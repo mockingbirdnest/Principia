@@ -15,6 +15,7 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
+using base::check_not_null;
 using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
@@ -108,6 +109,55 @@ template<template<typename, typename, int> class Evaluator>
 not_null<std::unique_ptr<Polynomial<Value, Argument>>>
 Polynomial<Value, Argument>::ReadFromMessage(
     serialization::Polynomial const& message) {
+  // 24 is the largest exponent that we can serialize for Quantity.
+  switch (message.degree()) {
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(1);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(2);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(3);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(4);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(5);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(6);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(7);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(8);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(9);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(10);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(11);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(12);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(13);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(14);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(15);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(16);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(17);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(18);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(19);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(20);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(21);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(22);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(23);
+    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(24);
+    default:
+      LOG(FATAL) << "Unexpected degree " << message.degree();
+      break;
+  }
+}
+
+#undef PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE
+
+#define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                      \
+  case value:                                                              \
+    return check_not_null(                                                 \
+        google::protobuf::Arena::Create<                                   \
+            PolynomialInMonomialBasis<Value, Argument, value, Evaluator>>( \
+            &arena,                                                        \
+            PolynomialInMonomialBasis<Value, Argument, value, Evaluator>:: \
+                ReadFromMessage(message)))
+
+template<typename Value, typename Argument>
+template<template<typename, typename, int> class Evaluator>
+not_null<Polynomial<Value, Argument>*>
+Polynomial<Value, Argument>::ReadFromMessage(
+    serialization::Polynomial const& message,
+    google::protobuf::Arena& arena) {
   // 24 is the largest exponent that we can serialize for Quantity.
   switch (message.degree()) {
     PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(1);

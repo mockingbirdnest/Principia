@@ -289,7 +289,8 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       continuous_trajectory->polynomials_.emplace_back(
           Instant::ReadFromMessage(pair.t_max()),
           Polynomial<Displacement<Frame>, Instant>::template ReadFromMessage<
-              EstrinEvaluator>(pair.polynomial()));
+              EstrinEvaluator>(pair.polynomial(),
+                               continuous_trajectory->arena_));
     }
   }
   if (message.has_first_time()) {
@@ -323,15 +324,12 @@ ContinuousTrajectory<Frame>::Checkpoint::Checkpoint(
       is_unstable_(is_unstable),
       degree_(degree),
       degree_age_(degree_age),
-      last_points_(last_points),
-      allocator_(&arena_),
-      polynomials_(allocator_) {
-  arena_.Init(google::protobuf::ArenaOptions());
-}
+      last_points_(last_points) {}
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory()
-    : allocator_(&arena) {}
+    : allocator_(&arena_),
+      polynomials(allocator) {}
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
@@ -341,19 +339,20 @@ ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
       polynomial(polynomial) {}
 
 template<typename Frame>
-not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+not_null<Polynomial<Displacement<Frame>, Instant>*>
 ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
     std::vector<Displacement<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v,
     Instant const& t_min,
     Instant const& t_max,
-    Displacement<Frame>& error_estimate) const {
+    Displacement<Frame>& error_estimate) {
   return numerics::NewhallApproximationInMonomialBasis<
             Displacement<Frame>, EstrinEvaluator>(degree,
                                                   q, v,
                                                   t_min, t_max,
-                                                  error_estimate);
+                                                  error_estimate,
+                                                  arena_);
 }
 
 template<typename Frame>

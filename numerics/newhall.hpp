@@ -5,6 +5,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
+#include "google/protobuf/arena.h"
 #include "numerics/чебышёв_series.hpp"
 #include "numerics/polynomial.hpp"
 #include "quantities/quantities.hpp"
@@ -55,6 +56,18 @@ NewhallApproximationInMonomialBasis(int degree,
                                     Instant const& t_min,
                                     Instant const& t_max,
                                     Vector& error_estimate);
+
+// Same as above, but the allocation occurs on the given arena.
+template<typename Vector,
+         template<typename, typename, int> class Evaluator>
+not_null<Polynomial<Vector, Instant>*>
+NewhallApproximationInMonomialBasis(int degree,
+                                    std::vector<Vector> const& q,
+                                    std::vector<Variation<Vector>> const& v,
+                                    Instant const& t_min,
+                                    Instant const& t_max,
+                                    Vector& error_estimate,
+                                    google::protobuf::Arena& arena);
 
 }  // namespace internal_newhall
 

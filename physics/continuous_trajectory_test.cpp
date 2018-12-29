@@ -52,6 +52,8 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
+using ::testing::DoAll;
+using ::testing::Return;
 using ::testing::Sequence;
 using ::testing::SetArgReferee;
 using ::testing::_;
@@ -61,26 +63,14 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
  public:
   using ContinuousTrajectory<Frame>::ContinuousTrajectory;
 
-  // Mock the Newhall factory.
-  not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-  NewhallApproximationInMonomialBasis(
-      int degree,
-      std::vector<Displacement<Frame>> const& q,
-      std::vector<Velocity<Frame>> const& v,
-      Instant const& t_min,
-      Instant const& t_max,
-      Displacement<Frame>& error_estimate) const override;
-
-  MOCK_CONST_METHOD7_T(
-      FillNewhallApproximationInMonomialBasis,
-      void(int degree,
-           std::vector<Displacement<Frame>> const& q,
-           std::vector<Velocity<Frame>> const& v,
-           Instant const& t_min,
-           Instant const& t_max,
-           Displacement<Frame>& error_estimate,
-           not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>&
-               polynomial));
+  MOCK_CONST_METHOD6_T(NewhallApproximationInMonomialBasis,
+                       not_null<Polynomial<Displacement<Frame>, Instant>*>(
+                           int degree,
+                           std::vector<Displacement<Frame>> const& q,
+                           std::vector<Velocity<Frame>> const& v,
+                           Instant const& t_min,
+                           Instant const& t_max,
+                           Displacement<Frame>& error_estimate));
 
   // Expose the Newhall optimization.
   using ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation;
@@ -91,29 +81,6 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
   bool is_unstable() const;
   void ResetBestNewhallApproximation();
 };
-
-template<typename Frame>
-not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
-    int degree,
-    std::vector<Displacement<Frame>> const& q,
-    std::vector<Velocity<Frame>> const& v,
-    Instant const& t_min,
-    Instant const& t_max,
-    Displacement<Frame>& error_estimate) const {
-  using P = PolynomialInMonomialBasis<
-                Displacement<Frame>, Instant, /*degree=*/1, HornerEvaluator>;
-  typename P::Coefficients const coefficients = {Displacement<Frame>(),
-                                                 Velocity<Frame>()};
-  not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-      polynomial = make_not_null_unique<P>(coefficients, Instant());
-  FillNewhallApproximationInMonomialBasis(degree,
-                                          q, v,
-                                          t_min, t_max,
-                                          error_estimate,
-                                          polynomial);
-  return polynomial;
-}
 
 template<typename Frame>
 int TestableContinuousTrajectory<Frame>::degree() const {
@@ -139,6 +106,12 @@ class ContinuousTrajectoryTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST1, true>;
+  using P1 = PolynomialInMonomialBasis<
+                Displacement<World>, Instant, /*degree=*/1, HornerEvaluator>;
+
+  ContinuousTrajectoryTest()
+      : coefficients_({Displacement<World>(), Velocity<World>()}),
+        polynomial_(make_not_null_unique<P1>(coefficients_, Instant())) {}
 
   void FillTrajectory(
       int const number_of_steps,
@@ -159,6 +132,10 @@ class ContinuousTrajectoryTest : public testing::Test {
   }
 
   Instant const t0_;
+
+  typename P1::Coefficients const coefficients_;
+  not_null<std::unique_ptr<Polynomial<Displacement<World>, Instant>>>
+      polynomial_;
 };
 
 TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
@@ -179,21 +156,25 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
+                NewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {3 * Metre, 4 * Metre, 5 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre})));
+                NewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {2 * Metre, 1 * Metre, 2 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre})));
+                NewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {0.1 * Metre, 2 * Metre, 0 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.1 * Metre})));
+                NewhallApproximationInMonomialBasis(6, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {0.5 * Metre, 0.5 * Metre, 0.1 * Metre})),
+                        Return(polynomial_.get())));
     t += step;
     trajectory->ComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(6, trajectory->degree());
@@ -207,21 +188,25 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
+                NewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {3 * Metre, 4 * Metre, 5 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre})));
+                NewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {2 * Metre, 1 * Metre, 2 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre})));
+                NewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {0.1 * Metre, 2 * Metre, 0 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({1 * Metre, 3 * Metre, 1 * Metre})));
+                NewhallApproximationInMonomialBasis(6, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {1 * Metre, 3 * Metre, 1 * Metre})),
+                        Return(polynomial_.get())));
     t += step;
     trajectory->ComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(5, trajectory->degree());
@@ -233,9 +218,10 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({0.1 * Metre, 1.5 * Metre, 0 * Metre})));
+                NewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {0.1 * Metre, 1.5 * Metre, 0 * Metre})),
+                        Return(polynomial_.get())));
     t += step;
     trajectory->ComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(5, trajectory->degree());
@@ -247,31 +233,38 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({0.1 * Metre, 2 * Metre, 0.5 * Metre})))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({1 * Metre, 2 * Metre, 1 * Metre})));
+                NewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {0.1 * Metre, 2 * Metre, 0.5 * Metre})),
+                        Return(polynomial_.get())))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {1 * Metre, 2 * Metre, 1 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
+                NewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {3 * Metre, 4 * Metre, 5 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre})));
+                NewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {2 * Metre, 1 * Metre, 2 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({1 * Metre, 1.5 * Metre, 1 * Metre})));
+                NewhallApproximationInMonomialBasis(6, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {1 * Metre, 1.5 * Metre, 1 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(7, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({1 * Metre, 1.2 * Metre, 1 * Metre})));
+                NewhallApproximationInMonomialBasis(7, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {1 * Metre, 1.2 * Metre, 1 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(8, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre})));
+                NewhallApproximationInMonomialBasis(8, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {1 * Metre, 1.3 * Metre, 1 * Metre})),
+                        Return(polynomial_.get())));
     t += step;
     trajectory->ComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(7, trajectory->degree());
@@ -283,17 +276,20 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(7, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre})));
+                NewhallApproximationInMonomialBasis(7, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {1 * Metre, 1.3 * Metre, 1 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
+                NewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {3 * Metre, 4 * Metre, 5 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({0.1 * Metre, 0.5 * Metre, 0.2 * Metre})));
+                NewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {0.1 * Metre, 0.5 * Metre, 0.2 * Metre})),
+                        Return(polynomial_.get())));
     t += step;
     trajectory->ComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(4, trajectory->degree());
@@ -308,21 +304,25 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({3 * Metre, 3 * Metre, 3 * Metre})));
+                NewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {3 * Metre, 3 * Metre, 3 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({2 * Metre, 2 * Metre, 2 * Metre})));
+                NewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {2 * Metre, 2 * Metre, 2 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({1 * Metre, 1 * Metre, 1 * Metre})));
+                NewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {1 * Metre, 1 * Metre, 1 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})));
+                NewhallApproximationInMonomialBasis(6, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {0.1 * Metre, 0.1 * Metre, 0.1 * Metre})),
+                        Return(polynomial_.get())));
     t += step;
     trajectory->ComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(6, trajectory->degree());
@@ -334,10 +334,11 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
+                NewhallApproximationInMonomialBasis(6, _, _, _, _, _))
         .Times(99)
-        .WillRepeatedly(SetArgReferee<5>(
-            Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})));
+        .WillRepeatedly(DoAll(SetArgReferee<5>(Displacement<World>(
+                                  {0.1 * Metre, 0.1 * Metre, 0.1 * Metre})),
+                              Return(polynomial_.get())));
     for (int i = 0; i < 99; ++i) {
       t += step;
       trajectory->ComputeBestNewhallApproximation(t, q, v);
@@ -351,17 +352,20 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({3 * Metre, 3 * Metre, 3 * Metre})));
+                NewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {3 * Metre, 3 * Metre, 3 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({2 * Metre, 2 * Metre, 2 * Metre})));
+                NewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {2 * Metre, 2 * Metre, 2 * Metre})),
+                        Return(polynomial_.get())));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
-            Displacement<World>({0.2 * Metre, 0.2 * Metre, 0.2 * Metre})));
+                NewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(Displacement<World>(
+                            {0.2 * Metre, 0.2 * Metre, 0.2 * Metre})),
+                        Return(polynomial_.get())));
     t += step;
     trajectory->ComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(5, trajectory->degree());

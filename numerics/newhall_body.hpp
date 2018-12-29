@@ -14,6 +14,7 @@ namespace principia {
 namespace numerics {
 namespace internal_newhall {
 
+using base::check_not_null;
 using base::make_not_null_unique;
 using geometry::Barycentre;
 using quantities::Exponentiation;
@@ -239,6 +240,48 @@ NewhallApproximationInMonomialBasis(int degree,
                                     Instant const& t_min,
                                     Instant const& t_max,
                                     Vector& error_estimate) {
+  switch (degree) {
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(3);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(4);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(5);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(6);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(7);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(8);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(9);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(10);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(11);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(12);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(13);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(14);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(15);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(16);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(17);
+    default:
+      LOG(FATAL) << "Unexpected degree " << degree;
+      break;
+  }
+}
+
+#undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE
+
+#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(degree)        \
+  case (degree):                                                              \
+    return check_not_null(                                                    \
+        google::protobuf::Arena::Create<                                      \
+            PolynomialInMonomialBasis<Vector, Instant, (degree), Evaluator>>( \
+            &arena,                                                           \
+            NewhallApproximationInMonomialBasis<Vector, (degree), Evaluator>( \
+                q, v, t_min, t_max, error_estimate)))
+
+template<typename Vector, template<typename, typename, int> class Evaluator>
+not_null<Polynomial<Vector, Instant>*>
+NewhallApproximationInMonomialBasis(int degree,
+                                    std::vector<Vector> const& q,
+                                    std::vector<Variation<Vector>> const& v,
+                                    Instant const& t_min,
+                                    Instant const& t_max,
+                                    Vector& error_estimate,
+                                    google::protobuf::Arena& arena) {
   switch (degree) {
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(3);
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(4);

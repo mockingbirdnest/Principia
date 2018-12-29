@@ -7,6 +7,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/point.hpp"
+#include "google/protobuf/arena.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
@@ -54,6 +55,10 @@ class Polynomial {
   template<template<typename, typename, int> class Evaluator>
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);
+  template<template<typename, typename, int> class Evaluator>
+  static not_null<Polynomial*> ReadFromMessage(
+      serialization::Polynomial const& message,
+      google::protobuf::Arena& arena);
 };
 
 template<typename Value, typename Argument, int degree_,

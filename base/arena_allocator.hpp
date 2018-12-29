@@ -10,6 +10,9 @@ namespace principia {
 namespace base {
 namespace arena_allocator_internal {
 
+// TODO(phl): Once std::pmr is implemented on all platforms, remove usage of
+// Arena and use polymorphic_allocator with an appropriate deleter for
+// unique_ptr and an appropriate placement new.
 template<class T>
 class ArenaAllocator {
  public:

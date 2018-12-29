@@ -154,14 +154,14 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       std::vector<InstantPolynomialPair, ArenaAllocator<InstantPolynomialPair>>;
 
   // May be overridden for testing.
-  virtual not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+  virtual not_null<Polynomial<Displacement<Frame>, Instant>*>
   NewhallApproximationInMonomialBasis(
       int degree,
       std::vector<Displacement<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v,
       Instant const& t_min,
       Instant const& t_max,
-      Displacement<Frame>& error_estimate) const;
+      Displacement<Frame>& error_estimate);
 
   // Computes the best Newhall approximation based on the desired tolerance.
   // Adjust the |degree_| and other member variables to stay within the
