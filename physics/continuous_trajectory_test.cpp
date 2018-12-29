@@ -63,14 +63,14 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
  public:
   using ContinuousTrajectory<Frame>::ContinuousTrajectory;
 
-  MOCK_CONST_METHOD6_T(NewhallApproximationInMonomialBasis,
-                       not_null<Polynomial<Displacement<Frame>, Instant>*>(
-                           int degree,
-                           std::vector<Displacement<Frame>> const& q,
-                           std::vector<Velocity<Frame>> const& v,
-                           Instant const& t_min,
-                           Instant const& t_max,
-                           Displacement<Frame>& error_estimate));
+  MOCK_METHOD6_T(NewhallApproximationInMonomialBasis,
+                 not_null<Polynomial<Displacement<Frame>, Instant>*>(
+                     int degree,
+                     std::vector<Displacement<Frame>> const& q,
+                     std::vector<Velocity<Frame>> const& v,
+                     Instant const& t_min,
+                     Instant const& t_max,
+                     Displacement<Frame>& error_estimate));
 
   // Expose the Newhall optimization.
   using ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation;

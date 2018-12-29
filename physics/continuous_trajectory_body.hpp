@@ -329,7 +329,7 @@ ContinuousTrajectory<Frame>::Checkpoint::Checkpoint(
 template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory()
     : allocator_(&arena_),
-      polynomials(allocator) {}
+      polynomials_(allocator_) {}
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
