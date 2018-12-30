@@ -26,6 +26,7 @@
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
@@ -63,7 +64,9 @@ using physics::SolarSystem;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::ArcSin;
+using quantities::Cbrt;
 using quantities::Cos;
+using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Pow;
 using quantities::Speed;
@@ -79,6 +82,7 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AlmostEquals;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
@@ -162,12 +166,29 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   // We work with orbit C from Russell and Lara (2006), Repeat Ground Track Lunar
   // Orbits in the Full-Potential Plus Third-Body Problem.
 
-  // The length and time units LU and TU are such that the Earth-Moon distance
-  // is 1 LU and the angular frequency of the body-fixed moon frame is θ′ = 1
-  // rad / TU, see figure 1 and table 1 of Russell and Lara (2006).
-  Length const LU = 384'400 * Kilo(Metre);
+  // The length and time units LU and TU are such that, in an idealized
+  // Earth-Moon system, the Earth-Moon distance is 1 LU and the angular
+  // frequency of the body-fixed moon frame is θ′ = 1 rad / TU, see figure 1 and
+  // table 1 of Russell and Lara (2006).
+  // In order to best reproduce the results of the paper, we choose our TU such
+  // that the rotational period of the moon is TU, and our LU such that the
+  // Moon's gravitational parameter has the same value in LU³/TU² as the
+  // gravitational parameter used in the paper.
+  // With cartesian initial conditions in the surface frame, these two
+  // properties ensure that the initial osculating lunar orbit has the same
+  // orientation, eccentricity, and anomaly.
+  Length const LU_rl = 384'400 * Kilo(Metre);
+  Time const TU_rl = 375'190.258663027 * Second;
+  GravitationalParameter const GM_rl =
+      4'902.801076 * (Pow<3>(Kilo(Metre)) / Pow<2>(Second));
+
   Time const TU = 1 * Radian / moon_->angular_velocity().Norm();
-  EXPECT_THAT(RelativeError(TU, 375'190.258663027 * Second), IsNear(1.4e-3));
+  Length const LU = Cbrt((moon_->gravitational_parameter() * Pow<2>(TU)) /
+                         (GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl))));
+  EXPECT_THAT(moon_->gravitational_parameter() / (Pow<3>(LU) / Pow<2>(TU)),
+              AlmostEquals(GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl)), 0));
+  EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3));
+  EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(0));
 
   // Initial conditions and elements from table 2 of Russell and Lara (2006).
   Length const x0 = -4.498948742093e-03 * LU;
