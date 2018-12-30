@@ -102,7 +102,9 @@ class LunarOrbitTest : public ::testing::Test {
                 /*step=*/10 * Minute))),
         moon_(dynamic_cast_not_null<OblateBody<ICRS> const*>(
             solar_system_2000_.massive_body(*ephemeris_, "Moon"))),
-        lunar_frame_(ephemeris_.get(), moon_) {
+        lunar_frame_(ephemeris_.get(), moon_),
+        instantaneous_moon_(InstantaneousLunarSurface::origin,
+                            Velocity<InstantaneousLunarSurface>{}) {
     google::LogToStderr();
   }
 
@@ -147,6 +149,9 @@ class LunarOrbitTest : public ::testing::Test {
   not_null<OblateBody<ICRS> const*> const moon_;
 
   BodySurfaceDynamicFrame<ICRS, LunarSurface> const lunar_frame_;
+  DegreesOfFreedom<InstantaneousLunarSurface> instantaneous_moon_;
+
+  MasslessBody const satellite_;
 };
 
 #if !defined(_DEBUG)
@@ -180,17 +185,12 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   DegreesOfFreedom<ICRS> initial_state =
       lunar_frame_.FromThisFrameAtTime(J2000)(lunar_initial_state);
 
-  MasslessBody const satellite{};
-
-  DegreesOfFreedom<InstantaneousLunarSurface> instantaneous_moon = {
-      InstantaneousLunarSurface::origin, Velocity<InstantaneousLunarSurface>{}};
-
   {
     KeplerOrbit<InstantaneousLunarSurface> initial_orbit(
         *moon_,
-        satellite,
+        satellite_,
         ToInstantaneousLunarSurfaceFrame(J2000)(initial_state) -
-            instantaneous_moon,
+            instantaneous_moon_,
         J2000);
     EXPECT_THAT(RelativeError(*initial_orbit.elements_at_epoch().semimajor_axis,
                               +1.861791339407e+03 * Kilo(Metre)),
@@ -249,9 +249,9 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
        t += integration_duration / 100'000.0) {
     auto const elements = KeplerOrbit<InstantaneousLunarSurface>(
         *moon_,
-        satellite,
+        satellite_,
         ToInstantaneousLunarSurfaceFrame(t)(
-            trajectory.EvaluateDegreesOfFreedom(t)) - instantaneous_moon,
+            trajectory.EvaluateDegreesOfFreedom(t)) - instantaneous_moon_,
         t).elements_at_epoch();
 
     mma_times.push_back((t - J2000) / Second);
@@ -293,9 +293,9 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
       auto const t = it.time();
       auto const elements = KeplerOrbit<InstantaneousLunarSurface>(
           *moon_,
-          satellite,
+          satellite_,
           ToInstantaneousLunarSurfaceFrame(t)(
-              trajectory.EvaluateDegreesOfFreedom(t)) - instantaneous_moon,
+              trajectory.EvaluateDegreesOfFreedom(t)) - instantaneous_moon_,
           t).elements_at_epoch();
 
       mma_node_times.push_back((t - J2000) / Second);
