@@ -128,6 +128,7 @@ class LunarOrbitTest : public ::testing::Test {
   // the inertial continuation of |LunarSurface| at t.  Note that this type
   // represents a different reference frame at each time, instead of a single
   // reference frame.  Time evolutions should not be computed in these frames.
+  // TODO(egg): NOPE.
   using InstantaneousLunarSurface =
       Frame<LunarSurfaceTag,
             LunarSurfaceTag::instantaneous_inertial,
@@ -135,14 +136,13 @@ class LunarOrbitTest : public ::testing::Test {
 
   RigidMotion<ICRS, InstantaneousLunarSurface>
   ToInstantaneousLunarSurfaceFrame(Instant const& t) {
-    RigidTransformation<LunarSurface, InstantaneousLunarSurface>
-        trivial_rigid_transformation_at_t(
-            LunarSurface::origin,
-            InstantaneousLunarSurface::origin,
-            OrthogonalMap<LunarSurface, InstantaneousLunarSurface>::Identity());
+    RigidTransformation<ICRS, InstantaneousLunarSurface> rigid_transformation(
+        ephemeris_->trajectory(moon_)->EvaluatePosition(t),
+        InstantaneousLunarSurface::origin,
+        OrthogonalMap<LunarSurface, InstantaneousLunarSurface>::Identity() *
+            lunar_frame_.ToThisFrameAtTime(J2000).orthogonal_map());
     return RigidMotion<ICRS, InstantaneousLunarSurface>(
-        trivial_rigid_transformation_at_t *
-            lunar_frame_.ToThisFrameAtTime(t).rigid_transformation(),
+        rigid_transformation,
         /*angular_velocity_of_to_frame=*/AngularVelocity<ICRS>{},
         /*velocity_of_to_frame_origin=*/
         ephemeris_->trajectory(moon_)->EvaluateVelocity(t));
@@ -262,8 +262,7 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                              Position<ICRS>>(),
           integration_step));
 
-  ephemeris_->FlowWithFixedStep(J2000 + 2 * period + integration_step,
-                                *instance);
+  ephemeris_->FlowWithFixedStep(J2000 + 3 * period, *instance);
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
@@ -276,10 +275,13 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   // Drop the units when logging to Mathematica, because it is ridiculously
   // slow at parsing them.
-  std::vector<Vector<double, LunarSurface>> mma_displacements;
-  std::vector<double> mma_arguments_of_periapsides;
-  std::vector<double> mma_eccentricities;
   std::vector<double> mma_times;
+  std::vector<double> mma_semimajor_axes;
+  std::vector<double> mma_eccentricities;
+  std::vector<double> mma_inclinations;
+  std::vector<double> mma_arguments_of_periapsides;
+  std::vector<double> mma_longitudes_of_ascending_nodes;
+  std::vector<Vector<double, LunarSurface>> mma_displacements;
 
   for (Instant t = J2000; t <= J2000 + 2 * period; t += period / 50'000) {
     auto const elements = KeplerOrbit<InstantaneousLunarSurface>(
@@ -290,18 +292,26 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
         t).elements_at_epoch();
 
     mma_times.push_back((t - J2000) / Second);
+    mma_semimajor_axes.push_back(*elements.semimajor_axis / Metre);
+    mma_inclinations.push_back(elements.inclination / Radian);
+    mma_eccentricities.push_back(*elements.eccentricity);
+    mma_arguments_of_periapsides.push_back(*elements.argument_of_periapsis /
+                                           Radian);
+    mma_longitudes_of_ascending_nodes.push_back(
+        elements.longitude_of_ascending_node / Radian);
     mma_displacements.push_back(
         (surface_trajectory.EvaluatePosition(t) - LunarSurface::origin) /
         Metre);
-    mma_arguments_of_periapsides.push_back(*elements.argument_of_periapsis /
-                                           Radian);
-    mma_eccentricities.push_back(*elements.eccentricity);
   }
 
   file << mathematica::Assign("times", mma_times);
-  file << mathematica::Assign("displacements", mma_displacements);
-  file << mathematica::Assign("arguments", mma_arguments_of_periapsides);
+  file << mathematica::Assign("semimajorAxes", mma_semimajor_axes);
   file << mathematica::Assign("eccentricities", mma_eccentricities);
+  file << mathematica::Assign("inclinations", mma_inclinations);
+  file << mathematica::Assign("arguments", mma_arguments_of_periapsides);
+  file << mathematica::Assign("longitudesOfAscendingNodes",
+                              mma_longitudes_of_ascending_nodes);
+  file << mathematica::Assign("displacements", mma_displacements);
 
   DiscreteTrajectory<LunarSurface> ascending_nodes;
   DiscreteTrajectory<LunarSurface> descending_nodes;
