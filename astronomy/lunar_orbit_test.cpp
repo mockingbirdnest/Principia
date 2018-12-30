@@ -35,10 +35,13 @@ namespace principia {
 using astronomy::ICRS;
 using astronomy::J2000;
 using base::dynamic_cast_not_null;
+using base::not_null;
 using base::OFStream;
+using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Instant;
+using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
@@ -46,15 +49,16 @@ using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodySurfaceDynamicFrame;
+using physics::ComputeNodes;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
-using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MasslessBody;
 using physics::OblateBody;
-using physics::ComputeNodes;
 using physics::RelativeDegreesOfFreedom;
+using physics::RigidMotion;
+using physics::RigidTransformation;
 using physics::SolarSystem;
 using quantities::Angle;
 using quantities::AngularFrequency;
@@ -66,6 +70,7 @@ using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
+using quantities::si::ArcMinute;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
@@ -74,8 +79,8 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
-using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 
@@ -83,57 +88,81 @@ namespace astronomy {
 
 class LunarOrbitTest : public ::testing::Test {
  protected:
-  static void SetUpTestCase() {
+  LunarOrbitTest()
+      : solar_system_2000_(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt"),
+        ephemeris_(solar_system_2000_.MakeEphemeris(
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
+            Ephemeris<ICRS>::FixedStepParameters(
+                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                                   Position<ICRS>>(),
+                /*step=*/10 * Minute))),
+        moon_(dynamic_cast_not_null<OblateBody<ICRS> const*>(
+            solar_system_2000_.massive_body(*ephemeris_, "Moon"))),
+        lunar_frame_(ephemeris_.get(), moon_) {
     google::LogToStderr();
-    ephemeris_ = solar_system_2000_.MakeEphemeris(
-        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
-                                 /*geopotential_tolerance=*/0x1p-24},
-        Ephemeris<ICRS>::FixedStepParameters(
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<ICRS>>(),
-            /*step=*/10 * Minute));
   }
 
-  static SolarSystem<ICRS> solar_system_2000_;
-  static std::unique_ptr<Ephemeris<ICRS>> ephemeris_;
-};
+  enum class LunarSurfaceTag { rotating, instantaneous_inertial };
 
-SolarSystem<ICRS> LunarOrbitTest::solar_system_2000_(
-    SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
-    SOLUTION_DIR / "astronomy" /
-        "sol_initial_state_jd_2451545_000000000.proto.txt");
-std::unique_ptr<Ephemeris<ICRS>> LunarOrbitTest::ephemeris_;
+  // This Moon-centred, Moon-fixed reference frame has the x axis pointing
+  // towards the Earth, and the y axis in the direction of the velocity of the
+  // Earth, see figure 1. of Russell and Lara (2006).
+  using LunarSurface = Frame<LunarSurfaceTag,
+                             LunarSurfaceTag::rotating,
+                             /*frame_is_inertial=*/false>;
+
+  // At any time t, |ToInstantaneousLunarSurfaceFrame(t)| converts to an
+  // inertial frame wherein the Moon is immobile at the origin at t, the x axis
+  // points towards the position of the Earth at t, and the y axis is in the
+  // direction of the velocity of the Earth at t.  In other words, this frame is
+  // the inertial continuation of |LunarSurface| at t.  Note that this type
+  // represents a different reference frame at each time, instead of a single
+  // reference frame.  Time evolutions should not be computed in these frames.
+  using InstantaneousLunarSurface =
+      Frame<LunarSurfaceTag,
+            LunarSurfaceTag::instantaneous_inertial,
+            /*frame_is_inertial=*/true>;
+
+  RigidMotion<ICRS, InstantaneousLunarSurface>
+  ToInstantaneousLunarSurfaceFrame(Instant const& t) {
+    RigidTransformation<LunarSurface, InstantaneousLunarSurface>
+        trivial_rigid_transformation_at_t(
+            LunarSurface::origin,
+            InstantaneousLunarSurface::origin,
+            OrthogonalMap<LunarSurface, InstantaneousLunarSurface>::Identity());
+    return RigidMotion<ICRS, InstantaneousLunarSurface>(
+        trivial_rigid_transformation_at_t *
+            lunar_frame_.ToThisFrameAtTime(t).rigid_transformation(),
+        /*angular_velocity_of_to_frame=*/AngularVelocity<ICRS>{},
+        /*velocity_of_to_frame_origin=*/
+        ephemeris_->trajectory(moon_)->EvaluateVelocity(t));
+  }
+
+  SolarSystem<ICRS> const solar_system_2000_;
+  not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
+  not_null<OblateBody<ICRS> const*> const moon_;
+
+  BodySurfaceDynamicFrame<ICRS, LunarSurface> const lunar_frame_;
+};
 
 #if !defined(_DEBUG)
 
 TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
-  auto const moon_body = dynamic_cast_not_null<OblateBody<ICRS> const*>(
-      solar_system_2000_.massive_body(*ephemeris_, "Moon"));
-  auto const moon_degrees_of_freedom =
-      solar_system_2000_.degrees_of_freedom("Moon");
-
   Time const integration_step = 10 * Second;
 
   // We work with orbit C from Russell and Lara (2006), Repeat Ground Track Lunar
   // Orbits in the Full-Potential Plus Third-Body Problem.
 
-  // This Moon-centred, Moon-fixed reference frame has the x axis pointing
-  // towards the Earth, and the y axis in the direction of the velocity of the
-  // Earth, see figure 1. of Russell and Lara (2006).
-
-  enum class LunarSurfaceTag { lunar_surface_frame };
-  using LunarSurface = Frame<LunarSurfaceTag,
-                             LunarSurfaceTag::lunar_surface_frame,
-                             /*frame_is_inertial=*/false>;
-  BodySurfaceDynamicFrame<ICRS, LunarSurface> lunar_frame(ephemeris_.get(),
-                                                          moon_body);
-
   // The length and time units LU and TU are such that the Earth-Moon distance
   // is 1 LU and the angular frequency of the body-fixed moon frame is θ′ = 1
   // rad / TU, see figure 1 and table 1 of Russell and Lara (2006).
   Length const LU = 384'400 * Kilo(Metre);
-  Time const TU = 1 * Radian / moon_body->angular_velocity().Norm();
-  EXPECT_THAT(RelativeError(TU, 375'190.258663027 * Second), IsNear(0));
+  Time const TU = 1 * Radian / moon_->angular_velocity().Norm();
+  EXPECT_THAT(RelativeError(TU, 375'190.258663027 * Second), IsNear(1.4e-3));
 
   // Initial conditions and elements from table 2 of Russell and Lara (2006).
   Length const x0 = -4.498948742093e-03 * LU;
@@ -146,30 +175,41 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   DegreesOfFreedom<LunarSurface> lunar_initial_state = {
       LunarSurface::origin + Displacement<LunarSurface>({x0, y0, z0}),
       Velocity<LunarSurface>({u0, v0, w0})};
-  DegreesOfFreedom<LunarSurface> moon_dof = {LunarSurface::origin,
-                                             Velocity<LunarSurface>{}};
 
   ephemeris_->Prolong(J2000);
-
   DegreesOfFreedom<ICRS> initial_state =
-      lunar_frame.FromThisFrameAtTime(J2000)(lunar_initial_state);
+      lunar_frame_.FromThisFrameAtTime(J2000)(lunar_initial_state);
 
   MasslessBody const satellite{};
 
-  {
-    KeplerianElements<LunarSurface> elements;
-    elements.semimajor_axis = +1.861791339407e+03 * Kilo(Metre);
-    elements.eccentricity = +2.110475283361e-02;
-    elements.inclination = +9.298309294740e+01 * Degree;
-    elements.argument_of_periapsis = -7.839337618501e+01 * Degree;
-    elements.longitude_of_ascending_node = -1.589469097527e+02 * Degree;
+  DegreesOfFreedom<InstantaneousLunarSurface> instantaneous_moon = {
+      InstantaneousLunarSurface::origin, Velocity<InstantaneousLunarSurface>{}};
 
-    KeplerOrbit<LunarSurface> initial_orbit(
-        *moon_body, satellite, lunar_initial_state - moon_dof, J2000);
-    auto const satellite_state_vectors = initial_orbit.StateVectors(J2000);
+  {
+    KeplerOrbit<InstantaneousLunarSurface> initial_orbit(
+        *moon_,
+        satellite,
+        ToInstantaneousLunarSurfaceFrame(J2000)(initial_state) -
+            instantaneous_moon,
+        J2000);
     EXPECT_THAT(RelativeError(*initial_orbit.elements_at_epoch().semimajor_axis,
                               +1.861791339407e+03 * Kilo(Metre)),
-                IsNear(0));
+                IsNear(2.4e-3));
+    EXPECT_THAT(RelativeError(*initial_orbit.elements_at_epoch().eccentricity,
+                              +2.110475283361e-02),
+                IsNear(1.9e-2));
+    EXPECT_THAT(AbsoluteError(initial_orbit.elements_at_epoch().inclination,
+                              +9.298309294740e+01 * Degree),
+                IsNear(10 * ArcMinute));
+    EXPECT_THAT(
+        AbsoluteError(*initial_orbit.elements_at_epoch().argument_of_periapsis,
+                      7.839337618501e+01 * Degree),
+        IsNear(6.5 * Degree));
+    EXPECT_THAT(
+        RelativeError(
+            initial_orbit.elements_at_epoch().longitude_of_ascending_node,
+            2 * π * Radian - 1.589469097527e+02 * Degree),
+        IsNear(2.4e-4));
   }
 
   Time const integration_duration = 2 * 28 * Day;
@@ -187,11 +227,13 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   // Remember that because of #228 we need to loop over FlowWithFixedStep.
   ephemeris_->FlowWithFixedStep(J2000 + integration_duration, *instance);
 
+  // To find the nodes, we need to convert the trajectory to a reference frame
+  // whose xy plane is the Moon's equator.
   DiscreteTrajectory<LunarSurface> surface_trajectory;
   for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
     surface_trajectory.Append(
         it.time(),
-        lunar_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+        lunar_frame_.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
   }
 
   // Drop the units when logging to Mathematica, because it is ridiculously
@@ -205,13 +247,17 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   for (Instant t = J2000; t <= J2000 + integration_duration;
        t += integration_duration / 100'000.0) {
-    RelativeDegreesOfFreedom<LunarSurface> const dof =
-        surface_trajectory.EvaluateDegreesOfFreedom(t) - moon_dof;
-    KeplerOrbit<LunarSurface> orbit(*moon_body, satellite, dof, t);
-    auto const elements = orbit.elements_at_epoch();
+    auto const elements = KeplerOrbit<InstantaneousLunarSurface>(
+        *moon_,
+        satellite,
+        ToInstantaneousLunarSurfaceFrame(t)(
+            trajectory.EvaluateDegreesOfFreedom(t)) - instantaneous_moon,
+        t).elements_at_epoch();
 
     mma_times.push_back((t - J2000) / Second);
-    mma_displacements.push_back(dof.displacement() / Metre);
+    mma_displacements.push_back(
+        (surface_trajectory.EvaluatePosition(t) - LunarSurface::origin) /
+        Metre);
     mma_arguments_of_periapsides.push_back(*elements.argument_of_periapsis /
                                            Radian);
     mma_eccentricities.push_back(*elements.eccentricity);
@@ -244,15 +290,19 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     for (auto it = nodes.trajectory.Begin();
          it != nodes.trajectory.End();
          ++it) {
-      RelativeDegreesOfFreedom<LunarSurface> const dof =
-          it.degrees_of_freedom() - moon_dof;
-      KeplerOrbit<LunarSurface> orbit(*moon_body, satellite, dof, it.time());
-      auto const elements = orbit.elements_at_epoch();
+      auto const t = it.time();
+      auto const elements = KeplerOrbit<InstantaneousLunarSurface>(
+          *moon_,
+          satellite,
+          ToInstantaneousLunarSurfaceFrame(t)(
+              trajectory.EvaluateDegreesOfFreedom(t)) - instantaneous_moon,
+          t).elements_at_epoch();
 
-      mma_node_times.push_back((it.time() - J2000) / Second);
-      mma_node_displacements.push_back(dof.displacement() / Metre);
-      mma_node_arguments_of_periapsides.push_back(*elements.argument_of_periapsis /
-                                             Radian);
+      mma_node_times.push_back((t - J2000) / Second);
+      mma_node_displacements.push_back(
+          (it.degrees_of_freedom().position() - LunarSurface::origin) / Metre);
+      mma_node_arguments_of_periapsides.push_back(
+          *elements.argument_of_periapsis / Radian);
       mma_node_eccentricities.push_back(*elements.eccentricity);
     }
     file << mathematica::Assign(absl::StrCat(nodes.name, "NodeTimes"),
