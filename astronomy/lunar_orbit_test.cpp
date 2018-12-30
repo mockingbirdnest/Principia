@@ -107,42 +107,37 @@ class LunarOrbitTest : public ::testing::Test {
         moon_(dynamic_cast_not_null<OblateBody<ICRS> const*>(
             solar_system_2000_.massive_body(*ephemeris_, "Moon"))),
         lunar_frame_(ephemeris_.get(), moon_),
-        instantaneous_moon_(InstantaneousLunarSurface::origin,
-                            Velocity<InstantaneousLunarSurface>{}) {
+        selenocentre_(Selenocentric::origin, Velocity<Selenocentric>{}) {
     google::LogToStderr();
   }
 
-  enum class LunarSurfaceTag { rotating, instantaneous_inertial };
+  enum class LunarTag { surface, selenocentric };
 
   // This Moon-centred, Moon-fixed reference frame has the x axis pointing
   // towards the Earth, and the y axis in the direction of the velocity of the
   // Earth, see figure 1. of Russell and Lara (2006).
-  using LunarSurface = Frame<LunarSurfaceTag,
-                             LunarSurfaceTag::rotating,
+  using LunarSurface = Frame<LunarTag,
+                             LunarTag::surface,
                              /*frame_is_inertial=*/false>;
 
-  // At any time t, |ToInstantaneousLunarSurfaceFrame(t)| converts to an
-  // inertial frame wherein the Moon is immobile at the origin at t, the x axis
-  // points towards the position of the Earth at t, and the y axis is in the
-  // direction of the velocity of the Earth at t.  In other words, this frame is
-  // the inertial continuation of |LunarSurface| at t.  Note that this type
-  // represents a different reference frame at each time, instead of a single
-  // reference frame.  Time evolutions should not be computed in these frames.
-  // TODO(egg): NOPE.
-  using InstantaneousLunarSurface =
-      Frame<LunarSurfaceTag,
-            LunarSurfaceTag::instantaneous_inertial,
-            /*frame_is_inertial=*/true>;
+  // The reference frame is non-rotating, with its origin at the selenocentre.
+  // The axes are those of LunarSurface at J2000.
+  // Note that this frame is not actually inertial, but we want to use it with
+  // |KeplerOrbit|.  Perhaps we should have a concept of non-rotating, and
+  // |KeplerOrbit| should check that; this is good enough for a test.
+  using Selenocentric = Frame<LunarTag,
+                              LunarTag::selenocentric,
+                              /*frame_is_inertial=*/true>;
 
-  RigidMotion<ICRS, InstantaneousLunarSurface>
-  ToInstantaneousLunarSurfaceFrame(Instant const& t) {
-    RigidTransformation<ICRS, InstantaneousLunarSurface> rigid_transformation(
-        ephemeris_->trajectory(moon_)->EvaluatePosition(t),
-        InstantaneousLunarSurface::origin,
-        OrthogonalMap<LunarSurface, InstantaneousLunarSurface>::Identity() *
-            lunar_frame_.ToThisFrameAtTime(J2000).orthogonal_map());
-    return RigidMotion<ICRS, InstantaneousLunarSurface>(
-        rigid_transformation,
+  // We do not use a |BodyCentredNonRotatingDynamicFrame| since that would use
+  // ICRS axes.
+  RigidMotion<ICRS, Selenocentric> ToSelenocentric(Instant const& t) {
+    return RigidMotion<ICRS, Selenocentric>(
+        RigidTransformation<ICRS, Selenocentric>(
+            ephemeris_->trajectory(moon_)->EvaluatePosition(t),
+            Selenocentric::origin,
+            OrthogonalMap<LunarSurface, Selenocentric>::Identity() *
+                lunar_frame_.ToThisFrameAtTime(J2000).orthogonal_map()),
         /*angular_velocity_of_to_frame=*/AngularVelocity<ICRS>{},
         /*velocity_of_to_frame_origin=*/
         ephemeris_->trajectory(moon_)->EvaluateVelocity(t));
@@ -153,7 +148,7 @@ class LunarOrbitTest : public ::testing::Test {
   not_null<OblateBody<ICRS> const*> const moon_;
 
   BodySurfaceDynamicFrame<ICRS, LunarSurface> const lunar_frame_;
-  DegreesOfFreedom<InstantaneousLunarSurface> instantaneous_moon_;
+  DegreesOfFreedom<Selenocentric> selenocentre_;
 
   MasslessBody const satellite_;
 };
@@ -223,11 +218,10 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     Angle const  ω0 = -7.839337618501e+01 * Degree;
     Angle const  Ω0 = -1.589469097527e+02 * Degree;
 
-    KeplerOrbit<InstantaneousLunarSurface> initial_orbit(
+    KeplerOrbit<Selenocentric> initial_orbit(
         *moon_,
         satellite_,
-        ToInstantaneousLunarSurfaceFrame(J2000)(initial_state) -
-            instantaneous_moon_,
+        ToSelenocentric(J2000)(initial_state) - selenocentre_,
         J2000);
     // The relative error on the semimajor axis is the same as the relative
     // error on our LU with respect to the one in the paper: the semimajor axis
@@ -284,11 +278,11 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   std::vector<Vector<double, LunarSurface>> mma_displacements;
 
   for (Instant t = J2000; t <= J2000 + 2 * period; t += period / 50'000) {
-    auto const elements = KeplerOrbit<InstantaneousLunarSurface>(
+    auto const elements = KeplerOrbit<Selenocentric>(
         *moon_,
         satellite_,
-        ToInstantaneousLunarSurfaceFrame(t)(
-            trajectory.EvaluateDegreesOfFreedom(t)) - instantaneous_moon_,
+        ToSelenocentric(t)(
+            trajectory.EvaluateDegreesOfFreedom(t)) - selenocentre_,
         t).elements_at_epoch();
 
     mma_times.push_back((t - J2000) / Second);
@@ -336,11 +330,11 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
          it != nodes.trajectory.End();
          ++it) {
       auto const t = it.time();
-      auto const elements = KeplerOrbit<InstantaneousLunarSurface>(
+      auto const elements = KeplerOrbit<Selenocentric>(
           *moon_,
           satellite_,
-          ToInstantaneousLunarSurfaceFrame(t)(
-              trajectory.EvaluateDegreesOfFreedom(t)) - instantaneous_moon_,
+          ToSelenocentric(t)(
+              trajectory.EvaluateDegreesOfFreedom(t)) - selenocentre_,
           t).elements_at_epoch();
 
       mma_node_times.push_back((t - J2000) / Second);
