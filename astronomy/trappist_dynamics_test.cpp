@@ -1332,7 +1332,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
   {
     // First, let's do some rounds of evolution with a population of individuals
     // based on |luca|.  The best of all of them is the Great Old One.
-    int const number_of_rounds = 10;
+    int const number_of_rounds = 40;
     genetics::Genome const luca(elements);
     Bundle bundle;
     std::filesystem::path stem;
@@ -1362,7 +1362,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
                                         compute_fitness,
                                         engine,
                                         file);
-        for (int i = 0; i < 20'000; ++i) {
+        for (int i = 0; i < 5'000; ++i) {
           population.ComputeAllFitnesses();
           population.BegetChildren();
         }
@@ -1386,7 +1386,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
     // Next, let's build a population of minor variants of the Great Old One,
     // the Outer Gods.  Use DEMCMC to improve them.  The best of them is the
     // Blind Idiot God.
-    int const number_of_variants = 50;
+    int const number_of_variants = 60;
     std::mt19937_64 engine;
     deмcmc::Population outer_gods;
     for (int i = 0; i < number_of_variants; ++i) {
