@@ -91,6 +91,7 @@ using testing_utilities::EqualsProto;
 using testing_utilities::FillUniquePtr;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::ReadFromHexadecimalFile;
+using testing_utilities::ReadLinesFromHexadecimalFile;
 using ::testing::AllOf;
 using ::testing::ByMove;
 using ::testing::DoAll;
@@ -656,21 +657,22 @@ TEST_F(InterfaceTest, DeserializePlugin) {
 TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
-  std::string const hexadecimal_plugin = ReadFromHexadecimalFile(
-      R"(P:\Public Mockingbird\Principia\Crashes\1595\persistent.proto.hex)");
-  principia__DeserializePlugin(
-          hexadecimal_plugin.c_str(),
-          hexadecimal_plugin.size(),
-          &deserializer,
-          &plugin,
-          /*compressor=*/"",
-          "hexadecimal");
-  principia__DeserializePlugin(hexadecimal_plugin.c_str(),
-                                          0,
-                                          &deserializer,
-                                          &plugin,
-                                          /*compressor=*/"",
-                                          "hexadecimal");
+  auto const lines = ReadLinesFromHexadecimalFile(
+      R"(C:\Users\phl.mantegna\Downloads\2038-long-load_erdos\2038-long-load_erdos.sfs)");
+  for (std::string const& line : lines) {
+    principia__DeserializePlugin(line.c_str(),
+                                 line.size(),
+                                 &deserializer,
+                                 &plugin,
+                                 /*compressor=*/"gipfeli",
+                                 "hexadecimal");
+  }
+  principia__DeserializePlugin(lines.front().c_str(),
+                               0,
+                               &deserializer,
+                               &plugin,
+                               /*compressor=*/"gipfeli",
+                               "hexadecimal");
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
