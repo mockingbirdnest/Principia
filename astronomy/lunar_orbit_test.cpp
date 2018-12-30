@@ -163,6 +163,9 @@ class LunarOrbitTest : public ::testing::Test {
 TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   Time const integration_step = 10 * Second;
 
+  base::OFStream file(SOLUTION_DIR / "mathematica" /
+                      "lunar_orbit.generated.wl");
+
   // We work with orbit C from Russell and Lara (2006), Repeat Ground Track Lunar
   // Orbits in the Full-Potential Plus Third-Body Problem.
 
@@ -189,14 +192,19 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
               AlmostEquals(GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl)), 0));
   EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3));
   EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(0));
+  
+  file << mathematica::Assign("tu", TU / Second);
+  file << mathematica::Assign("lu", LU / Metre);
+
+  Time const period = 2 * π * TU;
 
   // Initial conditions and elements from table 2 of Russell and Lara (2006).
   Length const x0 = -4.498948742093e-03 * LU;
   Length const y0 = -1.731769313131e-03 * LU;
   Length const z0 =  0 * LU;
-  Speed const u0  = -6.203996010078e-02 * (LU / TU);
-  Speed const v0  =  7.000280770869e-02 * (LU / TU);
-  Speed const w0  =  1.588813067177e+00 * (LU / TU);
+  Speed const  u0 = -6.203996010078e-02 * (LU / TU);
+  Speed const  v0 =  7.000280770869e-02 * (LU / TU);
+  Speed const  w0 =  1.588813067177e+00 * (LU / TU);
 
   DegreesOfFreedom<LunarSurface> lunar_initial_state = {
       LunarSurface::origin + Displacement<LunarSurface>({x0, y0, z0}),
@@ -207,33 +215,37 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
       lunar_frame_.FromThisFrameAtTime(J2000)(lunar_initial_state);
 
   {
+    Length const a0 = +1.861791339407e+03 * Kilo(Metre);
+    double const e0 = +2.110475283361e-02;
+    Angle const  i0 = +9.298309294740e+01 * Degree;
+    Angle const  ω0 = -7.839337618501e+01 * Degree;
+    Angle const  Ω0 = -1.589469097527e+02 * Degree;
+
     KeplerOrbit<InstantaneousLunarSurface> initial_orbit(
         *moon_,
         satellite_,
         ToInstantaneousLunarSurfaceFrame(J2000)(initial_state) -
             instantaneous_moon_,
         J2000);
-    EXPECT_THAT(RelativeError(*initial_orbit.elements_at_epoch().semimajor_axis,
-                              +1.861791339407e+03 * Kilo(Metre)),
-                IsNear(2.4e-3));
-    EXPECT_THAT(RelativeError(*initial_orbit.elements_at_epoch().eccentricity,
-                              +2.110475283361e-02),
-                IsNear(1.9e-2));
-    EXPECT_THAT(AbsoluteError(initial_orbit.elements_at_epoch().inclination,
-                              +9.298309294740e+01 * Degree),
-                IsNear(10 * ArcMinute));
     EXPECT_THAT(
-        AbsoluteError(*initial_orbit.elements_at_epoch().argument_of_periapsis,
-                      7.839337618501e+01 * Degree),
-        IsNear(6.5 * Degree));
+        RelativeError(*initial_orbit.elements_at_epoch().semimajor_axis, a0),
+        IsNear(2.4e-3));
+    EXPECT_THAT(
+        RelativeError(*initial_orbit.elements_at_epoch().eccentricity, e0),
+        IsNear(1.9e-2));
+    EXPECT_THAT(
+        RelativeError(initial_orbit.elements_at_epoch().inclination, i0),
+        IsNear(0));
+    EXPECT_THAT(
+        RelativeError(*initial_orbit.elements_at_epoch().argument_of_periapsis,
+                      -ω0),
+        IsNear(0));
     EXPECT_THAT(
         RelativeError(
             initial_orbit.elements_at_epoch().longitude_of_ascending_node,
-            2 * π * Radian - 1.589469097527e+02 * Degree),
+            2 * π * Radian + Ω0),
         IsNear(2.4e-4));
   }
-
-  Time const integration_duration = 2 * 28 * Day;
 
   DiscreteTrajectory<ICRS> trajectory;
   trajectory.Append(J2000, initial_state);
@@ -245,8 +257,8 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                              Position<ICRS>>(),
           integration_step));
 
-  // Remember that because of #228 we need to loop over FlowWithFixedStep.
-  ephemeris_->FlowWithFixedStep(J2000 + integration_duration, *instance);
+  ephemeris_->FlowWithFixedStep(J2000 + 2 * period + integration_step,
+                                *instance);
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
@@ -259,15 +271,12 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   // Drop the units when logging to Mathematica, because it is ridiculously
   // slow at parsing them.
-  base::OFStream file(SOLUTION_DIR / "mathematica" /
-                      "lunar_orbit.generated.wl");
   std::vector<Vector<double, LunarSurface>> mma_displacements;
   std::vector<double> mma_arguments_of_periapsides;
   std::vector<double> mma_eccentricities;
   std::vector<double> mma_times;
 
-  for (Instant t = J2000; t <= J2000 + integration_duration;
-       t += integration_duration / 100'000.0) {
+  for (Instant t = J2000; t <= J2000 + 2 * period; t += period / 50'000) {
     auto const elements = KeplerOrbit<InstantaneousLunarSurface>(
         *moon_,
         satellite_,
