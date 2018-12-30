@@ -171,8 +171,8 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   // The length and time units LU and TU are such that, in an idealized
   // Earth-Moon system, the Earth-Moon distance is 1 LU and the angular
-  // frequency of the body-fixed moon frame is θ′ = 1 rad / TU, see figure 1 and
-  // table 1 of Russell and Lara (2006).
+  // frequency of the body-fixed moon frame is θ′ = 1 rad / TU.
+
   // In order to best reproduce the results of the paper, we choose our TU such
   // that the rotational period of the moon is TU, and our LU such that the
   // Moon's gravitational parameter has the same value in LU³/TU² as the
@@ -180,6 +180,8 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   // With cartesian initial conditions in the surface frame, these two
   // properties ensure that the initial osculating lunar orbit has the same
   // orientation, eccentricity, and anomaly.
+
+  // The _rl values are the ones from table 1 of Russell and Lara (2006).
   Length const LU_rl = 384'400 * Kilo(Metre);
   Time const TU_rl = 375'190.258663027 * Second;
   GravitationalParameter const GM_rl =
@@ -189,9 +191,9 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   Length const LU = Cbrt((moon_->gravitational_parameter() * Pow<2>(TU)) /
                          (GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl))));
   EXPECT_THAT(moon_->gravitational_parameter() / (Pow<3>(LU) / Pow<2>(TU)),
-              AlmostEquals(GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl)), 0));
+              AlmostEquals(GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl)), 1));
   EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3));
-  EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(0));
+  EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(9.0e-4));
   
   file << mathematica::Assign("tu", TU / Second);
   file << mathematica::Assign("lu", LU / Metre);
@@ -227,24 +229,27 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
         ToInstantaneousLunarSurfaceFrame(J2000)(initial_state) -
             instantaneous_moon_,
         J2000);
+    // The relative error on the semimajor axis is the same as the relative
+    // error on our LU with respect to the one in the paper: the semimajor axis
+    // has the same value in LU.
     EXPECT_THAT(
         RelativeError(*initial_orbit.elements_at_epoch().semimajor_axis, a0),
-        IsNear(2.4e-3));
+        IsNear(9.0e-4));
     EXPECT_THAT(
         RelativeError(*initial_orbit.elements_at_epoch().eccentricity, e0),
-        IsNear(1.9e-2));
+        IsNear(1.4e-10));
     EXPECT_THAT(
         RelativeError(initial_orbit.elements_at_epoch().inclination, i0),
-        IsNear(0));
+        IsNear(9.7e-9));
     EXPECT_THAT(
         RelativeError(*initial_orbit.elements_at_epoch().argument_of_periapsis,
                       -ω0),
-        IsNear(0));
+        IsNear(7.1e-11));
     EXPECT_THAT(
         RelativeError(
             initial_orbit.elements_at_epoch().longitude_of_ascending_node,
             2 * π * Radian + Ω0),
-        IsNear(2.4e-4));
+        IsNear(4.7e-13));
   }
 
   DiscreteTrajectory<ICRS> trajectory;
