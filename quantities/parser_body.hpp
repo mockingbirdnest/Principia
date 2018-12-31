@@ -242,7 +242,7 @@ Q ParseQuantity(std::string const& s) {
   }
 
   Unit const unit = ParseQuotientUnit(unit_string);
-  CHECK(ExtractDimensions<Q>::dimensions() == unit.dimensions);
+  CHECK(ExtractDimensions<Q>::dimensions() == unit.dimensions) << unit_string;
   return magnitude * unit.scale * SIUnit<Q>();
 }
 
