@@ -105,8 +105,25 @@ void GenerateConfiguration(std::string const& game_epoch,
                                                                    : name)
                       << "\n";
     if (body.has_gravitational_parameter()) {
-      gravity_model_cfg << "    gravitational_parameter = "
-                        << body.gravitational_parameter() << "\n";
+      // TODO(phl): We don't properly marshall non-ASCII strings in structs, so
+      // if the gravity model has references to the solar or terrestrial masses,
+      // switch to SI units.
+      if (body.gravitational_parameter().find_first_of(u8"☉🜨") ==
+          std::string::npos) {
+        gravity_model_cfg << "    gravitational_parameter = "
+                          << body.gravitational_parameter() << "\n";
+      } else {
+        GravitationalParameter const gravitational_parameter =
+            ParseQuantity<GravitationalParameter>(
+                body.gravitational_parameter());
+        gravity_model_cfg << "    gravitational_parameter = "
+                          << std::scientific
+                          << std::setprecision(
+                                 std::numeric_limits<double>::max_digits10)
+                          << gravitational_parameter /
+                                 (Pow<3>(Kilo(Metre)) / Pow<2>(Second))
+                          << " km^3/s^2\n";
+      }
     } else {
       // If the mass was provided, convert to a gravitational parameter.
       Mass const mass = ParseQuantity<Mass>(body.mass());
