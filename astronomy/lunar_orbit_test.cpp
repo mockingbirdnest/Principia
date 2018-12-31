@@ -90,13 +90,30 @@ using testing_utilities::Slope;
 
 namespace astronomy {
 
-class LunarOrbitTest : public ::testing::Test {
+struct GeopotentialTruncation {
+  int max_degree;
+  int zonal_only;
+
+  // A string describing the truncation.
+  std::string DegreeAndOrder() const {
+    return absl::StrCat(max_degree, "x", zonal_only ? 0 : max_degree);
+  }
+};
+
+class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
  protected:
   LunarOrbitTest()
-      : solar_system_2000_(
-            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
-            SOLUTION_DIR / "astronomy" /
-                "sol_initial_state_jd_2451545_000000000.proto.txt"),
+      : solar_system_2000_([this]() {
+          SolarSystem<ICRS> result(
+              SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+              SOLUTION_DIR / "astronomy" /
+                  "sol_initial_state_jd_2451545_000000000.proto.txt");
+          result.LimitOblatenessToDegree("Moon", GetParam().max_degree);
+          if (GetParam().zonal_only) {
+            result.LimitOblatenessToZonal("Moon");
+          }
+          return result;
+        }()),
         ephemeris_(solar_system_2000_.MakeEphemeris(
             /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
@@ -155,11 +172,25 @@ class LunarOrbitTest : public ::testing::Test {
 
 #if !defined(_DEBUG)
 
-TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
+INSTANTIATE_TEST_CASE_P(
+    TruncatedSelenopotentials,
+    LunarOrbitTest,
+    ::testing::Values(GeopotentialTruncation{/*max_degree=*/50,
+                                             /*zonal_only=*/false},
+                      GeopotentialTruncation{/*max_degree=*/30,
+                                             /*zonal_only=*/false},
+                      GeopotentialTruncation{/*max_degree=*/50,
+                                             /*zonal_only=*/true}));
+
+TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   Time const integration_step = 10 * Second;
+  LOG(INFO) << "Using a " << GetParam().DegreeAndOrder()
+            << " selenopotential field";
 
   base::OFStream file(SOLUTION_DIR / "mathematica" /
-                      "lunar_orbit.generated.wl");
+                      absl::StrCat("lunar_orbit_",
+                                   GetParam().DegreeAndOrder(),
+                                   ".generated.wl"));
 
   // We work with orbit C from Russell and Lara (2006), Repeat Ground Track Lunar
   // Orbits in the Full-Potential Plus Third-Body Problem.
@@ -256,7 +287,7 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                              Position<ICRS>>(),
           integration_step));
 
-  ephemeris_->FlowWithFixedStep(J2000 + 3 * period, *instance);
+  ephemeris_->FlowWithFixedStep(J2000 + 12 * period, *instance);
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
