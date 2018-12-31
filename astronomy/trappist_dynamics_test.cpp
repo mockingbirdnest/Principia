@@ -24,6 +24,7 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -50,6 +51,8 @@ using geometry::OrientedAngleBetween;
 using geometry::Position;
 using geometry::Sign;
 using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::Quinlan1999Order8A;
 using numerics::Bisect;
 using physics::Ephemeris;
@@ -71,6 +74,7 @@ using quantities::Sqrt;
 using quantities::Square;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
+using quantities::si::Centi;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Hour;
@@ -1176,29 +1180,49 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
 }
 
 TEST_F(TrappistDynamicsTest, MathematicaTransits) {
-  Instant const a_century_later = system_.epoch() + 100 * JulianYear;
-  ephemeris_->Prolong(a_century_later);
-
-  TransitsByPlanet computations;
+  // Run this test with different ephemeris to make sure that the system is
+  // converged.
   OFStream file(TEMP_DIR / "trappist_transits.generated.wl");
+  int index = 0;
+  for (auto const& ephemeris :
+       {system_.MakeEphemeris(
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
+            Ephemeris<Sky>::FixedStepParameters(
+                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                                   Position<Sky>>(),
+                /*step=*/30 * Minute)),
+        system_.MakeEphemeris(
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Centi(Metre),
+                                     /*geopotential_tolerance=*/1.0e-7},
+            Ephemeris<Sky>::FixedStepParameters(
+                SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN11B,
+                                                      Position<Sky>>(),
+                /*step=*/45 * Minute))}) {
+    Instant const a_century_later = system_.epoch() + 100 * JulianYear;
+    ephemeris->Prolong(a_century_later);
 
-  auto const& star = system_.massive_body(*ephemeris_, star_name);
-  auto const bodies = ephemeris_->bodies();
-  for (auto const& planet : bodies) {
-    if (planet != star) {
-      computations[planet->name()] = ComputeTransits(*ephemeris_, star, planet);
-      file << mathematica::Assign("transit" + SanitizedName(*planet),
-                                  computations[planet->name()]);
+    TransitsByPlanet computations;
+
+    auto const& star = system_.massive_body(*ephemeris, star_name);
+    auto const bodies = ephemeris->bodies();
+    for (auto const& planet : bodies) {
+      if (planet != star) {
+        computations[planet->name()] =
+            ComputeTransits(*ephemeris, star, planet);
+        file << mathematica::Assign(
+                    "transit" + absl::StrCat(index) + SanitizedName(*planet),
+                    computations[planet->name()]);
+      }
     }
-  }
 
-  std::string info;
-  double const χ² = Transitsχ²(observations, computations, info);
-#if 0
-  CHECK_LT(χ², 482.0);
-#endif
-  CHECK_GT(χ², 470.0);
-  LOG(ERROR) << u8"χ²: " << χ² << " " << info;
+    std::string info;
+    double const χ² = Transitsχ²(observations, computations, info);
+    CHECK_LT(χ², 359.0);
+    CHECK_GT(χ², 358.0);
+    LOG(ERROR) << u8"χ²: " << χ² << " " << info;
+    ++index;
+  }
 }
 
 TEST_F(TrappistDynamicsTest, MathematicaAlignments) {
