@@ -179,6 +179,12 @@ INSTANTIATE_TEST_CASE_P(
                                              /*zonal_only=*/false},
                       GeopotentialTruncation{/*max_degree=*/30,
                                              /*zonal_only=*/false},
+                      GeopotentialTruncation{/*max_degree=*/25,
+                                             /*zonal_only=*/false},
+                      GeopotentialTruncation{/*max_degree=*/20,
+                                             /*zonal_only=*/false},
+                      GeopotentialTruncation{/*max_degree=*/10,
+                                             /*zonal_only=*/false},
                       GeopotentialTruncation{/*max_degree=*/50,
                                              /*zonal_only=*/true}));
 
@@ -287,7 +293,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                              Position<ICRS>>(),
           integration_step));
 
-  ephemeris_->FlowWithFixedStep(J2000 + 12 * period, *instance);
+  ephemeris_->FlowWithFixedStep(J2000 + 10 * 12 * period, *instance);
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
