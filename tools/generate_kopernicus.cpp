@@ -132,8 +132,8 @@ void GenerateKopernicusForSlippist1(
     }
     kopernicus_cfg << "      @displayName = " << name << "\n";
     kopernicus_cfg << "      %gravParameter = "
-                   << DebugString(GravitationalConstant *
-                                  ParseQuantity<Mass>(body.mass()) /
+                   << DebugString(ParseQuantity<GravitationalParameter>(
+                                      body.gravitational_parameter()) /
                                   SIUnit<GravitationalParameter>())
                    << "\n";
     kopernicus_cfg << "      %radius = "
