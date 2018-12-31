@@ -21,6 +21,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/sign.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -83,6 +84,9 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
+using ::testing::AllOf;
+using ::testing::Gt;
+using ::testing::Lt;
 
 using namespace std::chrono_literals;  // NOLINT.
 
@@ -1218,8 +1222,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
 
     std::string info;
     double const χ² = Transitsχ²(observations, computations, info);
-    EXPECT_LT(χ², 359.0);
-    EXPECT_GT(χ², 358.0);
+    EXPECT_THAT(χ², AllOf(Gt(358.0), Lt(359.0)));
     LOG(ERROR) << u8"χ²: " << χ² << " " << info;
     ++index;
   }
