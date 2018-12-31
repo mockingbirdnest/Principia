@@ -1180,7 +1180,7 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
 }
 
 TEST_F(TrappistDynamicsTest, MathematicaTransits) {
-  // Run this test with different ephemeris to make sure that the system is
+  // Run this test with different ephemerides to make sure that the system is
   // converged.
   OFStream file(TEMP_DIR / "trappist_transits.generated.wl");
   int index = 0;
@@ -1218,8 +1218,8 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
 
     std::string info;
     double const χ² = Transitsχ²(observations, computations, info);
-    CHECK_LT(χ², 359.0);
-    CHECK_GT(χ², 358.0);
+    EXPECT_LT(χ², 359.0);
+    EXPECT_GT(χ², 358.0);
     LOG(ERROR) << u8"χ²: " << χ² << " " << info;
     ++index;
   }
