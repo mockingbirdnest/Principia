@@ -678,8 +678,9 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
                                  &plugin,
                                  /*compressor=*/"gipfeli",
                                  "hexadecimal");
-    EXPECT_THAT(plugin, NotNull());
+    LOG(ERROR) << "Deserialization complete";
   }
+  EXPECT_THAT(plugin, NotNull());
 
   // Write that plugin back to another file with the same format.
   {
@@ -695,8 +696,33 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
       file << "serialized_plugin = " << hex << "\n";
       principia__DeleteString(&hex);
     }
+    LOG(ERROR) << "Serialization complete";
+  }
+  principia__DeletePlugin(&plugin);
+
+  // Read the plugin from the new file to make sure that it's fine.
+  {
+    PushDeserializer* deserializer = nullptr;
+    auto const lines =
+        ReadLinesFromHexadecimalFile(TEMP_DIR / "serialized_plugin.proto.hex");
+    for (std::string const& line : lines) {
+      principia__DeserializePlugin(line.c_str(),
+                                   line.size(),
+                                   &deserializer,
+                                   &plugin,
+                                   /*compressor=*/"gipfeli",
+                                   "hexadecimal");
+    }
+    principia__DeserializePlugin(lines.front().c_str(),
+                                 0,
+                                 &deserializer,
+                                 &plugin,
+                                 /*compressor=*/"gipfeli",
+                                 "hexadecimal");
+    LOG(ERROR) << "Deserialization complete";
   }
 
+  EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
 
