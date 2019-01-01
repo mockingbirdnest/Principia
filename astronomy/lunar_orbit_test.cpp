@@ -50,10 +50,12 @@ using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodySurfaceDynamicFrame;
+using physics::ComputeApsides;
 using physics::ComputeNodes;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
+using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MasslessBody;
 using physics::OblateBody;
@@ -66,7 +68,9 @@ using quantities::AngularFrequency;
 using quantities::ArcSin;
 using quantities::Cbrt;
 using quantities::Cos;
+using quantities::Sin;
 using quantities::GravitationalParameter;
+using quantities::Infinity;
 using quantities::Length;
 using quantities::Pow;
 using quantities::Speed;
@@ -82,17 +86,44 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
-using testing_utilities::AlmostEquals;
 using testing_utilities::AbsoluteError;
+using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 
 namespace astronomy {
 
+  // A minimum bounding rectangle for the eccentricity vector.
+struct EccentricityVectorRange {
+  double min_e_cos_ω = +Infinity<double>();
+  double max_e_cos_ω = -Infinity<double>();
+  double min_e_sin_ω = +Infinity<double>();
+  double max_e_sin_ω = -Infinity<double>();
+};
+
 struct GeopotentialTruncation {
+  // The geopotential truncation used.
   int max_degree;
   int zonal_only;
+
+  // Expectations.  All values are checked with IsNear.
+
+  // The Euclidean norm of the change in the (e cos ω, e sin ω) vector between
+  // the beginning and the end of the first period of the repeat ground track
+  // orbit.
+  double first_period_eccentricity_vector_drift;
+
+  // An expectation for the periodic repeat ground track behaviour discounting
+  // any effects that are periodic over one orbit.
+  // Bounds the value of the eccentricity vector at the descending node of every
+  // orbit of the first period.
+  EccentricityVectorRange first_period_descending_nodes;
+
+  // An expectation for the behaviour over many periods.  Only the first
+  // descending node of each period is bounded, so that the periodic component
+  // tested above is ignored.
+  EccentricityVectorRange period_ends;
 
   // A string describing the truncation.
   std::string DegreeAndOrder() const {
@@ -231,6 +262,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   file << mathematica::Assign("lu", LU / Metre);
 
   Time const period = 2 * π * TU;
+  int const orbits_per_period = 328;
 
   // Initial conditions and elements from table 2 of Russell and Lara (2006).
   Length const x0 = -4.498948742093e-03 * LU;
@@ -255,32 +287,27 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     Angle const  ω0 = -7.839337618501e+01 * Degree;
     Angle const  Ω0 = -1.589469097527e+02 * Degree;
 
-    KeplerOrbit<Selenocentric> initial_orbit(
-        *moon_,
-        satellite_,
-        ToSelenocentric(J2000)(initial_state) - selenocentre_,
-        J2000);
+    KeplerianElements<Selenocentric> const initial_osculating =
+        KeplerOrbit<Selenocentric>(
+            *moon_,
+            satellite_,
+            ToSelenocentric(J2000)(initial_state) - selenocentre_,
+            J2000).elements_at_epoch();
     // The relative error on the semimajor axis is the same as the relative
     // error on our LU with respect to the one in the paper: the semimajor axis
     // has the same value in LU.
+    EXPECT_THAT(RelativeError(*initial_osculating.semimajor_axis, a0),
+                IsNear(9.0e-4));
+    EXPECT_THAT(RelativeError(*initial_osculating.eccentricity, e0),
+                IsNear(1.4e-10));
+    EXPECT_THAT(RelativeError(initial_osculating.inclination, i0),
+                IsNear(9.7e-9));
     EXPECT_THAT(
-        RelativeError(*initial_orbit.elements_at_epoch().semimajor_axis, a0),
-        IsNear(9.0e-4));
-    EXPECT_THAT(
-        RelativeError(*initial_orbit.elements_at_epoch().eccentricity, e0),
-        IsNear(1.4e-10));
-    EXPECT_THAT(
-        RelativeError(initial_orbit.elements_at_epoch().inclination, i0),
-        IsNear(9.7e-9));
-    EXPECT_THAT(
-        RelativeError(*initial_orbit.elements_at_epoch().argument_of_periapsis,
-                      -ω0),
+        RelativeError(*initial_osculating.argument_of_periapsis, -ω0),
         IsNear(7.1e-11));
-    EXPECT_THAT(
-        RelativeError(
-            initial_orbit.elements_at_epoch().longitude_of_ascending_node,
-            2 * π * Radian + Ω0),
-        IsNear(4.7e-13));
+    EXPECT_THAT(RelativeError(initial_osculating.longitude_of_ascending_node,
+                              2 * π * Radian + Ω0),
+                IsNear(4.7e-13));
   }
 
   DiscreteTrajectory<ICRS> trajectory;
@@ -293,7 +320,9 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                              Position<ICRS>>(),
           integration_step));
 
-  ephemeris_->FlowWithFixedStep(J2000 + 10 * 12 * period, *instance);
+
+
+  ephemeris_->FlowWithFixedStep(J2000 + 12 * period, *instance);
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
@@ -352,10 +381,26 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                ascending_nodes,
                descending_nodes);
 
+  DiscreteTrajectory<ICRS> apoapsides;
+  DiscreteTrajectory<ICRS> periapsides;
+  ComputeApsides(ephemeris_->trajectory(moon_),
+                 trajectory.Begin(),
+                 trajectory.End(),
+                 apoapsides,
+                 periapsides);
+
   struct Nodes {
     std::string_view const name;
     DiscreteTrajectory<LunarSurface> const& trajectory;
   };
+
+  struct Apsides {
+    std::string_view const name;
+    DiscreteTrajectory<ICRS> const& trajectory;
+  };
+
+  std::vector<double> descending_node_eccentricities;
+  std::vector<Angle> descending_node_arguments;
 
   for (auto const& nodes : {Nodes{"ascending", ascending_nodes},
                             Nodes{"descending", descending_nodes}}) {
@@ -363,6 +408,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     std::vector<Vector<double, LunarSurface>> mma_node_displacements;
     std::vector<double> mma_node_arguments_of_periapsides;
     std::vector<double> mma_node_eccentricities;
+
     for (auto it = nodes.trajectory.Begin();
          it != nodes.trajectory.End();
          ++it) {
@@ -380,6 +426,11 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
       mma_node_arguments_of_periapsides.push_back(
           *elements.argument_of_periapsis / Radian);
       mma_node_eccentricities.push_back(*elements.eccentricity);
+
+      if (nodes.name == "descending") {
+        descending_node_eccentricities.push_back(*elements.eccentricity);
+        descending_node_arguments.push_back(*elements.argument_of_periapsis);
+      }
     }
     file << mathematica::Assign(absl::StrCat(nodes.name, "NodeTimes"),
                                 mma_node_times);
@@ -389,6 +440,45 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                 mma_node_arguments_of_periapsides);
     file << mathematica::Assign(absl::StrCat(nodes.name, "NodeEccentricities"),
                                 mma_node_eccentricities);
+  }
+
+  for (auto const& apsides : {Apsides{"apoapsides", apoapsides},
+                              Apsides{"periapsides", periapsides}}) {
+    std::vector<double> mma_apsis_times;
+    std::vector<Vector<double, LunarSurface>> mma_apsis_displacements;
+
+    for (auto it = apsides.trajectory.Begin();
+         it != apsides.trajectory.End();
+         ++it) {
+      auto const t = it.time();
+
+      mma_apsis_times.push_back((t - J2000) / Second);
+      mma_apsis_displacements.push_back(
+          (lunar_frame_.ToThisFrameAtTime(t).rigid_transformation()(
+               it.degrees_of_freedom().position()) -
+           LunarSurface::origin) / Metre);
+    }
+    file << mathematica::Assign(absl::StrCat(apsides.name, "Times"),
+                                mma_apsis_times);
+    file << mathematica::Assign(absl::StrCat(apsides.name, "Displacements"),
+                                mma_apsis_displacements);
+  }
+
+  EccentricityVectorRange actual_first_period_descending_nodes;
+  for (int orbit = 0; orbit < orbits_per_period; ++orbit) {
+      auto const elements_at_descending_node = KeplerOrbit<Selenocentric>(
+          *moon_,
+          satellite_,
+          ToSelenocentric(descending_nodes.)(
+              trajectory.EvaluateDegreesOfFreedom(t)) - selenocentre_,
+          t).elements_at_epoch();
+    auto& actual = actual_first_period_descending_nodes;
+    auto const& e = descending_node_eccentricities[i];
+    auto const& ω = descending_node_arguments[i];
+    actual.min_e_cos_ω = std::min(actual.max_e_cos_ω, e * Cos(ω));
+    actual.max_e_cos_ω = std::max(actual.max_e_cos_ω, e * Cos(ω));
+    actual.min_e_sin_ω = std::min(actual.max_e_sin_ω, e * Sin(ω));
+    actual.max_e_sin_ω = std::max(actual.max_e_sin_ω, e * Sin(ω));
   }
 }
 
