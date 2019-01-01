@@ -673,10 +673,10 @@ TEST_P(EphemerisTest, Serialization) {
   EXPECT_EQ(moon_read, ephemeris_read->body_for_serialization_index(1));
 
   EXPECT_EQ(ephemeris.t_min(), ephemeris_read->t_min());
-  EXPECT_EQ(ephemeris.t_max(), ephemeris_read->t_max());
   for (Instant time = ephemeris.t_min();
        time <= ephemeris.t_max();
        time += (ephemeris.t_max() - ephemeris.t_min()) / 100) {
+    ephemeris_read->Prolong(time);
     EXPECT_EQ(
         ephemeris.trajectory(earth)->EvaluateDegreesOfFreedom(time),
         ephemeris_read->trajectory(earth_read)->EvaluateDegreesOfFreedom(time));

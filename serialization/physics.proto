@@ -114,7 +114,8 @@ message Ephemeris {
   repeated ContinuousTrajectory trajectory = 2;
   optional AccuracyParameters accuracy_parameters = 10; // Added in Ἐρατοσθένης.
   required FixedStepParameters fixed_step_parameters = 7;
-  optional Point t_max = 8;
+  optional Point t_max = 8;  // Pre-Εὔδοξος.
+  optional bool has_checkpoints = 11;  // Added in Εὔδοξος.
   required IntegratorInstance instance = 9;
 
   // Pre-Ἐρατοσθένης

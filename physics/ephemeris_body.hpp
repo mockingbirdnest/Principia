@@ -721,6 +721,7 @@ void Ephemeris<Frame>::WriteToMessage(
       trajectory->WriteToMessage(message->add_trajectory());
     }
     instance_->WriteToMessage(message->mutable_instance());
+    message->set_has_checkpoints(false);
   } else {
     auto const& checkpoints = checkpoints_.front().checkpoints;
     CHECK_EQ(trajectories_.size(), checkpoints.size());
@@ -730,7 +731,7 @@ void Ephemeris<Frame>::WriteToMessage(
     }
     checkpoints_.front().instance->WriteToMessage(
         message->mutable_instance());
-    t_max().WriteToMessage(message->mutable_t_max());
+    message->set_has_checkpoints(true);
   }
   fixed_step_parameters_.WriteToMessage(
       message->mutable_fixed_step_parameters());
@@ -744,6 +745,8 @@ template<typename Frame>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
+  bool const is_pre_εὔδοξος = message.has_t_max();
+
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
     bodies.push_back(MassiveBody::ReadFromMessage(body));
@@ -803,9 +806,13 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
         body, std::move(deserialized_trajectory));
     ++index;
   }
-  if (message.has_t_max()) {
+  if (is_pre_εὔδοξος) {
     ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
     ephemeris->Prolong(Instant::ReadFromMessage(message.t_max()));
+  } else if (message.has_checkpoints()) {
+    ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
+    // The ephemeris will need to be prolonged as needed when deserializing the
+    // plugin.
   }
   return ephemeris;
 }

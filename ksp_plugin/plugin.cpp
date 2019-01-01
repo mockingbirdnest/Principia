@@ -1269,8 +1269,18 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
       std::unique_ptr<Plugin>(new Plugin(history_parameters,
                                          psychohistory_parameters));
 
+  plugin->game_epoch_ = Instant::ReadFromMessage(message.game_epoch());
+  plugin->current_time_ = Instant::ReadFromMessage(message.current_time());
+  plugin->planetarium_rotation_ =
+      Angle::ReadFromMessage(message.planetarium_rotation());
+
+  // The ephemeris constructed here is *not* prolonged and needs to be
+  // explicitly prolonged to cover all the instants that we care about.
   plugin->ephemeris_ =
       Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
+  plugin->ephemeris_->Prolong(plugin->game_epoch_);
+  plugin->ephemeris_->Prolong(plugin->current_time_);
+
   ReadCelestialsFromMessages(*plugin->ephemeris_,
                              message.celestial(),
                              plugin->celestials_,
@@ -1305,11 +1315,6 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     auto const& vessel = FindOrDie(plugin->vessels_, guid);
     plugin->part_id_to_vessel_.emplace(part_id, vessel.get());
   }
-
-  plugin->game_epoch_ = Instant::ReadFromMessage(message.game_epoch());
-  plugin->current_time_ = Instant::ReadFromMessage(message.current_time());
-  plugin->planetarium_rotation_ =
-      Angle::ReadFromMessage(message.planetarium_rotation());
 
   plugin->sun_ = FindOrDie(plugin->celestials_, message.sun_index()).get();
   plugin->main_body_ = plugin->sun_->body();

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
+#include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
@@ -37,6 +38,7 @@ namespace interface {
 using astronomy::operator""_TT;
 using base::check_not_null;
 using base::make_not_null_unique;
+using base::OFStream;
 using base::ParseFromBytes;
 using base::PullSerializer;
 using base::PushDeserializer;
@@ -655,24 +657,71 @@ TEST_F(InterfaceTest, DeserializePlugin) {
 
 // Use for debugging saves given by users.
 TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
-  PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
-  auto const lines = ReadLinesFromHexadecimalFile(
-      R"(C:\Users\phl.mantegna\Downloads\2038-long-load_erdos\2038-long-load_erdos.sfs)");
-  for (std::string const& line : lines) {
-    principia__DeserializePlugin(line.c_str(),
-                                 line.size(),
+
+  // Read a plugin from a file containing only the "serialized_plugin = " lines.
+  {
+    PushDeserializer* deserializer = nullptr;
+    auto const lines = ReadLinesFromHexadecimalFile(
+        R"(C:\Users\phl.mantegna\Downloads\2038-long-load_erdos\2038-long-load_erdos.sfs)");
+    for (std::string const& line : lines) {
+      principia__DeserializePlugin(line.c_str(),
+                                   line.size(),
+                                   &deserializer,
+                                   &plugin,
+                                   /*compressor=*/"gipfeli",
+                                   "hexadecimal");
+    }
+    principia__DeserializePlugin(lines.front().c_str(),
+                                 0,
                                  &deserializer,
                                  &plugin,
                                  /*compressor=*/"gipfeli",
                                  "hexadecimal");
+    LOG(ERROR) << "Deserialization complete";
   }
-  principia__DeserializePlugin(lines.front().c_str(),
-                               0,
-                               &deserializer,
-                               &plugin,
-                               /*compressor=*/"gipfeli",
-                               "hexadecimal");
+  EXPECT_THAT(plugin, NotNull());
+
+  // Write that plugin back to another file with the same format.
+  {
+    OFStream file(TEMP_DIR / "serialized_plugin.proto.hex");
+    PullSerializer* serializer = nullptr;
+    char const* hex = nullptr;
+    for (;;) {
+      hex = principia__SerializePlugin(
+          plugin, &serializer, "gipfeli", "hexadecimal");
+      if (hex == nullptr) {
+        break;
+      }
+      file << "serialized_plugin = " << hex << "\n";
+      principia__DeleteString(&hex);
+    }
+    LOG(ERROR) << "Serialization complete";
+  }
+  principia__DeletePlugin(&plugin);
+
+  // Read the plugin from the new file to make sure that it's fine.
+  {
+    PushDeserializer* deserializer = nullptr;
+    auto const lines =
+        ReadLinesFromHexadecimalFile(TEMP_DIR / "serialized_plugin.proto.hex");
+    for (std::string const& line : lines) {
+      principia__DeserializePlugin(line.c_str(),
+                                   line.size(),
+                                   &deserializer,
+                                   &plugin,
+                                   /*compressor=*/"gipfeli",
+                                   "hexadecimal");
+    }
+    principia__DeserializePlugin(lines.front().c_str(),
+                                 0,
+                                 &deserializer,
+                                 &plugin,
+                                 /*compressor=*/"gipfeli",
+                                 "hexadecimal");
+    LOG(ERROR) << "Deserialization complete";
+  }
+
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
