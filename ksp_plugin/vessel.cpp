@@ -356,6 +356,9 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*forks=*/{&vessel->psychohistory_, &vessel->prediction_});
+    // Necessary after Εὔδοξος because the ephemeris has not been prolonged
+    // during deserialization.  Doesn't hurt prior to Εὔδοξος.
+    ephemeris->Prolong(vessel->prediction_->last().time());
   }
 
   if (is_pre_陈景润) {
