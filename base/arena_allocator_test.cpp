@@ -2,6 +2,7 @@
 #include "base/arena_allocator.hpp"
 
 #include <string>
+#include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
