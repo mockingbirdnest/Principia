@@ -120,10 +120,12 @@ struct GeopotentialTruncation {
   // orbit of the first period.
   EccentricityVectorRange first_period_descending_nodes;
 
-  // An expectation for the behaviour over many periods.  Only the first
+  // An expectation for the behaviour over periods.  Only the first
   // descending node of each period is bounded, so that the periodic component
   // tested above is ignored.
   EccentricityVectorRange period_ends;
+  // The number of periods for the above expectation.
+  int periods;
 
   // A string describing the truncation.
   std::string DegreeAndOrder() const {
@@ -213,7 +215,8 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00018,
          /*first_period_descending_nodes=*/{-0.0055, +0.0051, +0.018, +0.027},
-         /*period_ends=*/{+0.0026, +0.0045, +0.020, +0.021},
+         /*period_ends=*/{+0.0026, +0.0037, +0.020, +0.021},
+         /*periods=*/10,
      },
      {
          /*max_degree=*/30,
@@ -221,6 +224,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*first_period_eccentricity_vector_drift=*/0.00032,
          /*first_period_descending_nodes=*/{-0.0058, +0.0048, +0.018, +0.027},
          /*period_ends=*/{+0.0019, +0.0050, +0.019, +0.022},
+         /*periods=*/28,
      },
      {
          /*max_degree=*/25,
@@ -228,6 +232,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*first_period_eccentricity_vector_drift=*/0.0011,
          /*first_period_descending_nodes=*/{-0.0060, +0.0044, +0.018, +0.027},
          /*period_ends=*/{-0.0017, +0.0089, +0.011, +0.021},
+         /*periods=*/28,
      },
      {
          /*max_degree=*/20,
@@ -235,6 +240,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*first_period_eccentricity_vector_drift=*/0.0013,
          /*first_period_descending_nodes=*/{-0.0064, +0.0045, +0.018, +0.028},
          /*period_ends=*/{-0.0030, +0.010, +0.0083, +0.021},
+         /*periods=*/28,
      },
      {
          /*max_degree=*/10,
@@ -242,6 +248,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*first_period_eccentricity_vector_drift=*/0.0037,
          /*first_period_descending_nodes=*/{-0.0091, +0.0036, +0.018, +0.028},
          /*period_ends=*/{-0.016, +0.021, -0.016, +0.021},
+         /*periods=*/28,
      },
      {
          /*max_degree=*/50,
@@ -249,6 +256,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*first_period_eccentricity_vector_drift=*/0.00098,
          /*first_period_descending_nodes=*/{+0.0038, +0.0040, +0.021, +0.022},
          /*period_ends=*/{-0.0047, +0.0040, +0.017, +0.025},
+         /*periods=*/28,
      }},
 };
 
@@ -360,7 +368,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                              Position<ICRS>>(),
           integration_step));
 
-  ephemeris_->FlowWithFixedStep(J2000 + 28 * period, *instance);
+  ephemeris_->FlowWithFixedStep(J2000 + GetParam().periods * period, *instance);
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
