@@ -94,7 +94,7 @@ using testing_utilities::Slope;
 
 namespace astronomy {
 
-  // A minimum bounding rectangle for the eccentricity vector.
+// A minimum bounding rectangle for a set of values of the eccentricity vector.
 struct EccentricityVectorRange {
   double min_e_cos_ω = +Infinity<double>();
   double max_e_cos_ω = -Infinity<double>();
@@ -130,6 +130,10 @@ struct GeopotentialTruncation {
     return absl::StrCat(max_degree, "x", zonal_only ? 0 : max_degree);
   }
 };
+
+std::ostream operator<<(std::ostream& o, GeopotentialTruncation truncation) {
+  return truncation.DegreeAndOrder();
+}
 
 class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
  protected:
@@ -203,21 +207,55 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
 
 #if !defined(_DEBUG)
 
+constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
+    {{
+         /*max_degree=*/50,
+         /*zonal_only=*/false,
+         /*first_period_eccentricity_vector_drift=*/0.00018,
+         /*first_period_descending_nodes=*/{-0.0055, +0.0051, +0.018, +0.027},
+         /*period_ends=*/{+0.0026, +0.0045, +0.020, +0.021},
+     },
+     {
+         /*max_degree=*/30,
+         /*zonal_only=*/false,
+         /*first_period_eccentricity_vector_drift=*/0.00032,
+         /*first_period_descending_nodes=*/{-0.0058, +0.0048, +0.018, +0.027},
+         /*period_ends=*/{+0.0019, +0.0050, +0.019, +0.022},
+     },
+     {
+         /*max_degree=*/25,
+         /*zonal_only=*/false,
+         /*first_period_eccentricity_vector_drift=*/0.0011,
+         /*first_period_descending_nodes=*/{-0.0060, +0.0044, +0.018, +0.027},
+         /*period_ends=*/{-0.0017, +0.0089, +0.011, +0.021},
+     },
+     {
+         /*max_degree=*/20,
+         /*zonal_only=*/false,
+         /*first_period_eccentricity_vector_drift=*/0.0013,
+         /*first_period_descending_nodes=*/{-0.0064, +0.0045, +0.018, +0.028},
+         /*period_ends=*/{-0.0030, +0.010, +0.0083, +0.021},
+     },
+     {
+         /*max_degree=*/10,
+         /*zonal_only=*/false,
+         /*first_period_eccentricity_vector_drift=*/0.0037,
+         /*first_period_descending_nodes=*/{-0.0091, +0.0036, +0.018, +0.028},
+         /*period_ends=*/{-0.016, +0.021, -0.016, +0.021},
+     },
+     {
+         /*max_degree=*/50,
+         /*zonal_only=*/true,
+         /*first_period_eccentricity_vector_drift=*/0.00098,
+         /*first_period_descending_nodes=*/{+0.0038, +0.0040, +0.021, +0.022},
+         /*period_ends=*/{-0.0047, +0.0040, +0.017, +0.025},
+     }},
+};
+
 INSTANTIATE_TEST_CASE_P(
     TruncatedSelenopotentials,
     LunarOrbitTest,
-    ::testing::Values(GeopotentialTruncation{/*max_degree=*/50,
-                                             /*zonal_only=*/false},
-                      GeopotentialTruncation{/*max_degree=*/30,
-                                             /*zonal_only=*/false},
-                      GeopotentialTruncation{/*max_degree=*/25,
-                                             /*zonal_only=*/false},
-                      GeopotentialTruncation{/*max_degree=*/20,
-                                             /*zonal_only=*/false},
-                      GeopotentialTruncation{/*max_degree=*/10,
-                                             /*zonal_only=*/false},
-                      GeopotentialTruncation{/*max_degree=*/50,
-                                             /*zonal_only=*/true}));
+    ::testing::ValuesIn(geopotential_truncations));
 
 TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   Time const integration_step = 10 * Second;
@@ -302,6 +340,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                 IsNear(1.4e-10));
     EXPECT_THAT(RelativeError(initial_osculating.inclination, i0),
                 IsNear(9.7e-9));
+    // TODO(egg): Figure out why we don't have the same sign as Russel and Lara
+    // here.
     EXPECT_THAT(
         RelativeError(*initial_osculating.argument_of_periapsis, -ω0),
         IsNear(7.1e-11));
