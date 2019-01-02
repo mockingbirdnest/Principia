@@ -322,7 +322,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
 
 
-  ephemeris_->FlowWithFixedStep(J2000 + 12 * period, *instance);
+  ephemeris_->FlowWithFixedStep(J2000 + 10 * 12 * period, *instance);
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
@@ -383,7 +383,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   DiscreteTrajectory<ICRS> apoapsides;
   DiscreteTrajectory<ICRS> periapsides;
-  ComputeApsides(ephemeris_->trajectory(moon_),
+  ComputeApsides(*ephemeris_->trajectory(moon_),
                  trajectory.Begin(),
                  trajectory.End(),
                  apoapsides,
@@ -442,8 +442,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                 mma_node_eccentricities);
   }
 
-  for (auto const& apsides : {Apsides{"apoapsides", apoapsides},
-                              Apsides{"periapsides", periapsides}}) {
+  for (auto const& apsides : {Apsides{"apoapsis", apoapsides},
+                              Apsides{"periapsis", periapsides}}) {
     std::vector<double> mma_apsis_times;
     std::vector<Vector<double, LunarSurface>> mma_apsis_displacements;
 
@@ -466,15 +466,9 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   EccentricityVectorRange actual_first_period_descending_nodes;
   for (int orbit = 0; orbit < orbits_per_period; ++orbit) {
-      auto const elements_at_descending_node = KeplerOrbit<Selenocentric>(
-          *moon_,
-          satellite_,
-          ToSelenocentric(descending_nodes.)(
-              trajectory.EvaluateDegreesOfFreedom(t)) - selenocentre_,
-          t).elements_at_epoch();
     auto& actual = actual_first_period_descending_nodes;
-    auto const& e = descending_node_eccentricities[i];
-    auto const& ω = descending_node_arguments[i];
+    auto const& e = descending_node_eccentricities[orbit];
+    auto const& ω = descending_node_arguments[orbit];
     actual.min_e_cos_ω = std::min(actual.max_e_cos_ω, e * Cos(ω));
     actual.max_e_cos_ω = std::max(actual.max_e_cos_ω, e * Cos(ω));
     actual.min_e_sin_ω = std::min(actual.max_e_sin_ω, e * Sin(ω));
