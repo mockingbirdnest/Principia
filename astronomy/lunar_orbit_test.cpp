@@ -131,8 +131,8 @@ struct GeopotentialTruncation {
   }
 };
 
-std::ostream operator<<(std::ostream& o, GeopotentialTruncation truncation) {
-  return truncation.DegreeAndOrder();
+std::ostream& operator<<(std::ostream& o, GeopotentialTruncation truncation) {
+  return o << truncation.DegreeAndOrder();
 }
 
 class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
