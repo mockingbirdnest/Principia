@@ -320,9 +320,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                              Position<ICRS>>(),
           integration_step));
 
-
-
-  ephemeris_->FlowWithFixedStep(J2000 + 10 * 12 * period, *instance);
+  ephemeris_->FlowWithFixedStep(J2000 + 28 * period, *instance);
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
@@ -464,15 +462,58 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                 mma_apsis_displacements);
   }
 
-  EccentricityVectorRange actual_first_period_descending_nodes;
-  for (int orbit = 0; orbit < orbits_per_period; ++orbit) {
-    auto& actual = actual_first_period_descending_nodes;
-    auto const& e = descending_node_eccentricities[orbit];
-    auto const& ω = descending_node_arguments[orbit];
-    actual.min_e_cos_ω = std::min(actual.max_e_cos_ω, e * Cos(ω));
-    actual.max_e_cos_ω = std::max(actual.max_e_cos_ω, e * Cos(ω));
-    actual.min_e_sin_ω = std::min(actual.max_e_sin_ω, e * Sin(ω));
-    actual.max_e_sin_ω = std::max(actual.max_e_sin_ω, e * Sin(ω));
+  {
+    auto const e0 = descending_node_eccentricities[0];
+    auto const e1 = descending_node_eccentricities[orbits_per_period];
+    auto const ω0 = descending_node_arguments[0];
+    auto const ω1 = descending_node_arguments[orbits_per_period];
+    EXPECT_THAT(Sqrt(Pow<2>(e1 * Cos(ω1) - e0 * Cos(ω0)) +
+                     Pow<2>(e1 * Sin(ω1) - e0 * Sin(ω0))),
+                IsNear(GetParam().first_period_eccentricity_vector_drift));
+  }
+
+  {
+    EccentricityVectorRange actual_first_period_descending_nodes;
+    for (int orbit = 0; orbit < orbits_per_period; ++orbit) {
+      auto& actual = actual_first_period_descending_nodes;
+      auto const e = descending_node_eccentricities[orbit];
+      auto const ω = descending_node_arguments[orbit];
+      actual.min_e_cos_ω = std::min(actual.min_e_cos_ω, e * Cos(ω));
+      actual.max_e_cos_ω = std::max(actual.max_e_cos_ω, e * Cos(ω));
+      actual.min_e_sin_ω = std::min(actual.min_e_sin_ω, e * Sin(ω));
+      actual.max_e_sin_ω = std::max(actual.max_e_sin_ω, e * Sin(ω));
+    }
+    EXPECT_THAT(actual_first_period_descending_nodes.min_e_cos_ω,
+                IsNear(GetParam().first_period_descending_nodes.min_e_cos_ω));
+    EXPECT_THAT(actual_first_period_descending_nodes.max_e_cos_ω,
+                IsNear(GetParam().first_period_descending_nodes.max_e_cos_ω));
+    EXPECT_THAT(actual_first_period_descending_nodes.min_e_sin_ω,
+                IsNear(GetParam().first_period_descending_nodes.min_e_sin_ω));
+    EXPECT_THAT(actual_first_period_descending_nodes.max_e_sin_ω,
+                IsNear(GetParam().first_period_descending_nodes.max_e_sin_ω));
+  }
+
+  {
+    EccentricityVectorRange actual_period_ends;
+    for (int orbit = 0;
+         orbit < descending_nodes.Size();
+         orbit += orbits_per_period) {
+      auto& actual = actual_period_ends;
+      auto const e = descending_node_eccentricities[orbit];
+      auto const ω = descending_node_arguments[orbit];
+      actual.min_e_cos_ω = std::min(actual.min_e_cos_ω, e * Cos(ω));
+      actual.max_e_cos_ω = std::max(actual.max_e_cos_ω, e * Cos(ω));
+      actual.min_e_sin_ω = std::min(actual.min_e_sin_ω, e * Sin(ω));
+      actual.max_e_sin_ω = std::max(actual.max_e_sin_ω, e * Sin(ω));
+    }
+    EXPECT_THAT(actual_period_ends.min_e_cos_ω,
+                IsNear(GetParam().period_ends.min_e_cos_ω));
+    EXPECT_THAT(actual_period_ends.max_e_cos_ω,
+                IsNear(GetParam().period_ends.max_e_cos_ω));
+    EXPECT_THAT(actual_period_ends.min_e_sin_ω,
+                IsNear(GetParam().period_ends.min_e_sin_ω));
+    EXPECT_THAT(actual_period_ends.max_e_sin_ω,
+                IsNear(GetParam().period_ends.max_e_sin_ω));
   }
 }
 
