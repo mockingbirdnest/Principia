@@ -174,7 +174,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
                              LunarTag::surface,
                              /*frame_is_inertial=*/false>;
 
-  // The reference frame is non-rotating, with its origin at the selenocentre.
+  // This reference frame is non-rotating, with its origin at the selenocentre.
   // The axes are those of LunarSurface at J2000.
   // Note that this frame is not actually inertial, but we want to use it with
   // |KeplerOrbit|.  Perhaps we should have a concept of non-rotating, and
@@ -215,7 +215,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00018,
          /*first_period_descending_nodes=*/{-0.0055, +0.0051, +0.018, +0.027},
-         /*period_ends=*/{+0.0026, +0.0037, +0.020, +0.021},
+         /*period_ends=*/{+0.0026, +0.0037, +0.0200, +0.021},
          /*periods=*/10,
      },
      {
@@ -223,31 +223,31 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00032,
          /*first_period_descending_nodes=*/{-0.0058, +0.0048, +0.018, +0.027},
-         /*period_ends=*/{+0.0019, +0.0050, +0.019, +0.022},
+         /*period_ends=*/{+0.0019, +0.0050, +0.0190, +0.022},
          /*periods=*/28,
      },
      {
          /*max_degree=*/25,
          /*zonal_only=*/false,
-         /*first_period_eccentricity_vector_drift=*/0.0011,
+         /*first_period_eccentricity_vector_drift=*/0.00110,
          /*first_period_descending_nodes=*/{-0.0060, +0.0044, +0.018, +0.027},
-         /*period_ends=*/{-0.0017, +0.0089, +0.011, +0.021},
+         /*period_ends=*/{-0.0017, +0.0089, +0.0110, +0.021},
          /*periods=*/28,
      },
      {
          /*max_degree=*/20,
          /*zonal_only=*/false,
-         /*first_period_eccentricity_vector_drift=*/0.0013,
+         /*first_period_eccentricity_vector_drift=*/0.00130,
          /*first_period_descending_nodes=*/{-0.0064, +0.0045, +0.018, +0.028},
-         /*period_ends=*/{-0.0030, +0.010, +0.0083, +0.021},
+         /*period_ends=*/{-0.0030, +0.0100, +0.0083, +0.021},
          /*periods=*/28,
      },
      {
          /*max_degree=*/10,
          /*zonal_only=*/false,
-         /*first_period_eccentricity_vector_drift=*/0.0037,
+         /*first_period_eccentricity_vector_drift=*/0.00370,
          /*first_period_descending_nodes=*/{-0.0091, +0.0036, +0.018, +0.028},
-         /*period_ends=*/{-0.016, +0.021, -0.016, +0.021},
+         /*period_ends=*/{-0.0160, +0.0210, -0.0160, +0.021},
          /*periods=*/28,
      },
      {
@@ -255,7 +255,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*zonal_only=*/true,
          /*first_period_eccentricity_vector_drift=*/0.00098,
          /*first_period_descending_nodes=*/{+0.0038, +0.0040, +0.021, +0.022},
-         /*period_ends=*/{-0.0047, +0.0040, +0.017, +0.025},
+         /*period_ends=*/{-0.0047, +0.0040, +0.0170, +0.025},
          /*periods=*/28,
      }},
 };
@@ -267,13 +267,12 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   Time const integration_step = 10 * Second;
-  LOG(INFO) << "Using a " << GetParam().DegreeAndOrder()
-            << " selenopotential field";
+  LOG(INFO) << "Using a " << GetParam() << " selenopotential field";
 
-  base::OFStream file(SOLUTION_DIR / "mathematica" /
-                      absl::StrCat("lunar_orbit_",
-                                   GetParam().DegreeAndOrder(),
-                                   ".generated.wl"));
+  OFStream file(SOLUTION_DIR / "mathematica" /
+                absl::StrCat("lunar_orbit_",
+                             GetParam().DegreeAndOrder(),
+                             ".generated.wl"));
 
   // We work with orbit C from Russell and Lara (2006), Repeat Ground Track Lunar
   // Orbits in the Full-Potential Plus Third-Body Problem.
@@ -318,12 +317,12 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   Speed const  v0 =  7.000280770869e-02 * (LU / TU);
   Speed const  w0 =  1.588813067177e+00 * (LU / TU);
 
-  DegreesOfFreedom<LunarSurface> lunar_initial_state = {
+  DegreesOfFreedom<LunarSurface> const lunar_initial_state = {
       LunarSurface::origin + Displacement<LunarSurface>({x0, y0, z0}),
       Velocity<LunarSurface>({u0, v0, w0})};
 
   ephemeris_->Prolong(J2000);
-  DegreesOfFreedom<ICRS> initial_state =
+  DegreesOfFreedom<ICRS> const initial_state =
       lunar_frame_.FromThisFrameAtTime(J2000)(lunar_initial_state);
 
   {
