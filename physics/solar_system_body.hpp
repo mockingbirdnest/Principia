@@ -107,6 +107,8 @@ SolarSystem<Frame>::SolarSystem(
     CheckFrame(initial_state_);
   }
 
+  for (auto& body : *gravity_model_.mutable_body())
+
   // Store the data in maps keyed by body name.
   for (auto& body : *gravity_model_.mutable_body()) {
     bool inserted;
@@ -155,6 +157,12 @@ SolarSystem<Frame>::SolarSystem(
   }
 
   epoch_ = ParseTT(initial_state_.epoch());
+
+#if !PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
+  for (auto const& name : names_) {
+    LimitOblatenessToDegree(name, 30);
+  }
+#endif
 
   // Call these two functions to parse all the data, so that errors are detected
   // at initialization.  Drop their results on the floor.

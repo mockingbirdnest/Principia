@@ -211,6 +211,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
 
 constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
     {{
+#if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
          /*max_degree=*/50,
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00018,
@@ -219,6 +220,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*periods=*/10,
      },
      {
+#endif
          /*max_degree=*/30,
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00032,
