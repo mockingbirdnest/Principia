@@ -24,6 +24,7 @@ void SolarSystemFactory::AdjustAccuracy(
   std::set<std::string> oblate;
   switch (accuracy) {
     case SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness:
+    case SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness:
       oblate.insert(SolarSystemFactory::name(SolarSystemFactory::Sun));
       oblate.insert(SolarSystemFactory::name(SolarSystemFactory::Jupiter));
       oblate.insert(SolarSystemFactory::name(SolarSystemFactory::Saturn));
@@ -100,6 +101,10 @@ SolarSystemFactory::MakeAccuracyParameters(Length const& fitting_tolerance,
       return typename Ephemeris<Frame>::AccuracyParameters(
           fitting_tolerance,
           /*geopotential_tolerance=*/0x1.0p-24);
+    case Accuracy::AllBodiesAndFullOblateness:
+      return typename Ephemeris<Frame>::AccuracyParameters(
+          fitting_tolerance,
+          /*geopotential_tolerance=*/0.0);
   }
   LOG(FATAL) << "Bad accuracy";
   base::noreturn();

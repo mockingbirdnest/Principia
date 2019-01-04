@@ -85,6 +85,8 @@ class SolarSystemFactory : not_constructible {
     MinorAndMajorBodies,
     // Same as above, with damped oblateness.
     AllBodiesAndDampedOblateness,
+    // Same as above, without damping.
+    AllBodiesAndFullOblateness,
   };
 
   template<typename Frame>
