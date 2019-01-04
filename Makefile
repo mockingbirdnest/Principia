@@ -61,6 +61,7 @@ endif
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)protobuf/src/.libs/libprotobuf.a
 LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)gipfeli/libgipfeli.a \
+	$(DEP_DIR)abseil-cpp/absl/strings/libabsl_strings.a \
 	$(DEP_DIR)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
 	$(DEP_DIR)abseil-cpp/absl/time/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
@@ -231,16 +232,11 @@ $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOC
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
 # For tests that depend on the plugin, we link against the principia shared
-# library instead of statically linking the objects.  Also note that we do not
-# link the $(LIBS), since they are in the $(KSP_PLUGIN).  We still need pthread
-# though.
-# NOTE(egg): this assumes that only the plugin-dependent tests need to be linked
-# against mock objects.  The classes further up that are big enough to be mocked
-# are likely to be highly templatized, so this will probably hold for a while.
+# library instead of statically linking the objects.
 
 $(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
+	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) $(LIBS) -lpthread -o $@
 
 ########## Testing
 

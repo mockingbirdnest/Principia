@@ -20,8 +20,6 @@
     <ClCompile />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="arena_allocator.hpp" />
-    <ClInclude Include="arena_allocator_body.hpp" />
     <ClInclude Include="array.hpp" />
     <ClInclude Include="array_body.hpp" />
     <ClInclude Include="base32768.hpp" />
@@ -76,7 +74,6 @@
     <ClInclude Include="version.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="arena_allocator_test.cpp" />
     <ClCompile Include="array_test.cpp" />
     <ClCompile Include="base32768_test.cpp" />
     <ClCompile Include="base64_test.cpp" />
