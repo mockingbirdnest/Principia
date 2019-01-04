@@ -20,6 +20,7 @@
     <None Include="trappist_gravity_model_slippist1.cfg" />
     <None Include="trappist_initial_state_jd_2457000_000000000.cfg" />
     <None Include="trappist_numerics_blueprint.cfg" />
+    <None Include="trappist_rss_time_formatter.cfg" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="kerbol_gravity_model.proto.txt" />
