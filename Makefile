@@ -233,7 +233,9 @@ $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOC
 
 # For tests that depend on the plugin, we link against the principia shared
 # library instead of statically linking the objects.
-
+# NOTE(egg): this assumes that only the plugin-dependent tests need to be linked
+# against mock objects.  The classes further up that are big enough to be mocked
+# are likely to be highly templatized, so this will probably hold for a while.
 $(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) $(LIBS) -lpthread -o $@
