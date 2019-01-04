@@ -1,5 +1,7 @@
 ﻿
+#include <algorithm>
 #include <filesystem>
+#include <string>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
@@ -209,8 +211,13 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
 
 #if !defined(_DEBUG)
 
+#if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
 constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
+#else
+constexpr std::array<GeopotentialTruncation, 4> geopotential_truncations = {
+#endif
     {{
+#if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
          /*max_degree=*/50,
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00018,
@@ -219,6 +226,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*periods=*/10,
      },
      {
+#endif
          /*max_degree=*/30,
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00032,
@@ -249,6 +257,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*first_period_descending_nodes=*/{-0.0091, +0.0036, +0.018, +0.028},
          /*period_ends=*/{-0.0160, +0.0210, -0.0160, +0.021},
          /*periods=*/28,
+#if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
      },
      {
          /*max_degree=*/50,
@@ -257,6 +266,7 @@ constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
          /*first_period_descending_nodes=*/{+0.0038, +0.0040, +0.021, +0.022},
          /*period_ends=*/{-0.0047, +0.0040, +0.0170, +0.025},
          /*periods=*/28,
+#endif
      }},
 };
 
@@ -274,8 +284,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                              GetParam().DegreeAndOrder(),
                              ".generated.wl"));
 
-  // We work with orbit C from Russell and Lara (2006), Repeat Ground Track Lunar
-  // Orbits in the Full-Potential Plus Third-Body Problem.
+  // We work with orbit C from Russell and Lara (2006), Repeat Ground Track
+  // Lunar Orbits in the Full-Potential Plus Third-Body Problem.
 
   // The length and time units LU and TU are such that, in an idealized
   // Earth-Moon system, the Earth-Moon distance is 1 LU and the angular
@@ -302,7 +312,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
               AlmostEquals(GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl)), 1));
   EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3));
   EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(9.0e-4));
-  
+
   file << mathematica::Assign("tu", TU / Second);
   file << mathematica::Assign("lu", LU / Metre);
 
