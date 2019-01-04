@@ -1,5 +1,7 @@
 ﻿
+#include <algorithm>
 #include <filesystem>
+#include <string>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
@@ -280,8 +282,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                              GetParam().DegreeAndOrder(),
                              ".generated.wl"));
 
-  // We work with orbit C from Russell and Lara (2006), Repeat Ground Track Lunar
-  // Orbits in the Full-Potential Plus Third-Body Problem.
+  // We work with orbit C from Russell and Lara (2006), Repeat Ground Track
+  // Lunar Orbits in the Full-Potential Plus Third-Body Problem.
 
   // The length and time units LU and TU are such that, in an idealized
   // Earth-Moon system, the Earth-Moon distance is 1 LU and the angular
@@ -308,7 +310,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
               AlmostEquals(GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl)), 1));
   EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3));
   EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(9.0e-4));
-  
+
   file << mathematica::Assign("tu", TU / Second);
   file << mathematica::Assign("lu", LU / Metre);
 
