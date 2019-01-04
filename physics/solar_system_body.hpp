@@ -107,8 +107,6 @@ SolarSystem<Frame>::SolarSystem(
     CheckFrame(initial_state_);
   }
 
-  for (auto& body : *gravity_model_.mutable_body())
-
   // Store the data in maps keyed by body name.
   for (auto& body : *gravity_model_.mutable_body()) {
     bool inserted;
