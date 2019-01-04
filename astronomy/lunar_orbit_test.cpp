@@ -209,7 +209,11 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
 
 #if !defined(_DEBUG)
 
+#if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
 constexpr std::array<GeopotentialTruncation, 6> geopotential_truncations = {
+#else
+constexpr std::array<GeopotentialTruncation, 5> geopotential_truncations = {
+#endif
     {{
 #if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
          /*max_degree=*/50,
