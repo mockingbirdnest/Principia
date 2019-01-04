@@ -257,6 +257,7 @@ constexpr std::array<GeopotentialTruncation, 5> geopotential_truncations = {
          /*first_period_descending_nodes=*/{-0.0091, +0.0036, +0.018, +0.028},
          /*period_ends=*/{-0.0160, +0.0210, -0.0160, +0.021},
          /*periods=*/28,
+#if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
      },
      {
          /*max_degree=*/50,
@@ -265,6 +266,7 @@ constexpr std::array<GeopotentialTruncation, 5> geopotential_truncations = {
          /*first_period_descending_nodes=*/{+0.0038, +0.0040, +0.021, +0.022},
          /*period_ends=*/{-0.0047, +0.0040, +0.0170, +0.025},
          /*periods=*/28,
+#endif
      }},
 };
 
