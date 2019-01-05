@@ -36,7 +36,7 @@ SCRIPT
     ubuntu.vm.provision "shell", inline: script
 
     ubuntu.vm.provider "virtualbox" do |v|
-      v.memory = 2048
+      v.memory = 8192
       v.cpus = 4
     end
   end
