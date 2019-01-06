@@ -1,6 +1,5 @@
 ﻿
-#include <float.h>
-
+#include <cfloat>
 #include <functional>
 #include <iostream>  // NOLINT(readability/streams)
 #include <utility>

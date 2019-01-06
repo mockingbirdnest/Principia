@@ -31,7 +31,7 @@ class IdentityTest : public testing::Test {
   using Id = Identity<World1, World2>;
   using R3 = R3Element<quantities::Length>;
 
-  void SetUp() override {
+  IdentityTest() {
     vector_ = Vector<quantities::Length, World1>(
         R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
     bivector_ = Bivector<quantities::Length, World1>(

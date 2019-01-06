@@ -16,7 +16,7 @@ class QuaternionTest : public testing::Test {
  protected:
   using R3 = R3Element<double>;
 
-  void SetUp() override {
+  QuaternionTest() {
     q1_ = Quaternion(1, {1, -1, -1});
     q2_ = Quaternion(-2, {1, -3, 4});
     q3_ = Quaternion(-8);

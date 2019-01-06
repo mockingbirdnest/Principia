@@ -41,7 +41,7 @@ class AffineMapTest : public testing::Test {
   using Rot = Rotation<World, World>;
   using RigidTransformation = AffineMap<World, World, Length, Rotation>;
 
-  void SetUp() override {
+  AffineMapTest() {
     zero_     = Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre});
     forward_  = Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre});
     leftward_ = Displacement<World>({0 * Metre, 1 * Metre, 0 * Metre});
