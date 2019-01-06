@@ -125,16 +125,25 @@ class StackTraceDecoder {
       stack_match = stack_regex.Match(stream.ReadLine());
     } while (!stack_match.Success);
     IntPtr handle = new IntPtr(1729);
-    SymSetOptions(0x80000000  // SYMOPT_DEBUG
-                 |0x00000010  // SYMOPT_LOAD_LINES
-                 );
+    UInt32 SYMOPT_LOAD_LINES = 0x00000010;
+    SymSetOptions(SYMOPT_LOAD_LINES);
     Win32Check(SymInitializeW(handle, null, fInvadeProcess: false));
-    Win32Check(SymLoadModuleExW(handle, IntPtr.Zero, principia_pdb_file.Replace(".pdb", ".dll"),
-        null, principia_base_address, 0,
-        IntPtr.Zero, 0) != 0);
-    Win32Check(SymLoadModuleExW(handle, IntPtr.Zero, physics_pdb_file.Replace(".pdb", ".dll"),
-        null, physics_base_address, 0,
-        IntPtr.Zero, 0) != 0);
+    Win32Check(SymLoadModuleExW(handle,
+                                IntPtr.Zero,
+                                principia_pdb_file.Replace(".pdb", ".dll"),
+                                null,
+                                principia_base_address,
+                                0,
+                                IntPtr.Zero,
+                                0) != 0);
+    Win32Check(SymLoadModuleExW(handle,
+                                IntPtr.Zero,
+                                physics_pdb_file.Replace(".pdb", ".dll"),
+                                null,
+                                physics_base_address,
+                                0,
+                                IntPtr.Zero,
+                                0) != 0);
 
     for (;
          stack_match.Success;
