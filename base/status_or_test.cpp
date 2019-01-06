@@ -46,27 +46,22 @@ namespace base {
 class Base1 {
  public:
   virtual ~Base1() = default;
+ private:
   int pad;
 };
 
 class Base2 {
  public:
   virtual ~Base2() = default;
+ private:
   int yetotherpad;
 };
 
 class Derived : public Base1, public Base2 {
  public:
   ~Derived() override = default;
+ private:
   int evenmorepad;
-};
-
-class CopyNoAssign final {
- public:
-  explicit CopyNoAssign(int value) : foo(value) {}
-  CopyNoAssign(const CopyNoAssign& other) = default;
-  const CopyNoAssign& operator=(const CopyNoAssign&) = delete;
-  int foo;
 };
 
 TEST(StatusOr, TestDefaultCtor) {

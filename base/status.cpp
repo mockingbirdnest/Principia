@@ -35,9 +35,9 @@
 
 #include "base/status.hpp"
 
+#include <cstdint>
+#include <cstdio>
 #include <ostream>
-#include <stdint.h>
-#include <stdio.h>
 #include <string>
 #include <utility>
 
