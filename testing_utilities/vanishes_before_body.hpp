@@ -3,11 +3,10 @@
 
 #include "testing_utilities/vanishes_before.hpp"
 
-#include <float.h>
-#include <math.h>
-#include <stdint.h>
-
 #include <algorithm>
+#include <cfloat>
+#include <cmath>
+#include <cstdint>
 #include <limits>
 #include <string>
 

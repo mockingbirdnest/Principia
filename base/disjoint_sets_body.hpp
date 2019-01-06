@@ -19,7 +19,7 @@ typename Subset<T>::Properties& Subset<T>::mutable_properties() {
 }
 
 template<typename T>
-Subset<T>::Subset(not_null<Node*> node) : node_(node) {}
+Subset<T>::Subset(not_null<Node*> node) : node_(std::move(node)) {}
 
 template<typename T>
 template<typename... SubsetPropertiesArgs>

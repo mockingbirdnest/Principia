@@ -86,8 +86,6 @@ inline std::string ErrorToString(Error const error) {
   noreturn();
 }
 
-Status::Status() : error_(Error::OK) {}
-
 Status::Status(Error const error, std::string const& message)
     : error_(error),
       message_(error == Error::OK ? "" : message) {}

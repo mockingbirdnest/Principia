@@ -46,7 +46,7 @@ StatusOr<T>::StatusOr()
     : status_(Status::UNKNOWN) {}
 
 template<typename T>
-StatusOr<T>::StatusOr(Status const& status) : status_(status) {
+StatusOr<T>::StatusOr(Status status) : status_(std::move(status)) {
   CHECK(!status_.ok()) << "Status::OK is not a valid argument";
 }
 

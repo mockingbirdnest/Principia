@@ -65,13 +65,10 @@ enum class Error {
   DATA_LOSS = 15,
 };
 
-std::string ErrorToString(Error const error);
+std::string ErrorToString(Error error);
 
 class Status final {
  public:
-  // Creates a "successful" status.
-  Status();
-
   Status(Error error, std::string const& message);
 
   // Some pre-defined Status objects.
@@ -93,7 +90,7 @@ class Status final {
   std::string ToString() const;
 
  private:
-  Error error_;
+  Error error_ = Error::OK;
   std::string message_;
 };
 

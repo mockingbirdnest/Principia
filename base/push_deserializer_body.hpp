@@ -110,7 +110,7 @@ inline void PushDeserializer::Start(
     std::function<void(google::protobuf::Message const&)> done) {
   CHECK(thread_ == nullptr);
   message_ = message;
-  thread_ = std::make_unique<std::thread>([this, done]() {
+  thread_ = std::make_unique<std::thread>([this, done = std::move(done)]() {
     // It is a well-known annoyance that, in order to set the total byte limit,
     // we have to copy code from MessageLite::ParseFromZeroCopyStream.  Blame
     // Kenton.

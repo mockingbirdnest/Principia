@@ -105,7 +105,7 @@ class BoundedArray final {
   using value_type = Element;
 
   template<typename... Args>
-  constexpr BoundedArray(Args&&... args);
+  constexpr explicit BoundedArray(Args&&... args);
 
   void push_back(const Element& value);
   void push_back(Element&& value);

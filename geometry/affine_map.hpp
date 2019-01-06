@@ -22,8 +22,6 @@ class AffineMap final {
             Point<ToVector> const& to_origin,
             LinearMap<FromFrame, ToFrame> const& linear_map);
 
-  AffineMap(AffineMap const&) = default;
-
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> Inverse() const;
   Point<ToVector> operator()(Point<FromVector> const& point) const;
 
