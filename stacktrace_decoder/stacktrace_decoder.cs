@@ -125,7 +125,6 @@ class StackTraceDecoder {
       stack_match = stack_regex.Match(stream.ReadLine());
     } while (!stack_match.Success);
     IntPtr handle = new IntPtr(1729);
-    UInt32 SYMOPT_LOAD_LINES = 0x00000010;
     SymSetOptions(SYMOPT_LOAD_LINES);
     Win32Check(SymInitializeW(handle, null, fInvadeProcess: false));
     Win32Check(SymLoadModuleExW(handle,

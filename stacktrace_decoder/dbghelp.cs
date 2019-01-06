@@ -10,7 +10,7 @@ namespace principia {
 namespace tools {
 
 internal static class DbgHelp {
-  const UInt32 SYMOPT_LOAD_LINES = 0x00000010;
+  internal const UInt32 SYMOPT_LOAD_LINES = 0x00000010;
 
   [StructLayout(LayoutKind.Sequential)]
   internal class IMAGEHLP_LINEW64 {
