@@ -1,22 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using static principia.tools.DbgHelp;
 
 namespace principia {
 namespace tools {
 
 class StackTraceDecoder {
-  const string dbh =
-      @"\Program Files (x86)\Windows Kits\10\Debuggers\x64\dbh.exe";
-
   // Returns the base address for the given DLL.
   private static Int64 GetBaseAddress(bool unity_crash,
                                       string unity_regex,
@@ -51,9 +45,9 @@ class StackTraceDecoder {
   }
 
   private static void Win32Check(bool success,
-                          [CallerMemberName] string member = "",
-                          [CallerFilePath] string file = "",
-                          [CallerLineNumber] int line = 0) {
+                                 [CallerMemberName] string member = "",
+                                 [CallerFilePath] string file = "",
+                                 [CallerLineNumber] int line = 0) {
     if (!success) {
       Console.WriteLine($"Error {Marshal.GetLastWin32Error()}");
       Console.WriteLine($"{file}:{line} ({member})");
@@ -152,27 +146,30 @@ class StackTraceDecoder {
                                 out Int32 displacement,
                                 line)) {
         if (!ParseLine(line, commit)) {
-           LogComment(
-               $"Not in Principia code: {stack_match.Groups[0]}");
+           LogComment($"Not in Principia code: {stack_match.Groups[0]}");
         }
       } else if (Marshal.GetLastWin32Error() == 126) {
-        LogComment(
-            $"Not in loaded modules: {stack_match.Groups[0]}");
+        LogComment($"Not in loaded modules: {stack_match.Groups[0]}");
       } else {
         Win32Check(false);
       }
       Int32 inline_trace = SymAddrIncludeInlineTrace(handle, address);
       if (inline_trace != 0) {
         LogComment($"{inline_trace} inline frames");
-         Win32Check(SymQueryInlineTrace(handle, address,
-                                0, address, address,
-                                out Int32 current_context, out Int32 current_frame_index));
-          for (int i = 0; i < inline_trace; ++i) {
-          Win32Check(SymGetLineFromInlineContextW(handle, address, current_context + i, 0, out Int32 dsp, line));
-            if (!ParseLine(line, commit)) {
-              LogComment($"Inline frame not in Principia code");
-            }
+        Win32Check(SymQueryInlineTrace(handle,
+                                       address,
+                                       0,
+                                       address,
+                                       address,
+                                       out Int32 current_context,
+                                       out Int32 current_frame_index));
+        for (int i = 0; i < inline_trace; ++i) {
+          Win32Check(SymGetLineFromInlineContextW(
+              handle, address, current_context + i, 0, out Int32 dsp, line));
+          if (!ParseLine(line, commit)) {
+            LogComment("Inline frame not in Principia code");
           }
+        }
       }
     }
   }
@@ -182,91 +179,6 @@ class StackTraceDecoder {
                       "<info_file_uri> <principia_pdb_file> " +
                       "<physics_pdb_file> [--unity-crash-at-commit=<sha1>]");
   }
-
-  [StructLayout(LayoutKind.Sequential)]
-  internal class IMAGEHLP_LINEW64 {
-    public Int32 SizeOfStruct = Marshal.SizeOf<IMAGEHLP_LINEW64>();
-    public IntPtr Key;
-    public Int32 LineNumber;
-    
-    public string FileName {
-      get {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0;; i += 2) {
-          char code_unit = (char)Marshal.ReadInt16(FileName_, i);
-          if (code_unit == 0) {
-            return result.ToString();
-          }
-          result.Append(code_unit);
-        }
-      }
-    }
-    private IntPtr FileName_;
-    public Int64 Address;
-  };
-
-    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool SymInitializeW(
-        IntPtr hProcess,
-        [MarshalAs(UnmanagedType.LPWStr)]string UserSearchPath,
-        [MarshalAs(UnmanagedType.Bool)]bool fInvadeProcess);
-
-    [DllImport("dbghelp.dll", CharSet = CharSet.Unicode)]
-    internal static extern Int32 SymAddrIncludeInlineTrace(
-        IntPtr hProcess,
-        Int64 Address);
-
-    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool SymQueryInlineTrace(
-      IntPtr hProcess,
-      Int64 StartAddress,
-      Int32 StartContext,
-      Int64 StartRetAddress,
-      Int64 CurAddress,
-      out Int32 CurContext,
-      out Int32 CurFrameIndex);
-
-    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool SymGetLineFromInlineContextW(
-        IntPtr            hProcess,
-        Int64           dwAddr,
-        Int32             InlineContext,
-        Int64           qwModuleBaseAddress,
-        out Int32            pdwDisplacement,
-        [MarshalAs(UnmanagedType.LPStruct)]IMAGEHLP_LINEW64 Line);
-
-
-    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool SymGetLineFromAddrW64(
-        IntPtr hProcess,
-        Int64 dwAddr,
-        out Int32 pdwDisplacement,
-        [MarshalAs(UnmanagedType.LPStruct)]IMAGEHLP_LINEW64 Line);
-
-    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool SymCleanup(
-        IntPtr hProcess);
-
-    [DllImport("dbghelp.dll", CharSet = CharSet.Unicode)]
-    internal static extern UInt32 SymSetOptions(
-        UInt32 SymOptions);
-
-    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    internal static extern Int64 SymLoadModuleExW(
-      IntPtr        hProcess,
-      IntPtr        hFile,
-      [MarshalAs(UnmanagedType.LPWStr)]string        ImageName,
-      [MarshalAs(UnmanagedType.LPWStr)]string        ModuleName,
-      Int64         BaseOfDll,
-      Int32         DllSize,
-      IntPtr        Data,
-      UInt32        Flags);
-
 }
 
 }  // namespace tools
