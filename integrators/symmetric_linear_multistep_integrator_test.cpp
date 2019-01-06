@@ -110,7 +110,7 @@ struct SimpleHarmonicMotionTestInstance final {
 // "where GetParam() = Leapfrog" rather than
 // "where GetParam() = n-byte object <hex>"
 std::ostream& operator<<(std::ostream& stream,
-                         SimpleHarmonicMotionTestInstance instance) {
+                         SimpleHarmonicMotionTestInstance const& instance) {
   return stream << instance.name;
 }
 
