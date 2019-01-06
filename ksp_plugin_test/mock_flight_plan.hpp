@@ -10,8 +10,6 @@ namespace internal_flight_plan {
 
 class MockFlightPlan : public FlightPlan {
  public:
-  MockFlightPlan() : FlightPlan() {}
-
   MOCK_CONST_METHOD0(initial_time, Instant());
   MOCK_CONST_METHOD0(desired_final_time, Instant());
 

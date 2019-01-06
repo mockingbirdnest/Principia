@@ -445,6 +445,7 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
           << " d\n";
   }
 }
+
 }  // namespace genetics
 
 // DEMCMC stands for Differential Evolution - Марков Chain Monte-Carlo.

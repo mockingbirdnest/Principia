@@ -521,7 +521,7 @@ class DateParser final {
   static constexpr DateParser ReadToEnd(CStringIterator str,
                                         std::int64_t digits,
                                         int digit_count,
-                                        int colons,
+                                        int hyphens,
                                         int first_hyphen_index,
                                         int second_hyphen_index,
                                         bool has_w,

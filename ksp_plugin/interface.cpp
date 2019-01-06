@@ -115,7 +115,7 @@ constexpr char hexadecimal_encoder[] = "hexadecimal";
 constexpr int chunk_size = 64 << 10;
 constexpr int number_of_chunks = 8;
 
-static not_null<Arena*> arena = []() {
+not_null<Arena*> arena = []() {
   ArenaOptions options;
   options.initial_block_size = chunk_size;
   options.max_block_size = 16 * chunk_size;

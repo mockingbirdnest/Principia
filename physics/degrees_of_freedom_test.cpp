@@ -32,8 +32,7 @@ class DegreesOfFreedomTest : public testing::Test {
   struct World;
 
   DegreesOfFreedomTest()
-      : testing::Test(),
-        d1_(origin_ + Displacement<World>({1 * SIUnit<Length>(),
+      : d1_(origin_ + Displacement<World>({1 * SIUnit<Length>(),
                                            2 * SIUnit<Length>(),
                                            3 * SIUnit<Length>()}),
             Velocity<World>({10 * SIUnit<Speed>(),

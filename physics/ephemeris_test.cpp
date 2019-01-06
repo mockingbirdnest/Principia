@@ -88,7 +88,7 @@ using ::testing::Ref;
 
 namespace {
 
-int constexpr max_steps = 1e6;
+int constexpr max_steps = 1'000'000;
 char constexpr big_name[] = "Big";
 char constexpr small_name[] = "Small";
 

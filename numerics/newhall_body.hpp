@@ -133,10 +133,11 @@ PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(17);
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION
 
-#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree)    \
-  case (degree):                                                         \
-    coefficients =                                                       \
-        newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04 * qv; \
+#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree)         \
+  case (degree):                                                              \
+    coefficients =                                                            \
+        std::vector<Vector>(                                                  \
+            newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04 * qv); \
     break
 
 template<typename Vector>

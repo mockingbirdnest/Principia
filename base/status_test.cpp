@@ -34,7 +34,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "base/status.hpp"
 
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 
 #include "gtest/gtest.h"

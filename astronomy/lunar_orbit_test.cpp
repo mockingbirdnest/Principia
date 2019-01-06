@@ -107,7 +107,7 @@ struct EccentricityVectorRange {
 struct GeopotentialTruncation {
   // The geopotential truncation used.
   int max_degree;
-  int zonal_only;
+  bool zonal_only;
 
   // Expectations.  All values are checked with IsNear.
 

@@ -76,9 +76,9 @@ TEST_F(QuantitiesTest, Formatting) {
   std::string const expected = "+1e+00 m kg s A K mol^-1 cd^-1 rad^-3";
   std::string const actual = DebugString(all_the_units, 0);
   EXPECT_EQ(expected, actual);
-  std::string const π17 = "\\+3\\.1415926535897931.e\\+00";
+  std::string const π17 = R"(\+3\.1415926535897931.e\+00)";
   EXPECT_THAT(DebugString(π), MatchesRegex(π17));
-  std::string const minus_e17 = "\\-2\\.718281828459045..e\\+00";
+  std::string const minus_e17 = R"(\-2\.718281828459045..e\+00)";
   EXPECT_THAT(DebugString(-e), MatchesRegex(minus_e17));
 }
 

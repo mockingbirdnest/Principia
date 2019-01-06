@@ -35,9 +35,9 @@
 
 #include "base/status.hpp"
 
+#include <cstdint>
+#include <cstdio>
 #include <ostream>
-#include <stdint.h>
-#include <stdio.h>
 #include <string>
 #include <utility>
 
@@ -86,8 +86,6 @@ inline std::string ErrorToString(Error const error) {
   noreturn();
 }
 
-Status::Status() : error_(Error::OK) {}
-
 Status::Status(Error const error, std::string const& message)
     : error_(error),
       message_(error == Error::OK ? "" : message) {}
@@ -134,7 +132,7 @@ std::ostream& operator<<(std::ostream& os, Status const& s) {
   return os;
 }
 
-const Status Status::OK = Status();
+const Status Status::OK;
 const Status Status::CANCELLED = Status(Error::CANCELLED, "");
 const Status Status::UNKNOWN = Status(Error::UNKNOWN, "");
 

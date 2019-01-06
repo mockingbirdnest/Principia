@@ -84,7 +84,7 @@ TEST_F(NotNullTest, Copy) {
   EXPECT_THAT(*int_ptr3, Eq(3));
   int_ptr2 = check_not_null(owner_of_five.get());
   EXPECT_THAT(*int_ptr2, Eq(5));
-  int_ptr2 = std::move(int_ptr3);
+  int_ptr2 = int_ptr3;
   EXPECT_THAT(*int_ptr2, Eq(3));
   EXPECT_THAT(*int_ptr3, Eq(3));
 }

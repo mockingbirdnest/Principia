@@ -108,7 +108,7 @@ class StatusOr final {
   // NOTE: Not explicit - we want to use |StatusOr<T>| as a return
   // value, so it is convenient and sensible to be able to do |return Status();|
   // when the return type is |StatusOr<T>|.
-  StatusOr(Status const& status);  // NOLINT
+  StatusOr(Status status);  // NOLINT
 
   // Construct a new object with the given value. After calling this
   // constructor, calls to |ValueOrDie()| will succeed, and calls to |status()|

@@ -16,7 +16,6 @@ FORWARD_DECLARE_FROM(method, template<typename Profile> class, Method);
 class Recorder final {
  public:
   explicit Recorder(std::filesystem::path const& path);
-  ~Recorder();
 
   // Locking is used to ensure that the pairs of writes don't get intermixed.
   void WriteAtConstruction(serialization::Method const& method);

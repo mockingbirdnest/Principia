@@ -54,10 +54,11 @@ std::string ToLower(std::string const& s) {
   std::string lower;
   for (int i = 0; i < s.size(); ++i) {
     if (i > 0 && i < s.size() - 1 &&
-        std::isupper(s[i]) && std::islower(s[i + 1])) {
+        static_cast<bool>(std::isupper(s[i])) &&
+        static_cast<bool>(std::islower(s[i + 1]))) {
       lower += "_" + std::string(1, std::tolower(s[i]));
     } else {
-      lower += std::tolower(s[i]);
+      lower += static_cast<char>(std::tolower(s[i]));
     }
   }
   return lower;
@@ -1101,7 +1102,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   std::vector<std::string> cs_interface_parameters;
   std::vector<std::string> cxx_interface_parameters;
   std::vector<std::string> cxx_run_arguments;
-  std::string cs_interface_return_marshal = "";
+  std::string cs_interface_return_marshal;
   std::string cs_interface_return_type = "void";
   std::string cxx_interface_return_type = "void";
   std::string cxx_run_prolog;

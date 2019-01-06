@@ -54,7 +54,7 @@ class Point final {
   // This constructor allows for C++11 functional constexpr operators, and
   // possibly move-magic.
   // TODO(egg): We may want to reconsider this after we truly have C++14.
-  constexpr Point(Vector const& coordinates);
+  constexpr explicit Point(Vector const& coordinates);
 
   Vector coordinates_;
 

@@ -16,7 +16,7 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
 
 // Equivalent to |std::abs(x)|.
 template<typename Q>
-Q Abs(Q const& x);
+Q Abs(Q const& quantity);
 
 // Returns a value between zero and |modulus|.
 template<typename Q>

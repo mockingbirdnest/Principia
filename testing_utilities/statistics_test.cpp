@@ -22,7 +22,7 @@ using testing::Eq;
 
 class StatisticsTest : public testing::Test {
  protected:
-  void SetUp() override {
+  StatisticsTest() {
     t_ = std::vector<Time>(population_size_);
     x_ = std::vector<Length>(population_size_);
     for (std::size_t i = 0; i < population_size_; ++i) {

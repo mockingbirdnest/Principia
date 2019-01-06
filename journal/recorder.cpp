@@ -21,10 +21,6 @@ Recorder::Recorder(std::filesystem::path const& path)
   CHECK(!stream_.fail()) << path;
 }
 
-Recorder::~Recorder() {
-  stream_.close();
-}
-
 void Recorder::WriteAtConstruction(serialization::Method const& method) {
   lock_.Lock();
   WriteLocked(method);
@@ -35,9 +31,9 @@ void Recorder::WriteAtDestruction(serialization::Method const& method) {
   lock_.Unlock();
 }
 
-void Recorder::Activate(base::not_null<Recorder*> const journal) {
+void Recorder::Activate(base::not_null<Recorder*> const recorder) {
   CHECK(active_recorder_ == nullptr);
-  active_recorder_ = journal;
+  active_recorder_ = recorder;
 }
 
 void Recorder::Deactivate() {
