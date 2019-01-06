@@ -41,8 +41,12 @@ class StackTraceDecoder {
       string file = $"{file_match.Groups[1]}/{file_match.Groups[2]}";
       string url = "https://github.com/mockingbirdnest/Principia/blob/" +
                    $"{commit}/{file}#L{line.LineNumber}";
-      Console.WriteLine(
-          snippets ? url : $"[`{file}:{line.LineNumber}`]({url})");
+      // Snippets should not be separated by new lines, as they are on their own
+      // line anyway, so that a new line spaces them more than necessary.  In
+      // order to keep the Markdown readable, hide a new line in a comment.
+      // `file:line` links need still to be separated by new lines.
+      Console.Write(snippets ? $"<!---\n--> {url} "
+                             : $"\n[`{file}:{line.LineNumber}`]({url})");
       return true;
     } else {
       return false;
@@ -61,7 +65,9 @@ class StackTraceDecoder {
   }
 
   private static void LogComment(string comment) {
-    Console.WriteLine($"<!--- {comment} -->");
+    // Put the new line in the comment in order to avoid introducing
+    // new lines in the Markdown.
+    Console.Write($"<!---\n {comment} -->");
   }
 
   private static void Main(string[] args) {
