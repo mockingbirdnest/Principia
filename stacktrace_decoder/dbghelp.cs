@@ -76,11 +76,6 @@ internal static class DbgHelp {
       out Int32 pdwDisplacement,
       [MarshalAs(UnmanagedType.LPStruct)] IMAGEHLP_LINEW64 Line);
 
-  [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-  [return: MarshalAs(UnmanagedType.Bool)]
-  internal static extern bool SymCleanup(
-      IntPtr hProcess);
-
   [DllImport("dbghelp.dll", CharSet = CharSet.Unicode)]
   internal static extern UInt32 SymSetOptions(
       UInt32 SymOptions);
