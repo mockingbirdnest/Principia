@@ -37,7 +37,7 @@ class FixedVector final {
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
 
-  operator explicit std::vector<Scalar>() const;
+  explicit operator std::vector<Scalar>() const;
 
   static constexpr int size = size_;
 

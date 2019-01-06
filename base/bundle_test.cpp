@@ -20,6 +20,8 @@ constexpr int workers = 8;
 
 class BundleTest : public testing::Test {
  protected:
+  BundleTest() = default;
+
   Bundle bundle_;
 };
 

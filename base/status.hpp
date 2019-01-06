@@ -69,6 +69,9 @@ std::string ErrorToString(Error error);
 
 class Status final {
  public:
+  // Creates a "successful" status.
+  Status() = default;
+
   Status(Error error, std::string const& message);
 
   // Some pre-defined Status objects.

@@ -132,7 +132,7 @@ std::ostream& operator<<(std::ostream& os, Status const& s) {
   return os;
 }
 
-const Status Status::OK = Status();
+const Status Status::OK;
 const Status Status::CANCELLED = Status(Error::CANCELLED, "");
 const Status Status::UNKNOWN = Status(Error::UNKNOWN, "");
 
