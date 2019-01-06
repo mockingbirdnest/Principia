@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -32,43 +34,35 @@ class StackTraceDecoder {
     return Convert.ToInt64(base_address_string, 16);
   }
 
-  // Returns the output of running DBH for the given address.
-  private static string DecodeUsingPdbFile(Int64 address,
-                                           Int64 base_address,
-                                           string pdb_file) {
-    Int64 dbh_base_address = 0x1000000;
-    string rebased_address =
-        Convert.ToString(address - base_address + dbh_base_address, 16);
-    var p = new Process();
-    p.StartInfo.UseShellExecute = false;
-    p.StartInfo.RedirectStandardOutput = true;
-    p.StartInfo.FileName = dbh;
-    p.StartInfo.Arguments =
-        '"' + pdb_file + "\" laddr \"" + rebased_address + '"';
-    p.Start();
-    string output = p.StandardOutput.ReadToEnd();
-    p.WaitForExit();
-    return output;
-  }
-
-  // Parses the output of DBH and writes the result to the console.  Returns
-  // true iff the parsing succeeded.
-  private static bool ParseDbhOutput(Regex file_regex,
-                                     Regex line_regex,
-                                     string commit,
-                                     string output) {
-    Match file_match = file_regex.Match(output);
+  // If the IMAGEHLP_LINEW64 represents a line of Principia code, writes a
+  // GitHub link to the console and returns true.  Otherwise, returns false.
+  private static bool ParseLine(IMAGEHLP_LINEW64 line, string commit) {
+    var file_regex = new Regex(@".*\\principia\\([a-z_]+)\\(\S+)");
+    Match file_match = file_regex.Match(line.FileName);
     if (file_match.Success) {
-      string file = file_match.Groups[1].ToString() + '/' +
-                    file_match.Groups[2].ToString();
-      string line = line_regex.Match(output).Groups[1].ToString();
+      string file = $"{file_match.Groups[1]}/{file_match.Groups[2]}";
       string url = "https://github.com/mockingbirdnest/Principia/blob/" +
-                   commit + '/' + file + "#L" + line;
-      Console.WriteLine("[`" + file + ":" + line + "`](" + url + ")");
+                   $"{commit}/{file}#L{line.LineNumber}";
+      Console.WriteLine($"[`{file}:{line.LineNumber}`]({url})");
       return true;
     } else {
       return false;
     }
+  }
+
+  private static void Win32Check(bool success,
+                          [CallerMemberName] string member = "",
+                          [CallerFilePath] string file = "",
+                          [CallerLineNumber] int line = 0) {
+    if (!success) {
+      Console.WriteLine($"Error {Marshal.GetLastWin32Error()}");
+      Console.WriteLine($"{file}:{line} ({member})");
+      Environment.Exit(1);
+    }
+  }
+
+  private static void LogComment(string comment) {
+    Console.WriteLine($"<!--- {comment} -->");
   }
 
   private static void Main(string[] args) {
@@ -119,10 +113,8 @@ class StackTraceDecoder {
                            @"\(([0-9A-F]+)\)",
                        "ksp_physics_lib\\.cpp",
                        stream);
-    Console.WriteLine("<!--- Using Principia base address " +
-                      Convert.ToString(principia_base_address, 16) + " -->");
-    Console.WriteLine("<!--- Using Physics base address " +
-                      Convert.ToString(physics_base_address, 16) + " -->");
+    LogComment($"Using Principia base address {principia_base_address:X}");
+    LogComment($"Using Physics base address {physics_base_address:X}");
     var stack_regex = new Regex(
         unity_crash ? @"\(0x([0-9A-F]+)\) .*"
                     : @"@\s+[0-9A-F]+\s+.* \[0x([0-9A-F]+)(\+[0-9]+)?\]");
@@ -138,23 +130,49 @@ class StackTraceDecoder {
     do {
       stack_match = stack_regex.Match(stream.ReadLine());
     } while (!stack_match.Success);
-    var file_regex = new Regex(
-        @"file\s+:\s+.*\\principia\\([a-z_]+)\\(\S+)");
-    var line_regex = new Regex(@"line\s+:\s+([0-9]+)");
+    IntPtr handle = new IntPtr(1729);
+    SymSetOptions(0x80000000  // SYMOPT_DEBUG
+                 |0x00000010  // SYMOPT_LOAD_LINES
+                 );
+    Win32Check(SymInitializeW(handle, null, fInvadeProcess: false));
+    Win32Check(SymLoadModuleExW(handle, IntPtr.Zero, principia_pdb_file.Replace(".pdb", ".dll"),
+        null, principia_base_address, 0,
+        IntPtr.Zero, 0) != 0);
+    Win32Check(SymLoadModuleExW(handle, IntPtr.Zero, physics_pdb_file.Replace(".pdb", ".dll"),
+        null, physics_base_address, 0,
+        IntPtr.Zero, 0) != 0);
+
     for (;
          stack_match.Success;
          stack_match = stack_regex.Match(stream.ReadLine())) {
       Int64 address = Convert.ToInt64(stack_match.Groups[1].ToString(), 16);
-      string principia_output = DecodeUsingPdbFile(address,
-                                                   principia_base_address,
-                                                   principia_pdb_file);
-      if (!ParseDbhOutput(file_regex, line_regex, commit, principia_output)) {
-        string physics_output =
-            DecodeUsingPdbFile(address, physics_base_address, physics_pdb_file);
-        if (!ParseDbhOutput(file_regex, line_regex, commit, physics_output)) {
-          Console.WriteLine("<!--- Nothing for " + stack_match.Groups[0] +
-                            " -->");
+      IMAGEHLP_LINEW64 line = new IMAGEHLP_LINEW64();
+      if (SymGetLineFromAddrW64(handle,
+                                address,
+                                out Int32 displacement,
+                                line)) {
+        if (!ParseLine(line, commit)) {
+           LogComment(
+               $"Not in Principia code: {stack_match.Groups[0]}");
         }
+      } else if (Marshal.GetLastWin32Error() == 126) {
+        LogComment(
+            $"Not in loaded modules: {stack_match.Groups[0]}");
+      } else {
+        Win32Check(false);
+      }
+      Int32 inline_trace = SymAddrIncludeInlineTrace(handle, address);
+      if (inline_trace != 0) {
+        LogComment($"{inline_trace} inline frames");
+         Win32Check(SymQueryInlineTrace(handle, address,
+                                0, address, address,
+                                out Int32 current_context, out Int32 current_frame_index));
+          for (int i = 0; i < inline_trace; ++i) {
+          Win32Check(SymGetLineFromInlineContextW(handle, address, current_context + i, 0, out Int32 dsp, line));
+            if (!ParseLine(line, commit)) {
+              LogComment($"Inline frame not in Principia code");
+            }
+          }
       }
     }
   }
@@ -164,6 +182,91 @@ class StackTraceDecoder {
                       "<info_file_uri> <principia_pdb_file> " +
                       "<physics_pdb_file> [--unity-crash-at-commit=<sha1>]");
   }
+
+  [StructLayout(LayoutKind.Sequential)]
+  internal class IMAGEHLP_LINEW64 {
+    public Int32 SizeOfStruct = Marshal.SizeOf<IMAGEHLP_LINEW64>();
+    public IntPtr Key;
+    public Int32 LineNumber;
+    
+    public string FileName {
+      get {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0;; i += 2) {
+          char code_unit = (char)Marshal.ReadInt16(FileName_, i);
+          if (code_unit == 0) {
+            return result.ToString();
+          }
+          result.Append(code_unit);
+        }
+      }
+    }
+    private IntPtr FileName_;
+    public Int64 Address;
+  };
+
+    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SymInitializeW(
+        IntPtr hProcess,
+        [MarshalAs(UnmanagedType.LPWStr)]string UserSearchPath,
+        [MarshalAs(UnmanagedType.Bool)]bool fInvadeProcess);
+
+    [DllImport("dbghelp.dll", CharSet = CharSet.Unicode)]
+    internal static extern Int32 SymAddrIncludeInlineTrace(
+        IntPtr hProcess,
+        Int64 Address);
+
+    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SymQueryInlineTrace(
+      IntPtr hProcess,
+      Int64 StartAddress,
+      Int32 StartContext,
+      Int64 StartRetAddress,
+      Int64 CurAddress,
+      out Int32 CurContext,
+      out Int32 CurFrameIndex);
+
+    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SymGetLineFromInlineContextW(
+        IntPtr            hProcess,
+        Int64           dwAddr,
+        Int32             InlineContext,
+        Int64           qwModuleBaseAddress,
+        out Int32            pdwDisplacement,
+        [MarshalAs(UnmanagedType.LPStruct)]IMAGEHLP_LINEW64 Line);
+
+
+    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SymGetLineFromAddrW64(
+        IntPtr hProcess,
+        Int64 dwAddr,
+        out Int32 pdwDisplacement,
+        [MarshalAs(UnmanagedType.LPStruct)]IMAGEHLP_LINEW64 Line);
+
+    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SymCleanup(
+        IntPtr hProcess);
+
+    [DllImport("dbghelp.dll", CharSet = CharSet.Unicode)]
+    internal static extern UInt32 SymSetOptions(
+        UInt32 SymOptions);
+
+    [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    internal static extern Int64 SymLoadModuleExW(
+      IntPtr        hProcess,
+      IntPtr        hFile,
+      [MarshalAs(UnmanagedType.LPWStr)]string        ImageName,
+      [MarshalAs(UnmanagedType.LPWStr)]string        ModuleName,
+      Int64         BaseOfDll,
+      Int32         DllSize,
+      IntPtr        Data,
+      UInt32        Flags);
+
 }
 
 }  // namespace tools
