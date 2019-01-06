@@ -30,14 +30,19 @@ class StackTraceDecoder {
 
   // If the IMAGEHLP_LINEW64 represents a line of Principia code, writes a
   // GitHub link to the console and returns true.  Otherwise, returns false.
-  private static bool ParseLine(IMAGEHLP_LINEW64 line, string commit) {
+  // If snippets is true, emits a raw link without Markdown formatting;
+  // within the Principia repository, this will be turned into a snippet by
+  // GitHub: https://help.github.com/articles/creating-a-permanent-link-to-a-code-snippet/.
+  private static bool ParseLine(IMAGEHLP_LINEW64 line, string commit,
+                                bool snippets) {
     var file_regex = new Regex(@".*\\principia\\([a-z_]+)\\(\S+)");
     Match file_match = file_regex.Match(line.FileName);
     if (file_match.Success) {
       string file = $"{file_match.Groups[1]}/{file_match.Groups[2]}";
       string url = "https://github.com/mockingbirdnest/Principia/blob/" +
                    $"{commit}/{file}#L{line.LineNumber}";
-      Console.WriteLine($"[`{file}:{line.LineNumber}`]({url})");
+      Console.WriteLine(
+          snippets ? url : $"[`{file}:{line.LineNumber}`]({url})");
       return true;
     } else {
       return false;
@@ -60,27 +65,28 @@ class StackTraceDecoder {
   }
 
   private static void Main(string[] args) {
-    bool unity_crash;
+    bool unity_crash = false;
+    Action<string> log = LogComment;
+    bool snippets = true;
     string commit = null;
-    if (args.Length == 3) {
-      unity_crash = false;
-    } else if (args.Length == 4) {
-      var match = Regex.Match(args[3],
-                              "--unity-crash-at-commit=([0-9a-f]{40})");
-      if (match.Success) {
+    for (int i = 2; i < args.Length; ++i) {
+      string flag = args[i];
+      var match = Regex.Match(flag, "--unity-crash-at-commit=([0-9a-f]{40})");
+      if (!unity_crash && match.Success) {
         unity_crash = true;
         commit = match.Groups[1].ToString();
+      } else if (snippets && flag == "--no-snippet") {
+        snippets = false;
+      } else if (log == LogComment && flag == "--no-comment") {
+        log = (_) => {};
       } else {
         PrintUsage();
         return;
       }
-    } else {
-      PrintUsage();
-      return;
     }
+
     string info_file_uri = args[0];
-    string principia_pdb_file = args[1];
-    string physics_pdb_file = args[2];
+    string principia_directory = args[1];
     var web_client = new WebClient();
     var stream = new StreamReader(web_client.OpenRead(info_file_uri),
                                   Encoding.UTF8);
@@ -107,8 +113,8 @@ class StackTraceDecoder {
                            @"\(([0-9A-F]+)\)",
                        "ksp_physics_lib\\.cpp",
                        stream);
-    LogComment($"Using Principia base address {principia_base_address:X}");
-    LogComment($"Using Physics base address {physics_base_address:X}");
+    log($"Using Principia base address {principia_base_address:X}");
+    log($"Using Physics base address {physics_base_address:X}");
     var stack_regex = new Regex(
         unity_crash ? @"\(0x([0-9A-F]+)\) .*"
                     : @"@\s+[0-9A-F]+\s+.* \[0x([0-9A-F]+)(\+[0-9]+)?\]");
@@ -127,22 +133,24 @@ class StackTraceDecoder {
     IntPtr handle = new IntPtr(1729);
     SymSetOptions(SYMOPT_LOAD_LINES);
     Win32Check(SymInitializeW(handle, null, fInvadeProcess: false));
-    Win32Check(SymLoadModuleExW(handle,
-                                IntPtr.Zero,
-                                principia_pdb_file.Replace(".pdb", ".dll"),
-                                null,
-                                principia_base_address,
-                                0,
-                                IntPtr.Zero,
-                                0) != 0);
-    Win32Check(SymLoadModuleExW(handle,
-                                IntPtr.Zero,
-                                physics_pdb_file.Replace(".pdb", ".dll"),
-                                null,
-                                physics_base_address,
-                                0,
-                                IntPtr.Zero,
-                                0) != 0);
+    Win32Check(
+        SymLoadModuleExW(handle,
+                         IntPtr.Zero,
+                         Path.Combine(principia_directory, "principia.dll"),
+                         null,
+                         principia_base_address,
+                         0,
+                         IntPtr.Zero,
+                         0) != 0);
+    Win32Check(
+        SymLoadModuleExW(handle,
+                         IntPtr.Zero,
+                         Path.Combine(principia_directory, "physics.dll"),
+                         null,
+                         physics_base_address,
+                         0,
+                         IntPtr.Zero,
+                         0) != 0);
 
     for (;
          stack_match.Success;
@@ -153,17 +161,17 @@ class StackTraceDecoder {
                                 address,
                                 out Int32 displacement,
                                 line)) {
-        if (!ParseLine(line, commit)) {
-           LogComment($"Not in Principia code: {stack_match.Groups[0]}");
+        if (!ParseLine(line, commit, snippets)) {
+           log($"Not in Principia code: {stack_match.Groups[0]}");
         }
       } else if (Marshal.GetLastWin32Error() == 126) {
-        LogComment($"Not in loaded modules: {stack_match.Groups[0]}");
+        log($"Not in loaded modules: {stack_match.Groups[0]}");
       } else {
         Win32Check(false);
       }
       Int32 inline_trace = SymAddrIncludeInlineTrace(handle, address);
       if (inline_trace != 0) {
-        LogComment($"{inline_trace} inline frames");
+        log($"{inline_trace} inline frames");
         Win32Check(SymQueryInlineTrace(handle,
                                        address,
                                        0,
@@ -174,8 +182,8 @@ class StackTraceDecoder {
         for (int i = 0; i < inline_trace; ++i) {
           Win32Check(SymGetLineFromInlineContextW(
               handle, address, current_context + i, 0, out Int32 dsp, line));
-          if (!ParseLine(line, commit)) {
-            LogComment("Inline frame not in Principia code");
+          if (!ParseLine(line, commit, snippets)) {
+            log("Inline frame not in Principia code");
           }
         }
       }
@@ -184,8 +192,9 @@ class StackTraceDecoder {
 
   private static void PrintUsage() {
     Console.WriteLine("Usage: stacktrace_decoder " +
-                      "<info_file_uri> <principia_pdb_file> " +
-                      "<physics_pdb_file> [--unity-crash-at-commit=<sha1>]");
+                      "<info_file_uri> <principia_directory> " +
+                      "[--unity-crash-at-commit=<sha1>] " +
+                      "[--no-comment] [--no-snippet]");
   }
 }
 
