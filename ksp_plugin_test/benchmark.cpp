@@ -74,7 +74,7 @@ void BM_PluginIntegrationBenchmark(benchmark::State& state) {
       "abd95a7e-6b8b-4dba-a1e9-c96cd594cd67",
       "b86d2efd-5150-4a44-8c36-04820a85e861"};
 
-  static constexpr int warp_factor = 6E6;
+  static constexpr int warp_factor = 6'000'000;
   static constexpr Frequency refresh_frequency = 50 * Hertz;
   static constexpr Time step = warp_factor / refresh_frequency;
   for (auto _ : state) {
