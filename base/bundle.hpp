@@ -39,7 +39,7 @@ class Bundle final {
 
  private:
   // Run on a separate thread to execute task and record its status.
-  void Toil(Task task) LOCKS_EXCLUDED(lock_, status_lock_);
+  void Toil(Task const& task) LOCKS_EXCLUDED(lock_, status_lock_);
 
   void JoinAll() LOCKS_EXCLUDED(lock_);
 

@@ -35,7 +35,7 @@
 
 #include "base/status_or.hpp"
 
-#include <errno.h>
+#include <cerrno>
 #include <memory>
 
 #include "gtest/gtest.h"
@@ -45,29 +45,28 @@ namespace base {
 
 class Base1 {
  public:
-  virtual ~Base1() {}
+  virtual ~Base1() = default;
   int pad;
 };
 
 class Base2 {
  public:
-  virtual ~Base2() {}
+  virtual ~Base2() = default;
   int yetotherpad;
 };
 
 class Derived : public Base1, public Base2 {
  public:
-  virtual ~Derived() {}
+  ~Derived() override = default;
   int evenmorepad;
 };
 
 class CopyNoAssign final {
  public:
   explicit CopyNoAssign(int value) : foo(value) {}
-  CopyNoAssign(const CopyNoAssign& other) : foo(other.foo) {}
+  CopyNoAssign(const CopyNoAssign& other) = default;
+  const CopyNoAssign& operator=(const CopyNoAssign&) = delete;
   int foo;
- private:
-  const CopyNoAssign& operator=(const CopyNoAssign&);
 };
 
 TEST(StatusOr, TestDefaultCtor) {

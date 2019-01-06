@@ -47,7 +47,7 @@ Status Bundle::JoinBefore(std::chrono::system_clock::time_point t) {
   return status_;
 }
 
-void Bundle::Toil(Task task) {
+void Bundle::Toil(Task const& task) {
   Status const status = task();
 
   // Avoid locking if the task succeeded: it cannot affect the overall status.
