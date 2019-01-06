@@ -343,5 +343,74 @@ n \deriv[m]{t}{\LegendrePolynomial{n}\of t} =
 \pa{n - 1} \deriv[m]{t}{\LegendrePolynomial{n - 2}\of t}
 \]
 This recurrence starts with ${\LegendrePolynomial{0}\of t} = 1$, ${\LegendrePolynomial{1}\of t} = t$ and ${\deriv{t}{\LegendrePolynomial{1}\of t}} = 1$.  It is similar to \cite[eqn. (12)]{Westra2017} and makes it possible to efficiently evaluate $\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb}$ for increasing values of $n$ and $m$.
+
+\section*{Damping}
+In order to reduce the computational cost, we ignore high degree and order terms at long range.
+This is done by replacing $\mathfrak R\of{r}$ by $\gs\of r \mathfrak R\of r$ in $V_{nm}$, where
+$\gs\of r = 0$ for all $r>s_1$, and $\gs\of r = 1$ for all $r<s_0$, so that the $V_{nm}$ term
+vanishes at long range and is unaffected at short range.
+
+In the force computations, this means that $\grad\mathfrak R$ is replaced by\[
+\grad \gs\mathfrak R=\pa{\gs'\mathfrak R + \gs\mathfrak R'} \frac \vr r\text.
+\]
+
+\subsection*{Sigmoid}
+Since we want the force to remain continuous, we need $\gs$ to be $\Cont[1]$; we achieve this by
+making $\gs$ the cubic interpolation on the non-constant interval $\intclos {s_0} {s_1}$,
+\[
+\gs\of r=
+\begin{cases}
+1 &\text{for }r \leq s_0\text, \\
+\frac{\pa{r-s_1}^2\pa{2r-3s_0+s_1}}{\pa{s_1-s_0}^3} &\text{for }r \in \intclos {s_0} {s_1}\text, \\
+0 &\text{for }r \geq s_1\text.
+\end{cases}
+\]
+Further, we require that the radial component of the force resulting from the damped $V_{nm}$ and all
+its derivatives be monotone, i.e., that
+\[
+\forall k \in \Positives, \deriv[k] r {\InnerProduct {\grad V_{nm}}{\frac \vr r}} = \deriv[k+1] r {\gs\mathfrak R\of r}{\mathfrak B\of \gb}\,{\mathfrak L\of \gl}
+\]
+have constant sign.
+
+Removing those factors that do not depend on $r$, this means that we must have
+\[
+\forall r \in \intopen {s_0} {s_1}, \deriv[k+1] r {\gs\of r r^{-\pa{n+1}}} \neq 0\text.
+\]
+
+\begin{lemma}
+The smallest value of $s_1$ such that the above property holds for all $k$ and $n$ is $s_1 = 3s_0$.
+\end{lemma}
+Accordingly, we pick $s_1=3s_0$.
+The expression for $\gs$ on $\intclos {s_0} {s_1}$ simplifies to\[
+\gs\of r = \frac{r \pa{r-3s_0}^2} {4 s_0^3} = \frac{r^3}{4 s_0^3} - \frac{3 r^2}{2s_0^2} + \frac{9r}{4s_0}\text.
+\]
+
+\subsection*{Threshold}
+For a tolerance $\gce$, we choose $s_0$ as the smallest distance such that the radial component of the force at $s_0$
+does not exceed $\gce$ times the magnitude of the central force,
+\[
+\max_{\gl,\gb} \abs{s_0^2\mathfrak R' \of {s_0}\, \mathfrak B \of \gb\, \mathfrak L\of\gl}
+= \gce\text.
+\]
+This maximum decomposes to
+\[
+\max_{\gl,\gb} \abs{s_0^2\mathfrak R' \of {s_0}\, \mathfrak B \of \gb\, \mathfrak L\of\gl}
+= \abs{s_0^2\mathfrak R' \of {s_0}} \max_\gb\abs{\,\mathfrak B \of \gb} \max_\gl \abs{\,\mathfrak L\of\gl}\text.
+\]
+The first factor is
+\[
+\abs{s_0^2\mathfrak R' \of {s_0}}=s_0^2\frac{\pa{n+1}\mathfrak R\of{s_0}}{s_0}=\pa{n+1}\frac{R^n}{s_0^n}\text.
+\]
+We have \[
+\max_\gl \abs{\,\mathfrak L\of\gl} = \max_\gl \abs{C_{nm}\cos m\gl + S_{nm} \sin m\gl} = \sqrt{C_{nm}^2 + S_{nm}^2}\text,
+\]
+and we numerically compute and tabulate \[
+\max_\gb\abs{\,\mathfrak B \of \gb} = \max_\gb\abs{\p nm\of{\sin \gb}}\text.
+\]
+Thus we can compute the desired $s_0$ as
+\[
+s_0 = R \pa{\frac{\max_\gb\abs{\p nm\of{\sin \gb}}\pa{n+1}\sqrt{C_{nm}^2 + S_{nm}^2}}{\gce}}^{\frac 1 n}\text.
+\]
+
 \printbibliography
 \end{document}
