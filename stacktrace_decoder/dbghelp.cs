@@ -11,6 +11,32 @@ namespace tools {
 
 internal static class DbgHelp {
   internal const UInt32 SYMOPT_LOAD_LINES = 0x00000010;
+  internal const Int32 MAX_SYM_NAME = 2000;
+
+  [StructLayout(LayoutKind.Sequential,
+                Size = 88 + 2 * (MAX_SYM_NAME - 1),
+                CharSet = CharSet.Unicode)]
+  internal class SYMBOL_INFOW {
+    public Int32 SizeOfStruct = 88;
+    public Int32 TypeIndex;
+    public Int64 Reserved0;
+    public Int64 Reserved1;
+    public Int32 Index;
+    public Int32 Size;
+    public Int64 ModBase;
+    public Int32 Flags;
+    public Int64 Value;
+    public Int64 Address;
+    public Int32 Register;
+    public Int32 Scope;
+    public Int32 Tag;
+    public Int32 NameLen;
+    public Int32 MaxNameLen = MAX_SYM_NAME;
+    // The entire name goes here, but in order to access it we would need
+    // a fixed-size buffer, which would require making this an unsafe struct
+    // instead of a class.  We don't need the name at this point.
+    public char Name0;
+  }
 
   [StructLayout(LayoutKind.Sequential)]
   internal class IMAGEHLP_LINEW64 {
@@ -90,6 +116,23 @@ internal static class DbgHelp {
       Int32 DllSize,
       IntPtr Data,
       UInt32 Flags);
+
+  [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+  [return: MarshalAs(UnmanagedType.Bool)]
+  internal static extern bool SymFromAddrW(
+      IntPtr hProcess,
+      Int64 Address,
+      out Int64 Displacement,
+      [MarshalAs(UnmanagedType.LPStruct)] SYMBOL_INFOW Symbol);
+
+  [DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+  [return: MarshalAs(UnmanagedType.Bool)]
+  internal static extern bool SymFromInlineContextW(
+      IntPtr hProcess,
+      Int64 Address,
+      Int32 InlineContext,
+      out Int64 Displacement,
+      [MarshalAs(UnmanagedType.LPStruct)] SYMBOL_INFOW Symbol);
 }
 
 } // namespace tools

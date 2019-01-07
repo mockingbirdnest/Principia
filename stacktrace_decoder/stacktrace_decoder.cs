@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -28,29 +29,42 @@ class StackTraceDecoder {
     return Convert.ToInt64(base_address_string, 16);
   }
 
-  // If the IMAGEHLP_LINEW64 represents a line of Principia code, writes a
-  // GitHub link to the console and returns true.  Otherwise, returns false.
+  // If the IMAGEHLP_LINEW64 represents a line of Principia code, returns a
+  // GitHub link.  Otherwise, returns null.
   // If snippets is true, emits a raw link without Markdown formatting;
   // within the Principia repository, this will be turned into a snippet by
   // GitHub: https://help.github.com/articles/creating-a-permanent-link-to-a-code-snippet/.
-  private static bool ParseLine(IMAGEHLP_LINEW64 line, string commit,
-                                bool snippets) {
+  private static string ParseLine(IntPtr handle, IMAGEHLP_LINEW64 line,
+                                  SYMBOL_INFOW symbol,
+                                  string commit, bool snippets) {
     var file_regex = new Regex(@".*\\principia\\([a-z_]+)\\(\S+)");
     Match file_match = file_regex.Match(line.FileName);
-    if (file_match.Success) {
-      string file = $"{file_match.Groups[1]}/{file_match.Groups[2]}";
-      string url = "https://github.com/mockingbirdnest/Principia/blob/" +
-                   $"{commit}/{file}#L{line.LineNumber}";
-      // Snippets should not be separated by new lines, as they are on their own
-      // line anyway, so that a new line spaces them more than necessary.  In
-      // order to keep the Markdown readable, hide a new line in a comment.
-      // `file:line` links need still to be separated by new lines.
-      Console.Write(snippets ? $"<!---\n--> {url} "
-                             : $"\n[`{file}:{line.LineNumber}`]({url})");
-      return true;
-    } else {
-      return false;
+    if (!file_match.Success) {
+      return null;
     }
+    string file = $"{file_match.Groups[1]}/{file_match.Groups[2]}";
+    int line_number = line.LineNumber;
+    int? start_line_number = line.LineNumber;
+
+    SymGetLineFromAddrW64(
+        handle, symbol.Address, out Int32 displacement, line);
+    Match symbol_file_match = file_regex.Match(line.FileName);
+    if (symbol_file_match.Success &&
+        $@"{symbol_file_match.Groups[1]}/{
+            symbol_file_match.Groups[2]}" == file &&
+        line.LineNumber < line_number) {
+      start_line_number = line.LineNumber;
+    }
+
+    string url = $@"https://github.com/mockingbirdnest/Principia/blob/{
+        commit}/{file}#{(start_line_number.HasValue ? $"L{start_line_number}-"
+                                                    : "")}L{line_number}";
+    // Snippets should not be separated by new lines, as they are on their own
+    // line anyway, so that a new line spaces them more than necessary.  In
+    // order to keep the Markdown readable, hide a new line in a comment.
+    // `file:line` links need still to be separated by new lines.
+    return snippets ? $"<!---\n--> {url} "
+                    : $"\n[`{file}:{line_number}`]({url})";
   }
 
   private static void Win32Check(bool success,
@@ -64,15 +78,15 @@ class StackTraceDecoder {
     }
   }
 
-  private static void LogComment(string comment) {
+  private static string Comment(string comment) {
     // Put the new line in the comment in order to avoid introducing
     // new lines in the Markdown.
-    Console.Write($"<!---\n {comment} -->");
+    return $"<!---\n {comment} -->";
   }
 
   private static void Main(string[] args) {
     bool unity_crash = false;
-    Action<string> log = LogComment;
+    Func<string, string> comment = Comment;
     bool snippets = true;
     string commit = null;
     for (int i = 2; i < args.Length; ++i) {
@@ -83,8 +97,8 @@ class StackTraceDecoder {
         commit = match.Groups[1].ToString();
       } else if (snippets && flag == "--no-snippet") {
         snippets = false;
-      } else if (log == LogComment && flag == "--no-comment") {
-        log = (_) => {};
+      } else if (comment == Comment && flag == "--no-comment") {
+        comment = (_) => "";
       } else {
         PrintUsage();
         return;
@@ -119,8 +133,10 @@ class StackTraceDecoder {
                            @"\(([0-9A-F]+)\)",
                        "ksp_physics_lib\\.cpp",
                        stream);
-    log($"Using Principia base address {principia_base_address:X}");
-    log($"Using Physics base address {physics_base_address:X}");
+    Console.Write(
+        comment($"Using Principia base address {principia_base_address:X}"));
+    Console.Write(
+        comment($"Using Physics base address {physics_base_address:X}"));
     var stack_regex = new Regex(
         unity_crash ? @"\(0x([0-9A-F]+)\) .*"
                     : @"@\s+[0-9A-F]+\s+.* \[0x([0-9A-F]+)(\+[0-9]+)?\]");
@@ -158,26 +174,28 @@ class StackTraceDecoder {
                          IntPtr.Zero,
                          0) != 0);
 
+    var trace = new List<string>();
     for (;
          stack_match.Success;
          stack_match = stack_regex.Match(stream.ReadLine())) {
       Int64 address = Convert.ToInt64(stack_match.Groups[1].ToString(), 16);
       IMAGEHLP_LINEW64 line = new IMAGEHLP_LINEW64();
+      SYMBOL_INFOW symbol = new SYMBOL_INFOW();
       if (SymGetLineFromAddrW64(handle,
                                 address,
                                 out Int32 displacement,
                                 line)) {
-        if (!ParseLine(line, commit, snippets)) {
-           log($"Not in Principia code: {stack_match.Groups[0]}");
-        }
+        Win32Check(
+            SymFromAddrW(handle, address, out Int64 displacement64, symbol));
+        trace.Add(ParseLine(handle, line, symbol, commit, snippets) ??
+                  comment($"Not in Principia code: {stack_match.Groups[0]}"));
       } else if (Marshal.GetLastWin32Error() == 126) {
-        log($"Not in loaded modules: {stack_match.Groups[0]}");
+        trace.Add(comment($"Not in loaded modules: {stack_match.Groups[0]}"));
       } else {
         Win32Check(false);
       }
       Int32 inline_trace = SymAddrIncludeInlineTrace(handle, address);
       if (inline_trace != 0) {
-        log($"{inline_trace} inline frames");
         Win32Check(SymQueryInlineTrace(handle,
                                        address,
                                        0,
@@ -188,11 +206,19 @@ class StackTraceDecoder {
         for (int i = 0; i < inline_trace; ++i) {
           Win32Check(SymGetLineFromInlineContextW(
               handle, address, current_context + i, 0, out Int32 dsp, line));
-          if (!ParseLine(line, commit, snippets)) {
-            log("Inline frame not in Principia code");
-          }
+          Win32Check(SymFromInlineContextW(handle,
+                                           address,
+                                           current_context + i,
+                                           out Int64 displacement64,
+                                           symbol));
+          trace.Add(ParseLine(handle, line, symbol, commit, snippets) ??
+                    comment("Inline frame not in Principia code"));
         }
       }
+    }
+    trace.Reverse();
+    foreach (string frame in trace) {
+      Console.Write(frame);
     }
   }
 
