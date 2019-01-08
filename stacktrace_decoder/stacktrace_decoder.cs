@@ -181,19 +181,6 @@ class StackTraceDecoder {
       Int64 address = Convert.ToInt64(stack_match.Groups[1].ToString(), 16);
       IMAGEHLP_LINEW64 line = new IMAGEHLP_LINEW64();
       SYMBOL_INFOW symbol = new SYMBOL_INFOW();
-      if (SymGetLineFromAddrW64(handle,
-                                address,
-                                out Int32 displacement,
-                                line)) {
-        Win32Check(
-            SymFromAddrW(handle, address, out Int64 displacement64, symbol));
-        trace.Add(ParseLine(handle, line, symbol, commit, snippets) ??
-                  comment($"Not in Principia code: {stack_match.Groups[0]}"));
-      } else if (Marshal.GetLastWin32Error() == 126) {
-        trace.Add(comment($"Not in loaded modules: {stack_match.Groups[0]}"));
-      } else {
-        Win32Check(false);
-      }
       Int32 inline_trace = SymAddrIncludeInlineTrace(handle, address);
       if (inline_trace != 0) {
         Win32Check(SymQueryInlineTrace(handle,
@@ -214,6 +201,19 @@ class StackTraceDecoder {
           trace.Add(ParseLine(handle, line, symbol, commit, snippets) ??
                     comment("Inline frame not in Principia code"));
         }
+      }
+      if (SymGetLineFromAddrW64(handle,
+                                address,
+                                out Int32 displacement,
+                                line)) {
+        Win32Check(
+            SymFromAddrW(handle, address, out Int64 displacement64, symbol));
+        trace.Add(ParseLine(handle, line, symbol, commit, snippets) ??
+                  comment($"Not in Principia code: {stack_match.Groups[0]}"));
+      } else if (Marshal.GetLastWin32Error() == 126) {
+        trace.Add(comment($"Not in loaded modules: {stack_match.Groups[0]}"));
+      } else {
+        Win32Check(false);
       }
     }
     trace.Reverse();
