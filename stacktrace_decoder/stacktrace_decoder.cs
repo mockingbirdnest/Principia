@@ -174,7 +174,7 @@ class StackTraceDecoder {
                          IntPtr.Zero,
                          0) != 0);
 
-    var trace = new List<string>();
+    var trace = new Stack<string>();
     for (;
          stack_match.Success;
          stack_match = stack_regex.Match(stream.ReadLine())) {
@@ -198,8 +198,8 @@ class StackTraceDecoder {
                                            current_context + i,
                                            out Int64 displacement64,
                                            symbol));
-          trace.Add(ParseLine(handle, line, symbol, commit, snippets) ??
-                    comment("Inline frame not in Principia code"));
+          trace.Push(ParseLine(handle, line, symbol, commit, snippets) ??
+                     comment("Inline frame not in Principia code"));
         }
       }
       if (SymGetLineFromAddrW64(handle,
@@ -208,17 +208,16 @@ class StackTraceDecoder {
                                 line)) {
         Win32Check(
             SymFromAddrW(handle, address, out Int64 displacement64, symbol));
-        trace.Add(ParseLine(handle, line, symbol, commit, snippets) ??
-                  comment($"Not in Principia code: {stack_match.Groups[0]}"));
+        trace.Push(ParseLine(handle, line, symbol, commit, snippets) ??
+                   comment($"Not in Principia code: {stack_match.Groups[0]}"));
       } else if (Marshal.GetLastWin32Error() == 126) {
-        trace.Add(comment($"Not in loaded modules: {stack_match.Groups[0]}"));
+        trace.Push(comment($"Not in loaded modules: {stack_match.Groups[0]}"));
       } else {
         Win32Check(false);
       }
     }
-    trace.Reverse();
-    foreach (string frame in trace) {
-      Console.Write(frame);
+    while (trace.Count > 0) {
+      Console.Write(trace.Pop());
     }
   }
 
