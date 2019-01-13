@@ -340,13 +340,14 @@ Status PileUp::AdvanceTime(Instant const& t) {
       // TODO(phl): Consider not setting |last_point_only| below as we would be
       // fine with multiple points in the |psychohistory_| once all the classes
       // have been changed.
-      CHECK_OK(ephemeris_->FlowWithAdaptiveStep(
-                   psychohistory_,
-                   Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-                   t,
-                   adaptive_step_parameters_,
-                   Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-                   /*last_point_only=*/true));
+      status.Update(
+          ephemeris_->FlowWithAdaptiveStep(
+              psychohistory_,
+              Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+              t,
+              adaptive_step_parameters_,
+              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+              /*last_point_only=*/true));
     }
   } else {
     // Destroy the fixed instance, it wouldn't be correct to use it the next
@@ -369,13 +370,13 @@ Status PileUp::AdvanceTime(Instant const& t) {
     // aligns the function object on an 8-byte boundary, resulting in an
     // addressing fault.  With a reference, VS2015 knows what to do.
     auto const intrinsic_acceleration = [&a](Instant const& t) { return a; };
-    CHECK_OK(ephemeris_->FlowWithAdaptiveStep(
+    status = ephemeris_->FlowWithAdaptiveStep(
                  history_.get(),
                  intrinsic_acceleration,
                  t,
                  adaptive_step_parameters_,
                  Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-                 /*last_point_only=*/false));
+                 /*last_point_only=*/false);
     psychohistory_ = history_->NewForkAtLast();
   }
 

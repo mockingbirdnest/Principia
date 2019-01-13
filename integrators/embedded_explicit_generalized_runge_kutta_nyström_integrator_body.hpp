@@ -139,6 +139,9 @@ Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
     // Compute the next step with decreasing step sizes until the error is
     // tolerable.
     do {
+      // Reset the status as any error returned by a previous force computation
+      // is now moot.
+      status = Status::OK;
       // Adapt step size.
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially since we make the order compile-time.
