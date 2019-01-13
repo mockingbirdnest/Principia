@@ -137,9 +137,6 @@ Instance::Solve(Instant const& t_final) {
     // tolerable.
     Status step_status;
     do {
-      // Reset the status as any error returned by a force computation for a
-      // rejected step is now moot.
-      step_status = Status::OK;
       // Adapt step size.
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially since we make the order compile-time.
@@ -172,6 +169,10 @@ Instance::Solve(Instant const& t_final) {
       }
 
       auto const h² = h * h;
+
+      // Reset the status as any error returned by a force computation for a
+      // rejected step is now moot.
+      step_status = Status::OK;
 
       // Runge-Kutta-Nyström iteration; fills |g|.
       for (int i = first_stage; i < stages_; ++i) {
