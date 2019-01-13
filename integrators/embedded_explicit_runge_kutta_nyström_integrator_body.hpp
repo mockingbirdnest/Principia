@@ -125,6 +125,7 @@ Instance::Solve(Instant const& t_final) {
   std::int64_t step_count = 0;
 
   Status status;
+  Status step_status;
 
   // No step size control on the first step.  If this instance is being
   // restarted we already have a value of |h| suitable for the next step, based
@@ -135,8 +136,11 @@ Instance::Solve(Instant const& t_final) {
   while (!at_end) {
     // Compute the next step with decreasing step sizes until the error is
     // tolerable.
-    Status step_status;
     do {
+      // Reset the status as any error returned by a force computation for a
+      // rejected step is now moot.
+      step_status = Status::OK;
+
       // Adapt step size.
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially since we make the order compile-time.
@@ -169,10 +173,6 @@ Instance::Solve(Instant const& t_final) {
       }
 
       auto const h² = h * h;
-
-      // Reset the status as any error returned by a force computation for a
-      // rejected step is now moot.
-      step_status = Status::OK;
 
       // Runge-Kutta-Nyström iteration; fills |g|.
       for (int i = first_stage; i < stages_; ++i) {
