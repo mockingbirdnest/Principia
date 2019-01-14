@@ -128,6 +128,7 @@ Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
   std::int64_t step_count = 0;
 
   Status status;
+  Status step_status;
 
   // No step size control on the first step.  If this instance is being
   // restarted we already have a value of |h| suitable for the next step, based
@@ -139,6 +140,10 @@ Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
     // Compute the next step with decreasing step sizes until the error is
     // tolerable.
     do {
+      // Reset the status as any error returned by a force computation for a
+      // rejected step is now moot.
+      step_status = Status::OK;
+
       // Adapt step size.
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially since we make the order compile-time.
@@ -188,7 +193,7 @@ Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
           q_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σj_a_ij_g_jk;
           v_stage[k] = v̂[k].value + h * Σj_aʹ_ij_g_jk;
         }
-        status.Update(
+        step_status.Update(
             equation.compute_acceleration(t_stage, q_stage, v_stage, g[i]));
       }
 
@@ -218,6 +223,8 @@ Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
       tolerance_to_error_ratio =
           this->tolerance_to_error_ratio_(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
+
+    status.Update(step_status);
 
     if (!parameters.last_step_is_exact && t.value + (t.error + h) > t_final) {
       // We did overshoot.  Drop the point that we just computed and exit.

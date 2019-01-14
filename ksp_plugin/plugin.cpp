@@ -756,7 +756,7 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
         // caller is catching-up two vessels belonging to the same pile-up in
         // parallel.
         Status const status = pile_up->DeformAndAdvanceTime(current_time_);
-        if (status.error() == Error::OUT_OF_RANGE) {
+        if (!status.ok()) {
           vessel.DisableDownsampling();
         }
         vessel.AdvanceTime();
@@ -769,13 +769,14 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
   PileUp const* const pile_up = pile_up_future.pile_up;
   auto& future = pile_up_future.future;
   future.wait();
-  if (future.get().error() == Error::OUT_OF_RANGE) {
+  Status const status = future.get();
+  if (!status.ok()) {
     for (not_null<Part*> const part : pile_up->parts()) {
       not_null<Vessel*> const vessel =
           FindOrDie(part_id_to_vessel_, part->part_id());
       if (collided_vessels.insert(vessel).second) {
-        LOG(INFO) << "Vessel " << vessel->ShortDebugString()
-                  << " collided with a celestial";
+        LOG(WARNING) << "Vessel " << vessel->ShortDebugString()
+                     << " collided with a celestial: " << status.ToString();
       }
     }
   }
