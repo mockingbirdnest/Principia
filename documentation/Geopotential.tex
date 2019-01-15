@@ -376,13 +376,49 @@ We require that it and all its derivatives be monotone, i.e., that
 have constant sign for $r \in \intclos {s_0} {s_1}$.
 
 Removing those factors that do not depend on $r$, this means that we must have
-\[
-\forall r \in \intopen{s_0} {s_1}, \deriv[k+1] r {\gs\of r r^{-\pa{n+1}}} \neq 0\text.
-\]
+\begin{equation}
+\forall r \in \intopen{s_0} {s_1}, \deriv[k+1] r {\gs\of r r^{-\pa{n+1}}} \neq 0\label{eqnderiv}\text.
+\end{equation}
 
-\begin{lemma}
-The smallest value of $s_1$ such that the above property holds for all $k$ and $n$ is $s_1 = 3s_0$.
-\end{lemma}
+\begin{proposition}
+The smallest value of $s_1$ such that (\ref{eqnderiv}) holds for all $k$ and $n$ is $s_1 = 3s_0$.
+\end{proposition}
+\begin{proof}
+We start by writing:
+\[
+\gs\of{r} = \sum{m = 0}[3] a_m r^m
+\]
+where:
+\[
+\begin{dcases}
+a_0 &= \frac{s_1-3s_0}{\pa{s_1-s_0}^3} \\
+a_1 &= \frac{6s_0 s_1}{\pa{s_1-s_0}^3} \\
+a_2 &= \frac{-3\pa{s_1+s_0}}{\pa{s_1-s_0}^3} \\
+a_3 &= \frac{2}{\pa{s_1-s_0}^3}
+\end{dcases}
+\]
+The function being derived in (\ref{eqnderiv}) is:
+\[
+\gs\of{r} r^{-\pa{n+1}} = \sum{m = 0}[3] a_m r^{-\pa{n-m+1}}
+\]
+The k-th derivative of $r^{-n}$ for $n > 0$ is:
+\[
+\deriv[k] r {\gs\of r r^{-pa{n}}} = \pa{-1}^k \frac{\Factorial{\pa{n+k-1}}}{\Factorial{\pa{n-1}}} r^{-\pa{n+k}}
+\]
+Whence:
+
+\begin{align*}
+\deriv[k+1] r {\gs\of r r^{-\pa{n+1}}} &= \pa{-1}^{\pa{k+1}} \sum{m = 0}[3] a_m \frac{\Factorial{\pa{n+k-m+1}}}{\Factorial{\pa{n-m}}} r^{\pa{n+k-m+2}} \\
+&= \pa{-1}^{\pa{k+1}} r^{\pa{n+k-m+2}} \frac{\Factorial{\pa{n+k-2}}}{\Factorial{n}}
+\begin{aligned}[t]
+&\;\Bigl[a_0 \pa{n+k+1}\pa{n+k}\pa{n+k-1} \\
+&+a_1 \pa{n+k}\pa{n+k-1} n r \\
+&+a_2 \pa{n+k-1} n \pa{n-1} r^2 \\
+&+a_3 n \pa{n-1}\pa{n-2} r^3\Bigr]
+\end{aligned}
+\end{align*}
+
+\end{proof}
 Accordingly, we pick $s_1=3s_0$.
 The expression for $\gs$ on $\intclos {s_0} {s_1}$ simplifies to\[
 \gs\of r = \frac{r \pa{r-3s_0}^2} {4 s_0^3} = \frac{r^3}{4 s_0^3} - \frac{3 r^2}{2s_0^2} + \frac{9r}{4s_0}\text.
