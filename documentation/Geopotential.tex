@@ -381,7 +381,7 @@ Removing those factors that do not depend on $r$, this means that we must have
 \end{equation}
 
 \begin{proposition}
-The smallest value of $s_1$ such that (\ref{eqnderiv}) holds for all $k$ and $n$ is $s_1 = 3s_0$.
+The smallest value of $s_1$ such that (\ref{eqnderiv}) holds for all $k≥0$ and $n≥2$ is $s_1 = 3s_0$.
 \end{proposition}
 \begin{proof}
 We start by writing:
@@ -433,18 +433,34 @@ With this choice of $s_1$ the constant term of $d_{n k}\of{s_0, s_1; r}$ vanishe
 6s_0 s_1 \pa{n+k}\pa{n+k-1} - 3\pa{s_0+s_1}\pa{n+k-1} \pa{n-1} r + 2 \pa{n-1}\pa{n-2} r^2 = 0
 \]
 or, substituting $s_1$:
-\[
-9{s_0}^2 \pa{n+k}\pa{n+k-1} - 6 s_0 \pa{n+k-1} \pa{n-1} r + \pa{n-1}\pa{n-2} r^2 = 0
-\]
-The reduced discriminant of this equation is:
+\begin{equation}
+9{s_0}^2 \pa{n+k}\pa{n+k-1} - 6 s_0 \pa{n+k-1} \pa{n-1} r + \pa{n-1}\pa{n-2} r^2 = 0 \label{eqn3s0}
+\end{equation}
+The reduced discriminant of equation \ref{eqn3s0} is:
 \begin{align*}
 \gD' &= 9 {s_0}^2 \pa{n+k-1}^2 \pa{n-1}^2 - 9 {s_0}^2 \pa{n+k}\pa{n+k-1}\pa{n-1}\pa{n-2}\\
 &=9 {s_0}^2\pa{n+k-1}\pa{n-1}\pa{k+1}
 \end{align*}
-and its solutions are:
+and its solutions are, when $n>2$:
 \[
-r_± = 3 s_0\frac{\pa{n+k-1} \pa{n-1} ± \sqrt{\pa{n+k-1}\pa{n-1}\pa{k+1}}}{\pa{n-1}\pa{n-2}}
+r_± = 3 s_0\frac{\pa{n+k-1}\pa{n-1} ± \sqrt{\pa{n+k-1}\pa{n-1}\pa{k+1}}}{\pa{n-1}\pa{n-2}}
 \]
+We want to prove that the smallest root, $r_-$ verifies $r_{-}>0$ and $r_{-}>s_0$.  The first inequality can be rewritten:
+\begin{align*}
+&\pa{n+k-1}\pa{n-1} > \sqrt{\pa{n+k-1}\pa{n-1}\pa{k+1}} \\
+\iff &\pa{n+k-1}\pa{n-1} > k + 1 \\
+\iff &\pa{n+k} \pa{n-2} > 0 \quad \text{which is trivally true.}
+\end{align*}
+The second inequality can be rewritten:
+\begin{align*}
+&\pa{n+k-1}\pa{n-1} - \pa{n-1}\pa{n-2} > \sqrt{\pa{n+k-1}\pa{n-1}\pa{k+1}} \\
+\iff &\pa{n-1}\pa{k+1} > \sqrt{\pa{n+k-1}\pa{n-1}\pa{k+1}} \\
+\iff &\pa{n-1}\pa{k+1} > n+k-1 \\
+\iff &k\pa{n-2} > 0 \quad \text{which is trivally true.}
+\end{align*}
+When $n=2$ equation (\ref{eqn3s0}) further reduces to a first-degree equation with root $r = \frac{3}{2} s_0 \pa{k+2}$ which verifies $r>0$ and $r≥3s_0$.  Note however that the latter inequality is not strict, i.e., the value $3s_0$ may be reached if $k=0$ and $n=2$.
+
+This concludes the proof of the lemma.
 \end{proof}
 \end{proof}
 Accordingly, we pick $s_1=3s_0$.
