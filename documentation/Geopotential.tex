@@ -391,9 +391,9 @@ We start by writing:
 where:
 \[
 \begin{dcases}
-a_0 &= \frac{s_1-3s_0}{\pa{s_1-s_0}^3} \\
+a_0 &= \frac{\pa{s_1-3s_0}{s_1}^2}{\pa{s_1-s_0}^3} \\
 a_1 &= \frac{6s_0 s_1}{\pa{s_1-s_0}^3} \\
-a_2 &= \frac{-3\pa{s_1+s_0}}{\pa{s_1-s_0}^3} \\
+a_2 &= \frac{-3\pa{s_0+s_1}}{\pa{s_1-s_0}^3} \\
 a_3 &= \frac{2}{\pa{s_1-s_0}^3}
 \end{dcases}
 \]
@@ -403,13 +403,12 @@ The function being derived in (\ref{eqnderiv}) is:
 \]
 The k-th derivative of $r^{-n}$ for $n > 0$ is:
 \[
-\deriv[k] r {\gs\of r r^{-pa{n}}} = \pa{-1}^k \frac{\Factorial{\pa{n+k-1}}}{\Factorial{\pa{n-1}}} r^{-\pa{n+k}}
+\deriv[k] r {\gs\of r r^{-n}} = \pa{-1}^k \frac{\Factorial{\pa{n+k-1}}}{\Factorial{\pa{n-1}}} r^{-\pa{n+k}}
 \]
 Whence:
-
 \begin{align*}
-\deriv[k+1] r {\gs\of r r^{-\pa{n+1}}} &= \pa{-1}^{\pa{k+1}} \sum{m = 0}[3] a_m \frac{\Factorial{\pa{n+k-m+1}}}{\Factorial{\pa{n-m}}} r^{\pa{n+k-m+2}} \\
-&= \pa{-1}^{\pa{k+1}} r^{\pa{n+k-m+2}} \frac{\Factorial{\pa{n+k-2}}}{\Factorial{n}}
+\deriv[k+1] r {\gs\of r r^{-\pa{n+1}}} &= \pa{-1}^{\pa{k+1}} \sum{m = 0}[3] a_m \frac{\Factorial{\pa{n+k-m+1}}}{\Factorial{\pa{n-m}}} r^{-\pa{n+k-m+2}} \\
+&= \pa{-1}^{\pa{k+1}} r^{-\pa{n+k-m+2}} \frac{\Factorial{\pa{n+k-2}}}{\Factorial{n}}
 \begin{aligned}[t]
 &\;\Bigl[a_0 \pa{n+k+1}\pa{n+k}\pa{n+k-1} \\
 &+a_1 \pa{n+k}\pa{n+k-1} n r \\
@@ -417,7 +416,36 @@ Whence:
 &+a_3 n \pa{n-1}\pa{n-2} r^3\Bigr]
 \end{aligned}
 \end{align*}
-
+Substituting the values of the $\pa{a_i}$, we see that the zeroes of $\deriv[k+1] r {\gs\of r r^{-\pa{n+1}}}$ are those of the polynomial:
+\begin{align*}
+d_{n k}\of{s_0, s_1; r} &= \pa{s_1-3s_0}{s_1}^2 \pa{n+k+1}\pa{n+k}\pa{n+k-1} \\
+&\quad + 6s_0 s_1 \pa{n+k}\pa{n+k-1} n r \\
+&\quad -3\pa{s_0+s_1}\pa{n+k-1} n \pa{n-1} r^2 \\
+&\quad + 2 n \pa{n-1}\pa{n-2} r^3
+\end{align*}
+The following lemma gives us a sufficient condition for the proposition above:
+\begin{lemma}
+If $s_1 = 3s_0$ then the positive roots of $d_{n k}\of{s_0, s_1; r}$ are greater than $s_1$.
+\end{lemma}
+\begin{proof}
+With this choice of $s_1$ the constant term of $d_{n k}\of{s_0, s_1; r}$ vanishes and $r=0$ is a trivial root.  We are left with the equation:
+\[
+6s_0 s_1 \pa{n+k}\pa{n+k-1} - 3\pa{s_0+s_1}\pa{n+k-1} \pa{n-1} r + 2 \pa{n-1}\pa{n-2} r^2 = 0
+\]
+or, substituting $s_1$:
+\[
+9{s_0}^2 \pa{n+k}\pa{n+k-1} - 6 s_0 \pa{n+k-1} \pa{n-1} r + \pa{n-1}\pa{n-2} r^2 = 0
+\]
+The reduced discriminant of this equation is:
+\begin{align*}
+\gD' &= 9 {s_0}^2 \pa{n+k-1}^2 \pa{n-1}^2 - 9 {s_0}^2 \pa{n+k}\pa{n+k-1}\pa{n-1}\pa{n-2}\\
+&=9 {s_0}^2\pa{n+k-1}\pa{n-1}\pa{k+1}
+\end{align*}
+and its solutions are:
+\[
+r_± = 3 s_0\frac{\pa{n+k-1} \pa{n-1} ± \sqrt{\pa{n+k-1}\pa{n-1}\pa{k+1}}}{\pa{n-1}\pa{n-2}}
+\]
+\end{proof}
 \end{proof}
 Accordingly, we pick $s_1=3s_0$.
 The expression for $\gs$ on $\intclos {s_0} {s_1}$ simplifies to\[
