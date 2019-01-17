@@ -973,6 +973,7 @@ public partial class PrincipiaPluginAdapter
           lastprepend = DateTime.Now;
           force_prepend_ = false;
           Log.Info("Prepending RSAS override");
+          active_vessel.OnPreAutopilotUpdate += OverrideRSASTarget;
           active_vessel.OnAutopilotUpdate =
               (FlightInputCallback)Delegate.Combine(
                   new FlightInputCallback(OverrideRSASTarget),
