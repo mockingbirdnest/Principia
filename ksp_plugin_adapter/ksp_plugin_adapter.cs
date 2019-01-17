@@ -21,6 +21,11 @@ public partial class PrincipiaPluginAdapter
   private DateTimeOffset next_release_date_ =
       new DateTimeOffset(2019, 02, 04, 21, 04, 00, TimeSpan.Zero);
 
+  private bool force_prepend_;
+  private DateTimeOffset lastprepend;
+  private DateTimeOffset lastoverride;
+  private DateTimeOffset lasteffectiveoverride;
+
   // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
   // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
   // actual name is commented.
@@ -470,7 +475,11 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
+    Log.Info("[RSAS] Override RSAS target");
+    lastoverride = DateTimeOffset.UtcNow;
+    lasteffectiveoverride = DateTimeOffset.UtcNow;
     if (override_rsas_target_ && FlightGlobals.ActiveVessel.Autopilot.Enabled) {
+      Log.Info("[RSAS]> SetTargetOrientation");
       FlightGlobals.ActiveVessel.Autopilot.SAS.SetTargetOrientation(
           rsas_target_,
           reset_rsas_target_);
@@ -960,12 +969,15 @@ public partial class PrincipiaPluginAdapter
 
         // Make the autopilot target our Frenet trihedron.
         if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
-            (Delegate)(FlightInputCallback)OverrideRSASTarget) {
+            (Delegate)(FlightInputCallback)OverrideRSASTarget || force_prepend_) {
+          lastprepend = DateTime.Now;
+          force_prepend_ = false;
           Log.Info("Prepending RSAS override");
           active_vessel.OnAutopilotUpdate =
               (FlightInputCallback)Delegate.Combine(
                   new FlightInputCallback(OverrideRSASTarget),
                   active_vessel.OnAutopilotUpdate);
+          active_vessel.OnAutopilotUpdate(new FlightCtrlState());
         }
         if (active_vessel.Autopilot.Enabled) {
           override_rsas_target_ = true;
@@ -2060,6 +2072,16 @@ public partial class PrincipiaPluginAdapter
       if (!PluginRunning()) {
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
+      force_prepend_ = UnityEngine.GUILayout.Button("Force prepend RSAS override");
+      if (UnityEngine.GUILayout.Button("Force FeedInputFeed")) {
+        FlightGlobals.ActiveVessel.FeedInputFeed();
+      }
+      if (UnityEngine.GUILayout.Button("Force OnAutopilotUpdate")) {
+        FlightGlobals.ActiveVessel.OnAutopilotUpdate(new FlightCtrlState());
+      }
+      UnityEngine.GUILayout.TextArea($"last prepend: {DateTimeOffset.UtcNow - lastprepend}");
+      UnityEngine.GUILayout.TextArea($"last override: {DateTimeOffset.UtcNow - lastoverride}");
+      UnityEngine.GUILayout.TextArea($"last effective override: {DateTimeOffset.UtcNow - lasteffectiveoverride}");
       if (DateTimeOffset.Now > next_release_date_) {
         UnityEngine.GUILayout.TextArea(
             "Announcement: the new moon of lunation number " +
