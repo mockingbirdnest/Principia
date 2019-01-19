@@ -21,11 +21,6 @@ public partial class PrincipiaPluginAdapter
   private DateTimeOffset next_release_date_ =
       new DateTimeOffset(2019, 02, 04, 21, 04, 00, TimeSpan.Zero);
 
-  // TODO(egg): Remove these traces.
-  private DateTimeOffset lastprepend;
-  private DateTimeOffset lastoverride;
-  private DateTimeOffset lasteffectiveoverride;
-
   // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
   // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
   // actual name is commented.
@@ -475,11 +470,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
-    Log.Info("[RSAS] Override RSAS target");
-    lastoverride = DateTimeOffset.UtcNow;
-    lasteffectiveoverride = DateTimeOffset.UtcNow;
     if (override_rsas_target_ && FlightGlobals.ActiveVessel.Autopilot.Enabled) {
-      Log.Info("[RSAS]> SetTargetOrientation");
       FlightGlobals.ActiveVessel.Autopilot.SAS.SetTargetOrientation(
           rsas_target_,
           reset_rsas_target_);
@@ -970,7 +961,6 @@ public partial class PrincipiaPluginAdapter
         // Make the autopilot target our Frenet trihedron.
         if (!active_vessel.OnPreAutopilotUpdate.GetInvocationList().Contains(
                 (FlightInputCallback)OverrideRSASTarget)) {
-          lastprepend = DateTime.Now;
           Log.Info("Prepending RSAS override");
           active_vessel.OnPreAutopilotUpdate += OverrideRSASTarget;
         }
@@ -2067,9 +2057,6 @@ public partial class PrincipiaPluginAdapter
       if (!PluginRunning()) {
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
-      UnityEngine.GUILayout.TextArea($"last prepend: {DateTimeOffset.UtcNow - lastprepend}");
-      UnityEngine.GUILayout.TextArea($"last override: {DateTimeOffset.UtcNow - lastoverride}");
-      UnityEngine.GUILayout.TextArea($"last effective override: {DateTimeOffset.UtcNow - lasteffectiveoverride}");
       if (DateTimeOffset.Now > next_release_date_) {
         UnityEngine.GUILayout.TextArea(
             "Announcement: the new moon of lunation number " +
