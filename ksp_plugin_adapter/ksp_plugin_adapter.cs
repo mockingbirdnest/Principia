@@ -21,7 +21,7 @@ public partial class PrincipiaPluginAdapter
   private DateTimeOffset next_release_date_ =
       new DateTimeOffset(2019, 02, 04, 21, 04, 00, TimeSpan.Zero);
 
-  private bool force_prepend_;
+  // TODO(egg): Remove these traces.
   private DateTimeOffset lastprepend;
   private DateTimeOffset lastoverride;
   private DateTimeOffset lasteffectiveoverride;
@@ -968,17 +968,11 @@ public partial class PrincipiaPluginAdapter
         SetNavballVector(navball_.antiNormalVector, -normal);
 
         // Make the autopilot target our Frenet trihedron.
-        if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
-            (Delegate)(FlightInputCallback)OverrideRSASTarget || force_prepend_) {
+        if (!active_vessel.OnPreAutopilotUpdate.GetInvocationList().Contains(
+                (FlightInputCallback)OverrideRSASTarget)) {
           lastprepend = DateTime.Now;
-          force_prepend_ = false;
           Log.Info("Prepending RSAS override");
           active_vessel.OnPreAutopilotUpdate += OverrideRSASTarget;
-          active_vessel.OnAutopilotUpdate =
-              (FlightInputCallback)Delegate.Combine(
-                  new FlightInputCallback(OverrideRSASTarget),
-                  active_vessel.OnAutopilotUpdate);
-          active_vessel.OnAutopilotUpdate(new FlightCtrlState());
         }
         if (active_vessel.Autopilot.Enabled) {
           override_rsas_target_ = true;
@@ -2072,13 +2066,6 @@ public partial class PrincipiaPluginAdapter
     using (new VerticalLayout()) {
       if (!PluginRunning()) {
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
-      }
-      force_prepend_ = UnityEngine.GUILayout.Button("Force prepend RSAS override");
-      if (UnityEngine.GUILayout.Button("Force FeedInputFeed")) {
-        FlightGlobals.ActiveVessel.FeedInputFeed();
-      }
-      if (UnityEngine.GUILayout.Button("Force OnAutopilotUpdate")) {
-        FlightGlobals.ActiveVessel.OnAutopilotUpdate(new FlightCtrlState());
       }
       UnityEngine.GUILayout.TextArea($"last prepend: {DateTimeOffset.UtcNow - lastprepend}");
       UnityEngine.GUILayout.TextArea($"last override: {DateTimeOffset.UtcNow - lastoverride}");
