@@ -381,7 +381,7 @@ Removing those factors that do not depend on $r$, this means that we must have
 \end{equation}
 
 \begin{proposition}
-The smallest value of $s_1$ such that (\ref{eqnderiv}) holds for all $k≥0$ and $n≥2$ is $s_1 = 3s_0$.
+The smallest value of $s_1$ such that (\ref{eqnderiv}) holds for all $k>0$ and $n≥2$ is $s_1 = 3s_0$.
 \end{proposition}
 \begin{proof}
 We start by writing:
@@ -425,7 +425,7 @@ d_{n k}\of{s_0, s_1; r} &= \pa{s_1-3s_0}{s_1}^2 \pa{n+k+1}\pa{n+k}\pa{n+k-1} \\
 \end{align*}
 The following two lemmata establish properties of the roots of $d_{n k}\of{s_0, s_1; r}$:
 \begin{lemma}[necessary condition]
-If $s_1<3s_0$ then there exist $k$ and $n$ such that $d_{n k}\of{s_0, s_1; r}$ has a zero in $\intopen{s_0} {s_1}$.
+If $1.183s_0<s_1<3s_0$ then there exist $k$ and $n$ such that $d_{n k}\of{s_0, s_1; r}$ has a zero in $\intopen{s_0} {s_1}$.
 \end{lemma}
 \begin{lemma}[sufficient condition]
 If $s_1 = 3s_0$ then the positive roots of $d_{n k}\of{s_0, s_1; r}$ are greater than $s_1$.
@@ -451,21 +451,20 @@ and its solutions are:
 \[
 r_± = s_1\frac{6 s_0\pa{k+2} ± \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}}}{6\pa{s_0+s_1}}
 \]
-We are going to construct a value of $k$ such that the smallest root $r_-$ is in $\intopen{s_0}{s_1}$.  First, consider the inequality $r_-<s_1$.  It can be rewritten:
+We want to find an integer $k$ such that the smallest root $r_-$ is in $\intopen{s_0}{s_1}$.  First, consider the inequality $r_-<s_1$.  It can be rewritten as follows:
 \begin{align*}
-&6 s_0\pa{k+2} - 6\pa{s_0+s_1} < \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}} \\
-\iff &6\pa{k s_0 + \pa{s_0-s_1}}^2 < \pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2} \\
+&6 s_0\pa{k+2} - 6\pa{s_0+s_1} < \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}}
+\end{align*}
+If $k>1$ the left-hand side is positive and we can further rewrite the inequality:
+\begin{align*}
+&6\pa{k s_0 + \pa{s_0-s_1}}^2 < \pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2} \\
 \iff &6\pa{k^2 s_0^2 + 2 k s_0 \pa{s_0 - s_1} + \pa{s_0 - s_1}^2} < \\
 &\qquad k^2 \pa{s_1^2-2 s_0 s_1 + 3s_0^2} + k \pa{3\pa{s_1-s_0}^2 + 2\pa{s_1^2-2 s_0 s_1 + 3s_0^2}} + 6\pa{s_0 - s_1}^2 \\
 \iff &k^2\pa{3s_0^2 + 2 s_0 s_1 - s_1^2} + k\pa{12 s_0\pa{s_0-s_1} - 3\pa{s_1-s_0} - 2\pa{s_1^2-2 s_0 s_1 + 3s_0^2}} < 0 \\
 \iff &k\pa{3s_0^2 + 2 s_0 s_1} + \pa{3s_0^2 -2 s_0 s_1 - 5 s_1^2} < 0 \\
 \iff &k\pa{3s_0-s_1}\pa{s_0+s_1} + \pa{3s_0 - 5s_1}\pa{s_0+s_1} < 0 \\
-\iff &k < \frac{5s_1-3s_0}{3s_0-s_1}
+\iff &k < \frac{5s_1-3s_0}{3s_0-s_1}=:k_1
 \end{align*}
-When $s_1$ is sufficiently close to $3s_0$, let's write $s_1=3\pa{1-\ge}s_0$ with $\ge>0$.  The above inequality becomes:
-\[
-k < \frac{15\pa{1-\ge}-3}{3\ge} = \frac{4}{\ge} + \BigO\of{1}
-\]
 Similarly, the inequality $s_0<r_-$ can be rewritten as follows:
 \begin{align*}
 &6 s_0 s_1\pa{k+2} - 6\pa{s_0+s_1}s_0 > s_1 \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}} \\
@@ -476,41 +475,38 @@ Similarly, the inequality $s_0<r_-$ can be rewritten as follows:
 \iff &k^2 s_1^2\pa{3s_0-s_1}\pa{s_0+s_1} + k s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2}\pa{s_0+s_1} + 6\pa{s_0-s_1}^3\pa{s_0+s_1} > 0 \\
 \iff &k^2 s_1^2\pa{3s_0-s_1} + k s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} + 6\pa{s_0-s_1}^3 > 0
 \end{align*}
-Because the polynomial in $k$ on the left-hand side of this inequality has a coefficient of $k^2$ which is positive when $s_1<3s_0$, the inequality is true if and only if $k$ is   greater that the largest root the polynomial.  Using $s_1=3\pa{1-\ge}s_0$ the roots can be found by solving:
+When $s_1<3s_0$, the coefficient of $k^2$ in the polynomial above is positive.  The constant term is negative, therefore the product of the roots is negative.  For the inequality to be true, $k$ must be greater than the largest root the polynomial.  The discriminant of the polynomial is:
 \[
-9 k^2\pa{\ge + \BigO\of{\ge^2}} - 12 k\pa{1 + \BigO\of\ge} - 16 \pa{1 + \BigO\of\ge} = 0
+\gD = s_1^2\pa{\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2}^2 - 24\pa{3s_0-s_1}\pa{s_0-s_1}^3}
 \]
-Which yields the condition on $k$:
+And the largest root is:
 \[
-k > \frac{4}{3\ge} + \BigO\of{1}
+k_2 = \frac{-s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} + \sqrt{\gD}}{2s_1^2\pa{3s_0-s_1}}
 \]
-
-When $\conv{k}{+\infty}$ we have:
-\[
-\gD' = 6 s_1^2 k^2 \pa{s_1^2-2 s_0 s_1 + 3s_0^2}  + \BigO\of{k}
-\]
-and thus:
-\[
-\sqrt{\gD'} = s_1 k \sqrt{6\pa{s_1^2-2 s_0 s_1 + 3s_0^2}} + \BigO\of{1}
-\]
-Hence, for the smallest root $r_-$:
-\[
-r_- = k\frac{6 s_0 s_1 - s_1 \sqrt{6\pa{s_1^2-2 s_0 s_1 + 3s_0^2}}}{6\pa{s_0+s_1}} + \BigO\of{1}
-\]
-This root tends to (positive) infinity if the numerator of the fraction is positive, that is if:
+Since $k$ is an integer, we want the interval $\intclos{k_2}{k_1}$ to contain an integer.  A necessary condition for this is $k_1-k_2≥1$.  This inequality can be rewritten as follows:
 \begin{align*}
-&6 s_0 > \sqrt{6\pa{s_1^2-2 s_0 s_1 + 3s_0^2}} \\
-\iff &6s_0^2 > s_1^2-2 s_0 s_1 + 3s_0^2 \\
-\iff &3 s_0^2 + 2 s_0 s_1 - s_1^2 > 0 \\
-\iff &\pa{3s_0 - s_1}\pa{s_0+s_1} > 0 \quad\text{which is true if and only if $s_1<3s_0$.}
+&2s_1^2\pa{5s_1-3s_0} + s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} - 2s_1^2\pa{3s_0-s_1} - \sqrt{\gD} ≥ 0 \\
+\iff &s_1\pa{7s_1^2 + 3 s_0 s_1 - 12s_0^2} ≥ \sqrt{\gD}
 \end{align*}
-For $k=0$, $d_{2,k}\of{s_0, s_1; r}$ has a root smaller than $s_0$.  When $\conv{k}{+\infty}$, its smallest root $\conv{r_-}{+\infty}$.  By continuity there exist values of $k$ such that the smallest root is in $\intopen{s_0}{s_1}$.
+This inequality can only be true if the left-hand side is positive, that is, if $s_1 ≥ \frac{\sqrt{345}-3}{14}s_0 \approx 1.112s_0$.  Assuming that this condition is met we can further rewrite the inequality:
+\begin{align*}
+&\pa{7s_1^2 + 3 s_0 s_1 - 12s_0^2}^2 ≥ \pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2}^2 - 24\pa{3s_0-s_1}\pa{s_0-s_1}^3 \\
+\iff &49s_1^4 + 42 s_0 s_1^3 - 159 s_0^2 s_1^2 - 72 s_0^3 s_1 + 144 s_0^4 ≥ \\
+&\qquad s_1^4 - 6 s_0 s_1^3 + 57 s_0^2 s_1^2 - 120 s_0^3 s_1 + 72 s_0^4 \\
+\iff &24\pa{s_1-s_0}\pa{2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3} ≥ 0
+\end{align*}
+The sum of the roots of $2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3$ is $-2$ and the product is $3/2$.  This means that this polynomial has a single positive root in $s_1$ and that when $s_1$ is greater than this root the inequality above holds.  Solving the cubic using $\emph{Mathematica}$ yields this root:
+\begin{align*}
+\hat\gq &= \frac{1}{3} \arctan\of{\frac{3 \sqrt{2517}}{41}} \\
+\hat{s}_1 &= \frac{s_0}{6}\pa{-4+\sqrt{138}\sin\hat\gq + \sqrt{46}\cos\hat\gq} \approx 1.183s_0
+\end{align*}
+Thus, if $s_1 \in \intclop{\hat{s}_1}{3s_0}$ it is possible to find an integer $k$ such that the smallest root of $d_{2,k}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
 \end{proof}
 \begin{remark}
-The continuity argument in the above proof is not valid because $k \in \Naturals$.
+It is possible that $\intclos{k_2}{k_1}$ contains an integer value even if $k_1-k_2<1$, in which case more values $s_1 \in \intopen{s_0}{\hat{s}_1}$ could be excluded.
 \end{remark}
 \begin{proof}[of sufficient condition]
-With the choice $s_1=3s_0$ the constant term of $d_{n k}\of{s_0, s_1; r}$ vanishes and $r=0$ is a trivial root.  We are left with the equation:
+With the choice $s_1=3s_0$ the constant term of the polynomial $d_{n k}\of{s_0, s_1; r}$ vanishes and $r=0$ is a trivial root.  We are left with the equation:
 \[
 6s_0 s_1 \pa{n+k}\pa{n+k-1} - 3\pa{s_0+s_1}\pa{n+k-1} \pa{n-1} r + 2 \pa{n-1}\pa{n-2} r^2 = 0
 \]
