@@ -18,7 +18,7 @@
 Geopotential%
 }%
 }
-\author{Pascal~Leroy (phl)}
+\author{Pascal~Leroy (phl) and Robin~Leroy (egg)}
 \begin{document}
 \maketitle
 \begin{sloppypar}
@@ -381,8 +381,7 @@ Removing those factors that do not depend on $r$, this means that we must have
 \end{equation}
 
 \begin{proposition}
-The smallest value of $s_1$ such that (\ref{eqnderiv}) holds for all $k>0$ and $n≥2$ is $s_1 = 3s_0$.
-\end{proposition}
+The smallest value of $s_1>1.183s_0$ such that (\ref{eqnderiv}) holds for all $k>0$ and $n≥2$ is $s_1 = 3s_0$.
 \begin{proof}
 We start by writing:
 \[
@@ -401,14 +400,14 @@ The function being derived in (\ref{eqnderiv}) is:
 \[
 \gs\of{r} r^{-\pa{n+1}} = \sum{m = 0}[3] a_m r^{-\pa{n-m+1}}
 \]
-The k-th derivative of $r^{-n}$ for $n > 0$ is:
+The p-th derivative of $r^{-q}$ for $q > 0$ is:
 \[
-\deriv[k] r {\gs\of r r^{-n}} = \pa{-1}^k \frac{\Factorial{\pa{n+k-1}}}{\Factorial{\pa{n-1}}} r^{-\pa{n+k}}
+\deriv[p] r {r^{-q}} = \pa{-1}^p \frac{\Factorial{\pa{q+p-1}}}{\Factorial{\pa{q-1}}} r^{-\pa{q+p}}
 \]
 Whence:
 \begin{align*}
 \deriv[k+1] r {\gs\of r r^{-\pa{n+1}}} &= \pa{-1}^{\pa{k+1}} \sum{m = 0}[3] a_m \frac{\Factorial{\pa{n+k-m+1}}}{\Factorial{\pa{n-m}}} r^{-\pa{n+k-m+2}} \\
-&= \pa{-1}^{\pa{k+1}} r^{-\pa{n+k-m+2}} \frac{\Factorial{\pa{n+k-2}}}{\Factorial{n}}
+&= \pa{-1}^{\pa{k+1}} r^{-\pa{n+k+2}} \frac{\Factorial{\pa{n+k-2}}}{\Factorial{n}}
 \begin{aligned}[t]
 &\;\Bigl[a_0 \pa{n+k+1}\pa{n+k}\pa{n+k-1} \\
 &+a_1 \pa{n+k}\pa{n+k-1} n r \\
@@ -432,6 +431,7 @@ If $s_1 = 3s_0$ then the positive roots of $d_{n k}\of{s_0, s_1; r}$ are greater
 \end{lemma}
 These lemmata trivially constitute necessary and sufficient conditions, respectively, for the proposition.
 \end{proof}
+\end{proposition}
 \begin{proof}[of necessary condition]
 In this proof we set $n=2$, which causes the term in $r^3$ of $d_{n k}\of{s_0, s_1; r}$ to vanish:
 \begin{multline*}
