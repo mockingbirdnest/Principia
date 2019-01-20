@@ -437,16 +437,7 @@ In this proof we set $n=2$, which causes the term in $r^3$ of $d_{n k}\of{s_0, s
 \begin{multline*}
 d_{2,k}\of{s_0, s_1; r} = \pa{s_1-3s_0}s_1^2\pa{k+3}\pa{k+2}\pa{k+1} \\+ 12s_0 s_1\pa{k+2}\pa{k+1}r - 6\pa{s_0+s_1}\pa{k+1}r^2
 \end{multline*}
-We first establish that, for $k=0$, this polynomial has a root smaller than $s_0$.  First note that the coefficient of $r^2$ is negative, so
-$\conv{d_{2,k}\of{s_0, s_1; r}}{-\infty}$ when $\conv{r}{±\infty}$.  Furthermore we have:
-\begin{align*}
-d_{2,0}\of{s_0, s_1; s_0} &= 6\pa{s_1 - 3s_0}s_1^2 + 24 s_0^2 s_1 - 6\pa{s_0 + s_1}s_0^2 \\
-&= 6\pa{s_1^3 - 3 s_0 s_1^2 + 3 s_0^2 s_1 - s_0^2} \\
-&= 6\pa{s_1 - s_0}^3 \quad\text{which is positive since $s_1>s_0$.}
-\end{align*}
-This proves that $s_0$ is between the roots of $d_{2,0}\of{s_0, s_1; r}$ and therefore that this polynomial has a root smaller than $s_0$.
-
-For a general value of $k$, the roots of $d_{2,k}\of{s_0, s_1; r}$ can be computed by solving:
+The roots of $d_{2,k}\of{s_0, s_1; r}$ can be computed by solving:
 \[
 \pa{s_1-3s_0}s_1^2\pa{k+3}\pa{k+2} + 12s_0 s_1\pa{k+2}r - 6\pa{s_0+s_1}r^2 = 0
 \]
@@ -458,8 +449,42 @@ The reduced discriminant of this equation is:
 \end{align*}
 and its solutions are:
 \[
-r_± = \frac{6 s_0 s_1\pa{k+2} ± \sqrt{\gD'}}{6\pa{s_0+s_1}}
+r_± = s_1\frac{6 s_0\pa{k+2} ± \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}}}{6\pa{s_0+s_1}}
 \]
+We are going to construct a value of $k$ such that the smallest root $r_-$ is in $\intopen{s_0}{s_1}$.  First, consider the inequality $r_-<s_1$.  It can be rewritten:
+\begin{align*}
+&6 s_0\pa{k+2} - 6\pa{s_0+s_1} < \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}} \\
+\iff &6\pa{k s_0 + \pa{s_0-s_1}}^2 < \pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2} \\
+\iff &6\pa{k^2 s_0^2 + 2 k s_0 \pa{s_0 - s_1} + \pa{s_0 - s_1}^2} < \\
+&\qquad k^2 \pa{s_1^2-2 s_0 s_1 + 3s_0^2} + k \pa{3\pa{s_1-s_0}^2 + 2\pa{s_1^2-2 s_0 s_1 + 3s_0^2}} + 6\pa{s_0 - s_1}^2 \\
+\iff &k^2\pa{3s_0^2 + 2 s_0 s_1 - s_1^2} + k\pa{12 s_0\pa{s_0-s_1} - 3\pa{s_1-s_0} - 2\pa{s_1^2-2 s_0 s_1 + 3s_0^2}} < 0 \\
+\iff &k\pa{3s_0^2 + 2 s_0 s_1} + \pa{3s_0^2 -2 s_0 s_1 - 5 s_1^2} < 0 \\
+\iff &k\pa{3s_0-s_1}\pa{s_0+s_1} + \pa{3s_0 - 5s_1}\pa{s_0+s_1} < 0 \\
+\iff &k < \frac{5s_1-3s_0}{3s_0-s_1}
+\end{align*}
+When $s_1$ is sufficiently close to $3s_0$, let's write $s_1=3\pa{1-\ge}s_0$ with $\ge>0$.  The above inequality becomes:
+\[
+k < \frac{15\pa{1-\ge}-3}{3\ge} = \frac{4}{\ge} + \BigO\of{1}
+\]
+Similarly, the inequality $s_0<r_-$ can be rewritten as follows:
+\begin{align*}
+&6 s_0 s_1\pa{k+2} - 6\pa{s_0+s_1}s_0 > s_1 \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}} \\
+\iff &6 s_0^2\pa{k s_1 + \pa{s_1-s_0}}^2 > s_1^2\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2} \\
+\iff &6 s_0^2\pa{k^2 s_1^2 + 2 k s_1\pa{s_1-s_0} + \pa{s_1-s_0}^2} > \\
+&\qquad k^2 s_1^2\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + k s_1^2\pa{3\pa{s_1-s_0}^2 + 2\pa{s_1^2-2 s_0 s_1 + 3s_0^2}} + 6 s_1^2\pa{s_0 - s_1}^2 \\
+\iff &k^2 s_1^2\pa{3s_0^2 + 2 s_0 s_1 - s_1^2} + k s_1\pa{-5s_1^3 + 10 s_0 s_1^2 + 3 s_0^2 s_1 - 12 s_0^3} + 6\pa{s_0-s_1}^3\pa{s_0+s_1} > 0 \\
+\iff &k^2 s_1^2\pa{3s_0-s_1}\pa{s_0+s_1} + k s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2}\pa{s_0+s_1} + 6\pa{s_0-s_1}^3\pa{s_0+s_1} > 0 \\
+\iff &k^2 s_1^2\pa{3s_0-s_1} + k s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} + 6\pa{s_0-s_1}^3 > 0
+\end{align*}
+Because the polynomial in $k$ on the left-hand side of this inequality has a coefficient of $k^2$ which is positive when $s_1<3s_0$, the inequality is true if and only if $k$ is   greater that the largest root the polynomial.  Using $s_1=3\pa{1-\ge}s_0$ the roots can be found by solving:
+\[
+9 k^2\pa{\ge + \BigO\of{\ge^2}} - 12 k\pa{1 + \BigO\of\ge} - 16 \pa{1 + \BigO\of\ge} = 0
+\]
+Which yields the condition on $k$:
+\[
+k > \frac{4}{3\ge} + \BigO\of{1}
+\]
+
 When $\conv{k}{+\infty}$ we have:
 \[
 \gD' = 6 s_1^2 k^2 \pa{s_1^2-2 s_0 s_1 + 3s_0^2}  + \BigO\of{k}
