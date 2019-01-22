@@ -422,9 +422,12 @@ d_{n k}\of{s_0, s_1; r} &= \pa{s_1-3s_0}{s_1}^2 \pa{n+k+1}\pa{n+k}\pa{n+k-1} \\
 &\quad -3\pa{s_0+s_1}\pa{n+k-1} n \pa{n-1} r^2 \\
 &\quad + 2 n \pa{n-1}\pa{n-2} r^3
 \end{align*}
-The following two lemmata establish properties of the roots of $d_{n k}\of{s_0, s_1; r}$:
-\begin{lemma}[necessary condition]
+The following three lemmata establish properties of the roots of $d_{n k}\of{s_0, s_1; r}$:
+\begin{lemma}[necessary condition, general case]
 If $1.183s_0<s_1<3s_0$ then there exist $k$ and $n$ such that $d_{n k}\of{s_0, s_1; r}$ has a zero in $\intopen{s_0} {s_1}$.
+\end{lemma}
+\begin{lemma}[necessary condition, special case]
+If $s_0<s_1<\pa{1+\frac{\sqrt{2}}{2}}s_0$ then there exist $k$ and $n$ such that $d_{n k}\of{s_0, s_1; r}$ has a zero in $\intopen{s_0} {s_1}$.
 \end{lemma}
 \begin{lemma}[sufficient condition]
 If $s_1 = 3s_0$ then the positive roots of $d_{n k}\of{s_0, s_1; r}$ are greater than $s_1$.
@@ -432,7 +435,7 @@ If $s_1 = 3s_0$ then the positive roots of $d_{n k}\of{s_0, s_1; r}$ are greater
 These lemmata trivially constitute necessary and sufficient conditions, respectively, for the proposition.
 \end{proof}
 \end{proposition}
-\begin{proof}[of necessary condition]
+\begin{proof}[of necessary condition, general case]
 In this proof we set $n=2$, which causes the term in $r^3$ of $d_{n k}\of{s_0, s_1; r}$ to vanish:
 \begin{multline*}
 d_{2,k}\of{s_0, s_1; r} = \pa{s_1-3s_0}s_1^2\pa{k+3}\pa{k+2}\pa{k+1} \\+ 12s_0 s_1\pa{k+2}\pa{k+1}r - 6\pa{s_0+s_1}\pa{k+1}r^2
@@ -502,9 +505,21 @@ The sum of the roots of $2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3$ is $-2$ an
 \end{align*}
 Thus, if $s_1 \in \intclop{\hat{s}_1}{3s_0}$ it is possible to find an integer $k$ such that the smallest root of $d_{2,k}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
 \end{proof}
-\begin{remark}
-It is possible that $\intclos{k_2}{k_1}$ contains an integer value even if $k_1-k_2<1$, in which case more values $s_1 \in \intopen{s_0}{\hat{s}_1}$ could be excluded.
-\end{remark}
+\begin{proof}[of necessary condition, special case]
+In this proof we set $n=2$ and $k=1$.  The inequality $r_-<s_1$ can be rewritten as in the previous proof, with the caveat that since the condition $k≥2$ does not hold anymore, we have to require $s_1<2s_0$ for the quantity $s_0\pa{k+2}-\pa{s_0+s_1}$ to be positive.  This is acceptable since we are looking for a proof when $s_1$ is close to $s_0$.  Thus we end up with:
+\[
+1 < \frac{5s_1-3s_0}{3s_0-s_1} \iff s_0 > s_1
+\]
+The inequality $r_-<s_1$ can be rewritten as in the previous proof and becomes, substituting $k$:
+\begin{align*}
+&k^2 s_1^2\pa{3s_0-s_1} + k s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} + 6\pa{s_0-s_1}^3 > 0 \\
+\iff &s_1\pa{-6s_1^2 + 18 s_0 s_1 - 12 s_0^2} + 6\pa{s_0-s_1}^3 > 0 \\
+\iff &-2s_1^3 + 6 s_0 s_1^2 - 5 s_0^2 s_1 + s_0^3 > 0 \\
+\iff &\pa{s_1 - s_0}\pa{-2 s_1 + 4 s_0 s_1 - s_0^2} > 0
+\end{align*}
+The quadratic term in the above condition is positive between its roots, and its only root greater than $s_0$ is $\pa{1+\frac{\sqrt{2}}{2}}s_0$.  Thus, if $s_1 \in \intopen{s_0}{\pa{1+\frac{\sqrt{2}}{2}}s_0}$ the smallest root of $d_{2,1}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
+
+\end{proof}
 \begin{proof}[of sufficient condition]
 With the choice $s_1=3s_0$ the constant term of the polynomial $d_{n k}\of{s_0, s_1; r}$ vanishes and $r=0$ is a trivial root.  We are left with the equation:
 \[
