@@ -18,7 +18,7 @@
 Geopotential%
 }%
 }
-\author{Pascal~Leroy (phl)}
+\author{Pascal~Leroy (phl) and Robin~Leroy (egg)}
 \begin{document}
 \maketitle
 \begin{sloppypar}
@@ -376,13 +376,169 @@ We require that it and all its derivatives be monotone, i.e., that
 have constant sign for $r \in \intclos {s_0} {s_1}$.
 
 Removing those factors that do not depend on $r$, this means that we must have
-\[
-\forall r \in \intopen{s_0} {s_1}, \deriv[k+1] r {\gs\of r r^{-\pa{n+1}}} \neq 0\text.
-\]
+\begin{equation}
+\forall r \in \intopen{s_0} {s_1}, \deriv[k+1] r {\gs\of r r^{-\pa{n+1}}} \neq 0\label{eqnderiv}\text.
+\end{equation}
 
-\begin{lemma}
-The smallest value of $s_1$ such that the above property holds for all $k$ and $n$ is $s_1 = 3s_0$.
+\begin{proposition}
+The smallest value of $s_1>1.183s_0$ such that (\ref{eqnderiv}) holds for all $k>0$ and $n≥2$ is $s_1 = 3s_0$.
+\begin{proof}
+We start by writing:
+\[
+\gs\of{r} = \sum{m = 0}[3] a_m r^m
+\]
+where:
+\[
+\begin{dcases}
+a_0 &= \frac{\pa{s_1-3s_0}{s_1}^2}{\pa{s_1-s_0}^3} \\
+a_1 &= \frac{6s_0 s_1}{\pa{s_1-s_0}^3} \\
+a_2 &= \frac{-3\pa{s_0+s_1}}{\pa{s_1-s_0}^3} \\
+a_3 &= \frac{2}{\pa{s_1-s_0}^3}
+\end{dcases}
+\]
+The function being derived in (\ref{eqnderiv}) is:
+\[
+\gs\of{r} r^{-\pa{n+1}} = \sum{m = 0}[3] a_m r^{-\pa{n-m+1}}
+\]
+The p-th derivative of $r^{-q}$ for $q > 0$ is:
+\[
+\deriv[p] r {r^{-q}} = \pa{-1}^p \frac{\Factorial{\pa{q+p-1}}}{\Factorial{\pa{q-1}}} r^{-\pa{q+p}}
+\]
+Whence:
+\begin{align*}
+\deriv[k+1] r {\gs\of r r^{-\pa{n+1}}} &= \pa{-1}^{\pa{k+1}} \sum{m = 0}[3] a_m \frac{\Factorial{\pa{n+k-m+1}}}{\Factorial{\pa{n-m}}} r^{-\pa{n+k-m+2}} \\
+&= \pa{-1}^{\pa{k+1}} r^{-\pa{n+k+2}} \frac{\Factorial{\pa{n+k-2}}}{\Factorial{n}}
+\begin{aligned}[t]
+&\;\Bigl[a_0 \pa{n+k+1}\pa{n+k}\pa{n+k-1} \\
+&+a_1 \pa{n+k}\pa{n+k-1} n r \\
+&+a_2 \pa{n+k-1} n \pa{n-1} r^2 \\
+&+a_3 n \pa{n-1}\pa{n-2} r^3\Bigr]
+\end{aligned}
+\end{align*}
+Substituting the values of the $\pa{a_i}$, we see that the zeroes of $\deriv[k+1] r {\gs\of r r^{-\pa{n+1}}}$ are those of the polynomial:
+\begin{align*}
+d_{n k}\of{s_0, s_1; r} &= \pa{s_1-3s_0}{s_1}^2 \pa{n+k+1}\pa{n+k}\pa{n+k-1} \\
+&\quad + 6s_0 s_1 \pa{n+k}\pa{n+k-1} n r \\
+&\quad -3\pa{s_0+s_1}\pa{n+k-1} n \pa{n-1} r^2 \\
+&\quad + 2 n \pa{n-1}\pa{n-2} r^3
+\end{align*}
+The following two lemmata establish properties of the roots of $d_{n k}\of{s_0, s_1; r}$:
+\begin{lemma}[necessary condition]
+If $1.183s_0<s_1<3s_0$ then there exist $k$ and $n$ such that $d_{n k}\of{s_0, s_1; r}$ has a zero in $\intopen{s_0} {s_1}$.
 \end{lemma}
+\begin{lemma}[sufficient condition]
+If $s_1 = 3s_0$ then the positive roots of $d_{n k}\of{s_0, s_1; r}$ are greater than $s_1$.
+\end{lemma}
+These lemmata trivially constitute necessary and sufficient conditions, respectively, for the proposition.
+\end{proof}
+\end{proposition}
+\begin{proof}[of necessary condition]
+In this proof we set $n=2$, which causes the term in $r^3$ of $d_{n k}\of{s_0, s_1; r}$ to vanish:
+\begin{multline*}
+d_{2,k}\of{s_0, s_1; r} = \pa{s_1-3s_0}s_1^2\pa{k+3}\pa{k+2}\pa{k+1} \\+ 12s_0 s_1\pa{k+2}\pa{k+1}r - 6\pa{s_0+s_1}\pa{k+1}r^2
+\end{multline*}
+The roots of $d_{2,k}\of{s_0, s_1; r}$ can be computed by solving:
+\[
+\pa{s_1-3s_0}s_1^2\pa{k+3}\pa{k+2} + 12s_0 s_1\pa{k+2}r - 6\pa{s_0+s_1}r^2 = 0
+\]
+The reduced discriminant of this equation is:
+\begin{align*}
+\gD' &= 36 s_0^2 s_1^2 \pa{k+2}^2 + 6\pa{s_0+s_1}\pa{s_1-3s_0}s_1^2\pa{k+2}\pa{k+3}\\
+&= 6 s_1^2\pa{k+2}\pa{6 s_0^2\pa{k+2}+\pa{s_1^2-2 s_0 s_1-3s_0^2}\pa{k+3}}\\
+&= 6 s_1^2\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}
+\end{align*}
+and its solutions are:
+\[
+r_± = s_1\frac{6 s_0\pa{k+2} ± \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}}}{6\pa{s_0+s_1}}
+\]
+We will now define $k_1$ and $k_2$ such that the following claim holds:
+\begin{claim}
+For every $k \in \intopen{k_2}{k_1}\Intersection{\Naturals}$, $r_- \in \intopen{s_0}{s_1}$.
+\end{claim}
+First, consider the inequality $r_-<s_1$.  It can be rewritten as follows:
+\begin{align*}
+&6 s_0\pa{k+2} - 6\pa{s_0+s_1} < \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}}
+\end{align*}
+If $k≥2$ the left-hand side is positive and we can further rewrite the inequality:
+\begin{align*}
+&6\pa{k s_0 + \pa{s_0-s_1}}^2 < \pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2} \\
+\iff &6\pa{k^2 s_0^2 + 2 k s_0 \pa{s_0 - s_1} + \pa{s_0 - s_1}^2} < \\
+&\qquad k^2 \pa{s_1^2-2 s_0 s_1 + 3s_0^2} + k \pa{3\pa{s_1-s_0}^2 + 2\pa{s_1^2-2 s_0 s_1 + 3s_0^2}} + 6\pa{s_0 - s_1}^2 \\
+\iff &k^2\pa{3s_0^2 + 2 s_0 s_1 - s_1^2} + k\pa{12 s_0\pa{s_0-s_1} - 3\pa{s_1-s_0}^2 - 2\pa{s_1^2-2 s_0 s_1 + 3s_0^2}} < 0 \\
+\iff &k\pa{3s_0^2 + 2 s_0 s_1 - s_1^2} + \pa{3s_0^2 -2 s_0 s_1 - 5 s_1^2} < 0 \\
+\iff &k\pa{3s_0-s_1}\pa{s_0+s_1} + \pa{3s_0 - 5s_1}\pa{s_0+s_1} < 0 \\
+\iff &k < \frac{5s_1-3s_0}{3s_0-s_1}=:k_1
+\end{align*}
+Similarly, the inequality $s_0<r_-$ can be rewritten as follows:
+\begin{align*}
+&6 s_0 s_1\pa{k+2} - 6\pa{s_0+s_1}s_0 > s_1 \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}} \\
+\iff &6 s_0^2\pa{k s_1 + \pa{s_1-s_0}}^2 > s_1^2\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2} \\
+\iff &6 s_0^2\pa{k^2 s_1^2 + 2 k s_1\pa{s_1-s_0} + \pa{s_1-s_0}^2} > \\
+&\qquad k^2 s_1^2\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + k s_1^2\pa{3\pa{s_1-s_0}^2 + 2\pa{s_1^2-2 s_0 s_1 + 3s_0^2}} + 6 s_1^2\pa{s_0 - s_1}^2 \\
+\iff &k^2 s_1^2\pa{3s_0^2 + 2 s_0 s_1 - s_1^2} + k s_1\pa{-5s_1^3 + 10 s_0 s_1^2 + 3 s_0^2 s_1 - 12 s_0^3} + 6\pa{s_0-s_1}^3\pa{s_0+s_1} > 0 \\
+\iff &k^2 s_1^2\pa{3s_0-s_1}\pa{s_0+s_1} + k s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2}\pa{s_0+s_1} + 6\pa{s_0-s_1}^3\pa{s_0+s_1} > 0 \\
+\iff &k^2 s_1^2\pa{3s_0-s_1} + k s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} + 6\pa{s_0-s_1}^3 > 0
+\end{align*}
+When $s_1<3s_0$, the coefficient of $k^2$ in the polynomial above is positive.  The constant term is negative, therefore the product of the roots is negative.  For the inequality to be true, $k$ must be greater than the largest root the polynomial.  The discriminant of the polynomial is:
+\[
+\gD = s_1^2\pa{\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2}^2 - 24\pa{3s_0-s_1}\pa{s_0-s_1}^3}
+\]
+And the largest root is:
+\[
+k_2 = \frac{-s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} + \sqrt{\gD}}{2s_1^2\pa{3s_0-s_1}}
+\]
+\begin{claim}
+$\intopen{k_2}{k_1}\Intersection{\Naturals}$ is nonempty when $s_1>1.183s_0$.
+\end{claim}
+A necessary condition for the interval $\intopen{k_2}{k_1}$ to contain an integer is $k_1-k_2>1$.  This inequality can be rewritten as follows:
+\begin{align*}
+&2s_1^2\pa{5s_1-3s_0} + s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} - 2s_1^2\pa{3s_0-s_1} - \sqrt{\gD} > 0 \\
+\iff &s_1\pa{7s_1^2 + 3 s_0 s_1 - 12s_0^2} > \sqrt{\gD}
+\end{align*}
+This inequality can only be true if the left-hand side is positive, that is, if $s_1 ≥ \frac{\sqrt{345}-3}{14}s_0 \approx 1.112s_0$.  Assuming that this condition is met we can further rewrite the inequality:
+\begin{align*}
+&\pa{7s_1^2 + 3 s_0 s_1 - 12s_0^2}^2 > \pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2}^2 - 24\pa{3s_0-s_1}\pa{s_0-s_1}^3 \\
+\iff &49s_1^4 + 42 s_0 s_1^3 - 159 s_0^2 s_1^2 - 72 s_0^3 s_1 + 144 s_0^4 > \\
+&\qquad s_1^4 - 6 s_0 s_1^3 + 57 s_0^2 s_1^2 - 120 s_0^3 s_1 + 72 s_0^4 \\
+\iff &24\pa{s_1-s_0}\pa{2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3} > 0
+\end{align*}
+The sum of the roots of $2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3$ is $-2s_0$ and the product is $3s_0/2$.  This means that this polynomial has a single positive root in $s_1$ and that when $s_1$ is greater than this root the inequality above holds.  Solving the cubic using $\emph{Mathematica}$ yields this root:
+\begin{align*}
+\hat\gq &= \frac{1}{3} \arctan\of{\frac{3 \sqrt{2517}}{41}} \\
+\hat{s}_1 &= \frac{s_0}{6}\pa{-4+\sqrt{138}\sin\hat\gq + \sqrt{46}\cos\hat\gq} \approx 1.183s_0
+\end{align*}
+Thus, if $s_1 \in \intopen{\hat{s}_1}{3s_0}$ it is possible to find an integer $k$ such that the smallest root of $d_{2,k}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
+\end{proof}
+\begin{remark}
+It is possible that $\intopen{k_2}{k_1}$ contains an integer value even if $k_1-k_2<1$, in which case more values $s_1 \in \intopen{s_0}{\hat{s}_1}$ could be excluded.
+\end{remark}
+\begin{proof}[of sufficient condition]
+With the choice $s_1=3s_0$ the constant term of the polynomial $d_{n k}\of{s_0, s_1; r}$ vanishes and $r=0$ is a trivial root.  We are left with the equation:
+\[
+6s_0 s_1 \pa{n+k}\pa{n+k-1} - 3\pa{s_0+s_1}\pa{n+k-1} \pa{n-1} r + 2 \pa{n-1}\pa{n-2} r^2 = 0
+\]
+or, substituting $s_1$:
+\begin{equation}
+9{s_0}^2 \pa{n+k}\pa{n+k-1} - 6 s_0 \pa{n+k-1} \pa{n-1} r + \pa{n-1}\pa{n-2} r^2 = 0 \label{eqn3s0}
+\end{equation}
+The reduced discriminant of equation (\ref{eqn3s0}) is:
+\begin{align*}
+\gD' &= 9 {s_0}^2 \pa{n+k-1}^2 \pa{n-1}^2 - 9 {s_0}^2 \pa{n+k}\pa{n+k-1}\pa{n-1}\pa{n-2}\\
+&=9 {s_0}^2\pa{n+k-1}\pa{n-1}\pa{k+1}
+\end{align*}
+and its solutions are, when $n>2$:
+\[
+r_± = 3 s_0\frac{\pa{n+k-1}\pa{n-1} ± \sqrt{\pa{n+k-1}\pa{n-1}\pa{k+1}}}{\pa{n-1}\pa{n-2}}
+\]
+We want to prove that the smallest root, $r_-$ verifies $r_{-}>3s_0$.  This inequality can be rewritten:
+\begin{align*}
+&\pa{n+k-1}\pa{n-1} - \pa{n-1}\pa{n-2} > \sqrt{\pa{n+k-1}\pa{n-1}\pa{k+1}} \\
+\iff &\pa{n-1}\pa{k+1} > \sqrt{\pa{n+k-1}\pa{n-1}\pa{k+1}} \\
+\iff &\pa{n-1}\pa{k+1} > n+k-1 \\
+\iff &k\pa{n-2} > 0 \quad \text{which is trivally true.}
+\end{align*}
+When $n=2$ equation (\ref{eqn3s0}) further reduces to a first-degree equation with root $r = \frac{3}{2} s_0 \pa{k+2}$ which verifies $r≥3s_0$.  Note however that the latter inequality is not strict, i.e., the value $3s_0$ may be reached if $k=0$ and $n=2$.
+\end{proof}
 Accordingly, we pick $s_1=3s_0$.
 The expression for $\gs$ on $\intclos {s_0} {s_1}$ simplifies to\[
 \gs\of r = \frac{r \pa{r-3s_0}^2} {4 s_0^3} = \frac{r^3}{4 s_0^3} - \frac{3 r^2}{2s_0^2} + \frac{9r}{4s_0}\text.
