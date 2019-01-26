@@ -451,8 +451,9 @@ and its solutions are:
 \[
 r_± = s_1\frac{6 s_0\pa{k+2} ± \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}}}{6\pa{s_0+s_1}}
 \]
+We will now define $k_1$ and $k_2$ such that the following claim holds:
 \begin{claim}
-There exist $k_1$ and $k_2$ such that for every $k \in \intopen{k_2}{k_1}\Intersection{\Naturals}$, $r_- \in \intopen{s_0}{s_1}$
+For every $k \in \intopen{k_2}{k_1}\Intersection{\Naturals}$, $r_- \in \intopen{s_0}{s_1}$.
 \end{claim}
 First, consider the inequality $r_-<s_1$.  It can be rewritten as follows:
 \begin{align*}
@@ -509,7 +510,7 @@ The sum of the roots of $2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3$ is $-2s_0$
 Thus, if $s_1 \in \intopen{\hat{s}_1}{3s_0}$ it is possible to find an integer $k$ such that the smallest root of $d_{2,k}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
 \end{proof}
 \begin{remark}
-It is possible that $\intclos{k_2}{k_1}$ contains an integer value even if $k_1-k_2<1$, in which case more values $s_1 \in \intopen{s_0}{\hat{s}_1}$ could be excluded.
+It is possible that $\intopen{k_2}{k_1}$ contains an integer value even if $k_1-k_2<1$, in which case more values $s_1 \in \intopen{s_0}{\hat{s}_1}$ could be excluded.
 \end{remark}
 \begin{proof}[of sufficient condition]
 With the choice $s_1=3s_0$ the constant term of the polynomial $d_{n k}\of{s_0, s_1; r}$ vanishes and $r=0$ is a trivial root.  We are left with the equation:
