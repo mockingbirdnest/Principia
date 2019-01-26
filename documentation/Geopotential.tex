@@ -454,7 +454,10 @@ and its solutions are:
 \[
 r_± = s_1\frac{6 s_0\pa{k+2} ± \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}}}{6\pa{s_0+s_1}}
 \]
-We want to find an integer $k$ such that the smallest root $r_-$ is in $\intopen{s_0}{s_1}$.  First, consider the inequality $r_-<s_1$.  It can be rewritten as follows:
+\begin{claim}
+There exist $k_1$ and $k_2$ such that for every $k \in \intopen{k_2}{k_1}\Intersection{\Naturals}$, $r_- \in \intopen{s_0}{s_1}$
+\end{claim}
+First, consider the inequality $r_-<s_1$.  It can be rewritten as follows:
 \begin{align*}
 &6 s_0\pa{k+2} - 6\pa{s_0+s_1} < \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}}
 \end{align*}
@@ -486,24 +489,27 @@ And the largest root is:
 \[
 k_2 = \frac{-s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} + \sqrt{\gD}}{2s_1^2\pa{3s_0-s_1}}
 \]
-Since $k$ is an integer, we want the interval $\intclos{k_2}{k_1}$ to contain an integer.  A necessary condition for this is $k_1-k_2≥1$.  This inequality can be rewritten as follows:
+\begin{claim}
+$\intopen{k_2}{k_1}\Intersection{\Naturals}$ is nonempty when $s_1>1.183s_0$.
+\end{claim}
+A necessary condition for the interval $\intopen{k_2}{k_1}$ to contain an integer is $k_1-k_2>1$.  This inequality can be rewritten as follows:
 \begin{align*}
-&2s_1^2\pa{5s_1-3s_0} + s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} - 2s_1^2\pa{3s_0-s_1} - \sqrt{\gD} ≥ 0 \\
-\iff &s_1\pa{7s_1^2 + 3 s_0 s_1 - 12s_0^2} ≥ \sqrt{\gD}
+&2s_1^2\pa{5s_1-3s_0} + s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} - 2s_1^2\pa{3s_0-s_1} - \sqrt{\gD} > 0 \\
+\iff &s_1\pa{7s_1^2 + 3 s_0 s_1 - 12s_0^2} > \sqrt{\gD}
 \end{align*}
 This inequality can only be true if the left-hand side is positive, that is, if $s_1 ≥ \frac{\sqrt{345}-3}{14}s_0 \approx 1.112s_0$.  Assuming that this condition is met we can further rewrite the inequality:
 \begin{align*}
-&\pa{7s_1^2 + 3 s_0 s_1 - 12s_0^2}^2 ≥ \pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2}^2 - 24\pa{3s_0-s_1}\pa{s_0-s_1}^3 \\
-\iff &49s_1^4 + 42 s_0 s_1^3 - 159 s_0^2 s_1^2 - 72 s_0^3 s_1 + 144 s_0^4 ≥ \\
+&\pa{7s_1^2 + 3 s_0 s_1 - 12s_0^2}^2 > \pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2}^2 - 24\pa{3s_0-s_1}\pa{s_0-s_1}^3 \\
+\iff &49s_1^4 + 42 s_0 s_1^3 - 159 s_0^2 s_1^2 - 72 s_0^3 s_1 + 144 s_0^4 > \\
 &\qquad s_1^4 - 6 s_0 s_1^3 + 57 s_0^2 s_1^2 - 120 s_0^3 s_1 + 72 s_0^4 \\
-\iff &24\pa{s_1-s_0}\pa{2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3} ≥ 0
+\iff &24\pa{s_1-s_0}\pa{2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3} > 0
 \end{align*}
-The sum of the roots of $2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3$ is $-2$ and the product is $3/2$.  This means that this polynomial has a single positive root in $s_1$ and that when $s_1$ is greater than this root the inequality above holds.  Solving the cubic using $\emph{Mathematica}$ yields this root:
+The sum of the roots of $2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3$ is $-2s_0$ and the product is $3s_0/2$.  This means that this polynomial has a single positive root in $s_1$ and that when $s_1$ is greater than this root the inequality above holds.  Solving the cubic using $\emph{Mathematica}$ yields this root:
 \begin{align*}
 \hat\gq &= \frac{1}{3} \arctan\of{\frac{3 \sqrt{2517}}{41}} \\
 \hat{s}_1 &= \frac{s_0}{6}\pa{-4+\sqrt{138}\sin\hat\gq + \sqrt{46}\cos\hat\gq} \approx 1.183s_0
 \end{align*}
-Thus, if $s_1 \in \intclop{\hat{s}_1}{3s_0}$ it is possible to find an integer $k$ such that the smallest root of $d_{2,k}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
+Thus, if $s_1 \in \intopen{\hat{s}_1}{3s_0}$ it is possible to find an integer $k$ such that the smallest root of $d_{2,k}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
 \end{proof}
 \begin{proof}[of necessary condition, special case]
 In this proof we set $n=2$ and $k=1$.  The inequality $r_-<s_1$ can be rewritten as in the previous proof, with the caveat that since the condition $k≥2$ does not hold anymore, we have to require $s_1<2s_0$ for the quantity $s_0\pa{k+2}-\pa{s_0+s_1}$ to be positive.  This is acceptable since we are looking for a proof when $s_1$ is close to $s_0$.  Thus we end up with:
