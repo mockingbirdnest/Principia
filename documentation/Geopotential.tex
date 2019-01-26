@@ -454,8 +454,9 @@ and its solutions are:
 \[
 r_± = s_1\frac{6 s_0\pa{k+2} ± \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}}}{6\pa{s_0+s_1}}
 \]
+We will now define $k_1$ and $k_2$ such that the following claim holds:
 \begin{claim}
-There exist $k_1$ and $k_2$ such that for every $k \in \intopen{k_2}{k_1}\Intersection{\Naturals}$, $r_- \in \intopen{s_0}{s_1}$
+For every $k \in \intopen{k_2}{k_1}\Intersection{\Naturals}$, $r_- \in \intopen{s_0}{s_1}$.
 \end{claim}
 First, consider the inequality $r_-<s_1$.  It can be rewritten as follows:
 \begin{align*}
@@ -524,7 +525,6 @@ The inequality $r_-<s_1$ can be rewritten as in the previous proof and becomes, 
 \iff &\pa{s_1 - s_0}\pa{-2 s_1 + 4 s_0 s_1 - s_0^2} > 0
 \end{align*}
 The quadratic term in the above condition is positive between its roots, and its only root greater than $s_0$ is $\pa{1+\frac{\sqrt{2}}{2}}s_0$.  Thus, if $s_1 \in \intopen{s_0}{\pa{1+\frac{\sqrt{2}}{2}}s_0}$ the smallest root of $d_{2,1}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
-
 \end{proof}
 \begin{proof}[of sufficient condition]
 With the choice $s_1=3s_0$ the constant term of the polynomial $d_{n k}\of{s_0, s_1; r}$ vanishes and $r=0$ is a trivial root.  We are left with the equation:

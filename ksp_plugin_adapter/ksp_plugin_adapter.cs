@@ -959,13 +959,10 @@ public partial class PrincipiaPluginAdapter
         SetNavballVector(navball_.antiNormalVector, -normal);
 
         // Make the autopilot target our Frenet trihedron.
-        if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
-            (Delegate)(FlightInputCallback)OverrideRSASTarget) {
+        if (!active_vessel.OnPreAutopilotUpdate.GetInvocationList().Contains(
+                (FlightInputCallback)OverrideRSASTarget)) {
           Log.Info("Prepending RSAS override");
-          active_vessel.OnAutopilotUpdate =
-              (FlightInputCallback)Delegate.Combine(
-                  new FlightInputCallback(OverrideRSASTarget),
-                  active_vessel.OnAutopilotUpdate);
+          active_vessel.OnPreAutopilotUpdate += OverrideRSASTarget;
         }
         if (active_vessel.Autopilot.Enabled) {
           override_rsas_target_ = true;
