@@ -424,7 +424,7 @@ d_{n k}\of{s_0, s_1; r} &= \pa{s_1-3s_0}{s_1}^2 \pa{n+k+1}\pa{n+k}\pa{n+k-1} \\
 \end{align*}
 The following three lemmata establish properties of the roots of $d_{n k}\of{s_0, s_1; r}$:
 \begin{lemma}[necessary condition, general case]
-If $1.183s_0<s_1<3s_0$ then there exist $k$ and $n$ such that $d_{n k}\of{s_0, s_1; r}$ has a zero in $\intopen{s_0} {s_1}$.
+If $\frac{9}{7}s_0<s_1<3s_0$ then there exist $k$ and $n$ such that $d_{n k}\of{s_0, s_1; r}$ has a zero in $\intopen{s_0} {s_1}$.
 \end{lemma}
 \begin{lemma}[necessary condition, special case]
 If $s_0<s_1<\pa{1+\frac{\sqrt{2}}{2}}s_0$ then there exist $k$ and $n$ such that $d_{n k}\of{s_0, s_1; r}$ has a zero in $\intopen{s_0} {s_1}$.
@@ -456,8 +456,8 @@ r_± = s_1\frac{6 s_0\pa{k+2} ± \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^
 \]
 We will now define $k_1$ and $k_2$ such that the following claim holds:
 \begin{claim}
-For every $k \in \intopen{k_2}{k_1}\Intersection{\Naturals}$, $r_- \in \intopen{s_0}{s_1}$.
-\end{claim}
+For every $k \in \intopen{k_2}{k_1}\Intersection\intclop{2}{+\infty}\Intersection{\Naturals}$, $r_- \in \intopen{s_0}{s_1}$.
+\begin{proof}
 First, consider the inequality $r_-<s_1$.  It can be rewritten as follows:
 \begin{align*}
 &6 s_0\pa{k+2} - 6\pa{s_0+s_1} < \sqrt{6\pa{k+2}\pa{k\pa{s_1^2-2 s_0 s_1 + 3s_0^2} + 3\pa{s_1-s_0}^2}}
@@ -490,10 +490,12 @@ And the largest root is:
 \[
 k_2 = \frac{-s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} + \sqrt{\gD}}{2s_1^2\pa{3s_0-s_1}}
 \]
-\begin{claim}
-$\intopen{k_2}{k_1}\Intersection{\Naturals}$ is nonempty when $s_1>1.183s_0$.
+\end{proof}
 \end{claim}
-A necessary condition for the interval $\intopen{k_2}{k_1}$ to contain an integer is $k_1-k_2>1$.  This inequality can be rewritten as follows:
+\begin{claim}
+$\intopen{k_2}{k_1}\Intersection\intclop{2}{+\infty}\Intersection{\Naturals}$ is nonempty when $s_1>\frac{9}{7}s_0 \approx 1.286s_0$.
+\begin{proof}
+For this set to be nonempty we must have $k_1>2$ which is equivalent to $s_1>\frac{9}{7}s_0$.  Given $k_1>2$, a sufficient condition for the interval $\intopen{k_2}{k_1}$ to contain an integer greater than $1$ is $k_1-k_2>1$.  This inequality can be rewritten as follows:
 \begin{align*}
 &2s_1^2\pa{5s_1-3s_0} + s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} - 2s_1^2\pa{3s_0-s_1} - \sqrt{\gD} > 0 \\
 \iff &s_1\pa{7s_1^2 + 3 s_0 s_1 - 12s_0^2} > \sqrt{\gD}
@@ -510,26 +512,38 @@ The sum of the roots of $2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3$ is $-2s_0$
 \hat\gq &= \frac{1}{3} \arctan\of{\frac{3 \sqrt{2517}}{41}} \\
 \hat{s}_1 &= \frac{s_0}{6}\pa{-4+\sqrt{138}\sin\hat\gq + \sqrt{46}\cos\hat\gq} \approx 1.183s_0
 \end{align*}
-Thus, if $s_1 \in \intopen{\hat{s}_1}{3s_0}$ it is possible to find an integer $k$ such that the smallest root of $d_{2,k}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
+Noting that $\hat{s}_1<\frac{9}{7}s_0$, we conclude that, if $s_1 \in \intopen{\frac{9}{7}s_0}{3s_0}$ it is possible to find an integer $k≥2$ such that the smallest root of $d_{2,k}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
 \end{proof}
-\begin{proof}[of necessary condition, special case]
-In this proof we set $n=2$ and $k=1$.  
-\begin{claim}
-$1 \in \intopen{k_2}{k_1}$ when $s_1<\pa{1+\frac{\sqrt{2}}{2}}s_0$.
 \end{claim}
-The inequality $r_-<s_1$ can be rewritten as in the previous proof, with the caveat that since the condition $k≥2$ does not hold anymore, we have to require $s_1<2s_0$ for the quantity $s_0\pa{k+2}-\pa{s_0+s_1}$ to be positive.  This is acceptable since we are looking for a proof when $s_1$ is close to $s_0$.  Thus we end up with:
+\end{proof}
+
+\begin{proof}[of necessary condition, special case]
+In this proof we set $n=2$ and $k=1$.
+\begin{claim}
+If $s_1<2s_0$, then for every $k \in \intopen{k_2}{k_1}\Intersection{\Positives}$, $r_- \in \intopen{s_0}{s_1}$.
+\begin{proof}
+The inequality $r_-<s_1$ can be rewritten as in the previous proof, with the caveat that since the condition $k≥2$ does not hold anymore, we have to require $s_1<2s_0$ for the quantity $s_0\pa{k+2}-\pa{s_0+s_1}$ to be positive.  This is acceptable since we are looking for a proof when $s_1$ is close to $s_0$.  The inequality $s_0<r_-$ is unaffected by any condition on $k$ so the definition of $k_2$ remains valid.
+\end{proof}
+\end{claim}
+\begin{claim}
+$1 \in \intopen{k_2}{k_1}$ when $s_1<\pa{1+\frac{\sqrt{2}}{2}}s_0 \approx 1.707s_0$.
+\begin{proof}
+The inequality $1<k_1$ can be rewritten:
 \[
-1 < \frac{5s_1-3s_0}{3s_0-s_1} \iff s_0 > s_1
+1 < \frac{5s_1-3s_0}{3s_0-s_1} \iff s_0 > s_1 \qquad\text{which is trivially true.}
 \]
-The inequality $r_-<s_1$ can be rewritten as in the previous proof and becomes, substituting $k$:
+The inequality $s_0<r_-$ can be rewritten as in the previous proof and becomes, substituting $k$:
 \begin{align*}
 &k^2 s_1^2\pa{3s_0-s_1} + k s_1\pa{-5s_1^2 + 15 s_0 s_1 - 12s_0^2} + 6\pa{s_0-s_1}^3 > 0 \\
 \iff &s_1\pa{-6s_1^2 + 18 s_0 s_1 - 12 s_0^2} + 6\pa{s_0-s_1}^3 > 0 \\
 \iff &-2s_1^3 + 6 s_0 s_1^2 - 5 s_0^2 s_1 + s_0^3 > 0 \\
-\iff &\pa{s_1 - s_0}\pa{-2 s_1 + 4 s_0 s_1 - s_0^2} > 0
+\iff &\pa{s_1 - s_0}\pa{-2 s_1^2 + 4 s_0 s_1 - s_0^2} > 0
 \end{align*}
 The quadratic term in the above condition is positive between its roots, and its only root greater than $s_0$ is $\pa{1+\frac{\sqrt{2}}{2}}s_0$.  Thus, if $s_1 \in \intopen{s_0}{\pa{1+\frac{\sqrt{2}}{2}}s_0}$ the smallest root of $d_{2,1}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
 \end{proof}
+\end{claim}
+\end{proof}
+
 \begin{proof}[of sufficient condition]
 With the choice $s_1=3s_0$ the constant term of the polynomial $d_{n k}\of{s_0, s_1; r}$ vanishes and $r=0$ is a trivial root.  We are left with the equation:
 \[
