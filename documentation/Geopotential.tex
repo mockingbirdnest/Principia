@@ -381,7 +381,7 @@ Removing those factors that do not depend on $r$, this means that we must have
 \end{equation}
 
 \begin{proposition}
-The smallest value of $s_1>1.183s_0$ such that (\ref{eqnderiv}) holds for all $k>0$ and $n≥2$ is $s_1 = 3s_0$.
+The smallest value of $s_1$ such that (\ref{eqnderiv}) holds for all $k>0$ and $n≥2$ is $s_1 = 3s_0$.
 \begin{proof}
 We start by writing:
 \[
@@ -513,7 +513,11 @@ The sum of the roots of $2s_1^3 + 4 s_0 s_1^2 - 5 s_0^2 s_1 - 3s_0^3$ is $-2s_0$
 Thus, if $s_1 \in \intopen{\hat{s}_1}{3s_0}$ it is possible to find an integer $k$ such that the smallest root of $d_{2,k}\of{s_0, s_1; r}$ is in $\intopen{s_0} {s_1}$.
 \end{proof}
 \begin{proof}[of necessary condition, special case]
-In this proof we set $n=2$ and $k=1$.  The inequality $r_-<s_1$ can be rewritten as in the previous proof, with the caveat that since the condition $k≥2$ does not hold anymore, we have to require $s_1<2s_0$ for the quantity $s_0\pa{k+2}-\pa{s_0+s_1}$ to be positive.  This is acceptable since we are looking for a proof when $s_1$ is close to $s_0$.  Thus we end up with:
+In this proof we set $n=2$ and $k=1$.  
+\begin{claim}
+$1 \in \intopen{k_2}{k_1}$ when $s_1<\pa{1+\frac{\sqrt{2}}{2}}s_0$.
+\end{claim}
+The inequality $r_-<s_1$ can be rewritten as in the previous proof, with the caveat that since the condition $k≥2$ does not hold anymore, we have to require $s_1<2s_0$ for the quantity $s_0\pa{k+2}-\pa{s_0+s_1}$ to be positive.  This is acceptable since we are looking for a proof when $s_1$ is close to $s_0$.  Thus we end up with:
 \[
 1 < \frac{5s_1-3s_0}{3s_0-s_1} \iff s_0 > s_1
 \]
