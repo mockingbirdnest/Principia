@@ -209,9 +209,9 @@ void Vessel::AdvanceTime() {
 }
 
 void Vessel::ForgetBefore(Instant const& time) {
-  // Make sure that the history keeps at least one (authoritative) point and
-  // don't change the psychohistory or prediction.  We cannot use the parts
-  // because they may have been moved to the future already.
+  // Make sure that the history keeps at least one point and don't change the
+  // psychohistory or prediction.  We cannot use the parts because they may have
+  // been moved to the future already.
   history_->ForgetBefore(std::min(time, history_->last().time()));
   if (flight_plan_ != nullptr) {
     flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });

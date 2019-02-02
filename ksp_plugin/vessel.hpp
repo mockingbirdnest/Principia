@@ -91,10 +91,9 @@ class Vessel {
 
   virtual void ClearAllIntrinsicForces();
 
-  // If the history is empty, appends a single authoritative point to it,
-  // computed as the barycentre of all parts.  |parts_| must not be empty.
-  // After this call, |history_| is never empty again and the psychohistory is
-  // usable.
+  // If the history is empty, appends a single point to it, computed as the
+  // barycentre of all parts.  |parts_| must not be empty.  After this call,
+  // |history_| is never empty again and the psychohistory is usable.
   virtual void PrepareHistory(Instant const& t);
 
   // Disable downsampling for the history of this vessel.  This is useful when
@@ -123,8 +122,9 @@ class Vessel {
   virtual FlightPlan& flight_plan() const;
   virtual bool has_flight_plan() const;
 
-  // Extends the psychohistory of this vessel by computing the centre of mass of
-  // its parts at every point in their tail.  Clears the tails.
+  // Extends the history and psychohistory of this vessel by computing the
+  // centre of mass of its parts at every point in their history and
+  // psychohistory.  Clears the parts' history and psychohistory.
   virtual void AdvanceTime();
 
   // Forgets the trajectories and flight plan before |time|.  This may delete
@@ -132,7 +132,6 @@ class Vessel {
   virtual void ForgetBefore(Instant const& time);
 
   // Creates a |flight_plan_| at the end of history using the given parameters.
-  // Deletes any pre-existing predictions.
   virtual void CreateFlightPlan(
       Instant const& final_time,
       Mass const& initial_mass,
@@ -144,9 +143,11 @@ class Vessel {
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
 
-  // Tries to extend the prediction up to and including |last_time|.  May not be
-  // able to do it next to a singularity.
-  virtual void FlowPrediction(Instant const& last_time);
+  // Tries to extend the prediction.  If |time| is infinite, extends the
+  // ephemeris by at most |max_ephemeris_steps_per_frame|.  Otherwise, tries to
+  // extend up to and including |time|.  May not be able to do it next to a
+  // singularity.
+  virtual void FlowPrediction(Instant const& time);
 
   virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
 
