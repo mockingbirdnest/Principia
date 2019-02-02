@@ -1,3 +1,5 @@
+$OutputEncoding = [console]::InputEncoding = [console]::OutputEncoding =
+    New-Object System.Text.UTF8Encoding
 $solutiondir = resolve-path $args[0]
 $env:Path += ";$env:programfiles\Git\bin;$env:localappdata\GitHub\Portab~1\bin;$env:localappdata\GitHub\Portab~1\mingw32\bin"
 $newdate = [DateTime](git log -1 --format=%cd --date=iso-strict)
