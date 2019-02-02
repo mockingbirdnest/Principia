@@ -96,7 +96,7 @@ class Vessel {
   // |history_| is never empty again and the psychohistory is usable.
   virtual void PrepareHistory(Instant const& t);
 
-  // Disable downsampling for the history of this vessel.  This is useful when
+  // Disables downsampling for the history of this vessel.  This is useful when
   // the vessel collided with a celestial, as downsampling might run into
   // trouble.
   virtual void DisableDownsampling();
@@ -143,10 +143,13 @@ class Vessel {
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
 
-  // Tries to extend the prediction.  If |time| is infinite, extends the
-  // ephemeris by at most |max_ephemeris_steps_per_frame|.  Otherwise, tries to
-  // extend up to and including |time|.  May not be able to do it next to a
+  // Tries to extend the prediction by extending the ephemeris by at most
+  //|max_ephemeris_steps_per_frame|.  May not be able to do it next to a
   // singularity.
+  virtual void FlowPrediction();
+
+  // Tries to extend the prediction (and the ephemeris) up to and including
+  // |time|.  May not be able to do it next to a singularity.
   virtual void FlowPrediction(Instant const& time);
 
   virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;

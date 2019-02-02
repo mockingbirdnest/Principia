@@ -240,29 +240,35 @@ void Vessel::DeleteFlightPlan() {
   flight_plan_.reset();
 }
 
+void Vessel::FlowPrediction() {
+  bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
+      prediction_,
+      Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+      ephemeris_->t_max(),
+      prediction_adaptive_step_parameters_,
+      FlightPlan::max_ephemeris_steps_per_frame,
+      /*last_point_only=*/false).ok();
+  if (reached_t) {
+    // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
+    ephemeris_->FlowWithAdaptiveStep(
+      prediction_,
+      Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+      InfiniteFuture,
+      prediction_adaptive_step_parameters_,
+      FlightPlan::max_ephemeris_steps_per_frame,
+      /*last_point_only=*/false);
+  }
+}
+
 void Vessel::FlowPrediction(Instant const& time) {
   if (time > prediction_->last().time()) {
-    bool const finite_time = IsFinite(time - prediction_->last().time());
-    Instant const t = finite_time ? time : ephemeris_->t_max();
-    // This will not prolong the ephemeris if |time| is infinite (but it may do
-    // so if it is finite).
-    bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
-        prediction_,
-        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-        t,
-        prediction_adaptive_step_parameters_,
-        FlightPlan::max_ephemeris_steps_per_frame,
-        /*last_point_only=*/false).ok();
-    if (!finite_time && reached_t) {
-      // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
-      ephemeris_->FlowWithAdaptiveStep(
+    ephemeris_->FlowWithAdaptiveStep(
         prediction_,
         Ephemeris<Barycentric>::NoIntrinsicAcceleration,
         time,
         prediction_adaptive_step_parameters_,
         FlightPlan::max_ephemeris_steps_per_frame,
         /*last_point_only=*/false);
-    }
   }
 }
 
@@ -345,13 +351,13 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       vessel->psychohistory_ = vessel->history_->NewForkAtLast();
     }
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    vessel->FlowPrediction(InfiniteFuture);
+    vessel->FlowPrediction();
   } else if (is_pre_chasles) {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*forks=*/{&vessel->psychohistory_});
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    vessel->FlowPrediction(InfiniteFuture);
+    vessel->FlowPrediction();
   } else {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),

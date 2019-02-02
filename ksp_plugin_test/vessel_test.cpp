@@ -296,7 +296,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                                                60.0 * Metre / Second,
                                                50.0 * Metre / Second}))),
                 Return(Status::OK)));
-  vessel_.FlowPrediction(astronomy::InfiniteFuture);
+  vessel_.FlowPrediction();
 
   EXPECT_EQ(3, vessel_.prediction().Size());
   auto it = vessel_.prediction().Begin();

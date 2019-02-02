@@ -54,7 +54,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
-using astronomy::InfiniteFuture;
 using astronomy::ParseTT;
 using astronomy::KSPStockSystemFingerprint;
 using astronomy::KSPStabilizedSystemFingerprint;
@@ -844,7 +843,7 @@ void Plugin::SetPredictionAdaptiveStepParameters(
 
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  FindOrDie(vessels_, vessel_guid)->FlowPrediction(InfiniteFuture);
+  FindOrDie(vessels_, vessel_guid)->FlowPrediction();
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
