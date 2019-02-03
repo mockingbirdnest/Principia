@@ -51,6 +51,16 @@ Vessel::Vessel(GUID const& guid,
 
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();
+  // Ask the predictor to shut down.  This may take a while.  Make sure that we
+  // handle the case where |PrepareHistory| was not called.
+  if (predictor_.joinable()) {
+    {
+      absl::MutexLock l(&predictor_lock_);
+      CHECK(predictor_parameters_);
+      predictor_parameters_->shutdown = true;
+    }
+    predictor_.join();
+  }
 }
 
 GUID const& Vessel::guid() const {
