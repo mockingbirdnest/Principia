@@ -179,6 +179,8 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
 
+  void RepeatedlyFlowPrediction();
+
   void AppendToVesselTrajectory(TrajectoryIterator part_trajectory_begin,
                                 TrajectoryIterator part_trajectory_end,
                                 DiscreteTrajectory<Barycentric>& trajectory);
@@ -195,6 +197,10 @@ class Vessel {
 
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
+
+  std::optional<Instant> predictor_last_time_;
+  bool predictor_shutdown_ = false;
+  std::thread predictor_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;

@@ -401,6 +401,52 @@ Vessel::Vessel()
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
+void Vessel::RepeatedlyFlowPrediction() {
+  for (;;) {
+    // No point in going faster than 50 Hz.
+    std::chrono::steady_clock::time_point const wakeup_time =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
+
+    if (predictor_shutdown_) {
+      break;
+    }
+
+    DiscreteTrajectory<Barycentric> prediction;//Needs a point.
+    if (predictor_last_time_) {
+      if (*predictor_last_time_ > prediction.last().time()) {
+        ephemeris_->FlowWithAdaptiveStep(
+            &prediction,
+            Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+            *predictor_last_time_,
+            prediction_adaptive_step_parameters_,
+            FlightPlan::max_ephemeris_steps_per_frame,
+            /*last_point_only=*/false);
+      }
+      predictor_last_time_ = std::nullopt;
+    } else {
+      bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
+          &prediction,
+          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+          ephemeris_->t_max(),
+          prediction_adaptive_step_parameters_,
+          FlightPlan::max_ephemeris_steps_per_frame,
+          /*last_point_only=*/false).ok();
+      if (reached_t) {
+        // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
+        ephemeris_->FlowWithAdaptiveStep(
+          &prediction,
+          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+          InfiniteFuture,
+          prediction_adaptive_step_parameters_,
+          FlightPlan::max_ephemeris_steps_per_frame,
+          /*last_point_only=*/false);
+      }
+    }
+
+    std::this_thread::sleep_until(wakeup_time);
+  }
+}
+
 void Vessel::AppendToVesselTrajectory(
     TrajectoryIterator const part_trajectory_begin,
     TrajectoryIterator const part_trajectory_end,
