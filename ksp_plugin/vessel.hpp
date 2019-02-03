@@ -180,6 +180,7 @@ class Vessel {
     Instant first_time;
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
     std::optional<Instant> last_time;
+    Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters;
     bool shutdown = false;
   };
 
@@ -198,7 +199,7 @@ class Vessel {
 
   MasslessBody const body_;
   Ephemeris<Barycentric>::AdaptiveStepParameters
-      prediction_adaptive_step_parameters_;
+      prediction_adaptive_step_parameters_;//TODO(phl)remove
   // The parent body for the 2-body approximation. Not owning.
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
@@ -206,7 +207,7 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
-  absl::Mutex predictor_lock_;
+  mutable absl::Mutex predictor_lock_;
   std::optional<PredictorParameters> predictor_parameters_
       GUARDED_BY(predictor_lock_);
   bool predictor_has_run_ GUARDED_BY(predictor_lock_) = false;

@@ -200,11 +200,15 @@ void Vessel::set_prediction_adaptive_step_parameters(
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         prediction_adaptive_step_parameters) {
   prediction_adaptive_step_parameters_ = prediction_adaptive_step_parameters;
+  absl::MutexLock l(&predictor_lock_);
+  predictor_parameters_->adaptive_step_parameters =
+      prediction_adaptive_step_parameters;
 }
 
 Ephemeris<Barycentric>::AdaptiveStepParameters const&
 Vessel::prediction_adaptive_step_parameters() const {
-  return prediction_adaptive_step_parameters_;
+  absl::ReaderMutexLock l(&predictor_lock_);
+  return predictor_parameters_->adaptive_step_parameters;
 }
 
 FlightPlan& Vessel::flight_plan() const {
@@ -266,35 +270,13 @@ void Vessel::DeleteFlightPlan() {
 }
 
 void Vessel::FlowPrediction() {
-  bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
-      prediction_,
-      Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-      ephemeris_->t_max(),
-      prediction_adaptive_step_parameters_,
-      FlightPlan::max_ephemeris_steps_per_frame,
-      /*last_point_only=*/false).ok();
-  if (reached_t) {
-    // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
-    ephemeris_->FlowWithAdaptiveStep(
-      prediction_,
-      Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-      InfiniteFuture,
-      prediction_adaptive_step_parameters_,
-      FlightPlan::max_ephemeris_steps_per_frame,
-      /*last_point_only=*/false);
-  }
+  absl::MutexLock l(&predictor_lock_);
+  predictor_parameters_->last_time = std::nullopt;
 }
 
 void Vessel::FlowPrediction(Instant const& time) {
-  if (time > prediction_->last().time()) {
-    ephemeris_->FlowWithAdaptiveStep(
-        prediction_,
-        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-        time,
-        prediction_adaptive_step_parameters_,
-        FlightPlan::max_ephemeris_steps_per_frame,
-        /*last_point_only=*/false);
-  }
+  absl::MutexLock l(&predictor_lock_);
+  predictor_parameters_->last_time = time;
 }
 
 DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
@@ -454,7 +436,7 @@ void Vessel::RepeatedlyFlowPrediction() {
             &prediction,
             Ephemeris<Barycentric>::NoIntrinsicAcceleration,
             *predictor_parameters->last_time,
-            prediction_adaptive_step_parameters_,
+            predictor_parameters->adaptive_step_parameters,
             FlightPlan::max_ephemeris_steps_per_frame,
             /*last_point_only=*/false);
       }
@@ -463,7 +445,7 @@ void Vessel::RepeatedlyFlowPrediction() {
           &prediction,
           Ephemeris<Barycentric>::NoIntrinsicAcceleration,
           ephemeris_->t_max(),
-          prediction_adaptive_step_parameters_,
+          predictor_parameters->adaptive_step_parameters,
           FlightPlan::max_ephemeris_steps_per_frame,
           /*last_point_only=*/false).ok();
       if (reached_t) {
@@ -472,7 +454,7 @@ void Vessel::RepeatedlyFlowPrediction() {
           &prediction,
           Ephemeris<Barycentric>::NoIntrinsicAcceleration,
           InfiniteFuture,
-          prediction_adaptive_step_parameters_,
+          predictor_parameters->adaptive_step_parameters,
           FlightPlan::max_ephemeris_steps_per_frame,
           /*last_point_only=*/false);
       }
