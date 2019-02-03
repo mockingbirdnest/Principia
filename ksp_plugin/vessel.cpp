@@ -407,22 +407,30 @@ void Vessel::RepeatedlyFlowPrediction() {
     std::chrono::steady_clock::time_point const wakeup_time =
         std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
 
-    if (predictor_shutdown_) {
+    PredictorParameters predictor_parameters;
+    {
+      absl::ReaderMutexLock l(&predictor_lock_);
+      predictor_parameters = predictor_parameters_;
+    }
+
+    if (predictor_parameters.shutdown) {
       break;
     }
 
-    DiscreteTrajectory<Barycentric> prediction;//Needs a point.
-    if (predictor_last_time_) {
-      if (*predictor_last_time_ > prediction.last().time()) {
+    DiscreteTrajectory<Barycentric> prediction;
+    prediction.Append(predictor_parameters.first_time,
+                      predictor_parameters.first_degrees_of_freedom);
+    if (predictor_parameters.last_time) {
+      if (*predictor_parameters.last_time > prediction.last().time()) {
         ephemeris_->FlowWithAdaptiveStep(
             &prediction,
             Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-            *predictor_last_time_,
+            *predictor_parameters.last_time,
             prediction_adaptive_step_parameters_,
             FlightPlan::max_ephemeris_steps_per_frame,
             /*last_point_only=*/false);
       }
-      predictor_last_time_ = std::nullopt;
+      predictor_parameters.last_time = std::nullopt;
     } else {
       bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
           &prediction,

@@ -176,6 +176,13 @@ class Vessel {
   Vessel();
 
  private:
+  struct PredictorParameters {
+    Instant first_time;
+    DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
+    std::optional<Instant> last_time;
+    bool shutdown = false;
+  };
+
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
 
@@ -198,8 +205,8 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
-  std::optional<Instant> predictor_last_time_;
-  bool predictor_shutdown_ = false;
+  absl::Mutex predictor_lock_;
+  PredictorParameters predictor_parameters_ GUARDED_BY(predictor_lock_);
   std::thread predictor_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
