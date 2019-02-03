@@ -186,6 +186,7 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
 
+  // Run by the |predictor_| thread to periodically recompute the prediction.
   void RepeatedlyFlowPrediction();
 
   void AppendToVesselTrajectory(TrajectoryIterator part_trajectory_begin,
@@ -206,7 +207,8 @@ class Vessel {
   std::set<PartId> kept_parts_;
 
   absl::Mutex predictor_lock_;
-  PredictorParameters predictor_parameters_ GUARDED_BY(predictor_lock_);
+  std::optional<PredictorParameters> predictor_parameters_
+      GUARDED_BY(predictor_lock_);
   std::thread predictor_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.

@@ -144,6 +144,18 @@ void Vessel::PrepareHistory(Instant const& t) {
     history_->SetDownsampling(max_dense_intervals, downsampling_tolerance);
     history_->Append(t, calculator.Get());
     psychohistory_ = history_->NewForkAtLast();
+
+    {
+      absl::MutexLock l(&predictor_lock_);
+      predictor_parameters_ = std::make_optional<PredictorParameters>(
+                                  psychohistory_->last().time(),
+                                  psychohistory_->last().degrees_of_freedom(),
+                                  /*last_time=*/InfiniteFuture,
+                                  /*shutdown=*/false);
+    }
+    predictor_ =
+        std::thread(std::bind(&Vessel::RepeatedlyFlowPrediction, this));
+    //Wait until the predictor has run once.
     prediction_ = psychohistory_->NewForkAtLast();
   }
 }
@@ -407,30 +419,32 @@ void Vessel::RepeatedlyFlowPrediction() {
     std::chrono::steady_clock::time_point const wakeup_time =
         std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
 
-    PredictorParameters predictor_parameters;
+    // The thread is only started after the parameters have been set, so we
+    // should always find parameters here.
+    std::optional<PredictorParameters> predictor_parameters;
     {
       absl::ReaderMutexLock l(&predictor_lock_);
+      CHECK(predictor_parameters_);
       predictor_parameters = predictor_parameters_;
     }
 
-    if (predictor_parameters.shutdown) {
+    if (predictor_parameters->shutdown) {
       break;
     }
 
     DiscreteTrajectory<Barycentric> prediction;
-    prediction.Append(predictor_parameters.first_time,
-                      predictor_parameters.first_degrees_of_freedom);
-    if (predictor_parameters.last_time) {
-      if (*predictor_parameters.last_time > prediction.last().time()) {
+    prediction.Append(predictor_parameters->first_time,
+                      predictor_parameters->first_degrees_of_freedom);
+    if (predictor_parameters->last_time) {
+      if (*predictor_parameters->last_time > prediction.last().time()) {
         ephemeris_->FlowWithAdaptiveStep(
             &prediction,
             Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-            *predictor_parameters.last_time,
+            *predictor_parameters->last_time,
             prediction_adaptive_step_parameters_,
             FlightPlan::max_ephemeris_steps_per_frame,
             /*last_point_only=*/false);
       }
-      predictor_parameters.last_time = std::nullopt;
     } else {
       bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
           &prediction,
@@ -450,6 +464,8 @@ void Vessel::RepeatedlyFlowPrediction() {
           /*last_point_only=*/false);
       }
     }
+
+    //Attach the prediction.
 
     std::this_thread::sleep_until(wakeup_time);
   }
