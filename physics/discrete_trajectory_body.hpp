@@ -252,7 +252,7 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 template<typename Frame>
 void DiscreteTrajectory<Frame>::SetDownsampling(
     std::int64_t const max_dense_intervals,
-    Length const tolerance) {
+    Length const& tolerance) {
   CHECK(this->is_root());
   CHECK(!downsampling_.has_value());
   downsampling_.emplace(

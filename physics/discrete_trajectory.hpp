@@ -138,7 +138,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // when |Append|ing, ensuring that |EvaluatePosition| returns a result within
   // |tolerance| of the missing points.  |max_dense_intervals| is the largest
   // number of points that can be added before removal is considered.
-  void SetDownsampling(std::int64_t max_dense_intervals, Length tolerance);
+  void SetDownsampling(std::int64_t max_dense_intervals,
+                       Length const& tolerance);
 
   // Clear the downsampling parameters.  From now on, all points appended to the
   // trajectory are going to be retained.
