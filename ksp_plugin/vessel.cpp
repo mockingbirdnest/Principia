@@ -427,13 +427,13 @@ void Vessel::RepeatedlyFlowPrediction() {
       break;
     }
 
-    DiscreteTrajectory<Barycentric> prediction;
-    prediction.Append(predictor_parameters->first_time,
-                      predictor_parameters->first_degrees_of_freedom);
+    auto prediction = std::make_unique<DiscreteTrajectory<Barycentric>>();
+    prediction->Append(predictor_parameters->first_time,
+                       predictor_parameters->first_degrees_of_freedom);
     if (predictor_parameters->last_time) {
-      if (*predictor_parameters->last_time > prediction.last().time()) {
+      if (*predictor_parameters->last_time > prediction->last().time()) {
         ephemeris_->FlowWithAdaptiveStep(
-            &prediction,
+            prediction.get(),
             Ephemeris<Barycentric>::NoIntrinsicAcceleration,
             *predictor_parameters->last_time,
             predictor_parameters->adaptive_step_parameters,
@@ -442,7 +442,7 @@ void Vessel::RepeatedlyFlowPrediction() {
       }
     } else {
       bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
-          &prediction,
+          prediction.get(),
           Ephemeris<Barycentric>::NoIntrinsicAcceleration,
           ephemeris_->t_max(),
           predictor_parameters->adaptive_step_parameters,
@@ -451,7 +451,7 @@ void Vessel::RepeatedlyFlowPrediction() {
       if (reached_t) {
         // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
         ephemeris_->FlowWithAdaptiveStep(
-          &prediction,
+          prediction.get(),
           Ephemeris<Barycentric>::NoIntrinsicAcceleration,
           InfiniteFuture,
           predictor_parameters->adaptive_step_parameters,
@@ -460,9 +460,13 @@ void Vessel::RepeatedlyFlowPrediction() {
       }
     }
 
-    //Attach the prediction.
+    //TODO(phl)Attach the prediction.
     {
       absl::MutexLock l(&predictor_lock_);
+      //TODO(phl):lock the psychohistory
+      prediction->ForgetBefore(psychohistory_->last().time());
+      //TODO(phl):not the right semantics
+      psychohistory_->AttachFork(std::move(prediction));
       predictor_has_run_ = true;
     }
 
