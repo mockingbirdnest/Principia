@@ -155,8 +155,11 @@ void Vessel::PrepareHistory(Instant const& t) {
     }
     predictor_ =
         std::thread(std::bind(&Vessel::RepeatedlyFlowPrediction, this));
-    //Wait until the predictor has run once.
-    prediction_ = psychohistory_->NewForkAtLast();
+    // Wait until the predictor has run once.
+    {
+      absl::ReaderMutexLock l(&predictor_lock_);
+      predictor_lock_.Await(absl::Condition(&predictor_has_run_));
+    }
   }
 }
 
@@ -466,6 +469,10 @@ void Vessel::RepeatedlyFlowPrediction() {
     }
 
     //Attach the prediction.
+    {
+      absl::MutexLock l(&predictor_lock_);
+      predictor_has_run_ = true;
+    }
 
     std::this_thread::sleep_until(wakeup_time);
   }

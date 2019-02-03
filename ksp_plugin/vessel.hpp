@@ -209,6 +209,7 @@ class Vessel {
   absl::Mutex predictor_lock_;
   std::optional<PredictorParameters> predictor_parameters_
       GUARDED_BY(predictor_lock_);
+  bool predictor_has_run_ GUARDED_BY(predictor_lock_) = false;
   std::thread predictor_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
