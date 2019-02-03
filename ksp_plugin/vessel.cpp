@@ -150,13 +150,13 @@ void Vessel::PrepareHistory(Instant const& t) {
     ForAllParts([&calculator](Part& part) {
       calculator.Add(part.degrees_of_freedom(), part.mass());
     });
-    CHECK(psychohistory_ == nullptr);
     history_->SetDownsampling(max_dense_intervals, downsampling_tolerance);
     history_->Append(t, calculator.Get());
-    psychohistory_ = history_->NewForkAtLast();
 
     {
       absl::MutexLock l(&predictor_lock_);
+      CHECK(psychohistory_ == nullptr);
+      psychohistory_ = history_->NewForkAtLast();
       predictor_parameters_ = std::make_optional<PredictorParameters>(
                                   psychohistory_->last().time(),
                                   psychohistory_->last().degrees_of_freedom(),
@@ -221,6 +221,7 @@ bool Vessel::has_flight_plan() const {
 }
 
 void Vessel::AdvanceTime() {
+  absl::MutexLock l(&predictor_lock_);
   history_->DeleteFork(psychohistory_);
   AppendToVesselTrajectory(&Part::history_begin,
                            &Part::history_end,
@@ -280,6 +281,7 @@ void Vessel::FlowPrediction(Instant const& time) {
 }
 
 DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
+  //TODO(phl)how does locking work here?
   return *psychohistory_;
 }
 
@@ -299,8 +301,11 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     CHECK(Contains(parts_, part_id));
     message->add_kept_parts(part_id);
   }
-  history_->WriteToMessage(message->mutable_history(),
-                           /*forks=*/{psychohistory_, prediction_});
+  {
+    absl::ReaderMutexLock l(&predictor_lock_);
+    history_->WriteToMessage(message->mutable_history(),
+                             /*forks=*/{psychohistory_, prediction_});
+  }
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -460,10 +465,8 @@ void Vessel::RepeatedlyFlowPrediction() {
       }
     }
 
-    //TODO(phl)Attach the prediction.
     {
       absl::MutexLock l(&predictor_lock_);
-      //TODO(phl):lock the psychohistory
       prediction->ForgetBefore(psychohistory_->last().time());
       //TODO(phl):not the right semantics
       psychohistory_->AttachFork(std::move(prediction));

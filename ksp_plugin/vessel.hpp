@@ -215,7 +215,8 @@ class Vessel {
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
-  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
+  DiscreteTrajectory<Barycentric>* psychohistory_
+      GUARDED_BY(predictor_lock_) = nullptr;
 
   // The |prediction_| is forked off the end of the |psychohistory_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
