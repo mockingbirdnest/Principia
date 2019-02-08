@@ -110,6 +110,12 @@ class Vessel {
   // Calls |action| on all parts.
   virtual void ForAllParts(std::function<void(Part&)> action) const;
 
+  // The shared_ptr ensures proper locking of the psychohistory while the caller
+  // holds the result.  The caller must ensure that the result has the right
+  // lifetime.
+  virtual std::shared_ptr<DiscreteTrajectory<Barycentric> const>
+  psychohistory() const;
+
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
   virtual void set_prediction_adaptive_step_parameters(
@@ -151,8 +157,6 @@ class Vessel {
   // Tries to extend the prediction (and the ephemeris) up to and including
   // |time|.  May not be able to do it next to a singularity.
   virtual void FlowPrediction(Instant const& time);
-
-  virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
 
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message,

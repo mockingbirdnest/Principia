@@ -728,7 +728,7 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
   // Update the vessels.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
-    if (vessel.psychohistory().last().time() < current_time_) {
+    if (vessel.psychohistory()->last().time() < current_time_) {
       if (Contains(collided_vessels, &vessel)) {
         vessel.DisableDownsampling();
       }
@@ -803,7 +803,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
     vessel->set_parent(parent);
   }
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
-      vessel->psychohistory().last().degrees_of_freedom() -
+      vessel->psychohistory()->last().degrees_of_freedom() -
       vessel->parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
@@ -1157,7 +1157,8 @@ Velocity<World> Plugin::UnmanageableVesselVelocity(
 
 Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   Vessel const& vessel = *FindOrDie(vessels_, vessel_guid);
-  auto const& last = vessel.psychohistory().last();
+  auto const psychohistory = vessel.psychohistory();
+  auto const& last = psychohistory->last();
   return VesselVelocity(last.time(), last.degrees_of_freedom());
 }
 

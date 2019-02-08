@@ -19,6 +19,7 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using astronomy::InfiniteFuture;
+using base::check_not_null;
 using base::Contains;
 using base::FindOrDie;
 using base::make_not_null_unique;
@@ -157,11 +158,12 @@ void Vessel::PrepareHistory(Instant const& t) {
       absl::MutexLock l(&predictor_lock_);
       CHECK(psychohistory_ == nullptr);
       psychohistory_ = history_->NewForkAtLast();
-      predictor_parameters_ = std::make_optional<PredictorParameters>(
-                                  psychohistory_->last().time(),
-                                  psychohistory_->last().degrees_of_freedom(),
-                                  /*last_time=*/InfiniteFuture,
-                                  /*shutdown=*/false);
+      predictor_parameters_ =
+          PredictorParameters{psychohistory_->last().time(),
+                              psychohistory_->last().degrees_of_freedom(),
+                              /*last_time=*/InfiniteFuture,
+                              prediction_adaptive_step_parameters_,
+                              /*shutdown=*/false};
     }
     predictor_ =
         std::thread(std::bind(&Vessel::RepeatedlyFlowPrediction, this));
@@ -280,9 +282,17 @@ void Vessel::FlowPrediction(Instant const& time) {
   predictor_parameters_->last_time = time;
 }
 
-DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
-  //TODO(phl)how does locking work here?
-  return *psychohistory_;
+std::shared_ptr<DiscreteTrajectory<Barycentric> const>
+Vessel::psychohistory() const {
+  // The lock is acquired here and released when the shared_ptr calls its
+  // deleter.  This ensures that the psychohistory is locked during the lifetime
+  // of the returned object.
+  predictor_lock_.ReaderLock();
+  return std::shared_ptr<DiscreteTrajectory<Barycentric> const>(
+      psychohistory_,
+      [this](DiscreteTrajectory<Barycentric> const*) {
+        predictor_lock_.ReaderUnlock();
+      });
 }
 
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,

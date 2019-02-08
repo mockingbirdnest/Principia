@@ -202,11 +202,11 @@ Iterator* principia__PlanetariumPlotPsychohistory(
   if (plugin->renderer().HasTargetVessel()) {
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
   } else {
-    auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
+    auto const psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
     auto const rp2_lines = PlotMethodN(*planetarium,
                                        method,
-                                       psychohistory.Begin(),
-                                       psychohistory.End(),
+                                       psychohistory->Begin(),
+                                       psychohistory->End(),
                                        plugin->CurrentTime(),
                                        /*reverse=*/true);
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
