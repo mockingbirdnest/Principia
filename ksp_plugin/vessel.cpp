@@ -193,28 +193,12 @@ void Vessel::ForAllParts(std::function<void(Part&)> action) const {
   }
 }
 
-std::shared_ptr<DiscreteTrajectory<Barycentric> const>
-Vessel::psychohistory() const {
-  // The lock is acquired here and released when the shared_ptr calls its
-  // deleter.  This ensures that the psychohistory is locked during the lifetime
-  // of the returned object.
-  predictor_lock_.ReaderLock();
-  return std::shared_ptr<DiscreteTrajectory<Barycentric> const>(
-      psychohistory_,
-      [this](DiscreteTrajectory<Barycentric> const*) {
-        predictor_lock_.ReaderUnlock();
-      });
+DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
+  return *psychohistory_;
 }
 
-std::shared_ptr<DiscreteTrajectory<Barycentric> const>
-Vessel::prediction() const {
-  // See comments in the previous function.
-  predictor_lock_.ReaderLock();
-  return std::shared_ptr<DiscreteTrajectory<Barycentric> const>(
-      prediction_,
-      [this](DiscreteTrajectory<Barycentric> const*) {
-        predictor_lock_.ReaderUnlock();
-      });
+DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
+  return *prediction_;
 }
 
 void Vessel::set_prediction_adaptive_step_parameters(

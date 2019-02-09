@@ -102,13 +102,13 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
     --last;
     target_->vessel->FlowPrediction(last.time());
   }
-  auto const prediction = target_->vessel->prediction();
+  auto const& prediction = target_->vessel->prediction();
   for (auto it = begin; it != end; ++it) {
     Instant const& t = it.time();
     if (target_) {
-      if (t < prediction->t_min()) {
+      if (t < prediction.t_min()) {
         continue;
-      } else if (t > prediction->t_max()) {
+      } else if (t > prediction.t_max()) {
         break;
       }
     }
@@ -200,8 +200,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const psychohistory = vessel.psychohistory();
-  auto const last = psychohistory->last();
+  auto const last = vessel.psychohistory().last();
   Instant const& time = last.time();
   DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
       last.degrees_of_freedom();
@@ -221,8 +220,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     NavigationFrame const& navigation_frame,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const psychohistory = vessel.psychohistory();
-  auto const last = psychohistory->last();
+  auto const last = vessel.psychohistory().last();
   auto const to_navigation = navigation_frame.ToThisFrameAtTime(last.time());
   auto const from_navigation = to_navigation.orthogonal_map().Inverse();
   auto const frenet_frame =

@@ -241,13 +241,13 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
             { 0.1 * AstronomicalUnit / Hour,
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time);
-    auto const psychohistory =
+    auto const& psychohistory =
         plugin_->GetVessel(vessel_guid)->psychohistory();
     auto const rendered_trajectory =
         plugin_->renderer().RenderBarycentricTrajectoryInWorld(
             plugin_->CurrentTime(),
-            psychohistory->Begin(),
-            psychohistory->End(),
+            psychohistory.Begin(),
+            psychohistory.End(),
             sun_world_position,
             plugin_->PlanetariumRotation());
     Position<World> const earth_world_position =
@@ -351,13 +351,13 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
           { 0.1 * AstronomicalUnit / Hour,
            -1.0 * AstronomicalUnit / Hour,
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time);
-    auto const psychohistory =
+    auto const& psychohistory =
         plugin_->GetVessel(vessel_guid)->psychohistory();
     auto const rendered_trajectory =
         plugin_->renderer().RenderBarycentricTrajectoryInWorld(
             plugin_->CurrentTime(),
-            psychohistory->Begin(),
-            psychohistory->End(),
+            psychohistory.Begin(),
+            psychohistory.End(),
             sun_world_position,
             plugin_->PlanetariumRotation());
     Position<World> const earth_world_position =
@@ -711,13 +711,13 @@ TEST_F(PluginIntegrationTest, Prediction) {
                                              adaptive_step_parameters);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
   plugin.UpdatePrediction(vessel_guid);
-  auto const prediction =
+  auto const& prediction =
       plugin.GetVessel(vessel_guid)->prediction();
   auto const rendered_prediction =
       plugin.renderer().RenderBarycentricTrajectoryInWorld(
           plugin.CurrentTime(),
-          prediction->Fork(),
-          prediction->End(),
+          prediction.Fork(),
+          prediction.End(),
           World::origin,
           plugin.PlanetariumRotation());
   EXPECT_EQ(15, rendered_prediction->Size());

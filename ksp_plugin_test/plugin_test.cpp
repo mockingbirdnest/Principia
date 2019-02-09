@@ -816,12 +816,12 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   plugin_->CatchUpLaggingVessels(collided_vessels);
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 3));
   EXPECT_LE(HistoryTime(time, 3), satellite->flight_plan().initial_time());
-  EXPECT_LE(HistoryTime(time, 3), satellite->psychohistory()->Begin().time());
+  EXPECT_LE(HistoryTime(time, 3), satellite->psychohistory().Begin().time());
   EXPECT_EQ(1, satellite->flight_plan().number_of_manœuvres());
   EXPECT_EQ(1 * Newton, satellite->flight_plan().GetManœuvre(0).thrust());
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
   EXPECT_LE(HistoryTime(time, 5), satellite->flight_plan().initial_time());
-  EXPECT_LE(HistoryTime(time, 5), satellite->psychohistory()->Begin().time());
+  EXPECT_LE(HistoryTime(time, 5), satellite->psychohistory().Begin().time());
   EXPECT_EQ(0, satellite->flight_plan().number_of_manœuvres());
 }
 
@@ -899,12 +899,12 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin_->CatchUpLaggingVessels(collided_vessels);
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
-  auto const prediction = plugin_->GetVessel(guid)->prediction();
+  auto const& prediction = plugin_->GetVessel(guid)->prediction();
   auto const rendered_prediction =
       plugin_->renderer().RenderBarycentricTrajectoryInWorld(
           plugin_->CurrentTime(),
-          prediction->Fork(),
-          prediction->End(),
+          prediction.Fork(),
+          prediction.End(),
           World::origin,
           plugin_->PlanetariumRotation());
 }

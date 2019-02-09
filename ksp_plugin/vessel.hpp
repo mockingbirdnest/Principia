@@ -110,13 +110,8 @@ class Vessel {
   // Calls |action| on all parts.
   virtual void ForAllParts(std::function<void(Part&)> action) const;
 
-  // The shared_ptr ensures proper locking of the trajectories while the caller
-  // holds the result.  The caller must ensure that the result has the right
-  // lifetime.
-  virtual std::shared_ptr<DiscreteTrajectory<Barycentric> const>
-  psychohistory() const;
-  virtual std::shared_ptr<DiscreteTrajectory<Barycentric> const>
-  prediction() const;
+  virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
+  virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
   virtual void set_prediction_adaptive_step_parameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
