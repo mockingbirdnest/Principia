@@ -110,10 +110,28 @@ void DiscreteTrajectory<Frame>::AttachFork(
   CHECK(fork->is_root());
   CHECK(!fork->timeline_.empty());
 
-  // Append to this trajectory a copy of the first point of |fork|.
   auto& fork_timeline = fork->timeline_;
   auto fork_begin = fork_timeline.begin();
-  Append(fork_begin->first, fork_begin->second);
+
+  // Determine if this trajectory already has a point matching the beginning of
+  // |fork|.
+  bool must_append;
+  if (this->Empty()) {
+    must_append = true;
+  } else {
+    auto const it = this->Find(fork_begin->first);
+    if (it == this->End()) {
+      must_append = true;
+    } else {
+      CHECK(it.degrees_of_freedom() == fork_begin->second);
+      must_append = false;
+    }
+  }
+
+  // If needed, append to this trajectory a copy of the first point of |fork|.
+  if (must_append) {
+    Append(fork_begin->first, fork_begin->second);
+  }
 
   // Attach |fork| to this trajectory.
   this->AttachForkToCopiedBegin(std::move(fork));

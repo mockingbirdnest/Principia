@@ -161,7 +161,7 @@ void Vessel::PrepareHistory(Instant const& t) {
       predictor_parameters_ =
           PredictorParameters{psychohistory_->last().time(),
                               psychohistory_->last().degrees_of_freedom(),
-                              /*last_time=*/InfiniteFuture,
+                              /*last_time=*/std::nullopt,
                               prediction_adaptive_step_parameters_,
                               /*shutdown=*/false};
     }
