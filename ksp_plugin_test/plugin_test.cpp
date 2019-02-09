@@ -117,6 +117,7 @@ using ::testing::Gt;
 using ::testing::InSequence;
 using ::testing::Le;
 using ::testing::Lt;
+using ::testing::Ne;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -727,7 +728,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   auto const dof = DegreesOfFreedom<Barycentric>(Barycentric::origin,
                                                  Velocity<Barycentric>());
   Instant const initial_time = ParseTT(initial_time_);
-  Instant const& time = initial_time + 1 * Second;
+  Instant const time = initial_time + 1 * Second;
   Instant t_max = time;
 
   auto* const mock_dynamic_frame =
@@ -744,9 +745,14 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_))
       .WillRepeatedly(SaveArg<0>(&t_max));
-  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
-      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof),
-                            Return(Status::OK)));
+  EXPECT_CALL(
+      plugin_->mock_ephemeris(),
+      FlowWithAdaptiveStep(_, _, Ne(astronomy::InfiniteFuture), _, _, _))
+      .WillRepeatedly(
+          DoAll(AppendToDiscreteTrajectory(dof), Return(Status::OK)));
+  EXPECT_CALL(plugin_->mock_ephemeris(),
+              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
+      .WillRepeatedly(Return(Status::OK));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
                             Return(Status::OK)));
