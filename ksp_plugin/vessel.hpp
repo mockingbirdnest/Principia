@@ -175,7 +175,7 @@ class Vessel {
   Vessel();
 
  private:
-  struct PredictorParameters {
+  struct PrognosticatorParameters {
     Instant first_time;
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
     std::optional<Instant> last_time;
@@ -186,12 +186,20 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
 
-  // Run by the |predictor_| thread to periodically recompute the prediction.
-  void RepeatedlyFlowPrediction();
+  // Run by the |prognosticator_| thread to periodically recompute the
+  // prognostication.
+  void RepeatedlyFlowPrognostication();
 
+  // Appends to |trajectory| the centre of mass of the trajectories of the parts
+  // denoted by |part_trajectory_begin| and |part_trajectory_end|.
   void AppendToVesselTrajectory(TrajectoryIterator part_trajectory_begin,
                                 TrajectoryIterator part_trajectory_end,
                                 DiscreteTrajectory<Barycentric>& trajectory);
+
+  // Attaches the given |trajectory| to the end of the |psychohistory_| to
+  // become the new |prediction_|.
+  void AttachPrediction(
+      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory);
 
   GUID const guid_;
   std::string name_;
@@ -206,20 +214,23 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
-  mutable absl::Mutex predictor_lock_;
-  std::optional<PredictorParameters> predictor_parameters_
-      GUARDED_BY(predictor_lock_);
-  bool predictor_has_run_ GUARDED_BY(predictor_lock_) = false;
-  std::thread predictor_;
+  mutable absl::Mutex prognosticator_lock_;
+  std::optional<PrognosticatorParameters> prognosticator_parameters_
+      GUARDED_BY(prognosticator_lock_);
+  bool prognosticator_has_run_ GUARDED_BY(prognosticator_lock_) = false;
+  std::thread prognosticator_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
-  DiscreteTrajectory<Barycentric>* psychohistory_
-      GUARDED_BY(predictor_lock_) = nullptr;
+  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // The |prediction_| is forked off the end of the |psychohistory_|.
-  DiscreteTrajectory<Barycentric>* prediction_
-      GUARDED_BY(predictor_lock_) = nullptr;
+  DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
+
+  // The |prognostication_| is a root trajectory that's computed asynchronously
+  // and may or may not be used at a prediction;
+  std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication_
+      GUARDED_BY(prognosticator_lock_);
 
   std::unique_ptr<FlightPlan> flight_plan_;
 };
