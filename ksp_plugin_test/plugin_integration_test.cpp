@@ -711,13 +711,13 @@ TEST_F(PluginIntegrationTest, Prediction) {
                                              adaptive_step_parameters);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
   plugin.UpdatePrediction(vessel_guid);
-  auto const& prediction =
+  auto const prediction =
       plugin.GetVessel(vessel_guid)->prediction();
   auto const rendered_prediction =
       plugin.renderer().RenderBarycentricTrajectoryInWorld(
           plugin.CurrentTime(),
-          prediction.Fork(),
-          prediction.End(),
+          prediction->Fork(),
+          prediction->End(),
           World::origin,
           plugin.PlanetariumRotation());
   EXPECT_EQ(15, rendered_prediction->Size());

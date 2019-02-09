@@ -21,7 +21,8 @@ class MockVessel : public Vessel {
 
   MOCK_CONST_METHOD0(psychohistory,
                      std::shared_ptr<DiscreteTrajectory<Barycentric> const>());
-  MOCK_CONST_METHOD0(prediction, DiscreteTrajectory<Barycentric> const&());
+  MOCK_CONST_METHOD0(prediction,
+                     std::shared_ptr<DiscreteTrajectory<Barycentric> const>());
 
   MOCK_CONST_METHOD0(flight_plan, FlightPlan&());
   MOCK_CONST_METHOD0(has_flight_plan, bool());

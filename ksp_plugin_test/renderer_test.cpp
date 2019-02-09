@@ -98,7 +98,10 @@ TEST_F(RendererTest, TargetVessel) {
           [](Instant const& t) { return Velocity<Barycentric>(); },
       vessel_trajectory);
   EXPECT_CALL(vessel, prediction())
-      .WillRepeatedly(ReturnRef(vessel_trajectory));
+      .WillRepeatedly(Return(
+          std::shared_ptr<DiscreteTrajectory<Barycentric>>(
+              &vessel_trajectory,
+              [](DiscreteTrajectory<Barycentric> const*) {})));
 
   renderer_.SetTargetVessel(&vessel, &celestial_, &ephemeris);
   EXPECT_TRUE(renderer_.HasTargetVessel());
@@ -215,7 +218,10 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
       },
       vessel_trajectory);
   EXPECT_CALL(vessel, prediction())
-      .WillRepeatedly(ReturnRef(vessel_trajectory));
+      .WillRepeatedly(Return(
+          std::shared_ptr<DiscreteTrajectory<Barycentric>>(
+              &vessel_trajectory,
+              [](DiscreteTrajectory<Barycentric> const*) {})));
 
   for (Instant t = t0_ + 3 * Second; t < t0_ + 8 * Second; t += 1 * Second) {
     EXPECT_CALL(celestial_trajectory, EvaluateDegreesOfFreedom(t))

@@ -43,12 +43,12 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
       {plugin, vessel_guid, celestial_index, sun_world_position},
       {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
-  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
+  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
-                                  prediction.Fork(),
-                                  prediction.End(),
+                                  prediction->Fork(),
+                                  prediction->End(),
                                   FromXYZ<Position<World>>(sun_world_position),
                                   rendered_apoapsides,
                                   rendered_periapsides);
@@ -70,11 +70,11 @@ void principia__RenderedPredictionClosestApproaches(
       {plugin, vessel_guid, sun_world_position},
       {closest_approaches});
   CHECK_NOTNULL(plugin);
-  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
+  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
-      prediction.Fork(),
-      prediction.End(),
+      prediction->Fork(),
+      prediction->End(),
       FromXYZ<Position<World>>(sun_world_position),
       rendered_closest_approaches);
   *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
@@ -92,11 +92,11 @@ void principia__RenderedPredictionNodes(Plugin const* const plugin,
       {plugin, vessel_guid, sun_world_position},
       {ascending, descending});
   CHECK_NOTNULL(plugin);
-  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
+  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   std::unique_ptr<DiscreteTrajectory<World>> rendered_ascending;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_descending;
-  plugin->ComputeAndRenderNodes(prediction.Fork(),
-                                prediction.End(),
+  plugin->ComputeAndRenderNodes(prediction->Fork(),
+                                prediction->End(),
                                 FromXYZ<Position<World>>(sun_world_position),
                                 rendered_ascending,
                                 rendered_descending);

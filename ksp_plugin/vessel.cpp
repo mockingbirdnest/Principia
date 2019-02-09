@@ -46,8 +46,7 @@ Vessel::Vessel(GUID const& guid,
       parent_(parent),
       ephemeris_(ephemeris),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
-  // Can't create the |psychohistory_| and |prediction_| here because |history_|
-  // is empty;
+  // Can't create the |psychohistory_| here because |history_| is empty;
 }
 
 Vessel::~Vessel() {
@@ -194,8 +193,28 @@ void Vessel::ForAllParts(std::function<void(Part&)> action) const {
   }
 }
 
-DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
-  return *prediction_;
+std::shared_ptr<DiscreteTrajectory<Barycentric> const>
+Vessel::psychohistory() const {
+  // The lock is acquired here and released when the shared_ptr calls its
+  // deleter.  This ensures that the psychohistory is locked during the lifetime
+  // of the returned object.
+  predictor_lock_.ReaderLock();
+  return std::shared_ptr<DiscreteTrajectory<Barycentric> const>(
+      psychohistory_,
+      [this](DiscreteTrajectory<Barycentric> const*) {
+        predictor_lock_.ReaderUnlock();
+      });
+}
+
+std::shared_ptr<DiscreteTrajectory<Barycentric> const>
+Vessel::prediction() const {
+  // See comments in the previous function.
+  predictor_lock_.ReaderLock();
+  return std::shared_ptr<DiscreteTrajectory<Barycentric> const>(
+      prediction_,
+      [this](DiscreteTrajectory<Barycentric> const*) {
+        predictor_lock_.ReaderUnlock();
+      });
 }
 
 void Vessel::set_prediction_adaptive_step_parameters(
@@ -232,7 +251,6 @@ void Vessel::AdvanceTime() {
   AppendToVesselTrajectory(&Part::psychohistory_begin,
                            &Part::psychohistory_end,
                            *psychohistory_);
-  prediction_ = psychohistory_->NewForkAtLast();
 
   for (auto const& pair : parts_) {
     Part& part = *pair.second;
@@ -280,19 +298,6 @@ void Vessel::FlowPrediction() {
 void Vessel::FlowPrediction(Instant const& time) {
   absl::MutexLock l(&predictor_lock_);
   predictor_parameters_->last_time = time;
-}
-
-std::shared_ptr<DiscreteTrajectory<Barycentric> const>
-Vessel::psychohistory() const {
-  // The lock is acquired here and released when the shared_ptr calls its
-  // deleter.  This ensures that the psychohistory is locked during the lifetime
-  // of the returned object.
-  predictor_lock_.ReaderLock();
-  return std::shared_ptr<DiscreteTrajectory<Barycentric> const>(
-      psychohistory_,
-      [this](DiscreteTrajectory<Barycentric> const*) {
-        predictor_lock_.ReaderUnlock();
-      });
 }
 
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
@@ -478,7 +483,7 @@ void Vessel::RepeatedlyFlowPrediction() {
     {
       absl::MutexLock l(&predictor_lock_);
       prediction->ForgetBefore(psychohistory_->last().time());
-      //TODO(phl):not the right semantics
+      prediction_ = prediction.get();
       psychohistory_->AttachFork(std::move(prediction));
       predictor_has_run_ = true;
     }

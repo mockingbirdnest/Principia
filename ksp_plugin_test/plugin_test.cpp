@@ -899,12 +899,12 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin_->CatchUpLaggingVessels(collided_vessels);
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
-  auto const& prediction = plugin_->GetVessel(guid)->prediction();
+  auto const prediction = plugin_->GetVessel(guid)->prediction();
   auto const rendered_prediction =
       plugin_->renderer().RenderBarycentricTrajectoryInWorld(
           plugin_->CurrentTime(),
-          prediction.Fork(),
-          prediction.End(),
+          prediction->Fork(),
+          prediction->End(),
           World::origin,
           plugin_->PlanetariumRotation());
 }

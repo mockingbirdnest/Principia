@@ -74,16 +74,6 @@ Vessel const& Renderer::GetTargetVessel() const {
   return *target_->vessel;
 }
 
-DiscreteTrajectory<Barycentric> const& Renderer::GetTargetVesselPrediction(
-    Instant const& time) const {
-  CHECK(target_);
-  target_->vessel->FlowPrediction(time);
-  // The prediction may not have been prolonged to |time| if we are near a
-  // singularity.
-  CHECK_LE(time, target_->vessel->prediction().last().time());
-  return target_->vessel->prediction();
-}
-
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
 Renderer::RenderBarycentricTrajectoryInWorld(
     Instant const& time,
@@ -112,12 +102,13 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
     --last;
     target_->vessel->FlowPrediction(last.time());
   }
+  auto const prediction = target_->vessel->prediction();
   for (auto it = begin; it != end; ++it) {
     Instant const& t = it.time();
     if (target_) {
-      if (t < target_->vessel->prediction().t_min()) {
+      if (t < prediction->t_min()) {
         continue;
-      } else if (t > target_->vessel->prediction().t_max()) {
+      } else if (t > prediction->t_max()) {
         break;
       }
     }
@@ -315,7 +306,7 @@ Renderer::Target::Target(
 not_null<NavigationFrame const*> Renderer::GetPlottingFrame(
     Instant const& time) const {
   if (target_) {
-    GetTargetVesselPrediction(time);
+    target_->vessel->FlowPrediction(time);
   }
   return GetPlottingFrame();
 }

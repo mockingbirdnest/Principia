@@ -232,8 +232,8 @@ TEST_F(VesselTest, Prediction) {
                 Return(Status::OK)));
   vessel_.FlowPrediction(astronomy::J2000 + 1 * Second);
 
-  EXPECT_EQ(2, vessel_.prediction().Size());
-  auto it = vessel_.prediction().Begin();
+  EXPECT_EQ(2, vessel_.prediction()->Size());
+  auto it = vessel_.prediction()->Begin();
   EXPECT_EQ(astronomy::J2000, it.time());
   EXPECT_THAT(
       it.degrees_of_freedom(),
@@ -298,8 +298,8 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                 Return(Status::OK)));
   vessel_.FlowPrediction();
 
-  EXPECT_EQ(3, vessel_.prediction().Size());
-  auto it = vessel_.prediction().Begin();
+  EXPECT_EQ(3, vessel_.prediction()->Size());
+  auto it = vessel_.prediction()->Begin();
   ++it;
   EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it.time());
   ++it;
