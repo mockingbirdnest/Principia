@@ -483,6 +483,7 @@ void Vessel::RepeatedlyFlowPrediction() {
     {
       absl::MutexLock l(&predictor_lock_);
       prediction->ForgetBefore(psychohistory_->last().time());
+      psychohistory_->DeleteFork(prediction_);
       prediction_ = prediction.get();
       psychohistory_->AttachFork(std::move(prediction));
       predictor_has_run_ = true;
