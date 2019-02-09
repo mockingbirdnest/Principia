@@ -39,6 +39,7 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
+using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::MockFunction;
@@ -215,17 +216,28 @@ TEST_F(VesselTest, AdvanceTime) {
 }
 
 TEST_F(VesselTest, Prediction) {
+  EXPECT_CALL(ephemeris_, t_max())
+      .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
+  EXPECT_CALL(
+      ephemeris_,
+      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(
+      ephemeris_,
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _, _))
+      .Times(AnyNumber());
   vessel_.PrepareHistory(astronomy::J2000);
 
-  EXPECT_CALL(ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
+  EXPECT_CALL(
+      ephemeris_,
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 1 * Second, _, _, _))
       .WillOnce(
           DoAll(AppendToDiscreteTrajectory(
                     astronomy::J2000 + 1.0 * Second,
                     DegreesOfFreedom<Barycentric>(
                         Barycentric::origin +
-                            Displacement<Barycentric>({14.0 / 3.0 * Metre,
-                                                       5.0 * Metre,
-                                                       4.0 * Metre}),
+                            Displacement<Barycentric>(
+                                {14.0 / 3.0 * Metre, 5.0 * Metre, 4.0 * Metre}),
                         Velocity<Barycentric>({140.0 / 3.0 * Metre / Second,
                                                50.0 * Metre / Second,
                                                40.0 * Metre / Second}))),

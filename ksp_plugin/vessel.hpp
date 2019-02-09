@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/status.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/part.hpp"
@@ -23,6 +24,7 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using geometry::Vector;
 using physics::DegreesOfFreedom;
@@ -145,13 +147,14 @@ class Vessel {
   virtual void DeleteFlightPlan();
 
   // Tries to extend the prediction by extending the ephemeris by at most
-  //|max_ephemeris_steps_per_frame|.  May not be able to do it next to a
-  // singularity.
+  //|max_ephemeris_steps_per_frame|.  No guarantees regarding the end time of
+  // the prediction.
   virtual void FlowPrediction();
 
-  // Tries to extend the prediction (and the ephemeris) up to and including
-  // |time|.  May not be able to do it next to a singularity.
-  virtual void FlowPrediction(Instant const& time);
+  // Extends the prediction (and the ephemeris) up to and including |time|.  May
+  // not be able to do it next to a singularity, in which case an error is
+  // returned.
+  virtual Status FlowPrediction(Instant const& time);
 
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message,
@@ -217,6 +220,7 @@ class Vessel {
   mutable absl::Mutex prognosticator_lock_;
   std::optional<PrognosticatorParameters> prognosticator_parameters_
       GUARDED_BY(prognosticator_lock_);
+  Status prognosticator_status_ GUARDED_BY(prognosticator_lock_);
   std::thread prognosticator_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.

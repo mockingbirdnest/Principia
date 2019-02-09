@@ -290,12 +290,23 @@ void Vessel::FlowPrediction() {
   }
 }
 
-void Vessel::FlowPrediction(Instant const& time) {
+Status Vessel::FlowPrediction(Instant const& time) {
+  if (time <= prediction_->last().time()) {
+    return Status::OK;
+  }
+
+  auto reached_time_or_error = [this, time](){
+    prognosticator_lock_.AssertReaderHeld();
+    return prognostication_ != nullptr &&
+           (time <= prognostication_->last().time() ||
+            !prognosticator_status_.ok());
+  };
+
   absl::MutexLock l(&prognosticator_lock_);
   prognosticator_parameters_->last_time = time;
-  if (prognostication_ != nullptr) {
-    AttachPrediction(std::move(prognostication_));
-  }
+  prognosticator_lock_.Await(absl::Condition(&reached_time_or_error));
+  AttachPrediction(std::move(prognostication_));
+  return prognosticator_status_;
 }
 
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
@@ -449,34 +460,36 @@ void Vessel::RepeatedlyFlowPrognostication() {
     prognostication->Append(
         prognosticator_parameters->first_time,
         prognosticator_parameters->first_degrees_of_freedom);
+    Status status;
     if (prognosticator_parameters->last_time) {
       if (*prognosticator_parameters->last_time >
           prognostication->last().time()) {
-        ephemeris_->FlowWithAdaptiveStep(
-            prognostication.get(),
-            Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-            *prognosticator_parameters->last_time,
-            prognosticator_parameters->adaptive_step_parameters,
-            FlightPlan::max_ephemeris_steps_per_frame,
-            /*last_point_only=*/false);
+        status = ephemeris_->FlowWithAdaptiveStep(
+                     prognostication.get(),
+                     Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+                     *prognosticator_parameters->last_time,
+                     prognosticator_parameters->adaptive_step_parameters,
+                     FlightPlan::max_ephemeris_steps_per_frame,
+                     /*last_point_only=*/false);
       }
     } else {
-      bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
-          prognostication.get(),
-          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          ephemeris_->t_max(),
-          prognosticator_parameters->adaptive_step_parameters,
-          FlightPlan::max_ephemeris_steps_per_frame,
-          /*last_point_only=*/false).ok();
-      if (reached_t) {
+      status = ephemeris_->FlowWithAdaptiveStep(
+                   prognostication.get(),
+                   Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+                   ephemeris_->t_max(),
+                   prognosticator_parameters->adaptive_step_parameters,
+                   FlightPlan::max_ephemeris_steps_per_frame,
+                   /*last_point_only=*/false);
+      bool const reached_t_max = status.ok();
+      if (reached_t_max) {
         // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
-        ephemeris_->FlowWithAdaptiveStep(
-          prognostication.get(),
-          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          InfiniteFuture,
-          prognosticator_parameters->adaptive_step_parameters,
-          FlightPlan::max_ephemeris_steps_per_frame,
-          /*last_point_only=*/false);
+        status = ephemeris_->FlowWithAdaptiveStep(
+                     prognostication.get(),
+                     Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+                     InfiniteFuture,
+                     prognosticator_parameters->adaptive_step_parameters,
+                     FlightPlan::max_ephemeris_steps_per_frame,
+                     /*last_point_only=*/false);
       }
     }
 
@@ -484,6 +497,7 @@ void Vessel::RepeatedlyFlowPrognostication() {
     {
       absl::MutexLock l(&prognosticator_lock_);
       prognostication_.swap(prognostication);
+      prognosticator_status_ = status;
     }
 
     std::this_thread::sleep_until(wakeup_time);
