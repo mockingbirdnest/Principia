@@ -102,10 +102,10 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
     --last;
     target_->vessel->FlowPrediction(last.time());
   }
-  auto const& prediction = target_->vessel->prediction();
   for (auto it = begin; it != end; ++it) {
     Instant const& t = it.time();
     if (target_) {
+      auto const& prediction = target_->vessel->prediction();
       if (t < prediction.t_min()) {
         continue;
       } else if (t > prediction.t_max()) {

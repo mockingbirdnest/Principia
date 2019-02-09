@@ -452,8 +452,9 @@ void Vessel::RepeatedlyFlowPrognostication() {
     }
 
     auto prognostication = std::make_unique<DiscreteTrajectory<Barycentric>>();
-    prognostication->Append(prognosticator_parameters->first_time,
-                       prognosticator_parameters->first_degrees_of_freedom);
+    prognostication->Append(
+        prognosticator_parameters->first_time,
+        prognosticator_parameters->first_degrees_of_freedom);
     if (prognosticator_parameters->last_time) {
       if (*prognosticator_parameters->last_time >
           prognostication->last().time()) {
@@ -485,17 +486,11 @@ void Vessel::RepeatedlyFlowPrognostication() {
       }
     }
 
+    // Publish the prognostication.
     {
       absl::MutexLock l(&prognosticator_lock_);
       prognostication_.swap(prognostication);
       prognosticator_has_run_ = true;
-    }
-
-    {
-      prognostication->ForgetBefore(psychohistory_->last().time());
-      psychohistory_->DeleteFork(prediction_);
-      prediction_ = prognostication.get();
-      psychohistory_->AttachFork(std::move(prognostication));
     }
 
     std::this_thread::sleep_until(wakeup_time);
@@ -553,8 +548,12 @@ void Vessel::AppendToVesselTrajectory(
 void Vessel::AttachPrediction(
     not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory) {
   trajectory->ForgetBefore(psychohistory_->last().time());
-  prediction_ = trajectory.get();
-  psychohistory_->AttachFork(std::move(trajectory));
+  if (trajectory->Empty()) {
+    prediction_ = psychohistory_->NewForkAtLast();
+  } else {
+    prediction_ = trajectory.get();
+    psychohistory_->AttachFork(std::move(trajectory));
+  }
 }
 
 }  // namespace internal_vessel
