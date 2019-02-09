@@ -150,14 +150,15 @@ void Vessel::PrepareHistory(Instant const& t) {
     ForAllParts([&calculator](Part& part) {
       calculator.Add(part.degrees_of_freedom(), part.mass());
     });
+    CHECK(psychohistory_ == nullptr);
     history_->SetDownsampling(max_dense_intervals, downsampling_tolerance);
     history_->Append(t, calculator.Get());
+    psychohistory_ = history_->NewForkAtLast();
+    prediction_ = psychohistory_->NewForkAtLast();
 
     // Prepare the parameters for the |prognosticator_| and start it.
     {
       absl::MutexLock l(&prognosticator_lock_);
-      CHECK(psychohistory_ == nullptr);
-      psychohistory_ = history_->NewForkAtLast();
       prognosticator_parameters_ =
           PrognosticatorParameters{psychohistory_->last().time(),
                                    psychohistory_->last().degrees_of_freedom(),
@@ -167,13 +168,6 @@ void Vessel::PrepareHistory(Instant const& t) {
     }
     prognosticator_ =
         std::thread(std::bind(&Vessel::RepeatedlyFlowPrognostication, this));
-
-    // Wait until the prognosticator has run once.
-    {
-      absl::MutexLock l(&prognosticator_lock_);
-      prognosticator_lock_.Await(absl::Condition(&prognosticator_has_run_));
-      AttachPrediction(std::move(prognostication_));
-    }
   }
 }
 
@@ -490,7 +484,6 @@ void Vessel::RepeatedlyFlowPrognostication() {
     {
       absl::MutexLock l(&prognosticator_lock_);
       prognostication_.swap(prognostication);
-      prognosticator_has_run_ = true;
     }
 
     std::this_thread::sleep_until(wakeup_time);

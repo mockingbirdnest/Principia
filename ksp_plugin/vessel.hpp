@@ -217,7 +217,6 @@ class Vessel {
   mutable absl::Mutex prognosticator_lock_;
   std::optional<PrognosticatorParameters> prognosticator_parameters_
       GUARDED_BY(prognosticator_lock_);
-  bool prognosticator_has_run_ GUARDED_BY(prognosticator_lock_) = false;
   std::thread prognosticator_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
