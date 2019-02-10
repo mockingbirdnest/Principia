@@ -108,29 +108,33 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::AttachFork(
     not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> fork) {
   CHECK(fork->is_root());
-  CHECK(!fork->timeline_.empty());
+  CHECK(!Empty());
 
   auto& fork_timeline = fork->timeline_;
-  auto fork_begin = fork_timeline.begin();
+  auto const this_last = last();
 
-  // Determine if this trajectory already has a point matching the beginning of
-  // |fork|.
-  bool must_append;
-  if (this->Empty()) {
-    must_append = true;
+  // Determine if |fork| already has a point matching the end of this
+  // trajectory.
+  bool must_prepend;
+  if (fork_timeline.empty()) {
+    must_prepend = true;
   } else {
-    auto const it = this->Find(fork_begin->first);
-    if (it == this->End()) {
-      must_append = true;
+    auto const it = fork_timeline.find(this_last.time());
+    if (it == fork_timeline.end()) {
+      must_prepend = true;
     } else {
-      CHECK(it.degrees_of_freedom() == fork_begin->second);
-      must_append = false;
+      CHECK(it == fork_timeline.begin())
+          << it->first << " " << this_last.time();
+      CHECK_EQ(this_last.degrees_of_freedom(), it->second);
+      must_prepend = false;
     }
   }
 
-  // If needed, append to this trajectory a copy of the first point of |fork|.
-  if (must_append) {
-    Append(fork_begin->first, fork_begin->second);
+  // If needed, prepend to |fork| a copy of the last point of this trajectory.
+  if (must_prepend) {
+    fork_timeline.emplace_hint(fork_timeline.begin(),
+                               this_last.time(),
+                               this_last.degrees_of_freedom());
   }
 
   // Attach |fork| to this trajectory.
@@ -138,7 +142,7 @@ void DiscreteTrajectory<Frame>::AttachFork(
 
   // Remove the first point of |fork| now that it properly attached to its
   // parent.
-  fork_timeline.erase(fork_begin);
+  fork_timeline.erase(fork_timeline.begin());
 }
 
 template<typename Frame>

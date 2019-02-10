@@ -485,11 +485,9 @@ TEST_F(DiscreteTrajectoryTest, AttachFork) {
   std::map<Instant, Velocity<World>> velocities =
       Velocities(*massive_trajectory_);
   std::list<Instant> times = Times(*massive_trajectory_);
-  EXPECT_THAT(positions,
-              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
-  EXPECT_THAT(velocities,
-              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  EXPECT_THAT(positions, ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_)));
+  EXPECT_THAT(velocities, ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_));
 
   positions = Positions(*unowned_fork1);
   velocities = Velocities(*unowned_fork1);

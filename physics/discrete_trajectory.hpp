@@ -108,10 +108,9 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // trajectory.
   not_null<DiscreteTrajectory<Frame>*> NewForkAtLast();
 
-  // If the first point of |fork| is not at the same time as the last point of
-  // this trajectory, it is appended (using Append) to this trajectory.  Then
-  // the first point of |fork| is removed and |fork| is made a fork of this
-  // trajectory at the end of this trajectory.  |fork| must be a non-empty root.
+  // Changes |fork| to become a fork of this trajectory at the end of this
+  // trajectory.  |fork| must be a non-empty root.  It may or may not have a
+  // point at the same time as the end of this trajectory.
   void AttachFork(not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> fork);
 
   // This object must not be a root.  It is detached from its parent and becomes
