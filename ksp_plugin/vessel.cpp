@@ -45,7 +45,7 @@ Vessel::Vessel(GUID const& guid,
       parent_(parent),
       ephemeris_(ephemeris),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
-  // Can't create the |psychohistory_| and |prediction_| here because |history_|	  // Can't create the |psychohistory_| here because |history_| is empty;
+  // Can't create the |psychohistory_| and |prediction_| here because |history_|
   // is empty;
 }
 
