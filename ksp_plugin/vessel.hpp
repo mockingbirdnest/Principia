@@ -148,7 +148,7 @@ class Vessel {
 
   // Tries to extend the prediction by extending the ephemeris by at most
   //|max_ephemeris_steps_per_frame|.  No guarantees regarding the end time of
-  // the prediction.
+  // the prediction when this call returns.
   virtual void FlowPrediction();
 
   // Extends the prediction (and the ephemeris) up to and including |time|.  May

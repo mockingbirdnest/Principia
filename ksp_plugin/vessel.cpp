@@ -19,7 +19,6 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using astronomy::InfiniteFuture;
-using base::check_not_null;
 using base::Contains;
 using base::FindOrDie;
 using base::make_not_null_unique;
@@ -46,7 +45,8 @@ Vessel::Vessel(GUID const& guid,
       parent_(parent),
       ephemeris_(ephemeris),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
-  // Can't create the |psychohistory_| here because |history_| is empty;
+  // Can't create the |psychohistory_| and |prediction_| here because |history_|	  // Can't create the |psychohistory_| here because |history_| is empty;
+  // is empty;
 }
 
 Vessel::~Vessel() {
@@ -325,11 +325,8 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     CHECK(Contains(parts_, part_id));
     message->add_kept_parts(part_id);
   }
-  {
-    absl::ReaderMutexLock l(&prognosticator_lock_);
-    history_->WriteToMessage(message->mutable_history(),
-                             /*forks=*/{psychohistory_, prediction_});
-  }
+  history_->WriteToMessage(message->mutable_history(),
+                           /*forks=*/{psychohistory_, prediction_});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
