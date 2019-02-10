@@ -209,8 +209,7 @@ void Vessel::set_prediction_adaptive_step_parameters(
 
 Ephemeris<Barycentric>::AdaptiveStepParameters const&
 Vessel::prediction_adaptive_step_parameters() const {
-  absl::ReaderMutexLock l(&prognosticator_lock_);
-  return prognosticator_parameters_->adaptive_step_parameters;
+  return prediction_adaptive_step_parameters_;
 }
 
 FlightPlan& Vessel::flight_plan() const {
@@ -284,7 +283,12 @@ void Vessel::DeleteFlightPlan() {
 
 void Vessel::FlowPrediction() {
   absl::MutexLock l(&prognosticator_lock_);
-  prognosticator_parameters_->last_time = std::nullopt;
+  prognosticator_parameters_ =
+      PrognosticatorParameters{psychohistory_->last().time(),
+                               psychohistory_->last().degrees_of_freedom(),
+                               /*last_time=*/std::nullopt,
+                               prediction_adaptive_step_parameters_,
+                               /*shutdown=*/false};
   if (prognostication_ != nullptr) {
     AttachPrediction(std::move(prognostication_));
   }
@@ -303,7 +307,12 @@ Status Vessel::FlowPrediction(Instant const& time) {
   };
 
   absl::MutexLock l(&prognosticator_lock_);
-  prognosticator_parameters_->last_time = time;
+  prognosticator_parameters_ =
+      PrognosticatorParameters{psychohistory_->last().time(),
+                               psychohistory_->last().degrees_of_freedom(),
+                               /*last_time=*/time,
+                               prediction_adaptive_step_parameters_,
+                               /*shutdown=*/false};
   prognosticator_lock_.Await(absl::Condition(&reached_time_or_error));
   AttachPrediction(std::move(prognostication_));
   return prognosticator_status_;

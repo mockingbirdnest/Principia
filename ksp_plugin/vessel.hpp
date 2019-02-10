@@ -209,8 +209,8 @@ class Vessel {
 
   MasslessBody const body_;
   Ephemeris<Barycentric>::AdaptiveStepParameters
-      prediction_adaptive_step_parameters_;//TODO(phl)remove
-  // The parent body for the 2-body approximation. Not owning.
+      prediction_adaptive_step_parameters_;
+  // The parent body for the 2-body approximation.
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
@@ -231,7 +231,7 @@ class Vessel {
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 
   // The |prognostication_| is a root trajectory that's computed asynchronously
-  // and may or may not be used at a prediction;
+  // and may or may not be used as a prediction;
   std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication_
       GUARDED_BY(prognosticator_lock_);
 
