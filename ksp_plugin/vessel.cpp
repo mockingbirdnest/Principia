@@ -155,19 +155,7 @@ void Vessel::PrepareHistory(Instant const& t) {
     history_->Append(t, calculator.Get());
     psychohistory_ = history_->NewForkAtLast();
     prediction_ = psychohistory_->NewForkAtLast();
-
-    // Prepare the parameters for the |prognosticator_| and start it.
-    {
-      absl::MutexLock l(&prognosticator_lock_);
-      prognosticator_parameters_ =
-          PrognosticatorParameters{psychohistory_->last().time(),
-                                   psychohistory_->last().degrees_of_freedom(),
-                                   /*last_time=*/std::nullopt,
-                                   prediction_adaptive_step_parameters_,
-                                   /*shutdown=*/false};
-    }
-    prognosticator_ =
-        std::thread(std::bind(&Vessel::RepeatedlyFlowPrognostication, this));
+    StartPrognosticator();
   }
 }
 
@@ -393,13 +381,11 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       vessel->psychohistory_ = vessel->history_->NewForkAtLast();
     }
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    vessel->FlowPrediction();
   } else if (is_pre_chasles) {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*forks=*/{&vessel->psychohistory_});
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    vessel->FlowPrediction();
   } else {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
@@ -418,6 +404,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->flight_plan_ = FlightPlan::ReadFromMessage(message.flight_plan(),
                                                        ephemeris);
   }
+  vessel->StartPrognosticator();
   return vessel;
 }
 
@@ -442,6 +429,20 @@ Vessel::Vessel()
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
+
+void Vessel::StartPrognosticator() {
+  {
+    absl::MutexLock l(&prognosticator_lock_);
+    prognosticator_parameters_ =
+        PrognosticatorParameters{psychohistory_->last().time(),
+                                 psychohistory_->last().degrees_of_freedom(),
+                                 /*last_time=*/std::nullopt,
+                                 prediction_adaptive_step_parameters_,
+                                 /*shutdown=*/false};
+  }
+  prognosticator_ =
+      std::thread(std::bind(&Vessel::RepeatedlyFlowPrognostication, this));
+}
 
 void Vessel::RepeatedlyFlowPrognostication() {
   for (;;) {

@@ -189,6 +189,9 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
 
+  // Prepares the parameters for the |prognosticator_| and start it.
+  void StartPrognosticator();
+
   // Run by the |prognosticator_| thread to periodically recompute the
   // prognostication.
   void RepeatedlyFlowPrognostication();
