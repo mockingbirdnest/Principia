@@ -184,7 +184,7 @@ class Ephemeris {
   virtual Status last_severe_integration_status() const;
 
   // Calls |ForgetBefore| on all trajectories.  On return |t_min() == t|.
-  virtual void ForgetBefore(Instant const& t);
+  virtual void ForgetBefore(Instant const& t) EXCLUDES(lock_);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t) EXCLUDES(lock_);
@@ -212,7 +212,7 @@ class Ephemeris {
       Instant const& t,
       AdaptiveStepParameters const& parameters,
       std::int64_t max_ephemeris_steps,
-      bool last_point_only);
+      bool last_point_only) EXCLUDES(lock_);
 
   // Same as above, but uses a generalized integrator.
   virtual Status FlowWithAdaptiveStep(
@@ -221,7 +221,7 @@ class Ephemeris {
       Instant const& t,
       GeneralizedAdaptiveStepParameters const& parameters,
       std::int64_t max_ephemeris_steps,
-      bool last_point_only);
+      bool last_point_only) EXCLUDES(lock_);
 
   // Integrates, until at most |t|, the trajectories followed by massless
   // bodies in the gravitational potential described by |*this|.  If
@@ -229,14 +229,15 @@ class Ephemeris {
   // integration parameters are given by the |instance|.
   virtual Status FlowWithFixedStep(
       Instant const& t,
-      typename Integrator<NewtonianMotionEquation>::Instance& instance);
+      typename Integrator<NewtonianMotionEquation>::Instance& instance)
+      EXCLUDES(lock_);
 
   // Returns the gravitational acceleration on a massless body located at the
   // given |position| at time |t|.
   virtual Vector<Acceleration, Frame>
   ComputeGravitationalAccelerationOnMasslessBody(
       Position<Frame> const& position,
-      Instant const& t) const;
+      Instant const& t) const EXCLUDES(lock_);
 
   // Returns the gravitational acceleration on the massless body having the
   // given |trajectory| at time |t|.  |t| must be one of the times of the
@@ -244,14 +245,14 @@ class Ephemeris {
   virtual Vector<Acceleration, Frame>
   ComputeGravitationalAccelerationOnMasslessBody(
       not_null<DiscreteTrajectory<Frame>*> trajectory,
-      Instant const& t) const;
+      Instant const& t) const EXCLUDES(lock_);
 
   // Returns the gravitational acceleration on the massive |body| at time |t|.
   // |body| must be one of the bodies of this object.
   virtual Vector<Acceleration, Frame>
   ComputeGravitationalAccelerationOnMassiveBody(
       not_null<MassiveBody const*> body,
-      Instant const& t) const REQUIRES_SHARED(lock_);
+      Instant const& t) const EXCLUDES(lock_);
 
   // Computes the apsides of the relative trajectory of |body1| and |body2}.
   // Appends to the given trajectories two point for each apsis, one for |body1|
@@ -400,16 +401,16 @@ class Ephemeris {
 
   std::map<not_null<MassiveBody const*>,
            not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
-      bodies_to_trajectories_;
+      bodies_to_trajectories_ GUARDED_BY(lock_);
 
   AccuracyParameters const accuracy_parameters_;
   FixedStepParameters const fixed_step_parameters_;
-  std::unique_ptr<
-      typename Integrator<NewtonianMotionEquation>::Instance> instance_;
+  std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
+      instance_ GUARDED_BY(lock_);
 
   // These are the states other that the last which we preserve in order to
   // implement compact serialization.  The vector is time-ordered.
-  std::vector<Checkpoint> checkpoints_;
+  std::vector<Checkpoint> checkpoints_ GUARDED_BY(lock_);
 
   int number_of_oblate_bodies_ = 0;
   int number_of_spherical_bodies_ = 0;

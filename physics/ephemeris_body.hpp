@@ -346,6 +346,7 @@ Status Ephemeris<Frame>::last_severe_integration_status() const {
 
 template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
+  absl::MutexLock l(&lock_);
   auto it = std::upper_bound(
                 checkpoints_.begin(), checkpoints_.end(), t,
                 [](Instant const& left, Checkpoint const& right) {
@@ -553,6 +554,7 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::
 ComputeGravitationalAccelerationOnMassiveBody(
     not_null<MassiveBody const*> const body,
     Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
   bool const body_is_oblate = body->is_oblate();
 
   std::vector<Position<Frame>> positions;
@@ -709,6 +711,7 @@ template<typename Frame>
 void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
   LOG(INFO) << __FUNCTION__;
+  absl::ReaderMutexLock l(&lock_);
   // The bodies are serialized in the order in which they were given at
   // construction.
   for (auto const& unowned_body : unowned_bodies_) {
@@ -807,9 +810,13 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     ++index;
   }
   if (is_pre_εὔδοξος) {
-    ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
+    {
+      absl::ReaderMutexLock l(&ephemeris->lock_);
+      ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
+    }
     ephemeris->Prolong(Instant::ReadFromMessage(message.t_max()));
   } else if (message.has_checkpoints()) {
+    absl::ReaderMutexLock l(&ephemeris->lock_);
     ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
     // The ephemeris will need to be prolonged as needed when deserializing the
     // plugin.
@@ -828,6 +835,7 @@ Ephemeris<Frame>::Ephemeris(
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
     typename NewtonianMotionEquation::SystemState const& state) {
+  lock_.AssertHeld();
   int index = 0;
   for (int i = 0; i < trajectories_.size(); ++i) {
     auto const& trajectory = trajectories_[i];
@@ -876,6 +884,7 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
 
 template<typename Frame>
 typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
+  lock_.AssertReaderHeld();
   std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   for (auto const& trajectory : trajectories_) {
     checkpoints.push_back(trajectory->GetCheckpoint());
@@ -885,6 +894,7 @@ typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max_locked() const {
+  lock_.AssertReaderHeld();
   Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
@@ -980,6 +990,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     std::size_t const b1,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
+  lock_.AssertReaderHeld();
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
   Position<Frame> const position1 = trajectories_[b1]->EvaluatePosition(t);
   Length const body1_mean_radius = body1.mean_radius();
