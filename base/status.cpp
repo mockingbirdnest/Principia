@@ -46,7 +46,13 @@
 namespace principia {
 namespace base {
 
-inline std::string ErrorToString(Error const error) {
+void ErrorUpdate(Error& left, Error const right) {
+  if (right != Error::OK) {
+    left = right;
+  }
+}
+
+std::string ErrorToString(Error const error) {
   switch (error) {
     case Error::OK:
       return "OK";

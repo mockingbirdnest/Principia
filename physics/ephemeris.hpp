@@ -29,6 +29,7 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
+using base::Error;
 using base::not_null;
 using base::Status;
 using geometry::Instant;
@@ -334,10 +335,9 @@ class Ephemeris {
   // Computes the accelerations due to one body, |body1| (with index |b1| in the
   // |bodies_| and |trajectories_| arrays) on massless bodies at the given
   // |positions|.  The template parameter specifies what we know about the
-  // massive body, and therefore what forces apply.  Returns false iff a
-  // collision occurred, i.e., the massless body is inside |body1|.
+  // massive body, and therefore what forces apply.
   template<bool body1_is_oblate>
-  bool ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
+  Error ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
       std::size_t const b1,
@@ -355,7 +355,7 @@ class Ephemeris {
   // massless bodies.  The massless bodies are at the given |positions|.
   // Returns false iff a collision occurred, i.e., the massless body is inside
   // one of the |bodies_|.
-  bool ComputeMasslessBodiesGravitationalAccelerations(
+  Status ComputeMasslessBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const

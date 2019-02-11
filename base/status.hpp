@@ -65,6 +65,8 @@ enum class Error {
   DATA_LOSS = 15,
 };
 
+void ErrorUpdate(Error& left, Error right);
+
 std::string ErrorToString(Error error);
 
 class Status final {
