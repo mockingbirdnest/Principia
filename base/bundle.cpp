@@ -56,11 +56,13 @@ void Bundle::Toil(Task const& task) {
     status_.Update(status);
   }
 
-  // No locking unless this is the last task and we are joining.  This
-  // avoids contention during joining.  Note that if |joining_| is true we know
-  // that |number_of_active_workers_| cannot increase.
-  --number_of_active_workers_;
-  if (joining_ && number_of_active_workers_ == 0) {
+  // No locking, so as to avoid contention during joining.  Note that if
+  // |joining_| is true we know that |number_of_active_workers_| cannot
+  // increase.  Reading |number_of_active_workers_| independently from the
+  // decrement would be incorrect as we must ensure that exactly one thread sees
+  // that counter dropping to zero.
+  int const number_of_active_workers = --number_of_active_workers_;
+  if (joining_ && number_of_active_workers == 0) {
     all_done_.Notify();
   }
 }
