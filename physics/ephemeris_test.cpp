@@ -778,8 +778,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
 // An apple located a bit above the pole collides with the ground.
 TEST_P(EphemerisTest, CollisionDetection) {
   Time const short_duration = 1 * Second;
-  // A naïve computation would have 1.428 s.
-  Time const long_duration = 1.431 * Second;
+  // A naïve computation would have 360.4 s.
+  Time const long_duration = 354.8 * Second;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRS>> initial_state;
 
