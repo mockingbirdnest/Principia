@@ -355,7 +355,7 @@ class Ephemeris {
   // massless bodies.  The massless bodies are at the given |positions|.
   // Returns false iff a collision occurred, i.e., the massless body is inside
   // one of the |bodies_|.
-  Status ComputeMasslessBodiesGravitationalAccelerations(
+  Error ComputeMasslessBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const

@@ -35,37 +35,43 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 
 #include "glog/logging.h"
+
+// TODO(phl): Many of the functions in this file should be made constexpr.
 
 namespace principia {
 namespace base {
 
 // See https://cloud.google.com/vision/reference/rest/v1/Code for recommended
 // usage of these codes.
-enum class Error {
-  OK = 0,
-  CANCELLED = 1,
-  UNKNOWN = 2,
-  INVALID_ARGUMENT = 3,
-  DEADLINE_EXCEEDED = 4,
-  NOT_FOUND = 5,
-  ALREADY_EXISTS = 6,
-  PERMISSION_DENIED = 7,
-  UNAUTHENTICATED = 16,
-  RESOURCE_EXHAUSTED = 8,
-  FAILED_PRECONDITION = 9,
-  ABORTED = 10,
-  OUT_OF_RANGE = 11,
-  UNIMPLEMENTED = 12,
-  INTERNAL = 13,
-  UNAVAILABLE = 14,
-  DATA_LOSS = 15,
+enum class Error : std::uint64_t {
+  OK                  = 0b0,
+  CANCELLED           = 0b1,
+  UNKNOWN             = 0b10,
+  INVALID_ARGUMENT    = 0b100,
+  DEADLINE_EXCEEDED   = 0b1000,
+  NOT_FOUND           = 0b10000,
+  ALREADY_EXISTS      = 0b100000,
+  PERMISSION_DENIED   = 0b1000000,
+  UNAUTHENTICATED     = 0b10000000,
+  RESOURCE_EXHAUSTED  = 0b100000000,
+  FAILED_PRECONDITION = 0b1000000000,
+  ABORTED             = 0b10000000000,
+  OUT_OF_RANGE        = 0b100000000000,
+  UNIMPLEMENTED       = 0b1000000000000,
+  INTERNAL            = 0b10000000000000,
+  UNAVAILABLE         = 0b100000000000000,
+  DATA_LOSS           = 0b1000000000000000,
 };
 
-void ErrorUpdate(Error& left, Error right);
+Error operator|(Error left, Error right);
+Error operator&(Error left, Error right);
+Error& operator|=(Error& left, Error right);
+Error& operator&=(Error& left, Error right);
 
 std::string ErrorToString(Error error);
 

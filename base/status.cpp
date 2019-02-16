@@ -46,10 +46,24 @@
 namespace principia {
 namespace base {
 
-void ErrorUpdate(Error& left, Error const right) {
-  if (right != Error::OK) {
-    left = right;
-  }
+Error operator|(Error const left, Error const right) {
+  return static_cast<Error>(static_cast<std::uint64_t>(left) |
+                            static_cast<std::uint64_t>(right));
+}
+
+Error operator&(Error const left, Error const right) {
+  return static_cast<Error>(static_cast<std::uint64_t>(left) &
+                            static_cast<std::uint64_t>(right));
+}
+
+Error& operator|=(Error& left, Error const right) {
+  *reinterpret_cast<std::uint64_t*>(&left) |= static_cast<std::uint64_t>(right);
+  return left;
+}
+
+Error& operator&=(Error& left, Error const right) {
+  *reinterpret_cast<std::uint64_t*>(&left) &= static_cast<std::uint64_t>(right);
+  return left;
 }
 
 std::string ErrorToString(Error const error) {
