@@ -68,6 +68,8 @@ enum class Error : std::uint64_t {
   DATA_LOSS           = 0b1000000000000000,
 };
 
+bool IsCompound(Error error);
+
 Error operator|(Error left, Error right);
 Error operator&(Error left, Error right);
 Error& operator|=(Error& left, Error right);

@@ -35,6 +35,7 @@
 
 #include "base/status.hpp"
 
+#include <bitset>
 #include <cstdint>
 #include <cstdio>
 #include <ostream>
@@ -45,6 +46,10 @@
 
 namespace principia {
 namespace base {
+
+bool IsCompound(Error const error) {
+  return std::bitset<64>(static_cast<std::uint64_t>(error)).count() > 1;
+}
 
 Error operator|(Error const left, Error const right) {
   return static_cast<Error>(static_cast<std::uint64_t>(left) |
@@ -108,7 +113,9 @@ std::string ErrorToString(Error const error) {
 
 Status::Status(Error const error, std::string const& message)
     : error_(error),
-      message_(error == Error::OK ? "" : message) {}
+      message_(error == Error::OK ? "" : message) {
+  CHECK(!IsCompound(error));
+}
 
 bool Status::ok() const {
   return error_ == Error::OK;
