@@ -20,6 +20,7 @@ namespace internal_vessel {
 
 using astronomy::InfiniteFuture;
 using base::Contains;
+using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::BarycentreCalculator;
@@ -500,8 +501,8 @@ void Vessel::RepeatedlyFlowPrognostication() {
       }
     }
 
-    // Publish the prognostication.
-    {
+    // Publish the prognostication if the computation was not cancelled.
+    if (status.error() != Error::CANCELLED) {
       absl::MutexLock l(&prognosticator_lock_);
       prognostication_.swap(prognostication);
       prognosticator_status_ = status;
