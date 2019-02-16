@@ -261,10 +261,9 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
   // Get an iterator denoting the first entry with time >= |time|.  Remove all
   // the entries that precede it.  This preserves any entry with time == |time|.
   auto const first_kept_in_timeline = timeline_.lower_bound(time);
-  Instant const& first_kept_time = first_kept_in_timeline->first;
   if (downsampling_.has_value() &&
       (first_kept_in_timeline == timeline_.end() ||
-       downsampling_->first_dense_time() < first_kept_time)) {
+       downsampling_->first_dense_time() < first_kept_in_timeline->first)) {
     // The start of the dense timeline will be invalidated.
     downsampling_->SetStartOfDenseTimeline(first_kept_in_timeline, timeline_);
   }

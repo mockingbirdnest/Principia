@@ -664,6 +664,12 @@ TEST_F(DiscreteTrajectoryTest, ForgetBeforeSuccess) {
   EXPECT_THAT(times, ElementsAre(t2_, t3_));
 }
 
+TEST_F(DiscreteTrajectoryTest, ForgetBeforeEmpty) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->ForgetBefore(t4_);
+  EXPECT_TRUE(massive_trajectory_->Empty());
+}
+
 TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
