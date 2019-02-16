@@ -359,6 +359,16 @@ TEST_F(ForkableTest, AttachForkWithCopiedBeginSuccess) {
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
 }
 
+TEST_F(ForkableTest, AttachForkWithCopiedBeginEmpty) {
+  trajectory_.push_back(t1_);
+  not_null<FakeTrajectory*> const fork1 =
+      trajectory_.NewFork(trajectory_.timeline_find(t1_));
+  not_null<std::unique_ptr<FakeTrajectory>> fork2 =
+      make_not_null_unique<FakeTrajectory>();
+  fork2->push_back(t3_);
+  fork1->AttachForkToCopiedBegin(std::move(fork2));
+}
+
 TEST_F(ForkableDeathTest, DetachForkWithCopiedBeginError) {
   EXPECT_DEATH({
     trajectory_.push_back(t1_);

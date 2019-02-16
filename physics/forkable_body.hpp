@@ -365,7 +365,10 @@ void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
   // Set the pointer into this object.  Note that |fork| is no longer usable.
   child_it->second->parent_ = that();
   child_it->second->position_in_parent_children_ = child_it;
-  child_it->second->position_in_parent_timeline_ = --timeline_end();
+  child_it->second->position_in_parent_timeline_ = timeline_end();
+  if (!timeline_empty()) {
+    --*child_it->second->position_in_parent_timeline_;
+  }
 }
 
 template<typename Tr4jectory, typename It3rator>
