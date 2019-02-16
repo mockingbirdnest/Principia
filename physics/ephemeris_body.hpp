@@ -68,6 +68,11 @@ using ::std::placeholders::_3;
 constexpr Length pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance =
     1 * Milli(Metre);
 constexpr Time max_time_between_checkpoints = 180 * Day;
+// Below this threshold detect a collision to prevent the integrator and the
+// downsampling from going postal.
+constexpr double mean_radius_tolerance = 0.9;
+
+Status const CollisionDetected(Error::OUT_OF_RANGE, "Collision detected");
 
 template<typename Frame>
 template<typename ODE>
@@ -405,14 +410,15 @@ Ephemeris<Frame>::NewInstance(
     FixedStepParameters const& parameters) {
   IntegrationProblem<NewtonianMotionEquation> problem;
 
-  problem.equation.compute_acceleration = [this, intrinsic_accelerations](
-      Instant const& t,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    RETURN_IF_ERROR(
+  problem.equation.compute_acceleration =
+      [this, intrinsic_accelerations](
+          Instant const& t,
+          std::vector<Position<Frame>> const& positions,
+          std::vector<Vector<Acceleration, Frame>>& accelerations) {
+    bool const ok =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
-                                                        accelerations));
+                                                        accelerations);
     // Add the intrinsic accelerations.
     for (int i = 0; i < intrinsic_accelerations.size(); ++i) {
       auto const intrinsic_acceleration = intrinsic_accelerations[i];
@@ -420,7 +426,7 @@ Ephemeris<Frame>::NewInstance(
         accelerations[i] += intrinsic_acceleration(t);
       }
     }
-    return Status::OK;
+    return ok ? Status::OK : CollisionDetected;
   };
 
   CHECK(!trajectories.empty());
@@ -459,14 +465,14 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    RETURN_IF_ERROR(
+    bool const ok =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
-                                                        accelerations));
+                                                        accelerations);
     if (intrinsic_acceleration != nullptr) {
       accelerations[0] += intrinsic_acceleration(t);
     }
-    return Status::OK;
+    return ok ? Status::OK : CollisionDetected;
   };
 
   return FlowODEWithAdaptiveStep<NewtonianMotionEquation>(
@@ -492,13 +498,15 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           std::vector<Position<Frame>> const& positions,
           std::vector<Velocity<Frame>> const& velocities,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        RETURN_IF_ERROR(
+        bool const ok =
             ComputeMasslessBodiesGravitationalAccelerations(t,
                                                             positions,
-                                                            accelerations));
-        accelerations[0] +=
-            intrinsic_acceleration(t, {positions[0], velocities[0]});
-        return Status::OK;
+                                                            accelerations);
+        if (intrinsic_acceleration != nullptr) {
+          accelerations[0] +=
+              intrinsic_acceleration(t, {positions[0], velocities[0]});
+        }
+        return ok ? Status::OK : CollisionDetected;
       };
 
   return FlowODEWithAdaptiveStep<GeneralizedNewtonianMotionEquation>(
@@ -987,8 +995,9 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
   lock_.AssertReaderHeld();
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
   Position<Frame> const position1 = trajectories_[b1]->EvaluatePosition(t);
-  Length const body1_mean_radius = body1.mean_radius();
-  Error error = Error::OK;
+  Length const body1_collision_radius =
+      mean_radius_tolerance * body1.mean_radius();
+  bool ok = true;
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
     // A vector from the center of |b2| to the center of |b1|.
@@ -996,9 +1005,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 
     Square<Length> const Δq² = Δq.Norm²();
     Length const Δq_norm = Sqrt(Δq²);
-    if (Δq_norm < body1_mean_radius) {
-      error = Error::OUT_OF_RANGE;
-    }
+    ok &= Δq_norm > body1_collision_radius;
 
     Exponentiation<Length, -3> const one_over_Δq³ = Δq_norm / (Δq² * Δq²);
 
@@ -1172,8 +1179,9 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   auto status = instance->Solve(t_final);
 
   // We probably don't care if the vessel gets too close to the singularity, as
-  // we only use this integrator for the future.  So we swallow the error.
-  // TODO(phl): Is this the right thing to do long term?
+  // we only use this integrator for the future.  So we swallow the error.  Note
+  // that a collision in the prediction or the flight plan (for which this path
+  // is used) should not cause the vessel to be deleted.
   if (status.error() == Error::OUT_OF_RANGE) {
     status = Status::OK;
   }
