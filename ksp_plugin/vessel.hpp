@@ -185,12 +185,15 @@ class Vessel {
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters;
     bool shutdown = false;
   };
+  friend bool operator!=(PrognosticatorParameters const& left,
+                         PrognosticatorParameters const& right);
 
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
 
-  // Prepares the parameters for the |prognosticator_| and start it.
-  void StartPrognosticator();
+  // Starts the |prognosticator_| if it is not started already.  The
+  // |prognosticator_parameters_| must have been set.
+  void StartPrognosticatorIfNeeded() REQUIRES(prognosticator_lock_);
 
   // Run by the |prognosticator_| thread to periodically recompute the
   // prognostication.

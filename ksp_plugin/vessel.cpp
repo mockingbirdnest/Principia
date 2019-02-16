@@ -33,6 +33,22 @@ using quantities::si::Metre;
 constexpr std::int64_t max_dense_intervals = 10'000;
 constexpr Length downsampling_tolerance = 10 * Metre;
 
+bool operator!=(Vessel::PrognosticatorParameters const& left,
+                Vessel::PrognosticatorParameters const& right) {
+  return left.first_time != right.first_time ||
+         left.first_degrees_of_freedom != right.first_degrees_of_freedom ||
+         left.last_time != right.last_time ||
+         &left.adaptive_step_parameters.integrator() !=
+             &right.adaptive_step_parameters.integrator() ||
+         left.adaptive_step_parameters.max_steps() !=
+             right.adaptive_step_parameters.max_steps() ||
+         left.adaptive_step_parameters.length_integration_tolerance() !=
+             right.adaptive_step_parameters.length_integration_tolerance() ||
+         left.adaptive_step_parameters.speed_integration_tolerance() !=
+             right.adaptive_step_parameters.speed_integration_tolerance() ||
+         left.shutdown != right.shutdown;
+}
+
 Vessel::Vessel(GUID const& guid,
                std::string const& name,
                not_null<Celestial const*> const parent,
@@ -156,7 +172,6 @@ void Vessel::PrepareHistory(Instant const& t) {
     history_->Append(t, calculator.Get());
     psychohistory_ = history_->NewForkAtLast();
     prediction_ = psychohistory_->NewForkAtLast();
-    StartPrognosticator();
   }
 }
 
@@ -211,6 +226,8 @@ bool Vessel::has_flight_plan() const {
 }
 
 void Vessel::AdvanceTime() {
+  LOG(WARNING)<<"Advancing time"
+  <<" "<<ShortDebugString();
   // Squirrel away the prediction so that we can reattach it if we don't have a
   // prognostication.
   auto prediction = prediction_->DetachFork();
@@ -239,6 +256,8 @@ void Vessel::AdvanceTime() {
 }
 
 void Vessel::ForgetBefore(Instant const& time) {
+  LOG(WARNING)<<"Forgetting before "<<time
+  <<" "<<ShortDebugString();
   // Make sure that the history keeps at least one point and don't change the
   // psychohistory or prediction.  We cannot use the parts because they may have
   // been moved to the future already.
@@ -271,6 +290,8 @@ void Vessel::DeleteFlightPlan() {
 }
 
 void Vessel::FlowPrediction() {
+  LOG(WARNING)<<"Flowing prediction"
+  <<" "<<ShortDebugString();
   absl::MutexLock l(&prognosticator_lock_);
   prognosticator_parameters_ =
       PrognosticatorParameters{psychohistory_->last().time(),
@@ -278,12 +299,15 @@ void Vessel::FlowPrediction() {
                                /*last_time=*/std::nullopt,
                                prediction_adaptive_step_parameters_,
                                /*shutdown=*/false};
+  StartPrognosticatorIfNeeded();
   if (prognostication_ != nullptr) {
     AttachPrediction(std::move(prognostication_));
   }
 }
 
 Status Vessel::FlowPrediction(Instant const& time) {
+  LOG(WARNING)<<"Flowing prediction until "<<time
+  <<" "<<ShortDebugString();
   if (time <= prediction_->last().time()) {
     return Status::OK;
   }
@@ -302,6 +326,9 @@ Status Vessel::FlowPrediction(Instant const& time) {
                                /*last_time=*/time,
                                prediction_adaptive_step_parameters_,
                                /*shutdown=*/false};
+  StartPrognosticatorIfNeeded();
+  LOG(WARNING)<<"Awaiting prediction to reach "<<time
+  <<" "<<ShortDebugString();
   prognosticator_lock_.Await(absl::Condition(&reached_time_or_error));
   AttachPrediction(std::move(prognostication_));
   return prognosticator_status_;
@@ -405,7 +432,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->flight_plan_ = FlightPlan::ReadFromMessage(message.flight_plan(),
                                                        ephemeris);
   }
-  vessel->StartPrognosticator();
   return vessel;
 }
 
@@ -431,21 +457,17 @@ Vessel::Vessel()
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
-void Vessel::StartPrognosticator() {
-  {
-    absl::MutexLock l(&prognosticator_lock_);
-    prognosticator_parameters_ =
-        PrognosticatorParameters{psychohistory_->last().time(),
-                                 psychohistory_->last().degrees_of_freedom(),
-                                 /*last_time=*/std::nullopt,
-                                 prediction_adaptive_step_parameters_,
-                                 /*shutdown=*/false};
+void Vessel::StartPrognosticatorIfNeeded() {
+  prognosticator_lock_.AssertHeld();
+  CHECK(prognosticator_parameters_);
+  if (!prognosticator_.joinable()) {
+    prognosticator_ =
+        std::thread(std::bind(&Vessel::RepeatedlyFlowPrognostication, this));
   }
-  prognosticator_ =
-      std::thread(std::bind(&Vessel::RepeatedlyFlowPrognostication, this));
 }
 
 void Vessel::RepeatedlyFlowPrognostication() {
+  std::optional<PrognosticatorParameters> previous_prognosticator_parameters;
   for (;;) {
     // No point in going faster than 50 Hz.
     std::chrono::steady_clock::time_point const wakeup_time =
@@ -464,48 +486,63 @@ void Vessel::RepeatedlyFlowPrognostication() {
       break;
     }
 
-    auto prognostication = std::make_unique<DiscreteTrajectory<Barycentric>>();
-    prognostication->Append(
-        prognosticator_parameters->first_time,
-        prognosticator_parameters->first_degrees_of_freedom);
-    Status status;
-    if (prognosticator_parameters->last_time) {
-      if (*prognosticator_parameters->last_time >
-          prognostication->last().time()) {
+    // Do not reflow if the parameters have not changed: the same causes would
+    // produce the same effects.
+    if (!previous_prognosticator_parameters ||
+        *previous_prognosticator_parameters != prognosticator_parameters) {
+      auto prognostication =
+          std::make_unique<DiscreteTrajectory<Barycentric>>();
+      prognostication->Append(
+          prognosticator_parameters->first_time,
+          prognosticator_parameters->first_degrees_of_freedom);
+      LOG(WARNING) << "Prognosticating at "
+                   << prognosticator_parameters->first_time << " "
+                   << ShortDebugString();
+      Status status;
+      if (prognosticator_parameters->last_time) {
+        if (*prognosticator_parameters->last_time >
+            prognostication->last().time()) {
+          status = ephemeris_->FlowWithAdaptiveStep(
+              prognostication.get(),
+              Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+              *prognosticator_parameters->last_time,
+              prognosticator_parameters->adaptive_step_parameters,
+              FlightPlan::max_ephemeris_steps_per_frame,
+              /*last_point_only=*/false);
+        }
+      } else {
         status = ephemeris_->FlowWithAdaptiveStep(
-                     prognostication.get(),
-                     Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-                     *prognosticator_parameters->last_time,
-                     prognosticator_parameters->adaptive_step_parameters,
-                     FlightPlan::max_ephemeris_steps_per_frame,
-                     /*last_point_only=*/false);
+            prognostication.get(),
+            Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+            ephemeris_->t_max(),
+            prognosticator_parameters->adaptive_step_parameters,
+            FlightPlan::max_ephemeris_steps_per_frame,
+            /*last_point_only=*/false);
+        bool const reached_t_max = status.ok();
+        if (reached_t_max) {
+          // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
+          status = ephemeris_->FlowWithAdaptiveStep(
+              prognostication.get(),
+              Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+              InfiniteFuture,
+              prognosticator_parameters->adaptive_step_parameters,
+              FlightPlan::max_ephemeris_steps_per_frame,
+              /*last_point_only=*/false);
+        }
       }
-    } else {
-      status = ephemeris_->FlowWithAdaptiveStep(
-                   prognostication.get(),
-                   Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-                   ephemeris_->t_max(),
-                   prognosticator_parameters->adaptive_step_parameters,
-                   FlightPlan::max_ephemeris_steps_per_frame,
-                   /*last_point_only=*/false);
-      bool const reached_t_max = status.ok();
-      if (reached_t_max) {
-        // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
-        status = ephemeris_->FlowWithAdaptiveStep(
-                     prognostication.get(),
-                     Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-                     InfiniteFuture,
-                     prognosticator_parameters->adaptive_step_parameters,
-                     FlightPlan::max_ephemeris_steps_per_frame,
-                     /*last_point_only=*/false);
-      }
-    }
+      LOG(WARNING) << "Prognostication finished " << status.ToString() << " "
+                   << ShortDebugString();
 
-    // Publish the prognostication if the computation was not cancelled.
-    if (status.error() != Error::CANCELLED) {
-      absl::MutexLock l(&prognosticator_lock_);
-      prognostication_.swap(prognostication);
-      prognosticator_status_ = status;
+      // Publish the prognostication if the computation was not cancelled.
+      if (status.error() != Error::CANCELLED) {
+        absl::MutexLock l(&prognosticator_lock_);
+        prognostication_.swap(prognostication);
+        prognosticator_status_ = status;
+      }
+      previous_prognosticator_parameters = prognosticator_parameters;
+    } else {
+      LOG(WARNING)<<"Prognostication skipped at "
+      <<prognosticator_parameters->first_time<<" "<<ShortDebugString();
     }
 
     std::this_thread::sleep_until(wakeup_time);
@@ -569,6 +606,9 @@ void Vessel::AttachPrediction(
     prediction_ = trajectory.get();
     psychohistory_->AttachFork(std::move(trajectory));
   }
+  LOG(WARNING)<<"Attached prediction from "<<
+  psychohistory_->last().time()<<" to "<<prediction_->last().time()
+  <<" "<<ShortDebugString();
 }
 
 }  // namespace internal_vessel
