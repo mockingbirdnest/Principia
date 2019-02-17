@@ -72,7 +72,9 @@ constexpr Time max_time_between_checkpoints = 180 * Day;
 // downsampling from going postal.
 constexpr double mean_radius_tolerance = 0.9;
 
-Status const CollisionDetected(Error::OUT_OF_RANGE, "Collision detected");
+inline Status const CollisionDetected() {
+  return Status(Error::OUT_OF_RANGE, "Collision detected");
+}
 
 template<typename Frame>
 template<typename ODE>
@@ -425,7 +427,7 @@ Ephemeris<Frame>::NewInstance(
         accelerations[i] += intrinsic_acceleration(t);
       }
     }
-    return ok ? Status::OK : CollisionDetected;
+    return ok ? Status::OK : CollisionDetected();
   };
 
   CHECK(!trajectories.empty());
@@ -471,7 +473,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     if (intrinsic_acceleration != nullptr) {
       accelerations[0] += intrinsic_acceleration(t);
     }
-    return ok ? Status::OK : CollisionDetected;
+    return ok ? Status::OK : CollisionDetected();
   };
 
   return FlowODEWithAdaptiveStep<NewtonianMotionEquation>(
@@ -505,7 +507,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           accelerations[0] +=
               intrinsic_acceleration(t, {positions[0], velocities[0]});
         }
-        return ok ? Status::OK : CollisionDetected;
+        return ok ? Status::OK : CollisionDetected();
       };
 
   return FlowODEWithAdaptiveStep<GeneralizedNewtonianMotionEquation>(
