@@ -423,8 +423,8 @@ message ExternalFlowFreefall {
   optional Return return = 3;
 }
 
-// Sets |coefficient| to the geopotential coefficient of the given |degree| and
-// |order| of the body with index |body_index|.
+// Sets |coefficient| to the normalized geopotential coefficient of the given
+// |degree| and |order| of the body with index |body_index|.
 // |coefficient.x| is set to Cnm, |coefficient.y| is set to Snm.
 message ExternalGeopotentialGetCoefficient {
   extend Method {
