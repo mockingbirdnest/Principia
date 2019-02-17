@@ -82,8 +82,10 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
            not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>&
                polynomial));
 
-  // Expose the Newhall optimization.
-  using ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation;
+  Status LockAndComputeBestNewhallApproximation(
+      Instant const& time,
+      std::vector<Displacement<Frame>> const& q,
+      std::vector<Velocity<Frame>> const& v);
 
   // Helpers to access the internal state of the Newhall optimization.
   int degree() const;
@@ -113,6 +115,16 @@ TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
                                           error_estimate,
                                           polynomial);
   return polynomial;
+}
+
+template<typename Frame>
+Status
+TestableContinuousTrajectory<Frame>::LockAndComputeBestNewhallApproximation(
+    Instant const& time,
+    std::vector<Displacement<Frame>> const& q,
+    std::vector<Velocity<Frame>> const& v) {
+  absl::MutexLock l(&lock_);
+  return ComputeBestNewhallApproximation(time, q, v);
 }
 
 template<typename Frame>
@@ -195,7 +207,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
         .WillOnce(SetArgReferee<5>(
             Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.1 * Metre})));
     t += step;
-    trajectory->ComputeBestNewhallApproximation(t, q, v);
+    trajectory->LockAndComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(6, trajectory->degree());
     EXPECT_EQ(tolerance, trajectory->adjusted_tolerance());
     EXPECT_FALSE(trajectory->is_unstable());
@@ -223,7 +235,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
         .WillOnce(SetArgReferee<5>(
             Displacement<World>({1 * Metre, 3 * Metre, 1 * Metre})));
     t += step;
-    trajectory->ComputeBestNewhallApproximation(t, q, v);
+    trajectory->LockAndComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(5, trajectory->degree());
     EXPECT_EQ(sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
@@ -237,7 +249,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
         .WillOnce(SetArgReferee<5>(
             Displacement<World>({0.1 * Metre, 1.5 * Metre, 0 * Metre})));
     t += step;
-    trajectory->ComputeBestNewhallApproximation(t, q, v);
+    trajectory->LockAndComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(5, trajectory->degree());
     EXPECT_EQ(sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
@@ -273,7 +285,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
         .WillOnce(SetArgReferee<5>(
             Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre})));
     t += step;
-    trajectory->ComputeBestNewhallApproximation(t, q, v);
+    trajectory->LockAndComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(7, trajectory->degree());
     EXPECT_EQ(sqrt(3.44) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
@@ -295,7 +307,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
         .WillOnce(SetArgReferee<5>(
             Displacement<World>({0.1 * Metre, 0.5 * Metre, 0.2 * Metre})));
     t += step;
-    trajectory->ComputeBestNewhallApproximation(t, q, v);
+    trajectory->LockAndComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(4, trajectory->degree());
     EXPECT_EQ(tolerance, trajectory->adjusted_tolerance());
     EXPECT_FALSE(trajectory->is_unstable());
@@ -324,7 +336,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
         .WillOnce(SetArgReferee<5>(
             Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})));
     t += step;
-    trajectory->ComputeBestNewhallApproximation(t, q, v);
+    trajectory->LockAndComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(6, trajectory->degree());
     EXPECT_EQ(tolerance, trajectory->adjusted_tolerance());
     EXPECT_FALSE(trajectory->is_unstable());
@@ -340,7 +352,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
             Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})));
     for (int i = 0; i < 99; ++i) {
       t += step;
-      trajectory->ComputeBestNewhallApproximation(t, q, v);
+      trajectory->LockAndComputeBestNewhallApproximation(t, q, v);
     }
     EXPECT_EQ(6, trajectory->degree());
     EXPECT_EQ(tolerance, trajectory->adjusted_tolerance());
@@ -363,7 +375,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
         .WillOnce(SetArgReferee<5>(
             Displacement<World>({0.2 * Metre, 0.2 * Metre, 0.2 * Metre})));
     t += step;
-    trajectory->ComputeBestNewhallApproximation(t, q, v);
+    trajectory->LockAndComputeBestNewhallApproximation(t, q, v);
     EXPECT_EQ(5, trajectory->degree());
     EXPECT_EQ(tolerance, trajectory->adjusted_tolerance());
     EXPECT_FALSE(trajectory->is_unstable());

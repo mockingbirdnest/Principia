@@ -53,11 +53,13 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
 
 template<typename Frame>
 bool ContinuousTrajectory<Frame>::empty() const {
+  absl::ReaderMutexLock l(&lock_);
   return polynomials_.empty();
 }
 
 template<typename Frame>
 double ContinuousTrajectory<Frame>::average_degree() const {
+  absl::ReaderMutexLock l(&lock_);
   if (polynomials_.empty()) {
     return 0;
   } else {
@@ -73,6 +75,8 @@ template<typename Frame>
 Status ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
+  absl::MutexLock l(&lock_);
+
   // Consistency checks.
   if (first_time_) {
     Instant const t0;
@@ -119,11 +123,13 @@ Status ContinuousTrajectory<Frame>::Append(
 
 template<typename Frame>
 void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
-  if (time < t_min()) {
+  absl::MutexLock l(&lock_);
+  if (time < t_min_locked()) {
     // TODO(phl): test for this case, it yielded a check failure in
     // |FindPolynomialForInstant|.
     return;
   }
+
   polynomials_.erase(polynomials_.begin(), FindPolynomialForInstant(time));
 
   // If there are no |polynomials_| left, clear everything.  Otherwise, update
@@ -140,25 +146,22 @@ void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min() const {
-  if (polynomials_.empty()) {
-    return astronomy::InfiniteFuture;
-  }
-  return *first_time_;
+  absl::ReaderMutexLock l(&lock_);
+  return t_min_locked();
 }
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_max() const {
-  if (polynomials_.empty()) {
-    return astronomy::InfinitePast;
-  }
-  return polynomials_.crbegin()->t_max;
+  absl::ReaderMutexLock l(&lock_);
+  return t_max_locked();
 }
 
 template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     Instant const& time) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
+  absl::ReaderMutexLock l(&lock_);
+  CHECK_LE(t_min_locked(), time);
+  CHECK_GE(t_max_locked(), time);
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
   auto const& polynomial = it->polynomial;
@@ -168,8 +171,9 @@ Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
 template<typename Frame>
 Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
     Instant const& time) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
+  absl::ReaderMutexLock l(&lock_);
+  CHECK_LE(t_min_locked(), time);
+  CHECK_GE(t_max_locked(), time);
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
   auto const& polynomial = it->polynomial;
@@ -179,8 +183,9 @@ Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
 template<typename Frame>
 DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
+  absl::ReaderMutexLock l(&lock_);
+  CHECK_LE(t_min_locked(), time);
+  CHECK_GE(t_max_locked(), time);
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
   auto const& polynomial = it->polynomial;
@@ -191,7 +196,8 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 template<typename Frame>
 typename ContinuousTrajectory<Frame>::Checkpoint
 ContinuousTrajectory<Frame>::GetCheckpoint() const {
-  return {t_max(),
+  absl::ReaderMutexLock l(&lock_);
+  return {t_max_locked(),
           adjusted_tolerance_,
           is_unstable_,
           degree_,
@@ -209,6 +215,7 @@ template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message,
       Checkpoint const& checkpoint) const {
+  absl::ReaderMutexLock l(&lock_);
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
   checkpoint.adjusted_tolerance_.WriteToMessage(
@@ -334,6 +341,24 @@ ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
       polynomial(std::move(polynomial)) {}
 
 template<typename Frame>
+Instant ContinuousTrajectory<Frame>::t_min_locked() const {
+  lock_.AssertReaderHeld();
+  if (polynomials_.empty()) {
+    return astronomy::InfiniteFuture;
+  }
+  return *first_time_;
+}
+
+template<typename Frame>
+Instant ContinuousTrajectory<Frame>::t_max_locked() const {
+  lock_.AssertReaderHeld();
+  if (polynomials_.empty()) {
+    return astronomy::InfinitePast;
+  }
+  return polynomials_.crbegin()->t_max;
+}
+
+template<typename Frame>
 not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
 ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
@@ -354,6 +379,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
     std::vector<Displacement<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v) {
+  lock_.AssertHeld();
   Length const previous_adjusted_tolerance = adjusted_tolerance_;
 
   // If the degree is too old, restart from the lowest degree.  This ensures
@@ -455,6 +481,7 @@ template<typename Frame>
 typename ContinuousTrajectory<Frame>::InstantPolynomialPairs::const_iterator
 ContinuousTrajectory<Frame>::FindPolynomialForInstant(
     Instant const& time) const {
+  lock_.AssertReaderHeld();
   // This returns the first polynomial |p| such that |time <= p.t_max|.
   {
     auto const begin = polynomials_.begin();
