@@ -423,38 +423,12 @@ message ExternalFlowFreefall {
   optional Return return = 3;
 }
 
-// Returns the first point of the coast phase following the given manoeuvre
-// which is locally nearest to the reference position, or the nearest endpoint
-// if there is no local minimum.
-message ExternalGetNearestPlannedCoastDegreesOfFreedom {
-  extend Method {
-    optional ExternalGetNearestPlannedCoastDegreesOfFreedom extension = 5152;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required int32 central_body_index = 2;
-    required string vessel_guid = 3;
-    required int32 manoeuvre_index = 4;
-    required XYZ world_body_centred_reference_position = 5;
-  }
-  message Out {
-    required QP world_body_centred_nearest_degrees_of_freedom = 1;
-  }
-  message Return {
-    required Status result = 1;
-  }
-  optional In in = 1;
-  optional Out out = 2;
-  optional Return return = 3;
-}
-
 // Sets |coefficient| to the geopotential coefficient of the given |degree| and
 // |order| of the body with index |body_index|.
 // |coefficient.x| is set to Cnm, |coefficient.y| is set to Snm.
-message ExternalGetGeopotentialCoefficient {
+message ExternalGeopotentialGetCoefficient {
   extend Method {
-    optional ExternalGetGeopotentialCoefficient extension = 5156;
+    optional ExternalGeopotentialGetCoefficient extension = 5156;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -474,13 +448,13 @@ message ExternalGetGeopotentialCoefficient {
   optional Return return = 3;
 }
 
-// Sets |reference_radius| to the reference radius of the geopotential model for
-// the body with index |body_index|.
+// Sets |reference_radius| to the value in metres of the reference radius of
+// the geopotential model for the body with index |body_index|.
 // If the body does not have a geopotential model, i.e., if it is modeled as an
 // isotropic sphere, the mean radius is used.
-message ExternalGetGeopotentialReferenceRadius {
+message ExternalGeopotentialGetReferenceRadius {
   extend Method {
-    optional ExternalGetGeopotentialReferenceRadius extension = 5157;
+    optional ExternalGeopotentialGetReferenceRadius extension = 5157;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -489,6 +463,32 @@ message ExternalGetGeopotentialReferenceRadius {
   }
   message Out {
     required double reference_radius = 1;
+  }
+  message Return {
+    required Status result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+// Returns the first point of the coast phase following the given manoeuvre
+// which is locally nearest to the reference position, or the nearest endpoint
+// if there is no local minimum.
+message ExternalGetNearestPlannedCoastDegreesOfFreedom {
+  extend Method {
+    optional ExternalGetNearestPlannedCoastDegreesOfFreedom extension = 5152;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 central_body_index = 2;
+    required string vessel_guid = 3;
+    required int32 manoeuvre_index = 4;
+    required XYZ world_body_centred_reference_position = 5;
+  }
+  message Out {
+    required QP world_body_centred_nearest_degrees_of_freedom = 1;
   }
   message Return {
     required Status result = 1;
