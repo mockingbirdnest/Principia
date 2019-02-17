@@ -226,8 +226,6 @@ bool Vessel::has_flight_plan() const {
 }
 
 void Vessel::AdvanceTime() {
-  LOG(WARNING)<<"Advancing time"
-  <<" "<<ShortDebugString();
   // Squirrel away the prediction so that we can reattach it if we don't have a
   // prognostication.
   auto prediction = prediction_->DetachFork();
@@ -256,8 +254,6 @@ void Vessel::AdvanceTime() {
 }
 
 void Vessel::ForgetBefore(Instant const& time) {
-  LOG(WARNING)<<"Forgetting before "<<time
-  <<" "<<ShortDebugString();
   // Make sure that the history keeps at least one point and don't change the
   // psychohistory or prediction.  We cannot use the parts because they may have
   // been moved to the future already.
@@ -290,8 +286,6 @@ void Vessel::DeleteFlightPlan() {
 }
 
 void Vessel::FlowPrediction() {
-  LOG(WARNING)<<"Flowing prediction"
-  <<" "<<ShortDebugString();
   absl::MutexLock l(&prognosticator_lock_);
   prognosticator_parameters_ =
       PrognosticatorParameters{psychohistory_->last().time(),
@@ -306,8 +300,6 @@ void Vessel::FlowPrediction() {
 }
 
 Status Vessel::FlowPrediction(Instant const& time) {
-  LOG(WARNING)<<"Flowing prediction until "<<time
-  <<" "<<ShortDebugString();
   if (time <= prediction_->last().time()) {
     return Status::OK;
   }
@@ -327,8 +319,6 @@ Status Vessel::FlowPrediction(Instant const& time) {
                                prediction_adaptive_step_parameters_,
                                /*shutdown=*/false};
   StartPrognosticatorIfNeeded();
-  LOG(WARNING)<<"Awaiting prediction to reach "<<time
-  <<" "<<ShortDebugString();
   prognosticator_lock_.Await(absl::Condition(&reached_time_or_error));
   AttachPrediction(std::move(prognostication_));
   return prognosticator_status_;
@@ -495,9 +485,6 @@ void Vessel::RepeatedlyFlowPrognostication() {
       prognostication->Append(
           prognosticator_parameters->first_time,
           prognosticator_parameters->first_degrees_of_freedom);
-      LOG(WARNING) << "Prognosticating at "
-                   << prognosticator_parameters->first_time << " "
-                   << ShortDebugString();
       Status status;
       if (prognosticator_parameters->last_time) {
         if (*prognosticator_parameters->last_time >
@@ -530,8 +517,10 @@ void Vessel::RepeatedlyFlowPrognostication() {
               /*last_point_only=*/false);
         }
       }
-      LOG(WARNING) << "Prognostication finished " << status.ToString() << " "
-                   << ShortDebugString();
+      LOG_IF(INFO, !status.ok())
+          << "Prognostication from " << prognosticator_parameters->first_time
+          << " finished at " << prognostication->last().time() << " with "
+          << status.ToString() << " for " << ShortDebugString();
 
       // Publish the prognostication if the computation was not cancelled.
       if (status.error() != Error::CANCELLED) {
@@ -540,9 +529,6 @@ void Vessel::RepeatedlyFlowPrognostication() {
         prognosticator_status_ = status;
       }
       previous_prognosticator_parameters = prognosticator_parameters;
-    } else {
-      LOG(WARNING)<<"Prognostication skipped at "
-      <<prognosticator_parameters->first_time<<" "<<ShortDebugString();
     }
 
     std::this_thread::sleep_until(wakeup_time);
@@ -606,9 +592,6 @@ void Vessel::AttachPrediction(
     prediction_ = trajectory.get();
     psychohistory_->AttachFork(std::move(trajectory));
   }
-  LOG(WARNING)<<"Attached prediction from "<<
-  psychohistory_->last().time()<<" to "<<prediction_->last().time()
-  <<" "<<ShortDebugString();
 }
 
 }  // namespace internal_vessel
