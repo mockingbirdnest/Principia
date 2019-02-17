@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
@@ -32,6 +33,9 @@ using numerics::Polynomial;
 template<typename Frame>
 class TestableContinuousTrajectory;
 
+// This class is thread-safe, but the client must be aware that if, for
+// instance, the trajectory is appended to asynchronously, successive calls to
+// |t_max()| may return different values.
 template<typename Frame>
 class ContinuousTrajectory : public Trajectory<Frame> {
  public:
@@ -57,46 +61,49 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   ContinuousTrajectory& operator=(ContinuousTrajectory&&) = delete;
 
   // Returns true iff this trajectory cannot be evaluated for any time.
-  bool empty() const;
+  bool empty() const EXCLUDES(lock_);
 
   // The average degree of the polynomials for the trajectory.  Only useful for
   // benchmarking or analyzing performance.  Do not use in real code.
-  double average_degree() const;
+  double average_degree() const EXCLUDES(lock_);
 
   // Appends one point to the trajectory.  |time| must be after the last time
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
   // successive calls to |Append| must be equally spaced with the |step| given
   // at construction.
   Status Append(Instant const& time,
-                DegreesOfFreedom<Frame> const& degrees_of_freedom);
+                DegreesOfFreedom<Frame> const& degrees_of_freedom)
+      EXCLUDES(lock_);
 
   // Removes all data for times strictly less than |time|.
-  void ForgetBefore(Instant const& time);
+  void ForgetBefore(Instant const& time) EXCLUDES(lock_);
 
   // Implementation of the interface |Trajectory|.
 
   // |t_max| may be less than the last time passed to Append.  For an empty
   // trajectory, an infinity with the proper sign is returned.
-  Instant t_min() const override;
-  Instant t_max() const override;
+  Instant t_min() const override EXCLUDES(lock_);
+  Instant t_max() const override EXCLUDES(lock_);
 
-  Position<Frame> EvaluatePosition(Instant const& time) const override;
-  Velocity<Frame> EvaluateVelocity(Instant const& time) const override;
+  Position<Frame> EvaluatePosition(Instant const& time) const override
+      EXCLUDES(lock_);
+  Velocity<Frame> EvaluateVelocity(Instant const& time) const override
+      EXCLUDES(lock_);
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
-      Instant const& time) const override;
+      Instant const& time) const override EXCLUDES(lock_);
 
   // End of the implementation of the interface.
 
   // Returns a checkpoint for the current state of this object.
-  Checkpoint GetCheckpoint() const;
+  Checkpoint GetCheckpoint() const EXCLUDES(lock_);
 
   // Serializes the current state of this object.
-  void WriteToMessage(
-      not_null<serialization::ContinuousTrajectory*> message) const;
+  void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
+      const EXCLUDES(lock_);
   // Serializes the state of this object as it existed when the checkpoint was
   // taken.
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message,
-                      Checkpoint const& checkpoint) const;
+                      Checkpoint const& checkpoint) const EXCLUDES(lock_);
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
@@ -152,7 +159,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   };
   using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
 
-  // May be overridden for testing.
+  Instant t_min_locked() const REQUIRES_SHARED(lock_);
+  Instant t_max_locked() const REQUIRES_SHARED(lock_);
+
+  // Really a static method, but may be overridden for testing.
   virtual not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
   NewhallApproximationInMonomialBasis(
       int degree,
@@ -169,13 +179,15 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Status ComputeBestNewhallApproximation(
       Instant const& time,
       std::vector<Displacement<Frame>> const& q,
-      std::vector<Velocity<Frame>> const& v);
+      std::vector<Velocity<Frame>> const& v) REQUIRES(lock_);
 
   // Returns an iterator to the polynomial applicable for the given |time|, or
   // |begin()| if |time| is before the first polynomial or |end()| if |time| is
   // after the last polynomial.  Time complexity is O(N Log N).
   typename InstantPolynomialPairs::const_iterator
-  FindPolynomialForInstant(Instant const& time) const;
+  FindPolynomialForInstant(Instant const& time) const REQUIRES_SHARED(lock_);
+
+  mutable absl::Mutex lock_;
 
   // Construction parameters;
   Time const step_;
@@ -183,16 +195,16 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // Initially set to the construction parameters, and then adjusted when we
   // choose the degree.
-  Length adjusted_tolerance_;
-  bool is_unstable_;
+  Length adjusted_tolerance_ GUARDED_BY(lock_);
+  bool is_unstable_ GUARDED_BY(lock_);
 
   // The degree of the approximation and its age in number of Newhall
   // approximations.
-  int degree_;
-  int degree_age_;
+  int degree_ GUARDED_BY(lock_);
+  int degree_age_ GUARDED_BY(lock_);
 
   // The polynomials are in increasing time order.
-  InstantPolynomialPairs polynomials_;
+  InstantPolynomialPairs polynomials_ GUARDED_BY(lock_);
 
   // Lookups into |polynomials_| are expensive because they entail a binary
   // search into a vector that grows over time.  In benchmarks, this can be as
@@ -201,22 +213,22 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // advantage of this, we keep track of the index of the last accessed
   // polynomial and first try to see if the new lookup is for the same
   // polynomial.  This makes us O(1) instead of O(Log N) most of the time and it
-  // speeds up the lookup by a factor of 7.  This member is atomic because of
-  // multithreading in the ephemeris, and is mutable to maintain the fiction
-  // that evaluation has no side effects.  In the presence of multithreading it
-  // may be that different threads would want to access polynomials at different
-  // indices, but by and large the threads progress in parallel, and benchmarks
-  // show that there is no adverse performance effects.  Any value in the range
-  // of |polynomials_| or 0 is correct.
-  mutable std::atomic_int last_accessed_polynomial_ = 0;
+  // speeds up the lookup by a factor of 7.  This member is mutable to maintain
+  // the fiction that evaluation has no side effects.  In the presence of
+  // multithreading it may be that different threads would want to access
+  // polynomials at different indices, but by and large the threads progress in
+  // parallel, and benchmarks show that there is no adverse performance effects.
+  // Any value in the range of |polynomials_| or 0 is correct.
+  mutable std::int64_t last_accessed_polynomial_ GUARDED_BY(lock_) = 0;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
-  std::optional<Instant> first_time_;
+  std::optional<Instant> first_time_ GUARDED_BY(lock_);
 
   // The points that have not yet been incorporated in a polynomial.  Nonempty
   // for a nonempty trajectory.
   // |last_points_.begin()->first == polynomials_.back().t_max|
-  std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
+  std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_
+      GUARDED_BY(lock_);
 
   friend class TestableContinuousTrajectory<Frame>;
 };

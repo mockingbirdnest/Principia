@@ -114,7 +114,7 @@ std::string ErrorToString(Error const error) {
 Status::Status(Error const error, std::string const& message)
     : error_(error),
       message_(error == Error::OK ? "" : message) {
-  CHECK(!IsCompound(error));
+  CHECK(!IsCompound(error)) << static_cast<std::uint64_t>(error);
 }
 
 bool Status::ok() const {
