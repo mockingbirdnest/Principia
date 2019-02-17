@@ -303,6 +303,7 @@ Ephemeris<Frame>::bodies() const {
 template<typename Frame>
 not_null<ContinuousTrajectory<Frame> const*> Ephemeris<Frame>::trajectory(
     not_null<MassiveBody const*> body) const {
+  absl::ReaderMutexLock l(&lock_);
   return FindOrDie(bodies_to_trajectories_, body).get();
 }
 

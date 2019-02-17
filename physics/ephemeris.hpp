@@ -169,7 +169,7 @@ class Ephemeris {
 
   // Returns the trajectory for the given |body|.
   virtual not_null<ContinuousTrajectory<Frame> const*> trajectory(
-      not_null<MassiveBody const*> body) const;
+      not_null<MassiveBody const*> body) const EXCLUDES(lock_);
 
   // Returns true if at least one of the trajectories is empty.
   virtual bool empty() const EXCLUDES(lock_);
