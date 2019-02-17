@@ -118,7 +118,7 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
 TEST_F(InterfaceExternalTest, Geopotential) {
   XY coefficient;
   double radius;
-  auto status = principia__ExternalGetGeopotentialCoefficient(
+  auto status = principia__ExternalGeopotentialGetCoefficient(
       &plugin_,
       SolarSystemFactory::Earth,
       /*degree=*/2,
@@ -128,7 +128,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
   EXPECT_THAT(-coefficient.x * Sqrt(5), IsNear(1.08e-3));
   EXPECT_THAT(coefficient.y, Eq(0));
 
-  status = principia__ExternalGetGeopotentialCoefficient(
+  status = principia__ExternalGeopotentialGetCoefficient(
       &plugin_,
       SolarSystemFactory::Earth,
       /*degree=*/3,
@@ -138,7 +138,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
   EXPECT_THAT(coefficient.x, IsNear(2.03e-6));
   EXPECT_THAT(coefficient.y, IsNear(0.248e-6));
 
-  status = principia__ExternalGetGeopotentialCoefficient(
+  status = principia__ExternalGeopotentialGetCoefficient(
       &plugin_,
       SolarSystemFactory::Earth,
       /*degree=*/1729,
@@ -148,14 +148,14 @@ TEST_F(InterfaceExternalTest, Geopotential) {
   EXPECT_THAT(coefficient.x, Eq(0));
   EXPECT_THAT(coefficient.y, Eq(0));
 
-  status = principia__ExternalGetGeopotentialReferenceRadius(
+  status = principia__ExternalGeopotentialGetReferenceRadius(
       &plugin_,
       SolarSystemFactory::Earth,
       &radius);
   EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
   EXPECT_THAT(radius, Eq(6'378'136.3));
 
-  status = principia__ExternalGetGeopotentialCoefficient(
+  status = principia__ExternalGeopotentialGetCoefficient(
       &plugin_,
       SolarSystemFactory::Ariel,
       /*degree=*/2,
@@ -165,7 +165,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
   EXPECT_THAT(coefficient.x, Eq(0));
   EXPECT_THAT(coefficient.y, Eq(0));
 
-  status = principia__ExternalGetGeopotentialCoefficient(
+  status = principia__ExternalGeopotentialGetCoefficient(
       &plugin_,
       SolarSystemFactory::Ariel,
       /*degree=*/0,
@@ -175,7 +175,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
   EXPECT_THAT(coefficient.x, Eq(1));
   EXPECT_THAT(coefficient.y, Eq(0));
 
-  status = principia__ExternalGetGeopotentialReferenceRadius(
+  status = principia__ExternalGeopotentialGetReferenceRadius(
       &plugin_,
       SolarSystemFactory::Ariel,
       &radius);
