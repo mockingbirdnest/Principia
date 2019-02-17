@@ -1211,8 +1211,8 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     return status;
   } else {
     return Status(Error::DEADLINE_EXCEEDED,
-                  "Couldn't reach " + DebugString(t_final) + ", stopping at " +
-                      DebugString(t));
+                  "Couldn't reach " + DebugString(t) + ", stopping at " +
+                      DebugString(t_final));
   }
 }
 
