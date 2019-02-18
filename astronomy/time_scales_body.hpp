@@ -63,6 +63,14 @@ constexpr Instant FromTAI(quantities::Time const& tai) {
   return FromTT(tai + 32.184 * Second);
 }
 
+constexpr Instant FromGPSTime(quantities::Time const& gps) {
+  return FromTAI(gps + 19 * Second);
+}
+
+constexpr Instant From北斗Time(quantities::Time const& bdt) {
+  return FromTAI(bdt + 33 * Second);
+}
+
 // Utilities for modern UTC (since 1972).
 
 constexpr std::array<int, (2019 - 1972) * 2 + 1> leap_seconds = {{
@@ -463,6 +471,16 @@ constexpr Instant DateTimeAsTAI(DateTime const& tai) {
   return FromTAI(TimeSince20000101T120000Z(tai));
 }
 
+constexpr Instant DateTimeAsGPSTime(DateTime const& gps) {
+  CONSTEXPR_CHECK(!gps.time().is_leap_second());
+  return FromGPSTime(TimeSince20000101T120000Z(gps));
+}
+
+constexpr Instant DateTimeAs北斗Time(DateTime const& 北斗) {
+  CONSTEXPR_CHECK(!北斗.time().is_leap_second());
+  return From北斗Time(TimeSince20000101T120000Z(北斗));
+}
+
 constexpr Instant DateTimeAsUTC(DateTime const& utc) {
   if (utc.time().is_end_of_day()) {
     return DateTimeAsUTC(utc.normalized_end_of_day());
@@ -514,6 +532,14 @@ constexpr Instant operator""_UT1(char const* str, std::size_t size) {
   }
 }
 
+constexpr Instant operator""_GPS(char const* str, std::size_t size) {
+  return DateTimeAsGPSTime(operator""_DateTime(str, size));
+}
+
+constexpr Instant operator""_北斗(char const* str, std::size_t size) {
+  return DateTimeAs北斗Time(operator""_DateTime(str, size));
+}
+
 inline Instant ParseTAI(std::string const& s) {
   return operator""_TAI(s.c_str(), s.size());
 }
@@ -528,6 +554,14 @@ inline Instant ParseUTC(std::string const& s) {
 
 inline Instant ParseUT1(std::string const& s) {
   return operator""_UT1(s.c_str(), s.size());
+}
+
+inline Instant ParseGPSTime(std::string const& s) {
+  return operator""_GPS(s.c_str(), s.size());
+}
+
+inline Instant Parse北斗Time(std::string const& s) {
+  return operator""_北斗(s.c_str(), s.size());
 }
 
 }  // namespace internal_time_scales
