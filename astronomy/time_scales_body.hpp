@@ -67,8 +67,8 @@ constexpr Instant FromGPSTime(quantities::Time const& gps) {
   return FromTAI(gps + 19 * Second);
 }
 
-constexpr Instant From北斗Time(quantities::Time const& bdt) {
-  return FromTAI(bdt + 33 * Second);
+constexpr Instant From北斗Time(quantities::Time const& 北斗) {
+  return FromTAI(北斗 + 33 * Second);
 }
 
 // Utilities for modern UTC (since 1972).
@@ -504,7 +504,7 @@ constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
 
 // |Instant| date literals.
 
-constexpr Instant operator""_TAI(char const* str, std::size_t size) {
+constexpr Instant operator""_TAI(char const* str, std::size_t const size) {
   if (IsJulian(str, size)) {
     return FromTAI(TimeSinceJ2000(operator""_Julian(str, size)));
   } else {
@@ -512,7 +512,7 @@ constexpr Instant operator""_TAI(char const* str, std::size_t size) {
   }
 }
 
-constexpr Instant operator""_TT(char const* str, std::size_t size) {
+constexpr Instant operator""_TT(char const* const str, std::size_t const size) {
   if (IsJulian(str, size)) {
     return FromTT(TimeSinceJ2000(operator""_Julian(str, size)));
   } else {
@@ -520,11 +520,13 @@ constexpr Instant operator""_TT(char const* str, std::size_t size) {
   }
 }
 
-constexpr Instant operator""_UTC(char const* str, std::size_t size) {
+constexpr Instant operator""_UTC(char const* const str,
+                                 std::size_t const size) {
   return DateTimeAsUTC(operator""_DateTime(str, size));
 }
 
-constexpr Instant operator""_UT1(char const* str, std::size_t size) {
+constexpr Instant operator""_UT1(char const* const str,
+                                 std::size_t const size) {
   if (IsJulian(str, size)) {
     return FromUT1(TimeSinceJ2000(operator""_Julian(str, size)));
   } else {
@@ -532,11 +534,13 @@ constexpr Instant operator""_UT1(char const* str, std::size_t size) {
   }
 }
 
-constexpr Instant operator""_GPS(char const* str, std::size_t size) {
+constexpr Instant operator""_GPS(char const* const str,
+                                 std::size_t const size) {
   return DateTimeAsGPSTime(operator""_DateTime(str, size));
 }
 
-constexpr Instant operator""_北斗(char const* str, std::size_t size) {
+constexpr Instant operator""_北斗(char const* const str,
+                                  std::size_t const size) {
   return DateTimeAs北斗Time(operator""_DateTime(str, size));
 }
 
