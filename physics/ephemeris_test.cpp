@@ -775,6 +775,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
                           -9.832 * SIUnit<Acceleration>()), 6.7e-6);
 }
 
+#if !defined(_DEBUG)
 // An apple located a bit above the pole collides with the ground.
 TEST_P(EphemerisTest, CollisionDetection) {
   Time const short_duration = 1 * Second;
@@ -824,6 +825,7 @@ TEST_P(EphemerisTest, CollisionDetection) {
   EXPECT_THAT(ephemeris.FlowWithFixedStep(t0_ + long_duration, *instance),
               StatusIs(Error::OUT_OF_RANGE));
 }
+#endif
 
 TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Time const duration = 1 * Second;
