@@ -169,15 +169,15 @@ class Ephemeris {
 
   // Returns the trajectory for the given |body|.
   virtual not_null<ContinuousTrajectory<Frame> const*> trajectory(
-      not_null<MassiveBody const*> body) const EXCLUDES(lock_);
+      not_null<MassiveBody const*> body) const;
 
   // Returns true if at least one of the trajectories is empty.
-  virtual bool empty() const EXCLUDES(lock_);
+  virtual bool empty() const;
 
   // The maximum of the |t_min|s of the trajectories.
   virtual Instant t_min() const EXCLUDES(lock_);
   // The mimimum of the |t_max|s of the trajectories.
-  virtual Instant t_max() const EXCLUDES(lock_);
+  virtual Instant t_max() const;
 
   virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
   planetary_integrator() const;
@@ -276,9 +276,9 @@ class Ephemeris {
       int serialization_index) const;
 
   virtual void WriteToMessage(
-      not_null<serialization::Ephemeris*> message) const;
+      not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
-      serialization::Ephemeris const& message);
+      serialization::Ephemeris const& message) EXCLUDES(lock_);
 
  protected:
   // For mocking purposes, leaves everything uninitialized and uses the given
@@ -303,9 +303,6 @@ class Ephemeris {
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
   Checkpoint GetCheckpoint() REQUIRES_SHARED(lock_);
-
-  // Same as t_max, but |lock_| must be held.
-  Instant t_max_locked() const REQUIRES_SHARED(lock_);
 
   // Note the return by copy: the returned value is usable even if the
   // |instance_| is being integrated.
@@ -349,7 +346,8 @@ class Ephemeris {
   void ComputeMassiveBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const
+      REQUIRES_SHARED(lock_);
 
   // Computes the acceleration exerted by the massive bodies in |bodies_| on
   // massless bodies.  The massless bodies are at the given |positions|.
@@ -369,7 +367,7 @@ class Ephemeris {
       Instant const& t,
       ODEAdaptiveStepParameters<ODE> const& parameters,
       std::int64_t max_ephemeris_steps,
-      bool last_point_only);
+      bool last_point_only) EXCLUDES(lock_);
 
   // Computes an estimate of the ratio |tolerance / error|.
   static double ToleranceToErrorRatio(
@@ -377,11 +375,6 @@ class Ephemeris {
       Speed const& speed_integration_tolerance,
       Time const& current_step_size,
       typename NewtonianMotionEquation::SystemStateError const& error);
-
-  // Guards |instance_|, |trajectories_|, and |bodies_to_trajectories_| during
-  // integration.  Note that the thread-safety annotations are incomplete
-  // because we do not attempt to protect all the operations, only integration.
-  mutable absl::Mutex lock_;
 
   // The bodies in the order in which they were given at construction.
   std::vector<not_null<MassiveBody const*>> unowned_bodies_;
@@ -401,10 +394,14 @@ class Ephemeris {
 
   std::map<not_null<MassiveBody const*>,
            not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
-      bodies_to_trajectories_ GUARDED_BY(lock_);
+      bodies_to_trajectories_;
 
   AccuracyParameters const accuracy_parameters_;
   FixedStepParameters const fixed_step_parameters_;
+
+  // The fields above this line are fixed at construction and therefore not
+  // protected.  Note that |ContinuousTrajectory| is thread-safe.
+  mutable absl::Mutex lock_;
   std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
       instance_ GUARDED_BY(lock_);
 

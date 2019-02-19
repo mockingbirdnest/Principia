@@ -287,6 +287,7 @@ Ephemeris<Frame>::Ephemeris(
     }
   }
 
+  absl::ReaderMutexLock l(&lock_);  // For locking checks.
   instance_ = fixed_step_parameters_.integrator_->NewInstance(
       problem,
       /*append_state=*/std::bind(
@@ -303,13 +304,11 @@ Ephemeris<Frame>::bodies() const {
 template<typename Frame>
 not_null<ContinuousTrajectory<Frame> const*> Ephemeris<Frame>::trajectory(
     not_null<MassiveBody const*> body) const {
-  absl::ReaderMutexLock l(&lock_);
   return FindOrDie(bodies_to_trajectories_, body).get();
 }
 
 template<typename Frame>
 bool Ephemeris<Frame>::empty() const {
-  absl::ReaderMutexLock l(&lock_);
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
     if (trajectory->empty()) {
@@ -334,8 +333,14 @@ Instant Ephemeris<Frame>::t_min() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
-  absl::ReaderMutexLock l(&lock_);
-  return t_max_locked();
+  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
+  for (auto const& pair : bodies_to_trajectories_) {
+    auto const& trajectory = pair.second;
+    t_max = std::min(t_max, trajectory->t_max());
+  }
+  // Here we may have a checkpoint after |t_max| if the checkpointed state was
+  // not yet incorporated in a series.
+  return t_max;
 }
 
 template<typename Frame>
@@ -381,6 +386,11 @@ void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
 
 template<typename Frame>
 void Ephemeris<Frame>::Prolong(Instant const& t) {
+  // Short-circuit without locking.
+  if (t <= t_max()) {
+    return;
+  }
+
   // Note that |t| may be before the last time that we integrated and still
   // after |t_max()|.  In this case we want to make sure that the integrator
   // makes progress.
@@ -396,10 +406,10 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   absl::MutexLock l(&lock_);
-  while (t_max_locked() < t) {
+  do {
     instance_->Solve(t_final);
     t_final += fixed_step_parameters_.step_;
-  }
+  } while (t_max() < t);
 }
 
 template<typename Frame>
@@ -563,23 +573,26 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::
 ComputeGravitationalAccelerationOnMassiveBody(
     not_null<MassiveBody const*> const body,
     Instant const& t) const {
-  absl::ReaderMutexLock l(&lock_);
   bool const body_is_oblate = body->is_oblate();
 
   std::vector<Position<Frame>> positions;
   std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
   int b1 = -1;
 
-  // Evaluate the |positions|.
-  positions.reserve(bodies_.size());
-  for (int b = 0; b < bodies_.size(); ++b) {
-    auto const& current_body = bodies_[b];
-    auto const& current_body_trajectory = trajectories_[b];
-    if (current_body.get() == body) {
-      CHECK_EQ(-1, b1);
-      b1 = b;
+  // Evaluate the |positions|.  Locking ensure that we see a consistent state of
+  // all the trajectories.
+  {
+    absl::ReaderMutexLock l(&lock_);
+    positions.reserve(bodies_.size());
+    for (int b = 0; b < bodies_.size(); ++b) {
+      auto const& current_body = bodies_[b];
+      auto const& current_body_trajectory = trajectories_[b];
+      if (current_body.get() == body) {
+        CHECK_EQ(-1, b1);
+        b1 = b;
+      }
+      positions.push_back(current_body_trajectory->EvaluatePosition(t));
     }
-    positions.push_back(current_body_trajectory->EvaluatePosition(t));
   }
   CHECK_LE(0, b1);
 
@@ -871,8 +884,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
       checkpoints_.empty()
           ? astronomy::InfinitePast
           : checkpoints_.back().instance->time().value;
-  if (t_max_locked() - t_last_intermediate_state >
-      max_time_between_checkpoints) {
+  if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
     checkpoints_.push_back(GetCheckpoint());
   }
 }
@@ -899,19 +911,6 @@ typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
     checkpoints.push_back(trajectory->GetCheckpoint());
   }
   return Checkpoint({instance_->Clone(), checkpoints});
-}
-
-template<typename Frame>
-Instant Ephemeris<Frame>::t_max_locked() const {
-  lock_.AssertReaderHeld();
-  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
-  for (auto const& pair : bodies_to_trajectories_) {
-    auto const& trajectory = pair.second;
-    t_max = std::min(t_max, trajectory->t_max());
-  }
-  // Here we may have a checkpoint after |t_max| if the checkpointed state was
-  // not yet incorporated in a series.
-  return t_max;
 }
 
 template<typename Frame>
@@ -1047,6 +1046,7 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
+  lock_.AssertReaderHeld();
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
 
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
@@ -1096,6 +1096,7 @@ Error Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
   Error error = Error::OK;
 
+  // Locking ensures that we see a consistent state of all the trajectories.
   absl::ReaderMutexLock l(&lock_);
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
