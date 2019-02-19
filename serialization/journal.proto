@@ -151,7 +151,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5155.
+  extensions 5000 to 5999;  // Last used: 5157.
 }
 
 message AdvanceTime {
@@ -414,6 +414,55 @@ message ExternalFlowFreefall {
   }
   message Out {
     required QP world_body_centred_final_degrees_of_freedom = 1;
+  }
+  message Return {
+    required Status result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+// Sets |coefficient| to the normalized geopotential coefficient of the given
+// |degree| and |order| of the body with index |body_index|.
+// |coefficient.x| is set to Cnm, |coefficient.y| is set to Snm.
+message ExternalGeopotentialGetCoefficient {
+  extend Method {
+    optional ExternalGeopotentialGetCoefficient extension = 5156;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 body_index = 2;
+    required int32 degree = 3;
+    required int32 order = 4;
+  }
+  message Out {
+    required XY coefficient = 1;
+  }
+  message Return {
+    required Status result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+// Sets |reference_radius| to the value in metres of the reference radius of
+// the geopotential model for the body with index |body_index|.
+// If the body does not have a geopotential model, i.e., if it is modeled as an
+// isotropic sphere, the mean radius is used.
+message ExternalGeopotentialGetReferenceRadius {
+  extend Method {
+    optional ExternalGeopotentialGetReferenceRadius extension = 5157;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 body_index = 2;
+  }
+  message Out {
+    required double reference_radius = 1;
   }
   message Return {
     required Status result = 1;

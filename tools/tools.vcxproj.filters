@@ -27,9 +27,6 @@
     <ClCompile Include="generate_kopernicus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\status.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="generate_configuration.hpp">

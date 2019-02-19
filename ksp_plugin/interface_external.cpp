@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "base/array.hpp"
 #include "base/status.hpp"
 #include "base/status_or.hpp"
@@ -23,6 +24,7 @@ using ksp_plugin::Vessel;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::ComputeApsides;
 using physics::DiscreteTrajectory;
+using physics::OblateBody;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 
@@ -69,6 +71,79 @@ Status principia__ExternalFlowFreefall(
   }
   return m.Return(MakeStatus(Error::UNIMPLEMENTED,
                              "|ExternalFlowFreefall| is not yet implemented"));
+}
+
+Status principia__ExternalGeopotentialGetCoefficient(
+    Plugin const* const plugin,
+    int const body_index,
+    int const degree,
+    int const order,
+    XY* const coefficient) {
+  journal::Method<journal::ExternalGeopotentialGetCoefficient> m{
+      {plugin,
+       body_index,
+       degree,
+       order},
+      {coefficient}};
+  if (plugin == nullptr) {
+    return m.Return(
+        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+  }
+  if (!plugin->HasCelestial(body_index)) {
+    return m.Return(MakeStatus(
+        Error::NOT_FOUND,
+        absl::StrCat("No celestial with index ", body_index)));
+  }
+  if (order < 0 || order > degree) {
+    return m.Return(MakeStatus(
+        Error::INVALID_ARGUMENT,
+        absl::StrCat(u8"Expected 0 ≤ order ≤ degree; got degree = ",
+                     degree, ", order = ", order)));
+  }
+  if (degree == 0) {
+    *coefficient = {1, 0};
+    return m.Return(OK());
+  }
+  auto const& body = *plugin->GetCelestial(body_index).body();
+  if (!body.is_oblate()) {
+    *coefficient = {0, 0};
+    return m.Return(OK());
+  }
+  auto const& oblate_body = dynamic_cast<OblateBody<Barycentric> const&>(body);
+  if (degree > oblate_body.geopotential_degree()) {
+    *coefficient = {0, 0};
+    return m.Return(OK());
+  }
+  *coefficient = {oblate_body.cos()[degree][order],
+                  oblate_body.sin()[degree][order]};
+  return m.Return(OK());
+}
+
+Status principia__ExternalGeopotentialGetReferenceRadius(
+    Plugin const* const plugin,
+    int const body_index,
+    double* const reference_radius) {
+  journal::Method<journal::ExternalGeopotentialGetReferenceRadius> m{
+      {plugin,
+       body_index},
+      {reference_radius}};
+  if (plugin == nullptr) {
+    return m.Return(
+        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+  }
+  if (!plugin->HasCelestial(body_index)) {
+    return m.Return(MakeStatus(
+        Error::NOT_FOUND,
+        absl::StrCat("No celestial with index ", body_index)));
+  }
+  auto const& body = *plugin->GetCelestial(body_index).body();
+  if (!body.is_oblate()) {
+    *reference_radius = body.mean_radius() / Metre;
+    return m.Return(OK());
+  }
+  auto const& oblate_body = dynamic_cast<OblateBody<Barycentric> const&>(body);
+  *reference_radius = oblate_body.reference_radius() / Metre;
+  return m.Return(OK());
 }
 
 Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(

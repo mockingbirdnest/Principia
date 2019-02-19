@@ -34,7 +34,6 @@
     <ClInclude Include="vanishes_before_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="algebra_test.cpp" />
     <ClCompile Include="almost_equals_test.cpp" />

@@ -20,6 +20,7 @@ using ksp_plugin::PartId;
 using ksp_plugin::FakePlugin;
 using ksp_plugin::Vessel;
 using physics::SolarSystem;
+using quantities::Sqrt;
 using quantities::si::Centi;
 using quantities::si::Hour;
 using quantities::si::Kilo;
@@ -112,6 +113,75 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
                                   IsNear(-4.9 * Kilo(Metre) / Second),
                                   AllOf(Gt(-1 * Centi(Metre) / Second),
                                         Lt(1 * Centi(Metre) / Second)))));
+}
+
+TEST_F(InterfaceExternalTest, Geopotential) {
+  XY coefficient;
+  double radius;
+  auto status = principia__ExternalGeopotentialGetCoefficient(
+      &plugin_,
+      SolarSystemFactory::Earth,
+      /*degree=*/2,
+      /*order=*/0,
+      &coefficient);
+  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(-coefficient.x * Sqrt(5), IsNear(1.08e-3));
+  EXPECT_THAT(coefficient.y, Eq(0));
+
+  status = principia__ExternalGeopotentialGetCoefficient(
+      &plugin_,
+      SolarSystemFactory::Earth,
+      /*degree=*/3,
+      /*order=*/1,
+      &coefficient);
+  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(coefficient.x, IsNear(2.03e-6));
+  EXPECT_THAT(coefficient.y, IsNear(0.248e-6));
+
+  status = principia__ExternalGeopotentialGetCoefficient(
+      &plugin_,
+      SolarSystemFactory::Earth,
+      /*degree=*/1729,
+      /*order=*/163,
+      &coefficient);
+  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(coefficient.x, Eq(0));
+  EXPECT_THAT(coefficient.y, Eq(0));
+
+  status = principia__ExternalGeopotentialGetReferenceRadius(
+      &plugin_,
+      SolarSystemFactory::Earth,
+      &radius);
+  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(radius, Eq(6'378'136.3));
+
+  status = principia__ExternalGeopotentialGetCoefficient(
+      &plugin_,
+      SolarSystemFactory::Ariel,
+      /*degree=*/2,
+      /*order=*/2,
+      &coefficient);
+  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(coefficient.x, Eq(0));
+  EXPECT_THAT(coefficient.y, Eq(0));
+
+  status = principia__ExternalGeopotentialGetCoefficient(
+      &plugin_,
+      SolarSystemFactory::Ariel,
+      /*degree=*/0,
+      /*order=*/0,
+      &coefficient);
+  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(coefficient.x, Eq(1));
+  EXPECT_THAT(coefficient.y, Eq(0));
+
+  status = principia__ExternalGeopotentialGetReferenceRadius(
+      &plugin_,
+      SolarSystemFactory::Ariel,
+      &radius);
+  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(radius, Eq(578'900));
+
 }
 
 }  // namespace interface
