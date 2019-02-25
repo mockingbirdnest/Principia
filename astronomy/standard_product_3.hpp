@@ -16,18 +16,18 @@ using geometry::Position;
 using geometry::Velocity;
 
 // A representation of data in the extended standard product 3 orbit format.
+// Specification:
+// - version a: ftp://igs.org/pub/data/format/sp3_docu.txt;
+// - version b: ftp://igs.org/pub/data/format/sp3_glon.txt.
+// - version c: ftp://igs.org/pub/data/format/sp3c.txt.
+// - version d: ftp://igs.org/pub/data/format/sp3d.pdf.
 class StandardProduct3 {
  public:
-  enum class Version : char {
-    A = 'a',  // Specification: ftp://igs.org/pub/data/format/sp3_docu.txt.
-    B = 'b',  // Specification: ftp://igs.org/pub/data/format/sp3_glon.txt.
-    C = 'c',  // Specification: ftp://igs.org/pub/data/format/sp3c.txt.
-    D = 'd',  // Specification: ftp://igs.org/pub/data/format/sp3d.pdf.
-  };
   StandardProduct3(std::filesystem::path const& filename);
 
  private:
-  Version version_;
+  // 'a' through 'd'.
+  char version_;
 
   struct OrbitPoint {
     Instant time;
@@ -36,7 +36,7 @@ class StandardProduct3 {
   };
 
   // REMOVE BEFORE FLIGHT: Satellites should not be strings, especially since
-  // SP3-a "01" is SP3-b or later "G01".
+  // SP3-a "  1" is SP3-b or later "G01".
   std::map<std::string, std::vector<OrbitPoint>> orbits_;
 };
 
