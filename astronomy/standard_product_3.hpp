@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <map>
+#include <optional>
 #include <string>
 
 #include "astronomy/frames.hpp"
@@ -26,18 +27,20 @@ class StandardProduct3 {
   StandardProduct3(std::filesystem::path const& filename);
 
  private:
-  // 'a' through 'd'.
-  char version_;
-
   struct OrbitPoint {
     Instant time;
     Position<ITRS> position;
-    Velocity<ITRS> velocity;
+    std::optional<Velocity<ITRS>> velocity;
   };
 
   // REMOVE BEFORE FLIGHT: Satellites should not be strings, especially since
   // SP3-a "  1" is SP3-b or later "G01".
-  std::map<std::string, std::vector<OrbitPoint>> orbits_;
+  std::map<std::string, std::vector<OrbitPoint>, std::less<>> orbits_;
+
+  // 'a' through 'd'.
+  char version_;
+
+  bool has_velocities_;
 };
 
 }  // namespace internal_standard_product_3

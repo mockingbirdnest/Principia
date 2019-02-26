@@ -10,6 +10,13 @@
 
 namespace principia {
 namespace astronomy {
+namespace internal_standard_product_3 {
+
+using geometry::Displacement;
+using quantities::si::Deci;
+using quantities::si::Kilo;
+using quantities::si::Metre;
+using quantities::si::Second;
 
 StandardProduct3::StandardProduct3(
     std::filesystem::path const& filename) {
@@ -35,22 +42,38 @@ StandardProduct3::StandardProduct3(
     CHECK_LT(index - 1, line.size()) << location;
     return line[index - 1];
   };
-  auto const columns = [&line, &location, line_number](
+  auto const columns = [&line, &location](
                             int first, int last) -> std::string_view {
     CHECK_LT(last - 1, line.size()) << location;
     return std::string_view(&line[first - 1], last - first + 1);
   };
+  auto const float_columns = [&columns, &location](int first,
+                                                   int last) -> double {
+    double result;
+    CHECK(absl::SimpleAtod(columns(first, last), &result))
+        << location << " columns " << first << "-" << last;
+    return result;
+  };
+  auto const integer_columns = [&columns, &location](int first,
+                                                     int last) -> int {
+    int result;
+    CHECK(absl::SimpleAtoi(columns(first, last), &result))
+        << location << " columns " << first << "-" << last;
+    return result;
+  };
 
-  int epochs;
+  int number_of_epochs;
   int number_of_satellites;
 
-  // Header: #a, #b, #c, or #d record.
+  // Header: # record.
   read_line();
   CHECK_EQ(column(1), '#') << location;
   CHECK_GE(column(2), 'a') << location;
   CHECK_LE(column(2), 'd') << location;
   version_ = column(2);
-  CHECK(absl::SimpleAtoi(columns(33, 39), &epochs)) << location;
+  CHECK(column(3) == 'P' || column(3) == 'V') << location;
+  has_velocities_ = column(3) == 'V';
+  number_of_epochs = integer_columns(33, 39);
 
   // Header: ## record.
   read_line();
@@ -59,7 +82,7 @@ StandardProduct3::StandardProduct3(
   // Header: +␣ records.
   read_line();
   CHECK_EQ(columns(1, 2), "+ ") << location;
-  CHECK(absl::SimpleAtoi(columns(4, 6), &number_of_satellites)) << location;
+  number_of_satellites = integer_columns(4, 6);
 
   int number_of_satellite_id_records = 0;
   while (columns(1, 2) == "+ ") {
@@ -149,7 +172,62 @@ StandardProduct3::StandardProduct3(
     LOG(FATAL) << "exactly 4 /* records expected in SP3-"
                << std::string(version_, 1) << ": " << location;
   }
+
+  for (int i = 0; i < number_of_epochs; ++i) {
+    // *␣ record: the epoch header record.
+    CHECK_EQ(columns(1, 2), "* ") << location;
+    std::string epoch_string = absl::StrCat(
+        columns(4, 7), "-", columns(9, 10), "-", columns(12, 13),
+        "T", columns(15, 16), ":", columns(18, 19), ":", columns(21, 31));
+    for (char& c : epoch_string) {
+      if (c == ' ') {
+        c = '0';
+      }
+    }
+    Instant const epoch = parse_time(epoch_string);
+    read_line();
+    for (int i = 0; i < orbits_.size(); ++i) {
+      // P record: the position and clock record.
+      CHECK_EQ(column(1), 'P') << location;
+      auto const it = orbits_.find(columns(2, 4));
+      CHECK(it != orbits_.end()) << "unknown satellite identifier "
+                                 << columns(2, 4) << ": " << location;
+      std::vector<OrbitPoint>& orbit = it->second;
+      orbit.emplace_back();
+      orbit.back().time = epoch;
+      orbit.back().position =
+          Displacement<ITRS>({float_columns(5, 18) * Kilo(Metre),
+                              float_columns(19, 32) * Kilo(Metre),
+                              float_columns(33, 46) * Kilo(Metre)}) +
+          ITRS::origin;
+
+      read_line();
+      if (version_ >= 'c' && columns(1, 2) == "EP") {
+        // Ignore the optional EP record (the position and clock correlation
+        // record).
+        read_line();
+      }
+
+      if (has_velocities_) {
+        // V record: the velocity and clock rate-of-change record.
+        CHECK_EQ(column(1), 'V') << location;
+        orbit.back().velocity =
+            Velocity<ITRS>({float_columns(5, 18) * (Deci(Metre) / Second),
+                            float_columns(19, 32) * (Deci(Metre) / Second),
+                            float_columns(33, 46) * (Deci(Metre) / Second)});
+      }
+
+      read_line();
+      if (version_ >= 'c' && columns(1, 2) == "EV") {
+        // Ignore the optional EV record (the velocity and clock rate-of-change
+        // correlation record).
+        read_line();
+      }
+    }
+  }
+  CHECK_EQ(columns(1, 3), "EOF") << location;
 }
 
+}  // namespace internal_standard_product_3
 }  // namespace astronomy
 }  // namespace principia
