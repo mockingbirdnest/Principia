@@ -22,30 +22,37 @@ StandardProduct3::StandardProduct3(
     std::filesystem::path const& filename) {
   std::ifstream file(filename);
   CHECK(file.good()) << filename;
-  std::string line;
+  std::optional<std::string> line;
   std::string location;
   int line_number = 0;
   auto const read_line = [&file, &filename, &line, &line_number, &location]() {
-    std::getline(file, line);
+    if (!line.has_value()) {
+      line.emplace();
+    }
+    std::getline(file, *line);
     if (file.fail()) {
       CHECK(file.eof()) << "non-EOF failure after " << location;
-      LOG(FATAL) << "unexpected end of file after " << location;
+      line.reset();
+      location = absl::StrCat(filename.string(), " at end of file");
     } else {
       ++line_number;
-      location = absl::StrCat(filename.string(), " line ", line_number, ": ", line);
+      location =
+          absl::StrCat(filename.string(), " line ", line_number, ": ", *line);
     }
   };
 
   // The specification uses 1-based column indices, and column ranges with
   // bounds included.
   auto const column = [&line, &location, line_number](int index) -> char {
-    CHECK_LT(index - 1, line.size()) << location;
-    return line[index - 1];
+    CHECK(line.has_value()) << location;
+    CHECK_LT(index - 1, line->size()) << location;
+    return (*line)[index - 1];
   };
   auto const columns = [&line, &location](
                             int first, int last) -> std::string_view {
-    CHECK_LT(last - 1, line.size()) << location;
-    return std::string_view(&line[first - 1], last - first + 1);
+    CHECK(line.has_value()) << location;
+    CHECK_LT(last - 1, line->size()) << location;
+    return std::string_view(&(*line)[first - 1], last - first + 1);
   };
   auto const float_columns = [&columns, &location](int first,
                                                    int last) -> double {
@@ -101,8 +108,8 @@ StandardProduct3::StandardProduct3(
       } else {
         CHECK_EQ(satellite_identifier, "  0") << full_location;
       }
-      read_line();
     }
+    read_line();
   }
   if (number_of_satellite_id_records < 5) {
     LOG(FATAL) << u8"at least 5 +␣ records expected: " << location;
@@ -161,7 +168,8 @@ StandardProduct3::StandardProduct3(
   // Header: /* records.
   read_line();
   int number_of_comment_records = 0;
-  while (columns(1, 2) == "/*") {
+  // while (columns(1, 2) == "/*") {
+  while (columns(1, 3) == "%/*") { // ILRS dialect
     ++number_of_comment_records;
     read_line();
   }
@@ -176,9 +184,11 @@ StandardProduct3::StandardProduct3(
   for (int i = 0; i < number_of_epochs; ++i) {
     // *␣ record: the epoch header record.
     CHECK_EQ(columns(1, 2), "* ") << location;
+    // Note: the seconds field is an F11.8, spanning columns 21..31, but our
+    // time parser only supports milliseconds.
     std::string epoch_string = absl::StrCat(
         columns(4, 7), "-", columns(9, 10), "-", columns(12, 13),
-        "T", columns(15, 16), ":", columns(18, 19), ":", columns(21, 31));
+        "T", columns(15, 16), ":", columns(18, 19), ":", columns(21, 26));
     for (char& c : epoch_string) {
       if (c == ' ') {
         c = '0';
@@ -218,14 +228,15 @@ StandardProduct3::StandardProduct3(
       }
 
       read_line();
-      if (version_ >= 'c' && columns(1, 2) == "EV") {
+      if (version_ >= 'c' && line.has_value() && columns(1, 2) == "EV") {
         // Ignore the optional EV record (the velocity and clock rate-of-change
         // correlation record).
         read_line();
       }
     }
   }
-  CHECK_EQ(columns(1, 3), "EOF") << location;
+  // CHECK_EQ(columns(1, 3), "EOF") << location;
+  CHECK(!line.has_value()); // ILRSA dialect.
 }
 
 }  // namespace internal_standard_product_3

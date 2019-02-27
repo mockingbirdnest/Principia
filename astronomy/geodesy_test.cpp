@@ -2,14 +2,15 @@
 #include <limits>
 
 #include "astronomy/frames.hpp"
+#include "astronomy/standard_product_3.hpp"
 #include "base/bundle.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -93,6 +94,9 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // https://ilrs.cddis.eosdis.nasa.gov/data_and_products/products/index.html;
   // see also the definition of the SP3 format
   // ftp://igs.org/pub/data/format/sp3c.txt.
+
+  StandardProduct3 ilrsa(SOLUTION_DIR / "astronomy" /
+                         "ilrsa.orb.lageos2.160319.v35.sp3");
 
   // ilrsa.orb.lageos2.160319.v35.sp3, headers and first record, from
   // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
