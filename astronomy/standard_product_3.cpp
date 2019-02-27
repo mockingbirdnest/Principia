@@ -19,7 +19,8 @@ using quantities::si::Metre;
 using quantities::si::Second;
 
 StandardProduct3::StandardProduct3(
-    std::filesystem::path const& filename) {
+    std::filesystem::path const& filename,
+    StandardProduct3::Dialect const dialect) {
   std::ifstream file(filename);
   CHECK(file.good()) << filename;
   std::optional<std::string> line;
@@ -168,8 +169,9 @@ StandardProduct3::StandardProduct3(
   // Header: /* records.
   read_line();
   int number_of_comment_records = 0;
-  // while (columns(1, 2) == "/*") {
-  while (columns(1, 3) == "%/*") { // ILRS dialect
+  while ((dialect == Dialect::ILRSA || dialect == Dialect::ILRSB)
+             ? columns(1, 3) == "%/*"
+             : columns(1, 2) == "/*") {
     ++number_of_comment_records;
     read_line();
   }
@@ -212,7 +214,7 @@ StandardProduct3::StandardProduct3(
           ITRS::origin;
 
       read_line();
-      if (version_ >= 'c' && columns(1, 2) == "EP") {
+      if (version_ >= 'c' && line.has_value() && columns(1, 2) == "EP") {
         // Ignore the optional EP record (the position and clock correlation
         // record).
         read_line();
@@ -235,8 +237,11 @@ StandardProduct3::StandardProduct3(
       }
     }
   }
-  // CHECK_EQ(columns(1, 3), "EOF") << location;
-  CHECK(!line.has_value()); // ILRSA dialect.
+  if (dialect != Dialect::ILRSA) {
+    CHECK_EQ(columns(1, 3), "EOF") << location;
+    read_line();
+  }
+  CHECK(!line.has_value()) << location;
 }
 
 }  // namespace internal_standard_product_3

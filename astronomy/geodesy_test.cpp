@@ -96,7 +96,8 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // ftp://igs.org/pub/data/format/sp3c.txt.
 
   StandardProduct3 ilrsa(SOLUTION_DIR / "astronomy" /
-                         "ilrsa.orb.lageos2.160319.v35.sp3");
+                         "ilrsa.orb.lageos2.160319.v35.sp3",
+                         StandardProduct3::Dialect::ILRSA);
 
   // ilrsa.orb.lageos2.160319.v35.sp3, headers and first record, from
   // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.

@@ -24,7 +24,13 @@ using geometry::Velocity;
 // - version d: ftp://igs.org/pub/data/format/sp3d.pdf.
 class StandardProduct3 {
  public:
-  StandardProduct3(std::filesystem::path const& filename);
+  enum class Dialect {
+    Standard,
+    ILRSA,  // %/* for comments, missing EOF.
+    ILRSB,  // %/* for comments.
+  };
+
+  StandardProduct3(std::filesystem::path const& filename, Dialect dialect);
 
  private:
   struct OrbitPoint {
