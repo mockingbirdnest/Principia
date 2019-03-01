@@ -82,6 +82,9 @@ StandardProduct3::StandardProduct3(
   CHECK(column(3) == 'P' || column(3) == 'V') << location;
   has_velocities_ = column(3) == 'V';
   number_of_epochs = integer_columns(33, 39);
+  if (dialect == Dialect::ILRSB) {
+    --number_of_epochs;
+  }
 
   // Header: ## record.
   read_line();
@@ -186,11 +189,25 @@ StandardProduct3::StandardProduct3(
   for (int i = 0; i < number_of_epochs; ++i) {
     // *␣ record: the epoch header record.
     CHECK_EQ(columns(1, 2), "* ") << location;
-    // Note: the seconds field is an F11.8, spanning columns 21..31, but our
-    // time parser only supports milliseconds.
-    std::string epoch_string = absl::StrCat(
-        columns(4, 7), "-", columns(9, 10), "-", columns(12, 13),
-        "T", columns(15, 16), ":", columns(18, 19), ":", columns(21, 26));
+    std::string epoch_string;
+    if (dialect == Dialect::ILRSB) {
+      int minutes = integer_columns(17, 18);
+      int hours = integer_columns(14, 15);
+      if (minutes == 60) {
+        minutes = 0;
+        ++hours;
+      }
+      epoch_string = absl::StrCat(
+          columns(3, 6), "-", columns(8, 9), "-", columns(11, 12),
+          "T", absl::Dec(hours, absl::kZeroPad2), ":",
+          absl::Dec(minutes, absl::kZeroPad2), ":", columns(20, 25));
+    } else {
+      // Note: the seconds field is an F11.8, spanning columns 21..31, but our
+      // time parser only supports milliseconds.
+      epoch_string = absl::StrCat(
+          columns(4, 7), "-", columns(9, 10), "-", columns(12, 13),
+          "T", columns(15, 16), ":", columns(18, 19), ":", columns(21, 26));
+    }
     for (char& c : epoch_string) {
       if (c == ' ') {
         c = '0';

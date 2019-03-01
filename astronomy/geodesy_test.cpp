@@ -99,6 +99,10 @@ TEST_F(GeodesyTest, LAGEOS2) {
                          "ilrsa.orb.lageos2.160319.v35.sp3",
                          StandardProduct3::Dialect::ILRSA);
 
+  StandardProduct3 ilrsb(SOLUTION_DIR / "astronomy" /
+                         "ilrsb.orb.lageos2.160319.v35.sp3",
+                         StandardProduct3::Dialect::ILRSB);
+
   // ilrsa.orb.lageos2.160319.v35.sp3, headers and first record, from
   // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
   // #cV2016  3 13  0  0  0.00000000    5040   SLR SLR08 FIT COMB

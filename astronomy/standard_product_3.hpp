@@ -25,9 +25,22 @@ using geometry::Velocity;
 class StandardProduct3 {
  public:
   enum class Dialect {
+    // SP3 file conformant with the specification.
     Standard,
-    ILRSA,  // %/* for comments, missing EOF.
-    ILRSB,  // %/* for comments.
+    // International Laser Ranging Service official combined product ILRSA.
+    // Divergences from the specification:
+    // - comments start with %/* instead of /*;
+    // - missing last line EOF.
+    ILRSA,
+    // International Laser Ranging Service official backup combined product
+    // ILRSB.
+    // Divergences from the specification:
+    // - the number of epochs given on the first line is off by one;
+    // - comments start with %/* instead of /*;
+    // - the fields of the epoch record are shifted one column to the left;
+    // - the minute field of the epoch record takes the value 60 at the end of
+    //   the hour.
+    ILRSB,
   };
 
   StandardProduct3(std::filesystem::path const& filename, Dialect dialect);
