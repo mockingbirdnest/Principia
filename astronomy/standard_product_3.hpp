@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <filesystem>
 #include <map>
@@ -43,6 +43,27 @@ class StandardProduct3 {
     ILRSB,
   };
 
+  enum SatelliteGroup : char {
+    General = 'L',
+    GPS = 'G',
+    ГЛОНАСС = 'R',
+    Galileo = 'E',
+    北斗 = 'C',
+    準天頂衛星 = 'J',
+    IRNSS = 'I',
+  };
+
+  struct SatelliteIdentifier {
+    SatelliteGroup group;
+    int index;
+
+    friend bool operator<(SatelliteIdentifier const& left,
+                          SatelliteIdentifier const& right) {
+      return left.group < right.group ||
+             (left.group == right.group && left.index < right.index);
+    }
+  };
+
   StandardProduct3(std::filesystem::path const& filename, Dialect dialect);
 
  private:
@@ -52,15 +73,16 @@ class StandardProduct3 {
     std::optional<Velocity<ITRS>> velocity;
   };
 
-  // REMOVE BEFORE FLIGHT: Satellites should not be strings, especially since
-  // SP3-a "  1" is SP3-b or later "G01".
-  std::map<std::string, std::vector<OrbitPoint>, std::less<>> orbits_;
+  std::map<SatelliteIdentifier, std::vector<OrbitPoint>> orbits_;
 
   // 'a' through 'd'.
   char version_;
 
   bool has_velocities_;
 };
+
+std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::SatelliteIdentifier const& id);
 
 }  // namespace internal_standard_product_3
 

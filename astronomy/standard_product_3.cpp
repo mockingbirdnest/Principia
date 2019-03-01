@@ -98,19 +98,43 @@ StandardProduct3::StandardProduct3(
   int number_of_satellite_id_records = 0;
   while (columns(1, 2) == "+ ") {
     ++number_of_satellite_id_records;
-    for (int column = 10; column <= 58; column += 3) {
-      auto const satellite_identifier = columns(column, column + 2);
+    for (int c = 10; c <= 58; c += 3) {
       auto const full_location =
-          absl::StrCat(location, " columns ", column, "-", column + 2);
+          absl::StrCat(location, " columns ", c, "-", c + 2);
       if (orbits_.size() != number_of_satellites) {
-        CHECK_NE(satellite_identifier, "  0") << full_location;
+        SatelliteIdentifier id;
+        if (version_ == 'a') {
+          // Satellite IDs are purely numeric (and implicitly GPS) in SP3-a.
+          CHECK_EQ(column(c), ' ') << full_location;
+          id.group = GPS;
+        } else {
+          id.group = SatelliteGroup{column(c)};
+          switch (id.group) {
+            case GPS:
+            case ГЛОНАСС:
+              // GPS and ГЛОНАСС (G and R) satellite IDs are supported since
+              // SP3-b.
+              break;
+            case General:
+            case Galileo:
+            case 北斗:
+            case 準天頂衛星:
+            case IRNSS:
+              CHECK_GE(version_, 'c') << full_location;
+              break;
+            default:
+              LOG(FATAL) << "invalid satellite identifier " << id << ": "
+                         << full_location;
+          }
+        }
+        id.index = integer_columns(c + 1, c + 2);
+        CHECK_GT(id.index, 0) << full_location;
         CHECK(orbits_.emplace(std::piecewise_construct,
-                              std::forward_as_tuple(satellite_identifier),
+                              std::forward_as_tuple(id),
                               std::forward_as_tuple()).second)
-            << "duplicate satellite identifier " << satellite_identifier << ": "
-            << full_location;
+            << "duplicate satellite identifier " << id << ": " << full_location;
       } else {
-        CHECK_EQ(satellite_identifier, "  0") << full_location;
+        CHECK_EQ(columns(c, c + 2), "  0") << full_location;
       }
     }
     read_line();
@@ -218,9 +242,12 @@ StandardProduct3::StandardProduct3(
     for (int i = 0; i < orbits_.size(); ++i) {
       // P record: the position and clock record.
       CHECK_EQ(column(1), 'P') << location;
-      auto const it = orbits_.find(columns(2, 4));
+      SatelliteIdentifier id;
+      id.group = version_ == 'a' ? GPS : SatelliteGroup{column(2)};
+      id.index = integer_columns(3, 4);
+      auto const it = orbits_.find(id);
       CHECK(it != orbits_.end()) << "unknown satellite identifier "
-                                 << columns(2, 4) << ": " << location;
+                                 << id << ": " << location;
       std::vector<OrbitPoint>& orbit = it->second;
       orbit.emplace_back();
       orbit.back().time = epoch;
@@ -240,6 +267,10 @@ StandardProduct3::StandardProduct3(
       if (has_velocities_) {
         // V record: the velocity and clock rate-of-change record.
         CHECK_EQ(column(1), 'V') << location;
+        if (version_ > 'a') {
+          CHECK_EQ(column(2), id.group) << location;
+        }
+        CHECK_EQ(integer_columns(3, 4), id.index) << location;
         orbit.back().velocity =
             Velocity<ITRS>({float_columns(5, 18) * (Deci(Metre) / Second),
                             float_columns(19, 32) * (Deci(Metre) / Second),
@@ -259,6 +290,12 @@ StandardProduct3::StandardProduct3(
     read_line();
   }
   CHECK(!line.has_value()) << location;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::SatelliteIdentifier const& id) {
+  return out << absl::StrCat(std::string(id.group, 1),
+                             absl::Dec(id.index, absl::kZeroPad2));
 }
 
 }  // namespace internal_standard_product_3
