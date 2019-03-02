@@ -64,15 +64,17 @@ class StandardProduct3 {
     }
   };
 
-  StandardProduct3(std::filesystem::path const& filename, Dialect dialect);
-
- private:
   struct OrbitPoint {
     Instant time;
     Position<ITRS> position;
     std::optional<Velocity<ITRS>> velocity;
   };
 
+  StandardProduct3(std::filesystem::path const& filename, Dialect dialect);
+
+  std::vector<OrbitPoint> const& orbit(SatelliteIdentifier const& id) const;
+
+ private:
   std::map<SatelliteIdentifier, std::vector<OrbitPoint>> orbits_;
 
   // 'a' through 'd'.

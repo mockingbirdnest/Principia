@@ -6,12 +6,14 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "astronomy/time_scales.hpp"
+#include "base/map_util.hpp"
 #include "glog/logging.h"
 
 namespace principia {
 namespace astronomy {
 namespace internal_standard_product_3 {
 
+using base::FindOrDie;
 using geometry::Displacement;
 using quantities::si::Deci;
 using quantities::si::Kilo;
@@ -290,6 +292,11 @@ StandardProduct3::StandardProduct3(
     read_line();
   }
   CHECK(!line.has_value()) << location;
+}
+
+std::vector<StandardProduct3::OrbitPoint> const& StandardProduct3::orbit(
+    SatelliteIdentifier const& id) const {
+  return FindOrDie(orbits_, id);
 }
 
 std::ostream& operator<<(std::ostream& out,

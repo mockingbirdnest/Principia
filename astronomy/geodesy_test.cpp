@@ -103,6 +103,9 @@ TEST_F(GeodesyTest, LAGEOS2) {
                          "ilrsb.orb.lageos2.160319.v35.sp3",
                          StandardProduct3::Dialect::ILRSB);
 
+  StandardProduct3::SatelliteIdentifier const lageos_2{
+      StandardProduct3::General, 52};
+
   // ilrsa.orb.lageos2.160319.v35.sp3, headers and first record, from
   // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
   // #cV2016  3 13  0  0  0.00000000    5040   SLR SLR08 FIT COMB
@@ -121,14 +124,11 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // PL52   2505.232029 -10564.815741  -5129.314404 999999.999999
   // VL52  34323.584344 -10455.947225  38998.988146 999999.999999
 
-  constexpr Instant initial_time = "2016-03-13T00:00:00,000"_UTC;
+  //constexpr Instant initial_time = "2016-03-13T00:00:00,000"_UTC;
+  Instant const initial_time = ilrsa.orbit(lageos_2).front().time;
   DegreesOfFreedom<ITRS> const initial_dof_ilrsa = {
-      ITRS::origin + Displacement<ITRS>({  2505.232029 * Kilo(Metre),
-                                         -10564.815741 * Kilo(Metre),
-                                          -5129.314404 * Kilo(Metre)}),
-      Velocity<ITRS>({ 34323.584344 * Deci(Metre) / Second,
-                      -10455.947225 * Deci(Metre) / Second,
-                       38998.988146 * Deci(Metre) / Second})};
+      ilrsa.orbit(lageos_2).front().position,
+      *ilrsa.orbit(lageos_2).front().velocity};
 
   // ilrsb.orb.lageos2.160319.v35.sp3, headers and first record, from
   // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
