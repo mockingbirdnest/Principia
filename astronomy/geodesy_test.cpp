@@ -89,99 +89,44 @@ class GeodesyTest : public ::testing::Test {
 
 TEST_F(GeodesyTest, LAGEOS2) {
   MasslessBody lageos2;
-  // Initial state and expected state from the ILRS official primary analysis
-  // product ILRSA, see
-  // https://ilrs.cddis.eosdis.nasa.gov/data_and_products/products/index.html;
-  // see also the definition of the SP3 format
-  // ftp://igs.org/pub/data/format/sp3c.txt.
 
-  StandardProduct3 ilrsa(SOLUTION_DIR / "astronomy" /
-                         "ilrsa.orb.lageos2.160319.v35.sp3",
-                         StandardProduct3::Dialect::ILRSA);
+  // ilrsa.orb.lageos2.160319.v35.sp3, from
+  // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
+  StandardProduct3 initial_ilrsa(
+      SOLUTION_DIR / "astronomy" / "ilrsa.orb.lageos2.160319.v35.sp3",
+      StandardProduct3::Dialect::ILRSA);
 
-  StandardProduct3 ilrsb(SOLUTION_DIR / "astronomy" /
-                         "ilrsb.orb.lageos2.160319.v35.sp3",
-                         StandardProduct3::Dialect::ILRSB);
+  // ilrsb.orb.lageos2.160319.v35.sp3, from
+  // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
+  StandardProduct3 initial_ilrsb(
+      SOLUTION_DIR / "astronomy" / "ilrsb.orb.lageos2.160319.v35.sp3",
+      StandardProduct3::Dialect::ILRSB);
 
-  StandardProduct3::SatelliteIdentifier const lageos_2{
+  // ilrsa.orb.lageos2.180804.v70.sp3, from
+  // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/180804/.
+  StandardProduct3 final_ilrsa(
+      SOLUTION_DIR / "astronomy" / "ilrsa.orb.lageos2.180804.v70.sp3",
+      StandardProduct3::Dialect::ILRSA);
+
+  StandardProduct3::SatelliteIdentifier const lageos2_id{
       StandardProduct3::General, 52};
 
-  // ilrsa.orb.lageos2.160319.v35.sp3, headers and first record, from
-  // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
-  // #cV2016  3 13  0  0  0.00000000    5040   SLR SLR08 FIT COMB
-  // ## 1888      0.00000000   120.00000000 57460 0.0000000000000
-  // +    1   L52  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-  // [... Lines 4 through 12 omitted                         ...]
-  // %c L  cc UTC ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
-  // %c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
-  // %f  0.0000000  0.000000000  0.00000000000  0.000000000000000
-  // [... Lines 15 through 18 omitted                        ...]
-  // %/* ilrsa.orb.lageos2.160319.v35.sp3 Reference TRF: SLRF2008
-  // %/* Input orbits: ASI v35, BKG v35, DGFI v35, ESA v35,
-  // %/* GFZ v35, GRGS v35, JCET v35, NSGF v35,
-  // %/* Combination details in README_CC.ilrsa
-  // *  2016  3 13  0  0  0.00000000
-  // PL52   2505.232029 -10564.815741  -5129.314404 999999.999999
-  // VL52  34323.584344 -10455.947225  38998.988146 999999.999999
+  CHECK_EQ(initial_ilrsa.orbit(lageos2_id).front().time,
+           initial_ilrsb.orbit(lageos2_id).front().time);
 
-  //constexpr Instant initial_time = "2016-03-13T00:00:00,000"_UTC;
-  Instant const initial_time = ilrsa.orbit(lageos_2).front().time;
+  Instant const initial_time = initial_ilrsa.orbit(lageos2_id).front().time;
   DegreesOfFreedom<ITRS> const initial_dof_ilrsa = {
-      ilrsa.orbit(lageos_2).front().position,
-      *ilrsa.orbit(lageos_2).front().velocity};
-
-  // ilrsb.orb.lageos2.160319.v35.sp3, headers and first record, from
-  // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
-  // #cV2016  3 13  0  0  0.00000000    5041   SLR ITRF97 FIT JCET
-  // ## 1888      0.00000000   120.00000000 57460 0.0000000000000
-  // +   1    L52  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-  // [... Lines 4 through 12 omitted                         ...]
-  // %c L  cc UTC ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
-  // %c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
-  // %f  0.0000000  0.000000000  0.00000000000  0.000000000000000
-  // [... Lines 15 through 18 omitted                        ...]
-  // %/* ilrsb.orb.lageos2.160319.v35.sp3 Reference TRF: SLRF2008
-  // %/* Input orbits:  ASI v35 GRGS v35 NSGF v35 ESA v35
-  // %/* GFZ v35 DGFI v35 JCET v35
-  // %/* Combination details in README_CC.ilrsb
-  // * 2016  3 13  0  0  0.00000000
-  // PL52   2505.232038 -10564.815750  -5129.314387
-  // VL52  34323.584276 -10455.947218  38998.988200
+      initial_ilrsa.orbit(lageos2_id).front().position,
+      *initial_ilrsa.orbit(lageos2_id).front().velocity};
 
   DegreesOfFreedom<ITRS> const initial_dof_ilrsb = {
-      ITRS::origin + Displacement<ITRS>({  2505.232038 * Kilo(Metre),
-                                         -10564.815750 * Kilo(Metre),
-                                          -5129.314387 * Kilo(Metre)}),
-      Velocity<ITRS>({ 34323.584276 * Deci(Metre) / Second,
-                      -10455.947218 * Deci(Metre) / Second,
-                       38998.988200 * Deci(Metre) / Second})};
+      initial_ilrsb.orbit(lageos2_id).front().position,
+      *initial_ilrsb.orbit(lageos2_id).front().velocity};
 
-  // ilrsa.orb.lageos2.180804.v70.sp3, headers and first record, from
-  // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/180804/.
-  // #cV2018  7 29  0  0  0.00000000    5040   SLR SLR08 FIT COMB
-  // ## 2012      0.00000000   120.00000000 58328 0.0000000000000
-  // +    1   L52  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-  // [... Lines 4 through 12 omitted                         ...]
-  // %c L  cc UTC ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
-  // %c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
-  // %f  0.0000000  0.000000000  0.00000000000  0.000000000000000
-  // [... Lines 15 through 18 omitted                        ...]
-  // %/* ilrsa.orb.lageos2.180804.v70.sp3 Reference TRF: SLRF2008
-  // %/* Input orbits: ASI v70, BKG v70, DGFI v70, ESA v70,
-  // %/* GFZ v70, JCET v70, NSGF v70,
-  // %/* Combination details in README_CC.ilrsa
-  // *  2018  7 29  0  0  0.00000000
-  // PL52 -11150.750217   5070.184012   1340.324930 999999.999999
-  // VL52 -15231.027828 -21132.111357 -44478.560714 999999.999999
-
-  constexpr Instant final_time = "2018-07-29T00:00:00,000"_UTC;
+  Instant const final_time = final_ilrsa.orbit(lageos2_id).front().time;
   DegreesOfFreedom<ITRS> const expected_final_dof = {
-      ITRS::origin + Displacement<ITRS>({-11150.750217 * Kilo(Metre),
-                                           5070.184012 * Kilo(Metre),
-                                           1340.324930 * Kilo(Metre)}),
-      Velocity<ITRS>({-15231.027828 * Deci(Metre) / Second,
-                      -21132.111357 * Deci(Metre) / Second,
-                      -44478.560714 * Deci(Metre) / Second})};
+      final_ilrsa.orbit(lageos2_id).front().position,
+      *final_ilrsa.orbit(lageos2_id).front().velocity};
 
   ephemeris_->Prolong(final_time);
 
