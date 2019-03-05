@@ -15,6 +15,8 @@ namespace internal_standard_product_3 {
 
 using base::FindOrDie;
 using geometry::Displacement;
+using quantities::NaN;
+using quantities::Speed;
 using quantities::si::Deci;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -26,6 +28,7 @@ StandardProduct3::StandardProduct3(
   std::ifstream file(filename);
   CHECK(file.good()) << filename;
   std::optional<std::string> line;
+
   std::string location;
   int line_number = 0;
   auto const read_line = [&file, &filename, &line, &line_number, &location]() {
@@ -34,7 +37,7 @@ StandardProduct3::StandardProduct3(
     }
     std::getline(file, *line);
     if (file.fail()) {
-      CHECK(file.eof()) << "non-EOF failure after " << location;
+      CHECK(file.eof()) << "Non-EOF failure after " << location;
       line.reset();
       location = absl::StrCat(filename.string(), " at end of file");
     } else {
@@ -46,26 +49,26 @@ StandardProduct3::StandardProduct3(
 
   // The specification uses 1-based column indices, and column ranges with
   // bounds included.
-  auto const column = [&line, &location, line_number](int index) -> char {
+  auto const column = [&line, &location, line_number](int const index) {
     CHECK(line.has_value()) << location;
     CHECK_LT(index - 1, line->size()) << location;
     return (*line)[index - 1];
   };
-  auto const columns = [&line, &location](
-                            int first, int last) -> std::string_view {
+  auto const columns = [&line, &location](int const first, int const last) {
     CHECK(line.has_value()) << location;
     CHECK_LT(last - 1, line->size()) << location;
+    CHECK_LE(first, last) << location;
     return std::string_view(&(*line)[first - 1], last - first + 1);
   };
-  auto const float_columns = [&columns, &location](int first,
-                                                   int last) -> double {
+  auto const float_columns = [&columns, &location](int const first,
+                                                   int const last) {
     double result;
     CHECK(absl::SimpleAtod(columns(first, last), &result))
         << location << " columns " << first << "-" << last;
     return result;
   };
-  auto const integer_columns = [&columns, &location](int first,
-                                                     int last) -> int {
+  auto const integer_columns = [&columns, &location](int const first,
+                                                     int const last) {
     int result;
     CHECK(absl::SimpleAtoi(columns(first, last), &result))
         << location << " columns " << first << "-" << last;
@@ -78,9 +81,9 @@ StandardProduct3::StandardProduct3(
   // Header: # record.
   read_line();
   CHECK_EQ(column(1), '#') << location;
-  CHECK_GE(column(2), 'a') << location;
-  CHECK_LE(column(2), 'd') << location;
-  version_ = column(2);
+  CHECK_GE(Version{column(2)}, Version::A) << location;
+  CHECK_LE(Version{column(2)}, Version::D) << location;
+  version_ = Version{column(2)};
   CHECK(column(3) == 'P' || column(3) == 'V') << location;
   has_velocities_ = column(3) == 'V';
   number_of_epochs = integer_columns(33, 39);
@@ -105,36 +108,37 @@ StandardProduct3::StandardProduct3(
           absl::StrCat(location, " columns ", c, "-", c + 2);
       if (orbits_.size() != number_of_satellites) {
         SatelliteIdentifier id;
-        if (version_ == 'a') {
+        if (version_ == Version::A) {
           // Satellite IDs are purely numeric (and implicitly GPS) in SP3-a.
           CHECK_EQ(column(c), ' ') << full_location;
-          id.group = GPS;
+          id.group = SatelliteGroup::GPS;
         } else {
           id.group = SatelliteGroup{column(c)};
           switch (id.group) {
-            case GPS:
-            case ГЛОНАСС:
+            case SatelliteGroup::GPS:
+            case SatelliteGroup::ГЛОНАСС:
               // GPS and ГЛОНАСС (G and R) satellite IDs are supported since
               // SP3-b.
               break;
-            case General:
-            case Galileo:
-            case 北斗:
-            case 準天頂衛星:
-            case IRNSS:
-              CHECK_GE(version_, 'c') << full_location;
+            case SatelliteGroup::General:
+            case SatelliteGroup::Galileo:
+            case SatelliteGroup::北斗:
+            case SatelliteGroup::準天頂衛星:
+            case SatelliteGroup::IRNSS:
+              CHECK_GE(version_, Version::C) << full_location;
               break;
             default:
-              LOG(FATAL) << "invalid satellite identifier " << id << ": "
+              LOG(FATAL) << "Invalid satellite identifier " << id << ": "
                          << full_location;
           }
         }
         id.index = integer_columns(c + 1, c + 2);
         CHECK_GT(id.index, 0) << full_location;
-        CHECK(orbits_.emplace(std::piecewise_construct,
-                              std::forward_as_tuple(id),
-                              std::forward_as_tuple()).second)
-            << "duplicate satellite identifier " << id << ": " << full_location;
+        auto const [it, inserted] = orbits_.emplace(std::piecewise_construct,
+                                                    std::forward_as_tuple(id),
+                                                    std::forward_as_tuple());
+        CHECK(inserted) << "Duplicate satellite identifier " << id << ": "
+                        << full_location;
       } else {
         CHECK_EQ(columns(c, c + 2), "  0") << full_location;
       }
@@ -144,9 +148,9 @@ StandardProduct3::StandardProduct3(
   if (number_of_satellite_id_records < 5) {
     LOG(FATAL) << u8"at least 5 +␣ records expected: " << location;
   }
-  if (version_ < 'd' && number_of_satellite_id_records > 5) {
-    LOG(FATAL) << u8"exactly 5 +␣ records expected in SP3-"
-               << std::string(version_, 1) << ": " << location;
+  if (version_ < Version::D && number_of_satellite_id_records > 5) {
+    LOG(FATAL) << u8"exactly 5 +␣ records expected in SP3-" << version_ << ": "
+               << location;
   }
 
   // Header: ++ records.
@@ -159,7 +163,7 @@ StandardProduct3::StandardProduct3(
   // Header: first %c record.
   std::function<Instant(std::string const&)> parse_time;
   CHECK_EQ(columns(1, 2), "%c") << location;
-  if (version_ < 'c') {
+  if (version_ < Version::C) {
     parse_time = &ParseGPSTime;
   } else {
     auto const time_system = columns(10, 12);
@@ -174,7 +178,7 @@ StandardProduct3::StandardProduct3(
                time_system == "QZS") {
       parse_time = &ParseGPSTime;
     } else {
-      LOG(FATAL) << "unexpected time system identifier " << time_system << ": "
+      LOG(FATAL) << "Unexpected time system identifier " << time_system << ": "
                  << location;
     }
   }
@@ -205,11 +209,11 @@ StandardProduct3::StandardProduct3(
     read_line();
   }
   if (number_of_comment_records < 4) {
-    LOG(FATAL) << "at least 4 /* records expected: " << location;
+    LOG(FATAL) << "At least 4 /* records expected: " << location;
   }
-  if (version_ < 'd' && number_of_comment_records > 5) {
-    LOG(FATAL) << "exactly 4 /* records expected in SP3-"
-               << std::string(version_, 1) << ": " << location;
+  if (version_ < Version::D && number_of_comment_records > 5) {
+    LOG(FATAL) << "Exactly 4 /* records expected in SP3-"
+               << version_ << ": " << location;
   }
 
   for (int i = 0; i < number_of_epochs; ++i) {
@@ -245,22 +249,25 @@ StandardProduct3::StandardProduct3(
       // P record: the position and clock record.
       CHECK_EQ(column(1), 'P') << location;
       SatelliteIdentifier id;
-      id.group = version_ == 'a' ? GPS : SatelliteGroup{column(2)};
+      id.group = version_ == Version::A ? SatelliteGroup::GPS
+                                        : SatelliteGroup{column(2)};
       id.index = integer_columns(3, 4);
       auto const it = orbits_.find(id);
-      CHECK(it != orbits_.end()) << "unknown satellite identifier "
+      CHECK(it != orbits_.end()) << "Unknown satellite identifier "
                                  << id << ": " << location;
-      std::vector<OrbitPoint>& orbit = it->second;
-      orbit.emplace_back();
-      orbit.back().time = epoch;
-      orbit.back().position =
+      DiscreteTrajectory<ITRS>& orbit = it->second;
+
+      Position<ITRS> const position =
           Displacement<ITRS>({float_columns(5, 18) * Kilo(Metre),
                               float_columns(19, 32) * Kilo(Metre),
                               float_columns(33, 46) * Kilo(Metre)}) +
           ITRS::origin;
+      // TODO(egg): use a difference formula to compute the velocities if they
+      // are not provided.
+      Velocity<ITRS> velocity({NaN<Speed>(), NaN<Speed>(), NaN<Speed>()});
 
       read_line();
-      if (version_ >= 'c' && line.has_value() && columns(1, 2) == "EP") {
+      if (version_ >= Version::C && line.has_value() && columns(1, 2) == "EP") {
         // Ignore the optional EP record (the position and clock correlation
         // record).
         read_line();
@@ -269,22 +276,24 @@ StandardProduct3::StandardProduct3(
       if (has_velocities_) {
         // V record: the velocity and clock rate-of-change record.
         CHECK_EQ(column(1), 'V') << location;
-        if (version_ > 'a') {
-          CHECK_EQ(column(2), id.group) << location;
+        if (version_ > Version::A) {
+          CHECK_EQ(SatelliteGroup{column(2)}, id.group) << location;
         }
         CHECK_EQ(integer_columns(3, 4), id.index) << location;
-        orbit.back().velocity =
+        velocity =
             Velocity<ITRS>({float_columns(5, 18) * (Deci(Metre) / Second),
                             float_columns(19, 32) * (Deci(Metre) / Second),
                             float_columns(33, 46) * (Deci(Metre) / Second)});
       }
 
       read_line();
-      if (version_ >= 'c' && line.has_value() && columns(1, 2) == "EV") {
+      if (version_ >= Version::C && line.has_value() && columns(1, 2) == "EV") {
         // Ignore the optional EV record (the velocity and clock rate-of-change
         // correlation record).
         read_line();
       }
+
+      orbit.Append(epoch, {position, velocity});
     }
   }
   if (dialect != Dialect::ILRSA) {
@@ -294,15 +303,30 @@ StandardProduct3::StandardProduct3(
   CHECK(!line.has_value()) << location;
 }
 
-std::vector<StandardProduct3::OrbitPoint> const& StandardProduct3::orbit(
+DiscreteTrajectory<ITRS> const& StandardProduct3::orbit(
     SatelliteIdentifier const& id) const {
   return FindOrDie(orbits_, id);
 }
 
+bool operator<(StandardProduct3::SatelliteIdentifier const& left,
+               StandardProduct3::SatelliteIdentifier const& right) {
+  return left.group < right.group ||
+         (left.group == right.group && left.index < right.index);
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::Version const& version) {
+  return out << std::string(static_cast<char>(version), 1);
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::SatelliteGroup const& group) {
+  return out << std::string(static_cast<char>(group), 1);
+}
+
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::SatelliteIdentifier const& id) {
-  return out << absl::StrCat(std::string(id.group, 1),
-                             absl::Dec(id.index, absl::kZeroPad2));
+  return out << id.group << absl::StrCat(absl::Dec(id.index, absl::kZeroPad2));
 }
 
 }  // namespace internal_standard_product_3

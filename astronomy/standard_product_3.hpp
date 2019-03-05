@@ -7,6 +7,7 @@
 
 #include "astronomy/frames.hpp"
 #include "geometry/named_quantities.hpp"
+#include "physics/discrete_trajectory.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -15,6 +16,7 @@ namespace internal_standard_product_3 {
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
+using physics::DiscreteTrajectory;
 
 // A representation of data in the extended standard product 3 orbit format.
 // Specification:
@@ -24,6 +26,13 @@ using geometry::Velocity;
 // - version d: ftp://igs.org/pub/data/format/sp3d.pdf.
 class StandardProduct3 {
  public:
+  enum class Version : char {
+    A = 'a',
+    B = 'b',
+    C = 'c',
+    D = 'd',
+  };
+
   enum class Dialect {
     // SP3 file conformant with the specification.
     Standard,
@@ -43,7 +52,7 @@ class StandardProduct3 {
     ILRSB,
   };
 
-  enum SatelliteGroup : char {
+  enum class SatelliteGroup : char {
     General = 'L',
     GPS = 'G',
     ГЛОНАСС = 'R',
@@ -56,12 +65,6 @@ class StandardProduct3 {
   struct SatelliteIdentifier {
     SatelliteGroup group;
     int index;
-
-    friend bool operator<(SatelliteIdentifier const& left,
-                          SatelliteIdentifier const& right) {
-      return left.group < right.group ||
-             (left.group == right.group && left.index < right.index);
-    }
   };
 
   struct OrbitPoint {
@@ -72,16 +75,23 @@ class StandardProduct3 {
 
   StandardProduct3(std::filesystem::path const& filename, Dialect dialect);
 
-  std::vector<OrbitPoint> const& orbit(SatelliteIdentifier const& id) const;
+  DiscreteTrajectory<ITRS> const& orbit(SatelliteIdentifier const& id) const;
 
  private:
-  std::map<SatelliteIdentifier, std::vector<OrbitPoint>> orbits_;
-
-  // 'a' through 'd'.
-  char version_;
+  std::map<SatelliteIdentifier, DiscreteTrajectory<ITRS>> orbits_;
+  Version version_;
 
   bool has_velocities_;
 };
+
+bool operator<(StandardProduct3::SatelliteIdentifier const& left,
+               StandardProduct3::SatelliteIdentifier const& right);
+
+std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::Version const& version);
+
+std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::SatelliteGroup const& group);
 
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::SatelliteIdentifier const& id);
