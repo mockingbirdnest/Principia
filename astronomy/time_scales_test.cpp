@@ -458,6 +458,23 @@ TEST_F(TimeScalesTest, EarthRotationAngle) {
               IsNear(-0.0000137 * Degree / Day));
 }
 
+TEST_F(TimeScalesTest, GNSS) {
+  // BeiDou Navigation Satellite System
+  // Signal In Space Interface Control Document
+  // Open Service Signals B1C and B2a (Test Version),
+  // 3.3 Time System.
+  // The start epoch of BDT is 00:00:00 on January 1, 2006 of Coordinated
+  // Universal Time (UTC).
+  EXPECT_THAT("2006-01-01T00:00:00"_北斗, Eq("2006-01-01T00:00:00"_UTC));
+
+  // Galileo OS SIS ICD, Issue 1.1.
+  // 5.1.2. Galileo System Time (GST).
+  // The GST start epoch shall be 00:00 UT on Sunday 22nd August 1999 (midnight
+  // between 21st and 22nd August). At the start epoch, GST shall be ahead of
+  // UTC by thirteen (13) leap seconds.
+  EXPECT_THAT("1999-08-22T00:00:13"_GPS, Eq("1999-08-22T00:00:00"_UTC));
+}
+
 }  // namespace internal_time_scales
 }  // namespace astronomy
 }  // namespace principia
