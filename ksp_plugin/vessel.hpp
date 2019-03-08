@@ -181,7 +181,6 @@ class Vessel {
   struct PrognosticatorParameters {
     Instant first_time;
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
-    std::optional<Instant> last_time;
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters;
     bool shutdown = false;
   };

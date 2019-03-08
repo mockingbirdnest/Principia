@@ -37,7 +37,6 @@ bool operator!=(Vessel::PrognosticatorParameters const& left,
                 Vessel::PrognosticatorParameters const& right) {
   return left.first_time != right.first_time ||
          left.first_degrees_of_freedom != right.first_degrees_of_freedom ||
-         left.last_time != right.last_time ||
          &left.adaptive_step_parameters.integrator() !=
              &right.adaptive_step_parameters.integrator() ||
          left.adaptive_step_parameters.max_steps() !=
@@ -290,7 +289,6 @@ void Vessel::FlowPrediction() {
   prognosticator_parameters_ =
       PrognosticatorParameters{psychohistory_->last().time(),
                                psychohistory_->last().degrees_of_freedom(),
-                               /*last_time=*/std::nullopt,
                                prediction_adaptive_step_parameters_,
                                /*shutdown=*/false};
   StartPrognosticatorIfNeeded();
@@ -300,28 +298,23 @@ void Vessel::FlowPrediction() {
 }
 
 Status Vessel::FlowPrediction(Instant const& time) {
+  // Make sure that the prognosticator recomputes a complete prediction from
+  // time to time.
+  FlowPrediction();
+
   if (time <= prediction_->last().time()) {
     return Status::OK;
   }
 
-  auto reached_time_or_error = [this, time](){
-    prognosticator_lock_.AssertReaderHeld();
-    return prognostication_ != nullptr &&
-           (time <= prognostication_->last().time() ||
-            !prognosticator_status_.ok());
-  };
-
-  absl::MutexLock l(&prognosticator_lock_);
-  prognosticator_parameters_ =
-      PrognosticatorParameters{psychohistory_->last().time(),
-                               psychohistory_->last().degrees_of_freedom(),
-                               /*last_time=*/time,
-                               prediction_adaptive_step_parameters_,
-                               /*shutdown=*/false};
-  StartPrognosticatorIfNeeded();
-  prognosticator_lock_.Await(absl::Condition(&reached_time_or_error));
-  AttachPrediction(std::move(prognostication_));
-  return prognosticator_status_;
+  // If the prediction is not long enough, extend it explicitly.  This is
+  // blocking.
+  return ephemeris_->FlowWithAdaptiveStep(
+             prediction_,
+             Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+             time,
+             prediction_adaptive_step_parameters_,
+             FlightPlan::max_ephemeris_steps_per_frame,
+             /*last_point_only=*/false);
 }
 
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
@@ -486,36 +479,23 @@ void Vessel::RepeatedlyFlowPrognostication() {
           prognosticator_parameters->first_time,
           prognosticator_parameters->first_degrees_of_freedom);
       Status status;
-      if (prognosticator_parameters->last_time) {
-        if (*prognosticator_parameters->last_time >
-            prognostication->last().time()) {
-          status = ephemeris_->FlowWithAdaptiveStep(
-              prognostication.get(),
-              Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-              *prognosticator_parameters->last_time,
-              prognosticator_parameters->adaptive_step_parameters,
-              FlightPlan::max_ephemeris_steps_per_frame,
-              /*last_point_only=*/false);
-        }
-      } else {
+      status = ephemeris_->FlowWithAdaptiveStep(
+          prognostication.get(),
+          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+          ephemeris_->t_max(),
+          prognosticator_parameters->adaptive_step_parameters,
+          FlightPlan::max_ephemeris_steps_per_frame,
+          /*last_point_only=*/false);
+      bool const reached_t_max = status.ok();
+      if (reached_t_max) {
+        // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
         status = ephemeris_->FlowWithAdaptiveStep(
             prognostication.get(),
             Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-            ephemeris_->t_max(),
+            InfiniteFuture,
             prognosticator_parameters->adaptive_step_parameters,
             FlightPlan::max_ephemeris_steps_per_frame,
             /*last_point_only=*/false);
-        bool const reached_t_max = status.ok();
-        if (reached_t_max) {
-          // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
-          status = ephemeris_->FlowWithAdaptiveStep(
-              prognostication.get(),
-              Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-              InfiniteFuture,
-              prognosticator_parameters->adaptive_step_parameters,
-              FlightPlan::max_ephemeris_steps_per_frame,
-              /*last_point_only=*/false);
-        }
       }
       LOG_IF(INFO, !status.ok())
           << "Prognostication from " << prognosticator_parameters->first_time
