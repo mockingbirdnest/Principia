@@ -119,18 +119,20 @@ void DiscreteTrajectory<Frame>::AttachFork(
   if (fork_timeline.empty()) {
     must_prepend = true;
   } else {
+    CHECK_LE(this_last.time(), fork_timeline.begin()->first);
     auto const it = fork_timeline.find(this_last.time());
     if (it == fork_timeline.end()) {
       must_prepend = true;
     } else {
       CHECK(it == fork_timeline.begin())
           << it->first << " " << this_last.time();
-      CHECK_EQ(this_last.degrees_of_freedom(), it->second);
       must_prepend = false;
     }
   }
 
   // If needed, prepend to |fork| a copy of the last point of this trajectory.
+  // This ensures that |fork| and this trajectory start and end, respectively,
+  // with points at the same time (but possibly distinct degrees of freedom).
   if (must_prepend) {
     fork_timeline.emplace_hint(fork_timeline.begin(),
                                this_last.time(),
@@ -140,8 +142,11 @@ void DiscreteTrajectory<Frame>::AttachFork(
   // Attach |fork| to this trajectory.
   this->AttachForkToCopiedBegin(std::move(fork));
 
-  // Remove the first point of |fork| now that it properly attached to its
-  // parent.
+  // Remove the first point of |fork| now that it is properly attached to its
+  // parent: that point is either redundant (if it was prepended above) or wrong
+  // (because we "trust" this trajectory more than |fork|).  The children that
+  // might have been forked at the deleted point were relocated by
+  // AttachForkToCopiedBegin.
   fork_timeline.erase(fork_timeline.begin());
 }
 
