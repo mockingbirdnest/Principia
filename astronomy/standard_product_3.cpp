@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <optional>
+#include <string>
 
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
@@ -134,7 +135,7 @@ StandardProduct3::StandardProduct3(
         }
         id.index = integer_columns(c + 1, c + 2);
         CHECK_GT(id.index, 0) << full_location;
-        auto const [it, inserted] = orbits_.emplace(std::piecewise_construct,
+        auto const [it, inserted] = orbits_.emplace(std::piecewise_construct,  // NOLINT
                                                     std::forward_as_tuple(id),
                                                     std::forward_as_tuple());
         CHECK(inserted) << "Duplicate satellite identifier " << id << ": "
