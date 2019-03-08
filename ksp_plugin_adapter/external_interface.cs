@@ -73,5 +73,5 @@ public class ExternalInterface {
   private PrincipiaPluginAdapter adapter_;
 }
 
-}
-}
+}  // namespace ksp_plugin_adapter
+}  // namespace principia

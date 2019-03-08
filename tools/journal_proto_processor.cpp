@@ -947,9 +947,15 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     cs_interface_type_declaration_[descriptor] =
         "internal partial class " + name + " {\n";
   } else {
-    cs_interface_type_declaration_[descriptor] =
-        "[StructLayout(LayoutKind.Sequential)]\ninternal partial struct " +
-        name + " {\n";
+  MessageOptions const& message_options = descriptor->options();
+  std::string const visibility =
+      message_options.GetExtension(journal::serialization::is_public)
+          ? "public"
+          : "internal";
+
+  cs_interface_type_declaration_[descriptor] =
+      "[StructLayout(LayoutKind.Sequential)]\n" + visibility +
+      " partial struct " + name + " {\n";
   }
   cxx_interface_type_declaration_[descriptor] =
       "extern \"C\"\nstruct " + name + " {\n";
