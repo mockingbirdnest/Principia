@@ -40,6 +40,9 @@
 
 #include "glog/logging.h"
 
+// TODO(phl): Many of the functions in this file should be made constexpr.
+// Also, we should use string_view.
+
 namespace principia {
 namespace base {
 
@@ -64,6 +67,9 @@ enum class Error {
   UNAVAILABLE = 14,
   DATA_LOSS = 15,
 };
+
+Error operator|(Error left, Error right);
+Error& operator|=(Error& left, Error right);
 
 std::string ErrorToString(Error error);
 
