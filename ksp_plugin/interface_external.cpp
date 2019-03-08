@@ -79,14 +79,6 @@ Status principia__ExternalGeopotentialGetCoefficient(
     int const degree,
     int const order,
     XY* const coefficient) {
-  LOG(ERROR) << "principia__ExternalGeopotentialGetCoefficient";
-  LOG(ERROR) << plugin;
-  LOG(ERROR) << body_index;
-  LOG(ERROR) << order;
-  LOG(ERROR) << coefficient;
-  LOG(ERROR) << ": "<< coefficient->x;
-  LOG(ERROR) << ": " << coefficient->y;
-
   journal::Method<journal::ExternalGeopotentialGetCoefficient> m{
       {plugin,
        body_index,
