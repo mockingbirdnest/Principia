@@ -35,7 +35,6 @@
 
 #include "base/status.hpp"
 
-#include <bitset>
 #include <cstdint>
 #include <cstdio>
 #include <ostream>
@@ -47,27 +46,12 @@
 namespace principia {
 namespace base {
 
-bool IsCompound(Error const error) {
-  return std::bitset<64>(static_cast<std::uint64_t>(error)).count() > 1;
-}
-
 Error operator|(Error const left, Error const right) {
-  return static_cast<Error>(static_cast<std::uint64_t>(left) |
-                            static_cast<std::uint64_t>(right));
-}
-
-Error operator&(Error const left, Error const right) {
-  return static_cast<Error>(static_cast<std::uint64_t>(left) &
-                            static_cast<std::uint64_t>(right));
+  return left == Error::OK ? right : left;
 }
 
 Error& operator|=(Error& left, Error const right) {
-  *reinterpret_cast<std::uint64_t*>(&left) |= static_cast<std::uint64_t>(right);
-  return left;
-}
-
-Error& operator&=(Error& left, Error const right) {
-  *reinterpret_cast<std::uint64_t*>(&left) &= static_cast<std::uint64_t>(right);
+  left = left | right;
   return left;
 }
 
@@ -113,9 +97,7 @@ std::string ErrorToString(Error const error) {
 
 Status::Status(Error const error, std::string const& message)
     : error_(error),
-      message_(error == Error::OK ? "" : message) {
-  CHECK(!IsCompound(error)) << static_cast<std::uint64_t>(error);
-}
+      message_(error == Error::OK ? "" : message) {}
 
 bool Status::ok() const {
   return error_ == Error::OK;
