@@ -1,92 +1,110 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace lamont {
 
-static class Reflection {
-  public class ReflectedProperties {
-    public ReflectedProperties(object obj) {
-      obj_ = obj;
+// Provides the following extension methods on all objects:
+// — obj.Call("name")(args).
+// — obj.GetValue("name");
+// — obj.SetValue("name", value);
+// The following generics are equivalent to casting the result of the
+// non-generic versions, with better error messages:
+// — obj.Call<T>("name")(args).
+// — obj.GetValue<T>("name");
+public static class Reflection {
+  // Returns the value of the property or field of |obj| with the given name.
+  public static T GetValue<T>(this object obj, string name) {
+    if (obj == null) {
+      throw new NullReferenceException(
+          $"Cannot access {typeof(T).FullName} {name} on null object");
     }
-
-    public object this[string name] {
-      get {
-        return obj_.GetType()
-            .GetProperty(name, BindingFlags.Public | BindingFlags.Instance)
-            .GetValue(obj_, index : null);
-      }
-      set {
-        obj_.GetType()
-            .GetProperty(name, BindingFlags.Public | BindingFlags.Instance)
-            .SetValue(obj_, value, index : null);
-      }
+    Type type = obj.GetType();
+    object result = null;
+    FieldInfo field = type.GetField(name, public_instance);
+    PropertyInfo property = type.GetProperty(name, public_instance);
+    if (field != null) {
+      result = field.GetValue(obj);
+    } else if (property != null) {
+      result = property.GetValue(obj, index : null);
+    } else {
+      throw new MissingMemberException(
+          $"No public instance field or property {name} in {type.FullName}");
     }
-
-    private object obj_;
+    try {
+      return (T)result;
+    } catch (Exception exception) {
+      throw new InvalidCastException(
+          $@"Could not convert the value of {
+              (field == null ? "property" : "field")} {
+              (field?.FieldType ?? property.PropertyType).FullName} {
+              type.FullName}.{name}, {result}, to {typeof(T).FullName}",
+          exception);
+    }
   }
 
-  public class ReflectedFields {
-    public ReflectedFields(object obj) {
-      obj_ = obj;
+  public static void SetValue<T>(this object obj, string name, T value) {
+    if (obj == null) {
+      throw new NullReferenceException(
+          $"Cannot access {typeof(T).FullName} {name} on null object");
     }
-
-    public object this[string name] {
-      get {
-        return obj_.GetType()
-            .GetField(name, BindingFlags.Public | BindingFlags.Instance)
-            .GetValue(obj_);
-      }
-      set {
-        obj_.GetType()
-            .GetField(name, BindingFlags.Public | BindingFlags.Instance)
-            .SetValue(obj_, value);
-      }
+    Type type = obj.GetType();
+    FieldInfo field = type.GetField(name, public_instance);
+    PropertyInfo property = type.GetProperty(name, public_instance);
+    if (field == null && property == null) {
+      throw new MissingMemberException(
+          $"No public instance field or property {name} in {type.FullName}");
     }
-
-    private object obj_;
-  }
-
-  public class ReflectedNonPublicFields {
-    public ReflectedNonPublicFields(object obj) {
-      obj_ = obj;
+    try {
+      field?.SetValue(obj, value);
+      property?.SetValue(obj, value, index : null);
+    } catch (Exception exception) {
+      throw new ArgumentException(
+          $@"Could not set {
+              (field == null ? "property" : "field")} {
+              (field?.FieldType ?? property.PropertyType).FullName} {
+              type.FullName}.{name} to {typeof(T).FullName} {value}",
+          exception);
     }
+  }
 
-    public object this[string name] {
-      get {
-        return obj_.GetType()
-            .GetField(name, BindingFlags.NonPublic | BindingFlags.Instance)
-            .GetValue(obj_);
-      }
-      set {
-        obj_.GetType()
-            .GetField(name, BindingFlags.NonPublic | BindingFlags.Instance)
-            .SetValue(obj_, value);
-      }
+  public static object GetValue(this object obj, string name) {
+    return obj.GetValue<object>(name);
+  }
+
+  public delegate T BoundMethod<T>(params object[] args);
+
+  public static BoundMethod<T> Call<T>(this object obj, string name) {
+    Type type = obj.GetType();
+    MethodInfo method = type.GetMethod(name, public_instance);
+    if (method == null) {
+     throw new KeyNotFoundException(
+         $"No public instance method {name} in {obj.GetType().FullName}");
     }
-
-    private object obj_;
+    return args => {
+      object result = method.Invoke(obj, args);
+      try {
+        return (T)result;
+      } catch (Exception exception) {
+        throw new InvalidCastException(
+            $@"Could not convert the result of {
+                method.ReturnType.FullName} {
+                type.FullName}.{name}(), {result}, to {typeof(T).FullName}",
+            exception);
+      }
+    };
   }
 
-  public static ReflectedProperties Properties(this object obj){
-     return new ReflectedProperties(obj);
+  public static BoundMethod<object> Call(this object obj, string name) {
+    return obj.Call<object>(name);
   }
 
-  public static ReflectedFields Fields(this object obj){
-     return new ReflectedFields(obj);
-  }
-
-  public static ReflectedNonPublicFields NonPublicFields(this object obj){
-     return new ReflectedNonPublicFields(obj);
-  }
+  private const BindingFlags public_instance =
+      BindingFlags.Public | BindingFlags.Instance;
 }
 
 static class Principia {
-  public class Error : Exception {
-    public Error() {}
-    public Error(string message) : base(message) {}
-    Error(string message, Exception inner) : base(message, inner) {}
-  }
-
   public static string AssemblyName() {
     foreach (var loaded_assembly in AssemblyLoader.loadedAssemblies) {
       if (loaded_assembly.assembly.GetName().Name == "ksp_plugin_adapter") {
@@ -102,32 +120,14 @@ static class Principia {
       $"principia.ksp_plugin_adapter.{name}, {AssemblyName()}");
   }
 
-  public static object Make(string name) {
-    return Activator.CreateInstance(GetType(name));
+  public static object Make(string type) {
+    return Activator.CreateInstance(GetType(type));
   }
 
-  public delegate void InterfaceFunction(params object[] args);
-
-  public static InterfaceFunction Call(string name) {
-    return args => {
-      object status = GetType("Interface").GetMethod(
-          $"External{name}",
-          BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, args);
-      if ((int)status.Fields()["error"] != 0) {
-        throw new Error(
-          $"Error {status.Fields()["error"]} from call to {name} with arguments {args}");
-      }
-    };
-  }
-
-  public static IntPtr Plugin() {
-    foreach (var module in ScenarioRunner.GetLoadedModules()) {
-      if (module.GetType().FullName ==
-          "principia.ksp_plugin_adapter.PrincipiaPluginAdapter") {
-        return (IntPtr)module.NonPublicFields()["plugin_"];
-      }
-    }
-    return IntPtr.Zero;
+  public static object Get() {
+    return GetType("ExternalInterface")
+        .GetMethod("Get")
+        .Invoke(null, null);
   }
 }
 
@@ -147,26 +147,58 @@ class LamontTest : ScenarioModule {
 
   void DrawLamontWindow(int window_id) {
     UnityEngine.GUILayout.BeginVertical();
+    object principia = null;
     try {
-      object coefficient = Principia.Make("XY");
-      Principia.Call("GeopotentialGetCoefficient")(
-          Principia.Plugin(),
+      principia = Principia.Get();
+    } catch (Exception e) {
+      UnityEngine.GUILayout.TextArea(e.ToString());
+    }
+    try {
+      var coefficient = principia.Call("GeopotentialGetCoefficient")(
           FlightGlobals.GetHomeBody().flightGlobalsIndex,
           2,
-          0,
-          coefficient);
-      double c20 = (double)coefficient.Fields()["x"];
+          0);
+      var c20 = coefficient.GetValue<double>("x");
       UnityEngine.GUILayout.TextArea($"C20 = {c20}");
     } catch (Exception e) {
       UnityEngine.GUILayout.TextArea(e.ToString());
     }
     try {
-      double r = double.NaN;
-      Principia.Call("GeopotentialGetReferenceRadius")(
-          Principia.Plugin(),
-          FlightGlobals.GetHomeBody().flightGlobalsIndex,
-          r);
+      double r = principia.Call<double>("GeopotentialGetReferenceRadius")(
+          FlightGlobals.GetHomeBody().flightGlobalsIndex);
       UnityEngine.GUILayout.TextArea($"r = {r}");
+    } catch (Exception e) {
+      UnityEngine.GUILayout.TextArea(e.ToString());
+    }
+    try {
+      var xy = Principia.Make("XY");
+      var c20 = xy.GetValue<string>("x");
+    } catch (Exception e) {
+      UnityEngine.GUILayout.TextArea(e.ToString());
+    }
+    try {
+      var xy = Principia.Make("XY");
+      var c20 = xy.GetValue<string>("z");
+    } catch (Exception e) {
+      UnityEngine.GUILayout.TextArea(e.ToString());
+    }
+    try {
+      var xy = Principia.Make("Burn");
+      var c20 = xy.GetValue<bool>("is_inertially_fixed");
+    } catch (Exception e) {
+      UnityEngine.GUILayout.TextArea(e.ToString());
+    }
+    try {
+      var xy = Principia.Make("Burn");
+      var c20 = xy.GetValue<string>("is_inertially_fixed");
+    } catch (Exception e) {
+      UnityEngine.GUILayout.TextArea(e.ToString());
+    }
+    try {
+      var qp = Principia.Make("QP");
+      var q = qp.GetValue("q");
+      var x = q.GetValue<double>("x");
+      q.SetValue("y", "kitten");
     } catch (Exception e) {
       UnityEngine.GUILayout.TextArea(e.ToString());
     }
