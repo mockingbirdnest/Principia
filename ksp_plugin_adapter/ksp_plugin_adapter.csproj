@@ -111,7 +111,6 @@
     <Compile Include="interface.generated.cs" />
     <Compile Include="ksp_plugin_adapter.cs" />
     <Compile Include="interface.cs" />
-    <Compile Include="lamont_test.cs" />
     <Compile Include="layout.cs" />
     <Compile Include="loader.cs" />
     <Compile Include="logging.cs" />
