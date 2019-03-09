@@ -108,9 +108,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // trajectory.
   not_null<DiscreteTrajectory<Frame>*> NewForkAtLast();
 
-  // The first point of |fork| is removed from |fork| and appended (using
-  // Append) to this trajectory.  Then |fork| is made a fork of this trajectory
-  // at the newly-inserted point.  |fork| must be a non-empty root.
+  // Changes |fork| to become a fork of this trajectory at the end of this
+  // trajectory.  |fork| must be a non-empty root and must start at or after the
+  // last time of this trajectory.  If it has a point at the last time of this
+  // trajectory, that point is ignored.
   void AttachFork(not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> fork);
 
   // This object must not be a root.  It is detached from its parent and becomes
@@ -138,7 +139,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // when |Append|ing, ensuring that |EvaluatePosition| returns a result within
   // |tolerance| of the missing points.  |max_dense_intervals| is the largest
   // number of points that can be added before removal is considered.
-  void SetDownsampling(std::int64_t max_dense_intervals, Length tolerance);
+  void SetDownsampling(std::int64_t max_dense_intervals,
+                       Length const& tolerance);
 
   // Clear the downsampling parameters.  From now on, all points appended to the
   // trajectory are going to be retained.
