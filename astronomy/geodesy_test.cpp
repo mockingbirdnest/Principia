@@ -122,7 +122,7 @@ TEST_F(GeodesyTest, LAGEOS2) {
       initial_ilrsb.orbit(lageos2_id).Begin().degrees_of_freedom();
 
   Instant const final_time = final_ilrsa.orbit(lageos2_id).Begin().time();
-  DegreesOfFreedom<ITRS> const expected_final_dof = 
+  DegreesOfFreedom<ITRS> const expected_final_dof =
       final_ilrsa.orbit(lageos2_id).Begin().degrees_of_freedom();
 
   ephemeris_->Prolong(final_time);
