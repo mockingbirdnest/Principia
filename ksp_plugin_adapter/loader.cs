@@ -110,7 +110,7 @@ internal static class Loader {
       [MarshalAs(UnmanagedType.LPTStr)] string filename,
       int flags = RTLD_NOW);
 
-  internal static bool loaded_principia_dll_ { get; private set; }
+  internal static bool loaded_principia_dll_ { get; private set; } = false;
 }
 
 }  // namespace ksp_plugin_adapter

@@ -88,7 +88,7 @@ public partial class PrincipiaPluginAdapter
   private bool selecting_active_vessel_target_ = false;
   private bool selecting_target_celestial_ = false;
 
-  private IntPtr plugin_;
+  private IntPtr plugin_ = IntPtr.Zero;
   internal IntPtr Plugin() {
     return plugin_;
   }
