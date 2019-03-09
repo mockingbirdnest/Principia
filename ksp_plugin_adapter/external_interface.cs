@@ -6,18 +6,14 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 public class ExternalInterface {
-  public XY GeopotentialGetCoefficient(
-      int body_index,
-      int degree,
-      int order) {
+  public XY GeopotentialGetCoefficient(int body_index, int degree, int order) {
     ThrowOnError(
         adapter_.Plugin().ExternalGeopotentialGetCoefficient(
             body_index, degree, order, out XY result));
     return result;
   }
 
-  public double GeopotentialGetReferenceRadius(
-      int body_index) {
+  public double GeopotentialGetReferenceRadius(int body_index) {
     ThrowOnError(
         adapter_.Plugin().ExternalGeopotentialGetReferenceRadius(
             body_index, out double result));
