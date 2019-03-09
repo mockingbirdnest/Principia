@@ -112,12 +112,12 @@ public static class Reflection {
 static class Principia {
   public static string AssemblyName() {
     foreach (var loaded_assembly in AssemblyLoader.loadedAssemblies) {
-      if (loaded_assembly.assembly.GetName().Name == "ksp_plugin_adapter") {
+      if (loaded_assembly.assembly.GetName().Name == "principia.ksp_plugin_adapter") {
         return loaded_assembly.assembly.FullName;
       }
     }
     throw new DllNotFoundException(
-        "ksp_plugin_adapter not in AssemblyLoader.loadedAssemblies");
+        "principia.ksp_plugin_adapter not in AssemblyLoader.loadedAssemblies");
   }
 
   public static Type GetType(string name) {
