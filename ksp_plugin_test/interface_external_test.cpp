@@ -181,7 +181,6 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       &radius);
   EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
   EXPECT_THAT(radius, Eq(578'900));
-
 }
 
 }  // namespace interface
