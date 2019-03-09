@@ -111,7 +111,6 @@
     <Compile Include="interface.generated.cs" />
     <Compile Include="ksp_plugin_adapter.cs" />
     <Compile Include="interface.cs" />
-    <Compile Include="lamont_test.cs" />
     <Compile Include="layout.cs" />
     <Compile Include="loader.cs" />
     <Compile Include="logging.cs" />
@@ -174,11 +173,9 @@
   </Target>
   -->
   <Target Name="Rename" AfterTargets="AfterBuild">
-    <Move SourceFiles="$(TargetPath)"
-          DestinationFiles="$(OutDir)$(ProjectName)$(TargetExt)" />
+    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(OutDir)$(ProjectName)$(TargetExt)" />
     <Message Text="Renamed $(OutDir)$(ProjectName)$(TargetExt) to $(OutDir)$(ProjectName)$(TargetExt)." Importance="high" />
-    <Move SourceFiles="$(OutDir)$(TargetName).pdb"
-          DestinationFiles="$(OutDir)$(ProjectName).pdb" />
+    <Move SourceFiles="$(OutDir)$(TargetName).pdb" DestinationFiles="$(OutDir)$(ProjectName).pdb" />
     <Message Text="Renamed $(OutDir)$(TargetName).pdb to $(OutDir)$(ProjectName).pdb." Importance="high" />
   </Target>
 </Project>
