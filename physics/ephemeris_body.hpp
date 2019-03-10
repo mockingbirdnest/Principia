@@ -408,7 +408,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   absl::MutexLock l(&lock_);
-  do {
+  while (t_max() < t) {
     instance_->Solve(t_final);
     t_final += fixed_step_parameters_.step_;
   } while (t_max() < t);
