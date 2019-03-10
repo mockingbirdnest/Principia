@@ -901,7 +901,10 @@ void Plugin::ComputeAndRenderClosestApproaches(
   if (begin != end) {
     auto last = end;
     --last;
-    CHECK_OK(target_vessel.FlowPrediction(last.time()));
+    target_vessel.FlowPrediction(last.time());
+    // The prediction may not have been prolonged enough if we are near a
+    // singularity.
+    CHECK_LE(last.time(), target_vessel.prediction().last().time());
   }
   ComputeApsides(target_vessel.prediction(),
                  begin,
