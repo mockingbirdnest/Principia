@@ -146,6 +146,7 @@ message WXYZ {
 }
 
 message XY {
+  option (is_public) = true;
   required double x = 1;
   required double y = 2;
 }
@@ -1969,6 +1970,9 @@ extend google.protobuf.MessageOptions {
   // For an interchange message that is used as an in parameters, specifies the
   // custom marshaler to use.
   optional string in_custom_marshaler = 50011;
+  // For an interchange message, specifies whether the generated C# struct
+  // should be public (the default is internal).
+  optional bool is_public = 50012;
   // If set, the body of the Run method is wrapped into an #ifdef for the given
   // symbol.  Useful for selectively skipping replay of some methods.
   optional string run_conditional_compilation_symbol = 50010;

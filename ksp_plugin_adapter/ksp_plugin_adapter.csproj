@@ -7,8 +7,8 @@
     <ProjectGuid>{E75B3F05-D64F-4AFE-9493-2F94A9B37510}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ksp_plugin_adapter</RootNamespace>
-    <AssemblyName>ksp_plugin_adapter</AssemblyName>
+    <RootNamespace>principia.ksp_plugin_adapter</RootNamespace>
+    <AssemblyName>principia.ksp_plugin_adapter</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -105,6 +105,7 @@
     <Compile Include="differential_slider.cs" />
     <Compile Include="disposable.cs" />
     <Compile Include="disposable_marshaller.cs" />
+    <Compile Include="external_interface.cs" />
     <Compile Include="flight_planner.cs" />
     <Compile Include="gl_lines.cs" />
     <Compile Include="interface.generated.cs" />
@@ -171,4 +172,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="Rename" AfterTargets="AfterBuild">
+    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(OutDir)$(ProjectName)$(TargetExt)" />
+    <Message Text="Renamed $(TargetPath) to $(OutDir)$(ProjectName)$(TargetExt)" Importance="high" />
+    <Move SourceFiles="$(OutDir)$(TargetName).pdb" DestinationFiles="$(OutDir)$(ProjectName).pdb" />
+    <Message Text="Renamed $(OutDir)$(TargetName).pdb to $(OutDir)$(ProjectName).pdb" Importance="high" />
+  </Target>
 </Project>

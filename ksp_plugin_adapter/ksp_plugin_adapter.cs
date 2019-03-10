@@ -89,6 +89,9 @@ public partial class PrincipiaPluginAdapter
   private bool selecting_target_celestial_ = false;
 
   private IntPtr plugin_ = IntPtr.Zero;
+  internal IntPtr Plugin() {
+    return plugin_;
+  }
 
   private bool display_patched_conics_ = false;
 
