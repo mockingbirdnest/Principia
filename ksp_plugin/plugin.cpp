@@ -897,7 +897,7 @@ void Plugin::ComputeAndRenderClosestApproaches(
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
   auto& target_vessel = renderer_->GetTargetVessel();
-  target_vessel.FlowPrediction(current_time_);
+  CHECK_OK(target_vessel.FlowPrediction(current_time_));
   ComputeApsides(target_vessel.prediction(),
                  begin,
                  end,
