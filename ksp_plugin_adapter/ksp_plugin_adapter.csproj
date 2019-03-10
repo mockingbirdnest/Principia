@@ -174,8 +174,8 @@
   -->
   <Target Name="Rename" AfterTargets="AfterBuild">
     <Move SourceFiles="$(TargetPath)" DestinationFiles="$(OutDir)$(ProjectName)$(TargetExt)" />
-    <Message Text="Renamed $(OutDir)$(ProjectName)$(TargetExt) to $(OutDir)$(ProjectName)$(TargetExt)." Importance="high" />
+    <Message Text="Renamed $(TargetPath) to $(OutDir)$(ProjectName)$(TargetExt)" Importance="high" />
     <Move SourceFiles="$(OutDir)$(TargetName).pdb" DestinationFiles="$(OutDir)$(ProjectName).pdb" />
-    <Message Text="Renamed $(OutDir)$(TargetName).pdb to $(OutDir)$(ProjectName).pdb." Importance="high" />
+    <Message Text="Renamed $(OutDir)$(TargetName).pdb to $(OutDir)$(ProjectName).pdb" Importance="high" />
   </Target>
 </Project>
