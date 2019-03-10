@@ -8,7 +8,7 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class Loader {
-  public static string LoadPrincipiaDllAndInitGoogleLogging() {
+  internal static string LoadPrincipiaDllAndInitGoogleLogging() {
     if (loaded_principia_dll_) {
       return null;
     }
@@ -110,7 +110,7 @@ internal static class Loader {
       [MarshalAs(UnmanagedType.LPTStr)] string filename,
       int flags = RTLD_NOW);
 
-  private static bool loaded_principia_dll_ = false;
+  internal static bool loaded_principia_dll_ { get; private set; } = false;
 }
 
 }  // namespace ksp_plugin_adapter
