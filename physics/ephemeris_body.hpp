@@ -289,6 +289,7 @@ Ephemeris<Frame>::Ephemeris(
     }
   }
 
+  absl::ReaderMutexLock l(&lock_);  // For locking checks.
   instance_ = fixed_step_parameters_.integrator_->NewInstance(
       problem,
       /*append_state=*/std::bind(
@@ -310,7 +311,6 @@ not_null<ContinuousTrajectory<Frame> const*> Ephemeris<Frame>::trajectory(
 
 template<typename Frame>
 bool Ephemeris<Frame>::empty() const {
-  absl::ReaderMutexLock l(&lock_);
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
     if (trajectory->empty()) {
@@ -335,8 +335,14 @@ Instant Ephemeris<Frame>::t_min() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
-  absl::ReaderMutexLock l(&lock_);
-  return t_max_locked();
+  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
+  for (auto const& pair : bodies_to_trajectories_) {
+    auto const& trajectory = pair.second;
+    t_max = std::min(t_max, trajectory->t_max());
+  }
+  // Here we may have a checkpoint after |t_max| if the checkpointed state was
+  // not yet incorporated in a series.
+  return t_max;
 }
 
 template<typename Frame>
@@ -353,6 +359,7 @@ Status Ephemeris<Frame>::last_severe_integration_status() const {
 
 template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
+  absl::MutexLock l(&lock_);
   auto it = std::upper_bound(
                 checkpoints_.begin(), checkpoints_.end(), t,
                 [](Instant const& left, Checkpoint const& right) {
@@ -381,6 +388,11 @@ void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
 
 template<typename Frame>
 void Ephemeris<Frame>::Prolong(Instant const& t) {
+  // Short-circuit without locking.
+  if (t <= t_max()) {
+    return;
+  }
+
   // Note that |t| may be before the last time that we integrated and still
   // after |t_max()|.  In this case we want to make sure that the integrator
   // makes progress.
@@ -396,7 +408,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   absl::MutexLock l(&lock_);
-  while (t_max_locked() < t) {
+  while (t_max() < t) {
     instance_->Solve(t_final);
     t_final += fixed_step_parameters_.step_;
   }
@@ -416,7 +428,7 @@ Ephemeris<Frame>::NewInstance(
           Instant const& t,
           std::vector<Position<Frame>> const& positions,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    bool const ok =
+    Error const error =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
                                                         accelerations);
@@ -427,7 +439,9 @@ Ephemeris<Frame>::NewInstance(
         accelerations[i] += intrinsic_acceleration(t);
       }
     }
-    return ok ? Status::OK : CollisionDetected();
+    return error == Error::OK ? Status::OK :
+           error == Error::CANCELLED ? Status::CANCELLED :
+                    CollisionDetected();
   };
 
   CHECK(!trajectories.empty());
@@ -466,14 +480,16 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    bool const ok =
+    Error const error =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
                                                         accelerations);
     if (intrinsic_acceleration != nullptr) {
       accelerations[0] += intrinsic_acceleration(t);
     }
-    return ok ? Status::OK : CollisionDetected();
+    return error == Error::OK ? Status::OK :
+           error == Error::CANCELLED ? Status::CANCELLED :
+                    CollisionDetected();
   };
 
   return FlowODEWithAdaptiveStep<NewtonianMotionEquation>(
@@ -499,7 +515,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           std::vector<Position<Frame>> const& positions,
           std::vector<Velocity<Frame>> const& velocities,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        bool const ok =
+        Error const error =
             ComputeMasslessBodiesGravitationalAccelerations(t,
                                                             positions,
                                                             accelerations);
@@ -507,7 +523,9 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           accelerations[0] +=
               intrinsic_acceleration(t, {positions[0], velocities[0]});
         }
-        return ok ? Status::OK : CollisionDetected();
+        return error == Error::OK ? Status::OK :
+               error == Error::CANCELLED ? Status::CANCELLED :
+                        CollisionDetected();
       };
 
   return FlowODEWithAdaptiveStep<GeneralizedNewtonianMotionEquation>(
@@ -713,6 +731,7 @@ template<typename Frame>
 void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
   LOG(INFO) << __FUNCTION__;
+  absl::ReaderMutexLock l(&lock_);
   // The bodies are serialized in the order in which they were given at
   // construction.
   for (auto const& unowned_body : unowned_bodies_) {
@@ -811,9 +830,13 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     ++index;
   }
   if (is_pre_εὔδοξος) {
-    ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
+    {
+      absl::ReaderMutexLock l(&ephemeris->lock_);
+      ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
+    }
     ephemeris->Prolong(Instant::ReadFromMessage(message.t_max()));
   } else if (message.has_checkpoints()) {
+    absl::ReaderMutexLock l(&ephemeris->lock_);
     ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
     // The ephemeris will need to be prolonged as needed when deserializing the
     // plugin.
@@ -832,6 +855,7 @@ Ephemeris<Frame>::Ephemeris(
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
     typename NewtonianMotionEquation::SystemState const& state) {
+  lock_.AssertHeld();
   int index = 0;
   for (int i = 0; i < trajectories_.size(); ++i) {
     auto const& trajectory = trajectories_[i];
@@ -858,8 +882,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
       checkpoints_.empty()
           ? astronomy::InfinitePast
           : checkpoints_.back().instance->time().value;
-  if (t_max_locked() - t_last_intermediate_state >
-      max_time_between_checkpoints) {
+  if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
     checkpoints_.push_back(GetCheckpoint());
   }
 }
@@ -880,23 +903,12 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
 
 template<typename Frame>
 typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
+  lock_.AssertReaderHeld();
   std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   for (auto const& trajectory : trajectories_) {
     checkpoints.push_back(trajectory->GetCheckpoint());
   }
   return Checkpoint({instance_->Clone(), checkpoints});
-}
-
-template<typename Frame>
-Instant Ephemeris<Frame>::t_max_locked() const {
-  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
-  for (auto const& pair : bodies_to_trajectories_) {
-    auto const& trajectory = pair.second;
-    t_max = std::min(t_max, trajectory->t_max());
-  }
-  // Here we may have a checkpoint after |t_max| if the checkpointed state was
-  // not yet incorporated in a series.
-  return t_max;
 }
 
 template<typename Frame>
@@ -977,18 +989,26 @@ void Ephemeris<Frame>::
 
 template<typename Frame>
 template<bool body1_is_oblate>
-bool Ephemeris<Frame>::
+Error Ephemeris<Frame>::
 ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     Instant const& t,
     MassiveBody const& body1,
     std::size_t const b1,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
+  lock_.AssertReaderHeld();
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
-  Position<Frame> const position1 = trajectories_[b1]->EvaluatePosition(t);
+  auto const& trajectory1 = *trajectories_[b1];
+  if (t < trajectory1.t_min()) {
+    // This can happen when computing a prediction asynchronously and the
+    // continuous trajectories have been "forgotten before" already.  Just
+    // cancel the prediction.
+    return Error::CANCELLED;
+  }
+  Position<Frame> const position1 = trajectory1.EvaluatePosition(t);
   Length const body1_collision_radius =
       mean_radius_tolerance * body1.mean_radius();
-  bool ok = true;
+  Error error = Error::OK;
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
     // A vector from the center of |b2| to the center of |b1|.
@@ -996,7 +1016,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 
     Square<Length> const Δq² = Δq.Norm²();
     Length const Δq_norm = Sqrt(Δq²);
-    ok &= Δq_norm > body1_collision_radius;
+    error |= Δq_norm > body1_collision_radius ? Error::OK : Error::OUT_OF_RANGE;
 
     Exponentiation<Length, -3> const one_over_Δq³ = Δq_norm / (Δq² * Δq²);
 
@@ -1016,7 +1036,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       accelerations[b2] += μ1 * degree_2_zonal_effect1;
     }
   }
-  return ok;
+  return error;
 }
 
 template<typename Frame>
@@ -1024,6 +1044,7 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
+  lock_.AssertReaderHeld();
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
 
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
@@ -1065,37 +1086,38 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
 }
 
 template<typename Frame>
-bool Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
-      Instant const& t,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) const {
+Error Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
+    Instant const& t,
+    std::vector<Position<Frame>> const& positions,
+    std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   CHECK_EQ(positions.size(), accelerations.size());
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
-  bool ok = true;
+  Error error = Error::OK;
 
+  // Locking ensures that we see a consistent state of all the trajectories.
   absl::ReaderMutexLock l(&lock_);
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
-    ok &= ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies<
-        /*body1_is_oblate=*/true>(
-        t,
-        body1, b1,
-        positions,
-        accelerations);
+    error |= ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies<
+                 /*body1_is_oblate=*/true>(
+                 t,
+                 body1, b1,
+                 positions,
+                 accelerations);
   }
   for (std::size_t b1 = number_of_oblate_bodies_;
        b1 < number_of_oblate_bodies_ +
             number_of_spherical_bodies_;
        ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
-    ok &= ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies<
-        /*body1_is_oblate=*/false>(
-        t,
-        body1, b1,
-        positions,
-        accelerations);
+    error |= ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies<
+                 /*body1_is_oblate=*/false>(
+                 t,
+                 body1, b1,
+                 positions,
+                 accelerations);
   }
-  return ok;
+  return error;
 }
 
 template<typename Frame>
@@ -1188,8 +1210,8 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     return status;
   } else {
     return Status(Error::DEADLINE_EXCEEDED,
-                  "Couldn't reach " + DebugString(t_final) + ", stopping at " +
-                      DebugString(t));
+                  "Couldn't reach " + DebugString(t) + ", stopping at " +
+                      DebugString(t_final));
   }
 }
 
