@@ -376,10 +376,10 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
         vessels_.emplace(
             vessel_guid,
             make_not_null_unique<Vessel>(vessel_guid,
-                                        vessel_name,
-                                        parent,
-                                        ephemeris_.get(),
-                                        DefaultPredictionParameters()));
+                                         vessel_name,
+                                         parent,
+                                         ephemeris_.get(),
+                                         DefaultPredictionParameters()));
   } else {
     inserted = false;
   }
@@ -897,7 +897,13 @@ void Plugin::ComputeAndRenderClosestApproaches(
 
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
-  ComputeApsides(renderer_->GetTargetVesselPrediction(current_time_),
+  auto& target_vessel = renderer_->GetTargetVessel();
+  if (begin != end) {
+    auto last = end;
+    --last;
+    CHECK_OK(target_vessel.FlowPrediction(last.time()));
+  }
+  ComputeApsides(target_vessel.prediction(),
                  begin,
                  end,
                  apoapsides_trajectory,
