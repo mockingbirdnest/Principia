@@ -77,6 +77,8 @@ class StandardProduct3 {
 
   DiscreteTrajectory<ITRS> const& orbit(SatelliteIdentifier const& id) const;
 
+  Version version() const;
+
  private:
   std::map<SatelliteIdentifier, DiscreteTrajectory<ITRS>> orbits_;
   Version version_;

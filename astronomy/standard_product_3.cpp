@@ -285,13 +285,14 @@ StandardProduct3::StandardProduct3(
             Velocity<ITRS>({float_columns(5, 18) * (Deci(Metre) / Second),
                             float_columns(19, 32) * (Deci(Metre) / Second),
                             float_columns(33, 46) * (Deci(Metre) / Second)});
-      }
 
-      read_line();
-      if (version_ >= Version::C && line.has_value() && columns(1, 2) == "EV") {
-        // Ignore the optional EV record (the velocity and clock rate-of-change
-        // correlation record).
         read_line();
+        if (version_ >= Version::C && line.has_value() &&
+            columns(1, 2) == "EV") {
+          // Ignore the optional EV record (the velocity and clock
+          // rate-of-change correlation record).
+          read_line();
+        }
       }
 
       orbit.Append(epoch, {position, velocity});
@@ -307,6 +308,10 @@ StandardProduct3::StandardProduct3(
 DiscreteTrajectory<ITRS> const& StandardProduct3::orbit(
     SatelliteIdentifier const& id) const {
   return FindOrDie(orbits_, id);
+}
+
+StandardProduct3::Version StandardProduct3::version() const {
+  return version_;
 }
 
 bool operator<(StandardProduct3::SatelliteIdentifier const& left,
