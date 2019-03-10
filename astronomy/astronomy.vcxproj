@@ -73,6 +73,7 @@
     <ClCompile Include="lunar_orbit_test.cpp" />
     <ClCompile Include="solar_system_dynamics_test.cpp" />
     <ClCompile Include="standard_product_3.cpp" />
+    <ClCompile Include="standard_product_3_test.cpp" />
     <ClCompile Include="time_scales_test.cpp" />
     <ClCompile Include="lunar_eclipse_test.cpp" />
     <ClCompile Include="mercury_perihelion_test.cpp" />

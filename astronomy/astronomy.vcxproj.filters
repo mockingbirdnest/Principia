@@ -218,5 +218,8 @@
     <ClCompile Include="standard_product_3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="standard_product_3_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
