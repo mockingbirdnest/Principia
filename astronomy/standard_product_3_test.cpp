@@ -63,7 +63,7 @@ TEST_F(StandardProduct3Test, PositionAndVelocity) {
   EXPECT_THAT(sp3c.version(), Eq(StandardProduct3::Version::C));
 }
 
-// Test that various nonconformant dialects are nonconformant distinct.
+// Test that the nonstandard dialects are nonconformant distinct.
 
 TEST_F(StandardProduct3DeathTest, ILRSANonConformance) {
   // We find no /* records, because they are %/* records in ILRSA.
@@ -94,6 +94,18 @@ TEST_F(StandardProduct3DeathTest, ILRSBNonConformance) {
                                     "ilrsb.orb.lageos2.160319.v35.sp3",
                                 StandardProduct3::Dialect::ILRSA),
                "date_time_body.hpp");
+}
+
+// Test that we successfully parse the nonstandard dialects.
+
+TEST_F(StandardProduct3Test, Dialects) {
+  StandardProduct3 ilrsa(SOLUTION_DIR / "astronomy" / "sp3_orbits" /
+                             "ilrsa.orb.lageos2.160319.v35.sp3",
+                         StandardProduct3::Dialect::ILRSA);
+
+  StandardProduct3 ilrsb(SOLUTION_DIR / "astronomy" / "sp3_orbits" /
+                             "ilrsb.orb.lageos2.160319.v35.sp3",
+                         StandardProduct3::Dialect::ILRSB);
 }
 
 }  // namespace astronomy
