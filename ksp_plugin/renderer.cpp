@@ -303,6 +303,9 @@ not_null<NavigationFrame const*> Renderer::GetPlottingFrame(
     Instant const& time) const {
   if (target_) {
     target_->vessel->FlowPrediction(time);
+    // The prediction may not have been prolonged enough if we are near a
+    // singularity.
+    CHECK_LE(time, target_->vessel->prediction().last().time());
   }
   return GetPlottingFrame();
 }
