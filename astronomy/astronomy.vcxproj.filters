@@ -71,6 +71,9 @@
     <None Include="sp3_orbits\ilrsb.orb.lageos2.160319.v35.sp3">
       <Filter>Resource Files\SP3 Orbits</Filter>
     </None>
+    <None Include="sp3_orbits\README.md">
+      <Filter>Resource Files\SP3 Orbits</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="sol_initial_state_jd_2433282_500000000.proto.txt">
