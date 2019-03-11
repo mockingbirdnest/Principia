@@ -331,7 +331,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
   // Polling for the integration to happen.
   do {
     vessel_.FlowPrediction();
-    using namespace std::chrono_literals;
+    using namespace std::chrono_literals;  // NOLINT(build/namespaces)
     std::this_thread::sleep_for(100ms);
   } while (vessel_.prediction().Size() != 3);
 
