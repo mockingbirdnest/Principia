@@ -67,11 +67,6 @@ class Renderer {
   virtual Vessel& GetTargetVessel();
   virtual Vessel const& GetTargetVessel() const;
 
-  // If there is a target vessel, returns its prediction after extending it up
-  // to |time|.
-  virtual DiscreteTrajectory<Barycentric> const& GetTargetVesselPrediction(
-      Instant const& time) const;
-
   // Returns a trajectory in |World| corresponding to the trajectory defined by
   // |begin| and |end|, as seen in the current plotting frame.  In this function
   // and others in this class, |sun_world_position| is the current position of
