@@ -20,8 +20,6 @@ using geometry::RigidTransformation;
 using geometry::Vector;
 using geometry::Velocity;
 using physics::BodyCentredBodyDirectionDynamicFrame;
-using physics::ComputeApsides;
-using physics::ComputeNodes;
 using physics::DegreesOfFreedom;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,
@@ -304,7 +302,7 @@ Renderer::Target::Target(
 not_null<NavigationFrame const*> Renderer::GetPlottingFrame(
     Instant const& time) const {
   if (target_) {
-    target_->vessel->FlowPrediction(time);
+    CHECK_OK(target_->vessel->FlowPrediction(time));
   }
   return GetPlottingFrame();
 }
