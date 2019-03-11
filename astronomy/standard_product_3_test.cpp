@@ -63,5 +63,38 @@ TEST_F(StandardProduct3Test, PositionAndVelocity) {
   EXPECT_THAT(sp3c.version(), Eq(StandardProduct3::Version::C));
 }
 
+// Test that various nonconformant dialects are nonconformant distinct.
+
+TEST_F(StandardProduct3DeathTest, ILRSANonConformance) {
+  // We find no /* records, because they are %/* records in ILRSA.
+  EXPECT_DEATH(StandardProduct3(SOLUTION_DIR / "astronomy" / "sp3_orbits" /
+                                    "ilrsa.orb.lageos2.160319.v35.sp3",
+                                StandardProduct3::Dialect::Standard),
+               R"(At least 4 /\* records expected)");
+  // We fail to parse the date in the epoch header record, as the fields of
+  // ILRSA are correctly aligned, but we expect the ILRSB misalignment.
+  // date_time_body.hpp.
+  EXPECT_DEATH(
+      StandardProduct3(SOLUTION_DIR / "astronomy" / "sp3_orbits" /
+                           "ilrsa.orb.lageos2.160319.v35.sp3",
+                       StandardProduct3::Dialect::ILRSB),
+      R"(SimpleAtoi.* line 23: \*  2016  3 13  0  0  0.00000000 columns 17-18)");
+}
+
+TEST_F(StandardProduct3DeathTest, ILRSBNonConformance) {
+  // We find no /* records, because they are %/* records in ILRSB.
+  EXPECT_DEATH(StandardProduct3(SOLUTION_DIR / "astronomy" / "sp3_orbits" /
+                                    "ilrsb.orb.lageos2.160319.v35.sp3",
+                                StandardProduct3::Dialect::Standard),
+               R"(At least 4 /\* records expected)");
+  // We fail to parse the date in the epoch header record, as the fields are
+  // misaligned.  The error reporting is not very helpful: we fail deep in
+  // date_time_body.hpp.
+  EXPECT_DEATH(StandardProduct3(SOLUTION_DIR / "astronomy" / "sp3_orbits" /
+                                    "ilrsb.orb.lageos2.160319.v35.sp3",
+                                StandardProduct3::Dialect::ILRSA),
+               "date_time_body.hpp");
+}
+
 }  // namespace astronomy
 }  // namespace principia
