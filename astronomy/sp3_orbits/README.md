@@ -14,25 +14,23 @@ https://kb.igs.org/hc/en-us/articles/115003935351,
 https://cddis.nasa.gov/Data_and_Derived_Products/GNSS/orbit_products.html.
 
 - [esa11802.eph](esa11802.eph):<br>
-  ftp://gssc.esa.int/gnss/products/1180 <br>
-  ftp://igs.ensg.ign.fr/pub/igs/products/1180 <br>
-  ftp://lox.ucsd.edu/pub/products/1180 <br>
-  ftp://cddis.gsfc.nasa.gov/gnss/products/1180
+  ftp://gssc.esa.int/gnss/products/1180/ <br>
+  ftp://igs.ensg.ign.fr/pub/igs/products/1180/ <br>
+  ftp://lox.ucsd.edu/pub/products/1180/ <br>
+  ftp://cddis.gsfc.nasa.gov/gnss/products/1180/
 
 ### Multi-GNSS Experiment (MGEX)
 
 See http://mgex.igs.org/IGS_MGEX_Products.php.
 
 - [COD0MGXFIN_20181260000_01D_05M_ORB.SP3](COD0MGXFIN_20181260000_01D_05M_ORB.SP3):<br>
-  ftp://gssc.esa.int/gnss/products/mgex/2000 <br>
-  ftp://igs.ensg.ign.fr/pub/igs/products/mgex/2000 <br>
-  ftp://lox.ucsd.edu/pub/products/mgex/2000 <br>
-  ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2000
+  ftp://igs.ensg.eu/pub/igs/products/mgex/2000/ <br>
+  ftp://igs.ensg.ign.fr/pub/igs/products/mgex/2000/ <br>
+  ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2000/
 - [COD0MGXFIN_20183640000_01D_05M_ORB.SP3](COD0MGXFIN_20183640000_01D_05M_ORB.SP3):<br>
-  ftp://gssc.esa.int/gnss/products/mgex/2034 <br>
-  ftp://igs.ensg.ign.fr/pub/igs/products/mgex/2034 <br>
-  ftp://lox.ucsd.edu/pub/products/mgex/2034 <br>
-  ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2034
+  ftp://igs.ensg.eu/pub/igs/products/mgex/2034/ <br>
+  ftp://igs.ensg.ign.fr/pub/igs/products/mgex/2034/ <br>
+  ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2034/
 
 
 ### International GLONASS Experiment (IGEX) / International GLONASS Service Pilot Project (IGLOS-PP)
