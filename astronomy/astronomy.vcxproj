@@ -16,6 +16,9 @@
     <None Include="sol_gravity_model.cfg" />
     <None Include="sol_initial_state_jd_2433282_500000000.cfg" />
     <None Include="sol_numerics_blueprint.cfg" />
+    <None Include="sp3_orbits\ilrsa.orb.lageos2.160319.v35.sp3" />
+    <None Include="sp3_orbits\ilrsa.orb.lageos2.180804.v70.sp3" />
+    <None Include="sp3_orbits\ilrsb.orb.lageos2.160319.v35.sp3" />
     <None Include="trappist_gravity_model.cfg" />
     <None Include="trappist_gravity_model_slippist1.cfg" />
     <None Include="trappist_initial_state_jd_2457000_000000000.cfg" />

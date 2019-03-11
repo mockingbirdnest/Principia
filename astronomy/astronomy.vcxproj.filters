@@ -15,6 +15,9 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{2f348d01-8c8d-4e0d-8ad2-c4e1d1a62595}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\SP3 Orbits">
+      <UniqueIdentifier>{5013cac9-94fd-404a-9590-be599c20b5ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="query.f">
@@ -58,6 +61,15 @@
     </None>
     <None Include="trappist_rss_time_formatter.cfg">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="sp3_orbits\ilrsa.orb.lageos2.160319.v35.sp3">
+      <Filter>Resource Files\SP3 Orbits</Filter>
+    </None>
+    <None Include="sp3_orbits\ilrsa.orb.lageos2.180804.v70.sp3">
+      <Filter>Resource Files\SP3 Orbits</Filter>
+    </None>
+    <None Include="sp3_orbits\ilrsb.orb.lageos2.160319.v35.sp3">
+      <Filter>Resource Files\SP3 Orbits</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
