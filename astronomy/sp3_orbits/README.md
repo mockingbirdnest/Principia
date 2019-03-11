@@ -1,5 +1,10 @@
 ﻿# Satellite orbits in SP3 format
 
+This directory contains satellite orbit files in the standard product 3 orbit
+format, used by Principia as test data.
+
+These files come from various agencies; we document their provenance here.
+
 ## International DORIS Service (IDS) products
 
 ## Inernational GNSS Service (IGS) products
