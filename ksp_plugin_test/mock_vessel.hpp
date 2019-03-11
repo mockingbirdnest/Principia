@@ -37,8 +37,6 @@ class MockVessel : public Vessel {
 
   MOCK_METHOD1(FlowPrediction, Status(Instant const& last_time));
 
-  MOCK_CONST_METHOD0(psychohistory_is_authoritative, bool());
-
   MOCK_CONST_METHOD1(WriteToMessage,
                      void(not_null<serialization::Vessel*> message));
 };

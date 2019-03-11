@@ -411,7 +411,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   while (t_max() < t) {
     instance_->Solve(t_final);
     t_final += fixed_step_parameters_.step_;
-  } while (t_max() < t);
+  }
 }
 
 template<typename Frame>
@@ -581,20 +581,16 @@ ComputeGravitationalAccelerationOnMassiveBody(
   std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
   int b1 = -1;
 
-  // Evaluate the |positions|.  Locking ensure that we see a consistent state of
-  // all the trajectories.
-  {
-    absl::ReaderMutexLock l(&lock_);
-    positions.reserve(bodies_.size());
-    for (int b = 0; b < bodies_.size(); ++b) {
-      auto const& current_body = bodies_[b];
-      auto const& current_body_trajectory = trajectories_[b];
-      if (current_body.get() == body) {
-        CHECK_EQ(-1, b1);
-        b1 = b;
-      }
-      positions.push_back(current_body_trajectory->EvaluatePosition(t));
+  // Evaluate the |positions|.
+  positions.reserve(bodies_.size());
+  for (int b = 0; b < bodies_.size(); ++b) {
+    auto const& current_body = bodies_[b];
+    auto const& current_body_trajectory = trajectories_[b];
+    if (current_body.get() == body) {
+      CHECK_EQ(-1, b1);
+      b1 = b;
     }
+    positions.push_back(current_body_trajectory->EvaluatePosition(t));
   }
   CHECK_LE(0, b1);
 
