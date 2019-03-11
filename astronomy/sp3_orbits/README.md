@@ -6,8 +6,12 @@
 
 ## International Laser Ranging Service (ILRS) products
 
-|File|CDDIS|EDC|
-|---|---|---|
-| [ilrsa.orb.lageos2.160319.v35.sp3](ilrsa.orb.lageos2.160319.v35.sp3) | [lageos2/160319/](ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/) | [lageos2/160319/](ftp://edc.dgfi.tum.de/pub/slr/products/orbits/lageos2/160319/) |
+- [ilrsa.orb.lageos2.160319.v35.sp3](ilrsa.orb.lageos2.160319.v35.sp3),<br>
+  [ilrsb.orb.lageos2.160319.v35.sp3](ilrsa.orb.lageos2.160319.v35.sp3):<br>
+  ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/ <br>
+  ftp://edc.dgfi.tum.de/pub/slr/products/orbits/lageos2/160319/
+- [ilrsa.orb.lageos2.180804.v70.sp3](ilrsa.orb.lageos2.180804.v70.sp3):<br>
+  ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/180804/ <br>
+  ftp://edc.dgfi.tum.de/pub/slr/products/orbits/lageos2/180804/
 
 ## Miscellaneous
