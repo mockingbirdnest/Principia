@@ -140,6 +140,7 @@ StandardProduct3::StandardProduct3(
                                                     std::forward_as_tuple());
         CHECK(inserted) << "Duplicate satellite identifier " << id << ": "
                         << full_location;
+        satellites_.push_back(id);
       } else {
         CHECK_EQ(columns(c, c + 2), "  0") << full_location;
       }
@@ -256,6 +257,18 @@ StandardProduct3::StandardProduct3(
       auto const it = orbits_.find(id);
       CHECK(it != orbits_.end()) << "Unknown satellite identifier "
                                  << id << ": " << location;
+
+      // The SP3-c and SP3-d specification require that the satellite order of
+      // the P, EP, V, and EV records be the same as the order of the satellite
+      // ID records.
+      // This wording was added to the SP3-c specification by the 2006-09-27
+      // amendment, which describes it as a “clarification”, so the intent seems
+      // to be that this was required from the start for SP3-c, and perhaps for
+      // earlier versions as well.
+      // If this breaks for SP3-a or SP3-b, consider exempting these versions
+      // from the check.
+      CHECK_EQ(id, satellites_[i]) << location;
+
       DiscreteTrajectory<ITRS>& orbit = it->second;
 
       Position<ITRS> const position =
@@ -312,6 +325,11 @@ DiscreteTrajectory<ITRS> const& StandardProduct3::orbit(
 
 StandardProduct3::Version StandardProduct3::version() const {
   return version_;
+}
+
+bool operator==(StandardProduct3::SatelliteIdentifier const& left,
+                StandardProduct3::SatelliteIdentifier const& right) {
+  return left.group == right.group && left.index == right.index;
 }
 
 bool operator<(StandardProduct3::SatelliteIdentifier const& left,

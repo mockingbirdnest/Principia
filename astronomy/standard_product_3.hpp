@@ -4,6 +4,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "astronomy/frames.hpp"
 #include "geometry/named_quantities.hpp"
@@ -80,11 +81,15 @@ class StandardProduct3 {
   Version version() const;
 
  private:
+  std::vector<SatelliteIdentifier> satellites_;
   std::map<SatelliteIdentifier, DiscreteTrajectory<ITRS>> orbits_;
   Version version_;
 
   bool has_velocities_;
 };
+
+bool operator==(StandardProduct3::SatelliteIdentifier const& left,
+                StandardProduct3::SatelliteIdentifier const& right);
 
 bool operator<(StandardProduct3::SatelliteIdentifier const& left,
                StandardProduct3::SatelliteIdentifier const& right);
