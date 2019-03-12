@@ -318,6 +318,11 @@ StandardProduct3::StandardProduct3(
   CHECK(!line.has_value()) << location;
 }
 
+std::vector<StandardProduct3::SatelliteIdentifier> const&
+StandardProduct3::satellites() const {
+  return satellites_;
+}
+
 DiscreteTrajectory<ITRS> const& StandardProduct3::orbit(
     SatelliteIdentifier const& id) const {
   return FindOrDie(orbits_, id);
@@ -340,12 +345,12 @@ bool operator<(StandardProduct3::SatelliteIdentifier const& left,
 
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::Version const& version) {
-  return out << std::string(static_cast<char>(version), 1);
+  return out << std::string(1, static_cast<char>(version));
 }
 
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::SatelliteGroup const& group) {
-  return out << std::string(static_cast<char>(group), 1);
+  return out << std::string(1, static_cast<char>(group));
 }
 
 std::ostream& operator<<(std::ostream& out,

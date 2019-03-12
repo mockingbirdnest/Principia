@@ -1,14 +1,37 @@
-﻿
-#include "astronomy/standard_product_3.hpp"
+﻿#include "astronomy/standard_product_3.hpp"
+
+#include <algorithm>
+#include <set>
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+using ::testing::AllOf;
+using ::testing::Each;
+using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Field;
+using ::testing::ResultOf;
+using ::testing::SizeIs;
+using ::testing::UnorderedElementsAre;
 
 namespace principia {
 namespace astronomy {
 
-class StandardProduct3Test : public ::testing::Test {};
+class StandardProduct3Test : public ::testing::Test {
+ protected:
+  static std::set<StandardProduct3::SatelliteGroup> SatelliteGroups(
+      std::vector<StandardProduct3::SatelliteIdentifier> const& identifiers) {
+    std::set<StandardProduct3::SatelliteGroup> result;
+    for (auto const& id : identifiers) {
+      result.insert(id.group);
+    }
+    return result;
+  }
+
+  static constexpr auto group = &StandardProduct3::SatelliteIdentifier::group;
+};
 
 using StandardProduct3DeathTest = StandardProduct3Test;
 
@@ -43,6 +66,33 @@ TEST_F(StandardProduct3Test, PositionOnly) {
   EXPECT_THAT(sp3b.version(), Eq(StandardProduct3::Version::B));
   EXPECT_THAT(sp3c.version(), Eq(StandardProduct3::Version::C));
   EXPECT_THAT(sp3d.version(), Eq(StandardProduct3::Version::D));
+
+  EXPECT_THAT(
+      sp3a.satellites(),
+      AllOf(SizeIs(26),
+            Each(Field(group, Eq(StandardProduct3::SatelliteGroup::GPS)))));
+  EXPECT_THAT(
+      sp3b.satellites(),
+      AllOf(SizeIs(3),
+            Each(Field(group, Eq(StandardProduct3::SatelliteGroup::ГЛОНАСС)))));
+  EXPECT_THAT(sp3c.satellites(),
+              AllOf(SizeIs(81),
+                    ResultOf(&SatelliteGroups,
+                             UnorderedElementsAre(
+                                 StandardProduct3::SatelliteGroup::北斗,
+                                 StandardProduct3::SatelliteGroup::Galileo,
+                                 StandardProduct3::SatelliteGroup::GPS,
+                                 StandardProduct3::SatelliteGroup::準天頂衛星,
+                                 StandardProduct3::SatelliteGroup::ГЛОНАСС))));
+  EXPECT_THAT(sp3d.satellites(),
+              AllOf(SizeIs(91),
+                    ResultOf(&SatelliteGroups,
+                             UnorderedElementsAre(
+                                 StandardProduct3::SatelliteGroup::北斗,
+                                 StandardProduct3::SatelliteGroup::Galileo,
+                                 StandardProduct3::SatelliteGroup::GPS,
+                                 StandardProduct3::SatelliteGroup::準天頂衛星,
+                                 StandardProduct3::SatelliteGroup::ГЛОНАСС))));
 }
 
 // Conformant position and velocity files of versions a and c.
@@ -61,6 +111,14 @@ TEST_F(StandardProduct3Test, PositionAndVelocity) {
 
   EXPECT_THAT(sp3a.version(), Eq(StandardProduct3::Version::A));
   EXPECT_THAT(sp3c.version(), Eq(StandardProduct3::Version::C));
+
+  EXPECT_THAT(
+      sp3a.satellites(),
+      AllOf(SizeIs(3),
+            Each(Field(group, Eq(StandardProduct3::SatelliteGroup::GPS)))));
+  EXPECT_THAT(sp3c.satellites(),
+              ElementsAre(StandardProduct3::SatelliteIdentifier{
+                  StandardProduct3::SatelliteGroup::General, 54}));
 }
 
 // Test that the nonstandard dialects are nonconformant distinct.
@@ -106,6 +164,13 @@ TEST_F(StandardProduct3Test, Dialects) {
   StandardProduct3 ilrsb(SOLUTION_DIR / "astronomy" / "sp3_orbits" /
                              "ilrsb.orb.lageos2.160319.v35.sp3",
                          StandardProduct3::Dialect::ILRSB);
+
+  EXPECT_THAT(ilrsa.satellites(),
+              ElementsAre(StandardProduct3::SatelliteIdentifier{
+                  StandardProduct3::SatelliteGroup::General, 52}));
+  EXPECT_THAT(ilrsb.satellites(),
+              ElementsAre(StandardProduct3::SatelliteIdentifier{
+                  StandardProduct3::SatelliteGroup::General, 52}));
 }
 
 }  // namespace astronomy
