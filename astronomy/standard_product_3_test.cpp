@@ -114,7 +114,7 @@ TEST_F(StandardProduct3Test, PositionAndVelocity) {
 
   EXPECT_THAT(
       sp3a.satellites(),
-      AllOf(SizeIs(3),
+      AllOf(SizeIs(31),
             Each(Field(group, Eq(StandardProduct3::SatelliteGroup::GPS)))));
   EXPECT_THAT(sp3c.satellites(),
               ElementsAre(StandardProduct3::SatelliteIdentifier{
