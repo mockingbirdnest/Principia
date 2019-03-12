@@ -25,11 +25,11 @@ See http://mgex.igs.org/IGS_MGEX_Products.php.
 
 - [COD0MGXFIN_20181260000_01D_05M_ORB.SP3](COD0MGXFIN_20181260000_01D_05M_ORB.SP3):<br>
   ftp://igs.ensg.eu/pub/igs/products/mgex/2000/ <br>
-  ftp://igs.ensg.ign.fr/pub/igs/products/mgex/2000/ <br>
+  ftp://igs.ign.fr/pub/igs/products/mgex/2000/ <br>
   ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2000/
 - [COD0MGXFIN_20183640000_01D_05M_ORB.SP3](COD0MGXFIN_20183640000_01D_05M_ORB.SP3):<br>
   ftp://igs.ensg.eu/pub/igs/products/mgex/2034/ <br>
-  ftp://igs.ensg.ign.fr/pub/igs/products/mgex/2034/ <br>
+  ftp://igs.ign.fr/pub/igs/products/mgex/2034/ <br>
   ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2034/
 
 
