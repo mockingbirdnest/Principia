@@ -15,7 +15,7 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{2f348d01-8c8d-4e0d-8ad2-c4e1d1a62595}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\SP3 Orbits">
+    <Filter Include="Resource Files\Standard Product 3">
       <UniqueIdentifier>{5013cac9-94fd-404a-9590-be599c20b5ab}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -62,17 +62,35 @@
     <None Include="trappist_rss_time_formatter.cfg">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="sp3_orbits\ilrsa.orb.lageos2.160319.v35.sp3">
-      <Filter>Resource Files\SP3 Orbits</Filter>
+    <None Include="standard_product_3\asi.orb.etalon2.171209.v70.sp3">
+      <Filter>Resource Files\Standard Product 3</Filter>
     </None>
-    <None Include="sp3_orbits\ilrsa.orb.lageos2.180804.v70.sp3">
-      <Filter>Resource Files\SP3 Orbits</Filter>
+    <None Include="standard_product_3\COD0MGXFIN_20181260000_01D_05M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
     </None>
-    <None Include="sp3_orbits\ilrsb.orb.lageos2.160319.v35.sp3">
-      <Filter>Resource Files\SP3 Orbits</Filter>
+    <None Include="standard_product_3\COD0MGXFIN_20183640000_01D_05M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
     </None>
-    <None Include="sp3_orbits\README.md">
-      <Filter>Resource Files\SP3 Orbits</Filter>
+    <None Include="standard_product_3\esa11802.eph">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\ilrsa.orb.lageos2.160319.v35.sp3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\ilrsa.orb.lageos2.180804.v70.sp3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\ilrsb.orb.lageos2.160319.v35.sp3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\mcc14000.sp3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\nga20342.eph">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\README.md">
+      <Filter>Resource Files\Standard Product 3</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
