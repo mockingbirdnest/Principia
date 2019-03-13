@@ -3,6 +3,7 @@
 #include <fstream>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"

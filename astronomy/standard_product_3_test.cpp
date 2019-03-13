@@ -44,8 +44,9 @@ using StandardProduct3DeathTest = StandardProduct3Test;
 TEST_F(StandardProduct3Test, PositionOnly) {
   // SP3-a file from the European Space Operations Centre (European
   // Space Agency).
-  StandardProduct3 sp3a(SOLUTION_DIR / "astronomy" / "standard_product_3" / "esa11802.eph",
-                        StandardProduct3::Dialect::Standard);
+  StandardProduct3 sp3a(
+      SOLUTION_DIR / "astronomy" / "standard_product_3" / "esa11802.eph",
+      StandardProduct3::Dialect::Standard);
 
   // SP3-b file from the laser operational and analysis centre (Лазерный
   // Операционно-Аналитический Центр) Mission Control Centre (Центр Управления
@@ -123,14 +124,15 @@ TEST_F(StandardProduct3Test, PositionAndVelocity) {
                   StandardProduct3::SatelliteGroup::General, 54}));
 }
 
-// Test that the nonstandard dialects are nonconformant distinct.
+// Test that the nonstandard dialects are nonconformant and distinct.
 
 TEST_F(StandardProduct3DeathTest, ILRSANonConformance) {
   // We find no /* records, because they are %/* records in ILRSA.
-  EXPECT_DEATH(StandardProduct3(SOLUTION_DIR / "astronomy" / "standard_product_3" /
-                                    "ilrsa.orb.lageos2.160319.v35.sp3",
-                                StandardProduct3::Dialect::Standard),
-               R"(At least 4 /\* records expected)");
+  EXPECT_DEATH(
+      StandardProduct3(SOLUTION_DIR / "astronomy" / "standard_product_3" /
+                           "ilrsa.orb.lageos2.160319.v35.sp3",
+                       StandardProduct3::Dialect::Standard),
+      R"(At least 4 /\* records expected)");
   // We fail to parse the date in the epoch header record, as the fields of
   // ILRSA are correctly aligned, but we expect the ILRSB misalignment.
   // date_time_body.hpp.
@@ -143,17 +145,19 @@ TEST_F(StandardProduct3DeathTest, ILRSANonConformance) {
 
 TEST_F(StandardProduct3DeathTest, ILRSBNonConformance) {
   // We find no /* records, because they are %/* records in ILRSB.
-  EXPECT_DEATH(StandardProduct3(SOLUTION_DIR / "astronomy" / "standard_product_3" /
-                                    "ilrsb.orb.lageos2.160319.v35.sp3",
-                                StandardProduct3::Dialect::Standard),
-               R"(At least 4 /\* records expected)");
+  EXPECT_DEATH(
+      StandardProduct3(SOLUTION_DIR / "astronomy" / "standard_product_3" /
+                           "ilrsb.orb.lageos2.160319.v35.sp3",
+                       StandardProduct3::Dialect::Standard),
+      R"(At least 4 /\* records expected)");
   // We fail to parse the date in the epoch header record, as the fields are
   // misaligned.  The error reporting is not very helpful: we fail deep in
   // date_time_body.hpp.
-  EXPECT_DEATH(StandardProduct3(SOLUTION_DIR / "astronomy" / "standard_product_3" /
-                                    "ilrsb.orb.lageos2.160319.v35.sp3",
-                                StandardProduct3::Dialect::ILRSA),
-               "date_time_body.hpp");
+  EXPECT_DEATH(
+      StandardProduct3(SOLUTION_DIR / "astronomy" / "standard_product_3" /
+                           "ilrsb.orb.lageos2.160319.v35.sp3",
+                       StandardProduct3::Dialect::ILRSA),
+      "date_time_body.hpp");
 }
 
 // Test that we successfully parse the nonstandard dialects.
