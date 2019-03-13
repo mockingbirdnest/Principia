@@ -284,7 +284,7 @@ void Vessel::DeleteFlightPlan() {
   flight_plan_.reset();
 }
 
-void Vessel::FlowPrediction() {
+void Vessel::RefreshPrediction() {
   absl::MutexLock l(&prognosticator_lock_);
   prognosticator_parameters_ =
       PrognosticatorParameters{psychohistory_->last().time(),
@@ -300,7 +300,7 @@ void Vessel::FlowPrediction() {
 Status Vessel::FlowPrediction(Instant const& time) {
   // Make sure that the prognosticator recomputes a complete prediction from
   // time to time.
-  FlowPrediction();
+  RefreshPrediction();
 
   if (time <= prediction_->last().time()) {
     return Status::OK;

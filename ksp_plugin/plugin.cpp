@@ -843,7 +843,7 @@ void Plugin::SetPredictionAdaptiveStepParameters(
 
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  FindOrDie(vessels_, vessel_guid)->FlowPrediction();
+  FindOrDie(vessels_, vessel_guid)->RefreshPrediction();
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,

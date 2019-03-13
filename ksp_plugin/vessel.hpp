@@ -146,10 +146,10 @@ class Vessel {
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
 
-  // Tries to extend the prediction by extending the ephemeris by at most
-  // |max_ephemeris_steps_per_frame|.  No guarantees regarding the end time of
+  // Tries to replace the current prediction with a more recently computed one.
+  // No guarantees that this happens.  No guarantees regarding the end time of
   // the prediction when this call returns.
-  virtual void FlowPrediction();
+  virtual void RefreshPrediction();
 
   // Extends the prediction (and the ephemeris) up to and including |time|.  May
   // not be able to do so next to a singularity, in which case an error is
