@@ -4,6 +4,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "astronomy/frames.hpp"
 #include "geometry/named_quantities.hpp"
@@ -75,14 +76,24 @@ class StandardProduct3 {
 
   StandardProduct3(std::filesystem::path const& filename, Dialect dialect);
 
+  // The satellite identifiers in the order in which they appear in the file
+  // (that order is the same in the satellite ID records and within each epoch).
+  std::vector<SatelliteIdentifier> const& satellites() const;
+
   DiscreteTrajectory<ITRS> const& orbit(SatelliteIdentifier const& id) const;
 
+  Version version() const;
+
  private:
+  std::vector<SatelliteIdentifier> satellites_;
   std::map<SatelliteIdentifier, DiscreteTrajectory<ITRS>> orbits_;
   Version version_;
 
   bool has_velocities_;
 };
+
+bool operator==(StandardProduct3::SatelliteIdentifier const& left,
+                StandardProduct3::SatelliteIdentifier const& right);
 
 bool operator<(StandardProduct3::SatelliteIdentifier const& left,
                StandardProduct3::SatelliteIdentifier const& right);

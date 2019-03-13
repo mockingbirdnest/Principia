@@ -3,6 +3,7 @@
 #include <fstream>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
@@ -140,6 +141,7 @@ StandardProduct3::StandardProduct3(
                                                     std::forward_as_tuple());
         CHECK(inserted) << "Duplicate satellite identifier " << id << ": "
                         << full_location;
+        satellites_.push_back(id);
       } else {
         CHECK_EQ(columns(c, c + 2), "  0") << full_location;
       }
@@ -256,6 +258,18 @@ StandardProduct3::StandardProduct3(
       auto const it = orbits_.find(id);
       CHECK(it != orbits_.end()) << "Unknown satellite identifier "
                                  << id << ": " << location;
+
+      // The SP3-c and SP3-d specification require that the satellite order of
+      // the P, EP, V, and EV records be the same as the order of the satellite
+      // ID records.
+      // This wording was added to the SP3-c specification by the 2006-09-27
+      // amendment, which describes it as a “clarification”, so the intent seems
+      // to be that this was required from the start for SP3-c, and perhaps for
+      // earlier versions as well.
+      // If this breaks for SP3-a or SP3-b, consider exempting these versions
+      // from the check.
+      CHECK_EQ(id, satellites_[i]) << location;
+
       DiscreteTrajectory<ITRS>& orbit = it->second;
 
       Position<ITRS> const position =
@@ -285,13 +299,14 @@ StandardProduct3::StandardProduct3(
             Velocity<ITRS>({float_columns(5, 18) * (Deci(Metre) / Second),
                             float_columns(19, 32) * (Deci(Metre) / Second),
                             float_columns(33, 46) * (Deci(Metre) / Second)});
-      }
 
-      read_line();
-      if (version_ >= Version::C && line.has_value() && columns(1, 2) == "EV") {
-        // Ignore the optional EV record (the velocity and clock rate-of-change
-        // correlation record).
         read_line();
+        if (version_ >= Version::C && line.has_value() &&
+            columns(1, 2) == "EV") {
+          // Ignore the optional EV record (the velocity and clock
+          // rate-of-change correlation record).
+          read_line();
+        }
       }
 
       orbit.Append(epoch, {position, velocity});
@@ -304,9 +319,23 @@ StandardProduct3::StandardProduct3(
   CHECK(!line.has_value()) << location;
 }
 
+std::vector<StandardProduct3::SatelliteIdentifier> const&
+StandardProduct3::satellites() const {
+  return satellites_;
+}
+
 DiscreteTrajectory<ITRS> const& StandardProduct3::orbit(
     SatelliteIdentifier const& id) const {
   return FindOrDie(orbits_, id);
+}
+
+StandardProduct3::Version StandardProduct3::version() const {
+  return version_;
+}
+
+bool operator==(StandardProduct3::SatelliteIdentifier const& left,
+                StandardProduct3::SatelliteIdentifier const& right) {
+  return left.group == right.group && left.index == right.index;
 }
 
 bool operator<(StandardProduct3::SatelliteIdentifier const& left,
@@ -317,12 +346,12 @@ bool operator<(StandardProduct3::SatelliteIdentifier const& left,
 
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::Version const& version) {
-  return out << std::string(static_cast<char>(version), 1);
+  return out << std::string(1, static_cast<char>(version));
 }
 
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::SatelliteGroup const& group) {
-  return out << std::string(static_cast<char>(group), 1);
+  return out << std::string(1, static_cast<char>(group));
 }
 
 std::ostream& operator<<(std::ostream& out,
