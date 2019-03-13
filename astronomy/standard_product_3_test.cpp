@@ -1,4 +1,5 @@
-﻿#include "astronomy/standard_product_3.hpp"
+﻿
+#include "astronomy/standard_product_3.hpp"
 
 #include <algorithm>
 #include <set>
@@ -6,6 +7,9 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+
+namespace principia {
+namespace astronomy {
 
 using ::testing::AllOf;
 using ::testing::Each;
@@ -15,9 +19,6 @@ using ::testing::Field;
 using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
-
-namespace principia {
-namespace astronomy {
 
 class StandardProduct3Test : public ::testing::Test {
  protected:

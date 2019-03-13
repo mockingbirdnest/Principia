@@ -76,7 +76,10 @@ class StandardProduct3 {
 
   StandardProduct3(std::filesystem::path const& filename, Dialect dialect);
 
+  // The satellite identifiers in the order in which they appear in the file
+  // (that order is the same in the satellite ID records and within each epoch).
   std::vector<SatelliteIdentifier> const& satellites() const;
+
   DiscreteTrajectory<ITRS> const& orbit(SatelliteIdentifier const& id) const;
 
   Version version() const;
