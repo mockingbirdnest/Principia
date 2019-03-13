@@ -90,21 +90,16 @@ class GeodesyTest : public ::testing::Test {
 TEST_F(GeodesyTest, LAGEOS2) {
   MasslessBody lageos2;
 
-  // ilrsa.orb.lageos2.160319.v35.sp3, from
-  // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
-  StandardProduct3 initial_ilrsa(SOLUTION_DIR / "astronomy" / "sp3_orbits" /
+  StandardProduct3 initial_ilrsa(SOLUTION_DIR / "astronomy" /
+                                     "standard_product_3" /
                                      "ilrsa.orb.lageos2.160319.v35.sp3",
                                  StandardProduct3::Dialect::ILRSA);
-
-  // ilrsb.orb.lageos2.160319.v35.sp3, from
-  // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
-  StandardProduct3 initial_ilrsb(SOLUTION_DIR / "astronomy" / "sp3_orbits" /
+  StandardProduct3 initial_ilrsb(SOLUTION_DIR / "astronomy" /
+                                     "standard_product_3" /
                                      "ilrsb.orb.lageos2.160319.v35.sp3",
                                  StandardProduct3::Dialect::ILRSB);
-
-  // ilrsa.orb.lageos2.180804.v70.sp3, from
-  // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/180804/.
-  StandardProduct3 final_ilrsa(SOLUTION_DIR / "astronomy" / "sp3_orbits" /
+  StandardProduct3 final_ilrsa(SOLUTION_DIR / "astronomy" /
+                                   "standard_product_3" /
                                    "ilrsa.orb.lageos2.180804.v70.sp3",
                                StandardProduct3::Dialect::ILRSA);
 
