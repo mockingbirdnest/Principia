@@ -7,7 +7,7 @@ These files come from various agencies; we document their provenance here.
 
 ## International DORIS Service (IDS) products
 
-## Inernational GNSS Service (IGS) products
+## International GNSS Service (IGS) products
 
 See http://www.igs.org/products,
 https://kb.igs.org/hc/en-us/articles/115003935351,
@@ -49,7 +49,7 @@ See https://ilrs.cddis.eosdis.nasa.gov/data_and_products/products/index.html.
   ftp://edc.dgfi.tum.de/pub/slr/products/orbits/etalon2/171209/ <br>
   ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/etalon2/171209/
 - [ilrsa.orb.lageos2.160319.v35.sp3](ilrsa.orb.lageos2.160319.v35.sp3),<br>
-  [ilrsb.orb.lageos2.160319.v35.sp3](ilrsa.orb.lageos2.160319.v35.sp3):<br>
+  [ilrsb.orb.lageos2.160319.v35.sp3](ilrsb.orb.lageos2.160319.v35.sp3):<br>
   ftp://edc.dgfi.tum.de/pub/slr/products/orbits/lageos2/160319/ <br>
   ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/
 - [ilrsa.orb.lageos2.180804.v70.sp3](ilrsa.orb.lageos2.180804.v70.sp3):<br>
