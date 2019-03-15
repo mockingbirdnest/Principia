@@ -246,6 +246,9 @@ public partial class PrincipiaPluginAdapter
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
+    if (is_bad_installation_) {
+      return;
+    }
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
@@ -619,6 +622,9 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
+    if (is_bad_installation_) {
+      return;
+    }
     if (must_record_journal_) {
       journaling_ = true;
       Log.ActivateRecorder(true);
@@ -648,12 +654,12 @@ public partial class PrincipiaPluginAdapter
                                   ref plugin_,
                                   serialization_compression_,
                                   serialization_encoding_);
-    if (serialization_compression_ == "") {
-      serialization_compression_ = "gipfeli";
-    }
-    if (serialization_encoding_ == "hexadecimal") {
-      serialization_encoding_ = "base64";
-    }
+      if (serialization_compression_ == "") {
+        serialization_compression_ = "gipfeli";
+      }
+      if (serialization_encoding_ == "hexadecimal") {
+        serialization_encoding_ = "base64";
+      }
 
       plotting_frame_selector_.reset(
           new ReferenceFrameSelector(this, 
