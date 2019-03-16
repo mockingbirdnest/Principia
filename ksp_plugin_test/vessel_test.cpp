@@ -330,7 +330,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
   vessel_.PrepareHistory(astronomy::J2000);
   // Polling for the integration to happen.
   do {
-    vessel_.FlowPrediction();
+    vessel_.RefreshPrediction();
     using namespace std::chrono_literals;  // NOLINT(build/namespaces)
     std::this_thread::sleep_for(100ms);
   } while (vessel_.prediction().Size() != 3);
