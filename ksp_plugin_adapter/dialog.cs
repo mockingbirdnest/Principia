@@ -8,11 +8,6 @@ namespace ksp_plugin_adapter {
 
 internal class Dialog {
 
-  public Dialog(ref int x, ref int y) {
-    x = UnityEngine.Screen.width / 2;
-    y = UnityEngine.Screen.height / 3;
-  }
-
   public void Show(String message, ref int x, ref int y) {
     UnityEngine.Rect dialog_window_rectangle = UnityEngine.Rect.zero;
 
@@ -38,6 +33,17 @@ internal class Dialog {
     WindowUtilities.EnsureOnScreen(ref dialog_window_rectangle);
     x = (int)dialog_window_rectangle.xMin;
     y = (int)dialog_window_rectangle.yMin;
+  }
+
+  public static int XCentre {
+    get {
+      return UnityEngine.Screen.width / 2;
+    }
+  }
+  public static int YCentre {
+    get {
+      return UnityEngine.Screen.height / 3;
+    }
   }
 }
 

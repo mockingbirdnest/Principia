@@ -221,27 +221,27 @@ public partial class PrincipiaPluginAdapter
   private Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
       new Dictionary<uint, QP>();
 
-  // The first apocalyptic error message.
+  // UI for the apocalypse notification.
   [KSPField(isPersistant = true)]
   private String revelation_ = "";
-  // Whether we have encountered an apocalypse already.
   [KSPField(isPersistant = true)]
   private bool is_post_apocalyptic_ = false;
   [KSPField(isPersistant = true)]
-  private int apocalypse_dialog_x_;
+  private int apocalypse_dialog_x_ = Dialog.XCentre;
   [KSPField(isPersistant = true)]
-  private int apocalypse_dialog_y_;
-  private Dialog apocalypse_dialog_;
+  private int apocalypse_dialog_y_ = Dialog.YCentre;
+  private Dialog apocalypse_dialog_ = new Dialog();
 
+  // UI for the bad installation notification.
   [KSPField(isPersistant = true)]
   private String bad_installation_message_ = "";
   [KSPField(isPersistant = true)]
   private bool is_bad_installation_ = false;
   [KSPField(isPersistant = true)]
-  private int bad_installation_dialog_x_;
+  private int bad_installation_dialog_x_ = Dialog.XCentre;
   [KSPField(isPersistant = true)]
-  private int bad_installation_dialog_y_;
-  private Dialog bad_installation_dialog_;
+  private int bad_installation_dialog_y_ = Dialog.YCentre;
+  private Dialog bad_installation_dialog_ = new Dialog();
 
   public event Action render_windows;
 
@@ -685,10 +685,6 @@ public partial class PrincipiaPluginAdapter
 
   private void OnGUI() {
     if (is_bad_installation_) {
-      if (bad_installation_dialog_ == null) {
-        bad_installation_dialog_ = new Dialog(ref bad_installation_dialog_x_,
-                                              ref bad_installation_dialog_y_);
-      }
       bad_installation_dialog_.Show(bad_installation_message_,
                                     ref bad_installation_dialog_x_,
                                     ref bad_installation_dialog_y_);
@@ -696,10 +692,6 @@ public partial class PrincipiaPluginAdapter
     }
 
     if (is_post_apocalyptic_) {
-      if (apocalypse_dialog_ == null) {
-        apocalypse_dialog_ = new Dialog(ref apocalypse_dialog_x_,
-                                        ref apocalypse_dialog_y_);
-      }
       apocalypse_dialog_.Show(revelation_,
                               ref apocalypse_dialog_x_,
                               ref apocalypse_dialog_y_);
