@@ -38,7 +38,6 @@ internal class Dialog {
 
   public static int XCentre { get; } = UnityEngine.Screen.width / 2;
   public static int YCentre { get; } = UnityEngine.Screen.height / 3;
-  }
 }
 
 }  // namespace ksp_plugin_adapter
