@@ -46,7 +46,8 @@ internal static class Loader {
     }
     if (!possible_dll_paths.Any(File.Exists)) {
       return "The principia DLL was not found at '" +
-             String.Join("', '", possible_dll_paths) + "'.";
+             String.Join("', '", possible_dll_paths) + "' in directory '" + 
+             Directory.GetCurrentDirectory() + "'.";
     }
     try {
       loaded_principia_dll_ = true;
