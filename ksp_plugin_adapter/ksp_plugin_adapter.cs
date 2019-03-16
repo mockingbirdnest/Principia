@@ -1001,6 +1001,9 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void FixedUpdate() {
+    if (is_bad_installation_) {
+      return;
+    }
     if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
