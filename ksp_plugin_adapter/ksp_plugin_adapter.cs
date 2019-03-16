@@ -222,8 +222,10 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, QP>();
 
   // UI for the apocalypse notification.
+  // The first apocalyptic error message.
   [KSPField(isPersistant = true)]
   private String revelation_ = "";
+  // Whether we have encountered an apocalypse already.
   [KSPField(isPersistant = true)]
   private bool is_post_apocalyptic_ = false;
   [KSPField(isPersistant = true)]
@@ -233,9 +235,7 @@ public partial class PrincipiaPluginAdapter
   private Dialog apocalypse_dialog_ = new Dialog();
 
   // UI for the bad installation notification.
-  [KSPField(isPersistant = true)]
   private String bad_installation_message_ = "";
-  [KSPField(isPersistant = true)]
   private bool is_bad_installation_ = false;
   [KSPField(isPersistant = true)]
   private int bad_installation_dialog_x_ = Dialog.XCentre;
@@ -246,9 +246,6 @@ public partial class PrincipiaPluginAdapter
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
-    if (is_bad_installation_) {
-      return;
-    }
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");

@@ -6,6 +6,7 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
+// TODO(phl): Load and save the coordinates from a ConfigNode.
 internal class Dialog {
 
   public void Show(String message, ref int x, ref int y) {
@@ -35,15 +36,8 @@ internal class Dialog {
     y = (int)dialog_window_rectangle.yMin;
   }
 
-  public static int XCentre {
-    get {
-      return UnityEngine.Screen.width / 2;
-    }
-  }
-  public static int YCentre {
-    get {
-      return UnityEngine.Screen.height / 3;
-    }
+  public static int XCentre { get; } = UnityEngine.Screen.width / 2;
+  public static int YCentre { get; } = UnityEngine.Screen.height / 3;
   }
 }
 
