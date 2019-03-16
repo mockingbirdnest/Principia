@@ -183,8 +183,6 @@ public partial class PrincipiaPluginAdapter
 
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
 
-  private String bad_installation_popup_;
-  
   private Krakensbane krakensbane_;
   private Krakensbane krakensbane {
     get {
@@ -230,22 +228,36 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private bool is_post_apocalyptic_ = false;
   [KSPField(isPersistant = true)]
-  private int apocalypse_window_x_ = UnityEngine.Screen.width / 2;
+  private int apocalypse_dialog_x_;
   [KSPField(isPersistant = true)]
-  private int apocalypse_window_y_ = UnityEngine.Screen.height / 3;
-  private UnityEngine.Rect apocalypse_window_rectangle_;
+  private int apocalypse_dialog_y_;
+  private Dialog apocalypse_dialog_;
+
+  [KSPField(isPersistant = true)]
+  private String bad_installation_message_ = "";
+  [KSPField(isPersistant = true)]
+  private bool is_bad_installation_ = false;
+  [KSPField(isPersistant = true)]
+  private int bad_installation_dialog_x_;
+  [KSPField(isPersistant = true)]
+  private int bad_installation_dialog_y_;
+  private Dialog bad_installation_dialog_;
 
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
+    if (is_bad_installation_) {
+      return;
+    }
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
     string load_error = Loader.LoadPrincipiaDllAndInitGoogleLogging();
     if (load_error != null) {
-      bad_installation_popup_ =
+      is_bad_installation_ = true;
+      bad_installation_message_ =
           "The Principia DLL failed to load.\n" + load_error;
-      UnityEngine.Debug.LogError(bad_installation_popup_);
+      UnityEngine.Debug.LogError(bad_installation_message_);
     }
 #if KSP_VERSION_1_3_1
     if (Versioning.version_major != 1 ||
@@ -530,7 +542,7 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnAwake() {
     base.OnAwake();
-    if (bad_installation_popup_ != null) {
+    if (is_bad_installation_) {
       return;
     }
     // While we're here, we might as well log.
@@ -610,6 +622,9 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
+    if (is_bad_installation_) {
+      return;
+    }
     if (must_record_journal_) {
       journaling_ = true;
       Log.ActivateRecorder(true);
@@ -639,12 +654,12 @@ public partial class PrincipiaPluginAdapter
                                   ref plugin_,
                                   serialization_compression_,
                                   serialization_encoding_);
-    if (serialization_compression_ == "") {
-      serialization_compression_ = "gipfeli";
-    }
-    if (serialization_encoding_ == "hexadecimal") {
-      serialization_encoding_ = "base64";
-    }
+      if (serialization_compression_ == "") {
+        serialization_compression_ = "gipfeli";
+      }
+      if (serialization_encoding_ == "hexadecimal") {
+        serialization_encoding_ = "base64";
+      }
 
       plotting_frame_selector_.reset(
           new ReferenceFrameSelector(this, 
@@ -669,46 +684,25 @@ public partial class PrincipiaPluginAdapter
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
 
   private void OnGUI() {
-    if (bad_installation_popup_ != null) {
-      UnityEngine.Debug.LogError("Spawning: " + bad_installation_popup_);
-      // No-one seems to understand what |anchorMin| and |anchorMax| do at this
-      // time.
-      PopupDialog.SpawnPopupDialog(
-          anchorMin           : default(UnityEngine.Vector2),
-          anchorMax           : default(UnityEngine.Vector2),
-          dialogName          : "Principia error",
-          title               : "Principia",
-          message             : bad_installation_popup_,
-          buttonMessage       : "OK",
-          persistAcrossScenes : true,
-          skin                : null,
-          isModal             : true);
-      bad_installation_popup_ = null;
+    if (is_bad_installation_) {
+      if (bad_installation_dialog_ == null) {
+        bad_installation_dialog_ = new Dialog(ref bad_installation_dialog_x_,
+                                              ref bad_installation_dialog_y_);
+      }
+      bad_installation_dialog_.Show(bad_installation_message_,
+                                    ref bad_installation_dialog_x_,
+                                    ref bad_installation_dialog_y_);
       return;
     }
 
     if (is_post_apocalyptic_) {
-      UnityEngine.GUI.skin = null;
-      apocalypse_window_rectangle_.xMin = apocalypse_window_x_;
-      apocalypse_window_rectangle_.yMin = apocalypse_window_y_;
-      apocalypse_window_rectangle_ = UnityEngine.GUILayout.Window(
-          id         : this.GetHashCode() + 1,
-          screenRect : apocalypse_window_rectangle_,
-          func       : (int id) => {
-              using (new VerticalLayout()) {
-                UnityEngine.GUILayout.TextArea(revelation_);
-              }
-              UnityEngine.GUI.DragWindow(
-                  position : new UnityEngine.Rect(x      : 0f,
-                                                  y      : 0f,
-                                                  width  : 10000f,
-                                                  height : 10000f));
-            },
-          text       : "Principia",
-          options    : UnityEngine.GUILayout.MinWidth(500));
-      WindowUtilities.EnsureOnScreen(ref apocalypse_window_rectangle_);
-      apocalypse_window_x_ = (int)apocalypse_window_rectangle_.xMin;
-      apocalypse_window_y_ = (int)apocalypse_window_rectangle_.yMin;
+      if (apocalypse_dialog_ == null) {
+        apocalypse_dialog_ = new Dialog(ref apocalypse_dialog_x_,
+                                        ref apocalypse_dialog_y_);
+      }
+      apocalypse_dialog_.Show(revelation_,
+                              ref apocalypse_dialog_x_,
+                              ref apocalypse_dialog_y_);
     }
 
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
@@ -1037,7 +1031,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void OnDisable() {
-    if (bad_installation_popup_ != null) {
+    if (is_bad_installation_) {
       return;
     }
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnDisable()");
