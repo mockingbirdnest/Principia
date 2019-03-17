@@ -7,8 +7,11 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class Dialog : IConfigNode {
-  public Dialog(String message) {
-    message_ = message;
+  public String Message {
+    set {
+      message_ = value;
+      UnityEngine.Debug.LogError(message_);
+    }
   }
 
   public void Show() {
@@ -19,7 +22,7 @@ internal class Dialog : IConfigNode {
         func       : (int id) => {
           using (new VerticalLayout())
           {
-            UnityEngine.GUILayout.TextArea(message_ ?? "null");
+            UnityEngine.GUILayout.TextArea(message_ ?? "SHOW WITHOUT MESSAGE");
           }
           UnityEngine.GUI.DragWindow();
         },
