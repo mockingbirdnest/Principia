@@ -229,18 +229,12 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private bool is_post_apocalyptic_ = false;
   [KSPField(isPersistant = true)]
-  private int apocalypse_dialog_x_ = Dialog.XCentre;
-  [KSPField(isPersistant = true)]
-  private int apocalypse_dialog_y_ = Dialog.YCentre;
   private Dialog apocalypse_dialog_ = new Dialog();
 
   // UI for the bad installation notification.
   private String bad_installation_message_ = "";
   private bool is_bad_installation_ = false;
   [KSPField(isPersistant = true)]
-  private int bad_installation_dialog_x_ = Dialog.XCentre;
-  [KSPField(isPersistant = true)]
-  private int bad_installation_dialog_y_ = Dialog.YCentre;
   private Dialog bad_installation_dialog_ = new Dialog();
 
   public event Action render_windows;
@@ -682,16 +676,12 @@ public partial class PrincipiaPluginAdapter
 
   private void OnGUI() {
     if (is_bad_installation_) {
-      bad_installation_dialog_.Show(bad_installation_message_,
-                                    ref bad_installation_dialog_x_,
-                                    ref bad_installation_dialog_y_);
+      bad_installation_dialog_.Show(bad_installation_message_);
       return;
     }
 
     if (is_post_apocalyptic_) {
-      apocalypse_dialog_.Show(revelation_,
-                              ref apocalypse_dialog_x_,
-                              ref apocalypse_dialog_y_);
+      apocalypse_dialog_.Show(revelation_);
     }
 
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
