@@ -6,7 +6,9 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal class Dialog : IConfigNode {
+internal class Dialog : WindowRenderer, IConfigNode {
+  public Dialog(PrincipiaPluginAdapter adapter) : base(adapter) {}
+
   public String Message {
     set {
       message_ = value;
@@ -14,20 +16,17 @@ internal class Dialog : IConfigNode {
     }
   }
 
-  public void Show() {
+  public override void RenderWindow() {
     UnityEngine.GUI.skin = null;
-    rectangle_ = UnityEngine.GUILayout.Window(
-        id         : this.GetHashCode(),
-        screenRect : rectangle_,
-        func       : (int id) => {
-          using (new UnityEngine.GUILayout.VerticalScope())
-          {
-            UnityEngine.GUILayout.TextArea(message_ ?? "SHOW WITHOUT MESSAGE");
-          }
-          UnityEngine.GUI.DragWindow();
-        },
-        text       : "Principia");
-    WindowUtilities.EnsureOnScreen(ref rectangle_);
+    Window(func : (int id) => {
+             using (new UnityEngine.GUILayout.VerticalScope()) {
+               UnityEngine.GUILayout.TextArea(
+                   message_ ?? "SHOW WITHOUT MESSAGE");
+             }
+             UnityEngine.GUI.DragWindow();
+           },
+           text : "Principia");
+    EnsureOnScreen();
   }
 
   void IConfigNode.Load(ConfigNode node) {
@@ -50,15 +49,8 @@ internal class Dialog : IConfigNode {
     }
   }
 
-  private static readonly float min_width_ = 500;
-
   // The message shown, if any.
   private String message_;
-  private UnityEngine.Rect rectangle_ =
-      new UnityEngine.Rect(x      : (UnityEngine.Screen.width - min_width_) / 2,
-                           y      : UnityEngine.Screen.height / 3,
-                           width  : min_width_,
-                           height : 0);
 }
 
 }  // namespace ksp_plugin_adapter

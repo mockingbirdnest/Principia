@@ -12,8 +12,6 @@ class FlightPlanner : WindowRenderer {
                        IntPtr plugin) : base(adapter) {
     adapter_ = adapter;
     plugin_ = plugin;
-    window_rectangle_.x = UnityEngine.Screen.width / 2;
-    window_rectangle_.y = UnityEngine.Screen.height / 3;
     final_time_ = new DifferentialSlider(
                 label            : "Plan length",
                 unit             : null,
@@ -33,16 +31,12 @@ class FlightPlanner : WindowRenderer {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     if (show_planner_) {
-      window_rectangle_ = UnityEngine.GUILayout.Window(
-                              id         : this.GetHashCode(),
-                              screenRect : window_rectangle_,
-                              func       : RenderPlanner,
-                              text       : "Flight plan",
-                              options    : UnityEngine.GUILayout.MinWidth(500));
-      WindowUtilities.EnsureOnScreen(ref window_rectangle_);
-      window_rectangle_.InputLock(this);
+      Window(func       : RenderPlanner,
+             text       : "Flight plan");
+      EnsureOnScreen();
+      InputLock();
     } else {
-      WindowUtilities.ClearLock(this);
+      ClearLock();
     }
     UnityEngine.GUI.skin = old_skin;
   }
@@ -344,11 +338,6 @@ class FlightPlanner : WindowRenderer {
     vessel_ = FlightGlobals.ActiveVessel;
   }
 
-  private void Shrink() {
-    window_rectangle_.height = 0.0f;
-    window_rectangle_.width = 0.0f;
-  }
-
   internal static string FormatPositiveTimeSpan (TimeSpan span) {
     return (GameSettings.KERBIN_TIME
                 ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
@@ -375,7 +364,6 @@ class FlightPlanner : WindowRenderer {
   private bool show_planner_ = false;
   private bool show_guidance_ = false;
   private ManeuverNode guidance_node_;
-  private UnityEngine.Rect window_rectangle_;
   
   private const double Log10TimeLowerRate = 0.0;
   private const double Log10TimeUpperRate = 7.0;
