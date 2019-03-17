@@ -222,16 +222,13 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, QP>();
 
   // UI for the apocalypse notification.
-  // Whether we have encountered an apocalypse already.
   [KSPField(isPersistant = true)]
-  private bool is_post_apocalyptic_ = false;
-  [KSPField(isPersistant = true)]
-  private Dialog apocalypse_dialog_ = new Dialog();
+  private Dialog apocalypse_dialog_;
 
   // UI for the bad installation notification.
-  private bool is_bad_installation_ = false;  // Don't persist.
+  private bool is_bad_installation_ = false;
   [KSPField(isPersistant = true)]
-  private Dialog bad_installation_dialog_ = new Dialog();
+  private Dialog bad_installation_dialog_;
 
   public event Action render_windows;
 
@@ -242,8 +239,8 @@ public partial class PrincipiaPluginAdapter
     string load_error = Loader.LoadPrincipiaDllAndInitGoogleLogging();
     if (load_error != null) {
       is_bad_installation_ = true;
-      bad_installation_dialog_.Message =
-          "The Principia DLL failed to load.\n" + load_error;
+      bad_installation_dialog_ =
+          new Dialog("The Principia DLL failed to load.\n" + load_error);
     }
 #if KSP_VERSION_1_3_1
     if (Versioning.version_major != 1 ||
@@ -674,10 +671,7 @@ public partial class PrincipiaPluginAdapter
       bad_installation_dialog_.Show();
       return;
     }
-
-    if (is_post_apocalyptic_) {
-      apocalypse_dialog_.Show();
-    }
+    apocalypse_dialog_?.Show();
 
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
       UnityEngine.Texture toolbar_button_texture;
@@ -1369,11 +1363,10 @@ public partial class PrincipiaPluginAdapter
       time_is_advancing_ = time_is_advancing(universal_time);
       if (time_is_advancing_) {
         plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-        if (!is_post_apocalyptic_) {
+        if (apocalypse_dialog_ == null) {
           String revelation = "";
           if (plugin_.HasEncounteredApocalypse(out revelation)) {
-            is_post_apocalyptic_ = true;
-            apocalypse_dialog_.Message = revelation;
+            apocalypse_dialog_ = new Dialog(revelation);
           }
         }
         foreach (var vessel in FlightGlobals.Vessels) {
