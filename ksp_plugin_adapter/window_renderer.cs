@@ -74,7 +74,37 @@ internal abstract class WindowRenderer : IDisposable {
     GC.SuppressFinalize(this);
   }
 
-  protected void EnsureOnScreen() {
+  // Locking.
+
+  protected void ClearLock() {
+    InputLockManager.RemoveControlLock(lock_name_);
+  }
+
+  private void InputLock() {
+    UnityEngine.Vector3 mouse = UnityEngine.Input.mousePosition;
+    mouse.y = UnityEngine.Screen.height - mouse.y;
+    if (rectangle_.Contains(mouse)) {
+      InputLockManager.SetControlLock(PrincipiaLock, lock_name_);
+    } else {
+      InputLockManager.RemoveControlLock(lock_name_);
+    }
+  }
+
+  // Rendering.
+
+  protected void Window(UnityEngine.GUI.WindowFunction func,
+                        String text) {
+    rectangle_ = UnityEngine.GUILayout.Window(
+                     id         : this.GetHashCode(),
+                     screenRect : rectangle_,
+                     func       : func,
+                     text       : text,
+                     options    : UnityEngine.GUILayout.MinWidth(min_width_));
+    EnsureOnScreen();
+    InputLock();
+  }
+
+  private void EnsureOnScreen() {
     rectangle_.x = UnityEngine.Mathf.Clamp(
                        rectangle_.x,
                        -rectangle_.width + min_width_on_screen_,
@@ -85,36 +115,12 @@ internal abstract class WindowRenderer : IDisposable {
                        UnityEngine.Screen.height - min_height_on_screen_);
   }
 
-  protected void ClearLock() {
-    InputLockManager.RemoveControlLock(lock_name_);
-  }
-
-  protected void InputLock() {
-    UnityEngine.Vector3 mouse = UnityEngine.Input.mousePosition;
-    mouse.y = UnityEngine.Screen.height - mouse.y;
-    if (rectangle_.Contains(mouse)) {
-      InputLockManager.SetControlLock(PrincipiaLock, lock_name_);
-    } else {
-      InputLockManager.RemoveControlLock(lock_name_);
-    }
-  }
-
   protected void Shrink() {
     rectangle_.height = 0.0f;
     rectangle_.width = 0.0f;
   }
 
-  protected void Window(UnityEngine.GUI.WindowFunction func,
-                        String text) {
-    rectangle_ = UnityEngine.GUILayout.Window(
-                     id         : this.GetHashCode(),
-                     screenRect : rectangle_,
-                     func       : func,
-                     text       : text,
-                     options    : UnityEngine.GUILayout.MinWidth(min_width_));
-  }
-
-  abstract public void RenderWindow();
+  abstract protected void RenderWindow();
 
   private static readonly ControlTypes PrincipiaLock =
       ControlTypes.ALLBUTCAMERAS &

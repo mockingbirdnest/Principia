@@ -55,8 +55,6 @@ class ReferenceFrameSelector : WindowRenderer {
       }
     }
     on_change_(FrameParameters());
-    window_rectangle_.x = UnityEngine.Screen.width / 2;
-    window_rectangle_.y = UnityEngine.Screen.height / 3;
   }
 
   public FrameType frame_type { get; private set; }
@@ -276,16 +274,10 @@ class ReferenceFrameSelector : WindowRenderer {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     if (show_selector_) {
-      window_rectangle_ = UnityEngine.GUILayout.Window(
-                              id         : this.GetHashCode(),
-                              screenRect : window_rectangle_,
-                              func       : RenderSelector,
-                              text       : name_ + " selection (" + Name() +
-                                           ")");
-      WindowUtilities.EnsureOnScreen(ref window_rectangle_);
-      window_rectangle_.InputLock(this);
+      Window(func : RenderSelector,
+             text : name_ + " selection (" + Name() + ")");
     } else {
-      WindowUtilities.ClearLock(this);
+      ClearLock();
     }
     UnityEngine.GUI.skin = old_skin;
   }
@@ -389,16 +381,10 @@ class ReferenceFrameSelector : WindowRenderer {
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
 
-  private void Shrink() {
-    window_rectangle_.height = 0.0f;
-    window_rectangle_.width = 0.0f;
-  }
-
   private Callback on_change_;
   // Not owned.
   private IntPtr plugin_;
   private bool show_selector_;
-  private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;
   private readonly string name_;
 }
