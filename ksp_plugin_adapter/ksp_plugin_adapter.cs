@@ -222,9 +222,6 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, QP>();
 
   // UI for the apocalypse notification.
-  // The first apocalyptic error message.
-  [KSPField(isPersistant = true)]
-  private String revelation_ = "";
   // Whether we have encountered an apocalypse already.
   [KSPField(isPersistant = true)]
   private bool is_post_apocalyptic_ = false;
@@ -232,8 +229,7 @@ public partial class PrincipiaPluginAdapter
   private Dialog apocalypse_dialog_ = new Dialog();
 
   // UI for the bad installation notification.
-  private String bad_installation_message_ = "";
-  private bool is_bad_installation_ = false;
+  private bool is_bad_installation_ = false;  // Don't persist.
   [KSPField(isPersistant = true)]
   private Dialog bad_installation_dialog_ = new Dialog();
 
@@ -246,9 +242,8 @@ public partial class PrincipiaPluginAdapter
     string load_error = Loader.LoadPrincipiaDllAndInitGoogleLogging();
     if (load_error != null) {
       is_bad_installation_ = true;
-      bad_installation_message_ =
+      bad_installation_dialog_.Message =
           "The Principia DLL failed to load.\n" + load_error;
-      UnityEngine.Debug.LogError(bad_installation_message_);
     }
 #if KSP_VERSION_1_3_1
     if (Versioning.version_major != 1 ||
@@ -676,12 +671,12 @@ public partial class PrincipiaPluginAdapter
 
   private void OnGUI() {
     if (is_bad_installation_) {
-      bad_installation_dialog_.Show(bad_installation_message_);
+      bad_installation_dialog_.Show();
       return;
     }
 
     if (is_post_apocalyptic_) {
-      apocalypse_dialog_.Show(revelation_);
+      apocalypse_dialog_.Show();
     }
 
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
@@ -1375,8 +1370,11 @@ public partial class PrincipiaPluginAdapter
       if (time_is_advancing_) {
         plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
         if (!is_post_apocalyptic_) {
-          is_post_apocalyptic_ |=
-              plugin_.HasEncounteredApocalypse(out revelation_);
+          String revelation = "";
+          if (plugin_.HasEncounteredApocalypse(out revelation)) {
+            is_post_apocalyptic_ = true;
+            apocalypse_dialog_.Message = revelation;
+          }
         }
         foreach (var vessel in FlightGlobals.Vessels) {
           if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
