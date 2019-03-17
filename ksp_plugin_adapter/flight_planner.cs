@@ -60,7 +60,7 @@ class FlightPlanner : WindowRenderer {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
 
-    using (new VerticalLayout()) {
+    using (new UnityEngine.GUILayout.VerticalScope()) {
 
       {
         string vessel_guid = vessel_?.id.ToString();
@@ -79,6 +79,8 @@ class FlightPlanner : WindowRenderer {
         if (burn_editors_ == null) {
           if (plugin_.HasVessel(vessel_guid)) {
             if (plugin_.FlightPlanExists(vessel_guid)) {
+              // TODO(phl): Evil change of state between the two calls to
+              // RenderPlanner.
               burn_editors_ = new List<BurnEditor>();
               for (int i = 0;
                    i < plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
@@ -124,8 +126,8 @@ class FlightPlanner : WindowRenderer {
           FlightPlanAdaptiveStepParameters parameters =
               plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
 
-          using (new HorizontalLayout()) {
-            using (new HorizontalLayout()) {
+          using (new UnityEngine.GUILayout.HorizontalScope()) {
+            using (new UnityEngine.GUILayout.HorizontalScope()) {
               UnityEngine.GUILayout.Label("Max. steps per segment:",
                                           UnityEngine.GUILayout.Width(150));
               const int factor = 4;
@@ -146,7 +148,7 @@ class FlightPlanner : WindowRenderer {
                                                             parameters);
               }
             }
-            using (new HorizontalLayout()) {
+            using (new UnityEngine.GUILayout.HorizontalScope()) {
               UnityEngine.GUILayout.Label("Tolerance:",
                                           UnityEngine.GUILayout.Width(75));
               if (parameters.length_integration_tolerance <= 1e-6) {
@@ -271,7 +273,7 @@ class FlightPlanner : WindowRenderer {
         // TODO(egg): We may want to consider setting the burn vector directly
         // rather than going through the solver.
         if (vessel_.patchedConicSolver != null) {
-          using (new HorizontalLayout()) {
+          using (new UnityEngine.GUILayout.HorizontalScope()) {
             show_guidance_ =
                 UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
             if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {

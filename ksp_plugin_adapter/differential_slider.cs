@@ -39,7 +39,7 @@ internal class DifferentialSlider {
     UnityEngine.GUI.skin = null;
     bool value_changed = false;
 
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
       if (text_colour_.HasValue) {
         style.normal.textColor = text_colour_.Value;

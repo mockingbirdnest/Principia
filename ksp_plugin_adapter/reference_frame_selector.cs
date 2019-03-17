@@ -294,14 +294,15 @@ class ReferenceFrameSelector : WindowRenderer {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
 
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       // Left-hand side: tree view for celestial selection.
-      using (new VerticalLayout(UnityEngine.GUILayout.Width(200))) {
+      using (new UnityEngine.GUILayout.VerticalScope(
+                     UnityEngine.GUILayout.Width(200))) {
         RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
       }
 
       // Right-hand side: toggles for reference frame type selection.
-      using (new VerticalLayout()) {
+      using (new UnityEngine.GUILayout.VerticalScope()) {
         if (target_override) {
           UnityEngine.GUILayout.Label(
               "Using target-centred frame selected on navball speed display",
@@ -333,7 +334,7 @@ class ReferenceFrameSelector : WindowRenderer {
   private void RenderSubtree(CelestialBody celestial, int depth) {
     // Horizontal offset between a node and its children.
     const int offset = 20;
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (!celestial.is_root()) {
         UnityEngine.GUILayout.Label(
             "",

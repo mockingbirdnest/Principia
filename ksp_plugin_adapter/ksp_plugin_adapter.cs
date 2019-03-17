@@ -2032,7 +2032,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void DrawMainWindow(int window_id) {
-    using (new VerticalLayout()) {
+    using (new UnityEngine.GUILayout.VerticalScope()) {
       if (!PluginRunning()) {
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
@@ -2056,7 +2056,7 @@ public partial class PrincipiaPluginAdapter
                "{0:0.00e00} s");
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
-        using (new HorizontalLayout()) {
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
           selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
               selecting_active_vessel_target_, "Select target vessel...");
           if (selecting_active_vessel_target_) {
@@ -2155,7 +2155,7 @@ public partial class PrincipiaPluginAdapter
       String label,
       ref bool changed,
       String format) {
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text    : label + ":",
                                   options : UnityEngine.GUILayout.Width(150));
       if (UnityEngine.GUILayout.Button(
@@ -2206,7 +2206,7 @@ public partial class PrincipiaPluginAdapter
                                      text  : "Enable Sun lens flare");
     if (MapView.MapIsEnabled &&
         FlightGlobals.ActiveVessel?.orbitTargeter != null) {
-      using (new HorizontalLayout()) {
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
         selecting_target_celestial_ = UnityEngine.GUILayout.Toggle(
             selecting_target_celestial_, "Select target celestial...");
         if (selecting_target_celestial_) {
@@ -2231,7 +2231,7 @@ public partial class PrincipiaPluginAdapter
 
   private void LoggingSettings() {
 #if SELECTABLE_PLOT_METHOD
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label("Чебышёв plotting method:");
       for (int i = 0; i < чебышёв_plotting_methods_count; ++i) {
         if (UnityEngine.GUILayout.Toggle(чебышёв_plotting_method_ == i,
@@ -2241,7 +2241,7 @@ public partial class PrincipiaPluginAdapter
       }
     }
 #endif
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(
               text    : "←",
@@ -2260,7 +2260,7 @@ public partial class PrincipiaPluginAdapter
       }
     }
     int column_width = 75;
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
       UnityEngine.GUILayout.Label(
           text    : "Log",
@@ -2272,7 +2272,7 @@ public partial class PrincipiaPluginAdapter
           text    : "Flush",
           options : UnityEngine.GUILayout.Width(column_width));
     }
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
       if (UnityEngine.GUILayout.Button(
               text    : "↑",
@@ -2294,7 +2294,7 @@ public partial class PrincipiaPluginAdapter
       }
     }
     for (int severity = 0; severity <= 3; ++severity) {
-      using (new HorizontalLayout()) {
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             text    : Log.severity_names[severity],
             options : UnityEngine.GUILayout.Width(column_width));
@@ -2312,7 +2312,7 @@ public partial class PrincipiaPluginAdapter
             options : UnityEngine.GUILayout.Width(column_width));
       }
     }
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
       if (UnityEngine.GUILayout.Button(
               text    : "↓",

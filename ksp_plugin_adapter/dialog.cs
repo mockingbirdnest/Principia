@@ -20,7 +20,7 @@ internal class Dialog : IConfigNode {
         id         : this.GetHashCode(),
         screenRect : rectangle_,
         func       : (int id) => {
-          using (new VerticalLayout())
+          using (new UnityEngine.GUILayout.VerticalScope())
           {
             UnityEngine.GUILayout.TextArea(message_ ?? "SHOW WITHOUT MESSAGE");
           }
