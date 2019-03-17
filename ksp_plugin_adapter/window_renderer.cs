@@ -9,12 +9,6 @@ namespace ksp_plugin_adapter {
 // TODO(egg): eventually |WindowRenderer| should own a rectangle and this should
 // not be static.
 internal static class WindowUtilities {
-  public static bool ContainsMouse(this UnityEngine.Rect window_rectangle) {
-    UnityEngine.Vector3 mouse = UnityEngine.Input.mousePosition;
-    mouse.y = UnityEngine.Screen.height - mouse.y;
-    return window_rectangle.Contains(mouse);
-  }
-
   public static void EnsureOnScreen(ref UnityEngine.Rect window_rectangle) {
     const float min_width_on_screen = 50;
     const float min_height_on_screen = 50;
@@ -29,9 +23,6 @@ internal static class WindowUtilities {
             -window_rectangle.height + min_height_on_screen,
             UnityEngine.Screen.height - min_height_on_screen);
   }
-
-  const ControlTypes PrincipiaLock = ControlTypes.ALLBUTCAMERAS &
-                                     ~ControlTypes.ALL_SHIP_CONTROLS;
 
   public static void InputLock(this UnityEngine.Rect window_rectangle,
                                object window_owner) {
@@ -49,6 +40,16 @@ internal static class WindowUtilities {
                   window_owner.GetHashCode();
     InputLockManager.RemoveControlLock(name);
   }
+
+  private static bool ContainsMouse(this UnityEngine.Rect window_rectangle) {
+    UnityEngine.Vector3 mouse = UnityEngine.Input.mousePosition;
+    mouse.y = UnityEngine.Screen.height - mouse.y;
+    return window_rectangle.Contains(mouse);
+  }
+
+  private static readonly ControlTypes PrincipiaLock =
+      ControlTypes.ALLBUTCAMERAS &
+      ~ControlTypes.ALL_SHIP_CONTROLS;
 };
 
 internal abstract class WindowRenderer : IDisposable {
