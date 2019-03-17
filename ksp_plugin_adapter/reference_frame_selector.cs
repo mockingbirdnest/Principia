@@ -276,12 +276,16 @@ class ReferenceFrameSelector : WindowRenderer {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     if (show_selector_) {
-      Window(func : RenderSelector,
-             text : name_ + " selection (" + Name() + ")");
-      EnsureOnScreen();
-      InputLock();
+      window_rectangle_ = UnityEngine.GUILayout.Window(
+                              id         : this.GetHashCode(),
+                              screenRect : window_rectangle_,
+                              func       : RenderSelector,
+                              text       : name_ + " selection (" + Name() +
+                                           ")");
+      WindowUtilities.EnsureOnScreen(ref window_rectangle_);
+      window_rectangle_.InputLock(this);
     } else {
-      ClearLock();
+      WindowUtilities.ClearLock(this);
     }
     UnityEngine.GUI.skin = old_skin;
   }

@@ -671,12 +671,12 @@ public partial class PrincipiaPluginAdapter
 
   private void OnGUI() {
     if (is_bad_installation_) {
-      bad_installation_dialog_.RenderWindow();
+      bad_installation_dialog_.Show();
       return;
     }
 
     if (is_post_apocalyptic_) {
-      apocalypse_dialog_.RenderWindow();
+      apocalypse_dialog_.Show();
     }
 
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
@@ -703,7 +703,7 @@ public partial class PrincipiaPluginAdapter
     }
 
     if (hide_all_gui_) {
-      this.ClearLock();
+      WindowUtilities.ClearLock(this);
       return;
     } else if (show_main_window_) {
       UnityEngine.GUI.skin = null;
@@ -718,7 +718,7 @@ public partial class PrincipiaPluginAdapter
       WindowUtilities.EnsureOnScreen(ref main_window_rectangle_);
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
-      InputLock();
+      main_window_rectangle_.InputLock(this);
 
       render_windows();
     }
@@ -1016,7 +1016,7 @@ public partial class PrincipiaPluginAdapter
       KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(
           toolbar_button_);
     }
-    ClearLock();
+    WindowUtilities.ClearLock(this);
     Cleanup();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
                                     ObscenelyEarly);
