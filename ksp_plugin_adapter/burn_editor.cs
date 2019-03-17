@@ -61,7 +61,7 @@ class BurnEditor {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     bool changed = false;
-    using (new VerticalLayout()) {
+    using (new UnityEngine.GUILayout.VerticalScope()) {
       var warning_style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
       warning_style.normal.textColor = XKCDColors.Orange;
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
@@ -74,7 +74,7 @@ class BurnEditor {
         ComputeEngineCharacteristics();
       }
       if (enabled) {
-        using (new HorizontalLayout()) {
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
           if (UnityEngine.GUILayout.Button("Active Engines")) {
             engine_warning_ = "";
             ComputeEngineCharacteristics();
@@ -111,7 +111,7 @@ class BurnEditor {
       changed |= Δv_binormal_.Render(enabled);
       changed |= initial_time_.Render(enabled);
       changed |= changed_reference_frame_;
-      using (new HorizontalLayout()) {
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
             UnityEngine.GUILayout.Width(200));
