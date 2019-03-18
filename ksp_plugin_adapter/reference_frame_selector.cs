@@ -31,10 +31,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   public delegate void Callback(NavigationFrameParameters frame_parameters);
 
   public ReferenceFrameSelector(
-      ISupervisor manager,
+      ISupervisor supervisor,
       IntPtr plugin,
       Callback on_change,
-      string name) : base(manager) {
+      string name) : base(supervisor) {
     plugin_ = plugin;
     on_change_ = on_change;
     name_ = name;
