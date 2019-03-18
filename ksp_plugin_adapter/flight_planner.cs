@@ -7,7 +7,7 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-class FlightPlanner : ManagedWindowRenderer {
+class FlightPlanner : SupervisedWindowRenderer {
   public FlightPlanner(PrincipiaPluginAdapter adapter,
                        IntPtr plugin) : base(adapter) {
     adapter_ = adapter;

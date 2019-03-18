@@ -6,7 +6,7 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal class Dialog : UnmanagedWindowRenderer, IConfigNode {
+internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
   public String Message {
     set {
       message_ = value;

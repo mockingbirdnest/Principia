@@ -20,7 +20,7 @@ static class CelestialExtensions {
   }
 }
 
-class ReferenceFrameSelector : ManagedWindowRenderer {
+class ReferenceFrameSelector : SupervisedWindowRenderer {
   public enum FrameType {
     BARYCENTRIC_ROTATING = 6001,
     BODY_CENTRED_NON_ROTATING = 6000,
@@ -31,7 +31,7 @@ class ReferenceFrameSelector : ManagedWindowRenderer {
   public delegate void Callback(NavigationFrameParameters frame_parameters);
 
   public ReferenceFrameSelector(
-      IManager manager,
+      ISupervisor manager,
       IntPtr plugin,
       Callback on_change,
       string name) : base(manager) {
