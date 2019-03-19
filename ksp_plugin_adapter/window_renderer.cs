@@ -52,26 +52,9 @@ internal static class WindowUtilities {
       ~ControlTypes.ALL_SHIP_CONTROLS;
 };
 
-internal abstract class WindowRenderer : IDisposable {
-  public interface ManagerInterface {
-    event Action render_windows;
-  }
-
-  public WindowRenderer(ManagerInterface manager) {
-    manager_ = manager;
-    manager_.render_windows += RenderWindow;
+internal abstract class BaseWindowRenderer : IConfigNode {
+  protected BaseWindowRenderer() {
     lock_name_ = GetType().ToString() + ":lock:" + GetHashCode();
-  }
-
-  ~WindowRenderer() {
-    manager_.render_windows -= RenderWindow;
-    ClearLock();
-  }
-
-  public void Dispose() {
-    manager_.render_windows -= RenderWindow;
-    ClearLock();
-    GC.SuppressFinalize(this);
   }
 
   // Locking.
@@ -120,6 +103,24 @@ internal abstract class WindowRenderer : IDisposable {
     rectangle_.width = 0.0f;
   }
 
+  // Persistence.
+
+  public void Load(ConfigNode node) {
+    String x_value = node.GetAtMostOneValue("x");
+    if (x_value != null) {
+      rectangle_.x = System.Convert.ToSingle(x_value);
+    }
+    String y_value = node.GetAtMostOneValue("y");
+    if (y_value != null) {
+      rectangle_.y = System.Convert.ToSingle(y_value);
+    }
+  }
+
+  public void Save(ConfigNode node) {
+    node.SetValue("x", rectangle_.x, createIfNotFound : true);
+    node.SetValue("y", rectangle_.y, createIfNotFound : true);
+  }
+
   abstract protected void RenderWindow();
 
   private static readonly ControlTypes PrincipiaLock =
@@ -131,7 +132,6 @@ internal abstract class WindowRenderer : IDisposable {
 
   private static readonly float min_width_ = 500;
 
-  private ManagerInterface manager_;
   private String lock_name_;
   private UnityEngine.Rect rectangle_ =
       new UnityEngine.Rect(x      : (UnityEngine.Screen.width - min_width_) / 2,
@@ -139,6 +139,35 @@ internal abstract class WindowRenderer : IDisposable {
                            width  : min_width_,
                            height : 0);
 }
+
+internal abstract class SupervisedWindowRenderer :
+    BaseWindowRenderer, IDisposable {
+  public interface ISupervisor {
+    event Action render_windows;
+  }
+
+  public SupervisedWindowRenderer(ISupervisor supervisor) : base() {
+    supervisor_ = supervisor;
+    supervisor_.render_windows += RenderWindow;
+  }
+
+  ~SupervisedWindowRenderer() {
+    supervisor_.render_windows -= RenderWindow;
+    ClearLock();
+  }
+
+  public void Dispose() {
+    if (supervisor_ != null) {
+      supervisor_.render_windows -= RenderWindow;
+    }
+    ClearLock();
+    GC.SuppressFinalize(this);
+  }
+
+  private ISupervisor supervisor_;
+}
+
+internal abstract class UnsupervisedWindowRenderer : BaseWindowRenderer {}
 
 internal struct Controlled<T> where T : class, IDisposable {
   public T get() {

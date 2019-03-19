@@ -14,7 +14,7 @@ namespace ksp_plugin_adapter {
                                          GameScenes.TRACKSTATION})]
 public partial class PrincipiaPluginAdapter
     : ScenarioModule,
-      WindowRenderer.ManagerInterface {
+      SupervisedWindowRenderer.ISupervisor {
 
   private const String next_release_name_ = "Fano";
   private const int next_release_lunation_number_ = 238;
