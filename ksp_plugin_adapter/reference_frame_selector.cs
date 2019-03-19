@@ -36,6 +36,12 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
       string name) : base(supervisor) {
     on_change_ = on_change;
     name_ = name;
+
+    // TODO(phl): Bogus initialization.  Find a way to get these data from the
+    // C++ side (we do for flight planning).
+    frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+    selected_celestial = FlightGlobals.GetHomeBody();
+
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       if (!celestial.is_leaf() && !celestial.is_root()) {

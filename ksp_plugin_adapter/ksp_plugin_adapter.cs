@@ -236,6 +236,7 @@ public partial class PrincipiaPluginAdapter
   private FlightPlanner flight_planner_;
   private MapNodePool map_node_pool_;
 
+  public event Action clear_locks;
   public event Action dispose_windows;
   public event Action render_windows;
 
@@ -1016,6 +1017,7 @@ public partial class PrincipiaPluginAdapter
           toolbar_button_);
     }
     Cleanup();
+    dispose_windows();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
                                     ObscenelyEarly);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
@@ -2007,7 +2009,7 @@ public partial class PrincipiaPluginAdapter
     map_renderer_ = null;
     map_node_pool_.Clear();
     WindowUtilities.ClearLock(this);
-    dispose_windows();
+    clear_locks();
     Interface.DeletePlugin(ref plugin_);
     previous_display_mode_ = null;
     navball_changed_ = true;

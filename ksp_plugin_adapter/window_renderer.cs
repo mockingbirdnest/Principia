@@ -142,20 +142,24 @@ internal abstract class BaseWindowRenderer : IConfigNode {
 
 internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   public interface ISupervisor {
+    event Action clear_locks;
     event Action dispose_windows;
     event Action render_windows;
   }
 
   public SupervisedWindowRenderer(ISupervisor supervisor) : base() {
+      UnityEngine.Debug.LogError("A");
     supervisor_ = supervisor;
+    supervisor_.clear_locks += ClearLock;
     supervisor_.dispose_windows += DisposeWindow;
     supervisor_.render_windows += RenderWindow;
   }
 
   public void DisposeWindow() {
+      UnityEngine.Debug.LogError("R");
+    supervisor_.clear_locks -= ClearLock;
     supervisor_.dispose_windows -= DisposeWindow;
     supervisor_.render_windows -= RenderWindow;
-    ClearLock();
   }
 
   private ISupervisor supervisor_;
