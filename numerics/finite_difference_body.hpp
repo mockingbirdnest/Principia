@@ -2,6 +2,7 @@
 
 #include "numerics/finite_difference.hpp"
 
+#include "quantities/tuples.hpp"
 #include "numerics/double_precision.hpp"
 
 namespace principia {
@@ -64,14 +65,14 @@ if (IMPL == 1) {
   // where the sum over j runs from 0 to n - 2, and the sum over
   // k runs from 0 to j.
   double numerator = 0;
-  DoublePrecision<Difference<Value>> sum{};
+  Difference<Value> sum{};
   for (int j = 0; j <= n - 2; ++j) {
-    numerator += numerators[j] / denominator;
+    numerator += numerators[j];
     Difference<Value> difference = values[j] - values[j + 1];
-    sum.Increment(numerator * difference);
+    sum += numerator * difference;
   }
-  return sum.value / step;
-} else { CHECK_EQ(IMPL, 4);
+  return sum / (denominator * step);
+} else if (IMPL == 4) {
   // We evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0, where the sums over i runs
   // from 0 to n - 1, as
   //   Σⱼ (Σₖ aₖ) (f(xⱼ) - f (xⱼ₊₁)),
@@ -83,6 +84,34 @@ if (IMPL == 1) {
     numerator += numerators[j];
     Difference<Value> difference = values[j] - values[j + 1];
     sum.Increment(numerator * difference);
+  }
+  return sum.value / (denominator * step);
+} else if (IMPL == 5) {
+  // We evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0, where the sums over i runs
+  // from 0 to n - 1, as
+  //   Σⱼ (Σₖ aₖ) (f(xⱼ) - f (xⱼ₊₁)),
+  // where the sum over j runs from 0 to n - 2, and the sum over
+  // k runs from 0 to j.
+  double numerator = 0;
+  DoublePrecision<Difference<Value>> sum{};
+  for (int j = 0; j <= n - 2; ++j) {
+    numerator += numerators[j];
+    Difference<Value> difference = values[j] - values[j + 1];
+    sum += DoublePrecision<Difference<Value>>(numerator * difference);
+  }
+  return sum.value / (denominator * step);
+} else { CHECK_EQ(IMPL, 6);
+  // We evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0, where the sums over i runs
+  // from 0 to n - 1, as
+  //   Σⱼ (Σₖ aₖ) (f(xⱼ) - f (xⱼ₊₁)),
+  // where the sum over j runs from 0 to n - 2, and the sum over
+  // k runs from 0 to j.
+  double numerator = 0;
+  DoublePrecision<Difference<Value>> sum{};
+  for (int j = 0; j <= n - 2; ++j) {
+    numerator += numerators[j];
+    Difference<Value> difference = values[j] - values[j + 1];
+    sum += TwoProduct(numerator, difference);
   }
   return sum.value / (denominator * step);
 }

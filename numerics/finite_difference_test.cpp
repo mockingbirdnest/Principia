@@ -1,6 +1,7 @@
 ﻿
 #include "numerics/finite_difference.hpp"
 
+#include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
@@ -10,7 +11,6 @@ namespace principia {
 namespace numerics {
 namespace internal_finite_difference {
 
-using mathematica::ToMathematica;
 using quantities::Sqrt;
 using quantities::Pow;
 
@@ -18,8 +18,10 @@ class FiniteDifferenceTest : public ::testing::Test {};
 
 TEST_F(FiniteDifferenceTest, Meow) {
   std::vector<std::vector<double>> estimates;
-  auto const f = [](double x) { return 1e12 - Pow<2>(x); };
-  for (IMPL = 1; IMPL <= 4; ++IMPL) {
+  auto const f = [](double x) {
+    return 1e9 + std::sin(x / 1024) - std::cos(x / 128 + 3);
+  };
+  for (IMPL = 1; IMPL <= 6; ++IMPL) {
     estimates.emplace_back();
     for (double step = 0x1p64; 1 + step != 1; step /= 2) {
       FixedVector<double, 6> values = {f(1),
@@ -31,7 +33,8 @@ TEST_F(FiniteDifferenceTest, Meow) {
       estimates.back().push_back(FiniteDifference(values, step, 0));
     }
   }
-  LOG(ERROR)<<ToMathematica(estimates);
+  base::OFStream file(SOLUTION_DIR / "finite_difference");
+  file << mathematica::Assign("estimates", estimates);
 }
 
 }  // namespace internal_finite_difference
