@@ -46,11 +46,11 @@ class BurnEditor {
                                     adapter,
                                     ReferenceFrameChanged,
                                     "Manœuvring frame");
-    reference_frame_selector_.Reset(plugin);
+    reference_frame_selector_.Initialize(plugin);
     plugin_ = plugin;
     vessel_ = vessel;
     adapter_ = adapter;
-    reference_frame_selector_.Reset(
+    reference_frame_selector_.SetFrameParameters(
         adapter_.plotting_frame_selector_.FrameParameters());
     ComputeEngineCharacteristics();
   }
@@ -136,7 +136,7 @@ class BurnEditor {
     Δv_normal_.value = burn.delta_v.y;
     Δv_binormal_.value = burn.delta_v.z;
     initial_time_.value = burn.initial_time;
-    reference_frame_selector_.Reset(burn.frame);
+    reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manoeuvre.duration;
     initial_mass_in_tonnes_ = manoeuvre.initial_mass_in_tonnes;

@@ -12,7 +12,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     adapter_ = adapter;
   }
 
-  public void Reset(IntPtr plugin) {
+  public void Initialize(IntPtr plugin) {
     plugin_ = plugin;
     final_time_ = new DifferentialSlider(
                 label            : "Plan length",

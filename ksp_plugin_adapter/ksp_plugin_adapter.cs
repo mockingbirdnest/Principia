@@ -655,10 +655,10 @@ public partial class PrincipiaPluginAdapter
         serialization_encoding_ = "base64";
       }
 
-      plotting_frame_selector_.Reset(plugin_);
+      plotting_frame_selector_.Initialize(plugin_);
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
-      flight_planner_.Reset(plugin_);
+      flight_planner_.Initialize(plugin_);
 
       plugin_construction_ = DateTime.Now;
     } else {
@@ -987,7 +987,7 @@ public partial class PrincipiaPluginAdapter
     }
     if (must_set_plotting_frame_ && FlightGlobals.currentMainBody != null) {
       must_set_plotting_frame_ = false;
-      plotting_frame_selector_.Reset(plugin_);
+      plotting_frame_selector_.UpdateMainBody();
       previous_display_mode_ = null;
     }
 
@@ -2497,9 +2497,9 @@ public partial class PrincipiaPluginAdapter
       plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
                           Planetarium.InverseRotAngle);
     }
-    plotting_frame_selector_.Reset(plugin_);
+    plotting_frame_selector_.Initialize(plugin_);
     must_set_plotting_frame_ = true;
-    flight_planner_.Reset(plugin_);
+    flight_planner_.Initialize(plugin_);
   } catch (Exception e) {
     Log.Fatal("Exception while resetting plugin: " + e.ToString());
   }

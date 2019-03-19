@@ -44,8 +44,11 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public void Reset(IntPtr plugin) {
+  public void Initialize(IntPtr plugin) {
     plugin_ = plugin;
+  }
+
+  public void UpdateMainBody() {
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     selected_celestial =
         FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
@@ -59,9 +62,22 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     on_change_(FrameParameters());
   }
 
-  public FrameType frame_type { get; private set; }
-  public CelestialBody selected_celestial { get; private set; }
-  public Vessel target_override { get; set; }
+  public void SetFrameParameters(NavigationFrameParameters parameters) {
+    frame_type = (FrameType)parameters.extension;
+    switch (frame_type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+      case FrameType.BODY_SURFACE:
+        selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
+        break;
+      case FrameType.BARYCENTRIC_ROTATING:
+        selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
+        break;
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+        selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
+        break;
+    }
+    on_change_(FrameParameters());
+  }
 
   // Sets the |frame_type| to |type| unless this would be invalid for the
   // |selected_celestial|, in which case |frame_type| is set to
@@ -242,22 +258,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public void Reset(NavigationFrameParameters parameters) {
-    frame_type = (FrameType)parameters.extension;
-    switch (frame_type) {
-      case FrameType.BODY_CENTRED_NON_ROTATING:
-      case FrameType.BODY_SURFACE:
-        selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
-        break;
-      case FrameType.BARYCENTRIC_ROTATING:
-        selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
-        break;
-      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-        selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
-        break;
-    }
-  }
-
   public void Hide() {
     show_selector_ = false;
   }
@@ -382,6 +382,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
+
+  public FrameType frame_type { get; private set; }
+  public CelestialBody selected_celestial { get; private set; }
+  public Vessel target_override { get; set; }
 
   private readonly Callback on_change_;
   private readonly string name_;
