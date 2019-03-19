@@ -8,9 +8,11 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 class FlightPlanner : SupervisedWindowRenderer {
-  public FlightPlanner(PrincipiaPluginAdapter adapter,
-                       IntPtr plugin) : base(adapter) {
+  public FlightPlanner(PrincipiaPluginAdapter adapter) : base(adapter) {
     adapter_ = adapter;
+  }
+
+  public void Reset(IntPtr plugin) {
     plugin_ = plugin;
     final_time_ = new DifferentialSlider(
                 label            : "Plan length",
@@ -24,7 +26,6 @@ class FlightPlanner : SupervisedWindowRenderer {
                         TimeSpan.FromSeconds(
                             value - plugin_.FlightPlanGetInitialTime(
                                         vessel_.id.ToString()))));
-
   }
 
   protected override void RenderWindow() {
@@ -352,8 +353,8 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   // Not owned.
-  private readonly IntPtr plugin_;
   private readonly PrincipiaPluginAdapter adapter_;
+  private IntPtr plugin_;
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
 

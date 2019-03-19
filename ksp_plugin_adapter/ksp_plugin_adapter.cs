@@ -81,10 +81,6 @@ public partial class PrincipiaPluginAdapter
   private int чебышёв_plotting_method_ = 2;
   private const int чебышёв_plotting_methods_count = 3;
 
-  internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
-  private Controlled<FlightPlanner> flight_planner_;
-  private MapNodePool map_node_pool_;
-
   private bool selecting_active_vessel_target_ = false;
   private bool selecting_target_celestial_ = false;
 
@@ -233,6 +229,12 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private Dialog bad_installation_dialog_ = new Dialog();
 
+  // UI for the auxiliary windows.
+  internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
+  [KSPField(isPersistant = true)]
+  private FlightPlanner flight_planner_;
+  private MapNodePool map_node_pool_;
+
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
@@ -264,6 +266,7 @@ public partial class PrincipiaPluginAdapter
                 "; this build targets " + expected_version + ".");
     }
     map_node_pool_ = new MapNodePool();
+    flight_planner_ = new FlightPlanner(this);
   }
 
   ~PrincipiaPluginAdapter() {
@@ -654,7 +657,7 @@ public partial class PrincipiaPluginAdapter
                                      "Plotting frame"));
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
-      flight_planner_.reset(new FlightPlanner(this, plugin_));
+      flight_planner_.Reset(plugin_);
 
       plugin_construction_ = DateTime.Now;
     } else {
@@ -2011,7 +2014,6 @@ public partial class PrincipiaPluginAdapter
     Interface.DeletePlugin(ref plugin_);
     plotting_frame_selector_.reset();
     previous_display_mode_ = null;
-    flight_planner_.reset();
     navball_changed_ = true;
   }
 
@@ -2085,7 +2087,7 @@ public partial class PrincipiaPluginAdapter
       }
       ReferenceFrameSelection();
       if (PluginRunning()) {
-        flight_planner_.get().RenderButton();
+        flight_planner_.RenderButton();
       }
       ToggleableSection(name   : "Prediction Settings",
                         show   : ref show_prediction_settings_,
@@ -2503,7 +2505,7 @@ public partial class PrincipiaPluginAdapter
                                    UpdateRenderingFrame,
                                    "Plotting frame"));
     must_set_plotting_frame_ = true;
-    flight_planner_.reset(new FlightPlanner(this, plugin_));
+    flight_planner_.Reset(plugin_);
   } catch (Exception e) {
     Log.Fatal("Exception while resetting plugin: " + e.ToString());
   }
