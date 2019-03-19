@@ -140,28 +140,22 @@ internal abstract class BaseWindowRenderer : IConfigNode {
                            height : 0);
 }
 
-internal abstract class SupervisedWindowRenderer :
-    BaseWindowRenderer, IDisposable {
+internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   public interface ISupervisor {
+    event Action dispose_windows;
     event Action render_windows;
   }
 
   public SupervisedWindowRenderer(ISupervisor supervisor) : base() {
     supervisor_ = supervisor;
+    supervisor_.dispose_windows += DisposeWindow;
     supervisor_.render_windows += RenderWindow;
   }
 
-  ~SupervisedWindowRenderer() {
+  public void DisposeWindow() {
+    supervisor_.dispose_windows -= DisposeWindow;
     supervisor_.render_windows -= RenderWindow;
     ClearLock();
-  }
-
-  public void Dispose() {
-    if (supervisor_ != null) {
-      supervisor_.render_windows -= RenderWindow;
-    }
-    ClearLock();
-    GC.SuppressFinalize(this);
   }
 
   private ISupervisor supervisor_;

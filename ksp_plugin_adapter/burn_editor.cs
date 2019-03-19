@@ -159,7 +159,7 @@ class BurnEditor {
   }
 
   public void Close() {
-    reference_frame_selector_.Dispose();
+    reference_frame_selector_.DisposeWindow();
   }
 
   private void ComputeEngineCharacteristics() {

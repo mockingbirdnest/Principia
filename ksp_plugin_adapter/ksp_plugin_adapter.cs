@@ -236,6 +236,7 @@ public partial class PrincipiaPluginAdapter
   private FlightPlanner flight_planner_;
   private MapNodePool map_node_pool_;
 
+  public event Action dispose_windows;
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
@@ -272,10 +273,6 @@ public partial class PrincipiaPluginAdapter
         new ReferenceFrameSelector(this,
                                    UpdateRenderingFrame,
                                    "Plotting frame");
-  }
-
-  ~PrincipiaPluginAdapter() {
-    Cleanup();
   }
 
   private bool PluginRunning() {
@@ -1018,7 +1015,6 @@ public partial class PrincipiaPluginAdapter
       KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(
           toolbar_button_);
     }
-    WindowUtilities.ClearLock(this);
     Cleanup();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
                                     ObscenelyEarly);
@@ -2008,8 +2004,10 @@ public partial class PrincipiaPluginAdapter
 
   private void Cleanup() {
     UnityEngine.Object.Destroy(map_renderer_);
-    map_node_pool_.Clear();
     map_renderer_ = null;
+    map_node_pool_.Clear();
+    WindowUtilities.ClearLock(this);
+    dispose_windows();
     Interface.DeletePlugin(ref plugin_);
     previous_display_mode_ = null;
     navball_changed_ = true;
