@@ -230,7 +230,8 @@ public partial class PrincipiaPluginAdapter
   private Dialog bad_installation_dialog_ = new Dialog();
 
   // UI for the auxiliary windows.
-  internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
+  [KSPField(isPersistant = true)]
+  internal ReferenceFrameSelector plotting_frame_selector_;
   [KSPField(isPersistant = true)]
   private FlightPlanner flight_planner_;
   private MapNodePool map_node_pool_;
@@ -267,6 +268,10 @@ public partial class PrincipiaPluginAdapter
     }
     map_node_pool_ = new MapNodePool();
     flight_planner_ = new FlightPlanner(this);
+    plotting_frame_selector_ =
+        new ReferenceFrameSelector(this,
+                                   UpdateRenderingFrame,
+                                   "Plotting frame");
   }
 
   ~PrincipiaPluginAdapter() {
@@ -373,7 +378,7 @@ public partial class PrincipiaPluginAdapter
       plugin_.UpdatePrediction(main_vessel.id.ToString());
       string target_id =
           FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
-      if (!plotting_frame_selector_.get().target_override &&
+      if (!plotting_frame_selector_.target_override &&
           target_id != null && plugin_.HasVessel(target_id)) {
         plugin_.VesselSetPredictionAdaptiveStepParameters(
             target_id, adaptive_step_parameters);
@@ -650,11 +655,7 @@ public partial class PrincipiaPluginAdapter
         serialization_encoding_ = "base64";
       }
 
-      plotting_frame_selector_.reset(
-          new ReferenceFrameSelector(this, 
-                                     plugin_,
-                                     UpdateRenderingFrame,
-                                     "Plotting frame"));
+      plotting_frame_selector_.Reset(plugin_);
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
       flight_planner_.Reset(plugin_);
@@ -781,17 +782,17 @@ public partial class PrincipiaPluginAdapter
           target_vessel != null &&
           plugin_.HasVessel(target_vessel.id.ToString())) {
         plugin_.SetTargetVessel(target_vessel.id.ToString(),
-                                plotting_frame_selector_.get()
+                                plotting_frame_selector_
                                     .selected_celestial.flightGlobalsIndex);
-        if (plotting_frame_selector_.get().target_override != target_vessel) {
+        if (plotting_frame_selector_.target_override != target_vessel) {
           navball_changed_ = true;
-          plotting_frame_selector_.get().target_override = target_vessel;
+          plotting_frame_selector_.target_override = target_vessel;
         }
       } else {
         plugin_.ClearTargetVessel();
-        if (plotting_frame_selector_.get().target_override != null) {
+        if (plotting_frame_selector_.target_override != null) {
           navball_changed_ = true;
-          plotting_frame_selector_.get().target_override = null;
+          plotting_frame_selector_.target_override = null;
         }
       }
 
@@ -809,11 +810,11 @@ public partial class PrincipiaPluginAdapter
         // frame accordingly.
         switch (FlightGlobals.speedDisplayMode) {
           case FlightGlobals.SpeedDisplayModes.Surface:
-            plotting_frame_selector_.get().SetFrameType(
+            plotting_frame_selector_.SetFrameType(
                 ReferenceFrameSelector.FrameType.BODY_SURFACE);
             break;
           case FlightGlobals.SpeedDisplayModes.Orbit:
-            plotting_frame_selector_.get().SetFrameType(
+            plotting_frame_selector_.SetFrameType(
                 last_non_surface_frame_type_);
             break;
         }
@@ -822,7 +823,7 @@ public partial class PrincipiaPluginAdapter
       if (navball_changed_ && previous_display_mode_ != null) {
         // Texture the ball.
         navball_changed_ = false;
-        if (plotting_frame_selector_.get().target_override) {
+        if (plotting_frame_selector_.target_override) {
           set_navball_texture(target_navball_texture_);
         } else {
           // If we are targeting an unmanageable vessel, keep the navball in
@@ -830,7 +831,7 @@ public partial class PrincipiaPluginAdapter
           // plotting frame.
           if (FlightGlobals.speedDisplayMode !=
               FlightGlobals.SpeedDisplayModes.Target) {
-            if (plotting_frame_selector_.get().frame_type ==
+            if (plotting_frame_selector_.frame_type ==
                     ReferenceFrameSelector.FrameType.BODY_SURFACE) {
               if (FlightGlobals.speedDisplayMode !=
                   FlightGlobals.SpeedDisplayModes.Surface) {
@@ -845,7 +846,7 @@ public partial class PrincipiaPluginAdapter
               }
             }
           }
-          switch (plotting_frame_selector_.get().frame_type) {
+          switch (plotting_frame_selector_.frame_type) {
             case ReferenceFrameSelector.FrameType.BODY_SURFACE:
               set_navball_texture(surface_navball_texture_);
               break;
@@ -872,11 +873,11 @@ public partial class PrincipiaPluginAdapter
               FlightGlobals.SpeedDisplayModes.Surface &&
           active_vessel.atmDensity > 0;
       if (ferram_owns_the_speed_display) {
-        plotting_frame_selector_.get().SetToSurfaceFrameOf(
+        plotting_frame_selector_.SetToSurfaceFrameOf(
             active_vessel.mainBody);
       }
 
-      if (plotting_frame_selector_.get().target_override == null &&
+      if (plotting_frame_selector_.target_override == null &&
           FlightGlobals.speedDisplayMode ==
               FlightGlobals.SpeedDisplayModes.Target) {
         KSP.UI.Screens.Flight.SpeedDisplay.Instance.textTitle.text = "Target";
@@ -886,7 +887,7 @@ public partial class PrincipiaPluginAdapter
               FlightGlobals.SpeedDisplayModes.Orbit ||
           FlightGlobals.speedDisplayMode ==
               FlightGlobals.SpeedDisplayModes.Surface ||
-          plotting_frame_selector_.get().target_override) {
+          plotting_frame_selector_.target_override) {
         bool plugin_has_active_manageable_vessel =
             has_active_manageable_vessel() &&
             plugin_.HasVessel(active_vessel.id.ToString());
@@ -896,8 +897,7 @@ public partial class PrincipiaPluginAdapter
         if (speed_display?.textTitle != null &&
             speed_display?.textSpeed != null &&
             !ferram_owns_the_speed_display) {
-          speed_display.textTitle.text =
-              plotting_frame_selector_.get().ShortName();
+          speed_display.textTitle.text = plotting_frame_selector_.ShortName();
           var active_vessel_velocity =
               plugin_has_active_manageable_vessel
                   ? (Vector3d)plugin_.VesselVelocity(
@@ -987,8 +987,7 @@ public partial class PrincipiaPluginAdapter
     }
     if (must_set_plotting_frame_ && FlightGlobals.currentMainBody != null) {
       must_set_plotting_frame_ = false;
-      plotting_frame_selector_.reset(new ReferenceFrameSelector(
-          this, plugin_, UpdateRenderingFrame, "Plotting frame"));
+      plotting_frame_selector_.Reset(plugin_);
       previous_display_mode_ = null;
     }
 
@@ -1756,7 +1755,7 @@ public partial class PrincipiaPluginAdapter
           string target_id =
               FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
           if (FlightGlobals.ActiveVessel != null &&
-              !plotting_frame_selector_.get().target_override &&
+              !plotting_frame_selector_.target_override &&
               target_id != null && plugin_.HasVessel(target_id)) {
             using (DisposableIterator rp2_lines_iterator =
                       planetarium.PlanetariumPlotPsychohistory(
@@ -1841,8 +1840,8 @@ public partial class PrincipiaPluginAdapter
 
   private void RenderPredictionMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
-    if (plotting_frame_selector_.get().target_override) {
-      Vessel target = plotting_frame_selector_.get().target_override;
+    if (plotting_frame_selector_.target_override) {
+      Vessel target = plotting_frame_selector_.target_override;
       DisposableIterator ascending_nodes_iterator;
       DisposableIterator descending_nodes_iterator;
       DisposableIterator approaches_iterator;
@@ -1858,22 +1857,22 @@ public partial class PrincipiaPluginAdapter
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.PREDICTION,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.PREDICTION,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
       map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.PREDICTION,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
     } else {
       foreach (CelestialBody celestial in
-               plotting_frame_selector_.get().FixedBodies()) {
+               plotting_frame_selector_.FixedBodies()) {
         DisposableIterator apoapsis_iterator;
         DisposableIterator periapsis_iterator;
         plugin_.RenderedPredictionApsides(vessel_guid,
@@ -1894,13 +1893,13 @@ public partial class PrincipiaPluginAdapter
             vessel    : null,
             celestial : celestial);
       }
-      var frame_type = plotting_frame_selector_.get().frame_type;
+      var frame_type = plotting_frame_selector_.frame_type;
       if (frame_type ==
               ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING ||
           frame_type == ReferenceFrameSelector.FrameType
                             .BODY_CENTRED_PARENT_DIRECTION) {
         var primary =
-            plotting_frame_selector_.get().selected_celestial.referenceBody;
+            plotting_frame_selector_.selected_celestial.referenceBody;
         DisposableIterator ascending_nodes_iterator;
         DisposableIterator descending_nodes_iterator;
         plugin_.RenderedPredictionNodes(vessel_guid,
@@ -1925,8 +1924,8 @@ public partial class PrincipiaPluginAdapter
 
   private void RenderFlightPlanMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
-    if (plotting_frame_selector_.get().target_override) {
-      Vessel target = plotting_frame_selector_.get().target_override;
+    if (plotting_frame_selector_.target_override) {
+      Vessel target = plotting_frame_selector_.target_override;
       DisposableIterator ascending_nodes_iterator;
       DisposableIterator descending_nodes_iterator;
       DisposableIterator approaches_iterator;
@@ -1942,22 +1941,22 @@ public partial class PrincipiaPluginAdapter
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
       map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.FLIGHT_PLAN,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
     } else {
       foreach (CelestialBody celestial in
-               plotting_frame_selector_.get().FixedBodies()) {
+               plotting_frame_selector_.FixedBodies()) {
         DisposableIterator apoapsis_iterator;
         DisposableIterator periapsis_iterator;
         plugin_.FlightPlanRenderedApsides(vessel_guid,
@@ -1978,13 +1977,13 @@ public partial class PrincipiaPluginAdapter
             vessel    : null,
             celestial : celestial);
       }
-      var frame_type = plotting_frame_selector_.get().frame_type;
+      var frame_type = plotting_frame_selector_.frame_type;
       if (frame_type ==
               ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING ||
           frame_type == ReferenceFrameSelector.FrameType
                             .BODY_CENTRED_PARENT_DIRECTION) {
         var primary =
-            plotting_frame_selector_.get().selected_celestial.referenceBody;
+            plotting_frame_selector_.selected_celestial.referenceBody;
         DisposableIterator ascending_nodes_iterator;
         DisposableIterator descending_nodes_iterator;
         plugin_.FlightPlanRenderedNodes(vessel_guid,
@@ -2012,7 +2011,6 @@ public partial class PrincipiaPluginAdapter
     map_node_pool_.Clear();
     map_renderer_ = null;
     Interface.DeletePlugin(ref plugin_);
-    plotting_frame_selector_.reset();
     previous_display_mode_ = null;
     navball_changed_ = true;
   }
@@ -2147,7 +2145,7 @@ public partial class PrincipiaPluginAdapter
 
   private void ReferenceFrameSelection() {
     if (PluginRunning()) {
-      plotting_frame_selector_.get().RenderButton();
+      plotting_frame_selector_.RenderButton();
     }
   }
 
@@ -2499,11 +2497,7 @@ public partial class PrincipiaPluginAdapter
       plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
                           Planetarium.InverseRotAngle);
     }
-    plotting_frame_selector_.reset(
-        new ReferenceFrameSelector(this,
-                                   plugin_,
-                                   UpdateRenderingFrame,
-                                   "Plotting frame"));
+    plotting_frame_selector_.Reset(plugin_);
     must_set_plotting_frame_ = true;
     flight_planner_.Reset(plugin_);
   } catch (Exception e) {

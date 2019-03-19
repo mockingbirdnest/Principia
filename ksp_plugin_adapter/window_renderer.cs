@@ -169,20 +169,5 @@ internal abstract class SupervisedWindowRenderer :
 
 internal abstract class UnsupervisedWindowRenderer : BaseWindowRenderer {}
 
-internal struct Controlled<T> where T : class, IDisposable {
-  public T get() {
-    return all_;
-  }
-
-  public void reset(T value = null) {
-    if (all_ != null) {
-      all_.Dispose();
-    }
-    all_ = value;
-  }
-
-  private T all_;
-}
-
 }  // namespace ksp_plugin_adapter
 }  // namespace principia

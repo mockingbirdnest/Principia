@@ -32,19 +32,21 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public ReferenceFrameSelector(
       ISupervisor supervisor,
-      IntPtr plugin,
       Callback on_change,
       string name) : base(supervisor) {
-    plugin_ = plugin;
     on_change_ = on_change;
     name_ = name;
-    frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       if (!celestial.is_leaf() && !celestial.is_root()) {
         expanded_.Add(celestial, false);
       }
     }
+  }
+
+  public void Reset(IntPtr plugin) {
+    plugin_ = plugin;
+    frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     selected_celestial =
         FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
     for (CelestialBody celestial = selected_celestial;
@@ -381,12 +383,12 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
 
-  private Callback on_change_;
+  private readonly Callback on_change_;
+  private readonly string name_;
   // Not owned.
   private IntPtr plugin_;
   private bool show_selector_;
   private Dictionary<CelestialBody, bool> expanded_;
-  private readonly string name_;
 }
 
 }  // namespace ksp_plugin_adapter

@@ -44,14 +44,14 @@ class BurnEditor {
     initial_time_.value = initial_time;
     reference_frame_selector_ = new ReferenceFrameSelector(
                                     adapter,
-                                    plugin,
                                     ReferenceFrameChanged,
                                     "Manœuvring frame");
+    reference_frame_selector_.Reset(plugin);
     plugin_ = plugin;
     vessel_ = vessel;
     adapter_ = adapter;
     reference_frame_selector_.Reset(
-        adapter_.plotting_frame_selector_.get().FrameParameters());
+        adapter_.plotting_frame_selector_.FrameParameters());
     ComputeEngineCharacteristics();
   }
 
@@ -96,7 +96,7 @@ class BurnEditor {
       }
       string frame_warning = "";
       if (!reference_frame_selector_.FrameParameters().Equals(
-              adapter_.plotting_frame_selector_.get().FrameParameters())) {
+              adapter_.plotting_frame_selector_.FrameParameters())) {
         frame_warning = "Manœuvre frame differs from plotting frame";
       }
       UnityEngine.GUILayout.TextArea(frame_warning, warning_style);
