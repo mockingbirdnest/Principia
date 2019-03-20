@@ -281,9 +281,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   protected override void RenderWindow(int window_id) {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
-
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       // Left-hand side: tree view for celestial selection.
       using (new UnityEngine.GUILayout.VerticalScope(
@@ -311,9 +308,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
         }
       }
     }
-
     UnityEngine.GUI.DragWindow();
-    UnityEngine.GUI.skin = old_skin;
   }
 
   private void RenderSubtree(CelestialBody celestial, int depth) {

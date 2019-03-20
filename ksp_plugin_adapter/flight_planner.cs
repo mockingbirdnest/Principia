@@ -40,11 +40,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   protected override String Title { get; } = "Flight plan";
 
   protected override void RenderWindow(int window_id) {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
-
     using (new UnityEngine.GUILayout.VerticalScope()) {
-
       {
         string vessel_guid = vessel_?.id.ToString();
         if (vessel_guid == null ||
@@ -221,9 +217,7 @@ class FlightPlanner : SupervisedWindowRenderer {
         }
       }
     }
-
     UnityEngine.GUI.DragWindow();
-    UnityEngine.GUI.skin = old_skin;
   }
 
   private void RenderUpcomingEvents() {
