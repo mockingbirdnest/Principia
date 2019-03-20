@@ -276,6 +276,11 @@ public partial class PrincipiaPluginAdapter
                                    "Plotting frame");
   }
 
+  ~PrincipiaPluginAdapter() {
+    // We should not get here without deleting the plugin, but just for safety.
+    Interface.DeletePlugin(ref plugin_);
+  }
+
   private bool PluginRunning() {
     return plugin_ != IntPtr.Zero;
   }
