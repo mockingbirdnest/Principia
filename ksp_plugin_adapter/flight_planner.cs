@@ -222,12 +222,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       }
     }
 
-    UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(x      : 0f,
-                                        y      : 0f,
-                                        width  : 10000f,
-                                        height : 10000f));
-
+    UnityEngine.GUI.DragWindow();
     UnityEngine.GUI.skin = old_skin;
   }
 

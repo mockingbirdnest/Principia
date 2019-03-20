@@ -2105,11 +2105,7 @@ public partial class PrincipiaPluginAdapter
                         render : CrashOptions);
 #endif
     }
-    UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(x      : 0f,
-                                        y      : 0f,
-                                        width  : 10000f,
-                                        height : 10000f));
+    UnityEngine.GUI.DragWindow();
   }
 
   delegate void GUIRenderer();
