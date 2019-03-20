@@ -32,19 +32,30 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public ReferenceFrameSelector(
       ISupervisor supervisor,
-      IntPtr plugin,
       Callback on_change,
       string name) : base(supervisor) {
-    plugin_ = plugin;
     on_change_ = on_change;
     name_ = name;
+
+    // TODO(phl): Bogus initialization.  Find a way to get these data from the
+    // C++ side (we do for flight planning).
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+    selected_celestial = FlightGlobals.GetHomeBody();
+
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       if (!celestial.is_leaf() && !celestial.is_root()) {
         expanded_.Add(celestial, false);
       }
     }
+  }
+
+  public void Initialize(IntPtr plugin) {
+    plugin_ = plugin;
+  }
+
+  public void UpdateMainBody() {
+    frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     selected_celestial =
         FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
     for (CelestialBody celestial = selected_celestial;
@@ -57,9 +68,22 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     on_change_(FrameParameters());
   }
 
-  public FrameType frame_type { get; private set; }
-  public CelestialBody selected_celestial { get; private set; }
-  public Vessel target_override { get; set; }
+  public void SetFrameParameters(NavigationFrameParameters parameters) {
+    frame_type = (FrameType)parameters.extension;
+    switch (frame_type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+      case FrameType.BODY_SURFACE:
+        selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
+        break;
+      case FrameType.BARYCENTRIC_ROTATING:
+        selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
+        break;
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+        selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
+        break;
+    }
+    on_change_(FrameParameters());
+  }
 
   // Sets the |frame_type| to |type| unless this would be invalid for the
   // |selected_celestial|, in which case |frame_type| is set to
@@ -240,22 +264,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public void Reset(NavigationFrameParameters parameters) {
-    frame_type = (FrameType)parameters.extension;
-    switch (frame_type) {
-      case FrameType.BODY_CENTRED_NON_ROTATING:
-      case FrameType.BODY_SURFACE:
-        selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
-        break;
-      case FrameType.BARYCENTRIC_ROTATING:
-        selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
-        break;
-      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-        selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
-        break;
-    }
-  }
-
   public void Hide() {
     show_selector_ = false;
   }
@@ -381,12 +389,16 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
 
-  private Callback on_change_;
+  public FrameType frame_type { get; private set; }
+  public CelestialBody selected_celestial { get; private set; }
+  public Vessel target_override { get; set; }
+
+  private readonly Callback on_change_;
+  private readonly string name_;
   // Not owned.
   private IntPtr plugin_;
   private bool show_selector_;
   private Dictionary<CelestialBody, bool> expanded_;
-  private readonly string name_;
 }
 
 }  // namespace ksp_plugin_adapter

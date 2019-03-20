@@ -140,49 +140,30 @@ internal abstract class BaseWindowRenderer : IConfigNode {
                            height : 0);
 }
 
-internal abstract class SupervisedWindowRenderer :
-    BaseWindowRenderer, IDisposable {
+internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   public interface ISupervisor {
+    event Action clear_locks;
+    event Action dispose_windows;
     event Action render_windows;
   }
 
   public SupervisedWindowRenderer(ISupervisor supervisor) : base() {
     supervisor_ = supervisor;
+    supervisor_.clear_locks += ClearLock;
+    supervisor_.dispose_windows += DisposeWindow;
     supervisor_.render_windows += RenderWindow;
   }
 
-  ~SupervisedWindowRenderer() {
+  public void DisposeWindow() {
+    supervisor_.clear_locks -= ClearLock;
+    supervisor_.dispose_windows -= DisposeWindow;
     supervisor_.render_windows -= RenderWindow;
-    ClearLock();
-  }
-
-  public void Dispose() {
-    if (supervisor_ != null) {
-      supervisor_.render_windows -= RenderWindow;
-    }
-    ClearLock();
-    GC.SuppressFinalize(this);
   }
 
   private ISupervisor supervisor_;
 }
 
 internal abstract class UnsupervisedWindowRenderer : BaseWindowRenderer {}
-
-internal struct Controlled<T> where T : class, IDisposable {
-  public T get() {
-    return all_;
-  }
-
-  public void reset(T value = null) {
-    if (all_ != null) {
-      all_.Dispose();
-    }
-    all_ = value;
-  }
-
-  private T all_;
-}
 
 }  // namespace ksp_plugin_adapter
 }  // namespace principia

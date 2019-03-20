@@ -11,6 +11,9 @@ class BurnEditor {
                     IntPtr plugin,
                     Vessel vessel,
                     double initial_time) {
+    adapter_ = adapter;
+    plugin_ = plugin;
+    vessel_ = vessel;
     Δv_tangent_ =
         new DifferentialSlider(label            : "Δv tangent",
                                unit             : "m / s",
@@ -43,15 +46,12 @@ class BurnEditor {
                             Planetarium.GetUniversalTime() - value)));
     initial_time_.value = initial_time;
     reference_frame_selector_ = new ReferenceFrameSelector(
-                                    adapter,
-                                    plugin,
+                                    adapter_,
                                     ReferenceFrameChanged,
                                     "Manœuvring frame");
-    plugin_ = plugin;
-    vessel_ = vessel;
-    adapter_ = adapter;
-    reference_frame_selector_.Reset(
-        adapter_.plotting_frame_selector_.get().FrameParameters());
+    reference_frame_selector_.Initialize(plugin_);
+    reference_frame_selector_.SetFrameParameters(
+        adapter_.plotting_frame_selector_.FrameParameters());
     ComputeEngineCharacteristics();
   }
 
@@ -96,7 +96,7 @@ class BurnEditor {
       }
       string frame_warning = "";
       if (!reference_frame_selector_.FrameParameters().Equals(
-              adapter_.plotting_frame_selector_.get().FrameParameters())) {
+              adapter_.plotting_frame_selector_.FrameParameters())) {
         frame_warning = "Manœuvre frame differs from plotting frame";
       }
       UnityEngine.GUILayout.TextArea(frame_warning, warning_style);
@@ -136,7 +136,7 @@ class BurnEditor {
     Δv_normal_.value = burn.delta_v.y;
     Δv_binormal_.value = burn.delta_v.z;
     initial_time_.value = burn.initial_time;
-    reference_frame_selector_.Reset(burn.frame);
+    reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manoeuvre.duration;
     initial_mass_in_tonnes_ = manoeuvre.initial_mass_in_tonnes;
@@ -159,7 +159,7 @@ class BurnEditor {
   }
 
   public void Close() {
-    reference_frame_selector_.Dispose();
+    reference_frame_selector_.DisposeWindow();
   }
 
   private void ComputeEngineCharacteristics() {
