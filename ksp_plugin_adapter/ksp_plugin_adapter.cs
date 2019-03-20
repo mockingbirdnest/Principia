@@ -723,6 +723,8 @@ public partial class PrincipiaPluginAdapter
       main_window_rectangle_.InputLock(this);
 
       render_windows();
+    } else {
+      clear_locks();
     }
   }
 
