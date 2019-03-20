@@ -264,33 +264,23 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public void Hide() {
-    show_selector_ = false;
-  }
-
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button(name_ + " selection (" + Name() +
                                      ")...")) {
-      show_selector_ = !show_selector_;
+      Toggle();
     }
     UnityEngine.GUI.skin = old_skin;
   }
 
-  protected override void RenderWindow() {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
-    if (show_selector_) {
-      Window(func : RenderSelector,
-             text : name_ + " selection (" + Name() + ")");
-    } else {
-      ClearLock();
+  protected override String Title {
+    get {
+      return name_ + " selection (" + Name() + ")";
     }
-    UnityEngine.GUI.skin = old_skin;
   }
 
-  private void RenderSelector(int window_id) {
+  protected override void RenderWindow(int window_id) {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
 
@@ -397,7 +387,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   private readonly string name_;
   // Not owned.
   private IntPtr plugin_;
-  private bool show_selector_;
   private Dictionary<CelestialBody, bool> expanded_;
 }
 

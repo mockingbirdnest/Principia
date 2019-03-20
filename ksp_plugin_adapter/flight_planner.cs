@@ -28,28 +28,18 @@ class FlightPlanner : SupervisedWindowRenderer {
                                         vessel_.id.ToString()))));
   }
 
-  protected override void RenderWindow() {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
-    if (show_planner_) {
-      Window(func : RenderPlanner,
-             text : "Flight plan");
-    } else {
-      ClearLock();
-    }
-    UnityEngine.GUI.skin = old_skin;
-  }
-
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button("Flight plan...")) {
-      show_planner_ = !show_planner_;
+      Toggle();
     }
     UnityEngine.GUI.skin = old_skin;
   }
 
-  private void RenderPlanner(int window_id) {
+  protected override String Title { get; } = "Flight plan";
+
+  protected override void RenderWindow(int window_id) {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
 
@@ -360,7 +350,6 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   private DifferentialSlider final_time_;
 
-  private bool show_planner_ = false;
   private bool show_guidance_ = false;
   private ManeuverNode guidance_node_;
   

@@ -218,9 +218,6 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, QP>();
 
   // UI for the apocalypse notification.
-  // Whether we have encountered an apocalypse already.
-  [KSPField(isPersistant = true)]
-  private bool is_post_apocalyptic_ = false;
   [KSPField(isPersistant = true)]
   private Dialog apocalypse_dialog_ = new Dialog();
 
@@ -679,12 +676,11 @@ public partial class PrincipiaPluginAdapter
   private void OnGUI() {
     if (is_bad_installation_) {
       bad_installation_dialog_.Show();
+      bad_installation_dialog_.RenderWindow();
       return;
     }
 
-    if (is_post_apocalyptic_) {
-      apocalypse_dialog_.Show();
-    }
+    apocalypse_dialog_.RenderWindow();
 
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
       UnityEngine.Texture toolbar_button_texture;
@@ -1376,11 +1372,11 @@ public partial class PrincipiaPluginAdapter
       time_is_advancing_ = time_is_advancing(universal_time);
       if (time_is_advancing_) {
         plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-        if (!is_post_apocalyptic_) {
+        if (!apocalypse_dialog_.Shown()) {
           String revelation = "";
           if (plugin_.HasEncounteredApocalypse(out revelation)) {
-            is_post_apocalyptic_ = true;
             apocalypse_dialog_.Message = revelation;
+            apocalypse_dialog_.Show();
           }
         }
         foreach (var vessel in FlightGlobals.Vessels) {

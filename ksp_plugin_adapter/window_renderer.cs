@@ -75,16 +75,22 @@ internal abstract class BaseWindowRenderer : IConfigNode {
 
   // Rendering.
 
-  protected void Window(UnityEngine.GUI.WindowFunction func,
-                        String text) {
-    rectangle_ = UnityEngine.GUILayout.Window(
-                     id         : this.GetHashCode(),
-                     screenRect : rectangle_,
-                     func       : func,
-                     text       : text,
-                     options    : UnityEngine.GUILayout.MinWidth(min_width_));
-    EnsureOnScreen();
-    InputLock();
+  public void RenderWindow() {
+    var old_skin = UnityEngine.GUI.skin;
+    UnityEngine.GUI.skin = null;
+    if (show_) {
+      rectangle_ = UnityEngine.GUILayout.Window(
+                       id         : this.GetHashCode(),
+                       screenRect : rectangle_,
+                       func       : RenderWindow,
+                       text       : Title,
+                       options    : UnityEngine.GUILayout.MinWidth(min_width_));
+      EnsureOnScreen();
+      InputLock();
+    } else {
+      ClearLock();
+    }
+    UnityEngine.GUI.skin = old_skin;
   }
 
   private void EnsureOnScreen() {
@@ -103,9 +109,31 @@ internal abstract class BaseWindowRenderer : IConfigNode {
     rectangle_.width = 0.0f;
   }
 
+  // Visibility.
+
+  public void Hide() {
+    show_ = false;
+  }
+
+  public void Show() {
+    show_ = true;
+  }
+
+  public bool Shown() {
+    return show_;
+  }
+
+  public void Toggle() {
+    show_ = !show_;
+  }
+
   // Persistence.
 
   public void Load(ConfigNode node) {
+    String show_value = node.GetAtMostOneValue("show");
+    if (show_value != null) {
+      show_ = System.Convert.ToBoolean(show_value);
+    }
     String x_value = node.GetAtMostOneValue("x");
     if (x_value != null) {
       rectangle_.x = System.Convert.ToSingle(x_value);
@@ -117,11 +145,13 @@ internal abstract class BaseWindowRenderer : IConfigNode {
   }
 
   public void Save(ConfigNode node) {
+    node.SetValue("show", show_, createIfNotFound : true);
     node.SetValue("x", rectangle_.x, createIfNotFound : true);
     node.SetValue("y", rectangle_.y, createIfNotFound : true);
   }
 
-  abstract protected void RenderWindow();
+  abstract protected String Title { get; }
+  abstract protected void RenderWindow(int window_id);
 
   private static readonly ControlTypes PrincipiaLock =
       ControlTypes.ALLBUTCAMERAS &
@@ -138,6 +168,7 @@ internal abstract class BaseWindowRenderer : IConfigNode {
                            y      : UnityEngine.Screen.height / 3,
                            width  : min_width_,
                            height : 0);
+  private bool show_ = false;
 }
 
 internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
