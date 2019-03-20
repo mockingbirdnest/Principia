@@ -148,7 +148,6 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   }
 
   public SupervisedWindowRenderer(ISupervisor supervisor) : base() {
-      UnityEngine.Debug.LogError("A");
     supervisor_ = supervisor;
     supervisor_.clear_locks += ClearLock;
     supervisor_.dispose_windows += DisposeWindow;
@@ -156,7 +155,6 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   }
 
   public void DisposeWindow() {
-      UnityEngine.Debug.LogError("R");
     supervisor_.clear_locks -= ClearLock;
     supervisor_.dispose_windows -= DisposeWindow;
     supervisor_.render_windows -= RenderWindow;

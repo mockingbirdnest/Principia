@@ -11,6 +11,9 @@ class BurnEditor {
                     IntPtr plugin,
                     Vessel vessel,
                     double initial_time) {
+    adapter_ = adapter;
+    plugin_ = plugin;
+    vessel_ = vessel;
     Δv_tangent_ =
         new DifferentialSlider(label            : "Δv tangent",
                                unit             : "m / s",
@@ -43,13 +46,10 @@ class BurnEditor {
                             Planetarium.GetUniversalTime() - value)));
     initial_time_.value = initial_time;
     reference_frame_selector_ = new ReferenceFrameSelector(
-                                    adapter,
+                                    adapter_,
                                     ReferenceFrameChanged,
                                     "Manœuvring frame");
-    reference_frame_selector_.Initialize(plugin);
-    plugin_ = plugin;
-    vessel_ = vessel;
-    adapter_ = adapter;
+    reference_frame_selector_.Initialize(plugin_);
     reference_frame_selector_.SetFrameParameters(
         adapter_.plotting_frame_selector_.FrameParameters());
     ComputeEngineCharacteristics();
