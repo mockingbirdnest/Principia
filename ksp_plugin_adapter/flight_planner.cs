@@ -7,13 +7,13 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-class FlightPlanner : WindowRenderer {
-  public FlightPlanner(PrincipiaPluginAdapter adapter,
-                       IntPtr plugin) : base(adapter) {
+class FlightPlanner : SupervisedWindowRenderer {
+  public FlightPlanner(PrincipiaPluginAdapter adapter) : base(adapter) {
     adapter_ = adapter;
+  }
+
+  public void Initialize(IntPtr plugin) {
     plugin_ = plugin;
-    window_rectangle_.x = UnityEngine.Screen.width / 2;
-    window_rectangle_.y = UnityEngine.Screen.height / 3;
     final_time_ = new DifferentialSlider(
                 label            : "Plan length",
                 unit             : null,
@@ -26,23 +26,16 @@ class FlightPlanner : WindowRenderer {
                         TimeSpan.FromSeconds(
                             value - plugin_.FlightPlanGetInitialTime(
                                         vessel_.id.ToString()))));
-
   }
 
   protected override void RenderWindow() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     if (show_planner_) {
-      window_rectangle_ = UnityEngine.GUILayout.Window(
-                              id         : this.GetHashCode(),
-                              screenRect : window_rectangle_,
-                              func       : RenderPlanner,
-                              text       : "Flight plan",
-                              options    : UnityEngine.GUILayout.MinWidth(500));
-      WindowUtilities.EnsureOnScreen(ref window_rectangle_);
-      window_rectangle_.InputLock(this);
+      Window(func : RenderPlanner,
+             text : "Flight plan");
     } else {
-      WindowUtilities.ClearLock(this);
+      ClearLock();
     }
     UnityEngine.GUI.skin = old_skin;
   }
@@ -60,7 +53,7 @@ class FlightPlanner : WindowRenderer {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
 
-    using (new VerticalLayout()) {
+    using (new UnityEngine.GUILayout.VerticalScope()) {
 
       {
         string vessel_guid = vessel_?.id.ToString();
@@ -79,6 +72,8 @@ class FlightPlanner : WindowRenderer {
         if (burn_editors_ == null) {
           if (plugin_.HasVessel(vessel_guid)) {
             if (plugin_.FlightPlanExists(vessel_guid)) {
+              // TODO(phl): Evil change of state between the two calls to
+              // RenderPlanner.
               burn_editors_ = new List<BurnEditor>();
               for (int i = 0;
                    i < plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
@@ -124,8 +119,8 @@ class FlightPlanner : WindowRenderer {
           FlightPlanAdaptiveStepParameters parameters =
               plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
 
-          using (new HorizontalLayout()) {
-            using (new HorizontalLayout()) {
+          using (new UnityEngine.GUILayout.HorizontalScope()) {
+            using (new UnityEngine.GUILayout.HorizontalScope()) {
               UnityEngine.GUILayout.Label("Max. steps per segment:",
                                           UnityEngine.GUILayout.Width(150));
               const int factor = 4;
@@ -146,7 +141,7 @@ class FlightPlanner : WindowRenderer {
                                                             parameters);
               }
             }
-            using (new HorizontalLayout()) {
+            using (new UnityEngine.GUILayout.HorizontalScope()) {
               UnityEngine.GUILayout.Label("Tolerance:",
                                           UnityEngine.GUILayout.Width(75));
               if (parameters.length_integration_tolerance <= 1e-6) {
@@ -271,7 +266,7 @@ class FlightPlanner : WindowRenderer {
         // TODO(egg): We may want to consider setting the burn vector directly
         // rather than going through the solver.
         if (vessel_.patchedConicSolver != null) {
-          using (new HorizontalLayout()) {
+          using (new UnityEngine.GUILayout.HorizontalScope()) {
             show_guidance_ =
                 UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
             if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
@@ -342,11 +337,6 @@ class FlightPlanner : WindowRenderer {
     vessel_ = FlightGlobals.ActiveVessel;
   }
 
-  private void Shrink() {
-    window_rectangle_.height = 0.0f;
-    window_rectangle_.width = 0.0f;
-  }
-
   internal static string FormatPositiveTimeSpan (TimeSpan span) {
     return (GameSettings.KERBIN_TIME
                 ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
@@ -363,8 +353,8 @@ class FlightPlanner : WindowRenderer {
   }
 
   // Not owned.
-  private readonly IntPtr plugin_;
   private readonly PrincipiaPluginAdapter adapter_;
+  private IntPtr plugin_;
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
 
@@ -373,7 +363,6 @@ class FlightPlanner : WindowRenderer {
   private bool show_planner_ = false;
   private bool show_guidance_ = false;
   private ManeuverNode guidance_node_;
-  private UnityEngine.Rect window_rectangle_;
   
   private const double Log10TimeLowerRate = 0.0;
   private const double Log10TimeUpperRate = 7.0;

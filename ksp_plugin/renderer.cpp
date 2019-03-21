@@ -20,8 +20,6 @@ using geometry::RigidTransformation;
 using geometry::Vector;
 using geometry::Velocity;
 using physics::BodyCentredBodyDirectionDynamicFrame;
-using physics::ComputeApsides;
-using physics::ComputeNodes;
 using physics::DegreesOfFreedom;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,
@@ -74,16 +72,6 @@ Vessel const& Renderer::GetTargetVessel() const {
   return *target_->vessel;
 }
 
-DiscreteTrajectory<Barycentric> const& Renderer::GetTargetVesselPrediction(
-    Instant const& time) const {
-  CHECK(target_);
-  target_->vessel->FlowPrediction(time);
-  // The prediction may not have been prolonged to |time| if we are near a
-  // singularity.
-  CHECK_LE(time, target_->vessel->prediction().last().time());
-  return target_->vessel->prediction();
-}
-
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
 Renderer::RenderBarycentricTrajectoryInWorld(
     Instant const& time,
@@ -115,9 +103,10 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
   for (auto it = begin; it != end; ++it) {
     Instant const& t = it.time();
     if (target_) {
-      if (t < target_->vessel->prediction().t_min()) {
+      auto const& prediction = target_->vessel->prediction();
+      if (t < prediction.t_min()) {
         continue;
-      } else if (t > target_->vessel->prediction().t_max()) {
+      } else if (t > prediction.t_max()) {
         break;
       }
     }
@@ -229,15 +218,13 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     NavigationFrame const& navigation_frame,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const vessel_psychohistory_last = vessel.psychohistory().last();
-  auto const to_navigation =
-      navigation_frame.ToThisFrameAtTime(vessel_psychohistory_last.time());
+  auto const last = vessel.psychohistory().last();
+  auto const to_navigation = navigation_frame.ToThisFrameAtTime(last.time());
   auto const from_navigation = to_navigation.orthogonal_map().Inverse();
   auto const frenet_frame =
       navigation_frame.FrenetFrame(
-          vessel_psychohistory_last.time(),
-          to_navigation(
-              vessel_psychohistory_last.degrees_of_freedom())).Forget();
+          last.time(),
+          to_navigation(last.degrees_of_freedom())).Forget();
   return BarycentricToWorld(planetarium_rotation) * from_navigation *
          frenet_frame;
 }
@@ -315,7 +302,10 @@ Renderer::Target::Target(
 not_null<NavigationFrame const*> Renderer::GetPlottingFrame(
     Instant const& time) const {
   if (target_) {
-    GetTargetVesselPrediction(time);
+    target_->vessel->FlowPrediction(time);
+    // The prediction may not have been prolonged enough if we are near a
+    // singularity.
+    CHECK_LE(time, target_->vessel->prediction().last().time());
   }
   return GetPlottingFrame();
 }

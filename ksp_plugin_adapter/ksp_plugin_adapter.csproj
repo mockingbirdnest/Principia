@@ -102,6 +102,7 @@
     <Compile Include="config_node_extensions.cs" />
     <Compile Include="config_node_parsers.cs" />
     <Compile Include="culture.cs" />
+    <Compile Include="dialog.cs" />
     <Compile Include="differential_slider.cs" />
     <Compile Include="disposable.cs" />
     <Compile Include="disposable_marshaller.cs" />
@@ -111,7 +112,6 @@
     <Compile Include="interface.generated.cs" />
     <Compile Include="ksp_plugin_adapter.cs" />
     <Compile Include="interface.cs" />
-    <Compile Include="layout.cs" />
     <Compile Include="loader.cs" />
     <Compile Include="logging.cs" />
     <Compile Include="map_node_pool.cs" />

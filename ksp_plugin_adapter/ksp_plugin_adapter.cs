@@ -14,7 +14,7 @@ namespace ksp_plugin_adapter {
                                          GameScenes.TRACKSTATION})]
 public partial class PrincipiaPluginAdapter
     : ScenarioModule,
-      WindowRenderer.ManagerInterface {
+      SupervisedWindowRenderer.ISupervisor {
 
   private const String next_release_name_ = "Fano";
   private const int next_release_lunation_number_ = 238;
@@ -80,10 +80,6 @@ public partial class PrincipiaPluginAdapter
 #endif
   private int чебышёв_plotting_method_ = 2;
   private const int чебышёв_plotting_methods_count = 3;
-
-  internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
-  private Controlled<FlightPlanner> flight_planner_;
-  private MapNodePool map_node_pool_;
 
   private bool selecting_active_vessel_target_ = false;
   private bool selecting_target_celestial_ = false;
@@ -183,8 +179,6 @@ public partial class PrincipiaPluginAdapter
 
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
 
-  private String bad_installation_popup_;
-  
   private Krakensbane krakensbane_;
   private Krakensbane krakensbane {
     get {
@@ -223,18 +217,27 @@ public partial class PrincipiaPluginAdapter
   private Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
       new Dictionary<uint, QP>();
 
-  // The first apocalyptic error message.
-  [KSPField(isPersistant = true)]
-  private String revelation_ = "";
+  // UI for the apocalypse notification.
   // Whether we have encountered an apocalypse already.
   [KSPField(isPersistant = true)]
   private bool is_post_apocalyptic_ = false;
   [KSPField(isPersistant = true)]
-  private int apocalypse_window_x_ = UnityEngine.Screen.width / 2;
-  [KSPField(isPersistant = true)]
-  private int apocalypse_window_y_ = UnityEngine.Screen.height / 3;
-  private UnityEngine.Rect apocalypse_window_rectangle_;
+  private Dialog apocalypse_dialog_ = new Dialog();
 
+  // UI for the bad installation notification.
+  private bool is_bad_installation_ = false;  // Don't persist.
+  [KSPField(isPersistant = true)]
+  private Dialog bad_installation_dialog_ = new Dialog();
+
+  // UI for the auxiliary windows.
+  [KSPField(isPersistant = true)]
+  internal ReferenceFrameSelector plotting_frame_selector_;
+  [KSPField(isPersistant = true)]
+  private FlightPlanner flight_planner_;
+  private MapNodePool map_node_pool_;
+
+  public event Action clear_locks;
+  public event Action dispose_windows;
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
@@ -243,9 +246,9 @@ public partial class PrincipiaPluginAdapter
     System.IO.Directory.CreateDirectory("glog/Principia");
     string load_error = Loader.LoadPrincipiaDllAndInitGoogleLogging();
     if (load_error != null) {
-      bad_installation_popup_ =
+      is_bad_installation_ = true;
+      bad_installation_dialog_.Message =
           "The Principia DLL failed to load.\n" + load_error;
-      UnityEngine.Debug.LogError(bad_installation_popup_);
     }
 #if KSP_VERSION_1_3_1
     if (Versioning.version_major != 1 ||
@@ -266,10 +269,16 @@ public partial class PrincipiaPluginAdapter
                 "; this build targets " + expected_version + ".");
     }
     map_node_pool_ = new MapNodePool();
+    flight_planner_ = new FlightPlanner(this);
+    plotting_frame_selector_ =
+        new ReferenceFrameSelector(this,
+                                   UpdateRenderingFrame,
+                                   "Plotting frame");
   }
 
   ~PrincipiaPluginAdapter() {
-    Cleanup();
+    // We should not get here without deleting the plugin, but just for safety.
+    Interface.DeletePlugin(ref plugin_);
   }
 
   private bool PluginRunning() {
@@ -372,7 +381,7 @@ public partial class PrincipiaPluginAdapter
       plugin_.UpdatePrediction(main_vessel.id.ToString());
       string target_id =
           FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
-      if (!plotting_frame_selector_.get().target_override &&
+      if (!plotting_frame_selector_.target_override &&
           target_id != null && plugin_.HasVessel(target_id)) {
         plugin_.VesselSetPredictionAdaptiveStepParameters(
             target_id, adaptive_step_parameters);
@@ -530,7 +539,7 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnAwake() {
     base.OnAwake();
-    if (bad_installation_popup_ != null) {
+    if (is_bad_installation_) {
       return;
     }
     // While we're here, we might as well log.
@@ -610,6 +619,9 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
+    if (is_bad_installation_) {
+      return;
+    }
     if (must_record_journal_) {
       journaling_ = true;
       Log.ActivateRecorder(true);
@@ -639,21 +651,17 @@ public partial class PrincipiaPluginAdapter
                                   ref plugin_,
                                   serialization_compression_,
                                   serialization_encoding_);
-    if (serialization_compression_ == "") {
-      serialization_compression_ = "gipfeli";
-    }
-    if (serialization_encoding_ == "hexadecimal") {
-      serialization_encoding_ = "base64";
-    }
+      if (serialization_compression_ == "") {
+        serialization_compression_ = "gipfeli";
+      }
+      if (serialization_encoding_ == "hexadecimal") {
+        serialization_encoding_ = "base64";
+      }
 
-      plotting_frame_selector_.reset(
-          new ReferenceFrameSelector(this, 
-                                     plugin_,
-                                     UpdateRenderingFrame,
-                                     "Plotting frame"));
+      plotting_frame_selector_.Initialize(plugin_);
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
-      flight_planner_.reset(new FlightPlanner(this, plugin_));
+      flight_planner_.Initialize(plugin_);
 
       plugin_construction_ = DateTime.Now;
     } else {
@@ -669,46 +677,13 @@ public partial class PrincipiaPluginAdapter
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
 
   private void OnGUI() {
-    if (bad_installation_popup_ != null) {
-      UnityEngine.Debug.LogError("Spawning: " + bad_installation_popup_);
-      // No-one seems to understand what |anchorMin| and |anchorMax| do at this
-      // time.
-      PopupDialog.SpawnPopupDialog(
-          anchorMin           : default(UnityEngine.Vector2),
-          anchorMax           : default(UnityEngine.Vector2),
-          dialogName          : "Principia error",
-          title               : "Principia",
-          message             : bad_installation_popup_,
-          buttonMessage       : "OK",
-          persistAcrossScenes : true,
-          skin                : null,
-          isModal             : true);
-      bad_installation_popup_ = null;
+    if (is_bad_installation_) {
+      bad_installation_dialog_.Show();
       return;
     }
 
     if (is_post_apocalyptic_) {
-      UnityEngine.GUI.skin = null;
-      apocalypse_window_rectangle_.xMin = apocalypse_window_x_;
-      apocalypse_window_rectangle_.yMin = apocalypse_window_y_;
-      apocalypse_window_rectangle_ = UnityEngine.GUILayout.Window(
-          id         : this.GetHashCode() + 1,
-          screenRect : apocalypse_window_rectangle_,
-          func       : (int id) => {
-              using (new VerticalLayout()) {
-                UnityEngine.GUILayout.TextArea(revelation_);
-              }
-              UnityEngine.GUI.DragWindow(
-                  position : new UnityEngine.Rect(x      : 0f,
-                                                  y      : 0f,
-                                                  width  : 10000f,
-                                                  height : 10000f));
-            },
-          text       : "Principia",
-          options    : UnityEngine.GUILayout.MinWidth(500));
-      WindowUtilities.EnsureOnScreen(ref apocalypse_window_rectangle_);
-      apocalypse_window_x_ = (int)apocalypse_window_rectangle_.xMin;
-      apocalypse_window_y_ = (int)apocalypse_window_rectangle_.yMin;
+      apocalypse_dialog_.Show();
     }
 
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
@@ -753,6 +728,8 @@ public partial class PrincipiaPluginAdapter
       main_window_rectangle_.InputLock(this);
 
       render_windows();
+    } else {
+      clear_locks();
     }
   }
 
@@ -810,17 +787,17 @@ public partial class PrincipiaPluginAdapter
           target_vessel != null &&
           plugin_.HasVessel(target_vessel.id.ToString())) {
         plugin_.SetTargetVessel(target_vessel.id.ToString(),
-                                plotting_frame_selector_.get()
+                                plotting_frame_selector_
                                     .selected_celestial.flightGlobalsIndex);
-        if (plotting_frame_selector_.get().target_override != target_vessel) {
+        if (plotting_frame_selector_.target_override != target_vessel) {
           navball_changed_ = true;
-          plotting_frame_selector_.get().target_override = target_vessel;
+          plotting_frame_selector_.target_override = target_vessel;
         }
       } else {
         plugin_.ClearTargetVessel();
-        if (plotting_frame_selector_.get().target_override != null) {
+        if (plotting_frame_selector_.target_override != null) {
           navball_changed_ = true;
-          plotting_frame_selector_.get().target_override = null;
+          plotting_frame_selector_.target_override = null;
         }
       }
 
@@ -838,11 +815,11 @@ public partial class PrincipiaPluginAdapter
         // frame accordingly.
         switch (FlightGlobals.speedDisplayMode) {
           case FlightGlobals.SpeedDisplayModes.Surface:
-            plotting_frame_selector_.get().SetFrameType(
+            plotting_frame_selector_.SetFrameType(
                 ReferenceFrameSelector.FrameType.BODY_SURFACE);
             break;
           case FlightGlobals.SpeedDisplayModes.Orbit:
-            plotting_frame_selector_.get().SetFrameType(
+            plotting_frame_selector_.SetFrameType(
                 last_non_surface_frame_type_);
             break;
         }
@@ -851,7 +828,7 @@ public partial class PrincipiaPluginAdapter
       if (navball_changed_ && previous_display_mode_ != null) {
         // Texture the ball.
         navball_changed_ = false;
-        if (plotting_frame_selector_.get().target_override) {
+        if (plotting_frame_selector_.target_override) {
           set_navball_texture(target_navball_texture_);
         } else {
           // If we are targeting an unmanageable vessel, keep the navball in
@@ -859,7 +836,7 @@ public partial class PrincipiaPluginAdapter
           // plotting frame.
           if (FlightGlobals.speedDisplayMode !=
               FlightGlobals.SpeedDisplayModes.Target) {
-            if (plotting_frame_selector_.get().frame_type ==
+            if (plotting_frame_selector_.frame_type ==
                     ReferenceFrameSelector.FrameType.BODY_SURFACE) {
               if (FlightGlobals.speedDisplayMode !=
                   FlightGlobals.SpeedDisplayModes.Surface) {
@@ -874,7 +851,7 @@ public partial class PrincipiaPluginAdapter
               }
             }
           }
-          switch (plotting_frame_selector_.get().frame_type) {
+          switch (plotting_frame_selector_.frame_type) {
             case ReferenceFrameSelector.FrameType.BODY_SURFACE:
               set_navball_texture(surface_navball_texture_);
               break;
@@ -901,11 +878,11 @@ public partial class PrincipiaPluginAdapter
               FlightGlobals.SpeedDisplayModes.Surface &&
           active_vessel.atmDensity > 0;
       if (ferram_owns_the_speed_display) {
-        plotting_frame_selector_.get().SetToSurfaceFrameOf(
+        plotting_frame_selector_.SetToSurfaceFrameOf(
             active_vessel.mainBody);
       }
 
-      if (plotting_frame_selector_.get().target_override == null &&
+      if (plotting_frame_selector_.target_override == null &&
           FlightGlobals.speedDisplayMode ==
               FlightGlobals.SpeedDisplayModes.Target) {
         KSP.UI.Screens.Flight.SpeedDisplay.Instance.textTitle.text = "Target";
@@ -915,7 +892,7 @@ public partial class PrincipiaPluginAdapter
               FlightGlobals.SpeedDisplayModes.Orbit ||
           FlightGlobals.speedDisplayMode ==
               FlightGlobals.SpeedDisplayModes.Surface ||
-          plotting_frame_selector_.get().target_override) {
+          plotting_frame_selector_.target_override) {
         bool plugin_has_active_manageable_vessel =
             has_active_manageable_vessel() &&
             plugin_.HasVessel(active_vessel.id.ToString());
@@ -925,8 +902,7 @@ public partial class PrincipiaPluginAdapter
         if (speed_display?.textTitle != null &&
             speed_display?.textSpeed != null &&
             !ferram_owns_the_speed_display) {
-          speed_display.textTitle.text =
-              plotting_frame_selector_.get().ShortName();
+          speed_display.textTitle.text = plotting_frame_selector_.ShortName();
           var active_vessel_velocity =
               plugin_has_active_manageable_vessel
                   ? (Vector3d)plugin_.VesselVelocity(
@@ -1007,14 +983,16 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void FixedUpdate() {
+    if (is_bad_installation_) {
+      return;
+    }
     if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
     }
     if (must_set_plotting_frame_ && FlightGlobals.currentMainBody != null) {
       must_set_plotting_frame_ = false;
-      plotting_frame_selector_.reset(new ReferenceFrameSelector(
-          this, plugin_, UpdateRenderingFrame, "Plotting frame"));
+      plotting_frame_selector_.UpdateMainBody();
       previous_display_mode_ = null;
     }
 
@@ -1037,7 +1015,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void OnDisable() {
-    if (bad_installation_popup_ != null) {
+    if (is_bad_installation_) {
       return;
     }
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnDisable()");
@@ -1045,8 +1023,8 @@ public partial class PrincipiaPluginAdapter
       KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(
           toolbar_button_);
     }
-    WindowUtilities.ClearLock(this);
     Cleanup();
+    dispose_windows();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
                                     ObscenelyEarly);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
@@ -1399,8 +1377,11 @@ public partial class PrincipiaPluginAdapter
       if (time_is_advancing_) {
         plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
         if (!is_post_apocalyptic_) {
-          is_post_apocalyptic_ |=
-              plugin_.HasEncounteredApocalypse(out revelation_);
+          String revelation = "";
+          if (plugin_.HasEncounteredApocalypse(out revelation)) {
+            is_post_apocalyptic_ = true;
+            apocalypse_dialog_.Message = revelation;
+          }
         }
         foreach (var vessel in FlightGlobals.Vessels) {
           if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
@@ -1779,7 +1760,7 @@ public partial class PrincipiaPluginAdapter
           string target_id =
               FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
           if (FlightGlobals.ActiveVessel != null &&
-              !plotting_frame_selector_.get().target_override &&
+              !plotting_frame_selector_.target_override &&
               target_id != null && plugin_.HasVessel(target_id)) {
             using (DisposableIterator rp2_lines_iterator =
                       planetarium.PlanetariumPlotPsychohistory(
@@ -1864,8 +1845,8 @@ public partial class PrincipiaPluginAdapter
 
   private void RenderPredictionMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
-    if (plotting_frame_selector_.get().target_override) {
-      Vessel target = plotting_frame_selector_.get().target_override;
+    if (plotting_frame_selector_.target_override) {
+      Vessel target = plotting_frame_selector_.target_override;
       DisposableIterator ascending_nodes_iterator;
       DisposableIterator descending_nodes_iterator;
       DisposableIterator approaches_iterator;
@@ -1881,22 +1862,22 @@ public partial class PrincipiaPluginAdapter
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.PREDICTION,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.PREDICTION,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
       map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.PREDICTION,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
     } else {
       foreach (CelestialBody celestial in
-               plotting_frame_selector_.get().FixedBodies()) {
+               plotting_frame_selector_.FixedBodies()) {
         DisposableIterator apoapsis_iterator;
         DisposableIterator periapsis_iterator;
         plugin_.RenderedPredictionApsides(vessel_guid,
@@ -1917,13 +1898,13 @@ public partial class PrincipiaPluginAdapter
             vessel    : null,
             celestial : celestial);
       }
-      var frame_type = plotting_frame_selector_.get().frame_type;
+      var frame_type = plotting_frame_selector_.frame_type;
       if (frame_type ==
               ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING ||
           frame_type == ReferenceFrameSelector.FrameType
                             .BODY_CENTRED_PARENT_DIRECTION) {
         var primary =
-            plotting_frame_selector_.get().selected_celestial.referenceBody;
+            plotting_frame_selector_.selected_celestial.referenceBody;
         DisposableIterator ascending_nodes_iterator;
         DisposableIterator descending_nodes_iterator;
         plugin_.RenderedPredictionNodes(vessel_guid,
@@ -1948,8 +1929,8 @@ public partial class PrincipiaPluginAdapter
 
   private void RenderFlightPlanMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
-    if (plotting_frame_selector_.get().target_override) {
-      Vessel target = plotting_frame_selector_.get().target_override;
+    if (plotting_frame_selector_.target_override) {
+      Vessel target = plotting_frame_selector_.target_override;
       DisposableIterator ascending_nodes_iterator;
       DisposableIterator descending_nodes_iterator;
       DisposableIterator approaches_iterator;
@@ -1965,22 +1946,22 @@ public partial class PrincipiaPluginAdapter
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
       map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.FLIGHT_PLAN,
           vessel    : target,
-          celestial : plotting_frame_selector_.get().selected_celestial);
+          celestial : plotting_frame_selector_.selected_celestial);
     } else {
       foreach (CelestialBody celestial in
-               plotting_frame_selector_.get().FixedBodies()) {
+               plotting_frame_selector_.FixedBodies()) {
         DisposableIterator apoapsis_iterator;
         DisposableIterator periapsis_iterator;
         plugin_.FlightPlanRenderedApsides(vessel_guid,
@@ -2001,13 +1982,13 @@ public partial class PrincipiaPluginAdapter
             vessel    : null,
             celestial : celestial);
       }
-      var frame_type = plotting_frame_selector_.get().frame_type;
+      var frame_type = plotting_frame_selector_.frame_type;
       if (frame_type ==
               ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING ||
           frame_type == ReferenceFrameSelector.FrameType
                             .BODY_CENTRED_PARENT_DIRECTION) {
         var primary =
-            plotting_frame_selector_.get().selected_celestial.referenceBody;
+            plotting_frame_selector_.selected_celestial.referenceBody;
         DisposableIterator ascending_nodes_iterator;
         DisposableIterator descending_nodes_iterator;
         plugin_.FlightPlanRenderedNodes(vessel_guid,
@@ -2032,12 +2013,12 @@ public partial class PrincipiaPluginAdapter
 
   private void Cleanup() {
     UnityEngine.Object.Destroy(map_renderer_);
-    map_node_pool_.Clear();
     map_renderer_ = null;
+    map_node_pool_.Clear();
+    WindowUtilities.ClearLock(this);
+    clear_locks();
     Interface.DeletePlugin(ref plugin_);
-    plotting_frame_selector_.reset();
     previous_display_mode_ = null;
-    flight_planner_.reset();
     navball_changed_ = true;
   }
 
@@ -2058,7 +2039,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void DrawMainWindow(int window_id) {
-    using (new VerticalLayout()) {
+    using (new UnityEngine.GUILayout.VerticalScope()) {
       if (!PluginRunning()) {
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
@@ -2082,7 +2063,7 @@ public partial class PrincipiaPluginAdapter
                "{0:0.00e00} s");
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
-        using (new HorizontalLayout()) {
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
           selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
               selecting_active_vessel_target_, "Select target vessel...");
           if (selecting_active_vessel_target_) {
@@ -2111,7 +2092,7 @@ public partial class PrincipiaPluginAdapter
       }
       ReferenceFrameSelection();
       if (PluginRunning()) {
-        flight_planner_.get().RenderButton();
+        flight_planner_.RenderButton();
       }
       ToggleableSection(name   : "Prediction Settings",
                         show   : ref show_prediction_settings_,
@@ -2171,7 +2152,7 @@ public partial class PrincipiaPluginAdapter
 
   private void ReferenceFrameSelection() {
     if (PluginRunning()) {
-      plotting_frame_selector_.get().RenderButton();
+      plotting_frame_selector_.RenderButton();
     }
   }
 
@@ -2181,7 +2162,7 @@ public partial class PrincipiaPluginAdapter
       String label,
       ref bool changed,
       String format) {
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text    : label + ":",
                                   options : UnityEngine.GUILayout.Width(150));
       if (UnityEngine.GUILayout.Button(
@@ -2232,7 +2213,7 @@ public partial class PrincipiaPluginAdapter
                                      text  : "Enable Sun lens flare");
     if (MapView.MapIsEnabled &&
         FlightGlobals.ActiveVessel?.orbitTargeter != null) {
-      using (new HorizontalLayout()) {
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
         selecting_target_celestial_ = UnityEngine.GUILayout.Toggle(
             selecting_target_celestial_, "Select target celestial...");
         if (selecting_target_celestial_) {
@@ -2257,7 +2238,7 @@ public partial class PrincipiaPluginAdapter
 
   private void LoggingSettings() {
 #if SELECTABLE_PLOT_METHOD
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label("Чебышёв plotting method:");
       for (int i = 0; i < чебышёв_plotting_methods_count; ++i) {
         if (UnityEngine.GUILayout.Toggle(чебышёв_plotting_method_ == i,
@@ -2267,7 +2248,7 @@ public partial class PrincipiaPluginAdapter
       }
     }
 #endif
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(
               text    : "←",
@@ -2286,7 +2267,7 @@ public partial class PrincipiaPluginAdapter
       }
     }
     int column_width = 75;
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
       UnityEngine.GUILayout.Label(
           text    : "Log",
@@ -2298,7 +2279,7 @@ public partial class PrincipiaPluginAdapter
           text    : "Flush",
           options : UnityEngine.GUILayout.Width(column_width));
     }
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
       if (UnityEngine.GUILayout.Button(
               text    : "↑",
@@ -2320,7 +2301,7 @@ public partial class PrincipiaPluginAdapter
       }
     }
     for (int severity = 0; severity <= 3; ++severity) {
-      using (new HorizontalLayout()) {
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             text    : Log.severity_names[severity],
             options : UnityEngine.GUILayout.Width(column_width));
@@ -2338,7 +2319,7 @@ public partial class PrincipiaPluginAdapter
             options : UnityEngine.GUILayout.Width(column_width));
       }
     }
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
       if (UnityEngine.GUILayout.Button(
               text    : "↓",
@@ -2523,13 +2504,9 @@ public partial class PrincipiaPluginAdapter
       plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
                           Planetarium.InverseRotAngle);
     }
-    plotting_frame_selector_.reset(
-        new ReferenceFrameSelector(this,
-                                   plugin_,
-                                   UpdateRenderingFrame,
-                                   "Plotting frame"));
+    plotting_frame_selector_.Initialize(plugin_);
     must_set_plotting_frame_ = true;
-    flight_planner_.reset(new FlightPlanner(this, plugin_));
+    flight_planner_.Initialize(plugin_);
   } catch (Exception e) {
     Log.Fatal("Exception while resetting plugin: " + e.ToString());
   }

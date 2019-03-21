@@ -8,15 +8,14 @@ internal class DifferentialSlider {
   public delegate string ValueFormatter(double value);
 
   // Rates are in units of |value| per real-time second.
-  public
-   DifferentialSlider(string label,
-                      string unit,
-                      double log10_lower_rate,
-                      double log10_upper_rate,
-                      double min_value = double.NegativeInfinity,
-                      double max_value = double.PositiveInfinity,
-                      ValueFormatter formatter = null,
-                      UnityEngine.Color? text_colour = null) {
+  public DifferentialSlider(string label,
+                            string unit,
+                            double log10_lower_rate,
+                            double log10_upper_rate,
+                            double min_value = double.NegativeInfinity,
+                            double max_value = double.PositiveInfinity,
+                            ValueFormatter formatter = null,
+                            UnityEngine.Color? text_colour = null) {
     label_ = label;
     unit_ = unit;
     if (formatter == null) {
@@ -29,7 +28,7 @@ internal class DifferentialSlider {
     min_value_ = min_value;
     max_value_ = max_value;
     text_colour_ = text_colour;
-}
+  }
 
   public double value { get; set; }
 
@@ -40,7 +39,7 @@ internal class DifferentialSlider {
     UnityEngine.GUI.skin = null;
     bool value_changed = false;
 
-    using (new HorizontalLayout()) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
       var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
       if (text_colour_.HasValue) {
         style.normal.textColor = text_colour_.Value;
