@@ -2,8 +2,8 @@
 
 #include "numerics/finite_difference.hpp"
 
-#include "quantities/tuples.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/finite_difference.mathematica.h"
 
 namespace principia {
 namespace numerics {

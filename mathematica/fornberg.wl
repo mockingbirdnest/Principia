@@ -94,3 +94,62 @@ MapThread[{#1 #2,#2}&,{fornberg,commondenominators},2]
 
 (* ::Input:: *)
 (*GenerateSplitFornberg[1,14,0,#&,"Backwards"->True]*)
+
+
+Clear[fornbergMatrix,fornbergDenominator,fornbergNumeratorMatrix];
+fornbergMatrix[n_]:=fornbergMatrix[n]=Table[GenerateFornberg[1,n,j,#&][[2,n]],{j,0,n-1}];
+fornbergDenominator[n_]:=fornbergDenominator[n]=If[Length[Union[#]]!=1,Throw[n->#],#[[1]]]&[ LCM@@Denominator[#]&/@fornbergMatrix[n]];
+fornbergNumeratorMatrix[n_]:=fornbergNumeratorMatrix[n]=fornbergDenominator[n]fornbergMatrix[n];
+
+
+SetDirectory[ParentDirectory[NotebookDirectory[]]];
+Export[
+"numerics\\finite_difference.mathematica.h",
+"#pragma once
+
+#include \"numerics/fixed_arrays.hpp\"
+
+namespace principia {
+namespace numerics {
+namespace internal_finite_difference {
+
+constexpr auto Numerators = std::make_tuple(\n    "<>
+StringRiffle[
+ Table[
+  "FixedMatrix<double, "<>
+  ToString[n]<>", "<>
+  ToString[n]<>">{\n        "<>
+  StringRiffle[
+   With[
+    {numberWidth=Table[
+      Max[StringLength@*ToString/@fornbergNumeratorMatrix[n][[;;,col]]],
+      {col,1,n}]},
+    "{{"<>StringRiffle[
+     Map[
+      StringRiffle[
+       Table[
+        StringPadLeft[
+         ToString[#[[col]]],
+         numberWidth[[col]]],
+        {col,1,n}],
+       ", "]&,
+      fornbergNumeratorMatrix[n]],
+     ",\n          "]],
+   ",\n        "]<>"}}}",
+  {n,1,16}],
+ ",\n    "]<>");
+
+constexpr std::array<double, 16> denominators = {{\n"<>
+With[
+ {numberWidth=Max[StringLength@*ToString@*fornbergDenominator/@Range[16]]},
+ StringJoin[
+  Table[
+   "    "<>StringPadLeft[ToString[fornbergDenominator[n]],numberWidth]<>",\n",
+   {n,1,16}]]]<>
+"}};
+
+}  // namespace principia
+}  // namespace numerics
+}  // namespace internal_finite_difference
+",
+"text"]

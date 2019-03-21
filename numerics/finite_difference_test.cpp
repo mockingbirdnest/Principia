@@ -20,8 +20,7 @@ class FiniteDifferenceTest : public ::testing::Test {
   std::vector<std::vector<double>> estimate() const {
     std::vector<std::vector<double>> estimates;
     auto const f = [](double x) {
-      return 1e9 + 1729 * std::sin(x / 1024) - 163 * std::cos(x / 128 + 3) -
-             x * x / 1024;
+      return 1e9 + Pow<5>(x);
     };
     for (IMPL = 1; IMPL <= 6; ++IMPL) {
       estimates.emplace_back();
