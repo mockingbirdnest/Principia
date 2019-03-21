@@ -33,7 +33,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   public ReferenceFrameSelector(
       ISupervisor supervisor,
       Callback on_change,
-      string name) : base(supervisor) {
+      string name) : base(supervisor, UnityEngine.GUILayout.MinWidth(0)) {
     on_change_ = on_change;
     name_ = name;
 

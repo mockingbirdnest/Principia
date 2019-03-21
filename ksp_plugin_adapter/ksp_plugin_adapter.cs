@@ -267,10 +267,9 @@ public partial class PrincipiaPluginAdapter
     }
     map_node_pool_ = new MapNodePool();
     flight_planner_ = new FlightPlanner(this);
-    plotting_frame_selector_ =
-        new ReferenceFrameSelector(this,
-                                   UpdateRenderingFrame,
-                                   "Plotting frame");
+    plotting_frame_selector_ = new ReferenceFrameSelector(this,
+                                                          UpdateRenderingFrame,
+                                                          "Plotting frame");
   }
 
   ~PrincipiaPluginAdapter() {
