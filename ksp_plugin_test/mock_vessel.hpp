@@ -19,6 +19,7 @@ class MockVessel : public Vessel {
   MOCK_CONST_METHOD0(parent, not_null<Celestial const*>());
   MOCK_METHOD1(set_parent, void(not_null<Celestial const*> parent));
 
+  MOCK_CONST_METHOD0(psychohistory, DiscreteTrajectory<Barycentric> const&());
   MOCK_CONST_METHOD0(prediction, DiscreteTrajectory<Barycentric> const&());
 
   MOCK_CONST_METHOD0(flight_plan, FlightPlan&());
@@ -34,10 +35,7 @@ class MockVessel : public Vessel {
 
   MOCK_METHOD0(DeleteFlightPlan, void());
 
-  MOCK_METHOD1(FlowPrediction, void(Instant const& last_time));
-
-  MOCK_CONST_METHOD0(psychohistory, DiscreteTrajectory<Barycentric> const&());
-  MOCK_CONST_METHOD0(psychohistory_is_authoritative, bool());
+  MOCK_METHOD1(FlowPrediction, Status(Instant const& last_time));
 
   MOCK_CONST_METHOD1(WriteToMessage,
                      void(not_null<serialization::Vessel*> message));

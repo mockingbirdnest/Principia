@@ -117,6 +117,7 @@ using ::testing::Gt;
 using ::testing::InSequence;
 using ::testing::Le;
 using ::testing::Lt;
+using ::testing::Ne;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -726,6 +727,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   PartId const part_id = 666;
   auto const dof = DegreesOfFreedom<Barycentric>(Barycentric::origin,
                                                  Velocity<Barycentric>());
+  Instant const initial_time = ParseTT(initial_time_);
+  Instant const time = initial_time + 1 * Second;
+  Instant t_max = time;
 
   auto* const mock_dynamic_frame =
       new MockDynamicFrame<Barycentric, Navigation>();
@@ -737,12 +741,18 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillOnce(DoAll(SaveArg<0>(&trajectories),
                       Return(ByMove(std::move(instance)))));
   EXPECT_CALL(plugin_->mock_ephemeris(), t_max())
-      .WillRepeatedly(Return(Instant()));
+      .WillRepeatedly(Return(t_max));
   EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
-  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
-      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof),
-                            Return(Status::OK)));
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_))
+      .WillRepeatedly(SaveArg<0>(&t_max));
+  EXPECT_CALL(
+      plugin_->mock_ephemeris(),
+      FlowWithAdaptiveStep(_, _, Ne(astronomy::InfiniteFuture), _, _, _))
+      .WillRepeatedly(
+          DoAll(AppendToDiscreteTrajectory(dof), Return(Status::OK)));
+  EXPECT_CALL(plugin_->mock_ephemeris(),
+              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
+      .WillRepeatedly(Return(Status::OK));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
                             Return(Status::OK)));
@@ -780,8 +790,6 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
   auto const satellite = plugin_->GetVessel(guid);
 
-  Instant const initial_time = ParseTT(initial_time_);
-  Instant const& time = initial_time + 1 * Second;
   plugin_->AdvanceTime(time, Angle());
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
