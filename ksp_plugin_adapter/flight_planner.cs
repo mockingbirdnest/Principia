@@ -49,13 +49,11 @@ class FlightPlanner : SupervisedWindowRenderer {
             !plugin_.FlightPlanExists(vessel_guid) ||
             plugin_.FlightPlanNumberOfManoeuvres(vessel_guid) !=
                 burn_editors_?.Count) {
-      UnityEngine.Debug.LogError("RS1");
           Reset();
         }
       }
 
       if (vessel_ != null) {
-                  UnityEngine.Debug.LogError("HV");
         string vessel_guid = vessel_.id.ToString();
         if (burn_editors_ == null) {
           if (plugin_.HasVessel(vessel_guid)) {
@@ -76,7 +74,6 @@ class FlightPlanner : SupervisedWindowRenderer {
                 burn_editors_.Last().Reset(
                     plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
               }
-      UnityEngine.Debug.LogError("Add "+plugin_.FlightPlanNumberOfManoeuvres(vessel_guid));
             } else {
               if (UnityEngine.GUILayout.Button("Create flight plan")) {
                 plugin_.FlightPlanCreate(vessel_guid,
@@ -85,24 +82,18 @@ class FlightPlanner : SupervisedWindowRenderer {
                 final_time_.value =
                     plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
                 Shrink();
-      UnityEngine.Debug.LogError("SH1");
               }
             }
           }
         } else {
-      UnityEngine.Debug.LogError("Render1");
           if (final_time_.Render(enabled : true)) {
-      UnityEngine.Debug.LogError("RenderFTB");
             plugin_.FlightPlanSetDesiredFinalTime(vessel_guid,
                                                   final_time_.value);
             final_time_.value =
                 plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
-      UnityEngine.Debug.LogError("RenderFTE");
           }
-                    UnityEngine.Debug.LogError("RenderAFT");
           double actual_final_time =
               plugin_.FlightPlanGetActualFinalTime(vessel_guid);
-                    UnityEngine.Debug.LogError("RenderTFB");
 
           UnityEngine.GUILayout.TextField(
               (final_time_.value == actual_final_time)
@@ -111,16 +102,12 @@ class FlightPlanner : SupervisedWindowRenderer {
                         FormatPositiveTimeSpan(TimeSpan.FromSeconds(
                             actual_final_time -
                             plugin_.FlightPlanGetInitialTime(vessel_guid))));
-      UnityEngine.Debug.LogError("RenderTFE");
 
           FlightPlanAdaptiveStepParameters parameters =
               plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
 
-                    UnityEngine.Debug.LogError("RenderUsing");
           using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.Debug.LogError("H");
             using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.Debug.LogError("HH1");
               UnityEngine.GUILayout.Label("Max. steps per segment:",
                                           UnityEngine.GUILayout.Width(150));
               const int factor = 4;
@@ -142,7 +129,6 @@ class FlightPlanner : SupervisedWindowRenderer {
               }
             }
             using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.Debug.LogError("HH2");
               UnityEngine.GUILayout.Label("Tolerance:",
                                           UnityEngine.GUILayout.Width(75));
               if (parameters.length_integration_tolerance <= 1e-6) {
@@ -168,7 +154,6 @@ class FlightPlanner : SupervisedWindowRenderer {
             }
           }
 
-      UnityEngine.Debug.LogError("Render2");
           double Δv = (from burn_editor in burn_editors_
                        select burn_editor.Δv()).Sum();
           UnityEngine.GUILayout.Label(
@@ -177,7 +162,6 @@ class FlightPlanner : SupervisedWindowRenderer {
           if (burn_editors_.Count == 0 && 
               UnityEngine.GUILayout.Button("Delete flight plan")) {
             plugin_.FlightPlanDelete(vessel_guid);
-      UnityEngine.Debug.LogError("RS2");
             Reset();
           } else {
             if (burn_editors_.Count > 0) {
@@ -187,7 +171,6 @@ class FlightPlanner : SupervisedWindowRenderer {
               UnityEngine.GUILayout.TextArea("Manœuvre #" + (i + 1) + ":");
               burn_editors_[i].Render(enabled : false);
             }
-      UnityEngine.Debug.LogError("Render "+burn_editors_.Count);
             if (burn_editors_.Count > 0) {
               BurnEditor last_burn = burn_editors_.Last();
               UnityEngine.GUILayout.TextArea("Editing manœuvre #" +
@@ -205,7 +188,6 @@ class FlightPlanner : SupervisedWindowRenderer {
                 burn_editors_.Last().Close();
                 burn_editors_.RemoveAt(burn_editors_.Count - 1);
                 Shrink();
-      UnityEngine.Debug.LogError("SH2");
               }
             }
             if (UnityEngine.GUILayout.Button(
@@ -231,7 +213,6 @@ class FlightPlanner : SupervisedWindowRenderer {
                 burn_editors_.Add(editor);
               }
               Shrink();
-      UnityEngine.Debug.LogError("SH3");
             }
           }
         }
