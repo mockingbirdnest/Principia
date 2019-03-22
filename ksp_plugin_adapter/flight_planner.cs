@@ -17,8 +17,8 @@ class FlightPlanner : SupervisedWindowRenderer {
     final_time_ = new DifferentialSlider(
                 label            : "Plan length",
                 unit             : null,
-                log10_lower_rate : Log10TimeLowerRate,
-                log10_upper_rate : Log10TimeUpperRate,
+                log10_lower_rate : log10_time_lower_rate,
+                log10_upper_rate : log10_time_upper_rate,
                 min_value        : 10,
                 max_value        : double.PositiveInfinity,
                 formatter        : value =>
@@ -180,7 +180,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       }
 
       double Δv = (from burn_editor in burn_editors_
-                    select burn_editor.Δv()).Sum();
+                   select burn_editor.Δv()).Sum();
       UnityEngine.GUILayout.Label(
           "Total Δv : " + Δv.ToString("0.000") + " m/s");
 
@@ -200,12 +200,12 @@ class FlightPlanner : SupervisedWindowRenderer {
         if (burn_editors_.Count > 0) {
           BurnEditor last_burn = burn_editors_.Last();
           UnityEngine.GUILayout.TextArea("Editing manœuvre #" +
-                                          (burn_editors_.Count) + ":");
+                                         (burn_editors_.Count) + ":");
           if (last_burn.Render(enabled: true)) {
             plugin_.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
             last_burn.Reset(
                 plugin_.FlightPlanGetManoeuvre(vessel_guid,
-                                                burn_editors_.Count - 1));
+                                               burn_editors_.Count - 1));
           }
           if (UnityEngine.GUILayout.Button(
                   "Delete last manœuvre",
@@ -232,7 +232,7 @@ class FlightPlanner : SupervisedWindowRenderer {
               new BurnEditor(adapter_, plugin_, vessel_, initial_time);
           Burn candidate_burn = editor.Burn();
           bool inserted = plugin_.FlightPlanAppend(vessel_guid,
-                                                    candidate_burn);
+                                                   candidate_burn);
           if (inserted) {
             editor.Reset(plugin_.FlightPlanGetManoeuvre(
                 vessel_guid, burn_editors_.Count));
@@ -366,8 +366,8 @@ class FlightPlanner : SupervisedWindowRenderer {
   private bool show_guidance_ = false;
   private ManeuverNode guidance_node_;
   
-  private const double Log10TimeLowerRate = 0.0;
-  private const double Log10TimeUpperRate = 7.0;
+  private const double log10_time_lower_rate = 0.0;
+  private const double log10_time_upper_rate = 7.0;
 }
 
 }  // namespace ksp_plugin_adapter
