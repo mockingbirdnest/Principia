@@ -111,7 +111,7 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      if (final_time_.Render(enabled: true)) {
+      if (final_time_.Render(enabled : true)) {
         plugin_.FlightPlanSetDesiredFinalTime(vessel_guid,
                                               final_time_.value);
         final_time_.value =
