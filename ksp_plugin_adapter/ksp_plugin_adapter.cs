@@ -242,10 +242,14 @@ public partial class PrincipiaPluginAdapter
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
     string load_error = Loader.LoadPrincipiaDllAndInitGoogleLogging();
-    if (load_error != null) {
+    if (load_error == null) {
+      is_bad_installation_ = false;
+      bad_installation_dialog_.Hide();
+    } else {
       is_bad_installation_ = true;
       bad_installation_dialog_.Message =
           "The Principia DLL failed to load.\n" + load_error;
+      bad_installation_dialog_.Show();
     }
 #if KSP_VERSION_1_3_1
     if (Versioning.version_major != 1 ||
@@ -674,7 +678,6 @@ public partial class PrincipiaPluginAdapter
 
   private void OnGUI() {
     if (is_bad_installation_) {
-      bad_installation_dialog_.Show();
       bad_installation_dialog_.RenderWindow();
       return;
     }
