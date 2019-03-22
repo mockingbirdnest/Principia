@@ -17,9 +17,8 @@ using quantities::Difference;
 // — |offset = (n - 1) / 2|, for odd n:
 //   central difference—in this case, the middle value is unused;
 // — |offset = n - 1|: backward difference.
-// The order of the approximation is n - 2, that is, the error on the derivative
-// is 𝒪(hⁿ⁻¹) as h → 0.  Note that Fornberg (1988) calls the value
-// n - 1 “order of accuracy”.
+// The error on the derivative is 𝒪(hⁿ⁻¹) as h → 0.
+// Fornberg (1988) calls the value n - 1 “order of accuracy”.
 template<typename Value, typename Argument, int n>
 Derivative<Value, Argument> FiniteDifference(
     FixedVector<Value, n> const& values,

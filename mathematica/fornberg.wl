@@ -105,6 +105,8 @@ fornbergNumeratorMatrix[n_]:=fornbergNumeratorMatrix[n]=fornbergDenominator[n]fo
 SetDirectory[ParentDirectory[NotebookDirectory[]]];
 Export[
 "numerics\\finite_difference.mathematica.h",
+With[
+{\[ScriptCapitalN]=17},
 "#pragma once
 
 #include \"numerics/fixed_arrays.hpp\"
@@ -136,20 +138,20 @@ StringRiffle[
       fornbergNumeratorMatrix[n]],
      "        "]],
    ",\n        "]<>"    }}",
-  {n,1,16}],
+  {n,1,\[ScriptCapitalN]}],
  ",\n    "]<>");
 
-constexpr std::array<double, 16> Denominators{\n"<>
+constexpr std::array<double, "<>ToString[\[ScriptCapitalN]]<>"> Denominators{\n"<>
 With[
- {numberWidth=Max[StringLength@*ToString@*fornbergDenominator/@Range[16]]},
+ {numberWidth=Max[StringLength@*ToString@*fornbergDenominator/@Range[\[ScriptCapitalN]]]},
  StringJoin[
   Table[
    "    "<>StringPadLeft[ToString[fornbergDenominator[n]],numberWidth]<>",\n",
-   {n,1,16}]]]<>
+   {n,1,\[ScriptCapitalN]}]]]<>
 "};
 
 }  // namespace principia
 }  // namespace numerics
 }  // namespace internal_finite_difference
-",
+"],
 "text"]
