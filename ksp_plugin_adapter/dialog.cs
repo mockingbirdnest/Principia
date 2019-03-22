@@ -14,21 +14,14 @@ internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
     }
   }
 
-  public void Show() {
-    RenderWindow();
-  }
+  protected override String Title { get; } = "Principia";
 
-  protected override void RenderWindow() {
-    UnityEngine.GUI.skin = null;
-    Window(func : (int id) => {
-             using (new UnityEngine.GUILayout.VerticalScope())
-             {
-               UnityEngine.GUILayout.TextArea(
-                   message_ ?? "SHOW WITHOUT MESSAGE");
-             }
-             UnityEngine.GUI.DragWindow();
-           },
-           text : "Principia");
+  protected override void RenderWindow(int window_id) {
+    using (new UnityEngine.GUILayout.VerticalScope())
+    {
+      UnityEngine.GUILayout.TextArea(message_ ?? "SHOW WITHOUT MESSAGE");
+    }
+    UnityEngine.GUI.DragWindow();
   }
 
   public new void Load(ConfigNode node) {

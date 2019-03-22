@@ -218,9 +218,6 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, QP>();
 
   // UI for the apocalypse notification.
-  // Whether we have encountered an apocalypse already.
-  [KSPField(isPersistant = true)]
-  private bool is_post_apocalyptic_ = false;
   [KSPField(isPersistant = true)]
   private Dialog apocalypse_dialog_ = new Dialog();
 
@@ -245,10 +242,14 @@ public partial class PrincipiaPluginAdapter
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
     string load_error = Loader.LoadPrincipiaDllAndInitGoogleLogging();
-    if (load_error != null) {
+    if (load_error == null) {
+      is_bad_installation_ = false;
+      bad_installation_dialog_.Hide();
+    } else {
       is_bad_installation_ = true;
       bad_installation_dialog_.Message =
           "The Principia DLL failed to load.\n" + load_error;
+      bad_installation_dialog_.Show();
     }
 #if KSP_VERSION_1_3_1
     if (Versioning.version_major != 1 ||
@@ -270,10 +271,9 @@ public partial class PrincipiaPluginAdapter
     }
     map_node_pool_ = new MapNodePool();
     flight_planner_ = new FlightPlanner(this);
-    plotting_frame_selector_ =
-        new ReferenceFrameSelector(this,
-                                   UpdateRenderingFrame,
-                                   "Plotting frame");
+    plotting_frame_selector_ = new ReferenceFrameSelector(this,
+                                                          UpdateRenderingFrame,
+                                                          "Plotting frame");
   }
 
   ~PrincipiaPluginAdapter() {
@@ -678,13 +678,11 @@ public partial class PrincipiaPluginAdapter
 
   private void OnGUI() {
     if (is_bad_installation_) {
-      bad_installation_dialog_.Show();
+      bad_installation_dialog_.RenderWindow();
       return;
     }
 
-    if (is_post_apocalyptic_) {
-      apocalypse_dialog_.Show();
-    }
+    apocalypse_dialog_.RenderWindow();
 
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
       UnityEngine.Texture toolbar_button_texture;
@@ -1376,11 +1374,11 @@ public partial class PrincipiaPluginAdapter
       time_is_advancing_ = time_is_advancing(universal_time);
       if (time_is_advancing_) {
         plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-        if (!is_post_apocalyptic_) {
+        if (!apocalypse_dialog_.Shown()) {
           String revelation = "";
           if (plugin_.HasEncounteredApocalypse(out revelation)) {
-            is_post_apocalyptic_ = true;
             apocalypse_dialog_.Message = revelation;
+            apocalypse_dialog_.Show();
           }
         }
         foreach (var vessel in FlightGlobals.Vessels) {
@@ -2109,11 +2107,7 @@ public partial class PrincipiaPluginAdapter
                         render : CrashOptions);
 #endif
     }
-    UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(x      : 0f,
-                                        y      : 0f,
-                                        width  : 10000f,
-                                        height : 10000f));
+    UnityEngine.GUI.DragWindow();
   }
 
   delegate void GUIRenderer();
