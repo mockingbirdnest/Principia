@@ -118,13 +118,13 @@ StringRiffle[
  Table[
   "FixedMatrix<double, "<>
   ToString[n]<>", "<>
-  ToString[n]<>">{\n        "<>
+  ToString[n]<>">{{\n        "<>
   StringRiffle[
    With[
     {numberWidth=Table[
       Max[StringLength@*ToString/@fornbergNumeratorMatrix[n][[;;,col]]],
       {col,1,n}]},
-    "{{"<>StringRiffle[
+    StringRiffle[
      Map[
       StringRiffle[
        Table[
@@ -132,21 +132,21 @@ StringRiffle[
          ToString[#[[col]]],
          numberWidth[[col]]],
         {col,1,n}],
-       ", "]&,
+       ", "]<>",\n"&,
       fornbergNumeratorMatrix[n]],
-     ",\n          "]],
-   ",\n        "]<>"}}}",
+     "        "]],
+   ",\n        "]<>"    }}",
   {n,1,16}],
  ",\n    "]<>");
 
-constexpr std::array<double, 16> denominators = {{\n"<>
+constexpr std::array<double, 16> Denominators{\n"<>
 With[
  {numberWidth=Max[StringLength@*ToString@*fornbergDenominator/@Range[16]]},
  StringJoin[
   Table[
    "    "<>StringPadLeft[ToString[fornbergDenominator[n]],numberWidth]<>",\n",
    {n,1,16}]]]<>
-"}};
+"};
 
 }  // namespace principia
 }  // namespace numerics
