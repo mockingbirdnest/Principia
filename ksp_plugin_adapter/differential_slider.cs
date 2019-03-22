@@ -35,30 +35,34 @@ internal class DifferentialSlider {
   // Renders the |DifferentialSlider|.  Returns true if and only if |value|
   // changed.
   public bool Render(bool enabled) {
+      UnityEngine.Debug.LogError("HS0");
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     bool value_changed = false;
 
     using (new UnityEngine.GUILayout.HorizontalScope()) {
+      UnityEngine.Debug.LogError("HS1");
       var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
       if (text_colour_.HasValue) {
         style.normal.textColor = text_colour_.Value;
       }
-      UnityEngine.GUILayout.Label(
-          text       : label_,
-          options    : UnityEngine.GUILayout.Width(75),
-          style      : style);
+      UnityEngine.GUILayout.Label(text       : label_,
+                                  options    : UnityEngine.GUILayout.Width(75),
+                                  style      : style);
 
+      UnityEngine.Debug.LogError("HS2");
       var old_alignment = UnityEngine.GUI.skin.label.alignment;
       UnityEngine.GUI.skin.label.alignment = UnityEngine.TextAnchor.UpperRight;
       UnityEngine.GUILayout.Label(
           text    : format_(value),
-          options : UnityEngine.GUILayout.Width(125 + (unit_ == null ? 50 : 0)));
+          options : UnityEngine.GUILayout.Width(
+                        125 + (unit_ == null ? 50 : 0)));
       UnityEngine.GUI.skin.label.alignment = old_alignment;
       UnityEngine.GUILayout.Label(
           text       : unit_ ?? "",
           options    : UnityEngine.GUILayout.Width(unit_ == null ? 0 : 50));
 
+      UnityEngine.Debug.LogError("HS3");
       if (enabled) {
         if (!UnityEngine.Input.GetMouseButton(0)) {
           slider_position_ = 0;
@@ -71,11 +75,13 @@ internal class DifferentialSlider {
             rightValue : 1,
             options    : UnityEngine.GUILayout.ExpandWidth(true));
 
+      UnityEngine.Debug.LogError("HS4");
         if (UnityEngine.GUILayout.Button("0",
                                          UnityEngine.GUILayout.Width(20))) {
           value_changed = true;
           value = 0;
         }
+      UnityEngine.Debug.LogError("HS5");
         if (slider_position_ != 0.0) {
           value_changed = true;
           value += Math.Sign(slider_position_) *
@@ -88,6 +94,7 @@ internal class DifferentialSlider {
       } else {
         slider_position_ = 0;
       }
+      UnityEngine.Debug.LogError("HS6");
       last_time_ = System.DateTime.Now;
     }
 
