@@ -20,6 +20,7 @@ namespace internal_vessel {
 
 using astronomy::InfiniteFuture;
 using base::Contains;
+using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::BarycentreCalculator;
@@ -31,6 +32,21 @@ using quantities::si::Metre;
 
 constexpr std::int64_t max_dense_intervals = 10'000;
 constexpr Length downsampling_tolerance = 10 * Metre;
+
+bool operator!=(Vessel::PrognosticatorParameters const& left,
+                Vessel::PrognosticatorParameters const& right) {
+  return left.first_time != right.first_time ||
+         left.first_degrees_of_freedom != right.first_degrees_of_freedom ||
+         &left.adaptive_step_parameters.integrator() !=
+             &right.adaptive_step_parameters.integrator() ||
+         left.adaptive_step_parameters.max_steps() !=
+             right.adaptive_step_parameters.max_steps() ||
+         left.adaptive_step_parameters.length_integration_tolerance() !=
+             right.adaptive_step_parameters.length_integration_tolerance() ||
+         left.adaptive_step_parameters.speed_integration_tolerance() !=
+             right.adaptive_step_parameters.speed_integration_tolerance() ||
+         left.shutdown != right.shutdown;
+}
 
 Vessel::Vessel(GUID const& guid,
                std::string const& name,
@@ -51,6 +67,16 @@ Vessel::Vessel(GUID const& guid,
 
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();
+  // Ask the prognosticator to shut down.  This may take a while.  Make sure
+  // that we handle the case where |PrepareHistory| was not called.
+  if (prognosticator_.joinable()) {
+    {
+      absl::MutexLock l(&prognosticator_lock_);
+      CHECK(prognosticator_parameters_);
+      prognosticator_parameters_->shutdown = true;
+    }
+    prognosticator_.join();
+  }
 }
 
 GUID const& Vessel::guid() const {
@@ -167,6 +193,10 @@ void Vessel::ForAllParts(std::function<void(Part&)> action) const {
   }
 }
 
+DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
+  return *psychohistory_;
+}
+
 DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
   return *prediction_;
 }
@@ -175,6 +205,9 @@ void Vessel::set_prediction_adaptive_step_parameters(
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         prediction_adaptive_step_parameters) {
   prediction_adaptive_step_parameters_ = prediction_adaptive_step_parameters;
+  absl::MutexLock l(&prognosticator_lock_);
+  prognosticator_parameters_->adaptive_step_parameters =
+      prediction_adaptive_step_parameters;
 }
 
 Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -192,6 +225,10 @@ bool Vessel::has_flight_plan() const {
 }
 
 void Vessel::AdvanceTime() {
+  // Squirrel away the prediction so that we can reattach it if we don't have a
+  // prognostication.
+  auto prediction = prediction_->DetachFork();
+
   history_->DeleteFork(psychohistory_);
   AppendToVesselTrajectory(&Part::history_begin,
                            &Part::history_end,
@@ -200,7 +237,14 @@ void Vessel::AdvanceTime() {
   AppendToVesselTrajectory(&Part::psychohistory_begin,
                            &Part::psychohistory_end,
                            *psychohistory_);
-  prediction_ = psychohistory_->NewForkAtLast();
+  {
+    absl::MutexLock l(&prognosticator_lock_);
+    if (prognostication_ == nullptr) {
+      AttachPrediction(std::move(prediction));
+    } else {
+      AttachPrediction(std::move(prognostication_));
+    }
+  }
 
   for (auto const& pair : parts_) {
     Part& part = *pair.second;
@@ -209,9 +253,9 @@ void Vessel::AdvanceTime() {
 }
 
 void Vessel::ForgetBefore(Instant const& time) {
-  // Make sure that the history keeps at least one (authoritative) point and
-  // don't change the psychohistory or prediction.  We cannot use the parts
-  // because they may have been moved to the future already.
+  // Make sure that the history keeps at least one point and don't change the
+  // psychohistory or prediction.  We cannot use the parts because they may have
+  // been moved to the future already.
   history_->ForgetBefore(std::min(time, history_->last().time()));
   if (flight_plan_ != nullptr) {
     flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });
@@ -240,34 +284,37 @@ void Vessel::DeleteFlightPlan() {
   flight_plan_.reset();
 }
 
-void Vessel::FlowPrediction(Instant const& time) {
-  if (time > prediction_->last().time()) {
-    bool const finite_time = IsFinite(time - prediction_->last().time());
-    Instant const t = finite_time ? time : ephemeris_->t_max();
-    // This will not prolong the ephemeris if |time| is infinite (but it may do
-    // so if it is finite).
-    bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
-        prediction_,
-        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-        t,
-        prediction_adaptive_step_parameters_,
-        FlightPlan::max_ephemeris_steps_per_frame,
-        /*last_point_only=*/false).ok();
-    if (!finite_time && reached_t) {
-      // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
-      ephemeris_->FlowWithAdaptiveStep(
-        prediction_,
-        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-        time,
-        prediction_adaptive_step_parameters_,
-        FlightPlan::max_ephemeris_steps_per_frame,
-        /*last_point_only=*/false);
-    }
+void Vessel::RefreshPrediction() {
+  absl::MutexLock l(&prognosticator_lock_);
+  prognosticator_parameters_ =
+      PrognosticatorParameters{psychohistory_->last().time(),
+                               psychohistory_->last().degrees_of_freedom(),
+                               prediction_adaptive_step_parameters_,
+                               /*shutdown=*/false};
+  StartPrognosticatorIfNeeded();
+  if (prognostication_ != nullptr) {
+    AttachPrediction(std::move(prognostication_));
   }
 }
 
-DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
-  return *psychohistory_;
+Status Vessel::FlowPrediction(Instant const& time) {
+  // Make sure that the prognosticator recomputes a complete prediction from
+  // time to time.
+  RefreshPrediction();
+
+  if (time <= prediction_->last().time()) {
+    return Status::OK;
+  }
+
+  // If the prediction is not long enough, extend it explicitly.  This is
+  // blocking.
+  return ephemeris_->FlowWithAdaptiveStep(
+             prediction_,
+             Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+             time,
+             prediction_adaptive_step_parameters_,
+             FlightPlan::max_ephemeris_steps_per_frame,
+             /*last_point_only=*/false);
 }
 
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
@@ -345,13 +392,11 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       vessel->psychohistory_ = vessel->history_->NewForkAtLast();
     }
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    vessel->FlowPrediction(InfiniteFuture);
   } else if (is_pre_chasles) {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*forks=*/{&vessel->psychohistory_});
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    vessel->FlowPrediction(InfiniteFuture);
   } else {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
@@ -394,6 +439,81 @@ Vessel::Vessel()
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
+
+void Vessel::StartPrognosticatorIfNeeded() {
+  prognosticator_lock_.AssertHeld();
+  CHECK(prognosticator_parameters_);
+  if (!prognosticator_.joinable()) {
+    prognosticator_ =
+        std::thread(std::bind(&Vessel::RepeatedlyFlowPrognostication, this));
+  }
+}
+
+void Vessel::RepeatedlyFlowPrognostication() {
+  std::optional<PrognosticatorParameters> previous_prognosticator_parameters;
+  for (;;) {
+    // No point in going faster than 50 Hz.
+    std::chrono::steady_clock::time_point const wakeup_time =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
+
+    // The thread is only started after the parameters have been set, so we
+    // should always find parameters here.
+    std::optional<PrognosticatorParameters> prognosticator_parameters;
+    {
+      absl::ReaderMutexLock l(&prognosticator_lock_);
+      CHECK(prognosticator_parameters_);
+      prognosticator_parameters = prognosticator_parameters_;
+    }
+
+    if (prognosticator_parameters->shutdown) {
+      break;
+    }
+
+    // Do not reflow if the parameters have not changed: the same causes would
+    // produce the same effects.
+    if (!previous_prognosticator_parameters ||
+        *previous_prognosticator_parameters != prognosticator_parameters) {
+      auto prognostication =
+          std::make_unique<DiscreteTrajectory<Barycentric>>();
+      prognostication->Append(
+          prognosticator_parameters->first_time,
+          prognosticator_parameters->first_degrees_of_freedom);
+      Status status;
+      status = ephemeris_->FlowWithAdaptiveStep(
+          prognostication.get(),
+          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+          ephemeris_->t_max(),
+          prognosticator_parameters->adaptive_step_parameters,
+          FlightPlan::max_ephemeris_steps_per_frame,
+          /*last_point_only=*/false);
+      bool const reached_t_max = status.ok();
+      if (reached_t_max) {
+        // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
+        status = ephemeris_->FlowWithAdaptiveStep(
+            prognostication.get(),
+            Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+            InfiniteFuture,
+            prognosticator_parameters->adaptive_step_parameters,
+            FlightPlan::max_ephemeris_steps_per_frame,
+            /*last_point_only=*/false);
+      }
+      LOG_IF(INFO, !status.ok())
+          << "Prognostication from " << prognosticator_parameters->first_time
+          << " finished at " << prognostication->last().time() << " with "
+          << status.ToString() << " for " << ShortDebugString();
+
+      // Publish the prognostication if the computation was not cancelled.
+      if (status.error() != Error::CANCELLED) {
+        absl::MutexLock l(&prognosticator_lock_);
+        prognostication_.swap(prognostication);
+        prognosticator_status_ = status;
+      }
+      previous_prognosticator_parameters = prognosticator_parameters;
+    }
+
+    std::this_thread::sleep_until(wakeup_time);
+  }
+}
 
 void Vessel::AppendToVesselTrajectory(
     TrajectoryIterator const part_trajectory_begin,
@@ -440,6 +560,17 @@ void Vessel::AppendToVesselTrajectory(
     DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
         calculator.Get();
     trajectory.Append(first_time, vessel_degrees_of_freedom);
+  }
+}
+
+void Vessel::AttachPrediction(
+    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory) {
+  trajectory->ForgetBefore(psychohistory_->last().time());
+  if (trajectory->Empty()) {
+    prediction_ = psychohistory_->NewForkAtLast();
+  } else {
+    prediction_ = trajectory.get();
+    psychohistory_->AttachFork(std::move(trajectory));
   }
 }
 

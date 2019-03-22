@@ -54,7 +54,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
-using astronomy::InfiniteFuture;
 using astronomy::ParseTT;
 using astronomy::KSPStockSystemFingerprint;
 using astronomy::KSPStabilizedSystemFingerprint;
@@ -844,7 +843,7 @@ void Plugin::SetPredictionAdaptiveStepParameters(
 
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  FindOrDie(vessels_, vessel_guid)->FlowPrediction(InfiniteFuture);
+  FindOrDie(vessels_, vessel_guid)->RefreshPrediction();
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
@@ -901,10 +900,7 @@ void Plugin::ComputeAndRenderClosestApproaches(
   if (begin != end) {
     auto last = end;
     --last;
-    target_vessel.FlowPrediction(last.time());
-    // The prediction may not have been prolonged enough if we are near a
-    // singularity.
-    CHECK_LE(last.time(), target_vessel.prediction().last().time());
+    CHECK_OK(target_vessel.FlowPrediction(last.time()));
   }
   ComputeApsides(target_vessel.prediction(),
                  begin,
