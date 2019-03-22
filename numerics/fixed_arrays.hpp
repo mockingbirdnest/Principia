@@ -2,7 +2,6 @@
 #pragma once
 
 #include <array>
-#include <initializer_list>
 #include <vector>
 
 #include "quantities/named_quantities.hpp"
@@ -26,13 +25,12 @@ class FixedVector final {
   constexpr FixedVector();
   explicit FixedVector(uninitialized_t);
 
-  constexpr explicit FixedVector(std::array<Scalar, size_> const& data);
-  constexpr explicit FixedVector(std::array<Scalar, size_>&& data);
-  FixedVector(
-      std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
+  // TODO(egg): Figure out why we have a move-conversion for |FixedVector| but
+  // not the matrices.
+  constexpr FixedVector(std::array<Scalar, size_> const& data);
+  constexpr FixedVector(std::array<Scalar, size_>&& data);
 
   bool operator==(FixedVector const& right) const;
-  FixedVector& operator=(std::initializer_list<Scalar> const& right);
 
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
@@ -57,13 +55,9 @@ class FixedMatrix final {
   explicit FixedMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
-  constexpr explicit FixedMatrix(
-      std::array<Scalar, rows * columns> const& data);
-  FixedMatrix(
-      std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
+  constexpr FixedMatrix(std::array<Scalar, rows * columns> const& data);
 
   bool operator==(FixedMatrix const& right) const;
-  FixedMatrix& operator=(std::initializer_list<Scalar> const& right);
 
   template<int r>
   class Row {
@@ -118,14 +112,10 @@ class FixedStrictlyLowerTriangularMatrix final {
   explicit FixedStrictlyLowerTriangularMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
-  constexpr explicit FixedStrictlyLowerTriangularMatrix(
+  constexpr FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, dimension> const& data);
-  FixedStrictlyLowerTriangularMatrix(
-      std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
 
   bool operator==(FixedStrictlyLowerTriangularMatrix const& right) const;
-  FixedStrictlyLowerTriangularMatrix& operator=(
-      std::initializer_list<Scalar> const& right);
 
   // For  0 < j < i < rows, the entry a_ij is accessed as |a[i][j]|.
   // if i and j do not satisfy these conditions, the expression |a[i][j]| is
@@ -147,14 +137,10 @@ class FixedLowerTriangularMatrix final {
   explicit FixedLowerTriangularMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
-  constexpr explicit FixedLowerTriangularMatrix(
+  constexpr FixedLowerTriangularMatrix(
       std::array<Scalar, dimension> const& data);
-  FixedLowerTriangularMatrix(
-      std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
 
   bool operator==(FixedLowerTriangularMatrix const& right) const;
-  FixedLowerTriangularMatrix& operator=(
-      std::initializer_list<Scalar> const& right);
 
   // For  0 < j <= i < rows, the entry a_ij is accessed as |a[i][j]|.
   // if i and j do not satisfy these conditions, the expression |a[i][j]| is
