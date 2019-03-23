@@ -46,67 +46,70 @@ class FlightPlanner : SupervisedWindowRenderer {
     // vessel and the editors to reflect the current state of the plugin and
     // then proceeds with the UI code.
     if (UnityEngine.Event.current.type == UnityEngine.EventType.Layout) {
-      {
-        string vessel_guid = vessel_?.id.ToString();
-        if (vessel_guid == null ||
-            vessel_ != FlightGlobals.ActiveVessel ||
-            !plugin_.HasVessel(vessel_guid) ||
-            !plugin_.FlightPlanExists(vessel_guid) ||
-            plugin_.FlightPlanNumberOfManoeuvres(vessel_guid) !=
-                burn_editors_?.Count) {
-          if (burn_editors_ != null) {
-            foreach (BurnEditor editor in burn_editors_) {
-              editor.Close();
-            }
-            burn_editors_ = null;
-          }
-          vessel_ = FlightGlobals.ActiveVessel;
-        }
-      }
-
-      if (burn_editors_ == null) {
-        string vessel_guid = vessel_?.id.ToString();
-        if (vessel_guid != null &&
-            plugin_.HasVessel(vessel_guid) &&
-            plugin_.FlightPlanExists(vessel_guid)) {
-          burn_editors_ = new List<BurnEditor>();
-          for (int i = 0;
-               i < plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
-               ++i) {
-            // Dummy initial time, we call |Reset| immediately afterwards.
-            final_time_.value =
-                plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
-            burn_editors_.Add(new BurnEditor(adapter_,
-                                             plugin_,
-                                             vessel_,
-                                             initial_time : 0));
-            burn_editors_.Last().Reset(
-                plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
-          }
-        }
-      }
+      UpdateVesselAndBurnEditors();
     }
 
-    // The UI code proper, executed identically for Layout and Repaint.
+    // The UI code proper, executed identically for Layout and Repaint.  We
+    // can freely change the state in events like clicks (e.g., in if statements
+    // for buttons) as these don't happen between Layout and Repaint.
+    string vessel_guid = vessel_?.id.ToString();
+    if (vessel_guid == null || !plugin_.HasVessel(vessel_guid)) {
+      return;
+    }
+
+    if (plugin_.FlightPlanExists(vessel_guid)) {
+      RenderFlightPlan(vessel_guid);
+    } else if (UnityEngine.GUILayout.Button("Create flight plan")) {
+      plugin_.FlightPlanCreate(vessel_guid,
+                               plugin_.CurrentTime() + 1000,
+                               vessel_.GetTotalMass());
+      final_time_.value =
+          plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
+      Shrink();
+    }
+    UnityEngine.GUI.DragWindow();
+  }
+
+  private void UpdateVesselAndBurnEditors() {
     {
       string vessel_guid = vessel_?.id.ToString();
       if (vessel_guid == null ||
-          !plugin_.HasVessel(vessel_guid)) {
-        return;
-      }
-
-      if (plugin_.FlightPlanExists(vessel_guid)) {
-        RenderFlightPlan(vessel_guid);
-      } else if (UnityEngine.GUILayout.Button("Create flight plan")) {
-        plugin_.FlightPlanCreate(vessel_guid,
-                                  plugin_.CurrentTime() + 1000,
-                                  vessel_.GetTotalMass());
-        final_time_.value =
-            plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
-        Shrink();
+          vessel_ != FlightGlobals.ActiveVessel ||
+          !plugin_.HasVessel(vessel_guid) ||
+          !plugin_.FlightPlanExists(vessel_guid) ||
+          plugin_.FlightPlanNumberOfManoeuvres(vessel_guid) !=
+              burn_editors_?.Count) {
+        if (burn_editors_ != null) {
+          foreach (BurnEditor editor in burn_editors_) {
+            editor.Close();
+          }
+          burn_editors_ = null;
+        }
+        vessel_ = FlightGlobals.ActiveVessel;
       }
     }
-    UnityEngine.GUI.DragWindow();
+
+    if (burn_editors_ == null) {
+      string vessel_guid = vessel_?.id.ToString();
+      if (vessel_guid != null &&
+          plugin_.HasVessel(vessel_guid) &&
+          plugin_.FlightPlanExists(vessel_guid)) {
+        burn_editors_ = new List<BurnEditor>();
+        for (int i = 0;
+              i < plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
+              ++i) {
+          // Dummy initial time, we call |Reset| immediately afterwards.
+          final_time_.value =
+              plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
+          burn_editors_.Add(new BurnEditor(adapter_,
+                                           plugin_,
+                                           vessel_,
+                                           initial_time: 0));
+          burn_editors_.Last().Reset(
+              plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
+        }
+      }
+    }
   }
 
   private void RenderFlightPlan(string vessel_guid) {
