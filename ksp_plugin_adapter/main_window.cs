@@ -21,6 +21,33 @@ internal class MainWindow : SupervisedWindowRenderer {
     plugin_ = plugin;
   }
 
+  public void SomethingCelestial(MapObject map_object) {
+    if (selecting_target_celestial_) {
+      FlightGlobals.fetch.SetVesselTarget(map_object.celestialBody);
+      selecting_target_celestial_ = false;
+    } else if (PlanetariumCamera.fetch.target != map_object) {
+      PlanetariumCamera.fetch.SetTarget(map_object);
+    }
+  }
+
+  public void SomethingVessel(MapObject map_object) {
+    if (selecting_active_vessel_target_) {
+      FlightGlobals.fetch.SetVesselTarget(map_object.vessel);
+      selecting_active_vessel_target_ = false;
+    } else if (buttons == Mouse.Buttons.Left &&
+               PlanetariumCamera.fetch.target != map_object) {
+      PlanetariumCamera.fetch.SetTarget(map_object);
+    }
+  }
+
+  public bool display_patched_conics { get; private set; } = false;
+
+  public double history_length {
+    get {
+      return history_lengths_[history_length_index_];
+    }
+  }
+
   public double prediction_length_tolerance {
     get {
       return prediction_length_tolerances_[prediction_length_tolerance_index_];
@@ -129,8 +156,8 @@ internal class MainWindow : SupervisedWindowRenderer {
   private delegate void GUIRenderer();
 
   private void RenderKSPFeatures() {
-    display_patched_conics_ = UnityEngine.GUILayout.Toggle(
-        value : display_patched_conics_,
+    display_patched_conics = UnityEngine.GUILayout.Toggle(
+        value : display_patched_conics,
         text  : "Display patched conics (do not use for flight planning!)");
     Sun.Instance.sunFlare.enabled =
         UnityEngine.GUILayout.Toggle(value : Sun.Instance.sunFlare.enabled,
@@ -266,10 +293,10 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
     UnityEngine.GUILayout.TextArea("Journalling is " +
                                    (journaling_ ? "ON" : "OFF"));
-    must_record_journal = UnityEngine.GUILayout.Toggle(
-        value   : must_record_journal,
+    must_record_journal_ = UnityEngine.GUILayout.Toggle(
+        value   : must_record_journal_,
         text    : "Record journal (starts on load)");
-    if (journaling_ && !must_record_journal) {
+    if (journaling_ && !must_record_journal_) {
       // We can deactivate a recorder at any time, but in order for replaying to
       // work, we should only activate one before creating a plugin.
       journaling_ = false;
@@ -291,11 +318,11 @@ internal class MainWindow : SupervisedWindowRenderer {
                    "{0:0.00e0}");
   }
 
-  private static void RenderSelector(double[] array,
-                                     ref int index,
-                                     String label,
-                                     ref bool changed,
-                                     String format) {
+  private static void RenderSelector<T>(T[] array,
+                                        ref int index,
+                                        String label,
+                                        ref bool changed,
+                                        String format) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text    : label + ":",
                                   options : UnityEngine.GUILayout.Width(150));
@@ -356,8 +383,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool show_ksp_features_ = false;
   [KSPField(isPersistant = true)]
   private bool show_logging_settings_ = false;
-
-  private bool display_patched_conics_ = false;
 
   //TODO(phl): Compatibility code.  Yuck.
   [KSPField(isPersistant = true)]

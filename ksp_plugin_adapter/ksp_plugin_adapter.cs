@@ -927,7 +927,7 @@ public partial class PrincipiaPluginAdapter
                ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
       plugin_.ForgetAllHistoriesBefore(plugin_.CurrentTime() -
-                                       history_lengths_[history_length_index_]);
+                                       main_window_.history_length);
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
 
@@ -1533,7 +1533,7 @@ public partial class PrincipiaPluginAdapter
           PatchRendering.RelativityMode.RELATIVE;
     }
 
-    if (display_patched_conics_ || !is_manageable(vessel)) {
+    if (main_window_.display_patched_conics || !is_manageable(vessel)) {
       vessel.orbitDriver.Renderer.drawMode =
           vessel.PatchedConicsAttached
               ? OrbitRenderer.DrawMode.OFF
