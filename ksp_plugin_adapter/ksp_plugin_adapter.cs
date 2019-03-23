@@ -525,8 +525,8 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
-    GameEvents.onShowUI.Add(ShowGUI);
-    GameEvents.onHideUI.Add(HideGUI);
+    GameEvents.onShowUI.Add(() => { hide_all_gui_ = false; });
+    GameEvents.onHideUI.Add(() => { hide_all_gui_ = true; });
     // Timing0, -8008 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.ObscenelyEarly,
                                  ObscenelyEarly);
@@ -1938,14 +1938,6 @@ public partial class PrincipiaPluginAdapter
     Interface.DeletePlugin(ref plugin_);
     previous_display_mode_ = null;
     navball_changed_ = true;
-  }
-
-  private void ShowGUI() {
-    hide_all_gui_ = false;
-  }
-
-  private void HideGUI() {
-    hide_all_gui_ = true;
   }
 
 #if CRASH_BUTTON

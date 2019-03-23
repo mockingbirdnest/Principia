@@ -271,8 +271,6 @@ internal class MainWindow : SupervisedWindowRenderer {
     UnityEngine.GUI.DragWindow();
   }
 
-  private delegate void GUIRenderer();
-
   private void RenderKSPFeatures() {
     display_patched_conics = UnityEngine.GUILayout.Toggle(
         value : display_patched_conics,
@@ -471,17 +469,16 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   private void ToggleableSection(String name,
                                  ref bool show,
-                                 GUIRenderer render) {
+                                 Action render) {
     String toggle = show ? "↑ " + name + " ↑"
                          : "↓ " + name + " ↓";
     if (UnityEngine.GUILayout.Button(toggle)) {
       show = !show;
-      if (!show) {
-        Shrink();
-      }
     }
     if (show) {
       render();
+    } else {
+      Shrink();
     }
   }
 
