@@ -67,14 +67,9 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
-  public void LoadCompatibilityDataIfNeeded(
-      int history_length_index,
-      int prediction_length_tolerance_index,
-      int prediction_steps_index) {
+  public void LoadCompatibilityDataIfNeeded(int history_length_index) {
     if (should_load_compatibility_data_) {
       history_length_index_ = history_length_index;
-      prediction_length_tolerance_index_ = prediction_length_tolerance_index;
-      prediction_steps_index_ = prediction_steps_index;
     }
   }
 
@@ -98,19 +93,6 @@ internal class MainWindow : SupervisedWindowRenderer {
           Convert.ToBoolean(show_prediction_settings_value);
     }
 
-    String prediction_length_tolerance_index_value =
-        node.GetAtMostOneValue("prediction_length_tolerance_index");
-    if (prediction_length_tolerance_index_value != null) {
-      should_load_compatibility_data_ = false;
-      prediction_length_tolerance_index_ =
-          Convert.ToInt32(prediction_length_tolerance_index_value);
-    }
-    String prediction_steps_index_value =
-        node.GetAtMostOneValue("prediction_steps_index");
-    if (prediction_steps_index_value != null) {
-      should_load_compatibility_data_ = false;
-      prediction_steps_index_ = Convert.ToInt32(prediction_steps_index_value);
-    }
     String history_length_index_value =
         node.GetAtMostOneValue("history_length_index");
     if (history_length_index_value != null) {
@@ -167,12 +149,6 @@ internal class MainWindow : SupervisedWindowRenderer {
                   show_prediction_settings_,
                   createIfNotFound : true);
 
-    node.SetValue("prediction_length_tolerance_index",
-                  prediction_length_tolerance_index_,
-                  createIfNotFound : true);
-    node.SetValue("prediction_steps_index",
-                  prediction_steps_index_,
-                  createIfNotFound : true);
     node.SetValue("history_length_index",
                   history_length_index_,
                   createIfNotFound : true);
@@ -421,6 +397,25 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderPredictionSettings() {
+    string vessel_guid = vessel_?.id.ToString();
+    if (vessel_guid == null || !plugin_.HasVessel(vessel_guid)) {
+      vessel_ = null;
+      prediction_length_tolerance_index_ =
+          default_prediction_length_tolerance_index_;
+      prediction_steps_index_ = default_prediction_steps_index_;
+    } else if (vessel_ != FlightGlobals.ActiveVessel) {
+      AdaptiveStepParameters adaptive_step_parameters =
+          plugin_.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
+      prediction_length_tolerance_index_ = Array.FindIndex(
+          prediction_length_tolerances_,
+          (double tolerance) =>
+              tolerance >=
+                  adaptive_step_parameters.length_integration_tolerance);
+      prediction_length_tolerance_index_ = Array.FindIndex(
+          prediction_steps_,
+          (Int64 step) => step >= adaptive_step_parameters.max_steps);
+    }
+
     bool changed_settings = false;
     RenderSelector(prediction_length_tolerances_,
                    ref prediction_length_tolerance_index_,
@@ -482,6 +477,12 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
+  private static void Find() {
+  }
+
+  private const int default_prediction_length_tolerance_index_ = 1;
+  private const int default_prediction_steps_index_ = 4;
+
   private static readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
@@ -502,8 +503,9 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool show_prediction_settings_ = true;
 
   private bool should_load_compatibility_data_ = true;
-  private int prediction_length_tolerance_index_ = 1;
-  private int prediction_steps_index_ = 4;
+  private int prediction_length_tolerance_index_ =
+      default_prediction_length_tolerance_index_;
+  private int prediction_steps_index_ = default_prediction_steps_index_;
   private int history_length_index_ = 10;
 
   private int buffered_logging_ = 0;
@@ -517,6 +519,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   private static bool journaling_ = false;
 
   private IntPtr plugin_ = IntPtr.Zero;
+  private Vessel vessel_;
 }
 
 }  // namespace ksp_plugin_adapter
