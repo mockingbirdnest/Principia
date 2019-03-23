@@ -658,8 +658,7 @@ public partial class PrincipiaPluginAdapter
     }
 
     if (hide_all_gui_) {
-      WindowUtilities.ClearLock(this);
-      return;
+      clear_locks();
     } else if (main_window_.Shown()) {
       render_windows();
     } else {
@@ -1935,7 +1934,6 @@ public partial class PrincipiaPluginAdapter
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
     map_node_pool_.Clear();
-    WindowUtilities.ClearLock(this);
     clear_locks();
     Interface.DeletePlugin(ref plugin_);
     previous_display_mode_ = null;
