@@ -70,15 +70,20 @@ public partial class PrincipiaPluginAdapter
   private const int чебышёв_plotting_methods_count = 3;
 
   private IntPtr plugin_ = IntPtr.Zero;
-  internal IntPtr Plugin() {
-    return plugin_;
-  }
 
   // Whether to compress saves.
   [KSPField(isPersistant = true)]
   private string serialization_compression_ = "";
   [KSPField(isPersistant = true)]
   private string serialization_encoding_ = "hexadecimal";
+
+  // For compatibility only.  Do not use in real code.
+  [KSPField(isPersistant = true)]
+  private int prediction_length_tolerance_index_ = 1;
+  [KSPField(isPersistant = true)]
+  private int prediction_steps_index_ = 4;
+  [KSPField(isPersistant = true)]
+  private int history_length_index_ = 10;
 
   // Whether the plotting frame must be set to something convenient at the next
   // opportunity.
@@ -570,6 +575,10 @@ public partial class PrincipiaPluginAdapter
     if (is_bad_installation_) {
       return;
     }
+    main_window_.LoadCompatibilityDataIfNeeded(
+        history_length_index              : history_length_index_,
+        prediction_length_tolerance_index : prediction_length_tolerance_index_,
+        prediction_steps_index            : prediction_steps_index_);
     if (node.HasValue(principia_serialized_plugin_)) {
       Cleanup();
       RemoveBuggyTidalLocking();

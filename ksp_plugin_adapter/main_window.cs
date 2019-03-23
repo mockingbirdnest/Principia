@@ -67,6 +67,17 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
+  public void LoadCompatibilityDataIfNeeded(
+      int history_length_index,
+      int prediction_length_tolerance_index,
+      int prediction_steps_index) {
+    if (should_load_compatibility_data_) {
+      history_length_index_ = history_length_index;
+      prediction_length_tolerance_index_ = prediction_length_tolerance_index;
+      prediction_steps_index_ = prediction_steps_index;
+    }
+  }
+
   public new void Load(ConfigNode node) {
     base.Load(node);
 
@@ -90,17 +101,20 @@ internal class MainWindow : SupervisedWindowRenderer {
     String prediction_length_tolerance_index_value =
         node.GetAtMostOneValue("prediction_length_tolerance_index");
     if (prediction_length_tolerance_index_value != null) {
+      should_load_compatibility_data_ = false;
       prediction_length_tolerance_index_ =
           Convert.ToInt32(prediction_length_tolerance_index_value);
     }
     String prediction_steps_index_value =
         node.GetAtMostOneValue("prediction_steps_index");
     if (prediction_steps_index_value != null) {
+      should_load_compatibility_data_ = false;
       prediction_steps_index_ = Convert.ToInt32(prediction_steps_index_value);
     }
     String history_length_index_value =
         node.GetAtMostOneValue("history_length_index");
     if (history_length_index_value != null) {
+      should_load_compatibility_data_ = false;
       history_length_index_ = Convert.ToInt32(history_length_index_value);
     }
 
@@ -490,7 +504,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool show_logging_settings_ = false;
   private bool show_prediction_settings_ = true;
 
-  //TODO(phl): Compatibility code.  Yuck.
+  private bool should_load_compatibility_data_ = true;
   private int prediction_length_tolerance_index_ = 1;
   private int prediction_steps_index_ = 4;
   private int history_length_index_ = 10;
