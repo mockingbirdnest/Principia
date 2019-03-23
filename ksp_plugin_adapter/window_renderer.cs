@@ -154,19 +154,19 @@ internal abstract class BaseWindowRenderer : IConfigNode {
   public void Load(ConfigNode node) {
     String must_centre_value = node.GetAtMostOneValue("must_centre");
     if (must_centre_value != null) {
-      must_centre_ = System.Convert.ToBoolean(must_centre_value);
+      must_centre_ = Convert.ToBoolean(must_centre_value);
     }
     String show_value = node.GetAtMostOneValue("show");
     if (show_value != null) {
-      show_ = System.Convert.ToBoolean(show_value);
+      show_ = Convert.ToBoolean(show_value);
     }
     String x_value = node.GetAtMostOneValue("x");
     if (x_value != null) {
-      rectangle_.x = System.Convert.ToSingle(x_value);
+      rectangle_.x = Convert.ToSingle(x_value);
     }
     String y_value = node.GetAtMostOneValue("y");
     if (y_value != null) {
-      rectangle_.y = System.Convert.ToSingle(y_value);
+      rectangle_.y = Convert.ToSingle(y_value);
     }
   }
 

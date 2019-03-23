@@ -73,64 +73,60 @@ internal class MainWindow : SupervisedWindowRenderer {
     String show_ksp_features_value =
         node.GetAtMostOneValue("show_ksp_features");
     if (show_ksp_features_value != null) {
-      show_ksp_features_ = System.Convert.ToBoolean(show_ksp_features_value);
+      show_ksp_features_ = Convert.ToBoolean(show_ksp_features_value);
     }
     String show_logging_settings_value =
         node.GetAtMostOneValue("show_logging_settings");
     if (show_logging_settings_value != null) {
-      show_logging_settings_ =
-          System.Convert.ToBoolean(show_logging_settings_value);
+      show_logging_settings_ = Convert.ToBoolean(show_logging_settings_value);
     }
     String show_prediction_settings_value =
         node.GetAtMostOneValue("show_prediction_settings");
     if (show_prediction_settings_value != null) {
       show_prediction_settings_ =
-          System.Convert.ToBoolean(show_prediction_settings_value);
+          Convert.ToBoolean(show_prediction_settings_value);
     }
 
     String prediction_length_tolerance_index_value =
         node.GetAtMostOneValue("prediction_length_tolerance_index");
     if (prediction_length_tolerance_index_value != null) {
       prediction_length_tolerance_index_ =
-          System.Convert.ToInt32(prediction_length_tolerance_index_value);
+          Convert.ToInt32(prediction_length_tolerance_index_value);
     }
     String prediction_steps_index_value =
         node.GetAtMostOneValue("prediction_steps_index");
     if (prediction_steps_index_value != null) {
-      prediction_steps_index_ =
-          System.Convert.ToInt32(prediction_steps_index_value);
+      prediction_steps_index_ = Convert.ToInt32(prediction_steps_index_value);
     }
     String history_length_index_value =
         node.GetAtMostOneValue("history_length_index");
     if (history_length_index_value != null) {
-      history_length_index_ =
-          System.Convert.ToInt32(history_length_index_value);
+      history_length_index_ = Convert.ToInt32(history_length_index_value);
     }
 
     String buffered_logging_value =
         node.GetAtMostOneValue("buffered_logging");
     if (buffered_logging_value != null) {
-      buffered_logging_ = System.Convert.ToInt32(buffered_logging_value);
+      buffered_logging_ = Convert.ToInt32(buffered_logging_value);
     }
     String stderr_logging_value = node.GetAtMostOneValue("stderr_logging");
     if (stderr_logging_value != null) {
-      stderr_logging_ = System.Convert.ToInt32(stderr_logging_value);
+      stderr_logging_ = Convert.ToInt32(stderr_logging_value);
     }
     String suppressed_logging_value =
         node.GetAtMostOneValue("suppressed_logging");
     if (suppressed_logging_value != null) {
-      suppressed_logging_ = System.Convert.ToInt32(suppressed_logging_value);
+      suppressed_logging_ = Convert.ToInt32(suppressed_logging_value);
     }
     String verbose_logging_value = node.GetAtMostOneValue("verbose_logging");
     if (verbose_logging_value != null) {
-      verbose_logging_ = System.Convert.ToInt32(verbose_logging_value);
+      verbose_logging_ = Convert.ToInt32(verbose_logging_value);
     }
 
     String must_record_journal_value =
         node.GetAtMostOneValue("must_record_journal");
     if (must_record_journal_value != null) {
-      must_record_journal_ =
-          System.Convert.ToBoolean(must_record_journal_value);
+      must_record_journal_ = Convert.ToBoolean(must_record_journal_value);
     }
 
     Log.SetBufferedLogging(buffered_logging_);

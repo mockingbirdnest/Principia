@@ -82,13 +82,13 @@ internal class DifferentialSlider {
                    Math.Pow(10, log10_lower_rate_ +
                                     (log10_upper_rate_ - log10_lower_rate_) *
                                         Math.Abs(slider_position_)) *
-                   (System.DateTime.Now - last_time_).TotalSeconds;
+                   (DateTime.Now - last_time_).TotalSeconds;
           value = Math.Min(Math.Max(min_value_, value), max_value_);
         }
       } else {
         slider_position_ = 0;
       }
-      last_time_ = System.DateTime.Now;
+      last_time_ = DateTime.Now;
     }
 
     UnityEngine.GUI.skin = old_skin;

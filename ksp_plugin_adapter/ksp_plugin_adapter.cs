@@ -188,7 +188,7 @@ public partial class PrincipiaPluginAdapter
   PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
-    System.IO.Directory.CreateDirectory("glog/Principia");
+    Directory.CreateDirectory("glog/Principia");
     string load_error = Loader.LoadPrincipiaDllAndInitGoogleLogging();
     if (load_error == null) {
       is_bad_installation_ = false;
