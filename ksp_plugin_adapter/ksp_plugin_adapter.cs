@@ -61,13 +61,7 @@ public partial class PrincipiaPluginAdapter
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
 
-
-#if SELECTABLE_PLOT_METHOD
-  // "Persistant" is a KSP typo.
-  [KSPField(isPersistant = true)]
-#endif
-  private int чебышёв_plotting_method_ = 2;
-  private const int чебышёв_plotting_methods_count = 3;
+  private const int чебышёв_plotting_method_ = 2;
 
   private IntPtr plugin_ = IntPtr.Zero;
 
@@ -84,11 +78,6 @@ public partial class PrincipiaPluginAdapter
   // Whether the plotting frame must be set to something convenient at the next
   // opportunity.
   private bool must_set_plotting_frame_ = false;
-
-#if CRASH_BUTTON
-  [KSPField(isPersistant = true)]
-  private bool show_crash_options_ = false;
-#endif
 
   private bool time_is_advancing_;
 
@@ -1932,22 +1921,6 @@ public partial class PrincipiaPluginAdapter
     previous_display_mode_ = null;
     navball_changed_ = true;
   }
-
-#if CRASH_BUTTON
-  private void CrashOptions() {
-    if (UnityEngine.GUILayout.Button(text : "CRASH ON MAP VIEW")) {
-      first_selected_celestial_ = second_selected_celestial_;
-      DeleteRenderingFrame(ref rendering_frame_);
-      rendering_frame_ = NewBarycentricRotatingRenderingFrame(
-                             plugin_,
-                             first_selected_celestial_,
-                             second_selected_celestial_);
-    }
-    if (UnityEngine.GUILayout.Button(text : "CRASH NOW")) {
-      Log.Fatal("You asked for it!");
-    }
-  }
-#endif
 
   private void UpdateRenderingFrame(
       NavigationFrameParameters frame_parameters) {

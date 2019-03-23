@@ -238,11 +238,6 @@ internal class MainWindow : SupervisedWindowRenderer {
       ToggleableSection(name   : "Logging Settings",
                         show   : ref show_logging_settings_,
                         render : RenderLoggingSettings);
-  #if CRASH_BUTTON
-      ToggleableSection(name   : "CRASH",
-                        show   : ref show_crash_options_,
-                        render : CrashOptions);
-  #endif
     }
     UnityEngine.GUI.DragWindow();
   }
@@ -280,17 +275,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderLoggingSettings() {
-#if SELECTABLE_PLOT_METHOD
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Label("Чебышёв plotting method:");
-      for (int i = 0; i < чебышёв_plotting_methods_count; ++i) {
-        if (UnityEngine.GUILayout.Toggle(чебышёв_plotting_method_ == i,
-                                         i.ToString())) {
-          чебышёв_plotting_method_ = i;
-        }
-      }
-    }
-#endif
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(
