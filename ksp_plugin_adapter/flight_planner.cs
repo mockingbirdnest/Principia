@@ -333,7 +333,7 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   // Not owned.
   private readonly PrincipiaPluginAdapter adapter_;
-  private IntPtr plugin_;
+  private IntPtr plugin_ = IntPtr.Zero;
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
 

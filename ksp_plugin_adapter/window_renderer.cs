@@ -126,7 +126,7 @@ internal abstract class BaseWindowRenderer : IConfigNode {
                        UnityEngine.Screen.height - min_height_on_screen_);
   }
 
-  protected void Shrink() {
+  public void Shrink() {
     rectangle_.height = 0.0f;
     rectangle_.width = 0.0f;
   }
