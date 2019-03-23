@@ -64,6 +64,9 @@ public partial class PrincipiaPluginAdapter
   private const int чебышёв_plotting_method_ = 2;
 
   private IntPtr plugin_ = IntPtr.Zero;
+  internal IntPtr Plugin() {
+    return plugin_;
+  }
 
   // Whether to compress saves.
   [KSPField(isPersistant = true)]
@@ -214,7 +217,8 @@ public partial class PrincipiaPluginAdapter
                                                           "Plotting frame");
     main_window_ = new MainWindow(this,
                                   flight_planner_,
-                                  plotting_frame_selector_);
+                                  plotting_frame_selector_,
+                                  PredictedVessel);
   }
 
   ~PrincipiaPluginAdapter() {
@@ -224,6 +228,10 @@ public partial class PrincipiaPluginAdapter
 
   private bool PluginRunning() {
     return plugin_ != IntPtr.Zero;
+  }
+
+  private Vessel PredictedVessel() {
+    return FlightGlobals.ActiveVessel ?? space_tracking?.SelectedVessel;
   }
 
   private delegate void BodyProcessor(CelestialBody body);
@@ -267,10 +275,13 @@ public partial class PrincipiaPluginAdapter
     QP from_parent = plugin_.CelestialFromParent(body.flightGlobalsIndex);
     // TODO(egg): Some of this might be be superfluous and redundant.
     Orbit original = body.orbit;
-    Orbit copy = new Orbit(original.inclination, original.eccentricity,
-                           original.semiMajorAxis, original.LAN,
+    Orbit copy = new Orbit(original.inclination,
+                           original.eccentricity,
+                           original.semiMajorAxis,
+                           original.LAN,
                            original.argumentOfPeriapsis,
-                           original.meanAnomalyAtEpoch, original.epoch,
+                           original.meanAnomalyAtEpoch,
+                           original.epoch,
                            original.referenceBody);
     copy.UpdateFromStateVectors((Vector3d)from_parent.q,
                                 (Vector3d)from_parent.p,
@@ -295,8 +306,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void UpdatePredictions() {
-    Vessel main_vessel = FlightGlobals.ActiveVessel ??
-                  space_tracking?.SelectedVessel;
+    Vessel main_vessel = PredictedVessel();
     bool ready_to_draw_active_vessel_trajectory =
         main_vessel != null &&
         MapView.MapIsEnabled &&

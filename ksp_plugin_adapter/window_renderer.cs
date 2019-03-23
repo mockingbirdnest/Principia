@@ -105,7 +105,7 @@ internal abstract class BaseWindowRenderer : IConfigNode {
 
   // Persistence.
 
-  public void Load(ConfigNode node) {
+  public virtual void Load(ConfigNode node) {
     String must_centre_value = node.GetAtMostOneValue("must_centre");
     if (must_centre_value != null) {
       must_centre_ = Convert.ToBoolean(must_centre_value);
@@ -124,7 +124,7 @@ internal abstract class BaseWindowRenderer : IConfigNode {
     }
   }
 
-  public void Save(ConfigNode node) {
+  public virtual void Save(ConfigNode node) {
     node.SetValue("must_centre", must_centre_, createIfNotFound : true);
     node.SetValue("show", show_, createIfNotFound : true);
     node.SetValue("x", rectangle_.x, createIfNotFound : true);

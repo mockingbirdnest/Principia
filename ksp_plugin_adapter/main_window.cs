@@ -13,12 +13,17 @@ internal class MainWindow : SupervisedWindowRenderer {
   private DateTimeOffset next_release_date_ =
       new DateTimeOffset(2019, 04, 05, 08, 51, 00, TimeSpan.Zero);
 
+  public delegate Vessel PredictedVessel();
+
   public MainWindow(SupervisedWindowRenderer.ISupervisor supervisor,
                     FlightPlanner flight_planner,
-                    ReferenceFrameSelector plotting_frame_selector)
+                    ReferenceFrameSelector plotting_frame_selector,
+                    PredictedVessel predicted_vessel)
       : base(supervisor) {
     flight_planner_ = flight_planner;
     plotting_frame_selector_ = plotting_frame_selector;
+    predicted_vessel_ = predicted_vessel;
+    Show();
   }
 
   public void Initialize(IntPtr plugin) {
@@ -49,23 +54,10 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   public bool display_patched_conics { get; private set; } = false;
 
-  public double history_length {
-    get {
-      return history_lengths_[history_length_index_];
-    }
-  }
-
-  public double prediction_length_tolerance {
-    get {
-      return prediction_length_tolerances_[prediction_length_tolerance_index_];
-    }
-  }
-
-  public Int64 prediction_steps {
-    get {
-      return prediction_steps_[prediction_steps_index_];
-    }
-  }
+  public double history_length => history_lengths_[history_length_index_];
+  public double prediction_length_tolerance =>
+      prediction_length_tolerances_[prediction_length_tolerance_index_];
+  public Int64 prediction_steps => prediction_steps_[prediction_steps_index_];
 
   public void LoadCompatibilityDataIfNeeded(int history_length_index) {
     if (should_load_compatibility_data_) {
@@ -73,7 +65,7 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
-  public new void Load(ConfigNode node) {
+  public override void Load(ConfigNode node) {
     base.Load(node);
 
     String show_ksp_features_value =
@@ -136,7 +128,7 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
-  public new void Save(ConfigNode node) {
+  public override void Save(ConfigNode node) {
     base.Save(node);
 
     node.SetValue("show_ksp_features",
@@ -185,10 +177,8 @@ internal class MainWindow : SupervisedWindowRenderer {
             " has come; please download the latest Principia release, " +
             next_release_name_ + ".");
       }
-      String version;
-      String unused_build_date;
-      Interface.GetVersion(build_date: out unused_build_date,
-                           version: out version);
+      Interface.GetVersion(build_date : out string unused_build_date,
+                           version    : out string version);
       UnityEngine.GUILayout.TextArea(version);
       bool changed_history_length = false;
       RenderSelector(history_lengths_,
@@ -209,8 +199,8 @@ internal class MainWindow : SupervisedWindowRenderer {
                 "Target: " +
                     FlightGlobals.fetch.VesselTarget.GetVessel().vesselName,
                 UnityEngine.GUILayout.ExpandWidth(true));
-            if (UnityEngine.GUILayout.Button("Clear",
-                                              UnityEngine.GUILayout.Width(50))) {
+            if (UnityEngine.GUILayout.Button(
+                    "Clear", UnityEngine.GUILayout.Width(50))) {
               selecting_active_vessel_target = false;
               FlightGlobals.fetch.SetVesselTarget(null);
             }
@@ -229,15 +219,15 @@ internal class MainWindow : SupervisedWindowRenderer {
         plotting_frame_selector_.RenderButton();
         flight_planner_.RenderButton();
       }
-      ToggleableSection(name   : "Prediction Settings",
-                        show   : ref show_prediction_settings_,
-                        render : RenderPredictionSettings);
-      ToggleableSection(name   : "KSP features",
-                        show   : ref show_ksp_features_,
-                        render : RenderKSPFeatures);
-      ToggleableSection(name   : "Logging Settings",
-                        show   : ref show_logging_settings_,
-                        render : RenderLoggingSettings);
+      RenderToggleableSection(name   : "Prediction Settings",
+                              show   : ref show_prediction_settings_,
+                              render : RenderPredictionSettings);
+      RenderToggleableSection(name   : "KSP Features",
+                              show   : ref show_ksp_features_,
+                              render : RenderKSPFeatures);
+      RenderToggleableSection(name   : "Logging Settings",
+                              show   : ref show_logging_settings_,
+                              render : RenderLoggingSettings);
     }
     UnityEngine.GUI.DragWindow();
   }
@@ -381,23 +371,21 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderPredictionSettings() {
-    string vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid == null || !plugin_.HasVessel(vessel_guid)) {
-      vessel_ = null;
-      prediction_length_tolerance_index_ =
-          default_prediction_length_tolerance_index_;
-      prediction_steps_index_ = default_prediction_steps_index_;
-    } else if (vessel_ != FlightGlobals.ActiveVessel) {
-      AdaptiveStepParameters adaptive_step_parameters =
-          plugin_.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
-      prediction_length_tolerance_index_ = Array.FindIndex(
-          prediction_length_tolerances_,
-          (double tolerance) =>
-              tolerance >=
-                  adaptive_step_parameters.length_integration_tolerance);
-      prediction_length_tolerance_index_ = Array.FindIndex(
-          prediction_steps_,
-          (Int64 step) => step >= adaptive_step_parameters.max_steps);
+    if (vessel_ != predicted_vessel_()) {
+      vessel_ = predicted_vessel_();
+      string vessel_guid = vessel_?.id.ToString();
+      if (vessel_guid != null && plugin_.HasVessel(vessel_guid)) {
+        AdaptiveStepParameters adaptive_step_parameters =
+            plugin_.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
+        prediction_length_tolerance_index_ = Array.FindIndex(
+            prediction_length_tolerances_,
+            (double tolerance) =>
+                tolerance >=
+                    adaptive_step_parameters.length_integration_tolerance);
+        prediction_steps_index_ = Array.FindIndex(
+            prediction_steps_,
+            (Int64 step) => step >= adaptive_step_parameters.max_steps);
+      }
     }
 
     bool changed_settings = false;
@@ -446,26 +434,21 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
-  private void ToggleableSection(String name,
-                                 ref bool show,
-                                 Action render) {
+  private void RenderToggleableSection(String name,
+                                       ref bool show,
+                                       Action render) {
     String toggle = show ? "↑ " + name + " ↑"
                          : "↓ " + name + " ↓";
     if (UnityEngine.GUILayout.Button(toggle)) {
       show = !show;
+      if (!show) {
+        Shrink();
+      }
     }
     if (show) {
       render();
-    } else {
-      Shrink();
     }
   }
-
-  private static void Find() {
-  }
-
-  private const int default_prediction_length_tolerance_index_ = 1;
-  private const int default_prediction_steps_index_ = 4;
 
   private static readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
@@ -479,6 +462,7 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   private readonly FlightPlanner flight_planner_;
   private readonly ReferenceFrameSelector plotting_frame_selector_;
+  private readonly PredictedVessel predicted_vessel_;
 
   private bool selecting_target_celestial_ = false;
 
@@ -487,9 +471,8 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool show_prediction_settings_ = true;
 
   private bool should_load_compatibility_data_ = true;
-  private int prediction_length_tolerance_index_ =
-      default_prediction_length_tolerance_index_;
-  private int prediction_steps_index_ = default_prediction_steps_index_;
+  private int prediction_length_tolerance_index_ = 1;
+  private int prediction_steps_index_ = 4;
   private int history_length_index_ = 10;
 
   private int buffered_logging_ = 0;
