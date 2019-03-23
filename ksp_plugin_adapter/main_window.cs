@@ -69,6 +69,70 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   public new void Load(ConfigNode node) {
     base.Load(node);
+
+    String show_ksp_features_value =
+        node.GetAtMostOneValue("show_ksp_features");
+    if (show_ksp_features_value != null) {
+      show_ksp_features_ = System.Convert.ToBoolean(show_ksp_features_value);
+    }
+    String show_logging_settings_value =
+        node.GetAtMostOneValue("show_logging_settings");
+    if (show_logging_settings_value != null) {
+      show_logging_settings_ =
+          System.Convert.ToBoolean(show_logging_settings_value);
+    }
+    String show_prediction_settings_value =
+        node.GetAtMostOneValue("show_prediction_settings");
+    if (show_prediction_settings_value != null) {
+      show_prediction_settings_ =
+          System.Convert.ToBoolean(show_prediction_settings_value);
+    }
+
+    String prediction_length_tolerance_index_value =
+        node.GetAtMostOneValue("prediction_length_tolerance_index");
+    if (prediction_length_tolerance_index_value != null) {
+      prediction_length_tolerance_index_ =
+          System.Convert.ToInt32(prediction_length_tolerance_index_value);
+    }
+    String prediction_steps_index_value =
+        node.GetAtMostOneValue("prediction_steps_index");
+    if (prediction_steps_index_value != null) {
+      prediction_steps_index_ =
+          System.Convert.ToInt32(prediction_steps_index_value);
+    }
+    String history_length_index_value =
+        node.GetAtMostOneValue("history_length_index");
+    if (history_length_index_value != null) {
+      history_length_index_ =
+          System.Convert.ToInt32(history_length_index_value);
+    }
+
+    String buffered_logging_value =
+        node.GetAtMostOneValue("buffered_logging");
+    if (buffered_logging_value != null) {
+      buffered_logging_ = System.Convert.ToInt32(buffered_logging_value);
+    }
+    String stderr_logging_value = node.GetAtMostOneValue("stderr_logging");
+    if (stderr_logging_value != null) {
+      stderr_logging_ = System.Convert.ToInt32(stderr_logging_value);
+    }
+    String suppressed_logging_value =
+        node.GetAtMostOneValue("suppressed_logging");
+    if (suppressed_logging_value != null) {
+      suppressed_logging_ = System.Convert.ToInt32(suppressed_logging_value);
+    }
+    String verbose_logging_value = node.GetAtMostOneValue("verbose_logging");
+    if (verbose_logging_value != null) {
+      verbose_logging_ = System.Convert.ToInt32(verbose_logging_value);
+    }
+
+    String must_record_journal_value =
+        node.GetAtMostOneValue("must_record_journal");
+    if (must_record_journal_value != null) {
+      must_record_journal_ =
+          System.Convert.ToBoolean(must_record_journal_value);
+    }
+
     Log.SetBufferedLogging(buffered_logging_);
     Log.SetSuppressedLogging(suppressed_logging_);
     Log.SetStderrLogging(stderr_logging_);
@@ -82,6 +146,43 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   public new void Save(ConfigNode node) {
     base.Save(node);
+
+    node.SetValue("show_ksp_features",
+                  show_ksp_features_,
+                  createIfNotFound : true);
+    node.SetValue("show_logging_settings",
+                  show_logging_settings_,
+                  createIfNotFound : true);
+    node.SetValue("show_prediction_settings",
+                  show_prediction_settings_,
+                  createIfNotFound : true);
+
+    node.SetValue("prediction_length_tolerance_index",
+                  prediction_length_tolerance_index_,
+                  createIfNotFound : true);
+    node.SetValue("prediction_steps_index",
+                  prediction_steps_index_,
+                  createIfNotFound : true);
+    node.SetValue("history_length_index",
+                  history_length_index_,
+                  createIfNotFound : true);
+
+    node.SetValue("buffered_logging",
+                  buffered_logging_,
+                  createIfNotFound : true);
+    node.SetValue("stderr_logging",
+                  stderr_logging_,
+                  createIfNotFound : true);
+    node.SetValue("suppressed_logging",
+                  suppressed_logging_,
+                  createIfNotFound : true);
+    node.SetValue("verbose_logging",
+                  verbose_logging_,
+                  createIfNotFound : true);
+
+    node.SetValue("must_record_journal",
+                  must_record_journal_,
+                  createIfNotFound : true);
   }
 
   protected override string Title { get; } = "Principia";
@@ -389,32 +490,21 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   private bool selecting_target_celestial_ = false;
 
-  [KSPField(isPersistant = true)]
-  private bool show_prediction_settings_ = true;
-  [KSPField(isPersistant = true)]
   private bool show_ksp_features_ = false;
-  [KSPField(isPersistant = true)]
   private bool show_logging_settings_ = false;
+  private bool show_prediction_settings_ = true;
 
   //TODO(phl): Compatibility code.  Yuck.
-  [KSPField(isPersistant = true)]
   private int prediction_length_tolerance_index_ = 1;
-  [KSPField(isPersistant = true)]
   private int prediction_steps_index_ = 4;
-  [KSPField(isPersistant = true)]
   private int history_length_index_ = 10;
 
-  [KSPField(isPersistant = true)]
   private int buffered_logging_ = 0;
-  [KSPField(isPersistant = true)]
   private int stderr_logging_ = 2;
-  [KSPField(isPersistant = true)]
   private int suppressed_logging_ = 0;
-  [KSPField(isPersistant = true)]
   private int verbose_logging_ = 0;
 
   // Whether a journal will be recorded when the plugin is next constructed.
-  [KSPField(isPersistant = true)]
   private bool must_record_journal_ = false;
   // Whether a journal is currently being recorded.
   private static bool journaling_ = false;
