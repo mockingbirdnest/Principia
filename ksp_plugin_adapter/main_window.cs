@@ -13,15 +13,19 @@ internal class MainWindow : SupervisedWindowRenderer {
   private DateTimeOffset next_release_date_ =
       new DateTimeOffset(2019, 04, 05, 08, 51, 00, TimeSpan.Zero);
 
-  public MainWindow(SupervisedWindowRenderer.ISupervisor supervisor)
+  public MainWindow(SupervisedWindowRenderer.ISupervisor supervisor,
+                    FlightPlanner flight_planner,
+                    ReferenceFrameSelector plotting_frame_selector)
       : base(supervisor) {
+    flight_planner_ = flight_planner;
+    plotting_frame_selector_ = plotting_frame_selector;
   }
 
   public void Initialize(IntPtr plugin) {
     plugin_ = plugin;
   }
 
-  public void SomethingCelestial(MapObject map_object) {
+  public void SelectTargetCelestial(MapObject map_object) {
     if (selecting_target_celestial_) {
       FlightGlobals.fetch.SetVesselTarget(map_object.celestialBody);
       selecting_target_celestial_ = false;
@@ -30,15 +34,18 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
-  public void SomethingVessel(MapObject map_object) {
-    if (selecting_active_vessel_target_) {
+  public void SelectActiveVesselTarget(MapObject map_object,
+                                       bool set_planetarium_camera) {
+    if (selecting_active_vessel_target) {
       FlightGlobals.fetch.SetVesselTarget(map_object.vessel);
-      selecting_active_vessel_target_ = false;
-    } else if (buttons == Mouse.Buttons.Left &&
+      selecting_active_vessel_target = false;
+    } else if (set_planetarium_camera &&
                PlanetariumCamera.fetch.target != map_object) {
       PlanetariumCamera.fetch.SetTarget(map_object);
     }
   }
+
+  public bool selecting_active_vessel_target { get; private set; } = false;
 
   public bool display_patched_conics { get; private set; } = false;
 
@@ -105,9 +112,9 @@ internal class MainWindow : SupervisedWindowRenderer {
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
-              selecting_active_vessel_target_, "Select target vessel...");
-          if (selecting_active_vessel_target_) {
+          selecting_active_vessel_target = UnityEngine.GUILayout.Toggle(
+              selecting_active_vessel_target, "Select target vessel...");
+          if (selecting_active_vessel_target) {
             selecting_target_celestial_ = false;
           }
           if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
@@ -117,7 +124,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                 UnityEngine.GUILayout.ExpandWidth(true));
             if (UnityEngine.GUILayout.Button("Clear",
                                               UnityEngine.GUILayout.Width(50))) {
-              selecting_active_vessel_target_ = false;
+              selecting_active_vessel_target = false;
               FlightGlobals.fetch.SetVesselTarget(null);
             }
             if (UnityEngine.GUILayout.Button("Switch To")) {
@@ -129,7 +136,7 @@ internal class MainWindow : SupervisedWindowRenderer {
           }
         }
       } else {
-        selecting_active_vessel_target_ = false;
+        selecting_active_vessel_target = false;
       }
       if (plugin_ != IntPtr.Zero) {
         plotting_frame_selector_.RenderButton();
@@ -168,7 +175,7 @@ internal class MainWindow : SupervisedWindowRenderer {
         selecting_target_celestial_ = UnityEngine.GUILayout.Toggle(
             selecting_target_celestial_, "Select target celestial...");
         if (selecting_target_celestial_) {
-          selecting_active_vessel_target_ = false;
+          selecting_active_vessel_target = false;
         }
         CelestialBody target_celestial =
             FlightGlobals.fetch.VesselTarget as CelestialBody;
@@ -376,6 +383,11 @@ internal class MainWindow : SupervisedWindowRenderer {
   private static readonly Int64[] prediction_steps_ =
       {1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16,
        1 << 18, 1 << 20, 1 << 22, 1 << 24};
+
+  private readonly FlightPlanner flight_planner_;
+  private readonly ReferenceFrameSelector plotting_frame_selector_;
+
+  private bool selecting_target_celestial_ = false;
 
   [KSPField(isPersistant = true)]
   private bool show_prediction_settings_ = true;

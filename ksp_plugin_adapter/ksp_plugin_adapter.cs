@@ -69,9 +69,6 @@ public partial class PrincipiaPluginAdapter
   private int чебышёв_plotting_method_ = 2;
   private const int чебышёв_plotting_methods_count = 3;
 
-  private bool selecting_active_vessel_target_ = false;
-  private bool selecting_target_celestial_ = false;
-
   private IntPtr plugin_ = IntPtr.Zero;
   internal IntPtr Plugin() {
     return plugin_;
@@ -165,6 +162,8 @@ public partial class PrincipiaPluginAdapter
   private Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
       new Dictionary<uint, QP>();
 
+  private MapNodePool map_node_pool_;
+
   // UI for the apocalypse notification.
   [KSPField(isPersistant = true)]
   private Dialog apocalypse_dialog_ = new Dialog();
@@ -178,10 +177,9 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private FlightPlanner flight_planner_;
   [KSPField(isPersistant = true)]
-  internal MainWindow main_window_;
-  [KSPField(isPersistant = true)]
   internal ReferenceFrameSelector plotting_frame_selector_;
-  private MapNodePool map_node_pool_;
+  [KSPField(isPersistant = true)]
+  internal MainWindow main_window_;
 
   public event Action clear_locks;
   public event Action dispose_windows;
@@ -220,11 +218,13 @@ public partial class PrincipiaPluginAdapter
                 "; this build targets " + expected_version + ".");
     }
     map_node_pool_ = new MapNodePool();
-    main_window_ = new MainWindow(this);
     flight_planner_ = new FlightPlanner(this);
     plotting_frame_selector_ = new ReferenceFrameSelector(this,
                                                           UpdateRenderingFrame,
                                                           "Plotting frame");
+    main_window_ = new MainWindow(this,
+                                  flight_planner_,
+                                  plotting_frame_selector_);
   }
 
   ~PrincipiaPluginAdapter() {
@@ -599,8 +599,8 @@ public partial class PrincipiaPluginAdapter
       }
 
       flight_planner_.Initialize(plugin_);
-      main_window_.Initialize(plugin_);
       plotting_frame_selector_.Initialize(plugin_);
+      main_window_.Initialize(plugin_);
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
 
@@ -1587,24 +1587,15 @@ public partial class PrincipiaPluginAdapter
   private void OnCelestialNodeClick(KSP.UI.Screens.Mapview.MapNode node,
                                     Mouse.Buttons buttons) {
     if (buttons == Mouse.Buttons.Left) {
-      if (selecting_target_celestial_) {
-        FlightGlobals.fetch.SetVesselTarget(node.mapObject.celestialBody);
-        selecting_target_celestial_ = false;
-      } else if (PlanetariumCamera.fetch.target != node.mapObject) {
-        PlanetariumCamera.fetch.SetTarget(node.mapObject);
-      }
+      main_window_.SelectTargetCelestial(node.mapObject);
     }
   }
 
   private void OnVesselNodeClick(KSP.UI.Screens.Mapview.MapNode node,
                                  Mouse.Buttons buttons) {
-    if (selecting_active_vessel_target_) {
-      FlightGlobals.fetch.SetVesselTarget(node.mapObject.vessel);
-      selecting_active_vessel_target_ = false;
-    } else if (buttons == Mouse.Buttons.Left &&
-               PlanetariumCamera.fetch.target != node.mapObject) {
-      PlanetariumCamera.fetch.SetTarget(node.mapObject);
-    }
+    main_window_.SelectActiveVesselTarget(
+        node.mapObject,
+        set_planetarium_camera : buttons == Mouse.Buttons.Left);
   }
 
   private void HandleMapViewClicks() {
@@ -1612,7 +1603,7 @@ public partial class PrincipiaPluginAdapter
         !UnityEngine.EventSystems.EventSystem.current
              .IsPointerOverGameObject() &&
         Mouse.Left.GetClick() && !ManeuverGizmo.HasMouseFocus &&
-        !selecting_active_vessel_target_) {
+        !main_window_.selecting_active_vessel_target) {
       var ray = PlanetariumCamera.Camera.ScreenPointToRay(
           UnityEngine.Input.mousePosition);
       foreach (var celestial in FlightGlobals.Bodies) {
@@ -1621,12 +1612,7 @@ public partial class PrincipiaPluginAdapter
                            ScaledSpace.LocalToScaledSpace(celestial.position) -
                                ray.origin).magnitude;
         if (scaled_distance * ScaledSpace.ScaleFactor < celestial.Radius) {
-          if (selecting_target_celestial_) {
-            FlightGlobals.fetch.SetVesselTarget(celestial);
-            selecting_target_celestial_ = false;
-          } else if (PlanetariumCamera.fetch.target != celestial.MapObject) {
-            PlanetariumCamera.fetch.SetTarget(celestial.MapObject);
-          }
+          main_window_.SelectTargetCelestial(celestial.MapObject);
         }
       }
     }
@@ -2118,8 +2104,8 @@ public partial class PrincipiaPluginAdapter
                           Planetarium.InverseRotAngle);
     }
     flight_planner_.Initialize(plugin_);
-    main_window_.Initialize(plugin_);
     plotting_frame_selector_.Initialize(plugin_);
+    main_window_.Initialize(plugin_);
     must_set_plotting_frame_ = true;
   } catch (Exception e) {
     Log.Fatal("Exception while resetting plugin: " + e.ToString());
