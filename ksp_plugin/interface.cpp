@@ -572,6 +572,7 @@ bool principia__HasVessel(Plugin* const plugin,
                           char const* const vessel_guid) {
   journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
   CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(vessel_guid);
   return m.Return(plugin->HasVessel(vessel_guid));
 }
 
