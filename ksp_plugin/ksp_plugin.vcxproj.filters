@@ -69,7 +69,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="iterators_body.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

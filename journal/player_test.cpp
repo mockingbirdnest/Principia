@@ -102,9 +102,9 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   }
   LOG(ERROR) << count << " journal entries in total";
   LOG(ERROR) << "Last successful method in:\n"
-              << player.last_method_in().DebugString();
+             << player.last_method_in().DebugString();
   LOG(ERROR) << "Last successful method out/return: \n"
-              << player.last_method_out_return().DebugString();
+             << player.last_method_out_return().DebugString();
 
 #if 0
   serialization::Method method_in;
