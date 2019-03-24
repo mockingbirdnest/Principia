@@ -376,7 +376,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   private readonly Callback on_change_;
   private readonly string name_;
   // Not owned.
-  private IntPtr plugin_;
+  private IntPtr plugin_ = IntPtr.Zero;
   private Dictionary<CelestialBody, bool> expanded_;
 }
 
