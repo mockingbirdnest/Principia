@@ -62,7 +62,7 @@ Derivative<Value, Argument> FiniteDifference(
     Argument const& step,
     int offset) {
   CHECK_EQ(offset, 0);
-  constexpr double const* numerators = forward_differences[n - 1];
+  constexpr FixedMatrix<double, n, n> numerators = std::get<n - 1>(Numerators);
   constexpr double denominator = denominators[n - 1];
   LOG(ERROR)<<IMPL;
 
