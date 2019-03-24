@@ -31,12 +31,13 @@ internal class MapNodePool {
 
   public void Update() {
     for (int i = pool_index_; i < nodes_.Count; ++i) {
-      nodes_[i].Terminate();
-      properties_.Remove(nodes_[i]);
+      if (properties_[nodes_[i]].visible) {
+        properties_[nodes_[i]].visible = false;
+        nodes_[i].NodeUpdate();
+      }
     }
-    nodes_.RemoveRange(index : pool_index_, count : nodes_.Count - pool_index_);
-    foreach (var node in nodes_) {
-      node.NodeUpdate();
+    for (int i = 0; i < pool_index_; ++i) {
+      nodes_[i].NodeUpdate();
     }
     pool_index_ = 0;
   }
@@ -46,27 +47,38 @@ internal class MapNodePool {
                             NodeSource source,
                             Vessel vessel,
                             CelestialBody celestial) {
-    for (; !apsis_iterator.IteratorAtEnd();
-         apsis_iterator.IteratorIncrement()) {
+    // We render at most 64 markers of one type and one provenance (e.g., at
+    // most 64 perilunes for the prediction of the active vessel).  This is
+    // more than is readable, and keeps the size of the map node pool under
+    // control.
+    for (int i = 0; i < 64 && !apsis_iterator.IteratorAtEnd();
+         ++i, apsis_iterator.IteratorIncrement()) {
       QP apsis = apsis_iterator.IteratorGetDiscreteTrajectoryQP();
-      MapNodeProperties node_properties;
-      node_properties.object_type = type;
-      node_properties.vessel = vessel;
-      node_properties.celestial = celestial;
-      node_properties.world_position = (Vector3d)apsis.q;
-      node_properties.velocity = (Vector3d)apsis.p;
-      node_properties.source = source;
-      node_properties.time = apsis_iterator.IteratorGetDiscreteTrajectoryTime();
+      MapNodeProperties node_properties = new MapNodeProperties {
+        visible = true,
+        object_type = type,
+        vessel = vessel,
+        celestial = celestial,
+        world_position = (Vector3d)apsis.q,
+        velocity = (Vector3d)apsis.p,
+        source = source,
+        time = apsis_iterator.IteratorGetDiscreteTrajectoryTime()
+      };
 
       if (pool_index_ == nodes_.Count) {
         nodes_.Add(MakePoolNode());
       } else if (properties_[nodes_[pool_index_]].object_type != type) {
-        // Do not reuse a node for different types, as this results in
-        // overlapping labels on KSP 1.3, e.g. a closest approach marker that
-        // also says "Ap" and "DN".
-        nodes_[pool_index_].Terminate();
-        properties_.Remove(nodes_[pool_index_]);
-        nodes_[pool_index_] = MakePoolNode();
+        // KSP attaches labels to its map nodes, but never detaches them.
+        // If the node changes type, we end up with an arbitrary combination of
+        // labels Ap, Pe, AN, DN.
+        // Recreating the node entirely takes a long time (approximately 50 ns *
+        // 𝑁, where 𝑁 is the total number of map nodes in existence), instead
+        // we manually get rid of the labels.
+        foreach (var component in
+                 nodes_[pool_index_].transform.GetComponentsInChildren<
+                     TMPro.TextMeshProUGUI>()) {
+          UnityEngine.Object.Destroy(component.gameObject);
+        }
       }
       properties_[nodes_[pool_index_++]] = node_properties;
     }
@@ -101,6 +113,10 @@ internal class MapNodePool {
     new_node.OnUpdateVisible +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.IconData icon) => {
+          if (!properties_[node].visible) {
+            icon.visible = false;
+            return;
+          }
           CelestialBody celestial = properties_[node].celestial;
           UnityEngine.Color colour =
               celestial.orbit == null
@@ -215,7 +231,8 @@ internal class MapNodePool {
     return new_node;
   }
 
-  private struct MapNodeProperties {
+  private class MapNodeProperties {
+    public bool visible;
     public MapObject.ObjectType object_type;
     public Vector3d world_position;
      // Velocity in the plotting frame.  Note that the handedness is

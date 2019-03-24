@@ -546,6 +546,9 @@ public partial class PrincipiaPluginAdapter
     // Timing5, 8008.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.BetterLateThanNever,
                                  BetterLateThanNever);
+    TimingManager.LateUpdateAdd(
+        TimingManager.TimingStage.BetterLateThanNever,
+        BetterLateThanNeverLateUpdate);
   }
 
   public override void OnSave(ConfigNode node) {
@@ -966,6 +969,9 @@ public partial class PrincipiaPluginAdapter
     TimingManager.FixedUpdateRemove(
         TimingManager.TimingStage.BetterLateThanNever,
         BetterLateThanNever);
+    TimingManager.LateUpdateRemove(
+        TimingManager.TimingStage.BetterLateThanNever,
+        BetterLateThanNeverLateUpdate);
   }
 
   #endregion
@@ -1475,6 +1481,33 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void BetterLateThanNeverLateUpdate() {
+    // While we draw the trajectories directly (and thus do so after everything
+    // else has been rendered), we rely on the game to render its map nodes.
+    // Since the screen position is determined in |MapNode.NodeUpdate|, it must
+    // be called before rendering occurs, but after the cameras have moved;
+    // otherwise, the map nodes will lag behind when the camera is moved.
+    // The only timing that satisfies these constraints is BetterLateThanNever
+    // in LateUpdate.
+    string main_vessel_guid = PredictedVessel()?.id.ToString();
+    if (MapView.MapIsEnabled && main_vessel_guid != null &&
+        PluginRunning() && plugin_.HasVessel(main_vessel_guid)) {
+      XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
+      RenderPredictionMarkers(main_vessel_guid, sun_world_position);
+      string target_id =
+          FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
+      if (FlightGlobals.ActiveVessel != null &&
+          !plotting_frame_selector_.target_override && target_id != null &&
+          plugin_.HasVessel(target_id)) {
+        RenderPredictionMarkers(target_id, sun_world_position);
+      }
+      if (plugin_.FlightPlanExists(main_vessel_guid)) {
+        RenderFlightPlanMarkers(main_vessel_guid, sun_world_position);
+      }
+    }
+    map_node_pool_.Update();
+  }
+
   private void SetBodyFrames() {
     if (PluginRunning()) {
       if (FlightGlobals.currentMainBody != null) {
@@ -1657,7 +1690,6 @@ public partial class PrincipiaPluginAdapter
                                  XKCDColors.Lime,
                                  GLLines.Style.FADED);
           }
-          RenderPredictionMarkers(main_vessel_guid, sun_world_position);
           using (DisposableIterator rp2_lines_iterator =
                     planetarium.PlanetariumPlotPrediction(
                         plugin_,
@@ -1681,7 +1713,6 @@ public partial class PrincipiaPluginAdapter
                                    XKCDColors.Goldenrod,
                                    GLLines.Style.FADED);
             }
-            RenderPredictionMarkers(target_id, sun_world_position);
             using (DisposableIterator rp2_lines_iterator =
                       planetarium.PlanetariumPlotPrediction(
                           plugin_,
@@ -1693,8 +1724,6 @@ public partial class PrincipiaPluginAdapter
             }
           }
           if (plugin_.FlightPlanExists(main_vessel_guid)) {
-            RenderFlightPlanMarkers(main_vessel_guid, sun_world_position);
-
             int number_of_segments =
                 plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
             for (int i = 0; i < number_of_segments; ++i) {
@@ -1747,9 +1776,6 @@ public partial class PrincipiaPluginAdapter
           }
         });
       }
-      map_node_pool_.Update();
-    } else {
-      map_node_pool_.Clear();
     }
   }
 
