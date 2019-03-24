@@ -47,8 +47,12 @@ internal class MapNodePool {
                             NodeSource source,
                             Vessel vessel,
                             CelestialBody celestial) {
-    for (; !apsis_iterator.IteratorAtEnd();
-         apsis_iterator.IteratorIncrement()) {
+    // We render at least 64 markers of one type and one provenance (e.g., at
+    // most 64 perilunes for the prediction of the active vessel).  This is
+    // more than is readable, and keeps the size of the map node pool under
+    // control.
+    for (int i = 0; i < 64 && !apsis_iterator.IteratorAtEnd();
+         ++i, apsis_iterator.IteratorIncrement()) {
       QP apsis = apsis_iterator.IteratorGetDiscreteTrajectoryQP();
       MapNodeProperties node_properties = new MapNodeProperties {
         visible = true,
