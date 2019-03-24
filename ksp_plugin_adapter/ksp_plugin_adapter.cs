@@ -1555,6 +1555,13 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void BetterLateThanNeverLateUpdate() {
+    // While we draw the trajectories directly (and thus do so after everything
+    // else has been rendered), we rely on the game to render its map nodes.
+    // Since the screen position is determined in |MapNode.NodeUpdate|, it must
+    // be called before rendering occurs, but after the cameras have moved;
+    // otherwise, the map nodes will lag behind when the camera is moved.
+    // The only timing that satisfies these constraints is BetterLateThanNever
+    // in LateUpdate.
     string main_vessel_guid = (FlightGlobals.ActiveVessel ??
                                space_tracking?.SelectedVessel)?.id.ToString();
     if (MapView.MapIsEnabled && main_vessel_guid != null &&
