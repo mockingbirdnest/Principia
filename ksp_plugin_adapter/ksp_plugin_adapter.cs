@@ -1635,8 +1635,7 @@ public partial class PrincipiaPluginAdapter
       vessel.mapObject.uiNode.OnClick += OnVesselNodeClick;
       RemoveStockTrajectoriesIfNeeded(vessel);
     }
-    Vessel main_vessel = FlightGlobals.ActiveVessel ??
-                         space_tracking?.SelectedVessel;
+    Vessel main_vessel = PredictedVessel();
     if (main_vessel == null) {
       return;
     }
