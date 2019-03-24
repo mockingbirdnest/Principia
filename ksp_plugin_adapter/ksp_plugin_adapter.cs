@@ -1489,8 +1489,7 @@ public partial class PrincipiaPluginAdapter
     // otherwise, the map nodes will lag behind when the camera is moved.
     // The only timing that satisfies these constraints is BetterLateThanNever
     // in LateUpdate.
-    string main_vessel_guid = (FlightGlobals.ActiveVessel ??
-                               space_tracking?.SelectedVessel)?.id.ToString();
+    string main_vessel_guid = PredictedVessel()?.id.ToString();
     if (MapView.MapIsEnabled && main_vessel_guid != null &&
         PluginRunning() && plugin_.HasVessel(main_vessel_guid)) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;

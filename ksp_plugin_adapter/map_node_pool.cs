@@ -47,7 +47,7 @@ internal class MapNodePool {
                             NodeSource source,
                             Vessel vessel,
                             CelestialBody celestial) {
-    // We render at least 64 markers of one type and one provenance (e.g., at
+    // We render at most 64 markers of one type and one provenance (e.g., at
     // most 64 perilunes for the prediction of the active vessel).  This is
     // more than is readable, and keeps the size of the map node pool under
     // control.
@@ -71,8 +71,9 @@ internal class MapNodePool {
         // KSP attaches labels to its map nodes, but never detaches them.
         // If the node changes type, we end up with an arbitrary combination of
         // labels Ap, Pe, AN, DN.
-        // Recreating the node entirely takes a long time, instead we manually
-        // get rid of the labels.
+        // Recreating the node entirely takes a long time (approximately 50 ns *
+        // 𝑁, where 𝑁 is the total number of map nodes in existence), instead
+        // we manually get rid of the labels.
         foreach (var component in
                  nodes_[pool_index_].transform.GetComponentsInChildren<
                      TMPro.TextMeshProUGUI>()) {
