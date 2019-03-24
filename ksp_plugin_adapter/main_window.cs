@@ -382,9 +382,16 @@ internal class MainWindow : SupervisedWindowRenderer {
             (double tolerance) =>
                 tolerance >=
                     adaptive_step_parameters.length_integration_tolerance);
+        if (prediction_length_tolerance_index_ < 0) {
+          prediction_length_tolerance_index_ =
+              default_prediction_length_tolerance_index_;
+        }
         prediction_steps_index_ = Array.FindIndex(
             prediction_steps_,
             (Int64 step) => step >= adaptive_step_parameters.max_steps);
+        if (prediction_steps_index_ < 0) {
+          prediction_steps_index_ = default_prediction_steps_index_;
+        }
       }
     }
 
@@ -460,6 +467,9 @@ internal class MainWindow : SupervisedWindowRenderer {
       {1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16,
        1 << 18, 1 << 20, 1 << 22, 1 << 24};
 
+  private const int default_prediction_length_tolerance_index_ = 1;
+  private const int default_prediction_steps_index_ = 4;
+
   private readonly FlightPlanner flight_planner_;
   private readonly ReferenceFrameSelector plotting_frame_selector_;
   private readonly PredictedVessel predicted_vessel_;
@@ -471,8 +481,9 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool show_prediction_settings_ = true;
 
   private bool should_load_compatibility_data_ = true;
-  private int prediction_length_tolerance_index_ = 1;
-  private int prediction_steps_index_ = 4;
+  private int prediction_length_tolerance_index_ =
+      default_prediction_length_tolerance_index_;
+  private int prediction_steps_index_ = default_prediction_steps_index_;
   private int history_length_index_ = 10;
 
   private int buffered_logging_ = 0;
