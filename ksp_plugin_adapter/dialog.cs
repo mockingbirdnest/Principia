@@ -14,7 +14,7 @@ internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
     }
   }
 
-  protected override String Title { get; } = "Principia";
+  protected override String Title => "Principia";
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope())

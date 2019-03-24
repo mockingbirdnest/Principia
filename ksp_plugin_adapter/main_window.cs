@@ -163,7 +163,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                   createIfNotFound : true);
   }
 
-  protected override string Title { get; } = "Principia";
+  protected override string Title => "Principia";
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
