@@ -6,52 +6,6 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-// TODO(egg): eventually |WindowRenderer| should own a rectangle and this should
-// not be static.
-internal static class WindowUtilities {
-  public static void EnsureOnScreen(ref UnityEngine.Rect window_rectangle) {
-    const float min_width_on_screen = 50;
-    const float min_height_on_screen = 50;
-    window_rectangle.x =
-        UnityEngine.Mathf.Clamp(
-            window_rectangle.x,
-            -window_rectangle.width + min_width_on_screen,
-            UnityEngine.Screen.width - min_width_on_screen);
-    window_rectangle.y =
-        UnityEngine.Mathf.Clamp(
-            window_rectangle.y,
-            -window_rectangle.height + min_height_on_screen,
-            UnityEngine.Screen.height - min_height_on_screen);
-  }
-
-  public static void InputLock(this UnityEngine.Rect window_rectangle,
-                               object window_owner) {
-    string name = window_owner.GetType().ToString() + ":lock:" +
-                  window_owner.GetHashCode();
-    if (window_rectangle.ContainsMouse()) {
-      InputLockManager.SetControlLock(PrincipiaLock, name);
-    } else {
-      InputLockManager.RemoveControlLock(name);
-    }
-  }
-
-  public static void ClearLock(object window_owner) {
-    string name = window_owner.GetType().ToString() + ":lock:" +
-                  window_owner.GetHashCode();
-    InputLockManager.RemoveControlLock(name);
-  }
-
-  private static bool ContainsMouse(this UnityEngine.Rect window_rectangle) {
-    UnityEngine.Vector3 mouse = UnityEngine.Input.mousePosition;
-    mouse.y = UnityEngine.Screen.height - mouse.y;
-    return window_rectangle.Contains(mouse);
-  }
-
-  private static readonly ControlTypes PrincipiaLock =
-      ControlTypes.ALLBUTCAMERAS &
-      ~ControlTypes.ALL_SHIP_CONTROLS;
-};
-
 internal abstract class BaseWindowRenderer : IConfigNode {
   protected BaseWindowRenderer(UnityEngine.GUILayoutOption[] options) {
     options_ = options.Length == 0 ? default_options_ : options;
@@ -126,7 +80,7 @@ internal abstract class BaseWindowRenderer : IConfigNode {
                        UnityEngine.Screen.height - min_height_on_screen_);
   }
 
-  protected void Shrink() {
+  public void Shrink() {
     rectangle_.height = 0.0f;
     rectangle_.width = 0.0f;
   }
@@ -151,26 +105,26 @@ internal abstract class BaseWindowRenderer : IConfigNode {
 
   // Persistence.
 
-  public void Load(ConfigNode node) {
+  public virtual void Load(ConfigNode node) {
     String must_centre_value = node.GetAtMostOneValue("must_centre");
     if (must_centre_value != null) {
-      must_centre_ = System.Convert.ToBoolean(must_centre_value);
+      must_centre_ = Convert.ToBoolean(must_centre_value);
     }
     String show_value = node.GetAtMostOneValue("show");
     if (show_value != null) {
-      show_ = System.Convert.ToBoolean(show_value);
+      show_ = Convert.ToBoolean(show_value);
     }
     String x_value = node.GetAtMostOneValue("x");
     if (x_value != null) {
-      rectangle_.x = System.Convert.ToSingle(x_value);
+      rectangle_.x = Convert.ToSingle(x_value);
     }
     String y_value = node.GetAtMostOneValue("y");
     if (y_value != null) {
-      rectangle_.y = System.Convert.ToSingle(y_value);
+      rectangle_.y = Convert.ToSingle(y_value);
     }
   }
 
-  public void Save(ConfigNode node) {
+  public virtual void Save(ConfigNode node) {
     node.SetValue("must_centre", must_centre_, createIfNotFound : true);
     node.SetValue("show", show_, createIfNotFound : true);
     node.SetValue("x", rectangle_.x, createIfNotFound : true);

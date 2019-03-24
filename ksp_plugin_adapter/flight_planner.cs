@@ -37,7 +37,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     UnityEngine.GUI.skin = old_skin;
   }
 
-  protected override String Title { get; } = "Flight plan";
+  protected override String Title => "Flight plan";
 
   protected override void RenderWindow(int window_id) {
     // We must ensure that the GUI elements don't change between Layout and
@@ -360,7 +360,7 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   // Not owned.
   private readonly PrincipiaPluginAdapter adapter_;
-  private IntPtr plugin_;
+  private IntPtr plugin_ = IntPtr.Zero;
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
 
