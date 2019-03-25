@@ -123,8 +123,8 @@ TestableContinuousTrajectory<Frame>::LockAndComputeBestNewhallApproximation(
     Instant const& time,
     std::vector<Displacement<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v) {
-  absl::MutexLock l(&lock_);
-  return ComputeBestNewhallApproximation(time, q, v);
+  absl::MutexLock l(&this->lock_);
+  return this->ComputeBestNewhallApproximation(time, q, v);
 }
 
 template<typename Frame>
