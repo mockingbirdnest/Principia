@@ -710,9 +710,15 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.SetPredictionAdaptiveStepParameters(vessel_guid,
                                              adaptive_step_parameters);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
-  plugin.UpdatePrediction(vessel_guid);
-  auto const& prediction =
-      plugin.GetVessel(vessel_guid)->prediction();
+
+  // Polling for the integration to happen.
+  do {
+    plugin.UpdatePrediction(vessel_guid);
+    using namespace std::chrono_literals;  // NOLINT(build/namespaces)
+    std::this_thread::sleep_for(100ms);
+  } while (plugin.GetVessel(vessel_guid)->prediction().Size() != 15);
+
+  auto const& prediction = plugin.GetVessel(vessel_guid)->prediction();
   auto const rendered_prediction =
       plugin.renderer().RenderBarycentricTrajectoryInWorld(
           plugin.CurrentTime(),

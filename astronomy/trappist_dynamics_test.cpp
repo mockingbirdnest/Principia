@@ -88,7 +88,7 @@ using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
 
-using namespace std::chrono_literals;  // NOLINT.
+using namespace std::chrono_literals;  // NOLINT(build/namespaces)
 
 namespace astronomy {
 

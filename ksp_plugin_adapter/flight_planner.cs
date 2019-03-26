@@ -17,8 +17,8 @@ class FlightPlanner : SupervisedWindowRenderer {
     final_time_ = new DifferentialSlider(
                 label            : "Plan length",
                 unit             : null,
-                log10_lower_rate : Log10TimeLowerRate,
-                log10_upper_rate : Log10TimeUpperRate,
+                log10_lower_rate : log10_time_lower_rate,
+                log10_upper_rate : log10_time_upper_rate,
                 min_value        : 10,
                 max_value        : double.PositiveInfinity,
                 formatter        : value =>
@@ -28,217 +28,223 @@ class FlightPlanner : SupervisedWindowRenderer {
                                         vessel_.id.ToString()))));
   }
 
-  protected override void RenderWindow() {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
-    if (show_planner_) {
-      Window(func : RenderPlanner,
-             text : "Flight plan");
-    } else {
-      ClearLock();
-    }
-    UnityEngine.GUI.skin = old_skin;
-  }
-
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button("Flight plan...")) {
-      show_planner_ = !show_planner_;
+      Toggle();
     }
     UnityEngine.GUI.skin = old_skin;
   }
 
-  private void RenderPlanner(int window_id) {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
+  protected override String Title => "Flight plan";
 
-    using (new UnityEngine.GUILayout.VerticalScope()) {
+  protected override void RenderWindow(int window_id) {
+    // We must ensure that the GUI elements don't change between Layout and
+    // Repaint.  This means that any state change must occur before Layout or
+    // after Repaint.  This if statement implements the former.  It updates the
+    // vessel and the editors to reflect the current state of the plugin and
+    // then proceeds with the UI code.
+    if (UnityEngine.Event.current.type == UnityEngine.EventType.Layout) {
+      UpdateVesselAndBurnEditors();
+    }
 
-      {
-        string vessel_guid = vessel_?.id.ToString();
-        if (vessel_guid == null ||
-            vessel_ != FlightGlobals.ActiveVessel ||
-            !plugin_.HasVessel(vessel_guid) ||
-            !plugin_.FlightPlanExists(vessel_guid) ||
-            plugin_.FlightPlanNumberOfManoeuvres(vessel_guid) !=
-                burn_editors_?.Count) {
-          Reset();
+    // The UI code proper, executed identically for Layout and Repaint.  We
+    // can freely change the state in events like clicks (e.g., in if statements
+    // for buttons) as these don't happen between Layout and Repaint.
+    string vessel_guid = vessel_?.id.ToString();
+    if (vessel_guid == null || !plugin_.HasVessel(vessel_guid)) {
+      return;
+    }
+
+    if (plugin_.FlightPlanExists(vessel_guid)) {
+      RenderFlightPlan(vessel_guid);
+    } else if (UnityEngine.GUILayout.Button("Create flight plan")) {
+      plugin_.FlightPlanCreate(vessel_guid,
+                               plugin_.CurrentTime() + 1000,
+                               vessel_.GetTotalMass());
+      final_time_.value =
+          plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
+      Shrink();
+    }
+    UnityEngine.GUI.DragWindow();
+  }
+
+  private void UpdateVesselAndBurnEditors() {
+    {
+      string vessel_guid = vessel_?.id.ToString();
+      if (vessel_guid == null ||
+          vessel_ != FlightGlobals.ActiveVessel ||
+          !plugin_.HasVessel(vessel_guid) ||
+          !plugin_.FlightPlanExists(vessel_guid) ||
+          plugin_.FlightPlanNumberOfManoeuvres(vessel_guid) !=
+              burn_editors_?.Count) {
+        if (burn_editors_ != null) {
+          foreach (BurnEditor editor in burn_editors_) {
+            editor.Close();
+          }
+          burn_editors_ = null;
         }
-      }
-
-      if (vessel_ != null) {
-        string vessel_guid = vessel_.id.ToString();
-        if (burn_editors_ == null) {
-          if (plugin_.HasVessel(vessel_guid)) {
-            if (plugin_.FlightPlanExists(vessel_guid)) {
-              // TODO(phl): Evil change of state between the two calls to
-              // RenderPlanner.
-              burn_editors_ = new List<BurnEditor>();
-              for (int i = 0;
-                   i < plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
-                   ++i) {
-                // Dummy initial time, we call |Reset| immediately afterwards.
-                final_time_.value =
-                    plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
-                burn_editors_.Add(new BurnEditor(adapter_,
-                                                 plugin_,
-                                                 vessel_,
-                                                 initial_time : 0));
-                burn_editors_.Last().Reset(
-                    plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
-              }
-            } else {
-              if (UnityEngine.GUILayout.Button("Create flight plan")) {
-                plugin_.FlightPlanCreate(vessel_guid,
-                                         plugin_.CurrentTime() + 1000,
-                                         vessel_.GetTotalMass());
-                final_time_.value =
-                    plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
-                Shrink();
-              }
-            }
-          }
-        } else {
-          if (final_time_.Render(enabled: true)) {
-            plugin_.FlightPlanSetDesiredFinalTime(vessel_guid,
-                                                  final_time_.value);
-            final_time_.value =
-                plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
-          }
-          double actual_final_time =
-              plugin_.FlightPlanGetActualFinalTime(vessel_guid);
-          UnityEngine.GUILayout.TextField(
-              (final_time_.value == actual_final_time)
-                  ? ""
-                  : "Timed out after " +
-                        FormatPositiveTimeSpan(TimeSpan.FromSeconds(
-                            actual_final_time -
-                            plugin_.FlightPlanGetInitialTime(vessel_guid))));
-
-          FlightPlanAdaptiveStepParameters parameters =
-              plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
-
-          using (new UnityEngine.GUILayout.HorizontalScope()) {
-            using (new UnityEngine.GUILayout.HorizontalScope()) {
-              UnityEngine.GUILayout.Label("Max. steps per segment:",
-                                          UnityEngine.GUILayout.Width(150));
-              const int factor = 4;
-              if (parameters.max_steps <= 100) {
-                UnityEngine.GUILayout.Button("min");
-              } else if (UnityEngine.GUILayout.Button("-")) {
-                parameters.max_steps /= factor;
-                plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                            parameters);
-              }
-              UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
-                                             UnityEngine.GUILayout.Width(75));
-              if (parameters.max_steps >= Int64.MaxValue / factor) {
-                UnityEngine.GUILayout.Button("max");
-              } else if (UnityEngine.GUILayout.Button("+")) {
-                parameters.max_steps *= factor;
-                plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                            parameters);
-              }
-            }
-            using (new UnityEngine.GUILayout.HorizontalScope()) {
-              UnityEngine.GUILayout.Label("Tolerance:",
-                                          UnityEngine.GUILayout.Width(75));
-              if (parameters.length_integration_tolerance <= 1e-6) {
-                UnityEngine.GUILayout.Button("min");
-              } else if (UnityEngine.GUILayout.Button("-")) {
-                parameters.length_integration_tolerance /= 2;
-                parameters.speed_integration_tolerance /= 2;
-                plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                            parameters);
-              }
-              UnityEngine.GUILayout.TextArea(
-                  parameters.length_integration_tolerance.ToString("0.0e0") +
-                      " m",
-                  UnityEngine.GUILayout.Width(75));
-              if (parameters.length_integration_tolerance >= 1e6) {
-                UnityEngine.GUILayout.Button("max");
-              } else if (UnityEngine.GUILayout.Button("+")) {
-                parameters.length_integration_tolerance *= 2;
-                parameters.speed_integration_tolerance *= 2;
-                plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                            parameters);
-              }
-            }
-          }
-
-          double Δv = (from burn_editor in burn_editors_
-                       select burn_editor.Δv()).Sum();
-          UnityEngine.GUILayout.Label(
-              "Total Δv : " + Δv.ToString("0.000") + " m/s");
-
-          if (burn_editors_.Count == 0 && 
-              UnityEngine.GUILayout.Button("Delete flight plan")) {
-            plugin_.FlightPlanDelete(vessel_guid);
-            Reset();
-          } else {
-            if (burn_editors_.Count > 0) {
-              RenderUpcomingEvents();
-            }
-            for (int i = 0; i < burn_editors_.Count - 1; ++i) {
-              UnityEngine.GUILayout.TextArea("Manœuvre #" + (i + 1) + ":");
-              burn_editors_[i].Render(enabled : false);
-            }
-            if (burn_editors_.Count > 0) {
-              BurnEditor last_burn = burn_editors_.Last();
-              UnityEngine.GUILayout.TextArea("Editing manœuvre #" +
-                                             (burn_editors_.Count) + ":");
-              if (last_burn.Render(enabled : true)) {
-                plugin_.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
-                last_burn.Reset(
-                    plugin_.FlightPlanGetManoeuvre(vessel_guid,
-                                                   burn_editors_.Count - 1));
-              }
-              if (UnityEngine.GUILayout.Button(
-                      "Delete last manœuvre",
-                      UnityEngine.GUILayout.ExpandWidth(true))) {
-                plugin_.FlightPlanRemoveLast(vessel_guid);
-                burn_editors_.Last().Close();
-                burn_editors_.RemoveAt(burn_editors_.Count - 1);
-                Shrink();
-              }
-            }
-            if (UnityEngine.GUILayout.Button(
-                    "Add manœuvre",
-                    UnityEngine.GUILayout.ExpandWidth(true))) {
-              double initial_time;
-              if (burn_editors_.Count == 0) {
-                initial_time = plugin_.CurrentTime() + 60;
-              } else {
-                initial_time =
-                    plugin_.FlightPlanGetManoeuvre(
-                        vessel_guid,
-                        burn_editors_.Count - 1).final_time + 60;
-              }
-              var editor =
-                  new BurnEditor(adapter_, plugin_, vessel_, initial_time);
-              Burn candidate_burn = editor.Burn();
-              bool inserted = plugin_.FlightPlanAppend(vessel_guid,
-                                                       candidate_burn);
-              if (inserted) {
-                editor.Reset(plugin_.FlightPlanGetManoeuvre(
-                    vessel_guid, burn_editors_.Count));
-                burn_editors_.Add(editor);
-              }
-              Shrink();
-            }
-          }
-        }
+        vessel_ = FlightGlobals.ActiveVessel;
       }
     }
 
-    UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(x      : 0f,
-                                        y      : 0f,
-                                        width  : 10000f,
-                                        height : 10000f));
+    if (burn_editors_ == null) {
+      string vessel_guid = vessel_?.id.ToString();
+      if (vessel_guid != null &&
+          plugin_.HasVessel(vessel_guid) &&
+          plugin_.FlightPlanExists(vessel_guid)) {
+        burn_editors_ = new List<BurnEditor>();
+        for (int i = 0;
+              i < plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
+              ++i) {
+          // Dummy initial time, we call |Reset| immediately afterwards.
+          final_time_.value =
+              plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
+          burn_editors_.Add(new BurnEditor(adapter_,
+                                           plugin_,
+                                           vessel_,
+                                           initial_time: 0));
+          burn_editors_.Last().Reset(
+              plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
+        }
+      }
+    }
+  }
 
-    UnityEngine.GUI.skin = old_skin;
+  private void RenderFlightPlan(string vessel_guid) {
+    using (new UnityEngine.GUILayout.VerticalScope()) {
+      if (final_time_.Render(enabled : true)) {
+        plugin_.FlightPlanSetDesiredFinalTime(vessel_guid,
+                                              final_time_.value);
+        final_time_.value =
+            plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
+      }
+      double actual_final_time =
+          plugin_.FlightPlanGetActualFinalTime(vessel_guid);
+
+      UnityEngine.GUILayout.TextField(
+          (final_time_.value == actual_final_time)
+              ? ""
+              : "Timed out after " +
+                    FormatPositiveTimeSpan(TimeSpan.FromSeconds(
+                        actual_final_time -
+                        plugin_.FlightPlanGetInitialTime(vessel_guid))));
+
+      FlightPlanAdaptiveStepParameters parameters =
+          plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
+
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          UnityEngine.GUILayout.Label("Max. steps per segment:",
+                                      UnityEngine.GUILayout.Width(150));
+          const int factor = 4;
+          if (parameters.max_steps <= 100) {
+            UnityEngine.GUILayout.Button("min");
+          } else if (UnityEngine.GUILayout.Button("-")) {
+            parameters.max_steps /= factor;
+            plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                        parameters);
+          }
+          UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
+                                          UnityEngine.GUILayout.Width(75));
+          if (parameters.max_steps >= Int64.MaxValue / factor) {
+            UnityEngine.GUILayout.Button("max");
+          } else if (UnityEngine.GUILayout.Button("+")) {
+            parameters.max_steps *= factor;
+            plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                        parameters);
+          }
+        }
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          UnityEngine.GUILayout.Label("Tolerance:",
+                                      UnityEngine.GUILayout.Width(75));
+          if (parameters.length_integration_tolerance <= 1e-6) {
+            UnityEngine.GUILayout.Button("min");
+          } else if (UnityEngine.GUILayout.Button("-")) {
+            parameters.length_integration_tolerance /= 2;
+            parameters.speed_integration_tolerance /= 2;
+            plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                        parameters);
+          }
+          UnityEngine.GUILayout.TextArea(
+              parameters.length_integration_tolerance.ToString("0.0e0") +
+                  " m",
+              UnityEngine.GUILayout.Width(75));
+          if (parameters.length_integration_tolerance >= 1e6) {
+            UnityEngine.GUILayout.Button("max");
+          } else if (UnityEngine.GUILayout.Button("+")) {
+            parameters.length_integration_tolerance *= 2;
+            parameters.speed_integration_tolerance *= 2;
+            plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                        parameters);
+          }
+        }
+      }
+
+      double Δv = (from burn_editor in burn_editors_
+                   select burn_editor.Δv()).Sum();
+      UnityEngine.GUILayout.Label(
+          "Total Δv : " + Δv.ToString("0.000") + " m/s");
+
+      if (burn_editors_.Count == 0 &&
+          UnityEngine.GUILayout.Button("Delete flight plan")) {
+        plugin_.FlightPlanDelete(vessel_guid);
+        Shrink();
+        // The state change will happen the next time we go through OnGUI.
+      } else {
+        if (burn_editors_.Count > 0) {
+          RenderUpcomingEvents();
+        }
+        for (int i = 0; i < burn_editors_.Count - 1; ++i) {
+          UnityEngine.GUILayout.TextArea("Manœuvre #" + (i + 1) + ":");
+          burn_editors_[i].Render(enabled: false);
+        }
+        if (burn_editors_.Count > 0) {
+          BurnEditor last_burn = burn_editors_.Last();
+          UnityEngine.GUILayout.TextArea("Editing manœuvre #" +
+                                         (burn_editors_.Count) + ":");
+          if (last_burn.Render(enabled: true)) {
+            plugin_.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
+            last_burn.Reset(
+                plugin_.FlightPlanGetManoeuvre(vessel_guid,
+                                               burn_editors_.Count - 1));
+          }
+          if (UnityEngine.GUILayout.Button(
+                  "Delete last manœuvre",
+                  UnityEngine.GUILayout.ExpandWidth(true))) {
+            plugin_.FlightPlanRemoveLast(vessel_guid);
+            burn_editors_.Last().Close();
+            burn_editors_.RemoveAt(burn_editors_.Count - 1);
+            Shrink();
+          }
+        }
+        if (UnityEngine.GUILayout.Button(
+                "Add manœuvre",
+                UnityEngine.GUILayout.ExpandWidth(true))) {
+          double initial_time;
+          if (burn_editors_.Count == 0) {
+            initial_time = plugin_.CurrentTime() + 60;
+          } else {
+            initial_time =
+                plugin_.FlightPlanGetManoeuvre(
+                    vessel_guid,
+                    burn_editors_.Count - 1).final_time + 60;
+          }
+          var editor =
+              new BurnEditor(adapter_, plugin_, vessel_, initial_time);
+          Burn candidate_burn = editor.Burn();
+          bool inserted = plugin_.FlightPlanAppend(vessel_guid,
+                                                   candidate_burn);
+          if (inserted) {
+            editor.Reset(plugin_.FlightPlanGetManoeuvre(
+                vessel_guid, burn_editors_.Count));
+            burn_editors_.Add(editor);
+          }
+          Shrink();
+        }
+      }
+    }
   }
 
   private void RenderUpcomingEvents() {
@@ -354,18 +360,17 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   // Not owned.
   private readonly PrincipiaPluginAdapter adapter_;
-  private IntPtr plugin_;
+  private IntPtr plugin_ = IntPtr.Zero;
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
 
   private DifferentialSlider final_time_;
 
-  private bool show_planner_ = false;
   private bool show_guidance_ = false;
   private ManeuverNode guidance_node_;
   
-  private const double Log10TimeLowerRate = 0.0;
-  private const double Log10TimeUpperRate = 7.0;
+  private const double log10_time_lower_rate = 0.0;
+  private const double log10_time_upper_rate = 7.0;
 }
 
 }  // namespace ksp_plugin_adapter

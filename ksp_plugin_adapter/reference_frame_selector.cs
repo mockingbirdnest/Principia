@@ -33,7 +33,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   public ReferenceFrameSelector(
       ISupervisor supervisor,
       Callback on_change,
-      string name) : base(supervisor) {
+      string name) : base(supervisor, UnityEngine.GUILayout.MinWidth(0)) {
     on_change_ = on_change;
     name_ = name;
 
@@ -264,36 +264,23 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public void Hide() {
-    show_selector_ = false;
-  }
-
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button(name_ + " selection (" + Name() +
                                      ")...")) {
-      show_selector_ = !show_selector_;
+      Toggle();
     }
     UnityEngine.GUI.skin = old_skin;
   }
 
-  protected override void RenderWindow() {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
-    if (show_selector_) {
-      Window(func : RenderSelector,
-             text : name_ + " selection (" + Name() + ")");
-    } else {
-      ClearLock();
+  protected override String Title {
+    get {
+      return name_ + " selection (" + Name() + ")";
     }
-    UnityEngine.GUI.skin = old_skin;
   }
 
-  private void RenderSelector(int window_id) {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
-
+  protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       // Left-hand side: tree view for celestial selection.
       using (new UnityEngine.GUILayout.VerticalScope(
@@ -321,14 +308,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
         }
       }
     }
-
-    UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(x      : 0f,
-                                        y      : 0f,
-                                        width  : 10000f,
-                                        height : 10000f));
-
-    UnityEngine.GUI.skin = old_skin;
+    UnityEngine.GUI.DragWindow();
   }
 
   private void RenderSubtree(CelestialBody celestial, int depth) {
@@ -396,8 +376,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   private readonly Callback on_change_;
   private readonly string name_;
   // Not owned.
-  private IntPtr plugin_;
-  private bool show_selector_;
+  private IntPtr plugin_ = IntPtr.Zero;
   private Dictionary<CelestialBody, bool> expanded_;
 }
 

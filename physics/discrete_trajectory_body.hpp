@@ -108,7 +108,7 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::AttachFork(
     not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> fork) {
   CHECK(fork->is_root());
-  CHECK(!Empty());
+  CHECK(!this->Empty());
 
   auto& fork_timeline = fork->timeline_;
   auto const this_last = last();
