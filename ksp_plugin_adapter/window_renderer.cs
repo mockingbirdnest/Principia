@@ -147,7 +147,7 @@ internal abstract class BaseWindowRenderer : IConfigNode {
   private readonly String lock_name_;
   private bool must_centre_ = true;
   private bool show_ = false;
-  private UnityEngine.Rect rectangle_ = UnityEngine.Rect.zero;
+  private UnityEngine.Rect rectangle_;
 }
 
 internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
