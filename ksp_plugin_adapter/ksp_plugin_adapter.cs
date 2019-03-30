@@ -1934,13 +1934,13 @@ public partial class PrincipiaPluginAdapter
         map_node_pool_.RenderMarkers(
             ascending_nodes_iterator,
             MapObject.ObjectType.AscendingNode,
-            MapNodePool.NodeSource.PREDICTION,
+            MapNodePool.NodeSource.FLIGHT_PLAN,
             vessel    : null,
             celestial : primary);
         map_node_pool_.RenderMarkers(
             descending_nodes_iterator,
             MapObject.ObjectType.DescendingNode,
-            MapNodePool.NodeSource.PREDICTION,
+            MapNodePool.NodeSource.FLIGHT_PLAN,
             vessel    : null,
             celestial : primary);
       }
