@@ -77,7 +77,7 @@ internal class MapNodePool {
         foreach (var component in
                  nodes_[pool_index_].transform.GetComponentsInChildren<
                      TMPro.TextMeshProUGUI>()) {
-          if (component.name == "iconLabel") {
+          if (component.name == "iconLabel(Clone)") {
             UnityEngine.Object.Destroy(component.gameObject);
           }
         }
