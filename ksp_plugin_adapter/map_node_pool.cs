@@ -71,9 +71,9 @@ internal class MapNodePool {
         // KSP attaches labels to its map nodes, but never detaches them.
         // If the node changes type, we end up with an arbitrary combination of
         // labels Ap, Pe, AN, DN.
-        // Recreating the node entirely takes a long time (approximately 50 ns *
-        // 𝑁, where 𝑁 is the total number of map nodes in existence), instead
-        // we manually get rid of the labels.
+        // Recreating the node entirely takes a long time (approximately
+        // 𝑁 * 70 μs, where 𝑁 is the total number of map nodes in existence),
+        // instead we manually get rid of the labels.
         foreach (var component in
                  nodes_[pool_index_].transform.GetComponentsInChildren<
                      TMPro.TextMeshProUGUI>()) {
