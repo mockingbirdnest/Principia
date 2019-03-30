@@ -307,12 +307,17 @@ Status Vessel::FlowPrediction(Instant const& time) {
   }
 
   // If the prediction is not long enough, extend it explicitly.  This is
-  // blocking.
+  // blocking.  We are willing to compute an arbitrary number of steps to try to
+  // reach the desired time.
+  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters =
+      prediction_adaptive_step_parameters_;
+  adaptive_step_parameters.set_max_steps(
+      std::numeric_limits<std::int64_t>::max());
   return ephemeris_->FlowWithAdaptiveStep(
              prediction_,
              Ephemeris<Barycentric>::NoIntrinsicAcceleration,
              time,
-             prediction_adaptive_step_parameters_,
+             adaptive_step_parameters,
              FlightPlan::max_ephemeris_steps_per_frame,
              /*last_point_only=*/false);
 }
