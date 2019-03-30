@@ -15,17 +15,17 @@ class FlightPlanner : SupervisedWindowRenderer {
   public void Initialize(IntPtr plugin) {
     plugin_ = plugin;
     final_time_ = new DifferentialSlider(
-                label            : "Plan length",
-                unit             : null,
-                log10_lower_rate : log10_time_lower_rate,
-                log10_upper_rate : log10_time_upper_rate,
-                min_value        : 10,
-                max_value        : double.PositiveInfinity,
-                formatter        : value =>
-                    FormatPositiveTimeSpan(
-                        TimeSpan.FromSeconds(
-                            value - plugin_.FlightPlanGetInitialTime(
-                                        vessel_.id.ToString()))));
+                      label            : "Plan length",
+                      unit             : null,
+                      log10_lower_rate : log10_time_lower_rate,
+                      log10_upper_rate : log10_time_upper_rate,
+                      min_value        : 10,
+                      max_value        : double.PositiveInfinity,
+                      formatter        : value =>
+                          FormatPositiveTimeSpan(
+                              TimeSpan.FromSeconds(
+                                  value - plugin_.FlightPlanGetInitialTime(
+                                              vessel_.id.ToString()))));
   }
 
   public void RenderButton() {
@@ -33,6 +33,12 @@ class FlightPlanner : SupervisedWindowRenderer {
     UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button("Flight plan...")) {
       Toggle();
+    }
+    // Override the state of the toggle if there is no active vessel.
+    string vessel_guid = vessel_ ?.id.ToString();
+    if (vessel_guid == null || !plugin_.HasVessel(vessel_guid)) {
+      Hide();
+      vessel_ = FlightGlobals.ActiveVessel;
     }
     UnityEngine.GUI.skin = old_skin;
   }
@@ -330,17 +336,6 @@ class FlightPlanner : SupervisedWindowRenderer {
       guidance_node_.RemoveSelf();
       guidance_node_ = null;
     }
-  }
-
-  private void Reset() {
-    if (burn_editors_ != null) {
-      foreach (BurnEditor editor in burn_editors_) {
-        editor.Close();
-      }
-      Shrink();
-    }
-    burn_editors_ = null;
-    vessel_ = FlightGlobals.ActiveVessel;
   }
 
   internal static string FormatPositiveTimeSpan (TimeSpan span) {
