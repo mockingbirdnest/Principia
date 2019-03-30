@@ -98,7 +98,7 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
   if (target_ && begin != end) {
     auto last = end;
     --last;
-    target_->vessel->FlowPrediction(last.time());
+    CHECK_OK(target_->vessel->FlowPrediction(last.time()));
   }
   for (auto it = begin; it != end; ++it) {
     Instant const& t = it.time();
