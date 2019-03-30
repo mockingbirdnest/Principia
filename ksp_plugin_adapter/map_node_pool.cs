@@ -81,6 +81,13 @@ internal class MapNodePool {
             UnityEngine.Object.Destroy(component.gameObject);
           }
         }
+        // Ensure that KSP knows that the type changed, and reattaches icon
+        // labels next time around, otherwise we might end up with no labels.
+        // Null nodes do not have a label, so inducing a type change through
+        // Null does not result in spurious labels.
+        properties_[nodes_[pool_index_]].object_type =
+            MapObject.ObjectType.Null;
+        nodes_[pool_index_].NodeUpdate();
       }
       properties_[nodes_[pool_index_++]] = node_properties;
     }
