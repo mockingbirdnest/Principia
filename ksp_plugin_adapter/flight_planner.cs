@@ -35,7 +35,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       Toggle();
     }
     // Override the state of the toggle if there is no active vessel.
-    string vessel_guid = vessel_ ?.id.ToString();
+    string vessel_guid = vessel_?.id.ToString();
     if (vessel_guid == null || !plugin_.HasVessel(vessel_guid)) {
       Hide();
       vessel_ = FlightGlobals.ActiveVessel;
