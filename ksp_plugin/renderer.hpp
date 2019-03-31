@@ -176,10 +176,6 @@ class Renderer {
     not_null<std::unique_ptr<NavigationFrame>> const target_frame;
   };
 
-  // Returns a plotting frame suitable for evaluation at |time|, possibly by
-  // extending the prediction if there is a target vessel.
-  not_null<NavigationFrame const*> GetPlottingFrame(Instant const& time) const;
-
   not_null<Celestial const*> const sun_;
 
   not_null<std::unique_ptr<NavigationFrame>> plotting_frame_;

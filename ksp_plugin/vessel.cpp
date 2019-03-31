@@ -297,29 +297,9 @@ void Vessel::RefreshPrediction() {
   }
 }
 
-Status Vessel::FlowPrediction(Instant const& time) {
-  // Make sure that the prognosticator recomputes a complete prediction from
-  // time to time.
+void Vessel::RefreshPrediction(Instant const& time) {
   RefreshPrediction();
-
-  if (time <= prediction_->last().time()) {
-    return Status::OK;
-  }
-
-  // If the prediction is not long enough, extend it explicitly.  This is
-  // blocking.  We are willing to compute an arbitrary number of steps to try to
-  // reach the desired time.
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters =
-      prediction_adaptive_step_parameters_;
-  adaptive_step_parameters.set_max_steps(
-      std::numeric_limits<std::int64_t>::max());
-  return ephemeris_->FlowWithAdaptiveStep(
-             prediction_,
-             Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-             time,
-             adaptive_step_parameters,
-             FlightPlan::max_ephemeris_steps_per_frame,
-             /*last_point_only=*/false);
+  prediction_->ForgetAfter(time);
 }
 
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,

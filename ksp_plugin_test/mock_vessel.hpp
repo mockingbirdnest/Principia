@@ -35,8 +35,6 @@ class MockVessel : public Vessel {
 
   MOCK_METHOD0(DeleteFlightPlan, void());
 
-  MOCK_METHOD1(FlowPrediction, Status(Instant const& last_time));
-
   MOCK_CONST_METHOD1(WriteToMessage,
                      void(not_null<serialization::Vessel*> message));
 };

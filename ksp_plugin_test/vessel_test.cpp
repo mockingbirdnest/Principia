@@ -263,7 +263,7 @@ TEST_F(VesselTest, Prediction) {
                                                50.0 * Metre / Second,
                                                40.0 * Metre / Second}))),
                 Return(Status::OK)));
-  vessel_.FlowPrediction(astronomy::J2000 + 1 * Second);
+  vessel_.RefreshPrediction(astronomy::J2000 + 1 * Second);
 
   EXPECT_EQ(2, vessel_.prediction().Size());
   auto it = vessel_.prediction().Begin();
