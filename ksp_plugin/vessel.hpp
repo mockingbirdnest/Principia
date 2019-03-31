@@ -172,6 +172,9 @@ class Vessel {
       PileUp::PileUpForSerializationIndex const&
           pile_up_for_serialization_index);
 
+  static void MakeAsynchronous();
+  static void MakeSynchronous();
+
  protected:
   // For mocking.
   Vessel();
@@ -196,6 +199,11 @@ class Vessel {
   // Run by the |prognosticator_| thread to periodically recompute the
   // prognostication.
   void RepeatedlyFlowPrognostication();
+
+  // Runs the integrator to compute the |prognostication_| based on the given
+  // parameters.
+  void FlowPrognostication(
+      PrognosticatorParameters const& prognosticator_parameters);
 
   // Appends to |trajectory| the centre of mass of the trajectories of the parts
   // denoted by |part_trajectory_begin| and |part_trajectory_end|.
@@ -240,6 +248,8 @@ class Vessel {
       GUARDED_BY(prognosticator_lock_);
 
   std::unique_ptr<FlightPlan> flight_plan_;
+
+  static bool synchronous_;
 };
 
 }  // namespace internal_vessel
