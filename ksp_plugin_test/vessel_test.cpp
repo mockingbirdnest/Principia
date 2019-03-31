@@ -272,7 +272,7 @@ TEST_F(VesselTest, Prediction) {
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction(astronomy::J2000 + 1 * Second);
-    using namespace std::chrono_literals;  // NOLINT(build/namespaces)
+    using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
   } while (vessel_.prediction().last().time() == astronomy::J2000);
 
@@ -342,7 +342,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction();
-    using namespace std::chrono_literals;  // NOLINT(build/namespaces)
+    using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
   } while (vessel_.prediction().Size() != 3);
 

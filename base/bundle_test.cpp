@@ -12,7 +12,7 @@ namespace principia {
 
 using ::testing::Eq;
 
-using namespace std::chrono_literals;  // NOLINT(build/namespaces)
+using namespace std::chrono_literals;
 
 namespace base {
 

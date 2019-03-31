@@ -714,7 +714,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   // Polling for the integration to happen.
   do {
     plugin.UpdatePrediction(vessel_guid);
-    using namespace std::chrono_literals;  // NOLINT(build/namespaces)
+    using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
   } while (plugin.GetVessel(vessel_guid)->prediction().Size() != 15);
 
