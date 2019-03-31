@@ -242,16 +242,20 @@ TEST_F(VesselTest, Prediction) {
   EXPECT_CALL(
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
-      .Times(AnyNumber());
+      .WillOnce(
+          DoAll(AppendToDiscreteTrajectory(
+                    astronomy::J2000 + 1.0 * Second,
+                    DegreesOfFreedom<Barycentric>(
+                        Barycentric::origin +
+                            Displacement<Barycentric>(
+                                {15.0 / 3.0 * Metre, 6.0 * Metre, 5.0 * Metre}),
+                        Velocity<Barycentric>({150.0 / 3.0 * Metre / Second,
+                                               60.0 * Metre / Second,
+                                               50.0 * Metre / Second}))),
+                Return(Status::OK)));
   EXPECT_CALL(
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _, _))
-      .Times(AnyNumber());
-  vessel_.PrepareHistory(astronomy::J2000);
-
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 1 * Second, _, _, _))
       .WillOnce(
           DoAll(AppendToDiscreteTrajectory(
                     astronomy::J2000 + 1.0 * Second,
@@ -263,7 +267,14 @@ TEST_F(VesselTest, Prediction) {
                                                50.0 * Metre / Second,
                                                40.0 * Metre / Second}))),
                 Return(Status::OK)));
-  vessel_.RefreshPrediction(astronomy::J2000 + 1 * Second);
+
+  vessel_.PrepareHistory(astronomy::J2000);
+  // Polling for the integration to happen.
+  do {
+    vessel_.RefreshPrediction(astronomy::J2000 + 1 * Second);
+    using namespace std::chrono_literals;  // NOLINT(build/namespaces)
+    std::this_thread::sleep_for(100ms);
+  } while (vessel_.prediction().last().time() == astronomy::J2000);
 
   EXPECT_EQ(2, vessel_.prediction().Size());
   auto it = vessel_.prediction().Begin();
