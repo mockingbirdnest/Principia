@@ -302,6 +302,10 @@ void Vessel::RefreshPrediction(Instant const& time) {
   prediction_->ForgetAfter(time);
 }
 
+std::string Vessel::ShortDebugString() const {
+  return name_ + " (" + guid_ + ")";
+}
+
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
                             PileUp::SerializationIndexForPileUp const&
                                 serialization_index_for_pile_up) const {
@@ -412,10 +416,6 @@ void Vessel::FillContainingPileUpsFromMessage(
     part->FillContainingPileUpFromMessage(part_message,
                                           pile_up_for_serialization_index);
   }
-}
-
-std::string Vessel::ShortDebugString() const {
-  return name_ + " (" + guid_ + ")";
 }
 
 Vessel::Vessel()

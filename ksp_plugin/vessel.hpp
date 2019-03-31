@@ -155,6 +155,9 @@ class Vessel {
   // have a last time at or before |time|.
   virtual void RefreshPrediction(Instant const& time);
 
+  // Returns "vessel_name (GUID)".
+  std::string ShortDebugString() const;
+
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message,
                               PileUp::SerializationIndexForPileUp const&
@@ -168,9 +171,6 @@ class Vessel {
       serialization::Vessel const& message,
       PileUp::PileUpForSerializationIndex const&
           pile_up_for_serialization_index);
-
-  // Returns "vessel_name (GUID)".
-  std::string ShortDebugString() const;
 
  protected:
   // For mocking.
