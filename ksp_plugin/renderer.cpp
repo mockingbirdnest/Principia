@@ -95,11 +95,6 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
-  if (target_ && begin != end) {
-    auto last = end;
-    --last;
-    CHECK_OK(target_->vessel->FlowPrediction(last.time()));
-  }
   for (auto it = begin; it != end; ++it) {
     Instant const& t = it.time();
     if (target_) {
@@ -161,7 +156,7 @@ Renderer::RenderPlottingTrajectoryInWorld(
 
 RigidMotion<Barycentric, Navigation> Renderer::BarycentricToPlotting(
     Instant const& time) const {
-  return GetPlottingFrame(time)->ToThisFrameAtTime(time);
+  return GetPlottingFrame()->ToThisFrameAtTime(time);
 }
 
 RigidTransformation<Barycentric, World> Renderer::BarycentricToWorld(
@@ -206,7 +201,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
       BarycentricToPlotting(time)(barycentric_degrees_of_freedom);
   Rotation<Frenet<Navigation>, Navigation> const
       frenet_frame_to_plotting_frame =
-          GetPlottingFrame(time)->FrenetFrame(
+          GetPlottingFrame()->FrenetFrame(
               time,
               plotting_frame_degrees_of_freedom);
 
@@ -231,7 +226,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
 
 OrthogonalMap<Navigation, Barycentric> Renderer::PlottingToBarycentric(
     Instant const& time) const {
-  return GetPlottingFrame(time)->FromThisFrameAtTime(time).orthogonal_map();
+  return GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map();
 }
 
 RigidTransformation<Navigation, World> Renderer::PlottingToWorld(
@@ -239,8 +234,7 @@ RigidTransformation<Navigation, World> Renderer::PlottingToWorld(
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   return BarycentricToWorld(time, sun_world_position, planetarium_rotation) *
-         GetPlottingFrame(time)->
-             FromThisFrameAtTime(time).rigid_transformation();
+         GetPlottingFrame()-> FromThisFrameAtTime(time).rigid_transformation();
 }
 
 OrthogonalMap<Navigation, World> Renderer::PlottingToWorld(
@@ -298,14 +292,6 @@ Renderer::Target::Target(
               ephemeris,
               [this]() -> auto& { return this->vessel->prediction(); },
               celestial->body())) {}
-
-not_null<NavigationFrame const*> Renderer::GetPlottingFrame(
-    Instant const& time) const {
-  if (target_) {
-    CHECK_OK(target_->vessel->FlowPrediction(time));
-  }
-  return GetPlottingFrame();
-}
 
 }  // namespace internal_renderer
 }  // namespace ksp_plugin

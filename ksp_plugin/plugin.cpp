@@ -843,7 +843,18 @@ void Plugin::SetPredictionAdaptiveStepParameters(
 
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  FindOrDie(vessels_, vessel_guid)->RefreshPrediction();
+  Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
+
+  // If there is a target vessel, ensure that the prediction of |vessel| is not
+  // longer than that of the target vessel.  This is necessary to build the
+  // targetting frame.
+  if (renderer_->HasTargetVessel()) {
+    Vessel& target_vessel = renderer_->GetTargetVessel();
+    target_vessel.RefreshPrediction();
+    vessel.RefreshPrediction(target_vessel.prediction().last().time());
+  } else {
+    vessel.RefreshPrediction();
+  }
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
@@ -896,13 +907,7 @@ void Plugin::ComputeAndRenderClosestApproaches(
 
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
-  auto& target_vessel = renderer_->GetTargetVessel();
-  if (begin != end) {
-    auto last = end;
-    --last;
-    CHECK_OK(target_vessel.FlowPrediction(last.time()));
-  }
-  ComputeApsides(target_vessel.prediction(),
+  ComputeApsides(renderer_->GetTargetVessel().prediction(),
                  begin,
                  end,
                  apoapsides_trajectory,

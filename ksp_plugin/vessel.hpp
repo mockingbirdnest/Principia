@@ -151,10 +151,9 @@ class Vessel {
   // the prediction when this call returns.
   virtual void RefreshPrediction();
 
-  // Extends the prediction (and the ephemeris) up to and including |time|.  May
-  // not be able to do so next to a singularity, in which case an error is
-  // returned.
-  virtual Status FlowPrediction(Instant const& time);
+  // Same as above, but when this call returns the prediction is guaranteed to
+  // have a last time at or before |time|.
+  virtual void RefreshPrediction(Instant const& time);
 
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message,
