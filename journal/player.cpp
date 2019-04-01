@@ -21,6 +21,7 @@ namespace journal {
 
 Player::Player(std::filesystem::path const& path)
     : stream_(path, std::ios::in) {
+  Vessel::MakeSynchronous();
   CHECK(!stream_.fail());
 }
 
