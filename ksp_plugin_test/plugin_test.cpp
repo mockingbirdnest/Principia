@@ -1115,7 +1115,7 @@ TEST_F(PluginTest, NavballTargetVessel) {
 
   plugin.SetTargetVessel(guid, SolarSystemFactory::Sun);
   plugin.AdvanceTime(plugin.CurrentTime() + 12 * Hour, 0 * Radian);
-  auto& future = plugin.CatchUpVessel(guid);
+  auto future = plugin.CatchUpVessel(guid);
   VesselSet collided_vessels;
   plugin.WaitForVesselToCatchUp(*future, collided_vessels);
   plugin.NavballFrameField(World::origin)->FromThisFrame(World::origin);
