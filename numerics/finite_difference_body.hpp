@@ -20,7 +20,7 @@ Derivative<Value, Argument> FiniteDifference(
     // For the central difference formula, aᵢ = - aₙ₋ᵢ₋₁; in particular, for
     // i = (n - 1) / 2 (the central coefficient), aᵢ = -aᵢ: the central value is
     // unused.
-    // We evaluate the sum Σᵢ aᵢ f(xᵢ), with i runnning from 0 to n - 1, as
+    // We thus evaluate the sum Σᵢ aᵢ f(xᵢ), with i runnning from 0 to n - 1, as
     // Σⱼ aⱼ (f(xⱼ) - f(xₙ₋ⱼ₋₁)), with j running from 0 to (n - 3) / 2.
     DoublePrecision<Difference<Value>> sum{};
     for (int j = 0; j <= (n - 3) / 2; ++j) {
@@ -28,8 +28,8 @@ Derivative<Value, Argument> FiniteDifference(
     }
     return sum.value / (denominator * step);
   } else {
-    // We evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0, where the sums over i runs
-    // from 0 to n - 1, as
+    // In the general case, we evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0,
+    // where the sums over i run from 0 to n - 1, as
     //   Σⱼ (Σₖ aₖ) (f(xⱼ) - f(xⱼ₊₁)),
     // where the sum over j runs from 0 to n - 2, and the sum over
     // k runs from 0 to j.
