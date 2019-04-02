@@ -14,88 +14,34 @@ Derivative<Value, Argument> FiniteDifference(
     FixedVector<Value, n> const& values,
     Argument const& step,
     int offset) {
-  CHECK_EQ(offset, 0);
-  constexpr FixedMatrix<double, n, n> numerators = std::get<n - 1>(Numerators);
-  constexpr double denominator = denominators[n - 1];
-  LOG(ERROR)<<IMPL;
-
-if (IMPL == 1) {
-  Difference<Value> sum{};
-  for (int j = 0; j <= n-1; ++j) {
-    sum += (numerators[j] / denominator) * values[j];
+  double const* const numerators = std::get<n - 1>(Numerators)[offset];
+  constexpr double denominator = Denominators[n - 1];
+  if (n % 2 == 1 && offset == (n - 1) / 2) {
+    // For the central difference formula, aᵢ = - aₙ₋ᵢ₋₁; in particular, for
+    // i = (n - 1) / 2 (the central coefficient), aᵢ = -aᵢ: the central value is
+    // unused.
+    // We evaluate the sum Σᵢ aᵢ f(xᵢ), with i runnning from 0 to n - 1, as
+    // Σⱼ aⱼ (f(xⱼ) - f(xₙ₋ⱼ₋₁)), with j running from 0 to (n - 3) / 2.
+    DoublePrecision<Difference<Value>> sum{};
+    for (int j = 0; j <= (n - 3) / 2; ++j) {
+      sum += TwoProduct(numerators[j], values[j] - values[n - j - 1]);
+    }
+    return sum.value / (denominator * step);
+  } else {
+    // We evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0, where the sums over i runs
+    // from 0 to n - 1, as
+    //   Σⱼ (Σₖ aₖ) (f(xⱼ) - f(xⱼ₊₁)),
+    // where the sum over j runs from 0 to n - 2, and the sum over
+    // k runs from 0 to j.
+    double numerator = 0;
+    DoublePrecision<Difference<Value>> sum{};
+    for (int j = 0; j <= n - 2; ++j) {
+      numerator += numerators[j];
+      Difference<Value> difference = values[j] - values[j + 1];
+      sum += TwoProduct(numerator, difference);
+    }
+    return sum.value / (denominator * step);
   }
-  return sum / (1 * step);
-} else if  (IMPL == 2) {
-  // We evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0, where the sums over i runs
-  // from 0 to n - 1, as
-  //   Σⱼ (Σₖ aₖ) (f(xⱼ) - f (xⱼ₊₁)),
-  // where the sum over j runs from 0 to n - 2, and the sum over
-  // k runs from 0 to j.
-  double numerator = 0;
-  Difference<Value> sum{};
-  for (int j = 0; j <= n - 2; ++j) {
-    numerator += numerators[j] / denominator;
-    Difference<Value> difference = values[j] - values[j + 1];
-    sum += numerator * difference;
-  }
-  return sum / (1 * step);
-} else if  (IMPL == 3) {
-  // We evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0, where the sums over i runs
-  // from 0 to n - 1, as
-  //   Σⱼ (Σₖ aₖ) (f(xⱼ) - f (xⱼ₊₁)),
-  // where the sum over j runs from 0 to n - 2, and the sum over
-  // k runs from 0 to j.
-  double numerator = 0;
-  Difference<Value> sum{};
-  for (int j = 0; j <= n - 2; ++j) {
-    numerator += numerators[j];
-    Difference<Value> difference = values[j] - values[j + 1];
-    sum += numerator * difference;
-  }
-  return sum / (denominator * step);
-} else if (IMPL == 4) {
-  // We evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0, where the sums over i runs
-  // from 0 to n - 1, as
-  //   Σⱼ (Σₖ aₖ) (f(xⱼ) - f (xⱼ₊₁)),
-  // where the sum over j runs from 0 to n - 2, and the sum over
-  // k runs from 0 to j.
-  double numerator = 0;
-  DoublePrecision<Difference<Value>> sum{};
-  for (int j = 0; j <= n - 2; ++j) {
-    numerator += numerators[j];
-    Difference<Value> difference = values[j] - values[j + 1];
-    sum.Increment(numerator * difference);
-  }
-  return sum.value / (denominator * step);
-} else if (IMPL == 5) {
-  // We evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0, where the sums over i runs
-  // from 0 to n - 1, as
-  //   Σⱼ (Σₖ aₖ) (f(xⱼ) - f (xⱼ₊₁)),
-  // where the sum over j runs from 0 to n - 2, and the sum over
-  // k runs from 0 to j.
-  double numerator = 0;
-  DoublePrecision<Difference<Value>> sum{};
-  for (int j = 0; j <= n - 2; ++j) {
-    numerator += numerators[j];
-    Difference<Value> difference = values[j] - values[j + 1];
-    sum += DoublePrecision<Difference<Value>>(numerator * difference);
-  }
-  return sum.value / (denominator * step);
-} else { CHECK_EQ(IMPL, 6);
-  // We evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0, where the sums over i runs
-  // from 0 to n - 1, as
-  //   Σⱼ (Σₖ aₖ) (f(xⱼ) - f (xⱼ₊₁)),
-  // where the sum over j runs from 0 to n - 2, and the sum over
-  // k runs from 0 to j.
-  double numerator = 0;
-  DoublePrecision<Difference<Value>> sum{};
-  for (int j = 0; j <= n - 2; ++j) {
-    numerator += numerators[j];
-    Difference<Value> difference = values[j] - values[j + 1];
-    sum += TwoProduct(numerator, difference);
-  }
-  return sum.value / (denominator * step);
-}
 }
 
 }  // namespace internal_finite_difference

@@ -22,7 +22,6 @@ class FiniteDifferenceTest : public ::testing::Test {
     auto const f = [](double x) {
       return 1e9 + Pow<5>(x);
     };
-    for (IMPL = 1; IMPL <= 6; ++IMPL) {
       estimates.emplace_back();
       for (double step = 0x1p64; 1 + step != 1; step /= 2) {
         FixedVector<double, n> values;
@@ -31,7 +30,6 @@ class FiniteDifferenceTest : public ::testing::Test {
         }
         estimates.back().push_back(FiniteDifference(values, step, 0));
       }
-    }
     return estimates;
   }
 };
