@@ -8,6 +8,9 @@ namespace ksp_plugin_adapter {
 
 internal abstract class BaseWindowRenderer : IConfigNode {
   protected BaseWindowRenderer(UnityEngine.GUILayoutOption[] options) {
+    // All dimensions are expressed in "units".  By default a unit is 25 pixels
+    // but it can scale up or down based on the KSP UI scale.
+    unit_ = 25 * GameSettings.UI_SCALE;
     options_ = options.Length == 0 ? default_options_ : options;
     lock_name_ = GetType().ToString() + ":lock:" + GetHashCode();
   }
@@ -103,6 +106,16 @@ internal abstract class BaseWindowRenderer : IConfigNode {
     show_ = !show_;
   }
 
+  // Scaling.
+
+  protected UnityEngine.GUILayoutOption GUILayoutOptionMinWidth(int units) {
+    return UnityEngine.GUILayout.MinWidth(unit_ * units);
+  }
+
+  protected UnityEngine.GUILayoutOption GUILayoutOptionWidth(int units) {
+    return UnityEngine.GUILayout.Width(unit_ * units);
+  }
+
   // Persistence.
 
   public virtual void Load(ConfigNode node) {
@@ -143,6 +156,7 @@ internal abstract class BaseWindowRenderer : IConfigNode {
   private static readonly UnityEngine.GUILayoutOption[] default_options_ =
         {UnityEngine.GUILayout.MinWidth(500)};
 
+  private readonly float unit_;
   private readonly UnityEngine.GUILayoutOption[] options_;
   private readonly String lock_name_;
   private bool must_centre_ = true;
