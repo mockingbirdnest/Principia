@@ -17,10 +17,9 @@ using quantities::Difference;
 // — |offset = (n - 1) / 2|, for odd n:
 //   central difference—in this case, the middle value is unused;
 // — |offset = n - 1|: backward difference.
-// The order of the difference formula is n - 1, that is:
-// — the error on the derivative is 𝒪(hⁿ⁻¹) as h → 0;
-// — if f is a polynomial of degree less than or equal to n - 1, the result is
-//   exact up to rounding errors.
+// The error on the derivative is 𝒪(hⁿ⁻¹) as h → 0.
+// If f is a polynomial of degree less than or equal to n - 1, the result is
+// exact up to rounding errors.
 template<typename Value, typename Argument, int n>
 Derivative<Value, Argument> FiniteDifference(
     FixedVector<Value, n> const& values,
