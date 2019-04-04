@@ -11,7 +11,9 @@ internal abstract class BaseWindowRenderer : IConfigNode {
     // All dimensions are expressed in "units".  By default a unit is 25 pixels
     // but it can scale up or down based on the KSP UI scale.
     unit_ = 25 * GameSettings.UI_SCALE;
-    options_ = options.Length == 0 ? default_options_ : options;
+    UnityEngine.GUILayoutOption[] default_options =
+        {UnityEngine.GUILayout.MinWidth(20 * unit_)};
+    options_ = options.Length == 0 ? default_options : options;
     lock_name_ = GetType().ToString() + ":lock:" + GetHashCode();
   }
 
@@ -108,12 +110,16 @@ internal abstract class BaseWindowRenderer : IConfigNode {
 
   // Scaling.
 
-  protected UnityEngine.GUILayoutOption GUILayoutOptionMinWidth(int units) {
+  protected UnityEngine.GUILayoutOption GUILayoutMinWidth(int units) {
     return UnityEngine.GUILayout.MinWidth(unit_ * units);
   }
 
-  protected UnityEngine.GUILayoutOption GUILayoutOptionWidth(int units) {
+  protected UnityEngine.GUILayoutOption GUILayoutWidth(int units) {
     return UnityEngine.GUILayout.Width(unit_ * units);
+  }
+
+  protected float Width(int units) {
+    return unit_ * units;
   }
 
   // Persistence.
@@ -153,8 +159,6 @@ internal abstract class BaseWindowRenderer : IConfigNode {
 
   private const float min_height_on_screen_ = 50;
   private const float min_width_on_screen_ = 50;
-  private static readonly UnityEngine.GUILayoutOption[] default_options_ =
-        {UnityEngine.GUILayout.MinWidth(500)};
 
   private readonly float unit_;
   private readonly UnityEngine.GUILayoutOption[] options_;

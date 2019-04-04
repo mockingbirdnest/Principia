@@ -143,7 +143,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label("Max. steps per segment:",
-                                      UnityEngine.GUILayout.Width(150));
+                                      GUILayoutWidth(6));
           const int factor = 4;
           if (parameters.max_steps <= 100) {
             UnityEngine.GUILayout.Button("min");
@@ -153,7 +153,7 @@ class FlightPlanner : SupervisedWindowRenderer {
                                                         parameters);
           }
           UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
-                                          UnityEngine.GUILayout.Width(75));
+                                          GUILayoutWidth(3));
           if (parameters.max_steps >= Int64.MaxValue / factor) {
             UnityEngine.GUILayout.Button("max");
           } else if (UnityEngine.GUILayout.Button("+")) {
@@ -164,7 +164,7 @@ class FlightPlanner : SupervisedWindowRenderer {
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label("Tolerance:",
-                                      UnityEngine.GUILayout.Width(75));
+                                      GUILayoutWidth(3));
           if (parameters.length_integration_tolerance <= 1e-6) {
             UnityEngine.GUILayout.Button("min");
           } else if (UnityEngine.GUILayout.Button("-")) {
@@ -174,9 +174,8 @@ class FlightPlanner : SupervisedWindowRenderer {
                                                         parameters);
           }
           UnityEngine.GUILayout.TextArea(
-              parameters.length_integration_tolerance.ToString("0.0e0") +
-                  " m",
-              UnityEngine.GUILayout.Width(75));
+              parameters.length_integration_tolerance.ToString("0.0e0") + " m",
+              GUILayoutWidth(3));
           if (parameters.length_integration_tolerance >= 1e6) {
             UnityEngine.GUILayout.Button("max");
           } else if (UnityEngine.GUILayout.Button("+")) {

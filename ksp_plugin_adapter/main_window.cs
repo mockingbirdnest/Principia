@@ -199,8 +199,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                 "Target: " +
                     FlightGlobals.fetch.VesselTarget.GetVessel().vesselName,
                 UnityEngine.GUILayout.ExpandWidth(true));
-            if (UnityEngine.GUILayout.Button(
-                    "Clear", UnityEngine.GUILayout.Width(50))) {
+            if (UnityEngine.GUILayout.Button("Clear", GUILayoutWidth(2))) {
               selecting_active_vessel_target = false;
               FlightGlobals.fetch.SetVesselTarget(null);
             }
@@ -252,8 +251,7 @@ internal class MainWindow : SupervisedWindowRenderer {
         if (target_celestial) {
           UnityEngine.GUILayout.Label("Target: " + target_celestial.name,
                                       UnityEngine.GUILayout.ExpandWidth(true));
-          if (UnityEngine.GUILayout.Button("Clear",
-                                           UnityEngine.GUILayout.Width(50))) {
+          if (UnityEngine.GUILayout.Button("Clear", GUILayoutWidth(2))) {
             selecting_target_celestial_ = false;
             FlightGlobals.fetch.SetVesselTarget(null);
           }
@@ -267,52 +265,45 @@ internal class MainWindow : SupervisedWindowRenderer {
   private void RenderLoggingSettings() {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
-      if (UnityEngine.GUILayout.Button(
-              text    : "←",
-              options : UnityEngine.GUILayout.Width(50))) {
+      if (UnityEngine.GUILayout.Button(text    : "←",
+                                       options : GUILayoutWidth(2))) {
         Log.SetVerboseLogging(Math.Max(verbose_logging_ - 1, 0));
         verbose_logging_ = Log.GetVerboseLogging();
       }
       UnityEngine.GUILayout.TextArea(
           text    : Log.GetVerboseLogging().ToString(),
-          options : UnityEngine.GUILayout.Width(50));
-      if (UnityEngine.GUILayout.Button(
-              text    : "→",
-              options : UnityEngine.GUILayout.Width(50))) {
+          options : GUILayoutWidth(2));
+      if (UnityEngine.GUILayout.Button(text    : "→",
+                                       options : GUILayoutWidth(2))) {
         Log.SetVerboseLogging(Math.Min(verbose_logging_ + 1, 4));
         verbose_logging_ = Log.GetVerboseLogging();
       }
     }
-    int column_width = 75;
+    float column_width = Width(3);
+    var gui_layout_column_width = GUILayoutWidth(3);
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
-      UnityEngine.GUILayout.Label(
-          text    : "Log",
-          options : UnityEngine.GUILayout.Width(column_width));
-      UnityEngine.GUILayout.Label(
-          text    : "stderr",
-          options : UnityEngine.GUILayout.Width(column_width));
-      UnityEngine.GUILayout.Label(
-          text    : "Flush",
-          options : UnityEngine.GUILayout.Width(column_width));
+      UnityEngine.GUILayout.Label(text    : "Log",
+                                  options : gui_layout_column_width);
+      UnityEngine.GUILayout.Label(text    : "stderr",
+                                  options : gui_layout_column_width);
+      UnityEngine.GUILayout.Label(text    : "Flush",
+                                  options : gui_layout_column_width);
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
-      if (UnityEngine.GUILayout.Button(
-              text    : "↑",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↑",
+                                       options : gui_layout_column_width)) {
         Log.SetSuppressedLogging(Math.Max(suppressed_logging_ - 1, 0));
         suppressed_logging_ = Log.GetSuppressedLogging();
       }
-      if (UnityEngine.GUILayout.Button(
-              text    : "↑",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↑",
+                                       options : gui_layout_column_width)) {
         Log.SetStderrLogging(Math.Max(stderr_logging_ - 1, 0));
         stderr_logging_ = Log.GetStderrLogging();
       }
-      if (UnityEngine.GUILayout.Button(
-              text    : "↑",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↑",
+                                       options : gui_layout_column_width)) {
         Log.SetBufferedLogging(Math.Max(buffered_logging_ - 1, -1));
         buffered_logging_ = Log.GetBufferedLogging();
       }
@@ -321,38 +312,35 @@ internal class MainWindow : SupervisedWindowRenderer {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             text    : Log.severity_names[severity],
-            options : UnityEngine.GUILayout.Width(column_width));
+            options : gui_layout_column_width);
         UnityEngine.GUILayout.Toggle(
             value   : severity >= Log.GetSuppressedLogging(),
             text    : "",
-            options : UnityEngine.GUILayout.Width(column_width));
+            options : gui_layout_column_width);
         UnityEngine.GUILayout.Toggle(
             value   : severity >= Log.GetStderrLogging(),
             text    : "",
-            options : UnityEngine.GUILayout.Width(column_width));
+            options : gui_layout_column_width);
         UnityEngine.GUILayout.Toggle(
             value   : severity > Log.GetBufferedLogging(),
             text    : "",
-            options : UnityEngine.GUILayout.Width(column_width));
+            options : gui_layout_column_width);
       }
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
-      if (UnityEngine.GUILayout.Button(
-              text    : "↓",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↓",
+                                       options : gui_layout_column_width)) {
         Log.SetSuppressedLogging(Math.Min(suppressed_logging_ + 1, 3));
         suppressed_logging_ = Log.GetSuppressedLogging();
       }
-      if (UnityEngine.GUILayout.Button(
-              text    : "↓",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↓",
+                                       options : gui_layout_column_width)) {
         Log.SetStderrLogging(Math.Min(stderr_logging_ + 1, 3));
         stderr_logging_ = Log.GetStderrLogging();
       }
-      if (UnityEngine.GUILayout.Button(
-              text    : "↓",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↓",
+                                       options : gui_layout_column_width)) {
         Log.SetBufferedLogging(Math.Min(buffered_logging_ + 1, 3));
         buffered_logging_ = Log.GetBufferedLogging();
       }
@@ -408,17 +396,16 @@ internal class MainWindow : SupervisedWindowRenderer {
                    "{0:0.00e0}");
   }
 
-  private static void RenderSelector<T>(T[] array,
-                                        ref int index,
-                                        String label,
-                                        ref bool changed,
-                                        String format) {
+  private void RenderSelector<T>(T[] array,
+                                 ref int index,
+                                 String label,
+                                 ref bool changed,
+                                 String format) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text    : label + ":",
-                                  options : UnityEngine.GUILayout.Width(150));
-      if (UnityEngine.GUILayout.Button(
-              text    : index == 0 ? "min" : "-",
-              options : UnityEngine.GUILayout.Width(50)) &&
+                                  options : GUILayoutWidth(6));
+      if (UnityEngine.GUILayout.Button(text    : index == 0 ? "min" : "-",
+                                       options : GUILayoutWidth(2)) &&
           index != 0) {
         --index;
         changed = true;
@@ -429,11 +416,11 @@ internal class MainWindow : SupervisedWindowRenderer {
           UnityEngine.TextAnchor.MiddleRight;
       UnityEngine.GUILayout.TextArea(
           text    : String.Format(Culture.culture, format, array[index]),
-          options : UnityEngine.GUILayout.Width(75));
+          options : GUILayoutWidth(3));
       UnityEngine.GUI.skin.textArea.alignment = old_alignment;
       if (UnityEngine.GUILayout.Button(
               text    : index == array.Length - 1 ? "max" : "+",
-              options : UnityEngine.GUILayout.Width(50)) &&
+              options : GUILayoutWidth(2)) &&
           index != array.Length - 1) {
         ++index;
         changed = true;
