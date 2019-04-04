@@ -35,8 +35,6 @@ internal class DifferentialSlider {
   // Renders the |DifferentialSlider|.  Returns true if and only if |value|
   // changed.
   public bool Render(bool enabled) {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
     bool value_changed = false;
 
     using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -90,8 +88,6 @@ internal class DifferentialSlider {
       }
       last_time_ = DateTime.Now;
     }
-
-    UnityEngine.GUI.skin = old_skin;
     return value_changed;
   }
 

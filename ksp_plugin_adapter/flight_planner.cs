@@ -29,8 +29,6 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button("Flight plan...")) {
       Toggle();
     }
@@ -40,7 +38,6 @@ class FlightPlanner : SupervisedWindowRenderer {
       Hide();
       vessel_ = FlightGlobals.ActiveVessel;
     }
-    UnityEngine.GUI.skin = old_skin;
   }
 
   protected override String Title => "Flight plan";

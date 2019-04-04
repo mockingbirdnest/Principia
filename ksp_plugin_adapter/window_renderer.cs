@@ -13,6 +13,7 @@ internal abstract class BaseWindowRenderer : IConfigNode {
     unit_ = 25 * GameSettings.UI_SCALE;
     UnityEngine.GUILayoutOption[] default_options =
         {UnityEngine.GUILayout.MinWidth(20 * unit_)};
+    
     options_ = options.Length == 0 ? default_options : options;
     lock_name_ = GetType().ToString() + ":lock:" + GetHashCode();
   }
@@ -34,10 +35,9 @@ internal abstract class BaseWindowRenderer : IConfigNode {
   }
 
   // Rendering.
-
   public void RenderWindow() {
     var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
+    ApplySkin();
     if (show_) {
       rectangle_ = UnityEngine.GUILayout.Window(
                        id         : this.GetHashCode(),
@@ -122,6 +122,19 @@ internal abstract class BaseWindowRenderer : IConfigNode {
     return unit_ * units;
   }
 
+  private void ApplySkin() {
+    if (skin_ == null) {
+      UnityEngine.GUI.skin = null;
+      // The default Unity skin uses Arial 13.
+      // TODO(phl): Do we need to change the fonts of the nested styles?
+      skin_ = UnityEngine.Object.Instantiate(UnityEngine.GUI.skin);
+      skin_.font = UnityEngine.Font.CreateDynamicFontFromOSFont(
+                        skin_.font.fontNames,
+                        (int)(skin_.font.fontSize * GameSettings.UI_SCALE));
+    }
+    UnityEngine.GUI.skin = skin_;
+  }
+
   // Persistence.
 
   public virtual void Load(ConfigNode node) {
@@ -163,6 +176,7 @@ internal abstract class BaseWindowRenderer : IConfigNode {
   private readonly float unit_;
   private readonly UnityEngine.GUILayoutOption[] options_;
   private readonly String lock_name_;
+  private UnityEngine.GUISkin skin_;
   private bool must_centre_ = true;
   private bool show_ = false;
   private UnityEngine.Rect rectangle_;

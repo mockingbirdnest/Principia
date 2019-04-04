@@ -265,13 +265,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button(name_ + " selection (" + Name() +
                                      ")...")) {
       Toggle();
     }
-    UnityEngine.GUI.skin = old_skin;
   }
 
   protected override String Title {

@@ -58,8 +58,6 @@ class BurnEditor {
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
   public bool Render(bool enabled) {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
     bool changed = false;
     using (new UnityEngine.GUILayout.VerticalScope()) {
       var warning_style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
@@ -120,7 +118,6 @@ class BurnEditor {
       }
       changed_reference_frame_ = false;
     }
-    UnityEngine.GUI.skin = old_skin;
     return changed && enabled;
   }
 
