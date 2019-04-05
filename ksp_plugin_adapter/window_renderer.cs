@@ -123,14 +123,44 @@ internal abstract class BaseWindowRenderer : IConfigNode {
   }
 
   private void ApplySkin() {
+    //KSP.UI.UIMasterController.Instance.appCanvas.scaleFactor =
+    //    GameSettings.UI_SCALE_APPS;
     if (skin_ == null) {
       UnityEngine.GUI.skin = null;
       // The default Unity skin uses Arial 13.
       // TODO(phl): Do we need to change the fonts of the nested styles?
       skin_ = UnityEngine.Object.Instantiate(UnityEngine.GUI.skin);
+
+      var pangram = new UnityEngine.GUIContent(
+          "Portez ce vieux whisky au juge blond qui fume.");
+      float button_height = skin_.button.CalcHeight(pangram, width: 1000);
+      float label_height = skin_.label.CalcHeight(pangram, width: 1000);
+      float text_area_height = skin_.textArea.CalcHeight(pangram, width: 1000);
+      float toggle_height = skin_.toggle.CalcHeight(pangram, width: 1000);
+      UnityEngine.Debug.LogError(button_height + " " + label_height + " " +
+      text_area_height+" "+toggle_height+" "+skin_.toggle.margin.top);
+
       skin_.font = UnityEngine.Font.CreateDynamicFontFromOSFont(
                         skin_.font.fontNames,
                         (int)(skin_.font.fontSize * GameSettings.UI_SCALE));
+
+      skin_.button.fixedHeight = button_height * GameSettings.UI_SCALE;
+      skin_.button.contentOffset =
+          new UnityEngine.Vector2(0, -skin_.button.fixedHeight / 10);
+      skin_.label.fixedHeight = label_height * GameSettings.UI_SCALE;
+      skin_.label.contentOffset =
+          new UnityEngine.Vector2(0, skin_.label.fixedHeight / 20);
+      skin_.textArea.fixedHeight = text_area_height * GameSettings.UI_SCALE;
+      skin_.textArea.contentOffset =
+          new UnityEngine.Vector2(0, skin_.textArea.fixedHeight / 20);
+      skin_.toggle.fixedHeight = toggle_height * GameSettings.UI_SCALE;
+      skin_.toggle.contentOffset =
+          new UnityEngine.Vector2(0, -skin_.toggle.fixedHeight / 10);
+      skin_.toggle.margin = new UnityEngine.RectOffset(
+          skin_.toggle.margin.left,
+          skin_.toggle.margin.right,
+          (int)(skin_.toggle.margin.top * 1.7 * GameSettings.UI_SCALE),
+          skin_.toggle.margin.bottom);
     }
     UnityEngine.GUI.skin = skin_;
   }
