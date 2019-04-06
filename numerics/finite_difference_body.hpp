@@ -12,16 +12,16 @@ template<typename Value, typename Argument, int n>
 Derivative<Value, Argument> FiniteDifference(
     std::array<Value, n> const& values,
     Argument const& step,
-    int offset) {
+    int const offset) {
   double const* const numerators = std::get<n - 1>(Numerators)[offset];
   constexpr double denominator = Denominators[n - 1];
+  Difference<Value> sum{};
   if (n % 2 == 1 && offset == (n - 1) / 2) {
     // For the central difference formula, aᵢ = - aₙ₋ᵢ₋₁; in particular, for
     // i = (n - 1) / 2 (the central coefficient), aᵢ = -aᵢ: the central value is
     // unused.
     // We thus evaluate the sum Σᵢ aᵢ f(xᵢ), with i runnning from 0 to n - 1, as
     // Σⱼ aⱼ (f(xⱼ) - f(xₙ₋ⱼ₋₁)), with j running from 0 to (n - 3) / 2.
-    Difference<Value> sum{};
     for (int j = 0; j <= (n - 3) / 2; ++j) {
       sum += numerators[j] * (values[j] - values[n - j - 1]);
     }
@@ -33,14 +33,12 @@ Derivative<Value, Argument> FiniteDifference(
     // where the sum over j runs from 0 to n - 2, and the sum over
     // k runs from 0 to j.
     double numerator = 0;
-    Difference<Value> sum{};
     for (int j = 0; j <= n - 2; ++j) {
       numerator += numerators[j];
-      Difference<Value> difference = values[j] - values[j + 1];
-      sum += numerator * difference;
+      sum += numerator * (values[j] - values[j + 1]);
     }
-    return sum / (denominator * step);
   }
+  return sum / (denominator * step);
 }
 
 }  // namespace internal_finite_difference
