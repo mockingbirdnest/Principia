@@ -256,6 +256,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     for (int i = 0; i < burn_editors_.Count; ++i) {
       NavigationManoeuvre manoeuvre =
           plugin_.FlightPlanGetManoeuvre(vessel_guid, i);
+      // TODO(phl): Evil changes of widgets between layout and repaint...
       if (manoeuvre.final_time > current_time) {
         if (manoeuvre.burn.initial_time > current_time) {
           UnityEngine.GUILayout.TextArea("Upcoming manœuvre: #" + (i + 1));

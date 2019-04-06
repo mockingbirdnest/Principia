@@ -39,7 +39,7 @@ internal class ScalingRenderer {
     // incorrect character bounds and everything looks ugly.  They even
     // "document" it in their source code, see
     // https://github.com/Unity-Technologies/UnityCsReference/blob/57f723ec72ca50427e5d17cad0ec123be2372f67/Modules/GraphViewEditor/Views/GraphView.cs#L262.
-    // So here I am, sizing a pangram to get an idea of the size of things and
+    // So here I am, sizing a pangram to get an idea of the shape of things and
     // nudging pixels by hand.  It's the 90's, go for it!
     var pangram = new UnityEngine.GUIContent(
         "Portez ce vieux whisky au juge blond qui fume.");
@@ -52,10 +52,6 @@ internal class ScalingRenderer {
     float text_area_height = skin.textArea.CalcHeight(pangram, width : 1000);
     float text_field_height = skin.textField.CalcHeight(pangram, width : 1000);
     float toggle_height = skin.toggle.CalcHeight(pangram, width : 1000);
-    UnityEngine.Debug.LogError(button_height + " " +
-    horizontal_slider_height+" "+horizontal_slider_thumb_height+" "+
-    label_height + " " +
-    text_area_height+" "+toggle_height);
 
     skin.font = UnityEngine.Font.CreateDynamicFontFromOSFont(
                       skin.font.fontNames,

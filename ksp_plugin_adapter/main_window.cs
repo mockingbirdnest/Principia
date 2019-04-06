@@ -410,14 +410,12 @@ internal class MainWindow : SupervisedWindowRenderer {
         --index;
         changed = true;
       }
-      UnityEngine.TextAnchor old_alignment =
-          UnityEngine.GUI.skin.textArea.alignment;
-      UnityEngine.GUI.skin.textArea.alignment =
-          UnityEngine.TextAnchor.MiddleRight;
+      var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
+      style.alignment = UnityEngine.TextAnchor.MiddleRight;
       UnityEngine.GUILayout.TextArea(
           text    : String.Format(Culture.culture, format, array[index]),
+          style   : style,
           options : GUILayoutWidth(3));
-      UnityEngine.GUI.skin.textArea.alignment = old_alignment;
       if (UnityEngine.GUILayout.Button(
               text    : index == array.Length - 1 ? "max" : "+",
               options : GUILayoutWidth(2)) &&

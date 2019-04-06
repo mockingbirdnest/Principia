@@ -38,20 +38,24 @@ internal class DifferentialSlider : ScalingRenderer {
     bool value_changed = false;
 
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
-      if (text_colour_.HasValue) {
-        style.normal.textColor = text_colour_.Value;
+      {
+        var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
+        if (text_colour_.HasValue) {
+          style.normal.textColor = text_colour_.Value;
+        }
+        UnityEngine.GUILayout.Label(text    : label_,
+                                    options : GUILayoutWidth(3),
+                                    style   : style);
       }
-      UnityEngine.GUILayout.Label(text    : label_,
-                                  options : GUILayoutWidth(3),
-                                  style   : style);
 
-      var old_alignment = UnityEngine.GUI.skin.label.alignment;
-      UnityEngine.GUI.skin.label.alignment = UnityEngine.TextAnchor.MiddleRight;
-      UnityEngine.GUILayout.Label(
-          text    : format_(value),
-          options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
-      UnityEngine.GUI.skin.label.alignment = old_alignment;
+      {
+        var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
+        style.alignment = UnityEngine.TextAnchor.MiddleRight;
+        UnityEngine.GUILayout.Label(
+            text    : format_(value),
+            style   : style,
+            options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
+      }
       UnityEngine.GUILayout.Label(
           text    : unit_ ?? "",
           options : GUILayoutWidth(unit_ == null ? 0 : 2));

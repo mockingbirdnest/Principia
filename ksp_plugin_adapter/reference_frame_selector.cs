@@ -349,13 +349,13 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private void TypeSelector(FrameType value) {
-   float old_fixed_height = UnityEngine.GUI.skin.toggle.fixedHeight;
-   bool old_wrap = UnityEngine.GUI.skin.toggle.wordWrap;
-   UnityEngine.GUI.skin.toggle.fixedHeight = 0;
-   UnityEngine.GUI.skin.toggle.wordWrap = true;
+   var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.toggle);
+   style.fixedHeight = 0;
+   style.wordWrap = true;
    if (UnityEngine.GUILayout.Toggle(
            frame_type == value,
            Description(value, selected_celestial, target_override),
+           style,
            GUILayoutWidth(6),
            GUILayoutHeight(5))) {
      if (frame_type != value) {
@@ -363,8 +363,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
        on_change_(FrameParameters());
      }
     }
-    UnityEngine.GUI.skin.toggle.fixedHeight = old_fixed_height;
-    UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
 
   public FrameType frame_type { get; private set; }

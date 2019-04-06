@@ -60,7 +60,8 @@ class BurnEditor : ScalingRenderer {
   public bool Render(bool enabled) {
     bool changed = false;
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      var warning_style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
+      var warning_style =
+          new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
       warning_style.normal.textColor = XKCDColors.Orange;
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
       // been set.  If we have fallen back to instant impulse, we should use this
