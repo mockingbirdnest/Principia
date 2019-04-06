@@ -2,7 +2,6 @@
 
 #include "numerics/finite_difference.hpp"
 
-#include "numerics/double_precision.hpp"
 #include "numerics/finite_difference.mathematica.h"
 
 namespace principia {
@@ -22,11 +21,11 @@ Derivative<Value, Argument> FiniteDifference(
     // unused.
     // We thus evaluate the sum Σᵢ aᵢ f(xᵢ), with i runnning from 0 to n - 1, as
     // Σⱼ aⱼ (f(xⱼ) - f(xₙ₋ⱼ₋₁)), with j running from 0 to (n - 3) / 2.
-    DoublePrecision<Difference<Value>> sum{};
+    Difference<Value> sum{};
     for (int j = 0; j <= (n - 3) / 2; ++j) {
-      sum += TwoProduct(numerators[j], values[j] - values[n - j - 1]);
+      sum += numerators[j] * (values[j] - values[n - j - 1]);
     }
-    return sum.value / (denominator * step);
+    return sum / (denominator * step);
   } else {
     // In the general case, we evaluate the sum Σᵢ aᵢ f(xᵢ), with Σᵢ aᵢ = 0,
     // where the sums over i run from 0 to n - 1, as
@@ -34,13 +33,13 @@ Derivative<Value, Argument> FiniteDifference(
     // where the sum over j runs from 0 to n - 2, and the sum over
     // k runs from 0 to j.
     double numerator = 0;
-    DoublePrecision<Difference<Value>> sum{};
+    Difference<Value> sum{};
     for (int j = 0; j <= n - 2; ++j) {
       numerator += numerators[j];
       Difference<Value> difference = values[j] - values[j + 1];
-      sum += TwoProduct(numerator, difference);
+      sum += numerator * difference;
     }
-    return sum.value / (denominator * step);
+    return sum / (denominator * step);
   }
 }
 
