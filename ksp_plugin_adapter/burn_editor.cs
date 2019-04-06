@@ -6,7 +6,7 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-class BurnEditor {
+class BurnEditor : ScalingRenderer {
   public BurnEditor(PrincipiaPluginAdapter adapter,
                     IntPtr plugin,
                     Vessel vessel,
@@ -112,7 +112,7 @@ class BurnEditor {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
-            UnityEngine.GUILayout.Width(200));
+            GUILayoutWidth(8));
         UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
                                     " s");
       }

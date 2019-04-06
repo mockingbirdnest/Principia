@@ -4,7 +4,7 @@ using System.Globalization;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal class DifferentialSlider {
+internal class DifferentialSlider : ScalingRenderer {
   public delegate string ValueFormatter(double value);
 
   // Rates are in units of |value| per real-time second.
@@ -43,34 +43,30 @@ internal class DifferentialSlider {
         style.normal.textColor = text_colour_.Value;
       }
       UnityEngine.GUILayout.Label(text    : label_,
-                                  options : UnityEngine.GUILayout.Width(75),
+                                  options : GUILayoutWidth(3),
                                   style   : style);
 
       var old_alignment = UnityEngine.GUI.skin.label.alignment;
-      UnityEngine.GUI.skin.label.alignment = UnityEngine.TextAnchor.UpperRight;
+      UnityEngine.GUI.skin.label.alignment = UnityEngine.TextAnchor.MiddleRight;
       UnityEngine.GUILayout.Label(
           text    : format_(value),
-          options : UnityEngine.GUILayout.Width(
-                        125 + (unit_ == null ? 50 : 0)));
+          options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
       UnityEngine.GUI.skin.label.alignment = old_alignment;
       UnityEngine.GUILayout.Label(
           text    : unit_ ?? "",
-          options : UnityEngine.GUILayout.Width(unit_ == null ? 0 : 50));
+          options : GUILayoutWidth(unit_ == null ? 0 : 2));
 
       if (enabled) {
         if (!UnityEngine.Input.GetMouseButton(0)) {
           slider_position_ = 0;
         }
-        UnityEngine.GUI.skin.horizontalSlider.fixedHeight = 21;
-        UnityEngine.GUI.skin.horizontalSliderThumb.fixedHeight = 21;
         slider_position_ = UnityEngine.GUILayout.HorizontalSlider(
             value      : slider_position_,
             leftValue  : -1,
             rightValue : 1,
             options    : UnityEngine.GUILayout.ExpandWidth(true));
 
-        if (UnityEngine.GUILayout.Button("0",
-                                         UnityEngine.GUILayout.Width(20))) {
+        if (UnityEngine.GUILayout.Button("0", GUILayoutWidth(1))) {
           value_changed = true;
           value = 0;
         }
