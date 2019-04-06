@@ -6,7 +6,7 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-class BurnEditor {
+class BurnEditor : ScalingRenderer {
   public BurnEditor(PrincipiaPluginAdapter adapter,
                     IntPtr plugin,
                     Vessel vessel,
@@ -58,11 +58,10 @@ class BurnEditor {
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
   public bool Render(bool enabled) {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
     bool changed = false;
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      var warning_style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
+      var warning_style =
+          new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
       warning_style.normal.textColor = XKCDColors.Orange;
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
       // been set.  If we have fallen back to instant impulse, we should use this
@@ -114,13 +113,12 @@ class BurnEditor {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
-            UnityEngine.GUILayout.Width(200));
+            GUILayoutWidth(8));
         UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
                                     " s");
       }
       changed_reference_frame_ = false;
     }
-    UnityEngine.GUI.skin = old_skin;
     return changed && enabled;
   }
 

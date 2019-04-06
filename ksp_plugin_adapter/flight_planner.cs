@@ -29,8 +29,6 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button("Flight plan...")) {
       Toggle();
     }
@@ -40,7 +38,6 @@ class FlightPlanner : SupervisedWindowRenderer {
       Hide();
       vessel_ = FlightGlobals.ActiveVessel;
     }
-    UnityEngine.GUI.skin = old_skin;
   }
 
   protected override String Title => "Flight plan";
@@ -143,7 +140,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label("Max. steps per segment:",
-                                      UnityEngine.GUILayout.Width(150));
+                                      GUILayoutWidth(6));
           const int factor = 4;
           if (parameters.max_steps <= 100) {
             UnityEngine.GUILayout.Button("min");
@@ -153,7 +150,7 @@ class FlightPlanner : SupervisedWindowRenderer {
                                                         parameters);
           }
           UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
-                                          UnityEngine.GUILayout.Width(75));
+                                          GUILayoutWidth(3));
           if (parameters.max_steps >= Int64.MaxValue / factor) {
             UnityEngine.GUILayout.Button("max");
           } else if (UnityEngine.GUILayout.Button("+")) {
@@ -164,7 +161,7 @@ class FlightPlanner : SupervisedWindowRenderer {
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label("Tolerance:",
-                                      UnityEngine.GUILayout.Width(75));
+                                      GUILayoutWidth(3));
           if (parameters.length_integration_tolerance <= 1e-6) {
             UnityEngine.GUILayout.Button("min");
           } else if (UnityEngine.GUILayout.Button("-")) {
@@ -174,9 +171,8 @@ class FlightPlanner : SupervisedWindowRenderer {
                                                         parameters);
           }
           UnityEngine.GUILayout.TextArea(
-              parameters.length_integration_tolerance.ToString("0.0e0") +
-                  " m",
-              UnityEngine.GUILayout.Width(75));
+              parameters.length_integration_tolerance.ToString("0.0e0") + " m",
+              GUILayoutWidth(3));
           if (parameters.length_integration_tolerance >= 1e6) {
             UnityEngine.GUILayout.Button("max");
           } else if (UnityEngine.GUILayout.Button("+")) {
@@ -260,6 +256,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     for (int i = 0; i < burn_editors_.Count; ++i) {
       NavigationManoeuvre manoeuvre =
           plugin_.FlightPlanGetManoeuvre(vessel_guid, i);
+      // TODO(phl): Evil changes of widgets between layout and repaint...
       if (manoeuvre.final_time > current_time) {
         if (manoeuvre.burn.initial_time > current_time) {
           UnityEngine.GUILayout.TextArea("Upcoming manœuvre: #" + (i + 1));
