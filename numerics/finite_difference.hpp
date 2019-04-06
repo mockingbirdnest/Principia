@@ -1,6 +1,7 @@
 ﻿#pragma once
 
-#include "numerics/fixed_arrays.hpp"
+#include <array>
+
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -22,7 +23,7 @@ using quantities::Difference;
 // exact up to rounding errors.
 template<typename Value, typename Argument, int n>
 Derivative<Value, Argument> FiniteDifference(
-    FixedVector<Value, n> const& values,
+    std::array<Value, n> const& values,
     Argument const& step,
     int offset);
 

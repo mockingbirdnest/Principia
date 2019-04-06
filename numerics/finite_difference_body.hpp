@@ -11,7 +11,7 @@ namespace internal_finite_difference {
 
 template<typename Value, typename Argument, int n>
 Derivative<Value, Argument> FiniteDifference(
-    FixedVector<Value, n> const& values,
+    std::array<Value, n> const& values,
     Argument const& step,
     int offset) {
   double const* const numerators = std::get<n - 1>(Numerators)[offset];

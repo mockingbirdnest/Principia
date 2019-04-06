@@ -106,8 +106,11 @@ SetDirectory[ParentDirectory[NotebookDirectory[]]];
 Export[
 "numerics\\finite_difference.mathematica.h",
 With[
-{\[ScriptCapitalN]=17},
+{\[ScriptCapitalN]=9},
 "#pragma once
+
+#include <array>
+#include <tuple>
 
 #include \"numerics/fixed_arrays.hpp\"
 
