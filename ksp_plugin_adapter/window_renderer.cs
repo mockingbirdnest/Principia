@@ -10,7 +10,8 @@ internal abstract class BaseWindowRenderer : IConfigNode {
   protected BaseWindowRenderer(UnityEngine.GUILayoutOption[] options) {
     // All dimensions are expressed in "units".  By default a unit is 25 pixels
     // but it can scale up or down based on the KSP UI scale.
-    unit_ = 25 * GameSettings.UI_SCALE;
+    scale_ = GameSettings.UI_SCALE * GameSettings.UI_SCALE_APPS;
+    unit_ = 25 * scale_;
     UnityEngine.GUILayoutOption[] default_options =
         {UnityEngine.GUILayout.MinWidth(20 * unit_)};
     
@@ -35,9 +36,14 @@ internal abstract class BaseWindowRenderer : IConfigNode {
   }
 
   // Rendering.
+
   public void RenderWindow() {
     var old_skin = UnityEngine.GUI.skin;
-    ApplySkin();
+    if (skin_ == null) {
+      UnityEngine.GUI.skin = null;
+      skin_ = MakeSkin(UnityEngine.GUI.skin);
+    }
+    UnityEngine.GUI.skin = skin_;
     if (show_) {
       rectangle_ = UnityEngine.GUILayout.Window(
                        id         : this.GetHashCode(),
@@ -110,6 +116,10 @@ internal abstract class BaseWindowRenderer : IConfigNode {
 
   // Scaling.
 
+  protected UnityEngine.GUILayoutOption GUILayoutHeight(int units) {
+    return UnityEngine.GUILayout.Height(unit_ * units);
+  }
+
   protected UnityEngine.GUILayoutOption GUILayoutMinWidth(int units) {
     return UnityEngine.GUILayout.MinWidth(unit_ * units);
   }
@@ -122,47 +132,42 @@ internal abstract class BaseWindowRenderer : IConfigNode {
     return unit_ * units;
   }
 
-  private void ApplySkin() {
-    //KSP.UI.UIMasterController.Instance.appCanvas.scaleFactor =
-    //    GameSettings.UI_SCALE_APPS;
-    if (skin_ == null) {
-      UnityEngine.GUI.skin = null;
-      // The default Unity skin uses Arial 13.
-      // TODO(phl): Do we need to change the fonts of the nested styles?
-      skin_ = UnityEngine.Object.Instantiate(UnityEngine.GUI.skin);
+  // Skinning.
 
-      var pangram = new UnityEngine.GUIContent(
-          "Portez ce vieux whisky au juge blond qui fume.");
-      float button_height = skin_.button.CalcHeight(pangram, width: 1000);
-      float label_height = skin_.label.CalcHeight(pangram, width: 1000);
-      float text_area_height = skin_.textArea.CalcHeight(pangram, width: 1000);
-      float toggle_height = skin_.toggle.CalcHeight(pangram, width: 1000);
-      UnityEngine.Debug.LogError(button_height + " " + label_height + " " +
-      text_area_height+" "+toggle_height+" "+skin_.toggle.margin.top);
+  private UnityEngine.GUISkin MakeSkin(UnityEngine.GUISkin template) {
+    UnityEngine.GUISkin skin = UnityEngine.Object.Instantiate(template);
 
-      skin_.font = UnityEngine.Font.CreateDynamicFontFromOSFont(
-                        skin_.font.fontNames,
-                        (int)(skin_.font.fontSize * GameSettings.UI_SCALE));
+    var pangram = new UnityEngine.GUIContent(
+        "Portez ce vieux whisky au juge blond qui fume.");
+    float button_height = skin.button.CalcHeight(pangram, width: 1000);
 
-      skin_.button.fixedHeight = button_height * GameSettings.UI_SCALE;
-      skin_.button.contentOffset =
-          new UnityEngine.Vector2(0, -skin_.button.fixedHeight / 10);
-      skin_.label.fixedHeight = label_height * GameSettings.UI_SCALE;
-      skin_.label.contentOffset =
-          new UnityEngine.Vector2(0, skin_.label.fixedHeight / 20);
-      skin_.textArea.fixedHeight = text_area_height * GameSettings.UI_SCALE;
-      skin_.textArea.contentOffset =
-          new UnityEngine.Vector2(0, skin_.textArea.fixedHeight / 20);
-      skin_.toggle.fixedHeight = toggle_height * GameSettings.UI_SCALE;
-      skin_.toggle.contentOffset =
-          new UnityEngine.Vector2(0, -skin_.toggle.fixedHeight / 10);
-      skin_.toggle.margin = new UnityEngine.RectOffset(
-          skin_.toggle.margin.left,
-          skin_.toggle.margin.right,
-          (int)(skin_.toggle.margin.top * 1.7 * GameSettings.UI_SCALE),
-          skin_.toggle.margin.bottom);
-    }
-    UnityEngine.GUI.skin = skin_;
+    float label_height = skin.label.CalcHeight(pangram, width: 1000);
+    float text_area_height = skin.textArea.CalcHeight(pangram, width: 1000);
+    float toggle_height = skin.toggle.CalcHeight(pangram, width: 1000);
+    UnityEngine.Debug.LogError(button_height + " " + label_height + " " +
+    text_area_height+" "+toggle_height);
+
+    skin.font = UnityEngine.Font.CreateDynamicFontFromOSFont(
+                      skin.font.fontNames,
+                      (int)(skin.font.fontSize * scale_));
+
+    skin.button.fixedHeight = button_height * scale_;
+    skin.button.contentOffset =
+        new UnityEngine.Vector2(0, -button_height * scale_ / 10);
+    skin.label.fixedHeight = label_height * scale_;
+    skin.label.contentOffset =
+        new UnityEngine.Vector2(0, label_height * scale_ / 20);
+    skin.textArea.fixedHeight = text_area_height * scale_;
+    skin.textArea.contentOffset =
+        new UnityEngine.Vector2(0, text_area_height * scale_ / 20);
+    skin.toggle.contentOffset =
+        new UnityEngine.Vector2(0, -toggle_height * scale_ / 10);
+    skin.toggle.margin = new UnityEngine.RectOffset(
+        skin.toggle.margin.left,
+        skin.toggle.margin.right,
+        (int)(skin.toggle.margin.top * 1.7 * scale_),
+        skin.toggle.margin.bottom);
+    return skin;
   }
 
   // Persistence.
@@ -203,6 +208,7 @@ internal abstract class BaseWindowRenderer : IConfigNode {
   private const float min_height_on_screen_ = 50;
   private const float min_width_on_screen_ = 50;
 
+  private readonly float scale_;
   private readonly float unit_;
   private readonly UnityEngine.GUILayoutOption[] options_;
   private readonly String lock_name_;

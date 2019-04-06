@@ -355,7 +355,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
            frame_type == value,
            Description(value, selected_celestial, target_override),
            GUILayoutWidth(6),
-           UnityEngine.GUILayout.Height(120))) {
+           GUILayoutHeight(6))) {
      if (frame_type != value) {
        frame_type = value;
        on_change_(FrameParameters());
