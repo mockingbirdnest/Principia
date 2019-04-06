@@ -1,6 +1,8 @@
 ﻿
 #include "numerics/finite_difference.hpp"
 
+#include <vector>
+
 #include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
