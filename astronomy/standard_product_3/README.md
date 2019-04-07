@@ -7,6 +7,21 @@ These files come from various agencies; we document their provenance here.
 
 ## International DORIS Service (IDS) products
 
+See https://ids-doris.org/ids/data-products/tables-of-data-products.html.
+
+- [grgtop03.b97344.e97348.D_S.sp3](grgtop03.b97344.e97348.D_S.sp3):<br>
+  ftp://doris.ensg.eu/pub/doris/products/orbits/grg/top/ <br>
+  ftp://doris.ign.fr/pub/doris/products/orbits/grg/top/ <br>
+  ftp://cddis.gsfc.nasa.gov/doris/products/orbits/grg/top/
+- [grgja203.b08243.e08247.D_S.sp3](grgja203.b08243.e08247.D_S.sp3):<br>
+  ftp://doris.ensg.eu/pub/doris/products/orbits/grg/ja2/ <br>
+  ftp://doris.ign.fr/pub/doris/products/orbits/grg/ja2/ <br>
+  ftp://cddis.gsfc.nasa.gov/doris/products/orbits/grg/ja2/
+- [ssaja102.b03007.e03017.DGS.sp3](ssaja102.b03007.e03017.DGS.sp3):<br>
+  ftp://doris.ensg.eu/pub/doris/products/orbits/ssa/ja2/ <br>
+  ftp://doris.ign.fr/pub/doris/products/orbits/ssa/ja2/ <br>
+  ftp://cddis.gsfc.nasa.gov/doris/products/orbits/ssa/ja2/
+
 ## International GNSS Service (IGS) products
 
 See http://www.igs.org/products,
