@@ -30,12 +30,25 @@ internal class DifferentialSlider : ScalingRenderer {
     text_colour_ = text_colour;
   }
 
-  public double value { get; set; }
+  public double value {
+    get {
+      return value_;
+    }
+    set {
+      if (value_ != value) {
+        value_ = value;
+        formatted_value_ = format_(value_);
+            UnityEngine.Debug.LogError("Reset "+formatted_value_ + " " +value_);
+      }
+    }
+  }
 
   // Renders the |DifferentialSlider|.  Returns true if and only if |value|
   // changed.
   public bool Render(bool enabled) {
     bool value_changed = false;
+    bool must_trace = false;
+    var e = UnityEngine.Event.current;
 
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       {
@@ -48,11 +61,36 @@ internal class DifferentialSlider : ScalingRenderer {
                                     style   : style);
       }
 
-      {
+      if (enabled) {
+        var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textField);
+        style.alignment = UnityEngine.TextAnchor.MiddleRight;
+        String new_formatted_value = UnityEngine.GUILayout.TextField(
+            text    : formatted_value_,
+            style   : style,
+            options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
+
+        if (new_formatted_value != formatted_value_) {
+          UnityEngine.Debug.LogError(formatted_value_ + " " +
+                                     new_formatted_value + " " +
+                                     e.type + " " +
+                                     e.keyCode);
+                                     must_trace = true;
+
+          if (e.type == UnityEngine.EventType.KeyUp &&
+              e.keyCode == UnityEngine.KeyCode.Return) {
+            //TODO(phl): Errors.
+            value = Double.Parse(new_formatted_value, Culture.culture);
+            slider_position_ = 0;
+            value_changed = true;
+          } else {
+            formatted_value_ = new_formatted_value;
+          }
+        }
+      } else {
         var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
         style.alignment = UnityEngine.TextAnchor.MiddleRight;
         UnityEngine.GUILayout.Label(
-            text    : format_(value),
+            text    : formatted_value_,
             style   : style,
             options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
       }
@@ -88,11 +126,11 @@ internal class DifferentialSlider : ScalingRenderer {
       }
       last_time_ = DateTime.Now;
     }
+    if (must_trace) {
+          UnityEngine.Debug.LogError(formatted_value_ + " " +value_);
+    }
     return value_changed;
   }
-
-  private float slider_position_ = 0.0f;
-  private DateTime last_time_;
 
   private readonly string label_;
   private readonly string unit_;
@@ -104,6 +142,11 @@ internal class DifferentialSlider : ScalingRenderer {
 
   private readonly ValueFormatter format_;
   private readonly UnityEngine.Color? text_colour_;
+
+  private float slider_position_ = 0.0f;
+  private DateTime last_time_;
+  private double value_;
+  private String formatted_value_;
 }
 
 }  // namespace ksp_plugin_adapter
