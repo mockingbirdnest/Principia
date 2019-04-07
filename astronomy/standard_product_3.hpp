@@ -106,6 +106,9 @@ std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::Version const& version);
 
 std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::Dialect const& dialect);
+
+std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::SatelliteGroup const& group);
 
 std::ostream& operator<<(std::ostream& out,

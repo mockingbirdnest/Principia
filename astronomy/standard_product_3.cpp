@@ -312,7 +312,10 @@ StandardProduct3::StandardProduct3(
         }
       }
 
-      orbit.Append(epoch, {position, velocity});
+      // Bad or absent positional and velocity values are to be set to 0.000000.
+      if (position != ITRS::origin && velocity != Velocity<ITRS>()) {
+        orbit.Append(epoch, {position, velocity});
+      }
     }
   }
   if (dialect != Dialect::ILRSA) {
@@ -401,6 +404,20 @@ bool operator<(StandardProduct3::SatelliteIdentifier const& left,
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::Version const& version) {
   return out << std::string(1, static_cast<char>(version));
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::Dialect const& dialect) {
+  switch (dialect) {
+    case StandardProduct3::Dialect::Standard:
+      return out << "Standard SP3";
+    case StandardProduct3::Dialect::ILRSA:
+      return out << "ILRSA SP3 dialect";
+    case StandardProduct3::Dialect::ILRSB:
+      return out << "ILRSB SP3 dialect";
+    default:
+      return out << "Unknown SP3 dialect (" << static_cast<int>(dialect) << ")";
+  }
 }
 
 std::ostream& operator<<(std::ostream& out,

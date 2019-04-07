@@ -46,6 +46,7 @@ using ::testing::Lt;
 using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
+using ::testing::ValuesIn;
 
 class StandardProduct3Test : public ::testing::Test {
  protected:
@@ -210,7 +211,20 @@ TEST_F(StandardProduct3Test, Dialects) {
 
 #if !defined(_DEBUG)
 
-class StandardProduct3DynamicsTest : public ::testing::Test {
+struct StandardProduct3Args {
+  std::filesystem::path filename;
+  StandardProduct3::Dialect dialect;
+  StandardProduct3::Version version;
+  bool has_velocities;
+};
+
+std::ostream& operator<<(std::ostream& out, StandardProduct3Args const& args) {
+  return out << args.filename << " interpreted as " << args.dialect
+             << " (expected to have version " << args.version << ")";
+}
+
+class StandardProduct3DynamicsTest
+    : public ::testing::TestWithParam<StandardProduct3Args> {
  protected:
   StandardProduct3DynamicsTest()
       : solar_system_([]() {
@@ -252,14 +266,46 @@ class StandardProduct3DynamicsTest : public ::testing::Test {
   BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
 };
 
-TEST_F(StandardProduct3DynamicsTest, PerturbedKeplerian) {
+INSTANTIATE_TEST_CASE_P(
+    AllVersionsAndDialects,
+    StandardProduct3DynamicsTest,
+    ValuesIn(std::vector<StandardProduct3Args>{
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" / "esa11802.eph",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::A},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" / "mcc14000.sp3",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::B},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "COD0MGXFIN_20181260000_01D_05M_ORB.SP3",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::C},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "COD0MGXFIN_20183640000_01D_05M_ORB.SP3",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::D},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" / "nga20342.eph",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::A},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "ilrsa.orb.lageos2.160319.v35.sp3",
+         StandardProduct3::Dialect::ILRSA,
+         StandardProduct3::Version::C},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "ilrsb.orb.lageos2.160319.v35.sp3",
+         StandardProduct3::Dialect::ILRSB,
+         StandardProduct3::Version::C},
+    }));
+
+// This test checks that, for each point of the orbit, its evolution taking into
+// account only a simple oblate Earth is close enough to the next point.
+TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
   // SP3-a file from the European Space Operations Centre (European
   // Space Agency).
-  StandardProduct3 sp3a(
-      SOLUTION_DIR / "astronomy" / "standard_product_3" / "esa11802.eph",
-      StandardProduct3::Dialect::Standard);
-  for (auto const& satellite : sp3a.satellites()) {
-    auto const& orbit = sp3a.orbit(satellite);
+  StandardProduct3 sp3(GetParam().filename, GetParam().dialect);
+  EXPECT_THAT(sp3.version(), Eq(GetParam().version));
+  for (auto const& satellite : sp3.satellites()) {
+    auto const& orbit = sp3.orbit(satellite);
     auto it = orbit.Begin();
     for (int i = 0;; ++i) {
       DiscreteTrajectory<ICRS> arc;
