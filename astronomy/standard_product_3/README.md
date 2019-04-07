@@ -7,7 +7,10 @@ These files come from various agencies; we document their provenance here.
 
 ## International DORIS Service (IDS) products
 
-See https://ids-doris.org/ids/data-products/tables-of-data-products.html.
+See https://ids-doris.org/ids/data-products/tables-of-data-products.html,
+https://ids-doris.org/documents/Data-Structure-Formats.pdf,
+https://ids-doris.org/ids/organization/analysis-centers.html,
+https://cddis.nasa.gov/docs/2016/cddis_IDSreport_2016.pdf.
 
 - [grgtop03.b97344.e97348.D_S.sp3](grgtop03.b97344.e97348.D_S.sp3):<br>
   ftp://doris.ensg.eu/pub/doris/products/orbits/grg/top/ <br>
