@@ -2,26 +2,55 @@
 #include "astronomy/standard_product_3.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <set>
 #include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/solar_system.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace astronomy {
 
+using base::dynamic_cast_not_null;
+using base::not_null;
+using geometry::Position;
+using physics::BodySurfaceDynamicFrame;
+using physics::ContinuousTrajectory;
+using physics::DiscreteTrajectory;
+using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
+using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
+using integrators::methods::QuinlanTremaine1990Order12;
+using physics::DegreesOfFreedom;
+using physics::Ephemeris;
+using physics::RotatingBody;
+using physics::SolarSystem;
+using quantities::si::Deci;
+using quantities::si::Metre;
+using quantities::si::Milli;
+using quantities::si::Minute;
+using quantities::si::Second;
+using testing_utilities::AbsoluteError;
+using testing_utilities::Componentwise;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Field;
+using ::testing::Lt;
 using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 
 class StandardProduct3Test : public ::testing::Test {
  protected:
+  StandardProduct3Test() {}
+
   static std::set<StandardProduct3::SatelliteGroup> SatelliteGroups(
       std::vector<StandardProduct3::SatelliteIdentifier> const& identifiers) {
     std::set<StandardProduct3::SatelliteGroup> result;
@@ -178,6 +207,95 @@ TEST_F(StandardProduct3Test, Dialects) {
               ElementsAre(StandardProduct3::SatelliteIdentifier{
                   StandardProduct3::SatelliteGroup::General, 52}));
 }
+
+#if !defined(_DEBUG)
+
+class StandardProduct3DynamicsTest : public ::testing::Test {
+ protected:
+  StandardProduct3DynamicsTest()
+      : solar_system_([]() {
+          SolarSystem<ICRS> solar_system(
+              SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+              SOLUTION_DIR / "astronomy" /
+                  "sol_initial_state_jd_2436116_311504629.proto.txt");
+          std::vector<std::string> names = solar_system.names();
+          for (auto const& name : names) {
+            if (name != "Earth") {
+              solar_system.RemoveMassiveBody(name);
+            }
+          }
+          solar_system.LimitOblatenessToDegree("Earth", 2);
+          solar_system.LimitOblatenessToZonal("Earth");
+          return solar_system;
+        }()),
+        ephemeris_(solar_system_.MakeEphemeris(
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
+            Ephemeris<ICRS>::FixedStepParameters(
+                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                                   Position<ICRS>>(),
+                /*step=*/10 * Minute))),
+        earth_(dynamic_cast_not_null<RotatingBody<ICRS> const*>(
+            solar_system_.massive_body(*ephemeris_, "Earth"))),
+        earth_trajectory_(*ephemeris_->trajectory(earth_)),
+        itrs_(ephemeris_.get(), earth_) {}
+
+  // This ephemeris has only one body, an oblate Earth.
+  // The lack of third bodies makes it quick to prolong; it is suitable for
+  // minimal sanity checking of Earth orbits.
+  // Its |t_min| is the time of the launch of Спутник-1, so it can be used for
+  // any artificial satellite.
+  SolarSystem<ICRS> const solar_system_;
+  not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
+  not_null<RotatingBody<ICRS> const*> const earth_;
+  ContinuousTrajectory<ICRS> const& earth_trajectory_;
+  BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
+};
+
+TEST_F(StandardProduct3DynamicsTest, PerturbedKeplerian) {
+  // SP3-a file from the European Space Operations Centre (European
+  // Space Agency).
+  StandardProduct3 sp3a(
+      SOLUTION_DIR / "astronomy" / "standard_product_3" / "esa11802.eph",
+      StandardProduct3::Dialect::Standard);
+  for (auto const& satellite : sp3a.satellites()) {
+    auto const& orbit = sp3a.orbit(satellite);
+    auto it = orbit.Begin();
+    for (int i = 0;; ++i) {
+      DiscreteTrajectory<ICRS> arc;
+      ephemeris_->Prolong(it.time());
+      arc.Append(it.time(),
+                 itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+      if (++it == orbit.End()) {
+        break;
+      }
+      ephemeris_->FlowWithAdaptiveStep(
+            &arc,
+            Ephemeris<ICRS>::NoIntrinsicAcceleration,
+            it.time(),
+            Ephemeris<ICRS>::AdaptiveStepParameters(
+                EmbeddedExplicitRungeKuttaNyströmIntegrator<
+                    DormandالمكاوىPrince1986RKN434FM,
+                    Position<ICRS>>(),
+                std::numeric_limits<std::int64_t>::max(),
+                /*length_integration_tolerance=*/1 * Milli(Metre),
+                /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
+            /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
+            /*last_point_only=*/true);
+      DegreesOfFreedom<ICRS> actual = arc.last().degrees_of_freedom();
+      DegreesOfFreedom<ICRS> expected =
+          itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom());
+      EXPECT_THAT(AbsoluteError(expected.position(), actual.position()),
+                  Lt(20 * Metre))
+          << "orbit of satellite " << satellite << " flowing from point " << i;
+      EXPECT_THAT(AbsoluteError(expected.velocity(), actual.velocity()),
+                  Lt(1 * Deci(Metre) / Second))
+          << "orbit of satellite " << satellite << " flowing from point " << i;
+    }
+  }
+}
+
+#endif
 
 }  // namespace astronomy
 }  // namespace principia

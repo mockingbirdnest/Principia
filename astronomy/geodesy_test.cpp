@@ -73,7 +73,7 @@ class GeodesyTest : public ::testing::Test {
         earth_trajectory_(*ephemeris_->trajectory(earth_)),
         itrs_(ephemeris_.get(), earth_) {}
 
-  SolarSystem<ICRS> solar_system_2010_;
+  SolarSystem<ICRS> const solar_system_2010_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<OblateBody<ICRS> const*> const earth_;
   ContinuousTrajectory<ICRS> const& earth_trajectory_;

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/discrete_trajectory.hpp"
 
@@ -14,6 +15,7 @@ namespace principia {
 namespace astronomy {
 namespace internal_standard_product_3 {
 
+using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
@@ -86,7 +88,9 @@ class StandardProduct3 {
 
  private:
   std::vector<SatelliteIdentifier> satellites_;
-  std::map<SatelliteIdentifier, DiscreteTrajectory<ITRS>> orbits_;
+  std::map<SatelliteIdentifier,
+           not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>
+      orbits_;
   Version version_;
 
   bool has_velocities_;

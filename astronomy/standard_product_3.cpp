@@ -10,13 +10,16 @@
 #include "astronomy/time_scales.hpp"
 #include "base/map_util.hpp"
 #include "glog/logging.h"
+#include "numerics/finite_difference.hpp"
 
 namespace principia {
 namespace astronomy {
 namespace internal_standard_product_3 {
 
 using base::FindOrDie;
+using base::make_not_null_unique;
 using geometry::Displacement;
+using numerics::FiniteDifference;
 using quantities::NaN;
 using quantities::Speed;
 using quantities::si::Deci;
@@ -136,9 +139,8 @@ StandardProduct3::StandardProduct3(
         }
         id.index = integer_columns(c + 1, c + 2);
         CHECK_GT(id.index, 0) << full_location;
-        auto const [it, inserted] = orbits_.emplace(std::piecewise_construct,  // NOLINT
-                                                    std::forward_as_tuple(id),
-                                                    std::forward_as_tuple());
+        auto const [it, inserted] = orbits_.emplace(  // NOLINT
+            id, make_not_null_unique<DiscreteTrajectory<ITRS>>());
         CHECK(inserted) << "Duplicate satellite identifier " << id << ": "
                         << full_location;
         satellites_.push_back(id);
@@ -270,15 +272,16 @@ StandardProduct3::StandardProduct3(
       // from the check.
       CHECK_EQ(id, satellites_[i]) << location;
 
-      DiscreteTrajectory<ITRS>& orbit = it->second;
+      DiscreteTrajectory<ITRS>& orbit = *it->second;
 
       Position<ITRS> const position =
           Displacement<ITRS>({float_columns(5, 18) * Kilo(Metre),
                               float_columns(19, 32) * Kilo(Metre),
                               float_columns(33, 46) * Kilo(Metre)}) +
           ITRS::origin;
-      // TODO(egg): use a difference formula to compute the velocities if they
-      // are not provided.
+      // If the file does not provide velocities, fill the trajectory with NaN
+      // velocities; we then replace it with another trajectory whose velocities
+      // are computed using a finite difference formula.
       Velocity<ITRS> velocity({NaN<Speed>(), NaN<Speed>(), NaN<Speed>()});
 
       read_line();
@@ -317,6 +320,57 @@ StandardProduct3::StandardProduct3(
     read_line();
   }
   CHECK(!line.has_value()) << location;
+  if (!has_velocities_) {
+    for (auto& [id, orbit] : orbits_) {
+      auto orbit_with_velocities =
+          make_not_null_unique<DiscreteTrajectory<ITRS>>();
+      // The number of points used for the finite difference formula.
+      constexpr int n = 9;
+      // TODO(egg): A valid file may have fewer than 9 points.  Consider
+      // removing this restriction.
+      CHECK_GE(orbit->Size(), n);
+      std::array<Instant, n> times;
+      std::array<Position<ITRS>, n> positions;
+      auto it = orbit->Begin();
+      for (int k = 0; k < n; ++k, ++it) {
+        // TODO(egg): we should check when reading the file that the times are
+        // equally spaced at the interval declared in columns 25-38 of SP3 line
+        // two.
+        times[k] = it.time();
+        positions[k] = it.degrees_of_freedom().position();
+      }
+      // We use a central difference formula wherever possible, so we keep
+      // |offset| at (n - 1) / 2 except at the beginning and end of the orbit.
+      int offset = 0;
+      for (int i = 0; i < orbit->Size(); ++i) {
+        orbit_with_velocities->Append(
+            times[offset],
+            {positions[offset],
+             FiniteDifference(
+                 /*values=*/positions,
+                 /*step=*/(times[n - 1] - times[0]) / (n - 1),
+                 offset)});
+        // At every iteration, either |offset| advances, or the |positions|
+        // window shifts and |it| advances.
+        if (offset < (n - 1) / 2 || it == orbit->End()) {
+          ++offset;
+        } else {
+          for (int k = 0; k < n - 1; ++k) {
+            times[k] = times[k + 1];
+            positions[k] = positions[k + 1];
+          }
+          times[n - 1] = it.time();
+          positions[n - 1] = it.degrees_of_freedom().position();
+          ++it;
+        }
+      }
+      // Internal sanity check, not an SP3 parse error. Note that having the
+      // right number of calls to |Append| does not guarantee this, as appending
+      // at an existing time merely emits a warning.
+      CHECK_EQ(orbit_with_velocities->Size(), orbit->Size());
+      orbit = std::move(orbit_with_velocities);
+    }
+  }
 }
 
 std::vector<StandardProduct3::SatelliteIdentifier> const&
@@ -326,7 +380,7 @@ StandardProduct3::satellites() const {
 
 DiscreteTrajectory<ITRS> const& StandardProduct3::orbit(
     SatelliteIdentifier const& id) const {
-  return FindOrDie(orbits_, id);
+  return *FindOrDie(orbits_, id);
 }
 
 StandardProduct3::Version StandardProduct3::version() const {
