@@ -298,6 +298,18 @@ INSTANTIATE_TEST_CASE_P(
              "ilrsb.orb.lageos2.160319.v35.sp3",
          StandardProduct3::Dialect::ILRSB,
          StandardProduct3::Version::C},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "grgtop03.b97344.e97348.D_S.sp3",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::C},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "grgja203.b08243.e08247.D_S.sp3",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::C},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "ssaja102.b03007.e03017.DGS.sp3",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::C},
     }));
 
 // This test checks that, for each point of the orbit, its evolution taking into
