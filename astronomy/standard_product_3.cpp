@@ -351,10 +351,11 @@ StandardProduct3::StandardProduct3(
           CHECK_EQ(SatelliteGroup{column(2)}, id.group) << location;
         }
         CHECK_EQ(integer_columns(3, 4), id.index) << location;
-        velocity =
-            Velocity<ITRS>({float_columns(5, 18) * (Deci(Metre) / Second),
-                            float_columns(19, 32) * (Deci(Metre) / Second),
-                            float_columns(33, 46) * (Deci(Metre) / Second)});
+        Speed const speed_unit =
+            dialect == Dialect::GRGS ? Metre / Second : Deci(Metre) / Second;
+        velocity = Velocity<ITRS>({float_columns(5, 18) * speed_unit,
+                                   float_columns(19, 32) * speed_unit,
+                                   float_columns(33, 46) * speed_unit});
 
         read_line();
         if (version_ >= Version::C && line.has_value() &&
@@ -456,6 +457,8 @@ std::ostream& operator<<(std::ostream& out,
       return out << "ILRSA SP3 dialect";
     case StandardProduct3::Dialect::ILRSB:
       return out << "ILRSB SP3 dialect";
+    case StandardProduct3::Dialect::GRGS:
+      return out << "GRGS SP3 dialect";
     default:
       return out << "Unknown SP3 dialect (" << static_cast<int>(dialect) << ")";
   }

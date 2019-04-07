@@ -53,6 +53,17 @@ class StandardProduct3 {
     // - the minute field of the epoch record takes the value 60 at the end of
     //   the hour.
     ILRSB,
+    // Files produced by the Groupe de Recherche de Géodesie Spatiale for the
+    // International DORIS Service.
+    // Note that these files, while having the letters grg in the file name,
+    // have the legacy agency field LCA, for Laboratoire d’Études en Géophysique
+    // et Océanographie Spatiales / Collecte Localisation Satellites (LEGOS/CLS)
+    // Analysis center.
+    // The files are syntactically correct, since the nonconformance only
+    // affects the numerical value of the velocity fields.
+    // Divergence from the specification:
+    // - the velocities are in m/s instead of the standard dm/s.
+    GRGS,
   };
 
   enum class SatelliteGroup : char {

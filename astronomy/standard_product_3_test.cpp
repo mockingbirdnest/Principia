@@ -302,12 +302,12 @@ INSTANTIATE_TEST_CASE_P(
         // Spatiale (GRGS).
         {SOLUTION_DIR / "astronomy" / "standard_product_3" /
              "grgtop03.b97344.e97348.D_S.sp3",
-         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Dialect::GRGS,
          StandardProduct3::Version::C},
         // Orbit for Jason-2, by the GRGS.
         {SOLUTION_DIR / "astronomy" / "standard_product_3" /
              "grgja203.b08243.e08247.D_S.sp3",
-         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Dialect::GRGS,
          StandardProduct3::Version::C},
         // Orbit for Jason-2, by the Segment-Sol multi-missions d’ALTimétrie,
         // Orbitographie et localisation précise (SSALTO).
