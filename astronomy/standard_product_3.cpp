@@ -27,6 +27,55 @@ using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Second;
 
+// Given a trajectory whose velocities are bad or absent (e.g., NaN), uses
+// n-point finite difference formulae on the positions to produce a trajectory
+// with consistent velocities.
+template<int n>
+not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
+    DiscreteTrajectory<ITRS> const& arc) {
+  auto result = make_not_null_unique<DiscreteTrajectory<ITRS>>();
+  CHECK_GE(arc.Size(), n);
+  std::array<Instant, n> times;
+  std::array<Position<ITRS>, n> positions;
+  auto it = arc.Begin();
+  for (int k = 0; k < n; ++k, ++it) {
+    // TODO(egg): we should check when reading the file that the times are
+    // equally spaced at the interval declared in columns 25-38 of SP3
+    // line two.
+    times[k] = it.time();
+    positions[k] = it.degrees_of_freedom().position();
+  }
+  // We use a central difference formula wherever possible, so we keep
+  // |offset| at (n - 1) / 2 except at the beginning and end of the arc.
+  int offset = 0;
+  for (int i = 0; i < arc.Size(); ++i) {
+    result->Append(
+        times[offset],
+        {positions[offset],
+         FiniteDifference(
+             /*values=*/positions,
+             /*step=*/(times[n - 1] - times[0]) / (n - 1),
+             offset)});
+    // At every iteration, either |offset| advances, or the |positions|
+    // window shifts and |it| advances.
+    if (offset < (n - 1) / 2 || it == arc.End()) {
+      ++offset;
+    } else {
+      for (int k = 0; k < n - 1; ++k) {
+        times[k] = times[k + 1];
+        positions[k] = positions[k + 1];
+      }
+      times[n - 1] = it.time();
+      positions[n - 1] = it.degrees_of_freedom().position();
+      ++it;
+    }
+  }
+  // Note that having the right number of calls to |Append| does not guarantee
+  // this, as appending at an existing time merely emits a warning.
+  CHECK_EQ(result->Size(), arc.Size());
+  return result;
+}
+
 StandardProduct3::StandardProduct3(
     std::filesystem::path const& filename,
     StandardProduct3::Dialect const dialect) {
@@ -139,10 +188,12 @@ StandardProduct3::StandardProduct3(
         }
         id.index = integer_columns(c + 1, c + 2);
         CHECK_GT(id.index, 0) << full_location;
-        auto const [it, inserted] = orbits_.emplace(  // NOLINT
-            id, make_not_null_unique<DiscreteTrajectory<ITRS>>());
+        auto const [it, inserted] = orbits_.emplace(std::piecewise_construct,
+                                                    std::forward_as_tuple(id),
+                                                    std::forward_as_tuple());
         CHECK(inserted) << "Duplicate satellite identifier " << id << ": "
                         << full_location;
+        it->second.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
         satellites_.push_back(id);
       } else {
         CHECK_EQ(columns(c, c + 2), "  0") << full_location;
@@ -272,7 +323,9 @@ StandardProduct3::StandardProduct3(
       // from the check.
       CHECK_EQ(id, satellites_[i]) << location;
 
-      DiscreteTrajectory<ITRS>& orbit = *it->second;
+      std::vector<not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>& orbit =
+          it->second;
+      DiscreteTrajectory<ITRS>& arc = *orbit.back();
 
       Position<ITRS> const position =
           Displacement<ITRS>({float_columns(5, 18) * Kilo(Metre),
@@ -313,8 +366,12 @@ StandardProduct3::StandardProduct3(
       }
 
       // Bad or absent positional and velocity values are to be set to 0.000000.
-      if (position != ITRS::origin && velocity != Velocity<ITRS>()) {
-        orbit.Append(epoch, {position, velocity});
+      if (position == ITRS::origin || velocity == Velocity<ITRS>()) {
+        if (!arc.Empty()) {
+          orbit.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
+        }
+      } else {
+        arc.Append(epoch, {position, velocity});
       }
     }
   }
@@ -322,56 +379,36 @@ StandardProduct3::StandardProduct3(
     CHECK_EQ(columns(1, 3), "EOF") << location;
     read_line();
   }
+  for (auto& [id, orbit] : orbits_) {
+    // Do not leave a final empty trajectory if the orbit ends with missing
+    // data.
+    if (orbit.back()->Empty()) {
+      orbit.pop_back();
+    }
+  }
   CHECK(!line.has_value()) << location;
   if (!has_velocities_) {
     for (auto& [id, orbit] : orbits_) {
-      auto orbit_with_velocities =
-          make_not_null_unique<DiscreteTrajectory<ITRS>>();
-      // The number of points used for the finite difference formula.
-      constexpr int n = 9;
-      // TODO(egg): A valid file may have fewer than 9 points.  Consider
-      // removing this restriction.
-      CHECK_GE(orbit->Size(), n);
-      std::array<Instant, n> times;
-      std::array<Position<ITRS>, n> positions;
-      auto it = orbit->Begin();
-      for (int k = 0; k < n; ++k, ++it) {
-        // TODO(egg): we should check when reading the file that the times are
-        // equally spaced at the interval declared in columns 25-38 of SP3 line
-        // two.
-        times[k] = it.time();
-        positions[k] = it.degrees_of_freedom().position();
-      }
-      // We use a central difference formula wherever possible, so we keep
-      // |offset| at (n - 1) / 2 except at the beginning and end of the orbit.
-      int offset = 0;
-      for (int i = 0; i < orbit->Size(); ++i) {
-        orbit_with_velocities->Append(
-            times[offset],
-            {positions[offset],
-             FiniteDifference(
-                 /*values=*/positions,
-                 /*step=*/(times[n - 1] - times[0]) / (n - 1),
-                 offset)});
-        // At every iteration, either |offset| advances, or the |positions|
-        // window shifts and |it| advances.
-        if (offset < (n - 1) / 2 || it == orbit->End()) {
-          ++offset;
-        } else {
-          for (int k = 0; k < n - 1; ++k) {
-            times[k] = times[k + 1];
-            positions[k] = positions[k + 1];
-          }
-          times[n - 1] = it.time();
-          positions[n - 1] = it.degrees_of_freedom().position();
-          ++it;
+      for (auto& arc : orbit) {
+        switch (arc->Size()) {
+#define COMPUTE_VELOCITIES_CASE(n)    \
+          case n:                             \
+            arc = ComputeVelocities<n>(*arc); \
+            break
+          COMPUTE_VELOCITIES_CASE(1);
+          COMPUTE_VELOCITIES_CASE(2);
+          COMPUTE_VELOCITIES_CASE(3);
+          COMPUTE_VELOCITIES_CASE(4);
+          COMPUTE_VELOCITIES_CASE(5);
+          COMPUTE_VELOCITIES_CASE(6);
+          COMPUTE_VELOCITIES_CASE(7);
+          COMPUTE_VELOCITIES_CASE(8);
+#undef COMPUTE_VELOCITIES_CASE
+          default:
+            arc = ComputeVelocities<9>(*arc);
+            break;
         }
       }
-      // Internal sanity check, not an SP3 parse error. Note that having the
-      // right number of calls to |Append| does not guarantee this, as appending
-      // at an existing time merely emits a warning.
-      CHECK_EQ(orbit_with_velocities->Size(), orbit->Size());
-      orbit = std::move(orbit_with_velocities);
     }
   }
 }
@@ -381,9 +418,13 @@ StandardProduct3::satellites() const {
   return satellites_;
 }
 
-DiscreteTrajectory<ITRS> const& StandardProduct3::orbit(
+std::vector<not_null<DiscreteTrajectory<ITRS> const*>> StandardProduct3::orbit(
     SatelliteIdentifier const& id) const {
-  return *FindOrDie(orbits_, id);
+  std::vector<not_null<DiscreteTrajectory<ITRS> const*>> result;
+  for (auto const& arc : FindOrDie(orbits_, id)) {
+    result.push_back(arc.get());
+  }
+  return result;
 }
 
 StandardProduct3::Version StandardProduct3::version() const {

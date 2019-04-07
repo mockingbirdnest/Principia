@@ -82,14 +82,16 @@ class StandardProduct3 {
   // (that order is the same in the satellite ID records and within each epoch).
   std::vector<SatelliteIdentifier> const& satellites() const;
 
-  DiscreteTrajectory<ITRS> const& orbit(SatelliteIdentifier const& id) const;
+  // Each orbit may consists of several arcs, separated by missing data.
+  std::vector<not_null<DiscreteTrajectory<ITRS> const*>> orbit(
+      SatelliteIdentifier const& id) const;
 
   Version version() const;
 
  private:
   std::vector<SatelliteIdentifier> satellites_;
   std::map<SatelliteIdentifier,
-           not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>
+           std::vector<not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>>
       orbits_;
   Version version_;
 

@@ -30,10 +30,10 @@ using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::RotatingBody;
 using physics::SolarSystem;
+using quantities::astronomy::JulianYear;
 using quantities::si::Deci;
 using quantities::si::Metre;
 using quantities::si::Milli;
-using quantities::si::Minute;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::Componentwise;
@@ -242,13 +242,16 @@ class StandardProduct3DynamicsTest
           solar_system.LimitOblatenessToZonal("Earth");
           return solar_system;
         }()),
+        // We can use a long time step because, in the absence of other bodies,
+        // the Earth will go in a straight line, which will be integrated
+        // exactly.
         ephemeris_(solar_system_.MakeEphemeris(
             /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
                 SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                                    Position<ICRS>>(),
-                /*step=*/10 * Minute))),
+                /*step=*/1 * JulianYear))),
         earth_(dynamic_cast_not_null<RotatingBody<ICRS> const*>(
             solar_system_.massive_body(*ephemeris_, "Earth"))),
         earth_trajectory_(*ephemeris_->trajectory(earth_)),
@@ -300,23 +303,23 @@ INSTANTIATE_TEST_CASE_P(
 // This test checks that, for each point of the orbit, its evolution taking into
 // account only a simple oblate Earth is close enough to the next point.
 TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
-  // SP3-a file from the European Space Operations Centre (European
-  // Space Agency).
   StandardProduct3 sp3(GetParam().filename, GetParam().dialect);
   EXPECT_THAT(sp3.version(), Eq(GetParam().version));
   for (auto const& satellite : sp3.satellites()) {
-    auto const& orbit = sp3.orbit(satellite);
-    auto it = orbit.Begin();
-    for (int i = 0;; ++i) {
-      DiscreteTrajectory<ICRS> arc;
-      ephemeris_->Prolong(it.time());
-      arc.Append(it.time(),
-                 itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom()));
-      if (++it == orbit.End()) {
-        break;
-      }
+    for (not_null<DiscreteTrajectory<ITRS> const*> const arc :
+         sp3.orbit(satellite)) {
+      auto it = arc->Begin();
+      for (int i = 0;; ++i) {
+        DiscreteTrajectory<ICRS> integrated_arc;
+        ephemeris_->Prolong(it.time());
+        integrated_arc.Append(
+            it.time(),
+            itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+        if (++it == arc->End()) {
+          break;
+        }
       ephemeris_->FlowWithAdaptiveStep(
-            &arc,
+            &integrated_arc,
             Ephemeris<ICRS>::NoIntrinsicAcceleration,
             it.time(),
             Ephemeris<ICRS>::AdaptiveStepParameters(
@@ -328,7 +331,8 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
                 /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
             /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
             /*last_point_only=*/true);
-      DegreesOfFreedom<ICRS> actual = arc.last().degrees_of_freedom();
+      DegreesOfFreedom<ICRS> actual =
+          integrated_arc.last().degrees_of_freedom();
       DegreesOfFreedom<ICRS> expected =
           itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom());
       EXPECT_THAT(AbsoluteError(expected.position(), actual.position()),
@@ -337,6 +341,7 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
       EXPECT_THAT(AbsoluteError(expected.velocity(), actual.velocity()),
                   Lt(1 * Deci(Metre) / Second))
           << "orbit of satellite " << satellite << " flowing from point " << i;
+      }
     }
   }
 }

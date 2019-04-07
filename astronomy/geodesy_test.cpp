@@ -106,19 +106,20 @@ TEST_F(GeodesyTest, LAGEOS2) {
   StandardProduct3::SatelliteIdentifier const lageos2_id{
       StandardProduct3::SatelliteGroup::General, 52};
 
-  CHECK_EQ(initial_ilrsa.orbit(lageos2_id).Begin().time(),
-           initial_ilrsb.orbit(lageos2_id).Begin().time());
+  CHECK_EQ(initial_ilrsa.orbit(lageos2_id)[0]->Begin().time(),
+           initial_ilrsb.orbit(lageos2_id)[0]->Begin().time());
 
-  Instant const initial_time = initial_ilrsa.orbit(lageos2_id).Begin().time();
+  Instant const initial_time =
+      initial_ilrsa.orbit(lageos2_id)[0]->Begin().time();
   DegreesOfFreedom<ITRS> const initial_dof_ilrsa =
-      initial_ilrsa.orbit(lageos2_id).Begin().degrees_of_freedom();
+      initial_ilrsa.orbit(lageos2_id)[0]->Begin().degrees_of_freedom();
 
   DegreesOfFreedom<ITRS> const initial_dof_ilrsb =
-      initial_ilrsb.orbit(lageos2_id).Begin().degrees_of_freedom();
+      initial_ilrsb.orbit(lageos2_id)[0]->Begin().degrees_of_freedom();
 
-  Instant const final_time = final_ilrsa.orbit(lageos2_id).Begin().time();
+  Instant const final_time = final_ilrsa.orbit(lageos2_id)[0]->Begin().time();
   DegreesOfFreedom<ITRS> const expected_final_dof =
-      final_ilrsa.orbit(lageos2_id).Begin().degrees_of_freedom();
+      final_ilrsa.orbit(lageos2_id)[0]->Begin().degrees_of_freedom();
 
   ephemeris_->Prolong(final_time);
 
