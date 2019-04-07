@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <limits>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "gmock/gmock.h"

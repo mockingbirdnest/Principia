@@ -188,9 +188,10 @@ StandardProduct3::StandardProduct3(
         }
         id.index = integer_columns(c + 1, c + 2);
         CHECK_GT(id.index, 0) << full_location;
-        auto const [it, inserted] = orbits_.emplace(std::piecewise_construct,
-                                                    std::forward_as_tuple(id),
-                                                    std::forward_as_tuple());
+        auto const [it, inserted] =  // NOLINT(whitespace/braces)
+            orbits_.emplace(std::piecewise_construct,
+                            std::forward_as_tuple(id),
+                            std::forward_as_tuple());
         CHECK(inserted) << "Duplicate satellite identifier " << id << ": "
                         << full_location;
         it->second.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
