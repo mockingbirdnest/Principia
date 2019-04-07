@@ -32,12 +32,12 @@ internal class DifferentialSlider : ScalingRenderer {
 
   public double value {
     get {
-      return value_;
+      return value_ ?? 0.0;
     }
     set {
-      if (value_ != value) {
+      if (!value_.HasValue || value_ != value) {
         value_ = value;
-        formatted_value_ = format_(value_);
+        formatted_value_ = format_(value_.Value);
             UnityEngine.Debug.LogError("Reset "+formatted_value_ + " " +value_);
       }
     }
@@ -47,8 +47,6 @@ internal class DifferentialSlider : ScalingRenderer {
   // changed.
   public bool Render(bool enabled) {
     bool value_changed = false;
-    bool must_trace = false;
-    var e = UnityEngine.Event.current;
 
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       {
@@ -64,35 +62,21 @@ internal class DifferentialSlider : ScalingRenderer {
       if (enabled) {
         var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textField);
         style.alignment = UnityEngine.TextAnchor.MiddleRight;
-        String control_name = GetHashCode() + ":text_field";
-        UnityEngine.GUI.SetNextControlName(control_name);
-        String new_formatted_value = UnityEngine.GUILayout.TextField(
+        String text_field_name = GetHashCode() + ":text_field";
+        UnityEngine.GUI.SetNextControlName(text_field_name);
+        formatted_value_ = UnityEngine.GUILayout.TextField(
             text    : formatted_value_,
             style   : style,
             options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
-
+        var current_event = UnityEngine.Event.current;
         if (UnityEngine.Event.current.isKey &&
             UnityEngine.Event.current.keyCode == UnityEngine.KeyCode.Return &&
-            UnityEngine.GUI.GetNameOfFocusedControl() == control_name) {
-          UnityEngine.Debug.LogError(
-              formatted_value_ + " " + new_formatted_value + " " +
-              current_event.type + " " + current_event.keyCode + " " +
-              UnityEngine.GUI.GetNameOfFocusedControl());
-          UnityEngine.Debug.LogError("YES!!!!");
-        }
-
-        must_trace = true;
-        if (new_formatted_value != formatted_value_) {
-          if (current_event.isKey &&
-              current_event.keyCode == UnityEngine.KeyCode.Return &&
-              UnityEngine.GUI.GetNameOfFocusedControl() == control_name) {
-            //TODO(phl): Errors.
-            value = Double.Parse(new_formatted_value, Culture.culture);
-            slider_position_ = 0;
-            value_changed = true;
-          } else {
-            formatted_value_ = new_formatted_value;
-          }
+            UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name) {
+          UnityEngine.Debug.LogError("ENTERED!!!!");
+          // TODO(phl): Errors.
+          value_changed = true;
+          value = Double.Parse(formatted_value_, Culture.culture);
+          slider_position_ = 0;
         }
       } else {
         var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
@@ -122,6 +106,7 @@ internal class DifferentialSlider : ScalingRenderer {
         }
         if (slider_position_ != 0.0) {
           value_changed = true;
+          value = Double.Parse(formatted_value_, Culture.culture);
           value += Math.Sign(slider_position_) *
                    Math.Pow(10, log10_lower_rate_ +
                                     (log10_upper_rate_ - log10_lower_rate_) *
@@ -133,9 +118,6 @@ internal class DifferentialSlider : ScalingRenderer {
         slider_position_ = 0;
       }
       last_time_ = DateTime.Now;
-    }
-    if (must_trace) {
-          UnityEngine.Debug.LogError(formatted_value_ + " " +value_);
     }
     return value_changed;
   }
@@ -153,7 +135,7 @@ internal class DifferentialSlider : ScalingRenderer {
 
   private float slider_position_ = 0.0f;
   private DateTime last_time_;
-  private double value_;
+  private double? value_;
   private String formatted_value_;
 }
 
