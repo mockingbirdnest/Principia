@@ -40,10 +40,8 @@ class BurnEditor : ScalingRenderer {
                 log10_upper_rate : Log10TimeUpperRate,
                 min_value        : 0,
                 max_value        : double.PositiveInfinity,
-                formatter        : value =>
-                    FlightPlanner.FormatTimeSpan(
-                        TimeSpan.FromSeconds(
-                            Planetarium.GetUniversalTime() - value)));
+                formatter        : FormatInitialTime,
+                parser           : TryParseInitialTime);
     initial_time_.value = initial_time;
     reference_frame_selector_ = new ReferenceFrameSelector(
                                     adapter_,
@@ -243,6 +241,21 @@ class BurnEditor : ScalingRenderer {
     const double range = 1000;
     thrust_in_kilonewtons_ = initial_mass_in_tonnes_ * range * scale;
     specific_impulse_in_seconds_g0_ = range;
+  }
+
+  internal string FormatInitialTime(double value) {
+    return FlightPlanner.FormatTimeSpan(
+        TimeSpan.FromSeconds(Planetarium.GetUniversalTime() - value));
+  }
+
+  internal bool TryParseInitialTime(string str, out double value) {
+    value = 0;
+    TimeSpan ts;
+    if (!FlightPlanner.TryParseTimeSpan(str, out ts)) {
+      return false;
+    }
+    value = Planetarium.GetUniversalTime() - ts.TotalSeconds;
+    return true;
   }
 
   private bool is_inertially_fixed_;

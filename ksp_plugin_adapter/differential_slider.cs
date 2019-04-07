@@ -6,6 +6,7 @@ namespace ksp_plugin_adapter {
 
 internal class DifferentialSlider : ScalingRenderer {
   public delegate string ValueFormatter(double value);
+  public delegate bool ValueParser(string s, out double value);
 
   // Rates are in units of |value| per real-time second.
   public DifferentialSlider(string label,
@@ -15,13 +16,28 @@ internal class DifferentialSlider : ScalingRenderer {
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
                             ValueFormatter formatter = null,
+                            ValueParser parser = null,
                             UnityEngine.Color? text_colour = null) {
     label_ = label;
     unit_ = unit;
     if (formatter == null) {
-      format_ = v => v.ToString("#,0.000", Culture.culture);
+      formatter_ = v => v.ToString("#,0.000", Culture.culture);
     } else {
-      format_ = formatter;
+      formatter_ = formatter;
+    }
+    if (parser == null) {
+      // As a special exemption we allow a comma as the decimal separator.
+      parser_ = (string s, out double value) =>
+                    Double.TryParse(s.Replace(',', '.'),
+                                    NumberStyles.AllowDecimalPoint |
+                                    NumberStyles.AllowLeadingSign |
+                                    NumberStyles.AllowLeadingWhite |
+                                    NumberStyles.AllowThousands |
+                                    NumberStyles.AllowTrailingWhite,
+                                    Culture.culture.NumberFormat,
+                                    out value);
+    } else {
+      parser_ = parser;
     }
     log10_lower_rate_ = log10_lower_rate;
     log10_upper_rate_ = log10_upper_rate;
@@ -37,8 +53,7 @@ internal class DifferentialSlider : ScalingRenderer {
     set {
       if (!value_.HasValue || value_ != value) {
         value_ = value;
-        formatted_value_ = format_(value_.Value);
-            UnityEngine.Debug.LogError("Reset "+formatted_value_ + " " +value_);
+        formatted_value_ = formatter_(value_.Value);
       }
     }
   }
@@ -62,21 +77,44 @@ internal class DifferentialSlider : ScalingRenderer {
       if (enabled) {
         var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textField);
         style.alignment = UnityEngine.TextAnchor.MiddleRight;
+
+        // If the text is not synctatically correct, inform the user by drawing
+        // it in colour.  We don't expect to see the "red" case as we should
+        // revert to a parseable value on exit.
+        if (!parser_(formatted_value_, out double v1)) {
+          style.focused.textColor = XKCDColors.Orange;
+          style.normal.textColor = XKCDColors.Red;
+        }
+
+        // Draw the text field and give it a name to be able to detect if it has
+        // focus.
         String text_field_name = GetHashCode() + ":text_field";
         UnityEngine.GUI.SetNextControlName(text_field_name);
         formatted_value_ = UnityEngine.GUILayout.TextField(
             text    : formatted_value_,
             style   : style,
             options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
+
+        // See if the user typed 'Return' in the field, in which case we
+        // terminate text entry.
         var current_event = UnityEngine.Event.current;
         if (UnityEngine.Event.current.isKey &&
             UnityEngine.Event.current.keyCode == UnityEngine.KeyCode.Return &&
             UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name) {
-          UnityEngine.Debug.LogError("ENTERED!!!!");
-          // TODO(phl): Errors.
-          value_changed = true;
-          value = Double.Parse(formatted_value_, Culture.culture);
-          slider_position_ = 0;
+
+          // Try to parse the input.  If that fails, go back to the previous
+          // legal value.
+          if (parser_(formatted_value_, out double v2)) {
+            value_changed = true;
+            value = v2;
+            slider_position_ = 0;
+            // TODO(phl): If the value computed here is rejected by the C++, we
+            // revert to the previous value just as if there was a parsing error
+            // and this is not nice.
+          } else {
+            // Go back to the previous legal value.
+            formatted_value_ = formatter_(value_.Value);
+          }
         }
       } else {
         var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
@@ -106,7 +144,9 @@ internal class DifferentialSlider : ScalingRenderer {
         }
         if (slider_position_ != 0.0) {
           value_changed = true;
-          value = Double.Parse(formatted_value_, Culture.culture);
+          if (parser_(formatted_value_, out double v)) {
+            value = v;
+          }
           value += Math.Sign(slider_position_) *
                    Math.Pow(10, log10_lower_rate_ +
                                     (log10_upper_rate_ - log10_lower_rate_) *
@@ -130,7 +170,8 @@ internal class DifferentialSlider : ScalingRenderer {
   private readonly double min_value_;
   private readonly double max_value_;
 
-  private readonly ValueFormatter format_;
+  private readonly ValueFormatter formatter_;
+  private readonly ValueParser parser_;
   private readonly UnityEngine.Color? text_colour_;
 
   private float slider_position_ = 0.0f;
