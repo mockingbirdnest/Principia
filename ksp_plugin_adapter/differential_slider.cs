@@ -78,7 +78,7 @@ internal class DifferentialSlider : ScalingRenderer {
         var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textField);
         style.alignment = UnityEngine.TextAnchor.MiddleRight;
 
-        // If the text is not synctatically correct, inform the user by drawing
+        // If the text is not syntactically correct, inform the user by drawing
         // it in colour.  We don't expect to see the "red" case as we should
         // revert to a parseable value on exit.
         if (!parser_(formatted_value_, out double v1)) {
@@ -95,13 +95,20 @@ internal class DifferentialSlider : ScalingRenderer {
             style   : style,
             options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
 
-        // See if the user typed 'Return' in the field, in which case we
-        // terminate text entry.
+        // See if the user typed 'Return' in the field, or moved focus
+        // elsewhere, in which case we terminate text entry.
+        bool terminate_text_entry = false;
         var current_event = UnityEngine.Event.current;
         if (UnityEngine.Event.current.isKey &&
             UnityEngine.Event.current.keyCode == UnityEngine.KeyCode.Return &&
             UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name) {
-
+          terminate_text_entry = true;
+        } else if (UnityEngine.GUI.GetNameOfFocusedControl() !=
+                       text_field_name &&
+                   formatted_value_ != formatter_(value_.Value)) {
+          terminate_text_entry = true;
+        }
+        if (terminate_text_entry) {
           // Try to parse the input.  If that fails, go back to the previous
           // legal value.
           if (parser_(formatted_value_, out double v2)) {
@@ -144,14 +151,16 @@ internal class DifferentialSlider : ScalingRenderer {
         }
         if (slider_position_ != 0.0) {
           value_changed = true;
+          // Moving the slider doesn't cause a loss of focus so we terminate
+          // input if necessary.
           if (parser_(formatted_value_, out double v)) {
             value = v;
           }
           value += Math.Sign(slider_position_) *
-                   Math.Pow(10, log10_lower_rate_ +
-                                    (log10_upper_rate_ - log10_lower_rate_) *
-                                        Math.Abs(slider_position_)) *
-                   (DateTime.Now - last_time_).TotalSeconds;
+                Math.Pow(10, log10_lower_rate_ +
+                                (log10_upper_rate_ - log10_lower_rate_) *
+                                    Math.Abs(slider_position_)) *
+                (DateTime.Now - last_time_).TotalSeconds;
           value = Math.Min(Math.Max(min_value_, value), max_value_);
         }
       } else {

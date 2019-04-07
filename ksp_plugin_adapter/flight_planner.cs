@@ -365,28 +365,23 @@ class FlightPlanner : SupervisedWindowRenderer {
     string hours = match.Groups[3].Value;
     string minutes = match.Groups[4].Value;
     string seconds = match.Groups[5].Value;
-    UnityEngine.Debug.LogError("S="+sign+",D="+days+",H="+hours+",M="+minutes+",Z="+seconds);
     if (!Int32.TryParse(days, out int d) ||
         !Int32.TryParse(hours, out int h) ||
         !Int32.TryParse(minutes, out int min) ||
         !Double.TryParse(seconds.Replace(',', '.'),
                          NumberStyles.AllowDecimalPoint |
-                         NumberStyles.AllowLeadingWhite |
-                         NumberStyles.AllowThousands |
-                         NumberStyles.AllowTrailingWhite,
+                         NumberStyles.AllowThousands,
                          Culture.culture.NumberFormat,
                          out double s)) {
       return false;
     }
-    UnityEngine.Debug.LogError("d="+d+",h="+h+",h="+min+"z="+s);
-    value = TimeSpan.FromDays(d / (GameSettings.KERBIN_TIME ? 4 : 1)) +
+    value = TimeSpan.FromDays((double)d / (GameSettings.KERBIN_TIME ? 4 : 1)) +
             TimeSpan.FromHours(h) +
             TimeSpan.FromMinutes(min) +
             TimeSpan.FromSeconds(s);
     if (sign.Length > 0 && sign[0] == '-') {
       value = value.Negate();
     }
-    UnityEngine.Debug.LogError("value="+value);
     return true;
   }
 
