@@ -215,12 +215,13 @@ struct StandardProduct3Args {
   std::filesystem::path filename;
   StandardProduct3::Dialect dialect;
   StandardProduct3::Version version;
-  bool has_velocities;
+  bool file_has_velocities;
 };
 
 std::ostream& operator<<(std::ostream& out, StandardProduct3Args const& args) {
   return out << args.filename << " interpreted as " << args.dialect
-             << " (expected to have version " << args.version << ")";
+             << " (expected to have version " << args.version << " and to "
+             << (args.file_has_velocities ? "" : "not") << " have velocities)";
 }
 
 class StandardProduct3DynamicsTest
@@ -275,46 +276,56 @@ INSTANTIATE_TEST_CASE_P(
     ValuesIn(std::vector<StandardProduct3Args>{
         {SOLUTION_DIR / "astronomy" / "standard_product_3" / "esa11802.eph",
          StandardProduct3::Dialect::Standard,
-         StandardProduct3::Version::A},
+         StandardProduct3::Version::A,
+         /*file_has_velocities=*/false},
         {SOLUTION_DIR / "astronomy" / "standard_product_3" / "mcc14000.sp3",
          StandardProduct3::Dialect::Standard,
-         StandardProduct3::Version::B},
+         StandardProduct3::Version::B,
+         /*file_has_velocities=*/false},
         {SOLUTION_DIR / "astronomy" / "standard_product_3" /
              "COD0MGXFIN_20181260000_01D_05M_ORB.SP3",
          StandardProduct3::Dialect::Standard,
-         StandardProduct3::Version::C},
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/false},
         {SOLUTION_DIR / "astronomy" / "standard_product_3" /
              "COD0MGXFIN_20183640000_01D_05M_ORB.SP3",
          StandardProduct3::Dialect::Standard,
-         StandardProduct3::Version::D},
+         StandardProduct3::Version::D,
+         /*file_has_velocities=*/false},
         {SOLUTION_DIR / "astronomy" / "standard_product_3" / "nga20342.eph",
          StandardProduct3::Dialect::Standard,
-         StandardProduct3::Version::A},
+         StandardProduct3::Version::A,
+         /*file_has_velocities=*/true},
         {SOLUTION_DIR / "astronomy" / "standard_product_3" /
              "ilrsa.orb.lageos2.160319.v35.sp3",
          StandardProduct3::Dialect::ILRSA,
-         StandardProduct3::Version::C},
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/true},
         {SOLUTION_DIR / "astronomy" / "standard_product_3" /
              "ilrsb.orb.lageos2.160319.v35.sp3",
          StandardProduct3::Dialect::ILRSB,
-         StandardProduct3::Version::C},
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/true},
         // Orbit for TOPEX/Poséidon, by the Groupe de Recherche de Géodesie
         // Spatiale (GRGS).
         {SOLUTION_DIR / "astronomy" / "standard_product_3" /
              "grgtop03.b97344.e97348.D_S.sp3",
          StandardProduct3::Dialect::GRGS,
-         StandardProduct3::Version::C},
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/true},
         // Orbit for Jason-2, by the GRGS.
         {SOLUTION_DIR / "astronomy" / "standard_product_3" /
              "grgja203.b08243.e08247.D_S.sp3",
          StandardProduct3::Dialect::GRGS,
-         StandardProduct3::Version::C},
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/true},
         // Orbit for Jason-2, by the Segment-Sol multi-missions d’ALTimétrie,
         // Orbitographie et localisation précise (SSALTO).
         {SOLUTION_DIR / "astronomy" / "standard_product_3" /
              "ssaja102.b03007.e03017.DGS.sp3",
          StandardProduct3::Dialect::Standard,
-         StandardProduct3::Version::C},
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/true},
     }));
 
 // This test checks that, for each point of the orbit, its evolution taking into
@@ -322,6 +333,7 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
   StandardProduct3 sp3(GetParam().filename, GetParam().dialect);
   EXPECT_THAT(sp3.version(), Eq(GetParam().version));
+  EXPECT_THAT(sp3.file_has_velocities(), Eq(GetParam().file_has_velocities));
   for (auto const& satellite : sp3.satellites()) {
     for (not_null<DiscreteTrajectory<ITRS> const*> const arc :
          sp3.orbit(satellite)) {

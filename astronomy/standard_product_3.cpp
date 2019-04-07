@@ -432,6 +432,10 @@ StandardProduct3::Version StandardProduct3::version() const {
   return version_;
 }
 
+bool StandardProduct3::file_has_velocities() const {
+  return has_velocities_;
+}
+
 bool operator==(StandardProduct3::SatelliteIdentifier const& left,
                 StandardProduct3::SatelliteIdentifier const& right) {
   return left.group == right.group && left.index == right.index;

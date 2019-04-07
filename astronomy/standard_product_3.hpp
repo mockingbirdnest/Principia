@@ -99,6 +99,11 @@ class StandardProduct3 {
 
   Version version() const;
 
+  // Whether velocities were given in the SP3 file.  If this is false, the
+  // velocities provided by this object are computed from the positions by a
+  // finite difference formula.
+  bool file_has_velocities() const;
+
  private:
   std::vector<SatelliteIdentifier> satellites_;
   std::map<SatelliteIdentifier,
