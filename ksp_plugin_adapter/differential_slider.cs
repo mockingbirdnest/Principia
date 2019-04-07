@@ -64,20 +64,28 @@ internal class DifferentialSlider : ScalingRenderer {
       if (enabled) {
         var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textField);
         style.alignment = UnityEngine.TextAnchor.MiddleRight;
+        String control_name = GetHashCode() + ":text_field";
+        UnityEngine.GUI.SetNextControlName(control_name);
         String new_formatted_value = UnityEngine.GUILayout.TextField(
             text    : formatted_value_,
             style   : style,
             options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
 
-        if (new_formatted_value != formatted_value_) {
-          UnityEngine.Debug.LogError(formatted_value_ + " " +
-                                     new_formatted_value + " " +
-                                     e.type + " " +
-                                     e.keyCode);
-                                     must_trace = true;
+        if (UnityEngine.Event.current.isKey &&
+            UnityEngine.Event.current.keyCode == UnityEngine.KeyCode.Return &&
+            UnityEngine.GUI.GetNameOfFocusedControl() == control_name) {
+          UnityEngine.Debug.LogError(
+              formatted_value_ + " " + new_formatted_value + " " +
+              current_event.type + " " + current_event.keyCode + " " +
+              UnityEngine.GUI.GetNameOfFocusedControl());
+          UnityEngine.Debug.LogError("YES!!!!");
+        }
 
-          if (e.type == UnityEngine.EventType.KeyUp &&
-              e.keyCode == UnityEngine.KeyCode.Return) {
+        must_trace = true;
+        if (new_formatted_value != formatted_value_) {
+          if (current_event.isKey &&
+              current_event.keyCode == UnityEngine.KeyCode.Return &&
+              UnityEngine.GUI.GetNameOfFocusedControl() == control_name) {
             //TODO(phl): Errors.
             value = Double.Parse(new_formatted_value, Culture.culture);
             slider_position_ = 0;
