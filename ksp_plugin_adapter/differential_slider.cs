@@ -13,6 +13,7 @@ internal class DifferentialSlider : ScalingRenderer {
                             string unit,
                             double log10_lower_rate,
                             double log10_upper_rate,
+                            double zero_value = 0,
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
                             ValueFormatter formatter = null,
@@ -41,6 +42,7 @@ internal class DifferentialSlider : ScalingRenderer {
     }
     log10_lower_rate_ = log10_lower_rate;
     log10_upper_rate_ = log10_upper_rate;
+    zero_value_ = zero_value;
     min_value_ = min_value;
     max_value_ = max_value;
     text_colour_ = text_colour;
@@ -147,7 +149,10 @@ internal class DifferentialSlider : ScalingRenderer {
 
         if (UnityEngine.GUILayout.Button("0", GUILayoutWidth(1))) {
           value_changed = true;
-          value = 0;
+          // Force a change of value so that any input is discarded.
+          value = zero_value_ + 1;
+          value = zero_value_;
+              UnityEngine.Debug.LogError(formatted_value_+" "+value);
         }
         if (slider_position_ != 0.0) {
           value_changed = true;
@@ -176,6 +181,7 @@ internal class DifferentialSlider : ScalingRenderer {
 
   private readonly double log10_lower_rate_ = -3;
   private readonly double log10_upper_rate_ = 3.5;
+  private readonly double zero_value_;
   private readonly double min_value_;
   private readonly double max_value_;
 
