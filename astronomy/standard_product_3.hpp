@@ -95,7 +95,7 @@ class StandardProduct3 {
 
   // Each orbit may consist of several arcs, separated by missing data.
   // The arcs are non-overlapping, and are ordered chronologically.
-  std::vector<not_null<DiscreteTrajectory<ITRS> const*>> orbit(
+  std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const& orbit(
       SatelliteIdentifier const& id) const;
 
   Version version() const;
@@ -110,6 +110,12 @@ class StandardProduct3 {
   std::map<SatelliteIdentifier,
            std::vector<not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>>
       orbits_;
+  // |orbits_| is the same as |const_orbits_|, but with non-owning pointers to
+  // constant trajectories; this allows us to references to these vectors from
+  // |StandardProduct3::orbit|.
+  std::map<SatelliteIdentifier,
+           std::vector<not_null<DiscreteTrajectory<ITRS> const*>>>
+      const_orbits_;
   Version version_;
 
   bool has_velocities_;

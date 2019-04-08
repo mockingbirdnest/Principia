@@ -390,6 +390,13 @@ StandardProduct3::StandardProduct3(
   CHECK(!line.has_value()) << location;
   if (!has_velocities_) {
     for (auto& [id, orbit] : orbits_) {
+      auto const [it, inserted] =
+          const_orbits_.emplace(std::piecewise_construct,
+                                std::forward_as_tuple(id),
+                                std::forward_as_tuple());
+      CHECK(inserted) << id;
+      auto& const_orbit = it->second;
+
       for (auto& arc : orbit) {
 
 #define COMPUTE_VELOCITIES_CASE(n)            \
@@ -413,6 +420,7 @@ StandardProduct3::StandardProduct3(
 
 #undef COMPUTE_VELOCITIES_CASE
 
+        const_orbit.push_back(arc.get());
       }
     }
   }
@@ -423,13 +431,9 @@ StandardProduct3::satellites() const {
   return satellites_;
 }
 
-std::vector<not_null<DiscreteTrajectory<ITRS> const*>> StandardProduct3::orbit(
-    SatelliteIdentifier const& id) const {
-  std::vector<not_null<DiscreteTrajectory<ITRS> const*>> result;
-  for (auto const& arc : FindOrDie(orbits_, id)) {
-    result.push_back(arc.get());
-  }
-  return result;
+std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const&
+StandardProduct3::orbit(SatelliteIdentifier const& id) const {
+  return FindOrDie(const_orbits_, id);
 }
 
 StandardProduct3::Version StandardProduct3::version() const {
