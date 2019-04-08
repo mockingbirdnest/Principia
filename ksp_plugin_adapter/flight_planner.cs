@@ -104,10 +104,13 @@ class FlightPlanner : SupervisedWindowRenderer {
           // Dummy initial time, we call |Reset| immediately afterwards.
           final_time_.value =
               plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
-          burn_editors_.Add(new BurnEditor(adapter_,
-                                           plugin_,
-                                           vessel_,
-                                           initial_time: 0));
+          burn_editors_.Add(
+              new BurnEditor(adapter_,
+                             plugin_,
+                             vessel_,
+                             initial_time: 0,
+                             index: burn_editors_.Count,
+                             previous_burn: burn_editors_.LastOrDefault()));
           burn_editors_.Last().Reset(
               plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
         }
@@ -234,7 +237,12 @@ class FlightPlanner : SupervisedWindowRenderer {
                     burn_editors_.Count - 1).final_time + 60;
           }
           var editor =
-              new BurnEditor(adapter_, plugin_, vessel_, initial_time);
+              new BurnEditor(adapter_,
+                             plugin_,
+                             vessel_,
+                             initial_time,
+                             index: burn_editors_.Count,
+                             previous_burn: burn_editors_.LastOrDefault());
           Burn candidate_burn = editor.Burn();
           bool inserted = plugin_.FlightPlanAppend(vessel_guid,
                                                    candidate_burn);
