@@ -152,7 +152,6 @@ internal class DifferentialSlider : ScalingRenderer {
           // Force a change of value so that any input is discarded.
           value = zero_value_ + 1;
           value = zero_value_;
-              UnityEngine.Debug.LogError(formatted_value_+" "+value);
         }
         if (slider_position_ != 0.0) {
           value_changed = true;
