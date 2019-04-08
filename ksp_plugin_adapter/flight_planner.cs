@@ -128,13 +128,16 @@ class FlightPlanner : SupervisedWindowRenderer {
       double actual_final_time =
           plugin_.FlightPlanGetActualFinalTime(vessel_guid);
 
-      UnityEngine.GUILayout.TextField(
-          (final_time_.value == actual_final_time)
-              ? ""
-              : "Timed out after " +
-                    FormatPositiveTimeSpan(TimeSpan.FromSeconds(
-                        actual_final_time -
-                        plugin_.FlightPlanGetInitialTime(vessel_guid))));
+      var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textField);
+      string message = "";
+      if (final_time_.value != actual_final_time) {
+        style.normal.textColor = XKCDColors.Orange;
+        message = "Timed out after " +
+                  FormatPositiveTimeSpan(TimeSpan.FromSeconds(
+                      actual_final_time -
+                      plugin_.FlightPlanGetInitialTime(vessel_guid)));
+      }
+      UnityEngine.GUILayout.TextField(message, style);
 
       FlightPlanAdaptiveStepParameters parameters =
           plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);

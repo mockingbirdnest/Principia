@@ -17,6 +17,7 @@ class BurnEditor : ScalingRenderer {
     plugin_ = plugin;
     vessel_ = vessel;
     index_ = index;
+    previous_burn_ = previous_burn;
     Δv_tangent_ =
         new DifferentialSlider(label            : "Δv tangent",
                                unit             : "m / s",
@@ -252,13 +253,11 @@ class BurnEditor : ScalingRenderer {
   }
 
   internal string FormatInitialTime(double value) {
-        FlightPlanner.FormatPositiveTimeSpan(
-                        TimeSpan.FromSeconds(
-                            value - (previous_burn?.final_time ??
-                                     plugin_.FlightPlanGetInitialTime(
-                                         vessel_.id.ToString()))))
-    return FlightPlanner.FormatTimeSpan(
-        TimeSpan.FromSeconds(Planetarium.GetUniversalTime() - value));
+    return FlightPlanner.FormatPositiveTimeSpan(
+               TimeSpan.FromSeconds(
+                   value - (previous_burn_?.final_time ??
+                            plugin_.FlightPlanGetInitialTime(
+                                vessel_.id.ToString()))));
   }
 
   internal bool TryParseInitialTime(string str, out double value) {
@@ -267,7 +266,9 @@ class BurnEditor : ScalingRenderer {
     if (!FlightPlanner.TryParseTimeSpan(str, out ts)) {
       return false;
     }
-    value = Planetarium.GetUniversalTime() - ts.TotalSeconds;
+    value = ts.TotalSeconds + (previous_burn_?.final_time ??
+                               plugin_.FlightPlanGetInitialTime(
+                                   vessel_.id.ToString()));
     return true;
   }
 
@@ -295,6 +296,7 @@ class BurnEditor : ScalingRenderer {
   private readonly IntPtr plugin_;
   private readonly Vessel vessel_;
   private readonly int index_;
+  private readonly BurnEditor previous_burn_;
   private readonly PrincipiaPluginAdapter adapter_;
 
   private bool changed_reference_frame_ = false;
