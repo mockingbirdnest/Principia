@@ -3,7 +3,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{873680B3-2406-4A30-9EE7-569E9B9DA661}</ProjectGuid>
     <RootNamespace>tools</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>

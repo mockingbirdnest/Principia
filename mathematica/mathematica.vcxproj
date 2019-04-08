@@ -3,7 +3,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{83A31DA7-3F62-464D-9F6B-09CCE07A865A}</ProjectGuid>
     <RootNamespace>mathematica</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
