@@ -390,7 +390,7 @@ StandardProduct3::StandardProduct3(
   CHECK(!line.has_value()) << location;
   if (!has_velocities_) {
     for (auto& [id, orbit] : orbits_) {
-      auto const [it, inserted] =
+      auto const [it, inserted] =  // NOLINT(whitespace/braces)
           const_orbits_.emplace(std::piecewise_construct,
                                 std::forward_as_tuple(id),
                                 std::forward_as_tuple());
@@ -398,7 +398,6 @@ StandardProduct3::StandardProduct3(
       auto& const_orbit = it->second;
 
       for (auto& arc : orbit) {
-
 #define COMPUTE_VELOCITIES_CASE(n)            \
           case n:                             \
             arc = ComputeVelocities<n>(*arc); \
