@@ -117,7 +117,7 @@ class BurnEditor : ScalingRenderer {
       UnityEngine.GUILayout.Label(
           index_ == 0 ? "Time base: start of flight plan"
                       : $"Time base: end of manœuvre #{index_}",
-          style: new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
+          style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
               alignment = UnityEngine.TextAnchor.UpperLeft});
       changed |= changed_reference_frame_;
       using (new UnityEngine.GUILayout.HorizontalScope()) {
