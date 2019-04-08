@@ -20,14 +20,14 @@ namespace astronomy {
 using base::dynamic_cast_not_null;
 using base::not_null;
 using geometry::Position;
-using physics::BodySurfaceDynamicFrame;
-using physics::ContinuousTrajectory;
-using physics::DiscreteTrajectory;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::QuinlanTremaine1990Order12;
+using physics::BodySurfaceDynamicFrame;
+using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::RotatingBody;
 using physics::SolarSystem;
@@ -51,8 +51,6 @@ using ::testing::ValuesIn;
 
 class StandardProduct3Test : public ::testing::Test {
  protected:
-  StandardProduct3Test() {}
-
   static std::set<StandardProduct3::SatelliteGroup> SatelliteGroups(
       std::vector<StandardProduct3::SatelliteIdentifier> const& identifiers) {
     std::set<StandardProduct3::SatelliteGroup> result;

@@ -1,5 +1,6 @@
 ﻿#include "astronomy/standard_product_3.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <optional>
 #include <string>
@@ -28,7 +29,7 @@ using quantities::si::Metre;
 using quantities::si::Second;
 
 // Given a trajectory whose velocities are bad or absent (e.g., NaN), uses
-// n-point finite difference formulae on the positions to produce a trajectory
+// n-point finite difference formulæ on the positions to produce a trajectory
 // with consistent velocities.
 template<int n>
 not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
@@ -61,12 +62,10 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
     if (offset < (n - 1) / 2 || it == arc.End()) {
       ++offset;
     } else {
-      for (int k = 0; k < n - 1; ++k) {
-        times[k] = times[k + 1];
-        positions[k] = positions[k + 1];
-      }
-      times[n - 1] = it.time();
-      positions[n - 1] = it.degrees_of_freedom().position();
+      std::move(positions.begin() + 1, positions.end(), positions.begin());
+      std::move(times.begin() + 1, times.end(), times.begin());
+      times.back() = it.time();
+      positions.back()  = it.degrees_of_freedom().position();
       ++it;
     }
   }
@@ -392,11 +391,13 @@ StandardProduct3::StandardProduct3(
   if (!has_velocities_) {
     for (auto& [id, orbit] : orbits_) {
       for (auto& arc : orbit) {
-        switch (arc->Size()) {
-#define COMPUTE_VELOCITIES_CASE(n)    \
+
+#define COMPUTE_VELOCITIES_CASE(n)            \
           case n:                             \
             arc = ComputeVelocities<n>(*arc); \
             break
+
+        switch (arc->Size()) {
           COMPUTE_VELOCITIES_CASE(1);
           COMPUTE_VELOCITIES_CASE(2);
           COMPUTE_VELOCITIES_CASE(3);
@@ -405,11 +406,13 @@ StandardProduct3::StandardProduct3(
           COMPUTE_VELOCITIES_CASE(6);
           COMPUTE_VELOCITIES_CASE(7);
           COMPUTE_VELOCITIES_CASE(8);
-#undef COMPUTE_VELOCITIES_CASE
           default:
             arc = ComputeVelocities<9>(*arc);
             break;
         }
+
+#undef COMPUTE_VELOCITIES_CASE
+
       }
     }
   }

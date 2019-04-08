@@ -93,7 +93,8 @@ class StandardProduct3 {
   // (that order is the same in the satellite ID records and within each epoch).
   std::vector<SatelliteIdentifier> const& satellites() const;
 
-  // Each orbit may consists of several arcs, separated by missing data.
+  // Each orbit may consist of several arcs, separated by missing data.
+  // The arcs are non-overlapping, and are ordered chronologically.
   std::vector<not_null<DiscreteTrajectory<ITRS> const*>> orbit(
       SatelliteIdentifier const& id) const;
 
