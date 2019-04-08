@@ -10,10 +10,13 @@ class BurnEditor : ScalingRenderer {
   public BurnEditor(PrincipiaPluginAdapter adapter,
                     IntPtr plugin,
                     Vessel vessel,
-                    double initial_time) {
+                    double initial_time,
+                    int index,
+                    BurnEditor previous_burn) {
     adapter_ = adapter;
     plugin_ = plugin;
     vessel_ = vessel;
+    index_ = index;
     Δv_tangent_ =
         new DifferentialSlider(label            : "Δv tangent",
                                unit             : "m / s",
@@ -107,6 +110,11 @@ class BurnEditor : ScalingRenderer {
       changed |= Δv_normal_.Render(enabled);
       changed |= Δv_binormal_.Render(enabled);
       changed |= initial_time_.Render(enabled);
+      UnityEngine.GUILayout.Label(
+          index_ == 0 ? "Time base: start of flight plan"
+                      : $"Time base: end of manœuvre #{index_}",
+          style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
+              alignment = UnityEngine.TextAnchor.UpperLeft});
       changed |= changed_reference_frame_;
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
@@ -244,6 +252,11 @@ class BurnEditor : ScalingRenderer {
   }
 
   internal string FormatInitialTime(double value) {
+        FlightPlanner.FormatPositiveTimeSpan(
+                        TimeSpan.FromSeconds(
+                            value - (previous_burn?.final_time ??
+                                     plugin_.FlightPlanGetInitialTime(
+                                         vessel_.id.ToString()))))
     return FlightPlanner.FormatTimeSpan(
         TimeSpan.FromSeconds(Planetarium.GetUniversalTime() - value));
   }
@@ -257,6 +270,8 @@ class BurnEditor : ScalingRenderer {
     value = Planetarium.GetUniversalTime() - ts.TotalSeconds;
     return true;
   }
+
+  private double final_time => initial_time_.value + duration_;
 
   private bool is_inertially_fixed_;
   private DifferentialSlider Δv_tangent_;
@@ -279,6 +294,7 @@ class BurnEditor : ScalingRenderer {
   // Not owned.
   private readonly IntPtr plugin_;
   private readonly Vessel vessel_;
+  private readonly int index_;
   private readonly PrincipiaPluginAdapter adapter_;
 
   private bool changed_reference_frame_ = false;

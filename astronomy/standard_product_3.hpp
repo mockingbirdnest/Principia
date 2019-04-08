@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/discrete_trajectory.hpp"
 
@@ -14,6 +15,7 @@ namespace principia {
 namespace astronomy {
 namespace internal_standard_product_3 {
 
+using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
@@ -51,6 +53,17 @@ class StandardProduct3 {
     // - the minute field of the epoch record takes the value 60 at the end of
     //   the hour.
     ILRSB,
+    // Files produced by the Groupe de Recherche de Géodesie Spatiale for the
+    // International DORIS Service.
+    // Note that these files, while having the letters grg in the file name,
+    // have the legacy agency field LCA, for Laboratoire d’Études en Géophysique
+    // et Océanographie Spatiales / Collecte Localisation Satellites (LEGOS/CLS)
+    // Analysis center.
+    // The files are syntactically correct, since the nonconformance only
+    // affects the numerical value of the velocity fields.
+    // Divergence from the specification:
+    // - the velocities are in m/s instead of the standard dm/s.
+    GRGS,
   };
 
   enum class SatelliteGroup : char {
@@ -80,13 +93,29 @@ class StandardProduct3 {
   // (that order is the same in the satellite ID records and within each epoch).
   std::vector<SatelliteIdentifier> const& satellites() const;
 
-  DiscreteTrajectory<ITRS> const& orbit(SatelliteIdentifier const& id) const;
+  // Each orbit may consist of several arcs, separated by missing data.
+  // The arcs are non-overlapping, and are ordered chronologically.
+  std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const& orbit(
+      SatelliteIdentifier const& id) const;
 
   Version version() const;
 
+  // Whether velocities were given in the SP3 file.  If this is false, the
+  // velocities provided by this object are computed from the positions by a
+  // finite difference formula.
+  bool file_has_velocities() const;
+
  private:
   std::vector<SatelliteIdentifier> satellites_;
-  std::map<SatelliteIdentifier, DiscreteTrajectory<ITRS>> orbits_;
+  std::map<SatelliteIdentifier,
+           std::vector<not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>>
+      orbits_;
+  // |orbits_| is the same as |const_orbits_|, but with non-owning pointers to
+  // constant trajectories; this allows us to references to these vectors from
+  // |StandardProduct3::orbit|.
+  std::map<SatelliteIdentifier,
+           std::vector<not_null<DiscreteTrajectory<ITRS> const*>>>
+      const_orbits_;
   Version version_;
 
   bool has_velocities_;
@@ -100,6 +129,9 @@ bool operator<(StandardProduct3::SatelliteIdentifier const& left,
 
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::Version const& version);
+
+std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::Dialect const& dialect);
 
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::SatelliteGroup const& group);

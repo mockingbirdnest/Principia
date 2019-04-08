@@ -103,10 +103,13 @@ class FlightPlanner : SupervisedWindowRenderer {
           // Dummy initial time, we call |Reset| immediately afterwards.
           final_time_.value =
               plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
-          burn_editors_.Add(new BurnEditor(adapter_,
-                                           plugin_,
-                                           vessel_,
-                                           initial_time: 0));
+          burn_editors_.Add(
+              new BurnEditor(adapter_,
+                             plugin_,
+                             vessel_,
+                             initial_time  : 0,
+                             index         : burn_editors_.Count,
+                             previous_burn : burn_editors_.LastOrDefault()));
           burn_editors_.Last().Reset(
               plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
         }
@@ -199,13 +202,13 @@ class FlightPlanner : SupervisedWindowRenderer {
         }
         for (int i = 0; i < burn_editors_.Count - 1; ++i) {
           UnityEngine.GUILayout.TextArea("Manœuvre #" + (i + 1) + ":");
-          burn_editors_[i].Render(enabled: false);
+          burn_editors_[i].Render(enabled : false);
         }
         if (burn_editors_.Count > 0) {
           BurnEditor last_burn = burn_editors_.Last();
           UnityEngine.GUILayout.TextArea("Editing manœuvre #" +
                                          (burn_editors_.Count) + ":");
-          if (last_burn.Render(enabled: true)) {
+          if (last_burn.Render(enabled : true)) {
             plugin_.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
             last_burn.Reset(
                 plugin_.FlightPlanGetManoeuvre(vessel_guid,
@@ -233,7 +236,12 @@ class FlightPlanner : SupervisedWindowRenderer {
                     burn_editors_.Count - 1).final_time + 60;
           }
           var editor =
-              new BurnEditor(adapter_, plugin_, vessel_, initial_time);
+              new BurnEditor(adapter_,
+                             plugin_,
+                             vessel_,
+                             initial_time,
+                             index         : burn_editors_.Count,
+                             previous_burn : burn_editors_.LastOrDefault());
           Burn candidate_burn = editor.Burn();
           bool inserted = plugin_.FlightPlanAppend(vessel_guid,
                                                    candidate_burn);
