@@ -173,7 +173,7 @@
   <!--Tools.-->
   <PropertyGroup>
     <!--Protocompiler.-->
-    <Protoc>$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc</Protoc>
+    <Protoc>$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc.exe</Protoc>
     <ProtocCommand>"$(Protoc)" -I"$(SolutionDir)." --cpp_out=dllexport_decl=SERIALIZATION_DLL:.. "{0}"</ProtocCommand>
     <ProtocMessage>Generating C++ files for {0}</ProtocMessage>
     <ProtocOutputs>{0}.pb.h;{0}.pb.cc;</ProtocOutputs>
