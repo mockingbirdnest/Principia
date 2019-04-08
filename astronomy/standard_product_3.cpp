@@ -390,13 +390,6 @@ StandardProduct3::StandardProduct3(
   CHECK(!line.has_value()) << location;
   if (!has_velocities_) {
     for (auto& [id, orbit] : orbits_) {
-      auto const [it, inserted] =  // NOLINT(whitespace/braces)
-          const_orbits_.emplace(std::piecewise_construct,
-                                std::forward_as_tuple(id),
-                                std::forward_as_tuple());
-      CHECK(inserted) << id;
-      auto& const_orbit = it->second;
-
       for (auto& arc : orbit) {
 #define COMPUTE_VELOCITIES_CASE(n)            \
           case n:                             \
@@ -418,9 +411,18 @@ StandardProduct3::StandardProduct3(
         }
 
 #undef COMPUTE_VELOCITIES_CASE
-
-        const_orbit.push_back(arc.get());
       }
+    }
+  }
+  for (auto& [id, orbit] : orbits_) {
+    auto const [it, inserted] =  // NOLINT(whitespace/braces)
+        const_orbits_.emplace(std::piecewise_construct,
+                              std::forward_as_tuple(id),
+                              std::forward_as_tuple());
+    CHECK(inserted) << id;
+    auto& const_orbit = it->second;
+    for (auto& arc : orbit) {
+      const_orbit.push_back(arc.get());
     }
   }
 }
