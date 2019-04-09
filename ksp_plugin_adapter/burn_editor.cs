@@ -156,8 +156,7 @@ class BurnEditor : ScalingRenderer {
         thrust_in_kilonewtons = thrust_in_kilonewtons_,
         specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
         frame = reference_frame_selector_.FrameParameters(),
-        initial_time = previous_coast_duration_.value +
-                       time_base,
+        initial_time = previous_coast_duration_.value + time_base,
         delta_v = new XYZ{x = Δv_tangent_.value,
                           y = Δv_normal_.value,
                           z = Δv_binormal_.value},
