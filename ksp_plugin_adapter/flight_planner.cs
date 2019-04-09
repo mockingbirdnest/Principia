@@ -292,49 +292,7 @@ class FlightPlanner : SupervisedWindowRenderer {
               TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
             }
           }
-          XYZ guidance = plugin_.FlightPlanGetGuidance(vessel_guid, i);
-          if (show_guidance_ &&
-              !double.IsNaN(guidance.x + guidance.y + guidance.z)) {
-            if (guidance_node_ == null ||
-                !vessel_.patchedConicSolver.maneuverNodes.Contains(
-                    guidance_node_)) {
-              while (vessel_.patchedConicSolver.maneuverNodes.Count > 0) {
-                vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
-              }
-              guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
-                  manoeuvre.burn.initial_time);
-            } else if (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
-              while (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
-                if (vessel_.patchedConicSolver.maneuverNodes.First() ==
-                    guidance_node_) {
-                  vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
-                } else {
-                  vessel_.patchedConicSolver.maneuverNodes.First().RemoveSelf();
-                }
-              }
-            }
-            var stock_orbit = guidance_node_.patch;
-            Vector3d stock_velocity_at_node_time =
-                stock_orbit.getOrbitalVelocityAtUT(
-                                  manoeuvre.burn.initial_time).xzy;
-            Vector3d stock_displacement_from_parent_at_node_time =
-                stock_orbit.getRelativePositionAtUT(
-                                  manoeuvre.burn.initial_time).xzy;
-            UnityEngine.Quaternion stock_frenet_frame_to_world =
-                UnityEngine.Quaternion.LookRotation(
-                    stock_velocity_at_node_time,
-                    Vector3d.Cross(
-                        stock_velocity_at_node_time,
-                        stock_displacement_from_parent_at_node_time));
-            guidance_node_.DeltaV =
-                ((Vector3d)manoeuvre.burn.delta_v).magnitude *
-                (Vector3d)(UnityEngine.Quaternion.Inverse(
-                               stock_frenet_frame_to_world) *
-                           (Vector3d)guidance);
-            guidance_node_.UT = manoeuvre.burn.initial_time;
-            vessel_.patchedConicSolver.UpdateFlightPlan();
-            should_clear_guidance = false;
-          }
+          should_clear_guidance &= ShowGuidance(manoeuvre, i);
           break;
         }
       }
@@ -343,6 +301,56 @@ class FlightPlanner : SupervisedWindowRenderer {
       guidance_node_.RemoveSelf();
       guidance_node_ = null;
     }
+  }
+
+  // Returns true iff the guidance node should be cleared.
+  internal bool ShowGuidance(NavigationManoeuvre manoeuvre,
+                             int manoeuvre_index) {
+    string vessel_guid = vessel_.id.ToString();
+    XYZ guidance = plugin_.FlightPlanGetGuidance(vessel_guid, manoeuvre_index);
+    if (show_guidance_ &&
+        !double.IsNaN(guidance.x + guidance.y + guidance.z)) {
+      if (guidance_node_ == null ||
+          !vessel_.patchedConicSolver.maneuverNodes.Contains(
+              guidance_node_)) {
+        while (vessel_.patchedConicSolver.maneuverNodes.Count > 0) {
+          vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
+        }
+        guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
+            manoeuvre.burn.initial_time);
+      } else if (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
+        while (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
+          if (vessel_.patchedConicSolver.maneuverNodes.First() ==
+              guidance_node_) {
+            vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
+          } else {
+            vessel_.patchedConicSolver.maneuverNodes.First().RemoveSelf();
+          }
+        }
+      }
+      var stock_orbit = guidance_node_.patch;
+      Vector3d stock_velocity_at_node_time =
+          stock_orbit.getOrbitalVelocityAtUT(
+                            manoeuvre.burn.initial_time).xzy;
+      Vector3d stock_displacement_from_parent_at_node_time =
+          stock_orbit.getRelativePositionAtUT(
+                            manoeuvre.burn.initial_time).xzy;
+      UnityEngine.Quaternion stock_frenet_frame_to_world =
+          UnityEngine.Quaternion.LookRotation(
+              stock_velocity_at_node_time,
+              Vector3d.Cross(
+                  stock_velocity_at_node_time,
+                  stock_displacement_from_parent_at_node_time));
+      guidance_node_.DeltaV =
+          ((Vector3d)manoeuvre.burn.delta_v).magnitude *
+          (Vector3d)(UnityEngine.Quaternion.Inverse(
+                          stock_frenet_frame_to_world) *
+                      (Vector3d)guidance);
+      guidance_node_.UT = manoeuvre.burn.initial_time;
+      vessel_.patchedConicSolver.UpdateFlightPlan();
+      return false;
+    }
+    return true;
   }
 
   internal static string FormatPositiveTimeSpan (TimeSpan span) {
@@ -413,12 +421,10 @@ class FlightPlanner : SupervisedWindowRenderer {
     return true;
   }
 
-  // Not owned.
   private readonly PrincipiaPluginAdapter adapter_;
   private IntPtr plugin_ = IntPtr.Zero;
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
-
   private DifferentialSlider final_time_;
 
   private bool show_guidance_ = false;
