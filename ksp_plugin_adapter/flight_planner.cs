@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 
 namespace principia {
@@ -21,11 +23,8 @@ class FlightPlanner : SupervisedWindowRenderer {
                       log10_upper_rate : log10_time_upper_rate,
                       min_value        : 10,
                       max_value        : double.PositiveInfinity,
-                      formatter        : value =>
-                          FormatPositiveTimeSpan(
-                              TimeSpan.FromSeconds(
-                                  value - plugin_.FlightPlanGetInitialTime(
-                                              vessel_.id.ToString()))));
+                      formatter        : FormatPlanLength,
+                      parser           : TryParsePlanLength);
   }
 
   public void RenderButton() {
@@ -129,13 +128,16 @@ class FlightPlanner : SupervisedWindowRenderer {
       double actual_final_time =
           plugin_.FlightPlanGetActualFinalTime(vessel_guid);
 
-      UnityEngine.GUILayout.TextField(
-          (final_time_.value == actual_final_time)
-              ? ""
-              : "Timed out after " +
-                    FormatPositiveTimeSpan(TimeSpan.FromSeconds(
-                        actual_final_time -
-                        plugin_.FlightPlanGetInitialTime(vessel_guid))));
+      var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textField);
+      style.normal.textColor = XKCDColors.Orange;
+      string message = "";
+      if (final_time_.value != actual_final_time) {
+        message = "Timed out after " +
+                  FormatPositiveTimeSpan(TimeSpan.FromSeconds(
+                      actual_final_time -
+                      plugin_.FlightPlanGetInitialTime(vessel_guid)));
+      }
+      UnityEngine.GUILayout.TextField(message, style);
 
       FlightPlanAdaptiveStepParameters parameters =
           plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
@@ -356,6 +358,59 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   internal static string FormatTimeSpan (TimeSpan span) {
     return span.Ticks.ToString("+;-") + FormatPositiveTimeSpan(span);
+  }
+
+  internal static bool TryParseTimeSpan(string str, out TimeSpan value) {
+    value = TimeSpan.Zero;
+    // Using a technology that is customarily used to parse HTML.
+    string pattern = @"^([-+]?)\s*(\d+)\s*"+
+                     (GameSettings.KERBIN_TIME ? "d6" : "d") +
+                     @"\s*(\d+)\s*h\s*(\d+)\s*min\s*([0-9.,']+)\s*s$";
+    Regex regex = new Regex(pattern);
+    var match = Regex.Match(str, pattern);
+    if (!match.Success) {
+      return false;
+    }
+    string sign = match.Groups[1].Value;
+    string days = match.Groups[2].Value;
+    string hours = match.Groups[3].Value;
+    string minutes = match.Groups[4].Value;
+    string seconds = match.Groups[5].Value;
+    if (!Int32.TryParse(days, out int d) ||
+        !Int32.TryParse(hours, out int h) ||
+        !Int32.TryParse(minutes, out int min) ||
+        !Double.TryParse(seconds.Replace(',', '.'),
+                         NumberStyles.AllowDecimalPoint |
+                         NumberStyles.AllowThousands,
+                         Culture.culture.NumberFormat,
+                         out double s)) {
+      return false;
+    }
+    value = TimeSpan.FromDays((double)d / (GameSettings.KERBIN_TIME ? 4 : 1)) +
+            TimeSpan.FromHours(h) +
+            TimeSpan.FromMinutes(min) +
+            TimeSpan.FromSeconds(s);
+    if (sign.Length > 0 && sign[0] == '-') {
+      value = value.Negate();
+    }
+    return true;
+  }
+
+  internal string FormatPlanLength(double value) {
+    return FormatPositiveTimeSpan(TimeSpan.FromSeconds(
+               value -
+               plugin_.FlightPlanGetInitialTime(vessel_.id.ToString())));
+  }
+
+  internal bool TryParsePlanLength(string str, out double value) {
+    value = 0;
+    TimeSpan ts;
+    if (!TryParseTimeSpan(str, out ts)) {
+      return false;
+    }
+    value = ts.TotalSeconds +
+            plugin_.FlightPlanGetInitialTime(vessel_.id.ToString());
+    return true;
   }
 
   // Not owned.

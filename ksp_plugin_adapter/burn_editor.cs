@@ -17,6 +17,7 @@ class BurnEditor : ScalingRenderer {
     plugin_ = plugin;
     vessel_ = vessel;
     index_ = index;
+    previous_burn_ = previous_burn;
     Δv_tangent_ =
         new DifferentialSlider(label            : "Δv tangent",
                                unit             : "m / s",
@@ -35,21 +36,20 @@ class BurnEditor : ScalingRenderer {
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
                                text_colour      : XKCDColors.PurplePink);
-    initial_time_ =
+    previous_coast_duration_ =
         new DifferentialSlider(
                 label            : "t initial",
                 unit             : null,
                 log10_lower_rate : Log10TimeLowerRate,
                 log10_upper_rate : Log10TimeUpperRate,
+                // We cannot have a coast of length 0, so let's make it very
+                // short: that will be indistinguishable.
+                zero_value       : 0.001,
                 min_value        : 0,
                 max_value        : double.PositiveInfinity,
-                formatter        : value =>
-                    FlightPlanner.FormatPositiveTimeSpan(
-                        TimeSpan.FromSeconds(
-                            value - (previous_burn?.final_time ??
-                                     plugin_.FlightPlanGetInitialTime(
-                                         vessel_.id.ToString())))));
-    initial_time_.value = initial_time;
+                formatter        : FormatPreviousCoastDuration,
+                parser           : TryParsePreviousCoastDuration);
+    previous_coast_duration_.value = initial_time - time_base;
     reference_frame_selector_ = new ReferenceFrameSelector(
                                     adapter_,
                                     ReferenceFrameChanged,
@@ -113,7 +113,7 @@ class BurnEditor : ScalingRenderer {
       changed |= Δv_tangent_.Render(enabled);
       changed |= Δv_normal_.Render(enabled);
       changed |= Δv_binormal_.Render(enabled);
-      changed |= initial_time_.Render(enabled);
+      changed |= previous_coast_duration_.Render(enabled);
       UnityEngine.GUILayout.Label(
           index_ == 0 ? "Time base: start of flight plan"
                       : $"Time base: end of manœuvre #{index_}",
@@ -143,7 +143,8 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_.value = burn.delta_v.x;
     Δv_normal_.value = burn.delta_v.y;
     Δv_binormal_.value = burn.delta_v.z;
-    initial_time_.value = burn.initial_time;
+    previous_coast_duration_.value =
+        burn.initial_time - time_base;
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manoeuvre.duration;
@@ -155,7 +156,7 @@ class BurnEditor : ScalingRenderer {
         thrust_in_kilonewtons = thrust_in_kilonewtons_,
         specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
         frame = reference_frame_selector_.FrameParameters(),
-        initial_time = initial_time_.value,
+        initial_time = previous_coast_duration_.value + time_base,
         delta_v = new XYZ{x = Δv_tangent_.value,
                           y = Δv_normal_.value,
                           z = Δv_binormal_.value},
@@ -255,13 +256,32 @@ class BurnEditor : ScalingRenderer {
     specific_impulse_in_seconds_g0_ = range;
   }
 
-  private double final_time => initial_time_.value + duration_;
+  internal string FormatPreviousCoastDuration(double value) {
+    return FlightPlanner.FormatPositiveTimeSpan(TimeSpan.FromSeconds(value));
+  }
+
+  internal bool TryParsePreviousCoastDuration(string str, out double value) {
+    value = 0;
+    TimeSpan ts;
+    if (!FlightPlanner.TryParseTimeSpan(str, out ts)) {
+      return false;
+    }
+    value = ts.TotalSeconds;
+    return true;
+  }
+
+  private double time_base => previous_burn_?.final_time ??
+                              plugin_.FlightPlanGetInitialTime(
+                                  vessel_.id.ToString());
+
+  private double final_time =>
+      time_base + previous_coast_duration_.value + duration_;
 
   private bool is_inertially_fixed_;
   private DifferentialSlider Δv_tangent_;
   private DifferentialSlider Δv_normal_;
   private DifferentialSlider Δv_binormal_;
-  private DifferentialSlider initial_time_;
+  private DifferentialSlider previous_coast_duration_;
   private ReferenceFrameSelector reference_frame_selector_;
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
@@ -279,6 +299,7 @@ class BurnEditor : ScalingRenderer {
   private readonly IntPtr plugin_;
   private readonly Vessel vessel_;
   private readonly int index_;
+  private readonly BurnEditor previous_burn_;
   private readonly PrincipiaPluginAdapter adapter_;
 
   private bool changed_reference_frame_ = false;
