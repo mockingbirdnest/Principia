@@ -105,13 +105,27 @@ class FlightPlanner : SupervisedWindowRenderer {
               plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
           burn_editors_.Add(
               new BurnEditor(adapter_,
-                             plugin_,
-                             vessel_,
-                             initial_time  : 0,
-                             index         : burn_editors_.Count,
-                             previous_burn : burn_editors_.LastOrDefault()));
+                              plugin_,
+                              vessel_,
+                              initial_time  : 0,
+                              index         : burn_editors_.Count,
+                              previous_burn : burn_editors_.LastOrDefault()));
           burn_editors_.Last().Reset(
               plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
+        }
+      }
+    }
+
+    if (burn_editors_ != null) {
+      string vessel_guid = vessel_?.id.ToString();
+      double current_time = plugin_.CurrentTime();
+      first_future_manoeuvre_ = null;
+      for (int i = 0; i < burn_editors_.Count; ++i) {
+        NavigationManoeuvre manoeuvre =
+            plugin_.FlightPlanGetManoeuvre(vessel_guid, i);
+        if (current_time < manoeuvre.final_time) {
+          first_future_manoeuvre_ = i;
+          break;
         }
       }
     }
@@ -266,8 +280,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     for (int i = 0; i < burn_editors_.Count; ++i) {
       NavigationManoeuvre manoeuvre =
           plugin_.FlightPlanGetManoeuvre(vessel_guid, i);
-      // TODO(phl): Evil changes of widgets between layout and repaint...
-      if (manoeuvre.final_time > current_time) {
+      if (first_future_manoeuvre_.HasValue && i >= first_future_manoeuvre_) {
         if (manoeuvre.burn.initial_time > current_time) {
           UnityEngine.GUILayout.TextArea("Upcoming manœuvre: #" + (i + 1));
           UnityEngine.GUILayout.Label(
@@ -426,6 +439,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
   private DifferentialSlider final_time_;
+  private int? first_future_manoeuvre_;
 
   private bool show_guidance_ = false;
   private ManeuverNode guidance_node_;
