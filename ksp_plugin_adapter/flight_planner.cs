@@ -129,9 +129,9 @@ class FlightPlanner : SupervisedWindowRenderer {
           plugin_.FlightPlanGetActualFinalTime(vessel_guid);
 
       var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textField);
+      style.normal.textColor = XKCDColors.Orange;
       string message = "";
       if (final_time_.value != actual_final_time) {
-        style.normal.textColor = XKCDColors.Orange;
         message = "Timed out after " +
                   FormatPositiveTimeSpan(TimeSpan.FromSeconds(
                       actual_final_time -

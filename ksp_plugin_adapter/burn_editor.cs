@@ -42,12 +42,14 @@ class BurnEditor : ScalingRenderer {
                 unit             : null,
                 log10_lower_rate : Log10TimeLowerRate,
                 log10_upper_rate : Log10TimeUpperRate,
+                // We cannot have a coast of length 0, so let's make it very
+                // short: that will be indistinguishable.
                 zero_value       : 0.001,
                 min_value        : 0,
                 max_value        : double.PositiveInfinity,
                 formatter        : FormatPreviousCoastDuration,
                 parser           : TryParsePreviousCoastDuration);
-    previous_coast_duration_.value = initial_time - previous_burn_final_time;
+    previous_coast_duration_.value = initial_time - time_base;
     reference_frame_selector_ = new ReferenceFrameSelector(
                                     adapter_,
                                     ReferenceFrameChanged,
@@ -142,7 +144,7 @@ class BurnEditor : ScalingRenderer {
     Δv_normal_.value = burn.delta_v.y;
     Δv_binormal_.value = burn.delta_v.z;
     previous_coast_duration_.value =
-        burn.initial_time - previous_burn_final_time;
+        burn.initial_time - time_base;
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manoeuvre.duration;
@@ -155,7 +157,7 @@ class BurnEditor : ScalingRenderer {
         specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
         frame = reference_frame_selector_.FrameParameters(),
         initial_time = previous_coast_duration_.value +
-                       previous_burn_final_time,
+                       time_base,
         delta_v = new XYZ{x = Δv_tangent_.value,
                           y = Δv_normal_.value,
                           z = Δv_binormal_.value},
@@ -269,12 +271,12 @@ class BurnEditor : ScalingRenderer {
     return true;
   }
 
-  private double previous_burn_final_time => previous_burn_?.final_time ??
-                                             plugin_.FlightPlanGetInitialTime(
-                                                 vessel_.id.ToString());
+  private double time_base => previous_burn_?.final_time ??
+                              plugin_.FlightPlanGetInitialTime(
+                                  vessel_.id.ToString());
 
   private double final_time =>
-      previous_burn_final_time + previous_coast_duration_.value + duration_;
+      time_base + previous_coast_duration_.value + duration_;
 
   private bool is_inertially_fixed_;
   private DifferentialSlider Δv_tangent_;

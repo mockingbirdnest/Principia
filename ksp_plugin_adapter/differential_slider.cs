@@ -150,13 +150,13 @@ internal class DifferentialSlider : ScalingRenderer {
         if (UnityEngine.GUILayout.Button("0", GUILayoutWidth(1))) {
           value_changed = true;
           // Force a change of value so that any input is discarded.
-          value = zero_value_ + 1;
+          value_ = null;
           value = zero_value_;
         }
         if (slider_position_ != 0.0) {
           value_changed = true;
-          // Moving the slider doesn't cause a loss of focus so we terminate
-          // input if necessary.
+          // Moving the slider doesn't always cause a loss of focus so we
+          // terminate input if necessary.
           if (parser_(formatted_value_, out double v)) {
             value = v;
           }
@@ -190,6 +190,10 @@ internal class DifferentialSlider : ScalingRenderer {
 
   private float slider_position_ = 0.0f;
   private DateTime last_time_;
+  // It is convenient for the value to be nullable so that we have a way to
+  // ensure that an assignment to it will actually have an effect and won't be
+  // optimized due to the existing value.  This happens at initialization and
+  // during some events handling.
   private double? value_;
   private String formatted_value_;
 }
