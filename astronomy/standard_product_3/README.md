@@ -49,6 +49,10 @@ See http://mgex.igs.org/IGS_MGEX_Products.php.
   ftp://igs.ensg.eu/pub/igs/products/mgex/2034/ <br>
   ftp://igs.ign.fr/pub/igs/products/mgex/2034/ <br>
   ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2034/
+- [WUM0MGXFIN_20190270000_01D_15M_ORB.SP3](WUM0MGXFIN_20190270000_01D_15M_ORB.SP3):<br>
+  ftp://igs.ensg.eu/pub/igs/products/mgex/2038/ <br>
+  ftp://igs.ign.fr/pub/igs/products/mgex/2038/ <br>
+  **not found** at ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2038/
 
 
 ### International GLONASS Experiment (IGEX) / International GLONASS Service Pilot Project (IGLOS-PP)

@@ -29,6 +29,7 @@
     <None Include="standard_product_3\nga20342.eph" />
     <None Include="standard_product_3\README.md" />
     <None Include="standard_product_3\ssaja102.b03007.e03017.DGS.sp3" />
+    <None Include="standard_product_3\WUM0MGXFIN_20190270000_01D_15M_ORB.SP3" />
     <None Include="trappist_gravity_model.cfg" />
     <None Include="trappist_gravity_model_slippist1.cfg" />
     <None Include="trappist_initial_state_jd_2457000_000000000.cfg" />
