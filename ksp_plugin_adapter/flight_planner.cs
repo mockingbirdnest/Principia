@@ -105,11 +105,11 @@ class FlightPlanner : SupervisedWindowRenderer {
               plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
           burn_editors_.Add(
               new BurnEditor(adapter_,
-                              plugin_,
-                              vessel_,
-                              initial_time  : 0,
-                              index         : burn_editors_.Count,
-                              previous_burn : burn_editors_.LastOrDefault()));
+                             plugin_,
+                             vessel_,
+                             initial_time  : 0,
+                             index         : burn_editors_.Count,
+                             previous_burn : burn_editors_.LastOrDefault()));
           burn_editors_.Last().Reset(
               plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
         }
