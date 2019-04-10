@@ -308,12 +308,12 @@ class FlightPlanner : SupervisedWindowRenderer {
           should_clear_guidance &= ShowGuidance(manoeuvre, i);
           break;
         }
-      } else {
-          // Reserve some space to avoid the UI changing shape if we have
-          // nothing to say.
-          UnityEngine.GUILayout.TextArea("All manœuvres are in the past");
-          UnityEngine.GUILayout.Space(Width(1));
-          UnityEngine.GUILayout.Space(Width(1));
+      } else if (!first_future_manoeuvre_.HasValue && i == 0) {
+        // Reserve some space to avoid the UI changing shape if we have
+        // nothing to say.
+        UnityEngine.GUILayout.TextArea("All manœuvres are in the past");
+        UnityEngine.GUILayout.Space(Width(1));
+        UnityEngine.GUILayout.Space(Width(1));
       }
     }
     if (should_clear_guidance && guidance_node_ != null) {
