@@ -114,7 +114,7 @@ TEST_F(StandardProduct3Test, PositionOnly) {
                                  StandardProduct3::SatelliteGroup::北斗,
                                  StandardProduct3::SatelliteGroup::Galileo,
                                  StandardProduct3::SatelliteGroup::GPS,
-                                 StandardProduct3::SatelliteGroup::準天頂衛星,
+                                 StandardProduct3::SatelliteGroup::みちびき,
                                  StandardProduct3::SatelliteGroup::ГЛОНАСС))));
   EXPECT_THAT(sp3d.satellites(),
               AllOf(SizeIs(91),
@@ -123,7 +123,7 @@ TEST_F(StandardProduct3Test, PositionOnly) {
                                  StandardProduct3::SatelliteGroup::北斗,
                                  StandardProduct3::SatelliteGroup::Galileo,
                                  StandardProduct3::SatelliteGroup::GPS,
-                                 StandardProduct3::SatelliteGroup::準天頂衛星,
+                                 StandardProduct3::SatelliteGroup::みちびき,
                                  StandardProduct3::SatelliteGroup::ГЛОНАСС))));
 }
 
@@ -227,7 +227,7 @@ TEST_F(StandardProduct3Test, Dialects) {
                                  StandardProduct3::SatelliteGroup::北斗,
                                  StandardProduct3::SatelliteGroup::Galileo,
                                  StandardProduct3::SatelliteGroup::GPS,
-                                 StandardProduct3::SatelliteGroup::準天頂衛星,
+                                 StandardProduct3::SatelliteGroup::みちびき,
                                  StandardProduct3::SatelliteGroup::ГЛОНАСС))));
 }
 

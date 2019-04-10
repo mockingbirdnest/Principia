@@ -176,7 +176,7 @@ StandardProduct3::StandardProduct3(
             case SatelliteGroup::General:
             case SatelliteGroup::Galileo:
             case SatelliteGroup::北斗:
-            case SatelliteGroup::準天頂衛星:
+            case SatelliteGroup::みちびき:
             case SatelliteGroup::IRNSS:
               CHECK_GE(version_, Version::C) << full_location;
               break;

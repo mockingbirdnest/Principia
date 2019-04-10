@@ -85,7 +85,7 @@ class StandardProduct3 {
     ГЛОНАСС = 'R',
     Galileo = 'E',
     北斗 = 'C',
-    準天頂衛星 = 'J',
+    みちびき = 'J',
     IRNSS = 'I',
   };
 
