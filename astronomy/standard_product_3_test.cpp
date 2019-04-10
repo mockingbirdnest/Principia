@@ -189,6 +189,16 @@ TEST_F(StandardProduct3DeathTest, ILRSBNonConformance) {
       "date_time_body.hpp");
 }
 
+TEST_F(StandardProduct3DeathTest, ChineseMGEXNonConformance) {
+  // There are 10 +␣ records and 10 ++ records in the Chinese MGEX dialect of
+  // SP3-c.
+  EXPECT_DEATH(
+      StandardProduct3(SOLUTION_DIR / "astronomy" / "standard_product_3" /
+                           "WUM0MGXFIN_20190270000_01D_15M_ORB.SP3",
+                       StandardProduct3::Dialect::Standard),
+      u8R"(exactly 5 \+␣ records expected in SP3-c)");
+}
+
 // Test that we successfully parse the nonstandard dialects.
 
 TEST_F(StandardProduct3Test, Dialects) {
