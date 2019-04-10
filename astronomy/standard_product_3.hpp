@@ -70,12 +70,12 @@ class StandardProduct3 {
     // the number of satellite ID records: there are 10 satellite ID records,
     // for a maximum of 170 satellites.
     // While SP3-d allows for an unlimited number of satellite ID records, it is
-    // questionable whether files in this dialect are valid SP3-d: indeed, they
-    // often have lines containing only 0s to pad to 10 lines of satellite IDs,
-    // whereas the SP3-d documentation seems to suggest that such padding is
-    // restricted to a last partial line: “The last “+ ” line may contain zeroes
-    // if the number of satellites (given on line three) is not an even multiple
-    // of 17.”.
+    // questionable whether files in this dialect are valid SP3-d, aside from
+    // the version identifier: indeed, they often have lines containing only 0s
+    // to pad to 10 lines of satellite IDs, whereas the SP3-d documentation
+    // seems to suggest that such padding is restricted to a last partial line:
+    // “The last “+ ” line may contain zeroes if the number of satellites (given
+    // on line three) is not an even multiple of 17.”.
     ChineseMGEX,
   };
 
