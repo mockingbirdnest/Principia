@@ -277,45 +277,48 @@ class FlightPlanner : SupervisedWindowRenderer {
     string vessel_guid = vessel_.id.ToString();
     double current_time = plugin_.CurrentTime();
     bool should_clear_guidance = true;
-    for (int i = 0; i < burn_editors_.Count; ++i) {
+
+    if (first_future_manoeuvre_.HasValue) {
+      int first_future_manoeuvre = first_future_manoeuvre_.Value;
       NavigationManoeuvre manoeuvre =
-          plugin_.FlightPlanGetManoeuvre(vessel_guid, i);
-      if (first_future_manoeuvre_.HasValue && i >= first_future_manoeuvre_) {
-        if (manoeuvre.burn.initial_time > current_time) {
-          UnityEngine.GUILayout.TextArea("Upcoming manœuvre: #" + (i + 1));
-          UnityEngine.GUILayout.Label(
-              "Ignition " + FormatTimeSpan(TimeSpan.FromSeconds(
-                                current_time - manoeuvre.burn.initial_time)));
-        } else {
-          UnityEngine.GUILayout.TextArea("Ongoing manœuvre: #" + (i + 1));
-          UnityEngine.GUILayout.Label(
-              "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
-                              current_time - manoeuvre.final_time)));
-        }
-        // In career mode, the patched conic solver may be null.  In that case
-        // we do not offer the option of showing the manœuvre on the navball,
-        // even though the flight planner is still available to plan it.
-        // TODO(egg): We may want to consider setting the burn vector directly
-        // rather than going through the solver.
-        if (vessel_.patchedConicSolver != null) {
-          using (new UnityEngine.GUILayout.HorizontalScope()) {
-            show_guidance_ =
-                UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
-            if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
-              TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
-            }
-          }
-          should_clear_guidance &= ShowGuidance(manoeuvre, i);
-          break;
-        }
-      } else if (!first_future_manoeuvre_.HasValue && i == 0) {
-        // Reserve some space to avoid the UI changing shape if we have
-        // nothing to say.
-        UnityEngine.GUILayout.TextArea("All manœuvres are in the past");
-        UnityEngine.GUILayout.Space(Width(1));
-        UnityEngine.GUILayout.Space(Width(1));
+          plugin_.FlightPlanGetManoeuvre(vessel_guid, first_future_manoeuvre);
+      if (manoeuvre.burn.initial_time > current_time) {
+        UnityEngine.GUILayout.TextArea("Upcoming manœuvre: #" +
+                                       (first_future_manoeuvre + 1));
+        UnityEngine.GUILayout.Label(
+            "Ignition " + FormatTimeSpan(TimeSpan.FromSeconds(
+                              current_time - manoeuvre.burn.initial_time)));
+      } else {
+        UnityEngine.GUILayout.TextArea("Ongoing manœuvre: #" +
+                                       (first_future_manoeuvre + 1));
+        UnityEngine.GUILayout.Label(
+            "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
+                            current_time - manoeuvre.final_time)));
       }
+      // In career mode, the patched conic solver may be null.  In that case
+      // we do not offer the option of showing the manœuvre on the navball,
+      // even though the flight planner is still available to plan it.
+      // TODO(egg): We may want to consider setting the burn vector directly
+      // rather than going through the solver.
+      if (vessel_.patchedConicSolver != null) {
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          show_guidance_ =
+              UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
+          if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
+            TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
+          }
+        }
+        should_clear_guidance &= ShowGuidance(manoeuvre,
+                                              first_future_manoeuvre);
+      }
+    } else {
+      // Reserve some space to avoid the UI changing shape if we have
+      // nothing to say.
+      UnityEngine.GUILayout.TextArea("All manœuvres are in the past");
+      UnityEngine.GUILayout.Space(Width(1));
+      UnityEngine.GUILayout.Space(Width(1));
     }
+
     if (should_clear_guidance && guidance_node_ != null) {
       guidance_node_.RemoveSelf();
       guidance_node_ = null;
@@ -441,7 +444,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   private readonly PrincipiaPluginAdapter adapter_;
-  private IntPtr plugin_ = IntPtr.Zero;
+  private IntPtr plugin_ = IntPtr.Zero;  // Not owned.
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
   private DifferentialSlider final_time_;
