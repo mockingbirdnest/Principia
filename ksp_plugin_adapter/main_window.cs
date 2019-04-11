@@ -168,7 +168,9 @@ internal class MainWindow : SupervisedWindowRenderer {
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       if (plugin_ == IntPtr.Zero) {
-        UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
+        UnityEngine.GUILayout.Label(
+            text : "Plugin is not started",
+            style : Style.Warning(UnityEngine.GUI.skin.label));
       }
       if (DateTimeOffset.Now > next_release_date_) {
         UnityEngine.GUILayout.TextArea(
@@ -179,7 +181,9 @@ internal class MainWindow : SupervisedWindowRenderer {
       }
       Interface.GetVersion(build_date : out string unused_build_date,
                            version    : out string version);
-      UnityEngine.GUILayout.TextArea(version);
+      UnityEngine.GUILayout.Label(
+          version,
+          style : Style.Info(UnityEngine.GUI.skin.label));
       bool changed_history_length = false;
       RenderSelector(history_lengths_,
                      ref history_length_index_,
@@ -345,11 +349,14 @@ internal class MainWindow : SupervisedWindowRenderer {
         buffered_logging_ = Log.GetBufferedLogging();
       }
     }
-    UnityEngine.GUILayout.TextArea("Journalling is " +
-                                   (journaling_ ? "ON" : "OFF"));
-    must_record_journal_ = UnityEngine.GUILayout.Toggle(
-        value   : must_record_journal_,
-        text    : "Record journal (starts on load)");
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      must_record_journal_ = UnityEngine.GUILayout.Toggle(
+          value   : must_record_journal_,
+          text    : "Record journal (starts on load)");
+      UnityEngine.GUILayout.Label(
+          "Journalling is " + (journaling_ ? "ON" : "OFF"),
+          style : Style.Info(Style.RightAligned(UnityEngine.GUI.skin.label)));
+    }
     if (journaling_ && !must_record_journal_) {
       // We can deactivate a recorder at any time, but in order for replaying to
       // work, we should only activate one before creating a plugin.

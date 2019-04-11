@@ -65,8 +65,6 @@ class BurnEditor : ScalingRenderer {
   public bool Render(bool enabled) {
     bool changed = false;
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      UnityEngine.GUIStyle warning_style =
-          Style.Warning(UnityEngine.GUI.skin.textArea);
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
       // been set.  If we have fallen back to instant impulse, we should use this
       // mass to set the thrust.
@@ -92,17 +90,10 @@ class BurnEditor : ScalingRenderer {
             changed = true;
           }
         }
-        UnityEngine.GUILayout.TextArea(engine_warning_, warning_style);
         reference_frame_selector_.RenderButton();
       } else {
         reference_frame_selector_.Hide();
       }
-      string frame_warning = "";
-      if (!reference_frame_selector_.FrameParameters().Equals(
-              adapter_.plotting_frame_selector_.FrameParameters())) {
-        frame_warning = "Manœuvre frame differs from plotting frame";
-      }
-      UnityEngine.GUILayout.TextArea(frame_warning, warning_style);
       if (is_inertially_fixed_ !=
           UnityEngine.GUILayout.Toggle(is_inertially_fixed_,
                                        "Inertially fixed")) {
@@ -126,6 +117,15 @@ class BurnEditor : ScalingRenderer {
         UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
                                     " s");
       }
+      string frame_warning = "";
+      if (!reference_frame_selector_.FrameParameters().Equals(
+              adapter_.plotting_frame_selector_.FrameParameters())) {
+        frame_warning = "Manœuvre frame differs from plotting frame";
+      }
+      UnityEngine.GUIStyle warning_style =
+          Style.Warning(UnityEngine.GUI.skin.label);
+      UnityEngine.GUILayout.Label(frame_warning, warning_style);
+      UnityEngine.GUILayout.Label(engine_warning_, warning_style);
       changed_reference_frame_ = false;
     }
     return changed && enabled;
