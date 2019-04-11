@@ -14,8 +14,8 @@ internal static class Style {
 
   public static UnityEngine.GUIStyle Info(UnityEngine.GUIStyle style) {
     var info_style = new UnityEngine.GUIStyle(style);
-    info_style.focused.textColor = XKCDColors.LightGrey;
-    info_style.normal.textColor = XKCDColors.LightGrey;
+    info_style.focused.textColor = ultra_cool_grey_;
+    info_style.normal.textColor = ultra_cool_grey_;
     return info_style;
   }
 
@@ -43,8 +43,25 @@ internal static class Style {
     var horizontal_line_style = new UnityEngine.GUIStyle
                                     (UnityEngine.GUI.skin.horizontalSlider);
     horizontal_line_style.fixedHeight /= 5;
+    horizontal_line_style.normal.background = ultra_cool_grey_texture;
     UnityEngine.GUILayout.Label("", horizontal_line_style);
   }
+
+  private static UnityEngine.Texture2D ultra_cool_grey_texture {
+    get {
+      var texture = new UnityEngine.Texture2D(width : 4, height : 4);
+      for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+          texture.SetPixel(i, j, ultra_cool_grey_);
+        }
+      }
+      return texture;
+    }
+  }
+
+  // Close to XKCD "cool grey", but hue-neutral
+  private static UnityEngine.Color ultra_cool_grey_ =
+      new UnityEngine.Color(0.64f, 0.64f, 0.64f);
 }
 
 }  // namespace ksp_plugin_adapter

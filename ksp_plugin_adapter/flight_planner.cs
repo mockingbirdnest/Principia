@@ -218,15 +218,15 @@ class FlightPlanner : SupervisedWindowRenderer {
         }
         for (int i = 0; i < burn_editors_.Count - 1; ++i) {
           Style.HorizontalLine();
-          UnityEngine.GUILayout.Label("Manœuvre #" + (i + 1));
-          burn_editors_[i].Render(enabled : false);
+          burn_editors_[i].Render(header: "Manœuvre #" + (i + 1),
+                                  enabled : false);
         }
         if (burn_editors_.Count > 0) {
           Style.HorizontalLine();
           BurnEditor last_burn = burn_editors_.Last();
-          UnityEngine.GUILayout.Label("Editing manœuvre #" +
-                                         (burn_editors_.Count));
-          if (last_burn.Render(enabled : true)) {
+          if (last_burn.Render(header : "Editing manœuvre #" +
+                                         (burn_editors_.Count),
+                               enabled : true)) {
             plugin_.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
             last_burn.Reset(
                 plugin_.FlightPlanGetManoeuvre(vessel_guid,

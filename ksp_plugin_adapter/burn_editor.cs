@@ -62,8 +62,19 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(bool enabled) {
+  public bool Render(string header, bool enabled) {
     bool changed = false;
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      UnityEngine.GUILayout.Label(header);
+      string frame_warning = "";
+      if (!reference_frame_selector_.FrameParameters().Equals(
+              adapter_.plotting_frame_selector_.FrameParameters())) {
+        frame_warning = "Manœuvre frame differs from plotting frame";
+      }
+      UnityEngine.GUILayout.Label(
+          frame_warning,
+          Style.RightAligned(Style.Warning(UnityEngine.GUI.skin.label)));
+    }
     using (new UnityEngine.GUILayout.VerticalScope()) {
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
       // been set.  If we have fallen back to instant impulse, we should use this
@@ -117,15 +128,8 @@ class BurnEditor : ScalingRenderer {
         UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
                                     " s");
       }
-      string frame_warning = "";
-      if (!reference_frame_selector_.FrameParameters().Equals(
-              adapter_.plotting_frame_selector_.FrameParameters())) {
-        frame_warning = "Manœuvre frame differs from plotting frame";
-      }
-      UnityEngine.GUIStyle warning_style =
-          Style.Warning(UnityEngine.GUI.skin.label);
-      UnityEngine.GUILayout.Label(frame_warning, warning_style);
-      UnityEngine.GUILayout.Label(engine_warning_, warning_style);
+      UnityEngine.GUILayout.Label(engine_warning_,
+                                  Style.Warning(UnityEngine.GUI.skin.label));
       changed_reference_frame_ = false;
     }
     return changed && enabled;
