@@ -410,11 +410,9 @@ internal class MainWindow : SupervisedWindowRenderer {
         --index;
         changed = true;
       }
-      var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
-      style.alignment = UnityEngine.TextAnchor.MiddleRight;
       UnityEngine.GUILayout.TextArea(
           text    : String.Format(Culture.culture, format, array[index]),
-          style   : style,
+          style   : Style.RightAligned(UnityEngine.GUI.skin.textArea),
           options : GUILayoutWidth(3));
       if (UnityEngine.GUILayout.Button(
               text    : index == array.Length - 1 ? "max" : "+",
