@@ -1767,9 +1767,9 @@ public partial class PrincipiaPluginAdapter
                             position_at_start +
                                 scale * (Vector3d)world_direction);
                       };
-                  add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
-                  add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
-                  add_vector(manoeuvre.binormal, XKCDColors.PurplePink);
+                  add_vector(manoeuvre.tangent, Style.Tangent);
+                  add_vector(manoeuvre.normal, Style.Normal);
+                  add_vector(manoeuvre.binormal, Style.Binormal);
                 }
               }
             }

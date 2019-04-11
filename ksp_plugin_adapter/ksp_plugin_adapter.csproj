@@ -121,6 +121,7 @@
     <Compile Include="optional_marshaler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="reference_frame_selector.cs" />
+    <Compile Include="style.cs" />
     <Compile Include="utf8_marshaler.cs" />
     <Compile Include="utf16_marshaler.cs" />
     <Compile Include="window_renderer.cs" />

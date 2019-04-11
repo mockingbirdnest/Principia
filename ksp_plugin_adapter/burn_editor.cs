@@ -23,19 +23,19 @@ class BurnEditor : ScalingRenderer {
                                unit             : "m / s",
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : XKCDColors.NeonYellow);
+                               text_colour      : Style.Tangent);
     Δv_normal_ =
         new DifferentialSlider(label            : "Δv normal",
                                unit             : "m / s",
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : XKCDColors.AquaBlue);
+                               text_colour      : Style.Normal);
     Δv_binormal_ =
         new DifferentialSlider(label            : "Δv binormal",
                                unit             : "m / s",
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : XKCDColors.PurplePink);
+                               text_colour      : Style.Binormal);
     previous_coast_duration_ =
         new DifferentialSlider(
                 label            : "t initial",
@@ -65,9 +65,8 @@ class BurnEditor : ScalingRenderer {
   public bool Render(bool enabled) {
     bool changed = false;
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      var warning_style =
-          new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
-      warning_style.normal.textColor = XKCDColors.Orange;
+      UnityEngine.GUIStyle warning_style =
+          Style.Warning(UnityEngine.GUI.skin.textArea);
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
       // been set.  If we have fallen back to instant impulse, we should use this
       // mass to set the thrust.

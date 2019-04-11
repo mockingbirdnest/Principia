@@ -81,11 +81,9 @@ internal class DifferentialSlider : ScalingRenderer {
         style.alignment = UnityEngine.TextAnchor.MiddleRight;
 
         // If the text is not syntactically correct, inform the user by drawing
-        // it in colour.  We don't expect to see the "red" case as we should
-        // revert to a parseable value on exit.
+        // it in the warning style.
         if (!parser_(formatted_value_, out double v1)) {
-          style.focused.textColor = XKCDColors.Orange;
-          style.normal.textColor = XKCDColors.Red;
+          style = Style.Error(style);
         }
 
         // Draw the text field and give it a name to be able to detect if it has
