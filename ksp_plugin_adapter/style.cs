@@ -32,6 +32,13 @@ internal static class Style {
     error_style.normal.textColor = XKCDColors.Red;
     return error_style;
   }
+
+  public static void HorizontalLine() {
+    var horizontal_line_style = new UnityEngine.GUIStyle
+                                    (UnityEngine.GUI.skin.horizontalSlider);
+    horizontal_line_style.fixedHeight /= 5;
+    UnityEngine.GUILayout.Label("", horizontal_line_style);
+  }
 }
 
 }  // namespace ksp_plugin_adapter
