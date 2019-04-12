@@ -114,7 +114,7 @@ TEST_F(StandardProduct3Test, PositionOnly) {
                                  StandardProduct3::SatelliteGroup::北斗,
                                  StandardProduct3::SatelliteGroup::Galileo,
                                  StandardProduct3::SatelliteGroup::GPS,
-                                 StandardProduct3::SatelliteGroup::準天頂衛星,
+                                 StandardProduct3::SatelliteGroup::みちびき,
                                  StandardProduct3::SatelliteGroup::ГЛОНАСС))));
   EXPECT_THAT(sp3d.satellites(),
               AllOf(SizeIs(91),
@@ -123,7 +123,7 @@ TEST_F(StandardProduct3Test, PositionOnly) {
                                  StandardProduct3::SatelliteGroup::北斗,
                                  StandardProduct3::SatelliteGroup::Galileo,
                                  StandardProduct3::SatelliteGroup::GPS,
-                                 StandardProduct3::SatelliteGroup::準天頂衛星,
+                                 StandardProduct3::SatelliteGroup::みちびき,
                                  StandardProduct3::SatelliteGroup::ГЛОНАСС))));
 }
 
@@ -189,6 +189,16 @@ TEST_F(StandardProduct3DeathTest, ILRSBNonConformance) {
       "date_time_body.hpp");
 }
 
+TEST_F(StandardProduct3DeathTest, ChineseMGEXNonConformance) {
+  // There are 10 +␣ records in the Chinese MGEX dialect of SP3-c, instead of
+  // the standard 5.
+  EXPECT_DEATH(
+      StandardProduct3(SOLUTION_DIR / "astronomy" / "standard_product_3" /
+                           "WUM0MGXFIN_20190270000_01D_15M_ORB.SP3",
+                       StandardProduct3::Dialect::Standard),
+      u8R"(exactly 5 \+␣ records expected in SP3-c)");
+}
+
 // Test that we successfully parse the nonstandard dialects.
 
 TEST_F(StandardProduct3Test, Dialects) {
@@ -200,12 +210,25 @@ TEST_F(StandardProduct3Test, Dialects) {
                              "ilrsb.orb.lageos2.160319.v35.sp3",
                          StandardProduct3::Dialect::ILRSB);
 
+  StandardProduct3 whu(SOLUTION_DIR / "astronomy" / "standard_product_3" /
+                           "WUM0MGXFIN_20190270000_01D_15M_ORB.SP3",
+                       StandardProduct3::Dialect::ChineseMGEX);
+
   EXPECT_THAT(ilrsa.satellites(),
               ElementsAre(StandardProduct3::SatelliteIdentifier{
                   StandardProduct3::SatelliteGroup::General, 52}));
   EXPECT_THAT(ilrsb.satellites(),
               ElementsAre(StandardProduct3::SatelliteIdentifier{
                   StandardProduct3::SatelliteGroup::General, 52}));
+  EXPECT_THAT(whu.satellites(),
+              AllOf(SizeIs(112),
+                    ResultOf(&SatelliteGroups,
+                             UnorderedElementsAre(
+                                 StandardProduct3::SatelliteGroup::北斗,
+                                 StandardProduct3::SatelliteGroup::Galileo,
+                                 StandardProduct3::SatelliteGroup::GPS,
+                                 StandardProduct3::SatelliteGroup::みちびき,
+                                 StandardProduct3::SatelliteGroup::ГЛОНАСС))));
 }
 
 #if !defined(_DEBUG)
@@ -291,6 +314,11 @@ INSTANTIATE_TEST_CASE_P(
          StandardProduct3::Dialect::Standard,
          StandardProduct3::Version::D,
          /*file_has_velocities=*/false},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "WUM0MGXFIN_20190270000_01D_15M_ORB.SP3",
+         StandardProduct3::Dialect::ChineseMGEX,
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/false},
         {SOLUTION_DIR / "astronomy" / "standard_product_3" / "nga20342.eph",
          StandardProduct3::Dialect::Standard,
          StandardProduct3::Version::A,
@@ -364,7 +392,7 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
       DegreesOfFreedom<ICRS> expected =
           itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom());
       EXPECT_THAT(AbsoluteError(expected.position(), actual.position()),
-                  Lt(20 * Metre))
+                  Lt(25 * Metre))
           << "orbit of satellite " << satellite << " flowing from point " << i;
       EXPECT_THAT(AbsoluteError(expected.velocity(), actual.velocity()),
                   Lt(1 * Deci(Metre) / Second))

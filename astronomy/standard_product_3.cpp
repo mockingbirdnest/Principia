@@ -176,7 +176,7 @@ StandardProduct3::StandardProduct3(
             case SatelliteGroup::General:
             case SatelliteGroup::Galileo:
             case SatelliteGroup::北斗:
-            case SatelliteGroup::準天頂衛星:
+            case SatelliteGroup::みちびき:
             case SatelliteGroup::IRNSS:
               CHECK_GE(version_, Version::C) << full_location;
               break;
@@ -205,8 +205,15 @@ StandardProduct3::StandardProduct3(
     LOG(FATAL) << u8"at least 5 +␣ records expected: " << location;
   }
   if (version_ < Version::D && number_of_satellite_id_records > 5) {
-    LOG(FATAL) << u8"exactly 5 +␣ records expected in SP3-" << version_ << ": "
-               << location;
+    if (dialect == Dialect::ChineseMGEX) {
+      CHECK_EQ(number_of_satellite_id_records, 10)
+          << u8"exactly 10 +␣ records expected in the " << dialect << ": "
+          << location;
+    } else {
+      CHECK_EQ(number_of_satellite_id_records, 5)
+          << u8"exactly 5 +␣ records expected in SP3-" << version_ << ": "
+          << location;
+    }
   }
 
   // Header: ++ records.
@@ -472,6 +479,8 @@ std::ostream& operator<<(std::ostream& out,
       return out << "ILRSB SP3 dialect";
     case StandardProduct3::Dialect::GRGS:
       return out << "GRGS SP3 dialect";
+    case StandardProduct3::Dialect::ChineseMGEX:
+      return out << "SHAO and WHU MGEX SP3 dialect";
     default:
       return out << "Unknown SP3 dialect (" << static_cast<int>(dialect) << ")";
   }

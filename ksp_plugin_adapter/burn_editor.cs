@@ -66,14 +66,14 @@ class BurnEditor : ScalingRenderer {
     bool changed = false;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(header);
-      if (manoeuvre_warning_ == "" &
-          !reference_frame_selector_.FrameParameters().Equals(
+      string frame_info = "";
+      if (!reference_frame_selector_.FrameParameters().Equals(
               adapter_.plotting_frame_selector_.FrameParameters())) {
-        manoeuvre_warning_ = "Manœuvre frame differs from plotting frame";
+        frame_info = "Manœuvre frame differs from plotting frame";
       }
       UnityEngine.GUILayout.Label(
-          manoeuvre_warning_,
-          Style.RightAligned(Style.Warning(UnityEngine.GUI.skin.label)));
+          frame_info,
+          Style.RightAligned(Style.Info(UnityEngine.GUI.skin.label)));
     }
     using (new UnityEngine.GUILayout.VerticalScope()) {
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
@@ -146,16 +146,8 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_.value = burn.delta_v.x;
     Δv_normal_.value = burn.delta_v.y;
     Δv_binormal_.value = burn.delta_v.z;
-    if (previous_coast_duration_.value != burn.initial_time - time_base) {
-      //UnityEngine.Debug.LogError(previous_coast_duration_.value+" "+
-      //burn.initial_time+" "+time_base+" "+
-      //(previous_coast_duration_.value -( burn.initial_time - time_base)));
-      previous_coast_duration_.value = burn.initial_time - time_base;
-      manoeuvre_warning_ =
-          "Manoeuvre corrected to be consistent with the flight plan";
-    } else {
-      manoeuvre_warning_ = "";
-    }
+    previous_coast_duration_.value =
+        burn.initial_time - time_base;
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manoeuvre.duration;
@@ -300,7 +292,6 @@ class BurnEditor : ScalingRenderer {
   private double initial_mass_in_tonnes_;
 
   private bool first_time_rendering = true;
-  private string manoeuvre_warning_ = "";
 
   private const double Log10ΔvLowerRate = -3.0;
   private const double Log10ΔvUpperRate = 3.5;

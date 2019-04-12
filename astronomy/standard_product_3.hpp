@@ -64,6 +64,19 @@ class StandardProduct3 {
     // Divergence from the specification:
     // - the velocities are in m/s instead of the standard dm/s.
     GRGS,
+    // The MGEX files produced by the SHAO (Shanghai Astronomical Observatory,
+    // 上海天文台) and WHU (Wuhan University, 武汉大学) analysis centres are
+    // SP3-c, but contain more than 85 satellites.  This is achieved by doubling
+    // the number of satellite ID records: there are 10 satellite ID records,
+    // for a maximum of 170 satellites.
+    // While SP3-d allows for an unlimited number of satellite ID records, it is
+    // questionable whether files in this dialect are valid SP3-d, aside from
+    // the version identifier: indeed, they often have lines containing only 0s
+    // to pad to 10 lines of satellite IDs, whereas the SP3-d documentation
+    // seems to suggest that such padding is restricted to a last partial line:
+    // “The last “+ ” line may contain zeroes if the number of satellites (given
+    // on line three) is not an even multiple of 17.”.
+    ChineseMGEX,
   };
 
   enum class SatelliteGroup : char {
@@ -72,7 +85,7 @@ class StandardProduct3 {
     ГЛОНАСС = 'R',
     Galileo = 'E',
     北斗 = 'C',
-    準天頂衛星 = 'J',
+    みちびき = 'J',
     IRNSS = 'I',
   };
 
