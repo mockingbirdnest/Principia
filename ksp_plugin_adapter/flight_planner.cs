@@ -142,17 +142,6 @@ class FlightPlanner : SupervisedWindowRenderer {
       double actual_final_time =
           plugin_.FlightPlanGetActualFinalTime(vessel_guid);
 
-      var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textField);
-      style.normal.textColor = XKCDColors.Orange;
-      string message = "";
-      if (final_time_.value != actual_final_time) {
-        message = "Timed out after " +
-                  FormatPositiveTimeSpan(TimeSpan.FromSeconds(
-                      actual_final_time -
-                      plugin_.FlightPlanGetInitialTime(vessel_guid)));
-      }
-      UnityEngine.GUILayout.TextField(message, style);
-
       FlightPlanAdaptiveStepParameters parameters =
           plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
 
@@ -208,6 +197,16 @@ class FlightPlanner : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           "Total Δv : " + Δv.ToString("0.000") + " m/s");
 
+      string message = "";
+      if (final_time_.value != actual_final_time) {
+        message = "Timed out after " +
+                  FormatPositiveTimeSpan(TimeSpan.FromSeconds(
+                      actual_final_time -
+                      plugin_.FlightPlanGetInitialTime(vessel_guid)));
+      }
+      UnityEngine.GUILayout.Label(
+          message, Style.Warning(UnityEngine.GUI.skin.label));
+
       if (burn_editors_.Count == 0 &&
           UnityEngine.GUILayout.Button("Delete flight plan")) {
         plugin_.FlightPlanDelete(vessel_guid);
@@ -218,14 +217,16 @@ class FlightPlanner : SupervisedWindowRenderer {
           RenderUpcomingEvents();
         }
         for (int i = 0; i < burn_editors_.Count - 1; ++i) {
-          UnityEngine.GUILayout.TextArea("Manœuvre #" + (i + 1) + ":");
-          burn_editors_[i].Render(enabled : false);
+          Style.HorizontalLine();
+          burn_editors_[i].Render(header: "Manœuvre #" + (i + 1),
+                                  enabled : false);
         }
         if (burn_editors_.Count > 0) {
+          Style.HorizontalLine();
           BurnEditor last_burn = burn_editors_.Last();
-          UnityEngine.GUILayout.TextArea("Editing manœuvre #" +
-                                         (burn_editors_.Count) + ":");
-          if (last_burn.Render(enabled : true)) {
+          if (last_burn.Render(header : "Editing manœuvre #" +
+                                         (burn_editors_.Count),
+                               enabled : true)) {
             plugin_.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
             last_burn.Reset(
                 plugin_.FlightPlanGetManoeuvre(vessel_guid,
@@ -278,22 +279,29 @@ class FlightPlanner : SupervisedWindowRenderer {
     double current_time = plugin_.CurrentTime();
     bool should_clear_guidance = true;
 
+    Style.HorizontalLine();
     if (first_future_manoeuvre_.HasValue) {
       int first_future_manoeuvre = first_future_manoeuvre_.Value;
       NavigationManoeuvre manoeuvre =
           plugin_.FlightPlanGetManoeuvre(vessel_guid, first_future_manoeuvre);
       if (manoeuvre.burn.initial_time > current_time) {
-        UnityEngine.GUILayout.TextArea("Upcoming manœuvre: #" +
-                                       (first_future_manoeuvre + 1));
-        UnityEngine.GUILayout.Label(
-            "Ignition " + FormatTimeSpan(TimeSpan.FromSeconds(
-                              current_time - manoeuvre.burn.initial_time)));
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          UnityEngine.GUILayout.Label("Upcoming manœuvre #" +
+                                      (first_future_manoeuvre + 1) + ":");
+          UnityEngine.GUILayout.Label(
+              "Ignition " + FormatTimeSpan(TimeSpan.FromSeconds(
+                                current_time - manoeuvre.burn.initial_time)),
+              style : Style.RightAligned(UnityEngine.GUI.skin.label));
+        }
       } else {
-        UnityEngine.GUILayout.TextArea("Ongoing manœuvre: #" +
-                                       (first_future_manoeuvre + 1));
-        UnityEngine.GUILayout.Label(
-            "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
-                            current_time - manoeuvre.final_time)));
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          UnityEngine.GUILayout.Label("Ongoing manœuvre #" +
+                                      (first_future_manoeuvre + 1) + ":");
+          UnityEngine.GUILayout.Label(
+              "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
+                              current_time - manoeuvre.final_time)),
+              style : Style.RightAligned(UnityEngine.GUI.skin.label));
+        }
       }
       // In career mode, the patched conic solver may be null.  In that case
       // we do not offer the option of showing the manœuvre on the navball,
@@ -314,8 +322,8 @@ class FlightPlanner : SupervisedWindowRenderer {
     } else {
       // Reserve some space to avoid the UI changing shape if we have
       // nothing to say.
-      UnityEngine.GUILayout.TextArea("All manœuvres are in the past");
-      UnityEngine.GUILayout.Space(Width(1));
+      UnityEngine.GUILayout.Label("All manœuvres are in the past",
+                                  Style.Warning(UnityEngine.GUI.skin.label));
       UnityEngine.GUILayout.Space(Width(1));
     }
 

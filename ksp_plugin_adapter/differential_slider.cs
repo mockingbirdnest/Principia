@@ -77,15 +77,11 @@ internal class DifferentialSlider : ScalingRenderer {
       }
 
       if (enabled) {
-        var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textField);
-        style.alignment = UnityEngine.TextAnchor.MiddleRight;
-
         // If the text is not syntactically correct, inform the user by drawing
-        // it in colour.  We don't expect to see the "red" case as we should
-        // revert to a parseable value on exit.
+        // it in the warning style.
+        var style = Style.RightAligned(UnityEngine.GUI.skin.textField);
         if (!parser_(formatted_value_, out double v1)) {
-          style.focused.textColor = XKCDColors.Orange;
-          style.normal.textColor = XKCDColors.Red;
+          style = Style.Warning(style);
         }
 
         // Draw the text field and give it a name to be able to detect if it has
@@ -126,11 +122,9 @@ internal class DifferentialSlider : ScalingRenderer {
           }
         }
       } else {
-        var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
-        style.alignment = UnityEngine.TextAnchor.MiddleRight;
         UnityEngine.GUILayout.Label(
             text    : formatted_value_,
-            style   : style,
+            style   : Style.RightAligned(UnityEngine.GUI.skin.label),
             options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
       }
       UnityEngine.GUILayout.Label(

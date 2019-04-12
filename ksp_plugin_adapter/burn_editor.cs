@@ -23,19 +23,19 @@ class BurnEditor : ScalingRenderer {
                                unit             : "m / s",
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : XKCDColors.NeonYellow);
+                               text_colour      : Style.Tangent);
     Δv_normal_ =
         new DifferentialSlider(label            : "Δv normal",
                                unit             : "m / s",
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : XKCDColors.AquaBlue);
+                               text_colour      : Style.Normal);
     Δv_binormal_ =
         new DifferentialSlider(label            : "Δv binormal",
                                unit             : "m / s",
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : XKCDColors.PurplePink);
+                               text_colour      : Style.Binormal);
     previous_coast_duration_ =
         new DifferentialSlider(
                 label            : "t initial",
@@ -62,12 +62,20 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(bool enabled) {
+  public bool Render(string header, bool enabled) {
     bool changed = false;
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      UnityEngine.GUILayout.Label(header);
+      string frame_info = "";
+      if (!reference_frame_selector_.FrameParameters().Equals(
+              adapter_.plotting_frame_selector_.FrameParameters())) {
+        frame_info = "Manœuvre frame differs from plotting frame";
+      }
+      UnityEngine.GUILayout.Label(
+          frame_info,
+          Style.RightAligned(Style.Info(UnityEngine.GUI.skin.label)));
+    }
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      var warning_style =
-          new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
-      warning_style.normal.textColor = XKCDColors.Orange;
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
       // been set.  If we have fallen back to instant impulse, we should use this
       // mass to set the thrust.
@@ -93,17 +101,10 @@ class BurnEditor : ScalingRenderer {
             changed = true;
           }
         }
-        UnityEngine.GUILayout.TextArea(engine_warning_, warning_style);
         reference_frame_selector_.RenderButton();
       } else {
         reference_frame_selector_.Hide();
       }
-      string frame_warning = "";
-      if (!reference_frame_selector_.FrameParameters().Equals(
-              adapter_.plotting_frame_selector_.FrameParameters())) {
-        frame_warning = "Manœuvre frame differs from plotting frame";
-      }
-      UnityEngine.GUILayout.TextArea(frame_warning, warning_style);
       if (is_inertially_fixed_ !=
           UnityEngine.GUILayout.Toggle(is_inertially_fixed_,
                                        "Inertially fixed")) {
@@ -127,6 +128,8 @@ class BurnEditor : ScalingRenderer {
         UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
                                     " s");
       }
+      UnityEngine.GUILayout.Label(engine_warning_,
+                                  Style.Warning(UnityEngine.GUI.skin.label));
       changed_reference_frame_ = false;
     }
     return changed && enabled;
