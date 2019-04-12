@@ -224,9 +224,10 @@ class FlightPlanner : SupervisedWindowRenderer {
         if (burn_editors_.Count > 0) {
           Style.HorizontalLine();
           BurnEditor last_burn = burn_editors_.Last();
-          if (last_burn.Render(header : "Editing manœuvre #" +
-                                         (burn_editors_.Count),
-                               enabled : true)) {
+          if (last_burn.Render(header            : "Editing manœuvre #" +
+                                                   (burn_editors_.Count),
+                               enabled           : true,
+                               actual_final_time : actual_final_time)) {
             plugin_.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
             last_burn.Reset(
                 plugin_.FlightPlanGetManoeuvre(vessel_guid,

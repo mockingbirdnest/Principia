@@ -48,6 +48,12 @@ internal class DifferentialSlider : ScalingRenderer {
     text_colour_ = text_colour;
   }
 
+  public double max_value {
+    set {
+      max_value_ = value;
+    }
+  }
+
   public double value {
     get {
       return value_ ?? 0.0;
@@ -77,10 +83,12 @@ internal class DifferentialSlider : ScalingRenderer {
       }
 
       if (enabled) {
-        // If the text is not syntactically correct, inform the user by drawing
-        // it in the warning style.
+        // If the text is not syntactically correct, or it exceeds the upper
+        // bound, inform the user by drawing it in the warning style.  Note the
+        // fudge factor to account for uncertainty in text/double conversions.
         var style = Style.RightAligned(UnityEngine.GUI.skin.textField);
-        if (!parser_(formatted_value_, out double v1)) {
+        if (!parser_(formatted_value_, out double v1) ||
+            v1 > max_value_ * (1 + 1.0e-5)) {
           style = Style.Warning(style);
         }
 
@@ -176,7 +184,6 @@ internal class DifferentialSlider : ScalingRenderer {
   private readonly double log10_upper_rate_ = 3.5;
   private readonly double zero_value_;
   private readonly double min_value_;
-  private readonly double max_value_;
 
   private readonly ValueFormatter formatter_;
   private readonly ValueParser parser_;
@@ -184,6 +191,7 @@ internal class DifferentialSlider : ScalingRenderer {
 
   private float slider_position_ = 0.0f;
   private DateTime last_time_;
+  private double max_value_;
   // It is convenient for the value to be nullable so that we have a way to
   // ensure that an assignment to it will actually have an effect and won't be
   // optimized due to the existing value.  This happens at initialization and

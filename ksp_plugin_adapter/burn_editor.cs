@@ -46,7 +46,6 @@ class BurnEditor : ScalingRenderer {
                 // short: that will be indistinguishable.
                 zero_value       : 0.001,
                 min_value        : 0,
-                max_value        : double.PositiveInfinity,
                 formatter        : FormatPreviousCoastDuration,
                 parser           : TryParsePreviousCoastDuration);
     previous_coast_duration_.value = initial_time - time_base;
@@ -62,8 +61,12 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(string header, bool enabled) {
+  public bool Render(string header,
+                     bool enabled,
+                     double? actual_final_time = null) {
     bool changed = false;
+    previous_coast_duration_.max_value =
+        (actual_final_time ?? double.PositiveInfinity) - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(header);
       string frame_info = "";
