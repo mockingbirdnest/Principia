@@ -66,14 +66,14 @@ class BurnEditor : ScalingRenderer {
     bool changed = false;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(header);
-      string frame_warning = "";
+      string frame_info = "";
       if (!reference_frame_selector_.FrameParameters().Equals(
               adapter_.plotting_frame_selector_.FrameParameters())) {
-        frame_warning = "Manœuvre frame differs from plotting frame";
+        frame_info = "Manœuvre frame differs from plotting frame";
       }
       UnityEngine.GUILayout.Label(
-          frame_warning,
-          Style.RightAligned(Style.Warning(UnityEngine.GUI.skin.label)));
+          frame_info,
+          Style.RightAligned(Style.Info(UnityEngine.GUI.skin.label)));
     }
     using (new UnityEngine.GUILayout.VerticalScope()) {
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
