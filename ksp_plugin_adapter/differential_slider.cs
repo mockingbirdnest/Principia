@@ -88,7 +88,7 @@ internal class DifferentialSlider : ScalingRenderer {
         // fudge factor to account for uncertainty in text/double conversions.
         var style = Style.RightAligned(UnityEngine.GUI.skin.textField);
         if (!parser_(formatted_value_, out double v1) ||
-            v1 > max_value_ * (1 + 1.0e-5)) {
+            v1 > max_value_ + 0.1) {
           style = Style.Warning(style);
         }
 
