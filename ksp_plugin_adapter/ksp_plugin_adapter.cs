@@ -691,110 +691,7 @@ public partial class PrincipiaPluginAdapter
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null) {
-      if (navball_ == null) {
-        navball_ = (KSP.UI.Screens.Flight.NavBall)FindObjectOfType(
-                       typeof(KSP.UI.Screens.Flight.NavBall));
-      }
-      var navball_material =
-          navball_.navBall.GetComponent<UnityEngine.Renderer>().material;
-
-      if (compass_navball_texture_ == null) {
-        compass_navball_texture_ = navball_material.GetTexture("_MainTexture");
-      }
-
-      Action<UnityEngine.Texture> set_navball_texture = (texture) =>
-          navball_material.SetTexture("_MainTexture", texture);
-
-      if (!PluginRunning()) {
-        return;
-      }
-
-      var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
-      if (FlightGlobals.speedDisplayMode ==
-              FlightGlobals.SpeedDisplayModes.Target &&
-          target_vessel != null &&
-          plugin_.HasVessel(target_vessel.id.ToString())) {
-        plugin_.SetTargetVessel(target_vessel.id.ToString(),
-                                plotting_frame_selector_
-                                    .selected_celestial.flightGlobalsIndex);
-        if (plotting_frame_selector_.target_override != target_vessel) {
-          navball_changed_ = true;
-          plotting_frame_selector_.target_override = target_vessel;
-        }
-      } else {
-        plugin_.ClearTargetVessel();
-        if (plotting_frame_selector_.target_override != null) {
-          navball_changed_ = true;
-          plotting_frame_selector_.target_override = null;
-        }
-      }
-
-      // Orient the ball.
-      navball_.navBall.rotation =
-          (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
-          (UnityEngine.QuaternionD)plugin_.NavballOrientation(
-              (XYZ)Planetarium.fetch.Sun.position,
-              (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
-
-      if (previous_display_mode_ != FlightGlobals.speedDisplayMode) {
-        navball_changed_ = true;
-        previous_display_mode_ = FlightGlobals.speedDisplayMode;
-        // The navball speed display mode was changed, change the reference
-        // frame accordingly.
-        switch (FlightGlobals.speedDisplayMode) {
-          case FlightGlobals.SpeedDisplayModes.Surface:
-            plotting_frame_selector_.SetFrameType(
-                ReferenceFrameSelector.FrameType.BODY_SURFACE);
-            break;
-          case FlightGlobals.SpeedDisplayModes.Orbit:
-            plotting_frame_selector_.SetFrameType(
-                last_non_surface_frame_type_);
-            break;
-        }
-      }
-
-      if (navball_changed_ && previous_display_mode_ != null) {
-        // Texture the ball.
-        navball_changed_ = false;
-        if (plotting_frame_selector_.target_override) {
-          set_navball_texture(target_navball_texture_);
-        } else {
-          // If we are targeting an unmanageable vessel, keep the navball in
-          // target mode; otherwise, put it in the mode that reflects the
-          // plotting frame.
-          if (FlightGlobals.speedDisplayMode !=
-              FlightGlobals.SpeedDisplayModes.Target) {
-            if (plotting_frame_selector_.frame_type ==
-                    ReferenceFrameSelector.FrameType.BODY_SURFACE) {
-              if (FlightGlobals.speedDisplayMode !=
-                  FlightGlobals.SpeedDisplayModes.Surface) {
-                FlightGlobals.SetSpeedMode(
-                    FlightGlobals.SpeedDisplayModes.Surface);
-              }
-            } else {
-              if (FlightGlobals.speedDisplayMode !=
-                  FlightGlobals.SpeedDisplayModes.Orbit) {
-                FlightGlobals.SetSpeedMode(
-                    FlightGlobals.SpeedDisplayModes.Orbit);
-              }
-            }
-          }
-          switch (plotting_frame_selector_.frame_type) {
-            case ReferenceFrameSelector.FrameType.BODY_SURFACE:
-              set_navball_texture(surface_navball_texture_);
-              break;
-            case ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING:
-              set_navball_texture(inertial_navball_texture_);
-              break;
-            case ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING:
-              set_navball_texture(barycentric_navball_texture_);
-              break;
-            case ReferenceFrameSelector.FrameType.BODY_CENTRED_PARENT_DIRECTION:
-              set_navball_texture(body_direction_navball_texture_);
-              break;
-          }
-        }
-      }
+      RenderNavball(active_vessel);
 
       // Design for compatibility with FAR: if we are in surface mode in an
       // atmosphere, FAR gives options to display the IAS, EAS, and Mach number,
@@ -1531,6 +1428,113 @@ public partial class PrincipiaPluginAdapter
             X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
             Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
             Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}};
+      }
+    }
+  }
+
+  private void RenderNavball(Vessel active_vessel) {
+    if (navball_ == null) {
+      navball_ = (KSP.UI.Screens.Flight.NavBall)FindObjectOfType(
+                      typeof(KSP.UI.Screens.Flight.NavBall));
+    }
+    var navball_material =
+        navball_.navBall.GetComponent<UnityEngine.Renderer>().material;
+
+    if (compass_navball_texture_ == null) {
+      compass_navball_texture_ = navball_material.GetTexture("_MainTexture");
+    }
+
+    Action<UnityEngine.Texture> set_navball_texture = (texture) =>
+        navball_material.SetTexture("_MainTexture", texture);
+
+    if (!PluginRunning()) {
+      return;
+    }
+
+    var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
+    if (FlightGlobals.speedDisplayMode ==
+            FlightGlobals.SpeedDisplayModes.Target &&
+        target_vessel != null &&
+        plugin_.HasVessel(target_vessel.id.ToString())) {
+      plugin_.SetTargetVessel(target_vessel.id.ToString(),
+                              plotting_frame_selector_
+                                  .selected_celestial.flightGlobalsIndex);
+      if (plotting_frame_selector_.target_override != target_vessel) {
+        navball_changed_ = true;
+        plotting_frame_selector_.target_override = target_vessel;
+      }
+    } else {
+      plugin_.ClearTargetVessel();
+      if (plotting_frame_selector_.target_override != null) {
+        navball_changed_ = true;
+        plotting_frame_selector_.target_override = null;
+      }
+    }
+
+    // Orient the ball.
+    navball_.navBall.rotation =
+        (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
+        (UnityEngine.QuaternionD)plugin_.NavballOrientation(
+            (XYZ)Planetarium.fetch.Sun.position,
+            (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
+
+    if (previous_display_mode_ != FlightGlobals.speedDisplayMode) {
+      navball_changed_ = true;
+      previous_display_mode_ = FlightGlobals.speedDisplayMode;
+      // The navball speed display mode was changed, change the reference
+      // frame accordingly.
+      switch (FlightGlobals.speedDisplayMode) {
+        case FlightGlobals.SpeedDisplayModes.Surface:
+          plotting_frame_selector_.SetFrameType(
+              ReferenceFrameSelector.FrameType.BODY_SURFACE);
+          break;
+        case FlightGlobals.SpeedDisplayModes.Orbit:
+          plotting_frame_selector_.SetFrameType(
+              last_non_surface_frame_type_);
+          break;
+      }
+    }
+
+    if (navball_changed_ && previous_display_mode_ != null) {
+      // Texture the ball.
+      navball_changed_ = false;
+      if (plotting_frame_selector_.target_override) {
+        set_navball_texture(target_navball_texture_);
+      } else {
+        // If we are targeting an unmanageable vessel, keep the navball in
+        // target mode; otherwise, put it in the mode that reflects the
+        // plotting frame.
+        if (FlightGlobals.speedDisplayMode !=
+            FlightGlobals.SpeedDisplayModes.Target) {
+          if (plotting_frame_selector_.frame_type ==
+                  ReferenceFrameSelector.FrameType.BODY_SURFACE) {
+            if (FlightGlobals.speedDisplayMode !=
+                FlightGlobals.SpeedDisplayModes.Surface) {
+              FlightGlobals.SetSpeedMode(
+                  FlightGlobals.SpeedDisplayModes.Surface);
+            }
+          } else {
+            if (FlightGlobals.speedDisplayMode !=
+                FlightGlobals.SpeedDisplayModes.Orbit) {
+              FlightGlobals.SetSpeedMode(
+                  FlightGlobals.SpeedDisplayModes.Orbit);
+            }
+          }
+        }
+        switch (plotting_frame_selector_.frame_type) {
+          case ReferenceFrameSelector.FrameType.BODY_SURFACE:
+            set_navball_texture(surface_navball_texture_);
+            break;
+          case ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING:
+            set_navball_texture(inertial_navball_texture_);
+            break;
+          case ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING:
+            set_navball_texture(barycentric_navball_texture_);
+            break;
+          case ReferenceFrameSelector.FrameType.BODY_CENTRED_PARENT_DIRECTION:
+            set_navball_texture(body_direction_navball_texture_);
+            break;
+        }
       }
     }
   }
