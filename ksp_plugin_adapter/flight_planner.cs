@@ -41,6 +41,24 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   public bool show_guidance { get => show_guidance_; }
 
+  public override void Load(ConfigNode node) {
+    base.Load(node);
+
+    String show_guidance_value =
+        node.GetAtMostOneValue("show_guidance");
+    if (show_guidance_value != null) {
+      show_guidance_ = Convert.ToBoolean(show_guidance_value);
+    }
+  }
+
+  public override void Save(ConfigNode node) {
+    base.Save(node);
+
+    node.SetValue("show_guidance",
+                  show_guidance_,
+                  createIfNotFound : true);
+  }
+
   protected override String Title => "Flight plan";
 
   protected override void RenderWindow(int window_id) {
@@ -280,7 +298,6 @@ class FlightPlanner : SupervisedWindowRenderer {
   private void RenderUpcomingEvents() {
     string vessel_guid = vessel_.id.ToString();
     double current_time = plugin_.CurrentTime();
-    bool should_clear_guidance = true;
 
     Style.HorizontalLine();
     if (first_future_manoeuvre_.HasValue) {
@@ -319,8 +336,6 @@ class FlightPlanner : SupervisedWindowRenderer {
             TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
           }
         }
-        should_clear_guidance &= ShowGuidance(manoeuvre,
-                                              first_future_manoeuvre);
       }
     } else {
       // Reserve some space to avoid the UI changing shape if we have
@@ -329,61 +344,6 @@ class FlightPlanner : SupervisedWindowRenderer {
                                   Style.Warning(UnityEngine.GUI.skin.label));
       UnityEngine.GUILayout.Space(Width(1));
     }
-
-    if (should_clear_guidance && guidance_node_ != null) {
-      guidance_node_.RemoveSelf();
-      guidance_node_ = null;
-    }
-  }
-
-  // Returns true iff the guidance node should be cleared.
-  internal bool ShowGuidance(NavigationManoeuvre manoeuvre,
-                             int manoeuvre_index) {
-    string vessel_guid = vessel_.id.ToString();
-    XYZ guidance = plugin_.FlightPlanGetGuidance(vessel_guid, manoeuvre_index);
-    if (show_guidance_ &&
-        !double.IsNaN(guidance.x + guidance.y + guidance.z)) {
-      if (guidance_node_ == null ||
-          !vessel_.patchedConicSolver.maneuverNodes.Contains(
-              guidance_node_)) {
-        while (vessel_.patchedConicSolver.maneuverNodes.Count > 0) {
-          vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
-        }
-        guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
-            manoeuvre.burn.initial_time);
-      } else if (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
-        while (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
-          if (vessel_.patchedConicSolver.maneuverNodes.First() ==
-              guidance_node_) {
-            vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
-          } else {
-            vessel_.patchedConicSolver.maneuverNodes.First().RemoveSelf();
-          }
-        }
-      }
-      var stock_orbit = guidance_node_.patch;
-      Vector3d stock_velocity_at_node_time =
-          stock_orbit.getOrbitalVelocityAtUT(
-                            manoeuvre.burn.initial_time).xzy;
-      Vector3d stock_displacement_from_parent_at_node_time =
-          stock_orbit.getRelativePositionAtUT(
-                            manoeuvre.burn.initial_time).xzy;
-      UnityEngine.Quaternion stock_frenet_frame_to_world =
-          UnityEngine.Quaternion.LookRotation(
-              stock_velocity_at_node_time,
-              Vector3d.Cross(
-                  stock_velocity_at_node_time,
-                  stock_displacement_from_parent_at_node_time));
-      guidance_node_.DeltaV =
-          ((Vector3d)manoeuvre.burn.delta_v).magnitude *
-          (Vector3d)(UnityEngine.Quaternion.Inverse(
-                          stock_frenet_frame_to_world) *
-                      (Vector3d)guidance);
-      guidance_node_.UT = manoeuvre.burn.initial_time;
-      vessel_.patchedConicSolver.UpdateFlightPlan();
-      return false;
-    }
-    return true;
   }
 
   internal static string FormatPositiveTimeSpan (TimeSpan span) {
@@ -462,7 +422,6 @@ class FlightPlanner : SupervisedWindowRenderer {
   private int? first_future_manoeuvre_;
 
   public bool show_guidance_ = false;
-  private ManeuverNode guidance_node_;
   
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;

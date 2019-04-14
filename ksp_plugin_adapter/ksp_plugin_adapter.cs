@@ -693,6 +693,9 @@ public partial class PrincipiaPluginAdapter
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null) {
       RenderNavball(active_vessel);
+      if (!PluginRunning()) {
+        return;
+      }
 
       // Design for compatibility with FAR: if we are in surface mode in an
       // atmosphere, FAR gives options to display the IAS, EAS, and Mach number,
@@ -1461,6 +1464,8 @@ public partial class PrincipiaPluginAdapter
                         first_future_manoeuvre_index.Value).burn;
         if (flight_planner_.show_guidance &&
             !double.IsNaN(guidance.x + guidance.y + guidance.z)) {
+          // The user wants to show the guidance node, and that node was
+          // properly computed by the C++ code.
           PatchedConicSolver solver = active_vessel.patchedConicSolver;
           if (guidance_node_ == null ||
               !solver.maneuverNodes.Contains(guidance_node_)) {
