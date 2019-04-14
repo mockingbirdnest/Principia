@@ -50,10 +50,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public void Initialize(IntPtr plugin) {
-    plugin_ = plugin;
-  }
-
   public void UpdateMainBody() {
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     selected_celestial =
@@ -371,8 +367,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   private readonly Callback on_change_;
   private readonly string name_;
-  // Not owned.
-  private IntPtr plugin_ = IntPtr.Zero;
   private Dictionary<CelestialBody, bool> expanded_;
 }
 
