@@ -602,9 +602,6 @@ public partial class PrincipiaPluginAdapter
         serialization_encoding_ = "base64";
       }
 
-      flight_planner_.Initialize(plugin_);
-      plotting_frame_selector_.Initialize(plugin_);
-      main_window_.Initialize(plugin_);
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
 
@@ -2103,9 +2100,6 @@ public partial class PrincipiaPluginAdapter
       plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
                           Planetarium.InverseRotAngle);
     }
-    flight_planner_.Initialize(plugin_);
-    plotting_frame_selector_.Initialize(plugin_);
-    main_window_.Initialize(plugin_);
     must_set_plotting_frame_ = true;
   } catch (Exception e) {
     Log.Fatal("Exception while resetting plugin: " + e.ToString());
