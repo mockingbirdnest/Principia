@@ -8,13 +8,11 @@ namespace ksp_plugin_adapter {
 
 class BurnEditor : ScalingRenderer {
   public BurnEditor(PrincipiaPluginAdapter adapter,
-                    IntPtr plugin,
                     Vessel vessel,
                     double initial_time,
                     int index,
                     BurnEditor previous_burn) {
     adapter_ = adapter;
-    plugin_ = plugin;
     vessel_ = vessel;
     index_ = index;
     previous_burn_ = previous_burn;
@@ -53,7 +51,6 @@ class BurnEditor : ScalingRenderer {
                                     adapter_,
                                     ReferenceFrameChanged,
                                     "Manœuvring frame");
-    reference_frame_selector_.Initialize(plugin_);
     reference_frame_selector_.SetFrameParameters(
         adapter_.plotting_frame_selector_.FrameParameters());
     ComputeEngineCharacteristics();
@@ -277,11 +274,13 @@ class BurnEditor : ScalingRenderer {
   }
 
   private double time_base => previous_burn_?.final_time ??
-                              plugin_.FlightPlanGetInitialTime(
+                              plugin.FlightPlanGetInitialTime(
                                   vessel_.id.ToString());
 
   private double final_time =>
       time_base + previous_coast_duration_.value + duration_;
+
+  private IntPtr plugin => adapter_.Plugin();
 
   private bool is_inertially_fixed_;
   private DifferentialSlider Δv_tangent_;
@@ -302,7 +301,6 @@ class BurnEditor : ScalingRenderer {
   private const double Log10TimeUpperRate = 7.0;
 
   // Not owned.
-  private readonly IntPtr plugin_;
   private readonly Vessel vessel_;
   private readonly int index_;
   private readonly BurnEditor previous_burn_;

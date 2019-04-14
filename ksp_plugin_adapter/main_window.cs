@@ -15,19 +15,16 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   public delegate Vessel PredictedVessel();
 
-  public MainWindow(SupervisedWindowRenderer.ISupervisor supervisor,
+  public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
                     ReferenceFrameSelector plotting_frame_selector,
                     PredictedVessel predicted_vessel)
-      : base(supervisor) {
+      : base(adapter) {
+    adapter_ = adapter;
     flight_planner_ = flight_planner;
     plotting_frame_selector_ = plotting_frame_selector;
     predicted_vessel_ = predicted_vessel;
     Show();
-  }
-
-  public void Initialize(IntPtr plugin) {
-    plugin_ = plugin;
   }
 
   public void SelectTargetCelestial(MapObject map_object) {
@@ -167,7 +164,7 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      if (plugin_ == IntPtr.Zero) {
+      if (plugin == IntPtr.Zero) {
         UnityEngine.GUILayout.Label(
             text : "Plugin is not started",
             style : Style.Warning(UnityEngine.GUI.skin.label));
@@ -218,7 +215,7 @@ internal class MainWindow : SupervisedWindowRenderer {
       } else {
         selecting_active_vessel_target = false;
       }
-      if (plugin_ != IntPtr.Zero) {
+      if (plugin != IntPtr.Zero) {
         plotting_frame_selector_.RenderButton();
         flight_planner_.RenderButton();
       }
@@ -232,6 +229,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                               show   : ref show_logging_settings_,
                               render : RenderLoggingSettings);
     }
+    Shrink();
     UnityEngine.GUI.DragWindow();
   }
 
@@ -369,9 +367,9 @@ internal class MainWindow : SupervisedWindowRenderer {
     if (vessel_ != predicted_vessel_()) {
       vessel_ = predicted_vessel_();
       string vessel_guid = vessel_?.id.ToString();
-      if (vessel_guid != null && plugin_.HasVessel(vessel_guid)) {
+      if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
         AdaptiveStepParameters adaptive_step_parameters =
-            plugin_.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
+            plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
         prediction_length_tolerance_index_ = Array.FindIndex(
             prediction_length_tolerances_,
             (double tolerance) =>
@@ -447,6 +445,8 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
+  private IntPtr plugin => adapter_.Plugin();
+
   private static readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
@@ -460,6 +460,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   private const int default_prediction_length_tolerance_index_ = 1;
   private const int default_prediction_steps_index_ = 4;
 
+  private readonly PrincipiaPluginAdapter adapter_;
   private readonly FlightPlanner flight_planner_;
   private readonly ReferenceFrameSelector plotting_frame_selector_;
   private readonly PredictedVessel predicted_vessel_;
@@ -486,7 +487,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   // Whether a journal is currently being recorded.
   private static bool journaling_ = false;
 
-  private IntPtr plugin_ = IntPtr.Zero;
   private Vessel vessel_;
 }
 
