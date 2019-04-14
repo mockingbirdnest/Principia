@@ -156,6 +156,7 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, QP>();
 
   private MapNodePool map_node_pool_;
+  private ManeuverNode guidance_node_;
 
   // UI for the apocalypse notification.
   [KSPField(isPersistant = true)]
@@ -1432,6 +1433,80 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void RenderGuidance(Vessel active_vessel) {
+    string vessel_guid = active_vessel.id.ToString();
+    if (plugin_.HasVessel(vessel_guid) &&
+        plugin_.FlightPlanExists(vessel_guid)) {
+      // Here the vessel is known to the plugin and has a flight plan.
+      //Duplicate.
+      double current_time = plugin_.CurrentTime();
+      int number_of_manoeuvres =
+          plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
+      int? first_future_manoeuvre_index = null;
+      for (int i = 0; i < number_of_manoeuvres; ++i) {
+        NavigationManoeuvre manoeuvre =
+            plugin_.FlightPlanGetManoeuvre(vessel_guid, i);
+        if (current_time < manoeuvre.final_time) {
+          first_future_manoeuvre_index = i;
+          break;
+        }
+      }
+      if (first_future_manoeuvre_index.HasValue) {
+        // Here the flight plan has a manoeuvre in the future.
+        XYZ guidance = plugin_.FlightPlanGetGuidance(
+                           vessel_guid,
+                           first_future_manoeuvre_index.Value);
+        Burn burn = plugin_.FlightPlanGetManoeuvre(
+                        vessel_guid,
+                        first_future_manoeuvre_index.Value).burn;
+        if (flight_planner_.show_guidance &&
+            !double.IsNaN(guidance.x + guidance.y + guidance.z)) {
+          PatchedConicSolver solver = active_vessel.patchedConicSolver;
+          if (guidance_node_ == null ||
+              !solver.maneuverNodes.Contains(guidance_node_)) {
+            while (solver.maneuverNodes.Count > 0) {
+              solver.maneuverNodes.Last().RemoveSelf();
+            }
+            guidance_node_ = solver.AddManeuverNode(burn.initial_time);
+          } else {
+            while (solver.maneuverNodes.Count > 1) {
+              if (solver.maneuverNodes.First() == guidance_node_) {
+                solver.maneuverNodes.Last().RemoveSelf();
+              } else {
+                solver.maneuverNodes.First().RemoveSelf();
+              }
+            }
+          }
+          var stock_orbit = guidance_node_.patch;
+          Vector3d stock_velocity_at_node_time =
+              stock_orbit.getOrbitalVelocityAtUT(burn.initial_time).xzy;
+          Vector3d stock_displacement_from_parent_at_node_time =
+              stock_orbit.getRelativePositionAtUT(burn.initial_time).xzy;
+          UnityEngine.Quaternion stock_frenet_frame_to_world =
+              UnityEngine.Quaternion.LookRotation(
+                  stock_velocity_at_node_time,
+                  Vector3d.Cross(
+                      stock_velocity_at_node_time,
+                      stock_displacement_from_parent_at_node_time));
+          guidance_node_.DeltaV =
+              ((Vector3d)burn.delta_v).magnitude *
+               (Vector3d)(UnityEngine.Quaternion.Inverse(
+                              stock_frenet_frame_to_world) *
+               (Vector3d)guidance);
+          guidance_node_.UT = burn.initial_time;
+          solver.UpdateFlightPlan();
+          // Return here after setting the guidance node.  All other paths will
+          // clear the guidance node.
+          return;
+        }
+      }
+    }
+    if (guidance_node_ != null) {
+      guidance_node_.RemoveSelf();
+      guidance_node_ = null;
+    }
+  }
+
   private void RenderNavball(Vessel active_vessel) {
     if (navball_ == null) {
       navball_ = (KSP.UI.Screens.Flight.NavBall)FindObjectOfType(
@@ -1537,6 +1612,8 @@ public partial class PrincipiaPluginAdapter
         }
       }
     }
+
+    RenderGuidance(active_vessel);
   }
 
   private void SetNavballVector(UnityEngine.Transform vector,

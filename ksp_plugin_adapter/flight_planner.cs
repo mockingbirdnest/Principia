@@ -39,6 +39,8 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
   }
 
+  public bool show_guidance { get => show_guidance_; }
+
   protected override String Title => "Flight plan";
 
   protected override void RenderWindow(int window_id) {
@@ -459,7 +461,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   private DifferentialSlider final_time_;
   private int? first_future_manoeuvre_;
 
-  private bool show_guidance_ = false;
+  public bool show_guidance_ = false;
   private ManeuverNode guidance_node_;
   
   private const double log10_time_lower_rate = 0.0;
