@@ -229,6 +229,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                               show   : ref show_logging_settings_,
                               render : RenderLoggingSettings);
     }
+    Shrink();
     UnityEngine.GUI.DragWindow();
   }
 
