@@ -1438,7 +1438,8 @@ public partial class PrincipiaPluginAdapter
     if (plugin_.HasVessel(vessel_guid) &&
         plugin_.FlightPlanExists(vessel_guid)) {
       // Here the vessel is known to the plugin and has a flight plan.
-      //Duplicate.
+      // This duplicates a bit of code in FlightPlanner.
+      // UpdateVesselAndBurnEditors but it's probably not worth factoring out.
       double current_time = plugin_.CurrentTime();
       int number_of_manoeuvres =
           plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
