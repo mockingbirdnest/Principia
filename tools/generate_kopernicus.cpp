@@ -72,7 +72,7 @@ std::map<std::string, std::string> const body_description_map = {
      "Requires envelope of volatiles in the form of oceans or ice."}};
 std::map<std::string, std::string> const body_name_map = {
     {"Trappist-1", "Sun"},
-    {"Trappist-1b", "Beta"},
+    {"Trappist-1b", "Bravo"},
     {"Trappist-1c", "Charlie"},
     {"Trappist-1d", "Delta"},
     {"Trappist-1e", "Kerbin"},
