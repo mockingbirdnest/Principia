@@ -204,8 +204,89 @@ gravity_model {
     axis_declination        : "52.88650 deg"
     reference_angle         : "176.630 deg"
     angular_frequency       : "350.89198226 deg / d"
-    j2                      : 0.0019566091594086663
     reference_radius        : "0.3396000000000000e+04 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order: 0, cos: -0.8750222171673000e-3, sin:  0},
+        column {order: 2, cos: -0.8463586483307999e-4, sin:  0.4893453540654000e-4}},
+      row {
+        degree: 3,
+        column {order: 0, cos: -0.1189685182432000e-4, sin:  0},
+        column {order: 1, cos:  0.3804282808928000e-5, sin:  0.2517723319666000e-4},
+        column {order: 2, cos: -0.1594791900598000e-4, sin:  0.8361448533878001e-5},
+        column {order: 3, cos:  0.3505407836913999e-4, sin:  0.2557436736190999e-4}},
+      row {
+        degree: 4,
+        column {order: 0, cos:  0.5129097385095001e-5, sin:  0},
+        column {order: 1, cos:  0.4216309347319999e-5, sin:  0.3763351487890999e-5},
+        column {order: 2, cos: -0.9525509211804002e-6, sin: -0.8980854671728999e-5},
+        column {order: 3, cos:  0.6456866644575001e-5, sin: -0.1932059377757000e-6},
+        column {order: 4, cos:  0.3097444714227000e-6, sin: -0.1287302417669000e-4}},
+      row {
+        degree: 5,
+        column {order: 0, cos: -0.1726895014689000e-5, sin:  0},
+        column {order: 1, cos:  0.4837706014382000e-6, sin:  0.2123124854215000e-5},
+        column {order: 2, cos: -0.4298104578106999e-5, sin: -0.1165934697957000e-5},
+        column {order: 3, cos:  0.3312673430828000e-5, sin:  0.2717149526983000e-6},
+        column {order: 4, cos: -0.4640372150607000e-5, sin: -0.3382090934133999e-5},
+        column {order: 5, cos: -0.4449809239991000e-5, sin:  0.3779829304883000e-5}},
+      row {
+        degree: 6,
+        column {order: 0, cos:  0.1346543850227000e-5, sin:  0},
+        column {order: 1, cos:  0.1802398385217000e-5, sin: -0.1518448874041000e-5},
+        column {order: 2, cos:  0.8616520266604999e-6, sin:  0.1469140465477000e-5},
+        column {order: 3, cos:  0.9556444846688001e-6, sin:  0.3330149637349000e-6},
+        column {order: 4, cos:  0.1008432106902000e-5, sin:  0.2638780936565000e-5},
+        column {order: 5, cos:  0.1657659047506000e-5, sin:  0.1622913601663000e-5},
+        column {order: 6, cos:  0.2762090727083000e-5, sin:  0.8218280590236001e-6}},
+      row {
+        degree: 7,
+        column {order: 0, cos:  0.1059829207857000e-5, sin:  0.0000000000000000E+00},
+        column {order: 1, cos:  0.1374994791275000e-5, sin: -0.2273324091113000e-6},
+        column {order: 2, cos:  0.2814020997655000e-5, sin: -0.6295149472716001e-6},
+        column {order: 3, cos:  0.8805007395651002e-6, sin: -0.3969019636652000e-6},
+        column {order: 4, cos:  0.2469015333243000e-5, sin: -0.4221627806895000e-6},
+        column {order: 5, cos: -0.1914889859051000e-6, sin: -0.1358558031754000e-5},
+        column {order: 6, cos: -0.5592671155376000e-6, sin: -0.1901458222182000e-5},
+        column {order: 7, cos:  0.4407572012470000e-6, sin: -0.1775578673430000e-5}},
+      row {
+        degree: 8,
+        column {order: 0, cos:  0.1444404754944000e-6, sin:  0.0000000000000000E+00},
+        column {order: 1, cos: -0.1325390936354000e-6, sin:  0.7505455226430000e-6},
+        column {order: 2, cos:  0.1810373860406000e-5, sin:  0.5071656553342998e-6},
+        column {order: 3, cos: -0.1206916693583000e-5, sin: -0.1341432146034000e-5},
+        column {order: 4, cos:  0.1588293689104000e-5, sin:  0.1483187128519000e-6},
+        column {order: 5, cos: -0.2791513754339000e-5, sin: -0.1630200924016001e-5},
+        column {order: 6, cos: -0.9141050129427001e-6, sin: -0.1790077854570000e-5},
+        column {order: 7, cos: -0.4739785177040001e-6, sin:  0.1644602583282000e-5},
+        column {order: 8, cos: -0.3106010854034000e-6, sin: -0.2503541930098000e-6}},
+      row {
+        degree: 9,
+        column {order: 0, cos: -0.2873968549666000e-6, sin:  0.0000000000000000E+00},
+        column {order: 1, cos:  0.4209960192536999e-6, sin: -0.4901949692322000e-6},
+        column {order: 2, cos:  0.1138712441662000e-5, sin:  0.3822469142506001e-6},
+        column {order: 3, cos: -0.9935503979552999e-6, sin: -0.1007717243039000e-5},
+        column {order: 4, cos:  0.2948078161495000e-6, sin:  0.1623611577512000e-5},
+        column {order: 5, cos: -0.2271676246899000e-5, sin: -0.1549632021705000e-5},
+        column {order: 6, cos:  0.8084961361306998e-6, sin:  0.5778814559320999e-6},
+        column {order: 7, cos: -0.6181358420135002e-6, sin:  0.8687893503869002e-6},
+        column {order: 8, cos:  0.1208115622351000e-5, sin: -0.1461750901679999e-6},
+        column {order: 9, cos: -0.1171732975847000e-5, sin: -0.6580905885765000e-6}},
+      row {
+        degree:10,
+        column {order: 0, cos:  0.7268736890787999e-6, sin:  0.0000000000000000E+00},
+        column {order: 1, cos:  0.9239744729445000e-6, sin:  0.2232404729807000e-6},
+        column {order: 2, cos:  0.7099004701805000e-8, sin: -0.1115796893452000e-5},
+        column {order: 3, cos: -0.2990650877323000e-6, sin:  0.4435496951367000e-6},
+        column {order: 4, cos: -0.1213937691644000e-5, sin: -0.6987473706070001e-7},
+        column {order: 5, cos:  0.4215775932972000e-6, sin: -0.1062846147969000e-5},
+        column {order: 6, cos:  0.6694031372046999e-6, sin:  0.1117227455734000e-5},
+        column {order: 7, cos:  0.3179744736365000e-6, sin: -0.6201811340881001e-6},
+        column {order: 8, cos:  0.5404210955483000e-6, sin:  0.8206889582226001e-6},
+        column {order: 9, cos: -0.1457153463028000e-5, sin: -0.1463925755399000e-5},
+        column {order:10, cos: -0.2749907798463001e-6, sin:  0.7532015544117000e-6}},
+    }
   }
   body {
     # Gravitational characteristics from MESSENGER data,
