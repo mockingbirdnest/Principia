@@ -1,6 +1,7 @@
 ﻿
 #include "physics/geopotential.hpp"
 
+#include <random>
 #include <vector>
 
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"
@@ -347,6 +348,32 @@ TEST_F(GeopotentialTest, TestVector) {
               IsNear(1.3e-8));
   EXPECT_THAT(actual_acceleration_cpp,
               AlmostEquals(actual_acceleration_f90, 4, 8));
+}
+
+TEST_F(GeopotentialTest, CppF90Comparison) {
+  SolarSystem<ICRS> solar_system_2000(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt");
+  solar_system_2000.LimitOblatenessToDegree("Earth", /*max_degree=*/9);
+  auto earth_message = solar_system_2000.gravity_model_message("Earth");
+  auto const earth = solar_system_2000.MakeOblateBody(earth_message);
+  Geopotential<ICRS> const geopotential(earth.get(), /*tolerance=*/0);
+
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> length_distribution(-1e7, 1e7);
+  for (int i = 0; i < 1000; ++i) {
+    Displacement<ITRS> const displacement(
+        {length_distribution(random) * Metre,
+         length_distribution(random) * Metre,
+         length_distribution(random) * Metre});
+    Vector<Acceleration, ITRS> const actual_acceleration_cpp =
+        AccelerationCpp(displacement, geopotential, *earth);
+    Vector<Acceleration, ITRS> const actual_acceleration_f90 =
+        AccelerationF90(displacement, *earth);
+    EXPECT_THAT(actual_acceleration_cpp,
+                AlmostEquals(actual_acceleration_f90, 0, 584));
+  }
 }
 
 TEST_F(GeopotentialTest, HarmonicDamping) {
