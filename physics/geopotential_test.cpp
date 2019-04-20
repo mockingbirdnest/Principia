@@ -34,6 +34,7 @@ using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Degree2SphericalHarmonicCoefficient;
 using quantities::Degree3SphericalHarmonicCoefficient;
+using quantities::GravitationalParameter;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::SIUnit;
@@ -71,7 +72,7 @@ class GeopotentialTest : public ::testing::Test {
                                   declination_of_pole_) {}
 
   template<typename Frame>
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   SphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
                                  Instant const& t,
                                  Displacement<Frame> const& r) {
@@ -81,7 +82,7 @@ class GeopotentialTest : public ::testing::Test {
   }
 
   template<typename Frame>
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   GeneralSphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
                                         Instant const& t,
                                         Displacement<Frame> const& r) {
@@ -90,6 +91,41 @@ class GeopotentialTest : public ::testing::Test {
     auto const one_over_r³ = r_norm / (r² * r²);
     return geopotential.GeneralSphericalHarmonicsAcceleration(
         t, r, r_norm, r², one_over_r³);
+  }
+
+  static Vector<Acceleration, ITRS> AccelerationCpp(
+      Displacement<ITRS> const& displacement,
+      Geopotential<ICRS> const& geopotential,
+      OblateBody<ICRS> const& earth) {
+    Displacement<ICRS> const icrs_displacement =
+        earth.FromSurfaceFrame<ITRS>(Instant())(displacement);
+    auto const icrs_acceleration =
+        earth.gravitational_parameter() *
+        (GeneralSphericalHarmonicsAcceleration(
+             geopotential, Instant(), icrs_displacement) -
+         icrs_displacement / Pow<3>(icrs_displacement.Norm()));
+    return earth.ToSurfaceFrame<ITRS>(Instant())(icrs_acceleration);
+  }
+
+  static Vector<Acceleration, ITRS> AccelerationF90(
+      Displacement<ITRS> const& displacement,
+      OblateBody<ICRS> const& earth) {
+    double const mu =
+        earth.gravitational_parameter() / SIUnit<GravitationalParameter>();
+    double const rbar = earth.reference_radius() / Metre;
+    numerics::FixedMatrix<double, 10, 10> cnm;
+    numerics::FixedMatrix<double, 10, 10> snm;
+    for (int n = 0; n <= 9; ++n) {
+      for (int m = 0; m <= n; ++m) {
+        cnm[n][m] = earth.cos()[n][m] * LegendreNormalizationFactor[n][m];
+        snm[n][m] = earth.sin()[n][m] * LegendreNormalizationFactor[n][m];
+      }
+    }
+    return Vector<Acceleration, ITRS>(
+        SIUnit<Acceleration>() *
+        astronomy::fortran_astrodynamics_toolkit::
+            ComputeGravityAccelerationLear<9, 9>(
+                displacement.coordinates() / Metre, mu, rbar, cnm, snm));
   }
 
   // The axis of rotation is along the z axis for ease of testing.
@@ -300,41 +336,15 @@ TEST_F(GeopotentialTest, TestVector) {
        2.3585194144421 * Metre / Second / Second,
        -2.9531441870790 * Metre / Second / Second});
 
-  Vector<Acceleration, ITRS> actual_acceleration_cpp;
-  Vector<Acceleration, ITRS> actual_acceleration_f90;
+  Vector<Acceleration, ITRS> const actual_acceleration_cpp =
+      AccelerationCpp(displacement, geopotential, earth);
+  Vector<Acceleration, ITRS> const actual_acceleration_f90 =
+      AccelerationF90(displacement, earth);
 
-  {
-    Displacement<ICRS> const icrs_displacement =
-        earth.FromSurfaceFrame<ITRS>(Instant())(
-            Displacement<ITRS>(displacement));
-    auto const icrs_acceleration =
-        earth_μ * (GeneralSphericalHarmonicsAcceleration(
-                       geopotential, Instant(), icrs_displacement) -
-                   icrs_displacement / Pow<3>(icrs_displacement.Norm()));
-    actual_acceleration_cpp =
-        earth.ToSurfaceFrame<ITRS>(Instant())(icrs_acceleration);
-    EXPECT_THAT(RelativeError(actual_acceleration_cpp, expected_acceleration),
-                IsNear(1.3e-8));
-  }
-  {
-    double mu = earth_μ / SIUnit<GravitationalParameter>();
-    double rbar = earth_reference_radius / Metre;
-    numerics::FixedMatrix<double, 10, 10> cnm;
-    numerics::FixedMatrix<double, 10, 10> snm;
-    for (int n = 0; n <= 9; ++n) {
-      for (int m = 0; m <= n; ++m) {
-        cnm[n][m] = earth.cos()[n][m] * LegendreNormalizationFactor[n][m];
-        snm[n][m] = earth.sin()[n][m] * LegendreNormalizationFactor[n][m];
-      }
-    }
-    actual_acceleration_f90 = Vector<Acceleration, ITRS>(
-        SIUnit<Acceleration>() *
-        astronomy::fortran_astrodynamics_toolkit::
-            ComputeGravityAccelerationLear<9, 9>(
-                displacement.coordinates() / Metre, mu, rbar, cnm, snm));
-    EXPECT_THAT(RelativeError(actual_acceleration_f90, expected_acceleration),
-                IsNear(1.3e-8));
-  }
+  EXPECT_THAT(RelativeError(actual_acceleration_cpp, expected_acceleration),
+              IsNear(1.3e-8));
+  EXPECT_THAT(RelativeError(actual_acceleration_f90, expected_acceleration),
+              IsNear(1.3e-8));
   EXPECT_THAT(actual_acceleration_cpp,
               AlmostEquals(actual_acceleration_f90, 4, 8));
 }
