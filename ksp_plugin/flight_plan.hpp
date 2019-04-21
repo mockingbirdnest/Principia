@@ -73,6 +73,8 @@ class FlightPlan {
 
   // |size()| must be greater than 0.
   virtual void RemoveLast();
+  //TODO(phl):Comment.
+  virtual void Replace(Burn burn, int index);
   // |size()| must be greater than 0.
   virtual bool ReplaceLast(Burn burn);
 
@@ -161,8 +163,13 @@ class FlightPlan {
   Instant start_of_last_coast() const;
   Instant start_of_penultimate_coast() const;
 
+  Instant start_of_next_burn(int index) const;
+  Instant start_of_previous_coast(int index) const;
+
   DiscreteTrajectory<Barycentric>& last_coast();
   DiscreteTrajectory<Barycentric>& penultimate_coast();
+
+  DiscreteTrajectory<Barycentric>& previous_coast(int index);
 
   Mass const initial_mass_;
   Instant initial_time_;
