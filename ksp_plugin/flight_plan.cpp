@@ -391,31 +391,11 @@ bool FlightPlan::RecomputeSegments() {
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   if (anomalous_segments_ > 0) {
     return;
-  } else if (manœuvre.initial_time() < manœuvre.final_time()) {
-    if (manœuvre.is_inertially_fixed()) {
-      bool const reached_desired_final_time =
-          ephemeris_->FlowWithAdaptiveStep(
-              segments_.back(),
-              manœuvre.InertialIntrinsicAcceleration(),
-              manœuvre.final_time(),
-              adaptive_step_parameters_,
-              max_ephemeris_steps_per_frame,
-              /*last_point_only=*/false).ok();
-      if (!reached_desired_final_time) {
-        anomalous_segments_ = 1;
-      }
-    } else {
-      bool const reached_desired_final_time =
-          ephemeris_->FlowWithAdaptiveStep(
-              segments_.back(),
-              manœuvre.FrenetIntrinsicAcceleration(),
-              manœuvre.final_time(),
-              generalized_adaptive_step_parameters_,
-              max_ephemeris_steps_per_frame,
-              /*last_point_only=*/false).ok();
-      if (!reached_desired_final_time) {
-        anomalous_segments_ = 1;
-      }
+  } else {
+    bool const reached_desired_final_time =
+        BurnSegment(manœuvre, segments_.back().get()).ok();
+    if (!reached_desired_final_time) {
+      anomalous_segments_ = 1;
     }
   }
 }
@@ -425,17 +405,50 @@ void FlightPlan::CoastLastSegment(Instant const& desired_final_time) {
     return;
   } else {
     bool const reached_desired_final_time =
-        ephemeris_->FlowWithAdaptiveStep(
-                        segments_.back(),
-                        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-                        desired_final_time,
-                        adaptive_step_parameters_,
-                        max_ephemeris_steps_per_frame,
-                        /*last_point_only=*/false).ok();
+        CoastSegment(desired_final_time, segments_.back().get()).ok();
     if (!reached_desired_final_time) {
       anomalous_segments_ = 1;
     }
   }
+}
+
+Status FlightPlan::BurnSegment(
+    NavigationManœuvre const& manœuvre,
+    not_null<DiscreteTrajectory<Barycentric>*> const segment) {
+  Instant const final_time = manœuvre.final_time();
+  if (manœuvre.initial_time() < final_time) {
+    if (manœuvre.is_inertially_fixed()) {
+      return ephemeris_->FlowWithAdaptiveStep(
+                             segment,
+                             manœuvre.InertialIntrinsicAcceleration(),
+                             final_time,
+                             adaptive_step_parameters_,
+                             max_ephemeris_steps_per_frame,
+                             /*last_point_only=*/false);
+    } else {
+      return ephemeris_->FlowWithAdaptiveStep(
+                             segment,
+                             manœuvre.FrenetIntrinsicAcceleration(),
+                             final_time,
+                             generalized_adaptive_step_parameters_,
+                             max_ephemeris_steps_per_frame,
+                             /*last_point_only=*/false);
+    }
+  } else {
+    return Status::OK;
+  }
+}
+
+Status FlightPlan::CoastSegment(
+    Instant const& desired_final_time,
+    not_null<DiscreteTrajectory<Barycentric>*> const segment) {
+  return ephemeris_->FlowWithAdaptiveStep(
+                         segment,
+                         Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+                         desired_final_time,
+                         adaptive_step_parameters_,
+                         max_ephemeris_steps_per_frame,
+                         /*last_point_only=*/false);
 }
 
 void FlightPlan::ReplaceLastSegment(

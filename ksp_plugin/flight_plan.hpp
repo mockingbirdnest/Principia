@@ -21,6 +21,7 @@ namespace ksp_plugin {
 namespace internal_flight_plan {
 
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::DegreesOfFreedom;
@@ -140,6 +141,12 @@ class FlightPlan {
   // acceleration.
   void CoastLastSegment(Instant const& desired_final_time);
 
+  //TODO(phl):comment
+  Status BurnSegment(NavigationManœuvre const& manœuvre,
+                     not_null<DiscreteTrajectory<Barycentric>*> segment);
+  Status CoastSegment(Instant const& desired_final_time,
+                      not_null<DiscreteTrajectory<Barycentric>*> segment);
+
   // Replaces the last segment with |segment|.  |segment| must be forked from
   // the same trajectory as the last segment, and at the same time.  |segment|
   // must not be anomalous.
@@ -163,12 +170,14 @@ class FlightPlan {
   Instant start_of_last_coast() const;
   Instant start_of_penultimate_coast() const;
 
+  //TODO(phl):comment
   Instant start_of_next_burn(int index) const;
   Instant start_of_previous_coast(int index) const;
 
   DiscreteTrajectory<Barycentric>& last_coast();
   DiscreteTrajectory<Barycentric>& penultimate_coast();
 
+  //TODO(phl):comment
   DiscreteTrajectory<Barycentric>& previous_coast(int index);
 
   Mass const initial_mass_;
