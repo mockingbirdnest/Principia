@@ -150,7 +150,7 @@ void FlightPlan::RemoveLast() {
   CoastLastSegment(desired_final_time_);
 }
 
-base::Status FlightPlan::Replace(Burn burn, int const index) {
+Status FlightPlan::Replace(Burn burn, int const index) {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
   auto manœuvre = MakeNavigationManœuvre(std::move(burn),
@@ -163,27 +163,43 @@ base::Status FlightPlan::Replace(Burn burn, int const index) {
   }
 
   DiscreteTrajectory<Barycentric>& previous_coast = previous_coast(index);
-  DiscreteTrajectory<Barycentric>* recomputed_coast =
+  //TODO(phl):Fork as late as possible.
+  DiscreteTrajectory<Barycentric>* const coast =
       previous_coast.parent()->NewForkWithoutCopy(previous_coast.Fork().time());
-  bool const reached_manœuvre_initial_time =
-      ephemeris_->FlowWithAdaptiveStep(
-          recomputed_coast,
-          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          manœuvre.initial_time(),
-          adaptive_step_parameters_,
-          max_ephemeris_steps_per_frame,
-          /*last_point_only=*/false).ok();
-  if (!reached_manœuvre_initial_time) {
-    recomputed_coast->parent()->DeleteFork(recomputed_coast);
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments = {coast};
+  std::vector<NavigationManœuvre> manœuvres = {std::move(manœuvre)};
+  //TODO(phl):Very similar loop in RecomputeSegments.
+  for (int i = index; i < manœuvres_.size(); ++i) {
+    if (i > index) {
+      auto const& original_manœuvre = manœuvres_[i];
+      auto const& manœuvre = manœuvres.back();
+      //TODO(phl): What happens to the frame of the original manoeuvre?
+      manœuvres.emplace_back(
+          NavigationManœuvre(original_manœuvre.thrust(),
+                             manœuvre.final_mass(),
+                             original_manœuvre.specific_impulse(),
+                             original_manœuvre.direction(),
+                             original_manœuvre.frame(),
+                             original_manœuvre.is_inertially_fixed()));
+    }
+    auto const& manœuvre = manœuvres.back();
+    auto& coast = segments.back();
+    RETURN_IF_ERROR(CoastSegment(manœuvre.initial_time(), coast));
+    manœuvre.set_coasting_trajectory(coast);
+    AddSegment(segments);
+    auto& burn = segments.back();
+    RETURN_IF_ERROR(BurnSegment(manœuvre, burn));
+    AddSegment(segments);
   }
-  // Next manoeuvres here.
+  RETURN_IF_ERROR(CoastSegment(desired_final_time_, segments.back()));
 
-
-
-  //return manœuvres_[index];
+  return Status::OK;
 }
 
 bool FlightPlan::ReplaceLast(Burn burn) {
+#if 1
+  return Replace(burn, manœuvres_.size() - 1).ok();
+#else
   CHECK(!manœuvres_.empty());
   auto manœuvre = MakeNavigationManœuvre(std::move(burn),
                                          manœuvres_.back().initial_mass());
@@ -201,6 +217,7 @@ bool FlightPlan::ReplaceLast(Burn burn) {
     }
   }
   return false;
+#endif
 }
 
 bool FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
@@ -393,7 +410,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
     return;
   } else {
     bool const reached_desired_final_time =
-        BurnSegment(manœuvre, segments_.back().get()).ok();
+        BurnSegment(manœuvre, segments_.back()).ok();
     if (!reached_desired_final_time) {
       anomalous_segments_ = 1;
     }
@@ -405,7 +422,7 @@ void FlightPlan::CoastLastSegment(Instant const& desired_final_time) {
     return;
   } else {
     bool const reached_desired_final_time =
-        CoastSegment(desired_final_time, segments_.back().get()).ok();
+        CoastSegment(desired_final_time, segments_.back()).ok();
     if (!reached_desired_final_time) {
       anomalous_segments_ = 1;
     }
@@ -463,10 +480,15 @@ void FlightPlan::ReplaceLastSegment(
 }
 
 void FlightPlan::AddSegment() {
-  segments_.emplace_back(segments_.back()->NewForkAtLast());
+  AddSegment(segments_);
   if (anomalous_segments_ > 0) {
     ++anomalous_segments_;
   }
+}
+
+void FlightPlan::AddSegment(
+    std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments) {
+  segments.emplace_back(segments.back()->NewForkAtLast());
 }
 
 void FlightPlan::ResetLastSegment() {

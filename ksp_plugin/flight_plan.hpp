@@ -75,7 +75,7 @@ class FlightPlan {
   // |size()| must be greater than 0.
   virtual void RemoveLast();
   //TODO(phl):Comment.
-  virtual void Replace(Burn burn, int index);
+  virtual Status Replace(Burn burn, int index);
   // |size()| must be greater than 0.
   virtual bool ReplaceLast(Burn burn);
 
@@ -154,6 +154,11 @@ class FlightPlan {
 
   // Adds a trajectory to |segments_|, forked at the end of the last one.
   void AddSegment();
+
+  //TODO(phl):comment
+  static void AddSegment(
+      std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments);
+
   // Forgets the last segment after its fork.
   void ResetLastSegment();
 
