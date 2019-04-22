@@ -92,6 +92,18 @@
     <None Include="standard_product_3\README.md">
       <Filter>Resource Files\Standard Product 3</Filter>
     </None>
+    <None Include="standard_product_3\grgja203.b08243.e08247.D_S.sp3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\grgtop03.b97344.e97348.D_S.sp3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\ssaja102.b03007.e03017.DGS.sp3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20190270000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="sol_initial_state_jd_2433282_500000000.proto.txt">

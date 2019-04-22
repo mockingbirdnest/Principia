@@ -1,5 +1,6 @@
 ﻿#include "astronomy/standard_product_3.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <optional>
 #include <string>
@@ -10,19 +11,69 @@
 #include "astronomy/time_scales.hpp"
 #include "base/map_util.hpp"
 #include "glog/logging.h"
+#include "numerics/finite_difference.hpp"
 
 namespace principia {
 namespace astronomy {
 namespace internal_standard_product_3 {
 
 using base::FindOrDie;
+using base::make_not_null_unique;
 using geometry::Displacement;
+using numerics::FiniteDifference;
 using quantities::NaN;
 using quantities::Speed;
 using quantities::si::Deci;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Second;
+
+// Given a trajectory whose velocities are bad or absent (e.g., NaN), uses
+// n-point finite difference formulæ on the positions to produce a trajectory
+// with consistent velocities.
+template<int n>
+not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
+    DiscreteTrajectory<ITRS> const& arc) {
+  auto result = make_not_null_unique<DiscreteTrajectory<ITRS>>();
+  CHECK_GE(arc.Size(), n);
+  std::array<Instant, n> times;
+  std::array<Position<ITRS>, n> positions;
+  auto it = arc.Begin();
+  for (int k = 0; k < n; ++k, ++it) {
+    // TODO(egg): we should check when reading the file that the times are
+    // equally spaced at the interval declared in columns 25-38 of SP3
+    // line two.
+    times[k] = it.time();
+    positions[k] = it.degrees_of_freedom().position();
+  }
+  // We use a central difference formula wherever possible, so we keep
+  // |offset| at (n - 1) / 2 except at the beginning and end of the arc.
+  int offset = 0;
+  for (int i = 0; i < arc.Size(); ++i) {
+    result->Append(
+        times[offset],
+        {positions[offset],
+         FiniteDifference(
+             /*values=*/positions,
+             /*step=*/(times[n - 1] - times[0]) / (n - 1),
+             offset)});
+    // At every iteration, either |offset| advances, or the |positions|
+    // window shifts and |it| advances.
+    if (offset < (n - 1) / 2 || it == arc.End()) {
+      ++offset;
+    } else {
+      std::move(positions.begin() + 1, positions.end(), positions.begin());
+      std::move(times.begin() + 1, times.end(), times.begin());
+      times.back() = it.time();
+      positions.back()  = it.degrees_of_freedom().position();
+      ++it;
+    }
+  }
+  // Note that having the right number of calls to |Append| does not guarantee
+  // this, as appending at an existing time merely emits a warning.
+  CHECK_EQ(result->Size(), arc.Size());
+  return result;
+}
 
 StandardProduct3::StandardProduct3(
     std::filesystem::path const& filename,
@@ -125,7 +176,7 @@ StandardProduct3::StandardProduct3(
             case SatelliteGroup::General:
             case SatelliteGroup::Galileo:
             case SatelliteGroup::北斗:
-            case SatelliteGroup::準天頂衛星:
+            case SatelliteGroup::みちびき:
             case SatelliteGroup::IRNSS:
               CHECK_GE(version_, Version::C) << full_location;
               break;
@@ -136,11 +187,13 @@ StandardProduct3::StandardProduct3(
         }
         id.index = integer_columns(c + 1, c + 2);
         CHECK_GT(id.index, 0) << full_location;
-        auto const [it, inserted] = orbits_.emplace(std::piecewise_construct,  // NOLINT
-                                                    std::forward_as_tuple(id),
-                                                    std::forward_as_tuple());
+        auto const [it, inserted] =  // NOLINT(whitespace/braces)
+            orbits_.emplace(std::piecewise_construct,
+                            std::forward_as_tuple(id),
+                            std::forward_as_tuple());
         CHECK(inserted) << "Duplicate satellite identifier " << id << ": "
                         << full_location;
+        it->second.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
         satellites_.push_back(id);
       } else {
         CHECK_EQ(columns(c, c + 2), "  0") << full_location;
@@ -152,8 +205,15 @@ StandardProduct3::StandardProduct3(
     LOG(FATAL) << u8"at least 5 +␣ records expected: " << location;
   }
   if (version_ < Version::D && number_of_satellite_id_records > 5) {
-    LOG(FATAL) << u8"exactly 5 +␣ records expected in SP3-" << version_ << ": "
-               << location;
+    if (dialect == Dialect::ChineseMGEX) {
+      CHECK_EQ(number_of_satellite_id_records, 10)
+          << u8"exactly 10 +␣ records expected in the " << dialect << ": "
+          << location;
+    } else {
+      CHECK_EQ(number_of_satellite_id_records, 5)
+          << u8"exactly 5 +␣ records expected in SP3-" << version_ << ": "
+          << location;
+    }
   }
 
   // Header: ++ records.
@@ -270,15 +330,18 @@ StandardProduct3::StandardProduct3(
       // from the check.
       CHECK_EQ(id, satellites_[i]) << location;
 
-      DiscreteTrajectory<ITRS>& orbit = it->second;
+      std::vector<not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>& orbit =
+          it->second;
+      DiscreteTrajectory<ITRS>& arc = *orbit.back();
 
       Position<ITRS> const position =
           Displacement<ITRS>({float_columns(5, 18) * Kilo(Metre),
                               float_columns(19, 32) * Kilo(Metre),
                               float_columns(33, 46) * Kilo(Metre)}) +
           ITRS::origin;
-      // TODO(egg): use a difference formula to compute the velocities if they
-      // are not provided.
+      // If the file does not provide velocities, fill the trajectory with NaN
+      // velocities; we then replace it with another trajectory whose velocities
+      // are computed using a finite difference formula.
       Velocity<ITRS> velocity({NaN<Speed>(), NaN<Speed>(), NaN<Speed>()});
 
       read_line();
@@ -295,10 +358,11 @@ StandardProduct3::StandardProduct3(
           CHECK_EQ(SatelliteGroup{column(2)}, id.group) << location;
         }
         CHECK_EQ(integer_columns(3, 4), id.index) << location;
-        velocity =
-            Velocity<ITRS>({float_columns(5, 18) * (Deci(Metre) / Second),
-                            float_columns(19, 32) * (Deci(Metre) / Second),
-                            float_columns(33, 46) * (Deci(Metre) / Second)});
+        Speed const speed_unit =
+            dialect == Dialect::GRGS ? Metre / Second : Deci(Metre) / Second;
+        velocity = Velocity<ITRS>({float_columns(5, 18) * speed_unit,
+                                   float_columns(19, 32) * speed_unit,
+                                   float_columns(33, 46) * speed_unit});
 
         read_line();
         if (version_ >= Version::C && line.has_value() &&
@@ -309,14 +373,65 @@ StandardProduct3::StandardProduct3(
         }
       }
 
-      orbit.Append(epoch, {position, velocity});
+      // Bad or absent positional and velocity values are to be set to 0.000000.
+      if (position == ITRS::origin || velocity == Velocity<ITRS>()) {
+        if (!arc.Empty()) {
+          orbit.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
+        }
+      } else {
+        arc.Append(epoch, {position, velocity});
+      }
     }
   }
   if (dialect != Dialect::ILRSA) {
     CHECK_EQ(columns(1, 3), "EOF") << location;
     read_line();
   }
+  for (auto& [id, orbit] : orbits_) {
+    // Do not leave a final empty trajectory if the orbit ends with missing
+    // data.
+    if (orbit.back()->Empty()) {
+      orbit.pop_back();
+    }
+  }
   CHECK(!line.has_value()) << location;
+  if (!has_velocities_) {
+    for (auto& [id, orbit] : orbits_) {
+      for (auto& arc : orbit) {
+#define COMPUTE_VELOCITIES_CASE(n)            \
+          case n:                             \
+            arc = ComputeVelocities<n>(*arc); \
+            break
+
+        switch (arc->Size()) {
+          COMPUTE_VELOCITIES_CASE(1);
+          COMPUTE_VELOCITIES_CASE(2);
+          COMPUTE_VELOCITIES_CASE(3);
+          COMPUTE_VELOCITIES_CASE(4);
+          COMPUTE_VELOCITIES_CASE(5);
+          COMPUTE_VELOCITIES_CASE(6);
+          COMPUTE_VELOCITIES_CASE(7);
+          COMPUTE_VELOCITIES_CASE(8);
+          default:
+            arc = ComputeVelocities<9>(*arc);
+            break;
+        }
+
+#undef COMPUTE_VELOCITIES_CASE
+      }
+    }
+  }
+  for (auto& [id, orbit] : orbits_) {
+    auto const [it, inserted] =  // NOLINT(whitespace/braces)
+        const_orbits_.emplace(std::piecewise_construct,
+                              std::forward_as_tuple(id),
+                              std::forward_as_tuple());
+    CHECK(inserted) << id;
+    auto& const_orbit = it->second;
+    for (auto& arc : orbit) {
+      const_orbit.push_back(arc.get());
+    }
+  }
 }
 
 std::vector<StandardProduct3::SatelliteIdentifier> const&
@@ -324,13 +439,17 @@ StandardProduct3::satellites() const {
   return satellites_;
 }
 
-DiscreteTrajectory<ITRS> const& StandardProduct3::orbit(
-    SatelliteIdentifier const& id) const {
-  return FindOrDie(orbits_, id);
+std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const&
+StandardProduct3::orbit(SatelliteIdentifier const& id) const {
+  return FindOrDie(const_orbits_, id);
 }
 
 StandardProduct3::Version StandardProduct3::version() const {
   return version_;
+}
+
+bool StandardProduct3::file_has_velocities() const {
+  return has_velocities_;
 }
 
 bool operator==(StandardProduct3::SatelliteIdentifier const& left,
@@ -347,6 +466,24 @@ bool operator<(StandardProduct3::SatelliteIdentifier const& left,
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::Version const& version) {
   return out << std::string(1, static_cast<char>(version));
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::Dialect const& dialect) {
+  switch (dialect) {
+    case StandardProduct3::Dialect::Standard:
+      return out << "Standard SP3";
+    case StandardProduct3::Dialect::ILRSA:
+      return out << "ILRSA SP3 dialect";
+    case StandardProduct3::Dialect::ILRSB:
+      return out << "ILRSB SP3 dialect";
+    case StandardProduct3::Dialect::GRGS:
+      return out << "GRGS SP3 dialect";
+    case StandardProduct3::Dialect::ChineseMGEX:
+      return out << "SHAO and WHU MGEX SP3 dialect";
+    default:
+      return out << "Unknown SP3 dialect (" << static_cast<int>(dialect) << ")";
+  }
 }
 
 std::ostream& operator<<(std::ostream& out,

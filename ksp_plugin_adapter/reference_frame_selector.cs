@@ -50,10 +50,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public void Initialize(IntPtr plugin) {
-    plugin_ = plugin;
-  }
-
   public void UpdateMainBody() {
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     selected_celestial =
@@ -265,13 +261,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button(name_ + " selection (" + Name() +
                                      ")...")) {
       Toggle();
     }
-    UnityEngine.GUI.skin = old_skin;
   }
 
   protected override String Title {
@@ -283,8 +276,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       // Left-hand side: tree view for celestial selection.
-      using (new UnityEngine.GUILayout.VerticalScope(
-                     UnityEngine.GUILayout.Width(200))) {
+      using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
         RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
       }
 
@@ -293,10 +285,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
         if (target_override) {
           UnityEngine.GUILayout.Label(
               "Using target-centred frame selected on navball speed display",
-              UnityEngine.GUILayout.Width(150));
+              GUILayoutWidth(6));
           UnityEngine.GUILayout.Label(
               Description(frame_type, selected_celestial, target_override),
-              UnityEngine.GUILayout.Width(150));
+              GUILayoutWidth(6));
         } else {
           TypeSelector(FrameType.BODY_SURFACE);
           TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
@@ -313,12 +305,11 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   private void RenderSubtree(CelestialBody celestial, int depth) {
     // Horizontal offset between a node and its children.
-    const int offset = 20;
+    const int offset = 1;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (!celestial.is_root()) {
-        UnityEngine.GUILayout.Label(
-            "",
-            UnityEngine.GUILayout.Width(offset * (depth - 1)));
+        UnityEngine.GUILayout.Label("",
+                                    GUILayoutWidth(offset * (depth - 1)));
         string button_text;
         if (celestial.is_leaf()) {
           button_text = "";
@@ -328,7 +319,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
           button_text = "+";
         }
         if (UnityEngine.GUILayout.Button(button_text,
-                                         UnityEngine.GUILayout.Width(offset))) {
+                                         GUILayoutWidth(offset))) {
           Shrink();
           if (!celestial.is_leaf()) {
             expanded_[celestial] = !expanded_[celestial];
@@ -354,19 +345,20 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private void TypeSelector(FrameType value) {
-   bool old_wrap = UnityEngine.GUI.skin.toggle.wordWrap;
-   UnityEngine.GUI.skin.toggle.wordWrap = true;
+   var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.toggle);
+   style.fixedHeight = 0;
+   style.wordWrap = true;
    if (UnityEngine.GUILayout.Toggle(
            frame_type == value,
            Description(value, selected_celestial, target_override),
-           UnityEngine.GUILayout.Width(150),
-           UnityEngine.GUILayout.Height(120))) {
+           style,
+           GUILayoutWidth(6),
+           GUILayoutHeight(5))) {
      if (frame_type != value) {
        frame_type = value;
        on_change_(FrameParameters());
      }
     }
-    UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
 
   public FrameType frame_type { get; private set; }
@@ -375,8 +367,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   private readonly Callback on_change_;
   private readonly string name_;
-  // Not owned.
-  private IntPtr plugin_ = IntPtr.Zero;
   private Dictionary<CelestialBody, bool> expanded_;
 }
 

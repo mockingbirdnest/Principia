@@ -2,23 +2,52 @@
 #include "astronomy/standard_product_3.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/solar_system.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace astronomy {
 
+using base::dynamic_cast_not_null;
+using base::not_null;
+using geometry::Position;
+using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
+using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
+using integrators::methods::QuinlanTremaine1990Order12;
+using physics::BodySurfaceDynamicFrame;
+using physics::ContinuousTrajectory;
+using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
+using physics::Ephemeris;
+using physics::RotatingBody;
+using physics::SolarSystem;
+using quantities::astronomy::JulianYear;
+using quantities::si::Deci;
+using quantities::si::Metre;
+using quantities::si::Milli;
+using quantities::si::Second;
+using testing_utilities::AbsoluteError;
+using testing_utilities::Componentwise;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Field;
+using ::testing::Lt;
 using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
+using ::testing::ValuesIn;
 
 class StandardProduct3Test : public ::testing::Test {
  protected:
@@ -85,7 +114,7 @@ TEST_F(StandardProduct3Test, PositionOnly) {
                                  StandardProduct3::SatelliteGroup::北斗,
                                  StandardProduct3::SatelliteGroup::Galileo,
                                  StandardProduct3::SatelliteGroup::GPS,
-                                 StandardProduct3::SatelliteGroup::準天頂衛星,
+                                 StandardProduct3::SatelliteGroup::みちびき,
                                  StandardProduct3::SatelliteGroup::ГЛОНАСС))));
   EXPECT_THAT(sp3d.satellites(),
               AllOf(SizeIs(91),
@@ -94,7 +123,7 @@ TEST_F(StandardProduct3Test, PositionOnly) {
                                  StandardProduct3::SatelliteGroup::北斗,
                                  StandardProduct3::SatelliteGroup::Galileo,
                                  StandardProduct3::SatelliteGroup::GPS,
-                                 StandardProduct3::SatelliteGroup::準天頂衛星,
+                                 StandardProduct3::SatelliteGroup::みちびき,
                                  StandardProduct3::SatelliteGroup::ГЛОНАСС))));
 }
 
@@ -160,6 +189,16 @@ TEST_F(StandardProduct3DeathTest, ILRSBNonConformance) {
       "date_time_body.hpp");
 }
 
+TEST_F(StandardProduct3DeathTest, ChineseMGEXNonConformance) {
+  // There are 10 +␣ records in the Chinese MGEX dialect of SP3-c, instead of
+  // the standard 5.
+  EXPECT_DEATH(
+      StandardProduct3(SOLUTION_DIR / "astronomy" / "standard_product_3" /
+                           "WUM0MGXFIN_20190270000_01D_15M_ORB.SP3",
+                       StandardProduct3::Dialect::Standard),
+      u8R"(exactly 5 \+␣ records expected in SP3-c)");
+}
+
 // Test that we successfully parse the nonstandard dialects.
 
 TEST_F(StandardProduct3Test, Dialects) {
@@ -171,13 +210,199 @@ TEST_F(StandardProduct3Test, Dialects) {
                              "ilrsb.orb.lageos2.160319.v35.sp3",
                          StandardProduct3::Dialect::ILRSB);
 
+  StandardProduct3 whu(SOLUTION_DIR / "astronomy" / "standard_product_3" /
+                           "WUM0MGXFIN_20190270000_01D_15M_ORB.SP3",
+                       StandardProduct3::Dialect::ChineseMGEX);
+
   EXPECT_THAT(ilrsa.satellites(),
               ElementsAre(StandardProduct3::SatelliteIdentifier{
                   StandardProduct3::SatelliteGroup::General, 52}));
   EXPECT_THAT(ilrsb.satellites(),
               ElementsAre(StandardProduct3::SatelliteIdentifier{
                   StandardProduct3::SatelliteGroup::General, 52}));
+  EXPECT_THAT(whu.satellites(),
+              AllOf(SizeIs(112),
+                    ResultOf(&SatelliteGroups,
+                             UnorderedElementsAre(
+                                 StandardProduct3::SatelliteGroup::北斗,
+                                 StandardProduct3::SatelliteGroup::Galileo,
+                                 StandardProduct3::SatelliteGroup::GPS,
+                                 StandardProduct3::SatelliteGroup::みちびき,
+                                 StandardProduct3::SatelliteGroup::ГЛОНАСС))));
 }
+
+#if !defined(_DEBUG)
+
+struct StandardProduct3Args {
+  std::filesystem::path filename;
+  StandardProduct3::Dialect dialect;
+  StandardProduct3::Version version;
+  bool file_has_velocities;
+};
+
+std::ostream& operator<<(std::ostream& out, StandardProduct3Args const& args) {
+  return out << args.filename << " interpreted as " << args.dialect
+             << " (expected to have version " << args.version << " and to "
+             << (args.file_has_velocities ? "" : "not") << " have velocities)";
+}
+
+class StandardProduct3DynamicsTest
+    : public ::testing::TestWithParam<StandardProduct3Args> {
+ protected:
+  StandardProduct3DynamicsTest()
+      : solar_system_([]() {
+          SolarSystem<ICRS> solar_system(
+              SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+              SOLUTION_DIR / "astronomy" /
+                  "sol_initial_state_jd_2436116_311504629.proto.txt");
+          std::vector<std::string> names = solar_system.names();
+          for (auto const& name : names) {
+            if (name != "Earth") {
+              solar_system.RemoveMassiveBody(name);
+            }
+          }
+          solar_system.LimitOblatenessToDegree("Earth", 2);
+          solar_system.LimitOblatenessToZonal("Earth");
+          return solar_system;
+        }()),
+        // We can use a long time step because, in the absence of other bodies,
+        // the Earth will go in a straight line, which will be integrated
+        // exactly.
+        ephemeris_(solar_system_.MakeEphemeris(
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
+            Ephemeris<ICRS>::FixedStepParameters(
+                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                                   Position<ICRS>>(),
+                /*step=*/1 * JulianYear))),
+        earth_(dynamic_cast_not_null<RotatingBody<ICRS> const*>(
+            solar_system_.massive_body(*ephemeris_, "Earth"))),
+        earth_trajectory_(*ephemeris_->trajectory(earth_)),
+        itrs_(ephemeris_.get(), earth_) {}
+
+  // This ephemeris has only one body, an oblate Earth.
+  // The lack of third bodies makes it quick to prolong; it is suitable for
+  // minimal sanity checking of Earth orbits.
+  // Its |t_min| is the time of the launch of Спутник-1, so it can be used for
+  // any artificial satellite.
+  SolarSystem<ICRS> const solar_system_;
+  not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
+  not_null<RotatingBody<ICRS> const*> const earth_;
+  ContinuousTrajectory<ICRS> const& earth_trajectory_;
+  BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
+};
+
+INSTANTIATE_TEST_CASE_P(
+    AllVersionsAndDialects,
+    StandardProduct3DynamicsTest,
+    ValuesIn(std::vector<StandardProduct3Args>{
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" / "esa11802.eph",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::A,
+         /*file_has_velocities=*/false},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" / "mcc14000.sp3",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::B,
+         /*file_has_velocities=*/false},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "COD0MGXFIN_20181260000_01D_05M_ORB.SP3",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/false},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "COD0MGXFIN_20183640000_01D_05M_ORB.SP3",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::D,
+         /*file_has_velocities=*/false},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "WUM0MGXFIN_20190270000_01D_15M_ORB.SP3",
+         StandardProduct3::Dialect::ChineseMGEX,
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/false},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" / "nga20342.eph",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::A,
+         /*file_has_velocities=*/true},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "ilrsa.orb.lageos2.160319.v35.sp3",
+         StandardProduct3::Dialect::ILRSA,
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/true},
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "ilrsb.orb.lageos2.160319.v35.sp3",
+         StandardProduct3::Dialect::ILRSB,
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/true},
+        // Orbit for TOPEX/Poséidon, by the Groupe de Recherche de Géodesie
+        // Spatiale (GRGS).
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "grgtop03.b97344.e97348.D_S.sp3",
+         StandardProduct3::Dialect::GRGS,
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/true},
+        // Orbit for Jason-2, by the GRGS.
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "grgja203.b08243.e08247.D_S.sp3",
+         StandardProduct3::Dialect::GRGS,
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/true},
+        // Orbit for Jason-2, by the Segment-Sol multi-missions d’ALTimétrie,
+        // Orbitographie et localisation précise (SSALTO).
+        {SOLUTION_DIR / "astronomy" / "standard_product_3" /
+             "ssaja102.b03007.e03017.DGS.sp3",
+         StandardProduct3::Dialect::Standard,
+         StandardProduct3::Version::C,
+         /*file_has_velocities=*/true},
+    }));
+
+// This test checks that, for each point of the orbit, its evolution taking into
+// account only a simple oblate Earth is close enough to the next point.
+TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
+  StandardProduct3 sp3(GetParam().filename, GetParam().dialect);
+  EXPECT_THAT(sp3.version(), Eq(GetParam().version));
+  EXPECT_THAT(sp3.file_has_velocities(), Eq(GetParam().file_has_velocities));
+  for (auto const& satellite : sp3.satellites()) {
+    for (not_null<DiscreteTrajectory<ITRS> const*> const arc :
+         sp3.orbit(satellite)) {
+      auto it = arc->Begin();
+      for (int i = 0;; ++i) {
+        DiscreteTrajectory<ICRS> integrated_arc;
+        ephemeris_->Prolong(it.time());
+        integrated_arc.Append(
+            it.time(),
+            itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+        if (++it == arc->End()) {
+          break;
+        }
+      ephemeris_->FlowWithAdaptiveStep(
+            &integrated_arc,
+            Ephemeris<ICRS>::NoIntrinsicAcceleration,
+            it.time(),
+            Ephemeris<ICRS>::AdaptiveStepParameters(
+                EmbeddedExplicitRungeKuttaNyströmIntegrator<
+                    DormandالمكاوىPrince1986RKN434FM,
+                    Position<ICRS>>(),
+                std::numeric_limits<std::int64_t>::max(),
+                /*length_integration_tolerance=*/1 * Milli(Metre),
+                /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
+            /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
+            /*last_point_only=*/true);
+      DegreesOfFreedom<ICRS> actual =
+          integrated_arc.last().degrees_of_freedom();
+      DegreesOfFreedom<ICRS> expected =
+          itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom());
+      EXPECT_THAT(AbsoluteError(expected.position(), actual.position()),
+                  Lt(25 * Metre))
+          << "orbit of satellite " << satellite << " flowing from point " << i;
+      EXPECT_THAT(AbsoluteError(expected.velocity(), actual.velocity()),
+                  Lt(1 * Deci(Metre) / Second))
+          << "orbit of satellite " << satellite << " flowing from point " << i;
+      }
+    }
+  }
+}
+
+#endif
 
 }  // namespace astronomy
 }  // namespace principia

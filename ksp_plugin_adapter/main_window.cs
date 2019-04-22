@@ -8,26 +8,23 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : SupervisedWindowRenderer {
   // Update this section before each release.
-  private const String next_release_name_ = "Fano";
-  private const int next_release_lunation_number_ = 238;
+  private const String next_release_name_ = "Fáry";
+  private const int next_release_lunation_number_ = 239;
   private DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2019, 04, 05, 08, 51, 00, TimeSpan.Zero);
+      new DateTimeOffset(2019, 05, 04, 22, 46, 00, TimeSpan.Zero);
 
   public delegate Vessel PredictedVessel();
 
-  public MainWindow(SupervisedWindowRenderer.ISupervisor supervisor,
+  public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
                     ReferenceFrameSelector plotting_frame_selector,
                     PredictedVessel predicted_vessel)
-      : base(supervisor) {
+      : base(adapter) {
+    adapter_ = adapter;
     flight_planner_ = flight_planner;
     plotting_frame_selector_ = plotting_frame_selector;
     predicted_vessel_ = predicted_vessel;
     Show();
-  }
-
-  public void Initialize(IntPtr plugin) {
-    plugin_ = plugin;
   }
 
   public void SelectTargetCelestial(MapObject map_object) {
@@ -167,8 +164,10 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      if (plugin_ == IntPtr.Zero) {
-        UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
+      if (plugin == IntPtr.Zero) {
+        UnityEngine.GUILayout.Label(
+            text : "Plugin is not started",
+            style : Style.Warning(UnityEngine.GUI.skin.label));
       }
       if (DateTimeOffset.Now > next_release_date_) {
         UnityEngine.GUILayout.TextArea(
@@ -179,7 +178,9 @@ internal class MainWindow : SupervisedWindowRenderer {
       }
       Interface.GetVersion(build_date : out string unused_build_date,
                            version    : out string version);
-      UnityEngine.GUILayout.TextArea(version);
+      UnityEngine.GUILayout.Label(
+          version,
+          style : Style.Info(UnityEngine.GUI.skin.label));
       bool changed_history_length = false;
       RenderSelector(history_lengths_,
                      ref history_length_index_,
@@ -199,8 +200,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                 "Target: " +
                     FlightGlobals.fetch.VesselTarget.GetVessel().vesselName,
                 UnityEngine.GUILayout.ExpandWidth(true));
-            if (UnityEngine.GUILayout.Button(
-                    "Clear", UnityEngine.GUILayout.Width(50))) {
+            if (UnityEngine.GUILayout.Button("Clear", GUILayoutWidth(2))) {
               selecting_active_vessel_target = false;
               FlightGlobals.fetch.SetVesselTarget(null);
             }
@@ -215,7 +215,7 @@ internal class MainWindow : SupervisedWindowRenderer {
       } else {
         selecting_active_vessel_target = false;
       }
-      if (plugin_ != IntPtr.Zero) {
+      if (plugin != IntPtr.Zero) {
         plotting_frame_selector_.RenderButton();
         flight_planner_.RenderButton();
       }
@@ -229,6 +229,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                               show   : ref show_logging_settings_,
                               render : RenderLoggingSettings);
     }
+    Shrink();
     UnityEngine.GUI.DragWindow();
   }
 
@@ -252,8 +253,7 @@ internal class MainWindow : SupervisedWindowRenderer {
         if (target_celestial) {
           UnityEngine.GUILayout.Label("Target: " + target_celestial.name,
                                       UnityEngine.GUILayout.ExpandWidth(true));
-          if (UnityEngine.GUILayout.Button("Clear",
-                                           UnityEngine.GUILayout.Width(50))) {
+          if (UnityEngine.GUILayout.Button("Clear", GUILayoutWidth(2))) {
             selecting_target_celestial_ = false;
             FlightGlobals.fetch.SetVesselTarget(null);
           }
@@ -267,52 +267,45 @@ internal class MainWindow : SupervisedWindowRenderer {
   private void RenderLoggingSettings() {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
-      if (UnityEngine.GUILayout.Button(
-              text    : "←",
-              options : UnityEngine.GUILayout.Width(50))) {
+      if (UnityEngine.GUILayout.Button(text    : "←",
+                                       options : GUILayoutWidth(2))) {
         Log.SetVerboseLogging(Math.Max(verbose_logging_ - 1, 0));
         verbose_logging_ = Log.GetVerboseLogging();
       }
       UnityEngine.GUILayout.TextArea(
           text    : Log.GetVerboseLogging().ToString(),
-          options : UnityEngine.GUILayout.Width(50));
-      if (UnityEngine.GUILayout.Button(
-              text    : "→",
-              options : UnityEngine.GUILayout.Width(50))) {
+          options : GUILayoutWidth(2));
+      if (UnityEngine.GUILayout.Button(text    : "→",
+                                       options : GUILayoutWidth(2))) {
         Log.SetVerboseLogging(Math.Min(verbose_logging_ + 1, 4));
         verbose_logging_ = Log.GetVerboseLogging();
       }
     }
-    int column_width = 75;
+    float column_width = Width(3);
+    var gui_layout_column_width = GUILayoutWidth(3);
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
-      UnityEngine.GUILayout.Label(
-          text    : "Log",
-          options : UnityEngine.GUILayout.Width(column_width));
-      UnityEngine.GUILayout.Label(
-          text    : "stderr",
-          options : UnityEngine.GUILayout.Width(column_width));
-      UnityEngine.GUILayout.Label(
-          text    : "Flush",
-          options : UnityEngine.GUILayout.Width(column_width));
+      UnityEngine.GUILayout.Label(text    : "Log",
+                                  options : gui_layout_column_width);
+      UnityEngine.GUILayout.Label(text    : "stderr",
+                                  options : gui_layout_column_width);
+      UnityEngine.GUILayout.Label(text    : "Flush",
+                                  options : gui_layout_column_width);
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
-      if (UnityEngine.GUILayout.Button(
-              text    : "↑",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↑",
+                                       options : gui_layout_column_width)) {
         Log.SetSuppressedLogging(Math.Max(suppressed_logging_ - 1, 0));
         suppressed_logging_ = Log.GetSuppressedLogging();
       }
-      if (UnityEngine.GUILayout.Button(
-              text    : "↑",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↑",
+                                       options : gui_layout_column_width)) {
         Log.SetStderrLogging(Math.Max(stderr_logging_ - 1, 0));
         stderr_logging_ = Log.GetStderrLogging();
       }
-      if (UnityEngine.GUILayout.Button(
-              text    : "↑",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↑",
+                                       options : gui_layout_column_width)) {
         Log.SetBufferedLogging(Math.Max(buffered_logging_ - 1, -1));
         buffered_logging_ = Log.GetBufferedLogging();
       }
@@ -321,47 +314,47 @@ internal class MainWindow : SupervisedWindowRenderer {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             text    : Log.severity_names[severity],
-            options : UnityEngine.GUILayout.Width(column_width));
+            options : gui_layout_column_width);
         UnityEngine.GUILayout.Toggle(
             value   : severity >= Log.GetSuppressedLogging(),
             text    : "",
-            options : UnityEngine.GUILayout.Width(column_width));
+            options : gui_layout_column_width);
         UnityEngine.GUILayout.Toggle(
             value   : severity >= Log.GetStderrLogging(),
             text    : "",
-            options : UnityEngine.GUILayout.Width(column_width));
+            options : gui_layout_column_width);
         UnityEngine.GUILayout.Toggle(
             value   : severity > Log.GetBufferedLogging(),
             text    : "",
-            options : UnityEngine.GUILayout.Width(column_width));
+            options : gui_layout_column_width);
       }
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
-      if (UnityEngine.GUILayout.Button(
-              text    : "↓",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↓",
+                                       options : gui_layout_column_width)) {
         Log.SetSuppressedLogging(Math.Min(suppressed_logging_ + 1, 3));
         suppressed_logging_ = Log.GetSuppressedLogging();
       }
-      if (UnityEngine.GUILayout.Button(
-              text    : "↓",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↓",
+                                       options : gui_layout_column_width)) {
         Log.SetStderrLogging(Math.Min(stderr_logging_ + 1, 3));
         stderr_logging_ = Log.GetStderrLogging();
       }
-      if (UnityEngine.GUILayout.Button(
-              text    : "↓",
-              options : UnityEngine.GUILayout.Width(column_width))) {
+      if (UnityEngine.GUILayout.Button(text    : "↓",
+                                       options : gui_layout_column_width)) {
         Log.SetBufferedLogging(Math.Min(buffered_logging_ + 1, 3));
         buffered_logging_ = Log.GetBufferedLogging();
       }
     }
-    UnityEngine.GUILayout.TextArea("Journalling is " +
-                                   (journaling_ ? "ON" : "OFF"));
-    must_record_journal_ = UnityEngine.GUILayout.Toggle(
-        value   : must_record_journal_,
-        text    : "Record journal (starts on load)");
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      must_record_journal_ = UnityEngine.GUILayout.Toggle(
+          value   : must_record_journal_,
+          text    : "Record journal (starts on load)");
+      UnityEngine.GUILayout.Label(
+          "Journalling is " + (journaling_ ? "ON" : "OFF"),
+          style : Style.Info(Style.RightAligned(UnityEngine.GUI.skin.label)));
+    }
     if (journaling_ && !must_record_journal_) {
       // We can deactivate a recorder at any time, but in order for replaying to
       // work, we should only activate one before creating a plugin.
@@ -374,9 +367,9 @@ internal class MainWindow : SupervisedWindowRenderer {
     if (vessel_ != predicted_vessel_()) {
       vessel_ = predicted_vessel_();
       string vessel_guid = vessel_?.id.ToString();
-      if (vessel_guid != null && plugin_.HasVessel(vessel_guid)) {
+      if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
         AdaptiveStepParameters adaptive_step_parameters =
-            plugin_.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
+            plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
         prediction_length_tolerance_index_ = Array.FindIndex(
             prediction_length_tolerances_,
             (double tolerance) =>
@@ -408,32 +401,27 @@ internal class MainWindow : SupervisedWindowRenderer {
                    "{0:0.00e0}");
   }
 
-  private static void RenderSelector<T>(T[] array,
-                                        ref int index,
-                                        String label,
-                                        ref bool changed,
-                                        String format) {
+  private void RenderSelector<T>(T[] array,
+                                 ref int index,
+                                 String label,
+                                 ref bool changed,
+                                 String format) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text    : label + ":",
-                                  options : UnityEngine.GUILayout.Width(150));
-      if (UnityEngine.GUILayout.Button(
-              text    : index == 0 ? "min" : "-",
-              options : UnityEngine.GUILayout.Width(50)) &&
+                                  options : GUILayoutWidth(6));
+      if (UnityEngine.GUILayout.Button(text    : index == 0 ? "min" : "-",
+                                       options : GUILayoutWidth(2)) &&
           index != 0) {
         --index;
         changed = true;
       }
-      UnityEngine.TextAnchor old_alignment =
-          UnityEngine.GUI.skin.textArea.alignment;
-      UnityEngine.GUI.skin.textArea.alignment =
-          UnityEngine.TextAnchor.MiddleRight;
       UnityEngine.GUILayout.TextArea(
           text    : String.Format(Culture.culture, format, array[index]),
-          options : UnityEngine.GUILayout.Width(75));
-      UnityEngine.GUI.skin.textArea.alignment = old_alignment;
+          style   : Style.RightAligned(UnityEngine.GUI.skin.textArea),
+          options : GUILayoutWidth(3));
       if (UnityEngine.GUILayout.Button(
               text    : index == array.Length - 1 ? "max" : "+",
-              options : UnityEngine.GUILayout.Width(50)) &&
+              options : GUILayoutWidth(2)) &&
           index != array.Length - 1) {
         ++index;
         changed = true;
@@ -457,6 +445,8 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
+  private IntPtr plugin => adapter_.Plugin();
+
   private static readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
@@ -470,6 +460,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   private const int default_prediction_length_tolerance_index_ = 1;
   private const int default_prediction_steps_index_ = 4;
 
+  private readonly PrincipiaPluginAdapter adapter_;
   private readonly FlightPlanner flight_planner_;
   private readonly ReferenceFrameSelector plotting_frame_selector_;
   private readonly PredictedVessel predicted_vessel_;
@@ -496,7 +487,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   // Whether a journal is currently being recorded.
   private static bool journaling_ = false;
 
-  private IntPtr plugin_ = IntPtr.Zero;
   private Vessel vessel_;
 }
 

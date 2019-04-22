@@ -6,50 +6,51 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-class BurnEditor {
+class BurnEditor : ScalingRenderer {
   public BurnEditor(PrincipiaPluginAdapter adapter,
-                    IntPtr plugin,
                     Vessel vessel,
-                    double initial_time) {
+                    double initial_time,
+                    int index,
+                    BurnEditor previous_burn) {
     adapter_ = adapter;
-    plugin_ = plugin;
     vessel_ = vessel;
+    index_ = index;
+    previous_burn_ = previous_burn;
     Δv_tangent_ =
         new DifferentialSlider(label            : "Δv tangent",
                                unit             : "m / s",
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : XKCDColors.NeonYellow);
+                               text_colour      : Style.Tangent);
     Δv_normal_ =
         new DifferentialSlider(label            : "Δv normal",
                                unit             : "m / s",
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : XKCDColors.AquaBlue);
+                               text_colour      : Style.Normal);
     Δv_binormal_ =
         new DifferentialSlider(label            : "Δv binormal",
                                unit             : "m / s",
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : XKCDColors.PurplePink);
-    initial_time_ =
+                               text_colour      : Style.Binormal);
+    previous_coast_duration_ =
         new DifferentialSlider(
                 label            : "t initial",
                 unit             : null,
                 log10_lower_rate : Log10TimeLowerRate,
                 log10_upper_rate : Log10TimeUpperRate,
+                // We cannot have a coast of length 0, so let's make it very
+                // short: that will be indistinguishable.
+                zero_value       : 0.001,
                 min_value        : 0,
-                max_value        : double.PositiveInfinity,
-                formatter        : value =>
-                    FlightPlanner.FormatTimeSpan(
-                        TimeSpan.FromSeconds(
-                            Planetarium.GetUniversalTime() - value)));
-    initial_time_.value = initial_time;
+                formatter        : FormatPreviousCoastDuration,
+                parser           : TryParsePreviousCoastDuration);
+    previous_coast_duration_.value = initial_time - time_base;
     reference_frame_selector_ = new ReferenceFrameSelector(
                                     adapter_,
                                     ReferenceFrameChanged,
                                     "Manœuvring frame");
-    reference_frame_selector_.Initialize(plugin_);
     reference_frame_selector_.SetFrameParameters(
         adapter_.plotting_frame_selector_.FrameParameters());
     ComputeEngineCharacteristics();
@@ -57,13 +58,24 @@ class BurnEditor {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(bool enabled) {
-    var old_skin = UnityEngine.GUI.skin;
-    UnityEngine.GUI.skin = null;
+  public bool Render(string header,
+                     bool enabled,
+                     double? actual_final_time = null) {
     bool changed = false;
+    previous_coast_duration_.max_value =
+        (actual_final_time ?? double.PositiveInfinity) - time_base;
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      UnityEngine.GUILayout.Label(header);
+      string frame_info = "";
+      if (!reference_frame_selector_.FrameParameters().Equals(
+              adapter_.plotting_frame_selector_.FrameParameters())) {
+        frame_info = "Manœuvre frame differs from plotting frame";
+      }
+      UnityEngine.GUILayout.Label(
+          frame_info,
+          Style.RightAligned(Style.Info(UnityEngine.GUI.skin.label)));
+    }
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      var warning_style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
-      warning_style.normal.textColor = XKCDColors.Orange;
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
       // been set.  If we have fallen back to instant impulse, we should use this
       // mass to set the thrust.
@@ -89,17 +101,10 @@ class BurnEditor {
             changed = true;
           }
         }
-        UnityEngine.GUILayout.TextArea(engine_warning_, warning_style);
         reference_frame_selector_.RenderButton();
       } else {
         reference_frame_selector_.Hide();
       }
-      string frame_warning = "";
-      if (!reference_frame_selector_.FrameParameters().Equals(
-              adapter_.plotting_frame_selector_.FrameParameters())) {
-        frame_warning = "Manœuvre frame differs from plotting frame";
-      }
-      UnityEngine.GUILayout.TextArea(frame_warning, warning_style);
       if (is_inertially_fixed_ !=
           UnityEngine.GUILayout.Toggle(is_inertially_fixed_,
                                        "Inertially fixed")) {
@@ -109,18 +114,24 @@ class BurnEditor {
       changed |= Δv_tangent_.Render(enabled);
       changed |= Δv_normal_.Render(enabled);
       changed |= Δv_binormal_.Render(enabled);
-      changed |= initial_time_.Render(enabled);
+      changed |= previous_coast_duration_.Render(enabled);
+      UnityEngine.GUILayout.Label(
+          index_ == 0 ? "Time base: start of flight plan"
+                      : $"Time base: end of manœuvre #{index_}",
+          style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
+              alignment = UnityEngine.TextAnchor.UpperLeft});
       changed |= changed_reference_frame_;
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
-            UnityEngine.GUILayout.Width(200));
+            GUILayoutWidth(8));
         UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
                                     " s");
       }
+      UnityEngine.GUILayout.Label(engine_warning_,
+                                  Style.Warning(UnityEngine.GUI.skin.label));
       changed_reference_frame_ = false;
     }
-    UnityEngine.GUI.skin = old_skin;
     return changed && enabled;
   }
 
@@ -135,7 +146,8 @@ class BurnEditor {
     Δv_tangent_.value = burn.delta_v.x;
     Δv_normal_.value = burn.delta_v.y;
     Δv_binormal_.value = burn.delta_v.z;
-    initial_time_.value = burn.initial_time;
+    previous_coast_duration_.value =
+        burn.initial_time - time_base;
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manoeuvre.duration;
@@ -147,7 +159,7 @@ class BurnEditor {
         thrust_in_kilonewtons = thrust_in_kilonewtons_,
         specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
         frame = reference_frame_selector_.FrameParameters(),
-        initial_time = initial_time_.value,
+        initial_time = previous_coast_duration_.value + time_base,
         delta_v = new XYZ{x = Δv_tangent_.value,
                           y = Δv_normal_.value,
                           z = Δv_binormal_.value},
@@ -247,11 +259,34 @@ class BurnEditor {
     specific_impulse_in_seconds_g0_ = range;
   }
 
+  internal string FormatPreviousCoastDuration(double value) {
+    return FlightPlanner.FormatPositiveTimeSpan(TimeSpan.FromSeconds(value));
+  }
+
+  internal bool TryParsePreviousCoastDuration(string str, out double value) {
+    value = 0;
+    TimeSpan ts;
+    if (!FlightPlanner.TryParseTimeSpan(str, out ts)) {
+      return false;
+    }
+    value = ts.TotalSeconds;
+    return true;
+  }
+
+  private double time_base => previous_burn_?.final_time ??
+                              plugin.FlightPlanGetInitialTime(
+                                  vessel_.id.ToString());
+
+  private double final_time =>
+      time_base + previous_coast_duration_.value + duration_;
+
+  private IntPtr plugin => adapter_.Plugin();
+
   private bool is_inertially_fixed_;
   private DifferentialSlider Δv_tangent_;
   private DifferentialSlider Δv_normal_;
   private DifferentialSlider Δv_binormal_;
-  private DifferentialSlider initial_time_;
+  private DifferentialSlider previous_coast_duration_;
   private ReferenceFrameSelector reference_frame_selector_;
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
@@ -266,8 +301,9 @@ class BurnEditor {
   private const double Log10TimeUpperRate = 7.0;
 
   // Not owned.
-  private readonly IntPtr plugin_;
   private readonly Vessel vessel_;
+  private readonly int index_;
+  private readonly BurnEditor previous_burn_;
   private readonly PrincipiaPluginAdapter adapter_;
 
   private bool changed_reference_frame_ = false;

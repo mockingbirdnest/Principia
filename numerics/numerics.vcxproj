@@ -11,6 +11,9 @@
     <ClInclude Include="combinatorics_body.hpp" />
     <ClInclude Include="cbrt.hpp" />
     <ClInclude Include="fast_sin_cos_2π.hpp" />
+    <ClInclude Include="finite_difference.hpp" />
+    <ClInclude Include="finite_difference.mathematica.h" />
+    <ClInclude Include="finite_difference_body.hpp" />
     <ClInclude Include="fit_hermite_spline.hpp" />
     <ClInclude Include="fit_hermite_spline_body.hpp" />
     <ClInclude Include="fixed_arrays.hpp" />
@@ -44,6 +47,7 @@
     <ClCompile Include="double_precision_test.cpp" />
     <ClCompile Include="fast_sin_cos_2π.cpp" />
     <ClCompile Include="fast_sin_cos_2π_test.cpp" />
+    <ClCompile Include="finite_difference_test.cpp" />
     <ClCompile Include="fit_hermite_spline_test.cpp" />
     <ClCompile Include="fixed_arrays_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />
