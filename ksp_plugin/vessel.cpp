@@ -292,7 +292,10 @@ void Vessel::RefreshPrediction() {
                                prediction_adaptive_step_parameters_,
                                /*shutdown=*/false};
   if (synchronous_) {
-    FlowPrognostication(*prognosticator_parameters_);
+    std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
+    Status const status = FlowPrognostication(*prognosticator_parameters_,
+                                              prognostication);
+    SwapPrognostication(prognostication, status);
   } else {
     StartPrognosticatorIfNeeded();
   }
@@ -470,7 +473,13 @@ void Vessel::RepeatedlyFlowPrognostication() {
     // produce the same effects.
     if (!previous_prognosticator_parameters ||
         *previous_prognosticator_parameters != prognosticator_parameters) {
-      FlowPrognostication(*prognosticator_parameters);
+      std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
+      Status const status = FlowPrognostication(*prognosticator_parameters,
+                                                prognostication);
+      {
+        absl::MutexLock l(&prognosticator_lock_);
+        SwapPrognostication(prognostication, status);
+      }
       previous_prognosticator_parameters = prognosticator_parameters;
     }
 
@@ -478,10 +487,10 @@ void Vessel::RepeatedlyFlowPrognostication() {
   }
 }
 
-void Vessel::FlowPrognostication(
-    PrognosticatorParameters const& prognosticator_parameters) {
-  auto prognostication =
-      std::make_unique<DiscreteTrajectory<Barycentric>>();
+Status Vessel::FlowPrognostication(
+    PrognosticatorParameters const& prognosticator_parameters,
+    std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication) {
+  prognostication = std::make_unique<DiscreteTrajectory<Barycentric>>();
   prognostication->Append(
       prognosticator_parameters.first_time,
       prognosticator_parameters.first_degrees_of_freedom);
@@ -508,10 +517,14 @@ void Vessel::FlowPrognostication(
       << "Prognostication from " << prognosticator_parameters.first_time
       << " finished at " << prognostication->last().time() << " with "
       << status.ToString() << " for " << ShortDebugString();
+  return status;
+}
 
-  // Publish the prognostication if the computation was not cancelled.
+void Vessel::SwapPrognostication(
+    std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
+    Status const& status) {
+  prognosticator_lock_.AssertHeld();
   if (status.error() != Error::CANCELLED) {
-    absl::MutexLock l(&prognosticator_lock_);
     prognostication_.swap(prognostication);
     prognosticator_status_ = status;
   }
@@ -576,7 +589,13 @@ void Vessel::AttachPrediction(
   }
 }
 
-bool Vessel::synchronous_ = false;
+// Run the prognostication in both synchronous and asynchronous mode in tests to
+// avoid code rot.
+#if defined(_DEBUG)
+std::atomic_bool Vessel::synchronous_(true);
+#else
+std::atomic_bool Vessel::synchronous_(false);
+#endif
 
 }  // namespace internal_vessel
 }  // namespace ksp_plugin

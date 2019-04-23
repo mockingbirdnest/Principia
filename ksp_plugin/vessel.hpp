@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/synchronization/mutex.h"
 #include "base/status.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
@@ -202,8 +203,14 @@ class Vessel {
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
-  void FlowPrognostication(
-      PrognosticatorParameters const& prognosticator_parameters);
+  Status FlowPrognostication(
+      PrognosticatorParameters const& prognosticator_parameters,
+      std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication);
+
+  // Publishes the prognostication if the computation was not cancelled.
+  void SwapPrognostication(
+      std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
+      Status const& status);
 
   // Appends to |trajectory| the centre of mass of the trajectories of the parts
   // denoted by |part_trajectory_begin| and |part_trajectory_end|.
@@ -249,7 +256,7 @@ class Vessel {
 
   std::unique_ptr<FlightPlan> flight_plan_;
 
-  static bool synchronous_;
+  static std::atomic_bool synchronous_;
 };
 
 }  // namespace internal_vessel
