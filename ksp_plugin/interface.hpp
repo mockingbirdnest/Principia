@@ -73,7 +73,7 @@ extern "C" PRINCIPIA_DLL
 void CDECL principia__InitGoogleLogging();
 
 extern "C" PRINCIPIA_DLL
-void CDECL principia_MakeVesselSynchronous();
+void CDECL principia_VesselMakeSynchronous();
 
 bool operator==(AdaptiveStepParameters const& left,
                 AdaptiveStepParameters const& right);

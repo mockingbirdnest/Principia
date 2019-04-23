@@ -641,7 +641,7 @@ void principia__InitGoogleLogging() {
   }
 }
 
-void principia_MakeVesselSynchronous() {
+void principia_VesselMakeSynchronous() {
   Vessel::MakeSynchronous();
 }
 
