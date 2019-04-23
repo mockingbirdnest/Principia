@@ -72,6 +72,9 @@ void CDECL principia__ActivateRecorder(bool activate);
 extern "C" PRINCIPIA_DLL
 void CDECL principia__InitGoogleLogging();
 
+extern "C" PRINCIPIA_DLL
+void CDECL principia_MakeVesselSynchronous();
+
 bool operator==(AdaptiveStepParameters const& left,
                 AdaptiveStepParameters const& right);
 bool operator==(Burn const& left, Burn const& right);

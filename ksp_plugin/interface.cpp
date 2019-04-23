@@ -641,6 +641,10 @@ void principia__InitGoogleLogging() {
   }
 }
 
+void principia_MakeVesselSynchronous() {
+  Vessel::MakeSynchronous();
+}
+
 void principia__InitializeEphemerisParameters(
     Plugin* const plugin,
     ConfigurationAccuracyParameters const accuracy_parameters,

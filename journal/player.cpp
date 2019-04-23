@@ -16,12 +16,13 @@ namespace principia {
 using base::GetLine;
 using base::HexadecimalEncoder;
 using base::UniqueArray;
+using interface::principia_MakeVesselSynchronous;
 
 namespace journal {
 
 Player::Player(std::filesystem::path const& path)
     : stream_(path, std::ios::in) {
-  Vessel::MakeSynchronous();
+  principia_MakeVesselSynchronous();
   CHECK(!stream_.fail());
 }
 
