@@ -54,8 +54,6 @@ class PlayerTest : public ::testing::Test {
 };
 
 TEST_F(PlayerTest, PlayTiny) {
-  // Do the recording in a separate thread to make sure that it activates using
-  // a different static variable than the one in the plugin dynamic library.
   {
     Recorder* const r(new Recorder(test_name_ + ".journal.hex"));
     Recorder::Activate(r);

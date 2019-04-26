@@ -268,6 +268,10 @@ NewEncoder(std::string_view const encoder) {
 
 }  // namespace
 
+void principia__ActivatePlayer() {
+  Vessel::MakeSynchronous();
+}
+
 // If |activate| is true and there is no active journal, create one and
 // activate it.  If |activate| is false and there is an active journal,
 // deactivate it.  Does nothing if there is already a journal in the desired
@@ -639,10 +643,6 @@ void principia__InitGoogleLogging() {
   principia::physics::LogPhysicsDLLBaseAddress();
 #endif
   }
-}
-
-void principia_VesselMakeSynchronous() {
-  Vessel::MakeSynchronous();
 }
 
 void principia__InitializeEphemerisParameters(
