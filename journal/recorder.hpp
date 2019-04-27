@@ -31,7 +31,7 @@ class Recorder final {
   absl::Mutex lock_;
   std::ofstream stream_;
 
-  static thread_local Recorder* active_recorder_;
+  static Recorder* active_recorder_;
 
   template<typename>
   friend class Method;

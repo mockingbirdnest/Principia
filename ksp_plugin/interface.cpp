@@ -268,6 +268,10 @@ NewEncoder(std::string_view const encoder) {
 
 }  // namespace
 
+void principia__ActivatePlayer() {
+  Vessel::MakeSynchronous();
+}
+
 // If |activate| is true and there is no active journal, create one and
 // activate it.  If |activate| is false and there is an active journal,
 // deactivate it.  Does nothing if there is already a journal in the desired
@@ -285,9 +289,11 @@ void principia__ActivateRecorder(bool const activate) {
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
     journal::Recorder* const recorder = new journal::Recorder(
         std::filesystem::path("glog") / "Principia" / name.str());
+    Vessel::MakeSynchronous();
     journal::Recorder::Activate(recorder);
   } else if (!activate && journal::Recorder::IsActivated()) {
     journal::Recorder::Deactivate();
+    Vessel::MakeAsynchronous();
   }
 }
 

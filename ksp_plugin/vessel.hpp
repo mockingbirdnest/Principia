@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/synchronization/mutex.h"
 #include "base/status.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
@@ -155,6 +156,9 @@ class Vessel {
   // have a last time at or before |time|.
   virtual void RefreshPrediction(Instant const& time);
 
+  // Returns "vessel_name (GUID)".
+  std::string ShortDebugString() const;
+
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message,
                               PileUp::SerializationIndexForPileUp const&
@@ -169,8 +173,8 @@ class Vessel {
       PileUp::PileUpForSerializationIndex const&
           pile_up_for_serialization_index);
 
-  // Returns "vessel_name (GUID)".
-  std::string ShortDebugString() const;
+  static void MakeAsynchronous();
+  static void MakeSynchronous();
 
  protected:
   // For mocking.
@@ -196,6 +200,17 @@ class Vessel {
   // Run by the |prognosticator_| thread to periodically recompute the
   // prognostication.
   void RepeatedlyFlowPrognostication();
+
+  // Runs the integrator to compute the |prognostication_| based on the given
+  // parameters.
+  Status FlowPrognostication(
+      PrognosticatorParameters const& prognosticator_parameters,
+      std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication);
+
+  // Publishes the prognostication if the computation was not cancelled.
+  void SwapPrognostication(
+      std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
+      Status const& status);
 
   // Appends to |trajectory| the centre of mass of the trajectories of the parts
   // denoted by |part_trajectory_begin| and |part_trajectory_end|.
@@ -240,6 +255,8 @@ class Vessel {
       GUARDED_BY(prognosticator_lock_);
 
   std::unique_ptr<FlightPlan> flight_plan_;
+
+  static std::atomic_bool synchronous_;
 };
 
 }  // namespace internal_vessel

@@ -3,7 +3,6 @@
 
 #include <list>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "benchmark/benchmark.h"
@@ -55,9 +54,7 @@ class PlayerTest : public ::testing::Test {
 };
 
 TEST_F(PlayerTest, PlayTiny) {
-  // Do the recording in a separate thread to make sure that it activates using
-  // a different static variable than the one in the plugin dynamic library.
-  std::thread recorder([this]() {
+  {
     Recorder* const r(new Recorder(test_name_ + ".journal.hex"));
     Recorder::Activate(r);
 
@@ -71,8 +68,7 @@ TEST_F(PlayerTest, PlayTiny) {
       m.Return();
     }
     Recorder::Deactivate();
-  });
-  recorder.join();
+  }
 
   Player player(test_name_ + ".journal.hex");
 
@@ -92,7 +88,7 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(\\venezia.mockingbirdnest.com\Namespaces\Public\Public Mockingbird\Principia\Crashes\1703\JOURNAL.20180130-000310)";  // NOLINT
+      R"(C:\Program Files\Kerbal Space Program\1.6.1\glog\Principia\JOURNAL.20190425-223810)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play()) {
