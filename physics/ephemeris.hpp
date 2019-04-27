@@ -38,8 +38,8 @@ using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using integrators::FixedStepSizeIntegrator;
-using integrators::Integrator;
 using integrators::IntegrationProblem;
+using integrators::Integrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Acceleration;
 using quantities::Length;
@@ -60,11 +60,10 @@ class Ephemeris {
     // The |length_| and |speed_integration_tolerance|s are used to compute the
     // |tolerance_to_error_ratio| for step size control.  The number of steps is
     // limited to |max_steps|.
-    ODEAdaptiveStepParameters(
-        AdaptiveStepSizeIntegrator<ODE> const& integrator,
-        std::int64_t max_steps,
-        Length const& length_integration_tolerance,
-        Speed const& speed_integration_tolerance);
+    ODEAdaptiveStepParameters(AdaptiveStepSizeIntegrator<ODE> const& integrator,
+                              std::int64_t max_steps,
+                              Length const& length_integration_tolerance,
+                              Speed const& speed_integration_tolerance);
 
     AdaptiveStepSizeIntegrator<ODE> const& integrator() const;
     std::int64_t max_steps() const;
@@ -122,8 +121,8 @@ class Ephemeris {
                        double geopotential_tolerance);
 
     void WriteToMessage(
-        not_null<serialization::Ephemeris::AccuracyParameters*> const
-            message) const;
+        not_null<serialization::Ephemeris::AccuracyParameters*> const message)
+        const;
     static AccuracyParameters ReadFromMessage(
         serialization::Ephemeris::AccuracyParameters const& message);
 
@@ -280,14 +279,20 @@ class Ephemeris {
   virtual not_null<MassiveBody const*> body_for_serialization_index(
       int serialization_index) const;
 
-  virtual void WriteToMessage(
-      not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
+  virtual void WriteToMessage(not_null<serialization::Ephemeris*> message) const
+      EXCLUDES(lock_);
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       serialization::Ephemeris const& message) EXCLUDES(lock_);
 
+  class Lock final {
+   public:
+    Lock(not_null<Ephemeris<Frame> const*> ephemeris);
+    ~Lock();
+  };
+
  protected:
-  // For mocking purposes, leaves everything uninitialized and uses the given
-  // |integrator|.
+  // For mocking purposes, leaves everything uninitialized and uses the
+  // given |integrator|.
   explicit Ephemeris(FixedStepSizeIntegrator<typename Ephemeris<
                          Frame>::NewtonianMotionEquation> const& integrator);
 
@@ -405,6 +410,9 @@ class Ephemeris {
   int number_of_spherical_bodies_ = 0;
 
   Status last_severe_integration_status_;
+
+  class LockManager;
+  std::unique_ptr<LockManager> lock_manager_;
 };
 
 }  // namespace internal_ephemeris
