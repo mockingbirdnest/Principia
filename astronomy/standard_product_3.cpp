@@ -102,7 +102,7 @@ StandardProduct3::StandardProduct3(
 
   // The specification uses 1-based column indices, and column ranges with
   // bounds included.
-  auto const column = [&line, &location, line_number](int const index) {
+  auto const column = [&line, &location](int const index) {
     CHECK(line.has_value()) << location;
     CHECK_LT(index - 1, line->size()) << location;
     return (*line)[index - 1];
