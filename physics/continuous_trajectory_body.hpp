@@ -194,52 +194,26 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
-typename ContinuousTrajectory<Frame>::Checkpoint
-ContinuousTrajectory<Frame>::GetCheckpoint() const {
-  absl::ReaderMutexLock l(&lock_);
-  return {t_max_locked(),
-          adjusted_tolerance_,
-          is_unstable_,
-          degree_,
-          degree_age_,
-          last_points_};
-}
-
-template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
-  WriteToMessage(message, GetCheckpoint());
-}
-
-template<typename Frame>
-void ContinuousTrajectory<Frame>::WriteToMessage(
-      not_null<serialization::ContinuousTrajectory*> const message,
-      Checkpoint const& checkpoint) const {
   absl::ReaderMutexLock l(&lock_);
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
-  checkpoint.adjusted_tolerance_.WriteToMessage(
-      message->mutable_adjusted_tolerance());
-  message->set_is_unstable(checkpoint.is_unstable_);
-  message->set_degree(checkpoint.degree_);
-  message->set_degree_age(checkpoint.degree_age_);
+  adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
+  message->set_is_unstable(is_unstable_);
+  message->set_degree(degree_);
+  message->set_degree_age(degree_age_);
   for (auto const& pair : polynomials_) {
     Instant const& t_max = pair.t_max;
     auto const& polynomial = pair.polynomial;
-    if (t_max <= checkpoint.t_max_) {
-      auto* const pair = message->add_instant_polynomial_pair();
-      t_max.WriteToMessage(pair->mutable_t_max());
-      polynomial->WriteToMessage(pair->mutable_polynomial());
-    }
-    if (t_max == checkpoint.t_max_) {
-      break;
-    }
-    CHECK_LT(t_max, checkpoint.t_max_);
+    auto* const pair = message->add_instant_polynomial_pair();
+    t_max.WriteToMessage(pair->mutable_t_max());
+    polynomial->WriteToMessage(pair->mutable_polynomial());
   }
   if (first_time_) {
     first_time_->WriteToMessage(message->mutable_first_time());
   }
-  for (auto const& pair : checkpoint.last_points_) {
+  for (auto const& pair : last_points_) {
     Instant const& instant = pair.first;
     DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
     not_null<
@@ -307,27 +281,6 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
   }
   return continuous_trajectory;
 }
-
-template<typename Frame>
-bool ContinuousTrajectory<Frame>::Checkpoint::IsAfter(
-    Instant const& time) const {
-  return time < t_max_;
-}
-
-template<typename Frame>
-ContinuousTrajectory<Frame>::Checkpoint::Checkpoint(
-    Instant const& t_max,
-    Length const& adjusted_tolerance,
-    bool const is_unstable,
-    int const degree,
-    int const degree_age,
-    std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> const& last_points)
-    : t_max_(t_max),
-      adjusted_tolerance_(adjusted_tolerance),
-      is_unstable_(is_unstable),
-      degree_(degree),
-      degree_age_(degree_age),
-      last_points_(last_points) {}
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory() {}

@@ -67,7 +67,6 @@ using ::std::placeholders::_3;
 
 constexpr Length pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance =
     1 * Milli(Metre);
-constexpr Time max_time_between_checkpoints = 180 * Day;
 // Below this threshold detect a collision to prevent the integrator and the
 // downsampling from going postal.
 constexpr double mean_radius_tolerance = 0.9;
@@ -328,8 +327,6 @@ Instant Ephemeris<Frame>::t_min() const {
     auto const& trajectory = pair.second;
     t_min = std::max(t_min, trajectory->t_min());
   }
-  CHECK(checkpoints_.empty() ||
-        checkpoints_.front().instance->time().value >= t_min);
   return t_min;
 }
 
@@ -340,8 +337,6 @@ Instant Ephemeris<Frame>::t_max() const {
     auto const& trajectory = pair.second;
     t_max = std::min(t_max, trajectory->t_max());
   }
-  // Here we may have a checkpoint after |t_max| if the checkpointed state was
-  // not yet incorporated in a series.
   return t_max;
 }
 
@@ -360,30 +355,10 @@ Status Ephemeris<Frame>::last_severe_integration_status() const {
 template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
   absl::MutexLock l(&lock_);
-  auto it = std::upper_bound(
-                checkpoints_.begin(), checkpoints_.end(), t,
-                [](Instant const& left, Checkpoint const& right) {
-                  // This lambda must implement a < comparison.
-                  for (auto const& checkpoint : right.checkpoints) {
-                    if (!checkpoint.IsAfter(left)) {
-                      // The individual |checkpoint| will become invalid, so
-                      // |right| <= |left|.
-                      return false;
-                    }
-                  }
-                  // All the individual checkpoints will remain valid, so
-                  // |left| < |right|.
-                  return true;
-                });
-  if (it != checkpoints_.end()) {
-    CHECK_LT(t, it->instance->time().value);
-  }
-
   for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = *pair.second;
     trajectory.ForgetBefore(t);
   }
-  checkpoints_.erase(checkpoints_.begin(), it);
 }
 
 template<typename Frame>
@@ -739,23 +714,10 @@ void Ephemeris<Frame>::WriteToMessage(
   }
   // The trajectories are serialized in the order resulting from the separation
   // between oblate and spherical bodies.
-  if (checkpoints_.empty()) {
-    for (auto const& trajectory : trajectories_) {
-      trajectory->WriteToMessage(message->add_trajectory());
-    }
-    instance_->WriteToMessage(message->mutable_instance());
-    message->set_has_checkpoints(false);
-  } else {
-    auto const& checkpoints = checkpoints_.front().checkpoints;
-    CHECK_EQ(trajectories_.size(), checkpoints.size());
-    for (int i = 0; i < trajectories_.size(); ++i) {
-      trajectories_[i]->WriteToMessage(message->add_trajectory(),
-                                       checkpoints[i]);
-    }
-    checkpoints_.front().instance->WriteToMessage(
-        message->mutable_instance());
-    message->set_has_checkpoints(true);
+  for (auto const& trajectory : trajectories_) {
+    trajectory->WriteToMessage(message->add_trajectory());
   }
+  instance_->WriteToMessage(message->mutable_instance());
   fixed_step_parameters_.WriteToMessage(
       message->mutable_fixed_step_parameters());
   accuracy_parameters_.WriteToMessage(
@@ -768,7 +730,6 @@ template<typename Frame>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
-  bool const is_pre_εὔδοξος = message.has_t_max();
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
@@ -829,18 +790,6 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
         body, std::move(deserialized_trajectory));
     ++index;
   }
-  if (is_pre_εὔδοξος) {
-    {
-      absl::ReaderMutexLock l(&ephemeris->lock_);
-      ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
-    }
-    ephemeris->Prolong(Instant::ReadFromMessage(message.t_max()));
-  } else if (message.has_checkpoints()) {
-    absl::ReaderMutexLock l(&ephemeris->lock_);
-    ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
-    // The ephemeris will need to be prolonged as needed when deserializing the
-    // plugin.
-  }
   return ephemeris;
 }
 
@@ -875,16 +824,6 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
 
     ++index;
   }
-
-  // Record an intermediate state if we haven't done so for too long.
-  CHECK(!trajectories_.empty());
-  Instant const t_last_intermediate_state =
-      checkpoints_.empty()
-          ? astronomy::InfinitePast
-          : checkpoints_.back().instance->time().value;
-  if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
-    checkpoints_.push_back(GetCheckpoint());
-  }
 }
 
 template<typename Frame>
@@ -899,16 +838,6 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
                                 state.velocities[index].value));
     ++index;
   }
-}
-
-template<typename Frame>
-typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
-  lock_.AssertReaderHeld();
-  std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
-  for (auto const& trajectory : trajectories_) {
-    checkpoints.push_back(trajectory->GetCheckpoint());
-  }
-  return Checkpoint({instance_->Clone(), checkpoints});
 }
 
 template<typename Frame>

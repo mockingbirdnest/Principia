@@ -292,22 +292,13 @@ class Ephemeris {
                          Frame>::NewtonianMotionEquation> const& integrator);
 
  private:
-  // The state of the integration and of the continuous trajectory at a
-  // particular time that we might want to use for compact serialization.
-  struct Checkpoint final {
-    std::unique_ptr<
-        typename Integrator<NewtonianMotionEquation>::Instance> instance;
-    std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
-  };
-
+  // Callbacks for the integrators.
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state)
       REQUIRES(lock_);
   static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
-
-  Checkpoint GetCheckpoint() REQUIRES_SHARED(lock_);
 
   // Note the return by copy: the returned value is usable even if the
   // |instance_| is being integrated.
@@ -409,10 +400,6 @@ class Ephemeris {
   mutable absl::Mutex lock_;
   std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
       instance_ GUARDED_BY(lock_);
-
-  // These are the states other that the last which we preserve in order to
-  // implement compact serialization.  The vector is time-ordered.
-  std::vector<Checkpoint> checkpoints_ GUARDED_BY(lock_);
 
   int number_of_oblate_bodies_ = 0;
   int number_of_spherical_bodies_ = 0;
