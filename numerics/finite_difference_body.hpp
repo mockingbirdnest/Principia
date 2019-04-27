@@ -20,7 +20,7 @@ Derivative<Value, Argument> FiniteDifference(
     // For the central difference formula, aᵢ = - aₙ₋ᵢ₋₁; in particular, for
     // i = (n - 1) / 2 (the central coefficient), aᵢ = -aᵢ: the central value is
     // unused.
-    // We thus evaluate the sum Σᵢ aᵢ f(xᵢ), with i runnning from 0 to n - 1, as
+    // We thus evaluate the sum Σᵢ aᵢ f(xᵢ), with i running from 0 to n - 1, as
     // Σⱼ aⱼ (f(xⱼ) - f(xₙ₋ⱼ₋₁)), with j running from 0 to (n - 3) / 2.  Which
     // we cannot write naively because n is unsigned.
     for (int j = 0; 2 * j + 3 <= n; ++j) {
