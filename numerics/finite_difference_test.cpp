@@ -41,6 +41,7 @@ TYPED_TEST_CASE(FiniteDifferenceTest, UpTo9);
 
 // Polynomials of degree up to n - 1, differentiated exactly.
 TYPED_TEST(FiniteDifferenceTest, LowDegreePolynomials) {
+  constexpr int n = TestFixture::n;
   std::array<double, n> values;
   constexpr double h = 3;
   static constexpr std::int64_t max_bits =
@@ -63,6 +64,7 @@ TYPED_TEST(FiniteDifferenceTest, LowDegreePolynomials) {
 // Polynomial of degree n, differentiated approximately, with convergence order
 // n - 1.
 TYPED_TEST(FiniteDifferenceTest, HighDegreePolynomial) {
+  constexpr int n = TestFixture::n;
   std::array<double, n> values;
   for (int j = 0; j < n; ++j) {
     std::vector<double> log_steps;
