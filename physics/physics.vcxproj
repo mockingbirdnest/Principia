@@ -22,6 +22,7 @@
     <ClInclude Include="body_surface_dynamic_frame_body.hpp" />
     <ClInclude Include="body_surface_frame_field.hpp" />
     <ClInclude Include="body_surface_frame_field_body.hpp" />
+    <ClInclude Include="checkpointer.hpp" />
     <ClInclude Include="continuous_trajectory_body.hpp" />
     <ClInclude Include="continuous_trajectory.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
