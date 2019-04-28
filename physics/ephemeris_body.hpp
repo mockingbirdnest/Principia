@@ -77,23 +77,23 @@ inline Status const CollisionDetected() {
 
 //TODO(phl):Thread-safe
 template<typename Frame>
-class Ephemeris<Frame>::LockManager {
+class Ephemeris<Frame>::GuardCommander {
  public:
   using Callback = std::function<void()>;
 
-  void RunWhenUnlocked(Instant& const t_min, Callback callback);
-  void Lock(Instant& const t_min);
-  void Unlock(Instant& const t_min);
+  void RunWhenUnguarded(Instant const& t_min, Callback callback);
+  void Guard(Instant const& t_min);
+  void Surrender(Instant const& t_min);
 
  private:
   std::multimap<Instant, Callback> callbacks_;
-  std::multiset<Instant> locks_;
+  std::multiset<Instant> guard_start_times_;
 };
 
 template<typename Frame>
-void Ephemeris<Frame>::LockManager::RunWhenUnlocked(Instant& const t_min,
+void Ephemeris<Frame>::GuardCommander::RunWhenUnguarded(Instant const& t_min,
                                                     Callback callback) {
-  if (!locks_.empty() && t_min < *locks_.begin()) {
+  if (!guard_start_times_.empty() && t_min < *guard_start_times_.begin()) {
     callback();
   } else {
     callbacks_.emplace(t_min, std::move(callback));
@@ -101,24 +101,24 @@ void Ephemeris<Frame>::LockManager::RunWhenUnlocked(Instant& const t_min,
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::LockManager::Lock(Instant& const t_min) {
-  locks_.insert(t_min);
+void Ephemeris<Frame>::GuardCommander::Guard(Instant const& t_min) {
+  guard_start_times_.insert(t_min);
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::LockManager::Unlock(Instant& const t_min) {
-  CHECK_EQ(1, locks_.erase(t_min));
-  if (locks_.empty()) {
+void Ephemeris<Frame>::GuardCommander::Surrender(Instant const& t_min) {
+  CHECK_EQ(1, guard_start_times_.erase(t_min));
+  if (guard_start_times_.empty()) {
     return;
   }
 
-  // Run all the callbacks that are now unlocked and remove them from the
+  // Run all the callbacks that are now unguarded and remove them from the
   // multimap.
-  Instant const first_locked_time = *locks_.begin();
+  Instant const first_guard_start_time = *guard_start_times_.begin();
   for (auto it = callbacks_.begin(); it != callbacks_.end();) {
     auto const& time = it->first;
     auto const& callback = it->second;
-    if (time < first_locked_time) {
+    if (time < first_guard_start_time) {
       callback();
       it = callbacks_.erase(it);
     } else {
@@ -373,12 +373,7 @@ bool Ephemeris<Frame>::empty() const {
 template<typename Frame>
 Instant Ephemeris<Frame>::t_min() const {
   absl::ReaderMutexLock l(&lock_);
-  Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
-  for (auto const& pair : bodies_to_trajectories_) {
-    auto const& trajectory = pair.second;
-    t_min = std::max(t_min, trajectory->t_min());
-  }
-  return t_min;
+  return t_min_locked();
 }
 
 template<typename Frame>
@@ -400,6 +395,7 @@ Ephemeris<Frame>::planetary_integrator() const {
 
 template<typename Frame>
 Status Ephemeris<Frame>::last_severe_integration_status() const {
+  absl::ReaderMutexLock l(&lock_);
   return last_severe_integration_status_;
 }
 
@@ -856,10 +852,17 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
-Ephemeris<Frame>::Lock::Lock(not_null<Ephemeris<Frame> const*> ephemeris) {}
+Ephemeris<Frame>::Guard::Guard(
+    not_null<Ephemeris<Frame> const*> const ephemeris) {
+  absl::MutexLock();
+  t_min_ = ephemeris->t_min_locked();
+  ephemeris->guard_commander_->Guard(t_min_);
+}
 
 template<typename Frame>
-Ephemeris<Frame>::Lock::~Lock() {}
+Ephemeris<Frame>::Guard::~Guard() {
+  ephemeris->guard_commander_->Surrender(t_min_);
+}
 
 template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
@@ -868,6 +871,17 @@ Ephemeris<Frame>::Ephemeris(
     : accuracy_parameters_(pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance,
                            /*geopotential_tolerance=*/0),
       fixed_step_parameters_(integrator, 1 * Second) {}
+
+template<typename Frame>
+Instant Ephemeris<Frame>::t_min_locked() const {
+  lock_.AssertReaderHeld();
+  Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
+  for (auto const& pair : bodies_to_trajectories_) {
+    auto const& trajectory = pair.second;
+    t_min = std::max(t_min, trajectory->t_min());
+  }
+  return t_min;
+}
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(

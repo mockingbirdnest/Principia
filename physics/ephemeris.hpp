@@ -187,8 +187,6 @@ class Ephemeris {
   // function is thread-hostile in the sense that it can cause |t_min()| to
   // increase, so if it is called is parallel with code that iterates over the
   // trajectories of the ephemeris, it can cause trouble.
-  // TODO(phl): Consider eliminating this function and truncating on
-  // serialization/deserialization.
   virtual void ForgetBefore(Instant const& t) EXCLUDES(lock_);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
@@ -284,10 +282,13 @@ class Ephemeris {
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       serialization::Ephemeris const& message) EXCLUDES(lock_);
 
-  class Lock final {
+  //TODO(phl):comment
+  class Guard final {
    public:
-    Lock(not_null<Ephemeris<Frame> const*> ephemeris);
-    ~Lock();
+    Guard(not_null<Ephemeris<Frame> const*> ephemeris);
+    ~Guard();
+   private:
+    Instant t_min_;
   };
 
  protected:
@@ -297,6 +298,8 @@ class Ephemeris {
                          Frame>::NewtonianMotionEquation> const& integrator);
 
  private:
+  Instant t_min_locked() const REQUIRES_SHARED(lock_);
+
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state)
@@ -400,19 +403,24 @@ class Ephemeris {
   AccuracyParameters const accuracy_parameters_;
   FixedStepParameters const fixed_step_parameters_;
 
-  // The fields above this line are fixed at construction and therefore not
-  // protected.  Note that |ContinuousTrajectory| is thread-safe.
-  mutable absl::Mutex lock_;
-  std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
-      instance_ GUARDED_BY(lock_);
-
   int number_of_oblate_bodies_ = 0;
   int number_of_spherical_bodies_ = 0;
 
-  Status last_severe_integration_status_;
+  // The fields above this line are fixed at construction and therefore not
+  // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
+  // also used to protect sections where the trajectories are not mutually
+  // consistent (e.g., during ForgetBefore, Prolong, etc.).
+  mutable absl::Mutex lock_;
 
-  class LockManager;
-  std::unique_ptr<LockManager> lock_manager_;
+  std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
+      instance_ GUARDED_BY(lock_);
+
+  Status last_severe_integration_status_ GUARDED_BY(lock_);
+
+  class GuardCommander;
+  std::unique_ptr<GuardCommander> guard_commander_ PT_GUARDED_BY(lock_);
+
+  friend class Guard;
 };
 
 }  // namespace internal_ephemeris
