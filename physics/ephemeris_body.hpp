@@ -75,13 +75,13 @@ inline Status const CollisionDetected() {
   return Status(Error::OUT_OF_RANGE, "Collision detected");
 }
 
-//TODO(phl):Thread-safe
+//TODO(phl):Comment
 template<typename Frame>
 class Ephemeris<Frame>::GuardCommander {
  public:
   using Callback = std::function<void()>;
 
-  void RunWhenUnguarded(Instant const& t_min, Callback callback);
+  bool RunWhenUnguarded(Instant const& t_min, Callback callback);
   void Guard(Instant const& t_min);
   void Surrender(Instant const& t_min);
 
@@ -92,16 +92,17 @@ class Ephemeris<Frame>::GuardCommander {
 };
 
 template<typename Frame>
-void Ephemeris<Frame>::GuardCommander::RunWhenUnguarded(Instant const& t_min,
+bool Ephemeris<Frame>::GuardCommander::RunWhenUnguarded(Instant const& t_min,
                                                         Callback callback) {
   {
     absl::MutexLock l(&lock_);
     if (!guard_start_times_.empty() && *guard_start_times_.begin() < t_min) {
       callbacks_.emplace(t_min, std::move(callback));
-      return;
+      return false;
     }
   }
   callback();
+  return true;
 }
 
 template<typename Frame>
@@ -411,12 +412,16 @@ Status Ephemeris<Frame>::last_severe_integration_status() const {
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
-  absl::MutexLock l(&lock_);
-  for (auto& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame>& trajectory = *pair.second;
-    trajectory.ForgetBefore(t);
-  }
+bool Ephemeris<Frame>::TryToForgetBefore(Instant const& t) {
+  auto forget_before_t = [this, t]() {
+    absl::MutexLock l(&lock_);
+    for (auto& pair : bodies_to_trajectories_) {
+      ContinuousTrajectory<Frame>& trajectory = *pair.second;
+      trajectory.ForgetBefore(t);
+    }
+  };
+
+  return guard_commander_->RunWhenUnguarded(t, std::move(forget_before_t));
 }
 
 template<typename Frame>

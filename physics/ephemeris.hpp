@@ -188,7 +188,7 @@ class Ephemeris {
   // increase, so if it is called is parallel with code that iterates over the
   // trajectories of the ephemeris, it can cause trouble.
   //TODO(phl):comment
-  virtual void ForgetBefore(Instant const& t) EXCLUDES(lock_);
+  virtual bool TryToForgetBefore(Instant const& t) EXCLUDES(lock_);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t) EXCLUDES(lock_);
