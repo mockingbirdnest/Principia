@@ -75,28 +75,38 @@ inline Status const CollisionDetected() {
   return Status(Error::OUT_OF_RANGE, "Collision detected");
 }
 
-//TODO(phl):Comment
+// Holds the state of all the guards and the callbacks whose execution has been
+// delayed due to protection by one or several guards.  This class is
+// thread-safe.
 template<typename Frame>
 class Ephemeris<Frame>::GuardCommander {
  public:
+  // A callback that may be run immediately or in a delayed manner when the
+  // state of the guards permits it.
   using Callback = std::function<void()>;
 
-  bool RunWhenUnguarded(Instant const& t_min, Callback callback);
-  void Guard(Instant const& t_min);
-  void Surrender(Instant const& t_min);
+  // If the range ]-∞, t[ is unprotected, |callback| is run immediately and this
+  // function returns true.  Otherwise |callback| is delayed and will be run as
+  // soon as ]-∞, t[ becomes unprotected; returns false in this case.  The
+  // callback are run without any lock held, in time order.
+  bool RunWhenUnprotected(Instant const& t, Callback callback);
+
+  // Protects and unprotects the time range [t_min, +∞[.
+  void Protect(Instant const& t_min);
+  void Unprotect(Instant const& t_min);
 
  private:
   absl::Mutex lock_;
-  std::multimap<Instant, Callback> callbacks_;
-  std::multiset<Instant> guard_start_times_;
+  std::multimap<Instant, Callback> callbacks_ GUARDED_BY(lock_);
+  std::multiset<Instant> guard_start_times_ GUARDED_BY(lock_);
 };
 
 template<typename Frame>
-bool Ephemeris<Frame>::GuardCommander::RunWhenUnguarded(Instant const& t_min,
-                                                        Callback callback) {
+bool Ephemeris<Frame>::GuardCommander::RunWhenUnprotected(Instant const& t,
+                                                          Callback callback) {
   {
     absl::MutexLock l(&lock_);
-    if (!guard_start_times_.empty() && *guard_start_times_.begin() < t_min) {
+    if (!guard_start_times_.empty() && *guard_start_times_.begin() < t) {
       callbacks_.emplace(t_min, std::move(callback));
       return false;
     }
@@ -106,13 +116,13 @@ bool Ephemeris<Frame>::GuardCommander::RunWhenUnguarded(Instant const& t_min,
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::GuardCommander::Guard(Instant const& t_min) {
+void Ephemeris<Frame>::GuardCommander::Protect(Instant const& t_min) {
   absl::MutexLock l(&lock_);
   guard_start_times_.insert(t_min);
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::GuardCommander::Surrender(Instant const& t_min) {
+void Ephemeris<Frame>::GuardCommander::Unprotect(Instant const& t_min) {
   std::vector<Callback> callbacks_to_run;
   {
     absl::MutexLock l(&lock_);
@@ -122,9 +132,9 @@ void Ephemeris<Frame>::GuardCommander::Surrender(Instant const& t_min) {
     // multimap.
     Instant const first_guard_start_time = *guard_start_times_.begin();
     for (auto it = callbacks_.begin(); it != callbacks_.end();) {
-      auto const& t_min = it->first;
+      auto const& t = it->first;
       auto& callback = it->second;
-      if (t_min <= first_guard_start_time) {
+      if (t <= first_guard_start_time) {
         callbacks_to_run.emplace_back(std::move(callback));
         it = callbacks_.erase(it);
       } else {
@@ -294,7 +304,8 @@ Ephemeris<Frame>::Ephemeris(
     AccuracyParameters const& accuracy_parameters,
     FixedStepParameters const& fixed_step_parameters)
     : accuracy_parameters_(accuracy_parameters),
-      fixed_step_parameters_(fixed_step_parameters) {
+      fixed_step_parameters_(fixed_step_parameters),
+      guard_commander_(make_not_null_unique<GuardCommander>()) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -421,7 +432,7 @@ bool Ephemeris<Frame>::TryToForgetBefore(Instant const& t) {
     }
   };
 
-  return guard_commander_->RunWhenUnguarded(t, std::move(forget_before_t));
+  return guard_commander_->RunWhenUnprotected(t, std::move(forget_before_t));
 }
 
 template<typename Frame>
@@ -872,12 +883,12 @@ Ephemeris<Frame>::Guard::Guard(
     not_null<Ephemeris<Frame> const*> const ephemeris) {
   absl::MutexLock l(&lock_);
   t_min_ = ephemeris->t_min_locked();
-  ephemeris->guard_commander_->Guard(t_min_);
+  ephemeris->guard_commander_->Protect(t_min_);
 }
 
 template<typename Frame>
 Ephemeris<Frame>::Guard::~Guard() {
-  ephemeris->guard_commander_->Surrender(t_min_);
+  ephemeris->guard_commander_->Unprotect(t_min_);
 }
 
 template<typename Frame>

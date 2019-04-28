@@ -283,7 +283,8 @@ class Ephemeris {
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       serialization::Ephemeris const& message) EXCLUDES(lock_);
 
-  //TODO(phl):comment
+  // A |Guard| is an RAII object that protects a critical section against
+  // changes to |t_min| due to calls to |TryToForgetBefore|.
   class Guard final {
    public:
     Guard(not_null<Ephemeris<Frame> const*> ephemeris);
@@ -407,6 +408,10 @@ class Ephemeris {
   int number_of_oblate_bodies_ = 0;
   int number_of_spherical_bodies_ = 0;
 
+  // Holds the state of all the guards.
+  class GuardCommander;
+  not_null<std::unique_ptr<GuardCommander>> guard_commander_;
+
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
   // also used to protect sections where the trajectories are not mutually
@@ -417,9 +422,6 @@ class Ephemeris {
       instance_ GUARDED_BY(lock_);
 
   Status last_severe_integration_status_ GUARDED_BY(lock_);
-
-  class GuardCommander;
-  std::unique_ptr<GuardCommander> guard_commander_;
 
   friend class Guard;
 };
