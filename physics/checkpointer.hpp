@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <functional>
@@ -5,6 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
+#include "quantities/quantities.hpp
 
 namespace principia {
 namespace physics {
@@ -12,27 +14,36 @@ namespace internal_checkpointer {
 
 using base::not_null;
 using geometry::Instant;
+using quantities::Time;
 
-template<typename T, typename... Types>
+template<typename Message, typename... Types>
 class Checkpointer {
  public:
   using Checkpoint = std::tuple<Types...>;
   using Filler = std::function<Checkpoint(T const&)>;
+  using Reader = std::function<Checkpoint(Message const&)>;
+  using Writer = std::function<void(Checkpoint const&, Message*)>;
 
-  Checkpointer(not_null<T const*> t, Filler filler);
+  Checkpointer(Filler filler,
+               Reader reader,
+               Writer writer);
 
-  Checkpoint const& Get();
-  void GetIfNeeded();
+  void CreateIfNeeded(Instant const& t,
+                      Time const& max_time_between_checkpoints);
+  void CreateUnconditionally(Instant const& t);
 
+  Instant const& OldestCheckpoint();
   bool HasBefore(Instant const& t);
-
   void ForgetBefore(Instant const& t);
 
-  void WriteToMessage();
-  static void ReadFromMessage();
+  void WriteToMessage(not_null<Message*> message);
+  static void ReadFromMessage(Message const& message);
 
-private:
-  std::vector<Checkpoint> checkpoints_;
+ private:
+  Filler const filler_;
+  Reader const reader_;
+  Writer const writer_;
+  std::map<Instant, Checkpoint> checkpoints_;
 };
 
 }  // namespace internal_checkpointer
@@ -41,3 +52,5 @@ using internal_checkpointer::Checkpointer;
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/checkpointer_body.hpp"
