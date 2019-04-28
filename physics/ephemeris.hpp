@@ -289,7 +289,9 @@ class Ephemeris {
    public:
     Guard(not_null<Ephemeris<Frame> const*> ephemeris);
     ~Guard();
+
    private:
+    not_null<Ephemeris<Frame> const*> const ephemeris_;
     Instant t_min_;
   };
 

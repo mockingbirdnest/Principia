@@ -107,7 +107,7 @@ bool Ephemeris<Frame>::GuardCommander::RunWhenUnprotected(Instant const& t,
   {
     absl::MutexLock l(&lock_);
     if (!guard_start_times_.empty() && *guard_start_times_.begin() < t) {
-      callbacks_.emplace(t_min, std::move(callback));
+      callbacks_.emplace(t, std::move(callback));
       return false;
     }
   }
@@ -880,15 +880,16 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
 
 template<typename Frame>
 Ephemeris<Frame>::Guard::Guard(
-    not_null<Ephemeris<Frame> const*> const ephemeris) {
-  absl::MutexLock l(&lock_);
+    not_null<Ephemeris<Frame> const*> const ephemeris)
+    : ephemeris_(ephemeris) {
+  absl::MutexLock l(&ephemeris->lock_);
   t_min_ = ephemeris->t_min_locked();
   ephemeris->guard_commander_->Protect(t_min_);
 }
 
 template<typename Frame>
 Ephemeris<Frame>::Guard::~Guard() {
-  ephemeris->guard_commander_->Unprotect(t_min_);
+  ephemeris_->guard_commander_->Unprotect(t_min_);
 }
 
 template<typename Frame>
@@ -897,7 +898,8 @@ Ephemeris<Frame>::Ephemeris(
         typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator)
     : accuracy_parameters_(pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance,
                            /*geopotential_tolerance=*/0),
-      fixed_step_parameters_(integrator, 1 * Second) {}
+      fixed_step_parameters_(integrator, 1 * Second),
+      guard_commander_(make_not_null_unique<GuardCommander>()) {}
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_min_locked() const {
