@@ -187,6 +187,7 @@ class Ephemeris {
   // function is thread-hostile in the sense that it can cause |t_min()| to
   // increase, so if it is called is parallel with code that iterates over the
   // trajectories of the ephemeris, it can cause trouble.
+  //TODO(phl):comment
   virtual void ForgetBefore(Instant const& t) EXCLUDES(lock_);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
@@ -418,7 +419,7 @@ class Ephemeris {
   Status last_severe_integration_status_ GUARDED_BY(lock_);
 
   class GuardCommander;
-  std::unique_ptr<GuardCommander> guard_commander_ PT_GUARDED_BY(lock_);
+  std::unique_ptr<GuardCommander> guard_commander_;
 
   friend class Guard;
 };

@@ -86,44 +86,55 @@ class Ephemeris<Frame>::GuardCommander {
   void Surrender(Instant const& t_min);
 
  private:
+  absl::Mutex lock_;
   std::multimap<Instant, Callback> callbacks_;
   std::multiset<Instant> guard_start_times_;
 };
 
 template<typename Frame>
 void Ephemeris<Frame>::GuardCommander::RunWhenUnguarded(Instant const& t_min,
-                                                    Callback callback) {
-  if (!guard_start_times_.empty() && t_min < *guard_start_times_.begin()) {
-    callback();
-  } else {
-    callbacks_.emplace(t_min, std::move(callback));
+                                                        Callback callback) {
+  {
+    absl::MutexLock l(&lock_);
+    if (!guard_start_times_.empty() && *guard_start_times_.begin() < t_min) {
+      callbacks_.emplace(t_min, std::move(callback));
+      return;
+    }
   }
+  callback();
 }
 
 template<typename Frame>
 void Ephemeris<Frame>::GuardCommander::Guard(Instant const& t_min) {
+  absl::MutexLock l(&lock_);
   guard_start_times_.insert(t_min);
 }
 
 template<typename Frame>
 void Ephemeris<Frame>::GuardCommander::Surrender(Instant const& t_min) {
-  CHECK_EQ(1, guard_start_times_.erase(t_min));
-  if (guard_start_times_.empty()) {
-    return;
+  std::vector<Callback> callbacks_to_run;
+  {
+    absl::MutexLock l(&lock_);
+    CHECK_EQ(1, guard_start_times_.erase(t_min));
+
+    // Find all the callbacks that are now unguarded and remove them from the
+    // multimap.
+    Instant const first_guard_start_time = *guard_start_times_.begin();
+    for (auto it = callbacks_.begin(); it != callbacks_.end();) {
+      auto const& t_min = it->first;
+      auto& callback = it->second;
+      if (t_min <= first_guard_start_time) {
+        callbacks_to_run.emplace_back(std::move(callback));
+        it = callbacks_.erase(it);
+      } else {
+        ++it;
+      }
+    }
   }
 
-  // Run all the callbacks that are now unguarded and remove them from the
-  // multimap.
-  Instant const first_guard_start_time = *guard_start_times_.begin();
-  for (auto it = callbacks_.begin(); it != callbacks_.end();) {
-    auto const& time = it->first;
-    auto const& callback = it->second;
-    if (time < first_guard_start_time) {
-      callback();
-      it = callbacks_.erase(it);
-    } else {
-      ++it;
-    }
+  // Run the callbacks without holding the lock.
+  for (auto const& callback : callbacks_to_run) {
+    callback();
   }
 }
 
@@ -854,7 +865,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
 template<typename Frame>
 Ephemeris<Frame>::Guard::Guard(
     not_null<Ephemeris<Frame> const*> const ephemeris) {
-  absl::MutexLock();
+  absl::MutexLock l(&lock_);
   t_min_ = ephemeris->t_min_locked();
   ephemeris->guard_commander_->Guard(t_min_);
 }
