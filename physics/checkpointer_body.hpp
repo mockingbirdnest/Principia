@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "physics/checkpointer.hpp"
@@ -6,37 +7,49 @@ namespace principia {
 namespace physics {
 namespace internal_checkpointer {
 
-template<typename Message, typenameTypes...>
-Checkpointer<Message, Types...>::Checkpointer(Filler filler,
-                                        Reader reader,
-                                        Writer writer)
-    : filler_(std::move(filler)),
-      reader_(std::move(reader)),
+template<typename T, typename Message>
+Checkpointer<T, Message>::Checkpointer(Reader reader, Writer writer)
+    : reader_(std::move(reader)),
       writer_(std::move(writer)) {}
 
-template<typename Message, typename... Types>
-void Checkpointer<Message, ... Types>::CreateIfNeeded(
+template<typename T, typename Message>
+void Checkpointer<T, Message>::CreateIfNeeded(
     Instant const& t,
-    Time const& max_time_between_checkpoints) {}
-
-template<typename Message, typename... Types>
-void Checkpointer<Message, ... Types>::CreateUnconditionally(Instant const& t) {
+    Time const& max_time_between_checkpoints) {
+  if (checkpoints_.empty() ||
+      max_time_between_checkpoints < t - checkpoints_.crbegin()->first) {
+    CreateUnconditionally(t);
+  }
 }
 
-template<typename Message, typenameTypes...>
-bool Checkpointer<Message, Types...>::HasBefore(Instant const& t) {
-  return false;
+template<typename T, typename Message>
+void Checkpointer<T, Message>::CreateUnconditionally(Instant const& t) {
+  auto const it = checkpoints_.emplace_hint(checkpoints_.end(), t, Message);
+  writer_(&it->second);
 }
 
-template<typename Message, typenameTypes...>
-void Checkpointer<Message, Types...>::ForgetBefore(Instant const& t) {}
+template<typename T, typename Message>
+Instant const& Checkpointer<T, Message>::OldestCheckpointTime() const {
+  if (checkpoints_.empty()) {
+    return InfinitePast;
+  } else {
+    return checkpoints_.begin()->first;
+  }
+}
 
-template<typename Message, typename... Types>
-void Checkpointer<Message, ... Types>::WriteToMessage(
+template<typename T, typename Message>
+void Checkpointer<T, Message>::ForgetBefore(Instant const& t) {
+  auto const it = checkpoints_.upper_bound(t);
+  CHECK(it == checkpoints_.end() || t < it->first);
+  checkpoints_.erase(checkpoints_.begin(), it);
+}
+
+template<typename T, typename Message>
+void Checkpointer<T, Message>::WriteToMessage(
     not_null<Message*> message) {}
 
-template<typename Message, typename... Types>
-void Checkpointer<Message, ... Types>::ReadFromMessage(Message const& message) {
+template<typename T, typename Message>
+void Checkpointer<T, Message>::ReadFromMessage(Message const& message) {
 }
 
 }  // namespace internal_checkpointer

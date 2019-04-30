@@ -16,34 +16,28 @@ using base::not_null;
 using geometry::Instant;
 using quantities::Time;
 
-template<typename Message, typename... Types>
+template<typename T, typename Message>
 class Checkpointer {
  public:
-  using Checkpoint = std::tuple<Types...>;
-  using Filler = std::function<Checkpoint(T const&)>;
-  using Reader = std::function<Checkpoint(Message const&)>;
-  using Writer = std::function<void(Checkpoint const&, Message*)>;
+  using Reader = std::function<void(Message const&, T&)>;
+  using Writer = std::function<void(T const&, not_null<Message>*)>;
 
-  Checkpointer(Filler filler,
-               Reader reader,
-               Writer writer);
+  Checkpointer(Reader reader, Writer writer);
 
   void CreateIfNeeded(Instant const& t,
                       Time const& max_time_between_checkpoints);
   void CreateUnconditionally(Instant const& t);
 
-  Instant const& OldestCheckpoint();
-  bool HasBefore(Instant const& t);
+  Instant const& OldestCheckpointTime() const;
   void ForgetBefore(Instant const& t);
 
   void WriteToMessage(not_null<Message*> message);
   static void ReadFromMessage(Message const& message);
 
  private:
-  Filler const filler_;
   Reader const reader_;
   Writer const writer_;
-  std::map<Instant, Checkpoint> checkpoints_;
+  std::map<Instant, Message> checkpoints_;
 };
 
 }  // namespace internal_checkpointer
