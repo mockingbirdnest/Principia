@@ -7,13 +7,13 @@ namespace principia {
 namespace physics {
 namespace internal_checkpointer {
 
-template<typename T, typename Message>
-Checkpointer<T, Message>::Checkpointer(Reader reader, Writer writer)
+template<typename Object, typename Message>
+Checkpointer<Object, Message>::Checkpointer(Reader reader, Writer writer)
     : reader_(std::move(reader)),
       writer_(std::move(writer)) {}
 
-template<typename T, typename Message>
-void Checkpointer<T, Message>::CreateIfNeeded(
+template<typename Object, typename Message>
+void Checkpointer<Object, Message>::CreateIfNeeded(
     Instant const& t,
     Time const& max_time_between_checkpoints) {
   if (checkpoints_.empty() ||
@@ -22,14 +22,14 @@ void Checkpointer<T, Message>::CreateIfNeeded(
   }
 }
 
-template<typename T, typename Message>
-void Checkpointer<T, Message>::CreateUnconditionally(Instant const& t) {
+template<typename Object, typename Message>
+void Checkpointer<Object, Message>::CreateUnconditionally(Instant const& t) {
   auto const it = checkpoints_.emplace_hint(checkpoints_.end(), t, Message);
   writer_(&it->second);
 }
 
-template<typename T, typename Message>
-Instant const& Checkpointer<T, Message>::OldestCheckpointTime() const {
+template<typename Object, typename Message>
+Instant const& Checkpointer<Object, Message>::OldestCheckpointTime() const {
   if (checkpoints_.empty()) {
     return InfinitePast;
   } else {
@@ -37,19 +37,24 @@ Instant const& Checkpointer<T, Message>::OldestCheckpointTime() const {
   }
 }
 
-template<typename T, typename Message>
-void Checkpointer<T, Message>::ForgetBefore(Instant const& t) {
+template<typename Object, typename Message>
+void Checkpointer<Object, Message>::ForgetBefore(Instant const& t) {
   auto const it = checkpoints_.upper_bound(t);
   CHECK(it == checkpoints_.end() || t < it->first);
   checkpoints_.erase(checkpoints_.begin(), it);
 }
 
-template<typename T, typename Message>
-void Checkpointer<T, Message>::WriteToMessage(
-    not_null<Message*> message) {}
+template<typename Object, typename Message>
+void Checkpointer<Object, Message>::WriteToMessage(
+    not_null<Message*> const message) {
+  writer_(message);
+}
 
-template<typename T, typename Message>
-void Checkpointer<T, Message>::ReadFromMessage(Message const& message) {
+template<typename Object, typename Message>
+void Checkpointer<Object, Message>::ReadFromMessage(
+    Message const& message,
+    not_null<Object*> const object) {
+  reader_(message, *object);
 }
 
 }  // namespace internal_checkpointer
