@@ -728,16 +728,15 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
 
   EXPECT_TRUE(trajectory->empty());
 
-  // Fill the trajectory, get a checkpoint and fill some more.
+  // Fill the trajectory, create a checkpoint and fill some more.
   FillTrajectory(number_of_steps1,
                  step,
                  position_function,
                  velocity_function,
                  t0_,
                  *trajectory);
-  ContinuousTrajectory<World>::Checkpoint const checkpoint =
-      trajectory->GetCheckpoint();
-  Instant const checkpoint_t_max = trajectory->t_max();
+  Instant const checkpoint_time = trajectory->t_max();
+  trajectory->checkpointer().CreateUnconditionally(checkpoint_time);
   FillTrajectory(number_of_steps2,
                  step,
                  position_function,
@@ -746,7 +745,7 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
                  *trajectory);
 
   serialization::ContinuousTrajectory message;
-  trajectory->WriteToMessage(&message, checkpoint);
+  trajectory->WriteToMessage(&message);
   EXPECT_EQ(step / Second, message.step().magnitude());
   EXPECT_EQ(tolerance / Metre, message.tolerance().magnitude());
   EXPECT_GE(message.adjusted_tolerance().magnitude(),
@@ -761,9 +760,9 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   auto const trajectory_read =
       ContinuousTrajectory<World>::ReadFromMessage(message);
   EXPECT_EQ(trajectory_read->t_min(), trajectory->t_min());
-  EXPECT_EQ(trajectory_read->t_max(), checkpoint_t_max);
+  EXPECT_EQ(trajectory_read->t_max(), checkpoint_time);
   for (Instant time = trajectory->t_min();
-       time <= checkpoint_t_max;
+       time <= checkpoint_time;
        time += step / number_of_substeps) {
     EXPECT_EQ(trajectory_read->EvaluateDegreesOfFreedom(time),
               trajectory->EvaluateDegreesOfFreedom(time));

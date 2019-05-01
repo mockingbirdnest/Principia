@@ -96,7 +96,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       serialization::ContinuousTrajectory const& message);
 
   //TODO(phl):comment
-  Checkpointer<serialization::ContinuousTrajectory>& checkpointer() const;
+  Checkpointer<serialization::ContinuousTrajectory>& checkpointer();
 
   void WriteToCheckpoint(
       not_null<serialization::ContinuousTrajectory*> message);

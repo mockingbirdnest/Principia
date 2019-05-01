@@ -151,6 +151,7 @@ void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
     first_time_ = time;
     last_accessed_polynomial_ = polynomials_.size() - 1;
   }
+  checkpointer_.ForgetBefore(time);
 }
 
 template<typename Frame>
@@ -280,7 +281,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
 
 template<typename Frame>
 Checkpointer<serialization::ContinuousTrajectory>&
-ContinuousTrajectory<Frame>::checkpointer() const {
+ContinuousTrajectory<Frame>::checkpointer() {
   return checkpointer_;
 }
 
