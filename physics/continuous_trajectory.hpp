@@ -95,9 +95,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
-  //TODO(phl):comment
+  // Checkpointing support.  The checkpointer is exposed to make it possible for
+  // Ephemeris to create synchronized checkpoints of its state and that of its
+  // trajectories.
   Checkpointer<serialization::ContinuousTrajectory>& checkpointer();
-
   void WriteToCheckpoint(
       not_null<serialization::ContinuousTrajectory*> message);
   bool ReadFromCheckpoint(serialization::ContinuousTrajectory const& message);

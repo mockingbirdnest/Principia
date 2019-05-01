@@ -13,33 +13,36 @@ Checkpointer<Message>::Checkpointer(Reader reader, Writer writer)
       writer_(std::move(writer)) {}
 
 template<typename Message>
+void Checkpointer<Message>::CreateUnconditionally(Instant const& t) {
+  absl::MutexLock l(&lock_);
+  CreateUnconditionallyLocked(t);
+}
+
+template<typename Message>
 bool Checkpointer<Message>::CreateIfNeeded(
     Instant const& t,
     Time const& max_time_between_checkpoints) {
+  absl::MutexLock l(&lock_);
   if (checkpoints_.empty() ||
       max_time_between_checkpoints < t - checkpoints_.crbegin()->first) {
-    CreateUnconditionally(t);
+    CreateUnconditionallyLocked(t);
     return true;
   }
   return false;
 }
 
 template<typename Message>
-void Checkpointer<Message>::CreateUnconditionally(Instant const& t) {
-  auto const it = checkpoints_.emplace_hint(checkpoints_.end(), t, Message());
-  writer_(&it->second);
-}
-
-template<typename Message>
 void Checkpointer<Message>::ForgetBefore(Instant const& t) {
-  auto const it = checkpoints_.upper_bound(t);
-  CHECK(it == checkpoints_.end() || t < it->first);
+  absl::MutexLock l(&lock_);
+  auto const it = checkpoints_.lower_bound(t);
+  CHECK(it == checkpoints_.end() || t <= it->first);
   checkpoints_.erase(checkpoints_.begin(), it);
 }
 
 template<typename Message>
 Instant Checkpointer<Message>::WriteToMessage(
     not_null<Message*> const message) const {
+  absl::ReaderMutexLock l(&lock_);
   if (checkpoints_.empty()) {
     // TODO(phl): declare this next to Instant.
     static Instant infinite_future = Instant() + quantities::Infinity<Time>();
@@ -53,10 +56,18 @@ Instant Checkpointer<Message>::WriteToMessage(
 template<typename Message>
 void Checkpointer<Message>::ReadFromMessage(Instant const& t,
                                             Message const& message) {
+  absl::MutexLock l(&lock_);
   checkpoints_.clear();
   if (reader_(message)) {
-    CreateUnconditionally(t);
+    CreateUnconditionallyLocked(t);
   }
+}
+
+template<typename Message>
+void Checkpointer<Message>::CreateUnconditionallyLocked(Instant const& t) {
+  lock_.AssertHeld();
+  auto const it = checkpoints_.emplace_hint(checkpoints_.end(), t, Message());
+  writer_(&it->second);
 }
 
 }  // namespace internal_checkpointer

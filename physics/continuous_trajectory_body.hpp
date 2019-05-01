@@ -296,7 +296,6 @@ ContinuousTrajectory<Frame>::checkpointer() {
 template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToCheckpoint(
     not_null<serialization::ContinuousTrajectory*> const message) {
-    LOG(ERROR)<<"TMAX "<<t_max();
   adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
   message->set_is_unstable(is_unstable_);
   message->set_degree(degree_);

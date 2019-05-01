@@ -293,7 +293,7 @@ class Ephemeris {
                          Frame>::NewtonianMotionEquation> const& integrator);
 
  private:
-  //TODO(phl):comment
+  // Checkpointing support.
   void WriteToCheckpoint(not_null<serialization::Ephemeris*> message);
   bool ReadFromCheckpoint(serialization::Ephemeris const& message);
 
