@@ -293,8 +293,9 @@ class Ephemeris {
                          Frame>::NewtonianMotionEquation> const& integrator);
 
  private:
+  //TODO(phl):comment
   void WriteToCheckpoint(not_null<serialization::Ephemeris*> message);
-  void ReadFromCheckpoint(serialization::Ephemeris const& message);
+  bool ReadFromCheckpoint(serialization::Ephemeris const& message);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(

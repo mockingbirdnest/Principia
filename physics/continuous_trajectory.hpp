@@ -100,7 +100,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   void WriteToCheckpoint(
       not_null<serialization::ContinuousTrajectory*> message);
-  void ReadFromCheckpoint(serialization::ContinuousTrajectory const& message);
+  bool ReadFromCheckpoint(serialization::ContinuousTrajectory const& message);
 
  protected:
   // For mocking.

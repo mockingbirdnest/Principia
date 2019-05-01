@@ -53,9 +53,10 @@ Instant Checkpointer<Message>::WriteToMessage(
 template<typename Message>
 void Checkpointer<Message>::ReadFromMessage(Instant const& t,
                                             Message const& message) {
-  reader_(message);
   checkpoints_.clear();
-  CreateUnconditionally(t);
+  if (reader_(message)) {
+    CreateUnconditionally(t);
+  }
 }
 
 }  // namespace internal_checkpointer

@@ -20,7 +20,7 @@ using quantities::Time;
 template<typename Message>
 class Checkpointer {
  public:
-  using Reader = std::function<void(Message const&)>;
+  using Reader = std::function<bool(Message const&)>;
   using Writer = std::function<void(not_null<Message*>)>;
 
   Checkpointer(Reader reader, Writer writer);

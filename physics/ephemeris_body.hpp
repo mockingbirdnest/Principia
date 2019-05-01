@@ -235,7 +235,7 @@ Ephemeris<Frame>::Ephemeris(
       checkpointer_(
           /*reader=*/
           [this](serialization::Ephemeris const& message) {
-            ReadFromCheckpoint(message);
+            return ReadFromCheckpoint(message);
           },
           /*writer=*/
           [this](not_null<serialization::Ephemeris*> const message) {
@@ -718,7 +718,9 @@ void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
   LOG(INFO) << __FUNCTION__;
   absl::ReaderMutexLock l(&lock_);
-  checkpointer_.WriteToMessage(message);
+  Instant const checkpoint_time = checkpointer_.WriteToMessage(message);
+  checkpoint_time.WriteToMessage(message->mutable_checkpoint_time());
+
   // The bodies are serialized in the order in which they were given at
   // construction.
   for (auto const& unowned_body : unowned_bodies_) {
@@ -741,6 +743,7 @@ template<typename Frame>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
+  bool const is_pre_fatou = !message.has_checkpoint_time();
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
@@ -782,12 +785,18 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
         body, std::move(deserialized_trajectory));
     ++index;
   }
-  ephemeris->checkpointer_.ReadFromMessage(
-      Instant::ReadFromMessage(
-          message.instance().current_state().time().value().point()),
-      message);
+
+  Instant checkpoint_time;
+  if (is_pre_fatou) {
+    checkpoint_time = Instant::ReadFromMessage(
+        message.instance().current_state().time().value().point());
+  } else {
+    checkpoint_time = Instant::ReadFromMessage(message.checkpoint_time());
+  }
+  ephemeris->checkpointer_.ReadFromMessage(checkpoint_time, message);
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.
+
   return ephemeris;
 }
 
@@ -797,7 +806,8 @@ Ephemeris<Frame>::Ephemeris(
         typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator)
     : accuracy_parameters_(pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance,
                            /*geopotential_tolerance=*/0),
-      fixed_step_parameters_(integrator, 1 * Second) {}
+      fixed_step_parameters_(integrator, 1 * Second),
+      checkpointer_(/*reader=*/nullptr, /*writer=*/nullptr) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpoint(
@@ -806,25 +816,29 @@ void Ephemeris<Frame>::WriteToCheckpoint(
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::ReadFromCheckpoint(
+bool Ephemeris<Frame>::ReadFromCheckpoint(
     serialization::Ephemeris const& message) {
-  NewtonianMotionEquation equation;
-  equation.compute_acceleration = [this](
-      Instant const& t,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    ComputeMassiveBodiesGravitationalAccelerations(t,
-                                                   positions,
-                                                   accelerations);
-    return Status::OK;
-  };
+  bool const has_checkpoint = message.has_instance();
+  if (has_checkpoint) {
+    NewtonianMotionEquation equation;
+    equation.compute_acceleration = [this](
+        Instant const& t,
+        std::vector<Position<Frame>> const& positions,
+        std::vector<Vector<Acceleration, Frame>>& accelerations) {
+      ComputeMassiveBodiesGravitationalAccelerations(t,
+                                                     positions,
+                                                     accelerations);
+      return Status::OK;
+    };
 
-  instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
-      ReadFromMessage(
-          message.instance(),
-          equation,
-          /*append_state=*/
-          std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
+    instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
+        ReadFromMessage(
+            message.instance(),
+            equation,
+            /*append_state=*/
+            std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
+  }
+  return has_checkpoint;
 }
 
 template<typename Frame>
