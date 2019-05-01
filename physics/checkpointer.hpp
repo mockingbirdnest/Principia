@@ -16,6 +16,7 @@ using base::not_null;
 using geometry::Instant;
 using quantities::Time;
 
+//TODO(phl):comment
 template<typename Object, typename Message>
 class Checkpointer {
  public:

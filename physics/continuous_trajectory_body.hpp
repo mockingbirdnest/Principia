@@ -194,18 +194,6 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
-typename ContinuousTrajectory<Frame>::Checkpoint
-ContinuousTrajectory<Frame>::GetCheckpoint() const {
-  absl::ReaderMutexLock l(&lock_);
-  return {t_max_locked(),
-          adjusted_tolerance_,
-          is_unstable_,
-          degree_,
-          degree_age_,
-          last_points_};
-}
-
-template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
   WriteToMessage(message, GetCheckpoint());
@@ -309,9 +297,52 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
-bool ContinuousTrajectory<Frame>::Checkpoint::IsAfter(
-    Instant const& time) const {
-  return time < t_max_;
+Checkpointer<ContinuousTrajectory, serialization::ContinuousTrajectory> const&
+ContinuousTrajectory<Frame>::checkpointer() const {
+  return checkpointer_;
+}
+
+template<typename Frame>
+void ContinuousTrajectory<Frame>::WriteToCheckpoint(
+    not_null<serialization::ContinuousTrajectory*> const message) {
+  absl::ReaderMutexLock l(&lock_);
+  return {t_max_locked(),
+          adjusted_tolerance_,
+          is_unstable_,
+          degree_,
+          degree_age_,
+          last_points_};
+  //TODO(phl):t_max?
+  adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
+  message->set_is_unstable(is_unstable_);
+  message->set_degree(degree_);
+  message->set_degree_age(degree_age_);
+  for (auto const& pair : last_points_) {
+    Instant const& instant = pair.first;
+    DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
+    not_null<serialization::ContinuousTrajectory::
+                 InstantaneousDegreesOfFreedom*> const
+        instantaneous_degrees_of_freedom = message->add_last_point();
+    instant.WriteToMessage(instantaneous_degrees_of_freedom->mutable_instant());
+    degrees_of_freedom.WriteToMessage(
+        instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
+  }
+}
+
+template<typename Frame>
+void ContinuousTrajectory<Frame>::ReadFromCheckpoint(
+    serialization::ContinuousTrajectory const& message,
+    not_null<ContinuousTrajectory*> const continuous_trajectory) {
+  continuous_trajectory->adjusted_tolerance_ =
+      Length::ReadFromMessage(message.adjusted_tolerance());
+  continuous_trajectory->is_unstable_ = message.is_unstable();
+  continuous_trajectory->degree_ = message.degree();
+  continuous_trajectory->degree_age_ = message.degree_age();
+  for (auto const& l : message.last_point()) {
+    continuous_trajectory->last_points_.push_back(
+        {Instant::ReadFromMessage(l.instant()),
+         DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
+  }
 }
 
 template<typename Frame>

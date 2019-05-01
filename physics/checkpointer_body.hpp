@@ -47,7 +47,9 @@ void Checkpointer<Object, Message>::ForgetBefore(Instant const& t) {
 template<typename Object, typename Message>
 void Checkpointer<Object, Message>::WriteToMessage(
     not_null<Message*> const message) {
-  writer_(message);
+  if (!checkpoints_.empty()) {
+    message->MergeFrom(checkpoints_.cbegin()->second);
+  }
 }
 
 template<typename Object, typename Message>
@@ -55,6 +57,7 @@ void Checkpointer<Object, Message>::ReadFromMessage(
     Message const& message,
     not_null<Object*> const object) {
   reader_(message, *object);
+  //TODO(phl): Update checkpoints here.
 }
 
 }  // namespace internal_checkpointer
