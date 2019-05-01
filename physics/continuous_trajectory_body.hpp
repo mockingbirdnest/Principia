@@ -44,12 +44,15 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
                                                   Length const& tolerance)
     : step_(step),
       tolerance_(tolerance),
-      checkpointer_(/*reader=*/[this](Message const& message) {
-                      checkpointer_.ReadFromCheckpoint(message, this);
-                    },
-                    /*writer=*/[this](not_null<Message>* message) {
-                      checkpointer_.WriteToCheckpoint(message);
-                    }),
+      checkpointer_(
+          /*reader=*/
+          [this](serialization::ContinuousTrajectory const& message) {
+            ReadFromCheckpoint(message);
+          },
+          /*writer=*/
+          [this](not_null<serialization::ContinuousTrajectory*> const message) {
+            WriteToCheckpoint(message);
+          }),
       adjusted_tolerance_(tolerance_),
       is_unstable_(false),
       degree_(min_degree),
@@ -203,7 +206,7 @@ template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
   absl::ReaderMutexLock l(&lock_);
-  const Instant oldest_checkpoint_time =  checkpointer_.WriteToMessage(message);
+  Instant const oldest_checkpoint_time =  checkpointer_.WriteToMessage(message);
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
   for (auto const& pair : polynomials_) {
@@ -233,7 +236,6 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       std::make_unique<ContinuousTrajectory<Frame>>(
           Time::ReadFromMessage(message.step()),
           Length::ReadFromMessage(message.tolerance()));
-  continuous_trajectory->checkpointer.ReadFromMessage();
   if (is_pre_cohen) {
     for (auto const& s : message.series()) {
       // Read the series, evaluate it and use the resulting values to build a
@@ -269,11 +271,15 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     continuous_trajectory->first_time_ =
         Instant::ReadFromMessage(message.first_time());
   }
+  if (!continuous_trajectory->polynomials_.empty()) {
+    continuous_trajectory->checkpointer_.ReadFromMessage(
+        continuous_trajectory->polynomials_.back().t_max, message);
+  }
   return continuous_trajectory;
 }
 
 template<typename Frame>
-Checkpointer<ContinuousTrajectory, serialization::ContinuousTrajectory>&
+Checkpointer<serialization::ContinuousTrajectory>&
 ContinuousTrajectory<Frame>::checkpointer() const {
   return checkpointer_;
 }
@@ -299,15 +305,13 @@ void ContinuousTrajectory<Frame>::WriteToCheckpoint(
 
 template<typename Frame>
 void ContinuousTrajectory<Frame>::ReadFromCheckpoint(
-    serialization::ContinuousTrajectory const& message,
-    not_null<ContinuousTrajectory*> const continuous_trajectory) {
-  continuous_trajectory->adjusted_tolerance_ =
-      Length::ReadFromMessage(message.adjusted_tolerance());
-  continuous_trajectory->is_unstable_ = message.is_unstable();
-  continuous_trajectory->degree_ = message.degree();
-  continuous_trajectory->degree_age_ = message.degree_age();
+    serialization::ContinuousTrajectory const& message) {
+  adjusted_tolerance_ = Length::ReadFromMessage(message.adjusted_tolerance());
+  is_unstable_ = message.is_unstable();
+  degree_ = message.degree();
+  degree_age_ = message.degree_age();
   for (auto const& l : message.last_point()) {
-    continuous_trajectory->last_points_.push_back(
+    last_points_.push_back(
         {Instant::ReadFromMessage(l.instant()),
          DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
   }

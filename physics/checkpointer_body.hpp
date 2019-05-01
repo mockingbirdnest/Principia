@@ -24,7 +24,7 @@ void Checkpointer<Message>::CreateIfNeeded(
 
 template<typename Message>
 void Checkpointer<Message>::CreateUnconditionally(Instant const& t) {
-  auto const it = checkpoints_.emplace_hint(checkpoints_.end(), t, Message);
+  auto const it = checkpoints_.emplace_hint(checkpoints_.end(), t, Message());
   writer_(&it->second);
 }
 
@@ -37,10 +37,11 @@ void Checkpointer<Message>::ForgetBefore(Instant const& t) {
 
 template<typename Message>
 Instant Checkpointer<Message>::WriteToMessage(
-    not_null<Message*> const message) {
+    not_null<Message*> const message) const {
   if (checkpoints_.empty()) {
     // TODO(phl): declare this next to Instant.
-    static Instant infinite_future = Instant + quantities::Infinity<Time>();
+    static Instant infinite_future = Instant() + quantities::Infinity<Time>();
+    return infinite_future;
   } else {
     message->MergeFrom(checkpoints_.cbegin()->second);
     return checkpoints_.cbegin()->first;

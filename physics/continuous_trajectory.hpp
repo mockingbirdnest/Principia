@@ -11,6 +11,7 @@
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/polynomial.hpp"
+#include "physics/checkpointer.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
@@ -95,14 +96,11 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       serialization::ContinuousTrajectory const& message);
 
   //TODO(phl):comment
-  Checkpointer<ContinuousTrajectory,
-               serialization::ContinuousTrajectory>& checkpointer() const;
+  Checkpointer<serialization::ContinuousTrajectory>& checkpointer() const;
 
   void WriteToCheckpoint(
       not_null<serialization::ContinuousTrajectory*> message);
-  static void ReadFromCheckpoint(
-      serialization::ContinuousTrajectory const& message,
-      not_null<ContinuousTrajectory*> continuous_trajectory);
+  void ReadFromCheckpoint(serialization::ContinuousTrajectory const& message);
 
  protected:
   // For mocking.
@@ -156,8 +154,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Construction parameters;
   Time const step_;
   Length const tolerance_;
-  Checkpointer<ContinuousTrajectory,
-               serialization::ContinuousTrajectory> checkpointer_;
+  Checkpointer<serialization::ContinuousTrajectory> checkpointer_;
 
   mutable absl::Mutex lock_;
 

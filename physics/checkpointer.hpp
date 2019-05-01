@@ -6,7 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
-#include "quantities/quantities.hpp
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
@@ -21,7 +21,7 @@ template<typename Message>
 class Checkpointer {
  public:
   using Reader = std::function<void(Message const&)>;
-  using Writer = std::function<void(not_null<Message>*)>;
+  using Writer = std::function<void(not_null<Message*>)>;
 
   Checkpointer(Reader reader, Writer writer);
 
@@ -31,7 +31,7 @@ class Checkpointer {
 
   void ForgetBefore(Instant const& t);
 
-  Instant WriteToMessage(not_null<Message*> message);
+  Instant WriteToMessage(not_null<Message*> message) const;
   void ReadFromMessage(Instant const& t,
                        Message const& message);
 
