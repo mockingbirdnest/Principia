@@ -91,16 +91,12 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Serializes the current state of this object.
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
-  // Serializes the state of this object as it existed when the checkpoint was
-  // taken.
-  void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message,
-                      Checkpoint const& checkpoint) const EXCLUDES(lock_);
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
   //TODO(phl):comment
-  Checkpointer<ContinuousTrajectory, serialization::ContinuousTrajectory> const&
-  checkpointer() const;
+  Checkpointer<ContinuousTrajectory,
+               serialization::ContinuousTrajectory>& checkpointer() const;
 
   void WriteToCheckpoint(
       not_null<serialization::ContinuousTrajectory*> message);
@@ -157,11 +153,13 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   typename InstantPolynomialPairs::const_iterator
   FindPolynomialForInstant(Instant const& time) const REQUIRES_SHARED(lock_);
 
-  mutable absl::Mutex lock_;
-
   // Construction parameters;
   Time const step_;
   Length const tolerance_;
+  Checkpointer<ContinuousTrajectory,
+               serialization::ContinuousTrajectory> checkpointer_;
+
+  mutable absl::Mutex lock_;
 
   // Initially set to the construction parameters, and then adjusted when we
   // choose the degree.

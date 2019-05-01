@@ -7,13 +7,13 @@ namespace principia {
 namespace physics {
 namespace internal_checkpointer {
 
-template<typename Object, typename Message>
-Checkpointer<Object, Message>::Checkpointer(Reader reader, Writer writer)
+template<typename Message>
+Checkpointer<Message>::Checkpointer(Reader reader, Writer writer)
     : reader_(std::move(reader)),
       writer_(std::move(writer)) {}
 
-template<typename Object, typename Message>
-void Checkpointer<Object, Message>::CreateIfNeeded(
+template<typename Message>
+void Checkpointer<Message>::CreateIfNeeded(
     Instant const& t,
     Time const& max_time_between_checkpoints) {
   if (checkpoints_.empty() ||
@@ -22,42 +22,37 @@ void Checkpointer<Object, Message>::CreateIfNeeded(
   }
 }
 
-template<typename Object, typename Message>
-void Checkpointer<Object, Message>::CreateUnconditionally(Instant const& t) {
+template<typename Message>
+void Checkpointer<Message>::CreateUnconditionally(Instant const& t) {
   auto const it = checkpoints_.emplace_hint(checkpoints_.end(), t, Message);
   writer_(&it->second);
 }
 
-template<typename Object, typename Message>
-Instant const& Checkpointer<Object, Message>::OldestCheckpointTime() const {
-  if (checkpoints_.empty()) {
-    return InfinitePast;
-  } else {
-    return checkpoints_.begin()->first;
-  }
-}
-
-template<typename Object, typename Message>
-void Checkpointer<Object, Message>::ForgetBefore(Instant const& t) {
+template<typename Message>
+void Checkpointer<Message>::ForgetBefore(Instant const& t) {
   auto const it = checkpoints_.upper_bound(t);
   CHECK(it == checkpoints_.end() || t < it->first);
   checkpoints_.erase(checkpoints_.begin(), it);
 }
 
-template<typename Object, typename Message>
-void Checkpointer<Object, Message>::WriteToMessage(
+template<typename Message>
+Instant Checkpointer<Message>::WriteToMessage(
     not_null<Message*> const message) {
-  if (!checkpoints_.empty()) {
+  if (checkpoints_.empty()) {
+    // TODO(phl): declare this next to Instant.
+    static Instant infinite_future = Instant + quantities::Infinity<Time>();
+  } else {
     message->MergeFrom(checkpoints_.cbegin()->second);
+    return checkpoints_.cbegin()->first;
   }
 }
 
-template<typename Object, typename Message>
-void Checkpointer<Object, Message>::ReadFromMessage(
-    Message const& message,
-    not_null<Object*> const object) {
-  reader_(message, *object);
-  //TODO(phl): Update checkpoints here.
+template<typename Message>
+void Checkpointer<Message>::ReadFromMessage(Instant const& t,
+                                            Message const& message) {
+  reader_(message);
+  checkpoints_.clear();
+  CreateUnconditionally(t);
 }
 
 }  // namespace internal_checkpointer

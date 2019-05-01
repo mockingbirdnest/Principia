@@ -16,11 +16,11 @@ using base::not_null;
 using geometry::Instant;
 using quantities::Time;
 
-//TODO(phl):comment
-template<typename Object, typename Message>
+//TODO(phl):comment.  Thread safety?
+template<typename Message>
 class Checkpointer {
  public:
-  using Reader = std::function<void(Message const&, Object&)>;
+  using Reader = std::function<void(Message const&)>;
   using Writer = std::function<void(not_null<Message>*)>;
 
   Checkpointer(Reader reader, Writer writer);
@@ -29,12 +29,11 @@ class Checkpointer {
                       Time const& max_time_between_checkpoints);
   void CreateUnconditionally(Instant const& t);
 
-  Instant const& OldestCheckpointTime() const;
   void ForgetBefore(Instant const& t);
 
-  void WriteToMessage(not_null<Message*> message);
-  static void ReadFromMessage(Message const& message,
-                              not_null<Object*> object);
+  Instant WriteToMessage(not_null<Message*> message);
+  void ReadFromMessage(Instant const& t,
+                       Message const& message);
 
  private:
   Reader const reader_;
