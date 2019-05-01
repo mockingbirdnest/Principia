@@ -25,7 +25,7 @@ class Checkpointer {
 
   Checkpointer(Reader reader, Writer writer);
 
-  void CreateIfNeeded(Instant const& t,
+  bool CreateIfNeeded(Instant const& t,
                       Time const& max_time_between_checkpoints);
   void CreateUnconditionally(Instant const& t);
 

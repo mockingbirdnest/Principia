@@ -15,6 +15,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "physics/checkpointer.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -292,22 +293,16 @@ class Ephemeris {
                          Frame>::NewtonianMotionEquation> const& integrator);
 
  private:
-  // The state of the integration and of the continuous trajectory at a
-  // particular time that we might want to use for compact serialization.
-  struct Checkpoint final {
-    std::unique_ptr<
-        typename Integrator<NewtonianMotionEquation>::Instance> instance;
-    std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
-  };
+  void WriteToCheckpoint(not_null<serialization::Ephemeris*> message);
+  void ReadFromCheckpoint(serialization::Ephemeris const& message);
 
+  // Callbacks for the integrators.
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state)
       REQUIRES(lock_);
   static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
-
-  Checkpoint GetCheckpoint() REQUIRES_SHARED(lock_);
 
   // Note the return by copy: the returned value is usable even if the
   // |instance_| is being integrated.
@@ -404,18 +399,16 @@ class Ephemeris {
   AccuracyParameters const accuracy_parameters_;
   FixedStepParameters const fixed_step_parameters_;
 
+  int number_of_oblate_bodies_ = 0;
+  int number_of_spherical_bodies_ = 0;
+
+  Checkpointer<serialization::Ephemeris> checkpointer_;
+
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.
   mutable absl::Mutex lock_;
   std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
       instance_ GUARDED_BY(lock_);
-
-  // These are the states other that the last which we preserve in order to
-  // implement compact serialization.  The vector is time-ordered.
-  std::vector<Checkpoint> checkpoints_ GUARDED_BY(lock_);
-
-  int number_of_oblate_bodies_ = 0;
-  int number_of_spherical_bodies_ = 0;
 
   Status last_severe_integration_status_;
 };

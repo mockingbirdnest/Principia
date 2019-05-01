@@ -13,13 +13,15 @@ Checkpointer<Message>::Checkpointer(Reader reader, Writer writer)
       writer_(std::move(writer)) {}
 
 template<typename Message>
-void Checkpointer<Message>::CreateIfNeeded(
+bool Checkpointer<Message>::CreateIfNeeded(
     Instant const& t,
     Time const& max_time_between_checkpoints) {
   if (checkpoints_.empty() ||
       max_time_between_checkpoints < t - checkpoints_.crbegin()->first) {
     CreateUnconditionally(t);
+    return true;
   }
+  return false;
 }
 
 template<typename Message>
