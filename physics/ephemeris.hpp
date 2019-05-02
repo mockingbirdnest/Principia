@@ -296,6 +296,8 @@ class Ephemeris {
   // Checkpointing support.
   void WriteToCheckpoint(not_null<serialization::Ephemeris*> message);
   bool ReadFromCheckpoint(serialization::Ephemeris const& message);
+  void CreateCheckpointIfNeeded(Instant const& time) const
+      SHARED_LOCKS_REQUIRED(lock_);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
@@ -403,7 +405,8 @@ class Ephemeris {
   int number_of_oblate_bodies_ = 0;
   int number_of_spherical_bodies_ = 0;
 
-  Checkpointer<serialization::Ephemeris> checkpointer_;
+  not_null<
+      std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.

@@ -37,13 +37,15 @@ using quantities::Time;
 template<typename Message>
 class Checkpointer {
  public:
-  // A function that reconstructs an object from a checkpoint.  It must return
-  // true iff the given message actually contained a checkpoint.  If it returns
-  // false, it must leave the object in a state corresponding to its default
-  // initialization.
+  // A function that reconstructs an object from a checkpoint as a side effect.
+  // It must return true iff the given message actually contained a checkpoint.
+  // If it returns false, it must leave the object in a state corresponding to
+  // its default initialization.  This function is expected to capture the
+  // object being deserialized.
   using Reader = std::function<bool(Message const&)>;
 
-  // A function that writes an object to a checkpoint.
+  // A function that writes an object to a checkpoint.  This function is
+  // expected to capture the object being serialized.
   using Writer = std::function<void(not_null<Message*>)>;
 
   Checkpointer(Reader reader, Writer writer);
@@ -62,10 +64,10 @@ class Checkpointer {
   void ForgetBefore(Instant const& t) EXCLUDES(lock_);
 
   // If there exist a checkpoint, writes the oldest checkpoint to the |message|
-  // and returns its time.  Otherwise returns +∞.  The time returned by this
-  // function should be serialized and passed to |ReadFromMessage| when
-  // deserializing to ensure that checkpoints are preserved across
-  // serialization/deserialization cycles.
+  // using protocol buffer merging and returns its time.  Otherwise returns +∞.
+  // The time returned by this function should be serialized and passed to
+  // |ReadFromMessage| when deserializing to ensure that checkpoints are
+  // preserved across serialization/deserialization cycles.
   Instant WriteToMessage(not_null<Message*> message) const EXCLUDES(lock_);
 
   // Clears all the checkpoints in this checkpointer, and calls the |Reader|
