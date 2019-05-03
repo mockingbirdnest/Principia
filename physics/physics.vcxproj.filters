@@ -241,5 +241,8 @@
     <ClCompile Include="geopotential_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="checkpointer_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
