@@ -300,8 +300,8 @@ TEST_P(EphemerisTest, EarthMoon) {
   EXPECT_THAT(Abs(moon_positions[100].coordinates().x), Lt(2 * Metre));
 }
 
-// Test the behavior of TryToForgetBefore on the Earth-Moon system.
-TEST_P(EphemerisTest, TryToForgetBefore) {
+// Test the behavior of EventuallyForgetBefore on the Earth-Moon system.
+TEST_P(EphemerisTest, EventuallyForgetBefore) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRS>> initial_state;
   Position<ICRS> centre_of_mass;
@@ -331,15 +331,15 @@ TEST_P(EphemerisTest, TryToForgetBefore) {
   EXPECT_EQ(t_max, earth_trajectory.t_max());
   EXPECT_EQ(t_max, moon_trajectory.t_max());
 
-  CHECK(ephemeris.TryToForgetBefore(t0_ + 3 * period));
+  CHECK(ephemeris.EventuallyForgetBefore(t0_ + 3 * period));
   EXPECT_EQ(t0_ + 3 * period, ephemeris.t_min());
   EXPECT_EQ(t0_ + 3 * period, earth_trajectory.t_min());
   EXPECT_EQ(t0_ + 3 * period, moon_trajectory.t_min());
 
-  // Check that a Guard delays the effect of TryToForgetBefore.
+  // Check that a Guard delays the effect of EventuallyForgetBefore.
   {
     Ephemeris<ICRS>::Guard g(&ephemeris);
-    CHECK(!ephemeris.TryToForgetBefore(t0_ + 5 * period));
+    CHECK(!ephemeris.EventuallyForgetBefore(t0_ + 5 * period));
     EXPECT_EQ(t0_ + 3 * period, ephemeris.t_min());
     EXPECT_EQ(t0_ + 3 * period, earth_trajectory.t_min());
     EXPECT_EQ(t0_ + 3 * period, moon_trajectory.t_min());

@@ -784,7 +784,7 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   CHECK(!initializing_);
   CHECK_LT(t, current_time_);
-  ephemeris_->TryToForgetBefore(t);
+  ephemeris_->EventuallyForgetBefore(t);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
     vessel->ForgetBefore(t);
