@@ -250,5 +250,8 @@
     <ClCompile Include="protector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="protector_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

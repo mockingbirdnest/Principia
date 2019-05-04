@@ -84,6 +84,7 @@
     <ClCompile Include="jacobi_coordinates_test.cpp" />
     <ClCompile Include="kepler_orbit_test.cpp" />
     <ClCompile Include="protector.cpp" />
+    <ClCompile Include="protector_test.cpp" />
     <ClCompile Include="rigid_motion_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
     <ClCompile Include="forkable_test.cpp" />
