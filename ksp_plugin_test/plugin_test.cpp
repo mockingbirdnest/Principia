@@ -760,7 +760,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillRepeatedly(ReturnRef(
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<Barycentric>>()));
-  EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(_)).Times(2);
+  EXPECT_CALL(plugin_->mock_ephemeris(), TryToForgetBefore(_))
+      .Times(2)
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
       .WillRepeatedly(Return(
           RigidMotion<Barycentric, Navigation>(
@@ -886,8 +888,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
 
   Instant const initial_time = ParseTT(initial_time_);
   Instant const& time = initial_time + 1 * Second;
-  EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(HistoryTime(time, 5)))
-      .Times(1);
+  EXPECT_CALL(plugin_->mock_ephemeris(), TryToForgetBefore(HistoryTime(time, 5)))
+      .WillOnce(Return(true));
   plugin_->AdvanceTime(time, Angle());
   VesselSet collided_vessels;
   plugin_->CatchUpLaggingVessels(collided_vessels);

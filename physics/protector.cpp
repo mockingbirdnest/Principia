@@ -2,6 +2,7 @@
 #include "physics/protector.hpp"
 
 #include <optional>
+#include <vector>
 
 namespace principia {
 namespace physics {

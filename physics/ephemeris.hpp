@@ -286,9 +286,9 @@ class Ephemeris {
 
   // A |Guard| is an RAII object that protects a critical section against
   // changes to |t_min| due to calls to |TryToForgetBefore|.
-  class Guard final {
+  class PHYSICS_DLL Guard final {
    public:
-    Guard(not_null<Ephemeris<Frame> const*> ephemeris);
+    explicit Guard(not_null<Ephemeris<Frame> const*> ephemeris);
     ~Guard();
 
    private:
