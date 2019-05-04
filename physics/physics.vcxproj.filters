@@ -176,6 +176,9 @@
     <ClInclude Include="checkpointer_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="protector.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -243,6 +246,9 @@
     </ClCompile>
     <ClCompile Include="checkpointer_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="protector.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

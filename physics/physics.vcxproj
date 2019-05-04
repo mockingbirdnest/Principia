@@ -34,6 +34,7 @@
     <ClInclude Include="dynamic_frame_body.hpp" />
     <ClInclude Include="geopotential.hpp" />
     <ClInclude Include="geopotential_body.hpp" />
+    <ClInclude Include="protector.hpp" />
     <ClInclude Include="hierarchical_system.hpp" />
     <ClInclude Include="hierarchical_system_body.hpp" />
     <ClInclude Include="jacobi_coordinates.hpp" />
@@ -82,6 +83,7 @@
     <ClCompile Include="hierarchical_system_test.cpp" />
     <ClCompile Include="jacobi_coordinates_test.cpp" />
     <ClCompile Include="kepler_orbit_test.cpp" />
+    <ClCompile Include="protector.cpp" />
     <ClCompile Include="rigid_motion_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
     <ClCompile Include="forkable_test.cpp" />

@@ -22,6 +22,7 @@
 #include "physics/geopotential.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
+#include "physics/protector.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "serialization/numerics.pb.h"
 #include "serialization/physics.pb.h"
@@ -419,10 +420,7 @@ class Ephemeris {
 
   not_null<
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
-
-  // Holds the state of all the guards.
-  class GuardCommander;
-  not_null<std::unique_ptr<GuardCommander>> guard_commander_;
+  not_null<std::unique_ptr<Protector>> protector_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
