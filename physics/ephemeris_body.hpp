@@ -428,7 +428,6 @@ Ephemeris<Frame>::NewInstance(
       }
     }
     return error == Error::OK ? Status::OK :
-           error == Error::CANCELLED ? Status::CANCELLED :
                     CollisionDetected();
   };
 
@@ -476,7 +475,6 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
       accelerations[0] += intrinsic_acceleration(t);
     }
     return error == Error::OK ? Status::OK :
-           error == Error::CANCELLED ? Status::CANCELLED :
                     CollisionDetected();
   };
 
@@ -512,7 +510,6 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
               intrinsic_acceleration(t, {positions[0], velocities[0]});
         }
         return error == Error::OK ? Status::OK :
-               error == Error::CANCELLED ? Status::CANCELLED :
                         CollisionDetected();
       };
 
@@ -1014,12 +1011,6 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
   lock_.AssertReaderHeld();
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
   auto const& trajectory1 = *trajectories_[b1];
-  if (t < trajectory1.t_min()) {
-    // This can happen when computing a prediction asynchronously and the
-    // continuous trajectories have been "forgotten before" already.  Just
-    // cancel the prediction.
-    return Error::CANCELLED;
-  }
   Position<Frame> const position1 = trajectory1.EvaluatePosition(t);
   Length const body1_collision_radius =
       mean_radius_tolerance * body1.mean_radius();
