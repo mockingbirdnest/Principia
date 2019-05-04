@@ -170,6 +170,12 @@
     <ClInclude Include="geopotential_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="checkpointer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkpointer_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -233,6 +239,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="geopotential_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkpointer_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

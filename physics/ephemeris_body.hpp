@@ -67,6 +67,7 @@ using ::std::placeholders::_3;
 
 constexpr Length pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance =
     1 * Milli(Metre);
+constexpr Time max_time_between_checkpoints = 180 * Day;
 // Below this threshold detect a collision to prevent the integrator and the
 // downsampling from going postal.
 constexpr double mean_radius_tolerance = 0.9;
@@ -181,15 +182,15 @@ std::int64_t Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::max_steps()
 
 template<typename Frame>
 template<typename ODE>
-Length Ephemeris<Frame>::ODEAdaptiveStepParameters<
-    ODE>::length_integration_tolerance() const {
+Length Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
+length_integration_tolerance() const {
   return length_integration_tolerance_;
 }
 
 template<typename Frame>
 template<typename ODE>
-Speed Ephemeris<Frame>::ODEAdaptiveStepParameters<
-    ODE>::speed_integration_tolerance() const {
+Speed Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
+speed_integration_tolerance() const {
   return speed_integration_tolerance_;
 }
 
@@ -203,16 +204,15 @@ void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::set_max_steps(
 
 template<typename Frame>
 template<typename ODE>
-void Ephemeris<Frame>::ODEAdaptiveStepParameters<
-    ODE>::set_length_integration_tolerance(Length const&
-                                               length_integration_tolerance) {
+void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
+set_length_integration_tolerance(Length const& length_integration_tolerance) {
   length_integration_tolerance_ = length_integration_tolerance;
 }
 
 template<typename Frame>
 template<typename ODE>
 void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
-    set_speed_integration_tolerance(Speed const& speed_integration_tolerance) {
+set_speed_integration_tolerance(Speed const& speed_integration_tolerance) {
   speed_integration_tolerance_ = speed_integration_tolerance;
 }
 
@@ -269,7 +269,8 @@ template<typename Frame>
 Ephemeris<Frame>::FixedStepParameters::FixedStepParameters(
     FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
     Time const& step)
-    : integrator_(&integrator), step_(step) {
+    : integrator_(&integrator),
+      step_(step) {
   CHECK_LT(Time(), step);
 }
 
@@ -305,19 +306,30 @@ Ephemeris<Frame>::Ephemeris(
     FixedStepParameters const& fixed_step_parameters)
     : accuracy_parameters_(accuracy_parameters),
       fixed_step_parameters_(fixed_step_parameters),
+      checkpointer_(
+          make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
+              /*reader=*/
+              [this](serialization::Ephemeris const& message) {
+                return ReadFromCheckpoint(message);
+              },
+              /*writer=*/
+              [this](not_null<serialization::Ephemeris*> const message) {
+                WriteToCheckpoint(message);
+              })) {
       guard_commander_(make_not_null_unique<GuardCommander>()) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
   IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation.compute_acceleration =
-      [this](Instant const& t,
-             std::vector<Position<Frame>> const& positions,
-             std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        ComputeMassiveBodiesGravitationalAccelerations(
-            t, positions, accelerations);
-        return Status::OK;
-      };
+  problem.equation.compute_acceleration = [this](
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<Vector<Acceleration, Frame>>& accelerations) {
+    ComputeMassiveBodiesGravitationalAccelerations(t,
+                                                   positions,
+                                                   accelerations);
+    return Status::OK;
+  };
 
   typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
@@ -330,10 +342,10 @@ Ephemeris<Frame>::Ephemeris(
     unowned_bodies_indices_.emplace(body.get(), i);
 
     auto const inserted = bodies_to_trajectories_.emplace(
-        body.get(),
-        std::make_unique<ContinuousTrajectory<Frame>>(
-            fixed_step_parameters_.step_,
-            accuracy_parameters_.fitting_tolerance_));
+                              body.get(),
+                              std::make_unique<ContinuousTrajectory<Frame>>(
+                                  fixed_step_parameters_.step_,
+                                  accuracy_parameters_.fitting_tolerance_));
     CHECK(inserted.second);
     ContinuousTrajectory<Frame>* const trajectory =
         inserted.first->second.get();
@@ -365,14 +377,14 @@ Ephemeris<Frame>::Ephemeris(
   absl::ReaderMutexLock l(&lock_);  // For locking checks.
   instance_ = fixed_step_parameters_.integrator_->NewInstance(
       problem,
-      /*append_state=*/
-      std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1),
+      /*append_state=*/std::bind(
+          &Ephemeris::AppendMassiveBodiesState, this, _1),
       fixed_step_parameters_.step_);
 }
 
 template<typename Frame>
-std::vector<not_null<MassiveBody const*>> const& Ephemeris<Frame>::bodies()
-    const {
+std::vector<not_null<MassiveBody const*>> const&
+Ephemeris<Frame>::bodies() const {
   return unowned_bodies_;
 }
 
@@ -430,6 +442,7 @@ bool Ephemeris<Frame>::TryToForgetBefore(Instant const& t) {
       ContinuousTrajectory<Frame>& trajectory = *pair.second;
       trajectory.ForgetBefore(t);
     }
+    checkpointer_->ForgetBefore(t);
   };
 
   return guard_commander_->RunWhenUnprotected(t, std::move(forget_before_t));
@@ -477,20 +490,21 @@ Ephemeris<Frame>::NewInstance(
           Instant const& t,
           std::vector<Position<Frame>> const& positions,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        Error const error = ComputeMasslessBodiesGravitationalAccelerations(
-            t, positions, accelerations);
-        // Add the intrinsic accelerations.
-        for (int i = 0; i < intrinsic_accelerations.size(); ++i) {
-          auto const intrinsic_acceleration = intrinsic_accelerations[i];
-          if (intrinsic_acceleration != nullptr) {
-            accelerations[i] += intrinsic_acceleration(t);
-          }
-        }
-        return error == Error::OK
-                   ? Status::OK
-                   : error == Error::CANCELLED ? Status::CANCELLED
-                                               : CollisionDetected();
-      };
+    Error const error =
+        ComputeMasslessBodiesGravitationalAccelerations(t,
+                                                        positions,
+                                                        accelerations);
+    // Add the intrinsic accelerations.
+    for (int i = 0; i < intrinsic_accelerations.size(); ++i) {
+      auto const intrinsic_acceleration = intrinsic_accelerations[i];
+      if (intrinsic_acceleration != nullptr) {
+        accelerations[i] += intrinsic_acceleration(t);
+      }
+    }
+    return error == Error::OK ? Status::OK :
+           error == Error::CANCELLED ? Status::CANCELLED :
+                    CollisionDetected();
+  };
 
   CHECK(!trajectories.empty());
   Instant const trajectory_last_time = (*trajectories.begin())->last().time();
@@ -524,29 +538,29 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     AdaptiveStepParameters const& parameters,
     std::int64_t const max_ephemeris_steps,
     bool const last_point_only) {
-  auto compute_acceleration =
-      [this, &intrinsic_acceleration](
-          Instant const& t,
-          std::vector<Position<Frame>> const& positions,
-          std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        Error const error = ComputeMasslessBodiesGravitationalAccelerations(
-            t, positions, accelerations);
-        if (intrinsic_acceleration != nullptr) {
-          accelerations[0] += intrinsic_acceleration(t);
-        }
-        return error == Error::OK
-                   ? Status::OK
-                   : error == Error::CANCELLED ? Status::CANCELLED
-                                               : CollisionDetected();
-      };
+  auto compute_acceleration = [this, &intrinsic_acceleration](
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<Vector<Acceleration, Frame>>& accelerations) {
+    Error const error =
+        ComputeMasslessBodiesGravitationalAccelerations(t,
+                                                        positions,
+                                                        accelerations);
+    if (intrinsic_acceleration != nullptr) {
+      accelerations[0] += intrinsic_acceleration(t);
+    }
+    return error == Error::OK ? Status::OK :
+           error == Error::CANCELLED ? Status::CANCELLED :
+                    CollisionDetected();
+  };
 
   return FlowODEWithAdaptiveStep<NewtonianMotionEquation>(
-      std::move(compute_acceleration),
-      trajectory,
-      t,
-      parameters,
-      max_ephemeris_steps,
-      last_point_only);
+             std::move(compute_acceleration),
+             trajectory,
+             t,
+             parameters,
+             max_ephemeris_steps,
+             last_point_only);
 }
 
 template<typename Frame>
@@ -563,25 +577,26 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           std::vector<Position<Frame>> const& positions,
           std::vector<Velocity<Frame>> const& velocities,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        Error const error = ComputeMasslessBodiesGravitationalAccelerations(
-            t, positions, accelerations);
+        Error const error =
+            ComputeMasslessBodiesGravitationalAccelerations(t,
+                                                            positions,
+                                                            accelerations);
         if (intrinsic_acceleration != nullptr) {
           accelerations[0] +=
               intrinsic_acceleration(t, {positions[0], velocities[0]});
         }
-        return error == Error::OK
-                   ? Status::OK
-                   : error == Error::CANCELLED ? Status::CANCELLED
-                                               : CollisionDetected();
+        return error == Error::OK ? Status::OK :
+               error == Error::CANCELLED ? Status::CANCELLED :
+                        CollisionDetected();
       };
 
   return FlowODEWithAdaptiveStep<GeneralizedNewtonianMotionEquation>(
-      std::move(compute_acceleration),
-      trajectory,
-      t,
-      parameters,
-      max_ephemeris_steps,
-      last_point_only);
+             std::move(compute_acceleration),
+             trajectory,
+             t,
+             parameters,
+             max_ephemeris_steps,
+             last_point_only);
 }
 
 template<typename Frame>
@@ -614,7 +629,7 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMasslessBody(
   auto const it = trajectory->Find(t);
   DegreesOfFreedom<Frame> const& degrees_of_freedom = it.degrees_of_freedom();
   return ComputeGravitationalAccelerationOnMasslessBody(
-      degrees_of_freedom.position(), t);
+             degrees_of_freedom.position(), t);
 }
 
 template<typename Frame>
@@ -644,73 +659,56 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
   if (body_is_oblate) {
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/true>(t,
-                                  /*body1=*/*body,
-                                  b1,
-                                  /*bodies2=*/bodies_,
-                                  /*b2_begin=*/0,
-                                  /*b2_end=*/b1,
-                                  positions,
-                                  accelerations,
-                                  geopotentials_);
+        /*body2_is_oblate=*/true>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/0, /*b2_end=*/b1,
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/true>(t,
-                                  /*body1=*/*body,
-                                  b1,
-                                  /*bodies2=*/bodies_,
-                                  /*b2_begin=*/b1 + 1,
-                                  /*b2_end=*/number_of_oblate_bodies_,
-                                  positions,
-                                  accelerations,
-                                  geopotentials_);
+        /*body2_is_oblate=*/true>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/b1 + 1, /*b2_end=*/number_of_oblate_bodies_,
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
         /*body2_is_oblate=*/false>(
         t,
-        /*body1=*/*body,
-        b1,
+        /*body1=*/*body, b1,
         /*bodies2=*/bodies_,
         /*b2_begin=*/number_of_oblate_bodies_,
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions,
-        accelerations,
-        geopotentials_);
+        positions, accelerations, geopotentials_);
   } else {
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/true>(t,
-                                  /*body1=*/*body,
-                                  b1,
-                                  /*bodies2=*/bodies_,
-                                  /*b2_begin=*/0,
-                                  /*b2_end=*/number_of_oblate_bodies_,
-                                  positions,
-                                  accelerations,
-                                  geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/false>(t,
-                                   /*body1=*/*body,
-                                   b1,
-                                   /*bodies2=*/bodies_,
-                                   /*b2_begin=*/number_of_oblate_bodies_,
-                                   /*b2_end=*/b1,
-                                   positions,
-                                   accelerations,
-                                   geopotentials_);
+        /*body2_is_oblate=*/true>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/0, /*b2_end=*/number_of_oblate_bodies_,
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/false,
         /*body2_is_oblate=*/false>(
         t,
-        /*body1=*/*body,
-        b1,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/number_of_oblate_bodies_,
+        /*b2_end=*/b1,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/false>(
+        t,
+        /*body1=*/*body, b1,
         /*bodies2=*/bodies_,
         /*b2_begin=*/b1 + 1,
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions,
-        accelerations,
-        geopotentials_);
+        positions, accelerations, geopotentials_);
   }
 
   return accelerations[b1];
@@ -731,8 +729,8 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
   // Computes the derivative of the squared distance between |body1| and |body2|
   // at time |t|.
   auto const evaluate_square_distance_derivative =
-      [body1_trajectory,
-       body2_trajectory](Instant const& t) -> Variation<Square<Length>> {
+      [body1_trajectory, body2_trajectory](
+          Instant const& t) -> Variation<Square<Length>> {
     DegreesOfFreedom<Frame> const body1_degrees_of_freedom =
         body1_trajectory->EvaluateDegreesOfFreedom(t);
     DegreesOfFreedom<Frame> const body2_degrees_of_freedom =
@@ -745,7 +743,8 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
   std::optional<Instant> previous_time;
   std::optional<Variation<Square<Length>>> previous_squared_distance_derivative;
 
-  for (Instant time = t_min(); time <= t_max();
+  for (Instant time = t_min();
+       time <= t_max();
        time += fixed_step_parameters_.step()) {
     Variation<Square<Length>> const squared_distance_derivative =
         evaluate_square_distance_derivative(time);
@@ -757,8 +756,9 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
       // The derivative of |squared_distance| changed sign.  Find its zero by
       // bisection, this is the time of the apsis.  Then compute the apsis and
       // append it to one of the output trajectories.
-      Instant const apsis_time =
-          Bisect(evaluate_square_distance_derivative, *previous_time, time);
+      Instant const apsis_time = Bisect(evaluate_square_distance_derivative,
+                                        *previous_time,
+                                        time);
       DegreesOfFreedom<Frame> const apsis1_degrees_of_freedom =
           body1_trajectory->EvaluateDegreesOfFreedom(apsis_time);
       DegreesOfFreedom<Frame> const apsis2_degrees_of_freedom =
@@ -794,6 +794,13 @@ void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
   LOG(INFO) << __FUNCTION__;
   absl::ReaderMutexLock l(&lock_);
+
+  // Make sure that a checkpoint exists, otherwise we would not serialize some
+  // parts of the state.
+  CreateCheckpointIfNeeded(instance_->time().value);
+  Instant const checkpoint_time = checkpointer_->WriteToMessage(message);
+  checkpoint_time.WriteToMessage(message->mutable_checkpoint_time());
+
   // The bodies are serialized in the order in which they were given at
   // construction.
   for (auto const& unowned_body : unowned_bodies_) {
@@ -804,10 +811,10 @@ void Ephemeris<Frame>::WriteToMessage(
   for (auto const& trajectory : trajectories_) {
     trajectory->WriteToMessage(message->add_trajectory());
   }
-  instance_->WriteToMessage(message->mutable_instance());
   fixed_step_parameters_.WriteToMessage(
       message->mutable_fixed_step_parameters());
-  accuracy_parameters_.WriteToMessage(message->mutable_accuracy_parameters());
+  accuracy_parameters_.WriteToMessage(
+      message->mutable_accuracy_parameters());
   LOG(INFO) << NAMED(message->SpaceUsed());
   LOG(INFO) << NAMED(message->ByteSize());
 }
@@ -816,6 +823,7 @@ template<typename Frame>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
+  bool const is_pre_fatou = !message.has_checkpoint_time();
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
@@ -837,30 +845,12 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
       bodies.size(),
       DegreesOfFreedom<Frame>(Position<Frame>(), Velocity<Frame>()));
   Instant const initial_time;
-  auto ephemeris =
-      make_not_null_unique<Ephemeris<Frame>>(std::move(bodies),
-                                             initial_state,
-                                             initial_time,
-                                             accuracy_parameters,
-                                             fixed_step_parameters);
-
-  NewtonianMotionEquation equation;
-  equation.compute_acceleration =
-      [ephemeris = ephemeris.get()](
-          Instant const& t,
-          std::vector<Position<Frame>> const& positions,
-          std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        ephemeris->ComputeMassiveBodiesGravitationalAccelerations(
-            t, positions, accelerations);
-        return Status::OK;
-      };
-
-  ephemeris->instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::
-      Instance::ReadFromMessage(
-          message.instance(),
-          equation,
-          /*append_state=*/
-          std::bind(&Ephemeris::AppendMassiveBodiesState, ephemeris.get(), _1));
+  auto ephemeris = make_not_null_unique<Ephemeris<Frame>>(
+                       std::move(bodies),
+                       initial_state,
+                       initial_time,
+                       accuracy_parameters,
+                       fixed_step_parameters);
 
   int index = 0;
   ephemeris->bodies_to_trajectories_.clear();
@@ -875,6 +865,18 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
         body, std::move(deserialized_trajectory));
     ++index;
   }
+
+  Instant checkpoint_time;
+  if (is_pre_fatou) {
+    checkpoint_time = Instant::ReadFromMessage(
+        message.instance().current_state().time().value().point());
+  } else {
+    checkpoint_time = Instant::ReadFromMessage(message.checkpoint_time());
+  }
+  ephemeris->checkpointer_->ReadFromMessage(checkpoint_time, message);
+  // The ephemeris will need to be prolonged as needed when deserializing the
+  // plugin.
+
   return ephemeris;
 }
 
@@ -899,28 +901,61 @@ Ephemeris<Frame>::Ephemeris(
     : accuracy_parameters_(pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance,
                            /*geopotential_tolerance=*/0),
       fixed_step_parameters_(integrator, 1 * Second),
-      guard_commander_(make_not_null_unique<GuardCommander>()) {}
+      checkpointer_(
+          make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
+              /*reader=*/nullptr, /*writer=*/nullptr)) {}
 
 template<typename Frame>
-Instant Ephemeris<Frame>::t_min_locked() const {
+void Ephemeris<Frame>::WriteToCheckpoint(
+    not_null<serialization::Ephemeris*> message) {
+  instance_->WriteToMessage(message->mutable_instance());
+}
+
+template<typename Frame>
+bool Ephemeris<Frame>::ReadFromCheckpoint(
+    serialization::Ephemeris const& message) {
+  bool const has_checkpoint = message.has_instance();
+  CHECK(has_checkpoint) << message.DebugString();
+  NewtonianMotionEquation equation;
+  equation.compute_acceleration = [this](
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<Vector<Acceleration, Frame>>& accelerations) {
+    ComputeMassiveBodiesGravitationalAccelerations(t,
+                                                    positions,
+                                                    accelerations);
+    return Status::OK;
+  };
+
+  instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
+      ReadFromMessage(
+          message.instance(),
+          equation,
+          /*append_state=*/
+          std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
+  return true;
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::CreateCheckpointIfNeeded(Instant const& time) const {
   lock_.AssertReaderHeld();
-  Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
-  for (auto const& pair : bodies_to_trajectories_) {
-    auto const& trajectory = pair.second;
-    t_min = std::max(t_min, trajectory->t_min());
+  if (checkpointer_->CreateIfNeeded(time, max_time_between_checkpoints)) {
+    for (auto const& trajectory : trajectories_) {
+      trajectory->checkpointer().CreateUnconditionally(time);
+    }
   }
-  return t_min;
 }
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
     typename NewtonianMotionEquation::SystemState const& state) {
   lock_.AssertHeld();
+  Instant const time = state.time.value;
   int index = 0;
   for (int i = 0; i < trajectories_.size(); ++i) {
     auto const& trajectory = trajectories_[i];
     auto const status = trajectory->Append(
-        state.time.value,
+        time,
         DegreesOfFreedom<Frame>(state.positions[index].value,
                                 state.velocities[index].value));
 
@@ -935,6 +970,8 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
 
     ++index;
   }
+
+  CreateCheckpointIfNeeded(time);
 }
 
 template<typename Frame>
@@ -943,9 +980,10 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories) {
   int index = 0;
   for (auto& trajectory : trajectories) {
-    trajectory->Append(state.time.value,
-                       DegreesOfFreedom<Frame>(state.positions[index].value,
-                                               state.velocities[index].value));
+    trajectory->Append(
+        state.time.value,
+        DegreesOfFreedom<Frame>(state.positions[index].value,
+                                state.velocities[index].value));
     ++index;
   }
 }
@@ -997,18 +1035,28 @@ void Ephemeris<Frame>::
 
     if (body1_is_oblate || body2_is_oblate) {
       if (body1_is_oblate) {
-        Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
+        Vector<Quotient<Acceleration,
+                        GravitationalParameter>, Frame> const
             degree_2_zonal_effect1 =
                 geopotentials[b1].GeneralSphericalHarmonicsAcceleration(
-                    t, -Δq, Δq_norm, Δq², one_over_Δq³);
+                    t,
+                    -Δq,
+                    Δq_norm,
+                    Δq²,
+                    one_over_Δq³);
         acceleration_on_b1 -= μ2 * degree_2_zonal_effect1;
         acceleration_on_b2 += μ1 * degree_2_zonal_effect1;
       }
       if (body2_is_oblate) {
-        Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
+        Vector<Quotient<Acceleration,
+                        GravitationalParameter>, Frame> const
             degree_2_zonal_effect2 =
                 geopotentials[b2].GeneralSphericalHarmonicsAcceleration(
-                    t, Δq, Δq_norm, Δq², one_over_Δq³);
+                    t,
+                    Δq,
+                    Δq_norm,
+                    Δq²,
+                    one_over_Δq³);
         acceleration_on_b1 += μ2 * degree_2_zonal_effect2;
         acceleration_on_b2 -= μ1 * degree_2_zonal_effect2;
       }
@@ -1019,12 +1067,12 @@ void Ephemeris<Frame>::
 template<typename Frame>
 template<bool body1_is_oblate>
 Error Ephemeris<Frame>::
-    ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
-        Instant const& t,
-        MassiveBody const& body1,
-        std::size_t const b1,
-        std::vector<Position<Frame>> const& positions,
-        std::vector<Vector<Acceleration, Frame>>& accelerations) const {
+ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
+    Instant const& t,
+    MassiveBody const& body1,
+    std::size_t const b1,
+    std::vector<Position<Frame>> const& positions,
+    std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   lock_.AssertReaderHeld();
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
   auto const& trajectory1 = *trajectories_[b1];
@@ -1053,10 +1101,15 @@ Error Ephemeris<Frame>::
     accelerations[b2] += Δq * μ1_over_Δq³;
 
     if (body1_is_oblate) {
-      Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
+      Vector<Quotient<Acceleration,
+                      GravitationalParameter>, Frame> const
           degree_2_zonal_effect1 =
               geopotentials_[b1].GeneralSphericalHarmonicsAcceleration(
-                  t, -Δq, Δq_norm, Δq², one_over_Δq³);
+                  t,
+                  -Δq,
+                  Δq_norm,
+                  Δq²,
+                  one_over_Δq³);
       accelerations[b2] += μ1 * degree_2_zonal_effect1;
     }
   }
@@ -1075,44 +1128,37 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     MassiveBody const& body1 = *bodies_[b1];
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/true>(t,
-                                  body1,
-                                  b1,
-                                  /*bodies2=*/bodies_,
-                                  /*b2_begin=*/b1 + 1,
-                                  /*b2_end=*/number_of_oblate_bodies_,
-                                  positions,
-                                  accelerations,
-                                  geopotentials_);
+        /*body2_is_oblate=*/true>(
+        t,
+        body1, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/b1 + 1,
+        /*b2_end=*/number_of_oblate_bodies_,
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
         /*body2_is_oblate=*/false>(
         t,
-        body1,
-        b1,
+        body1, b1,
         /*bodies2=*/bodies_,
         /*b2_begin=*/number_of_oblate_bodies_,
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions,
-        accelerations,
-        geopotentials_);
+        positions, accelerations, geopotentials_);
   }
   for (std::size_t b1 = number_of_oblate_bodies_;
-       b1 < number_of_oblate_bodies_ + number_of_spherical_bodies_;
+       b1 < number_of_oblate_bodies_ +
+            number_of_spherical_bodies_;
        ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/false,
         /*body2_is_oblate=*/false>(
         t,
-        body1,
-        b1,
+        body1, b1,
         /*bodies2=*/bodies_,
         /*b2_begin=*/b1 + 1,
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions,
-        accelerations,
-        geopotentials_);
+        positions, accelerations, geopotentials_);
   }
 }
 
@@ -1130,14 +1176,23 @@ Error Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
     error |= ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies<
-        /*body1_is_oblate=*/true>(t, body1, b1, positions, accelerations);
+                 /*body1_is_oblate=*/true>(
+                 t,
+                 body1, b1,
+                 positions,
+                 accelerations);
   }
   for (std::size_t b1 = number_of_oblate_bodies_;
-       b1 < number_of_oblate_bodies_ + number_of_spherical_bodies_;
+       b1 < number_of_oblate_bodies_ +
+            number_of_spherical_bodies_;
        ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
     error |= ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies<
-        /*body1_is_oblate=*/false>(t, body1, b1, positions, accelerations);
+                 /*body1_is_oblate=*/false>(
+                 t,
+                 body1, b1,
+                 positions,
+                 accelerations);
   }
   return error;
 }
@@ -1156,8 +1211,8 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     return Status::OK;
   }
 
-  std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories = {
-      trajectory};
+  std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
+      {trajectory};
   // The |min| is here to prevent us from spending too much time computing the
   // ephemeris.  The |max| is here to ensure that we always try to integrate
   // forward.  We use |last_state_.time.value| because this is always finite,
@@ -1191,8 +1246,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
       std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
                 std::cref(parameters.length_integration_tolerance_),
                 std::cref(parameters.speed_integration_tolerance_),
-                _1,
-                _2);
+                _1, _2);
 
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state;
   typename ODE::SystemState last_state;
@@ -1205,8 +1259,11 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
         &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories));
   }
 
-  auto const instance = parameters.integrator_->NewInstance(
-      problem, append_state, tolerance_to_error_ratio, integrator_parameters);
+  auto const instance =
+      parameters.integrator_->NewInstance(problem,
+                                          append_state,
+                                          tolerance_to_error_ratio,
+                                          integrator_parameters);
   auto status = instance->Solve(t_final);
 
   // We probably don't care if the vessel gets too close to the singularity, as
@@ -1244,10 +1301,12 @@ double Ephemeris<Frame>::ToleranceToErrorRatio(
   Length max_length_error;
   Speed max_speed_error;
   for (auto const& position_error : error.position_error) {
-    max_length_error = std::max(max_length_error, position_error.Norm());
+    max_length_error = std::max(max_length_error,
+                                position_error.Norm());
   }
   for (auto const& velocity_error : error.velocity_error) {
-    max_speed_error = std::max(max_speed_error, velocity_error.Norm());
+    max_speed_error = std::max(max_speed_error,
+                               velocity_error.Norm());
   }
   return std::min(length_integration_tolerance / max_length_error,
                   speed_integration_tolerance / max_speed_error);

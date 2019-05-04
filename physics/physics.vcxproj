@@ -22,6 +22,8 @@
     <ClInclude Include="body_surface_dynamic_frame_body.hpp" />
     <ClInclude Include="body_surface_frame_field.hpp" />
     <ClInclude Include="body_surface_frame_field_body.hpp" />
+    <ClInclude Include="checkpointer.hpp" />
+    <ClInclude Include="checkpointer_body.hpp" />
     <ClInclude Include="continuous_trajectory_body.hpp" />
     <ClInclude Include="continuous_trajectory.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
@@ -71,6 +73,7 @@
     <ClCompile Include="body_surface_dynamic_frame_test.cpp" />
     <ClCompile Include="body_surface_frame_field_test.cpp" />
     <ClCompile Include="body_test.cpp" />
+    <ClCompile Include="checkpointer_test.cpp" />
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
     <ClCompile Include="discrete_trajectory_test.cpp" />

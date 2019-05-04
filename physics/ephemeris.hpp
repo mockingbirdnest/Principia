@@ -15,6 +15,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "physics/checkpointer.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -121,8 +122,8 @@ class Ephemeris {
                        double geopotential_tolerance);
 
     void WriteToMessage(
-        not_null<serialization::Ephemeris::AccuracyParameters*> const message)
-        const;
+        not_null<serialization::Ephemeris::AccuracyParameters*> const
+            message) const;
     static AccuracyParameters ReadFromMessage(
         serialization::Ephemeris::AccuracyParameters const& message);
 
@@ -278,8 +279,8 @@ class Ephemeris {
   virtual not_null<MassiveBody const*> body_for_serialization_index(
       int serialization_index) const;
 
-  virtual void WriteToMessage(not_null<serialization::Ephemeris*> message) const
-      EXCLUDES(lock_);
+  virtual void WriteToMessage(
+      not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       serialization::Ephemeris const& message) EXCLUDES(lock_);
 
@@ -296,13 +297,17 @@ class Ephemeris {
   };
 
  protected:
-  // For mocking purposes, leaves everything uninitialized and uses the
-  // given |integrator|.
+  // For mocking purposes, leaves everything uninitialized and uses the given
+  // |integrator|.
   explicit Ephemeris(FixedStepSizeIntegrator<typename Ephemeris<
                          Frame>::NewtonianMotionEquation> const& integrator);
 
  private:
-  Instant t_min_locked() const REQUIRES_SHARED(lock_);
+  // Checkpointing support.
+  void WriteToCheckpoint(not_null<serialization::Ephemeris*> message);
+  bool ReadFromCheckpoint(serialization::Ephemeris const& message);
+  void CreateCheckpointIfNeeded(Instant const& time) const
+      SHARED_LOCKS_REQUIRED(lock_);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
@@ -315,6 +320,8 @@ class Ephemeris {
   // Note the return by copy: the returned value is usable even if the
   // |instance_| is being integrated.
   Instant instance_time() const EXCLUDES(lock_);
+
+  Instant t_min_locked() const REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between one body, |body1| (with index |b1| in
   // the |positions| and |accelerations| arrays) and the bodies |bodies2| (with
@@ -409,6 +416,9 @@ class Ephemeris {
 
   int number_of_oblate_bodies_ = 0;
   int number_of_spherical_bodies_ = 0;
+
+  not_null<
+      std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
 
   // Holds the state of all the guards.
   class GuardCommander;

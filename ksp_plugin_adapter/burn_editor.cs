@@ -184,7 +184,7 @@ class BurnEditor : ScalingRenderer {
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
     double[] thrusts =
         (from engine in active_engines
-         select engine.MaxThrustOutputVac(useThrustLimiter: true) *
+         select engine.maxThrust *
              (from transform in engine.thrustTransforms
               select Math.Max(0,
                               Vector3d.Dot(reference_direction,

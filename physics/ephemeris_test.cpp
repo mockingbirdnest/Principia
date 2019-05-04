@@ -14,6 +14,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -46,10 +47,12 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Rotation;
 using geometry::Velocity;
+using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
+using integrators::methods::Fine1987RKNG34;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using integrators::methods::Quinlan1999Order8A;
@@ -676,6 +679,9 @@ TEST_P(EphemerisTest, Serialization) {
   ephemeris.WriteToMessage(&message);
 
   auto const ephemeris_read = Ephemeris<ICRS>::ReadFromMessage(message);
+  // After deserialization, the client must prolong as needed.
+  ephemeris_read->Prolong(ephemeris.t_max());
+
   MassiveBody const* const earth_read = ephemeris_read->bodies()[0];
   MassiveBody const* const moon_read = ephemeris_read->bodies()[1];
 

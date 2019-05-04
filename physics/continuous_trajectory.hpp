@@ -11,6 +11,7 @@
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/polynomial.hpp"
+#include "physics/checkpointer.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
@@ -93,6 +94,14 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
+  // Checkpointing support.  The checkpointer is exposed to make it possible for
+  // Ephemeris to create synchronized checkpoints of its state and that of its
+  // trajectories.
+  Checkpointer<serialization::ContinuousTrajectory>& checkpointer();
+  void WriteToCheckpoint(
+      not_null<serialization::ContinuousTrajectory*> message);
+  bool ReadFromCheckpoint(serialization::ContinuousTrajectory const& message);
+
  protected:
   // For mocking.
   ContinuousTrajectory();
@@ -142,11 +151,12 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   typename InstantPolynomialPairs::const_iterator
   FindPolynomialForInstant(Instant const& time) const REQUIRES_SHARED(lock_);
 
-  mutable absl::Mutex lock_;
-
   // Construction parameters;
   Time const step_;
   Length const tolerance_;
+  Checkpointer<serialization::ContinuousTrajectory> checkpointer_;
+
+  mutable absl::Mutex lock_;
 
   // Initially set to the construction parameters, and then adjusted when we
   // choose the degree.
