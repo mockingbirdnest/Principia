@@ -288,7 +288,7 @@ class Ephemeris {
   // changes to |t_min| due to calls to |TryToForgetBefore|.
   class Guard final {
    public:
-    Guard(not_null<Ephemeris<Frame> const*> ephemeris);
+    explicit Guard(not_null<Ephemeris<Frame> const*> ephemeris);
     ~Guard();
 
    private:
