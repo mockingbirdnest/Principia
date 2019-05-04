@@ -131,11 +131,14 @@ void Ephemeris<Frame>::GuardCommander::Unprotect(Instant const& t_min) {
 
     // Find all the callbacks that are now unguarded and remove them from the
     // multimap.
-    Instant const first_guard_start_time = *guard_start_times_.begin();
+    std::optional<Instant> const first_guard_start_time =
+        guard_start_times_.empty()
+            ? std::nullopt
+            : std::make_optional(*guard_start_times_.begin());
     for (auto it = callbacks_.begin(); it != callbacks_.end();) {
       auto const& t = it->first;
       auto& callback = it->second;
-      if (t <= first_guard_start_time) {
+      if (!first_guard_start_time || t <= *first_guard_start_time) {
         callbacks_to_run.emplace_back(std::move(callback));
         it = callbacks_.erase(it);
       } else {
@@ -315,7 +318,7 @@ Ephemeris<Frame>::Ephemeris(
               /*writer=*/
               [this](not_null<serialization::Ephemeris*> const message) {
                 WriteToCheckpoint(message);
-              })) {
+              })),
       guard_commander_(make_not_null_unique<GuardCommander>()) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
@@ -903,7 +906,8 @@ Ephemeris<Frame>::Ephemeris(
       fixed_step_parameters_(integrator, 1 * Second),
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
-              /*reader=*/nullptr, /*writer=*/nullptr)) {}
+              /*reader=*/nullptr, /*writer=*/nullptr)),
+      guard_commander_(make_not_null_unique<GuardCommander>()) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpoint(
@@ -992,6 +996,17 @@ template<typename Frame>
 Instant Ephemeris<Frame>::instance_time() const {
   absl::ReaderMutexLock l(&lock_);
   return instance_->time().value;
+}
+
+template<typename Frame>
+Instant Ephemeris<Frame>::t_min_locked() const {
+  lock_.AssertReaderHeld();
+  Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
+  for (auto const& pair : bodies_to_trajectories_) {
+    auto const& trajectory = pair.second;
+    t_min = std::max(t_min, trajectory->t_min());
+  }
+  return t_min;
 }
 
 template<typename Frame>
