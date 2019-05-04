@@ -14,6 +14,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -46,10 +47,12 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Rotation;
 using geometry::Velocity;
+using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
+using integrators::methods::Fine1987RKNG34;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using integrators::methods::Quinlan1999Order8A;
@@ -297,8 +300,8 @@ TEST_P(EphemerisTest, EarthMoon) {
   EXPECT_THAT(Abs(moon_positions[100].coordinates().x), Lt(2 * Metre));
 }
 
-// Test the behavior of ForgetBefore on the Earth-Moon system.
-TEST_P(EphemerisTest, ForgetBefore) {
+// Test the behavior of EventuallyForgetBefore on the Earth-Moon system.
+TEST_P(EphemerisTest, EventuallyForgetBefore) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRS>> initial_state;
   Position<ICRS> centre_of_mass;
@@ -328,10 +331,22 @@ TEST_P(EphemerisTest, ForgetBefore) {
   EXPECT_EQ(t_max, earth_trajectory.t_max());
   EXPECT_EQ(t_max, moon_trajectory.t_max());
 
-  ephemeris.ForgetBefore(t0_ + 3 * period);
+  CHECK(ephemeris.EventuallyForgetBefore(t0_ + 3 * period));
   EXPECT_EQ(t0_ + 3 * period, ephemeris.t_min());
   EXPECT_EQ(t0_ + 3 * period, earth_trajectory.t_min());
   EXPECT_EQ(t0_ + 3 * period, moon_trajectory.t_min());
+
+  // Check that a Guard delays the effect of EventuallyForgetBefore.
+  {
+    Ephemeris<ICRS>::Guard g(&ephemeris);
+    CHECK(!ephemeris.EventuallyForgetBefore(t0_ + 5 * period));
+    EXPECT_EQ(t0_ + 3 * period, ephemeris.t_min());
+    EXPECT_EQ(t0_ + 3 * period, earth_trajectory.t_min());
+    EXPECT_EQ(t0_ + 3 * period, moon_trajectory.t_min());
+  }
+  EXPECT_EQ(t0_ + 5 * period, ephemeris.t_min());
+  EXPECT_EQ(t0_ + 5 * period, earth_trajectory.t_min());
+  EXPECT_EQ(t0_ + 5 * period, moon_trajectory.t_min());
 }
 
 // The Moon alone.  It moves in straight line.

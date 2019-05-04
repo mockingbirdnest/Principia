@@ -22,6 +22,7 @@
 #include "physics/geopotential.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
+#include "physics/protector.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "serialization/numerics.pb.h"
 #include "serialization/physics.pb.h"
@@ -39,8 +40,8 @@ using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using integrators::FixedStepSizeIntegrator;
-using integrators::Integrator;
 using integrators::IntegrationProblem;
+using integrators::Integrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Acceleration;
 using quantities::Length;
@@ -61,11 +62,10 @@ class Ephemeris {
     // The |length_| and |speed_integration_tolerance|s are used to compute the
     // |tolerance_to_error_ratio| for step size control.  The number of steps is
     // limited to |max_steps|.
-    ODEAdaptiveStepParameters(
-        AdaptiveStepSizeIntegrator<ODE> const& integrator,
-        std::int64_t max_steps,
-        Length const& length_integration_tolerance,
-        Speed const& speed_integration_tolerance);
+    ODEAdaptiveStepParameters(AdaptiveStepSizeIntegrator<ODE> const& integrator,
+                              std::int64_t max_steps,
+                              Length const& length_integration_tolerance,
+                              Speed const& speed_integration_tolerance);
 
     AdaptiveStepSizeIntegrator<ODE> const& integrator() const;
     std::int64_t max_steps() const;
@@ -185,13 +185,11 @@ class Ephemeris {
 
   virtual Status last_severe_integration_status() const;
 
-  // Calls |ForgetBefore| on all trajectories.  On return |t_min() == t|.  This
-  // function is thread-hostile in the sense that it can cause |t_min()| to
-  // increase, so if it is called is parallel with code that iterates over the
-  // trajectories of the ephemeris, it can cause trouble.
-  // TODO(phl): Consider eliminating this function and truncating on
-  // serialization/deserialization.
-  virtual void ForgetBefore(Instant const& t) EXCLUDES(lock_);
+  // If the time |t| is not protected by a |Guard|, calls |ForgetBefore| on all
+  // trajectories and returns true, after which |t_min() == t|.  If the time |t|
+  // is protected by a |Guard|, returns false; the actual action is delayed
+  // until the destruction of the |Guard|.
+  virtual bool EventuallyForgetBefore(Instant const& t) EXCLUDES(lock_);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t) EXCLUDES(lock_);
@@ -286,6 +284,24 @@ class Ephemeris {
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       serialization::Ephemeris const& message) EXCLUDES(lock_);
 
+  // A |Guard| is an RAII object that protects a critical section against
+  // changes to |t_min| due to calls to |EventuallyForgetBefore|.
+  class Guard final {
+   public:
+    explicit Guard(not_null<Ephemeris<Frame> const*> ephemeris);
+    ~Guard();
+
+    // Move only.
+    Guard(Guard&&) = default;
+    Guard& operator=(Guard&&) = default;
+    Guard(Guard const&) = delete;
+    Guard& operator=(Guard const&) = delete;
+
+   private:
+    not_null<Ephemeris<Frame> const*> const ephemeris_;
+    Instant t_min_;
+  };
+
  protected:
   // For mocking purposes, leaves everything uninitialized and uses the given
   // |integrator|.
@@ -310,6 +326,8 @@ class Ephemeris {
   // Note the return by copy: the returned value is usable even if the
   // |instance_| is being integrated.
   Instant instance_time() const EXCLUDES(lock_);
+
+  Instant t_min_locked() const REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between one body, |body1| (with index |b1| in
   // the |positions| and |accelerations| arrays) and the bodies |bodies2| (with
@@ -407,14 +425,20 @@ class Ephemeris {
 
   not_null<
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
+  not_null<std::unique_ptr<Protector>> protector_;
 
   // The fields above this line are fixed at construction and therefore not
-  // protected.  Note that |ContinuousTrajectory| is thread-safe.
+  // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
+  // also used to protect sections where the trajectories are not mutually
+  // consistent (e.g., during ForgetBefore, Prolong, etc.).
   mutable absl::Mutex lock_;
+
   std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
       instance_ GUARDED_BY(lock_);
 
-  Status last_severe_integration_status_;
+  Status last_severe_integration_status_ GUARDED_BY(lock_);
+
+  friend class Guard;
 };
 
 }  // namespace internal_ephemeris

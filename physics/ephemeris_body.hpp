@@ -43,8 +43,8 @@ using geometry::Sign;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
-using integrators::Integrator;
 using integrators::IntegrationProblem;
+using integrators::Integrator;
 using integrators::methods::Fine1987RKNG34;
 using numerics::Bisect;
 using numerics::DoublePrecision;
@@ -241,7 +241,8 @@ Ephemeris<Frame>::Ephemeris(
               /*writer=*/
               [this](not_null<serialization::Ephemeris*> const message) {
                 WriteToCheckpoint(message);
-              })) {
+              })),
+      protector_(make_not_null_unique<Protector>()) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -333,12 +334,7 @@ bool Ephemeris<Frame>::empty() const {
 template<typename Frame>
 Instant Ephemeris<Frame>::t_min() const {
   absl::ReaderMutexLock l(&lock_);
-  Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
-  for (auto const& pair : bodies_to_trajectories_) {
-    auto const& trajectory = pair.second;
-    t_min = std::max(t_min, trajectory->t_min());
-  }
-  return t_min;
+  return t_min_locked();
 }
 
 template<typename Frame>
@@ -360,17 +356,22 @@ Ephemeris<Frame>::planetary_integrator() const {
 
 template<typename Frame>
 Status Ephemeris<Frame>::last_severe_integration_status() const {
+  absl::ReaderMutexLock l(&lock_);
   return last_severe_integration_status_;
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
-  absl::MutexLock l(&lock_);
-  for (auto& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame>& trajectory = *pair.second;
-    trajectory.ForgetBefore(t);
-  }
-  checkpointer_->ForgetBefore(t);
+bool Ephemeris<Frame>::EventuallyForgetBefore(Instant const& t) {
+  auto forget_before_t = [this, t]() {
+    absl::MutexLock l(&lock_);
+    for (auto& pair : bodies_to_trajectories_) {
+      ContinuousTrajectory<Frame>& trajectory = *pair.second;
+      trajectory.ForgetBefore(t);
+    }
+    checkpointer_->ForgetBefore(t);
+  };
+
+  return protector_->RunWhenUnprotected(t, std::move(forget_before_t));
 }
 
 template<typename Frame>
@@ -536,8 +537,8 @@ Status Ephemeris<Frame>::FlowWithFixedStep(
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame> Ephemeris<Frame>::
-ComputeGravitationalAccelerationOnMasslessBody(
+Vector<Acceleration, Frame>
+Ephemeris<Frame>::ComputeGravitationalAccelerationOnMasslessBody(
     Position<Frame> const& position,
     Instant const& t) const {
   std::vector<Vector<Acceleration, Frame>> accelerations(1);
@@ -547,8 +548,8 @@ ComputeGravitationalAccelerationOnMasslessBody(
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame> Ephemeris<Frame>::
-ComputeGravitationalAccelerationOnMasslessBody(
+Vector<Acceleration, Frame>
+Ephemeris<Frame>::ComputeGravitationalAccelerationOnMasslessBody(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     Instant const& t) const {
   auto const it = trajectory->Find(t);
@@ -558,8 +559,8 @@ ComputeGravitationalAccelerationOnMasslessBody(
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame> Ephemeris<Frame>::
-ComputeGravitationalAccelerationOnMassiveBody(
+Vector<Acceleration, Frame>
+Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
     not_null<MassiveBody const*> const body,
     Instant const& t) const {
   bool const body_is_oblate = body->is_oblate();
@@ -806,6 +807,20 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
+Ephemeris<Frame>::Guard::Guard(
+    not_null<Ephemeris<Frame> const*> const ephemeris)
+    : ephemeris_(ephemeris) {
+  absl::MutexLock l(&ephemeris->lock_);
+  t_min_ = ephemeris->t_min_locked();
+  ephemeris->protector_->Protect(t_min_);
+}
+
+template<typename Frame>
+Ephemeris<Frame>::Guard::~Guard() {
+  ephemeris_->protector_->Unprotect(t_min_);
+}
+
+template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
     FixedStepSizeIntegrator<
         typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator)
@@ -814,7 +829,8 @@ Ephemeris<Frame>::Ephemeris(
       fixed_step_parameters_(integrator, 1 * Second),
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
-              /*reader=*/nullptr, /*writer=*/nullptr)) {}
+              /*reader=*/nullptr, /*writer=*/nullptr)),
+      protector_(make_not_null_unique<Protector>()) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpoint(
@@ -903,6 +919,17 @@ template<typename Frame>
 Instant Ephemeris<Frame>::instance_time() const {
   absl::ReaderMutexLock l(&lock_);
   return instance_->time().value;
+}
+
+template<typename Frame>
+Instant Ephemeris<Frame>::t_min_locked() const {
+  lock_.AssertReaderHeld();
+  Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
+  for (auto const& pair : bodies_to_trajectories_) {
+    auto const& trajectory = pair.second;
+    t_min = std::max(t_min, trajectory->t_min());
+  }
+  return t_min;
 }
 
 template<typename Frame>
@@ -1111,12 +1138,12 @@ Error Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
 template<typename Frame>
 template<typename ODE>
 Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
-      typename ODE::RightHandSideComputation compute_acceleration,
-      not_null<DiscreteTrajectory<Frame>*> trajectory,
-      Instant const& t,
-      ODEAdaptiveStepParameters<ODE> const& parameters,
-      std::int64_t max_ephemeris_steps,
-      bool last_point_only) {
+    typename ODE::RightHandSideComputation compute_acceleration,
+    not_null<DiscreteTrajectory<Frame>*> trajectory,
+    Instant const& t,
+    ODEAdaptiveStepParameters<ODE> const& parameters,
+    std::int64_t max_ephemeris_steps,
+    bool last_point_only) {
   Instant const& trajectory_last_time = trajectory->last().time();
   if (trajectory_last_time == t) {
     return Status::OK;

@@ -89,7 +89,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // End of the implementation of the interface.
 
-  // Serializes the current state of this object.
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
