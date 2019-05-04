@@ -361,7 +361,7 @@ Status Ephemeris<Frame>::last_severe_integration_status() const {
 }
 
 template<typename Frame>
-bool Ephemeris<Frame>::TryToForgetBefore(Instant const& t) {
+bool Ephemeris<Frame>::EventuallyForgetBefore(Instant const& t) {
   auto forget_before_t = [this, t]() {
     absl::MutexLock l(&lock_);
     for (auto& pair : bodies_to_trajectories_) {

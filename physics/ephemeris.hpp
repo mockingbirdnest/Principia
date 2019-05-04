@@ -189,7 +189,7 @@ class Ephemeris {
   // trajectories and returns true, after which |t_min() == t|.  If the time |t|
   // is protected by a |Guard|, returns false; the actual action is delayed
   // until the destruction of the |Guard|.
-  virtual bool TryToForgetBefore(Instant const& t) EXCLUDES(lock_);
+  virtual bool EventuallyForgetBefore(Instant const& t) EXCLUDES(lock_);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t) EXCLUDES(lock_);
@@ -285,11 +285,17 @@ class Ephemeris {
       serialization::Ephemeris const& message) EXCLUDES(lock_);
 
   // A |Guard| is an RAII object that protects a critical section against
-  // changes to |t_min| due to calls to |TryToForgetBefore|.
+  // changes to |t_min| due to calls to |EventuallyForgetBefore|.
   class Guard final {
    public:
     explicit Guard(not_null<Ephemeris<Frame> const*> ephemeris);
     ~Guard();
+
+    // Move only.
+    Guard(Guard&&) = default;
+    Guard& operator=(Guard&&) = default;
+    Guard(Guard const&) = delete;
+    Guard& operator=(Guard const&) = delete;
 
    private:
     not_null<Ephemeris<Frame> const*> const ephemeris_;
