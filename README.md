@@ -1,6 +1,6 @@
 # Principia
 
-**[Fáry](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#f%C3%A1ry), the May version of Principia, is available, with a number of UI improvements.  Download it [here for 1.3.1](https://bit.ly/2XWcGuh), and [here for 1.4.x, 1.5.1 and 1.6.1](https://bit.ly/2UMys1A).  We also updated the “Trappist-1 for Principia” mini-mod for version 0.7.x of the [SLIPPIST-1](https://github.com/GregroxMun/Seven-Worlds-of-SLIPPIST-1/releases) mod; download it [here](https://goo.gl/2ZHf3Tt).**
+**[Fáry](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#f%C3%A1ry), the May version of Principia, is available, with a number of UI improvements.  Download it [here for 1.3.1](https://bit.ly/2UMys1A), and [here for 1.4.x, 1.5.1 and 1.6.1](https://bit.ly/2XWcGuh).  We also updated the “Trappist-1 for Principia” mini-mod for version 0.7.x of the [SLIPPIST-1](https://github.com/GregroxMun/Seven-Worlds-of-SLIPPIST-1/releases) mod; download it [here](https://bit.ly/2ZHf3Tt).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
