@@ -344,7 +344,7 @@ TEST_P(EphemerisTest, TryToForgetBefore) {
     EXPECT_EQ(t0_ + 3 * period, earth_trajectory.t_min());
     EXPECT_EQ(t0_ + 3 * period, moon_trajectory.t_min());
   }
-  EXPECT_EQ(t0_ + 5 * period, ephemeris.t_min())/*<<(ephemeris.t_min()-t0_)/period*/;
+  EXPECT_EQ(t0_ + 5 * period, ephemeris.t_min());
   EXPECT_EQ(t0_ + 5 * period, earth_trajectory.t_min());
   EXPECT_EQ(t0_ + 5 * period, moon_trajectory.t_min());
 }
