@@ -620,33 +620,69 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
                  velocity_function,
                  t0_,
                  *trajectory);
-  serialization::ContinuousTrajectory message;
-  trajectory->WriteToMessage(&message);
-  EXPECT_EQ(step / Second, message.step().magnitude());
-  EXPECT_EQ(tolerance / Metre, message.tolerance().magnitude());
-  EXPECT_GE(message.adjusted_tolerance().magnitude(),
-            message.tolerance().magnitude());
-  EXPECT_TRUE(message.has_is_unstable());
-  EXPECT_EQ(3, message.degree());
-  EXPECT_GE(100, message.degree_age());
-  EXPECT_EQ(2, message.instant_polynomial_pair_size());
-  EXPECT_TRUE(message.has_first_time());
-  EXPECT_EQ(4, message.last_point_size());
 
-  auto const trajectory_read =
-      ContinuousTrajectory<World>::ReadFromMessage(message);
-  EXPECT_EQ(trajectory->t_min(), trajectory_read->t_min());
-  EXPECT_EQ(trajectory->t_max(), trajectory_read->t_max());
-  for (Instant time = trajectory->t_min();
-       time <= trajectory->t_max();
-       time += step / number_of_substeps) {
-    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time),
-              trajectory_read->EvaluateDegreesOfFreedom(time));
+  // No checkpoints.  The checkpointed fields are absent from the serialization.
+  {
+    serialization::ContinuousTrajectory message;
+    trajectory->WriteToMessage(&message);
+    EXPECT_EQ(step / Second, message.step().magnitude());
+    EXPECT_EQ(tolerance / Metre, message.tolerance().magnitude());
+    EXPECT_FALSE(message.has_adjusted_tolerance());
+    EXPECT_FALSE(message.has_is_unstable());
+    EXPECT_FALSE(message.has_degree());
+    EXPECT_FALSE(message.has_degree_age());
+    EXPECT_EQ(0, message.last_point_size());
+    EXPECT_EQ(2, message.instant_polynomial_pair_size());
+    EXPECT_TRUE(message.has_first_time());
+
+    auto const trajectory_read =
+        ContinuousTrajectory<World>::ReadFromMessage(message);
+    EXPECT_EQ(trajectory->t_min(), trajectory_read->t_min());
+    EXPECT_EQ(trajectory->t_max(), trajectory_read->t_max());
+    for (Instant time = trajectory->t_min();
+         time <= trajectory->t_max();
+         time += step / number_of_substeps) {
+      EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time),
+                trajectory_read->EvaluateDegreesOfFreedom(time));
+    }
+
+    serialization::ContinuousTrajectory second_message;
+    trajectory_read->WriteToMessage(&second_message);
+    EXPECT_THAT(message, EqualsProto(second_message));
   }
 
-  serialization::ContinuousTrajectory second_message;
-  trajectory_read->WriteToMessage(&second_message);
-  EXPECT_THAT(message, EqualsProto(second_message));
+  // Now take a checkpoint and verify that the checkpointed data is properly
+  // serialized.
+  trajectory->checkpointer().CreateUnconditionally(trajectory->t_max());
+  {
+    serialization::ContinuousTrajectory message;
+    trajectory->WriteToMessage(&message);
+    EXPECT_EQ(step / Second, message.step().magnitude());
+    EXPECT_EQ(tolerance / Metre, message.tolerance().magnitude());
+    EXPECT_GE(message.adjusted_tolerance().magnitude(),
+              message.tolerance().magnitude());
+    EXPECT_TRUE(message.has_is_unstable());
+    EXPECT_EQ(3, message.degree());
+    EXPECT_GE(100, message.degree_age());
+    EXPECT_EQ(2, message.instant_polynomial_pair_size());
+    EXPECT_TRUE(message.has_first_time());
+    EXPECT_EQ(4, message.last_point_size());
+
+    auto const trajectory_read =
+        ContinuousTrajectory<World>::ReadFromMessage(message);
+    EXPECT_EQ(trajectory->t_min(), trajectory_read->t_min());
+    EXPECT_EQ(trajectory->t_max(), trajectory_read->t_max());
+    for (Instant time = trajectory->t_min();
+         time <= trajectory->t_max();
+         time += step / number_of_substeps) {
+      EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time),
+                trajectory_read->EvaluateDegreesOfFreedom(time));
+    }
+
+    serialization::ContinuousTrajectory second_message;
+    trajectory_read->WriteToMessage(&second_message);
+    EXPECT_THAT(message, EqualsProto(second_message));
+  }
 }
 
 TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
@@ -728,16 +764,15 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
 
   EXPECT_TRUE(trajectory->empty());
 
-  // Fill the trajectory, get a checkpoint and fill some more.
+  // Fill the trajectory, create a checkpoint and fill some more.
   FillTrajectory(number_of_steps1,
                  step,
                  position_function,
                  velocity_function,
                  t0_,
                  *trajectory);
-  ContinuousTrajectory<World>::Checkpoint const checkpoint =
-      trajectory->GetCheckpoint();
-  Instant const checkpoint_t_max = trajectory->t_max();
+  Instant const checkpoint_time = trajectory->t_max();
+  trajectory->checkpointer().CreateUnconditionally(checkpoint_time);
   FillTrajectory(number_of_steps2,
                  step,
                  position_function,
@@ -746,7 +781,7 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
                  *trajectory);
 
   serialization::ContinuousTrajectory message;
-  trajectory->WriteToMessage(&message, checkpoint);
+  trajectory->WriteToMessage(&message);
   EXPECT_EQ(step / Second, message.step().magnitude());
   EXPECT_EQ(tolerance / Metre, message.tolerance().magnitude());
   EXPECT_GE(message.adjusted_tolerance().magnitude(),
@@ -761,9 +796,9 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   auto const trajectory_read =
       ContinuousTrajectory<World>::ReadFromMessage(message);
   EXPECT_EQ(trajectory_read->t_min(), trajectory->t_min());
-  EXPECT_EQ(trajectory_read->t_max(), checkpoint_t_max);
+  EXPECT_EQ(trajectory_read->t_max(), checkpoint_time);
   for (Instant time = trajectory->t_min();
-       time <= checkpoint_t_max;
+       time <= checkpoint_time;
        time += step / number_of_substeps) {
     EXPECT_EQ(trajectory_read->EvaluateDegreesOfFreedom(time),
               trajectory->EvaluateDegreesOfFreedom(time));

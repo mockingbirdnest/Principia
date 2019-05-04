@@ -664,6 +664,9 @@ TEST_P(EphemerisTest, Serialization) {
   ephemeris.WriteToMessage(&message);
 
   auto const ephemeris_read = Ephemeris<ICRS>::ReadFromMessage(message);
+  // After deserialization, the client must prolong as needed.
+  ephemeris_read->Prolong(ephemeris.t_max());
+
   MassiveBody const* const earth_read = ephemeris_read->bodies()[0];
   MassiveBody const* const moon_read = ephemeris_read->bodies()[1];
 
