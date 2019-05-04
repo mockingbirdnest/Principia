@@ -185,11 +185,10 @@ class Ephemeris {
 
   virtual Status last_severe_integration_status() const;
 
-  // Calls |ForgetBefore| on all trajectories.  On return |t_min() == t|.  This
-  // function is thread-hostile in the sense that it can cause |t_min()| to
-  // increase, so if it is called is parallel with code that iterates over the
-  // trajectories of the ephemeris, it can cause trouble.
-  //TODO(phl):comment
+  // If the time |t| is not protected by a |Guard|, calls |ForgetBefore| on all
+  // trajectories and returns true, after which |t_min() == t|.  If the time |t|
+  // is protected by a |Guard|, returns false; the actual action is delayed
+  // until the destruction of the |Guard|.
   virtual bool TryToForgetBefore(Instant const& t) EXCLUDES(lock_);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
