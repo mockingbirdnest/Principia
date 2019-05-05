@@ -22,7 +22,7 @@ namespace numerics {
 class FastSinCos2πTest : public ::testing::Test {
  protected:
 #if defined(_DEBUG)
-  static constexpr int iterations_ = 1e7;
+  static constexpr int iterations_ = 1e6;
 #else
   static constexpr int iterations_ = 1e8;
 #endif

@@ -22,7 +22,11 @@ class ThreadPoolTest : public ::testing::Test {
 // Check that execution occurs in parallel.  If things were sequential, the
 // integers in |numbers| would be monotonically increasing.
 TEST_F(ThreadPoolTest, ParallelExecution) {
-  static constexpr int number_of_calls = 1'000'000;
+#if defined(_DEBUG)
+  constexpr int number_of_calls = 100'000;
+#else
+  constexpr int number_of_calls = 1'000'000;
+#endif
 
   absl::Mutex lock;
   std::vector<std::int64_t> numbers;
