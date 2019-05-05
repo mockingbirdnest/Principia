@@ -44,7 +44,7 @@ using quantities::Acceleration;
 // - the Z axis is the pole Z from the figure.
 // Note that, when |InertialFrame| is the ICRS, these axes make |ThisFrame| the
 // usual celestial reference frame (the GCRS) if |centre| is the Earth, as the X
-// axis will point towards ♈; however, if |centre| is another planet,
+// axis will point towards ♈︎; however, if |centre| is another planet,
 // |ThisFrame| will not have the axes of its natural celestial reference frame,
 // as the X axis will not point towards its equinox.
 // REMOVE BEFORE FLIGHT: Do we really want that? This seems like a very
