@@ -237,6 +237,8 @@ TEST_F(VesselTest, AdvanceTime) {
 }
 
 TEST_F(VesselTest, Prediction) {
+  EXPECT_CALL(ephemeris_, t_min_locked())
+      .WillRepeatedly(Return(astronomy::J2000));
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
   EXPECT_CALL(
@@ -306,6 +308,8 @@ TEST_F(VesselTest, Prediction) {
 }
 
 TEST_F(VesselTest, PredictBeyondTheInfinite) {
+  EXPECT_CALL(ephemeris_, t_min_locked())
+      .WillRepeatedly(Return(astronomy::J2000));
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(astronomy::J2000 + 0.5 * Second));
   EXPECT_CALL(
