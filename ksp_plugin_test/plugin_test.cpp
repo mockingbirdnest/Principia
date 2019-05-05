@@ -902,9 +902,6 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
 
   Instant const initial_time = ParseTT(initial_time_);
   Instant const& time = initial_time + 1 * Second;
-  EXPECT_CALL(plugin_->mock_ephemeris(),
-              EventuallyForgetBefore(HistoryTime(time, 5)))
-      .WillOnce(Return(true));
   plugin_->AdvanceTime(time, Angle());
   VesselSet collided_vessels;
   plugin_->CatchUpLaggingVessels(collided_vessels);
@@ -915,6 +912,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
                               inserted);
   plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
   plugin_->CatchUpLaggingVessels(collided_vessels);
+  EXPECT_CALL(plugin_->mock_ephemeris(), t_min_locked)
+      .WillRepeatedly(Return(HistoryTime(time, 0)));
   plugin_->UpdatePrediction(guid);
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
@@ -923,6 +922,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
                               inserted);
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin_->CatchUpLaggingVessels(collided_vessels);
+  EXPECT_CALL(plugin_->mock_ephemeris(),
+              EventuallyForgetBefore(HistoryTime(time, 5)))
+      .WillOnce(Return(true));
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
   auto const& prediction = plugin_->GetVessel(guid)->prediction();
   auto const rendered_prediction =

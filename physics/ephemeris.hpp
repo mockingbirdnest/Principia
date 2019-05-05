@@ -327,7 +327,7 @@ class Ephemeris {
   // |instance_| is being integrated.
   Instant instance_time() const EXCLUDES(lock_);
 
-  Instant t_min_locked() const REQUIRES_SHARED(lock_);
+  virtual Instant t_min_locked() const REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between one body, |body1| (with index |b1| in
   // the |positions| and |accelerations| arrays) and the bodies |bodies2| (with
