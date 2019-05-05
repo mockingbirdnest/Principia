@@ -412,7 +412,21 @@ TEST_F(PluginTest, Serialization) {
   plugin->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->UpdatePrediction(satellite);
-  plugin->ForgetAllHistoriesBefore(HistoryTime(time, 2));
+
+  // The call to |UpdatePrediction| above may guard the ephemeris and delay
+  // forgetting the histories until after the plugin is serialized below.  To
+  // make this test deterministic, we poll until forgetting has actually
+  // happened.
+  for (;;) {
+    Instant const t_min = HistoryTime(time, 2);
+    plugin->ForgetAllHistoriesBefore(t_min);
+    if (t_min <=
+        plugin->GetCelestial(SolarSystemFactory::Sun).trajectory().t_min()) {
+      break;
+    }
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(100ms);
+  }
 
   plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);
   plugin->renderer().SetPlottingFrame(

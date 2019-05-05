@@ -491,9 +491,9 @@ Status Vessel::FlowPrognostication(
     PrognosticatorParameters const& prognosticator_parameters,
     std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication) {
   // This function may be run in a separate thread, and bad things will happen
-  // if |TryToForgetBefore| runs in parallel with it: the ephemeris' |t_min| may
-  // end up being after the time that |FlowWithAdaptiveStep| tries to integrate,
-  // causing various check failures.
+  // if |EventuallyForgetBefore| runs in parallel with it: the ephemeris'
+  // |t_min| may end up being after the time that |FlowWithAdaptiveStep| tries
+  // to integrate, causing various check failures.
   Ephemeris<Barycentric>::Guard g(ephemeris_);
 
   prognostication = std::make_unique<DiscreteTrajectory<Barycentric>>();
