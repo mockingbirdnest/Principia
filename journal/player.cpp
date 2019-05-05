@@ -16,11 +16,13 @@ namespace principia {
 using base::GetLine;
 using base::HexadecimalEncoder;
 using base::UniqueArray;
+using interface::principia__ActivatePlayer;
 
 namespace journal {
 
 Player::Player(std::filesystem::path const& path)
     : stream_(path, std::ios::in) {
+  principia__ActivatePlayer();
   CHECK(!stream_.fail());
 }
 

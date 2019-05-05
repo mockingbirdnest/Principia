@@ -8,10 +8,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : SupervisedWindowRenderer {
   // Update this section before each release.
-  private const String next_release_name_ = "Fáry";
-  private const int next_release_lunation_number_ = 239;
+  private const String next_release_name_ = "Fatou";
+  private const int next_release_lunation_number_ = 240;
   private DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2019, 05, 04, 22, 46, 00, TimeSpan.Zero);
+      new DateTimeOffset(2019, 06, 03, 10, 02, 00, TimeSpan.Zero);
 
   public delegate Vessel PredictedVessel();
 
@@ -189,6 +189,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                      "{0:0.00e00} s");
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
+        show_selection_ui = true;
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           selecting_active_vessel_target = UnityEngine.GUILayout.Toggle(
               selecting_active_vessel_target, "Select target vessel...");
@@ -213,6 +214,11 @@ internal class MainWindow : SupervisedWindowRenderer {
           }
         }
       } else {
+        // This will remove the "Select" UI so it must shrink.
+        if (show_selection_ui) {
+          show_selection_ui = false;
+          Shrink();
+        }
         selecting_active_vessel_target = false;
       }
       if (plugin != IntPtr.Zero) {
@@ -229,7 +235,6 @@ internal class MainWindow : SupervisedWindowRenderer {
                               show   : ref show_logging_settings_,
                               render : RenderLoggingSettings);
     }
-    Shrink();
     UnityEngine.GUI.DragWindow();
   }
 
@@ -470,6 +475,8 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool show_ksp_features_ = false;
   private bool show_logging_settings_ = false;
   private bool show_prediction_settings_ = true;
+
+  private bool show_selection_ui = false;
 
   private bool should_load_compatibility_data_ = true;
   private int prediction_length_tolerance_index_ =

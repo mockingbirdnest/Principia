@@ -291,7 +291,14 @@ void Vessel::RefreshPrediction() {
                                psychohistory_->last().degrees_of_freedom(),
                                prediction_adaptive_step_parameters_,
                                /*shutdown=*/false};
-  StartPrognosticatorIfNeeded();
+  if (synchronous_) {
+    std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
+    Status const status = FlowPrognostication(*prognosticator_parameters_,
+                                              prognostication);
+    SwapPrognostication(prognostication, status);
+  } else {
+    StartPrognosticatorIfNeeded();
+  }
   if (prognostication_ != nullptr) {
     AttachPrediction(std::move(prognostication_));
   }
@@ -300,6 +307,10 @@ void Vessel::RefreshPrediction() {
 void Vessel::RefreshPrediction(Instant const& time) {
   RefreshPrediction();
   prediction_->ForgetAfter(time);
+}
+
+std::string Vessel::ShortDebugString() const {
+  return name_ + " (" + guid_ + ")";
 }
 
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
@@ -414,8 +425,12 @@ void Vessel::FillContainingPileUpsFromMessage(
   }
 }
 
-std::string Vessel::ShortDebugString() const {
-  return name_ + " (" + guid_ + ")";
+void Vessel::MakeAsynchronous() {
+  synchronous_ = false;
+}
+
+void Vessel::MakeSynchronous() {
+  synchronous_ = true;
 }
 
 Vessel::Vessel()
@@ -458,45 +473,60 @@ void Vessel::RepeatedlyFlowPrognostication() {
     // produce the same effects.
     if (!previous_prognosticator_parameters ||
         *previous_prognosticator_parameters != prognosticator_parameters) {
-      auto prognostication =
-          std::make_unique<DiscreteTrajectory<Barycentric>>();
-      prognostication->Append(
-          prognosticator_parameters->first_time,
-          prognosticator_parameters->first_degrees_of_freedom);
-      Status status;
-      status = ephemeris_->FlowWithAdaptiveStep(
-          prognostication.get(),
-          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          ephemeris_->t_max(),
-          prognosticator_parameters->adaptive_step_parameters,
-          FlightPlan::max_ephemeris_steps_per_frame,
-          /*last_point_only=*/false);
-      bool const reached_t_max = status.ok();
-      if (reached_t_max) {
-        // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
-        status = ephemeris_->FlowWithAdaptiveStep(
-            prognostication.get(),
-            Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-            InfiniteFuture,
-            prognosticator_parameters->adaptive_step_parameters,
-            FlightPlan::max_ephemeris_steps_per_frame,
-            /*last_point_only=*/false);
-      }
-      LOG_IF(INFO, !status.ok())
-          << "Prognostication from " << prognosticator_parameters->first_time
-          << " finished at " << prognostication->last().time() << " with "
-          << status.ToString() << " for " << ShortDebugString();
-
-      // Publish the prognostication if the computation was not cancelled.
-      if (status.error() != Error::CANCELLED) {
+      std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
+      Status const status = FlowPrognostication(*prognosticator_parameters,
+                                                prognostication);
+      {
         absl::MutexLock l(&prognosticator_lock_);
-        prognostication_.swap(prognostication);
-        prognosticator_status_ = status;
+        SwapPrognostication(prognostication, status);
       }
       previous_prognosticator_parameters = prognosticator_parameters;
     }
 
     std::this_thread::sleep_until(wakeup_time);
+  }
+}
+
+Status Vessel::FlowPrognostication(
+    PrognosticatorParameters const& prognosticator_parameters,
+    std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication) {
+  prognostication = std::make_unique<DiscreteTrajectory<Barycentric>>();
+  prognostication->Append(
+      prognosticator_parameters.first_time,
+      prognosticator_parameters.first_degrees_of_freedom);
+  Status status;
+  status = ephemeris_->FlowWithAdaptiveStep(
+      prognostication.get(),
+      Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+      ephemeris_->t_max(),
+      prognosticator_parameters.adaptive_step_parameters,
+      FlightPlan::max_ephemeris_steps_per_frame,
+      /*last_point_only=*/false);
+  bool const reached_t_max = status.ok();
+  if (reached_t_max) {
+    // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
+    status = ephemeris_->FlowWithAdaptiveStep(
+        prognostication.get(),
+        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+        InfiniteFuture,
+        prognosticator_parameters.adaptive_step_parameters,
+        FlightPlan::max_ephemeris_steps_per_frame,
+        /*last_point_only=*/false);
+  }
+  LOG_IF(INFO, !status.ok())
+      << "Prognostication from " << prognosticator_parameters.first_time
+      << " finished at " << prognostication->last().time() << " with "
+      << status.ToString() << " for " << ShortDebugString();
+  return status;
+}
+
+void Vessel::SwapPrognostication(
+    std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
+    Status const& status) {
+  prognosticator_lock_.AssertHeld();
+  if (status.error() != Error::CANCELLED) {
+    prognostication_.swap(prognostication);
+    prognosticator_status_ = status;
   }
 }
 
@@ -558,6 +588,14 @@ void Vessel::AttachPrediction(
     psychohistory_->AttachFork(std::move(trajectory));
   }
 }
+
+// Run the prognostication in both synchronous and asynchronous mode in tests to
+// avoid code rot.
+#if defined(_DEBUG)
+std::atomic_bool Vessel::synchronous_(true);
+#else
+std::atomic_bool Vessel::synchronous_(false);
+#endif
 
 }  // namespace internal_vessel
 }  // namespace ksp_plugin

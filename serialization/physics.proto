@@ -60,6 +60,7 @@ message ContinuousTrajectory {
   repeated ChebyshevSeries series = 7;  // Pre-Cohen.
   optional Point first_time = 8;
   repeated InstantaneousDegreesOfFreedom last_point = 9;
+  optional Point checkpoint_time = 11;  // Added in Fatou.
   // Added in Cohen.
   message InstantPolynomialPair {
     required Point t_max = 1;
@@ -114,11 +115,16 @@ message Ephemeris {
   repeated ContinuousTrajectory trajectory = 2;
   optional AccuracyParameters accuracy_parameters = 10; // Added in Ἐρατοσθένης.
   required FixedStepParameters fixed_step_parameters = 7;
-  optional Point t_max = 8;  // Pre-Εὔδοξος.
-  optional bool has_checkpoints = 11;  // Added in Εὔδοξος.
   required IntegratorInstance instance = 9;
+  optional Point checkpoint_time = 12;  // Added in Fatou.
 
-  // Pre-Ἐρατοσθένης
+  // Pre-Fatou.
+  reserved 11;
+  reserved "has_checkpoints";
+  // Pre-Εὔδοξος.
+  reserved 8;
+  reserved "t_max";
+  // Pre-Ἐρατοσθένης.
   reserved 5;
   reserved "fitting_tolerance";
   // Pre-Cardano.

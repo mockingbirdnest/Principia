@@ -1,6 +1,6 @@
 # Principia
 
-**[Fano](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#fano), the April version of Principia, is available, with performance improvements and some minor UI bug fixes.  Download it [here for 1.3.1](https://bit.ly/2ONYnEM), and [here for 1.4.x, 1.5.1 and 1.6.1](https://bit.ly/2uOzbVb).**
+**[Fáry](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#f%C3%A1ry), the May version of Principia, is available, with a number of UI improvements.  Download it [here for 1.3.1](https://bit.ly/2UMys1A), and [here for 1.4.x, 1.5.1 and 1.6.1](https://bit.ly/2XWcGuh).  We also updated the “Trappist-1 for Principia” mini-mod for version 0.7.x of the [SLIPPIST-1](https://github.com/GregroxMun/Seven-Worlds-of-SLIPPIST-1/releases) mod; download it [here](https://bit.ly/2ZHf3Tt).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -16,4 +16,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.3.1](https://bit.ly/2ONYnEM), and [here for 1.4.x, 1.5.1 and 1.6.1](https://bit.ly/2uOzbVb).  Download the [“Trappist-1 for Principia”](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions#installing-trappist-1-for-principia) mini-mod [here](https://bit.ly/2RrjjkC).  Or, if you don't trust our binary, build the mod from the [Fano](https://github.com/mockingbirdnest/Principia/releases/tag/2019040509-Fano) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.3.1](https://bit.ly/2UMys1A), and [here for 1.4.x, 1.5.1 and 1.6.1](https://bit.ly/2XWcGuh).  Download the [“Trappist-1 for Principia”](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions#installing-trappist-1-for-principia) mini-mod [here](https://bit.ly/2ZHf3Tt).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Fáry](https://github.com/mockingbirdnest/Principia/releases/tag/2019050423-F%C3%A1ry) release.
