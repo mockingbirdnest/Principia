@@ -43,7 +43,11 @@ TEST_F(BundleDeathTest, AddAfterJoin) {
 }
 
 TEST_F(BundleTest, MatrixVectorProduct) {
+#if defined(_DEBUG)
+  constexpr std::int64_t short_dimension = 100;
+#else
   constexpr std::int64_t short_dimension = 1000;
+#endif
   constexpr std::int64_t long_dimension = 100000;
   std::vector<std::int64_t> matrix(short_dimension * long_dimension, 1);
   std::vector<std::int64_t> vector(long_dimension);

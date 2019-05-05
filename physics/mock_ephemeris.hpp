@@ -88,6 +88,8 @@ class MockEphemeris : public Ephemeris<Frame> {
 
   MOCK_CONST_METHOD1_T(WriteToMessage,
                        void(not_null<serialization::Ephemeris*> message));
+
+  MOCK_CONST_METHOD0_T(t_min_locked, Instant());
 };
 
 }  // namespace internal_ephemeris

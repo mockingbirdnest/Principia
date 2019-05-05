@@ -286,7 +286,7 @@ class Ephemeris {
 
   // A |Guard| is an RAII object that protects a critical section against
   // changes to |t_min| due to calls to |EventuallyForgetBefore|.
-  class Guard final {
+  class PHYSICS_DLL Guard final {
    public:
     explicit Guard(not_null<Ephemeris<Frame> const*> ephemeris);
     ~Guard();
@@ -327,7 +327,7 @@ class Ephemeris {
   // |instance_| is being integrated.
   Instant instance_time() const EXCLUDES(lock_);
 
-  Instant t_min_locked() const REQUIRES_SHARED(lock_);
+  virtual Instant t_min_locked() const REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between one body, |body1| (with index |b1| in
   // the |positions| and |accelerations| arrays) and the bodies |bodies2| (with
