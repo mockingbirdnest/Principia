@@ -30,10 +30,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public delegate void Callback(NavigationFrameParameters frame_parameters);
 
-  public ReferenceFrameSelector(
-      ISupervisor supervisor,
-      Callback on_change,
-      string name) : base(supervisor, UnityEngine.GUILayout.MinWidth(0)) {
+  public ReferenceFrameSelector(ISupervisor supervisor,
+                                Callback on_change,
+                                string name)
+      : base(supervisor, UnityEngine.GUILayout.MinWidth(0)) {
     on_change_ = on_change;
     name_ = name;
 
@@ -51,56 +51,64 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public void UpdateMainBody() {
-    frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
-    selected_celestial =
-        FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
-    for (CelestialBody celestial = selected_celestial;
-         celestial.orbit != null;
-         celestial = celestial.orbit.referenceBody) {
-      if (!celestial.is_leaf()) {
-        expanded_[celestial] = true;
+    EffectChange(() => {
+      frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+      selected_celestial =
+          FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
+      for (CelestialBody celestial = selected_celestial;
+           celestial.orbit != null;
+           celestial = celestial.orbit.referenceBody) {
+        if (!celestial.is_leaf()) {
+          expanded_[celestial] = true;
+        }
       }
-    }
-    on_change_(FrameParameters());
+    });
+    UnityEngine.Debug.LogError("UMB");
   }
 
   public void SetFrameParameters(NavigationFrameParameters parameters) {
-    frame_type = (FrameType)parameters.extension;
-    switch (frame_type) {
-      case FrameType.BODY_CENTRED_NON_ROTATING:
-      case FrameType.BODY_SURFACE:
-        selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
-        break;
-      case FrameType.BARYCENTRIC_ROTATING:
-        selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
-        break;
-      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-        selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
-        break;
-    }
-    on_change_(FrameParameters());
+    EffectChange(() => {
+      frame_type = (FrameType)parameters.extension;
+      switch (frame_type) {
+        case FrameType.BODY_CENTRED_NON_ROTATING:
+        case FrameType.BODY_SURFACE:
+          selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
+          break;
+        case FrameType.BARYCENTRIC_ROTATING:
+          selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
+          break;
+        case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+          selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
+          break;
+      }
+    });
+    UnityEngine.Debug.LogError("SFP");
   }
 
   // Sets the |frame_type| to |type| unless this would be invalid for the
   // |selected_celestial|, in which case |frame_type| is set to
   // |BODY_CENTRED_NON_ROTATING|.
   public void SetFrameType(FrameType type) {
-    if (selected_celestial.is_root() &&
-        (type == FrameType.BARYCENTRIC_ROTATING ||
-         type == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
-      frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
-    } else {
-      frame_type = type;
-    }
-    on_change_(FrameParameters());
+    EffectChange(() => {
+      if (selected_celestial.is_root() &&
+          (type == FrameType.BARYCENTRIC_ROTATING ||
+           type == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
+        frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+      } else {
+        frame_type = type;
+      }
+    });
+    UnityEngine.Debug.LogError("SFT");
   }
 
   // Sets the |frame_type| to |BODY_SURFACE| and sets |selected_celestial| to
   // the given |celestial|.
   public void SetToSurfaceFrameOf(CelestialBody celestial) {
-    frame_type = FrameType.BODY_SURFACE;
-    selected_celestial = celestial;
-    on_change_(FrameParameters());
+    EffectChange(() => {
+      frame_type = FrameType.BODY_SURFACE;
+      selected_celestial = celestial;
+    });
+    UnityEngine.Debug.LogError("STSFO");
   }
 
   public static String Name(FrameType type,
@@ -267,6 +275,26 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
+  public FrameType frame_type {
+    get => frame_type_;
+    private set {
+      if (frame_type_ != value) {
+        frame_changed_ = true;
+      }
+      frame_type_ = value;
+    }
+  }
+
+  public CelestialBody selected_celestial {
+    get => selected_celestial_;
+    private set {
+      if (selected_celestial_ != value) {
+        frame_changed_ = true;
+      }
+      selected_celestial_ = value;
+    }
+  }
+
   protected override String Title {
     get {
       return name_ + " selection (" + Name() + ")";
@@ -328,13 +356,13 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
       }
       if (UnityEngine.GUILayout.Toggle(selected_celestial == celestial,
                                        celestial.name)) {
-        if (selected_celestial != celestial) {
+        EffectChange(() => {
           selected_celestial = celestial;
           if (celestial.is_root() && frame_type != FrameType.BODY_SURFACE) {
             frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
           }
-          on_change_(FrameParameters());
-        }
+        });
+    UnityEngine.Debug.LogError("RS");
       }
     }
     if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
@@ -354,20 +382,31 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
            style,
            GUILayoutWidth(6),
            GUILayoutHeight(5))) {
-     if (frame_type != value) {
-       frame_type = value;
-       on_change_(FrameParameters());
-     }
+      EffectChange(() => {
+        frame_type = value;
+      });
+      UnityEngine.Debug.LogError("TS");
     }
   }
 
-  public FrameType frame_type { get; private set; }
-  public CelestialBody selected_celestial { get; private set; }
+  private void EffectChange(Action action) {
+    frame_changed_ = false;
+    action();
+    if (frame_changed_) {
+      on_change_(FrameParameters());
+      frame_changed_ = false;
+    }
+  }
+
   public Vessel target_override { get; set; }
 
   private readonly Callback on_change_;
   private readonly string name_;
   private Dictionary<CelestialBody, bool> expanded_;
+
+  private bool frame_changed_ = false;
+  private FrameType frame_type_;
+  private CelestialBody selected_celestial_;
 }
 
 }  // namespace ksp_plugin_adapter
