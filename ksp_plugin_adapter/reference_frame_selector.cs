@@ -275,25 +275,9 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public FrameType frame_type {
-    get => frame_type_;
-    private set {
-      if (frame_type_ != value) {
-        frame_changed_ = true;
-      }
-      frame_type_ = value;
-    }
-  }
-
-  public CelestialBody selected_celestial {
-    get => selected_celestial_;
-    private set {
-      if (selected_celestial_ != value) {
-        frame_changed_ = true;
-      }
-      selected_celestial_ = value;
-    }
-  }
+  public FrameType frame_type { get; private set; }
+  public CelestialBody selected_celestial { get; private set; }
+  public Vessel target_override { get; set; }
 
   protected override String Title {
     get {
@@ -389,24 +373,21 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
+  // Runs an action that may change the frame and run on_change_ if there
+  // actually was a change.
   private void EffectChange(Action action) {
-    frame_changed_ = false;
+    var old_frame_type = frame_type;
+    var old_selected_celestial = selected_celestial;
     action();
-    if (frame_changed_) {
+    if (frame_type != old_frame_type ||
+        selected_celestial != old_selected_celestial) {
       on_change_(FrameParameters());
-      frame_changed_ = false;
     }
   }
-
-  public Vessel target_override { get; set; }
 
   private readonly Callback on_change_;
   private readonly string name_;
   private Dictionary<CelestialBody, bool> expanded_;
-
-  private bool frame_changed_ = false;
-  private FrameType frame_type_;
-  private CelestialBody selected_celestial_;
 }
 
 }  // namespace ksp_plugin_adapter
