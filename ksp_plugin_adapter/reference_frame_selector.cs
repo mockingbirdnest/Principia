@@ -63,7 +63,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
         }
       }
     });
-    UnityEngine.Debug.LogError("UMB");
   }
 
   public void SetFrameParameters(NavigationFrameParameters parameters) {
@@ -82,7 +81,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
           break;
       }
     });
-    UnityEngine.Debug.LogError("SFP");
   }
 
   // Sets the |frame_type| to |type| unless this would be invalid for the
@@ -98,7 +96,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
         frame_type = type;
       }
     });
-    UnityEngine.Debug.LogError("SFT");
   }
 
   // Sets the |frame_type| to |BODY_SURFACE| and sets |selected_celestial| to
@@ -108,7 +105,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
       frame_type = FrameType.BODY_SURFACE;
       selected_celestial = celestial;
     });
-    UnityEngine.Debug.LogError("STSFO");
   }
 
   public static String Name(FrameType type,
@@ -346,7 +342,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
             frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
           }
         });
-    UnityEngine.Debug.LogError("RS");
       }
     }
     if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
@@ -369,7 +364,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
       EffectChange(() => {
         frame_type = value;
       });
-      UnityEngine.Debug.LogError("TS");
     }
   }
 

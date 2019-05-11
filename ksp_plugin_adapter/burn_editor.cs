@@ -51,7 +51,6 @@ class BurnEditor : ScalingRenderer {
                                     adapter_,
                                     ReferenceFrameChanged,
                                     "Manœuvring frame");
-    UnityEngine.Debug.LogError("BurnEditor");
     reference_frame_selector_.SetFrameParameters(
         adapter_.plotting_frame_selector_.FrameParameters());
     ComputeEngineCharacteristics();
@@ -112,22 +111,16 @@ class BurnEditor : ScalingRenderer {
         changed = true;
         is_inertially_fixed_ = !is_inertially_fixed_;
       }
-      UnityEngine.Debug.Log("T "+changed);
       changed |= Δv_tangent_.Render(enabled);
-      UnityEngine.Debug.Log("N "+changed);
       changed |= Δv_normal_.Render(enabled);
-      UnityEngine.Debug.Log("B "+changed);
       changed |= Δv_binormal_.Render(enabled);
-      UnityEngine.Debug.Log("D "+changed);
       changed |= previous_coast_duration_.Render(enabled);
       UnityEngine.GUILayout.Label(
           index_ == 0 ? "Time base: start of flight plan"
                       : $"Time base: end of manœuvre #{index_}",
           style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
               alignment = UnityEngine.TextAnchor.UpperLeft});
-      UnityEngine.Debug.Log("R "+changed);
       changed |= changed_reference_frame_;
-      UnityEngine.Debug.Log("E "+changed);
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
@@ -155,7 +148,6 @@ class BurnEditor : ScalingRenderer {
     Δv_binormal_.value = burn.delta_v.z;
     previous_coast_duration_.value =
         burn.initial_time - time_base;
-    UnityEngine.Debug.LogError("Reset");
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manoeuvre.duration;
