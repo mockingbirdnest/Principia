@@ -87,11 +87,9 @@ internal class MapNodePool {
         // Ensure that KSP thinks the type changed, and reattaches icon
         // labels next time around, otherwise we might end up with no labels.
         // Null nodes do not have a label, so inducing a type change through
-        // Null does not result in spurious labels.
-        if(properties_[nodes_[pool_index_]].visible == false) {
-          UnityEngine.Debug.LogError(
-              "NodeUpdate to type Null whereas visible is false.");
-        }
+        // Null does not result in spurious labels.  Note that the type is
+        // updated only if the node is visible.
+        properties_[nodes_[pool_index_]].visible = true;
         properties_[nodes_[pool_index_]].object_type =
             MapObject.ObjectType.Null;
         nodes_[pool_index_].NodeUpdate();
