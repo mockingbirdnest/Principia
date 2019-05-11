@@ -101,6 +101,7 @@ class FlightPlanner : SupervisedWindowRenderer {
             editor.Close();
           }
           burn_editors_ = null;
+          Shrink();
         }
         vessel_ = FlightGlobals.ActiveVessel;
       }
