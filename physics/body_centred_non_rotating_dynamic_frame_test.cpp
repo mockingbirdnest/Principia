@@ -20,7 +20,9 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace physics {
@@ -50,6 +52,8 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
+using testing_utilities::VanishesBefore;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
@@ -152,9 +156,13 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Inverse) {
     auto const small_initial_state_transformed_and_back =
         from_big_frame_at_t(to_big_frame_at_t(small_initial_state_));
     EXPECT_THAT(small_initial_state_transformed_and_back.position(),
-                AlmostEquals(small_initial_state_.position(), 0, 1));
-    EXPECT_THAT(small_initial_state_transformed_and_back.velocity(),
-                AlmostEquals(small_initial_state_.velocity(), 0, 1));
+                AlmostEquals(small_initial_state_.position(), 0));
+    EXPECT_THAT(
+        small_initial_state_transformed_and_back.velocity(),
+        Componentwise(
+            AlmostEquals(small_initial_state_.velocity().coordinates().x, 0, 1),
+            VanishesBefore(small_initial_state_.velocity().coordinates().x, 0),
+            AlmostEquals(small_initial_state_.velocity().coordinates().z, 0)));
   }
 }
 
