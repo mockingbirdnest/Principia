@@ -291,14 +291,14 @@ class Ephemeris {
     explicit Guard(not_null<Ephemeris<Frame> const*> ephemeris);
     ~Guard();
 
-    // Move only.
-    Guard(Guard&&) = default;
-    Guard& operator=(Guard&&) = default;
+    // Move only.  A moved-from |Guard| does not protect anything.
+    Guard(Guard&& other);
+    Guard& operator=(Guard&& other);
     Guard(Guard const&) = delete;
     Guard& operator=(Guard const&) = delete;
 
    private:
-    not_null<Ephemeris<Frame> const*> const ephemeris_;
+    Ephemeris<Frame> const* ephemeris_;
     Instant t_min_;
   };
 

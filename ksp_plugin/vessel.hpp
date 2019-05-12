@@ -182,6 +182,7 @@ class Vessel {
 
  private:
   struct PrognosticatorParameters {
+    Ephemeris<Barycentric>::Guard guard;
     Instant first_time;
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters;
@@ -204,7 +205,7 @@ class Vessel {
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
   Status FlowPrognostication(
-      PrognosticatorParameters const& prognosticator_parameters,
+      PrognosticatorParameters&& prognosticator_parameters,
       std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication);
 
   // Publishes the prognostication if the computation was not cancelled.
@@ -237,9 +238,12 @@ class Vessel {
   std::set<PartId> kept_parts_;
 
   mutable absl::Mutex prognosticator_lock_;
+  // This member only contains a value if |RefreshPrediction| has been called
+  // but the parameters have not been picked by the |prognosticator_|.  It never
+  // contains a moved-from value, and is only read using |std::swap| to ensure
+  // that reading it clears it.
   std::optional<PrognosticatorParameters> prognosticator_parameters_
       GUARDED_BY(prognosticator_lock_);
-  Status prognosticator_status_ GUARDED_BY(prognosticator_lock_);
   std::thread prognosticator_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
