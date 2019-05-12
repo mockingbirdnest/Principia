@@ -814,7 +814,32 @@ Ephemeris<Frame>::Guard::Guard(
 
 template<typename Frame>
 Ephemeris<Frame>::Guard::~Guard() {
-  ephemeris_->protector_->Unprotect(t_min_);
+  // |ephemeris_| may be null for a moved-from object.
+  if (ephemeris_ != nullptr) {
+    ephemeris_->protector_->Unprotect(t_min_);
+  }
+}
+
+template<typename Frame>
+Ephemeris<Frame>::Guard::Guard(Guard&& other)
+    : ephemeris_(std::move(other.ephemeris_)),
+      t_min_(std::move(other.t_min_)) {
+  other.ephemeris_ = nullptr;
+}
+
+template<typename Frame>
+typename Ephemeris<Frame>::Guard&
+Ephemeris<Frame>::Guard::operator=(Guard&& other) {
+  if (this != &other) {
+    // |ephemeris_| may be null for a moved-from object.
+    if (ephemeris_ != nullptr) {
+      ephemeris_->protector_->Unprotect(t_min_);
+    }
+    ephemeris_ = std::move(other.ephemeris_);
+    t_min_ = std::move(other.t_min_);
+    other.ephemeris_ = nullptr;
+  }
+  return *this;
 }
 
 template<typename Frame>

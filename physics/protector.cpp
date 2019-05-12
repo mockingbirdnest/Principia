@@ -30,7 +30,9 @@ void Protector::Unprotect(Instant const& t_min) {
   std::vector<Callback> callbacks_to_run;
   {
     absl::MutexLock l(&lock_);
-    CHECK_EQ(1, protection_start_times_.erase(t_min));
+    auto const it = protection_start_times_.find(t_min);
+    CHECK(it != protection_start_times_.end());
+    protection_start_times_.erase(it);
 
     // Find all the callbacks that are now unprotected and remove them from the
     // multimap.

@@ -68,13 +68,13 @@ internal class MapNodePool {
       if (pool_index_ == nodes_.Count) {
         nodes_.Add(MakePoolNode());
       } else if (properties_[nodes_[pool_index_]].object_type != type ||
-                 properties_[nodes_[pool_index_]].source != source) {
+                 properties_[nodes_[pool_index_]].celestial != celestial) {
         // KSP attaches labels to its map nodes, but never detaches them.
         // If the node changes type, we end up with an arbitrary combination of
         // labels Ap, Pe, AN, DN.
-        // If the node changes source, the colour of the icon label is not
-        // updated to match the icon (making it unreadable in some cases).
-        // Recreating the node entirely takes a long time (approximately
+        // Similarly, if the node changes celestial, the colour of the icon
+        // label is not updated to match the icon (making it unreadable in some
+        // cases). Recreating the node entirely takes a long time (approximately
         // 𝑁 * 70 μs, where 𝑁 is the total number of map nodes in existence),
         // instead we manually get rid of the labels.
         foreach (var component in
@@ -87,7 +87,9 @@ internal class MapNodePool {
         // Ensure that KSP thinks the type changed, and reattaches icon
         // labels next time around, otherwise we might end up with no labels.
         // Null nodes do not have a label, so inducing a type change through
-        // Null does not result in spurious labels.
+        // Null does not result in spurious labels.  Note that the type is
+        // updated only if the node is visible.
+        properties_[nodes_[pool_index_]].visible = true;
         properties_[nodes_[pool_index_]].object_type =
             MapObject.ObjectType.Null;
         nodes_[pool_index_].NodeUpdate();
