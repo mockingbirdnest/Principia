@@ -56,9 +56,10 @@ class StackTraceDecoder {
       start_line_number = line.LineNumber;
     }
 
-    string url = $@"https://github.com/mockingbirdnest/Principia/blob/{
-        commit}/{file}#{(start_line_number.HasValue ? $"L{start_line_number}-"
-                                                    : "")}L{line_number}";
+    string url = System.Uri.EscapeUriString(
+        $@"https://github.com/mockingbirdnest/Principia/blob/{commit}/{file}#{
+           (start_line_number.HasValue ? $"L{start_line_number}-"
+                                       : "")}L{line_number}");
     // Snippets should not be separated by new lines, as they are on their own
     // line anyway, so that a new line spaces them more than necessary.  In
     // order to keep the Markdown readable, hide a new line in a comment.
@@ -78,6 +79,13 @@ class StackTraceDecoder {
     }
   }
 
+  private static void Check(bool condition, string message) {
+    if (!condition) {
+      Console.WriteLine(message);
+      Environment.Exit(1);
+    }
+  }
+
   private static string Comment(string comment) {
     // Put the new line in the comment in order to avoid introducing
     // new lines in the Markdown.
@@ -89,6 +97,14 @@ class StackTraceDecoder {
     Func<string, string> comment = Comment;
     bool snippets = true;
     string commit = null;
+
+    if (args.Length < 2) {
+      PrintUsage();
+      return;
+    }
+    string info_file_uri = args[0];
+    string principia_directory = args[1];
+
     for (int i = 2; i < args.Length; ++i) {
       string flag = args[i];
       var match = Regex.Match(flag, "--unity-crash-at-commit=([0-9a-f]{40})");
@@ -105,21 +121,26 @@ class StackTraceDecoder {
       }
     }
 
-    string info_file_uri = args[0];
-    string principia_directory = args[1];
     var web_client = new WebClient();
     var stream = new StreamReader(web_client.OpenRead(info_file_uri),
                                   Encoding.UTF8);
     if (!unity_crash) {
       var version_regex = new Regex(
           @"^I.*\] Principia version " + 
-          @"([0-9]{10}-\w+)-[0-9]+-g([0-9a-f]{40}) built");
+          @"([0-9]{10}-\w+)-[0-9]+-g([0-9a-f]{40})(-dirty)? built");
       Match version_match;
       do {
+        Check(!stream.EndOfStream,
+              $"Could not find Principia version line in {info_file_uri}");
         version_match = version_regex.Match(stream.ReadLine());
       } while (!version_match.Success);
       string tag = version_match.Groups[1].ToString();
       commit = version_match.Groups[2].ToString();
+      bool dirty = version_match.Groups[3].Success;
+      if (dirty) {
+        Console.Write(comment(
+            $"Warning: version is dirty; line numbers may be incorrect."));
+      }
     }
     Int64 principia_base_address =
         GetBaseAddress(unity_crash,
