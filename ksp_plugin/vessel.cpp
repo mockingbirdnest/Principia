@@ -72,8 +72,12 @@ Vessel::~Vessel() {
   if (prognosticator_.joinable()) {
     {
       absl::MutexLock l(&prognosticator_lock_);
-      CHECK(prognosticator_parameters_);
-      prognosticator_parameters_->shutdown = true;
+      prognosticator_parameters_ =
+          PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
+                                   psychohistory_->last().time(),
+                                   psychohistory_->last().degrees_of_freedom(),
+                                   prediction_adaptive_step_parameters_,
+                                   /*shutdown=*/true};
     }
     prognosticator_.join();
   }
@@ -206,8 +210,10 @@ void Vessel::set_prediction_adaptive_step_parameters(
         prediction_adaptive_step_parameters) {
   prediction_adaptive_step_parameters_ = prediction_adaptive_step_parameters;
   absl::MutexLock l(&prognosticator_lock_);
-  prognosticator_parameters_->adaptive_step_parameters =
-      prediction_adaptive_step_parameters;
+  if (prognosticator_parameters_) {
+    prognosticator_parameters_->adaptive_step_parameters =
+        prediction_adaptive_step_parameters;
+  }
 }
 
 Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -286,15 +292,30 @@ void Vessel::DeleteFlightPlan() {
 
 void Vessel::RefreshPrediction() {
   absl::MutexLock l(&prognosticator_lock_);
+  // The guard below ensures that the ephemeris will not be "forgotten before"
+  // the end of the psychohistory between now and the time when the
+  // prognosticator finishes the integration.  This ensures that the ephemeris'
+  // |t_min| is never after the time that |FlowWithAdaptiveStep| tries to
+  // integrate.
+  // The guard will be destroyed either when the next set of parameters is
+  // created or when the prognostication has been computed.
+  // Note that we know that both |EventuallyForgetBefore| and
+  // |RefreshPrediction| are called on the main thread, therefore the ephemeris
+  // currently covers the last time of the psychohistory.  Were this to change,
+  // this code might have to change.
   prognosticator_parameters_ =
-      PrognosticatorParameters{psychohistory_->last().time(),
+      PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
+                               psychohistory_->last().time(),
                                psychohistory_->last().degrees_of_freedom(),
                                prediction_adaptive_step_parameters_,
                                /*shutdown=*/false};
   if (synchronous_) {
     std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
-    Status const status = FlowPrognostication(*prognosticator_parameters_,
-                                              prognostication);
+    std::optional<PrognosticatorParameters> prognosticator_parameters;
+    std::swap(prognosticator_parameters, prognosticator_parameters_);
+    Status const status =
+        FlowPrognostication(std::move(*prognosticator_parameters),
+                            prognostication);
     SwapPrognostication(prognostication, status);
   } else {
     StartPrognosticatorIfNeeded();
@@ -442,7 +463,6 @@ Vessel::Vessel()
 
 void Vessel::StartPrognosticatorIfNeeded() {
   prognosticator_lock_.AssertHeld();
-  CHECK(prognosticator_parameters_);
   if (!prognosticator_.joinable()) {
     prognosticator_ =
         std::thread(std::bind(&Vessel::RepeatedlyFlowPrognostication, this));
@@ -450,37 +470,32 @@ void Vessel::StartPrognosticatorIfNeeded() {
 }
 
 void Vessel::RepeatedlyFlowPrognostication() {
-  std::optional<PrognosticatorParameters> previous_prognosticator_parameters;
   for (;;) {
     // No point in going faster than 50 Hz.
     std::chrono::steady_clock::time_point const wakeup_time =
         std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
 
-    // The thread is only started after the parameters have been set, so we
-    // should always find parameters here.
     std::optional<PrognosticatorParameters> prognosticator_parameters;
     {
       absl::ReaderMutexLock l(&prognosticator_lock_);
-      CHECK(prognosticator_parameters_);
-      prognosticator_parameters = prognosticator_parameters_;
+      if (!prognosticator_parameters_) {
+        // No parameters, let's wait for them to appear.
+        continue;
+      }
+      std::swap(prognosticator_parameters, prognosticator_parameters_);
     }
 
     if (prognosticator_parameters->shutdown) {
       break;
     }
 
-    // Do not reflow if the parameters have not changed: the same causes would
-    // produce the same effects.
-    if (!previous_prognosticator_parameters ||
-        *previous_prognosticator_parameters != prognosticator_parameters) {
-      std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
-      Status const status = FlowPrognostication(*prognosticator_parameters,
-                                                prognostication);
-      {
-        absl::MutexLock l(&prognosticator_lock_);
-        SwapPrognostication(prognostication, status);
-      }
-      previous_prognosticator_parameters = prognosticator_parameters;
+    std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
+    Status const status =
+        FlowPrognostication(std::move(*prognosticator_parameters),
+                            prognostication);
+    {
+      absl::MutexLock l(&prognosticator_lock_);
+      SwapPrognostication(prognostication, status);
     }
 
     std::this_thread::sleep_until(wakeup_time);
@@ -488,14 +503,10 @@ void Vessel::RepeatedlyFlowPrognostication() {
 }
 
 Status Vessel::FlowPrognostication(
-    PrognosticatorParameters const& prognosticator_parameters,
+    PrognosticatorParameters prognosticator_parameters,
     std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication) {
-  // This function may be run in a separate thread, and bad things will happen
-  // if |EventuallyForgetBefore| runs in parallel with it: the ephemeris'
-  // |t_min| may end up being after the time that |FlowWithAdaptiveStep| tries
-  // to integrate, causing various check failures.
-  Ephemeris<Barycentric>::Guard g(ephemeris_);
-
+  // The guard contained in |prognosticator_parameters| ensures that the |t_min|
+  // of the ephemeris doesn't move in this function.
   prognostication = std::make_unique<DiscreteTrajectory<Barycentric>>();
   prognostication->Append(
       prognosticator_parameters.first_time,
@@ -532,7 +543,6 @@ void Vessel::SwapPrognostication(
   prognosticator_lock_.AssertHeld();
   if (status.error() != Error::CANCELLED) {
     prognostication_.swap(prognostication);
-    prognosticator_status_ = status;
   }
 }
 
