@@ -60,10 +60,7 @@ RotatingBody<Frame>::RotatingBody(
                         0 * Radian,
                         π / 2 * Radian +
                             parameters.right_ascension_of_pole_).ToCartesian()),
-      equatorial_(RadiusLatitudeLongitude(
-                      1.0,
-                      0 * Radian,
-                      parameters.right_ascension_of_pole_).ToCartesian()),
+      equatorial_(Wedge(biequatorial_, polar_axis_).coordinates()),
       angular_velocity_(polar_axis_.coordinates() *
                         parameters.angular_frequency_) {}
 

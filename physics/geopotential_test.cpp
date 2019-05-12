@@ -192,7 +192,7 @@ TEST_F(GeopotentialTest, J2) {
         geopotential,
         Instant(),
         Displacement<World>({6 * Metre, -4 * Metre, 5 * Metre}));
-    EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 4));
+    EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 3));
   }
 }
 
