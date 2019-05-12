@@ -205,7 +205,7 @@ class Vessel {
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
   Status FlowPrognostication(
-      PrognosticatorParameters&& prognosticator_parameters,
+      PrognosticatorParameters prognosticator_parameters,
       std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication);
 
   // Publishes the prognostication if the computation was not cancelled.

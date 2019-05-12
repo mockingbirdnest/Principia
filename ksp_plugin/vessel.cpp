@@ -299,9 +299,10 @@ void Vessel::RefreshPrediction() {
   // integrate.
   // The guard will be destroyed either when the next set of parameters is
   // created or when the prognostication has been computed.
-  // Note that we know that |RefreshPrediction| is called on the main thread and
-  // that the ephemeris currently covers the last time of the psychohistory.
-  // Were this to change, this code might have to change.
+  // Note that we know that both |EventuallyForgetBefore| and
+  // |RefreshPrediction| are called on the main thread, therefore the ephemeris
+  // currently covers the last time of the psychohistory.  Were this to change,
+  // this code might have to change.
   prognosticator_parameters_ =
       PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
                                psychohistory_->last().time(),
@@ -502,7 +503,7 @@ void Vessel::RepeatedlyFlowPrognostication() {
 }
 
 Status Vessel::FlowPrognostication(
-    PrognosticatorParameters&& prognosticator_parameters,
+    PrognosticatorParameters prognosticator_parameters,
     std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication) {
   // The guard contained in |prognosticator_parameters| ensures that the |t_min|
   // of the ephemeris doesn't move in this function.
