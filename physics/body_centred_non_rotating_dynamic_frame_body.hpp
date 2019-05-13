@@ -17,9 +17,9 @@ using geometry::Rotation;
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
-    BodyCentredNonRotatingDynamicFrame(
-        not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-        not_null<MassiveBody const*> const centre)
+BodyCentredNonRotatingDynamicFrame(
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    not_null<MassiveBody const*> const centre)
     : ephemeris_(ephemeris),
       centre_(centre),
       centre_trajectory_(ephemeris_->trajectory(centre_)),
@@ -69,8 +69,10 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
       centre_trajectory_->EvaluateDegreesOfFreedom(t);
 
-  RigidTransformation<InertialFrame, ThisFrame> const rigid_transformation(
-      centre_degrees_of_freedom.position(), ThisFrame::origin, orthogonal_map_);
+  RigidTransformation<InertialFrame, ThisFrame> const
+      rigid_transformation(centre_degrees_of_freedom.position(),
+                           ThisFrame::origin,
+                           orthogonal_map_);
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              AngularVelocity<InertialFrame>(),
