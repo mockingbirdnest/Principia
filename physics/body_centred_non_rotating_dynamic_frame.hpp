@@ -47,10 +47,6 @@ using quantities::Acceleration;
 // axis will point towards ♈︎; however, if |centre| is another planet,
 // |ThisFrame| will not have the axes of its natural celestial reference frame,
 // as the X axis will not point towards its equinox.
-// REMOVE BEFORE FLIGHT: Do we really want that? This seems like a very
-// contrived way get something that only makes sense for the Earth with respect
-// to the ICRS; in particular, if the XY plane of |InertialFrame| is the
-// invariable plane, Q should naturally be the X axis, not the Y axis.
 template<typename InertialFrame, typename ThisFrame>
 class BodyCentredNonRotatingDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {
