@@ -219,20 +219,20 @@ TEST_F(GeodesyTest, LAGEOS2) {
                             primary_actual_final_dof.position()),
               AnyOf(IsNear(237 * Metre),    // Linux.
                     IsNear(28 * Metre),     // No FMA.
-                    IsNear(8.0 * Metre)));  // FMA.
+                    IsNear(98 * Metre)));   // FMA.
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
                            primary_actual_final_dof.position() - ITRS::origin),
               AnyOf(IsNear(4.0 * ArcSecond),     // Linux.
                     IsNear(0.47 * ArcSecond),    // No FMA.
-                    IsNear(0.13 * ArcSecond)));  // FMA.
+                    IsNear(1.6 * ArcSecond)));   // FMA.
   // Radial error at the geocentre.
   EXPECT_THAT(AbsoluteError(
                   (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
                   (primary_actual_final_dof.position() - ITRS::origin).Norm()),
               AnyOf(IsNear(99 * Centi(Metre)),     // Linux.
                     IsNear(11 * Centi(Metre)),     // No FMA.
-                    IsNear(1.2 * Centi(Metre))));  // FMA.
+                    IsNear(43 * Centi(Metre))));   // FMA.
 }
 
 #endif
