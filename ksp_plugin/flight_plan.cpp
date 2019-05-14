@@ -150,7 +150,7 @@ void FlightPlan::RemoveLast() {
   CoastLastSegment(desired_final_time_);
 }
 
-Status FlightPlan::Replace(Burn burn, int const index) {
+Status FlightPlan::Replace(Burn&& burn, int const index) {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
   auto manœuvre = MakeNavigationManœuvre(std::move(burn),
@@ -158,14 +158,15 @@ Status FlightPlan::Replace(Burn burn, int const index) {
   if (manœuvre.IsSingular()) {
     return Status(Error::OUT_OF_RANGE, "Singular");
   }
-  if (!manœuvre.FitsBetween(start_of_previous_coast(), start_of_next_burn())) {
+  if (!manœuvre.FitsBetween(start_of_previous_coast(index),
+                            start_of_next_burn(index))) {
     return Status(Error::INVALID_ARGUMENT, "Doesn't fit");
   }
 
-  DiscreteTrajectory<Barycentric>& previous_coast = previous_coast(index);
+  DiscreteTrajectory<Barycentric>& replaced_coast = previous_coast(index);
   //TODO(phl):Fork as late as possible.
   DiscreteTrajectory<Barycentric>* const coast =
-      previous_coast.parent()->NewForkWithoutCopy(previous_coast.Fork().time());
+      replaced_coast.parent()->NewForkWithoutCopy(replaced_coast.Fork().time());
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments = {coast};
   std::vector<NavigationManœuvre> manœuvres = {std::move(manœuvre)};
   //TODO(phl):Very similar loop in RecomputeSegments.
@@ -182,7 +183,7 @@ Status FlightPlan::Replace(Burn burn, int const index) {
                              original_manœuvre.frame(),
                              original_manœuvre.is_inertially_fixed()));
     }
-    auto const& manœuvre = manœuvres.back();
+    auto& manœuvre = manœuvres.back();
     auto& coast = segments.back();
     RETURN_IF_ERROR(CoastSegment(manœuvre.initial_time(), coast));
     manœuvre.set_coasting_trajectory(coast);
@@ -196,9 +197,9 @@ Status FlightPlan::Replace(Burn burn, int const index) {
   return Status::OK;
 }
 
-bool FlightPlan::ReplaceLast(Burn burn) {
+bool FlightPlan::ReplaceLast(Burn&& burn) {
 #if 1
-  return Replace(burn, manœuvres_.size() - 1).ok();
+  return Replace(std::move(burn), manœuvres_.size() - 1).ok();
 #else
   CHECK(!manœuvres_.empty());
   auto manœuvre = MakeNavigationManœuvre(std::move(burn),
@@ -393,6 +394,9 @@ bool FlightPlan::RecomputeSegments() {
   while (segments_.size() > 1) {
     PopLastSegment();
   }
+#if 1
+  RecomputeSegments(initial_mass_, manœuvres_, segments_);//TODO(phl):status
+#else
   ResetLastSegment();
   for (auto& manœuvre : manœuvres_) {
     CoastLastSegment(manœuvre.initial_time());
@@ -402,6 +406,7 @@ bool FlightPlan::RecomputeSegments() {
     AddSegment();
   }
   CoastLastSegment(desired_final_time_);
+#endif
   return anomalous_segments_ <= 2;
 }
 
@@ -466,6 +471,26 @@ Status FlightPlan::CoastSegment(
                          adaptive_step_parameters_,
                          max_ephemeris_steps_per_frame,
                          /*last_point_only=*/false);
+}
+
+Status FlightPlan::RecomputeSegments(
+    Mass const& initial_mass,
+    std::vector<NavigationManœuvre>& manœuvres,
+    std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments) {
+  CHECK(!segments.empty());
+  Mass manœuvre_initial_mass = initial_mass;
+  for (auto& manœuvre : manœuvres) {
+    auto& coast = segments.back();
+    RETURN_IF_ERROR(CoastSegment(manœuvre.initial_time(), coast));
+    manœuvre.set_coasting_trajectory(coast);
+    AddSegment(segments);
+    auto& burn = segments.back();
+    manœuvre.set_initial_mass(manœuvre_initial_mass);
+    RETURN_IF_ERROR(BurnSegment(manœuvre, burn));
+    manœuvre_initial_mass = manœuvre.final_mass();
+    AddSegment(segments);
+  }
+  RETURN_IF_ERROR(CoastSegment(desired_final_time_, segments.back()));
 }
 
 void FlightPlan::ReplaceLastSegment(

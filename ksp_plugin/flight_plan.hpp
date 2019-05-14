@@ -75,9 +75,9 @@ class FlightPlan {
   // |size()| must be greater than 0.
   virtual void RemoveLast();
   //TODO(phl):Comment.
-  virtual Status Replace(Burn burn, int index);
+  virtual Status Replace(Burn&& burn, int index);
   // |size()| must be greater than 0.
-  virtual bool ReplaceLast(Burn burn);
+  virtual bool ReplaceLast(Burn&& burn);
 
   // Returns false and has no effect if |desired_final_time| is before the end
   // of the last manœuvre or before |initial_time_|.
@@ -146,6 +146,10 @@ class FlightPlan {
                      not_null<DiscreteTrajectory<Barycentric>*> segment);
   Status CoastSegment(Instant const& desired_final_time,
                       not_null<DiscreteTrajectory<Barycentric>*> segment);
+  Status RecomputeSegments(
+      Mass const& initial_mass,
+      std::vector<NavigationManœuvre>& manœuvres,
+      std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments);
 
   // Replaces the last segment with |segment|.  |segment| must be forked from
   // the same trajectory as the last segment, and at the same time.  |segment|
