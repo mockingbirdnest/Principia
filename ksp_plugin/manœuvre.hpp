@@ -50,9 +50,6 @@ class Manœuvre {
            bool is_inertially_fixed);
   virtual ~Manœuvre() = default;
 
-  Manœuvre(Manœuvre const&) = default;
-  Manœuvre& operator=(Manœuvre const&) = default;
-
   Force const& thrust() const;
   Mass const& initial_mass() const;
   // Specific impulse by mass, because specific impulse by weight is insane.
@@ -63,7 +60,7 @@ class Manœuvre {
   // individual thrust divided by the exhaust velocity).
   SpecificImpulse const& specific_impulse() const;
   Vector<double, Frenet<Frame>> const& direction() const;
-  DynamicFrame<InertialFrame, Frame> const& frame() const;
+  std::shared_ptr<DynamicFrame<InertialFrame, Frame> const> frame() const;
 
   // Equivalent characterizations of intensity.  Only one of the mutators may be
   // called, and only once.

@@ -163,22 +163,33 @@ Status FlightPlan::Replace(Burn&& burn, int const index) {
     return Status(Error::INVALID_ARGUMENT, "Doesn't fit");
   }
 
-  not_null<DiscreteTrajectory<Barycentric>> replaced_coast =
-      previous_coast(index);
+  DiscreteTrajectory<Barycentric>* replaced_coast = previous_coast(index);
+  DiscreteTrajectory<Barycentric>& replaced_coast_parent =
+      *replaced_coast->parent();
   //TODO(phl):Fork as late as possible.
-  DiscreteTrajectory<Barycentric>* const coast =
-      replaced_coast.parent()->NewForkWithoutCopy(replaced_coast.Fork().time());
-  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments = {coast};
-  std::vector<NavigationManœuvre> manœuvres = {std::move(manœuvre)};
-  std::copy(manœuvres_.cbegin() + index + 1,
-            manœuvres_.cend(),
-            std::back_inserter(manœuvres));
+  DiscreteTrajectory<Barycentric>* tentative_coast =
+      replaced_coast_parent.NewForkWithoutCopy(replaced_coast->Fork().time());
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> tentative_segments = {
+      tentative_coast};
+  std::vector<NavigationManœuvre> tentative_manœuvres = {std::move(manœuvre)};
+  for (int i = index; i < manœuvres_.size(); ++i) {
+    NavigationManœuvre const& original_manœuvre = manœuvres_[i];
+    Burn const burn{original_manœuvre.thrust(),
+                    original_manœuvre.specific_impulse(),
+                    original_manœuvre.frame(),
+                    original_manœuvre.initial_time(),
+                    original_manœuvre.Δv(),
+                    original_manœuvre.is_inertially_fixed()};
+    tentative_manœuvres.push_back(MakeNavigationManœuvre(
+                                      burn, manœuvres_[i - 1].final_mass()));
+  }
   Status const status = RecomputeSegments(manœuvres_[index].initial_mass(),
-                                          manœuvres,
-                                          segments);
+                                          tentative_manœuvres,
+                                          tentative_segments);
   if (status.ok()) {
-
+    replaced_coast_parent.DeleteFork(replaced_coast);
   } else {
+    replaced_coast_parent.DeleteFork(tentative_coast);
   }
 
   return Status::OK;
@@ -472,7 +483,6 @@ Status FlightPlan::RecomputeSegments(
     manœuvre.set_coasting_trajectory(coast);
     AddSegment(segments);
     auto& burn = segments.back();
-    manœuvre.set_initial_mass(manœuvre_initial_mass);
     RETURN_IF_ERROR(BurnSegment(manœuvre, burn));
     manœuvre_initial_mass = manœuvre.final_mass();
     AddSegment(segments);
@@ -573,7 +583,7 @@ DiscreteTrajectory<Barycentric>& FlightPlan::penultimate_coast() {
 
 not_null<DiscreteTrajectory<Barycentric>*> FlightPlan::previous_coast(
     int const index) {
-  return *segments_[2 * index];
+  return segments_[2 * index];
 }
 
 }  // namespace internal_flight_plan

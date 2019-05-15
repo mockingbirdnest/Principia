@@ -58,9 +58,9 @@ Manœuvre<InertialFrame, Frame>::direction() const {
 }
 
 template<typename InertialFrame, typename Frame>
-DynamicFrame<InertialFrame, Frame> const&
+std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>
 Manœuvre<InertialFrame, Frame>::frame() const {
-  return *frame_;
+  return frame_;
 }
 
 template<typename InertialFrame, typename Frame>
