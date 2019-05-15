@@ -45,6 +45,7 @@ internal class MapNodePool {
   public void RenderMarkers(DisposableIterator apsis_iterator,
                             MapObject.ObjectType type,
                             NodeSource source,
+                            string reference_plane,
                             Vessel vessel,
                             CelestialBody celestial) {
     // We render at most 64 markers of one type and one provenance (e.g., at
@@ -59,6 +60,7 @@ internal class MapNodePool {
         object_type = type,
         vessel = vessel,
         celestial = celestial,
+        reference_plane_description = reference_plane,
         world_position = (Vector3d)apsis.q,
         velocity = (Vector3d)apsis.p,
         source = source,
@@ -190,11 +192,14 @@ internal class MapNodePool {
                          MapObject.ObjectType.AscendingNode ||
                      properties_[node].object_type ==
                          MapObject.ObjectType.DescendingNode) {
-            String name = properties_[node].object_type ==
-                                  MapObject.ObjectType.AscendingNode
-                              ? "Ascending Node"
-                              : "Descending Node";
-            caption.Header = name;
+            String node_name =
+                properties_[node].object_type ==
+                    MapObject.ObjectType.AscendingNode
+                    ? "Ascending Node"
+                    : "Descending Node";
+            string reference_plane =
+                properties_[node].reference_plane_description;
+            caption.Header = $"{node_name} with respect to {reference_plane}";
             caption.captionLine2 =
                 properties_[node].velocity.z.ToString("N0", Culture.culture) +
                 " m/s out of plane";
@@ -255,6 +260,7 @@ internal class MapNodePool {
     public CelestialBody celestial;
     public NodeSource source;
     public double time;
+    public string reference_plane_description;
   }
 
   private List<KSP.UI.Screens.Mapview.MapNode> nodes_;

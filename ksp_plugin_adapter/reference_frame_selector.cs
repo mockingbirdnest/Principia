@@ -103,6 +103,20 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     on_change_(FrameParameters());
   }
 
+  public String ReferencePlaneDescription() {
+    if (!target_override &&
+        (frame_type == FrameType.BODY_CENTRED_NON_ROTATING ||
+         frame_type == FrameType.BODY_SURFACE)) {
+      return $"the equator of {selected_celestial.NameWithArticle()}";
+    }
+    string secondary =
+        target_override?.vesselName ?? selected_celestial.NameWithArticle();
+    string primary = target_override
+        ? selected_celestial.NameWithArticle()
+        : selected_celestial.referenceBody.NameWithArticle();
+   return $"the orbit of {secondary} around {primary}";
+  }
+
   public static String Name(FrameType type,
                             CelestialBody selected,
                             Vessel target_override) {
