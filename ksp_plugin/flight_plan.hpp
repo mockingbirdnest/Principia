@@ -187,7 +187,7 @@ class FlightPlan {
   DiscreteTrajectory<Barycentric>& penultimate_coast();
 
   //TODO(phl):comment
-  DiscreteTrajectory<Barycentric>& previous_coast(int index);
+  not_null<DiscreteTrajectory<Barycentric>*> previous_coast(int index);
 
   Mass const initial_mass_;
   Instant initial_time_;

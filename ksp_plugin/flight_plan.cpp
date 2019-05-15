@@ -163,36 +163,23 @@ Status FlightPlan::Replace(Burn&& burn, int const index) {
     return Status(Error::INVALID_ARGUMENT, "Doesn't fit");
   }
 
-  DiscreteTrajectory<Barycentric>& replaced_coast = previous_coast(index);
+  not_null<DiscreteTrajectory<Barycentric>> replaced_coast =
+      previous_coast(index);
   //TODO(phl):Fork as late as possible.
   DiscreteTrajectory<Barycentric>* const coast =
       replaced_coast.parent()->NewForkWithoutCopy(replaced_coast.Fork().time());
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments = {coast};
   std::vector<NavigationManœuvre> manœuvres = {std::move(manœuvre)};
-  //TODO(phl):Very similar loop in RecomputeSegments.
-  for (int i = index; i < manœuvres_.size(); ++i) {
-    if (i > index) {
-      auto const& original_manœuvre = manœuvres_[i];
-      auto const& manœuvre = manœuvres.back();
-      //TODO(phl): What happens to the frame of the original manoeuvre?
-      manœuvres.emplace_back(
-          NavigationManœuvre(original_manœuvre.thrust(),
-                             manœuvre.final_mass(),
-                             original_manœuvre.specific_impulse(),
-                             original_manœuvre.direction(),
-                             original_manœuvre.frame(),
-                             original_manœuvre.is_inertially_fixed()));
-    }
-    auto& manœuvre = manœuvres.back();
-    auto& coast = segments.back();
-    RETURN_IF_ERROR(CoastSegment(manœuvre.initial_time(), coast));
-    manœuvre.set_coasting_trajectory(coast);
-    AddSegment(segments);
-    auto& burn = segments.back();
-    RETURN_IF_ERROR(BurnSegment(manœuvre, burn));
-    AddSegment(segments);
+  std::copy(manœuvres_.cbegin() + index + 1,
+            manœuvres_.cend(),
+            std::back_inserter(manœuvres));
+  Status const status = RecomputeSegments(manœuvres_[index].initial_mass(),
+                                          manœuvres,
+                                          segments);
+  if (status.ok()) {
+
+  } else {
   }
-  RETURN_IF_ERROR(CoastSegment(desired_final_time_, segments.back()));
 
   return Status::OK;
 }
@@ -584,7 +571,8 @@ DiscreteTrajectory<Barycentric>& FlightPlan::penultimate_coast() {
   return *segments_[segments_.size() - 3];
 }
 
-DiscreteTrajectory<Barycentric>& FlightPlan::previous_coast(int const index) {
+not_null<DiscreteTrajectory<Barycentric>*> FlightPlan::previous_coast(
+    int const index) {
   return *segments_[2 * index];
 }
 

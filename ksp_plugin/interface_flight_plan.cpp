@@ -90,7 +90,7 @@ Burn GetBurn(Plugin const& plugin,
   {
     auto const* barycentric_rotating_dynamic_frame = dynamic_cast<
         BarycentricRotatingDynamicFrame<Barycentric, Navigation> const*>(
-            &*manœuvre.frame());
+            &manœuvre.frame());
     if (barycentric_rotating_dynamic_frame != nullptr) {
       ++number_of_subclasses;
       parameters.extension =
@@ -105,7 +105,7 @@ Burn GetBurn(Plugin const& plugin,
   {
     auto const* body_centred_body_direction_dynamic_frame = dynamic_cast<
         BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation> const*>(
-            &*manœuvre.frame());
+            &manœuvre.frame());
     if (body_centred_body_direction_dynamic_frame != nullptr) {
       ++number_of_subclasses;
       parameters.extension = serialization::
@@ -120,7 +120,7 @@ Burn GetBurn(Plugin const& plugin,
   {
     auto const* body_centred_non_rotating_dynamic_frame = dynamic_cast<
         BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const*>(
-            &*manœuvre.frame());
+            &manœuvre.frame());
     if (body_centred_non_rotating_dynamic_frame != nullptr) {
       ++number_of_subclasses;
       parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
@@ -133,7 +133,7 @@ Burn GetBurn(Plugin const& plugin,
   {
     auto const* body_surface_dynamic_frame = dynamic_cast<
         BodySurfaceDynamicFrame<Barycentric, Navigation> const*>(
-            &*manœuvre.frame());
+            &manœuvre.frame());
     if (body_surface_dynamic_frame != nullptr) {
       ++number_of_subclasses;
       parameters.extension =
@@ -256,7 +256,7 @@ XYZ principia__FlightPlanGetGuidance(Plugin const* const plugin,
   } else {
     result = plugin->renderer().FrenetToWorld(
                  *plugin->GetVessel(vessel_guid),
-                 *manœuvre.frame(),
+                 manœuvre.frame(),
                  plugin->PlanetariumRotation())(manœuvre.direction());
   }
   return m.Return(ToXYZ(result));
