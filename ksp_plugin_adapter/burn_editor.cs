@@ -14,6 +14,7 @@ class BurnEditor : ScalingRenderer {
                     BurnEditor previous_burn) {
     adapter_ = adapter;
     vessel_ = vessel;
+    initial_time_ = initial_time;
     index_ = index;
     previous_burn_ = previous_burn;
     Δv_tangent_ =
@@ -46,7 +47,7 @@ class BurnEditor : ScalingRenderer {
                 min_value        : 0,
                 formatter        : FormatPreviousCoastDuration,
                 parser           : TryParsePreviousCoastDuration);
-    previous_coast_duration_.value = initial_time - time_base;
+    previous_coast_duration_.value = initial_time_ - time_base;
     reference_frame_selector_ = new ReferenceFrameSelector(
                                     adapter_,
                                     ReferenceFrameChanged,
@@ -111,16 +112,23 @@ class BurnEditor : ScalingRenderer {
         changed = true;
         is_inertially_fixed_ = !is_inertially_fixed_;
       }
+      changed |= changed_reference_frame_;
       changed |= Δv_tangent_.Render(enabled);
       changed |= Δv_normal_.Render(enabled);
       changed |= Δv_binormal_.Render(enabled);
-      changed |= previous_coast_duration_.Render(enabled);
+      {
+        var render_time_base = time_base;
+        previous_coast_duration_.value = initial_time_ - render_time_base;
+        if (previous_coast_duration_.Render(enabled)) {
+          changed = true;
+          initial_time_ = previous_coast_duration_.value + render_time_base;
+        }
+      }
       UnityEngine.GUILayout.Label(
           index_ == 0 ? "Time base: start of flight plan"
                       : $"Time base: end of manœuvre #{index_}",
           style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
               alignment = UnityEngine.TextAnchor.UpperLeft});
-      changed |= changed_reference_frame_;
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
@@ -146,8 +154,7 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_.value = burn.delta_v.x;
     Δv_normal_.value = burn.delta_v.y;
     Δv_binormal_.value = burn.delta_v.z;
-    previous_coast_duration_.value =
-        burn.initial_time - time_base;
+    initial_time_ = burn.initial_time;
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manoeuvre.duration;
@@ -159,7 +166,7 @@ class BurnEditor : ScalingRenderer {
         thrust_in_kilonewtons = thrust_in_kilonewtons_,
         specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
         frame = reference_frame_selector_.FrameParameters(),
-        initial_time = previous_coast_duration_.value + time_base,
+        initial_time = initial_time_,
         delta_v = new XYZ{x = Δv_tangent_.value,
                           y = Δv_normal_.value,
                           z = Δv_binormal_.value},
@@ -277,8 +284,7 @@ class BurnEditor : ScalingRenderer {
                               plugin.FlightPlanGetInitialTime(
                                   vessel_.id.ToString());
 
-  private double final_time =>
-      time_base + previous_coast_duration_.value + duration_;
+  private double final_time => initial_time_ + duration_;
 
   private IntPtr plugin => adapter_.Plugin();
 
@@ -292,6 +298,7 @@ class BurnEditor : ScalingRenderer {
   private double specific_impulse_in_seconds_g0_;
   private double duration_;
   private double initial_mass_in_tonnes_;
+  private double initial_time_;
 
   private bool first_time_rendering = true;
 

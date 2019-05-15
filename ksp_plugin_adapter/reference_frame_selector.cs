@@ -30,10 +30,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public delegate void Callback(NavigationFrameParameters frame_parameters);
 
-  public ReferenceFrameSelector(
-      ISupervisor supervisor,
-      Callback on_change,
-      string name) : base(supervisor, UnityEngine.GUILayout.MinWidth(0)) {
+  public ReferenceFrameSelector(ISupervisor supervisor,
+                                Callback on_change,
+                                string name)
+      : base(supervisor, UnityEngine.GUILayout.MinWidth(0)) {
     on_change_ = on_change;
     name_ = name;
 
@@ -51,56 +51,60 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public void UpdateMainBody() {
-    frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
-    selected_celestial =
-        FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
-    for (CelestialBody celestial = selected_celestial;
-         celestial.orbit != null;
-         celestial = celestial.orbit.referenceBody) {
-      if (!celestial.is_leaf()) {
-        expanded_[celestial] = true;
+    EffectChange(() => {
+      frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+      selected_celestial =
+          FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
+      for (CelestialBody celestial = selected_celestial;
+           celestial.orbit != null;
+           celestial = celestial.orbit.referenceBody) {
+        if (!celestial.is_leaf()) {
+          expanded_[celestial] = true;
+        }
       }
-    }
-    on_change_(FrameParameters());
+    });
   }
 
   public void SetFrameParameters(NavigationFrameParameters parameters) {
-    frame_type = (FrameType)parameters.extension;
-    switch (frame_type) {
-      case FrameType.BODY_CENTRED_NON_ROTATING:
-      case FrameType.BODY_SURFACE:
-        selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
-        break;
-      case FrameType.BARYCENTRIC_ROTATING:
-        selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
-        break;
-      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-        selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
-        break;
-    }
-    on_change_(FrameParameters());
+    EffectChange(() => {
+      frame_type = (FrameType)parameters.extension;
+      switch (frame_type) {
+        case FrameType.BODY_CENTRED_NON_ROTATING:
+        case FrameType.BODY_SURFACE:
+          selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
+          break;
+        case FrameType.BARYCENTRIC_ROTATING:
+          selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
+          break;
+        case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+          selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
+          break;
+      }
+    });
   }
 
   // Sets the |frame_type| to |type| unless this would be invalid for the
   // |selected_celestial|, in which case |frame_type| is set to
   // |BODY_CENTRED_NON_ROTATING|.
   public void SetFrameType(FrameType type) {
-    if (selected_celestial.is_root() &&
-        (type == FrameType.BARYCENTRIC_ROTATING ||
-         type == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
-      frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
-    } else {
-      frame_type = type;
-    }
-    on_change_(FrameParameters());
+    EffectChange(() => {
+      if (selected_celestial.is_root() &&
+          (type == FrameType.BARYCENTRIC_ROTATING ||
+           type == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
+        frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+      } else {
+        frame_type = type;
+      }
+    });
   }
 
   // Sets the |frame_type| to |BODY_SURFACE| and sets |selected_celestial| to
   // the given |celestial|.
   public void SetToSurfaceFrameOf(CelestialBody celestial) {
-    frame_type = FrameType.BODY_SURFACE;
-    selected_celestial = celestial;
-    on_change_(FrameParameters());
+    EffectChange(() => {
+      frame_type = FrameType.BODY_SURFACE;
+      selected_celestial = celestial;
+    });
   }
 
   public String ReferencePlaneDescription() {
@@ -281,6 +285,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
+  public FrameType frame_type { get; private set; }
+  public CelestialBody selected_celestial { get; private set; }
+  public Vessel target_override { get; set; }
+
   protected override String Title {
     get {
       return name_ + " selection (" + Name() + ")";
@@ -342,13 +350,12 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
       }
       if (UnityEngine.GUILayout.Toggle(selected_celestial == celestial,
                                        celestial.name)) {
-        if (selected_celestial != celestial) {
+        EffectChange(() => {
           selected_celestial = celestial;
           if (celestial.is_root() && frame_type != FrameType.BODY_SURFACE) {
             frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
           }
-          on_change_(FrameParameters());
-        }
+        });
       }
     }
     if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
@@ -368,16 +375,23 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
            style,
            GUILayoutWidth(6),
            GUILayoutHeight(5))) {
-     if (frame_type != value) {
-       frame_type = value;
-       on_change_(FrameParameters());
-     }
+      EffectChange(() => {
+        frame_type = value;
+      });
     }
   }
 
-  public FrameType frame_type { get; private set; }
-  public CelestialBody selected_celestial { get; private set; }
-  public Vessel target_override { get; set; }
+  // Runs an action that may change the frame and run on_change_ if there
+  // actually was a change.
+  private void EffectChange(Action action) {
+    var old_frame_type = frame_type;
+    var old_selected_celestial = selected_celestial;
+    action();
+    if (frame_type != old_frame_type ||
+        selected_celestial != old_selected_celestial) {
+      on_change_(FrameParameters());
+    }
+  }
 
   private readonly Callback on_change_;
   private readonly string name_;

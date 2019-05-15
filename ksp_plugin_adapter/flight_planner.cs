@@ -101,6 +101,7 @@ class FlightPlanner : SupervisedWindowRenderer {
             editor.Close();
           }
           burn_editors_ = null;
+          Shrink();
         }
         vessel_ = FlightGlobals.ActiveVessel;
       }
@@ -112,12 +113,11 @@ class FlightPlanner : SupervisedWindowRenderer {
           plugin.HasVessel(vessel_guid) &&
           plugin.FlightPlanExists(vessel_guid)) {
         burn_editors_ = new List<BurnEditor>();
+        final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
         for (int i = 0;
               i < plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
               ++i) {
           // Dummy initial time, we call |Reset| immediately afterwards.
-          final_time_.value =
-              plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
           burn_editors_.Add(
               new BurnEditor(adapter_,
                              vessel_,
