@@ -20,6 +20,7 @@ using base::not_null;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Vector;
+using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
@@ -147,9 +148,10 @@ class Manœuvre {
   Force const thrust_;
   Mass const initial_mass_;
   SpecificImpulse const specific_impulse_;
-  Intensity const intensity_;
-  Timing const timing_;
-  not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
+  Intensity intensity_;
+  Timing timing_;
+  not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> const
+      frame_;
   bool const is_inertially_fixed_;
   DiscreteTrajectory<InertialFrame> const* coasting_trajectory_ = nullptr;
 };
