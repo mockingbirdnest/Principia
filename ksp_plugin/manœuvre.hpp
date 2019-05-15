@@ -45,7 +45,7 @@ class Manœuvre {
            Mass const& initial_mass,
            SpecificImpulse const& specific_impulse,
            Vector<double, Frenet<Frame>> const& direction,
-           not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>>
+           not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>>
                frame,
            bool is_inertially_fixed);
   Manœuvre(Manœuvre&&) = default;
@@ -62,7 +62,8 @@ class Manœuvre {
   // individual thrust divided by the exhaust velocity).
   SpecificImpulse const& specific_impulse() const;
   Vector<double, Frenet<Frame>> const& direction() const;
-  not_null<DynamicFrame<InertialFrame, Frame> const*> frame() const;
+  not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame()
+      const;
 
   // Equivalent characterizations of intensity.  Only one of the mutators may be
   // called, and only once.
@@ -152,7 +153,7 @@ class Manœuvre {
   Vector<double, Frenet<Frame>> const direction_;
   std::optional<Time> duration_;
   std::optional<Instant> initial_time_;
-  not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
+  not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
   bool const is_inertially_fixed_;
   DiscreteTrajectory<InertialFrame> const* coasting_trajectory_ = nullptr;
 };

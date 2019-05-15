@@ -26,7 +26,7 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(
     Mass const& initial_mass,
     SpecificImpulse const& specific_impulse,
     Vector<double, Frenet<Frame>> const& direction,
-    not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame,
+    not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame,
     bool const is_inertially_fixed)
     : thrust_(thrust),
       initial_mass_(initial_mass),
@@ -58,9 +58,9 @@ Manœuvre<InertialFrame, Frame>::direction() const {
 }
 
 template<typename InertialFrame, typename Frame>
-not_null<DynamicFrame<InertialFrame, Frame>const*>
+not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>>
 Manœuvre<InertialFrame, Frame>::frame() const {
-  return frame_.get();
+  return frame_;
 }
 
 template<typename InertialFrame, typename Frame>

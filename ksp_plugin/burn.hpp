@@ -25,7 +25,7 @@ using quantities::SpecificImpulse;
 struct Burn final {
   Force thrust;
   SpecificImpulse specific_impulse;
-  not_null<std::unique_ptr<NavigationFrame const>> frame;
+  not_null<std::shared_ptr<NavigationFrame const>> frame;
   Instant initial_time;
   Velocity<Frenet<Navigation>> Δv;
   bool is_inertially_fixed;
