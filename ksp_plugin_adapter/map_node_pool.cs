@@ -45,32 +45,79 @@ internal class MapNodePool {
   public void RenderMarkers(DisposableIterator apsis_iterator,
                             MapObject.ObjectType type,
                             NodeSource source,
-                            string reference_plane,
-                            Vessel vessel,
-                            CelestialBody celestial) {
+                            ReferenceFrameSelector reference_frame) {
     // We render at most 64 markers of one type and one provenance (e.g., at
     // most 64 perilunes for the prediction of the active vessel).  This is
     // more than is readable, and keeps the size of the map node pool under
     // control.
+    MapObject associated_map_object;
+    UnityEngine.Color colour;
+    if (type == MapObject.ObjectType.Apoapsis ||
+        type == MapObject.ObjectType.Periapsis) {
+      CelestialBody fixed_body = reference_frame.selected_celestial;
+      associated_map_object = fixed_body.MapObject;
+      colour = fixed_body.orbit == null
+            ? XKCDColors.SunshineYellow
+            : fixed_body.orbitDriver.Renderer.nodeColor;
+    } else if (type == MapObject.ObjectType.ApproachIntersect) {
+      associated_map_object = reference_frame.target_override.mapObject;
+      colour = XKCDColors.Chartreuse;
+    } else {
+      if (!reference_frame.target_override &&
+          (reference_frame.frame_type ==
+               ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING ||
+           reference_frame.frame_type ==
+               ReferenceFrameSelector.FrameType.BODY_SURFACE)) {
+        // In one-body frames, the apsides are shown with the colour of the
+        // body.
+        // The nodes are with respect to the equator, rather than with respect
+        // to an orbit. We show the nodes in a different (but arbitrary) colour
+        // so that they can be distinguished easily.
+        associated_map_object = reference_frame.selected_celestial.MapObject;
+        colour = XKCDColors.Chartreuse;
+      } else {
+        // In two-body frames, if apsides are shown, they are shown with the
+        // colour of the secondary (or in XKCD chartreuse if the secondary is a
+        // vessel).
+        // The nodes are with respect to the orbit of the secondary around the
+        // primary. We show the nodes with the colour of the primary.
+        CelestialBody primary = reference_frame.target_override
+            ? reference_frame.selected_celestial
+            : reference_frame.selected_celestial.referenceBody;
+        associated_map_object = primary.MapObject;
+        colour = primary.orbit == null
+            ? XKCDColors.SunshineYellow
+            : primary.orbitDriver.Renderer.nodeColor;
+      }
+    }
+    colour.a = 1;
+
     for (int i = 0; i < 64 && !apsis_iterator.IteratorAtEnd();
          ++i, apsis_iterator.IteratorIncrement()) {
       QP apsis = apsis_iterator.IteratorGetDiscreteTrajectoryQP();
       MapNodeProperties node_properties = new MapNodeProperties {
         visible = true,
         object_type = type,
-        vessel = vessel,
-        celestial = celestial,
-        reference_plane_description = reference_plane,
+        colour = colour,
+        reference_frame = reference_frame,
         world_position = (Vector3d)apsis.q,
         velocity = (Vector3d)apsis.p,
         source = source,
         time = apsis_iterator.IteratorGetDiscreteTrajectoryTime()
       };
+      if (type == MapObject.ObjectType.Periapsis &&
+          reference_frame.selected_celestial.GetAltitude(
+              node_properties.world_position) < 0) {
+        node_properties.object_type = MapObject.ObjectType.PatchTransition;
+        node_properties.colour = XKCDColors.Orange;
+      }
 
       if (pool_index_ == nodes_.Count) {
         nodes_.Add(MakePoolNode());
-      } else if (properties_[nodes_[pool_index_]].object_type != type ||
-                 properties_[nodes_[pool_index_]].celestial != celestial) {
+      } else if (properties_[nodes_[pool_index_]].object_type !=
+                     node_properties.object_type ||
+                 properties_[nodes_[pool_index_]].colour !=
+                     node_properties.colour) {
         // KSP attaches labels to its map nodes, but never detaches them.
         // If the node changes type, we end up with an arbitrary combination of
         // labels Ap, Pe, AN, DN.
@@ -113,134 +160,104 @@ internal class MapNodePool {
         (KSP.UI.Screens.Mapview.MapNode node,
          Mouse.Buttons buttons) => {
           if (buttons == Mouse.Buttons.Left) {
-            if (properties_[node].vessel != null) {
-              if (PlanetariumCamera.fetch.target !=
-                  properties_[node].vessel.mapObject) {
-                PlanetariumCamera.fetch.SetTarget(
-                    properties_[node].vessel.mapObject);
-              }
-            } else if (PlanetariumCamera.fetch.target !=
-                       properties_[node].celestial.MapObject) {
+            if (PlanetariumCamera.fetch.target !=
+                properties_[node].associated_map_object) {
               PlanetariumCamera.fetch.SetTarget(
-                  properties_[node].celestial.MapObject);
+                  properties_[node].associated_map_object);
             }
           }
         };
     new_node.OnUpdateVisible +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.IconData icon) => {
-          if (!properties_[node].visible) {
-            icon.visible = false;
-            return;
-          }
-          CelestialBody celestial = properties_[node].celestial;
-          UnityEngine.Color colour =
-              celestial.orbit == null
-                  ? XKCDColors.SunshineYellow
-                  : celestial.orbitDriver.Renderer.nodeColor;
-          colour.a = 1;
-          icon.visible = true;
-          if (properties_[node].object_type == MapObject.ObjectType.Periapsis &&
-              properties_[node].celestial.GetAltitude(
-                  properties_[node].world_position) < 0) {
-            // Make sure we see impacts.
-            colour = XKCDColors.Orange;
-          }
-          if (properties_[node].object_type ==
-              MapObject.ObjectType.ApproachIntersect) {
-            colour = XKCDColors.Chartreuse;
-          }
-          icon.color = colour;
+          icon.visible = properties_[node].visible;
+          icon.color = properties_[node].colour;
         };
     new_node.OnUpdateType +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
-          if (properties_[node].object_type == MapObject.ObjectType.Periapsis &&
-              properties_[node].celestial.GetAltitude(
-                  properties_[node].world_position) < 0) {
-            type.oType = MapObject.ObjectType.PatchTransition;
+          type.oType = properties_[node].object_type;
+          if (properties_[node].object_type ==
+              MapObject.ObjectType.PatchTransition) {
             type.pType =
                 KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.Impact;
           } else if (properties_[node].object_type ==
                      MapObject.ObjectType.ApproachIntersect) {
-            type.oType = properties_[node].object_type;
             type.aType = KSP.UI.Screens.Mapview.MapNode.ApproachNodeType
                              .CloseApproachOwn;
-          } else {
-            type.oType = properties_[node].object_type;
           }
         };
     new_node.OnUpdateCaption +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.CaptionData caption) => {
+          string source;
+          switch (properties_[node].source) {
+            case NodeSource.FLIGHT_PLAN:
+              source = "Planned";
+              break;
+            case NodeSource.PREDICTION:
+              source = "Predicted";
+              break;
+            default:
+              throw Log.Fatal("Unexpected node source " +
+                              properties_[node].source);
+          }
           if (properties_[node].object_type == MapObject.ObjectType.Periapsis ||
               properties_[node].object_type == MapObject.ObjectType.Apoapsis) {
-            String name =
+            string apsis_name =
                 properties_[node].object_type == MapObject.ObjectType.Periapsis
                     ? "Periapsis"
                     : "Apoapsis";
+            CelestialBody celestial =
+                properties_[node].reference_frame.selected_celestial;
+            Vector3d position = properties_[node].world_position;
+            double speed = properties_[node].velocity.magnitude;
             caption.Header =
-                properties_[node].celestial.name + " " + name + " : <color=" +
-                XKCDColors.HexFormat.Chartreuse + ">" +
-                properties_[node].celestial.GetAltitude(
-                    properties_[node].world_position).ToString(
-                        "N0",
-                        Culture.culture) + " m</color>";
-            caption.captionLine2 =
-                properties_[node].velocity.magnitude.ToString("N0",
-                                                              Culture.culture) +
-                " m/s";
+                $@"{source} {celestial.name} {apsis_name} : <color={
+                   XKCDColors.HexFormat.Chartreuse}>{
+                   celestial.GetAltitude(position):N0} m</color>".ToString(
+                    Culture.culture);
+            caption.captionLine2 = $"{speed:N0} m/s".ToString(Culture.culture);
           } else if (properties_[node].object_type ==
                          MapObject.ObjectType.AscendingNode ||
                      properties_[node].object_type ==
                          MapObject.ObjectType.DescendingNode) {
-            String node_name =
+            string node_name =
                 properties_[node].object_type ==
                     MapObject.ObjectType.AscendingNode
                     ? "Ascending Node"
                     : "Descending Node";
             string reference_plane =
-                properties_[node].reference_plane_description;
-            caption.Header = $"{node_name} with respect to {reference_plane}";
+                properties_[node].reference_frame.ReferencePlaneDescription();
+            caption.Header =
+                $"{source} {node_name}\nwith respect to {reference_plane}";
             caption.captionLine2 =
-                properties_[node].velocity.z.ToString("N0", Culture.culture) +
-                " m/s out of plane";
+                $"{properties_[node].velocity.z:N0} m/s".ToString(
+                    Culture.culture);
           } else if (properties_[node].object_type ==
                      MapObject.ObjectType.ApproachIntersect) {
-            caption.Header = "Target Approach : <color=" +
-                             XKCDColors.HexFormat.Chartreuse + ">" +
-                             (properties_[node].vessel.GetWorldPos3D() -
-                              properties_[node].world_position)
-                                 .magnitude.ToString("N0", Culture.culture) +
-                             " m</color>";
-            caption.captionLine2 =
-                properties_[node].velocity.magnitude.ToString("N0",
-                                                              Culture.culture) +
-                " m/s";
+            Vessel target_vessel =
+                properties_[node].reference_frame.target_override;
+            double separation = (target_vessel.GetWorldPos3D() -
+                                 properties_[node].world_position).magnitude;
+            double speed = properties_[node].velocity.magnitude;
+            caption.Header =
+                $@"Target Approach : <color={XKCDColors.HexFormat.Chartreuse}>{
+                   separation:N0} m</color>".ToString(Culture.culture);
+            caption.captionLine2 = $"{speed:N0} m/s".ToString(Culture.culture);
           }
           caption.captionLine1 =
               "T" +
               FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(
                   Planetarium.GetUniversalTime() - properties_[node].time));
-          if (properties_[node].celestial.GetAltitude(
-                  properties_[node].world_position) < 0 &&
-              properties_[node].object_type == MapObject.ObjectType.Periapsis) {
-            caption.Header = properties_[node].celestial.name +
-                             " Impact<color=" +
+          if (properties_[node].object_type ==
+              MapObject.ObjectType.PatchTransition) {
+            CelestialBody celestial =
+                properties_[node].reference_frame.selected_celestial;
+            caption.Header = celestial.name + " Impact<color=" +
                              XKCDColors.HexFormat.Chartreuse + "></color>";
             caption.captionLine1 = "";
             caption.captionLine2 = "";
-          }
-          switch (properties_[node].source) {
-            case NodeSource.FLIGHT_PLAN:
-              caption.Header = "Planned " + caption.Header;
-              break;
-            case NodeSource.PREDICTION:
-              caption.Header = "Predicted " + caption.Header;
-              break;
-            default:
-              throw Log.Fatal("Unexpected node source " +
-                              properties_[node].source);
           }
         };
     new_node.OnUpdatePosition +=
@@ -258,11 +275,11 @@ internal class MapNodePool {
      // inconsistent with World; for practical purposes only the norm or
      // individual coordinates of this vector should be used here.
     public Vector3d velocity;
-    public Vessel vessel;
-    public CelestialBody celestial;
+    public UnityEngine.Color colour;
+    public MapObject associated_map_object;
+    public ReferenceFrameSelector reference_frame;
     public NodeSource source;
     public double time;
-    public string reference_plane_description;
   }
 
   private List<KSP.UI.Screens.Mapview.MapNode> nodes_;
