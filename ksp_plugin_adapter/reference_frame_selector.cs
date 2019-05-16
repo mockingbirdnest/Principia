@@ -107,20 +107,6 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     });
   }
 
-  public String ReferencePlaneDescription() {
-    if (!target_override &&
-        (frame_type == FrameType.BODY_CENTRED_NON_ROTATING ||
-         frame_type == FrameType.BODY_SURFACE)) {
-      return $"the equator of {selected_celestial.NameWithArticle()}";
-    }
-    string secondary =
-        target_override?.vesselName ?? selected_celestial.NameWithArticle();
-    string primary = target_override
-        ? selected_celestial.NameWithArticle()
-        : selected_celestial.referenceBody.NameWithArticle();
-   return $"the orbit of {secondary} around {primary}";
-  }
-
   public static String Name(FrameType type,
                             CelestialBody selected,
                             Vessel target_override) {
@@ -233,6 +219,21 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public String Description() {
     return Description(frame_type, selected_celestial, target_override);
+  }
+
+  public String ReferencePlaneDescription() {
+    if (!target_override &&
+        (frame_type == FrameType.BODY_CENTRED_NON_ROTATING ||
+         frame_type == FrameType.BODY_SURFACE)) {
+      return $"equator of {selected_celestial.NameWithArticle()}";
+    }
+    string secondary = target_override != null
+        ? "the target"
+        : selected_celestial.NameWithArticle();
+    string primary = target_override
+        ? selected_celestial.NameWithArticle()
+        : selected_celestial.referenceBody.NameWithArticle();
+   return $"orbit of {secondary} around {primary}";
   }
 
   public CelestialBody[] FixedBodies() {

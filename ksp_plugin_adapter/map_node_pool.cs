@@ -213,7 +213,7 @@ internal class MapNodePool {
             Vector3d position = properties_[node].world_position;
             double speed = properties_[node].velocity.magnitude;
             caption.Header =
-                $@"{source} {celestial.name} {apsis_name} : <color={
+                $@"{source} {celestial.name} {apsis_name} :\n<color={
                    XKCDColors.HexFormat.Chartreuse}>{
                    celestial.GetAltitude(position):N0} m</color>".ToString(
                     Culture.culture);
@@ -230,7 +230,7 @@ internal class MapNodePool {
             string reference_plane =
                 properties_[node].reference_frame.ReferencePlaneDescription();
             caption.Header =
-                $"{source} {node_name}\nwith respect to {reference_plane}";
+                $"{source} {node_name} :\n{reference_plane}";
             caption.captionLine2 =
                 $"{properties_[node].velocity.z:N0} m/s".ToString(
                     Culture.culture);
@@ -242,7 +242,7 @@ internal class MapNodePool {
                                  properties_[node].world_position).magnitude;
             double speed = properties_[node].velocity.magnitude;
             caption.Header =
-                $@"Target Approach : <color={XKCDColors.HexFormat.Chartreuse}>{
+                $@"Target Approach :\n<color={XKCDColors.HexFormat.Chartreuse}>{
                    separation:N0} m</color>".ToString(Culture.culture);
             caption.captionLine2 = $"{speed:N0} m/s".ToString(Culture.culture);
           }
