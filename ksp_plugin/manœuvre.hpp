@@ -91,14 +91,21 @@ class Manœuvre {
   Intensity const& intensity() const;
   Timing const& timing() const;
 
-  // Intensity must have been set.  Returns true if Δv is NaN or infinite.
-  bool IsSingular() const;
+  // Individual intensity and timing fields.
+  Vector<double, Frenet<Frame>> const& direction() const;
+  Time const& duration() const;
+  Velocity<Frenet<Frame>> const& Δv() const;
+  Instant const& initial_time() const;
+  Instant const& time_of_half_Δv() const;
 
   // Derived quantities.
   Variation<Mass> mass_flow() const;
   Mass final_mass() const;
   Time time_to_half_Δv() const;
   Instant final_time() const;
+
+  // Intensity must have been set.  Returns true if Δv is NaN or infinite.
+  bool IsSingular() const;
 
   // Returns true if and only if [initial_time, final_time] ⊆ ]begin, end[.
   bool FitsBetween(Instant const& begin, Instant const& end) const;

@@ -108,13 +108,39 @@ typename Manœuvre<InertialFrame, Frame>::Timing const&
 }
 
 template<typename InertialFrame, typename Frame>
+Vector<double, Frenet<Frame>> const& Manœuvre<InertialFrame, Frame>::direction()
+    const {
+  return *intensity_.direction;
+}
+
+template<typename InertialFrame, typename Frame>
+Time const& Manœuvre<InertialFrame, Frame>::duration() const {
+  return *intensity_.duration;
+}
+
+template<typename InertialFrame, typename Frame>
+Velocity<Frenet<Frame>> const& Manœuvre<InertialFrame, Frame>::Δv() const {
+  return *intensity_.Δv;
+}
+
+template<typename InertialFrame, typename Frame>
+Instant const& Manœuvre<InertialFrame, Frame>::initial_time() const {
+  return *timing_.initial_time;
+}
+
+template<typename InertialFrame, typename Frame>
+Instant const& Manœuvre<InertialFrame, Frame>::time_of_half_Δv() const {
+  return timing_.time_of_half_Δv;
+}
+
+template<typename InertialFrame, typename Frame>
 Variation<Mass> Manœuvre<InertialFrame, Frame>::mass_flow() const {
   return thrust_ / specific_impulse_;
 }
 
 template<typename InertialFrame, typename Frame>
 Mass Manœuvre<InertialFrame, Frame>::final_mass() const {
-  return initial_mass_ - mass_flow() * *intensity_.duration;
+  return initial_mass_ - mass_flow() * duration();
 }
 
 template<typename InertialFrame, typename Frame>
@@ -125,18 +151,18 @@ Time Manœuvre<InertialFrame, Frame>::time_to_half_Δv() const {
 
 template<typename InertialFrame, typename Frame>
 Instant Manœuvre<InertialFrame, Frame>::final_time() const {
-  return *timing_.initial_time + *intensity_.duration;
+  return initial_time() + duration();
 }
 
 template<typename InertialFrame, typename Frame>
 bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
                                                  Instant const& end) const {
-  return begin < timing_.initial_time && final_time() < end;
+  return begin < initial_time() && final_time() < end;
 }
 
 template<typename InertialFrame, typename Frame>
 bool Manœuvre<InertialFrame, Frame>::IsSingular() const {
-  return !IsFinite(intensity_.Δv->Norm²());
+  return !IsFinite(Δv.Norm²());
 }
 
 template<typename InertialFrame, typename Frame>
@@ -149,7 +175,7 @@ template<typename InertialFrame, typename Frame>
 Vector<double, InertialFrame>
     Manœuvre<InertialFrame, Frame>::InertialDirection() const {
   CHECK(is_inertially_fixed_);
-  return FrenetFrame()(*intensity_.direction);
+  return FrenetFrame()(direction());
 }
 
 template<typename InertialFrame, typename Frame>
@@ -172,8 +198,7 @@ Manœuvre<InertialFrame, Frame>::FrenetIntrinsicAcceleration() const {
              -> Vector<Acceleration, InertialFrame> {
     return ComputeIntrinsicAcceleration(
         t,
-        /*direction=*/ComputeFrenetFrame(t, degrees_of_freedom)(
-            *intensity_.direction));
+        /*direction=*/ComputeFrenetFrame(t, degrees_of_freedom)(direction()));
   };
 }
 
@@ -182,9 +207,9 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
     Manœuvre<InertialFrame, Frame>::FrenetFrame() const {
   CHECK_NOTNULL(coasting_trajectory_);
   typename DiscreteTrajectory<InertialFrame>::Iterator const it =
-      coasting_trajectory_->Find(*timing_.initial_time);
+      coasting_trajectory_->Find(initial_time());
   CHECK(it != coasting_trajectory_->End());
-  return ComputeFrenetFrame(*timing_.initial_time, it.degrees_of_freedom());
+  return ComputeFrenetFrame(initial_time(), it.degrees_of_freedom());
 }
 
 template<typename InertialFrame, typename Frame>
@@ -193,9 +218,9 @@ void Manœuvre<InertialFrame, Frame>::WriteToMessage(
   thrust_.WriteToMessage(message->mutable_thrust());
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   specific_impulse_.WriteToMessage(message->mutable_specific_impulse());
-  intensity_.direction->WriteToMessage(message->mutable_direction());
-  intensity_.duration->WriteToMessage(message->mutable_duration());
-  timing_.initial_time->WriteToMessage(message->mutable_initial_time());
+  direction().WriteToMessage(message->mutable_direction());
+  duration().WriteToMessage(message->mutable_duration());
+  initial_time().WriteToMessage(message->mutable_initial_time());
   frame_->WriteToMessage(message->mutable_frame());
   message->set_is_inertially_fixed(is_inertially_fixed_);
 }
@@ -239,9 +264,9 @@ Vector<Acceleration, InertialFrame>
 Manœuvre<InertialFrame, Frame>::ComputeIntrinsicAcceleration(
     Instant const& t,
     Vector<double, InertialFrame> const& direction) const {
-  if (t >= *timing_.initial_time && t <= final_time()) {
+  if (t >= initial_time() && t <= final_time()) {
     return direction * thrust_ /
-           (initial_mass_ - (t - *timing_.initial_time) * mass_flow());
+           (initial_mass_ - (t - initial_time()) * mass_flow());
   } else {
     return Vector<Acceleration, InertialFrame>();
   }
