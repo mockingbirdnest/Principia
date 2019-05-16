@@ -41,6 +41,7 @@ using geometry::Identity;
 using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
 using geometry::Rotation;
+using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
@@ -55,6 +56,7 @@ using ksp_plugin::WorldSun;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
+using physics::Frenet;
 using physics::MassiveBody;
 using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
@@ -86,10 +88,11 @@ Index const celestial_index = 1;
 
 }  // namespace
 
-MATCHER_P3(BurnMatches, thrust, specific_impulse, initial_time, "") {
+MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
   return arg.thrust == thrust &&
          arg.specific_impulse == specific_impulse &&
-         arg.initial_time == initial_time;
+         arg.initial_time == initial_time &&
+         arg.Δv == Δv;
 }
 
 class InterfaceFlightPlanTest : public ::testing::Test {
@@ -206,7 +209,11 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
               AppendConstRef(
                   BurnMatches(1 * Kilo(Newton),
                               2 * Second * StandardGravity,
-                              Instant() + 3 * Second)))
+                              Instant() + 3 * Second,
+                              Velocity<Frenet<Navigation>>(
+                                  {4 * (Metre / Second),
+                                   5 * (Metre / Second),
+                                   6 * (Metre / Second)}))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), vessel_guid, burn));
 
@@ -349,7 +356,11 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
               ReplaceLastConstRef(
                   BurnMatches(10 * Kilo(Newton),
                               2 * Second * StandardGravity,
-                              Instant() + 3 * Second)))
+                              Instant() + 3 * Second,
+                              Velocity<Frenet<Navigation>>(
+                                  {4 * (Metre / Second),
+                                   5 * (Metre / Second),
+                                   6 * (Metre / Second)}))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanReplaceLast(plugin_.get(),
                                                vessel_guid,
