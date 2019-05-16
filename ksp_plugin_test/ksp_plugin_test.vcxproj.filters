@@ -56,9 +56,6 @@
     <ClCompile Include="flight_plan_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ksp_plugin\burn.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

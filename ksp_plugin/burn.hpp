@@ -21,7 +21,7 @@ using quantities::Mass;
 using quantities::SpecificImpulse;
 
 // Parameters for constructing a |NavigationManœuvre|, excluding the initial
-// mass.  This owns a |NavigationFrame| and is therefore not copyable.
+// mass.
 struct Burn final {
   Force thrust;
   SpecificImpulse specific_impulse;
@@ -31,12 +31,9 @@ struct Burn final {
   bool is_inertially_fixed;
 };
 
-NavigationManœuvre MakeNavigationManœuvre(Burn burn, Mass const& initial_mass);
-
 }  // namespace internal_burn
 
 using internal_burn::Burn;
-using internal_burn::MakeNavigationManœuvre;
 
 }  // namespace ksp_plugin
 }  // namespace principia

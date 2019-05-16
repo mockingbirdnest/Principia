@@ -26,6 +26,24 @@ using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
 
+namespace {
+
+NavigationManœuvre MakeNavigationManœuvre(Burn burn, Mass const& initial_mass) {
+  NavigationManœuvre::Intensity intensity;
+  intensity.Δv = burn.Δv;
+  NavigationManœuvre::Timing timing;
+  timing.initial_time = burn.initial_time;
+  return NavigationManœuvre(burn.thrust,
+                            initial_mass,
+                            burn.specific_impulse,
+                            intensity,
+                            timing,
+                            std::move(burn.frame),
+                            burn.is_inertially_fixed);
+}
+
+}  // namespace
+
 FlightPlan::FlightPlan(
     Mass const& initial_mass,
     Instant const& initial_time,
