@@ -937,18 +937,76 @@ void Plugin::ComputeAndRenderNodes(
                Vector<double, Navigation>({0, 0, 1}),
                ascending_trajectory,
                descending_trajectory);
-  ascending = renderer_->RenderPlottingTrajectoryInWorld(
-                  current_time_,
-                  ascending_trajectory.Begin(),
-                  ascending_trajectory.End(),
-                  sun_world_position,
-                  PlanetariumRotation());
-  descending = renderer_->RenderPlottingTrajectoryInWorld(
-                   current_time_,
-                   descending_trajectory.Begin(),
-                   descending_trajectory.End(),
-                   sun_world_position,
-                   PlanetariumRotation());
+
+  std::optional<DiscreteTrajectory<Navigation>> filtered_ascending_trajectory;
+  std::optional<DiscreteTrajectory<Navigation>> filtered_descending_trajectory;
+
+  auto const cast_plotting_frame = dynamic_cast<
+      BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const*>(
+      &*renderer_->GetPlottingFrame());
+  if (cast_plotting_frame != nullptr) {
+    auto const& plotting_frame = *cast_plotting_frame;
+    auto const centre = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
+        plotting_frame.centre());
+    // The plotting frame is a body-centred non-rotating frame; as this frame
+    // does not rotate, its reference plane is not an inherent dynamical
+    // property.  Discard the nodes if they are far enough from the central body
+    // that its equator is irrelevant.  Specifically, discard a node if:
+    // - it is too far for dynamical oblateness to matter, and
+    // - it is above the semimajor axis of a supersynchronous orbit (1 orbit for
+    //   2 body revolutions).
+    Length const j2_threshold =
+        centre->is_oblate()
+            ? physics::Geopotential<Barycentric>(
+                  dynamic_cast_not_null<
+                      physics::OblateBody<Barycentric> const*>(centre),
+                  /*tolerance=*/0x1p-24).degree_damping()[2].inner_threshold()
+            : 0 * Metre;
+    Length const supersynchronous_threshold = quantities::Cbrt(
+        centre->gravitational_parameter() /
+        quantities::Pow<2>(centre->angular_frequency() / (2 * Radian)));
+    Length const threshold = std::max(j2_threshold, supersynchronous_threshold);
+
+    filtered_ascending_trajectory.emplace();
+    for (auto it = ascending_trajectory.Begin();
+         it != ascending_trajectory.End();
+         ++it) {
+      if ((it.degrees_of_freedom().position() - Navigation::origin).Norm() <
+          threshold) {
+        filtered_ascending_trajectory->Append(it.time(),
+                                              it.degrees_of_freedom());
+      }
+    }
+    filtered_descending_trajectory.emplace();
+    for (auto it = descending_trajectory.Begin();
+         it != descending_trajectory.End();
+         ++it) {
+      if ((it.degrees_of_freedom().position() - Navigation::origin).Norm() <
+          threshold) {
+        filtered_descending_trajectory->Append(it.time(),
+                                               it.degrees_of_freedom());
+      }
+    }
+  }
+  auto const& ascending_nodes = filtered_ascending_trajectory.has_value()
+                                    ? *filtered_ascending_trajectory
+                                    : ascending_trajectory;
+  auto const& descending_nodes = filtered_descending_trajectory.has_value()
+                                     ? *filtered_descending_trajectory
+                                     : descending_trajectory;
+
+  ascending =
+      renderer_->RenderPlottingTrajectoryInWorld(current_time_,
+                                                 ascending_nodes.Begin(),
+                                                 ascending_nodes.End(),
+                                                 sun_world_position,
+                                                 PlanetariumRotation());
+  descending =
+      renderer_->RenderPlottingTrajectoryInWorld(current_time_,
+                                                 descending_nodes.Begin(),
+                                                 descending_nodes.End(),
+                                                 sun_world_position,
+                                                 PlanetariumRotation());
 }
 
 bool Plugin::HasCelestial(Index const index) const {
