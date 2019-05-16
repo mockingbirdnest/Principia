@@ -74,10 +74,6 @@ FlightPlan& GetFlightPlan(Plugin const& plugin,
 
 Burn GetBurn(Plugin const& plugin,
              NavigationManœuvre const& manœuvre) {
-  Velocity<Frenet<NavigationFrame>> const Δv =
-      manœuvre.Δv() == Speed() ? Velocity<Frenet<NavigationFrame>>()
-                               : manœuvre.Δv() * manœuvre.direction();
-
   // When building the parameters, make sure that the "optional" fields get a
   // deterministic default.
   NavigationFrameParameters parameters;
@@ -148,8 +144,8 @@ Burn GetBurn(Plugin const& plugin,
   return {manœuvre.thrust() / Kilo(Newton),
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
-          ToGameTime(plugin, manœuvre.initial_time()),
-          ToXYZ(Δv),
+          ToGameTime(plugin, *manœuvre.timing().initial_time),
+          ToXYZ(*manœuvre.intensity().Δv),
           manœuvre.is_inertially_fixed()};
 }
 
@@ -161,9 +157,10 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
   result.initial_mass_in_tonnes = manœuvre.initial_mass() / Tonne;
   result.final_mass_in_tonnes = manœuvre.final_mass() / Tonne;
   result.mass_flow = manœuvre.mass_flow() / (Kilogram / Second);
-  result.duration = manœuvre.duration() / Second;
+  result.duration = *manœuvre.intensity().duration / Second;
   result.final_time = ToGameTime(plugin, manœuvre.final_time());
-  result.time_of_half_delta_v = ToGameTime(plugin, manœuvre.time_of_half_Δv());
+  result.time_of_half_delta_v = ToGameTime(plugin,
+                                           *manœuvre.timing().time_of_half_Δv);
   result.time_to_half_delta_v = manœuvre.time_to_half_Δv() / Second;
   return result;
 }
@@ -254,10 +251,11 @@ XYZ principia__FlightPlanGetGuidance(Plugin const* const plugin,
     result = plugin->renderer().BarycentricToWorld(
                  plugin->PlanetariumRotation())(manœuvre.InertialDirection());
   } else {
-    result = plugin->renderer().FrenetToWorld(
-                 *plugin->GetVessel(vessel_guid),
-                 *manœuvre.frame(),
-                 plugin->PlanetariumRotation())(manœuvre.direction());
+    result =
+        plugin->renderer().FrenetToWorld(
+            *plugin->GetVessel(vessel_guid),
+            *manœuvre.frame(),
+            plugin->PlanetariumRotation())(*manœuvre.intensity().direction);
   }
   return m.Return(ToXYZ(result));
 }

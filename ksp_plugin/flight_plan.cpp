@@ -326,7 +326,7 @@ void FlightPlan::Append(NavigationManœuvre manœuvre) {
   {
     // Hide the moved-from |manœuvre|.
     NavigationManœuvre& manœuvre = manœuvres_.back();
-    CHECK_EQ(manœuvre.initial_time(), segments_.back()->last().time());
+    CHECK_EQ(*manœuvre.timing().initial_time, segments_.back()->last().time());
     manœuvre.set_coasting_trajectory(segments_.back());
     AddSegment();
     BurnLastSegment(manœuvre);
@@ -343,7 +343,7 @@ bool FlightPlan::RecomputeSegments() {
   }
   ResetLastSegment();
   for (auto& manœuvre : manœuvres_) {
-    CoastLastSegment(manœuvre.initial_time());
+    CoastLastSegment(*manœuvre.timing().initial_time);
     manœuvre.set_coasting_trajectory(segments_.back());
     AddSegment();
     BurnLastSegment(manœuvre);
@@ -356,7 +356,7 @@ bool FlightPlan::RecomputeSegments() {
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   if (anomalous_segments_ > 0) {
     return;
-  } else if (manœuvre.initial_time() < manœuvre.final_time()) {
+  } else if (manœuvre.timing().initial_time < manœuvre.final_time()) {
     if (manœuvre.is_inertially_fixed()) {
       bool const reached_desired_final_time =
           ephemeris_->FlowWithAdaptiveStep(
@@ -449,7 +449,7 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
       ephemeris_->FlowWithAdaptiveStep(
           recomputed_coast,
           Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          manœuvre.initial_time(),
+          *manœuvre.timing().initial_time,
           adaptive_step_parameters_,
           max_ephemeris_steps_per_frame,
           /*last_point_only=*/false).ok();

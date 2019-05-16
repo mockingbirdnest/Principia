@@ -131,12 +131,12 @@ Instant Manœuvre<InertialFrame, Frame>::final_time() const {
 template<typename InertialFrame, typename Frame>
 bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
                                                  Instant const& end) const {
-  return begin < initial_time() && final_time() < end;
+  return begin < timing_.initial_time && final_time() < end;
 }
 
 template<typename InertialFrame, typename Frame>
 bool Manœuvre<InertialFrame, Frame>::IsSingular() const {
-  return !IsFinite(Δv());
+  return !IsFinite(intensity_.Δv->Norm²());
 }
 
 template<typename InertialFrame, typename Frame>
@@ -172,7 +172,8 @@ Manœuvre<InertialFrame, Frame>::FrenetIntrinsicAcceleration() const {
              -> Vector<Acceleration, InertialFrame> {
     return ComputeIntrinsicAcceleration(
         t,
-        /*direction=*/ComputeFrenetFrame(t, degrees_of_freedom)(direction_));
+        /*direction=*/ComputeFrenetFrame(t, degrees_of_freedom)(
+            *intensity_.direction));
   };
 }
 
