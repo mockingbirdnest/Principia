@@ -130,7 +130,7 @@ Instant const& Manœuvre<InertialFrame, Frame>::initial_time() const {
 
 template<typename InertialFrame, typename Frame>
 Instant const& Manœuvre<InertialFrame, Frame>::time_of_half_Δv() const {
-  return timing_.time_of_half_Δv;
+  return *timing_.time_of_half_Δv;
 }
 
 template<typename InertialFrame, typename Frame>
