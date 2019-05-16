@@ -54,9 +54,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
-using astronomy::ParseTT;
-using astronomy::KSPStockSystemFingerprint;
 using astronomy::KSPStabilizedSystemFingerprint;
+using astronomy::KSPStockSystemFingerprint;
+using astronomy::ParseTT;
 using astronomy::StabilizeKSP;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
@@ -65,8 +65,8 @@ using base::FindOrDie;
 using base::Fingerprint2011;
 using base::HexadecimalEncoder;
 using base::make_not_null_unique;
-using base::OFStream;
 using base::not_null;
+using base::OFStream;
 using base::SerializeAsBytes;
 using base::Status;
 using geometry::AffineMap;
@@ -90,13 +90,17 @@ using physics::ComputeNodes;
 using physics::CoordinateFrameField;
 using physics::DynamicFrame;
 using physics::Frenet;
+using physics::Geopotential;
 using physics::KeplerianElements;
 using physics::MassiveBody;
+using physics::OblateBody;
 using physics::RigidMotion;
 using physics::SolarSystem;
+using quantities::Cbrt;
 using quantities::Force;
 using quantities::Infinity;
 using quantities::Length;
+using quantities::Pow;
 using quantities::si::Kilogram;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -957,14 +961,13 @@ void Plugin::ComputeAndRenderNodes(
     //   2 body revolutions).
     Length const j2_threshold =
         centre->is_oblate()
-            ? physics::Geopotential<Barycentric>(
-                  dynamic_cast_not_null<
-                      physics::OblateBody<Barycentric> const*>(centre),
+            ? Geopotential<Barycentric>(
+                  dynamic_cast_not_null<OblateBody<Barycentric> const*>(centre),
                   /*tolerance=*/0x1p-24).degree_damping()[2].inner_threshold()
             : 0 * Metre;
-    Length const supersynchronous_threshold = quantities::Cbrt(
-        centre->gravitational_parameter() /
-        quantities::Pow<2>(centre->angular_frequency() / (2 * Radian)));
+    Length const supersynchronous_threshold =
+        Cbrt(centre->gravitational_parameter() /
+             Pow<2>(centre->angular_frequency() / (2 * Radian)));
     Length const threshold = std::max(j2_threshold, supersynchronous_threshold);
 
     filtered_ascending_trajectory.emplace();
