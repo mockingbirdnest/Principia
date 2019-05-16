@@ -21,8 +21,8 @@ class MockFlightPlan : public FlightPlan {
   MOCK_CONST_METHOD1(AppendConstRef, bool(Burn const& burn));
   MOCK_CONST_METHOD1(ReplaceLastConstRef, bool(Burn const& burn));
 
-  bool Append(Burn burn);
-  bool ReplaceLast(Burn burn);
+  bool Append(Burn burn) override;
+  bool ReplaceLast(Burn burn) override;
 
   MOCK_METHOD1(SetDesiredFinalTime, bool(Instant const& final_time));
 

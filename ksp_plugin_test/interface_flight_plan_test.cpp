@@ -235,16 +235,21 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
           new BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>(
             &ephemeris,
             &centre);
+
+  MockManœuvre<Barycentric, Navigation>::Intensity intensity;
+  intensity.direction = Vector<double, Frenet<Navigation>>({1, 1, 1});
+  intensity.duration = 7 * Second;
+  MockManœuvre<Barycentric, Navigation>::Timing timing;
+  timing.initial_time = Instant();
   MockManœuvre<Barycentric, Navigation> navigation_manœuvre(
       10 * Kilo(Newton),
       20 * Tonne,
       30 * Second * StandardGravity,
-      Vector<double, Frenet<Navigation>>({1, 1, 1}),
+      intensity,
+      timing,
       std::unique_ptr<DynamicFrame<Barycentric, Navigation> const>(
           navigation_manœuvre_frame),
       /*is_inertially_fixed=*/true);
-  navigation_manœuvre.set_initial_time(Instant());
-  navigation_manœuvre.set_duration(7 * Second);
   auto const barycentric_to_plotting = RigidMotion<Barycentric, Navigation>(
       RigidTransformation<Barycentric, Navigation>(
           Barycentric::origin,
