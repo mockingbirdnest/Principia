@@ -111,7 +111,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                /*specific_impulse_in_seconds_g0=*/2,
                /*frame=*/{/*extension=*/6000, /*centre=*/celestial_index},
                /*initial_time=*/3,
-               /*delta_v=*/{4, 5, 6}};
+               /*delta_v=*/{4, 5, 6},
+               /*is_inertially_fixed=*/true};
   StrictMock<MockVessel> vessel;
   StrictMock<MockFlightPlan> flight_plan;
 
