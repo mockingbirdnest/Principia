@@ -162,7 +162,7 @@ bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
 
 template<typename InertialFrame, typename Frame>
 bool Manœuvre<InertialFrame, Frame>::IsSingular() const {
-  return !IsFinite(Δv.Norm²());
+  return !IsFinite(Δv().Norm²());
 }
 
 template<typename InertialFrame, typename Frame>

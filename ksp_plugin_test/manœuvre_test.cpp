@@ -345,8 +345,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
               IsNear(3.2 * Kilo(Metre) / Second, 1.01));
 
   // From the Apollo 8 flight journal.
-  EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second,
-                            second_burn.Δv().Norm()),
+  EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second, second_burn.Δv().Norm()),
               Lt(20 * Metre / Second));
 }
 
