@@ -86,11 +86,10 @@ Index const celestial_index = 1;
 
 }  // namespace
 
-MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
+MATCHER_P3(BurnMatches, thrust, specific_impulse, initial_time, "") {
   return arg.thrust == thrust &&
          arg.specific_impulse == specific_impulse &&
-         arg.initial_time == initial_time &&
-         arg.Δv == Δv;
+         arg.initial_time == initial_time;
 }
 
 class InterfaceFlightPlanTest : public ::testing::Test {
@@ -207,11 +206,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
               AppendConstRef(
                   BurnMatches(1 * Kilo(Newton),
                               2 * Second * StandardGravity,
-                              Instant() + 3 * Second,
-                              Velocity<Frenet<Navigation>>(
-                                  {4 * (Metre / Second),
-                                   5 * (Metre / Second),
-                                   6 * (Metre / Second)}))))
+                              Instant() + 3 * Second)))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), vessel_guid, burn));
 
@@ -354,11 +349,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
               ReplaceLastConstRef(
                   BurnMatches(10 * Kilo(Newton),
                               2 * Second * StandardGravity,
-                              Instant() + 3 * Second,
-                              Velocity<Frenet<Navigation>>(
-                                  {4 * (Metre / Second),
-                                   5 * (Metre / Second),
-                                   6 * (Metre / Second)}))))
+                              Instant() + 3 * Second)))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanReplaceLast(plugin_.get(),
                                                vessel_guid,
