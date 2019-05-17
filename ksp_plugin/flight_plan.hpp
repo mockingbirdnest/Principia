@@ -6,7 +6,6 @@
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
-#include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
 #include "physics/degrees_of_freedom.hpp"

@@ -6,7 +6,6 @@
 #include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
-#include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/vessel.hpp"

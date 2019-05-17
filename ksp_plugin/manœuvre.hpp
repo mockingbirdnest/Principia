@@ -73,21 +73,25 @@ class Manœuvre {
     Intensity intensity;
     Timing timing;
     // Defines the Frenet frame.
-    not_null<std::shared_ptr<NavigationFrame const>> frame;
+    not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame;
     // If true, the direction of the burn remains fixed in a nonrotating frame.
     // Otherwise, the direction of the burn remains fixed in the Frenet frame of
     // the trajectory.
     bool is_inertially_fixed;
   };
 
-  // A manœuvre is a burn applied to a vessel specified by its initial mass.
-  Manœuvre(Burn const& burn,
-           Mass const& initial_mass);
+  // A manœuvre is a burn applied to a vessel specified by its initial mass and
+  // attached to a coasting trajectory.
+  Manœuvre(Mass const& initial_mass,
+           Burn const& burn);
   virtual ~Manœuvre() = default;
+
+  Mass const& initial_mass() const;
 
   // All the fields returned by these selectors are filled.
   Intensity const& intensity() const;
   Timing const& timing() const;
+  Burn const& burn() const;
 
   // Individual intensity and timing fields.
   Vector<double, Frenet<Frame>> const& direction() const;
@@ -98,7 +102,6 @@ class Manœuvre {
 
   // Individual burn fields.
   Force const& thrust() const;
-  Mass const& initial_mass() const;
   SpecificImpulse const& specific_impulse() const;
   not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame()
       const;
@@ -110,7 +113,7 @@ class Manœuvre {
   Time time_to_half_Δv() const;
   Instant final_time() const;
 
-  // Returns true if Δv is NaN or infinite.
+  // Returns true if ‖Δv‖ is NaN or infinite.
   bool IsSingular() const;
 
   // Returns true if and only if [initial_time, final_time] ⊆ ]begin, end[.
@@ -158,14 +161,8 @@ class Manœuvre {
       Instant const& t,
       Vector<double, InertialFrame> const& direction) const;
 
-  Force const thrust_;
   Mass const initial_mass_;
-  SpecificImpulse const specific_impulse_;
-  Intensity intensity_;
-  Timing timing_;
-  not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> const
-      frame_;
-  bool const is_inertially_fixed_;
+  Burn burn_;
   DiscreteTrajectory<InertialFrame> const* coasting_trajectory_ = nullptr;
 };
 
