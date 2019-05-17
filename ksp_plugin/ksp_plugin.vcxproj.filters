@@ -41,9 +41,6 @@
     <ClInclude Include="flight_plan.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="burn.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="interface.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>

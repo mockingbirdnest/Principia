@@ -34,17 +34,16 @@ using quantities::Speed;
 using quantities::Time;
 using quantities::Variation;
 
-// This class represents a constant-thrust inertial burn.  |InertialFrame| is
-// an underlying inertial reference frame, |Frame| is the reference frame used
-// to compute the Frenet frame.  |Frame| is defined by the parameter |frame|
-// given to the constructor.  The |direction| is given in the Frenet frame of
-// the trajectory at the beginning of the burn.
+// This class represents a constant-thrust burn.  |InertialFrame| is an
+// underlying inertial reference frame, |Frame| is the reference frame used to
+// compute the Frenet frame.
 template<typename InertialFrame, typename Frame>
 class Manœuvre {
  public:
   // Characterization of intensity.  All members for exactly one of the groups
-  // must be supplied.
-  struct Intensity {
+  // must be supplied.  The |direction| and |Δv| are given in the Frenet frame
+  // of the trajectory at the beginning of the burn.
+  struct Intensity final {
     // Group 1.
     std::optional<Vector<double, Frenet<Frame>>> direction;
     std::optional<Time> duration;
@@ -54,38 +53,37 @@ class Manœuvre {
 
   // Characterization of timing.  All members for exactly one of the groups
   // must be supplied.
-  struct Timing {
+  struct Timing final {
     // Group 1.
     std::optional<Instant> initial_time;
     // Group 2.
     std::optional<Instant> time_of_half_Δv;
   };
 
-  Manœuvre(Force const& thrust,
-           Mass const& initial_mass,
-           SpecificImpulse const& specific_impulse,
-           Intensity const& intensity,
-           Timing const& timing,
-           not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>>
-               frame,
-           bool is_inertially_fixed);
-  virtual ~Manœuvre() = default;
+  // Complete description of a burn.
+  struct Burn final {
+    Force thrust;
+    // Specific impulse by mass, because specific impulse by weight is insane.
+    // This is defined as the ratio of thrust to mass flow.
+    // If the burn is done with a single engine (in a vacuum), this will be its
+    // exhaust velocity.  For several engines, this is the total thrust divided
+    // by the sum of the individual mass flows (where each mass flow is the
+    // individual thrust divided by the exhaust velocity).
+    SpecificImpulse specific_impulse;
+    Intensity intensity;
+    Timing timing;
+    // Defines the Frenet frame.
+    not_null<std::shared_ptr<NavigationFrame const>> frame;
+    // If true, the direction of the burn remains fixed in a nonrotating frame.
+    // Otherwise, the direction of the burn remains fixed in the Frenet frame of
+    // the trajectory.
+    bool is_inertially_fixed;
+  };
 
-  Force const& thrust() const;
-  Mass const& initial_mass() const;
-  // Specific impulse by mass, because specific impulse by weight is insane.
-  // This is defined as the ratio of thrust to mass flow.
-  // If the burn is done with a single engine (in a vacuum), this will be its
-  // exhaust velocity.  For several engines, this is the total thrust divided
-  // by the sum of the individual mass flows (where each mass flow is the
-  // individual thrust divided by the exhaust velocity).
-  SpecificImpulse const& specific_impulse() const;
-  not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame()
-      const;
-  // If true, the direction of the burn remains fixed in a nonrotating frame.
-  // Otherwise, the direction of the burn remains fixed in the Frenet frame of
-  // the trajectory.
-  bool is_inertially_fixed() const;
+  // A manœuvre is a burn applied to a vessel specified by its initial mass.
+  Manœuvre(Burn const& burn,
+           Mass const& initial_mass);
+  virtual ~Manœuvre() = default;
 
   // All the fields returned by these selectors are filled.
   Intensity const& intensity() const;
@@ -98,21 +96,29 @@ class Manœuvre {
   Instant const& initial_time() const;
   Instant const& time_of_half_Δv() const;
 
+  // Individual burn fields.
+  Force const& thrust() const;
+  Mass const& initial_mass() const;
+  SpecificImpulse const& specific_impulse() const;
+  not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame()
+      const;
+  bool is_inertially_fixed() const;
+
   // Derived quantities.
   Variation<Mass> mass_flow() const;
   Mass final_mass() const;
   Time time_to_half_Δv() const;
   Instant final_time() const;
 
-  // Intensity must have been set.  Returns true if Δv is NaN or infinite.
+  // Returns true if Δv is NaN or infinite.
   bool IsSingular() const;
 
   // Returns true if and only if [initial_time, final_time] ⊆ ]begin, end[.
   bool FitsBetween(Instant const& begin, Instant const& end) const;
 
-  // Sets the trajectory at the end of which the mannœuvre takes place.  Must
-  // be called before any of the functions below.  |trajectory| must have a
-  // point at |initial_time()|.
+  // Sets the trajectory at the end of which the manœuvre takes place.  Must be
+  // called before any of the functions below.  |trajectory| must have a point
+  // at |initial_time()|.
   void set_coasting_trajectory(
       not_null<DiscreteTrajectory<InertialFrame> const*> trajectory);
 
