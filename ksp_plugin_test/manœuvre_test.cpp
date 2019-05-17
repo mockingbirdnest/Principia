@@ -100,10 +100,10 @@ TEST_F(ManœuvreTest, TimedBurn) {
   Manœuvre<World, Rendering>::Timing timing;
   timing.initial_time = t0_;
   Manœuvre<World, Rendering>::Burn const burn{
-      /*thrust=*/1 * Newton,
-      /*specific_impulse=*/1 * Newton * Second / Kilogram,
       intensity,
       timing,
+      /*thrust=*/1 * Newton,
+      /*specific_impulse=*/1 * Newton * Second / Kilogram,
       MakeMockDynamicFrame(),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
@@ -162,10 +162,10 @@ TEST_F(ManœuvreTest, TargetΔv) {
   Manœuvre<World, Rendering>::Timing timing;
   timing.time_of_half_Δv = t0_;
   Manœuvre<World, Rendering>::Burn const burn{
-      /*thrust=*/1 * Newton,
-      /*specific_impulse=*/1 * Newton * Second / Kilogram,
       intensity,
       timing,
+      /*thrust=*/1 * Newton,
+      /*specific_impulse=*/1 * Newton * Second / Kilogram,
       MakeMockDynamicFrame(),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
@@ -256,10 +256,10 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   Manœuvre<World, Rendering>::Timing first_burn_timing;
   first_burn_timing.initial_time = s_ivb_1st_90_percent_thrust;
   Manœuvre<World, Rendering>::Burn const first_burn{
-      thrust_1st,
-      specific_impulse_1st,
       first_burn_intensity,
       first_burn_timing,
+      thrust_1st,
+      specific_impulse_1st,
       MakeMockDynamicFrame(),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> first_manœuvre(
@@ -301,10 +301,10 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   Manœuvre<World, Rendering>::Timing second_burn_timing;
   second_burn_timing.initial_time = s_ivb_2nd_90_percent_thrust;
   Manœuvre<World, Rendering>::Burn const second_burn{
-      thrust_2nd,
-      specific_impulse_2nd,
       second_burn_intensity,
       second_burn_timing,
+      thrust_2nd,
+      specific_impulse_2nd,
       MakeMockDynamicFrame(),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> second_manœuvre(
@@ -363,10 +363,10 @@ TEST_F(ManœuvreTest, Serialization) {
   Manœuvre<World, Rendering>::Timing timing;
   timing.time_of_half_Δv = t0_;
   Manœuvre<World, Rendering>::Burn const burn{
-      /*thrust=*/1 * Newton,
-      /*specific_impulse=*/1 * Newton * Second / Kilogram,
       intensity,
       timing,
+      /*thrust=*/1 * Newton,
+      /*specific_impulse=*/1 * Newton * Second / Kilogram,
       std::move(mock_dynamic_frame),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);

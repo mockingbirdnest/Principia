@@ -234,10 +234,10 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
   intensity.duration = Time::ReadFromMessage(message.duration());
   Timing timing;
   timing.initial_time = Instant::ReadFromMessage(message.initial_time());
-  Burn const burn{Force::ReadFromMessage(message.thrust()),
-                  SpecificImpulse::ReadFromMessage(message.specific_impulse()),
-                  intensity,
+  Burn const burn{intensity,
                   timing,
+                  Force::ReadFromMessage(message.thrust()),
+                  SpecificImpulse::ReadFromMessage(message.specific_impulse()),
                   DynamicFrame<InertialFrame, Frame>::ReadFromMessage(
                       message.frame(), ephemeris),
                   message.is_inertially_fixed()};

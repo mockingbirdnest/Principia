@@ -62,6 +62,8 @@ class Manœuvre {
 
   // Complete description of a burn.
   struct Burn final {
+    Intensity intensity;
+    Timing timing;
     Force thrust;
     // Specific impulse by mass, because specific impulse by weight is insane.
     // This is defined as the ratio of thrust to mass flow.
@@ -70,8 +72,6 @@ class Manœuvre {
     // by the sum of the individual mass flows (where each mass flow is the
     // individual thrust divided by the exhaust velocity).
     SpecificImpulse specific_impulse;
-    Intensity intensity;
-    Timing timing;
     // Defines the Frenet frame.
     not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame;
     // If true, the direction of the burn remains fixed in a nonrotating frame.
