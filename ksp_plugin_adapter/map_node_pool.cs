@@ -157,8 +157,7 @@ internal class MapNodePool {
          KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
           var properties = properties_[node];
           if (properties.object_type == MapObject.ObjectType.Periapsis &&
-              properties.celestial.GetAltitude(
-                  properties.world_position) < 0) {
+              properties.celestial.GetAltitude(properties.world_position) < 0) {
             type.oType = MapObject.ObjectType.PatchTransition;
             type.pType =
                 KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.Impact;
