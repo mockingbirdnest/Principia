@@ -86,14 +86,23 @@ namespace {
 char const vessel_guid[] = "123-456";
 Index const celestial_index = 1;
 
-}  // namespace
-
-MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
-  return arg.thrust == thrust &&
-         arg.specific_impulse == specific_impulse &&
-         *arg.timing.initial_time == initial_time &&
-         *arg.intensity.Δv == Δv;
+MATCHER_P(HasThrust, thrust, "") {
+  return arg.thrust == thrust;
 }
+
+MATCHER_P(HasSpecificImpulse, specific_impulse, "") {
+  return arg.specific_impulse == specific_impulse;
+}
+
+MATCHER_P(HasInitialTime, initial_time, "") {
+  return arg.timing.initial_time && *arg.timing.initial_time == initial_time;
+}
+
+MATCHER_P(HasΔv, Δv, "") {
+  return arg.intensity.Δv && *arg.intensity.Δv == Δv;
+}
+
+}  // namespace
 
 class InterfaceFlightPlanTest : public ::testing::Test {
  protected:
@@ -208,13 +217,13 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillOnce(FillUniquePtr<1>(
                     new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
   EXPECT_CALL(flight_plan,
-              Append(BurnMatches(1 * Kilo(Newton),
-                                 2 * Second * StandardGravity,
-                                 Instant() + 3 * Second,
-                                 Velocity<Frenet<Navigation>>(
+              Append(AllOf(HasThrust(1 * Kilo(Newton)),
+                           HasSpecificImpulse(2 * Second * StandardGravity),
+                           HasInitialTime(Instant() + 3 * Second),
+                           HasΔv(Velocity<Frenet<Navigation>>(
                                      {4 * (Metre / Second),
                                       5 * (Metre / Second),
-                                      6 * (Metre / Second)}))))
+                                      6 * (Metre / Second)})))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(),
                                           vessel_guid,
@@ -356,13 +365,14 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillOnce(FillUniquePtr<1>(
                     new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
   EXPECT_CALL(flight_plan,
-              ReplaceLast(BurnMatches(10 * Kilo(Newton),
-                                      2 * Second * StandardGravity,
-                                      Instant() + 3 * Second,
-                                      Velocity<Frenet<Navigation>>(
-                                          {4 * (Metre / Second),
-                                           5 * (Metre / Second),
-                                           6 * (Metre / Second)}))))
+              ReplaceLast(
+                  AllOf(HasThrust(10 * Kilo(Newton)),
+                        HasSpecificImpulse(2 * Second * StandardGravity),
+                        HasInitialTime(Instant() + 3 * Second),
+                        HasΔv(Velocity<Frenet<Navigation>>(
+                                  {4 * (Metre / Second),
+                                  5 * (Metre / Second),
+                                  6 * (Metre / Second)})))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanReplaceLast(plugin_.get(),
                                                vessel_guid,
