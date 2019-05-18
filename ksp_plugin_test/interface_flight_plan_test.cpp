@@ -371,8 +371,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                         HasInitialTime(Instant() + 3 * Second),
                         HasΔv(Velocity<Frenet<Navigation>>(
                                   {4 * (Metre / Second),
-                                  5 * (Metre / Second),
-                                  6 * (Metre / Second)})))))
+                                   5 * (Metre / Second),
+                                   6 * (Metre / Second)})))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanReplaceLast(plugin_.get(),
                                                vessel_guid,

@@ -18,8 +18,8 @@ class MockFlightPlan : public FlightPlan {
 
   MOCK_METHOD0(RemoveLast, void());
 
-  MOCK_CONST_METHOD1(Append, bool(NavigationManœuvre::Burn const& burn));
-  MOCK_CONST_METHOD1(ReplaceLast, bool(NavigationManœuvre::Burn const& burn));
+  MOCK_METHOD1(Append, bool(NavigationManœuvre::Burn const& burn));
+  MOCK_METHOD1(ReplaceLast, bool(NavigationManœuvre::Burn const& burn));
 
   MOCK_METHOD1(SetDesiredFinalTime, bool(Instant const& final_time));
 

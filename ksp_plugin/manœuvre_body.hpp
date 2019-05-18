@@ -29,7 +29,7 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
   : initial_mass_(initial_mass),
     burn_(burn) {
   // Fill the missing fields of |intensity|.
-  auto intensity = burn_.intensity;
+  auto& intensity = burn_.intensity;
   if (intensity.Δv) {
     CHECK(!intensity.direction && !intensity.duration);
     intensity.direction = NormalizeOrZero(*intensity.Δv);
