@@ -35,7 +35,9 @@ using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
+using quantities::GravitationalParameter;
 using quantities::Pow;
+using quantities::SIUnit;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -392,8 +394,9 @@ TEST_F(ManœuvreTest, Serialization) {
   EXPECT_TRUE(message.has_frame());
 
   MockEphemeris<World> ephemeris;
+  MassiveBody const body(SIUnit<GravitationalParameter>());
   EXPECT_CALL(ephemeris, body_for_serialization_index(666))
-      .WillOnce(Return(make_not_null<MassiveBody const*>()));
+      .WillOnce(Return(&body));
   EXPECT_CALL(ephemeris, trajectory(_))
       .WillOnce(Return(make_not_null<ContinuousTrajectory<World> const*>()));
   Manœuvre<World, Rendering> const manœuvre_read =

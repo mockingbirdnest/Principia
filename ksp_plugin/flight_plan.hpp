@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "base/status.hpp
+#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "ksp_plugin/frames.hpp"

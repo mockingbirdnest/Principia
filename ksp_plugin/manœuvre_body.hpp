@@ -44,7 +44,7 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
     }
   } else {
     CHECK(intensity.direction && intensity.duration);
-    // Циолко́вский's equation.
+    // Циолковский's equation.
     intensity.Δv = *intensity.direction * specific_impulse() *
                    std::log(initial_mass_ / final_mass());
   }

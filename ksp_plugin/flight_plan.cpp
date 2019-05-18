@@ -142,7 +142,8 @@ void FlightPlan::RemoveLast() {
   PopLastSegment();  // Last coast.
   PopLastSegment();  // Last burn.
   ResetLastSegment();
-  RecomputeSegments(manœuvres_, segments_);
+  // Recompute the last coast.
+  RecomputeSegments(std::vector<NavigationManœuvre>(), segments_);
 }
 
 Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
@@ -226,8 +227,9 @@ bool FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
     return false;
   } else {
     desired_final_time_ = desired_final_time;
+    // Reset the last coast and recompute it.
     ResetLastSegment();
-    RecomputeSegments(manœuvres_, segments_);
+    RecomputeSegments(std::vector<NavigationManœuvre>(), segments_);
     return true;//TODO(phl)OK?
   }
 }
@@ -494,7 +496,6 @@ void FlightPlan::AddSegment(
 
 void FlightPlan::ResetLastSegment() {
   segments_.back()->ForgetAfter(segments_.back()->Fork().time());
-  }
 }
 
 void FlightPlan::PopLastSegment() {
