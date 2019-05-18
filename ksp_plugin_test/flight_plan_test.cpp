@@ -116,38 +116,49 @@ class FlightPlanTest : public testing::Test {
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
   }
 
-  Burn MakeTangentBurn(Force const& thrust,
-                       SpecificImpulse const& specific_impulse,
-                       Instant const& initial_time,
-                       Speed const& Δv) {
-    return {thrust,
+  NavigationManœuvre::Burn MakeTangentBurn(
+      Force const& thrust,
+      SpecificImpulse const& specific_impulse,
+      Instant const& initial_time,
+      Speed const& Δv) {
+    NavigationManœuvre::Intensity intensity;
+    intensity.Δv = Velocity<Frenet<Navigation>>({Δv,
+                                                 0 * Metre / Second,
+                                                 0 * Metre / Second});
+    NavigationManœuvre::Timing timing;
+    timing.initial_time = initial_time;
+    return {intensity,
+            timing,
+            thrust,
             specific_impulse,
             make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
-            initial_time,
-            Velocity<Frenet<Navigation>>(
-                {Δv, 0 * Metre / Second, 0 * Metre / Second}),
             /*is_inertially_fixed=*/true};
   }
 
-  Burn MakeFirstBurn() {
-    return {/*thrust=*/1 * Newton,
+  NavigationManœuvre::Burn MakeFirstBurn() {
+    NavigationManœuvre::Intensity intensity;
+    intensity.Δv = Velocity<Frenet<Navigation>>({1 * Metre / Second,
+                                                 0 * Metre / Second,
+                                                 0 * Metre / Second});
+    NavigationManœuvre::Timing timing;
+    timing.initial_time = t0_ + 1 * Second;
+    return {intensity,
+            timing,
+            /*thrust=*/1 * Newton,
             /*specific_impulse=*/1 * Newton * Second / Kilogram,
             make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
-            /*initial_time=*/t0_ + 1 * Second,
-            Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
             /*is_inertially_fixed=*/true};
   }
 
-  Burn MakeSecondBurn() {
+  NavigationManœuvre::Burn MakeSecondBurn() {
     auto burn = MakeFirstBurn();
-    burn.initial_time += 1 * Second;
+    *burn.timing.initial_time += 1 * Second;
     return burn;
   }
 
-  Burn MakeThirdBurn() {
+  NavigationManœuvre::Burn MakeThirdBurn() {
     auto burn = MakeFirstBurn();
-    burn.Δv *= 10;
+    *burn.intensity.Δv *= 10;
     return burn;
   }
 

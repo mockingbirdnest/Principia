@@ -6,7 +6,6 @@
 #include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
-#include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/vessel.hpp"
@@ -55,13 +54,17 @@ using quantities::si::Tonne;
 
 namespace {
 
-ksp_plugin::Burn FromInterfaceBurn(Plugin const& plugin,
-                                   Burn const& burn) {
-  return {burn.thrust_in_kilonewtons * Kilo(Newton),
+NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
+                                           Burn const& burn) {
+  NavigationManœuvre::Intensity intensity;
+  intensity.Δv = FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v);
+  NavigationManœuvre::Timing timing;
+  timing.initial_time = FromGameTime(plugin, burn.initial_time);
+  return {intensity,
+          timing,
+          burn.thrust_in_kilonewtons * Kilo(Newton),
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
           NewNavigationFrame(plugin, burn.frame),
-          FromGameTime(plugin, burn.initial_time),
-          FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v),
           burn.is_inertially_fixed};
 }
 
@@ -74,10 +77,6 @@ FlightPlan& GetFlightPlan(Plugin const& plugin,
 
 Burn GetBurn(Plugin const& plugin,
              NavigationManœuvre const& manœuvre) {
-  Velocity<Frenet<NavigationFrame>> const Δv =
-      manœuvre.Δv() == Speed() ? Velocity<Frenet<NavigationFrame>>()
-                               : manœuvre.Δv() * manœuvre.direction();
-
   // When building the parameters, make sure that the "optional" fields get a
   // deterministic default.
   NavigationFrameParameters parameters;
@@ -149,7 +148,7 @@ Burn GetBurn(Plugin const& plugin,
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
           ToGameTime(plugin, manœuvre.initial_time()),
-          ToXYZ(Δv),
+          ToXYZ(manœuvre.Δv()),
           manœuvre.is_inertially_fixed()};
 }
 

@@ -816,14 +816,20 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   VesselSet collided_vessels;
   plugin_->CatchUpLaggingVessels(collided_vessels);
 
-  auto const burn = [this, mock_dynamic_frame, time]() -> Burn {
-    return {/*thrust=*/1 * Newton,
+  auto const burn =
+      [this, mock_dynamic_frame, time]() -> NavigationManœuvre::Burn {
+    NavigationManœuvre::Intensity intensity;
+    intensity.Δv = Velocity<Frenet<Navigation>>({1 * Metre / Second,
+                                                 0 * Metre / Second,
+                                                 0 * Metre / Second});
+    NavigationManœuvre::Timing timing;
+    timing.initial_time = HistoryTime(time, 4);
+    return {intensity,
+            timing,
+            /*thrust=*/1 * Newton,
             /*specific_impulse=*/1 * Newton * Second / Kilogram,
             std::unique_ptr<MockDynamicFrame<Barycentric, Navigation>>(
                 mock_dynamic_frame),
-            /*initial_time=*/HistoryTime(time, 4),
-            Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
             /*is_inertially_fixed=*/true};
   };
   plugin_->CreateFlightPlan(guid,

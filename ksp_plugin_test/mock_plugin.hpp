@@ -69,9 +69,10 @@ class MockPlugin : public Plugin {
                           Instant const& final_time,
                           Mass const& initial_mass));
 
-  MOCK_METHOD1(SetPredictionAdaptiveStepParameters,
-               void(Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                        prediction_adaptive_step_parameters));
+  MOCK_CONST_METHOD2(SetPredictionAdaptiveStepParameters,
+                     void(GUID const& vessel_guid,
+                          Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                              prediction_adaptive_step_parameters));
 
   MOCK_CONST_METHOD1(HasVessel, bool(GUID const& vessel_guid));
   MOCK_CONST_METHOD1(GetVessel, not_null<Vessel*>(GUID const& vessel_guid));
