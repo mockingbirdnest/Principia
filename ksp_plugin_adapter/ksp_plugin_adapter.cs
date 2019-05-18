@@ -1090,8 +1090,7 @@ public partial class PrincipiaPluginAdapter
     // Advance the lagging vessels and kill those which collided with a
     // celestial.
     {
-      DisposableIterator collided_vessels;
-      plugin_.CatchUpLaggingVessels(out collided_vessels);
+      plugin_.CatchUpLaggingVessels(out DisposableIterator collided_vessels);
       for (; !collided_vessels.IteratorAtEnd();
             collided_vessels.IteratorIncrement()) {
         Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
@@ -1867,16 +1866,15 @@ public partial class PrincipiaPluginAdapter
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_override) {
       Vessel target = plotting_frame_selector_.target_override;
-      DisposableIterator ascending_nodes_iterator;
-      DisposableIterator descending_nodes_iterator;
-      DisposableIterator approaches_iterator;
-      plugin_.RenderedPredictionNodes(vessel_guid,
-                                      sun_world_position,
-                                      out ascending_nodes_iterator,
-                                      out descending_nodes_iterator);
-      plugin_.RenderedPredictionClosestApproaches(vessel_guid,
-                                                  sun_world_position,
-                                                  out approaches_iterator);
+      plugin_.RenderedPredictionNodes(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator ascending_nodes_iterator,
+          out DisposableIterator descending_nodes_iterator);
+      plugin_.RenderedPredictionClosestApproaches(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator approaches_iterator);
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
@@ -1898,13 +1896,12 @@ public partial class PrincipiaPluginAdapter
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.FixedBodies()) {
-        DisposableIterator apoapsis_iterator;
-        DisposableIterator periapsis_iterator;
-        plugin_.RenderedPredictionApsides(vessel_guid,
-                                          celestial.flightGlobalsIndex,
-                                          sun_world_position,
-                                          out apoapsis_iterator,
-                                          out periapsis_iterator);
+        plugin_.RenderedPredictionApsides(
+            vessel_guid,
+            celestial.flightGlobalsIndex,
+            sun_world_position,
+            out DisposableIterator apoapsis_iterator,
+            out DisposableIterator periapsis_iterator);
         map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
@@ -1925,12 +1922,11 @@ public partial class PrincipiaPluginAdapter
                             .BODY_CENTRED_PARENT_DIRECTION) {
         var primary =
             plotting_frame_selector_.selected_celestial.referenceBody;
-        DisposableIterator ascending_nodes_iterator;
-        DisposableIterator descending_nodes_iterator;
-        plugin_.RenderedPredictionNodes(vessel_guid,
-                                        sun_world_position,
-                                        out ascending_nodes_iterator,
-                                        out descending_nodes_iterator);
+        plugin_.RenderedPredictionNodes(
+            vessel_guid,
+            sun_world_position,
+            out DisposableIterator ascending_nodes_iterator,
+            out DisposableIterator descending_nodes_iterator);
         map_node_pool_.RenderMarkers(
             ascending_nodes_iterator,
             MapObject.ObjectType.AscendingNode,
@@ -1951,16 +1947,15 @@ public partial class PrincipiaPluginAdapter
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_override) {
       Vessel target = plotting_frame_selector_.target_override;
-      DisposableIterator ascending_nodes_iterator;
-      DisposableIterator descending_nodes_iterator;
-      DisposableIterator approaches_iterator;
-      plugin_.FlightPlanRenderedNodes(vessel_guid,
-                                      sun_world_position,
-                                      out ascending_nodes_iterator,
-                                      out descending_nodes_iterator);
-      plugin_.FlightPlanRenderedClosestApproaches(vessel_guid,
-                                                  sun_world_position,
-                                                  out approaches_iterator);
+      plugin_.FlightPlanRenderedNodes(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator ascending_nodes_iterator,
+          out DisposableIterator descending_nodes_iterator);
+      plugin_.FlightPlanRenderedClosestApproaches(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator approaches_iterator);
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
@@ -1982,13 +1977,12 @@ public partial class PrincipiaPluginAdapter
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.FixedBodies()) {
-        DisposableIterator apoapsis_iterator;
-        DisposableIterator periapsis_iterator;
-        plugin_.FlightPlanRenderedApsides(vessel_guid,
-                                          celestial.flightGlobalsIndex,
-                                          sun_world_position,
-                                          out apoapsis_iterator,
-                                          out periapsis_iterator);
+        plugin_.FlightPlanRenderedApsides(
+            vessel_guid,
+            celestial.flightGlobalsIndex,
+            sun_world_position,
+            out DisposableIterator apoapsis_iterator,
+            out DisposableIterator periapsis_iterator);
         map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
@@ -2009,12 +2003,11 @@ public partial class PrincipiaPluginAdapter
                             .BODY_CENTRED_PARENT_DIRECTION) {
         var primary =
             plotting_frame_selector_.selected_celestial.referenceBody;
-        DisposableIterator ascending_nodes_iterator;
-        DisposableIterator descending_nodes_iterator;
-        plugin_.FlightPlanRenderedNodes(vessel_guid,
-                                        sun_world_position,
-                                        out ascending_nodes_iterator,
-                                        out descending_nodes_iterator);
+        plugin_.FlightPlanRenderedNodes(
+            vessel_guid,
+            sun_world_position,
+            out DisposableIterator ascending_nodes_iterator,
+            out DisposableIterator descending_nodes_iterator);
         map_node_pool_.RenderMarkers(
             ascending_nodes_iterator,
             MapObject.ObjectType.AscendingNode,
