@@ -41,6 +41,7 @@ using geometry::Identity;
 using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
 using geometry::Rotation;
+using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
@@ -55,6 +56,7 @@ using ksp_plugin::WorldSun;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
+using physics::Frenet;
 using physics::MassiveBody;
 using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
@@ -84,14 +86,23 @@ namespace {
 char const vessel_guid[] = "123-456";
 Index const celestial_index = 1;
 
-}  // namespace
-
-MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
-  return arg.thrust == thrust &&
-         arg.specific_impulse == specific_impulse &&
-         arg.initial_time == initial_time &&
-         arg.Δv == Δv;
+MATCHER_P(HasThrust, thrust, "") {
+  return arg.thrust == thrust;
 }
+
+MATCHER_P(HasSpecificImpulse, specific_impulse, "") {
+  return arg.specific_impulse == specific_impulse;
+}
+
+MATCHER_P(HasInitialTime, initial_time, "") {
+  return arg.timing.initial_time && *arg.timing.initial_time == initial_time;
+}
+
+MATCHER_P(HasΔv, Δv, "") {
+  return arg.intensity.Δv && *arg.intensity.Δv == Δv;
+}
+
+}  // namespace
 
 class InterfaceFlightPlanTest : public ::testing::Test {
  protected:
@@ -105,11 +116,13 @@ class InterfaceFlightPlanTest : public ::testing::Test {
 };
 
 TEST_F(InterfaceFlightPlanTest, FlightPlan) {
-  Burn burn = {/*thrust_in_kilonewtons=*/1,
-               /*specific_impulse_in_seconds_g0=*/2,
-               /*frame=*/{/*extension=*/6000, /*centre=*/celestial_index},
-               /*initial_time=*/3,
-               /*delta_v=*/{4, 5, 6}};
+  Burn interface_burn = {
+      /*thrust_in_kilonewtons=*/1,
+      /*specific_impulse_in_seconds_g0=*/2,
+      /*frame=*/{/*extension=*/6000, /*centre=*/celestial_index},
+      /*initial_time=*/3,
+      /*delta_v=*/{4, 5, 6},
+      /*is_inertially_fixed=*/true};
   StrictMock<MockVessel> vessel;
   StrictMock<MockFlightPlan> flight_plan;
 
@@ -204,16 +217,17 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillOnce(FillUniquePtr<1>(
                     new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
   EXPECT_CALL(flight_plan,
-              AppendConstRef(
-                  BurnMatches(1 * Kilo(Newton),
-                              2 * Second * StandardGravity,
-                              Instant() + 3 * Second,
-                              Velocity<Frenet<Navigation>>(
-                                  {4 * (Metre / Second),
-                                   5 * (Metre / Second),
-                                   6 * (Metre / Second)}))))
+              Append(AllOf(HasThrust(1 * Kilo(Newton)),
+                           HasSpecificImpulse(2 * Second * StandardGravity),
+                           HasInitialTime(Instant() + 3 * Second),
+                           HasΔv(Velocity<Frenet<Navigation>>(
+                                     {4 * (Metre / Second),
+                                      5 * (Metre / Second),
+                                      6 * (Metre / Second)})))))
       .WillOnce(Return(true));
-  EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), vessel_guid, burn));
+  EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(),
+                                          vessel_guid,
+                                          interface_burn));
 
   EXPECT_CALL(flight_plan, number_of_manœuvres())
       .WillOnce(Return(4));
@@ -235,16 +249,21 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
           new BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>(
             &ephemeris,
             &centre);
-  MockManœuvre<Barycentric, Navigation> navigation_manœuvre(
+
+  MockManœuvre<Barycentric, Navigation>::Intensity intensity;
+  intensity.direction = Vector<double, Frenet<Navigation>>({1, 1, 1});
+  intensity.duration = 7 * Second;
+  MockManœuvre<Barycentric, Navigation>::Timing timing;
+  timing.initial_time = Instant();
+  MockManœuvre<Barycentric, Navigation>::Burn const burn{
+      intensity,
+      timing,
       10 * Kilo(Newton),
-      20 * Tonne,
       30 * Second * StandardGravity,
-      Vector<double, Frenet<Navigation>>({1, 1, 1}),
       std::unique_ptr<DynamicFrame<Barycentric, Navigation> const>(
           navigation_manœuvre_frame),
-      /*is_inertially_fixed=*/true);
-  navigation_manœuvre.set_initial_time(Instant());
-  navigation_manœuvre.set_duration(7 * Second);
+      /*is_inertially_fixed=*/true};
+  MockManœuvre<Barycentric, Navigation> navigation_manœuvre(20 * Tonne, burn);
   auto const barycentric_to_plotting = RigidMotion<Barycentric, Navigation>(
       RigidTransformation<Barycentric, Navigation>(
           Barycentric::origin,
@@ -340,24 +359,24 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_EQ(XYZ({0, 2, 4}),
             principia__IteratorGetDiscreteTrajectoryXYZ(iterator));
 
-  burn.thrust_in_kilonewtons = 10;
+  interface_burn.thrust_in_kilonewtons = 10;
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(
                     new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
   EXPECT_CALL(flight_plan,
-              ReplaceLastConstRef(
-                  BurnMatches(10 * Kilo(Newton),
-                              2 * Second * StandardGravity,
-                              Instant() + 3 * Second,
-                              Velocity<Frenet<Navigation>>(
+              ReplaceLast(
+                  AllOf(HasThrust(10 * Kilo(Newton)),
+                        HasSpecificImpulse(2 * Second * StandardGravity),
+                        HasInitialTime(Instant() + 3 * Second),
+                        HasΔv(Velocity<Frenet<Navigation>>(
                                   {4 * (Metre / Second),
                                    5 * (Metre / Second),
-                                   6 * (Metre / Second)}))))
+                                   6 * (Metre / Second)})))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanReplaceLast(plugin_.get(),
                                                vessel_guid,
-                                               burn));
+                                               interface_burn));
 
   EXPECT_CALL(flight_plan, RemoveLast());
   principia__FlightPlanRemoveLast(plugin_.get(), vessel_guid);

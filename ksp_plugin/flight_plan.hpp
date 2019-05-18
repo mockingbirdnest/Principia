@@ -6,7 +6,6 @@
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
-#include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -61,7 +60,7 @@ class FlightPlan {
   // |burn| would start before |initial_time_| or before the end of the previous
   // burn, or end after |desired_final_time_|, or if the integration of the
   // coasting phase times out or is singular before the burn.
-  virtual bool Append(Burn burn);
+  virtual bool Append(NavigationManœuvre::Burn const& burn);
 
   // Forgets the flight plan at least before |time|.  The actual cutoff time
   // will be in a coast trajectory and may be after |time|.  |on_empty| is run
@@ -74,7 +73,7 @@ class FlightPlan {
   // |size()| must be greater than 0.
   virtual void RemoveLast();
   // |size()| must be greater than 0.
-  virtual bool ReplaceLast(Burn burn);
+  virtual bool ReplaceLast(NavigationManœuvre::Burn const& burn);
 
   // Returns false and has no effect if |desired_final_time| is before the end
   // of the last manœuvre or before |initial_time_|.

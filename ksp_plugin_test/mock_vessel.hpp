@@ -27,16 +27,21 @@ class MockVessel : public Vessel {
 
   MOCK_METHOD1(ForgetBefore, void(Instant const& time));
 
-  MOCK_METHOD3(CreateFlightPlan,
+  MOCK_METHOD4(CreateFlightPlan,
                void(Instant const& final_time,
                     Mass const& initial_mass,
                     Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                        adaptive_parameters));
+                        flight_plan_adaptive_step_parameters,
+                    Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
+                        const&
+                        flight_plan_generalized_adaptive_step_parameters));
 
   MOCK_METHOD0(DeleteFlightPlan, void());
 
-  MOCK_CONST_METHOD1(WriteToMessage,
-                     void(not_null<serialization::Vessel*> message));
+  MOCK_CONST_METHOD2(WriteToMessage,
+                     void(not_null<serialization::Vessel*> message,
+                          PileUp::SerializationIndexForPileUp const&
+                              serialization_index_for_pile_up));
 };
 
 }  // namespace internal_vessel
