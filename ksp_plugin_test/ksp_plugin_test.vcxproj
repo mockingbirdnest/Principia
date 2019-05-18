@@ -41,7 +41,6 @@
     <ClCompile Include="interface_renderer_test.cpp" />
     <ClCompile Include="interface_test.cpp" />
     <ClCompile Include="manœuvre_test.cpp" />
-    <ClCompile Include="mock_flight_plan.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
     <ClCompile Include="mock_renderer.cpp" />
     <ClCompile Include="part_test.cpp" />

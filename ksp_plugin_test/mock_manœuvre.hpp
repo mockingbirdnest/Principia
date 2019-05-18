@@ -13,22 +13,11 @@ class MockManœuvre : public Manœuvre<InertialFrame, Frame>{
  public:
   using Intensity = typename Manœuvre<InertialFrame, Frame>::Intensity;
   using Timing = typename Manœuvre<InertialFrame, Frame>::Timing;
+  using Burn = typename Manœuvre<InertialFrame, Frame>::Burn;
 
-  MockManœuvre(
-      Force const& thrust,
-      Mass const& initial_mass,
-      SpecificImpulse const& specific_impulse,
-      Intensity const& intensity,
-      Timing const& timing,
-      not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame,
-      bool const is_inertially_fixed)
-    : Manœuvre<InertialFrame, Frame>(thrust,
-                                      initial_mass,
-                                      specific_impulse,
-                                      intensity,
-                                      timing,
-                                      std::move(frame),
-                                      is_inertially_fixed) {}
+  MockManœuvre(Mass const& initial_mass,
+               Burn const& burn)
+    : Manœuvre<InertialFrame, Frame>(initial_mass, burn) {}
 
   MOCK_CONST_METHOD0_T(InertialDirection, Vector<double, InertialFrame>());
 
