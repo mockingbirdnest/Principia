@@ -1,6 +1,4 @@
-﻿#include "manœuvre.hpp"
-#include "manœuvre.hpp"
-
+﻿
 #pragma once
 
 #include "ksp_plugin/manœuvre.hpp"
