@@ -149,11 +149,12 @@ void FlightPlan::RemoveLast() {
   CoastLastSegment(desired_final_time_);
 }
 
-Status FlightPlan::Replace(Burn&& burn, int const index) {
+Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
+                           int const index) {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
-  auto manœuvre = MakeNavigationManœuvre(std::move(burn),
-                                         manœuvres_[index].initial_mass());
+  NavigationManœuvre const manœuvre(manœuvres_[index].initial_mass(),
+                                    burn);
   if (manœuvre.IsSingular()) {
     return Status(Error::OUT_OF_RANGE, "Singular");
   }
@@ -170,17 +171,11 @@ Status FlightPlan::Replace(Burn&& burn, int const index) {
       replaced_coast_parent.NewForkWithoutCopy(replaced_coast->Fork().time());
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> tentative_segments = {
       tentative_coast};
-  std::vector<NavigationManœuvre> tentative_manœuvres = {std::move(manœuvre)};
+  std::vector<NavigationManœuvre> tentative_manœuvres = {manœuvre};
   for (int i = index; i < manœuvres_.size(); ++i) {
-    NavigationManœuvre const& original_manœuvre = manœuvres_[i];
-    Burn const burn{original_manœuvre.thrust(),
-                    original_manœuvre.specific_impulse(),
-                    original_manœuvre.frame(),
-                    original_manœuvre.initial_time(),
-                    original_manœuvre.Δv(),
-                    original_manœuvre.is_inertially_fixed()};
-    tentative_manœuvres.push_back(MakeNavigationManœuvre(
-                                      burn, manœuvres_[i - 1].final_mass()));
+    NavigationManœuvre::Burn burn = manœuvres_[i].burn();
+    tentative_manœuvres.push_back(
+        NavigationManœuvre(manœuvres_[i - 1].final_mass(), burn));
   }
   Status const status = RecomputeSegments(manœuvres_[index].initial_mass(),
                                           tentative_manœuvres,
@@ -194,13 +189,13 @@ Status FlightPlan::Replace(Burn&& burn, int const index) {
   return Status::OK;
 }
 
-bool FlightPlan::ReplaceLast(Burn&& burn) {
+bool FlightPlan::ReplaceLast(NavigationManœuvre::Burn const& burn) {
 #if 1
-  return Replace(std::move(burn), manœuvres_.size() - 1).ok();
+  return Replace(burn, manœuvres_.size() - 1).ok();
 #else
   CHECK(!manœuvres_.empty());
   NavigationManœuvre const manœuvre(manœuvres_.back().initial_mass(),
-                                    std::move(burn));
+                                    burn);
   if (manœuvre.FitsBetween(start_of_penultimate_coast(), desired_final_time_) &&
       !manœuvre.IsSingular()) {
     DiscreteTrajectory<Barycentric>* recomputed_penultimate_coast =
@@ -371,8 +366,8 @@ FlightPlan::FlightPlan()
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second) {}
 
-void FlightPlan::Append(NavigationManœuvre manœuvre) {
-  manœuvres_.emplace_back(std::move(manœuvre));
+void FlightPlan::Append(NavigationManœuvre const& manœuvre) {
+  manœuvres_.push_back(manœuvre);
   {
     // Hide the moved-from |manœuvre|.
     NavigationManœuvre& manœuvre = manœuvres_.back();
@@ -486,7 +481,7 @@ Status FlightPlan::RecomputeSegments(
     manœuvre_initial_mass = manœuvre.final_mass();
     AddSegment(segments);
   }
-  RETURN_IF_ERROR(CoastSegment(desired_final_time_, segments.back()));
+  return CoastSegment(desired_final_time_, segments.back());
 }
 
 void FlightPlan::ReplaceLastSegment(

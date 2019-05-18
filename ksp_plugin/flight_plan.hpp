@@ -74,7 +74,7 @@ class FlightPlan {
   // |size()| must be greater than 0.
   virtual void RemoveLast();
   //TODO(phl):Comment.
-  virtual Status Replace(Burn&& burn, int index);
+  virtual Status Replace(NavigationManœuvre::Burn const& burn, int index);
   // |size()| must be greater than 0.
   virtual bool ReplaceLast(NavigationManœuvre::Burn const& burn);
 
@@ -127,7 +127,7 @@ class FlightPlan {
   // |manœuvre| must fit between |start_of_last_coast()| and
   // |desired_final_time_|, the last coast segment must end at
   // |manœuvre.initial_time()|.
-  void Append(NavigationManœuvre manœuvre);
+  void Append(NavigationManœuvre const& manœuvre);
 
   // Recomputes all trajectories in |segments_|.  Returns false if the
   // recomputation resulted in more than 2 anomalous segments.
