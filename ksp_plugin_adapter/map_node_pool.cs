@@ -233,8 +233,7 @@ internal class MapNodePool {
               "T" +
               FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(
                   Planetarium.GetUniversalTime() - properties.time));
-          if (properties.celestial.GetAltitude(
-                  properties.world_position) < 0 &&
+          if (properties.celestial.GetAltitude(properties.world_position) < 0 &&
               properties.object_type == MapObject.ObjectType.Periapsis) {
             var celestial = properties.celestial.name;
             caption.Header = 
