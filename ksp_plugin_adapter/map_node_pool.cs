@@ -111,40 +111,42 @@ internal class MapNodePool {
         (KSP.UI.Screens.Mapview.MapNode node,
          Mouse.Buttons buttons) => {
           if (buttons == Mouse.Buttons.Left) {
-            if (properties_[node].vessel != null) {
+            var properties = properties_[node];
+            if (properties.vessel != null) {
               if (PlanetariumCamera.fetch.target !=
-                  properties_[node].vessel.mapObject) {
+                  properties.vessel.mapObject) {
                 PlanetariumCamera.fetch.SetTarget(
-                    properties_[node].vessel.mapObject);
+                    properties.vessel.mapObject);
               }
             } else if (PlanetariumCamera.fetch.target !=
-                       properties_[node].celestial.MapObject) {
+                       properties.celestial.MapObject) {
               PlanetariumCamera.fetch.SetTarget(
-                  properties_[node].celestial.MapObject);
+                  properties.celestial.MapObject);
             }
           }
         };
     new_node.OnUpdateVisible +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.IconData icon) => {
-          if (!properties_[node].visible) {
+          var properties = properties_[node];
+          if (!properties.visible) {
             icon.visible = false;
             return;
           }
-          CelestialBody celestial = properties_[node].celestial;
+          CelestialBody celestial = properties.celestial;
           UnityEngine.Color colour =
               celestial.orbit == null
                   ? XKCDColors.SunshineYellow
                   : celestial.orbitDriver.Renderer.nodeColor;
           colour.a = 1;
           icon.visible = true;
-          if (properties_[node].object_type == MapObject.ObjectType.Periapsis &&
-              properties_[node].celestial.GetAltitude(
-                  properties_[node].world_position) < 0) {
+          if (properties.object_type == MapObject.ObjectType.Periapsis &&
+              properties.celestial.GetAltitude(
+                  properties.world_position) < 0) {
             // Make sure we see impacts.
             colour = XKCDColors.Orange;
           }
-          if (properties_[node].object_type ==
+          if (properties.object_type ==
               MapObject.ObjectType.ApproachIntersect) {
             colour = XKCDColors.Chartreuse;
           }
@@ -153,26 +155,28 @@ internal class MapNodePool {
     new_node.OnUpdateType +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
-          if (properties_[node].object_type == MapObject.ObjectType.Periapsis &&
-              properties_[node].celestial.GetAltitude(
-                  properties_[node].world_position) < 0) {
+          var properties = properties_[node];
+          if (properties.object_type == MapObject.ObjectType.Periapsis &&
+              properties.celestial.GetAltitude(
+                  properties.world_position) < 0) {
             type.oType = MapObject.ObjectType.PatchTransition;
             type.pType =
                 KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.Impact;
-          } else if (properties_[node].object_type ==
+          } else if (properties.object_type ==
                      MapObject.ObjectType.ApproachIntersect) {
-            type.oType = properties_[node].object_type;
+            type.oType = properties.object_type;
             type.aType = KSP.UI.Screens.Mapview.MapNode.ApproachNodeType
                              .CloseApproachOwn;
           } else {
-            type.oType = properties_[node].object_type;
+            type.oType = properties.object_type;
           }
         };
     new_node.OnUpdateCaption +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.CaptionData caption) => {
+          var properties = properties_[node];
           string source;
-          switch (properties_[node].source) {
+          switch (properties.source) {
             case NodeSource.FLIGHT_PLAN:
               source = "Planned";
               break;
@@ -180,56 +184,60 @@ internal class MapNodePool {
               source = "Predicted";
               break;
             default:
-              throw Log.Fatal("Unexpected node source " +
-                              properties_[node].source);
+              throw Log.Fatal($"Unexpected node source {properties.source}");
           }
-          if (properties_[node].object_type == MapObject.ObjectType.Periapsis ||
-              properties_[node].object_type == MapObject.ObjectType.Apoapsis) {
-            String apsis_name =
-                properties_[node].object_type == MapObject.ObjectType.Periapsis
-                    ? "Periapsis"
-                    : "Apoapsis";
-            CelestialBody celestial = properties_[node].celestial;
-            Vector3d position = properties_[node].world_position;
-            double speed = properties_[node].velocity.magnitude;
-            caption.Header =
-                $@"{source} {celestial.name} {apsis_name} : <color={
-                   XKCDColors.HexFormat.Chartreuse}>{
-                   celestial.GetAltitude(position):N0} m</color>".ToString(
-                    Culture.culture);
-            caption.captionLine2 = $"{speed:N0} m/s".ToString(Culture.culture);
-          } else if (properties_[node].object_type ==
-                         MapObject.ObjectType.AscendingNode ||
-                     properties_[node].object_type ==
-                         MapObject.ObjectType.DescendingNode) {
-            string node_name =
-                properties_[node].object_type ==
-                    MapObject.ObjectType.AscendingNode
-                    ? "Ascending Node"
-                    : "Descending Node";
-            caption.Header = $"{source} {node_name}";
-            caption.captionLine2 =
-                $"{properties_[node].velocity.z:N0} m/s".ToString(
-                    Culture.culture);
-          } else if (properties_[node].object_type ==
-                     MapObject.ObjectType.ApproachIntersect) {
-            Vessel target_vessel = properties_[node].vessel;
-            double separation = (target_vessel.GetWorldPos3D() -
-                                 properties_[node].world_position).magnitude;
-            double speed = properties_[node].velocity.magnitude;
-            caption.Header =
-                $@"Target Approach : <color={XKCDColors.HexFormat.Chartreuse}>{
-                   separation:N0} m</color>".ToString(Culture.culture);
-            caption.captionLine2 = $"{speed:N0} m/s".ToString(Culture.culture);
+          switch (properties.object_type) {
+            case MapObject.ObjectType.Periapsis:
+            case MapObject.ObjectType.Apoapsis: {
+              String apsis_name =
+                  properties.object_type == MapObject.ObjectType.Periapsis
+                      ? "Periapsis"
+                      : "Apoapsis";
+              CelestialBody celestial = properties.celestial;
+              Vector3d position = properties.world_position;
+              double speed = properties.velocity.magnitude;
+              caption.Header =
+                  $@"{source} {celestial.name} {apsis_name} : <color={
+                     XKCDColors.HexFormat.Chartreuse}>{
+                     celestial.GetAltitude(position):N0} m</color>".ToString(
+                      Culture.culture);
+              caption.captionLine2 =
+                  $"{speed:N0} m/s".ToString(Culture.culture);
+              break;
+            }
+            case MapObject.ObjectType.AscendingNode:
+            case MapObject.ObjectType.DescendingNode: {
+              string node_name =
+                  properties.object_type == MapObject.ObjectType.AscendingNode
+                      ? "Ascending Node"
+                      : "Descending Node";
+              caption.Header = $"{source} {node_name}";
+              caption.captionLine2 =
+                  $"{properties.velocity.z:N0} m/s".ToString(Culture.culture);
+              break;
+            }
+            case MapObject.ObjectType.ApproachIntersect: {
+              Vessel target_vessel = properties.vessel;
+              double separation = (target_vessel.GetWorldPos3D() -
+                                   properties.world_position).magnitude;
+              double speed = properties.velocity.magnitude;
+              caption.Header =
+                  $@"Target Approach : <color={
+                     XKCDColors.HexFormat.Chartreuse}>{
+                     separation:N0} m</color>".ToString(Culture.culture);
+              caption.captionLine2 =
+                  $"{speed:N0} m/s".ToString(Culture.culture);
+              break;
+            }
           }
           caption.captionLine1 =
               "T" +
               FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(
-                  Planetarium.GetUniversalTime() - properties_[node].time));
-          if (properties_[node].celestial.GetAltitude(
-                  properties_[node].world_position) < 0 &&
-              properties_[node].object_type == MapObject.ObjectType.Periapsis) {
-            var celestial = properties_[node].celestial.name;
+                  Planetarium.GetUniversalTime() - properties.time));
+          if (properties.celestial.GetAltitude(
+                  properties.world_position) < 0 &&
+              properties.object_type == MapObject.ObjectType.Periapsis) {
+            var celestial = properties.celestial.name;
             caption.Header = 
                 $@"{source} {celestial} Impact<color={
                    XKCDColors.HexFormat.Chartreuse}></color>";
