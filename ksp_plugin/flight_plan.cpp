@@ -127,13 +127,8 @@ void FlightPlan::ForgetBefore(Instant const& time,
   // to keep.
   segments_.erase(segments_.cbegin(),
                   segments_.cbegin() + *first_to_keep);
-  // For some reason manœuvres_.erase() doesn't work because it wants to
-  // copy, hence this dance.
-  std::vector<NavigationManœuvre> m;
-  std::move(manœuvres_.begin() + *first_to_keep / 2,
-            manœuvres_.end(),
-            std::back_inserter(m));
-  manœuvres_.swap(m);
+  manœuvres_.erase(manœuvres_.cbegin(),
+                   manœuvres_.cbegin() + *first_to_keep / 2);
 
   auto const root_begin = root_->Begin();
   initial_time_ = root_begin.time();
@@ -166,27 +161,40 @@ Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
   DiscreteTrajectory<Barycentric>* replaced_coast = previous_coast(index);
   DiscreteTrajectory<Barycentric>& replaced_coast_parent =
       *replaced_coast->parent();
-  //TODO(phl):Fork as late as possible.
+  // TODO(phl): Fork as late as possible.
   DiscreteTrajectory<Barycentric>* tentative_coast =
       replaced_coast_parent.NewForkWithoutCopy(replaced_coast->Fork().time());
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> tentative_segments = {
       tentative_coast};
   std::vector<NavigationManœuvre> tentative_manœuvres = {manœuvre};
-  for (int i = index; i < manœuvres_.size(); ++i) {
-    NavigationManœuvre::Burn burn = manœuvres_[i].burn();
-    tentative_manœuvres.push_back(
-        NavigationManœuvre(manœuvres_[i - 1].final_mass(), burn));
+  Mass initial_mass = manœuvre.final_mass();
+  for (int i = index + 1; i < manœuvres_.size(); ++i) {
+    NavigationManœuvre const tentative_manœuvre(initial_mass,
+                                                manœuvres_[i].burn());
+    tentative_manœuvres.push_back(tentative_manœuvre);
+    initial_mass = tentative_manœuvre.final_mass();
   }
   Status const status = RecomputeSegments(manœuvres_[index].initial_mass(),
                                           tentative_manœuvres,
                                           tentative_segments);
   if (status.ok()) {
+    // Keep the tentative manœuvres and segments: copy them into the vectors.
+    manœuvres_.erase(manœuvres_.cbegin() + index,
+                     manœuvres_.cend());
+    std::copy(tentative_manœuvres.cbegin(),
+              tentative_manœuvres.cend(),
+              std::back_inserter(manœuvres_));
+    segments_.erase(segments_.cbegin() + 2 * index,
+                    segments_.cend());
+    std::copy(tentative_segments.cbegin(),
+              tentative_segments.cend(),
+              std::back_inserter(segments_));
     replaced_coast_parent.DeleteFork(replaced_coast);
   } else {
+    // Drop the tentative manœuvres and segments.
     replaced_coast_parent.DeleteFork(tentative_coast);
   }
-
-  return Status::OK;
+  return status;
 }
 
 bool FlightPlan::ReplaceLast(NavigationManœuvre::Burn const& burn) {
@@ -369,7 +377,6 @@ FlightPlan::FlightPlan()
 void FlightPlan::Append(NavigationManœuvre const& manœuvre) {
   manœuvres_.push_back(manœuvre);
   {
-    // Hide the moved-from |manœuvre|.
     NavigationManœuvre& manœuvre = manœuvres_.back();
     CHECK_EQ(manœuvre.initial_time(), segments_.back()->last().time());
     manœuvre.set_coasting_trajectory(segments_.back());
@@ -386,20 +393,10 @@ bool FlightPlan::RecomputeSegments() {
   while (segments_.size() > 1) {
     PopLastSegment();
   }
-#if 1
-  RecomputeSegments(initial_mass_, manœuvres_, segments_);//TODO(phl):status
-#else
-  ResetLastSegment();
-  for (auto& manœuvre : manœuvres_) {
-    CoastLastSegment(manœuvre.initial_time());
-    manœuvre.set_coasting_trajectory(segments_.back());
-    AddSegment();
-    BurnLastSegment(manœuvre);
-    AddSegment();
-  }
-  CoastLastSegment(desired_final_time_);
-#endif
-  return anomalous_segments_ <= 2;
+  Status const status = RecomputeSegments(initial_mass_,
+                                          manœuvres_,
+                                          segments_);
+  return status.ok() && anomalous_segments_ <= 2;
 }
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
@@ -470,7 +467,6 @@ Status FlightPlan::RecomputeSegments(
     std::vector<NavigationManœuvre>& manœuvres,
     std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments) {
   CHECK(!segments.empty());
-  Mass manœuvre_initial_mass = initial_mass;
   for (auto& manœuvre : manœuvres) {
     auto& coast = segments.back();
     RETURN_IF_ERROR(CoastSegment(manœuvre.initial_time(), coast));
@@ -478,7 +474,6 @@ Status FlightPlan::RecomputeSegments(
     AddSegment(segments);
     auto& burn = segments.back();
     RETURN_IF_ERROR(BurnSegment(manœuvre, burn));
-    manœuvre_initial_mass = manœuvre.final_mass();
     AddSegment(segments);
   }
   return CoastSegment(desired_final_time_, segments.back());

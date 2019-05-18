@@ -86,9 +86,12 @@ class Manœuvre {
            Burn const& burn);
   virtual ~Manœuvre() = default;
 
+  Manœuvre(const Manœuvre&) = default;
+  Manœuvre& operator=(const Manœuvre&) = default;
+
   Mass const& initial_mass() const;
 
-  // All the fields returned by these selectors are filled.
+  // Return the data passed at construction, with the same optionals set.
   Intensity const& intensity() const;
   Timing const& timing() const;
   Burn const& burn() const;
@@ -161,8 +164,13 @@ class Manœuvre {
       Instant const& t,
       Vector<double, InertialFrame> const& direction) const;
 
-  Mass const initial_mass_;
-  Burn burn_;
+  // Return structs where all the optionals are set.
+  Intensity const& full_intensity() const;
+  Timing const& full_timing() const;
+
+  Mass initial_mass_;
+  Burn construction_burn_;  // As given at construction.
+  Burn burn_;  // All optionals filled.
   DiscreteTrajectory<InertialFrame> const* coasting_trajectory_ = nullptr;
 };
 

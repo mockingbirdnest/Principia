@@ -98,7 +98,7 @@ class FlightPlanTest : public testing::Test {
         /*initial_mass=*/1 * Kilogram,
         /*initial_time=*/root_.Begin().time(),
         /*initial_degrees_of_freedom=*/root_.Begin().degrees_of_freedom(),
-        /*final_time=*/t0_ + 1.5 * Second,
+        /*desired_final_time=*/t0_ + 1.5 * Second,
         ephemeris_.get(),
         Ephemeris<Barycentric>::AdaptiveStepParameters(
             EmbeddedExplicitRungeKuttaNyströmIntegrator<
@@ -259,7 +259,6 @@ TEST_F(FlightPlanTest, Singular) {
                           /*specific_impulse=*/1 * Newton * Second / Kilogram,
                           /*initial_time=*/t0_ + 0.5 * Second,
                           /*Δv=*/-1 * Metre / Second)));
-  flight_plan_->GetSegment(1, begin, end);
   flight_plan_->GetSegment(1, begin, end);
   back = end;
   --back;
