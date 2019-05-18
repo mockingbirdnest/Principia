@@ -245,8 +245,7 @@ internal class MapNodePool {
         };
     new_node.OnUpdatePosition +=
         (KSP.UI.Screens.Mapview.MapNode node) =>
-        ScaledSpace.LocalToScaledSpace(
-            properties_[node].world_position);
+        ScaledSpace.LocalToScaledSpace(properties_[node].world_position);
     return new_node;
   }
 
