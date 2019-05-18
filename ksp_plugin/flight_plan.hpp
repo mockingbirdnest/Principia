@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status.hpp
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -135,18 +136,15 @@ class FlightPlan {
 
   // Flows the last segment for the duration of |manœuvre| using its intrinsic
   // acceleration.
-  void BurnLastSegment(NavigationManœuvre const& manœuvre);
-  // Flows the last segment until |desired_final_time| with no intrinsic
-  // acceleration.
-  void CoastLastSegment(Instant const& desired_final_time);
-
   //TODO(phl):comment
   Status BurnSegment(NavigationManœuvre const& manœuvre,
                      not_null<DiscreteTrajectory<Barycentric>*> segment);
+  // Flows the last segment until |desired_final_time| with no intrinsic
+  // acceleration.
+  //TODO(phl):comment
   Status CoastSegment(Instant const& desired_final_time,
                       not_null<DiscreteTrajectory<Barycentric>*> segment);
   Status RecomputeSegments(
-      Mass const& initial_mass,
       std::vector<NavigationManœuvre>& manœuvres,
       std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments);
 
@@ -156,8 +154,6 @@ class FlightPlan {
   void ReplaceLastSegment(not_null<DiscreteTrajectory<Barycentric>*> segment);
 
   // Adds a trajectory to |segments_|, forked at the end of the last one.
-  void AddSegment();
-
   //TODO(phl):comment
   static void AddSegment(
       std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments);
