@@ -269,9 +269,9 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   EXPECT_THAT(RelativeError(lox_flowrate_1st + fuel_flowrate_1st,
                             first_manœuvre.mass_flow()),
               Lt(1e-4));
-  EXPECT_THAT(
-      RelativeError(total_vehicle_at_s_ivb_1st_eco, first_manœuvre.final_mass()),
-      Lt(1e-3));
+  EXPECT_THAT(RelativeError(total_vehicle_at_s_ivb_1st_eco,
+                            first_manœuvre.final_mass()),
+              Lt(1e-3));
   EXPECT_EQ(s_ivb_1st_eco, first_manœuvre.final_time());
 
   // Accelerations from Figure 4-4. Ascent Trajectory Acceleration Comparison.
@@ -286,7 +286,8 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
   first_manœuvre.set_coasting_trajectory(&discrete_trajectory_);
-  auto const first_acceleration = first_manœuvre.InertialIntrinsicAcceleration();
+  auto const first_acceleration =
+      first_manœuvre.InertialIntrinsicAcceleration();
   EXPECT_THAT(
       first_acceleration(first_manœuvre.initial_time()).Norm(),
       IsNear(5.6 * Metre / Pow<2>(Second)));
@@ -314,9 +315,9 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   EXPECT_THAT(RelativeError(lox_flowrate_2nd + fuel_flowrate_2nd,
                             second_manœuvre.mass_flow()),
               Lt(2e-4));
-  EXPECT_THAT(
-      RelativeError(total_vehicle_at_s_ivb_2nd_eco, second_manœuvre.final_mass()),
-      Lt(2e-3));
+  EXPECT_THAT(RelativeError(total_vehicle_at_s_ivb_2nd_eco,
+                            second_manœuvre.final_mass()),
+              Lt(2e-3));
   EXPECT_EQ(s_ivb_2nd_eco, second_manœuvre.final_time());
 
   // Accelerations from Figure 4-9. Injection Phase Acceleration Comparison.
@@ -331,7 +332,8 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
   second_manœuvre.set_coasting_trajectory(&discrete_trajectory_);
-  auto const second_acceleration = second_manœuvre.InertialIntrinsicAcceleration();
+  auto const second_acceleration =
+      second_manœuvre.InertialIntrinsicAcceleration();
   EXPECT_THAT(second_acceleration(second_manœuvre.initial_time()).Norm(),
               IsNear(7.2 * Metre / Pow<2>(Second), 1.05));
   EXPECT_THAT(second_acceleration(t6 + 650 * Second).Norm(),
@@ -349,7 +351,8 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
               IsNear(3.2 * Kilo(Metre) / Second, 1.01));
 
   // From the Apollo 8 flight journal.
-  EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second, second_manœuvre.Δv().Norm()),
+  EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second,
+                            second_manœuvre.Δv().Norm()),
               Lt(20 * Metre / Second));
 }
 
