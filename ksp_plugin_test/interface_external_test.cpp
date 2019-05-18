@@ -1,4 +1,4 @@
-
+﻿
 #include "ksp_plugin/interface.hpp"
 
 #include "gmock/gmock.h"
@@ -18,6 +18,7 @@ using ksp_plugin::GUID;
 using ksp_plugin::Navigation;
 using ksp_plugin::PartId;
 using ksp_plugin::FakePlugin;
+using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Vessel;
 using physics::SolarSystem;
 using quantities::Sqrt;
@@ -73,17 +74,19 @@ class InterfaceExternalTest : public ::testing::Test {
 TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   plugin_.CreateFlightPlan(
       vessel_guid, plugin_.CurrentTime() + 24 * Hour, 1 * Tonne);
-  // This variable is necessary in VS 2017 15.8 preview 3 because putting the
-  // list initialization directly in the call below causes the frame to be
-  // destroyed after the call.
-  auto burn = ksp_plugin::Burn{
+  NavigationManœuvre::Intensity intensity;
+  intensity.Δv = Velocity<Frenet<Navigation>>({1000 * Metre / Second,
+                                               0 * Metre / Second,
+                                               0 * Metre / Second});
+  NavigationManœuvre::Timing timing;
+  timing.initial_time =  plugin_.CurrentTime() + 30 * Second;
+  NavigationManœuvre::Burn burn{
+      intensity,
+      timing,
       180 * Kilo(Newton),
       4.56 * Kilo(Newton) * Second / Kilogram,
       plugin_.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth),
-      plugin_.CurrentTime() + 30 * Second,
-      Velocity<Frenet<Navigation>>(
-          {1000 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
       /*is_inertially_fixed=*/false};
   vessel_->flight_plan().Append(std::move(burn));
   QP result;
