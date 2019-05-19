@@ -143,7 +143,7 @@ void FlightPlan::RemoveLast() {
   PopLastSegment();  // Last burn.
   ResetLastSegment();
   // Recompute the last coast.
-  RecomputeSegments(std::vector<NavigationManœuvre>(), segments_);
+  RecomputeSegments(std::vector<NavigationManœuvre>{}, segments_);
 }
 
 Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
@@ -229,7 +229,7 @@ bool FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
     desired_final_time_ = desired_final_time;
     // Reset the last coast and recompute it.
     ResetLastSegment();
-    RecomputeSegments(std::vector<NavigationManœuvre>(), segments_);
+    RecomputeSegments(std::vector<NavigationManœuvre>{}, segments_);
     return true;//TODO(phl)OK?
   }
 }
@@ -254,14 +254,15 @@ bool FlightPlan::SetAdaptiveStepParameters(
       generalized_adaptive_step_parameters_;
   adaptive_step_parameters_ = adaptive_step_parameters;
   generalized_adaptive_step_parameters_ = generalized_adaptive_step_parameters;
-  if (RecomputeSegments()) {
+  Status const status = RecomputeAllSegments();
+  if (status.ok()) {
     return true;
   } else {
     // If the recomputation fails, leave this place as clean as we found it.
     adaptive_step_parameters_ = original_adaptive_step_parameters;
     generalized_adaptive_step_parameters_ =
         original_generalized_adaptive_step_parameters;
-    CHECK(RecomputeSegments());
+    CHECK_OK(RecomputeAllSegments());
     return false;
   }
 }
@@ -352,7 +353,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
   // We need to forcefully prolong, otherwise we might exceed the ephemeris
   // step limit while recomputing the segments and fail the check.
   flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_);
-  CHECK(flight_plan->RecomputeSegments()) << message.DebugString();
+  CHECK_OK(flight_plan->RecomputeAllSegments()) << message.DebugString();
 
   return flight_plan;
 }
@@ -377,19 +378,18 @@ FlightPlan::FlightPlan()
           /*speed_integration_tolerance=*/1 * Metre / Second) {}
 
 void FlightPlan::Append(NavigationManœuvre const& manœuvre) {
-  manœuvres_.push_back(manœuvre);
   CHECK_EQ(manœuvre.initial_time(), segments_.back()->last().time());
-  RecomputeSegments(manœuvres_, segments_);
+  RecomputeSegments(std::vector<NavigationManœuvre>{manœuvre}, segments_);
+  manœuvres_.push_back(manœuvre);
 }
 
-bool FlightPlan::RecomputeSegments() {
+Status FlightPlan::RecomputeAllSegments() {
   // It is important that the segments be destroyed in (reverse chronological)
   // order of the forks.
   while (segments_.size() > 1) {
     PopLastSegment();
   }
-  Status const status = RecomputeSegments(manœuvres_, segments_);
-  return status.ok() && anomalous_segments_ <= 2;
+  return RecomputeSegments(manœuvres_, segments_);
 }
 
 Status FlightPlan::BurnSegment(

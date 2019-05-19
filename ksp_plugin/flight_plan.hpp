@@ -130,9 +130,8 @@ class FlightPlan {
   // |manœuvre.initial_time()|.
   void Append(NavigationManœuvre const& manœuvre);
 
-  // Recomputes all trajectories in |segments_|.  Returns false if the
-  // recomputation resulted in more than 2 anomalous segments.
-  bool RecomputeSegments();
+  // Clears and recomputes all trajectories in |segments_|.
+  Status RecomputeAllSegments();
 
   // Flows the last segment for the duration of |manœuvre| using its intrinsic
   // acceleration.
@@ -144,6 +143,8 @@ class FlightPlan {
   //TODO(phl):comment
   Status CoastSegment(Instant const& desired_final_time,
                       not_null<DiscreteTrajectory<Barycentric>*> segment);
+  // TODO(phl): The first argument should really be an std::span, but then Apple
+  // has invented the Macintosh.
   Status RecomputeSegments(
       std::vector<NavigationManœuvre>& manœuvres,
       std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments);
