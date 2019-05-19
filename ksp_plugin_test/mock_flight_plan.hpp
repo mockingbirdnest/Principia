@@ -24,6 +24,9 @@ class MockFlightPlan : public FlightPlan {
 
   MOCK_CONST_METHOD0(adaptive_step_parameters,
                      Ephemeris<Barycentric>::AdaptiveStepParameters const&());
+  MOCK_CONST_METHOD0(
+      generalized_adaptive_step_parameters,
+      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&());
   MOCK_METHOD2(
       SetAdaptiveStepParameters,
       Status(Ephemeris<Barycentric>::AdaptiveStepParameters const&

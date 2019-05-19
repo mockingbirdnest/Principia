@@ -42,8 +42,10 @@ using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
 using geometry::Rotation;
 using geometry::Velocity;
+using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
+using integrators::methods::Fine1987RKNG34;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::MockFlightPlan;
@@ -52,6 +54,7 @@ using ksp_plugin::MockPlugin;
 using ksp_plugin::MockRenderer;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
+using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::WorldSun;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
@@ -65,6 +68,8 @@ using physics::RigidMotion;
 using quantities::constants::StandardGravity;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
+using quantities::si::Metre;
+using quantities::si::Milli;
 using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
@@ -160,6 +165,24 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_EQ(4, principia__FlightPlanGetDesiredFinalTime(plugin_.get(),
                                                         vessel_guid));
 
+  EXPECT_CALL(flight_plan, adaptive_step_parameters())
+      .WillOnce(
+          ReturnRef(Ephemeris<Barycentric>::AdaptiveStepParameters(
+            EmbeddedExplicitRungeKuttaNyströmIntegrator<
+                    DormandالمكاوىPrince1986RKN434FM,
+                    Position<Barycentric>>(),
+                /*max_steps=*/1,
+                /*length_integration_tolerance=*/1 * Milli(Metre),
+                /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
+  EXPECT_CALL(flight_plan, generalized_adaptive_step_parameters())
+      .WillOnce(
+          ReturnRef(Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
+              EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+                  Fine1987RKNG34,
+                  Position<Barycentric>>(),
+              /*max_steps=*/1,
+              /*length_integration_tolerance=*/1 * Milli(Metre),
+              /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
   EXPECT_CALL(
       flight_plan,
       SetAdaptiveStepParameters(
@@ -202,6 +225,16 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       /*speed_integration_tolerance=*/333 * Metre / Second);
   EXPECT_CALL(flight_plan, adaptive_step_parameters())
       .WillOnce(ReturnRef(adaptive_step_parameters));
+  Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
+  generalized_adaptive_step_parameters(
+      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+          Fine1987RKNG34,
+          Position<Barycentric>>(),
+      /*max_steps=*/111,
+      /*length_integration_tolerance=*/222 * Metre,
+      /*speed_integration_tolerance=*/333 * Metre / Second);
+  EXPECT_CALL(flight_plan, generalized_adaptive_step_parameters())
+      .WillOnce(ReturnRef(generalized_adaptive_step_parameters));
   FlightPlanAdaptiveStepParameters expected_adaptive_step_parameters = {
       /*integrator_kind=*/1,
       /*generalized_integrator_kind=*/2,
@@ -364,6 +397,11 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
               FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(
                     new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
+  EXPECT_CALL(flight_plan, GetManœuvre(0))
+      .WillOnce(
+          ReturnRef(NavigationManœuvre(/*initial_mass=*/1 * Kilogram, burn)));
+  EXPECT_CALL(flight_plan, number_of_manœuvres())
+      .WillOnce(Return(1));
   EXPECT_CALL(flight_plan,
               ReplaceLast(
                   AllOf(HasThrust(10 * Kilo(Newton)),

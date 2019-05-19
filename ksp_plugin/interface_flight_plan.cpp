@@ -174,10 +174,20 @@ bool principia__FlightPlanAppend(Plugin const* const plugin,
                                  Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
   CHECK_NOTNULL(plugin);
+
+  // NOTE(phl): Preserving the previous semantics of FlightPlan.
   auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
-  return m.Return(flight_plan.Append(FromInterfaceBurn(*plugin, burn)).ok() ||
-                  flight_plan.number_of_anomalous_manœuvres() <= 1);
-  //TODO(phl): RemoveLast in case of error.
+  base::Status const status =
+      flight_plan.Append(FromInterfaceBurn(*plugin, burn));
+  if (status.error() == FlightPlan::singular ||
+      status.error() == FlightPlan::does_not_fit) {
+    return m.Return(false);
+  } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() <= 1) {
+    return m.Return(true);
+  } else {
+    flight_plan.RemoveLast();
+    return m.Return(false);
+  }
 }
 
 void principia__FlightPlanCreate(Plugin const* const plugin,
@@ -453,10 +463,22 @@ bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
                                                      vessel_guid,
                                                      burn});
   CHECK_NOTNULL(plugin);
+
+  // NOTE(phl): Preserving the previous semantics of FlightPlan.
   auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
-  return m.Return(
-      flight_plan.ReplaceLast(FromInterfaceBurn(*plugin, burn)).ok() ||
-      flight_plan.number_of_anomalous_manœuvres() <= 1);
+  auto const manœuvre =
+      flight_plan.GetManœuvre(flight_plan.number_of_manœuvres() - 1);
+  base::Status const status =
+      flight_plan.ReplaceLast(FromInterfaceBurn(*plugin, burn));
+  if (status.error() == FlightPlan::singular ||
+      status.error() == FlightPlan::does_not_fit) {
+    return m.Return(false);
+  } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() <= 1) {
+    return m.Return(true);
+  } else {
+    flight_plan.Append(manœuvre.burn());
+    return m.Return(false);
+  }
 }
 
 bool principia__FlightPlanSetAdaptiveStepParameters(
@@ -469,12 +491,23 @@ bool principia__FlightPlanSetAdaptiveStepParameters(
   CHECK_NOTNULL(plugin);
   auto const parameters = FromFlightPlanAdaptiveStepParameters(
       flight_plan_adaptive_step_parameters);
+
+  // NOTE(phl): Preserving the previous semantics of FlightPlan.
   auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
-  return m.Return(
+  auto const adaptive_step_parameters =
+      flight_plan.adaptive_step_parameters();
+  auto const generalized_adaptive_step_parameters =
+      flight_plan.generalized_adaptive_step_parameters();
+  base::Status const status =
       flight_plan.SetAdaptiveStepParameters(parameters.first,
-                                            parameters.second).ok() ||
-      flight_plan.number_of_anomalous_manœuvres() <= 1);
-  //TODO(phl): Reset in case of error.
+                                            parameters.second);
+  if (status.ok()) {
+    return m.Return(true);
+  } else {
+    flight_plan.SetAdaptiveStepParameters(adaptive_step_parameters,
+                                          generalized_adaptive_step_parameters);
+    return m.Return(false);
+  }
 }
 
 bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
@@ -484,10 +517,12 @@ bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
                                                              vessel_guid,
                                                              final_time});
   CHECK_NOTNULL(plugin);
+
+  // NOTE(phl): Preserving the previous semantics of FlightPlan.
   auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
-  return m.Return(
-      flight_plan.SetDesiredFinalTime(FromGameTime(*plugin, final_time)).ok() ||
-      flight_plan.number_of_anomalous_manœuvres() <= 1);
+  base::Status const status =
+      flight_plan.SetDesiredFinalTime(FromGameTime(*plugin, final_time));
+  return m.Return(status.error() != FlightPlan::bad_desired_final_time);
 }
 
 }  // namespace interface
