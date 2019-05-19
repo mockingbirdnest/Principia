@@ -202,7 +202,7 @@ Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
   return RecomputeSegments(manœuvres_to_recompute);
 }
 
-bool FlightPlan::ReplaceLast(NavigationManœuvre::Burn const& burn) {
+Status FlightPlan::ReplaceLast(NavigationManœuvre::Burn const& burn) {
   return Replace(burn, manœuvres_.size() - 1).ok();
 }
 

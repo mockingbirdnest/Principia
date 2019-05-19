@@ -79,7 +79,7 @@ class FlightPlan {
   //TODO(phl):Comment.
   virtual Status Replace(NavigationManœuvre::Burn const& burn, int index);
   // |size()| must be greater than 0.
-  virtual bool ReplaceLast(NavigationManœuvre::Burn const& burn);
+  virtual Status ReplaceLast(NavigationManœuvre::Burn const& burn);
 
   // Returns an error and has no effect if |desired_final_time| is before the
   // end of the last manœuvre or before |initial_time_|.
