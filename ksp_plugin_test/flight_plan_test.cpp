@@ -228,20 +228,24 @@ TEST_F(FlightPlanTest, Singular) {
                           /*specific_impulse=*/1 * Newton * Second / Kilogram,
                           /*initial_time=*/singularity + 1 * Milli(Second),
                           /*Δv=*/1 * Metre / Second)),
-      StatusIs(Error::DATA_LOSS));
-  EXPECT_EQ(1, flight_plan_->number_of_anomalous_manœuvres());
+      StatusIs(integrators::termination_condition::VanishingStepSize));
+  EXPECT_EQ(2, flight_plan_->number_of_anomalous_manœuvres());
+  flight_plan_->RemoveLast();
 
   // The singularity occurs during the burn: we're boosting towards the
   // singularity, so we reach the singularity in less than π / 2√2 s, before the
   // end of the burn which lasts 10 (1 - 1/e) s.
   // The derivation of analytic expression for the time at which we reach the
   // singularity is left as an exercise to the reader.
-  EXPECT_OK(
+  EXPECT_THAT(
       flight_plan_->Append(
           MakeTangentBurn(/*thrust=*/1 * Newton,
                           /*specific_impulse=*/1 * Newton * Second / Kilogram,
                           /*initial_time=*/t0_ + 0.5 * Second,
-                          /*Δv=*/1 * Metre / Second)));
+                          /*Δv=*/1 * Metre / Second)),
+      StatusIs(integrators::termination_condition::VanishingStepSize));
+  EXPECT_EQ(1, flight_plan_->number_of_anomalous_manœuvres());
+
   flight_plan_->GetSegment(1, begin, end);
   back = end;
   --back;
@@ -258,12 +262,15 @@ TEST_F(FlightPlanTest, Singular) {
   // The proof of existence of the singularity, as well as the derivation of
   // analytic expression for the time at which we reach the singularity, are
   // left as an exercise to the reader.
-  EXPECT_OK(
+  EXPECT_THAT(
       flight_plan_->ReplaceLast(
           MakeTangentBurn(/*thrust=*/10 * Newton,
                           /*specific_impulse=*/1 * Newton * Second / Kilogram,
                           /*initial_time=*/t0_ + 0.5 * Second,
-                          /*Δv=*/-1 * Metre / Second)));
+                          /*Δv=*/-1 * Metre / Second)),
+      StatusIs(integrators::termination_condition::VanishingStepSize));
+  EXPECT_EQ(1, flight_plan_->number_of_anomalous_manœuvres());
+
   flight_plan_->GetSegment(1, begin, end);
   back = end;
   --back;

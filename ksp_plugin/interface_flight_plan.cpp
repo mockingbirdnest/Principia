@@ -177,6 +177,7 @@ bool principia__FlightPlanAppend(Plugin const* const plugin,
   auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
   return m.Return(flight_plan.Append(FromInterfaceBurn(*plugin, burn)).ok() ||
                   flight_plan.number_of_anomalous_manœuvres() <= 1);
+  //TODO(phl): RemoveLast in case of error.
 }
 
 void principia__FlightPlanCreate(Plugin const* const plugin,
