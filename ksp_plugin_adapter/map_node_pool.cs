@@ -110,7 +110,8 @@ internal class MapNodePool {
         world_position = (Vector3d)apsis.q,
         velocity = (Vector3d)apsis.p,
         source = source,
-        time = apsis_iterator.IteratorGetDiscreteTrajectoryTime()
+        time = apsis_iterator.IteratorGetDiscreteTrajectoryTime(),
+        associated_map_object = associated_map_object,
       };
       if (type == MapObject.ObjectType.Periapsis &&
           reference_frame.selected_celestial.GetAltitude(
