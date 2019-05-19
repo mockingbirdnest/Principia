@@ -58,11 +58,10 @@ class FlightPlan {
   // |index| must be in [0, number_of_manœuvres()[.
   virtual NavigationManœuvre const& GetManœuvre(int index) const;
 
-  // The following two functions return false and have no effect if the given
+  // The following function returns an error and has no effect if the given
   // |burn| would start before |initial_time_| or before the end of the previous
-  // burn, or end after |desired_final_time_|, or if the integration of the
-  // coasting phase times out or is singular before the burn.
-  virtual bool Append(NavigationManœuvre::Burn const& burn);
+  // burn, or end after |desired_final_time_|, or if the |burn| is singular.
+  virtual Status Append(NavigationManœuvre::Burn const& burn);
 
   // Forgets the flight plan at least before |time|.  The actual cutoff time
   // will be in a coast trajectory and may be after |time|.  |on_empty| is run
@@ -73,15 +72,15 @@ class FlightPlan {
 
 
   // |size()| must be greater than 0.
-  virtual void RemoveLast();
+  virtual Status RemoveLast();
   //TODO(phl):Comment.
   virtual Status Replace(NavigationManœuvre::Burn const& burn, int index);
   // |size()| must be greater than 0.
   virtual bool ReplaceLast(NavigationManœuvre::Burn const& burn);
 
-  // Returns false and has no effect if |desired_final_time| is before the end
-  // of the last manœuvre or before |initial_time_|.
-  virtual bool SetDesiredFinalTime(Instant const& desired_final_time);
+  // Returns an error and has no effect if |desired_final_time| is before the
+  // end of the last manœuvre or before |initial_time_|.
+  virtual Status SetDesiredFinalTime(Instant const& desired_final_time);
 
   virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
   adaptive_step_parameters() const;
@@ -91,7 +90,7 @@ class FlightPlan {
   // Sets the parameters used to compute the trajectories.  The trajectories are
   // recomputed.  Returns false (and doesn't change this object) if the
   // parameters would make it impossible to recompute the trajectories.
-  virtual bool SetAdaptiveStepParameters(
+  virtual Status SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters,
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
@@ -124,12 +123,6 @@ class FlightPlan {
   FlightPlan();
 
  private:
-  // Appends |manœuvre| to |manœuvres_|, adds a burn and a coast segment.
-  // |manœuvre| must fit between |start_of_last_coast()| and
-  // |desired_final_time_|, the last coast segment must end at
-  // |manœuvre.initial_time()|.
-  void Append(NavigationManœuvre const& manœuvre);
-
   // Clears and recomputes all trajectories in |segments_|.
   Status RecomputeAllSegments();
 
@@ -148,11 +141,6 @@ class FlightPlan {
   Status RecomputeSegments(
       std::vector<NavigationManœuvre>& manœuvres,
       std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments);
-
-  // Replaces the last segment with |segment|.  |segment| must be forked from
-  // the same trajectory as the last segment, and at the same time.  |segment|
-  // must not be anomalous.
-  void ReplaceLastSegment(not_null<DiscreteTrajectory<Barycentric>*> segment);
 
   // Adds a trajectory to |segments_|, forked at the end of the last one.
   //TODO(phl):comment
