@@ -74,7 +74,7 @@ std::string SerializeUtf16(char16_t const* const deserialized) {
 
 }  // namespace
 
-#define PRINCIPIA_CHECK_EQ(a, b)
+#define PRINCIPIA_CHECK_EQ(a, b) CHECK((a) == (b))
 #define PRINCIPIA_SET_VERBOSE_LOGGING 1
 
 #include "journal/profiles.generated.cc"
