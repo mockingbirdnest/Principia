@@ -86,6 +86,10 @@ int FlightPlan::number_of_manœuvres() const {
   return manœuvres_.size();
 }
 
+int FlightPlan::number_of_anomalous_manœuvres() const {
+  return (anomalous_segments_ + 1) / 2;
+}
+
 NavigationManœuvre const& FlightPlan::GetManœuvre(int const index) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());

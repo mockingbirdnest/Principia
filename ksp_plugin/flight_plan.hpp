@@ -55,6 +55,9 @@ class FlightPlan {
   virtual Instant desired_final_time() const;
 
   virtual int number_of_manœuvres() const;
+  //TODO(phl):comment
+  virtual int number_of_anomalous_manœuvres() const;
+
   // |index| must be in [0, number_of_manœuvres()[.
   virtual NavigationManœuvre const& GetManœuvre(int index) const;
 
