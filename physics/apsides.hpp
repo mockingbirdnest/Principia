@@ -1,5 +1,8 @@
 #pragma once
 
+#include <functional>
+
+#include "base/constant_function.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/trajectory.hpp"
 
@@ -7,6 +10,8 @@ namespace principia {
 namespace physics {
 namespace internal_apsides {
 
+using base::ConstantFunction;
+using base::Identically;
 using geometry::Vector;
 
 // Computes the apsides with respect to |reference| for the discrete trajectory
@@ -23,12 +28,14 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 // and |end| with the xy plane.  Appends the crossings that go towards the
 // |north| side of the xy plane to |ascending|, and those that go away from the
 // |north| side to |descending|.
-template<typename Frame>
+// Nodes for which |predicate| returns false are excluded.
+template<typename Frame, typename Predicate = ConstantFunction<bool>>
 void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
                   typename DiscreteTrajectory<Frame>::Iterator end,
                   Vector<double, Frame> const& north,
                   DiscreteTrajectory<Frame>& ascending,
-                  DiscreteTrajectory<Frame>& descending);
+                  DiscreteTrajectory<Frame>& descending,
+                  Predicate predicate = Identically(true));
 
 // TODO(egg): when we can usefully iterate over an arbitrary |Trajectory|, move
 // the following from |Ephemeris|.
