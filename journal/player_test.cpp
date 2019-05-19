@@ -102,24 +102,46 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   LOG(ERROR) << "Last successful method out/return: \n"
              << player.last_method_out_return().DebugString();
 
-#if 0
+#if 1
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::FutureWaitForVesselToCatchUp::extension);
+        serialization::SetPartApparentDegreesOfFreedom::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(222367552);
-    in->set_future(6209463568);
+    in->set_plugin(6351018528);
+    in->set_part_id(0);
+    {
+      auto* const dof = in->mutable_degrees_of_freedom();
+      auto* const q = dof->mutable_q();
+      q->set_x(-0.36689972877502441);
+      q->set_y(-0.21265912055969238);
+      q->set_z(-0.13075445592403412);
+      auto* const p = dof->mutable_p();
+      p->set_x(0.21613305807113647);
+      p->set_y(0.12690158188343048);
+      p->set_z(0.08301004022359848);
+    }
+    {
+      auto* const dof = in->mutable_main_body_degrees_of_freedom();
+      auto* const q = dof->mutable_q();
+      q->set_x(-5269720.6347961426);
+      q->set_y(-3050611.0277061462);
+      q->set_z(-1874750.4663391113);
+      auto* const p = dof->mutable_p();
+      p->set_x(-0.0);
+      p->set_y(-0.0);
+      p->set_z(-0.0);
+    }
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::FutureWaitForVesselToCatchUp::extension);
+        serialization::SetPartApparentDegreesOfFreedom::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<FutureWaitForVesselToCatchUp>(method_in,
-                                                       method_out_return,
-                                                       player));
+  CHECK(RunIfAppropriate<SetPartApparentDegreesOfFreedom>(method_in,
+                                                          method_out_return,
+                                                          player));
 #endif
 }
 
