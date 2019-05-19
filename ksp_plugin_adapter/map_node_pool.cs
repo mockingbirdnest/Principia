@@ -52,43 +52,50 @@ internal class MapNodePool {
     // control.
     MapObject associated_map_object;
     UnityEngine.Color colour;
-    if (type == MapObject.ObjectType.Apoapsis ||
-        type == MapObject.ObjectType.Periapsis) {
-      CelestialBody fixed_body = reference_frame.selected_celestial;
-      associated_map_object = fixed_body.MapObject;
-      colour = fixed_body.orbit == null
-            ? XKCDColors.SunshineYellow
-            : fixed_body.orbitDriver.Renderer.nodeColor;
-    } else if (type == MapObject.ObjectType.ApproachIntersect) {
-      associated_map_object = reference_frame.target_override.mapObject;
-      colour = XKCDColors.Chartreuse;
-    } else {
-      if (!reference_frame.target_override &&
-          (reference_frame.frame_type ==
-               ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING ||
-           reference_frame.frame_type ==
-               ReferenceFrameSelector.FrameType.BODY_SURFACE)) {
-        // In one-body frames, the apsides are shown with the colour of the
-        // body.
-        // The nodes are with respect to the equator, rather than with respect
-        // to an orbit. We show the nodes in a different (but arbitrary) colour
-        // so that they can be distinguished easily.
-        associated_map_object = reference_frame.selected_celestial.MapObject;
+    switch (type) {
+      case MapObject.ObjectType.Apoapsis:
+      case MapObject.ObjectType.Periapsis:
+        CelestialBody fixed_body = reference_frame.selected_celestial;
+        associated_map_object = fixed_body.MapObject;
+        colour = fixed_body.orbit == null
+              ? XKCDColors.SunshineYellow
+              : fixed_body.orbitDriver.Renderer.nodeColor;
+        break;
+      case MapObject.ObjectType.ApproachIntersect:
+        associated_map_object = reference_frame.target_override.mapObject;
         colour = XKCDColors.Chartreuse;
-      } else {
-        // In two-body frames, if apsides are shown, they are shown with the
-        // colour of the secondary (or in XKCD chartreuse if the secondary is a
-        // vessel).
-        // The nodes are with respect to the orbit of the secondary around the
-        // primary. We show the nodes with the colour of the primary.
-        CelestialBody primary = reference_frame.target_override
-            ? reference_frame.selected_celestial
-            : reference_frame.selected_celestial.referenceBody;
-        associated_map_object = primary.MapObject;
-        colour = primary.orbit == null
-            ? XKCDColors.SunshineYellow
-            : primary.orbitDriver.Renderer.nodeColor;
-      }
+        break;
+      case MapObject.ObjectType.AscendingNode:
+      case MapObject.ObjectType.DescendingNode:
+        if (!reference_frame.target_override &&
+            (reference_frame.frame_type ==
+                 ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING ||
+             reference_frame.frame_type ==
+                 ReferenceFrameSelector.FrameType.BODY_SURFACE)) {
+          // In one-body frames, the apsides are shown with the colour of the
+          // body.
+          // The nodes are with respect to the equator, rather than with respect
+          // to an orbit. We show the nodes in a different (but arbitrary)
+          // colour so that they can be distinguished easily.
+          associated_map_object = reference_frame.selected_celestial.MapObject;
+          colour = XKCDColors.Chartreuse;
+        } else {
+          // In two-body frames, if apsides are shown, they are shown with the
+          // colour of the secondary (or in XKCD chartreuse if the secondary is
+          // a vessel).
+          // The nodes are with respect to the orbit of the secondary around the
+          // primary. We show the nodes with the colour of the primary.
+          CelestialBody primary = reference_frame.target_override
+              ? reference_frame.selected_celestial
+              : reference_frame.selected_celestial.referenceBody;
+          associated_map_object = primary.MapObject;
+          colour = primary.orbit == null
+              ? XKCDColors.SunshineYellow
+              : primary.orbitDriver.Renderer.nodeColor;
+        }
+        break;
+      default:
+        throw Log.Fatal($"Unexpected type {type}");
     }
     colour.a = 1;
 

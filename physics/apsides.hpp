@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "physics/discrete_trajectory.hpp"
 #include "physics/trajectory.hpp"
 
@@ -19,16 +21,34 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides);
 
+// REMOVE BEFORE FLIGHT: move to base.
+template<typename T>
+struct constant_function {
+  template<typename... Args>
+  constexpr T operator()(Args&&...) {
+    return value;
+  }
+
+  T value;
+};
+
+template <typename T>
+constexpr constant_function<T> Everywhere(T value) {
+  return {value};
+}
+
 // Computes the crossings of the discrete trajectory segment given by |begin|
 // and |end| with the xy plane.  Appends the crossings that go towards the
 // |north| side of the xy plane to |ascending|, and those that go away from the
 // |north| side to |descending|.
-template<typename Frame>
+/// Nodes for which |filter| returns false are excluded.
+template<typename Frame, typename Predicate = constant_function<bool>>
 void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
                   typename DiscreteTrajectory<Frame>::Iterator end,
                   Vector<double, Frame> const& north,
                   DiscreteTrajectory<Frame>& ascending,
-                  DiscreteTrajectory<Frame>& descending);
+                  DiscreteTrajectory<Frame>& descending,
+                  Predicate filter = Everywhere(true));
 
 // TODO(egg): when we can usefully iterate over an arbitrary |Trajectory|, move
 // the following from |Ephemeris|.

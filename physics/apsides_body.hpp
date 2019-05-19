@@ -119,12 +119,19 @@ void ComputeApsides(Trajectory<Frame> const& reference,
   }
 }
 
-template<typename Frame>
+template<typename Frame, typename Predicate>
 void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
                   typename DiscreteTrajectory<Frame>::Iterator end,
                   Vector<double, Frame> const& north,
                   DiscreteTrajectory<Frame>& ascending,
-                  DiscreteTrajectory<Frame>& descending) {
+                  DiscreteTrajectory<Frame>& descending,
+                  Predicate filter) {
+  static_assert(
+      std::is_convertible<decltype(
+                              filter(std::declval<DegreesOfFreedom<Frame>>())),
+                          bool>::value,
+      "|filter| must be a predicate on |DegreesOfFreedom<Frame>|");
+
   std::optional<Instant> previous_time;
   std::optional<Length> previous_z;
   std::optional<Speed> previous_z_speed;
@@ -167,13 +174,15 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
 
       DegreesOfFreedom<Frame> const node_degrees_of_freedom =
           begin.trajectory()->EvaluateDegreesOfFreedom(node_time);
-      if (Sign(InnerProduct(north, Vector<double, Frame>({0, 0, 1}))) ==
-          Sign(z_speed)) {
-        // |north| is up and we are going up, or |north| is down and we are
-        // going down.
-        ascending.Append(node_time, node_degrees_of_freedom);
-      } else {
-        descending.Append(node_time, node_degrees_of_freedom);
+      if (filter(node_degrees_of_freedom)) {
+        if (Sign(InnerProduct(north, Vector<double, Frame>({0, 0, 1}))) ==
+            Sign(z_speed)) {
+          // |north| is up and we are going up, or |north| is down and we are
+          // going down.
+          ascending.Append(node_time, node_degrees_of_freedom);
+        } else {
+          descending.Append(node_time, node_degrees_of_freedom);
+        }
       }
     }
 

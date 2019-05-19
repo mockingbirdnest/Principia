@@ -933,21 +933,11 @@ void Plugin::ComputeAndRenderNodes(
     std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
   auto const trajectory_in_plotting =
       renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
-  DiscreteTrajectory<Navigation> ascending_trajectory;
-  DiscreteTrajectory<Navigation> descending_trajectory;
-  // The so-called North is orthogonal to the plane of the trajectory.
-  ComputeNodes(trajectory_in_plotting->Begin(),
-               trajectory_in_plotting->End(),
-               Vector<double, Navigation>({0, 0, 1}),
-               ascending_trajectory,
-               descending_trajectory);
-
-  std::optional<DiscreteTrajectory<Navigation>> filtered_ascending_trajectory;
-  std::optional<DiscreteTrajectory<Navigation>> filtered_descending_trajectory;
 
   auto const cast_plotting_frame = dynamic_cast<
       BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const*>(
       &*renderer_->GetPlottingFrame());
+  Length threshold;
   if (cast_plotting_frame != nullptr) {
     auto const& plotting_frame = *cast_plotting_frame;
     auto const centre = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
@@ -968,48 +958,36 @@ void Plugin::ComputeAndRenderNodes(
     Length const supersynchronous_threshold =
         Cbrt(centre->gravitational_parameter() /
              Pow<2>(centre->angular_frequency() / (2 * Radian)));
-    Length const threshold = std::max(j2_threshold, supersynchronous_threshold);
-
-    filtered_ascending_trajectory.emplace();
-    for (auto it = ascending_trajectory.Begin();
-         it != ascending_trajectory.End();
-         ++it) {
-      if ((it.degrees_of_freedom().position() - Navigation::origin).Norm() <
-          threshold) {
-        filtered_ascending_trajectory->Append(it.time(),
-                                              it.degrees_of_freedom());
-      }
-    }
-    filtered_descending_trajectory.emplace();
-    for (auto it = descending_trajectory.Begin();
-         it != descending_trajectory.End();
-         ++it) {
-      if ((it.degrees_of_freedom().position() - Navigation::origin).Norm() <
-          threshold) {
-        filtered_descending_trajectory->Append(it.time(),
-                                               it.degrees_of_freedom());
-      }
-    }
+    threshold = std::max(j2_threshold, supersynchronous_threshold);
   }
-  auto const& ascending_nodes = filtered_ascending_trajectory.has_value()
-                                    ? *filtered_ascending_trajectory
-                                    : ascending_trajectory;
-  auto const& descending_nodes = filtered_descending_trajectory.has_value()
-                                     ? *filtered_descending_trajectory
-                                     : descending_trajectory;
+  auto const show_node = [threshold, trivial = cast_plotting_frame == nullptr](
+                             DegreesOfFreedom<Navigation> const& dof) {
+    return trivial ? true
+                   : (dof.position() - Navigation::origin).Norm() < threshold;
+  };
 
-  ascending =
-      renderer_->RenderPlottingTrajectoryInWorld(current_time_,
-                                                 ascending_nodes.Begin(),
-                                                 ascending_nodes.End(),
-                                                 sun_world_position,
-                                                 PlanetariumRotation());
-  descending =
-      renderer_->RenderPlottingTrajectoryInWorld(current_time_,
-                                                 descending_nodes.Begin(),
-                                                 descending_nodes.End(),
-                                                 sun_world_position,
-                                                 PlanetariumRotation());
+  DiscreteTrajectory<Navigation> ascending_trajectory;
+  DiscreteTrajectory<Navigation> descending_trajectory;
+  // The so-called North is orthogonal to the plane of the trajectory.
+  ComputeNodes(trajectory_in_plotting->Begin(),
+               trajectory_in_plotting->End(),
+               Vector<double, Navigation>({0, 0, 1}),
+               ascending_trajectory,
+               descending_trajectory,
+               show_node);
+
+  ascending = renderer_->RenderPlottingTrajectoryInWorld(
+                  current_time_,
+                  ascending_trajectory.Begin(),
+                  ascending_trajectory.End(),
+                  sun_world_position,
+                  PlanetariumRotation());
+  descending = renderer_->RenderPlottingTrajectoryInWorld(
+                   current_time_,
+                   descending_trajectory.Begin(),
+                   descending_trajectory.End(),
+                   sun_world_position,
+                   PlanetariumRotation());
 }
 
 bool Plugin::HasCelestial(Index const index) const {
