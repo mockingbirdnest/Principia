@@ -138,14 +138,11 @@ class FlightPlan {
                       not_null<DiscreteTrajectory<Barycentric>*> segment);
   // TODO(phl): The first argument should really be an std::span, but then Apple
   // has invented the Macintosh.
-  Status RecomputeSegments(
-      std::vector<NavigationManœuvre>& manœuvres,
-      std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments);
+  Status RecomputeSegments(std::vector<NavigationManœuvre>& manœuvres);
 
   // Adds a trajectory to |segments_|, forked at the end of the last one.
   //TODO(phl):comment
-  static void AddSegment(
-      std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments);
+  void AddLastSegment();
 
   // Forgets the last segment after its fork.
   void ResetLastSegment();

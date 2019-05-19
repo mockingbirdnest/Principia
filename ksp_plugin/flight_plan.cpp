@@ -67,7 +67,7 @@ FlightPlan::FlightPlan(
   // Create a fork for the first coasting trajectory.
   segments_.emplace_back(root_->NewForkWithoutCopy(initial_time_));
   CHECK(manœuvres_.empty());
-  RecomputeSegments(manœuvres_, segments_);
+  RecomputeSegments(manœuvres_);
 }
 
 Instant FlightPlan::initial_time() const {
@@ -106,8 +106,7 @@ Status FlightPlan::Append(NavigationManœuvre::Burn const& burn) {
   // last coast;
   manœuvres_.push_back(manœuvre);
   ResetLastSegment();
-  return RecomputeSegments(std::vector<NavigationManœuvre>{manœuvre},
-                           segments_);
+  return RecomputeSegments(std::vector<NavigationManœuvre>{manœuvre});
 }
 
 void FlightPlan::ForgetBefore(Instant const& time,
@@ -156,7 +155,7 @@ Status FlightPlan::RemoveLast() {
   PopLastSegment();  // Last burn.
   // Clear and recompute the last coast.
   ResetLastSegment();
-  return RecomputeSegments(std::vector<NavigationManœuvre>{}, segments_);
+  return RecomputeSegments(std::vector<NavigationManœuvre>{});
 }
 
 Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
@@ -196,7 +195,7 @@ Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
             manœuvres_.cend(),
             std::back_inserter(manœuvres_to_recompute));
   ResetLastSegment();
-  return RecomputeSegments(manœuvres_to_recompute, segments_);
+  return RecomputeSegments(manœuvres_to_recompute);
 }
 
 bool FlightPlan::ReplaceLast(NavigationManœuvre::Burn const& burn) {
@@ -210,7 +209,7 @@ Status FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
   desired_final_time_ = desired_final_time;
   // Reset the last coast and recompute it.
   ResetLastSegment();
-  return RecomputeSegments(std::vector<NavigationManœuvre>{}, segments_);
+  return RecomputeSegments(std::vector<NavigationManœuvre>{});
 }
 
 Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -352,7 +351,7 @@ Status FlightPlan::RecomputeAllSegments() {
   while (segments_.size() > 1) {
     PopLastSegment();
   }
-  return RecomputeSegments(manœuvres_, segments_);
+  return RecomputeSegments(manœuvres_);
 }
 
 Status FlightPlan::BurnSegment(
@@ -395,59 +394,56 @@ Status FlightPlan::CoastSegment(
 }
 
 Status FlightPlan::RecomputeSegments(
-    std::vector<NavigationManœuvre>& manœuvres,
-    std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments) {
-  CHECK(!segments.empty());
+    std::vector<NavigationManœuvre>& manœuvres) {
+  CHECK(!segments_.empty());
   Status overall_status;
-  int anomalous_segments = 0;
   for (auto& manœuvre : manœuvres) {
-    auto& coast = segments.back();
+    auto& coast = segments_.back();
     manœuvre.set_coasting_trajectory(coast);
 
-    if (anomalous_segments == 0) {
+    if (anomalous_segments_ == 0) {
       Status const status = CoastSegment(manœuvre.initial_time(), coast);
       if (!status.ok()) {
         overall_status.Update(status);
-        anomalous_segments = 1;
+        anomalous_segments_ = 1;
       }
     }
 
-    AddSegment(segments);
-    if (anomalous_segments > 0) {
-      ++anomalous_segments;
-    }
+    AddLastSegment();
 
-    if (anomalous_segments == 0) {
-      auto& burn = segments.back();
+    if (anomalous_segments_ == 0) {
+      auto& burn = segments_.back();
       Status const status = BurnSegment(manœuvre, burn);
       if (!status.ok()) {
         overall_status.Update(status);
-        anomalous_segments = 1;
+        anomalous_segments_ = 1;
       }
     }
 
-    AddSegment(segments);
-    if (anomalous_segments > 0) {
-      ++anomalous_segments;
-    }
+    AddLastSegment();
   }
-  if (anomalous_segments == 0) {
-    Status const status = CoastSegment(desired_final_time_, segments.back());
+  if (anomalous_segments_ == 0) {
+    Status const status = CoastSegment(desired_final_time_, segments_.back());
     if (!status.ok()) {
       overall_status.Update(status);
-      anomalous_segments = 1;
+      anomalous_segments_ = 1;
     }
   }
   return overall_status;
 }
 
-void FlightPlan::AddSegment(
-    std::vector<not_null<DiscreteTrajectory<Barycentric>*>>& segments) {
-  segments.emplace_back(segments.back()->NewForkAtLast());
+void FlightPlan::AddLastSegment() {
+  segments_.emplace_back(segments_.back()->NewForkAtLast());
+  if (anomalous_segments_ > 0) {
+    ++anomalous_segments_;
+  }
 }
 
 void FlightPlan::ResetLastSegment() {
   segments_.back()->ForgetAfter(segments_.back()->Fork().time());
+  if (anomalous_segments_ > 0) {
+    --anomalous_segments_;
+  }
 }
 
 void FlightPlan::PopLastSegment() {
@@ -455,6 +451,9 @@ void FlightPlan::PopLastSegment() {
   CHECK(!trajectory->is_root());
   trajectory->parent()->DeleteFork(trajectory);
   segments_.pop_back();
+  if (anomalous_segments_ > 0) {
+    --anomalous_segments_;
+  }
 }
 
 DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
