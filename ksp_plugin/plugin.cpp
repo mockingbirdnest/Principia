@@ -10,11 +10,11 @@
 #include <list>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
-#include <set>
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/solar_system_fingerprints.hpp"
@@ -35,6 +35,7 @@
 #include "geometry/permutation.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
+#include "ksp_plugin/equator_relevance_threshold.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part_subsets.hpp"
 #include "physics/apsides.hpp"
@@ -90,17 +91,13 @@ using physics::ComputeNodes;
 using physics::CoordinateFrameField;
 using physics::DynamicFrame;
 using physics::Frenet;
-using physics::Geopotential;
 using physics::KeplerianElements;
 using physics::MassiveBody;
-using physics::OblateBody;
 using physics::RigidMotion;
 using physics::SolarSystem;
-using quantities::Cbrt;
 using quantities::Force;
 using quantities::Infinity;
 using quantities::Length;
-using quantities::Pow;
 using quantities::si::Kilogram;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -937,33 +934,18 @@ void Plugin::ComputeAndRenderNodes(
   auto const cast_plotting_frame = dynamic_cast<
       BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const*>(
       &*renderer_->GetPlottingFrame());
-  Length threshold;
-  if (cast_plotting_frame != nullptr) {
-    auto const& plotting_frame = *cast_plotting_frame;
-    auto const centre = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
-        plotting_frame.centre());
-    // The plotting frame is a body-centred non-rotating frame; as this frame
-    // does not rotate, its reference plane is not an inherent dynamical
-    // property.  Discard the nodes if they are far enough from the central body
-    // that its equator is irrelevant.  Specifically, discard a node if:
-    // - it is too far for dynamical oblateness to matter, and
-    // - it is above the semimajor axis of a supersynchronous orbit (1 orbit for
-    //   2 body revolutions).
-    Length const j2_threshold =
-        centre->is_oblate()
-            ? Geopotential<Barycentric>(
-                  dynamic_cast_not_null<OblateBody<Barycentric> const*>(centre),
-                  /*tolerance=*/0x1p-24).degree_damping()[2].inner_threshold()
-            : 0 * Metre;
-    Length const supersynchronous_threshold =
-        Cbrt(centre->gravitational_parameter() /
-             Pow<2>(centre->angular_frequency() / (2 * Radian)));
-    threshold = std::max(j2_threshold, supersynchronous_threshold);
-  }
-  auto const show_node = [threshold, trivial = cast_plotting_frame == nullptr](
-                             DegreesOfFreedom<Navigation> const& dof) {
-    return trivial ? true
-                   : (dof.position() - Navigation::origin).Norm() < threshold;
+  // The body-centred non rotating frame is a body-centred non-rotating frame;
+  // as this frame does not rotate, its reference plane is not an inherent
+  // dynamical property.   When using this frame, discard the nodes if they are
+  // far enough from the central body that its equator is irrelevant.
+  Length const threshold =
+      cast_plotting_frame == nullptr
+          ? Infinity<Length>()
+          : EquatorRelevanceThreshold(
+                *dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
+                    cast_plotting_frame->centre()));
+  auto const show_node = [threshold](DegreesOfFreedom<Navigation> const& dof) {
+    return (dof.position() - Navigation::origin).Norm() < threshold;
   };
 
   DiscreteTrajectory<Navigation> ascending_trajectory;
