@@ -146,7 +146,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                               /*mass_in_tonnes=*/100);
 
   EXPECT_CALL(flight_plan, SetDesiredFinalTime(Instant() + 60 * Second))
-      .WillOnce(Return(true));
+      .WillOnce(Return(base::Status::OK));
   EXPECT_TRUE(principia__FlightPlanSetDesiredFinalTime(plugin_.get(),
                                                        vessel_guid,
                                                        60));
@@ -183,7 +183,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                     &Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters::
                         speed_integration_tolerance,
                     33 * Metre / Second))))
-      .WillOnce(Return(true));
+      .WillOnce(Return(base::Status::OK));
   EXPECT_TRUE(principia__FlightPlanSetAdaptiveStepParameters(
                   plugin_.get(),
                   vessel_guid,
@@ -224,7 +224,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                      {4 * (Metre / Second),
                                       5 * (Metre / Second),
                                       6 * (Metre / Second)})))))
-      .WillOnce(Return(true));
+      .WillOnce(Return(base::Status::OK));
   EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(),
                                           vessel_guid,
                                           interface_burn));
@@ -373,7 +373,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                   {4 * (Metre / Second),
                                    5 * (Metre / Second),
                                    6 * (Metre / Second)})))))
-      .WillOnce(Return(true));
+      .WillOnce(Return(base::Status::OK));
   EXPECT_TRUE(principia__FlightPlanReplaceLast(plugin_.get(),
                                                vessel_guid,
                                                interface_burn));
