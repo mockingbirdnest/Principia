@@ -20,6 +20,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
+using base::Error;
 using base::not_null;
 using base::Status;
 using geometry::Instant;
@@ -119,7 +120,12 @@ class FlightPlan {
       serialization::FlightPlan const& message,
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
-  static std::int64_t constexpr max_ephemeris_steps_per_frame = 1000;
+  static constexpr std::int64_t max_ephemeris_steps_per_frame = 1000;
+
+  //TODO(phl):fix
+  static constexpr Error bad_desired_final_time = Error::DEADLINE_EXCEEDED;
+  static constexpr Error does_not_fit = Error::INVALID_ARGUMENT;
+  static constexpr Error singular = Error::OUT_OF_RANGE;
 
  protected:
   // For mocking.

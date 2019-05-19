@@ -286,13 +286,13 @@ TEST_F(FlightPlanTest, Singular) {
 TEST_F(FlightPlanTest, Append) {
   // Burn ends after final time.
   EXPECT_THAT(flight_plan_->Append(MakeFirstBurn()),
-              StatusIs(Error::DATA_LOSS));
+              StatusIs(FlightPlan::does_not_fit));
   EXPECT_EQ(0, flight_plan_->number_of_manœuvres());
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_OK(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   EXPECT_THAT(flight_plan_->Append(MakeFirstBurn()),
-              StatusIs(Error::DATA_LOSS));
+              StatusIs(FlightPlan::does_not_fit));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   EXPECT_OK(flight_plan_->Append(MakeSecondBurn()));
   EXPECT_EQ(2, flight_plan_->number_of_manœuvres());

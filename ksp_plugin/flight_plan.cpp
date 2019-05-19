@@ -29,15 +29,15 @@ using quantities::si::Metre;
 using quantities::si::Second;
 
 inline Status const BadDesiredFinalTime() {
-  return Status(Error::INVALID_ARGUMENT, "Bad desired final time");
+  return Status(FlightPlan::bad_desired_final_time, "Bad desired final time");
 }
 
 inline Status const DoesNotFit() {
-  return Status(Error::INVALID_ARGUMENT, "Does not fit");
+  return Status(FlightPlan::does_not_fit, "Does not fit");
 }
 
 inline Status const Singular() {
-  return Status(Error::OUT_OF_RANGE, "Singular");
+  return Status(FlightPlan::singular, "Singular");
 }
 
 FlightPlan::FlightPlan(
