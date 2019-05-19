@@ -170,6 +170,9 @@
     <ClInclude Include="graveyard_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="constant_function.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
