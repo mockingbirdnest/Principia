@@ -352,6 +352,7 @@ Status FlightPlan::RecomputeAllSegments() {
   while (segments_.size() > 1) {
     PopLastSegment();
   }
+  ResetLastSegment();
   return RecomputeSegments(manœuvres_);
 }
 

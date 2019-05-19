@@ -40,6 +40,7 @@ class FlightPlan {
   // |initial_degrees_of_freedom| and with the given |initial_mass|.  The
   // trajectories are computed using the given |integrator| in the given
   // |ephemeris|.
+  //TODO(phl): 1 coast till desired final time.
   FlightPlan(Mass const& initial_mass,
              Instant const& initial_time,
              DegreesOfFreedom<Barycentric> const& initial_degrees_of_freedom,

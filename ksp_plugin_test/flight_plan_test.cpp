@@ -465,7 +465,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)),
       StatusIs(integrators::termination_condition::ReachedMaximalStepCount));
-  EXPECT_EQ(2, flight_plan_->number_of_anomalous_manœuvres());
+  EXPECT_EQ(3, flight_plan_->number_of_anomalous_manœuvres());
 
   flight_plan_->SetAdaptiveStepParameters(adaptive_step_parameters,
                                           generalized_adaptive_step_parameters);
