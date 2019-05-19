@@ -1864,8 +1864,6 @@ public partial class PrincipiaPluginAdapter
 
   private void RenderPredictionMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
-    string reference_plane =
-        plotting_frame_selector_.ReferencePlaneDescription();
     if (plotting_frame_selector_.target_override) {
       Vessel target = plotting_frame_selector_.target_override;
       plugin_.RenderedPredictionNodes(
@@ -1935,8 +1933,6 @@ public partial class PrincipiaPluginAdapter
 
   private void RenderFlightPlanMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
-    string reference_plane =
-        plotting_frame_selector_.ReferencePlaneDescription();
     if (plotting_frame_selector_.target_override) {
       Vessel target = plotting_frame_selector_.target_override;
       plugin_.FlightPlanRenderedNodes(

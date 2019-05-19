@@ -129,11 +129,11 @@ internal class MapNodePool {
         // KSP attaches labels to its map nodes, but never detaches them.
         // If the node changes type, we end up with an arbitrary combination of
         // labels Ap, Pe, AN, DN.
-        // Similarly, if the node changes celestial, the colour of the icon
-        // label is not updated to match the icon (making it unreadable in some
-        // cases). Recreating the node entirely takes a long time (approximately
-        // 𝑁 * 70 μs, where 𝑁 is the total number of map nodes in existence),
-        // instead we manually get rid of the labels.
+        // Similarly, if the node changes colour, the colour of the icon label
+        // is not updated to match the icon (making it unreadable in some
+        // cases).  Recreating the node entirely takes a long time
+        // (approximately 𝑁 * 70 μs, where 𝑁 is the total number of map nodes
+        // in existence), instead we manually get rid of the labels.
         foreach (var component in
                  nodes_[pool_index_].transform.GetComponentsInChildren<
                      TMPro.TextMeshProUGUI>()) {
@@ -187,8 +187,7 @@ internal class MapNodePool {
          KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
           var properties = properties_[node];
           type.oType = properties.object_type;
-          if (properties.object_type ==
-              MapObject.ObjectType.PatchTransition) {
+          if (properties.object_type == MapObject.ObjectType.PatchTransition) {
             type.pType =
                 KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.Impact;
           } else if (properties.object_type ==
@@ -215,7 +214,7 @@ internal class MapNodePool {
           switch (properties.object_type) {
             case MapObject.ObjectType.Periapsis:
             case MapObject.ObjectType.Apoapsis: {
-              String apsis_name =
+              string apsis_name =
                   properties.object_type == MapObject.ObjectType.Periapsis
                       ? "Periapsis"
                       : "Apoapsis";

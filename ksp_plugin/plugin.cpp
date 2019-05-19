@@ -931,11 +931,11 @@ void Plugin::ComputeAndRenderNodes(
   auto const trajectory_in_plotting =
       renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
 
-  auto const cast_plotting_frame = dynamic_cast<
+  auto const* const cast_plotting_frame = dynamic_cast<
       BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const*>(
       &*renderer_->GetPlottingFrame());
   // The body-centred non rotating frame does not rotate; its reference plane is
-  // not an inherent dynamical property.   When using this frame, discard the
+  // not an inherent dynamical property.  When using this frame, discard the
   // nodes if they are far enough from the central body that its equator is
   // irrelevant.
   Length const threshold =

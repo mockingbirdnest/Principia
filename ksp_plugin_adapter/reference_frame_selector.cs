@@ -230,7 +230,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     string secondary = target_override != null
         ? "the target"
         : selected_celestial.NameWithArticle();
-    string primary = target_override
+    string primary = target_override != null
         ? selected_celestial.NameWithArticle()
         : selected_celestial.referenceBody.NameWithArticle();
     return $"orbit of {secondary} around {primary}";

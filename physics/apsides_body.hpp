@@ -125,12 +125,12 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
                   Vector<double, Frame> const& north,
                   DiscreteTrajectory<Frame>& ascending,
                   DiscreteTrajectory<Frame>& descending,
-                  Predicate filter) {
+                  Predicate predicate) {
   static_assert(
-      std::is_convertible<decltype(
-                              filter(std::declval<DegreesOfFreedom<Frame>>())),
+      std::is_convertible<decltype(predicate(
+                              std::declval<DegreesOfFreedom<Frame>>())),
                           bool>::value,
-      "|filter| must be a predicate on |DegreesOfFreedom<Frame>|");
+      "|predicate| must be a predicate on |DegreesOfFreedom<Frame>|");
 
   std::optional<Instant> previous_time;
   std::optional<Length> previous_z;
@@ -174,7 +174,7 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
 
       DegreesOfFreedom<Frame> const node_degrees_of_freedom =
           begin.trajectory()->EvaluateDegreesOfFreedom(node_time);
-      if (filter(node_degrees_of_freedom)) {
+      if (predicate(node_degrees_of_freedom)) {
         if (Sign(InnerProduct(north, Vector<double, Frame>({0, 0, 1}))) ==
             Sign(z_speed)) {
           // |north| is up and we are going up, or |north| is down and we are
