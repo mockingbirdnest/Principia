@@ -173,43 +173,30 @@ Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
     return Status(Error::INVALID_ARGUMENT, "Doesn't fit");
   }
 
-  //TODO(phl):fix
-  DiscreteTrajectory<Barycentric>* replaced_coast = previous_coast(index);
-  DiscreteTrajectory<Barycentric>& replaced_coast_parent =
-      *replaced_coast->parent();
-  // TODO(phl): Fork as late as possible.
-  DiscreteTrajectory<Barycentric>* tentative_coast =
-      replaced_coast_parent.NewForkWithoutCopy(replaced_coast->Fork().time());
-  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> tentative_segments = {
-      tentative_coast};
-  std::vector<NavigationManœuvre> tentative_manœuvres = {manœuvre};
+  // Replace the manœuvre at position |index| and rebuild all the ones that
+  // follow as they may have a different initial mass.  Also pop the segments
+  // that we'll recompute.
+  manœuvres_[index] = manœuvre;
+  PopLastSegment();  // Last coast.
+  PopLastSegment();  // Last burn.
+
   Mass initial_mass = manœuvre.final_mass();
   for (int i = index + 1; i < manœuvres_.size(); ++i) {
-    NavigationManœuvre const tentative_manœuvre(initial_mass,
-                                                manœuvres_[i].burn());
-    tentative_manœuvres.push_back(tentative_manœuvre);
-    initial_mass = tentative_manœuvre.final_mass();
+    manœuvres_[i] = NavigationManœuvre(initial_mass, manœuvres_[i].burn());
+    initial_mass = manœuvres_[i].final_mass();
+    PopLastSegment();  // Last coast.
+    PopLastSegment();  // Last burn.
   }
-  Status const status = RecomputeSegments(tentative_manœuvres,
-                                          tentative_segments);
-  if (status.ok()) {
-    // Keep the tentative manœuvres and segments: copy them into the vectors.
-    manœuvres_.erase(manœuvres_.cbegin() + index,
-                     manœuvres_.cend());
-    std::copy(tentative_manœuvres.cbegin(),
-              tentative_manœuvres.cend(),
-              std::back_inserter(manœuvres_));
-    segments_.erase(segments_.cbegin() + 2 * index,
-                    segments_.cend());
-    std::copy(tentative_segments.cbegin(),
-              tentative_segments.cend(),
-              std::back_inserter(segments_));
-    replaced_coast_parent.DeleteFork(replaced_coast);
-  } else {
-    // Drop the tentative manœuvres and segments.
-    replaced_coast_parent.DeleteFork(tentative_coast);
-  }
-  return status;
+
+  // TODO(phl): Recompute as late as possible.
+  // At this point the last coast is the one to which |manœuvre| gets attached.
+  // Clear it and recompute everything that follows.
+  std::vector<NavigationManœuvre> manœuvres_to_recompute;
+  std::copy(manœuvres_.cbegin() + index,
+            manœuvres_.cend(),
+            std::back_inserter(manœuvres_to_recompute));
+  ResetLastSegment();
+  return RecomputeSegments(manœuvres_to_recompute, segments_);
 }
 
 bool FlightPlan::ReplaceLast(NavigationManœuvre::Burn const& burn) {
