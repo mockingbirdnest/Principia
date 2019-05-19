@@ -174,8 +174,9 @@ bool principia__FlightPlanAppend(Plugin const* const plugin,
                                  Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
   CHECK_NOTNULL(plugin);
-  return m.Return(GetFlightPlan(*plugin, vessel_guid).
-                      Append(FromInterfaceBurn(*plugin, burn)));
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  return m.Return(flight_plan.Append(FromInterfaceBurn(*plugin, burn)).ok() ||
+                  flight_plan.number_of_anomalous_manœuvres() <= 1);
 }
 
 void principia__FlightPlanCreate(Plugin const* const plugin,
@@ -451,8 +452,10 @@ bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
                                                      vessel_guid,
                                                      burn});
   CHECK_NOTNULL(plugin);
-  return m.Return(GetFlightPlan(*plugin, vessel_guid).
-                      ReplaceLast(FromInterfaceBurn(*plugin, burn)));
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  return m.Return(
+      flight_plan.ReplaceLast(FromInterfaceBurn(*plugin, burn)).ok() ||
+      flight_plan.number_of_anomalous_manœuvres() <= 1);
 }
 
 bool principia__FlightPlanSetAdaptiveStepParameters(
@@ -465,9 +468,11 @@ bool principia__FlightPlanSetAdaptiveStepParameters(
   CHECK_NOTNULL(plugin);
   auto const parameters = FromFlightPlanAdaptiveStepParameters(
       flight_plan_adaptive_step_parameters);
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
   return m.Return(
-    GetFlightPlan(*plugin, vessel_guid).
-        SetAdaptiveStepParameters(parameters.first, parameters.second));
+      flight_plan.SetAdaptiveStepParameters(parameters.first,
+                                            parameters.second).ok() ||
+      flight_plan.number_of_anomalous_manœuvres() <= 1);
 }
 
 bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
@@ -477,8 +482,10 @@ bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
                                                              vessel_guid,
                                                              final_time});
   CHECK_NOTNULL(plugin);
-  return m.Return(GetFlightPlan(*plugin, vessel_guid).
-                      SetDesiredFinalTime(FromGameTime(*plugin, final_time)));
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  return m.Return(
+      flight_plan.SetDesiredFinalTime(FromGameTime(*plugin, final_time)).ok() ||
+      flight_plan.number_of_anomalous_manœuvres() <= 1);
 }
 
 }  // namespace interface

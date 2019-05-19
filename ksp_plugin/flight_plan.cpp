@@ -203,7 +203,7 @@ Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
 }
 
 Status FlightPlan::ReplaceLast(NavigationManœuvre::Burn const& burn) {
-  return Replace(burn, manœuvres_.size() - 1).ok();
+  return Replace(burn, manœuvres_.size() - 1);
 }
 
 Status FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
