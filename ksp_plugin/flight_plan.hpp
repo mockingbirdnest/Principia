@@ -32,8 +32,8 @@ using quantities::Length;
 using quantities::Mass;
 using quantities::Speed;
 
-// A stack of |Burn|s that manages a chain of trajectories obtained by executing
-// the corresponding |NavigationManœuvre|s.
+// A chain of trajectories obtained by executing the corresponding
+// |NavigationManœuvre|s.
 class FlightPlan {
  public:
   // Creates a |FlightPlan| with no burns starting at |initial_time| with

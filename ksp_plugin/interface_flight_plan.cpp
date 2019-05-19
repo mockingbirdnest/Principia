@@ -474,6 +474,7 @@ bool principia__FlightPlanSetAdaptiveStepParameters(
       flight_plan.SetAdaptiveStepParameters(parameters.first,
                                             parameters.second).ok() ||
       flight_plan.number_of_anomalous_manœuvres() <= 1);
+  //TODO(phl): Reset in case of error.
 }
 
 bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,

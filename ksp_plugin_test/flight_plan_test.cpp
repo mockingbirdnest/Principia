@@ -391,7 +391,7 @@ TEST_F(FlightPlanTest, ReplaceLast) {
           final_mass();
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   EXPECT_THAT(flight_plan_->ReplaceLast(MakeThirdBurn()),
-              StatusIs(Error::DATA_LOSS));
+              StatusIs(FlightPlan::does_not_fit));
   EXPECT_EQ(old_final_mass,
             flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
                 final_mass());
@@ -441,6 +441,11 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   --end;
   EXPECT_EQ(t0_ + 42 * Second, end.time());
 
+  auto const adaptive_step_parameters =
+      flight_plan_->adaptive_step_parameters();
+  auto const generalized_adaptive_step_parameters =
+      flight_plan_->generalized_adaptive_step_parameters();
+
   // Reduce |max_steps|.  This causes many segments to become truncated so the
   // call to |SetAdaptiveStepParameters| returns false and the flight plan is
   // unaffected.
@@ -459,7 +464,11 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
             /*max_steps=*/1,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)),
-      StatusIs(Error::DATA_LOSS));
+      StatusIs(integrators::termination_condition::ReachedMaximalStepCount));
+  EXPECT_EQ(2, flight_plan_->number_of_anomalous_manœuvres());
+
+  flight_plan_->SetAdaptiveStepParameters(adaptive_step_parameters,
+                                          generalized_adaptive_step_parameters);
 
   EXPECT_EQ(5, flight_plan_->number_of_segments());
   flight_plan_->GetSegment(4, begin, end);

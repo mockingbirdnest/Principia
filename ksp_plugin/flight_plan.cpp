@@ -231,9 +231,6 @@ Status FlightPlan::SetAdaptiveStepParameters(
         adaptive_step_parameters,
     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
         generalized_adaptive_step_parameters) {
-  auto const original_adaptive_step_parameters = adaptive_step_parameters_;
-  auto const original_generalized_adaptive_step_parameters =
-      generalized_adaptive_step_parameters_;
   adaptive_step_parameters_ = adaptive_step_parameters;
   generalized_adaptive_step_parameters_ = generalized_adaptive_step_parameters;
   return RecomputeAllSegments();
