@@ -203,9 +203,6 @@ Manœuvre<InertialFrame, Frame>::FrenetIntrinsicAcceleration() const {
 template<typename InertialFrame, typename Frame>
 OrthogonalMap<Frenet<Frame>, InertialFrame>
     Manœuvre<InertialFrame, Frame>::FrenetFrame() const {
-  if (coasting_trajectory_==nullptr) {
-    LOG(FATAL)<<"oops";
-  }
   CHECK_NOTNULL(coasting_trajectory_);
   typename DiscreteTrajectory<InertialFrame>::Iterator const it =
       coasting_trajectory_->Find(initial_time());
