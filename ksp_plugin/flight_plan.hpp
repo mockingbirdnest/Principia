@@ -57,7 +57,7 @@ class FlightPlan {
   virtual Instant desired_final_time() const;
 
   // End time of the last coast.  If this is less than |desired_final_time()|,
-  // there is at least an anomalous manœuvres.
+  // there is at least an anomalous manœuvre.
   virtual Instant actual_final_time() const;
 
   // The number of manœuvres in the flight plan.
