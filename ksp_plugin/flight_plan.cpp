@@ -68,7 +68,7 @@ FlightPlan::FlightPlan(
   // Create a fork for the first coasting trajectory.
   segments_.emplace_back(root_->NewForkWithoutCopy(initial_time_));
   CHECK(manœuvres_.empty());
-  ComputeSegments(manœuvres_);
+  ComputeSegments(manœuvres_.begin(), manœuvres_.end());
 }
 
 Instant FlightPlan::initial_time() const {
@@ -111,7 +111,8 @@ Status FlightPlan::Append(NavigationManœuvre::Burn const& burn) {
   // last coast;
   manœuvres_.push_back(manœuvre);
   ResetLastSegment();
-  return ComputeSegments(std::vector<NavigationManœuvre>{manœuvre});
+  return ComputeSegments(manœuvres_.begin() + manœuvres_.size() - 1,
+                         manœuvres_.end());
 }
 
 void FlightPlan::ForgetBefore(Instant const& time,
@@ -160,7 +161,7 @@ Status FlightPlan::RemoveLast() {
   PopLastSegment();  // Last burn.
   // Clear and recompute the last coast.
   ResetLastSegment();
-  return ComputeSegments(std::vector<NavigationManœuvre>{});
+  return ComputeSegments(manœuvres_.end(), manœuvres_.end());
 }
 
 Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
@@ -195,12 +196,8 @@ Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
   // TODO(phl): Recompute as late as possible.
   // At this point the last coast is the one to which |manœuvre| gets attached.
   // Clear it and recompute everything that follows.
-  std::vector<NavigationManœuvre> manœuvres_to_recompute;
-  std::copy(manœuvres_.cbegin() + index,
-            manœuvres_.cend(),
-            std::back_inserter(manœuvres_to_recompute));
   ResetLastSegment();
-  return ComputeSegments(manœuvres_to_recompute);
+  return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
 }
 
 Status FlightPlan::ReplaceLast(NavigationManœuvre::Burn const& burn) {
@@ -214,7 +211,7 @@ Status FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
   desired_final_time_ = desired_final_time;
   // Reset the last coast and recompute it.
   ResetLastSegment();
-  return ComputeSegments(std::vector<NavigationManœuvre>{});
+  return ComputeSegments(manœuvres_.end(), manœuvres_.end());
 }
 
 Status FlightPlan::SetAdaptiveStepParameters(
@@ -323,7 +320,9 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
   // We need to forcefully prolong, otherwise we might exceed the ephemeris
   // step limit while recomputing the segments and fail the check.
   flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_);
-  CHECK_OK(flight_plan->RecomputeAllSegments()) << message.DebugString();
+  Status const status = flight_plan->RecomputeAllSegments();
+  CHECK_GE(2, flight_plan->anomalous_segments_)
+      << message.DebugString() << " " << status;
 
   return flight_plan;
 }
@@ -354,7 +353,7 @@ Status FlightPlan::RecomputeAllSegments() {
     PopLastSegment();
   }
   ResetLastSegment();
-  return ComputeSegments(manœuvres_);
+  return ComputeSegments(manœuvres_.begin(), manœuvres_.end());
 }
 
 Status FlightPlan::BurnSegment(
@@ -397,10 +396,12 @@ Status FlightPlan::CoastSegment(
 }
 
 Status FlightPlan::ComputeSegments(
-    std::vector<NavigationManœuvre>& manœuvres) {
+    std::vector<NavigationManœuvre>::iterator const begin,
+    std::vector<NavigationManœuvre>::iterator const end) {
   CHECK(!segments_.empty());
   Status overall_status;
-  for (auto& manœuvre : manœuvres) {
+  for (auto it = begin; it != end; ++it) {
+    auto& manœuvre = *it;
     auto& coast = segments_.back();
     manœuvre.set_coasting_trajectory(coast);
 
@@ -457,25 +458,6 @@ void FlightPlan::PopLastSegment() {
   if (anomalous_segments_ > 0) {
     --anomalous_segments_;
   }
-}
-
-DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
-    DiscreteTrajectory<Barycentric>& coast,
-    NavigationManœuvre const& manœuvre) {
-  DiscreteTrajectory<Barycentric>* recomputed_coast =
-      coast.parent()->NewForkWithoutCopy(coast.Fork().time());
-  bool const reached_manœuvre_initial_time =
-      ephemeris_->FlowWithAdaptiveStep(
-          recomputed_coast,
-          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          manœuvre.initial_time(),
-          adaptive_step_parameters_,
-          max_ephemeris_steps_per_frame,
-          /*last_point_only=*/false).ok();
-  if (!reached_manœuvre_initial_time) {
-    recomputed_coast->parent()->DeleteFork(recomputed_coast);
-  }
-  return recomputed_coast;
 }
 
 Instant FlightPlan::start_of_last_coast() const {

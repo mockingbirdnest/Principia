@@ -171,7 +171,8 @@ class FlightPlan {
   // error are of length 0 and are anomalous.
   // TODO(phl): The argument should really be an std::span, but then Apple has
   // invented the Macintosh.
-  Status ComputeSegments(std::vector<NavigationManœuvre>& manœuvres);
+  Status ComputeSegments(std::vector<NavigationManœuvre>::iterator begin,
+                         std::vector<NavigationManœuvre>::iterator end);
 
   // Adds a trajectory to |segments_|, forked at the end of the last one.  If
   // there are already anomalous trajectories, the newly created trajectory is
@@ -185,13 +186,6 @@ class FlightPlan {
   // Deletes the last trajectory and removes it from |segments_|.  If there are
   // anomalous trajectories, their number is decremented and may become 0.
   void PopLastSegment();
-
-  // If the integration of a coast from the fork of |coast| until
-  // |manœuvre.initial_time()| reaches the end, returns the integrated
-  // trajectory.  Otherwise, returns null.
-  DiscreteTrajectory<Barycentric>* CoastIfReachesManœuvreInitialTime(
-      DiscreteTrajectory<Barycentric>& coast,
-      NavigationManœuvre const& manœuvre);
 
   Instant start_of_last_coast() const;
 
