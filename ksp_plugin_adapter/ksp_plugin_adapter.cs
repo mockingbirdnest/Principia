@@ -1090,8 +1090,7 @@ public partial class PrincipiaPluginAdapter
     // Advance the lagging vessels and kill those which collided with a
     // celestial.
     {
-      DisposableIterator collided_vessels;
-      plugin_.CatchUpLaggingVessels(out collided_vessels);
+      plugin_.CatchUpLaggingVessels(out DisposableIterator collided_vessels);
       for (; !collided_vessels.IteratorAtEnd();
             collided_vessels.IteratorIncrement()) {
         Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
@@ -1867,83 +1866,68 @@ public partial class PrincipiaPluginAdapter
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_override) {
       Vessel target = plotting_frame_selector_.target_override;
-      DisposableIterator ascending_nodes_iterator;
-      DisposableIterator descending_nodes_iterator;
-      DisposableIterator approaches_iterator;
-      plugin_.RenderedPredictionNodes(vessel_guid,
-                                      sun_world_position,
-                                      out ascending_nodes_iterator,
-                                      out descending_nodes_iterator);
-      plugin_.RenderedPredictionClosestApproaches(vessel_guid,
-                                                  sun_world_position,
-                                                  out approaches_iterator);
+      plugin_.RenderedPredictionNodes(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator ascending_nodes_iterator,
+          out DisposableIterator descending_nodes_iterator);
+      plugin_.RenderedPredictionClosestApproaches(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator approaches_iterator);
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.PREDICTION,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.PREDICTION,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.PREDICTION,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.FixedBodies()) {
-        DisposableIterator apoapsis_iterator;
-        DisposableIterator periapsis_iterator;
-        plugin_.RenderedPredictionApsides(vessel_guid,
-                                          celestial.flightGlobalsIndex,
-                                          sun_world_position,
-                                          out apoapsis_iterator,
-                                          out periapsis_iterator);
+        plugin_.RenderedPredictionApsides(
+            vessel_guid,
+            celestial.flightGlobalsIndex,
+            sun_world_position,
+            out DisposableIterator apoapsis_iterator,
+            out DisposableIterator periapsis_iterator);
         map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
             MapNodePool.NodeSource.PREDICTION,
-            vessel    : null,
-            celestial : celestial);
+            plotting_frame_selector_);
         map_node_pool_.RenderMarkers(
             periapsis_iterator,
             MapObject.ObjectType.Periapsis,
             MapNodePool.NodeSource.PREDICTION,
-            vessel    : null,
-            celestial : celestial);
+            plotting_frame_selector_);
       }
       var frame_type = plotting_frame_selector_.frame_type;
-      if (frame_type ==
-              ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING ||
-          frame_type == ReferenceFrameSelector.FrameType
-                            .BODY_CENTRED_PARENT_DIRECTION) {
-        var primary =
-            plotting_frame_selector_.selected_celestial.referenceBody;
-        DisposableIterator ascending_nodes_iterator;
-        DisposableIterator descending_nodes_iterator;
-        plugin_.RenderedPredictionNodes(vessel_guid,
-                                        sun_world_position,
-                                        out ascending_nodes_iterator,
-                                        out descending_nodes_iterator);
-        map_node_pool_.RenderMarkers(
-            ascending_nodes_iterator,
-            MapObject.ObjectType.AscendingNode,
-            MapNodePool.NodeSource.PREDICTION,
-            vessel    : null,
-            celestial : primary);
-        map_node_pool_.RenderMarkers(
-            descending_nodes_iterator,
-            MapObject.ObjectType.DescendingNode,
-            MapNodePool.NodeSource.PREDICTION,
-            vessel    : null,
-            celestial : primary);
-      }
+      var primary =
+          plotting_frame_selector_.selected_celestial.referenceBody;
+      plugin_.RenderedPredictionNodes(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator ascending_nodes_iterator,
+          out DisposableIterator descending_nodes_iterator);
+      map_node_pool_.RenderMarkers(
+          ascending_nodes_iterator,
+          MapObject.ObjectType.AscendingNode,
+          MapNodePool.NodeSource.PREDICTION,
+          plotting_frame_selector_);
+      map_node_pool_.RenderMarkers(
+          descending_nodes_iterator,
+          MapObject.ObjectType.DescendingNode,
+          MapNodePool.NodeSource.PREDICTION,
+          plotting_frame_selector_);
     }
   }
 
@@ -1951,83 +1935,67 @@ public partial class PrincipiaPluginAdapter
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_override) {
       Vessel target = plotting_frame_selector_.target_override;
-      DisposableIterator ascending_nodes_iterator;
-      DisposableIterator descending_nodes_iterator;
-      DisposableIterator approaches_iterator;
-      plugin_.FlightPlanRenderedNodes(vessel_guid,
-                                      sun_world_position,
-                                      out ascending_nodes_iterator,
-                                      out descending_nodes_iterator);
-      plugin_.FlightPlanRenderedClosestApproaches(vessel_guid,
-                                                  sun_world_position,
-                                                  out approaches_iterator);
+      plugin_.FlightPlanRenderedNodes(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator ascending_nodes_iterator,
+          out DisposableIterator descending_nodes_iterator);
+      plugin_.FlightPlanRenderedClosestApproaches(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator approaches_iterator);
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.FLIGHT_PLAN,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.FixedBodies()) {
-        DisposableIterator apoapsis_iterator;
-        DisposableIterator periapsis_iterator;
-        plugin_.FlightPlanRenderedApsides(vessel_guid,
-                                          celestial.flightGlobalsIndex,
-                                          sun_world_position,
-                                          out apoapsis_iterator,
-                                          out periapsis_iterator);
+        plugin_.FlightPlanRenderedApsides(
+            vessel_guid,
+            celestial.flightGlobalsIndex,
+            sun_world_position,
+            out DisposableIterator apoapsis_iterator,
+            out DisposableIterator periapsis_iterator);
         map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
             MapNodePool.NodeSource.FLIGHT_PLAN,
-            vessel    : null,
-            celestial : celestial);
+            plotting_frame_selector_);
         map_node_pool_.RenderMarkers(
             periapsis_iterator,
             MapObject.ObjectType.Periapsis,
             MapNodePool.NodeSource.FLIGHT_PLAN,
-            vessel    : null,
-            celestial : celestial);
+            plotting_frame_selector_);
       }
-      var frame_type = plotting_frame_selector_.frame_type;
-      if (frame_type ==
-              ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING ||
-          frame_type == ReferenceFrameSelector.FrameType
-                            .BODY_CENTRED_PARENT_DIRECTION) {
-        var primary =
-            plotting_frame_selector_.selected_celestial.referenceBody;
-        DisposableIterator ascending_nodes_iterator;
-        DisposableIterator descending_nodes_iterator;
-        plugin_.FlightPlanRenderedNodes(vessel_guid,
-                                        sun_world_position,
-                                        out ascending_nodes_iterator,
-                                        out descending_nodes_iterator);
-        map_node_pool_.RenderMarkers(
-            ascending_nodes_iterator,
-            MapObject.ObjectType.AscendingNode,
-            MapNodePool.NodeSource.FLIGHT_PLAN,
-            vessel    : null,
-            celestial : primary);
-        map_node_pool_.RenderMarkers(
-            descending_nodes_iterator,
-            MapObject.ObjectType.DescendingNode,
-            MapNodePool.NodeSource.FLIGHT_PLAN,
-            vessel    : null,
-            celestial : primary);
-      }
+      var primary =
+          plotting_frame_selector_.selected_celestial.referenceBody;
+      plugin_.FlightPlanRenderedNodes(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator ascending_nodes_iterator,
+          out DisposableIterator descending_nodes_iterator);
+      map_node_pool_.RenderMarkers(
+          ascending_nodes_iterator,
+          MapObject.ObjectType.AscendingNode,
+          MapNodePool.NodeSource.FLIGHT_PLAN,
+          plotting_frame_selector_);
+      map_node_pool_.RenderMarkers(
+          descending_nodes_iterator,
+          MapObject.ObjectType.DescendingNode,
+          MapNodePool.NodeSource.FLIGHT_PLAN,
+          plotting_frame_selector_);
     }
   }
 

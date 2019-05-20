@@ -101,7 +101,7 @@ void PileUp::SetPartApparentDegreesOfFreedom(
   bool inserted;
   std::tie(it, inserted) =
       apparent_part_degrees_of_freedom_.emplace(part, degrees_of_freedom);
-  CHECK(inserted) << "Duplicate part " << part << " at "
+  CHECK(inserted) << "Duplicate part " << part->ShortDebugString() << " at "
                   << degrees_of_freedom;
 }
 
