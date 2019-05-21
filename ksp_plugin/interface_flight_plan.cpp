@@ -182,7 +182,7 @@ bool principia__FlightPlanAppend(Plugin const* const plugin,
   if (status.error() == FlightPlan::singular ||
       status.error() == FlightPlan::does_not_fit) {
     return m.Return(false);
-  } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() <= 1) {
+  } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() == 0) {
     return m.Return(true);
   } else {
     flight_plan.RemoveLast();
@@ -473,7 +473,7 @@ bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
   if (status.error() == FlightPlan::singular ||
       status.error() == FlightPlan::does_not_fit) {
     return m.Return(false);
-  } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() <= 1) {
+  } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() == 0) {
     return m.Return(true);
   } else {
     flight_plan.Append(manœuvre.burn());

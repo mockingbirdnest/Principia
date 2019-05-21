@@ -229,7 +229,7 @@ TEST_F(FlightPlanTest, Singular) {
                           /*initial_time=*/singularity + 1 * Milli(Second),
                           /*Δv=*/1 * Metre / Second)),
       StatusIs(integrators::termination_condition::VanishingStepSize));
-  EXPECT_EQ(2, flight_plan_->number_of_anomalous_manœuvres());
+  EXPECT_EQ(1, flight_plan_->number_of_anomalous_manœuvres());
   flight_plan_->RemoveLast();
 
   // The singularity occurs during the burn: we're boosting towards the
@@ -244,7 +244,7 @@ TEST_F(FlightPlanTest, Singular) {
                           /*initial_time=*/t0_ + 0.5 * Second,
                           /*Δv=*/1 * Metre / Second)),
       StatusIs(integrators::termination_condition::VanishingStepSize));
-  EXPECT_EQ(1, flight_plan_->number_of_anomalous_manœuvres());
+  EXPECT_EQ(0, flight_plan_->number_of_anomalous_manœuvres());
 
   flight_plan_->GetSegment(1, begin, end);
   back = end;
@@ -269,7 +269,7 @@ TEST_F(FlightPlanTest, Singular) {
                           /*initial_time=*/t0_ + 0.5 * Second,
                           /*Δv=*/-1 * Metre / Second)),
       StatusIs(integrators::termination_condition::VanishingStepSize));
-  EXPECT_EQ(1, flight_plan_->number_of_anomalous_manœuvres());
+  EXPECT_EQ(0, flight_plan_->number_of_anomalous_manœuvres());
 
   flight_plan_->GetSegment(1, begin, end);
   back = end;
@@ -465,7 +465,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)),
       StatusIs(integrators::termination_condition::ReachedMaximalStepCount));
-  EXPECT_EQ(3, flight_plan_->number_of_anomalous_manœuvres());
+  EXPECT_EQ(2, flight_plan_->number_of_anomalous_manœuvres());
 
   flight_plan_->SetAdaptiveStepParameters(adaptive_step_parameters,
                                           generalized_adaptive_step_parameters);

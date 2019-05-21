@@ -88,7 +88,7 @@ int FlightPlan::number_of_manœuvres() const {
 }
 
 int FlightPlan::number_of_anomalous_manœuvres() const {
-  return (anomalous_segments_ + 1) / 2;
+  return (anomalous_segments_ - 1) / 2;
 }
 
 NavigationManœuvre const& FlightPlan::GetManœuvre(int const index) const {
@@ -171,11 +171,11 @@ Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
   NavigationManœuvre const manœuvre(manœuvres_[index].initial_mass(),
                                     burn);
   if (manœuvre.IsSingular()) {
-    return Status(Error::OUT_OF_RANGE, "Singular");
+    return Singular();
   }
   if (!manœuvre.FitsBetween(start_of_previous_coast(index),
                             start_of_next_burn(index))) {
-    return Status(Error::INVALID_ARGUMENT, "Doesn't fit");
+    return DoesNotFit();
   }
 
   // Replace the manœuvre at position |index| and rebuild all the ones that

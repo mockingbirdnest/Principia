@@ -64,10 +64,9 @@ class FlightPlan {
   virtual int number_of_manœuvres() const;
 
   // The number of manœuvres at the end of flight plan that are anomalous, i.e.,
-  // lead to their burn or a subsequent trajectory failing to integrate.  Note
-  // that this returns 1 for a flight plan without manœuvres if the first coast
-  // fails to integrate.  The functions that change manœuvres may change the
-  // number of anomalous manœuvres.
+  // follow an anomalous segment.  These are manœuvres whose Frenet trihedron
+  // cannot be drawn.  The functions that change manœuvres may change the number
+  // of anomalous manœuvres.
   virtual int number_of_anomalous_manœuvres() const;
 
   // Returns the specified manœuvre.  |index| must be in
@@ -142,8 +141,8 @@ class FlightPlan {
 
   static constexpr std::int64_t max_ephemeris_steps_per_frame = 1000;
 
-  static constexpr Error bad_desired_final_time = Error::INVALID_ARGUMENT;
-  static constexpr Error does_not_fit = Error::INVALID_ARGUMENT;
+  static constexpr Error bad_desired_final_time = Error::OUT_OF_RANGE;
+  static constexpr Error does_not_fit = Error::OUT_OF_RANGE;
   static constexpr Error singular = Error::INVALID_ARGUMENT;
 
  protected:
