@@ -88,7 +88,7 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(C:\Program Files\Kerbal Space Program\1.6.1\glog\Principia\JOURNAL.20190511-140327)";  // NOLINT
+      R"(C:\Program Files\Kerbal Space Program\1.6.1\glog\Principia\JOURNAL.20190520-205625)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play()) {
@@ -106,20 +106,20 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::FutureWaitForVesselToCatchUp::extension);
+        serialization::FlightPlanGetManoeuvreFrenetTrihedron::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(222367552);
-    in->set_future(6209463568);
+    in->set_plugin(2634828656);
+    in->set_vessel_guid("88d741d3-600c-4f4b-9567-8109cecab2bd");
+    in->set_index(0);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::FutureWaitForVesselToCatchUp::extension);
+        serialization::FlightPlanGetManoeuvreFrenetTrihedron::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<FutureWaitForVesselToCatchUp>(method_in,
-                                                       method_out_return,
-                                                       player));
+  CHECK(RunIfAppropriate<FlightPlanGetManoeuvreFrenetTrihedron>(
+      method_in, method_out_return, player));
 #endif
 }
 

@@ -25,6 +25,7 @@ template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
                                          Burn const& burn)
   : initial_mass_(initial_mass),
+    construction_burn_(burn),
     burn_(burn) {
   // Fill the missing fields of |intensity|.
   auto& intensity = burn_.intensity;
@@ -67,45 +68,45 @@ Mass const& Manœuvre<InertialFrame, Frame>::initial_mass() const {
 template<typename InertialFrame, typename Frame>
 typename Manœuvre<InertialFrame, Frame>::Intensity const&
     Manœuvre<InertialFrame, Frame>::intensity() const {
-  return burn_.intensity;
+  return construction_burn_.intensity;
 }
 
 template<typename InertialFrame, typename Frame>
 typename Manœuvre<InertialFrame, Frame>::Timing const&
     Manœuvre<InertialFrame, Frame>::timing() const {
-  return burn_.timing;
+  return construction_burn_.timing;
 }
 
 template<typename InertialFrame, typename Frame>
 typename Manœuvre<InertialFrame, Frame>::Burn const&
     Manœuvre<InertialFrame, Frame>::burn() const {
-  return burn_;
+  return construction_burn_;
 }
 
 template<typename InertialFrame, typename Frame>
 Vector<double, Frenet<Frame>> const& Manœuvre<InertialFrame, Frame>::direction()
     const {
-  return *intensity().direction;
+  return *full_intensity().direction;
 }
 
 template<typename InertialFrame, typename Frame>
 Time const& Manœuvre<InertialFrame, Frame>::duration() const {
-  return *intensity().duration;
+  return *full_intensity().duration;
 }
 
 template<typename InertialFrame, typename Frame>
 Velocity<Frenet<Frame>> const& Manœuvre<InertialFrame, Frame>::Δv() const {
-  return *intensity().Δv;
+  return *full_intensity().Δv;
 }
 
 template<typename InertialFrame, typename Frame>
 Instant const& Manœuvre<InertialFrame, Frame>::initial_time() const {
-  return *timing().initial_time;
+  return *full_timing().initial_time;
 }
 
 template<typename InertialFrame, typename Frame>
 Instant const& Manœuvre<InertialFrame, Frame>::time_of_half_Δv() const {
-  return *timing().time_of_half_Δv;
+  return *full_timing().time_of_half_Δv;
 }
 
 template<typename InertialFrame, typename Frame>
@@ -266,6 +267,18 @@ Manœuvre<InertialFrame, Frame>::ComputeIntrinsicAcceleration(
   } else {
     return Vector<Acceleration, InertialFrame>();
   }
+}
+
+template<typename InertialFrame, typename Frame>
+typename Manœuvre<InertialFrame, Frame>::Intensity const&
+Manœuvre<InertialFrame, Frame>::full_intensity() const {
+  return burn_.intensity;
+}
+
+template<typename InertialFrame, typename Frame>
+typename Manœuvre<InertialFrame, Frame>::Timing const&
+Manœuvre<InertialFrame, Frame>::full_timing() const {
+  return burn_.timing;
 }
 
 }  // namespace internal_manœuvre

@@ -16,25 +16,23 @@ class MockFlightPlan : public FlightPlan {
   MOCK_CONST_METHOD0(number_of_manœuvres, int());
   MOCK_CONST_METHOD1(GetManœuvre, NavigationManœuvre const& (int index));
 
-  MOCK_METHOD0(RemoveLast, void());
+  MOCK_METHOD1(Append, Status(NavigationManœuvre::Burn const& burn));
+  MOCK_METHOD0(RemoveLast, Status());
+  MOCK_METHOD1(ReplaceLast, Status(NavigationManœuvre::Burn const& burn));
 
-  MOCK_METHOD1(Append, bool(NavigationManœuvre::Burn const& burn));
-  MOCK_METHOD1(ReplaceLast, bool(NavigationManœuvre::Burn const& burn));
-
-  MOCK_METHOD1(SetDesiredFinalTime, bool(Instant const& final_time));
+  MOCK_METHOD1(SetDesiredFinalTime, Status(Instant const& final_time));
 
   MOCK_CONST_METHOD0(adaptive_step_parameters,
                      Ephemeris<Barycentric>::AdaptiveStepParameters const&());
+  MOCK_CONST_METHOD0(
+      generalized_adaptive_step_parameters,
+      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&());
   MOCK_METHOD2(
       SetAdaptiveStepParameters,
-      bool(Ephemeris<Barycentric>::AdaptiveStepParameters const&
-               adaptive_step_parameters,
-           Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
-               generalized_adaptive_step_parameters));
-
-  MOCK_METHOD2(SetTolerances,
-               void(Length const& length_integration_tolerance,
-                    Speed const& speed_integration_tolerance));
+      Status(Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                 adaptive_step_parameters,
+             Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+                 generalized_adaptive_step_parameters));
 
   MOCK_CONST_METHOD0(number_of_segments, int());
 
