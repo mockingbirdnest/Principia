@@ -135,7 +135,8 @@ message QP {
 message Status {
   // A principia::base::Error, or equivalently, a google.rpc.Code.
   required int32 error = 1;
-  // TODO(phl): find a way to produce strings in a struct.
+  // TODO(phl): find a way to produce strings in a struct and to interchange
+  // enums.
 }
 
 message WXYZ {
@@ -512,7 +513,7 @@ message FlightPlanAppend {
     required Burn burn = 3;
   }
   message Return {
-    required bool result = 1;
+    required Status result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -815,7 +816,7 @@ message FlightPlanReplaceLast{
     required Burn burn = 3;
   }
   message Return {
-    required bool result = 1;
+    required Status result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -833,7 +834,7 @@ message FlightPlanSetAdaptiveStepParameters {
         flight_plan_adaptive_step_parameters = 3;
   }
   message Return {
-    required bool result = 1;
+    required Status result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -850,7 +851,7 @@ message FlightPlanSetDesiredFinalTime {
     required double final_time = 3;
   }
   message Return {
-    required bool result = 1;
+    required Status result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

@@ -9,6 +9,7 @@
 #include "base/macros.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "base/status.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
@@ -135,6 +136,8 @@ KeplerianElements ToKeplerianElements(
 
 QP ToQP(DegreesOfFreedom<World> const& dof);
 QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
+
+Status ToStatus(base::Status const& status);
 
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 
