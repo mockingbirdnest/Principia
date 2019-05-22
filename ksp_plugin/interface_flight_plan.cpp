@@ -444,6 +444,21 @@ Iterator* principia__FlightPlanRenderedSegment(
       plugin));
 }
 
+Status principia__FlightPlanReplace(Plugin const* const plugin,
+                                    char const* const vessel_guid,
+                                    Burn const burn,
+                                    int const index) {
+  journal::Method<journal::FlightPlanReplace> m({plugin,
+                                                 vessel_guid,
+                                                 burn,
+                                                 index});
+  CHECK_NOTNULL(plugin);
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).
+                               Replace(FromInterfaceBurn(*plugin, burn),
+                                       index)));
+}
+
 Status principia__FlightPlanReplaceLast(Plugin const* const plugin,
                                         char const* const vessel_guid,
                                         Burn const burn) {
