@@ -148,8 +148,8 @@ class FlightPlanner : SupervisedWindowRenderer {
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       if (final_time_.Render(enabled : true)) {
-        plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
-                                              final_time_.value);
+        var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
+                                                          final_time_.value);
         final_time_.value =
             plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       }
@@ -168,8 +168,8 @@ class FlightPlanner : SupervisedWindowRenderer {
             UnityEngine.GUILayout.Button("min");
           } else if (UnityEngine.GUILayout.Button("-")) {
             parameters.max_steps /= factor;
-            plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                       parameters);
+            var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                                    parameters);
           }
           UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
                                           GUILayoutWidth(3));
@@ -177,8 +177,8 @@ class FlightPlanner : SupervisedWindowRenderer {
             UnityEngine.GUILayout.Button("max");
           } else if (UnityEngine.GUILayout.Button("+")) {
             parameters.max_steps *= factor;
-            plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                       parameters);
+            var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                                    parameters);
           }
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -189,8 +189,8 @@ class FlightPlanner : SupervisedWindowRenderer {
           } else if (UnityEngine.GUILayout.Button("-")) {
             parameters.length_integration_tolerance /= 2;
             parameters.speed_integration_tolerance /= 2;
-            plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                       parameters);
+            var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                                    parameters);
           }
           UnityEngine.GUILayout.TextArea(
               parameters.length_integration_tolerance.ToString("0.0e0") + " m",
@@ -200,8 +200,8 @@ class FlightPlanner : SupervisedWindowRenderer {
           } else if (UnityEngine.GUILayout.Button("+")) {
             parameters.length_integration_tolerance *= 2;
             parameters.speed_integration_tolerance *= 2;
-            plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                       parameters);
+            var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                                    parameters);
           }
         }
       }
@@ -242,7 +242,8 @@ class FlightPlanner : SupervisedWindowRenderer {
                                                    (burn_editors_.Count),
                                enabled           : true,
                                actual_final_time : actual_final_time)) {
-            plugin.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
+            var status = plugin.FlightPlanReplaceLast(vessel_guid,
+                                                      last_burn.Burn());
             last_burn.Reset(
                 plugin.FlightPlanGetManoeuvre(vessel_guid,
                                               burn_editors_.Count - 1));
@@ -274,9 +275,8 @@ class FlightPlanner : SupervisedWindowRenderer {
                              index         : burn_editors_.Count,
                              previous_burn : burn_editors_.LastOrDefault());
           Burn candidate_burn = editor.Burn();
-          bool inserted = plugin.FlightPlanAppend(vessel_guid,
-                                                  candidate_burn);
-          if (inserted) {
+          var status = plugin.FlightPlanAppend(vessel_guid, candidate_burn);
+          if (!status.ok()) {
             editor.Reset(plugin.FlightPlanGetManoeuvre(
                 vessel_guid, burn_editors_.Count));
             burn_editors_.Add(editor);
