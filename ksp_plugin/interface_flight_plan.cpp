@@ -308,6 +308,17 @@ principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
   return m.Return(result);
 }
 
+int principia__FlightPlanNumberOfAnomalousManoeuvres(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanNumberOfAnomalousManoeuvres> m(
+      {plugin,
+       vessel_guid});
+  CHECK_NOTNULL(plugin);
+  return m.Return(GetFlightPlan(*plugin, vessel_guid).
+                      number_of_anomalous_manœuvres());
+}
+
 int principia__FlightPlanNumberOfManoeuvres(Plugin const* const plugin,
                                             char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfManoeuvres> m({plugin,
