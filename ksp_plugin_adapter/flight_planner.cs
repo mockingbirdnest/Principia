@@ -338,7 +338,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
   }
 
-  internal static string FormatPositiveTimeSpan (TimeSpan span) {
+  internal static string FormatPositiveTimeSpan(TimeSpan span) {
     return (GameSettings.KERBIN_TIME
                 ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
                       " d6 " + (span.Hours % 6).ToString("0;0") + " h "
@@ -356,7 +356,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   internal static bool TryParseTimeSpan(string str, out TimeSpan value) {
     value = TimeSpan.Zero;
     // Using a technology that is customarily used to parse HTML.
-    string pattern = @"^([-+]?)\s*(\d+)\s*"+
+    string pattern = @"^+?\s*(\d+)\s*"+
                      (GameSettings.KERBIN_TIME ? "d6" : "d") +
                      @"\s*(\d+)\s*h\s*(\d+)\s*min\s*([0-9.,']+)\s*s$";
     Regex regex = new Regex(pattern);
@@ -364,11 +364,10 @@ class FlightPlanner : SupervisedWindowRenderer {
     if (!match.Success) {
       return false;
     }
-    string sign = match.Groups[1].Value;
-    string days = match.Groups[2].Value;
-    string hours = match.Groups[3].Value;
-    string minutes = match.Groups[4].Value;
-    string seconds = match.Groups[5].Value;
+    string days = match.Groups[1].Value;
+    string hours = match.Groups[2].Value;
+    string minutes = match.Groups[3].Value;
+    string seconds = match.Groups[4].Value;
     if (!Int32.TryParse(days, out int d) ||
         !Int32.TryParse(hours, out int h) ||
         !Int32.TryParse(minutes, out int min) ||
@@ -383,9 +382,6 @@ class FlightPlanner : SupervisedWindowRenderer {
             TimeSpan.FromHours(h) +
             TimeSpan.FromMinutes(min) +
             TimeSpan.FromSeconds(s);
-    if (sign.Length > 0 && sign[0] == '-') {
-      value = value.Negate();
-    }
     return true;
   }
 
