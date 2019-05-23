@@ -20,6 +20,11 @@ internal partial struct Status {
   public bool ok() {
     return error == 0;
   }
+  public void Update(Status s) {
+    if (ok() && !s.ok()) {
+      this = s;
+    }
+  }
 }
 
 internal partial struct XYZ {
