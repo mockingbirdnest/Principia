@@ -5,6 +5,7 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal partial struct Status {
+  public static Status OK = new Status{error = 0};
   public bool is_aborted() {
     return error == 10;
   }

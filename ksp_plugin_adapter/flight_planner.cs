@@ -150,6 +150,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       if (final_time_.Render(enabled : true)) {
         var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
                                                           final_time_.value);
+        UpdateStatus(status, null);
         final_time_.value =
             plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       }
@@ -170,6 +171,7 @@ class FlightPlanner : SupervisedWindowRenderer {
             parameters.max_steps /= factor;
             var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
                                                                     parameters);
+            UpdateStatus(status, null);
           }
           UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
                                           GUILayoutWidth(3));
@@ -179,6 +181,7 @@ class FlightPlanner : SupervisedWindowRenderer {
             parameters.max_steps *= factor;
             var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
                                                                     parameters);
+            UpdateStatus(status, null);
           }
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -191,6 +194,7 @@ class FlightPlanner : SupervisedWindowRenderer {
             parameters.speed_integration_tolerance /= 2;
             var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
                                                                     parameters);
+            UpdateStatus(status, null);
           }
           UnityEngine.GUILayout.TextArea(
               parameters.length_integration_tolerance.ToString("0.0e0") + " m",
@@ -202,6 +206,7 @@ class FlightPlanner : SupervisedWindowRenderer {
             parameters.speed_integration_tolerance *= 2;
             var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
                                                                     parameters);
+            UpdateStatus(status, null);
           }
         }
       }
@@ -211,15 +216,8 @@ class FlightPlanner : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           "Total Δv : " + Δv.ToString("0.000") + " m/s");
 
-      string message = "";
-      if (final_time_.value != actual_final_time) {
-        message = "Timed out after " +
-                  FormatPositiveTimeSpan(TimeSpan.FromSeconds(
-                      actual_final_time -
-                      plugin.FlightPlanGetInitialTime(vessel_guid)));
-      }
-      UnityEngine.GUILayout.Label(
-          message, Style.Warning(UnityEngine.GUI.skin.label));
+      UnityEngine.GUILayout.Label(GetStatusMessage(),
+                                  Style.Warning(UnityEngine.GUI.skin.label));
 
       if (burn_editors_.Count == 0 &&
           UnityEngine.GUILayout.Button("Delete flight plan")) {
@@ -244,6 +242,7 @@ class FlightPlanner : SupervisedWindowRenderer {
                                actual_final_time : actual_final_time)) {
             var status = plugin.FlightPlanReplaceLast(vessel_guid,
                                                       last_burn.Burn());
+            UpdateStatus(status, burn_editors_.Count - 1);
             last_burn.Reset(
                 plugin.FlightPlanGetManoeuvre(vessel_guid,
                                               burn_editors_.Count - 1));
@@ -276,11 +275,10 @@ class FlightPlanner : SupervisedWindowRenderer {
                              previous_burn : burn_editors_.LastOrDefault());
           Burn candidate_burn = editor.Burn();
           var status = plugin.FlightPlanAppend(vessel_guid, candidate_burn);
-          if (!status.ok()) {
-            editor.Reset(plugin.FlightPlanGetManoeuvre(
-                vessel_guid, burn_editors_.Count));
-            burn_editors_.Add(editor);
-          }
+          editor.Reset(plugin.FlightPlanGetManoeuvre(
+              vessel_guid, burn_editors_.Count));
+          burn_editors_.Add(editor);
+          UpdateStatus(status, burn_editors_.Count - 1);
           Shrink();
         }
       }
@@ -402,6 +400,77 @@ class FlightPlanner : SupervisedWindowRenderer {
     return true;
   }
 
+  private void UpdateStatus(Status status, int? error_manoeuvre) {
+    if (message_was_displayed_) {
+      status_ = Status.OK;
+      first_error_manoeuvre_ = null;
+      message_was_displayed_ = false;
+    }
+    if (status_.ok() && !status.ok()) {
+      status_ = status;
+      first_error_manoeuvre_ = error_manoeuvre;
+    }
+  }
+
+  private string GetStatusMessage() {
+    string vessel_guid = vessel_?.id.ToString();
+    string message = "";
+    if (vessel_guid != null && !status_.ok()) {
+      string remedy_message = "changing the flight plan";  // Preceded by "Try".
+      string status_message = "computation failed";  // Preceded by "The".
+      double actual_final_time =
+          plugin.FlightPlanGetActualFinalTime(vessel_guid);
+      bool timed_out = actual_final_time < final_time_.value;
+      string time_out_message =
+          timed_out ? " after " +
+                      FormatPositiveTimeSpan(TimeSpan.FromSeconds(
+                           actual_final_time -
+                           plugin.FlightPlanGetInitialTime(vessel_guid)))
+                    : "";
+      if (status_.is_aborted()) {
+        status_message = "integrator reached the maximum number of steps" +
+                         time_out_message;
+        remedy_message = "increasing 'Max. steps per segment'";
+      } else if (status_.is_failed_precondition()) {
+        status_message = "integrator encountered a singularity (probably the " +
+                         "centre of a celestial)" + time_out_message;
+        remedy_message = "avoiding collisions with a celestial";
+      } else if (status_.is_invalid_argument()) {
+        if (first_error_manoeuvre_.HasValue) {
+          status_message = "manoeuvre #" + first_error_manoeuvre_.Value +
+                           " overlaps with the preceding or following one";
+          remedy_message = "increasing the initial time or reducing the " +
+                           "duration of manoeuvre #" +
+                           first_error_manoeuvre_.Value;
+        } else {
+          status_message = "flight plan final time overlaps the last " +
+                           "manoeuvre";
+          remedy_message = "increasing the flight plan duration";
+        }
+      } else if (status_.is_out_of_range()) {
+        status_message = "manoeuvre #" + first_error_manoeuvre_.Value +
+                         " would result in an infinite or indeterminate " +
+                         "velocity";
+        remedy_message = "adjusting the duration of manoeuvre #" +
+                         first_error_manoeuvre_.Value;
+      }
+
+      int anomalous_manoeuvres =
+          plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
+      int manoeuvres = plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
+      if (anomalous_manoeuvres > 0) {
+        message = "The last " + anomalous_manoeuvres + " manoeuvres could " +
+                  "not be drawn because the " + status_message + "; try " +
+                  remedy_message + " or adjusting manoeuvre " +
+                  (manoeuvres - anomalous_manoeuvres - 1) + ".";
+      } else {
+        message = "The " + status_message + "; try " + remedy_message + ".";
+      }
+    }
+    message_was_displayed_ = true;
+    return message;
+  }
+
   private IntPtr plugin => adapter_.Plugin();
 
   private readonly PrincipiaPluginAdapter adapter_;
@@ -411,6 +480,10 @@ class FlightPlanner : SupervisedWindowRenderer {
   private int? first_future_manoeuvre_;
 
   private bool show_guidance_ = false;
+
+  private Status status_ = Status.OK;
+  private int? first_error_manoeuvre_;
+  private bool message_was_displayed_ = false;
   
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;
