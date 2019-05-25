@@ -39,6 +39,14 @@ internal static class Style {
     return right_aligned_style;
   }
 
+  public static UnityEngine.GUIStyle Multiline(UnityEngine.GUIStyle style) {
+    var multiline_style = new UnityEngine.GUIStyle(style);
+    multiline_style.alignment = UnityEngine.TextAnchor.UpperLeft;
+    multiline_style.fixedHeight = 0;
+    multiline_style.wordWrap = true;
+    return multiline_style;
+  }
+
   public static void HorizontalLine() {
     var horizontal_line_style = new UnityEngine.GUIStyle
                                     (UnityEngine.GUI.skin.horizontalSlider);

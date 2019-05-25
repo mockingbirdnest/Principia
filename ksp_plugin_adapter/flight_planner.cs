@@ -216,8 +216,19 @@ class FlightPlanner : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           "Total Δv : " + Δv.ToString("0.000") + " m/s");
 
-      UnityEngine.GUILayout.Label(GetStatusMessage(),
-                                  Style.Warning(UnityEngine.GUI.skin.label));
+      {
+        var style = Style.Warning(Style.Multiline(UnityEngine.GUI.skin.label));
+        string message = GetStatusMessage();
+        // Size the label explicitly so that it doesn't decrease when the
+        // message goes away: that causes annoying flicker.  The enclosing
+        // window has a width of 20 units, but not all of that is available,
+        // hence 19.
+        warning_height_ = Math.Max(
+            warning_height_,
+            style.CalcHeight(new UnityEngine.GUIContent(message), Width(19)));
+        UnityEngine.GUILayout.Label(
+            message, style, UnityEngine.GUILayout.Height(warning_height_));
+      }
 
       if (burn_editors_.Count == 0 &&
           UnityEngine.GUILayout.Button("Delete flight plan")) {
@@ -416,11 +427,15 @@ class FlightPlanner : SupervisedWindowRenderer {
     string vessel_guid = vessel_?.id.ToString();
     string message = "";
     if (vessel_guid != null && !status_.ok()) {
-      string remedy_message = "changing the flight plan";  // Preceded by "Try".
-      string status_message = "computation failed";  // Preceded by "The".
+      int anomalous_manoeuvres =
+          plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
+      int manoeuvres = plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
       double actual_final_time =
           plugin.FlightPlanGetActualFinalTime(vessel_guid);
       bool timed_out = actual_final_time < final_time_.value;
+
+      string remedy_message = "changing the flight plan";  // Preceded by "Try".
+      string status_message = "computation failed";  // Preceded by "The".
       string time_out_message =
           timed_out ? " after " +
                       FormatPositiveTimeSpan(TimeSpan.FromSeconds(
@@ -430,34 +445,43 @@ class FlightPlanner : SupervisedWindowRenderer {
       if (status_.is_aborted()) {
         status_message = "integrator reached the maximum number of steps" +
                          time_out_message;
-        remedy_message = "increasing 'Max. steps per segment'";
+        remedy_message = "increasing 'Max. steps per segment' or avoiding " +
+                         "collisions with a celestial";
       } else if (status_.is_failed_precondition()) {
         status_message = "integrator encountered a singularity (probably the " +
                          "centre of a celestial)" + time_out_message;
         remedy_message = "avoiding collisions with a celestial";
       } else if (status_.is_invalid_argument()) {
+        status_message = "manoeuvre #" + (first_error_manoeuvre_.Value + 1) +
+                         " would result in an infinite or indeterminate " +
+                         "velocity";
+        remedy_message = "adjusting the duration of manoeuvre #" +
+                         (first_error_manoeuvre_.Value + 1);
+      } else if (status_.is_out_of_range()) {
         if (first_error_manoeuvre_.HasValue) {
-          status_message = "manoeuvre #" + first_error_manoeuvre_.Value +
-                           " overlaps with the preceding or following one";
-          remedy_message = "increasing the initial time or reducing the " +
+          status_message = "manoeuvre #" + (first_error_manoeuvre_.Value + 1) +
+                           " overlaps with " + 
+                           ((first_error_manoeuvre_.Value == 0)
+                                ? "the start of the flight plan"
+                                : "manoeuvre #" +
+                                  first_error_manoeuvre_.Value) + " or " +
+                           ((first_error_manoeuvre_.Value == manoeuvres - 1)
+                                ? "the end of the flight plan"
+                                : "manoeuvre #" +
+                                  (first_error_manoeuvre_.Value + 2));
+          remedy_message = ((first_error_manoeuvre_.Value == manoeuvres - 1)
+                               ? "extending the flight plan or "
+                               : "") +
+                           "increasing the initial time or reducing the " +
                            "duration of manoeuvre #" +
-                           first_error_manoeuvre_.Value;
+                           (first_error_manoeuvre_.Value + 1);
         } else {
           status_message = "flight plan final time overlaps the last " +
                            "manoeuvre";
           remedy_message = "increasing the flight plan duration";
         }
-      } else if (status_.is_out_of_range()) {
-        status_message = "manoeuvre #" + first_error_manoeuvre_.Value +
-                         " would result in an infinite or indeterminate " +
-                         "velocity";
-        remedy_message = "adjusting the duration of manoeuvre #" +
-                         first_error_manoeuvre_.Value;
       }
 
-      int anomalous_manoeuvres =
-          plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
-      int manoeuvres = plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
       if (anomalous_manoeuvres > 0) {
         message = "The last " + anomalous_manoeuvres + " manoeuvres could " +
                   "not be drawn because the " + status_message + "; try " +
@@ -480,6 +504,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   private int? first_future_manoeuvre_;
 
   private bool show_guidance_ = false;
+  private float warning_height_ = 1;
 
   private Status status_ = Status.OK;
   private int? first_error_manoeuvre_;
