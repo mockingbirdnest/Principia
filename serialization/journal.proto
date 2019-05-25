@@ -733,7 +733,11 @@ message FlightPlanRemoveLast {
                                  (is_subject) = true];
     required string vessel_guid = 2;
   }
+  message Return {
+    required Status result = 1;
+  }
   optional In in = 1;
+  optional Return return = 3;
 }
 
 message FlightPlanRenderedApsides {

@@ -334,12 +334,11 @@ int principia__FlightPlanNumberOfSegments(Plugin const* const plugin,
   return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_segments());
 }
 
-void principia__FlightPlanRemoveLast(Plugin const* const plugin,
-                                     char const* const vessel_guid) {
+Status principia__FlightPlanRemoveLast(Plugin const* const plugin,
+                                       char const* const vessel_guid) {
   journal::Method<journal::FlightPlanRemoveLast> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  GetFlightPlan(*plugin, vessel_guid).RemoveLast();
-  return m.Return();
+  return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).RemoveLast()));
 }
 
 void principia__FlightPlanRenderedApsides(Plugin const* const plugin,

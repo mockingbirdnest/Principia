@@ -261,7 +261,8 @@ class FlightPlanner : SupervisedWindowRenderer {
           if (UnityEngine.GUILayout.Button(
                   "Delete last manœuvre",
                   UnityEngine.GUILayout.ExpandWidth(true))) {
-            plugin.FlightPlanRemoveLast(vessel_guid);
+            var status = plugin.FlightPlanRemoveLast(vessel_guid);
+            UpdateStatus(status, null);
             burn_editors_.Last().Close();
             burn_editors_.RemoveAt(burn_editors_.Count - 1);
             Shrink();

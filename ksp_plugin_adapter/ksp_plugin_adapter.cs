@@ -1807,6 +1807,10 @@ public partial class PrincipiaPluginAdapter
             }
           }
           if (plugin_.FlightPlanExists(main_vessel_guid)) {
+            int number_of_anomalous_manoeuvres =
+                plugin_.FlightPlanNumberOfAnomalousManoeuvres(main_vessel_guid);
+            int number_of_manoeuvres =
+                plugin_.FlightPlanNumberOfManoeuvres(main_vessel_guid);
             int number_of_segments =
                 plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
             for (int i = 0; i < number_of_segments; ++i) {
@@ -1835,24 +1839,27 @@ public partial class PrincipiaPluginAdapter
                 }
                 if (is_burn) {
                   int manoeuvre_index = i / 2;
-                  NavigationManoeuvreFrenetTrihedron manoeuvre =
-                      plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
-                          main_vessel_guid,
-                          manoeuvre_index);
-                  double scale = (ScaledSpace.ScaledToLocalSpace(
-                                      MapView.MapCamera.transform.position) -
-                                  position_at_start).magnitude * 0.015;
-                  Action<XYZ, UnityEngine.Color> add_vector =
-                      (world_direction, colour) => {
-                        UnityEngine.GL.Color(colour);
-                        GLLines.AddSegment(
-                            position_at_start,
-                            position_at_start +
-                                scale * (Vector3d)world_direction);
-                      };
-                  add_vector(manoeuvre.tangent, Style.Tangent);
-                  add_vector(manoeuvre.normal, Style.Normal);
-                  add_vector(manoeuvre.binormal, Style.Binormal);
+                  if (manoeuvre_index <
+                      number_of_manoeuvres - number_of_anomalous_manoeuvres) {
+                    NavigationManoeuvreFrenetTrihedron manoeuvre =
+                        plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
+                            main_vessel_guid,
+                            manoeuvre_index);
+                    double scale = (ScaledSpace.ScaledToLocalSpace(
+                                        MapView.MapCamera.transform.position) -
+                                    position_at_start).magnitude * 0.015;
+                    Action<XYZ, UnityEngine.Color> add_vector =
+                        (world_direction, colour) => {
+                          UnityEngine.GL.Color(colour);
+                          GLLines.AddSegment(
+                              position_at_start,
+                              position_at_start +
+                                  scale * (Vector3d)world_direction);
+                        };
+                    add_vector(manoeuvre.tangent, Style.Tangent);
+                    add_vector(manoeuvre.normal, Style.Normal);
+                    add_vector(manoeuvre.binormal, Style.Binormal);
+                  }
                 }
               }
             }
