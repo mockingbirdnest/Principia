@@ -200,7 +200,7 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__CelestialFromParent(plugin, celestial_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__LogFatal("a fatal error", "a file", 1729);
+    principia__LogFatal("a file", 1729, "a fatal error");
   }, "a file:1729.*a fatal error");
 }
 
@@ -229,9 +229,9 @@ TEST_F(InterfaceDeathTest, ActivateRecorder) {
 }
 
 TEST_F(InterfaceTest, Log) {
-  principia__LogInfo("An info", "a file", 1);
-  principia__LogWarning("A warning", "another file", 2);
-  principia__LogError("An error", "yet another file", 3);
+  principia__LogInfo("a file", 1, "An info");
+  principia__LogWarning("another file", 2, "A warning");
+  principia__LogError("yet another file", 3, "An error");
 }
 
 TEST_F(InterfaceTest, NewPlugin) {
