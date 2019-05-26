@@ -40,8 +40,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   public override void Load(ConfigNode node) {
     base.Load(node);
 
-    String show_guidance_value =
-        node.GetAtMostOneValue("show_guidance");
+    String show_guidance_value = node.GetAtMostOneValue("show_guidance");
     if (show_guidance_value != null) {
       show_guidance_ = Convert.ToBoolean(show_guidance_value);
     }
@@ -366,7 +365,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   internal static bool TryParseTimeSpan(string str, out TimeSpan value) {
     value = TimeSpan.Zero;
     // Using a technology that is customarily used to parse HTML.
-    string pattern = @"^+?\s*(\d+)\s*"+
+    string pattern = @"^[+]?\s*(\d+)\s*" +
                      (GameSettings.KERBIN_TIME ? "d6" : "d") +
                      @"\s*(\d+)\s*h\s*(\d+)\s*min\s*([0-9.,']+)\s*s$";
     Regex regex = new Regex(pattern);
