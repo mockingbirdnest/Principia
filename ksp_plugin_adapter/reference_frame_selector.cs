@@ -41,6 +41,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     // C++ side (we do for flight planning).
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     selected_celestial = FlightGlobals.GetHomeBody();
+    is_freshly_constructed_ = true;
 
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
@@ -388,15 +389,18 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     var old_frame_type = frame_type;
     var old_selected_celestial = selected_celestial;
     action();
-    if (frame_type != old_frame_type ||
+    if (is_freshly_constructed_ ||
+        frame_type != old_frame_type ||
         selected_celestial != old_selected_celestial) {
       on_change_(FrameParameters());
+      is_freshly_constructed_ = false;
     }
   }
 
   private readonly Callback on_change_;
   private readonly string name_;
   private Dictionary<CelestialBody, bool> expanded_;
+  private bool is_freshly_constructed_;
 }
 
 }  // namespace ksp_plugin_adapter
