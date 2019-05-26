@@ -170,11 +170,20 @@ internal class MainWindow : SupervisedWindowRenderer {
             style : Style.Warning(UnityEngine.GUI.skin.label));
       }
       if (DateTimeOffset.Now > next_release_date_) {
+#if KSP_VERSION_1_3_1
+UnityEngine.GUILayout.TextArea(
+            "Announcement: the new moon of lunation number " +
+            next_release_lunation_number_ +
+            " has come; please update KSP to version 1.6.1 and download the " +
+            "latest Principia release, " + next_release_name_ + ". Note that " +
+            "RealismOverhaul and RealSolarSystem now support KSP 1.6.1.");
+#else
         UnityEngine.GUILayout.TextArea(
             "Announcement: the new moon of lunation number " +
             next_release_lunation_number_ +
             " has come; please download the latest Principia release, " +
             next_release_name_ + ".");
+#endif
       }
       Interface.GetVersion(build_date : out string unused_build_date,
                            version    : out string version);
