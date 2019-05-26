@@ -152,9 +152,10 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
 
   EXPECT_CALL(flight_plan, SetDesiredFinalTime(Instant() + 60 * Second))
       .WillOnce(Return(base::Status::OK));
-  EXPECT_TRUE(principia__FlightPlanSetDesiredFinalTime(plugin_.get(),
-                                                       vessel_guid,
-                                                       60));
+  EXPECT_EQ(0,
+            principia__FlightPlanSetDesiredFinalTime(plugin_.get(),
+                                                     vessel_guid,
+                                                     60).error);
 
   EXPECT_CALL(flight_plan, initial_time())
       .WillOnce(Return(Instant() + 3 * Second));
@@ -207,14 +208,15 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                         speed_integration_tolerance,
                     33 * Metre / Second))))
       .WillOnce(Return(base::Status::OK));
-  EXPECT_TRUE(principia__FlightPlanSetAdaptiveStepParameters(
-                  plugin_.get(),
-                  vessel_guid,
-                  {/*integrator_kind=*/1,
-                   /*generalized_integrator_kind=*/2,
-                   /*max_step=*/11,
-                   /*length_integration_tolerance=*/22,
-                   /*speed_integration_tolerance=*/33}));
+  EXPECT_EQ(0,
+            principia__FlightPlanSetAdaptiveStepParameters(
+                plugin_.get(),
+                vessel_guid,
+                {/*integrator_kind=*/1,
+                  /*generalized_integrator_kind=*/2,
+                  /*max_step=*/11,
+                  /*length_integration_tolerance=*/22,
+                  /*speed_integration_tolerance=*/33}).error);
 
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
@@ -258,9 +260,10 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                       5 * (Metre / Second),
                                       6 * (Metre / Second)})))))
       .WillOnce(Return(base::Status::OK));
-  EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(),
-                                          vessel_guid,
-                                          interface_burn));
+  EXPECT_EQ(0,
+            principia__FlightPlanAppend(plugin_.get(),
+                                        vessel_guid,
+                                        interface_burn).error);
 
   EXPECT_CALL(flight_plan, number_of_manœuvres())
       .WillOnce(Return(4));
@@ -412,9 +415,10 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                    5 * (Metre / Second),
                                    6 * (Metre / Second)})))))
       .WillOnce(Return(base::Status::OK));
-  EXPECT_TRUE(principia__FlightPlanReplaceLast(plugin_.get(),
-                                               vessel_guid,
-                                               interface_burn));
+  EXPECT_EQ(0,
+            principia__FlightPlanReplaceLast(plugin_.get(),
+                                             vessel_guid,
+                                             interface_burn).error);
 
   EXPECT_CALL(flight_plan, RemoveLast());
   principia__FlightPlanRemoveLast(plugin_.get(), vessel_guid);
