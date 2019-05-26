@@ -230,6 +230,20 @@ TEST_F(FlightPlanTest, Singular) {
                           /*Δv=*/1 * Metre / Second)),
       StatusIs(integrators::termination_condition::VanishingStepSize));
   EXPECT_EQ(1, flight_plan_->number_of_anomalous_manœuvres());
+
+  // Add another manœuvre and check the status.
+  EXPECT_THAT(
+      flight_plan_->Append(
+          MakeTangentBurn(/*thrust=*/1 * Newton,
+                          /*specific_impulse=*/1 * Newton * Second / Kilogram,
+                          /*initial_time=*/singularity + 10 * Second,
+                          /*Δv=*/1 * Metre / Second)),
+      StatusIs(integrators::termination_condition::VanishingStepSize));
+  EXPECT_EQ(2, flight_plan_->number_of_anomalous_manœuvres());
+
+  // Check that RemoveLast returns the proper statuses.
+  EXPECT_THAT(flight_plan_->RemoveLast(),
+              StatusIs(integrators::termination_condition::VanishingStepSize));
   flight_plan_->RemoveLast();
 
   // The singularity occurs during the burn: we're boosting towards the
