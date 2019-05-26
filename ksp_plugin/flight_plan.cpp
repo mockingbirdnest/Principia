@@ -401,10 +401,7 @@ Status FlightPlan::ComputeSegments(
     std::vector<NavigationManœuvre>::iterator const begin,
     std::vector<NavigationManœuvre>::iterator const end) {
   CHECK(!segments_.empty());
-  if (anomalous_segments_ == 0) {
-    anomalous_status_ = Status::OK;
-  }
-  Status overall_status = anomalous_status_;
+  Status overall_status;
   for (auto it = begin; it != end; ++it) {
     auto& manœuvre = *it;
     auto& coast = segments_.back();
@@ -415,7 +412,6 @@ Status FlightPlan::ComputeSegments(
       if (!status.ok()) {
         overall_status.Update(status);
         anomalous_segments_ = 1;
-        anomalous_status_ = status;
       }
     }
 
@@ -427,7 +423,6 @@ Status FlightPlan::ComputeSegments(
       if (!status.ok()) {
         overall_status.Update(status);
         anomalous_segments_ = 1;
-        anomalous_status_ = status;
       }
     }
 
@@ -438,10 +433,8 @@ Status FlightPlan::ComputeSegments(
     if (!status.ok()) {
       overall_status.Update(status);
       anomalous_segments_ = 1;
-      anomalous_status_ = status;
     }
   }
-    <<adaptive_step_parameters_.max_steps();
   return overall_status;
 }
 
