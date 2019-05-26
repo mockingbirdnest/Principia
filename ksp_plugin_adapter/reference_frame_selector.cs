@@ -307,10 +307,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
       using (new UnityEngine.GUILayout.VerticalScope()) {
         if (target_override) {
           UnityEngine.GUILayout.Label(
-              "Using target-centred frame selected on navball speed display",
-              GUILayoutWidth(6));
-          UnityEngine.GUILayout.Label(
+              "Using target-centred frame selected on navball speed " +
+              "display\n\n" +
               Description(frame_type, selected_celestial, target_override),
+              Style.Multiline(UnityEngine.GUI.skin.label),
               GUILayoutWidth(6));
         } else {
           TypeSelector(FrameType.BODY_SURFACE);
