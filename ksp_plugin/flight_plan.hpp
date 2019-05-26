@@ -207,6 +207,9 @@ class FlightPlan {
   // either end prematurely or follow an anomalous trajectory; in the latter
   // case they are empty.
   int anomalous_segments_ = 0;
+  // The status of the first anomalous segment.  Set and used exclusively by
+  // |ComputeSegments|.
+  Status anomalous_status_;
 
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;

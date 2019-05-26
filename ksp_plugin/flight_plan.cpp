@@ -318,11 +318,12 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
         NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
   }
   // We need to forcefully prolong, otherwise we might exceed the ephemeris
-  // step limit while recomputing the segments and fail the check.
+  // step limit while recomputing the segments and make the flight plan
+  // anomalous for no good reason.
   flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_);
   Status const status = flight_plan->RecomputeAllSegments();
   LOG_IF(INFO, flight_plan->anomalous_segments_ > 0)
-      << "Loading a flight plan with " << flight_plan->anomalous_segments_ <<
+      << "Loading a flight plan with " << flight_plan->anomalous_segments_
       << " anomalous segments and status " << status << "\n"
       << message.DebugString();
 
@@ -401,7 +402,10 @@ Status FlightPlan::ComputeSegments(
     std::vector<NavigationManœuvre>::iterator const begin,
     std::vector<NavigationManœuvre>::iterator const end) {
   CHECK(!segments_.empty());
-  Status overall_status;
+  if (anomalous_segments_ == 0) {
+    anomalous_status_ = Status::OK;
+  }
+  Status overall_status = anomalous_status_;
   for (auto it = begin; it != end; ++it) {
     auto& manœuvre = *it;
     auto& coast = segments_.back();
@@ -412,6 +416,7 @@ Status FlightPlan::ComputeSegments(
       if (!status.ok()) {
         overall_status.Update(status);
         anomalous_segments_ = 1;
+        anomalous_status_ = status;
       }
     }
 
@@ -423,6 +428,7 @@ Status FlightPlan::ComputeSegments(
       if (!status.ok()) {
         overall_status.Update(status);
         anomalous_segments_ = 1;
+        anomalous_status_ = status;
       }
     }
 
@@ -433,6 +439,7 @@ Status FlightPlan::ComputeSegments(
     if (!status.ok()) {
       overall_status.Update(status);
       anomalous_segments_ = 1;
+      anomalous_status_ = status;
     }
   }
   return overall_status;
