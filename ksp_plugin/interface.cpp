@@ -832,29 +832,36 @@ void principia__InsertUnloadedPart(Plugin* const plugin,
 
 // Exports |LOG(SEVERITY) << text| for fast logging from the C# adapter.
 // This will always evaluate its argument even if the corresponding log severity
-// is disabled, so it is less efficient than LOG(INFO).  It will not report the
-// line and file of the caller.
-void principia__LogError(char const* const text) {
+// is disabled, so it is less efficient than LOG(SEVERITY).
+void principia__LogError(char const* const file,
+                         int const line,
+                         char const* const text) {
   journal::Method<journal::LogError> m({text});
-  LOG(ERROR) << text;
+  google::LogMessage(file, line, google::ERROR).stream() << text;
   return m.Return();
 }
 
-void principia__LogFatal(char const* const text) {
+void principia__LogFatal(char const* const file,
+                         int const line,
+                         char const* const text) {
   journal::Method<journal::LogFatal> m({text});
-  LOG(FATAL) << text;
+  google::LogMessageFatal(file, line).stream() << text;
   return m.Return();
 }
 
-void principia__LogInfo(char const* const text) {
+void principia__LogInfo(char const* const file,
+                        int const line,
+                        char const* const text) {
   journal::Method<journal::LogInfo> m({text});
-  LOG(INFO) << text;
+  google::LogMessage(file, line).stream() << text;
   return m.Return();
 }
 
-void principia__LogWarning(char const* const text) {
+void principia__LogWarning(char const* const file,
+                           int const line,
+                           char const* const text) {
   journal::Method<journal::LogWarning> m({text});
-  LOG(WARNING) << text;
+  google::LogMessage(file, line, google::WARNING).stream() << text;
   return m.Return();
 }
 
