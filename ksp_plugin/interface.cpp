@@ -836,7 +836,7 @@ void principia__InsertUnloadedPart(Plugin* const plugin,
 void principia__LogError(char const* const file,
                          int const line,
                          char const* const text) {
-  journal::Method<journal::LogError> m({text});
+  journal::Method<journal::LogError> m({file, line, text});
   google::LogMessage(file, line, google::ERROR).stream() << text;
   return m.Return();
 }
@@ -844,7 +844,7 @@ void principia__LogError(char const* const file,
 void principia__LogFatal(char const* const file,
                          int const line,
                          char const* const text) {
-  journal::Method<journal::LogFatal> m({text});
+  journal::Method<journal::LogFatal> m({file, line, text});
   google::LogMessageFatal(file, line).stream() << text;
   return m.Return();
 }
@@ -852,7 +852,7 @@ void principia__LogFatal(char const* const file,
 void principia__LogInfo(char const* const file,
                         int const line,
                         char const* const text) {
-  journal::Method<journal::LogInfo> m({text});
+  journal::Method<journal::LogInfo> m({file, line, text});
   google::LogMessage(file, line).stream() << text;
   return m.Return();
 }
@@ -860,7 +860,7 @@ void principia__LogInfo(char const* const file,
 void principia__LogWarning(char const* const file,
                            int const line,
                            char const* const text) {
-  journal::Method<journal::LogWarning> m({text});
+  journal::Method<journal::LogWarning> m({file, line, text});
   google::LogMessage(file, line, google::WARNING).stream() << text;
   return m.Return();
 }
