@@ -165,24 +165,26 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_EQ(4, principia__FlightPlanGetDesiredFinalTime(plugin_.get(),
                                                         vessel_guid));
 
-  EXPECT_CALL(flight_plan, adaptive_step_parameters())
-      .WillOnce(
-          ReturnRef(Ephemeris<Barycentric>::AdaptiveStepParameters(
-            EmbeddedExplicitRungeKuttaNyströmIntegrator<
-                    DormandالمكاوىPrince1986RKN434FM,
-                    Position<Barycentric>>(),
-                /*max_steps=*/1,
-                /*length_integration_tolerance=*/1 * Milli(Metre),
-                /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
-  EXPECT_CALL(flight_plan, generalized_adaptive_step_parameters())
-      .WillOnce(
-          ReturnRef(Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
-              EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-                  Fine1987RKNG34,
-                  Position<Barycentric>>(),
-              /*max_steps=*/1,
-              /*length_integration_tolerance=*/1 * Milli(Metre),
-              /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
+  {
+    Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
+        EmbeddedExplicitRungeKuttaNyströmIntegrator<
+            DormandالمكاوىPrince1986RKN434FM,
+            Position<Barycentric>>(),
+        /*max_steps=*/1,
+        /*length_integration_tolerance=*/1 * Milli(Metre),
+        /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
+    EXPECT_CALL(flight_plan, adaptive_step_parameters())
+        .WillOnce(ReturnRef(adaptive_step_parameters));
+    Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
+    generalized_adaptive_step_parameters(
+        EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+            Fine1987RKNG34,
+            Position<Barycentric>>(),
+        /*max_steps=*/1,
+        /*length_integration_tolerance=*/1 * Milli(Metre),
+        /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
+    EXPECT_CALL(flight_plan, generalized_adaptive_step_parameters())
+        .WillOnce(ReturnRef(generalized_adaptive_step_parameters));
   EXPECT_CALL(
       flight_plan,
       SetAdaptiveStepParameters(
@@ -215,35 +217,38 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                    /*max_step=*/11,
                    /*length_integration_tolerance=*/22,
                    /*speed_integration_tolerance=*/33}));
+  }
 
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          DormandالمكاوىPrince1986RKN434FM,
-          Position<Barycentric>>(),
-      /*max_steps=*/111,
-      /*length_integration_tolerance=*/222 * Metre,
-      /*speed_integration_tolerance=*/333 * Metre / Second);
-  EXPECT_CALL(flight_plan, adaptive_step_parameters())
-      .WillOnce(ReturnRef(adaptive_step_parameters));
-  Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
-  generalized_adaptive_step_parameters(
-      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          Fine1987RKNG34,
-          Position<Barycentric>>(),
-      /*max_steps=*/111,
-      /*length_integration_tolerance=*/222 * Metre,
-      /*speed_integration_tolerance=*/333 * Metre / Second);
-  EXPECT_CALL(flight_plan, generalized_adaptive_step_parameters())
-      .WillOnce(ReturnRef(generalized_adaptive_step_parameters));
-  FlightPlanAdaptiveStepParameters expected_adaptive_step_parameters = {
-      /*integrator_kind=*/1,
-      /*generalized_integrator_kind=*/2,
-      /*max_step=*/111,
-      /*length_integration_tolerance=*/222,
-      /*speed_integration_tolerance=*/333};
-  EXPECT_EQ(expected_adaptive_step_parameters,
-            principia__FlightPlanGetAdaptiveStepParameters(
-                plugin_.get(), vessel_guid));
+  {
+    Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
+        EmbeddedExplicitRungeKuttaNyströmIntegrator<
+            DormandالمكاوىPrince1986RKN434FM,
+            Position<Barycentric>>(),
+        /*max_steps=*/111,
+        /*length_integration_tolerance=*/222 * Metre,
+        /*speed_integration_tolerance=*/333 * Metre / Second);
+    EXPECT_CALL(flight_plan, adaptive_step_parameters())
+        .WillOnce(ReturnRef(adaptive_step_parameters));
+    Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
+    generalized_adaptive_step_parameters(
+        EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+            Fine1987RKNG34,
+            Position<Barycentric>>(),
+        /*max_steps=*/111,
+        /*length_integration_tolerance=*/222 * Metre,
+        /*speed_integration_tolerance=*/333 * Metre / Second);
+    EXPECT_CALL(flight_plan, generalized_adaptive_step_parameters())
+        .WillOnce(ReturnRef(generalized_adaptive_step_parameters));
+    FlightPlanAdaptiveStepParameters expected_adaptive_step_parameters = {
+        /*integrator_kind=*/1,
+        /*generalized_integrator_kind=*/2,
+        /*max_step=*/111,
+        /*length_integration_tolerance=*/222,
+        /*speed_integration_tolerance=*/333};
+    EXPECT_EQ(expected_adaptive_step_parameters,
+              principia__FlightPlanGetAdaptiveStepParameters(
+                  plugin_.get(), vessel_guid));
+  }
 
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
@@ -397,9 +402,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
               FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(
                     new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
+  auto const manœuvre = NavigationManœuvre(/*initial_mass=*/1 * Kilogram, burn);
   EXPECT_CALL(flight_plan, GetManœuvre(0))
-      .WillOnce(
-          ReturnRef(NavigationManœuvre(/*initial_mass=*/1 * Kilogram, burn)));
+      .WillOnce(ReturnRef(manœuvre));
   EXPECT_CALL(flight_plan, number_of_manœuvres())
       .WillOnce(Return(1));
   EXPECT_CALL(flight_plan,
