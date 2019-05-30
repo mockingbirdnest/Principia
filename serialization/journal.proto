@@ -1367,6 +1367,8 @@ message LogError {
     optional LogError extension = 5010;
   }
   message In {
+    required string file = 2;
+    required int32 line = 3;
     required string text = 1;
   }
   optional In in = 1;
@@ -1377,6 +1379,8 @@ message LogFatal {
     optional LogFatal extension = 5011;
   }
   message In {
+    required string file = 2;
+    required int32 line = 3;
     required string text = 1;
   }
   optional In in = 1;
@@ -1387,6 +1391,8 @@ message LogInfo {
     optional LogInfo extension = 5012;
   }
   message In {
+    required string file = 2;
+    required int32 line = 3;
     required string text = 1;
   }
   optional In in = 1;
@@ -1397,6 +1403,8 @@ message LogWarning {
     optional LogWarning extension = 5013;
   }
   message In {
+    required string file = 2;
+    required int32 line = 3;
     required string text = 1;
   }
   optional In in = 1;

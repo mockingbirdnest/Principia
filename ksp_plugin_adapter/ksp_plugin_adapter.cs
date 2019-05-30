@@ -198,14 +198,15 @@ public partial class PrincipiaPluginAdapter
         Versioning.version_minor != 3 ||
         Versioning.Revision != 1) {
       string expected_version = "1.3.1";
-#elif KSP_VERSION_1_6_1
+#elif KSP_VERSION_1_7_0
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 4 &&
            (Versioning.Revision >= 1 && Versioning.Revision <= 5)) ||
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||
-          (Versioning.version_minor == 6 && Versioning.Revision == 1))) {
+          (Versioning.version_minor == 6 && Versioning.Revision == 1) ||
+          (Versioning.version_minor == 7 && Versioning.Revision == 0))) {
       string expected_version =
-          "1.6.1, 1.5.1, 1.4.5, 1.4.4, 1.4.3, 1.4.2, and 1.4.1";
+          "1.7.0, 1.6.1, 1.5.1, 1.4.5, 1.4.4, 1.4.3, 1.4.2, and 1.4.1";
 #endif
       Log.Fatal("Unexpected KSP version " + Versioning.version_major + "." +
                 Versioning.version_minor + "." + Versioning.Revision +
@@ -455,7 +456,7 @@ public partial class PrincipiaPluginAdapter
         path;
     if (File.Exists(full_path)) {
       var texture2d = new UnityEngine.Texture2D(2, 2);
-#if KSP_VERSION_1_6_1
+#if KSP_VERSION_1_7_0
       bool success = UnityEngine.ImageConversion.LoadImage(
           texture2d, File.ReadAllBytes(full_path));
 #elif KSP_VERSION_1_3_1
