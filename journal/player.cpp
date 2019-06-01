@@ -39,11 +39,9 @@ bool Player::Play(int const index) {
   }
 
 #if 0
-  if (index == 3171451) {
-    LOG_IF(ERROR, index > 3170000) << "index: " << index << "\n"
-                                   << method_in->ShortDebugString() << "\n"
-                                   << method_out_return->ShortDebugString();
-  }
+  LOG_IF(ERROR, index > 3170000) << "index: " << index << "\n"
+                                 << method_in->ShortDebugString() << "\n"
+                                 << method_out_return->ShortDebugString();
 #endif
 
   auto const before = std::chrono::system_clock::now();
