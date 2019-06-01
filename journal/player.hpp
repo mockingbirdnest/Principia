@@ -18,7 +18,8 @@ class Player final {
   explicit Player(std::filesystem::path const& path);
 
   // Replays the next message in the journal.  Returns false at end of journal.
-  bool Play();
+  // |index| is the 0-based index of the message in the journal.
+  bool Play(int index);
 
   // Return the last replayed messages.
   serialization::Method const& last_method_in() const;
