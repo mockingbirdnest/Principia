@@ -476,6 +476,8 @@ bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
   } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() == 0) {
     return m.Return(true);
   } else {
+    // The last manœuvre is broken.  Roll it back.
+    flight_plan.RemoveLast();
     flight_plan.Append(manœuvre.burn());
     return m.Return(false);
   }
