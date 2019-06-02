@@ -1,9 +1,9 @@
 # Instructions for building Principia on Windows
 
-These instructions are for Visual Studio 2017 version 15.9.4 preview 1, using the git
+These instructions are for Visual Studio 2019 version 16.2.0 preview 1, using the git
 Powershell provided by [GitHub for Windows](https://windows.github.com/).
 
-We assume a working installation of Kerbal Space Program version 1.6.1 is
+We assume a working installation of Kerbal Space Program version 1.7.0 is
 found in `<KSP directory>`.
 
 The repository is found at https://github.com/mockingbirdnest/Principia.git.
@@ -39,7 +39,7 @@ In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
 
 ### KSP and Unity assemblies
 
-In order to build for KSP 1.3.1, copy the corresponding KSP 1.3.1 assemblies to `<root>\KSP Assemblies\1.3.1`.  For KSP 1.6.1 copy the corresponding KSP 1.6.1 assemblies to `<root>\KSP Assemblies\1.6.1`
+In order to build for KSP 1.3.1, copy the corresponding KSP 1.3.1 assemblies to `<root>\KSP Assemblies\1.3.1`.  For KSP 1.7.0 copy the corresponding KSP 1.7.0 assemblies to `<root>\KSP Assemblies\1.7.0`
 
 ### Downloading the Google libraries
 
