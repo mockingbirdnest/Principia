@@ -26,6 +26,7 @@
     <ClInclude Include="base64.hpp" />
     <ClInclude Include="base64_body.hpp" />
     <ClInclude Include="bundle.hpp" />
+    <ClInclude Include="constant_function.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />
     <ClInclude Include="encoder.hpp" />

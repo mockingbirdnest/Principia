@@ -434,8 +434,8 @@ Acceleration(Geopotential<Frame> const& geopotential,
   UnitVector ŷ;
   UnitVector const ẑ = body.polar_axis();
   if (is_zonal) {
-    x̂ = body.biequatorial();
-    ŷ = body.equatorial();
+    x̂ = body.equatorial();
+    ŷ = body.biequatorial();
   } else {
     auto const from_surface_frame =
       body.template FromSurfaceFrame<SurfaceFrame>(t);

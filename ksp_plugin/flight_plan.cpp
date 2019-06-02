@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/flight_plan.hpp"
 
+#include <algorithm>
 #include <optional>
 #include <vector>
 
@@ -14,7 +15,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
+using base::Error;
 using base::make_not_null_unique;
+using base::Status;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
@@ -25,6 +28,18 @@ using integrators::methods::Fine1987RKNG34;
 using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
+
+inline Status const BadDesiredFinalTime() {
+  return Status(FlightPlan::bad_desired_final_time, "Bad desired final time");
+}
+
+inline Status const DoesNotFit() {
+  return Status(FlightPlan::does_not_fit, "Does not fit");
+}
+
+inline Status const Singular() {
+  return Status(FlightPlan::singular, "Singular");
+}
 
 FlightPlan::FlightPlan(
     Mass const& initial_mass,
@@ -52,7 +67,8 @@ FlightPlan::FlightPlan(
 
   // Create a fork for the first coasting trajectory.
   segments_.emplace_back(root_->NewForkWithoutCopy(initial_time_));
-  CoastLastSegment(desired_final_time_);
+  CHECK(manœuvres_.empty());
+  ComputeSegments(manœuvres_.begin(), manœuvres_.end());
 }
 
 Instant FlightPlan::initial_time() const {
@@ -71,28 +87,32 @@ int FlightPlan::number_of_manœuvres() const {
   return manœuvres_.size();
 }
 
+int FlightPlan::number_of_anomalous_manœuvres() const {
+  return (anomalous_segments_ - 1) / 2;
+}
+
 NavigationManœuvre const& FlightPlan::GetManœuvre(int const index) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
   return manœuvres_[index];
 }
 
-bool FlightPlan::Append(Burn burn) {
-  auto manœuvre =
-      MakeNavigationManœuvre(
-          std::move(burn),
-          manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass());
-  if (manœuvre.FitsBetween(start_of_last_coast(), desired_final_time_) &&
-      !manœuvre.IsSingular()) {
-    DiscreteTrajectory<Barycentric>* recomputed_last_coast =
-        CoastIfReachesManœuvreInitialTime(last_coast(), manœuvre);
-    if (recomputed_last_coast != nullptr) {
-      ReplaceLastSegment(recomputed_last_coast);
-      Append(std::move(manœuvre));
-      return true;
-    }
+Status FlightPlan::Append(NavigationManœuvre::Burn const& burn) {
+  NavigationManœuvre const manœuvre(
+      manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass(),
+      burn);
+  if (manœuvre.IsSingular()) {
+    return Singular();
   }
-  return false;
+  if (!manœuvre.FitsBetween(start_of_last_coast(), desired_final_time_)) {
+    return DoesNotFit();
+  }
+  // Reset the last coast and integrate it followed by a burn followed by a new
+  // last coast;
+  manœuvres_.push_back(manœuvre);
+  ResetLastSegment();
+  return ComputeSegments(manœuvres_.begin() + manœuvres_.size() - 1,
+                         manœuvres_.end());
 }
 
 void FlightPlan::ForgetBefore(Instant const& time,
@@ -126,57 +146,82 @@ void FlightPlan::ForgetBefore(Instant const& time,
   // to keep.
   segments_.erase(segments_.cbegin(),
                   segments_.cbegin() + *first_to_keep);
-  // For some reason manœuvres_.erase() doesn't work because it wants to
-  // copy, hence this dance.
-  std::vector<NavigationManœuvre> m;
-  std::move(manœuvres_.begin() + *first_to_keep / 2,
-            manœuvres_.end(),
-            std::back_inserter(m));
-  manœuvres_.swap(m);
+  manœuvres_.erase(manœuvres_.cbegin(),
+                   manœuvres_.cbegin() + *first_to_keep / 2);
 
   auto const root_begin = root_->Begin();
   initial_time_ = root_begin.time();
   initial_degrees_of_freedom_ = root_begin.degrees_of_freedom();
 }
 
-void FlightPlan::RemoveLast() {
+Status FlightPlan::RemoveLast() {
   CHECK(!manœuvres_.empty());
   manœuvres_.pop_back();
   PopLastSegment();  // Last coast.
   PopLastSegment();  // Last burn.
+  // Clear and recompute the last coast.
   ResetLastSegment();
-  CoastLastSegment(desired_final_time_);
+  return ComputeSegments(manœuvres_.end(), manœuvres_.end());
 }
 
-bool FlightPlan::ReplaceLast(Burn burn) {
-  CHECK(!manœuvres_.empty());
-  auto manœuvre = MakeNavigationManœuvre(std::move(burn),
-                                         manœuvres_.back().initial_mass());
-  if (manœuvre.FitsBetween(start_of_penultimate_coast(), desired_final_time_) &&
-      !manœuvre.IsSingular()) {
-    DiscreteTrajectory<Barycentric>* recomputed_penultimate_coast =
-        CoastIfReachesManœuvreInitialTime(penultimate_coast(), manœuvre);
-    if (recomputed_penultimate_coast != nullptr) {
-      manœuvres_.pop_back();
-      PopLastSegment();  // Last coast.
-      PopLastSegment();  // Last burn.
-      ReplaceLastSegment(recomputed_penultimate_coast);
-      Append(std::move(manœuvre));
-      return true;
-    }
+Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
+                           int const index) {
+  CHECK_LE(0, index);
+  CHECK_LT(index, number_of_manœuvres());
+  NavigationManœuvre const manœuvre(manœuvres_[index].initial_mass(),
+                                    burn);
+  if (manœuvre.IsSingular()) {
+    return Singular();
   }
-  return false;
+  if (!manœuvre.FitsBetween(start_of_previous_coast(index),
+                            start_of_next_burn(index))) {
+    return DoesNotFit();
+  }
+
+  // Replace the manœuvre at position |index| and rebuild all the ones that
+  // follow as they may have a different initial mass.  Also pop the segments
+  // that we'll recompute.
+  manœuvres_[index] = manœuvre;
+  PopLastSegment();  // Last coast.
+  PopLastSegment();  // Last burn.
+
+  Mass initial_mass = manœuvre.final_mass();
+  for (int i = index + 1; i < manœuvres_.size(); ++i) {
+    manœuvres_[i] = NavigationManœuvre(initial_mass, manœuvres_[i].burn());
+    initial_mass = manœuvres_[i].final_mass();
+    PopLastSegment();  // Last coast.
+    PopLastSegment();  // Last burn.
+  }
+
+  // TODO(phl): Recompute as late as possible.
+  // At this point the last coast is the one to which |manœuvre| gets attached.
+  // Clear it and recompute everything that follows.
+  ResetLastSegment();
+  return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
 }
 
-bool FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
-  if (start_of_last_coast() > desired_final_time) {
-    return false;
-  } else {
-    desired_final_time_ = desired_final_time;
-    ResetLastSegment();
-    CoastLastSegment(desired_final_time_);
-    return true;
+Status FlightPlan::ReplaceLast(NavigationManœuvre::Burn const& burn) {
+  return Replace(burn, manœuvres_.size() - 1);
+}
+
+Status FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
+  if (desired_final_time < start_of_last_coast()) {
+    return BadDesiredFinalTime();
   }
+  desired_final_time_ = desired_final_time;
+  // Reset the last coast and recompute it.
+  ResetLastSegment();
+  return ComputeSegments(manœuvres_.end(), manœuvres_.end());
+}
+
+Status FlightPlan::SetAdaptiveStepParameters(
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters,
+    Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+        generalized_adaptive_step_parameters) {
+  adaptive_step_parameters_ = adaptive_step_parameters;
+  generalized_adaptive_step_parameters_ = generalized_adaptive_step_parameters;
+  return RecomputeAllSegments();
 }
 
 Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -187,28 +232,6 @@ FlightPlan::adaptive_step_parameters() const {
 Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
 FlightPlan::generalized_adaptive_step_parameters() const {
   return generalized_adaptive_step_parameters_;
-}
-
-bool FlightPlan::SetAdaptiveStepParameters(
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters,
-    Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
-        generalized_adaptive_step_parameters) {
-  auto const original_adaptive_step_parameters = adaptive_step_parameters_;
-  auto const original_generalized_adaptive_step_parameters =
-      generalized_adaptive_step_parameters_;
-  adaptive_step_parameters_ = adaptive_step_parameters;
-  generalized_adaptive_step_parameters_ = generalized_adaptive_step_parameters;
-  if (RecomputeSegments()) {
-    return true;
-  } else {
-    // If the recomputation fails, leave this place as clean as we found it.
-    adaptive_step_parameters_ = original_adaptive_step_parameters;
-    generalized_adaptive_step_parameters_ =
-        original_generalized_adaptive_step_parameters;
-    CHECK(RecomputeSegments());
-    return false;
-  }
 }
 
 int FlightPlan::number_of_segments() const {
@@ -297,7 +320,9 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
   // We need to forcefully prolong, otherwise we might exceed the ephemeris
   // step limit while recomputing the segments and fail the check.
   flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_);
-  CHECK(flight_plan->RecomputeSegments()) << message.DebugString();
+  Status const status = flight_plan->RecomputeAllSegments();
+  CHECK_GE(2, flight_plan->anomalous_segments_)
+      << message.DebugString() << " " << status;
 
   return flight_plan;
 }
@@ -321,100 +346,103 @@ FlightPlan::FlightPlan()
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second) {}
 
-void FlightPlan::Append(NavigationManœuvre manœuvre) {
-  manœuvres_.emplace_back(std::move(manœuvre));
-  {
-    // Hide the moved-from |manœuvre|.
-    NavigationManœuvre& manœuvre = manœuvres_.back();
-    CHECK_EQ(manœuvre.initial_time(), segments_.back()->last().time());
-    manœuvre.set_coasting_trajectory(segments_.back());
-    AddSegment();
-    BurnLastSegment(manœuvre);
-    AddSegment();
-    CoastLastSegment(desired_final_time_);
-  }
-}
-
-bool FlightPlan::RecomputeSegments() {
+Status FlightPlan::RecomputeAllSegments() {
   // It is important that the segments be destroyed in (reverse chronological)
   // order of the forks.
   while (segments_.size() > 1) {
     PopLastSegment();
   }
   ResetLastSegment();
-  for (auto& manœuvre : manœuvres_) {
-    CoastLastSegment(manœuvre.initial_time());
-    manœuvre.set_coasting_trajectory(segments_.back());
-    AddSegment();
-    BurnLastSegment(manœuvre);
-    AddSegment();
-  }
-  CoastLastSegment(desired_final_time_);
-  return anomalous_segments_ <= 2;
+  return ComputeSegments(manœuvres_.begin(), manœuvres_.end());
 }
 
-void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
-  if (anomalous_segments_ > 0) {
-    return;
-  } else if (manœuvre.initial_time() < manœuvre.final_time()) {
-    if (manœuvre.is_inertially_fixed()) {
-      bool const reached_desired_final_time =
-          ephemeris_->FlowWithAdaptiveStep(
-              segments_.back(),
-              manœuvre.InertialIntrinsicAcceleration(),
-              manœuvre.final_time(),
-              adaptive_step_parameters_,
-              max_ephemeris_steps_per_frame,
-              /*last_point_only=*/false).ok();
-      if (!reached_desired_final_time) {
-        anomalous_segments_ = 1;
-      }
-    } else {
-      bool const reached_desired_final_time =
-          ephemeris_->FlowWithAdaptiveStep(
-              segments_.back(),
-              manœuvre.FrenetIntrinsicAcceleration(),
-              manœuvre.final_time(),
-              generalized_adaptive_step_parameters_,
-              max_ephemeris_steps_per_frame,
-              /*last_point_only=*/false).ok();
-      if (!reached_desired_final_time) {
-        anomalous_segments_ = 1;
-      }
-    }
-  }
-}
-
-void FlightPlan::CoastLastSegment(Instant const& desired_final_time) {
-  if (anomalous_segments_ > 0) {
-    return;
-  } else {
-    bool const reached_desired_final_time =
-        ephemeris_->FlowWithAdaptiveStep(
-                        segments_.back(),
-                        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-                        desired_final_time,
-                        adaptive_step_parameters_,
-                        max_ephemeris_steps_per_frame,
-                        /*last_point_only=*/false).ok();
-    if (!reached_desired_final_time) {
-      anomalous_segments_ = 1;
-    }
-  }
-}
-
-void FlightPlan::ReplaceLastSegment(
+Status FlightPlan::BurnSegment(
+    NavigationManœuvre const& manœuvre,
     not_null<DiscreteTrajectory<Barycentric>*> const segment) {
-  CHECK_EQ(segment->parent(), segments_.back()->parent());
-  CHECK_EQ(segment->Fork().time(), segments_.back()->Fork().time());
-  PopLastSegment();
-  // |segment| must not be anomalous, so it cannot not follow an anomalous
-  // segment.
-  CHECK_EQ(0, anomalous_segments_);
-  segments_.emplace_back(segment);
+  Instant const final_time = manœuvre.final_time();
+  if (manœuvre.initial_time() < final_time) {
+    if (manœuvre.is_inertially_fixed()) {
+      return ephemeris_->FlowWithAdaptiveStep(
+                             segment,
+                             manœuvre.InertialIntrinsicAcceleration(),
+                             final_time,
+                             adaptive_step_parameters_,
+                             max_ephemeris_steps_per_frame,
+                             /*last_point_only=*/false);
+    } else {
+      return ephemeris_->FlowWithAdaptiveStep(
+                             segment,
+                             manœuvre.FrenetIntrinsicAcceleration(),
+                             final_time,
+                             generalized_adaptive_step_parameters_,
+                             max_ephemeris_steps_per_frame,
+                             /*last_point_only=*/false);
+    }
+  } else {
+    return Status::OK;
+  }
 }
 
-void FlightPlan::AddSegment() {
+Status FlightPlan::CoastSegment(
+    Instant const& desired_final_time,
+    not_null<DiscreteTrajectory<Barycentric>*> const segment) {
+  return ephemeris_->FlowWithAdaptiveStep(
+                         segment,
+                         Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+                         desired_final_time,
+                         adaptive_step_parameters_,
+                         max_ephemeris_steps_per_frame,
+                         /*last_point_only=*/false);
+}
+
+Status FlightPlan::ComputeSegments(
+    std::vector<NavigationManœuvre>::iterator const begin,
+    std::vector<NavigationManœuvre>::iterator const end) {
+  CHECK(!segments_.empty());
+  if (anomalous_segments_ == 0) {
+    anomalous_status_ = Status::OK;
+  }
+  Status overall_status = anomalous_status_;
+  for (auto it = begin; it != end; ++it) {
+    auto& manœuvre = *it;
+    auto& coast = segments_.back();
+    manœuvre.set_coasting_trajectory(coast);
+
+    if (anomalous_segments_ == 0) {
+      Status const status = CoastSegment(manœuvre.initial_time(), coast);
+      if (!status.ok()) {
+        overall_status.Update(status);
+        anomalous_segments_ = 1;
+        anomalous_status_ = status;
+      }
+    }
+
+    AddLastSegment();
+
+    if (anomalous_segments_ == 0) {
+      auto& burn = segments_.back();
+      Status const status = BurnSegment(manœuvre, burn);
+      if (!status.ok()) {
+        overall_status.Update(status);
+        anomalous_segments_ = 1;
+        anomalous_status_ = status;
+      }
+    }
+
+    AddLastSegment();
+  }
+  if (anomalous_segments_ == 0) {
+    Status const status = CoastSegment(desired_final_time_, segments_.back());
+    if (!status.ok()) {
+      overall_status.Update(status);
+      anomalous_segments_ = 1;
+      anomalous_status_ = status;
+    }
+  }
+  return overall_status;
+}
+
+void FlightPlan::AddLastSegment() {
   segments_.emplace_back(segments_.back()->NewForkAtLast());
   if (anomalous_segments_ > 0) {
     ++anomalous_segments_;
@@ -424,8 +452,6 @@ void FlightPlan::AddSegment() {
 void FlightPlan::ResetLastSegment() {
   segments_.back()->ForgetAfter(segments_.back()->Fork().time());
   if (anomalous_segments_ == 1) {
-    // If there was one anomalous segment, it was the last one, which was
-    // anomalous because it ended early.  It is no longer anomalous.
     anomalous_segments_ = 0;
   }
 }
@@ -440,43 +466,18 @@ void FlightPlan::PopLastSegment() {
   }
 }
 
-DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
-    DiscreteTrajectory<Barycentric>& coast,
-    NavigationManœuvre const& manœuvre) {
-  DiscreteTrajectory<Barycentric>* recomputed_coast =
-      coast.parent()->NewForkWithoutCopy(coast.Fork().time());
-  bool const reached_manœuvre_initial_time =
-      ephemeris_->FlowWithAdaptiveStep(
-          recomputed_coast,
-          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          manœuvre.initial_time(),
-          adaptive_step_parameters_,
-          max_ephemeris_steps_per_frame,
-          /*last_point_only=*/false).ok();
-  if (!reached_manœuvre_initial_time) {
-    recomputed_coast->parent()->DeleteFork(recomputed_coast);
-  }
-  return recomputed_coast;
-}
-
 Instant FlightPlan::start_of_last_coast() const {
   return manœuvres_.empty() ? initial_time_ : manœuvres_.back().final_time();
 }
 
-Instant FlightPlan::start_of_penultimate_coast() const {
-  CHECK(!manœuvres_.empty());
-  return manœuvres_.size() == 1
-             ? initial_time_
-             : manœuvres_[manœuvres_.size() - 2].final_time();
+Instant FlightPlan::start_of_next_burn(int const index) const {
+  return index == manœuvres_.size() - 1
+             ? desired_final_time_
+             : manœuvres_[index + 1].initial_time();
 }
 
-DiscreteTrajectory<Barycentric>& FlightPlan::last_coast() {
-  return *segments_.back();
-}
-
-DiscreteTrajectory<Barycentric>& FlightPlan::penultimate_coast() {
-  // The penultimate coast is the antepenultimate segment.
-  return *segments_[segments_.size() - 3];
+Instant FlightPlan::start_of_previous_coast(int const index) const {
+  return index == 0 ? initial_time_ : manœuvres_[index - 1].final_time();
 }
 
 }  // namespace internal_flight_plan

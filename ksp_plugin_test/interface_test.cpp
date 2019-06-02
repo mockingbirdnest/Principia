@@ -53,7 +53,6 @@ using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
-using ksp_plugin::MakeNavigationManœuvre;
 using ksp_plugin::MockManœuvre;
 using ksp_plugin::MockPlugin;
 using ksp_plugin::MockRenderer;
@@ -149,6 +148,7 @@ class InterfaceTest : public testing::Test {
 
   InterfaceTest()
       : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
+        // Use PluginTest.Serialization to create these files.
         hexadecimal_simple_plugin_(ReadFromHexadecimalFile(
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex")),
         serialized_simple_plugin_(ReadFromBinaryFile(
@@ -200,8 +200,8 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__CelestialFromParent(plugin, celestial_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__LogFatal("a fatal error");
-  }, "a fatal error");
+    principia__LogFatal("a file", 1729, "a fatal error");
+  }, "a file:1729.*a fatal error");
 }
 
 TEST_F(InterfaceTest, InitGoogleLogging1) {
@@ -229,9 +229,9 @@ TEST_F(InterfaceDeathTest, ActivateRecorder) {
 }
 
 TEST_F(InterfaceTest, Log) {
-  principia__LogInfo("An info");
-  principia__LogWarning("A warning");
-  principia__LogError("An error");
+  principia__LogInfo("a file", 1, "An info");
+  principia__LogWarning("another file", 2, "A warning");
+  principia__LogError("yet another file", 3, "An error");
 }
 
 TEST_F(InterfaceTest, NewPlugin) {

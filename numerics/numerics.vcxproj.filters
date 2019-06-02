@@ -101,6 +101,15 @@
     <ClInclude Include="legendre_normalization_factor.mathematica.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="finite_difference.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="finite_difference_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="finite_difference.mathematica.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -149,6 +158,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="finite_difference_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

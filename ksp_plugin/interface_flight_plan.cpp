@@ -6,7 +6,6 @@
 #include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
-#include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/vessel.hpp"
@@ -55,13 +54,17 @@ using quantities::si::Tonne;
 
 namespace {
 
-ksp_plugin::Burn FromInterfaceBurn(Plugin const& plugin,
-                                   Burn const& burn) {
-  return {burn.thrust_in_kilonewtons * Kilo(Newton),
+NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
+                                           Burn const& burn) {
+  NavigationManœuvre::Intensity intensity;
+  intensity.Δv = FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v);
+  NavigationManœuvre::Timing timing;
+  timing.initial_time = FromGameTime(plugin, burn.initial_time);
+  return {intensity,
+          timing,
+          burn.thrust_in_kilonewtons * Kilo(Newton),
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
           NewNavigationFrame(plugin, burn.frame),
-          FromGameTime(plugin, burn.initial_time),
-          FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v),
           burn.is_inertially_fixed};
 }
 
@@ -74,10 +77,6 @@ FlightPlan& GetFlightPlan(Plugin const& plugin,
 
 Burn GetBurn(Plugin const& plugin,
              NavigationManœuvre const& manœuvre) {
-  Velocity<Frenet<NavigationFrame>> const Δv =
-      manœuvre.Δv() == Speed() ? Velocity<Frenet<NavigationFrame>>()
-                               : manœuvre.Δv() * manœuvre.direction();
-
   // When building the parameters, make sure that the "optional" fields get a
   // deterministic default.
   NavigationFrameParameters parameters;
@@ -149,7 +148,7 @@ Burn GetBurn(Plugin const& plugin,
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
           ToGameTime(plugin, manœuvre.initial_time()),
-          ToXYZ(Δv),
+          ToXYZ(manœuvre.Δv()),
           manœuvre.is_inertially_fixed()};
 }
 
@@ -175,8 +174,20 @@ bool principia__FlightPlanAppend(Plugin const* const plugin,
                                  Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
   CHECK_NOTNULL(plugin);
-  return m.Return(GetFlightPlan(*plugin, vessel_guid).
-                      Append(FromInterfaceBurn(*plugin, burn)));
+
+  // NOTE(phl): Preserving the previous semantics of FlightPlan.
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  base::Status const status =
+      flight_plan.Append(FromInterfaceBurn(*plugin, burn));
+  if (status.error() == FlightPlan::singular ||
+      status.error() == FlightPlan::does_not_fit) {
+    return m.Return(false);
+  } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() == 0) {
+    return m.Return(true);
+  } else {
+    flight_plan.RemoveLast();
+    return m.Return(false);
+  }
 }
 
 void principia__FlightPlanCreate(Plugin const* const plugin,
@@ -452,8 +463,24 @@ bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
                                                      vessel_guid,
                                                      burn});
   CHECK_NOTNULL(plugin);
-  return m.Return(GetFlightPlan(*plugin, vessel_guid).
-                      ReplaceLast(FromInterfaceBurn(*plugin, burn)));
+
+  // NOTE(phl): Preserving the previous semantics of FlightPlan.
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  auto const manœuvre =
+      flight_plan.GetManœuvre(flight_plan.number_of_manœuvres() - 1);
+  base::Status const status =
+      flight_plan.ReplaceLast(FromInterfaceBurn(*plugin, burn));
+  if (status.error() == FlightPlan::singular ||
+      status.error() == FlightPlan::does_not_fit) {
+    return m.Return(false);
+  } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() == 0) {
+    return m.Return(true);
+  } else {
+    // The last manœuvre is broken.  Roll it back.
+    flight_plan.RemoveLast();
+    flight_plan.Append(manœuvre.burn());
+    return m.Return(false);
+  }
 }
 
 bool principia__FlightPlanSetAdaptiveStepParameters(
@@ -466,9 +493,23 @@ bool principia__FlightPlanSetAdaptiveStepParameters(
   CHECK_NOTNULL(plugin);
   auto const parameters = FromFlightPlanAdaptiveStepParameters(
       flight_plan_adaptive_step_parameters);
-  return m.Return(
-    GetFlightPlan(*plugin, vessel_guid).
-        SetAdaptiveStepParameters(parameters.first, parameters.second));
+
+  // NOTE(phl): Preserving the previous semantics of FlightPlan.
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  auto const adaptive_step_parameters =
+      flight_plan.adaptive_step_parameters();
+  auto const generalized_adaptive_step_parameters =
+      flight_plan.generalized_adaptive_step_parameters();
+  base::Status const status =
+      flight_plan.SetAdaptiveStepParameters(parameters.first,
+                                            parameters.second);
+  if (status.ok()) {
+    return m.Return(true);
+  } else {
+    flight_plan.SetAdaptiveStepParameters(adaptive_step_parameters,
+                                          generalized_adaptive_step_parameters);
+    return m.Return(false);
+  }
 }
 
 bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
@@ -478,8 +519,12 @@ bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
                                                              vessel_guid,
                                                              final_time});
   CHECK_NOTNULL(plugin);
-  return m.Return(GetFlightPlan(*plugin, vessel_guid).
-                      SetDesiredFinalTime(FromGameTime(*plugin, final_time)));
+
+  // NOTE(phl): Preserving the previous semantics of FlightPlan.
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  base::Status const status =
+      flight_plan.SetDesiredFinalTime(FromGameTime(*plugin, final_time));
+  return m.Return(status.error() != FlightPlan::bad_desired_final_time);
 }
 
 }  // namespace interface

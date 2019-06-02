@@ -73,7 +73,7 @@ class GeodesyTest : public ::testing::Test {
         earth_trajectory_(*ephemeris_->trajectory(earth_)),
         itrs_(ephemeris_.get(), earth_) {}
 
-  SolarSystem<ICRS> solar_system_2010_;
+  SolarSystem<ICRS> const solar_system_2010_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<OblateBody<ICRS> const*> const earth_;
   ContinuousTrajectory<ICRS> const& earth_trajectory_;
@@ -106,19 +106,21 @@ TEST_F(GeodesyTest, LAGEOS2) {
   StandardProduct3::SatelliteIdentifier const lageos2_id{
       StandardProduct3::SatelliteGroup::General, 52};
 
-  CHECK_EQ(initial_ilrsa.orbit(lageos2_id).Begin().time(),
-           initial_ilrsb.orbit(lageos2_id).Begin().time());
+  CHECK_EQ(initial_ilrsa.orbit(lageos2_id).front()->Begin().time(),
+           initial_ilrsb.orbit(lageos2_id).front()->Begin().time());
 
-  Instant const initial_time = initial_ilrsa.orbit(lageos2_id).Begin().time();
+  Instant const initial_time =
+      initial_ilrsa.orbit(lageos2_id).front()->Begin().time();
   DegreesOfFreedom<ITRS> const initial_dof_ilrsa =
-      initial_ilrsa.orbit(lageos2_id).Begin().degrees_of_freedom();
+      initial_ilrsa.orbit(lageos2_id).front()->Begin().degrees_of_freedom();
 
   DegreesOfFreedom<ITRS> const initial_dof_ilrsb =
-      initial_ilrsb.orbit(lageos2_id).Begin().degrees_of_freedom();
+      initial_ilrsb.orbit(lageos2_id).front()->Begin().degrees_of_freedom();
 
-  Instant const final_time = final_ilrsa.orbit(lageos2_id).Begin().time();
+  Instant const final_time =
+      final_ilrsa.orbit(lageos2_id).front()->Begin().time();
   DegreesOfFreedom<ITRS> const expected_final_dof =
-      final_ilrsa.orbit(lageos2_id).Begin().degrees_of_freedom();
+      final_ilrsa.orbit(lageos2_id).front()->Begin().degrees_of_freedom();
 
   ephemeris_->Prolong(final_time);
 
@@ -217,23 +219,23 @@ TEST_F(GeodesyTest, LAGEOS2) {
                             primary_actual_final_dof.position()),
               AnyOf(IsNear(237 * Metre),    // Linux.
                     IsNear(28 * Metre),     // No FMA.
-				    IsNear(2.4 * Metre),    // VS 2019
-                    IsNear(8.0 * Metre)));  // FMA.
+                    IsNear(2.4 * Metre),    // VS 2019
+                    IsNear(98 * Metre)));  // FMA.
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
-						   primary_actual_final_dof.position() - ITRS::origin),
-			  AnyOf(IsNear(4.0* ArcSecond),   // Linux.
-				    IsNear(0.47* ArcSecond),    // No FMA.
-					IsNear(0.13* ArcSecond),    // FMA.
-					IsNear(0.04* ArcSecond)));  // VS 2019
+                           primary_actual_final_dof.position() - ITRS::origin),
+                AnyOf(IsNear(4.0 * ArcSecond),   // Linux.
+                      IsNear(0.47 * ArcSecond),    // No FMA.
+                      IsNear(1.6 * ArcSecond),    // FMA.
+                      IsNear(0.04 * ArcSecond)));  // VS 2019
   // Radial error at the geocentre.
   EXPECT_THAT(AbsoluteError(
                   (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
                   (primary_actual_final_dof.position() - ITRS::origin).Norm()),
               AnyOf(IsNear(99 * Centi(Metre)),     // Linux.
                     IsNear(11 * Centi(Metre)),     // No FMA.
-				    IsNear(2.4 * Centi(Metre)),    // VS 2019
-                    IsNear(1.2 * Centi(Metre))));  // FMA.
+                    IsNear(2.4 * Centi(Metre)),    // VS 2019
+                    IsNear(43 * Centi(Metre))));  // FMA.
 }
 
 #endif

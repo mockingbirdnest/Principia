@@ -16,15 +16,17 @@ namespace principia {
 using base::GetLine;
 using base::HexadecimalEncoder;
 using base::UniqueArray;
+using interface::principia__ActivatePlayer;
 
 namespace journal {
 
 Player::Player(std::filesystem::path const& path)
     : stream_(path, std::ios::in) {
+  principia__ActivatePlayer();
   CHECK(!stream_.fail());
 }
 
-bool Player::Play() {
+bool Player::Play(int const index) {
   std::unique_ptr<serialization::Method> method_in = Read();
   if (method_in == nullptr) {
     // End of input file.
@@ -37,8 +39,9 @@ bool Player::Play() {
   }
 
 #if 0
-  LOG(ERROR) << "\n" << method_in->ShortDebugString() << "\n"
-             << method_out_return->ShortDebugString();
+  LOG_IF(ERROR, index > 3170000) << "index: " << index << "\n"
+                                 << method_in->ShortDebugString() << "\n"
+                                 << method_out_return->ShortDebugString();
 #endif
 
   auto const before = std::chrono::system_clock::now();

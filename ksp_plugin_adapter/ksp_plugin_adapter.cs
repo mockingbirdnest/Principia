@@ -156,6 +156,7 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, QP>();
 
   private MapNodePool map_node_pool_;
+  private ManeuverNode guidance_node_;
 
   // UI for the apocalypse notification.
   [KSPField(isPersistant = true)]
@@ -197,14 +198,15 @@ public partial class PrincipiaPluginAdapter
         Versioning.version_minor != 3 ||
         Versioning.Revision != 1) {
       string expected_version = "1.3.1";
-#elif KSP_VERSION_1_6_1
+#elif KSP_VERSION_1_7_0
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 4 &&
            (Versioning.Revision >= 1 && Versioning.Revision <= 5)) ||
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||
-          (Versioning.version_minor == 6 && Versioning.Revision == 1))) {
+          (Versioning.version_minor == 6 && Versioning.Revision == 1) ||
+          (Versioning.version_minor == 7 && Versioning.Revision == 0))) {
       string expected_version =
-          "1.6.1, 1.5.1, 1.4.5, 1.4.4, 1.4.3, 1.4.2, and 1.4.1";
+          "1.7.0, 1.6.1, 1.5.1, 1.4.5, 1.4.4, 1.4.3, 1.4.2, and 1.4.1";
 #endif
       Log.Fatal("Unexpected KSP version " + Versioning.version_major + "." +
                 Versioning.version_minor + "." + Versioning.Revision +
@@ -454,7 +456,7 @@ public partial class PrincipiaPluginAdapter
         path;
     if (File.Exists(full_path)) {
       var texture2d = new UnityEngine.Texture2D(2, 2);
-#if KSP_VERSION_1_6_1
+#if KSP_VERSION_1_7_0
       bool success = UnityEngine.ImageConversion.LoadImage(
           texture2d, File.ReadAllBytes(full_path));
 #elif KSP_VERSION_1_3_1
@@ -602,9 +604,6 @@ public partial class PrincipiaPluginAdapter
         serialization_encoding_ = "base64";
       }
 
-      flight_planner_.Initialize(plugin_);
-      plotting_frame_selector_.Initialize(plugin_);
-      main_window_.Initialize(plugin_);
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
 
@@ -691,109 +690,9 @@ public partial class PrincipiaPluginAdapter
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null) {
-      if (navball_ == null) {
-        navball_ = (KSP.UI.Screens.Flight.NavBall)FindObjectOfType(
-                       typeof(KSP.UI.Screens.Flight.NavBall));
-      }
-      var navball_material =
-          navball_.navBall.GetComponent<UnityEngine.Renderer>().material;
-
-      if (compass_navball_texture_ == null) {
-        compass_navball_texture_ = navball_material.GetTexture("_MainTexture");
-      }
-
-      Action<UnityEngine.Texture> set_navball_texture = (texture) =>
-          navball_material.SetTexture("_MainTexture", texture);
-
+      RenderNavball(active_vessel);
       if (!PluginRunning()) {
         return;
-      }
-
-      var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
-      if (FlightGlobals.speedDisplayMode ==
-              FlightGlobals.SpeedDisplayModes.Target &&
-          target_vessel != null &&
-          plugin_.HasVessel(target_vessel.id.ToString())) {
-        plugin_.SetTargetVessel(target_vessel.id.ToString(),
-                                plotting_frame_selector_
-                                    .selected_celestial.flightGlobalsIndex);
-        if (plotting_frame_selector_.target_override != target_vessel) {
-          navball_changed_ = true;
-          plotting_frame_selector_.target_override = target_vessel;
-        }
-      } else {
-        plugin_.ClearTargetVessel();
-        if (plotting_frame_selector_.target_override != null) {
-          navball_changed_ = true;
-          plotting_frame_selector_.target_override = null;
-        }
-      }
-
-      // Orient the ball.
-      navball_.navBall.rotation =
-          (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
-          (UnityEngine.QuaternionD)plugin_.NavballOrientation(
-              (XYZ)Planetarium.fetch.Sun.position,
-              (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
-
-      if (previous_display_mode_ != FlightGlobals.speedDisplayMode) {
-        navball_changed_ = true;
-        previous_display_mode_ = FlightGlobals.speedDisplayMode;
-        // The navball speed display mode was changed, change the reference
-        // frame accordingly.
-        switch (FlightGlobals.speedDisplayMode) {
-          case FlightGlobals.SpeedDisplayModes.Surface:
-            plotting_frame_selector_.SetFrameType(
-                ReferenceFrameSelector.FrameType.BODY_SURFACE);
-            break;
-          case FlightGlobals.SpeedDisplayModes.Orbit:
-            plotting_frame_selector_.SetFrameType(
-                last_non_surface_frame_type_);
-            break;
-        }
-      }
-
-      if (navball_changed_ && previous_display_mode_ != null) {
-        // Texture the ball.
-        navball_changed_ = false;
-        if (plotting_frame_selector_.target_override) {
-          set_navball_texture(target_navball_texture_);
-        } else {
-          // If we are targeting an unmanageable vessel, keep the navball in
-          // target mode; otherwise, put it in the mode that reflects the
-          // plotting frame.
-          if (FlightGlobals.speedDisplayMode !=
-              FlightGlobals.SpeedDisplayModes.Target) {
-            if (plotting_frame_selector_.frame_type ==
-                    ReferenceFrameSelector.FrameType.BODY_SURFACE) {
-              if (FlightGlobals.speedDisplayMode !=
-                  FlightGlobals.SpeedDisplayModes.Surface) {
-                FlightGlobals.SetSpeedMode(
-                    FlightGlobals.SpeedDisplayModes.Surface);
-              }
-            } else {
-              if (FlightGlobals.speedDisplayMode !=
-                  FlightGlobals.SpeedDisplayModes.Orbit) {
-                FlightGlobals.SetSpeedMode(
-                    FlightGlobals.SpeedDisplayModes.Orbit);
-              }
-            }
-          }
-          switch (plotting_frame_selector_.frame_type) {
-            case ReferenceFrameSelector.FrameType.BODY_SURFACE:
-              set_navball_texture(surface_navball_texture_);
-              break;
-            case ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING:
-              set_navball_texture(inertial_navball_texture_);
-              break;
-            case ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING:
-              set_navball_texture(barycentric_navball_texture_);
-              break;
-            case ReferenceFrameSelector.FrameType.BODY_CENTRED_PARENT_DIRECTION:
-              set_navball_texture(body_direction_navball_texture_);
-              break;
-          }
-        }
       }
 
       // Design for compatibility with FAR: if we are in surface mode in an
@@ -1192,8 +1091,7 @@ public partial class PrincipiaPluginAdapter
     // Advance the lagging vessels and kill those which collided with a
     // celestial.
     {
-      DisposableIterator collided_vessels;
-      plugin_.CatchUpLaggingVessels(out collided_vessels);
+      plugin_.CatchUpLaggingVessels(out DisposableIterator collided_vessels);
       for (; !collided_vessels.IteratorAtEnd();
             collided_vessels.IteratorIncrement()) {
         Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
@@ -1535,6 +1433,192 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void RenderGuidance(Vessel active_vessel) {
+    string vessel_guid = active_vessel.id.ToString();
+    if (plugin_.HasVessel(vessel_guid) &&
+        plugin_.FlightPlanExists(vessel_guid)) {
+      // Here the vessel is known to the plugin and has a flight plan.
+      // This duplicates a bit of code in FlightPlanner.
+      // UpdateVesselAndBurnEditors but it's probably not worth factoring out.
+      double current_time = plugin_.CurrentTime();
+      int number_of_manoeuvres =
+          plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
+      int? first_future_manoeuvre_index = null;
+      for (int i = 0; i < number_of_manoeuvres; ++i) {
+        NavigationManoeuvre manoeuvre =
+            plugin_.FlightPlanGetManoeuvre(vessel_guid, i);
+        if (current_time < manoeuvre.final_time) {
+          first_future_manoeuvre_index = i;
+          break;
+        }
+      }
+      if (first_future_manoeuvre_index.HasValue) {
+        // Here the flight plan has a manoeuvre in the future.
+        XYZ guidance = plugin_.FlightPlanGetGuidance(
+                           vessel_guid,
+                           first_future_manoeuvre_index.Value);
+        Burn burn = plugin_.FlightPlanGetManoeuvre(
+                        vessel_guid,
+                        first_future_manoeuvre_index.Value).burn;
+        if (flight_planner_.show_guidance &&
+            !double.IsNaN(guidance.x + guidance.y + guidance.z)) {
+          // The user wants to show the guidance node, and that node was
+          // properly computed by the C++ code.
+          PatchedConicSolver solver = active_vessel.patchedConicSolver;
+          if (guidance_node_ == null ||
+              !solver.maneuverNodes.Contains(guidance_node_)) {
+            while (solver.maneuverNodes.Count > 0) {
+              solver.maneuverNodes.Last().RemoveSelf();
+            }
+            guidance_node_ = solver.AddManeuverNode(burn.initial_time);
+          } else {
+            while (solver.maneuverNodes.Count > 1) {
+              if (solver.maneuverNodes.First() == guidance_node_) {
+                solver.maneuverNodes.Last().RemoveSelf();
+              } else {
+                solver.maneuverNodes.First().RemoveSelf();
+              }
+            }
+          }
+          var stock_orbit = guidance_node_.patch;
+          Vector3d stock_velocity_at_node_time =
+              stock_orbit.getOrbitalVelocityAtUT(burn.initial_time).xzy;
+          Vector3d stock_displacement_from_parent_at_node_time =
+              stock_orbit.getRelativePositionAtUT(burn.initial_time).xzy;
+          UnityEngine.Quaternion stock_frenet_frame_to_world =
+              UnityEngine.Quaternion.LookRotation(
+                  stock_velocity_at_node_time,
+                  Vector3d.Cross(
+                      stock_velocity_at_node_time,
+                      stock_displacement_from_parent_at_node_time));
+          guidance_node_.DeltaV =
+              ((Vector3d)burn.delta_v).magnitude *
+               (Vector3d)(UnityEngine.Quaternion.Inverse(
+                              stock_frenet_frame_to_world) *
+               (Vector3d)guidance);
+          guidance_node_.UT = burn.initial_time;
+          solver.UpdateFlightPlan();
+          // Return here after setting the guidance node.  All other paths will
+          // clear the guidance node.
+          return;
+        }
+      }
+    }
+    if (guidance_node_ != null) {
+      guidance_node_.RemoveSelf();
+      guidance_node_ = null;
+    }
+  }
+
+  private void RenderNavball(Vessel active_vessel) {
+    if (navball_ == null) {
+      navball_ = (KSP.UI.Screens.Flight.NavBall)FindObjectOfType(
+                      typeof(KSP.UI.Screens.Flight.NavBall));
+    }
+    var navball_material =
+        navball_.navBall.GetComponent<UnityEngine.Renderer>().material;
+
+    if (compass_navball_texture_ == null) {
+      compass_navball_texture_ = navball_material.GetTexture("_MainTexture");
+    }
+
+    Action<UnityEngine.Texture> set_navball_texture = (texture) =>
+        navball_material.SetTexture("_MainTexture", texture);
+
+    if (!PluginRunning()) {
+      return;
+    }
+
+    var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
+    if (FlightGlobals.speedDisplayMode ==
+            FlightGlobals.SpeedDisplayModes.Target &&
+        target_vessel != null &&
+        plugin_.HasVessel(target_vessel.id.ToString())) {
+      plugin_.SetTargetVessel(target_vessel.id.ToString(),
+                              plotting_frame_selector_
+                                  .selected_celestial.flightGlobalsIndex);
+      if (plotting_frame_selector_.target_override != target_vessel) {
+        navball_changed_ = true;
+        plotting_frame_selector_.target_override = target_vessel;
+      }
+    } else {
+      plugin_.ClearTargetVessel();
+      if (plotting_frame_selector_.target_override != null) {
+        navball_changed_ = true;
+        plotting_frame_selector_.target_override = null;
+      }
+    }
+
+    // Orient the ball.
+    navball_.navBall.rotation =
+        (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
+        (UnityEngine.QuaternionD)plugin_.NavballOrientation(
+            (XYZ)Planetarium.fetch.Sun.position,
+            (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
+
+    if (previous_display_mode_ != FlightGlobals.speedDisplayMode) {
+      navball_changed_ = true;
+      previous_display_mode_ = FlightGlobals.speedDisplayMode;
+      // The navball speed display mode was changed, change the reference
+      // frame accordingly.
+      switch (FlightGlobals.speedDisplayMode) {
+        case FlightGlobals.SpeedDisplayModes.Surface:
+          plotting_frame_selector_.SetFrameType(
+              ReferenceFrameSelector.FrameType.BODY_SURFACE);
+          break;
+        case FlightGlobals.SpeedDisplayModes.Orbit:
+          plotting_frame_selector_.SetFrameType(
+              last_non_surface_frame_type_);
+          break;
+      }
+    }
+
+    if (navball_changed_ && previous_display_mode_ != null) {
+      // Texture the ball.
+      navball_changed_ = false;
+      if (plotting_frame_selector_.target_override) {
+        set_navball_texture(target_navball_texture_);
+      } else {
+        // If we are targeting an unmanageable vessel, keep the navball in
+        // target mode; otherwise, put it in the mode that reflects the
+        // plotting frame.
+        if (FlightGlobals.speedDisplayMode !=
+            FlightGlobals.SpeedDisplayModes.Target) {
+          if (plotting_frame_selector_.frame_type ==
+                  ReferenceFrameSelector.FrameType.BODY_SURFACE) {
+            if (FlightGlobals.speedDisplayMode !=
+                FlightGlobals.SpeedDisplayModes.Surface) {
+              FlightGlobals.SetSpeedMode(
+                  FlightGlobals.SpeedDisplayModes.Surface);
+            }
+          } else {
+            if (FlightGlobals.speedDisplayMode !=
+                FlightGlobals.SpeedDisplayModes.Orbit) {
+              FlightGlobals.SetSpeedMode(
+                  FlightGlobals.SpeedDisplayModes.Orbit);
+            }
+          }
+        }
+        switch (plotting_frame_selector_.frame_type) {
+          case ReferenceFrameSelector.FrameType.BODY_SURFACE:
+            set_navball_texture(surface_navball_texture_);
+            break;
+          case ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING:
+            set_navball_texture(inertial_navball_texture_);
+            break;
+          case ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING:
+            set_navball_texture(barycentric_navball_texture_);
+            break;
+          case ReferenceFrameSelector.FrameType.BODY_CENTRED_PARENT_DIRECTION:
+            set_navball_texture(body_direction_navball_texture_);
+            break;
+        }
+      }
+    }
+
+    RenderGuidance(active_vessel);
+  }
+
   private void SetNavballVector(UnityEngine.Transform vector,
                                 Vector3d direction) {
      vector.localPosition = (UnityEngine.QuaternionD)navball_.attitudeGymbal *
@@ -1767,9 +1851,9 @@ public partial class PrincipiaPluginAdapter
                             position_at_start +
                                 scale * (Vector3d)world_direction);
                       };
-                  add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
-                  add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
-                  add_vector(manoeuvre.binormal, XKCDColors.PurplePink);
+                  add_vector(manoeuvre.tangent, Style.Tangent);
+                  add_vector(manoeuvre.normal, Style.Normal);
+                  add_vector(manoeuvre.binormal, Style.Binormal);
                 }
               }
             }
@@ -1783,83 +1867,68 @@ public partial class PrincipiaPluginAdapter
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_override) {
       Vessel target = plotting_frame_selector_.target_override;
-      DisposableIterator ascending_nodes_iterator;
-      DisposableIterator descending_nodes_iterator;
-      DisposableIterator approaches_iterator;
-      plugin_.RenderedPredictionNodes(vessel_guid,
-                                      sun_world_position,
-                                      out ascending_nodes_iterator,
-                                      out descending_nodes_iterator);
-      plugin_.RenderedPredictionClosestApproaches(vessel_guid,
-                                                  sun_world_position,
-                                                  out approaches_iterator);
+      plugin_.RenderedPredictionNodes(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator ascending_nodes_iterator,
+          out DisposableIterator descending_nodes_iterator);
+      plugin_.RenderedPredictionClosestApproaches(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator approaches_iterator);
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.PREDICTION,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.PREDICTION,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.PREDICTION,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.FixedBodies()) {
-        DisposableIterator apoapsis_iterator;
-        DisposableIterator periapsis_iterator;
-        plugin_.RenderedPredictionApsides(vessel_guid,
-                                          celestial.flightGlobalsIndex,
-                                          sun_world_position,
-                                          out apoapsis_iterator,
-                                          out periapsis_iterator);
+        plugin_.RenderedPredictionApsides(
+            vessel_guid,
+            celestial.flightGlobalsIndex,
+            sun_world_position,
+            out DisposableIterator apoapsis_iterator,
+            out DisposableIterator periapsis_iterator);
         map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
             MapNodePool.NodeSource.PREDICTION,
-            vessel    : null,
-            celestial : celestial);
+            plotting_frame_selector_);
         map_node_pool_.RenderMarkers(
             periapsis_iterator,
             MapObject.ObjectType.Periapsis,
             MapNodePool.NodeSource.PREDICTION,
-            vessel    : null,
-            celestial : celestial);
+            plotting_frame_selector_);
       }
       var frame_type = plotting_frame_selector_.frame_type;
-      if (frame_type ==
-              ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING ||
-          frame_type == ReferenceFrameSelector.FrameType
-                            .BODY_CENTRED_PARENT_DIRECTION) {
-        var primary =
-            plotting_frame_selector_.selected_celestial.referenceBody;
-        DisposableIterator ascending_nodes_iterator;
-        DisposableIterator descending_nodes_iterator;
-        plugin_.RenderedPredictionNodes(vessel_guid,
-                                        sun_world_position,
-                                        out ascending_nodes_iterator,
-                                        out descending_nodes_iterator);
-        map_node_pool_.RenderMarkers(
-            ascending_nodes_iterator,
-            MapObject.ObjectType.AscendingNode,
-            MapNodePool.NodeSource.PREDICTION,
-            vessel    : null,
-            celestial : primary);
-        map_node_pool_.RenderMarkers(
-            descending_nodes_iterator,
-            MapObject.ObjectType.DescendingNode,
-            MapNodePool.NodeSource.PREDICTION,
-            vessel    : null,
-            celestial : primary);
-      }
+      var primary =
+          plotting_frame_selector_.selected_celestial.referenceBody;
+      plugin_.RenderedPredictionNodes(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator ascending_nodes_iterator,
+          out DisposableIterator descending_nodes_iterator);
+      map_node_pool_.RenderMarkers(
+          ascending_nodes_iterator,
+          MapObject.ObjectType.AscendingNode,
+          MapNodePool.NodeSource.PREDICTION,
+          plotting_frame_selector_);
+      map_node_pool_.RenderMarkers(
+          descending_nodes_iterator,
+          MapObject.ObjectType.DescendingNode,
+          MapNodePool.NodeSource.PREDICTION,
+          plotting_frame_selector_);
     }
   }
 
@@ -1867,83 +1936,67 @@ public partial class PrincipiaPluginAdapter
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_override) {
       Vessel target = plotting_frame_selector_.target_override;
-      DisposableIterator ascending_nodes_iterator;
-      DisposableIterator descending_nodes_iterator;
-      DisposableIterator approaches_iterator;
-      plugin_.FlightPlanRenderedNodes(vessel_guid,
-                                      sun_world_position,
-                                      out ascending_nodes_iterator,
-                                      out descending_nodes_iterator);
-      plugin_.FlightPlanRenderedClosestApproaches(vessel_guid,
-                                                  sun_world_position,
-                                                  out approaches_iterator);
+      plugin_.FlightPlanRenderedNodes(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator ascending_nodes_iterator,
+          out DisposableIterator descending_nodes_iterator);
+      plugin_.FlightPlanRenderedClosestApproaches(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator approaches_iterator);
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.FLIGHT_PLAN,
-          vessel    : target,
-          celestial : plotting_frame_selector_.selected_celestial);
+          plotting_frame_selector_);
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.FixedBodies()) {
-        DisposableIterator apoapsis_iterator;
-        DisposableIterator periapsis_iterator;
-        plugin_.FlightPlanRenderedApsides(vessel_guid,
-                                          celestial.flightGlobalsIndex,
-                                          sun_world_position,
-                                          out apoapsis_iterator,
-                                          out periapsis_iterator);
+        plugin_.FlightPlanRenderedApsides(
+            vessel_guid,
+            celestial.flightGlobalsIndex,
+            sun_world_position,
+            out DisposableIterator apoapsis_iterator,
+            out DisposableIterator periapsis_iterator);
         map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
             MapNodePool.NodeSource.FLIGHT_PLAN,
-            vessel    : null,
-            celestial : celestial);
+            plotting_frame_selector_);
         map_node_pool_.RenderMarkers(
             periapsis_iterator,
             MapObject.ObjectType.Periapsis,
             MapNodePool.NodeSource.FLIGHT_PLAN,
-            vessel    : null,
-            celestial : celestial);
+            plotting_frame_selector_);
       }
-      var frame_type = plotting_frame_selector_.frame_type;
-      if (frame_type ==
-              ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING ||
-          frame_type == ReferenceFrameSelector.FrameType
-                            .BODY_CENTRED_PARENT_DIRECTION) {
-        var primary =
-            plotting_frame_selector_.selected_celestial.referenceBody;
-        DisposableIterator ascending_nodes_iterator;
-        DisposableIterator descending_nodes_iterator;
-        plugin_.FlightPlanRenderedNodes(vessel_guid,
-                                        sun_world_position,
-                                        out ascending_nodes_iterator,
-                                        out descending_nodes_iterator);
-        map_node_pool_.RenderMarkers(
-            ascending_nodes_iterator,
-            MapObject.ObjectType.AscendingNode,
-            MapNodePool.NodeSource.FLIGHT_PLAN,
-            vessel    : null,
-            celestial : primary);
-        map_node_pool_.RenderMarkers(
-            descending_nodes_iterator,
-            MapObject.ObjectType.DescendingNode,
-            MapNodePool.NodeSource.FLIGHT_PLAN,
-            vessel    : null,
-            celestial : primary);
-      }
+      var primary =
+          plotting_frame_selector_.selected_celestial.referenceBody;
+      plugin_.FlightPlanRenderedNodes(
+          vessel_guid,
+          sun_world_position,
+          out DisposableIterator ascending_nodes_iterator,
+          out DisposableIterator descending_nodes_iterator);
+      map_node_pool_.RenderMarkers(
+          ascending_nodes_iterator,
+          MapObject.ObjectType.AscendingNode,
+          MapNodePool.NodeSource.FLIGHT_PLAN,
+          plotting_frame_selector_);
+      map_node_pool_.RenderMarkers(
+          descending_nodes_iterator,
+          MapObject.ObjectType.DescendingNode,
+          MapNodePool.NodeSource.FLIGHT_PLAN,
+          plotting_frame_selector_);
     }
   }
 
@@ -2103,9 +2156,6 @@ public partial class PrincipiaPluginAdapter
       plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
                           Planetarium.InverseRotAngle);
     }
-    flight_planner_.Initialize(plugin_);
-    plotting_frame_selector_.Initialize(plugin_);
-    main_window_.Initialize(plugin_);
     must_set_plotting_frame_ = true;
   } catch (Exception e) {
     Log.Fatal("Exception while resetting plugin: " + e.ToString());

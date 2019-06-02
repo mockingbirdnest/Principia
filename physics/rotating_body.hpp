@@ -72,8 +72,10 @@ class RotatingBody : public MassiveBody {
   Vector<double, Frame> const& polar_axis() const;
 
   // Two unit vectors in the equatorial plane of the body.  |biequatorial| is
-  // also in the equatorial plane of Frame.  The basis |biequatorial|,
-  // |equatorial|, |polar_axis| is direct.
+  // also in the equatorial plane of Frame.  The basis |equatorial|,
+  // |biequatorial|, |polar_axis| has the same orientation as that of |Frame|.
+  // In the figures of the 2015 IAU WGCCRE report (figure 1 or 2 depending on
+  // the convention used for |polar_axis|), |biequatorial| is the node Q.
   Vector<double, Frame> const& biequatorial() const;
   Vector<double, Frame> const& equatorial() const;
 
@@ -134,8 +136,8 @@ class RotatingBody : public MassiveBody {
  private:
   Parameters const parameters_;
   Vector<double, Frame> const polar_axis_;
-  Vector<double, Frame> biequatorial_;
-  Vector<double, Frame> equatorial_;
+  Vector<double, Frame> const biequatorial_;
+  Vector<double, Frame> const equatorial_;
   AngularVelocity<Frame> const angular_velocity_;
 };
 

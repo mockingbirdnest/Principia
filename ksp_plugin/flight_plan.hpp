@@ -4,9 +4,9 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
-#include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -20,7 +20,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
+using base::Error;
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::DegreesOfFreedom;
@@ -30,14 +32,15 @@ using quantities::Length;
 using quantities::Mass;
 using quantities::Speed;
 
-// A stack of |Burn|s that manages a chain of trajectories obtained by executing
-// the corresponding |NavigationManœuvre|s.
+// A chain of trajectories obtained by executing the corresponding
+// |NavigationManœuvre|s.
 class FlightPlan {
  public:
   // Creates a |FlightPlan| with no burns starting at |initial_time| with
   // |initial_degrees_of_freedom| and with the given |initial_mass|.  The
-  // trajectories are computed using the given |integrator| in the given
-  // |ephemeris|.
+  // trajectories are computed using the given parameters by the given
+  // |ephemeris|.  The flight plan contains a single coast which, if possible
+  // ends at |desired_final_time|.
   FlightPlan(Mass const& initial_mass,
              Instant const& initial_time,
              DegreesOfFreedom<Barycentric> const& initial_degrees_of_freedom,
@@ -49,19 +52,33 @@ class FlightPlan {
                  generalized_adaptive_step_parameters);
   virtual ~FlightPlan() = default;
 
+  // Construction parameters.
   virtual Instant initial_time() const;
-  virtual Instant actual_final_time() const;
   virtual Instant desired_final_time() const;
 
+  // End time of the last coast.  If this is less than |desired_final_time()|,
+  // there is at least an anomalous manœuvre.
+  virtual Instant actual_final_time() const;
+
+  // The number of manœuvres in the flight plan.
   virtual int number_of_manœuvres() const;
-  // |index| must be in [0, number_of_manœuvres()[.
+
+  // The number of manœuvres at the end of flight plan that are anomalous, i.e.,
+  // follow an anomalous segment.  These are manœuvres whose Frenet trihedron
+  // cannot be drawn.  The functions that change manœuvres may change the number
+  // of anomalous manœuvres.
+  virtual int number_of_anomalous_manœuvres() const;
+
+  // Returns the specified manœuvre.  |index| must be in
+  // [0, number_of_manœuvres()[.
   virtual NavigationManœuvre const& GetManœuvre(int index) const;
 
-  // The following two functions return false and have no effect if the given
-  // |burn| would start before |initial_time_| or before the end of the previous
-  // burn, or end after |desired_final_time_|, or if the integration of the
-  // coasting phase times out or is singular before the burn.
-  virtual bool Append(Burn burn);
+  // Appends a manœuvre using the specified |burn|.  |index| must be in
+  // [0, number_of_manœuvres()[.  Returns an error and has no effect if the
+  // given |burn| cannot fit between the preceding burn and the end of the
+  // flight plan.  Otherwise, updates the flight plan and returns the
+  // integration status.
+  virtual Status Append(NavigationManœuvre::Burn const& burn);
 
   // Forgets the flight plan at least before |time|.  The actual cutoff time
   // will be in a coast trajectory and may be after |time|.  |on_empty| is run
@@ -71,34 +88,42 @@ class FlightPlan {
                             std::function<void()> const& on_empty);
 
 
-  // |size()| must be greater than 0.
-  virtual void RemoveLast();
-  // |size()| must be greater than 0.
-  virtual bool ReplaceLast(Burn burn);
+  // Removes the last manœuvre.
+  virtual Status RemoveLast();
 
-  // Returns false and has no effect if |desired_final_time| is before the end
-  // of the last manœuvre or before |initial_time_|.
-  virtual bool SetDesiredFinalTime(Instant const& desired_final_time);
+  // Replaces a manœuvre with one using the specified |burn|.  |index| must be
+  // in [0, number_of_manœuvres()[.  Returns an error and has no effect if the
+  // given |burn| cannot fit between the preceding and following burns.
+  // Otherwise, updates the flight plan and returns the integration status.
+  virtual Status Replace(NavigationManœuvre::Burn const& burn, int index);
+
+  // Same as above, but for the last manœuvre.  |number_of_manœuvres()| must be
+  // at least one..
+  virtual Status ReplaceLast(NavigationManœuvre::Burn const& burn);
+
+  // Updates the desired final time of the flight plan.  Returns an error and
+  // has no effect |desired_final_time| is before the beginning of the last
+  // coast.
+  virtual Status SetDesiredFinalTime(Instant const& desired_final_time);
+
+  // Sets the parameters used to compute the trajectories and recomputes them
+  // all.  Returns the integration status.
+  virtual Status SetAdaptiveStepParameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          adaptive_step_parameters,
+      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+          generalized_adaptive_step_parameters);
 
   virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
   adaptive_step_parameters() const;
   virtual Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
   generalized_adaptive_step_parameters() const;
 
-  // Sets the parameters used to compute the trajectories.  The trajectories are
-  // recomputed.  Returns false (and doesn't change this object) if the
-  // parameters would make it impossible to recompute the trajectories.
-  virtual bool SetAdaptiveStepParameters(
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_step_parameters,
-      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
-          generalized_adaptive_step_parameters);
-
-  // Returns the number of trajectory segments in this object.
+  // Returns the number of trajectories in this object.
   virtual int number_of_segments() const;
 
   // |index| must be in [0, number_of_segments()[.  Sets the iterators to denote
-  // the given trajectory segment.
+  // the given trajectory.
   virtual void GetSegment(int index,
                           DiscreteTrajectory<Barycentric>::Iterator& begin,
                           DiscreteTrajectory<Barycentric>::Iterator& end) const;
@@ -114,55 +139,58 @@ class FlightPlan {
       serialization::FlightPlan const& message,
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
-  static std::int64_t constexpr max_ephemeris_steps_per_frame = 1000;
+  static constexpr std::int64_t max_ephemeris_steps_per_frame = 1000;
+
+  static constexpr Error bad_desired_final_time = Error::OUT_OF_RANGE;
+  static constexpr Error does_not_fit = Error::OUT_OF_RANGE;
+  static constexpr Error singular = Error::INVALID_ARGUMENT;
 
  protected:
   // For mocking.
   FlightPlan();
 
  private:
-  // Appends |manœuvre| to |manœuvres_|, adds a burn and a coast segment.
-  // |manœuvre| must fit between |start_of_last_coast()| and
-  // |desired_final_time_|, the last coast segment must end at
-  // |manœuvre.initial_time()|.
-  void Append(NavigationManœuvre manœuvre);
+  // Clears and recomputes all trajectories in |segments_|.
+  Status RecomputeAllSegments();
 
-  // Recomputes all trajectories in |segments_|.  Returns false if the
-  // recomputation resulted in more than 2 anomalous segments.
-  bool RecomputeSegments();
+  // Flows the given |segment| for the duration of |manœuvre| using its
+  // intrinsic acceleration.
+  Status BurnSegment(NavigationManœuvre const& manœuvre,
+                     not_null<DiscreteTrajectory<Barycentric>*> segment);
 
-  // Flows the last segment for the duration of |manœuvre| using its intrinsic
+  // Flows the given |segment| until |desired_final_time| with no intrinsic
   // acceleration.
-  void BurnLastSegment(NavigationManœuvre const& manœuvre);
-  // Flows the last segment until |desired_final_time| with no intrinsic
-  // acceleration.
-  void CoastLastSegment(Instant const& desired_final_time);
+  Status CoastSegment(Instant const& desired_final_time,
+                      not_null<DiscreteTrajectory<Barycentric>*> segment);
 
-  // Replaces the last segment with |segment|.  |segment| must be forked from
-  // the same trajectory as the last segment, and at the same time.  |segment|
-  // must not be anomalous.
-  void ReplaceLastSegment(not_null<DiscreteTrajectory<Barycentric>*> segment);
+  // Computes new trajectories and appends them to |segments_|.  This updates
+  // the last coast of |segments_| and then appends one coast and one burn for
+  // each manœuvre in |manœuvres|.  If one of the integration returns an error,
+  // returns that error.  In this case the trajectories that follow the one in
+  // error are of length 0 and are anomalous.
+  // TODO(phl): The argument should really be an std::span, but then Apple has
+  // invented the Macintosh.
+  Status ComputeSegments(std::vector<NavigationManœuvre>::iterator begin,
+                         std::vector<NavigationManœuvre>::iterator end);
 
-  // Adds a trajectory to |segments_|, forked at the end of the last one.
-  void AddSegment();
-  // Forgets the last segment after its fork.
+  // Adds a trajectory to |segments_|, forked at the end of the last one.  If
+  // there are already anomalous trajectories, the newly created trajectory is
+  // anomalous too.
+  void AddLastSegment();
+
+  // Forgets the last trajectory after its fork.  If that trajectory was the
+  // only anomalous one, there are no anomalous trajectories after this call.
   void ResetLastSegment();
 
-  // Deletes the last segment and removes it from |segments_|.
+  // Deletes the last trajectory and removes it from |segments_|.  If there are
+  // anomalous trajectories, their number is decremented and may become 0.
   void PopLastSegment();
 
-  // If the integration of a coast from the fork of |coast| until
-  // |manœuvre.initial_time()| reaches the end, returns the integrated
-  // trajectory.  Otherwise, returns null.
-  DiscreteTrajectory<Barycentric>* CoastIfReachesManœuvreInitialTime(
-      DiscreteTrajectory<Barycentric>& coast,
-      NavigationManœuvre const& manœuvre);
-
   Instant start_of_last_coast() const;
-  Instant start_of_penultimate_coast() const;
 
-  DiscreteTrajectory<Barycentric>& last_coast();
-  DiscreteTrajectory<Barycentric>& penultimate_coast();
+  // In the following functions, |index| refers to the index of a manœuvre.
+  Instant start_of_next_burn(int index) const;
+  Instant start_of_previous_coast(int index) const;
 
   Mass const initial_mass_;
   Instant initial_time_;
@@ -171,22 +199,23 @@ class FlightPlan {
   // The root of the flight plan.  Contains a single point, not part of
   // |segments_|.  Owns all the |segments_|.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> root_;
-  // Never empty; Starts and ends with a coasting segment; coasting and burning
-  // alternate.  This simulates a stack.  Each segment is a fork of the previous
-  // one.
+
+  // Never empty; Starts and ends with a coast; coasts and burns alternate.
+  // Each trajectory is a fork of the previous one.
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments_;
+  // The last |anomalous_segments_| of |segments_| are anomalous, i.e. they
+  // either end prematurely or follow an anomalous trajectory; in the latter
+  // case they are empty.
+  int anomalous_segments_ = 0;
+  // The status of the first anomalous segment.  Set and used exclusively by
+  // |ComputeSegments|.
+  Status anomalous_status_;
+
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
       generalized_adaptive_step_parameters_;
-  // The last |anomalous_segments_| of |segments_| are anomalous, i.e. they
-  // either end prematurely or follow an anomalous segment; in the latter case
-  // they are empty.
-  // The contract of |Append| and |ReplaceLast| implies that
-  // |anomalous_segments_| is at most 2: the penultimate coast is never
-  // anomalous.
-  int anomalous_segments_ = 0;
 };
 
 }  // namespace internal_flight_plan

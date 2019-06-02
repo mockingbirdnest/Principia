@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/discrete_trajectory.hpp"
 
@@ -14,6 +15,7 @@ namespace principia {
 namespace astronomy {
 namespace internal_standard_product_3 {
 
+using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
@@ -51,6 +53,30 @@ class StandardProduct3 {
     // - the minute field of the epoch record takes the value 60 at the end of
     //   the hour.
     ILRSB,
+    // Files produced by the Groupe de Recherche de Géodesie Spatiale for the
+    // International DORIS Service.
+    // Note that these files, while having the letters grg in the file name,
+    // have the legacy agency field LCA, for Laboratoire d’Études en Géophysique
+    // et Océanographie Spatiales / Collecte Localisation Satellites (LEGOS/CLS)
+    // Analysis center.
+    // The files are syntactically correct, since the nonconformance only
+    // affects the numerical value of the velocity fields.
+    // Divergence from the specification:
+    // - the velocities are in m/s instead of the standard dm/s.
+    GRGS,
+    // The MGEX files produced by the SHAO (Shanghai Astronomical Observatory,
+    // 上海天文台) and WHU (Wuhan University, 武汉大学) analysis centres are
+    // SP3-c, but contain more than 85 satellites.  This is achieved by doubling
+    // the number of satellite ID records: there are 10 satellite ID records,
+    // for a maximum of 170 satellites.
+    // While SP3-d allows for an unlimited number of satellite ID records, it is
+    // questionable whether files in this dialect are valid SP3-d, aside from
+    // the version identifier: indeed, they often have lines containing only 0s
+    // to pad to 10 lines of satellite IDs, whereas the SP3-d documentation
+    // seems to suggest that such padding is restricted to a last partial line:
+    // “The last “+ ” line may contain zeroes if the number of satellites (given
+    // on line three) is not an even multiple of 17.”.
+    ChineseMGEX,
   };
 
   enum class SatelliteGroup : char {
@@ -59,7 +85,7 @@ class StandardProduct3 {
     ГЛОНАСС = 'R',
     Galileo = 'E',
     北斗 = 'C',
-    準天頂衛星 = 'J',
+    みちびき = 'J',
     IRNSS = 'I',
   };
 
@@ -80,13 +106,29 @@ class StandardProduct3 {
   // (that order is the same in the satellite ID records and within each epoch).
   std::vector<SatelliteIdentifier> const& satellites() const;
 
-  DiscreteTrajectory<ITRS> const& orbit(SatelliteIdentifier const& id) const;
+  // Each orbit may consist of several arcs, separated by missing data.
+  // The arcs are non-overlapping, and are ordered chronologically.
+  std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const& orbit(
+      SatelliteIdentifier const& id) const;
 
   Version version() const;
 
+  // Whether velocities were given in the SP3 file.  If this is false, the
+  // velocities provided by this object are computed from the positions by a
+  // finite difference formula.
+  bool file_has_velocities() const;
+
  private:
   std::vector<SatelliteIdentifier> satellites_;
-  std::map<SatelliteIdentifier, DiscreteTrajectory<ITRS>> orbits_;
+  std::map<SatelliteIdentifier,
+           std::vector<not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>>
+      orbits_;
+  // |orbits_| is the same as |const_orbits_|, but with non-owning pointers to
+  // constant trajectories; this allows us to references to these vectors from
+  // |StandardProduct3::orbit|.
+  std::map<SatelliteIdentifier,
+           std::vector<not_null<DiscreteTrajectory<ITRS> const*>>>
+      const_orbits_;
   Version version_;
 
   bool has_velocities_;
@@ -100,6 +142,9 @@ bool operator<(StandardProduct3::SatelliteIdentifier const& left,
 
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::Version const& version);
+
+std::ostream& operator<<(std::ostream& out,
+                         StandardProduct3::Dialect const& dialect);
 
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::SatelliteGroup const& group);

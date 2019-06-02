@@ -8,26 +8,23 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : SupervisedWindowRenderer {
   // Update this section before each release.
-  private const String next_release_name_ = "Fáry";
-  private const int next_release_lunation_number_ = 239;
+  private const String next_release_name_ = "Fermat";
+  private const int next_release_lunation_number_ = 241;
   private DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2019, 05, 04, 22, 46, 00, TimeSpan.Zero);
+      new DateTimeOffset(2019, 07, 02, 19, 16, 00, TimeSpan.Zero);
 
   public delegate Vessel PredictedVessel();
 
-  public MainWindow(SupervisedWindowRenderer.ISupervisor supervisor,
+  public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
                     ReferenceFrameSelector plotting_frame_selector,
                     PredictedVessel predicted_vessel)
-      : base(supervisor) {
+      : base(adapter) {
+    adapter_ = adapter;
     flight_planner_ = flight_planner;
     plotting_frame_selector_ = plotting_frame_selector;
     predicted_vessel_ = predicted_vessel;
     Show();
-  }
-
-  public void Initialize(IntPtr plugin) {
-    plugin_ = plugin;
   }
 
   public void SelectTargetCelestial(MapObject map_object) {
@@ -167,19 +164,33 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      if (plugin_ == IntPtr.Zero) {
-        UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
+      if (plugin == IntPtr.Zero) {
+        UnityEngine.GUILayout.Label(
+            text : "Plugin is not started",
+            style : Style.Warning(UnityEngine.GUI.skin.label));
       }
       if (DateTimeOffset.Now > next_release_date_) {
-        UnityEngine.GUILayout.TextArea(
-            "Announcement: the new moon of lunation number " +
-            next_release_lunation_number_ +
-            " has come; please download the latest Principia release, " +
-            next_release_name_ + ".");
+        if (Versioning.Revision <= 4) {
+          UnityEngine.GUILayout.TextArea(
+              "Announcement: the new moon of lunation number " +
+              next_release_lunation_number_ +
+              " has come; please update KSP to version 1.6.1 and download " +
+              "the latest Principia release, " + next_release_name_ + ". " +
+              "Note that RealismOverhaul and RealSolarSystem now support " +
+              "KSP 1.6.1.");
+        } else {
+          UnityEngine.GUILayout.TextArea(
+              "Announcement: the new moon of lunation number " +
+              next_release_lunation_number_ +
+              " has come; please download the latest Principia release, " +
+              next_release_name_ + ".");
+        }
       }
       Interface.GetVersion(build_date : out string unused_build_date,
                            version    : out string version);
-      UnityEngine.GUILayout.TextArea(version);
+      UnityEngine.GUILayout.Label(
+          version,
+          style : Style.Info(UnityEngine.GUI.skin.label));
       bool changed_history_length = false;
       RenderSelector(history_lengths_,
                      ref history_length_index_,
@@ -188,6 +199,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                      "{0:0.00e00} s");
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
+        show_selection_ui = true;
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           selecting_active_vessel_target = UnityEngine.GUILayout.Toggle(
               selecting_active_vessel_target, "Select target vessel...");
@@ -212,9 +224,14 @@ internal class MainWindow : SupervisedWindowRenderer {
           }
         }
       } else {
+        // This will remove the "Select" UI so it must shrink.
+        if (show_selection_ui) {
+          show_selection_ui = false;
+          Shrink();
+        }
         selecting_active_vessel_target = false;
       }
-      if (plugin_ != IntPtr.Zero) {
+      if (plugin != IntPtr.Zero) {
         plotting_frame_selector_.RenderButton();
         flight_planner_.RenderButton();
       }
@@ -345,11 +362,14 @@ internal class MainWindow : SupervisedWindowRenderer {
         buffered_logging_ = Log.GetBufferedLogging();
       }
     }
-    UnityEngine.GUILayout.TextArea("Journalling is " +
-                                   (journaling_ ? "ON" : "OFF"));
-    must_record_journal_ = UnityEngine.GUILayout.Toggle(
-        value   : must_record_journal_,
-        text    : "Record journal (starts on load)");
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      must_record_journal_ = UnityEngine.GUILayout.Toggle(
+          value   : must_record_journal_,
+          text    : "Record journal (starts on load)");
+      UnityEngine.GUILayout.Label(
+          "Journalling is " + (journaling_ ? "ON" : "OFF"),
+          style : Style.Info(Style.RightAligned(UnityEngine.GUI.skin.label)));
+    }
     if (journaling_ && !must_record_journal_) {
       // We can deactivate a recorder at any time, but in order for replaying to
       // work, we should only activate one before creating a plugin.
@@ -362,9 +382,9 @@ internal class MainWindow : SupervisedWindowRenderer {
     if (vessel_ != predicted_vessel_()) {
       vessel_ = predicted_vessel_();
       string vessel_guid = vessel_?.id.ToString();
-      if (vessel_guid != null && plugin_.HasVessel(vessel_guid)) {
+      if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
         AdaptiveStepParameters adaptive_step_parameters =
-            plugin_.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
+            plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
         prediction_length_tolerance_index_ = Array.FindIndex(
             prediction_length_tolerances_,
             (double tolerance) =>
@@ -410,11 +430,9 @@ internal class MainWindow : SupervisedWindowRenderer {
         --index;
         changed = true;
       }
-      var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
-      style.alignment = UnityEngine.TextAnchor.MiddleRight;
       UnityEngine.GUILayout.TextArea(
           text    : String.Format(Culture.culture, format, array[index]),
-          style   : style,
+          style   : Style.RightAligned(UnityEngine.GUI.skin.textArea),
           options : GUILayoutWidth(3));
       if (UnityEngine.GUILayout.Button(
               text    : index == array.Length - 1 ? "max" : "+",
@@ -442,6 +460,8 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
+  private IntPtr plugin => adapter_.Plugin();
+
   private static readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
@@ -455,6 +475,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   private const int default_prediction_length_tolerance_index_ = 1;
   private const int default_prediction_steps_index_ = 4;
 
+  private readonly PrincipiaPluginAdapter adapter_;
   private readonly FlightPlanner flight_planner_;
   private readonly ReferenceFrameSelector plotting_frame_selector_;
   private readonly PredictedVessel predicted_vessel_;
@@ -464,6 +485,8 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool show_ksp_features_ = false;
   private bool show_logging_settings_ = false;
   private bool show_prediction_settings_ = true;
+
+  private bool show_selection_ui = false;
 
   private bool should_load_compatibility_data_ = true;
   private int prediction_length_tolerance_index_ =
@@ -481,7 +504,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   // Whether a journal is currently being recorded.
   private static bool journaling_ = false;
 
-  private IntPtr plugin_ = IntPtr.Zero;
   private Vessel vessel_;
 }
 

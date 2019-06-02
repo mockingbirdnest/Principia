@@ -7,6 +7,24 @@ These files come from various agencies; we document their provenance here.
 
 ## International DORIS Service (IDS) products
 
+See https://ids-doris.org/ids/data-products/tables-of-data-products.html,
+https://ids-doris.org/documents/Data-Structure-Formats.pdf,
+https://ids-doris.org/ids/organization/analysis-centers.html,
+https://cddis.nasa.gov/docs/2016/cddis_IDSreport_2016.pdf.
+
+- [grgtop03.b97344.e97348.D_S.sp3](grgtop03.b97344.e97348.D_S.sp3):<br>
+  ftp://doris.ensg.eu/pub/doris/products/orbits/grg/top/ <br>
+  ftp://doris.ign.fr/pub/doris/products/orbits/grg/top/ <br>
+  ftp://cddis.gsfc.nasa.gov/doris/products/orbits/grg/top/
+- [grgja203.b08243.e08247.D_S.sp3](grgja203.b08243.e08247.D_S.sp3):<br>
+  ftp://doris.ensg.eu/pub/doris/products/orbits/grg/ja2/ <br>
+  ftp://doris.ign.fr/pub/doris/products/orbits/grg/ja2/ <br>
+  ftp://cddis.gsfc.nasa.gov/doris/products/orbits/grg/ja2/
+- [ssaja102.b03007.e03017.DGS.sp3](ssaja102.b03007.e03017.DGS.sp3):<br>
+  ftp://doris.ensg.eu/pub/doris/products/orbits/ssa/ja2/ <br>
+  ftp://doris.ign.fr/pub/doris/products/orbits/ssa/ja2/ <br>
+  ftp://cddis.gsfc.nasa.gov/doris/products/orbits/ssa/ja2/
+
 ## International GNSS Service (IGS) products
 
 See http://www.igs.org/products,
@@ -31,6 +49,10 @@ See http://mgex.igs.org/IGS_MGEX_Products.php.
   ftp://igs.ensg.eu/pub/igs/products/mgex/2034/ <br>
   ftp://igs.ign.fr/pub/igs/products/mgex/2034/ <br>
   ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2034/
+- [WUM0MGXFIN_20190270000_01D_15M_ORB.SP3](WUM0MGXFIN_20190270000_01D_15M_ORB.SP3):<br>
+  ftp://igs.ensg.eu/pub/igs/products/mgex/2038/ <br>
+  ftp://igs.ign.fr/pub/igs/products/mgex/2038/ <br>
+  **not found** at ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2038/
 
 
 ### International GLONASS Experiment (IGEX) / International GLONASS Service Pilot Project (IGLOS-PP)

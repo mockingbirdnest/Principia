@@ -19,12 +19,16 @@
     <None Include="standard_product_3\COD0MGXFIN_20181260000_01D_05M_ORB.SP3" />
     <None Include="standard_product_3\COD0MGXFIN_20183640000_01D_05M_ORB.SP3" />
     <None Include="standard_product_3\esa11802.eph" />
+    <None Include="standard_product_3\grgja203.b08243.e08247.D_S.sp3" />
+    <None Include="standard_product_3\grgtop03.b97344.e97348.D_S.sp3" />
     <None Include="standard_product_3\ilrsa.orb.lageos2.160319.v35.sp3" />
     <None Include="standard_product_3\ilrsa.orb.lageos2.180804.v70.sp3" />
     <None Include="standard_product_3\ilrsb.orb.lageos2.160319.v35.sp3" />
     <None Include="standard_product_3\mcc14000.sp3" />
     <None Include="standard_product_3\nga20342.eph" />
     <None Include="standard_product_3\README.md" />
+    <None Include="standard_product_3\ssaja102.b03007.e03017.DGS.sp3" />
+    <None Include="standard_product_3\WUM0MGXFIN_20190270000_01D_15M_ORB.SP3" />
     <None Include="trappist_gravity_model.cfg" />
     <None Include="trappist_gravity_model_slippist1.cfg" />
     <None Include="trappist_initial_state_jd_2457000_000000000.cfg" />
@@ -74,6 +78,7 @@
     <ClCompile Include="..\base\bundle.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
+    <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="date_time_test.cpp" />
     <ClCompile Include="ksp_fingerprint_test.cpp" />
     <ClCompile Include="ksp_resonance_test.cpp" />

@@ -268,6 +268,10 @@ NewEncoder(std::string_view const encoder) {
 
 }  // namespace
 
+void principia__ActivatePlayer() {
+  Vessel::MakeSynchronous();
+}
+
 // If |activate| is true and there is no active journal, create one and
 // activate it.  If |activate| is false and there is an active journal,
 // deactivate it.  Does nothing if there is already a journal in the desired
@@ -285,9 +289,11 @@ void principia__ActivateRecorder(bool const activate) {
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
     journal::Recorder* const recorder = new journal::Recorder(
         std::filesystem::path("glog") / "Principia" / name.str());
+    Vessel::MakeSynchronous();
     journal::Recorder::Activate(recorder);
   } else if (!activate && journal::Recorder::IsActivated()) {
     journal::Recorder::Deactivate();
+    Vessel::MakeAsynchronous();
   }
 }
 
@@ -826,29 +832,36 @@ void principia__InsertUnloadedPart(Plugin* const plugin,
 
 // Exports |LOG(SEVERITY) << text| for fast logging from the C# adapter.
 // This will always evaluate its argument even if the corresponding log severity
-// is disabled, so it is less efficient than LOG(INFO).  It will not report the
-// line and file of the caller.
-void principia__LogError(char const* const text) {
-  journal::Method<journal::LogError> m({text});
-  LOG(ERROR) << text;
+// is disabled, so it is less efficient than LOG(SEVERITY).
+void principia__LogError(char const* const file,
+                         int const line,
+                         char const* const text) {
+  journal::Method<journal::LogError> m({file, line, text});
+  google::LogMessage(file, line, google::ERROR).stream() << text;
   return m.Return();
 }
 
-void principia__LogFatal(char const* const text) {
-  journal::Method<journal::LogFatal> m({text});
-  LOG(FATAL) << text;
+void principia__LogFatal(char const* const file,
+                         int const line,
+                         char const* const text) {
+  journal::Method<journal::LogFatal> m({file, line, text});
+  google::LogMessageFatal(file, line).stream() << text;
   return m.Return();
 }
 
-void principia__LogInfo(char const* const text) {
-  journal::Method<journal::LogInfo> m({text});
-  LOG(INFO) << text;
+void principia__LogInfo(char const* const file,
+                        int const line,
+                        char const* const text) {
+  journal::Method<journal::LogInfo> m({file, line, text});
+  google::LogMessage(file, line).stream() << text;
   return m.Return();
 }
 
-void principia__LogWarning(char const* const text) {
-  journal::Method<journal::LogWarning> m({text});
-  LOG(WARNING) << text;
+void principia__LogWarning(char const* const file,
+                           int const line,
+                           char const* const text) {
+  journal::Method<journal::LogWarning> m({file, line, text});
+  google::LogMessage(file, line, google::WARNING).stream() << text;
   return m.Return();
 }
 

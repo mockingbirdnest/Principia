@@ -11,6 +11,7 @@
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\base\version.generated.cc" />
+    <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="ksp_physics_lib.cpp" />
   </ItemGroup>
 </Project>

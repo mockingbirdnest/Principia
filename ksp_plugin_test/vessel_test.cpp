@@ -237,6 +237,8 @@ TEST_F(VesselTest, AdvanceTime) {
 }
 
 TEST_F(VesselTest, Prediction) {
+  EXPECT_CALL(ephemeris_, t_min_locked())
+      .WillRepeatedly(Return(astronomy::J2000));
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
   EXPECT_CALL(
@@ -252,7 +254,8 @@ TEST_F(VesselTest, Prediction) {
                         Velocity<Barycentric>({150.0 / 3.0 * Metre / Second,
                                                60.0 * Metre / Second,
                                                50.0 * Metre / Second}))),
-                Return(Status::OK)));
+                Return(Status::OK)))
+      .WillRepeatedly(Return(Status::OK));
   EXPECT_CALL(
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _, _))
@@ -266,7 +269,8 @@ TEST_F(VesselTest, Prediction) {
                         Velocity<Barycentric>({140.0 / 3.0 * Metre / Second,
                                                50.0 * Metre / Second,
                                                40.0 * Metre / Second}))),
-                Return(Status::OK)));
+                Return(Status::OK)))
+      .WillRepeatedly(Return(Status::OK));
 
   vessel_.PrepareHistory(astronomy::J2000);
   // Polling for the integration to happen.
@@ -306,6 +310,8 @@ TEST_F(VesselTest, Prediction) {
 }
 
 TEST_F(VesselTest, PredictBeyondTheInfinite) {
+  EXPECT_CALL(ephemeris_, t_min_locked())
+      .WillRepeatedly(Return(astronomy::J2000));
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(astronomy::J2000 + 0.5 * Second));
   EXPECT_CALL(

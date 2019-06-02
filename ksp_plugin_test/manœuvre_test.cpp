@@ -35,7 +35,9 @@ using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
+using quantities::GravitationalParameter;
 using quantities::Pow;
+using quantities::SIUnit;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -94,13 +96,19 @@ class ManœuvreTest : public ::testing::Test {
 TEST_F(ManœuvreTest, TimedBurn) {
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
 
-  Manœuvre<World, Rendering> manœuvre(
+  Manœuvre<World, Rendering>::Intensity intensity;
+  intensity.direction = e_y;
+  intensity.duration = 1 * Second;
+  Manœuvre<World, Rendering>::Timing timing;
+  timing.initial_time = t0_;
+  Manœuvre<World, Rendering>::Burn const burn{
+      intensity,
+      timing,
       /*thrust=*/1 * Newton,
-      /*initial_mass=*/2 * Kilogram,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
-      /*direction=*/2 * e_y,
       MakeMockDynamicFrame(),
-      /*is_inertially_fixed=*/true);
+      /*is_inertially_fixed=*/true};
+  Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
@@ -114,13 +122,11 @@ TEST_F(ManœuvreTest, TimedBurn) {
 #endif
   EXPECT_EQ(1 * Kilogram / Second, manœuvre.mass_flow());
 
-  manœuvre.set_duration(1 * Second);
   EXPECT_EQ(1 * Second, manœuvre.duration());
-  EXPECT_EQ(std::log(2) * Metre / Second, manœuvre.Δv());
+  EXPECT_EQ(std::log(2) * Metre / Second, manœuvre.Δv().Norm());
   EXPECT_EQ((2 - Sqrt(2)) * Second, manœuvre.time_to_half_Δv());
   EXPECT_EQ(1 * Kilogram, manœuvre.final_mass());
 
-  manœuvre.set_initial_time(t0_);
   EXPECT_EQ(t0_, manœuvre.initial_time());
   EXPECT_EQ(t0_ + 1 * Second, manœuvre.final_time());
   EXPECT_EQ(t0_ + (2 - Sqrt(2)) * Second, manœuvre.time_of_half_Δv());
@@ -153,13 +159,19 @@ TEST_F(ManœuvreTest, TimedBurn) {
 
 TEST_F(ManœuvreTest, TargetΔv) {
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
-  Manœuvre<World, Rendering> manœuvre(
+
+  Manœuvre<World, Rendering>::Intensity intensity;
+  intensity.Δv = e_y * Metre / Second;
+  Manœuvre<World, Rendering>::Timing timing;
+  timing.time_of_half_Δv = t0_;
+  Manœuvre<World, Rendering>::Burn const burn{
+      intensity,
+      timing,
       /*thrust=*/1 * Newton,
-      /*initial_mass=*/2 * Kilogram,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
-      /*direction=*/e_y,
       MakeMockDynamicFrame(),
-      /*is_inertially_fixed=*/true);
+      /*is_inertially_fixed=*/true};
+  Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
@@ -173,13 +185,11 @@ TEST_F(ManœuvreTest, TargetΔv) {
 #endif
   EXPECT_EQ(1 * Kilogram / Second, manœuvre.mass_flow());
 
-  manœuvre.set_Δv(1 * Metre / Second);
-  EXPECT_EQ(1 * Metre / Second, manœuvre.Δv());
+  EXPECT_EQ(1 * Metre / Second, manœuvre.Δv().Norm());
   EXPECT_EQ((2 - 2 / e) * Second, manœuvre.duration());
   EXPECT_EQ((2 - 2 / Sqrt(e)) * Second, manœuvre.time_to_half_Δv());
   EXPECT_EQ((2 / e) * Kilogram, manœuvre.final_mass());
 
-  manœuvre.set_time_of_half_Δv(t0_);
   EXPECT_EQ(t0_ - (2 - 2 / Sqrt(e)) * Second, manœuvre.initial_time());
   EXPECT_EQ(t0_ + (2 / Sqrt(e) - 2 / e) * Second, manœuvre.final_time());
   EXPECT_EQ(t0_, manœuvre.time_of_half_Δv());
@@ -244,79 +254,91 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // An arbitrary direction, we're not testing this.
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
 
-  Manœuvre<World, Rendering> first_burn(
+  Manœuvre<World, Rendering>::Intensity first_burn_intensity;
+  first_burn_intensity.direction = e_y;
+  first_burn_intensity.duration = s_ivb_1st_eco - s_ivb_1st_90_percent_thrust;
+  Manœuvre<World, Rendering>::Timing first_burn_timing;
+  first_burn_timing.initial_time = s_ivb_1st_90_percent_thrust;
+  Manœuvre<World, Rendering>::Burn const first_burn{
+      first_burn_intensity,
+      first_burn_timing,
       thrust_1st,
-      total_vehicle_at_s_ivb_1st_90_percent_thrust,
       specific_impulse_1st,
-      e_y,
       MakeMockDynamicFrame(),
-      /*is_inertially_fixed=*/true);
+      /*is_inertially_fixed=*/true};
+  Manœuvre<World, Rendering> first_manœuvre(
+      total_vehicle_at_s_ivb_1st_90_percent_thrust,
+      first_burn);
+
   EXPECT_THAT(RelativeError(lox_flowrate_1st + fuel_flowrate_1st,
-                            first_burn.mass_flow()),
+                            first_manœuvre.mass_flow()),
               Lt(1e-4));
-
-  first_burn.set_duration(s_ivb_1st_eco - s_ivb_1st_90_percent_thrust);
-  EXPECT_THAT(
-      RelativeError(total_vehicle_at_s_ivb_1st_eco, first_burn.final_mass()),
-      Lt(1e-3));
-
-  first_burn.set_initial_time(s_ivb_1st_90_percent_thrust);
-  EXPECT_EQ(s_ivb_1st_eco, first_burn.final_time());
+  EXPECT_THAT(RelativeError(total_vehicle_at_s_ivb_1st_eco,
+                            first_manœuvre.final_mass()),
+              Lt(1e-3));
+  EXPECT_EQ(s_ivb_1st_eco, first_manœuvre.final_time());
 
   // Accelerations from Figure 4-4. Ascent Trajectory Acceleration Comparison.
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
-  discrete_trajectory_.Append(first_burn.initial_time(), dof_);
+  discrete_trajectory_.Append(first_manœuvre.initial_time(), dof_);
   EXPECT_CALL(*mock_dynamic_frame_,
-              ToThisFrameAtTime(first_burn.initial_time()))
+              ToThisFrameAtTime(first_manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
   EXPECT_CALL(*mock_dynamic_frame_,
-              FrenetFrame(first_burn.initial_time(), rendering_dof_))
+              FrenetFrame(first_manœuvre.initial_time(), rendering_dof_))
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
-  first_burn.set_coasting_trajectory(&discrete_trajectory_);
-  auto const first_acceleration = first_burn.InertialIntrinsicAcceleration();
+  first_manœuvre.set_coasting_trajectory(&discrete_trajectory_);
+  auto const first_acceleration =
+      first_manœuvre.InertialIntrinsicAcceleration();
   EXPECT_THAT(
-      first_acceleration(first_burn.initial_time()).Norm(),
+      first_acceleration(first_manœuvre.initial_time()).Norm(),
       IsNear(5.6 * Metre / Pow<2>(Second)));
   EXPECT_THAT(first_acceleration(range_zero + 600 * Second).Norm(),
               IsNear(6.15 * Metre / Pow<2>(Second), 1.01));
-  EXPECT_THAT(first_acceleration(first_burn.final_time()).Norm(),
+  EXPECT_THAT(first_acceleration(first_manœuvre.final_time()).Norm(),
               IsNear(7.04 * Metre / Pow<2>(Second), 1.01));
 
-  Manœuvre<World, Rendering> second_burn(
+  Manœuvre<World, Rendering>::Intensity second_burn_intensity;
+  second_burn_intensity.direction = e_y;
+  second_burn_intensity.duration = s_ivb_2nd_eco - s_ivb_2nd_90_percent_thrust;
+  Manœuvre<World, Rendering>::Timing second_burn_timing;
+  second_burn_timing.initial_time = s_ivb_2nd_90_percent_thrust;
+  Manœuvre<World, Rendering>::Burn const second_burn{
+      second_burn_intensity,
+      second_burn_timing,
       thrust_2nd,
-      total_vehicle_at_s_ivb_2nd_90_percent_thrust,
       specific_impulse_2nd,
-      e_y,
       MakeMockDynamicFrame(),
-      /*is_inertially_fixed=*/true);
+      /*is_inertially_fixed=*/true};
+  Manœuvre<World, Rendering> second_manœuvre(
+      total_vehicle_at_s_ivb_2nd_90_percent_thrust,
+      second_burn);
+
   EXPECT_THAT(RelativeError(lox_flowrate_2nd + fuel_flowrate_2nd,
-                            second_burn.mass_flow()),
+                            second_manœuvre.mass_flow()),
               Lt(2e-4));
-
-  second_burn.set_duration(s_ivb_2nd_eco - s_ivb_2nd_90_percent_thrust);
-  EXPECT_THAT(
-      RelativeError(total_vehicle_at_s_ivb_2nd_eco, second_burn.final_mass()),
-      Lt(2e-3));
-
-  second_burn.set_initial_time(s_ivb_2nd_90_percent_thrust);
-  EXPECT_EQ(s_ivb_2nd_eco, second_burn.final_time());
+  EXPECT_THAT(RelativeError(total_vehicle_at_s_ivb_2nd_eco,
+                            second_manœuvre.final_mass()),
+              Lt(2e-3));
+  EXPECT_EQ(s_ivb_2nd_eco, second_manœuvre.final_time());
 
   // Accelerations from Figure 4-9. Injection Phase Acceleration Comparison.
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
-  discrete_trajectory_.Append(second_burn.initial_time(), dof_);
+  discrete_trajectory_.Append(second_manœuvre.initial_time(), dof_);
   EXPECT_CALL(*mock_dynamic_frame_,
-              ToThisFrameAtTime(second_burn.initial_time()))
+              ToThisFrameAtTime(second_manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
   EXPECT_CALL(*mock_dynamic_frame_,
-              FrenetFrame(second_burn.initial_time(), rendering_dof_))
+              FrenetFrame(second_manœuvre.initial_time(), rendering_dof_))
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
-  second_burn.set_coasting_trajectory(&discrete_trajectory_);
-  auto const second_acceleration = second_burn.InertialIntrinsicAcceleration();
-  EXPECT_THAT(second_acceleration(second_burn.initial_time()).Norm(),
+  second_manœuvre.set_coasting_trajectory(&discrete_trajectory_);
+  auto const second_acceleration =
+      second_manœuvre.InertialIntrinsicAcceleration();
+  EXPECT_THAT(second_acceleration(second_manœuvre.initial_time()).Norm(),
               IsNear(7.2 * Metre / Pow<2>(Second), 1.05));
   EXPECT_THAT(second_acceleration(t6 + 650 * Second).Norm(),
               IsNear(8.01 * Metre / Pow<2>(Second), 1.01));
@@ -326,29 +348,35 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
               IsNear(9.9 * Metre / Pow<2>(Second), 1.01));
   EXPECT_THAT(second_acceleration(t6 + 850 * Second).Norm(),
               IsNear(12.97 * Metre / Pow<2>(Second), 1.001));
-  EXPECT_THAT(second_acceleration(second_burn.final_time()).Norm(),
+  EXPECT_THAT(second_acceleration(second_manœuvre.final_time()).Norm(),
               IsNear(15.12 * Metre / Pow<2>(Second), 1.001));
 
-  EXPECT_THAT(second_burn.Δv(), IsNear(3.2 * Kilo(Metre) / Second, 1.01));
+  EXPECT_THAT(second_manœuvre.Δv().Norm(),
+              IsNear(3.2 * Kilo(Metre) / Second, 1.01));
 
   // From the Apollo 8 flight journal.
-  EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second, second_burn.Δv()),
+  EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second,
+                            second_manœuvre.Δv().Norm()),
               Lt(20 * Metre / Second));
 }
 
 TEST_F(ManœuvreTest, Serialization) {
   auto mock_dynamic_frame = MakeMockDynamicFrame();
   auto const unowned_dynamic_frame = mock_dynamic_frame.get();
-  Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
-  Manœuvre<World, Rendering> manœuvre(
+  Vector<double, Frenet<Rendering>> const e_y({0, 1, 0});
+
+  Manœuvre<World, Rendering>::Intensity intensity;
+  intensity.Δv = e_y * Metre / Second;
+  Manœuvre<World, Rendering>::Timing timing;
+  timing.time_of_half_Δv = t0_;
+  Manœuvre<World, Rendering>::Burn const burn{
+      intensity,
+      timing,
       /*thrust=*/1 * Newton,
-      /*initial_mass=*/2 * Kilogram,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
-      /*direction=*/e_y,
       std::move(mock_dynamic_frame),
-      /*is_inertially_fixed=*/true);
-  manœuvre.set_Δv(1 * Metre / Second);
-  manœuvre.set_time_of_half_Δv(t0_);
+      /*is_inertially_fixed=*/true};
+  Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
 
   serialization::DynamicFrame serialized_mock_dynamic_frame;
   serialized_mock_dynamic_frame.MutableExtension(
@@ -368,8 +396,9 @@ TEST_F(ManœuvreTest, Serialization) {
   EXPECT_TRUE(message.has_frame());
 
   MockEphemeris<World> ephemeris;
+  MassiveBody const body(SIUnit<GravitationalParameter>());
   EXPECT_CALL(ephemeris, body_for_serialization_index(666))
-      .WillOnce(Return(make_not_null<MassiveBody const*>()));
+      .WillOnce(Return(&body));
   EXPECT_CALL(ephemeris, trajectory(_))
       .WillOnce(Return(make_not_null<ContinuousTrajectory<World> const*>()));
   Manœuvre<World, Rendering> const manœuvre_read =
@@ -388,7 +417,7 @@ TEST_F(ManœuvreTest, Serialization) {
 #endif
   EXPECT_EQ(1 * Kilogram / Second, manœuvre_read.mass_flow());
 
-  EXPECT_EQ(1 * Metre / Second, manœuvre.Δv());
+  EXPECT_EQ(1 * Metre / Second, manœuvre.Δv().Norm());
   EXPECT_EQ((2 - 2 / e) * Second, manœuvre_read.duration());
   EXPECT_EQ((2 - 2 / Sqrt(e)) * Second, manœuvre_read.time_to_half_Δv());
   EXPECT_EQ((2 / e) * Kilogram, manœuvre_read.final_mass());
