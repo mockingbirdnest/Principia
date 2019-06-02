@@ -24,4 +24,4 @@ foreach ($name in $names) {
 
 write-error (
     "Could not find Visual Studio version $version preview $preview;" +
-    " found the following versions:`n$names")
+    " found the following versions:`n${[string]::join('`n', $names)}")
