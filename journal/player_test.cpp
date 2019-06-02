@@ -22,7 +22,7 @@ void BM_PlayForReal(benchmark::State& state) {
     Player player(
         R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20180311-192733)");
     int count = 0;
-    while (player.Play()) {
+    while (player.Play(count)) {
       ++count;
       LOG_IF(ERROR, (count % 100'000) == 0)
           << count << " journal entries replayed";
@@ -74,7 +74,7 @@ TEST_F(PlayerTest, PlayTiny) {
 
   // Replay the journal.
   int count = 0;
-  while (player.Play()) {
+  while (player.Play(count)) {
     ++count;
   }
   EXPECT_EQ(2, count);
@@ -88,10 +88,10 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(C:\Program Files\Kerbal Space Program\1.6.1\glog\Principia\JOURNAL.20190520-205625)";  // NOLINT
+      R"(C:\Program Files\Kerbal Space Program\1.7.0\glog\Principia\JOURNAL.20190601-174743)";  // NOLINT
   Player player(path);
   int count = 0;
-  while (player.Play()) {
+  while (player.Play(count)) {
     ++count;
     LOG_IF(ERROR, (count % 100'000) == 0) << count
                                           << " journal entries replayed";
@@ -108,8 +108,8 @@ TEST_F(PlayerTest, DISABLED_Debug) {
     auto* extension = method_in.MutableExtension(
         serialization::FlightPlanGetManoeuvreFrenetTrihedron::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(2634828656);
-    in->set_vessel_guid("88d741d3-600c-4f4b-9567-8109cecab2bd");
+    in->set_plugin(2312193072);
+    in->set_vessel_guid("bedd9d23-de56-4fb8-881c-f647e22f848f");
     in->set_index(0);
   }
   serialization::Method method_out_return;
