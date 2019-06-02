@@ -17,11 +17,11 @@ $msbuildpaths = &$vswhere                 `
 $i = 0;
 foreach ($name in $names) {
   if ($name.startswith("VisualStudioPreview/$version-pre.$preview.")) {
-    return $msbuildpaths | select-object $i
+    return $msbuildpaths[$i]
   }
   ++$i
 }
 
-write-error (
+write-error(
     "Could not find Visual Studio version $version preview $preview;" +
-    " found the following versions:`n${$names | join-string -separator "`r`n"}")
+    " found the following versions:`n$([string]::join("`n", $names))")
