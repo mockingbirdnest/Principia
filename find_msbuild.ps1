@@ -17,7 +17,7 @@ $msbuildpaths = &$vswhere                 `
 $i = 0;
 foreach ($name in $names) {
   if ($name.startswith("VisualStudioPreview/$version-pre.$preview.")) {
-    return $msbuildpaths[$i]
+    return ($msbuildpaths | select-object -index $i)
   }
   ++$i
 }

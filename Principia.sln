@@ -82,9 +82,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "base\base.vcxproj",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}"
 	ProjectSection(SolutionItems) = preProject
+		build_for_benchmarking.ps1 = build_for_benchmarking.ps1
+		debug_and_release_in_parallel.xml = debug_and_release_in_parallel.xml
+		find_msbuild.ps1 = find_msbuild.ps1
 		generate_version_translation_unit.ps1 = generate_version_translation_unit.ps1
 		install_deps.sh = install_deps.sh
+		make_principia_release.ps1 = make_principia_release.ps1
 		rebuild_all_solutions.ps1 = rebuild_all_solutions.ps1
+		rebuild_debug_and_release_in_parallel.ps1 = rebuild_debug_and_release_in_parallel.ps1
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "coverage_analyser", "coverage_analyser\coverage_analyser.csproj", "{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}"
