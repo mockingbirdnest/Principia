@@ -212,6 +212,7 @@ TEST_F(GeodesyTest, LAGEOS2) {
                             *expected_elements.mean_anomaly),
               IsNear(58 * ArcMinute));
 
+#if 0
   // Error arising from uncertainty in the initial state, estimated as the
   // difference between the primary and secondary ILRS products.
   // Absolute error in position.
@@ -236,6 +237,7 @@ TEST_F(GeodesyTest, LAGEOS2) {
                     IsNear(11 * Centi(Metre)),    // No FMA.
                     IsNear(43 * Centi(Metre)),    // FMA.
                     IsNear(93 * Centi(Metre))));  // VS 2019.
+#endif
 }
 
 #endif
