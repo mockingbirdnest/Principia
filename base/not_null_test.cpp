@@ -43,7 +43,7 @@ TEST_F(NotNullDeathTest, DeathByNullptr) {
 
 TEST_F(NotNullTest, Move) {
   not_null<std::unique_ptr<int>> int_ptr1 = make_not_null_unique<int>(3);
-#if !PRINCIPIA_COMPILER_MSVC ||     \
+#if !PRINCIPIA_COMPILER_MSVC || \
     !(_MSC_FULL_VER == 190'023'506 || \
       _MSC_FULL_VER == 190'023'918 || \
       _MSC_FULL_VER == 190'024'210 || \
@@ -59,7 +59,8 @@ TEST_F(NotNullTest, Move) {
       _MSC_FULL_VER == 191'627'024 || \
       _MSC_FULL_VER == 191'627'025 || \
       _MSC_FULL_VER == 191'627'027 || \
-      _MSC_FULL_VER == 192'027'508)
+      _MSC_FULL_VER == 192'027'508 || \
+      _MSC_FULL_VER == 192'227'706)
   EXPECT_THAT(*(std::unique_ptr<int> const&)int_ptr1, Eq(3));
 #endif
   not_null<std::unique_ptr<int>> int_ptr2 = std::move(int_ptr1);

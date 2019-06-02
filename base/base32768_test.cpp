@@ -84,7 +84,8 @@ using Base32768DeathTest = Base32768Test;
       _MSC_FULL_VER == 191'627'024 || \
       _MSC_FULL_VER == 191'627'025 || \
       _MSC_FULL_VER == 191'627'027 || \
-      _MSC_FULL_VER == 192'027'508)
+      _MSC_FULL_VER == 192'027'508 || \
+      _MSC_FULL_VER == 192'227'706)
 TEST_F(Base32768Test, EncodeMultipleOf15Bits) {
   // First 15 bytes of the MD5 of the empty string.
   Array<std::uint8_t const> const binary("\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04"
