@@ -3,7 +3,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5EEA5210-0FA9-4B44-8466-C40B22D24E8E}</ProjectGuid>
     <RootNamespace>astronomy</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
