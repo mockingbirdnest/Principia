@@ -1,8 +1,8 @@
 $version = "15.9.3"
 $preview = "1"
 
-$vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe";
-$names = &$vswhere                     `
+$vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+$names = &$vswhere                        `
     -prerelease                           `
     -all                                  `
     -requires Microsoft.Component.MSBuild `
