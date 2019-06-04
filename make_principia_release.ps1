@@ -83,7 +83,7 @@ foreach ($ksp_version in $compatibility_ksp_versions) {
   if (!(sls ([regex]::escape($ksp_version)) -encoding Unicode `
         (".\Release\$ksp_version Compatibility\GameData\Principia\" +
              "ksp_plugin_adapter.dll"))) {
-    write-error ("Configuration Release KSP $ksp_version does not target "+
+    write-error ("Configuration Release KSP $ksp_version does not target " +
                  "$ksp_version.")
   }
 }
