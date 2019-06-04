@@ -45,9 +45,7 @@ if ($tag -in $(git tag)) {
 
 git checkout "$remote/master"
 git tag $tag -m $mathematician
-#git push $remote --tags REMOVE BEFORE FLIGHT: uncomment
-
-if (0) { # REMOVE BEFORE FLIGHT
+git push $remote --tags
 
 if (test-path .\Release) {
   rm .\Release -recurse
@@ -58,8 +56,6 @@ if (test-path .\Release) {
     /property:Configuration=Release `
     /property:Platform=x64          `
     .\Principia.sln
-
-} # REMOVE BEFORE FLIGHT
 
 &$msbuild                              `
     "/t:ksp_plugin;ksp_plugin_adapter" `
