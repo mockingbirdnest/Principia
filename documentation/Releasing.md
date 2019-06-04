@@ -11,9 +11,9 @@ names with the appropriate cases.
 - [ ] Make sure that the project can be built and tested under Linux.
 - [ ] Run the following command, where:
   - `yyyyMMddHH` is the date of the new moon in UT1,
-  - `"<language>"` is the language code for the language in which `<Mathematician>` is written,
+  - `<language>` is the language code for the language in which `<Mathematician>` is written,
   - `1.x.y` is the primary KSP version (the latest version targeted by the `Release` configuration), and
-  - `"1.u.v", ...` is the (possibly empty) list of supported KSP versions that require a separate build, where each version number is quoted and comma separated. 
+  - `"1.u.v", ...` is the (possibly empty) comma-separated list of supported KSP versions that require a separate build, where each version number is quoted.
 ```powershell
 make_principia_release "<Mathematician>" "<language>" "yyyyMMddHH" "1.x.y" @("1.u.v", ...)
 ```
