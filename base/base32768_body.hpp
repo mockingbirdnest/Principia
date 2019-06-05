@@ -161,8 +161,7 @@ constexpr auto fifteen_bits = MakeRepertoire<block_size>(
       _MSC_FULL_VER == 191'627'024 || \
       _MSC_FULL_VER == 191'627'025 || \
       _MSC_FULL_VER == 191'627'027 || \
-      _MSC_FULL_VER == 192'027'508 || \
-      _MSC_FULL_VER == 192'227'706)
+      _MSC_FULL_VER == 192'027'508)
     u"ᖀᖠᗀᗠᘀᘠᙀᚠᛀកᠠᡀᣀᦀ᧠ᨠᯀᰀᴀ⇠⋀⍀⍠⎀⎠⏀␀─┠╀╠▀"
     u"■◀◠☀☠♀♠⚀⚠⛀⛠✀✠❀➀➠⠀⠠⡀⡠⢀⢠⣀⣠⤀⤠⥀⥠⦠⨠⩀⪀"
     u"⪠⫠⬀⬠⭀ⰀⲀⲠⳀⴀⵀ⺠⻀㇀㐀㐠㑀㑠㒀㒠㓀㓠㔀㔠㕀㕠㖀㖠㗀㗠㘀㘠"
