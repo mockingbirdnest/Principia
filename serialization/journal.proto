@@ -135,7 +135,8 @@ message QP {
 message Status {
   // A principia::base::Error, or equivalently, a google.rpc.Code.
   required int32 error = 1;
-  // TODO(phl): find a way to produce strings in a struct.
+  // TODO(phl): find a way to produce strings in a struct and to interchange
+  // enums.
 }
 
 message WXYZ {
@@ -152,7 +153,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5157.
+  extensions 5000 to 5999;  // Last used: 5159.
 }
 
 message AdvanceTime {
@@ -512,7 +513,7 @@ message FlightPlanAppend {
     required Burn burn = 3;
   }
   message Return {
-    required bool result = 1;
+    required Status result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -675,6 +676,22 @@ message FlightPlanGetManoeuvreFrenetTrihedron {
   optional Return return = 3;
 }
 
+message FlightPlanNumberOfAnomalousManoeuvres {
+  extend Method {
+    optional FlightPlanNumberOfAnomalousManoeuvres extension = 5159;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message FlightPlanNumberOfManoeuvres {
   extend Method {
     optional FlightPlanNumberOfManoeuvres extension = 5038;
@@ -716,7 +733,11 @@ message FlightPlanRemoveLast {
                                  (is_subject) = true];
     required string vessel_guid = 2;
   }
+  message Return {
+    required Status result = 1;
+  }
   optional In in = 1;
+  optional Return return = 3;
 }
 
 message FlightPlanRenderedApsides {
@@ -804,6 +825,24 @@ message FlightPlanRenderedSegment {
   optional Return return = 3;
 }
 
+message FlightPlanReplace {
+  extend Method {
+    optional FlightPlanReplace extension = 5158;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required Burn burn = 3;
+    required int32 index = 4;
+  }
+  message Return {
+    required Status result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message FlightPlanReplaceLast{
   extend Method {
     optional FlightPlanReplaceLast extension = 5066;
@@ -815,7 +854,7 @@ message FlightPlanReplaceLast{
     required Burn burn = 3;
   }
   message Return {
-    required bool result = 1;
+    required Status result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -833,7 +872,7 @@ message FlightPlanSetAdaptiveStepParameters {
         flight_plan_adaptive_step_parameters = 3;
   }
   message Return {
-    required bool result = 1;
+    required Status result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -850,7 +889,7 @@ message FlightPlanSetDesiredFinalTime {
     required double final_time = 3;
   }
   message Return {
-    required bool result = 1;
+    required Status result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

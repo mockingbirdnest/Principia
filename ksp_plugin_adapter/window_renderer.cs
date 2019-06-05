@@ -65,9 +65,9 @@ internal class ScalingRenderer {
     skin.horizontalSliderThumb.fixedHeight = 21 * scale_;
     skin.horizontalSliderThumb.fixedWidth = 12 * scale_;
     skin.label.alignment = UnityEngine.TextAnchor.MiddleLeft;
-        skin.label.contentOffset =
-            new UnityEngine.Vector2(0, -label_height * scale_ / 20);
-        skin.label.fixedHeight = label_height * scale_;
+    skin.label.contentOffset =
+        new UnityEngine.Vector2(0, -label_height * scale_ / 20);
+    skin.label.fixedHeight = label_height * scale_;
     skin.textArea.alignment = UnityEngine.TextAnchor.MiddleLeft;
     skin.textArea.contentOffset =
         new UnityEngine.Vector2(0, -text_area_height * scale_ / 20);

@@ -30,23 +30,14 @@ using physics::RigidTransformation;
 
 namespace {
 
-Status MakeStatus(base::Status const status) {
-  Status result;
-  if (!status.ok()) {
-    LOG(ERROR) << status.message();
-  }
-  result.error = static_cast<int>(status.error());
-  return result;
-}
-
 // A wrapper for |MakeStatus(base::Status(error, message))|, since we often
 // construct the status in the interface itself.
 Status MakeStatus(Error const error, std::string const& message) {
-  return MakeStatus(base::Status(error, message));
+  return ToStatus(base::Status(error, message));
 }
 
 Status OK() {
-  return MakeStatus(base::Status::OK);
+  return ToStatus(base::Status::OK);
 }
 
 }  // namespace

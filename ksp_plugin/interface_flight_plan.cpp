@@ -169,25 +169,13 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
 
 }  // namespace
 
-bool principia__FlightPlanAppend(Plugin const* const plugin,
-                                 char const* const vessel_guid,
-                                 Burn const burn) {
+Status principia__FlightPlanAppend(Plugin const* const plugin,
+                                   char const* const vessel_guid,
+                                   Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
   CHECK_NOTNULL(plugin);
-
-  // NOTE(phl): Preserving the previous semantics of FlightPlan.
-  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
-  base::Status const status =
-      flight_plan.Append(FromInterfaceBurn(*plugin, burn));
-  if (status.error() == FlightPlan::singular ||
-      status.error() == FlightPlan::does_not_fit) {
-    return m.Return(false);
-  } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() == 0) {
-    return m.Return(true);
-  } else {
-    flight_plan.RemoveLast();
-    return m.Return(false);
-  }
+  return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).
+                               Append(FromInterfaceBurn(*plugin, burn))));
 }
 
 void principia__FlightPlanCreate(Plugin const* const plugin,
@@ -320,6 +308,17 @@ principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
   return m.Return(result);
 }
 
+int principia__FlightPlanNumberOfAnomalousManoeuvres(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanNumberOfAnomalousManoeuvres> m(
+      {plugin,
+       vessel_guid});
+  CHECK_NOTNULL(plugin);
+  return m.Return(GetFlightPlan(*plugin, vessel_guid).
+                      number_of_anomalous_manœuvres());
+}
+
 int principia__FlightPlanNumberOfManoeuvres(Plugin const* const plugin,
                                             char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfManoeuvres> m({plugin,
@@ -335,12 +334,11 @@ int principia__FlightPlanNumberOfSegments(Plugin const* const plugin,
   return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_segments());
 }
 
-void principia__FlightPlanRemoveLast(Plugin const* const plugin,
-                                     char const* const vessel_guid) {
+Status principia__FlightPlanRemoveLast(Plugin const* const plugin,
+                                       char const* const vessel_guid) {
   journal::Method<journal::FlightPlanRemoveLast> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  GetFlightPlan(*plugin, vessel_guid).RemoveLast();
-  return m.Return();
+  return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).RemoveLast()));
 }
 
 void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
@@ -456,34 +454,34 @@ Iterator* principia__FlightPlanRenderedSegment(
       plugin));
 }
 
-bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
-                                      char const* const vessel_guid,
-                                      Burn const burn) {
+Status principia__FlightPlanReplace(Plugin const* const plugin,
+                                    char const* const vessel_guid,
+                                    Burn const burn,
+                                    int const index) {
+  journal::Method<journal::FlightPlanReplace> m({plugin,
+                                                 vessel_guid,
+                                                 burn,
+                                                 index});
+  CHECK_NOTNULL(plugin);
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).
+                               Replace(FromInterfaceBurn(*plugin, burn),
+                                       index)));
+}
+
+Status principia__FlightPlanReplaceLast(Plugin const* const plugin,
+                                        char const* const vessel_guid,
+                                        Burn const burn) {
   journal::Method<journal::FlightPlanReplaceLast> m({plugin,
                                                      vessel_guid,
                                                      burn});
   CHECK_NOTNULL(plugin);
-
-  // NOTE(phl): Preserving the previous semantics of FlightPlan.
   auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
-  auto const manœuvre =
-      flight_plan.GetManœuvre(flight_plan.number_of_manœuvres() - 1);
-  base::Status const status =
-      flight_plan.ReplaceLast(FromInterfaceBurn(*plugin, burn));
-  if (status.error() == FlightPlan::singular ||
-      status.error() == FlightPlan::does_not_fit) {
-    return m.Return(false);
-  } else if (status.ok() || flight_plan.number_of_anomalous_manœuvres() == 0) {
-    return m.Return(true);
-  } else {
-    // The last manœuvre is broken.  Roll it back.
-    flight_plan.RemoveLast();
-    flight_plan.Append(manœuvre.burn());
-    return m.Return(false);
-  }
+  return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).
+                               ReplaceLast(FromInterfaceBurn(*plugin, burn))));
 }
 
-bool principia__FlightPlanSetAdaptiveStepParameters(
+Status principia__FlightPlanSetAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid,
     FlightPlanAdaptiveStepParameters const
@@ -493,38 +491,20 @@ bool principia__FlightPlanSetAdaptiveStepParameters(
   CHECK_NOTNULL(plugin);
   auto const parameters = FromFlightPlanAdaptiveStepParameters(
       flight_plan_adaptive_step_parameters);
-
-  // NOTE(phl): Preserving the previous semantics of FlightPlan.
-  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
-  auto const adaptive_step_parameters =
-      flight_plan.adaptive_step_parameters();
-  auto const generalized_adaptive_step_parameters =
-      flight_plan.generalized_adaptive_step_parameters();
-  base::Status const status =
-      flight_plan.SetAdaptiveStepParameters(parameters.first,
-                                            parameters.second);
-  if (status.ok()) {
-    return m.Return(true);
-  } else {
-    flight_plan.SetAdaptiveStepParameters(adaptive_step_parameters,
-                                          generalized_adaptive_step_parameters);
-    return m.Return(false);
-  }
+  return m.Return(
+      ToStatus(GetFlightPlan(*plugin, vessel_guid).
+          SetAdaptiveStepParameters(parameters.first, parameters.second)));
 }
 
-bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
-                                              char const* const vessel_guid,
-                                              double const final_time) {
+Status principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
+                                                char const* const vessel_guid,
+                                                double const final_time) {
   journal::Method<journal::FlightPlanSetDesiredFinalTime> m({plugin,
                                                              vessel_guid,
                                                              final_time});
   CHECK_NOTNULL(plugin);
-
-  // NOTE(phl): Preserving the previous semantics of FlightPlan.
-  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
-  base::Status const status =
-      flight_plan.SetDesiredFinalTime(FromGameTime(*plugin, final_time));
-  return m.Return(status.error() != FlightPlan::bad_desired_final_time);
+  return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).
+                      SetDesiredFinalTime(FromGameTime(*plugin, final_time))));
 }
 
 }  // namespace interface

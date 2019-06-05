@@ -335,6 +335,13 @@ inline QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
   return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::ToQP(relative_dof);
 }
 
+inline Status ToStatus(base::Status const& status) {
+  if (!status.ok()) {
+    LOG(ERROR) << status.message();
+  }
+  return {static_cast<int>(status.error())};
+}
+
 inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
   return {quaternion.real_part(),
           quaternion.imaginary_part().x,

@@ -4,6 +4,30 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
+internal partial struct Status {
+  public static Status OK = new Status{error = 0};
+  public bool is_aborted() {
+    return error == 10;
+  }
+  public bool is_failed_precondition() {
+    return error == 9;
+  }
+  public bool is_invalid_argument() {
+    return error == 3;
+  }
+  public bool is_out_of_range() {
+    return error == 11;
+  }
+  public bool ok() {
+    return error == 0;
+  }
+  public void Update(Status s) {
+    if (ok() && !s.ok()) {
+      this = s;
+    }
+  }
+}
+
 internal partial struct XYZ {
   public static explicit operator XYZ(Vector3d v) {
     return new XYZ{x = v.x, y = v.y, z = v.z};
