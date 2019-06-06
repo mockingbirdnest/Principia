@@ -132,12 +132,12 @@ class FlightPlanner : SupervisedWindowRenderer {
     if (burn_editors_ != null) {
       string vessel_guid = vessel_?.id.ToString();
       double current_time = plugin.CurrentTime();
-      first_future_manoeuvre_ = null;
+      first_future_manœuvre_ = null;
       for (int i = 0; i < burn_editors_.Count; ++i) {
-        NavigationManoeuvre manoeuvre =
+        NavigationManoeuvre manœuvre =
             plugin.FlightPlanGetManoeuvre(vessel_guid, i);
-        if (current_time < manoeuvre.final_time) {
-          first_future_manoeuvre_ = i;
+        if (current_time < manœuvre.final_time) {
+          first_future_manœuvre_ = i;
           break;
         }
       }
@@ -297,26 +297,26 @@ class FlightPlanner : SupervisedWindowRenderer {
     double current_time = plugin.CurrentTime();
 
     Style.HorizontalLine();
-    if (first_future_manoeuvre_.HasValue) {
-      int first_future_manoeuvre = first_future_manoeuvre_.Value;
-      NavigationManoeuvre manoeuvre =
-          plugin.FlightPlanGetManoeuvre(vessel_guid, first_future_manoeuvre);
-      if (manoeuvre.burn.initial_time > current_time) {
+    if (first_future_manœuvre_.HasValue) {
+      int first_future_manœuvre = first_future_manœuvre_.Value;
+      NavigationManoeuvre manœuvre =
+          plugin.FlightPlanGetManoeuvre(vessel_guid, first_future_manœuvre);
+      if (manœuvre.burn.initial_time > current_time) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label("Upcoming manœuvre #" +
-                                      (first_future_manoeuvre + 1) + ":");
+                                      (first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
               "Ignition " + FormatTimeSpan(TimeSpan.FromSeconds(
-                                current_time - manoeuvre.burn.initial_time)),
+                                current_time - manœuvre.burn.initial_time)),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label("Ongoing manœuvre #" +
-                                      (first_future_manoeuvre + 1) + ":");
+                                      (first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
               "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
-                              current_time - manoeuvre.final_time)),
+                              current_time - manœuvre.final_time)),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
       }
@@ -330,7 +330,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           show_guidance_ =
               UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
           if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
-            TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
+            TimeWarp.fetch.WarpTo(manœuvre.burn.initial_time - 60);
           }
         }
       }
@@ -407,15 +407,15 @@ class FlightPlanner : SupervisedWindowRenderer {
     return true;
   }
 
-  private void UpdateStatus(Status status, int? error_manoeuvre) {
+  private void UpdateStatus(Status status, int? error_manœuvre) {
     if (message_was_displayed_) {
       status_ = Status.OK;
-      first_error_manoeuvre_ = null;
+      first_error_manœuvre_ = null;
       message_was_displayed_ = false;
     }
     if (status_.ok() && !status.ok()) {
       status_ = status;
-      first_error_manoeuvre_ = error_manoeuvre;
+      first_error_manœuvre_ = error_manœuvre;
     }
   }
 
@@ -423,9 +423,9 @@ class FlightPlanner : SupervisedWindowRenderer {
     string vessel_guid = vessel_?.id.ToString();
     string message = "";
     if (vessel_guid != null && !status_.ok()) {
-      int anomalous_manoeuvres =
+      int anomalous_manœuvres =
           plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
-      int manoeuvres = plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
+      int manœuvres = plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
       double actual_final_time =
           plugin.FlightPlanGetActualFinalTime(vessel_guid);
       bool timed_out = actual_final_time < final_time_.value;
@@ -448,41 +448,41 @@ class FlightPlanner : SupervisedWindowRenderer {
                          "centre of a celestial)" + time_out_message;
         remedy_message = "avoiding collisions with a celestial";
       } else if (status_.is_invalid_argument()) {
-        status_message = "manoeuvre #" + (first_error_manoeuvre_.Value + 1) +
+        status_message = "manœuvre #" + (first_error_manœuvre_.Value + 1) +
                          " would result in an infinite or indeterminate " +
                          "velocity";
-        remedy_message = "adjusting the duration of manoeuvre #" +
-                         (first_error_manoeuvre_.Value + 1);
+        remedy_message = "adjusting the duration of manœuvre #" +
+                         (first_error_manœuvre_.Value + 1);
       } else if (status_.is_out_of_range()) {
-        if (first_error_manoeuvre_.HasValue) {
-          status_message = "manoeuvre #" + (first_error_manoeuvre_.Value + 1) +
+        if (first_error_manœuvre_.HasValue) {
+          status_message = "manœuvre #" + (first_error_manœuvre_.Value + 1) +
                            " overlaps with " + 
-                           ((first_error_manoeuvre_.Value == 0)
+                           ((first_error_manœuvre_.Value == 0)
                                 ? "the start of the flight plan"
-                                : "manoeuvre #" +
-                                  first_error_manoeuvre_.Value) + " or " +
-                           ((first_error_manoeuvre_.Value == manoeuvres - 1)
+                                : "manœuvre #" +
+                                  first_error_manœuvre_.Value) + " or " +
+                           ((first_error_manœuvre_.Value == manœuvres - 1)
                                 ? "the end of the flight plan"
-                                : "manoeuvre #" +
-                                  (first_error_manoeuvre_.Value + 2));
-          remedy_message = ((first_error_manoeuvre_.Value == manoeuvres - 1)
+                                : "manœuvre #" +
+                                  (first_error_manœuvre_.Value + 2));
+          remedy_message = ((first_error_manœuvre_.Value == manœuvres - 1)
                                ? "extending the flight plan or "
                                : "") +
                            "increasing the initial time or reducing the " +
-                           "duration of manoeuvre #" +
-                           (first_error_manoeuvre_.Value + 1);
+                           "duration of manœuvre #" +
+                           (first_error_manœuvre_.Value + 1);
         } else {
           status_message = "flight plan final time overlaps the last " +
-                           "manoeuvre";
+                           "manœuvre";
           remedy_message = "increasing the flight plan duration";
         }
       }
 
-      if (anomalous_manoeuvres > 0) {
-        message = "The last " + anomalous_manoeuvres + " manoeuvres could " +
+      if (anomalous_manœuvres > 0) {
+        message = "The last " + anomalous_manœuvres + " manœuvres could " +
                   "not be drawn because the " + status_message + "; try " +
-                  remedy_message + " or adjusting manoeuvre " +
-                  (manoeuvres - anomalous_manoeuvres - 1) + ".";
+                  remedy_message + " or adjusting manœuvre " +
+                  (manœuvres - anomalous_manœuvres - 1) + ".";
       } else {
         message = "The " + status_message + "; try " + remedy_message + ".";
       }
@@ -497,13 +497,13 @@ class FlightPlanner : SupervisedWindowRenderer {
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
   private DifferentialSlider final_time_;
-  private int? first_future_manoeuvre_;
+  private int? first_future_manœuvre_;
 
   private bool show_guidance_ = false;
   private float warning_height_ = 1;
 
   private Status status_ = Status.OK;
-  private int? first_error_manoeuvre_;
+  private int? first_error_manœuvre_;
   private bool message_was_displayed_ = false;
   
   private const double log10_time_lower_rate = 0.0;
