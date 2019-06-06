@@ -277,11 +277,12 @@ TEST_F(FlightPlanTest, Singular) {
   // analytic expression for the time at which we reach the singularity, are
   // left as an exercise to the reader.
   EXPECT_THAT(
-      flight_plan_->ReplaceLast(
+      flight_plan_->Replace(
           MakeTangentBurn(/*thrust=*/10 * Newton,
                           /*specific_impulse=*/1 * Newton * Second / Kilogram,
                           /*initial_time=*/t0_ + 0.5 * Second,
-                          /*Δv=*/-1 * Metre / Second)),
+                          /*Δv=*/-1 * Metre / Second),
+          /*index=*/0),
       StatusIs(integrators::termination_condition::VanishingStepSize));
   EXPECT_EQ(0, flight_plan_->number_of_anomalous_manœuvres());
 
@@ -397,21 +398,21 @@ TEST_F(FlightPlanTest, RemoveLast) {
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
 }
 
-TEST_F(FlightPlanTest, ReplaceLast) {
+TEST_F(FlightPlanTest, Replace) {
   flight_plan_->SetDesiredFinalTime(t0_ + 1.7 * Second);
   EXPECT_OK(flight_plan_->Append(MakeFirstBurn()));
   Mass const old_final_mass =
       flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
           final_mass();
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  EXPECT_THAT(flight_plan_->ReplaceLast(MakeThirdBurn()),
+  EXPECT_THAT(flight_plan_->Replace(MakeThirdBurn(), /*index=*/0),
               StatusIs(FlightPlan::does_not_fit));
   EXPECT_EQ(old_final_mass,
             flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
                 final_mass());
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
-  EXPECT_OK(flight_plan_->ReplaceLast(MakeThirdBurn()));
+  EXPECT_OK(flight_plan_->Replace(MakeThirdBurn(), /*index=*/0));
   EXPECT_GT(old_final_mass,
             flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
                 final_mass());
@@ -527,7 +528,7 @@ TEST_F(FlightPlanTest, GuidedBurn) {
   auto guided_burn = MakeFirstBurn();
   guided_burn.thrust /= 10;
   guided_burn.is_inertially_fixed = false;
-  EXPECT_OK(flight_plan_->ReplaceLast(std::move(guided_burn)));
+  EXPECT_OK(flight_plan_->Replace(std::move(guided_burn), /*index=*/0));
   flight_plan_->GetAllSegments(begin, end);
   last = --end;
   Speed const guided_final_speed = last.degrees_of_freedom().velocity().Norm();

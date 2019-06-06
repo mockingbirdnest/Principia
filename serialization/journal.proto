@@ -843,23 +843,6 @@ message FlightPlanReplace {
   optional Return return = 3;
 }
 
-message FlightPlanReplaceLast{
-  extend Method {
-    optional FlightPlanReplaceLast extension = 5066;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required Burn burn = 3;
-  }
-  message Return {
-    required Status result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message FlightPlanSetAdaptiveStepParameters {
   extend Method {
     optional FlightPlanSetAdaptiveStepParameters extension = 5080;
