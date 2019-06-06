@@ -238,23 +238,21 @@ class FlightPlanner : SupervisedWindowRenderer {
         if (burn_editors_.Count > 0) {
           RenderUpcomingEvents();
         }
-        for (int i = 0; i < burn_editors_.Count - 1; ++i) {
+
+        for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
-          burn_editors_[i].Render(header: "Manœuvre #" + (i + 1));
-        }
-        if (burn_editors_.Count > 0) {
-          Style.HorizontalLine();
-          BurnEditor last_burn = burn_editors_.Last();
-          if (last_burn.Render(header            : "Editing manœuvre #" +
-                                                   (burn_editors_.Count),
-                               actual_final_time : actual_final_time)) {
-            var status = plugin.FlightPlanReplaceLast(vessel_guid,
-                                                      last_burn.Burn());
-            UpdateStatus(status, burn_editors_.Count - 1);
-            last_burn.Reset(
-                plugin.FlightPlanGetManoeuvre(vessel_guid,
-                                              burn_editors_.Count - 1));
+          BurnEditor burn = burn_editors_[i];
+          if (burn.Render(header            : "Manœuvre #" + (i + 1),
+                          actual_final_time :
+                              plugin.FlightPlanGetManoeuvre(
+                                  vessel_guid, i).final_time)) {
+            var status = plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
+            UpdateStatus(status, i);
+            burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
           }
+        }
+
+        if (burn_editors_.Count > 0) {
           if (UnityEngine.GUILayout.Button(
                   "Delete last manœuvre",
                   UnityEngine.GUILayout.ExpandWidth(true))) {
