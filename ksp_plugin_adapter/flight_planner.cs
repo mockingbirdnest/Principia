@@ -146,7 +146,7 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      if (final_time_.Render(enabled : true)) {
+      if (final_time_.Render()) {
         var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
                                                           final_time_.value);
         UpdateStatus(status, null);
@@ -240,15 +240,13 @@ class FlightPlanner : SupervisedWindowRenderer {
         }
         for (int i = 0; i < burn_editors_.Count - 1; ++i) {
           Style.HorizontalLine();
-          burn_editors_[i].Render(header: "Manœuvre #" + (i + 1),
-                                  enabled : false);
+          burn_editors_[i].Render(header: "Manœuvre #" + (i + 1));
         }
         if (burn_editors_.Count > 0) {
           Style.HorizontalLine();
           BurnEditor last_burn = burn_editors_.Last();
           if (last_burn.Render(header            : "Editing manœuvre #" +
                                                    (burn_editors_.Count),
-                               enabled           : true,
                                actual_final_time : actual_final_time)) {
             var status = plugin.FlightPlanReplaceLast(vessel_guid,
                                                       last_burn.Burn());
