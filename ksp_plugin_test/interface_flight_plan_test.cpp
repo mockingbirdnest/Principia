@@ -385,23 +385,19 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillOnce(FillUniquePtr<1>(
                     new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
   auto const manœuvre = NavigationManœuvre(/*initial_mass=*/1 * Kilogram, burn);
-  EXPECT_CALL(flight_plan,
-              Replace(
-                  AllOf(HasThrust(10 * Kilo(Newton)),
-                        HasSpecificImpulse(2 * Second * StandardGravity),
-                        HasInitialTime(Instant() + 3 * Second),
-                        HasΔv(Velocity<Frenet<Navigation>>(
-                                  {4 * (Metre / Second),
-                                   5 * (Metre / Second),
-                                   6 * (Metre / Second)}))),
-                  flight_plan.number_of_manœuvres() - 1))
+  EXPECT_CALL(
+      flight_plan,
+      Replace(
+          AllOf(HasThrust(10 * Kilo(Newton)),
+                HasSpecificImpulse(2 * Second * StandardGravity),
+                HasInitialTime(Instant() + 3 * Second),
+                HasΔv(Velocity<Frenet<Navigation>>({4 * (Metre / Second),
+                                                    5 * (Metre / Second),
+                                                    6 * (Metre / Second)}))),
+          42))
       .WillOnce(Return(base::Status::OK));
-  EXPECT_EQ(0,
-            principia__FlightPlanReplace(plugin_.get(),
-                                         vessel_guid,
-                                         interface_burn,
-                                         flight_plan.number_of_manœuvres() - 1)
-                .error);
+  EXPECT_EQ(0, principia__FlightPlanReplace(
+                   plugin_.get(), vessel_guid, interface_burn, 42).error);
 
   EXPECT_CALL(flight_plan, RemoveLast());
   principia__FlightPlanRemoveLast(plugin_.get(), vessel_guid);
