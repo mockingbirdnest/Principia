@@ -239,13 +239,20 @@ class FlightPlanner : SupervisedWindowRenderer {
           RenderUpcomingEvents();
         }
 
+        // Compute the final times for each manœuvre before displaying them.
+        var final_times = new List<double>();
+        for (int i = 0; i < burn_editors_.Count - 1; ++i) {
+          final_times.Add(
+              plugin.FlightPlanGetManoeuvre(vessel_guid, i + 1).
+                  burn.initial_time);
+        }
+        final_times.Add(plugin.FlightPlanGetActualFinalTime(vessel_guid));
+
         for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
           BurnEditor burn = burn_editors_[i];
-          if (burn.Render(header            : "Manœuvre #" + (i + 1),
-                          actual_final_time :
-                              plugin.FlightPlanGetManoeuvre(
-                                  vessel_guid, i).final_time)) {
+          if (burn.Render(header     : "Manœuvre #" + (i + 1),
+                          final_time : final_times[i])) {
             var status = plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
             UpdateStatus(status, i);
             burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));

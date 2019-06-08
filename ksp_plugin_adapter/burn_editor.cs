@@ -59,10 +59,10 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(string header, double actual_final_time) {
+  public bool Render(string header, double final_time) {
     bool changed = false;
     //TODO(phl):Is this right?
-    previous_coast_duration_.max_value = actual_final_time - time_base;
+    previous_coast_duration_.max_value = final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(header);
       string frame_info = "";
