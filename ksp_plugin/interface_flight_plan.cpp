@@ -469,18 +469,6 @@ Status principia__FlightPlanReplace(Plugin const* const plugin,
                                        index)));
 }
 
-Status principia__FlightPlanReplaceLast(Plugin const* const plugin,
-                                        char const* const vessel_guid,
-                                        Burn const burn) {
-  journal::Method<journal::FlightPlanReplaceLast> m({plugin,
-                                                     vessel_guid,
-                                                     burn});
-  CHECK_NOTNULL(plugin);
-  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
-  return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).
-                               ReplaceLast(FromInterfaceBurn(*plugin, burn))));
-}
-
 Status principia__FlightPlanSetAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid,

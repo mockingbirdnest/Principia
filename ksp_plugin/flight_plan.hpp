@@ -97,10 +97,6 @@ class FlightPlan {
   // Otherwise, updates the flight plan and returns the integration status.
   virtual Status Replace(NavigationManœuvre::Burn const& burn, int index);
 
-  // Same as above, but for the last manœuvre.  |number_of_manœuvres()| must be
-  // at least one..
-  virtual Status ReplaceLast(NavigationManœuvre::Burn const& burn);
-
   // Updates the desired final time of the flight plan.  Returns an error and
   // has no effect |desired_final_time| is before the beginning of the last
   // coast.

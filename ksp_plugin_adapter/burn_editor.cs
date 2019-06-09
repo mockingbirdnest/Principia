@@ -59,12 +59,11 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(string header,
-                     bool enabled,
-                     double? actual_final_time = null) {
+  public bool Render(string header, 
+                     bool anomalous,
+                     double final_time) {
     bool changed = false;
-    previous_coast_duration_.max_value =
-        (actual_final_time ?? double.PositiveInfinity) - time_base;
+    previous_coast_duration_.max_value = final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(header);
       string frame_info = "";
@@ -86,7 +85,12 @@ class BurnEditor : ScalingRenderer {
         engine_warning_ = "";
         ComputeEngineCharacteristics();
       }
-      if (enabled) {
+
+      // The frame selector is disabled for an anomalous manœuvre as is has no
+      // effect.
+      if (anomalous) {
+         reference_frame_selector_.Hide();
+      } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           if (UnityEngine.GUILayout.Button("Active Engines")) {
             engine_warning_ = "";
@@ -103,8 +107,6 @@ class BurnEditor : ScalingRenderer {
           }
         }
         reference_frame_selector_.RenderButton();
-      } else {
-        reference_frame_selector_.Hide();
       }
       if (is_inertially_fixed_ !=
           UnityEngine.GUILayout.Toggle(is_inertially_fixed_,
@@ -113,13 +115,19 @@ class BurnEditor : ScalingRenderer {
         is_inertially_fixed_ = !is_inertially_fixed_;
       }
       changed |= changed_reference_frame_;
-      changed |= Δv_tangent_.Render(enabled);
-      changed |= Δv_normal_.Render(enabled);
-      changed |= Δv_binormal_.Render(enabled);
+
+      // The Δv controls are disabled for an anomalous manœuvre as they have no
+      // effect.
+      changed |= Δv_tangent_.Render(enabled : !anomalous);
+      changed |= Δv_normal_.Render(enabled : !anomalous);
+      changed |= Δv_binormal_.Render(enabled : !anomalous);
       {
         var render_time_base = time_base;
         previous_coast_duration_.value = initial_time_ - render_time_base;
-        if (previous_coast_duration_.Render(enabled)) {
+
+        // The duration of the previous coast is always enabled as it can make
+        // a manœuvre non-anomalous.
+        if (previous_coast_duration_.Render(enabled : true)) {
           changed = true;
           initial_time_ = previous_coast_duration_.value + render_time_base;
         }
@@ -140,7 +148,7 @@ class BurnEditor : ScalingRenderer {
                                   Style.Warning(UnityEngine.GUI.skin.label));
       changed_reference_frame_ = false;
     }
-    return changed && enabled;
+    return changed;
   }
 
   public double Δv() {
