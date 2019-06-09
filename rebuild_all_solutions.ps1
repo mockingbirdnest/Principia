@@ -3,8 +3,8 @@ $ErrorActionPreference = "Stop"
 $msbuild = &".\Principia\find_msbuild.ps1"
 
 $dependencies = @(".\Google\glog\google-glog.sln",
-                  ".\Google\googletest\googletest\msvc\2017\gtest.sln",
-                  ".\Google\googletest\googlemock\msvc\2017\gmock.sln",
+                  ".\Google\googletest\googletest\msvc\gtest.sln",
+                  ".\Google\googletest\googlemock\msvc\gmock.sln",
                   ".\Google\protobuf\vsprojects\protobuf.sln",
                   ".\Google\benchmark\msvc\google-benchmark.sln",
                   ".\Google\gipfeli\msvc\gipfeli.sln",
