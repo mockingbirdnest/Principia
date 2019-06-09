@@ -146,7 +146,7 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      if (final_time_.Render()) {
+      if (final_time_.Render(enabled : true)) {
         var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
                                                           final_time_.value);
         UpdateStatus(status, null);
@@ -247,11 +247,15 @@ class FlightPlanner : SupervisedWindowRenderer {
                   burn.initial_time);
         }
         final_times.Add(plugin.FlightPlanGetActualFinalTime(vessel_guid));
+        int number_of_anomalous_manœuvres =
+            plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
 
         for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
           BurnEditor burn = burn_editors_[i];
           if (burn.Render(header     : "Manœuvre #" + (i + 1),
+                          anomalous  : i >= (burn_editors_.Count -
+                                             number_of_anomalous_manœuvres),
                           final_time : final_times[i])) {
             var status = plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
             UpdateStatus(status, i);

@@ -59,7 +59,9 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(string header, double final_time) {
+  public bool Render(string header, 
+                     bool anomalous,
+                     double final_time) {
     bool changed = false;
     previous_coast_duration_.max_value = final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -83,22 +85,29 @@ class BurnEditor : ScalingRenderer {
         engine_warning_ = "";
         ComputeEngineCharacteristics();
       }
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        if (UnityEngine.GUILayout.Button("Active Engines")) {
-          engine_warning_ = "";
-          ComputeEngineCharacteristics();
-          changed = true;
-        } else if (UnityEngine.GUILayout.Button("Active RCS")) {
-          engine_warning_ = "";
-          ComputeRCSCharacteristics();
-          changed = true;
-        } else if (UnityEngine.GUILayout.Button("Instant Impulse")) {
-          engine_warning_ = "";
-          UseTheForceLuke();
-          changed = true;
+
+      // The frame selector is disabled for an anomalous manœuvre as is has no
+      // effect.
+      if (anomalous) {
+         reference_frame_selector_.Hide();
+      } else {
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          if (UnityEngine.GUILayout.Button("Active Engines")) {
+            engine_warning_ = "";
+            ComputeEngineCharacteristics();
+            changed = true;
+          } else if (UnityEngine.GUILayout.Button("Active RCS")) {
+            engine_warning_ = "";
+            ComputeRCSCharacteristics();
+            changed = true;
+          } else if (UnityEngine.GUILayout.Button("Instant Impulse")) {
+            engine_warning_ = "";
+            UseTheForceLuke();
+            changed = true;
+          }
         }
+        reference_frame_selector_.RenderButton();
       }
-      reference_frame_selector_.RenderButton();
       if (is_inertially_fixed_ !=
           UnityEngine.GUILayout.Toggle(is_inertially_fixed_,
                                        "Inertially fixed")) {
@@ -106,13 +115,19 @@ class BurnEditor : ScalingRenderer {
         is_inertially_fixed_ = !is_inertially_fixed_;
       }
       changed |= changed_reference_frame_;
-      changed |= Δv_tangent_.Render();
-      changed |= Δv_normal_.Render();
-      changed |= Δv_binormal_.Render();
+
+      // The Δv controls are disabled for an anomalous manœuvre as they have no
+      // effect.
+      changed |= Δv_tangent_.Render(enabled : !anomalous);
+      changed |= Δv_normal_.Render(enabled : !anomalous);
+      changed |= Δv_binormal_.Render(enabled : !anomalous);
       {
         var render_time_base = time_base;
         previous_coast_duration_.value = initial_time_ - render_time_base;
-        if (previous_coast_duration_.Render()) {
+
+        // The duration of the previous coast is always enabled as it can make
+        // a manœuvre non-anomalous.
+        if (previous_coast_duration_.Render(enabled : true)) {
           changed = true;
           initial_time_ = previous_coast_duration_.value + render_time_base;
         }
