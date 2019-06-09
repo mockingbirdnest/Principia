@@ -475,7 +475,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           remedy_message = ((first_error_manœuvre_.Value == manœuvres - 1)
                                ? "extending the flight plan or "
                                : "") +
-                           "increasing the initial time or reducing the " +
+                           "adjusting the initial time or reducing the " +
                            "duration of manœuvre #" +
                            (first_error_manœuvre_.Value + 1);
         } else {
