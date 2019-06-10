@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace principia {
+﻿namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class Style {
@@ -68,7 +63,7 @@ internal static class Style {
   }
 
   // Close to XKCD "cool grey", but hue-neutral
-  private static UnityEngine.Color ultra_cool_grey_ =
+  private static readonly UnityEngine.Color ultra_cool_grey_ =
       new UnityEngine.Color(0.64f, 0.64f, 0.64f);
 }
 

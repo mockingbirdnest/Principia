@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -185,15 +183,17 @@ internal class MapNodePool {
     new_node.OnUpdateType +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
-          var properties = properties_[node];
+          MapNodeProperties properties = properties_[node];
           type.oType = properties.object_type;
-          if (properties.object_type == MapObject.ObjectType.PatchTransition) {
-            type.pType =
-                KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.Impact;
-          } else if (properties.object_type ==
-                     MapObject.ObjectType.ApproachIntersect) {
-            type.aType = KSP.UI.Screens.Mapview.MapNode.ApproachNodeType
-                             .CloseApproachOwn;
+          switch (properties.object_type) {
+            case MapObject.ObjectType.PatchTransition:
+              type.pType =
+                  KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.Impact;
+              break;
+            case MapObject.ObjectType.ApproachIntersect:
+              type.aType = KSP.UI.Screens.Mapview.MapNode.ApproachNodeType.
+                  CloseApproachOwn;
+              break;
           }
         };
     new_node.OnUpdateCaption +=

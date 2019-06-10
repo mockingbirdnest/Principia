@@ -17,7 +17,7 @@ internal abstract class UTF8Marshaler : ICustomMarshaler {
     return -1;
   }
 
-  protected readonly static Encoding utf8_ =
+  protected static readonly Encoding utf8_ =
       new UTF8Encoding(encoderShouldEmitUTF8Identifier : false,
                        throwOnInvalidBytes             : true);
 }
@@ -29,7 +29,7 @@ internal class InUTF8Marshaler : UTF8Marshaler {
   // marshalers must implement a static method called |GetInstance| that accepts
   // a |String| as a parameter and has a return type of |ICustomMarshaler|,
   // see https://goo.gl/wwmBTa.
-  public static ICustomMarshaler GetInstance(String s) {
+  public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
 
@@ -38,12 +38,11 @@ internal class InUTF8Marshaler : UTF8Marshaler {
   }
 
   public override IntPtr MarshalManagedToNative(object managed_object) {
-    var value = managed_object as String;
-    if (value == null) {
-      throw Log.Fatal(String.Format(CultureInfo.InvariantCulture,
+    if (!(managed_object is string value)) {
+      throw Log.Fatal(string.Format(CultureInfo.InvariantCulture,
                                     "|{0}| must be used on a |{1}|.",
                                     GetType().Name,
-                                    typeof(String).Name));
+                                    typeof(string).Name));
     }
     int size = utf8_.GetByteCount(value);
     IntPtr buffer = Marshal.AllocHGlobal(size + 1);
@@ -60,14 +59,14 @@ internal class InUTF8Marshaler : UTF8Marshaler {
     throw Log.Fatal("use |OutUTF8Marshaler| for out parameters");
   }
 
-  private readonly static InUTF8Marshaler instance_ = new InUTF8Marshaler();
+  private static readonly InUTF8Marshaler instance_ = new InUTF8Marshaler();
   private byte[] bytes_ = new byte[1];
 }
 
 // A marshaler for out parameter or return value UTF-8 strings whose ownership
 // is not taken by the caller.
 internal class OutUTF8Marshaler : UTF8Marshaler {
-  public static ICustomMarshaler GetInstance(String s) {
+  public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
 
@@ -86,14 +85,14 @@ internal class OutUTF8Marshaler : UTF8Marshaler {
     return utf8_.GetString(bytes_, 0, size);
   }
 
-  private readonly static OutUTF8Marshaler instance_ = new OutUTF8Marshaler();
+  private static readonly OutUTF8Marshaler instance_ = new OutUTF8Marshaler();
   private byte[] bytes_ = new byte[1];
 }
 
 // A marshaler for out parameter or return value UTF-8 strings whose ownership
 // is taken by the caller.
 internal class OutOwnedUTF8Marshaler : OutUTF8Marshaler {
-  public static new ICustomMarshaler GetInstance(String s) {
+  public new static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
 
@@ -101,7 +100,7 @@ internal class OutOwnedUTF8Marshaler : OutUTF8Marshaler {
     Interface.DeleteString(ref native_data);
   }
 
-  private readonly static OutOwnedUTF8Marshaler instance_ =
+  private static readonly OutOwnedUTF8Marshaler instance_ =
       new OutOwnedUTF8Marshaler();
 }
 

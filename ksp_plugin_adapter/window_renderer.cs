@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -142,7 +139,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
       if (must_centre_ && rectangle_.width > 0) {
         rectangle_ =
             UnityEngine.GUILayout.Window(
-                id         : this.GetHashCode(),
+                id         : GetHashCode(),
                 screenRect : new UnityEngine.Rect(
                     x      : (UnityEngine.Screen.width - rectangle_.width) / 2,
                     y      : UnityEngine.Screen.height / 3,
@@ -198,19 +195,19 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   // Persistence.
 
   public virtual void Load(ConfigNode node) {
-    String must_centre_value = node.GetAtMostOneValue("must_centre");
+    string must_centre_value = node.GetAtMostOneValue("must_centre");
     if (must_centre_value != null) {
       must_centre_ = Convert.ToBoolean(must_centre_value);
     }
-    String show_value = node.GetAtMostOneValue("show");
+    string show_value = node.GetAtMostOneValue("show");
     if (show_value != null) {
       show_ = Convert.ToBoolean(show_value);
     }
-    String x_value = node.GetAtMostOneValue("x");
+    string x_value = node.GetAtMostOneValue("x");
     if (x_value != null) {
       rectangle_.x = Convert.ToSingle(x_value);
     }
-    String y_value = node.GetAtMostOneValue("y");
+    string y_value = node.GetAtMostOneValue("y");
     if (y_value != null) {
       rectangle_.y = Convert.ToSingle(y_value);
     }
@@ -223,8 +220,8 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     node.SetValue("y", rectangle_.y, createIfNotFound : true);
   }
 
-  abstract protected String Title { get; }
-  abstract protected void RenderWindow(int window_id);
+  protected abstract string Title { get; }
+  protected abstract void RenderWindow(int window_id);
 
   private static readonly ControlTypes PrincipiaLock =
       ControlTypes.ALLBUTCAMERAS &
@@ -234,7 +231,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   private const float min_width_on_screen_ = 50;
 
   private readonly UnityEngine.GUILayoutOption[] options_;
-  private readonly String lock_name_;
+  private readonly string lock_name_;
   private UnityEngine.GUISkin skin_;
   private bool must_centre_ = true;
   private bool show_ = false;
@@ -248,9 +245,9 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
     event Action render_windows;
   }
 
-  public SupervisedWindowRenderer(ISupervisor supervisor,
-                                  params UnityEngine.GUILayoutOption[] options)
-        : base(options) {
+  protected SupervisedWindowRenderer(
+      ISupervisor supervisor,
+      params UnityEngine.GUILayoutOption[] options) : base(options) {
     supervisor_ = supervisor;
     supervisor_.clear_locks += ClearLock;
     supervisor_.dispose_windows += DisposeWindow;
@@ -263,11 +260,11 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
     supervisor_.render_windows -= RenderWindow;
   }
 
-  private ISupervisor supervisor_;
+  private readonly ISupervisor supervisor_;
 }
 
 internal abstract class UnsupervisedWindowRenderer : BaseWindowRenderer {
-  public UnsupervisedWindowRenderer(
+  protected UnsupervisedWindowRenderer(
       params UnityEngine.GUILayoutOption[] options) : base(options) {}
 }
 

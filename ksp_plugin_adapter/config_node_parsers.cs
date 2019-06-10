@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -87,10 +84,10 @@ internal static class ConfigNodeParsers {
                 ?? "90 deg",
         reference_angle      =
             node?.GetAtMostOneValue("reference_angle")
-                ?? (body.initialRotation.ToString() + " deg"),
+                ?? (body.initialRotation + " deg"),
         angular_frequency    =
             node?.GetAtMostOneValue("angular_frequency")
-                ??  (body.angularV.ToString() + " rad/s"),
+                ?? (body.angularV + " rad/s"),
         reference_radius     =
             node?.GetAtMostOneValue("reference_radius"),
         j2                   =
@@ -105,13 +102,13 @@ internal static class ConfigNodeParsers {
     List<BodyGeopotentialElement> elements =
         new List<BodyGeopotentialElement>();
     foreach (ConfigNode geopotential_row in geopotential_rows) {
-      String degree = geopotential_row.GetUniqueValue("degree");
+      string degree = geopotential_row.GetUniqueValue("degree");
       ConfigNode[] geopotential_columns =
           geopotential_row.GetNodes("geopotential_column");
       foreach (ConfigNode geopotential_column in geopotential_columns) {
-        String order = geopotential_column.GetUniqueValue("order");
-        String cos = geopotential_column.GetUniqueValue("cos");
-        String sin = geopotential_column.GetUniqueValue("sin");
+        string order = geopotential_column.GetUniqueValue("order");
+        string cos = geopotential_column.GetUniqueValue("cos");
+        string sin = geopotential_column.GetUniqueValue("sin");
         elements.Add(new BodyGeopotentialElement{degree = degree,
                                                  order = order,
                                                  cos = cos,

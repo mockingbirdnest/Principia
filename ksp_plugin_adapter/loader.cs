@@ -1,8 +1,8 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -17,7 +17,7 @@ internal static class Loader {
       return "32-bit platforms are no longer supported; " +
              "use the 64-bit KSP executable.";
     }
-    String[] possible_dll_paths = null;
+    string[] possible_dll_paths = null;
     bool? is_cxx_installed;
     string required_cxx_packages;
     switch (Environment.OSVersion.Platform) {
@@ -27,13 +27,13 @@ internal static class Loader {
             "the Visual C++ Redistributable Packages for Visual Studio " +
             "2017 on x64";
         possible_dll_paths =
-            new String[] {@"GameData\Principia\x64\principia.dll"};
+            new string[] {@"GameData\Principia\x64\principia.dll"};
         break;
       // Both Mac and Linux report |PlatformID.Unix|, so we treat them together
       // (we probably don't actually encounter |PlatformID.MacOSX|).
       case PlatformID.Unix:
       case PlatformID.MacOSX:
-        possible_dll_paths = new String[] {
+        possible_dll_paths = new string[] {
             @"GameData/Principia/Linux64/principia.so",
             @"GameData/Principia/MacOS64/principia.so"};
         is_cxx_installed = null;
@@ -46,7 +46,7 @@ internal static class Loader {
     }
     if (!possible_dll_paths.Any(File.Exists)) {
       return "The principia DLL was not found at '" +
-             String.Join("', '", possible_dll_paths) + "' in directory '" + 
+             string.Join("', '", possible_dll_paths) + "' in directory '" + 
              Directory.GetCurrentDirectory() + "'.";
     }
     try {
@@ -72,7 +72,7 @@ internal static class Loader {
       } else {
         return "An unknown error occurred; detected OS " +
                Environment.OSVersion + " 64-bit; tried loading dll at '" +
-               String.Join("', '", possible_dll_paths) + "'. Note that " +
+               string.Join("', '", possible_dll_paths) + "'. Note that " +
                required_cxx_packages + " are required.";
       }
     }
