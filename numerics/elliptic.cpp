@@ -636,58 +636,64 @@ void celbd(double const mc,double& elb, double& eld) {
   eldold=eld;
 }
 
-subroutine celbdj(nc,mc,bc,dc,jc)
-real*8 nc,mc,bc,dc,jc,kc,cel
-integer err
-call celbd(mc,bc,dc)
-kc=sqrt(mc)
-jc=cel(kc,nc,0.d0,1.d0,err)
-return
-end
-//---------------------------------------------------------------------------
-subroutine elcbdj(c0,n,mc,b,d,j)
+void Celbdj(double const nc,
+            double const mc,
+            double const bc,
+            double const dc,
+            double& jc) {
+  double kc, cel;
+  int err;
+  Celbd(mc, bc, dc);
+  kc = sqrt(mc);
+  jc = cel(kc, nc, 0.d0, 1.d0, err);
+}
 
-real*8 c0,n,mc,b,d,j
-real*8 c,x,y,s,m,sy,t,h
-real*8 yy(11),ss(11),cd(11)
-real*8 uatan
-integer i,k
+void Elcbdj(double const c0,
+            double const n,
+            double const mc,
+            double& b,
+            double& d,
+            double& j) {
+  double c, x, y, s, m, sy, t, h;
+  double yy(11), ss(11), cd(11);
+  double uatan;
+  int i, k;
 
-c=c0
-x=c*c
-y=1.d0-x
-s=sqrt(y)
-if(x.gt.0.1d0) then
-  call elsbdj(s,n,mc,b,d,j)
-    return
-endif
-m=1.d0-mc
-ss(1)=s
-do i=1,10
-    d=sqrt(mc+m*x)
-  x=(c+d)/(1.d0+d)
-  y=1.d0-x
-  yy(i+1)=y
-  ss(i+1)=sqrt(y)
-  cd(i)=c*d
-    if(x.gt.0.1d0) then
-        goto 1
-  endif
-  c=sqrt(x)
-enddo
-write(*,*) "(elcbdj) too many iterations: c0,n,mc=",c0,n,mc
-1 continue
-s=ss(i+1)
-call elsbdj(s,n,mc,b,d,j)
-do k=i,1,-1
-  sy=ss(k)*yy(k+1)
-  t=sy/(1.d0-n*(yy(k)-yy(k+1)*cd(k)))
-  b=2.d0*b-sy
-  d=d+(d+sy)
-  j=j+(j+uatan(t,h))
-enddo
-return
-end
+  c = c0;
+  x = c * c;
+  y = 1.d0 - x;
+  s = sqrt(y);
+  if (x > 0.1d0) {
+    Elsbdj(s, n, mc, b, d, j);
+    return;
+  }
+  m = 1.d0 - mc;
+  ss(1) = s;
+  for (int i = 1; i <= 10; ++i) {
+    d = sqrt(mc + m * x);
+    x = (c + d) / (1.d0 + d);
+    y = 1.d0 - x;
+    yy(i + 1) = y;
+    ss(i + 1) = sqrt(y);
+    cd(i) = c * d;
+    if (x > 0.1d0) {
+      break;
+    }
+    if (i == 10) {
+      LOG(FATAL) << "(elcbdj) too many iterations: c0,n,mc=" << c0 << n << mc;
+    }
+    c = sqrt(x);
+  }
+  s = ss(i + 1);
+  Elsbdj(s, n, mc, b, d, j);
+  for (int k = i; k >= 1; --k) {
+    sy = ss(k) * yy(k + 1);
+    t = sy / (1.d0 - n * (yy(k) - yy(k + 1) * cd(k)));
+    b = 2.d0 * b - sy;
+    d = d + (d + sy);
+    j = j + (j + uatan(t, h));
+  }
+}
 //---------------------------------------------------------------------------
 subroutine elsbdj(s0,n,mc,b,d,j)
 
