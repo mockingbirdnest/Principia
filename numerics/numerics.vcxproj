@@ -44,6 +44,7 @@
     <ClCompile Include="cbrt_test.cpp" />
     <ClCompile Include="combinatorics_test.cpp" />
     <ClCompile Include="double_precision_test.cpp" />
+    <ClCompile Include="elliptic.cpp" />
     <ClCompile Include="fast_sin_cos_2π.cpp" />
     <ClCompile Include="fast_sin_cos_2π_test.cpp" />
     <ClCompile Include="finite_difference_test.cpp" />
