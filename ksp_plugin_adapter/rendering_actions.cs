@@ -10,9 +10,7 @@ class RenderingActions : UnityEngine.MonoBehaviour {
   }
 
   private void OnPostRender() {
-    if (post_render != null) {
-      post_render();
-    }
+    post_render?.Invoke();
   }
 
   internal Action pre_cull {
@@ -21,9 +19,7 @@ class RenderingActions : UnityEngine.MonoBehaviour {
   }
 
   private void OnPreCull() {
-    if (pre_cull != null) {
-      pre_cull();
-    }
+    pre_cull?.Invoke();
   }
 }
 

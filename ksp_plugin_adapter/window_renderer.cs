@@ -139,7 +139,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
       if (must_centre_ && rectangle_.width > 0) {
         rectangle_ =
             UnityEngine.GUILayout.Window(
-                id         : this.GetHashCode(),
+                id         : GetHashCode(),
                 screenRect : new UnityEngine.Rect(
                     x      : (UnityEngine.Screen.width - rectangle_.width) / 2,
                     y      : UnityEngine.Screen.height / 3,
@@ -220,8 +220,8 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     node.SetValue("y", rectangle_.y, createIfNotFound : true);
   }
 
-  abstract protected string Title { get; }
-  abstract protected void RenderWindow(int window_id);
+  protected abstract string Title { get; }
+  protected abstract void RenderWindow(int window_id);
 
   private static readonly ControlTypes PrincipiaLock =
       ControlTypes.ALLBUTCAMERAS &
@@ -245,9 +245,9 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
     event Action render_windows;
   }
 
-  public SupervisedWindowRenderer(ISupervisor supervisor,
-                                  params UnityEngine.GUILayoutOption[] options)
-        : base(options) {
+  protected SupervisedWindowRenderer(
+      ISupervisor supervisor,
+      params UnityEngine.GUILayoutOption[] options) : base(options) {
     supervisor_ = supervisor;
     supervisor_.clear_locks += ClearLock;
     supervisor_.dispose_windows += DisposeWindow;
@@ -264,7 +264,7 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
 }
 
 internal abstract class UnsupervisedWindowRenderer : BaseWindowRenderer {
-  public UnsupervisedWindowRenderer(
+  protected UnsupervisedWindowRenderer(
       params UnityEngine.GUILayoutOption[] options) : base(options) {}
 }
 

@@ -117,7 +117,7 @@ internal class MainWindow : SupervisedWindowRenderer {
     Log.SetVerboseLogging(verbose_logging_);
 
     if (must_record_journal_) {
-      journaling_ = true;
+      journalling_ = true;
       Log.ActivateRecorder(true);
     }
   }
@@ -364,13 +364,13 @@ internal class MainWindow : SupervisedWindowRenderer {
           value   : must_record_journal_,
           text    : "Record journal (starts on load)");
       UnityEngine.GUILayout.Label(
-          "Journalling is " + (journaling_ ? "ON" : "OFF"),
+          "Journalling is " + (journalling_ ? "ON" : "OFF"),
           style : Style.Info(Style.RightAligned(UnityEngine.GUI.skin.label)));
     }
-    if (journaling_ && !must_record_journal_) {
+    if (journalling_ && !must_record_journal_) {
       // We can deactivate a recorder at any time, but in order for replaying to
       // work, we should only activate one before creating a plugin.
-      journaling_ = false;
+      journalling_ = false;
       Interface.ActivateRecorder(false);
     }
   }
@@ -499,7 +499,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   // Whether a journal will be recorded when the plugin is next constructed.
   private bool must_record_journal_ = false;
   // Whether a journal is currently being recorded.
-  private static bool journaling_ = false;
+  private static bool journalling_ = false;
 
   private Vessel vessel_;
 }

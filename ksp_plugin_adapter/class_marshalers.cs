@@ -89,7 +89,7 @@ internal static partial class Interface {
       return -1;
     }
 
-    private readonly static InBodyParametersMarshaler instance_ =
+    private static readonly InBodyParametersMarshaler instance_ =
         new InBodyParametersMarshaler();
   }
 

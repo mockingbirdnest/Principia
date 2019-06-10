@@ -55,9 +55,7 @@ internal class DifferentialSlider : ScalingRenderer {
   }
 
   public double value {
-    get {
-      return value_ ?? 0.0;
-    }
+    get => value_ ?? 0.0;
     set {
       if (!value_.HasValue || value_ != value) {
         value_ = value;
@@ -180,8 +178,8 @@ internal class DifferentialSlider : ScalingRenderer {
   private readonly string label_;
   private readonly string unit_;
 
-  private readonly double log10_lower_rate_ = -3;
-  private readonly double log10_upper_rate_ = 3.5;
+  private readonly double log10_lower_rate_;
+  private readonly double log10_upper_rate_;
   private readonly double zero_value_;
   private readonly double min_value_;
 

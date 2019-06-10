@@ -35,12 +35,10 @@ internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
       throw Log.Fatal("The runtime returns null for null objects");
     }
     T value;
-    var value_if_boxed = managed_object as T?;
-    if (value_if_boxed != null) {
-      value = value_if_boxed.Value;
+    if (managed_object is T value_if_boxed) {
+      value = value_if_boxed;
     } else {
-      var value_if_strongly_boxed = managed_object as Boxed<T>;
-      if (value_if_strongly_boxed != null) {
+      if (managed_object is Boxed<T> value_if_strongly_boxed) {
         value = value_if_strongly_boxed.all;
       } else {
         throw Log.Fatal(
@@ -65,7 +63,7 @@ internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
     }
   }
 
-  private readonly static OptionalMarshaler<T> instance_ =
+  private static readonly OptionalMarshaler<T> instance_ =
       new OptionalMarshaler<T>();
 }
 

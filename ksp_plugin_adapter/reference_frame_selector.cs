@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-static class CelestialExtensions {
+internal static class CelestialExtensions {
   public static bool is_leaf(this CelestialBody celestial) {
     return celestial.orbitingBodies.Count == 0;
   }
@@ -17,7 +17,7 @@ static class CelestialExtensions {
   }
 }
 
-class ReferenceFrameSelector : SupervisedWindowRenderer {
+internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   public enum FrameType {
     BARYCENTRIC_ROTATING = 6001,
     BODY_CENTRED_NON_ROTATING = 6000,
@@ -288,11 +288,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   public CelestialBody selected_celestial { get; private set; }
   public Vessel target_override { get; set; }
 
-  protected override string Title {
-    get {
-      return name_ + " selection (" + Name() + ")";
-    }
-  }
+  protected override string Title => name_ + " selection (" + Name() + ")";
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -365,15 +361,15 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private void TypeSelector(FrameType value) {
-   var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.toggle);
-   style.fixedHeight = 0;
-   style.wordWrap = true;
-   if (UnityEngine.GUILayout.Toggle(
-           frame_type == value,
-           Description(value, selected_celestial, target_override),
-           style,
-           GUILayoutWidth(6),
-           GUILayoutHeight(5))) {
+    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.toggle);
+    style.fixedHeight = 0;
+    style.wordWrap = true;
+    if (UnityEngine.GUILayout.Toggle(
+            frame_type == value,
+            Description(value, selected_celestial, target_override),
+            style,
+            GUILayoutWidth(6),
+            GUILayoutHeight(5))) {
       EffectChange(() => {
         frame_type = value;
       });

@@ -84,10 +84,10 @@ internal static class ConfigNodeParsers {
                 ?? "90 deg",
         reference_angle      =
             node?.GetAtMostOneValue("reference_angle")
-                ?? (body.initialRotation.ToString() + " deg"),
+                ?? (body.initialRotation + " deg"),
         angular_frequency    =
             node?.GetAtMostOneValue("angular_frequency")
-                ??  (body.angularV.ToString() + " rad/s"),
+                ?? (body.angularV + " rad/s"),
         reference_radius     =
             node?.GetAtMostOneValue("reference_radius"),
         j2                   =

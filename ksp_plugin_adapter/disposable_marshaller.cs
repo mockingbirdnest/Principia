@@ -29,7 +29,7 @@ internal class DisposableIteratorMarshaller : ICustomMarshaler {
     return new DisposableIterator(iterator);
   }
 
-  private readonly static DisposableIteratorMarshaller instance_ =
+  private static readonly DisposableIteratorMarshaller instance_ =
       new DisposableIteratorMarshaller();
 }
 
@@ -58,7 +58,7 @@ internal class DisposablePlanetariumMarshaller : ICustomMarshaler {
     return new DisposablePlanetarium(planetarium);
   }
 
-  private readonly static DisposablePlanetariumMarshaller instance_ =
+  private static readonly DisposablePlanetariumMarshaller instance_ =
       new DisposablePlanetariumMarshaller();
 }
 

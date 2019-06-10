@@ -33,7 +33,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
   }
 
-  public bool show_guidance { get => show_guidance_; }
+  public bool show_guidance => show_guidance_;
 
   public override void Load(ConfigNode node) {
     base.Load(node);
@@ -373,8 +373,8 @@ class FlightPlanner : SupervisedWindowRenderer {
     string pattern = @"^[+]?\s*(\d+)\s*" +
                      (GameSettings.KERBIN_TIME ? "d6" : "d") +
                      @"\s*(\d+)\s*h\s*(\d+)\s*min\s*([0-9.,']+)\s*s$";
-    Regex regex = new Regex(pattern);
-    var match = Regex.Match(str, pattern);
+    var regex = new Regex(pattern);
+    var match = regex.Match(str);
     if (!match.Success) {
       return false;
     }
@@ -407,8 +407,7 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   internal bool TryParsePlanLength(string str, out double value) {
     value = 0;
-    TimeSpan ts;
-    if (!TryParseTimeSpan(str, out ts)) {
+    if (!TryParseTimeSpan(str, out TimeSpan ts)) {
       return false;
     }
     value = ts.TotalSeconds +

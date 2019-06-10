@@ -27,7 +27,7 @@ internal class OutOwnedUTF16Marshaler : ICustomMarshaler {
     return Marshal.PtrToStringUni(native_data);
   }
 
-  private readonly static OutOwnedUTF16Marshaler instance_ =
+  private static readonly OutOwnedUTF16Marshaler instance_ =
       new OutOwnedUTF16Marshaler();
 }
 

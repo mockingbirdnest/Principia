@@ -77,8 +77,8 @@ class BurnEditor : ScalingRenderer {
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
       // been set.  If we have fallen back to instant impulse, we should use this
       // mass to set the thrust.
-      if (first_time_rendering) {
-        first_time_rendering = false;
+      if (first_time_rendering_) {
+        first_time_rendering_ = false;
         changed = true;
         engine_warning_ = "";
         ComputeEngineCharacteristics();
@@ -155,16 +155,16 @@ class BurnEditor : ScalingRenderer {
                         z = Δv_binormal_.value}.magnitude;
   }
 
-  public void Reset(NavigationManoeuvre manoeuvre) {
-    Burn burn = manoeuvre.burn;
+  public void Reset(NavigationManoeuvre manœuvre) {
+    Burn burn = manœuvre.burn;
     Δv_tangent_.value = burn.delta_v.x;
     Δv_normal_.value = burn.delta_v.y;
     Δv_binormal_.value = burn.delta_v.z;
     initial_time_ = burn.initial_time;
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
-    duration_ = manoeuvre.duration;
-    initial_mass_in_tonnes_ = manoeuvre.initial_mass_in_tonnes;
+    duration_ = manœuvre.duration;
+    initial_mass_in_tonnes_ = manœuvre.initial_mass_in_tonnes;
   }
 
   public Burn Burn() {
@@ -191,8 +191,7 @@ class BurnEditor : ScalingRenderer {
     ModuleEngines[] active_engines =
         (from part in vessel_.parts
          select (from PartModule module in part.Modules
-                 where module is ModuleEngines &&
-                       (module as ModuleEngines).EngineIgnited
+                 where (module as ModuleEngines)?.EngineIgnited == true
                  select module as ModuleEngines)).SelectMany(x => x).ToArray();
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
     double[] thrusts =
@@ -278,8 +277,7 @@ class BurnEditor : ScalingRenderer {
 
   internal bool TryParsePreviousCoastDuration(string str, out double value) {
     value = 0;
-    TimeSpan ts;
-    if (!FlightPlanner.TryParseTimeSpan(str, out ts)) {
+    if (!FlightPlanner.TryParseTimeSpan(str, out TimeSpan ts)) {
       return false;
     }
     value = ts.TotalSeconds;
@@ -306,7 +304,7 @@ class BurnEditor : ScalingRenderer {
   private double initial_mass_in_tonnes_;
   private double initial_time_;
 
-  private bool first_time_rendering = true;
+  private bool first_time_rendering_ = true;
 
   private const double Log10ΔvLowerRate = -3.0;
   private const double Log10ΔvUpperRate = 3.5;
