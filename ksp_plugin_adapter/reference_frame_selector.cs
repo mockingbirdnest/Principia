@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -108,7 +105,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     });
   }
 
-  public static String Name(FrameType type,
+  public static string Name(FrameType type,
                             CelestialBody selected,
                             Vessel target_override) {
    if (target_override) {
@@ -139,7 +136,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
    }
   }
 
-  public static String ShortName(FrameType type,
+  public static string ShortName(FrameType type,
                                  CelestialBody selected,
                                  Vessel target_override) {
     if (target_override) {
@@ -169,7 +166,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public static String Description(FrameType type,
+  public static string Description(FrameType type,
                                    CelestialBody selected,
                                    Vessel target_override) {
     if (target_override) {
@@ -210,19 +207,19 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public String Name() {
+  public string Name() {
     return Name(frame_type, selected_celestial, target_override);
   }
 
-  public String ShortName() {
+  public string ShortName() {
     return ShortName(frame_type, selected_celestial, target_override);
   }
 
-  public String Description() {
+  public string Description() {
     return Description(frame_type, selected_celestial, target_override);
   }
 
-  public String ReferencePlaneDescription() {
+  public string ReferencePlaneDescription() {
     if (!target_override &&
         (frame_type == FrameType.BODY_CENTRED_NON_ROTATING ||
          frame_type == FrameType.BODY_SURFACE)) {
@@ -291,7 +288,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   public CelestialBody selected_celestial { get; private set; }
   public Vessel target_override { get; set; }
 
-  protected override String Title {
+  protected override string Title {
     get {
       return name_ + " selection (" + Name() + ")";
     }
@@ -399,7 +396,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   private readonly Callback on_change_;
   private readonly string name_;
-  private Dictionary<CelestialBody, bool> expanded_;
+  private readonly Dictionary<CelestialBody, bool> expanded_;
   private bool is_freshly_constructed_;
 }
 

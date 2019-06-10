@@ -10,7 +10,7 @@ internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
   // marshalers must implement a static method called |GetInstance| that accepts
   // a |String| as a parameter and has a return type of |ICustomMarshaler|,
   // see https://goo.gl/wwmBTa.
-  public static ICustomMarshaler GetInstance(String s) {
+  public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
 
@@ -44,7 +44,7 @@ internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
         value = value_if_strongly_boxed.all;
       } else {
         throw Log.Fatal(
-            String.Format(
+            string.Format(
                 CultureInfo.InvariantCulture,
                 "|{0}<{1}>| must be used on a boxed |{1}| or on a |{2}<{1}>|.",
                 GetType().Name,

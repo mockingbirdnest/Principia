@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -40,7 +38,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   public override void Load(ConfigNode node) {
     base.Load(node);
 
-    String show_guidance_value = node.GetAtMostOneValue("show_guidance");
+    string show_guidance_value = node.GetAtMostOneValue("show_guidance");
     if (show_guidance_value != null) {
       show_guidance_ = Convert.ToBoolean(show_guidance_value);
     }
@@ -54,7 +52,7 @@ class FlightPlanner : SupervisedWindowRenderer {
                   createIfNotFound : true);
   }
 
-  protected override String Title => "Flight plan";
+  protected override string Title => "Flight plan";
 
   protected override void RenderWindow(int window_id) {
     // We must ensure that the GUI elements don't change between Layout and
@@ -174,7 +172,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           }
           UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
                                           GUILayoutWidth(3));
-          if (parameters.max_steps >= Int64.MaxValue / factor) {
+          if (parameters.max_steps >= long.MaxValue / factor) {
             UnityEngine.GUILayout.Button("max");
           } else if (UnityEngine.GUILayout.Button("+")) {
             parameters.max_steps *= factor;
@@ -384,10 +382,10 @@ class FlightPlanner : SupervisedWindowRenderer {
     string hours = match.Groups[2].Value;
     string minutes = match.Groups[3].Value;
     string seconds = match.Groups[4].Value;
-    if (!Int32.TryParse(days, out int d) ||
-        !Int32.TryParse(hours, out int h) ||
-        !Int32.TryParse(minutes, out int min) ||
-        !Double.TryParse(seconds.Replace(',', '.'),
+    if (!int.TryParse(days, out int d) ||
+        !int.TryParse(hours, out int h) ||
+        !int.TryParse(minutes, out int min) ||
+        !double.TryParse(seconds.Replace(',', '.'),
                          NumberStyles.AllowDecimalPoint |
                          NumberStyles.AllowThousands,
                          Culture.culture.NumberFormat,
@@ -507,7 +505,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   private readonly PrincipiaPluginAdapter adapter_;
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
-  private DifferentialSlider final_time_;
+  private readonly DifferentialSlider final_time_;
   private int? first_future_manœuvre_;
 
   private bool show_guidance_ = false;

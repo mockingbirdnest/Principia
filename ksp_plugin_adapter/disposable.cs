@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 namespace principia {
 namespace ksp_plugin_adapter {

@@ -11,7 +11,7 @@ internal class DisposableIteratorMarshaller : ICustomMarshaler {
     return -1;
   }
 
-  public static ICustomMarshaler GetInstance(String s) {
+  public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
 
@@ -40,7 +40,7 @@ internal class DisposablePlanetariumMarshaller : ICustomMarshaler {
     return -1;
   }
 
-  public static ICustomMarshaler GetInstance(String s) {
+  public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
 

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -50,12 +48,12 @@ public partial class PrincipiaPluginAdapter
     Vectors = 31,
   };
 
-  private const String principia_serialized_plugin_ = "serialized_plugin";
-  private const String principia_initial_state_config_name_ =
+  private const string principia_serialized_plugin_ = "serialized_plugin";
+  private const string principia_initial_state_config_name_ =
       "principia_initial_state";
-  private const String principia_gravity_model_config_name_ =
+  private const string principia_gravity_model_config_name_ =
       "principia_gravity_model";
-  private const String principia_numerics_blueprint_config_name_ =
+  private const string principia_numerics_blueprint_config_name_ =
       "principia_numerics_blueprint";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
@@ -76,7 +74,7 @@ public partial class PrincipiaPluginAdapter
 
   // For compatibility only.  Do not use in real code.
   [KSPField(isPersistant = true)]
-  private int history_length_index_ = 10;
+  private readonly int history_length_index_ = 10;
 
   // Whether the plotting frame must be set to something convenient at the next
   // opportunity.
@@ -101,7 +99,7 @@ public partial class PrincipiaPluginAdapter
   private ReferenceFrameSelector.FrameType last_non_surface_frame_type_ =
       ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING;
 
-  List<IntPtr> vessel_futures_ = new List<IntPtr>();
+  readonly List<IntPtr> vessel_futures_ = new List<IntPtr>();
 
   // The RSAS is the component of the stock KSP autopilot that deals with
   // orienting the vessel towards a specific direction (e.g. prograde).
@@ -145,31 +143,31 @@ public partial class PrincipiaPluginAdapter
   // because we can test whether we have the part or not. Set in
   // FashionablyLate, before the FlightIntegrator clears the forces.  Used in
   // WaitForFixedUpdate.
-  private Dictionary<uint, Part.ForceHolder[]> part_id_to_intrinsic_forces_ =
+  private readonly Dictionary<uint, Part.ForceHolder[]> part_id_to_intrinsic_forces_ =
       new Dictionary<uint, Part.ForceHolder[]>();
-  private Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
+  private readonly Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
       new Dictionary<uint, Vector3d>();
 
   // The degrees of freedom at BetterLateThanNever.  Those are used to insert
   // new parts with the correct initial state.
-  private Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
+  private readonly Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
       new Dictionary<uint, QP>();
 
-  private MapNodePool map_node_pool_;
+  private readonly MapNodePool map_node_pool_;
   private ManeuverNode guidance_node_;
 
   // UI for the apocalypse notification.
   [KSPField(isPersistant = true)]
-  private Dialog apocalypse_dialog_ = new Dialog();
+  private readonly Dialog apocalypse_dialog_ = new Dialog();
 
   // UI for the bad installation notification.
-  private bool is_bad_installation_ = false;  // Don't persist.
+  private readonly bool is_bad_installation_ = false;  // Don't persist.
   [KSPField(isPersistant = true)]
-  private Dialog bad_installation_dialog_ = new Dialog();
+  private readonly Dialog bad_installation_dialog_ = new Dialog();
 
   // The game windows.
   [KSPField(isPersistant = true)]
-  private FlightPlanner flight_planner_;
+  private readonly FlightPlanner flight_planner_;
   [KSPField(isPersistant = true)]
   internal ReferenceFrameSelector plotting_frame_selector_;
   [KSPField(isPersistant = true)]
@@ -447,7 +445,7 @@ public partial class PrincipiaPluginAdapter
 
   // Returns false and nulls |texture| if the file does not exist.
   private bool LoadTextureIfExists(out UnityEngine.Texture texture,
-                                   String path) {
+                                   string path) {
     string full_path =
         KSPUtil.ApplicationRootPath + Path.DirectorySeparatorChar +
         "GameData" + Path.DirectorySeparatorChar +
@@ -474,7 +472,7 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void LoadTextureOrDie(out UnityEngine.Texture texture, String path) {
+  private void LoadTextureOrDie(out UnityEngine.Texture texture, string path) {
     bool success = LoadTextureIfExists(out texture, path);
     if (!success) {
       Log.Fatal("Missing texture " + path);
@@ -556,7 +554,7 @@ public partial class PrincipiaPluginAdapter
   public override void OnSave(ConfigNode node) {
     base.OnSave(node);
     if (PluginRunning()) {
-      String serialization;
+      string serialization;
       IntPtr serializer = IntPtr.Zero;
       for (;;) {
         serialization = plugin_.SerializePlugin(ref serializer,
@@ -581,9 +579,9 @@ public partial class PrincipiaPluginAdapter
       RemoveBuggyTidalLocking();
 
       IntPtr deserializer = IntPtr.Zero;
-      String[] serializations = node.GetValues(principia_serialized_plugin_);
+      string[] serializations = node.GetValues(principia_serialized_plugin_);
       Log.Info("Serialization has " + serializations.Length + " chunks");
-      foreach (String serialization in serializations) {
+      foreach (string serialization in serializations) {
         Interface.DeserializePlugin(serialization,
                                     serialization.Length,
                                     ref deserializer,
@@ -1206,7 +1204,7 @@ public partial class PrincipiaPluginAdapter
       if (time_is_advancing_) {
         plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
         if (!apocalypse_dialog_.Shown()) {
-          String revelation = "";
+          string revelation = "";
           if (plugin_.HasEncounteredApocalypse(out revelation)) {
             apocalypse_dialog_.Message = revelation;
             apocalypse_dialog_.Show();
@@ -1870,7 +1868,7 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void RenderPredictionMarkers(String vessel_guid,
+  private void RenderPredictionMarkers(string vessel_guid,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_override) {
       Vessel target = plotting_frame_selector_.target_override;
@@ -1939,7 +1937,7 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void RenderFlightPlanMarkers(String vessel_guid,
+  private void RenderFlightPlanMarkers(string vessel_guid,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_override) {
       Vessel target = plotting_frame_selector_.target_override;
@@ -2067,7 +2065,7 @@ public partial class PrincipiaPluginAdapter
     Cleanup();
     RemoveBuggyTidalLocking();
     plugin_construction_ = DateTime.Now;
-    Dictionary<String, ConfigNode> name_to_gravity_model = null;
+    Dictionary<string, ConfigNode> name_to_gravity_model = null;
     ConfigNode gravity_model = GameDatabase.Instance.GetAtMostOneNode(
         principia_gravity_model_config_name_);
     ConfigNode initial_state = GameDatabase.Instance.GetAtMostOneNode(

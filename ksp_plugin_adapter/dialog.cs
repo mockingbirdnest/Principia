@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace principia {
+﻿namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
-  public String Message {
+  public string Message {
     set {
       message_ = value;
       UnityEngine.Debug.LogError(message_);
     }
   }
 
-  protected override String Title => "Principia";
+  protected override string Title => "Principia";
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope())
@@ -36,7 +31,7 @@ internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
     }
   }
 
-  private String message_;
+  private string message_;
 }
 
 }  // namespace ksp_plugin_adapter

@@ -29,7 +29,7 @@ internal class DifferentialSlider : ScalingRenderer {
     if (parser == null) {
       // As a special exemption we allow a comma as the decimal separator.
       parser_ = (string s, out double value) =>
-                    Double.TryParse(s.Replace(',', '.'),
+                    double.TryParse(s.Replace(',', '.'),
                                     NumberStyles.AllowDecimalPoint |
                                     NumberStyles.AllowLeadingSign |
                                     NumberStyles.AllowLeadingWhite |
@@ -94,7 +94,7 @@ internal class DifferentialSlider : ScalingRenderer {
 
         // Draw the text field and give it a name to be able to detect if it has
         // focus.
-        String text_field_name = GetHashCode() + ":text_field";
+        string text_field_name = GetHashCode() + ":text_field";
         UnityEngine.GUI.SetNextControlName(text_field_name);
         formatted_value_ = UnityEngine.GUILayout.TextField(
             text    : formatted_value_,
@@ -197,7 +197,7 @@ internal class DifferentialSlider : ScalingRenderer {
   // optimized due to the existing value.  This happens at initialization and
   // during some events handling.
   private double? value_;
-  private String formatted_value_;
+  private string formatted_value_;
 }
 
 }  // namespace ksp_plugin_adapter

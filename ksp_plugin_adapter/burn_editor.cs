@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -297,11 +295,11 @@ class BurnEditor : ScalingRenderer {
   private IntPtr plugin => adapter_.Plugin();
 
   private bool is_inertially_fixed_;
-  private DifferentialSlider Δv_tangent_;
-  private DifferentialSlider Δv_normal_;
-  private DifferentialSlider Δv_binormal_;
-  private DifferentialSlider previous_coast_duration_;
-  private ReferenceFrameSelector reference_frame_selector_;
+  private readonly DifferentialSlider Δv_tangent_;
+  private readonly DifferentialSlider Δv_normal_;
+  private readonly DifferentialSlider Δv_binormal_;
+  private readonly DifferentialSlider previous_coast_duration_;
+  private readonly ReferenceFrameSelector reference_frame_selector_;
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
   private double duration_;
