@@ -7,8 +7,9 @@ Before starting, make sure the following are installed on your machine:
 
 The solution contains a C# project named `coverage_analyser` which requires
 the Enterprise edition of Visual Studio to build.  It's only a development
-tool for our own use, so if you use a different edition, just delete that
-project.  You will still be able to build and test the mod.
+tool for our own use, so if you use a different edition, just do 
+`Project > Unload Project` on that project.  You will still be able to build 
+and test the mod.
 
 These instructions use the git Powershell provided by [GitHub for Windows](https://windows.github.com/).
 We assume a working installation of Kerbal Space Program version 1.7.0 is found in `<KSP directory>`.
