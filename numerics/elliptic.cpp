@@ -8,6 +8,7 @@
 // 1. Use arrays for the coefficients.
 // 2. Use Estrin evaluation for polynomials of high degree (possibly adding
 //    support for polynomials of two and three variables).
+// 3. Use 0-based arrays.
 
 namespace principia {
 namespace numerics {
@@ -28,7 +29,7 @@ namespace numerics {
 //             mc   = complementary parameter 0 <= mc   <= 1
 //
 //     Outputs: b, d, j
-void Eldbj(double const phi,
+void Elbdj(double const phi,
            double const phic,
            double const n,
            double const mc,
@@ -97,7 +98,7 @@ double Cel(double const kc0,
   //     Outputs: cel   = integral value
   //              err   = integer error indicator
   //
-  double out, a, b, e, f, g;
+  double out, a, b=0, e, f, g; //TODO(phl):Initial value?
   double p, q, kc, em, qc;
   err = 0;
   kc = kc0;
@@ -168,7 +169,7 @@ void Celbd(double const mc,double& elb, double& eld) {
   constexpr double PI = 3.1415926535897932384626433832795;
   constexpr double PIINV = 0.31830988618379067153776752674503;
 
-  double mcold,elbold,eldold;  //Save?
+  static double mcold,elbold,eldold;
 
   constexpr double Q1 = 1.0 / 16.0;
   constexpr double Q2 = 1.0 / 32.0;
@@ -215,7 +216,7 @@ void Celbd(double const mc,double& elb, double& eld) {
 
   double logq2, dkkc, dddc, dele, delb, elk1;
 
-  bool first = true;
+  static bool first = true;
 
   if (first) {
     first = false;
@@ -243,8 +244,7 @@ void Celbd(double const mc,double& elb, double& eld) {
     } else {
       mx = mc - 0.05;
 
-// (K'-1)/(pi/2)
-
+  // (K'-1)/(pi/2)
       dkkc=    0.01286425658832983978282698630501405107893 
           +mx*(0.26483429894479586582278131697637750604652 
           +mx*(0.15647573786069663900214275050014481397750 
@@ -260,8 +260,7 @@ void Celbd(double const mc,double& elb, double& eld) {
           +mx*(0.04812375496807025605361215168677991360500 
           ))))))))))));
 
-// (K'-E')/(pi/2)
-
+  // (K'-E')/(pi/2)
       dddc=    0.02548395442966088473597712420249483947953 
           +mx*(0.51967384324140471318255255900132590084179 
           +mx*(0.20644951110163173131719312525729037023377 
@@ -662,10 +661,10 @@ void Elcbdj(double const c0,
             double& b,
             double& d,
             double& j) {
-  double c, x, y, s, m, sy, t, h;
-  double yy[11];
-  double ss[11];
-  double cd[11];
+  double c, x, y, s, m, sy, t, h=0;//TODO(phl):Initial value?
+  double yy[12];
+  double ss[12];
+  double cd[12];
 
   c = c0;
   x = c * c;
@@ -693,7 +692,7 @@ void Elcbdj(double const c0,
     }
     c = sqrt(x);
   }
-  s = ss[i + 1];//Danger!
+  s = ss[11];
   Elsbdj(s, n, mc, b, d, j);
   for (int k = i; k >= 1; --k) {
     sy = ss[k] * yy[k + 1];
@@ -711,9 +710,9 @@ void Elsbdj(double const s0,
             double& d,
             double& j) {
   double m, h, del, s, y, c, sy, t;
-  double yy[11];
-  double ss[11];
-  double cd[11];
+  double yy[12];
+  double ss[12];
+  double cd[12];
 
   m = 1.0 - mc;
   h = n * (1.0 - n) * (n - m);
@@ -745,9 +744,9 @@ void Elsbdj(double const s0,
     }
   }
   Serbd(y, m, b, d);
-  b = ss[i + 1] * b;  // Danger!
-  d = ss[i + 1] * y * d;
-  j = ss[i + 1] * Serj(y, n, m);
+  b = ss[11] * b;
+  d = ss[11] * y * d;
+  j = ss[11] * Serj(y, n, m);
   for (int k = i; k >= 1; --k) {
     sy = ss[k] * yy[k + 1];
     t = sy / (1.0 - n * (yy[k] - yy[k + 1] * cd[k]));
@@ -1230,9 +1229,9 @@ double Serj(double const y, double const n, double const m) {
 
 double Uatan(double const t, double const h) {
   double z, y, x, a, r, ri;
-  /*static?*/ double hold = 1.0;
-  /*static?*/ double rold = 1.0;
-  /*static?*/ double riold = 1.0;
+  static double hold = 1.0;
+  static double rold = 1.0;
+  static double riold = 1.0;
   constexpr double A3 = 1.0 / 3.;
   constexpr double A5 = 1.0 / 5.;
   constexpr double A7 = 1.0 / 7.;

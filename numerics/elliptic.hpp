@@ -3,7 +3,7 @@
 namespace principia {
 namespace numerics {
 
-void Eldbj(double const phi,
+void Elbdj(double const phi,
            double const phic,
            double const n,
            double const mc,
