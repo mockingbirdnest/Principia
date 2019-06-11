@@ -2,6 +2,11 @@
 #include "glog/logging.h"
 #include "quantities/numbers.hpp"
 
+// TODO(phl):
+// 1. Use arrays for the coefficients.
+// 2. Use Estrin evaluation for polynomials of high degree (possibly adding
+//    support for polynomials of two and three variables).
+
 namespace principia {
 namespace numerics {
 
@@ -694,1460 +699,662 @@ void Elcbdj(double const c0,
     j = j + (j + uatan(t, h));
   }
 }
-//---------------------------------------------------------------------------
-subroutine elsbdj(s0,n,mc,b,d,j)
 
-real*8 s0,n,mc,b,d,j
-real*8 m,h,del,s,y,c,sy,t
-real*8 yy(11),ss(11),cd(11)
-real*8 serj,uatan
-integer i,k
+void Elsbdj(double const s0,
+            double const n,
+            double const mc,
+            double& b,
+            double& d,
+            double& j) {
+  double m, h, del, s, y, c, sy, t;
+  double yy(11), ss(11), cd(11);
+  double serj, uatan;
+  int i, k;
 
-m=1.d0-mc
-h=n*(1.d0-n)*(n-m)
-del=0.01622d0
-s=s0
-y=s*s
-if(y.lt.del) then
-  call serbd(y,m,b,d)
-  b=s*b
-  d=s*y*d
-  j=s*serj(y,n,m)
-  return
-endif
-yy(1)=y
-ss(1)=s
-do i=1,10
-    c=sqrt(1.d0-y)
-    d=sqrt(1.d0-m*y)
-    y=y/((1.d0+c)*(1.d0+d))
-  yy(i+1)=y
-  ss(i+1)=sqrt(y)
-  cd(i)=c*d
-  if(y.lt.del) then
-    goto 1
-  endif
-enddo
-write(*,*) "(elsbdj) too many iterations: s0,m=",s0,m
-1 continue
-call serbd(y,m,b,d)
-b=ss(i+1)*b
-d=ss(i+1)*y*d
-j=ss(i+1)*serj(y,n,m)
-do k=i,1,-1
-  sy=ss(k)*yy(k+1)
-  t=sy/(1.d0-n*(yy(k)-yy(k+1)*cd(k)))
-  b=2.d0*b-sy
-  d=d+(d+sy)
-  j=j+(j+uatan(t,h))
-enddo
-return
-end
-//---------------------------------------------------------------------------
-subroutine serbd(y,m,b,d)
-
-real*8 y,m,b,d
-real*8 F1,F2,F3,F4,F10,F20,F21,F30,F31,F40,F41,F42
-real*8 F5,F50,F51,F52,F6,F60,F61,F62,F63
-real*8 F7,F70,F71,F72,F73,F8,F80,F81,F82,F83,F84
-real*8 F9,F90,F91,F92,F93,F94
-real*8 FA,FA0,FA1,FA2,FA3,FA4,FA5
-real*8 FB,FB0,FB1,FB2,FB3,FB4,FB5
-constexpr double F10=1.d0/6.d0)
-constexpr double F20=3.d0/40.d0)
-constexpr double F21=2.d0/40.d0)
-constexpr double F30=5.d0/112.d0)
-constexpr double F31=3.d0/112.d0)
-constexpr double F40=35.d0/1152.d0)
-constexpr double F41=20.d0/1152.d0)
-constexpr double F42=18.d0/1152.d0)
-constexpr double F50=63.d0/2816.d0)
-constexpr double F51=35.d0/2816.d0)
-constexpr double F52=30.d0/2816.d0)
-constexpr double F60=231.d0/13312.d0)
-constexpr double F61=126.d0/13312.d0)
-constexpr double F62=105.d0/13312.d0)
-constexpr double F63=100.d0/13312.d0)
-constexpr double F70=429.d0/30720.d0)
-constexpr double F71=231.d0/30720.d0)
-constexpr double F72=189.d0/30720.d0)
-constexpr double F73=175.d0/30720.d0)
-constexpr double F80=6435.d0/557056.d0)
-constexpr double F81=3432.d0/557056.d0)
-constexpr double F82=2722.d0/557056.d0)
-constexpr double F83=2520.d0/557056.d0)
-constexpr double F84=2450.d0/557056.d0)
-constexpr double F90=12155.d0/1245184.d0)
-constexpr double F91=6435.d0/1245184.d0)
-constexpr double F92=5148.d0/1245184.d0)
-constexpr double F93=4620.d0/1245184.d0)
-constexpr double F94=4410.d0/1245184.d0)
-constexpr double FA0=46189.d0/5505024.d0)
-constexpr double FA1=24310.d0/5505024.d0)
-constexpr double FA2=19305.d0/5505024.d0)
-constexpr double FA3=17160.d0/5505024.d0)
-constexpr double FA4=16170.d0/5505024.d0)
-constexpr double FA5=15876.d0/5505024.d0)
-constexpr double FB0=88179.d0/12058624.d0)
-constexpr double FB1=46189.d0/12058624.d0)
-constexpr double FB2=36465.d0/12058624.d0)
-constexpr double FB3=32175.d0/12058624.d0)
-constexpr double FB4=30030.d0/12058624.d0)
-constexpr double FB5=29106.d0/12058624.d0)
-
-real*8 A1,A2,A3,A4,A5,A6,A7,A8,A9,AA,AB
-constexpr double A1=3.d0/5.d0)
-constexpr double A2=5.d0/7.d0)
-constexpr double A3=7.d0/9.d0)
-constexpr double A4=9.d0/11.d0)
-constexpr double A5=11.d0/13.d0)
-constexpr double A6=13.d0/15.d0)
-constexpr double A7=15.d0/17.d0)
-constexpr double A8=17.d0/19.d0)
-constexpr double A9=19.d0/21.d0)
-constexpr double AA=21.d0/23.d0)
-constexpr double AB=23.d0/25.d0)
-
-real*8 B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,BB
-real*8 D0,D1,D2,D3,D4,D5,D6,D7,D8,D9,DA,DB
-constexpr double D0=1.d0/3.d0)
-
-F1=F10+m*F10
-F2=F20+m*(F21+m*F20)
-F3=F30+m*(F31+m*(F31+m*F30))
-F4=F40+m*(F41+m*(F42+m*(F41+m*F40)))
-F5=F50+m*(F51+m*(F52+m*(F52+m*(F51+m*F50))))
-F6=F60+m*(F61+m*(F62+m*(F63+m*(F62+m*(F61+m*F60)))))
-F7=F70+m*(F71+m*(F72+m*(F73+m*(F73+m*(F72+m*(F71+m*F70))))))
-F8=F80+m*(F81+m*(F82+m*(F83+m*(F84+m*(F83+m*(F82+m*(F81+m*F80)))))))
-F9=F90+m*(F91+m*(F92+m*(F93+m*(F94+m*(F94+m*(F93+m*(F92+m*(F91+m*F90))))))))
-FA=FA0+m*(FA1+m*(FA2+m*(FA3+m*(FA4+m*(FA5+m*(FA4+m*(FA3+m*(FA2+m*(FA1+m*FA0)))))))))
-FB=FB0+m*(FB1+m*(FB2+m*(FB3+m*(FB4+m*(FB5+m*(FB5+m*(FB4+m*(FB3+m*(FB2+m*(FB1+m*FB0))))))))))
-
-D1=F1*A1
-D2=F2*A2
-D3=F3*A3
-D4=F4*A4
-D5=F5*A5
-D6=F6*A6
-D7=F7*A7
-D8=F8*A8
-D9=F9*A9
-DA=FA*AA
-DB=FB*AB
-
-d=D0+y*(D1+y*(D2+y*(D3+y*(D4+y*(D5+y*(D6+y*(D7+y*(D8+y*(D9+y*(DA+y*DB))))))))))
-
-B1=F1-D0
-B2=F2-D1
-B3=F3-D2
-B4=F4-D3
-B5=F5-D4
-B6=F6-D5
-B7=F7-D6
-B8=F8-D7
-B9=F9-D8
-BA=FA-D9
-BB=FB-DA
-
-b=1.d0+y*(B1+y*(B2+y*(B3+y*(B4+y*(B5+y*(B6+y*(B7+y*(B8+y*(B9+y*(BA+y*BB))))))))))
-
-return
-end
-//---------------------------------------------------------------------------
-real*8 function serj(y,n,m)
-
-real*8 y,n,m
-
-real*8 J1,J2,J3,J4,J5,J6,J7,J8,J9,JA
-
-real*8 J100,J200,J201,J210,J300,J301,J302,J310,J311,J320
-real*8 J400,J401,J402,J403,J410,J411,J412,J420,J421,J430
-real*8 J500,J501,J502,J503,J504,J510,J511,J512,J513,J520
-real*8 J521,J522,J530,J531,J540
-real*8 J600,J601,J602,J603,J604,J605,J610,J611,J612,J613,J614
-real*8 J620,J621,J622,J623,J630,J631,J632,J640,J641,J650
-real*8 J700,J701,J702,J703,J704,J705,J706
-real*8 J710,J711,J712,J713,J714,J715,J720,J721,J722,J723,J724
-real*8 J730,J731,J732,J733,J740,J741,J742,J750,J751,J760
-real*8 J800,J801,J802,J803,J804,J805,J806,J807
-real*8 J810,J811,J812,J813,J814,J815,J816
-real*8 J820,J821,J822,J823,J824,J825,J830,J831,J832,J833,J834
-real*8 J840,J841,J842,J843,J850,J851,J852,J860,J861,J870
-real*8 J900,J901,J902,J903,J904,J905,J906,J907,J908
-real*8 J910,J911,J912,J913,J914,J915,J916,J917
-real*8 J920,J921,J922,J923,J924,J925,J926
-real*8 J930,J931,J932,J933,J934,J935,J940,J941,J942,J943,J944
-real*8 J950,J951,J952,J953,J960,J961,J962,J970,J971,J980
-real*8 JA00,JA01,JA02,JA03,JA04,JA05,JA06,JA07,JA08,JA09
-real*8 JA10,JA11,JA12,JA13,JA14,JA15,JA16,JA17,JA18
-real*8 JA20,JA21,JA22,JA23,JA24,JA25,JA26,JA27
-real*8 JA30,JA31,JA32,JA33,JA34,JA35,JA36
-real*8 JA40,JA41,JA42,JA43,JA44,JA45,JA50,JA51,JA52,JA53,JA54
-real*8 JA60,JA61,JA62,JA63,JA70,JA71,JA72,JA80,JA81,JA90
-
-constexpr double J100=1.d0/3.d0)
-
-constexpr double J200=1.d0/10.d0)
-constexpr double J201=2.d0/10.d0)
-constexpr double J210=1.d0/10.d0)
-
-constexpr double J300=3.d0/56.d0)
-constexpr double J301=4.d0/56.d0)
-constexpr double J302=8.d0/56.d0)
-constexpr double J310=2.d0/56.d0)
-constexpr double J311=4.d0/56.d0)
-constexpr double J320=3.d0/56.d0)
-
-constexpr double J400=5.d0/144.d0)
-constexpr double J401=6.d0/144.d0)
-constexpr double J402=8.d0/144.d0)
-constexpr double J403=16.d0/144.d0)
-constexpr double J410=3.d0/144.d0)
-constexpr double J411=4.d0/144.d0)
-constexpr double J412=8.d0/144.d0)
-constexpr double J420=3.d0/144.d0)
-constexpr double J421=6.d0/144.d0)
-constexpr double J430=5.d0/144.d0)
-
-constexpr double J500=35.d0/1408.d0)
-constexpr double J501=40.d0/1408.d0)
-constexpr double J502=48.d0/1408.d0)
-constexpr double J503=64.d0/1408.d0)
-constexpr double J504=128.d0/1408.d0)
-constexpr double J510=20.d0/1408.d0)
-constexpr double J511=24.d0/1408.d0)
-constexpr double J512=32.d0/1408.d0)
-constexpr double J513=64.d0/1408.d0)
-constexpr double J520=18.d0/1408.d0)
-constexpr double J521=24.d0/1408.d0)
-constexpr double J522=48.d0/1408.d0)
-constexpr double J530=20.d0/1408.d0)
-constexpr double J531=40.d0/1408.d0)
-constexpr double J540=35.d0/1408.d0)
-
-constexpr double J600=63.d0/3328.d0)
-constexpr double J601=70.d0/3328.d0)
-constexpr double J602=80.d0/3328.d0)
-constexpr double J603=96.d0/3328.d0)
-constexpr double J604=128.d0/3328.d0)
-constexpr double J605=256.d0/3328.d0)
-constexpr double J610=35.d0/3328.d0)
-constexpr double J611=40.d0/3328.d0)
-constexpr double J612=48.d0/3328.d0)
-constexpr double J613=64.d0/3328.d0)
-constexpr double J614=128.d0/3328.d0)
-constexpr double J620=30.d0/3328.d0)
-constexpr double J621=36.d0/3328.d0)
-constexpr double J622=48.d0/3328.d0)
-constexpr double J623=96.d0/3328.d0)
-constexpr double J630=30.d0/3328.d0)
-constexpr double J631=40.d0/3328.d0)
-constexpr double J632=80.d0/3328.d0)
-constexpr double J640=35.d0/3328.d0)
-constexpr double J641=70.d0/3328.d0)
-constexpr double J650=63.d0/3328.d0)
-
-constexpr double J700=231.d0/15360.d0)
-constexpr double J701=252.d0/15360.d0)
-constexpr double J702=280.d0/15360.d0)
-constexpr double J703=320.d0/15360.d0)
-constexpr double J704=384.d0/15360.d0)
-constexpr double J705=512.d0/15360.d0)
-constexpr double J706=1024.d0/15360.d0)
-constexpr double J710=126.d0/15360.d0)
-constexpr double J711=140.d0/15360.d0)
-constexpr double J712=160.d0/15360.d0)
-constexpr double J713=192.d0/15360.d0)
-constexpr double J714=256.d0/15360.d0)
-constexpr double J715=512.d0/15360.d0)
-constexpr double J720=105.d0/15360.d0)
-constexpr double J721=120.d0/15360.d0)
-constexpr double J722=144.d0/15360.d0)
-constexpr double J723=192.d0/15360.d0)
-constexpr double J724=384.d0/15360.d0)
-constexpr double J730=100.d0/15360.d0)
-constexpr double J731=120.d0/15360.d0)
-constexpr double J732=160.d0/15360.d0)
-constexpr double J733=320.d0/15360.d0)
-constexpr double J740=105.d0/15360.d0)
-constexpr double J741=140.d0/15360.d0)
-constexpr double J742=280.d0/15360.d0)
-constexpr double J750=126.d0/15360.d0)
-constexpr double J751=252.d0/15360.d0)
-constexpr double J760=231.d0/15360.d0)
-
-constexpr double J800=429.d0/34816.d0)
-constexpr double J801=462.d0/34816.d0)
-constexpr double J802=504.d0/34816.d0)
-constexpr double J803=560.d0/34816.d0)
-constexpr double J804=640.d0/34816.d0)
-constexpr double J805=768.d0/34816.d0)
-constexpr double J806=1024.d0/34816.d0)
-constexpr double J807=2048.d0/34816.d0)
-constexpr double J810=231.d0/34816.d0)
-constexpr double J811=252.d0/34816.d0)
-constexpr double J812=280.d0/34816.d0)
-constexpr double J813=320.d0/34816.d0)
-constexpr double J814=384.d0/34816.d0)
-constexpr double J815=512.d0/34816.d0)
-constexpr double J816=1024.d0/34816.d0)
-constexpr double J820=189.d0/34816.d0)
-constexpr double J821=210.d0/34816.d0)
-constexpr double J822=240.d0/34816.d0)
-constexpr double J823=288.d0/34816.d0)
-constexpr double J824=284.d0/34816.d0)
-constexpr double J825=768.d0/34816.d0)
-constexpr double J830=175.d0/34816.d0)
-constexpr double J831=200.d0/34816.d0)
-constexpr double J832=240.d0/34816.d0)
-constexpr double J833=320.d0/34816.d0)
-constexpr double J834=640.d0/34816.d0)
-constexpr double J840=175.d0/34816.d0)
-constexpr double J841=210.d0/34816.d0)
-constexpr double J842=280.d0/34816.d0)
-constexpr double J843=560.d0/34816.d0)
-constexpr double J850=189.d0/34816.d0)
-constexpr double J851=252.d0/34816.d0)
-constexpr double J852=504.d0/34816.d0)
-constexpr double J860=231.d0/34816.d0)
-constexpr double J861=462.d0/34816.d0)
-constexpr double J870=429.d0/34816.d0)
-
-constexpr double J900=6435.d0/622592.d0)
-constexpr double J901=6864.d0/622592.d0)
-constexpr double J902=7392.d0/622592.d0)
-constexpr double J903=8064.d0/622592.d0)
-constexpr double J904=8960.d0/622592.d0)
-constexpr double J905=10240.d0/622592.d0)
-constexpr double J906=12288.d0/622592.d0)
-constexpr double J907=16384.d0/622592.d0)
-constexpr double J908=32768.d0/622592.d0)
-constexpr double J910=3432.d0/622592.d0)
-constexpr double J911=3696.d0/622592.d0)
-constexpr double J912=4032.d0/622592.d0)
-constexpr double J913=4480.d0/622592.d0)
-constexpr double J914=5120.d0/622592.d0)
-constexpr double J915=6144.d0/622592.d0)
-constexpr double J916=8192.d0/622592.d0)
-constexpr double J917=16384.d0/622592.d0)
-constexpr double J920=2772.d0/622592.d0)
-constexpr double J921=3024.d0/622592.d0)
-constexpr double J922=3360.d0/622592.d0)
-constexpr double J923=3840.d0/622592.d0)
-constexpr double J924=4608.d0/622592.d0)
-constexpr double J925=6144.d0/622592.d0)
-constexpr double J926=12288.d0/622592.d0)
-constexpr double J930=2520.d0/622592.d0)
-constexpr double J931=2800.d0/622592.d0)
-constexpr double J932=3200.d0/622592.d0)
-constexpr double J933=3840.d0/622592.d0)
-constexpr double J934=5120.d0/622592.d0)
-constexpr double J935=10240.d0/622592.d0)
-constexpr double J940=2450.d0/622592.d0)
-constexpr double J941=2800.d0/622592.d0)
-constexpr double J942=3360.d0/622592.d0)
-constexpr double J943=4480.d0/622592.d0)
-constexpr double J944=8960.d0/622592.d0)
-constexpr double J950=2520.d0/622592.d0)
-constexpr double J951=3024.d0/622592.d0)
-constexpr double J952=4032.d0/622592.d0)
-constexpr double J953=8064.d0/622592.d0)
-constexpr double J960=2772.d0/622592.d0)
-constexpr double J961=3696.d0/622592.d0)
-constexpr double J962=7392.d0/622592.d0)
-constexpr double J970=3432.d0/622592.d0)
-constexpr double J971=6864.d0/622592.d0)
-constexpr double J980=6435.d0/622592.d0)
-
-constexpr double JA00=12155.d0/1376256.d0)
-constexpr double JA01=12870.d0/1376256.d0)
-constexpr double JA02=13728.d0/1376256.d0)
-constexpr double JA03=14784.d0/1376256.d0)
-constexpr double JA04=16128.d0/1376256.d0)
-constexpr double JA05=17920.d0/1376256.d0)
-constexpr double JA06=20480.d0/1376256.d0)
-constexpr double JA07=24576.d0/1376256.d0)
-constexpr double JA08=32768.d0/1376256.d0)
-constexpr double JA09=65536.d0/1376256.d0)
-constexpr double JA10=6435.d0/1376256.d0)
-constexpr double JA11=6864.d0/1376256.d0)
-constexpr double JA12=7392.d0/1376256.d0)
-constexpr double JA13=8064.d0/1376256.d0)
-constexpr double JA14=8960.d0/1376256.d0)
-constexpr double JA15=10240.d0/1376256.d0)
-constexpr double JA16=12288.d0/1376256.d0)
-constexpr double JA17=16384.d0/1376256.d0)
-constexpr double JA18=32768.d0/1376256.d0)
-constexpr double JA20=5148.d0/1376256.d0)
-constexpr double JA21=5544.d0/1376256.d0)
-constexpr double JA22=6048.d0/1376256.d0)
-constexpr double JA23=6720.d0/1376256.d0)
-constexpr double JA24=7680.d0/1376256.d0)
-constexpr double JA25=9216.d0/1376256.d0)
-constexpr double JA26=12288.d0/1376256.d0)
-constexpr double JA27=24576.d0/1376256.d0)
-constexpr double JA30=4620.d0/1376256.d0)
-constexpr double JA31=5040.d0/1376256.d0)
-constexpr double JA32=5600.d0/1376256.d0)
-constexpr double JA33=6400.d0/1376256.d0)
-constexpr double JA34=7680.d0/1376256.d0)
-constexpr double JA35=10240.d0/1376256.d0)
-constexpr double JA36=20480.d0/1376256.d0)
-constexpr double JA40=4410.d0/1376256.d0)
-constexpr double JA41=4900.d0/1376256.d0)
-constexpr double JA42=5600.d0/1376256.d0)
-constexpr double JA43=6720.d0/1376256.d0)
-constexpr double JA44=8960.d0/1376256.d0)
-constexpr double JA45=17920.d0/1376256.d0)
-constexpr double JA50=4410.d0/1376256.d0)
-constexpr double JA51=5040.d0/1376256.d0)
-constexpr double JA52=6048.d0/1376256.d0)
-constexpr double JA53=8064.d0/1376256.d0)
-constexpr double JA54=16128.d0/1376256.d0)
-constexpr double JA60=4620.d0/1376256.d0)
-constexpr double JA61=5544.d0/1376256.d0)
-constexpr double JA62=7392.d0/1376256.d0)
-constexpr double JA63=14784.d0/1376256.d0)
-constexpr double JA70=5148.d0/1376256.d0)
-constexpr double JA71=6864.d0/1376256.d0)
-constexpr double JA72=13728.d0/1376256.d0)
-constexpr double JA80=6435.d0/1376256.d0)
-constexpr double JA81=12870.d0/1376256.d0)
-constexpr double JA90=12155.d0/1376256.d0)
-
-J1=J100
-J2=J200+n*J201+m*J210
-J3=J300+n*(J301+n*J302)+m*(J310+n*J311+m*J320)
-J4=J400+n*(J401+n*(J402+n*J403))
-    +m*(J410+n*(J411+n*J412)+m*(J420+n*J421+m*J430))
-J5=J500+n*(J501+n*(J502+n*(J503+n*J504)))
-    +m*(J510+n*(J511+n*(J512+n*J513))
-    +m*(J520+n*(J521+n*J522)+m*(J530+n*J531+m*J540)))
-if(y.le.6.0369310d-04) then
-    serj=y*(J1+y*(J2+y*(J3+y*(J4+y*J5))))
+  m = 1.d0 - mc;
+  h = n * (1.d0 - n) * (n - m);
+  del = 0.01622d0;
+  s = s0;
+  y = s * s;
+  if (y < del) {
+    Serbd(y, m, b, d);
+    b = s * b;
+    d = s * y * d;
+    j = s * serj(y, n, m);
     return
-endif
+  }
+  yy(1)=y;
+  ss(1) = s;
+  for (int i = 1; i <= 10; ++i) {
+    c = sqrt(1.d0 - y);
+    d = sqrt(1.d0 - m * y);
+    y = y / ((1.d0 + c) * (1.d0 + d));
+    yy(i + 1) = y;
+    ss(i + 1) = sqrt(y);
+    cd(i) = c * d;
+    if (y < del) {
+      break;
+    }
+    if (i == 10) {
+      LOG(FATAL) << "(elsbdj) too many iterations: s0,m=" << s0 << m;
+    }
+  }
+  Serbd(y, m, b, d);
+  b = ss(i + 1) * b;
+  d = ss(i + 1) * y * d;
+  j = ss(i + 1) * serj(y, n, m);
+  for (int k = i; k >= 1; --k) {
+    sy = ss(k) * yy(k + 1);
+    t = sy / (1.d0 - n * (yy(k) - yy(k + 1) * cd(k)));
+    b = 2.d0 * b - sy;
+    d = d + (d + sy);
+    j = j + (j + uatan(t, h));
+  }
+}
 
-J6=J600+n*(J601+n*(J602+n*(J603+n*(J604+n*J605))))
-    +m*(J610+n*(J611+n*(J612+n*(J613+n*J614)))
-    +m*(J620+n*(J621+n*(J622+n*J623))
-    +m*(J630+n*(J631+n*J632)+m*(J640+n*J641+m*J650))))
-if(y.le.2.0727505d-03) then
-    serj=y*(J1+y*(J2+y*(J3+y*(J4+y*(J5+y*J6)))))
+void Serbd(double const y, double const m, double& b, double& d) {
+  constexpr double F10 = 1.d0 / 6.;
+  constexpr double F20 = 3.d0 / 40.;
+  constexpr double F21 = 2.d0 / 40.;
+  constexpr double F30 = 5.d0 / 112.;
+  constexpr double F31 = 3.d0 / 112.;
+  constexpr double F40 = 35.d0 / 1152.;
+  constexpr double F41 = 20.d0 / 1152.;
+  constexpr double F42 = 18.d0 / 1152.;
+  constexpr double F50 = 63.d0 / 2816.;
+  constexpr double F51 = 35.d0 / 2816.;
+  constexpr double F52 = 30.d0 / 2816.;
+  constexpr double F60 = 231.d0 / 13312.;
+  constexpr double F61 = 126.d0 / 13312.;
+  constexpr double F62 = 105.d0 / 13312.;
+  constexpr double F63 = 100.d0 / 13312.;
+  constexpr double F70 = 429.d0 / 30720.;
+  constexpr double F71 = 231.d0 / 30720.;
+  constexpr double F72 = 189.d0 / 30720.;
+  constexpr double F73 = 175.d0 / 30720.;
+  constexpr double F80 = 6435.d0 / 557056.;
+  constexpr double F81 = 3432.d0 / 557056.;
+  constexpr double F82 = 2722.d0 / 557056.;
+  constexpr double F83 = 2520.d0 / 557056.;
+  constexpr double F84 = 2450.d0 / 557056.;
+  constexpr double F90 = 12155.d0 / 1245184.;
+  constexpr double F91 = 6435.d0 / 1245184.;
+  constexpr double F92 = 5148.d0 / 1245184.;
+  constexpr double F93 = 4620.d0 / 1245184.;
+  constexpr double F94 = 4410.d0 / 1245184.;
+  constexpr double FA0 = 46189.d0 / 5505024.;
+  constexpr double FA1 = 24310.d0 / 5505024.;
+  constexpr double FA2 = 19305.d0 / 5505024.;
+  constexpr double FA3 = 17160.d0 / 5505024.;
+  constexpr double FA4 = 16170.d0 / 5505024.;
+  constexpr double FA5 = 15876.d0 / 5505024.;
+  constexpr double FB0 = 88179.d0 / 12058624.;
+  constexpr double FB1 = 46189.d0 / 12058624.;
+  constexpr double FB2 = 36465.d0 / 12058624.;
+  constexpr double FB3 = 32175.d0 / 12058624.;
+  constexpr double FB4 = 30030.d0 / 12058624.;
+  constexpr double FB5 = 29106.d0 / 12058624.;
+
+  constexpr double A1 = 3.d0 / 5.;
+  constexpr double A2 = 5.d0 / 7.;
+  constexpr double A3 = 7.d0 / 9.;
+  constexpr double A4 = 9.d0 / 11.;
+  constexpr double A5 = 11.d0 / 13.;
+  constexpr double A6 = 13.d0 / 15.;
+  constexpr double A7 = 15.d0 / 17.;
+  constexpr double A8 = 17.d0 / 19.;
+  constexpr double A9 = 19.d0 / 21.;
+  constexpr double AA = 21.d0 / 23.;
+  constexpr double AB = 23.d0 / 25.;
+
+  constexpr double D0 = 1.d0 / 3.;
+
+  F1=F10+m*F10;
+  F2=F20+m*(F21+m*F20);
+  F3=F30+m*(F31+m*(F31+m*F30));
+  F4=F40+m*(F41+m*(F42+m*(F41+m*F40)));
+  F5=F50+m*(F51+m*(F52+m*(F52+m*(F51+m*F50))));
+  F6=F60+m*(F61+m*(F62+m*(F63+m*(F62+m*(F61+m*F60)))));
+  F7=F70+m*(F71+m*(F72+m*(F73+m*(F73+m*(F72+m*(F71+m*F70))))));
+  F8=F80+m*(F81+m*(F82+m*(F83+m*(F84+m*(F83+m*(F82+m*(F81+m*F80)))))));
+  F9=F90+m*(F91+m*(F92+m*(F93+m*(F94+m*(F94+m*(F93+m*(F92+m*(F91+m*F90))))))));
+  FA=FA0+m*(FA1+m*(FA2+m*(FA3+m*(FA4+m*(FA5+m*(FA4+m*(FA3+m*(FA2+m*(FA1+m*FA0)))))))));
+  FB=FB0+m*(FB1+m*(FB2+m*(FB3+m*(FB4+m*(FB5+m*(FB5+m*(FB4+m*(FB3+m*(FB2+m*(FB1+m*FB0))))))))));
+
+  D1 = F1 * A1;
+  D2 = F2 * A2;
+  D3 = F3 * A3;
+  D4 = F4 * A4;
+  D5 = F5 * A5;
+  D6 = F6 * A6;
+  D7 = F7 * A7;
+  D8 = F8 * A8;
+  D9 = F9 * A9;
+  DA = FA * AA;
+  DB = FB * AB;
+
+  d=D0+y*(D1+y*(D2+y*(D3+y*(D4+y*(D5+y*(D6+y*(D7+y*(D8+y*(D9+y*(DA+y*DB))))))))));
+
+  B1 = F1 - D0;
+  B2 = F2 - D1;
+  B3 = F3 - D2;
+  B4 = F4 - D3;
+  B5 = F5 - D4;
+  B6 = F6 - D5;
+  B7 = F7 - D6;
+  B8 = F8 - D7;
+  B9 = F9 - D8;
+  BA = FA - D9;
+  BB = FB - DA;
+
+  b=1.d0+y*(B1+y*(B2+y*(B3+y*(B4+y*(B5+y*(B6+y*(B7+y*(B8+y*(B9+y*(BA+y*BB))))))))));
+}
+
+double Serj(double const y, double const n, double const m) {
+  constexpr double J100 = 1.d0 / 3.;
+
+  constexpr double J200 = 1.d0 / 10.;
+  constexpr double J201 = 2.d0 / 10.;
+  constexpr double J210 = 1.d0 / 10.;
+
+  constexpr double J300 = 3.d0 / 56.;
+  constexpr double J301 = 4.d0 / 56.;
+  constexpr double J302 = 8.d0 / 56.;
+  constexpr double J310 = 2.d0 / 56.;
+  constexpr double J311 = 4.d0 / 56.;
+  constexpr double J320 = 3.d0 / 56.;
+
+  constexpr double J400 = 5.d0 / 144.;
+  constexpr double J401 = 6.d0 / 144.;
+  constexpr double J402 = 8.d0 / 144.;
+  constexpr double J403 = 16.d0 / 144.;
+  constexpr double J410 = 3.d0 / 144.;
+  constexpr double J411 = 4.d0 / 144.;
+  constexpr double J412 = 8.d0 / 144.;
+  constexpr double J420 = 3.d0 / 144.;
+  constexpr double J421 = 6.d0 / 144.;
+  constexpr double J430 = 5.d0 / 144.;
+
+  constexpr double J500 = 35.d0 / 1408.;
+  constexpr double J501 = 40.d0 / 1408.;
+  constexpr double J502 = 48.d0 / 1408.;
+  constexpr double J503 = 64.d0 / 1408.;
+  constexpr double J504 = 128.d0 / 1408.;
+  constexpr double J510 = 20.d0 / 1408.;
+  constexpr double J511 = 24.d0 / 1408.;
+  constexpr double J512 = 32.d0 / 1408.;
+  constexpr double J513 = 64.d0 / 1408.;
+  constexpr double J520 = 18.d0 / 1408.;
+  constexpr double J521 = 24.d0 / 1408.;
+  constexpr double J522 = 48.d0 / 1408.;
+  constexpr double J530 = 20.d0 / 1408.;
+  constexpr double J531 = 40.d0 / 1408.;
+  constexpr double J540 = 35.d0 / 1408.;
+
+  constexpr double J600 = 63.d0 / 3328.;
+  constexpr double J601 = 70.d0 / 3328.;
+  constexpr double J602 = 80.d0 / 3328.;
+  constexpr double J603 = 96.d0 / 3328.;
+  constexpr double J604 = 128.d0 / 3328.;
+  constexpr double J605 = 256.d0 / 3328.;
+  constexpr double J610 = 35.d0 / 3328.;
+  constexpr double J611 = 40.d0 / 3328.;
+  constexpr double J612 = 48.d0 / 3328.;
+  constexpr double J613 = 64.d0 / 3328.;
+  constexpr double J614 = 128.d0 / 3328.;
+  constexpr double J620 = 30.d0 / 3328.;
+  constexpr double J621 = 36.d0 / 3328.;
+  constexpr double J622 = 48.d0 / 3328.;
+  constexpr double J623 = 96.d0 / 3328.;
+  constexpr double J630 = 30.d0 / 3328.;
+  constexpr double J631 = 40.d0 / 3328.;
+  constexpr double J632 = 80.d0 / 3328.;
+  constexpr double J640 = 35.d0 / 3328.;
+  constexpr double J641 = 70.d0 / 3328.;
+  constexpr double J650 = 63.d0 / 3328.;
+
+  constexpr double J700 = 231.d0 / 15360.;
+  constexpr double J701 = 252.d0 / 15360.;
+  constexpr double J702 = 280.d0 / 15360.;
+  constexpr double J703 = 320.d0 / 15360.;
+  constexpr double J704 = 384.d0 / 15360.;
+  constexpr double J705 = 512.d0 / 15360.;
+  constexpr double J706 = 1024.d0 / 15360.;
+  constexpr double J710 = 126.d0 / 15360.;
+  constexpr double J711 = 140.d0 / 15360.;
+  constexpr double J712 = 160.d0 / 15360.;
+  constexpr double J713 = 192.d0 / 15360.;
+  constexpr double J714 = 256.d0 / 15360.;
+  constexpr double J715 = 512.d0 / 15360.;
+  constexpr double J720 = 105.d0 / 15360.;
+  constexpr double J721 = 120.d0 / 15360.;
+  constexpr double J722 = 144.d0 / 15360.;
+  constexpr double J723 = 192.d0 / 15360.;
+  constexpr double J724 = 384.d0 / 15360.;
+  constexpr double J730 = 100.d0 / 15360.;
+  constexpr double J731 = 120.d0 / 15360.;
+  constexpr double J732 = 160.d0 / 15360.;
+  constexpr double J733 = 320.d0 / 15360.;
+  constexpr double J740 = 105.d0 / 15360.;
+  constexpr double J741 = 140.d0 / 15360.;
+  constexpr double J742 = 280.d0 / 15360.;
+  constexpr double J750 = 126.d0 / 15360.;
+  constexpr double J751 = 252.d0 / 15360.;
+  constexpr double J760 = 231.d0 / 15360.;
+
+  constexpr double J800 = 429.d0 / 34816.;
+  constexpr double J801 = 462.d0 / 34816.;
+  constexpr double J802 = 504.d0 / 34816.;
+  constexpr double J803 = 560.d0 / 34816.;
+  constexpr double J804 = 640.d0 / 34816.;
+  constexpr double J805 = 768.d0 / 34816.;
+  constexpr double J806 = 1024.d0 / 34816.;
+  constexpr double J807 = 2048.d0 / 34816.;
+  constexpr double J810 = 231.d0 / 34816.;
+  constexpr double J811 = 252.d0 / 34816.;
+  constexpr double J812 = 280.d0 / 34816.;
+  constexpr double J813 = 320.d0 / 34816.;
+  constexpr double J814 = 384.d0 / 34816.;
+  constexpr double J815 = 512.d0 / 34816.;
+  constexpr double J816 = 1024.d0 / 34816.;
+  constexpr double J820 = 189.d0 / 34816.;
+  constexpr double J821 = 210.d0 / 34816.;
+  constexpr double J822 = 240.d0 / 34816.;
+  constexpr double J823 = 288.d0 / 34816.;
+  constexpr double J824 = 284.d0 / 34816.;
+  constexpr double J825 = 768.d0 / 34816.;
+  constexpr double J830 = 175.d0 / 34816.;
+  constexpr double J831 = 200.d0 / 34816.;
+  constexpr double J832 = 240.d0 / 34816.;
+  constexpr double J833 = 320.d0 / 34816.;
+  constexpr double J834 = 640.d0 / 34816.;
+  constexpr double J840 = 175.d0 / 34816.;
+  constexpr double J841 = 210.d0 / 34816.;
+  constexpr double J842 = 280.d0 / 34816.;
+  constexpr double J843 = 560.d0 / 34816.;
+  constexpr double J850 = 189.d0 / 34816.;
+  constexpr double J851 = 252.d0 / 34816.;
+  constexpr double J852 = 504.d0 / 34816.;
+  constexpr double J860 = 231.d0 / 34816.;
+  constexpr double J861 = 462.d0 / 34816.;
+  constexpr double J870 = 429.d0 / 34816.;
+
+  constexpr double J900 = 6435.d0 / 622592.;
+  constexpr double J901 = 6864.d0 / 622592.;
+  constexpr double J902 = 7392.d0 / 622592.;
+  constexpr double J903 = 8064.d0 / 622592.;
+  constexpr double J904 = 8960.d0 / 622592.;
+  constexpr double J905 = 10240.d0 / 622592.;
+  constexpr double J906 = 12288.d0 / 622592.;
+  constexpr double J907 = 16384.d0 / 622592.;
+  constexpr double J908 = 32768.d0 / 622592.;
+  constexpr double J910 = 3432.d0 / 622592.;
+  constexpr double J911 = 3696.d0 / 622592.;
+  constexpr double J912 = 4032.d0 / 622592.;
+  constexpr double J913 = 4480.d0 / 622592.;
+  constexpr double J914 = 5120.d0 / 622592.;
+  constexpr double J915 = 6144.d0 / 622592.;
+  constexpr double J916 = 8192.d0 / 622592.;
+  constexpr double J917 = 16384.d0 / 622592.;
+  constexpr double J920 = 2772.d0 / 622592.;
+  constexpr double J921 = 3024.d0 / 622592.;
+  constexpr double J922 = 3360.d0 / 622592.;
+  constexpr double J923 = 3840.d0 / 622592.;
+  constexpr double J924 = 4608.d0 / 622592.;
+  constexpr double J925 = 6144.d0 / 622592.;
+  constexpr double J926 = 12288.d0 / 622592.;
+  constexpr double J930 = 2520.d0 / 622592.;
+  constexpr double J931 = 2800.d0 / 622592.;
+  constexpr double J932 = 3200.d0 / 622592.;
+  constexpr double J933 = 3840.d0 / 622592.;
+  constexpr double J934 = 5120.d0 / 622592.;
+  constexpr double J935 = 10240.d0 / 622592.;
+  constexpr double J940 = 2450.d0 / 622592.;
+  constexpr double J941 = 2800.d0 / 622592.;
+  constexpr double J942 = 3360.d0 / 622592.;
+  constexpr double J943 = 4480.d0 / 622592.;
+  constexpr double J944 = 8960.d0 / 622592.;
+  constexpr double J950 = 2520.d0 / 622592.;
+  constexpr double J951 = 3024.d0 / 622592.;
+  constexpr double J952 = 4032.d0 / 622592.;
+  constexpr double J953 = 8064.d0 / 622592.;
+  constexpr double J960 = 2772.d0 / 622592.;
+  constexpr double J961 = 3696.d0 / 622592.;
+  constexpr double J962 = 7392.d0 / 622592.;
+  constexpr double J970 = 3432.d0 / 622592.;
+  constexpr double J971 = 6864.d0 / 622592.;
+  constexpr double J980 = 6435.d0 / 622592.;
+
+  constexpr double JA00 = 12155.d0 / 1376256.;
+  constexpr double JA01 = 12870.d0 / 1376256.;
+  constexpr double JA02 = 13728.d0 / 1376256.;
+  constexpr double JA03 = 14784.d0 / 1376256.;
+  constexpr double JA04 = 16128.d0 / 1376256.;
+  constexpr double JA05 = 17920.d0 / 1376256.;
+  constexpr double JA06 = 20480.d0 / 1376256.;
+  constexpr double JA07 = 24576.d0 / 1376256.;
+  constexpr double JA08 = 32768.d0 / 1376256.;
+  constexpr double JA09 = 65536.d0 / 1376256.;
+  constexpr double JA10 = 6435.d0 / 1376256.;
+  constexpr double JA11 = 6864.d0 / 1376256.;
+  constexpr double JA12 = 7392.d0 / 1376256.;
+  constexpr double JA13 = 8064.d0 / 1376256.;
+  constexpr double JA14 = 8960.d0 / 1376256.;
+  constexpr double JA15 = 10240.d0 / 1376256.;
+  constexpr double JA16 = 12288.d0 / 1376256.;
+  constexpr double JA17 = 16384.d0 / 1376256.;
+  constexpr double JA18 = 32768.d0 / 1376256.;
+  constexpr double JA20 = 5148.d0 / 1376256.;
+  constexpr double JA21 = 5544.d0 / 1376256.;
+  constexpr double JA22 = 6048.d0 / 1376256.;
+  constexpr double JA23 = 6720.d0 / 1376256.;
+  constexpr double JA24 = 7680.d0 / 1376256.;
+  constexpr double JA25 = 9216.d0 / 1376256.;
+  constexpr double JA26 = 12288.d0 / 1376256.;
+  constexpr double JA27 = 24576.d0 / 1376256.;
+  constexpr double JA30 = 4620.d0 / 1376256.;
+  constexpr double JA31 = 5040.d0 / 1376256.;
+  constexpr double JA32 = 5600.d0 / 1376256.;
+  constexpr double JA33 = 6400.d0 / 1376256.;
+  constexpr double JA34 = 7680.d0 / 1376256.;
+  constexpr double JA35 = 10240.d0 / 1376256.;
+  constexpr double JA36 = 20480.d0 / 1376256.;
+  constexpr double JA40 = 4410.d0 / 1376256.;
+  constexpr double JA41 = 4900.d0 / 1376256.;
+  constexpr double JA42 = 5600.d0 / 1376256.;
+  constexpr double JA43 = 6720.d0 / 1376256.;
+  constexpr double JA44 = 8960.d0 / 1376256.;
+  constexpr double JA45 = 17920.d0 / 1376256.;
+  constexpr double JA50 = 4410.d0 / 1376256.;
+  constexpr double JA51 = 5040.d0 / 1376256.;
+  constexpr double JA52 = 6048.d0 / 1376256.;
+  constexpr double JA53 = 8064.d0 / 1376256.;
+  constexpr double JA54 = 16128.d0 / 1376256.;
+  constexpr double JA60 = 4620.d0 / 1376256.;
+  constexpr double JA61 = 5544.d0 / 1376256.;
+  constexpr double JA62 = 7392.d0 / 1376256.;
+  constexpr double JA63 = 14784.d0 / 1376256.;
+  constexpr double JA70 = 5148.d0 / 1376256.;
+  constexpr double JA71 = 6864.d0 / 1376256.;
+  constexpr double JA72 = 13728.d0 / 1376256.;
+  constexpr double JA80 = 6435.d0 / 1376256.;
+  constexpr double JA81 = 12870.d0 / 1376256.;
+  constexpr double JA90 = 12155.d0 / 1376256.;
+
+  J1 = J100;
+  J2 = J200 + n * J201 + m * J210;
+  J3 = J300 + n * (J301 + n * J302) + m * (J310 + n * J311 + m * J320);
+  J4 = J400 + n * (J401 + n * (J402 + n * J403)) +
+       m * (J410 + n * (J411 + n * J412) + m * (J420 + n * J421 + m * J430));
+  J5 = J500 + n * (J501 + n * (J502 + n * (J503 + n * J504))) +
+       m * (J510 + n * (J511 + n * (J512 + n * J513)) +
+            m * (J520 + n * (J521 + n * J522) +
+                 m * (J530 + n * J531 + m * J540)));
+  if (y <= 6.0369310d - 04) {
+    return y * (J1 + y * (J2 + y * (J3 + y * (J4 + y * J5))));
+  }
+
+  J6 = J600 + n * (J601 + n * (J602 + n * (J603 + n * (J604 + n * J605)))) +
+       m * (J610 + n * (J611 + n * (J612 + n * (J613 + n * J614))) +
+            m * (J620 + n * (J621 + n * (J622 + n * J623)) +
+                 m * (J630 + n * (J631 + n * J632) +
+                      m * (J640 + n * J641 + m * J650))));
+  if (y <= 2.0727505d - 03) {
+    return y * (J1 + y * (J2 + y * (J3 + y * (J4 + y * (J5 + y * J6)))));
+  }
+
+  J7 =
+      J700 +
+      n * (J701 +
+           n * (J702 + n * (J703 + n * (J704 + n * (J705 + n * J706))))) +
+      m * (J710 + n * (J711 + n * (J712 + n * (J713 + n * (J714 + n * J715)))) +
+           m * (J720 + n * (J721 + n * (J722 + n * (J723 + n * J724))) +
+                m * (J730 + n * (J731 + n * (J732 + n * J733)) +
+                     m * (J740 + n * (J741 + n * J742) +
+                          m * (J750 + n * J751 + m * J760)))));
+  if (y <= 5.0047026d - 03) {
+    return y *
+           (J1 + y * (J2 + y * (J3 + y * (J4 + y * (J5 + y * (J6 + y * J7))))));
+  }
+
+  J8 =
+      J800 +
+      n * (J801 +
+           n * (J802 +
+                n * (J803 + n * (J804 + n * (J805 + n * (J806 + n * J807)))))) +
+      m * (J810 +
+           n * (J811 +
+                n * (J812 + n * (J813 + n * (J814 + n * (J815 + n * J816))))) +
+           m * (J820 +
+                n * (J821 + n * (J822 + n * (J823 + n * (J824 + n * J825)))) +
+                m * (J830 + n * (J831 + n * (J832 + n * (J833 + n * J834))) +
+                     m * (J840 + n * (J841 + n * (J842 + n * J843)) +
+                          m * (J850 + n * (J851 + n * J852) +
+                               m * (J860 + n * J861 + m * J870))))));
+  if (y <= 9.6961652d - 03) {
+    return y * (J1 +
+                y * (J2 +
+                     y * (J3 +
+                          y * (J4 + y * (J5 + y * (J6 + y * (J7 + y * J8)))))));
+  }
+
+  J9 = J900 +
+       n * (J901 +
+            n * (J902 +
+                 n * (J903 +
+                      n * (J904 +
+                           n * (J905 + n * (J906 + n * (J907 + n * J908))))))) +
+       m * (J910 +
+            n * (J911 +
+                 n * (J912 +
+                      n * (J913 +
+                           n * (J914 + n * (J915 + n * (J916 + n * J917)))))) +
+            m * (J920 +
+                 n * (J921 +
+                      n * (J922 +
+                           n * (J923 + n * (J924 + n * (J925 + n * J926))))) +
+                 m * (J930 +
+                      n * (J931 +
+                           n * (J932 + n * (J933 + n * (J934 + n * J935)))) +
+                      m * (J940 +
+                           n * (J941 + n * (J942 + n * (J943 + n * J944))) +
+                           m * (J950 + n * (J951 + n * (J952 + n * J953)) +
+                                m * (J960 + n * (J961 + n * J962) +
+                                     m * (J970 + n * J971 + m * J980)))))));
+  if (y <= 1.6220210d - 02) {
+    return y *
+           (J1 +
+            y * (J2 +
+                 y * (J3 +
+                      y * (J4 +
+                           y * (J5 +
+                                y * (J6 + y * (J7 + y * (J8 + y * J9))))))));
+  }
+
+  JA =
+      JA00 +
+      n * (JA01 +
+           n * (JA02 +
+                n * (JA03 +
+                     n * (JA04 +
+                          n * (JA05 +
+                               n * (JA06 +
+                                    n * (JA07 + n * (JA08 + n * JA09)))))))) +
+      m * (JA10 +
+           n * (JA11 +
+                n * (JA12 +
+                     n * (JA13 +
+                          n * (JA14 +
+                               n * (JA15 +
+                                    n * (JA16 + n * (JA17 + n * JA18))))))) +
+           m * (JA20 +
+                n * (JA21 +
+                     n * (JA22 +
+                          n * (JA23 +
+                               n * (JA24 +
+                                    n * (JA25 + n * (JA26 + n * JA27)))))) +
+                m * (JA30 +
+                     n * (JA31 +
+                          n * (JA32 +
+                               n * (JA33 +
+                                    n * (JA34 + n * (JA35 + n * JA36))))) +
+                     m * (JA40 +
+                          n * (JA41 +
+                               n * (JA42 +
+                                    n * (JA43 + n * (JA44 + n * JA45)))) +
+                          m * (JA50 +
+                               n * (JA51 + n * (JA52 + n * (JA53 + n * JA54))) +
+                               m * (JA60 + n * (JA61 + n * (JA62 + n * JA63)) +
+                                    m * (JA70 + n * (JA71 + n * JA72) +
+                                         m * (JA80 + n * JA81 +
+                                              m * JA90))))))));
+  return y * (J1 +
+              y * (J2 +
+                   y * (J3 +
+                        y * (J4 +
+                             y * (J5 +
+                                  y * (J6 +
+                                       y * (J7 +
+                                            y * (J8 + y * (J9 + y * JA)))))))));
+}
+
+double Uatan(double const t, double const h) {
+  double z, y, x, a, r, ri, hold, rold, riold;
+  /*static?*/ double hold = 1.d0;
+  /*static?*/ double rold = 1.d0;
+  /*static?*/ double riold = 1.d0;
+  constexpr double A3 = 1.d0 / 3.;
+  constexpr double A5 = 1.d0 / 5.;
+  constexpr double A7 = 1.d0 / 7.;
+  constexpr double A9 = 1.d0 / 9.;
+  constexpr double A11 = 1.d0 / 11.;
+  constexpr double A13 = 1.d0 / 13.;
+  constexpr double A15 = 1.d0 / 15.;
+  constexpr double A17 = 1.d0 / 17.;
+  constexpr double A19 = 1.d0 / 19.;
+  constexpr double A21 = 1.d0 / 21.;
+  constexpr double A23 = 1.d0 / 23.;
+  constexpr double A25 = 1.d0 / 25.;
+
+  z = -h * t * t;
+  a = abs(z);
+
+  if (a < 3.3306691d - 16) {
+    return t;
+  } else if (a < 2.3560805d - 08) {
+    return t * (1.d0 + z * A3);
+  } else if (a < 9.1939631d - 06) {
+    return t * (1.d0 + z * (A3 + z * A5));
+  } else if (a < 1.7779240d - 04) {
+    return t * (1.d0 + z * (A3 + z * (A5 + z * A7)));
+  } else if (a < 1.0407839d - 03) {
+    return t * (1.d0 + z * (A3 + z * (A5 + z * (A7 + z * A9))));
+  } else if (a < 3.3616998d - 03) {
+    return t * (1.d0 + z * (A3 + z * (A5 + z * (A7 + z * (A9 + z * A11)))));
+  } else if (a < 7.7408014d - 03) {
     return
-endif
-
-J7=J700+n*(J701+n*(J702+n*(J703+n*(J704+n*(J705+n*J706)))))
-    +m*(J710+n*(J711+n*(J712+n*(J713+n*(J714+n*J715))))
-    +m*(J720+n*(J721+n*(J722+n*(J723+n*J724)))
-    +m*(J730+n*(J731+n*(J732+n*J733))
-    +m*(J740+n*(J741+n*J742)+m*(J750+n*J751+m*J760)))))
-if(y.le.5.0047026d-03) then
-    serj=y*(J1+y*(J2+y*(J3+y*(J4+y*(J5+y*(J6+y*J7))))))
-   return
-endif
-
-J8=J800+n*(J801+n*(J802+n*(J803+n*(J804+n*(J805+n*(J806+n*J807))))))
-    +m*(J810+n*(J811+n*(J812+n*(J813+n*(J814+n*(J815+n*J816)))))
-    +m*(J820+n*(J821+n*(J822+n*(J823+n*(J824+n*J825))))
-    +m*(J830+n*(J831+n*(J832+n*(J833+n*J834)))
-    +m*(J840+n*(J841+n*(J842+n*J843))
-    +m*(J850+n*(J851+n*J852)+m*(J860+n*J861+m*J870))))))
-if(y.le.9.6961652d-03) then
-    serj=y*(J1+y*(J2+y*(J3+y*(J4+y*(J5+y*(J6+y*(J7+y*J8)))))))
+        t * (1.d0 +
+             z * (A3 + z * (A5 + z * (A7 + z * (A9 + z * (A11 + z * A13))))));
+  } else if (a < 1.4437181d - 02) {
     return
-endif
-
-J9=J900+n*(J901+n*(J902+n*(J903+n*(J904+n*(J905+n*(J906+n*(J907+n*J908)))))))
-    +m*(J910+n*(J911+n*(J912+n*(J913+n*(J914+n*(J915+n*(J916+n*J917))))))
-    +m*(J920+n*(J921+n*(J922+n*(J923+n*(J924+n*(J925+n*J926)))))
-    +m*(J930+n*(J931+n*(J932+n*(J933+n*(J934+n*J935))))
-    +m*(J940+n*(J941+n*(J942+n*(J943+n*J944)))
-    +m*(J950+n*(J951+n*(J952+n*J953))
-    +m*(J960+n*(J961+n*J962)+m*(J970+n*J971+m*J980)))))))
-if(y.le.1.6220210d-02) then
-    serj=y*(J1+y*(J2+y*(J3+y*(J4+y*(J5+y*(J6+y*(J7+y*(J8+y*J9))))))))
+        t * (1.d0 +
+             z * (A3 +
+                  z * (A5 +
+                       z * (A7 + z * (A9 + z * (A11 + z * (A13 + z * A15)))))));
+  } else if (a < 2.3407312d - 02) {
     return
-endif
-
-JA=JA00+n*(JA01+n*(JA02+n*(JA03+n*(JA04+n*(JA05+n*(JA06+n*(JA07+n*(JA08+n*JA09))))))))
-    +m*(JA10+n*(JA11+n*(JA12+n*(JA13+n*(JA14+n*(JA15+n*(JA16+n*(JA17+n*JA18)))))))
-    +m*(JA20+n*(JA21+n*(JA22+n*(JA23+n*(JA24+n*(JA25+n*(JA26+n*JA27))))))
-    +m*(JA30+n*(JA31+n*(JA32+n*(JA33+n*(JA34+n*(JA35+n*JA36)))))
-    +m*(JA40+n*(JA41+n*(JA42+n*(JA43+n*(JA44+n*JA45))))
-    +m*(JA50+n*(JA51+n*(JA52+n*(JA53+n*JA54)))
-    +m*(JA60+n*(JA61+n*(JA62+n*JA63))
-    +m*(JA70+n*(JA71+n*JA72)+m*(JA80+n*JA81+m*JA90))))))))
-serj=y*(J1+y*(J2+y*(J3+y*(J4+y*(J5+y*(J6+y*(J7+y*(J8+y*(J9+y*JA)))))))))
-return
-end
-//---------------------------------------------------------------------------
-real*8 function uatan(t,h)
-real*8 t,h,z,y,x
-real*8 a,r,ri,hold,rold,riold
-real*8 A3,A5,A7,A9,A11,A13,A15,A17,A19,A21,A23,A25
-data hold/1.d0/, rold/1.d0/,riold/1.d0/
-save hold,rold,riold
-constexpr double A3=1.d0/3.d0)
-constexpr double A5=1.d0/5.d0)
-constexpr double A7=1.d0/7.d0)
-constexpr double A9=1.d0/9.d0)
-constexpr double A11=1.d0/11.d0)
-constexpr double A13=1.d0/13.d0)
-constexpr double A15=1.d0/15.d0)
-constexpr double A17=1.d0/17.d0)
-constexpr double A19=1.d0/19.d0)
-constexpr double A21=1.d0/21.d0)
-constexpr double A23=1.d0/23.d0)
-constexpr double A25=1.d0/25.d0)
-
-z=-h*t*t
-a=abs(z)
-
-if(a.lt.3.3306691d-16) then
-    uatan=t
-elseif(a.lt.2.3560805d-08) then
-    uatan=t*(1.d0+z*A3)
-elseif(a.lt.9.1939631d-06) then
-    uatan=t*(1.d0+z*(A3+z*A5))
-elseif(a.lt.1.7779240d-04) then
-    uatan=t*(1.d0+z*(A3+z*(A5+z*A7)))
-elseif(a.lt.1.0407839d-03) then
-    uatan=t*(1.d0+z*(A3+z*(A5+z*(A7+z*A9))))
-elseif(a.lt.3.3616998d-03) then
-    uatan=t*(1.d0+z*(A3+z*(A5+z*(A7+z*(A9+z*A11)))))
-elseif(a.lt.7.7408014d-03) then
-    uatan=t*(1.d0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*A13))))))
-elseif(a.lt.1.4437181d-02) then
-    uatan=t*(1.d0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*A15)))))))
-elseif(a.lt.2.3407312d-02) then
-    uatan=t*(1.d0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*(A15+z*A17))))))))
-elseif(a.lt.3.4416203d-02) then
-    uatan=t*(1.d0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*(A15+z*(A17+z*A19)))))))))
-elseif(z.lt.0.d0) then
-    if(abs(h-hold).lt.1.d-16) then
-        r=rold; ri=riold
-    else
-        r=sqrt(h); ri=1.d0/r; hold=h; rold=r; riold=ri
-    endif
-    uatan=atan(r*t)*ri
-elseif(a.lt.4.7138547d-02) then
-    uatan=t*(1.d0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*(A15+z*(A17+z*(A19+z*A21))))))))))
-elseif(a.lt.6.1227405d-02) then
-    uatan=t*(1.d0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*(A15+z*(A17+z*(A19+z*(A21+z*A23)))))))))))
-elseif(a.lt.7.6353468d-02) then
-    uatan=t*(1.d0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*(A15+z*(A17+z*(A19+z*(A21+z*(A23+z*A25))))))))))))
-else
-    if(abs(h-hold).lt.1.d-16) then
-        r=rold; ri=riold
-    else
-        r=sqrt(-h); ri=1.d0/r; hold=h; rold=r; riold=ri
-    endif
-    y=r*t
-    x=log((1.d0+y)/(1.d0-y))*0.5d0
-    uatan=x*ri
-endif
-
-return
-end
-//---------------------------------------------------------------------------
-subroutine relbdj(phi,phic,n,mc,b,d,j)
-//
-//  Single precision general incomplete elliptic integrals of all three kinds
-//
-//     Reference: T. Fukushima, (2011) J. Comp. Appl. Math., 236, 1961-1975
-//    "Precise and Fast Computation of a General Incomplete Elliptic Integral
-//     of Third Kind by Half and Double Argument Transformations"    
-//
-//     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
-//
-//     Used subprograms: rcel,rcelbd,rcelbdj,relcbdj,rserbd,rserj,ruatan
-//
-//     Inputs: phi  = argument                0 <= phi  <= PI/2
-//             phic = complementar argument   0 <= phic <= PI/2
-//             n    = characteristic          0 <= n    <= 1
-//             mc   = complementary parameter 0 <= mc   <= 1
-//
-//     Outputs: b, d, j
-//
-//     CAUTION: phi and phic must satisfy condition, phi + phic = PI/2
-//
-real*4 phi,phic,n,mc,b,d,j
-real*4 m,nc,h,c,x,d2,z,bc,dc,jc,sz,t,v,t2
-real*4 ruatan
-
-if(phi.lt.1.345) then
-      call relsbdj(sin(phi),n,mc,b,d,j)
-else
-      m=1.0-mc
-      nc=1.0-n
-      h=n*nc*(n-m)
-      c=sin(phic)
-      x=c*c
-      d2=mc+m*x
-      if(x.lt.0.95*d2) then
-        z=c/sqrt(d2)
-        call relsbdj(z,n,mc,b,d,j)
-        call rcelbdj(nc,mc,bc,dc,jc)
-    sz=z*sqrt(1.0-x)
-    t=sz/nc
-    b=bc-(b-sz)
-    d=dc-(d+sz)
-    j=jc-(j+ruatan(t,h))
-  else
-    v=mc*(1.0-x)
-    if(v.lt.x*d2) then
-      call relcbdj(c,n,mc,b,d,j)
-    else
-      t2=(1.0-x)/d2
-               call relcbdj(sqrt(mc*t2),n,mc,b,d,j)
-                call rcelbdj(nc,mc,bc,dc,jc)
-          sz=c*sqrt(t2)
-          t=sz/nc
-          b=bc-(b-sz)
-          d=dc-(d+sz)
-          j=jc-(j+ruatan(t,h))
-    endif
-  endif
-endif
-return
-end
-//---------------------------------------------------------------------------
-      real function rcel(kc0, nc, aa, bb, err)
-c
-c  Single precision general complete elliptic integral "cel"
-c
-c  created by Burlisch
-c
-c  coded by T. Fukushima <Toshio.Fukushima@nao.ac.jp>
-c
-c  Reference: Bulirsch, R. (1969), Numer. Math., 13, 305-315
-c        "Numerical computation of elliptic integrals and elliptic functions III"
-c
-c     Inputs: kc0    = complimentary modulus        0 <= kc0  <= 1
-c             nc     = complimentary characteristic 0 <= nc   <= 1
-c             aa, bb = coefficients
-c
-c     Outputs: cel   = integral value
-c              err   = integer error indicator
-c
-      integer err
-      real kc0, nc, aa, bb
-      real out, a, b, e, f, g
-      real p, q, kc, em, qc
-      err = 0
-      kc = kc0
-      if (kc != 0.0) goto 3
-         if (b != 0.0) goto 1
-            kc = 1.19e-7
-            goto  2
-   1        err = 1
-            rcel = 1.e+32
-            return
-   2     continue
-   3  qc = abs(kc)
-      a = aa
-      b = bb
-      p = nc
-      e = qc
-      em = 1.0
-      if (p .le. 0.0) goto 4
-         p = sqrt(p)
-         b = b/p
-         goto  5
-   4     f = qc*qc
-         q = 1.0-f
-         g = 1.0-p
-         f = f-p
-         q = q*(b-a*p)
-         p = sqrt(f/g)
-         a = (a-b)/g
-         b = a*p-q/(g*g*p)
-   5  continue
-         f = a
-         a = a+b/p
-         g = e/p
-         b = b+f*g
-         b = 2.0*b
-         p = p+g
-         g = em
-         em = em+qc
-         if (abs(g-qc) .lt. 1.e-3*qc) goto  6
-         qc = 2.0*sqrt(e)
-         e = qc*em
-         goto  5
-   6  out = 1.5707963267948966*(b+a*em)/(em*(em+p))
-      rcel = out
-      return
-      end
-//---------------------------------------------------------------------------
-subroutine rcelbd(mc,elb,eld)
-//
-//  Single precision general complete elliptic integrals of the second kind
-//
-//  Reference: T. Fukushima, (2011) Math. Comp., 80, 1725-1743
-//     "Precise and Fast Computation of General Complete Elliptic Integral
-//      of Second Kind"
-//
-//     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
-//
-//     Inputs: mc   = complementary parameter 0 <= mc   <= 1
-//
-//     Output: elb,eld
-//
-real*4 mc,elk,elb,ele,eld
-real*4 m,mx,kkc,nome,eec,kec
-
-real*4 PIQ,PIHALF,PI,PIINV
-constexpr double PIQ=0.78539816)
-constexpr double PIHALF=1.57079633)
-constexpr double PI=3.14159265)
-constexpr double PIINV=0.318309886)
-
-real*4 mcold,elbold,eldold
-save mcold,elbold,eldold
-
-real*4 Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8
-constexpr double Q1=1.0/16.0,Q2=1.0/32.0,Q3=21.0/1024.0)
-constexpr double Q4=31.0/2048.0,Q5=6257.0/524288.0)
-constexpr double Q6=10293.0/1048576.0,Q7=279025.0/33554432.0)
-constexpr double Q8=483127.0/67108864.0)
-
-real*4 K1,K2,K3,K4
-constexpr double K1=1.0/4.0)
-constexpr double K2=9.0/64.0)
-constexpr double K3=25.0/256.0)
-constexpr double K4=1225.0/16384.0)
-
-real*4 B1,B2,B3,B4,B5
-constexpr double B1=1.0/2.0)
-constexpr double B2=1.0/16.0)
-constexpr double B3=3.0/128.0)
-constexpr double B4=25.0/2048.0)
-constexpr double B5=245.0/32768.0)
-
-real*4 D1,D2,D3,D4,D5
-constexpr double D1=1.0/2.0)
-constexpr double D2=3.0/16.0)
-constexpr double D3=15.0/128.0)
-constexpr double D4=175.0/2048.0)
-constexpr double D5=2205.0/32768.0)
-
-real*4 logq2,dkkc,dddc,ddc,dele,delb,elk1
-
-logical first/.TRUE./
-
-if(first) then
-    first=.FALSE.
-  mcold=1.0
-  elbold=PIQ
-  eldold=PIQ
-endif
-m=1.0-mc
-if(abs(mc-mcold).lt.1.19e-7*mc) then
-  elb=elbold
-  eld=eldold
-elseif(m.lt.1.19e-7) then
-    elb=PIQ
-  eld=PIQ
-elseif(mc.lt.1.19e-7) then
-    elb=1.0
-  eld=0.386294361-0.5*log(mc)
-elseif(mc.lt.0.1) then
-    nome=mc*(Q1+mc*(Q2+mc*(Q3+mc*(Q4+mc*(Q5+mc*(Q6+mc*(Q7+mc*Q8))))))) 
-    if(mc.lt.0.01) then
-        dkkc=mc*(K1+mc*(K2+mc*(K3+mc*K4)))
-        dddc=mc*(D1+mc*(D2+mc*(D3+mc*D4)))
-    else
-        mx=mc-0.05
-
-// (K'-1)/(pi/2)
-
-      dkkc=0.0128642566+mx*(0.2648342989+mx*(0.1564757379+mx*(
-           0.1142614608+mx*(0.0920272442+mx*(0.0784321883+mx*(
-           0.0693526014))))))
-
-// (K'-E')/(pi/2)
-
-    dddc=0.0254839544+mx*(0.5196738432+mx*(0.2064495111+mx*(
-             0.1361095213+mx*(0.1045801404+mx*(0.0867461292+mx*(
-             0.0753638027))))))
-    endif
-  kkc=1.0+dkkc
-  logq2=-0.5*log(nome)
-  elk=kkc*logq2
-  dele=-dkkc/kkc+logq2*dddc
-  elk1=elk-1.0
-  delb=(dele-mc*elk1)/m
-  elb=1.0+delb
-  eld=elk1-delb
-elseif(m.le.0.01) then
-  elb=PIHALF*(B1+m*(B2+m*(B3+m*(B4+m*B5))))
-  eld=PIHALF*(D1+m*(D2+m*(D3+m*(D4+m*D5))))
-elseif(m.le.0.1) then
-  mx=0.95-mc
-  elb=0.7904014136+mx*(0.1020062662+mx*(0.03987839556+mx*(
-        0.02173713638+mx*(0.01396097977+mx*(0.009892518823)))))
-  eld=0.8006020402+mx*(0.3139944778+mx*(0.2059131187+mx*(
-        0.1577443465+mx*(0.1305950773+mx*(0.1133084745)))))
-elseif(m.le.0.2) then
-  mx=0.85-mc
-  elb=0.8010240645+mx*(0.1106953445+mx*(0.0473487467+mx*(
-        0.0284843673+mx*(0.0202778114+mx*(0.0159650059)))))
-  eld=0.8342326678+mx*(0.3604952816+mx*(0.2623796641+mx*(
-        0.2237239445+mx*(0.2064478118+mx*(0.1998094409)))))
-elseif(m.le.0.3) then
-  mx=0.75-mc
-  elb=0.8125977729+mx*(0.1211096179+mx*(0.05729337683+mx*(
-        0.03850945160+mx*(0.03078343030+mx*(0.02729056493+mx*(
-        0.02591636929))))))
-  eld=0.8731525819+mx*(0.4206222307+mx*(0.3442310616+mx*(
-        0.3311330218+mx*(0.3452772851+mx*(0.3779453222+mx*(
-        0.4273780125))))))
-elseif(m.le.0.4) then
-  mx=0.65-mc
-  elb=0.8253235580+mx*(0.1338621161+mx*(0.07101129360+mx*(
-        0.05417847742+mx*(0.04945174495+mx*(0.05022219622+mx*(
-        0.05474291317))))))
-  eld=0.9190270392+mx*(0.5010021593+mx*(0.4688312706+mx*(
-        0.5177142278+mx*(0.6208433913+mx*(0.7823643938+mx*(
-        1.0191145351))))))
-elseif(m.le.0.5) then
-  mx=0.55-mc
-  elb=0.8394795703+mx*(0.1499164403+mx*(0.09083193582+mx*(
-        0.08034703348+mx*(0.08563844050+mx*(0.1019547259+mx*(
-        0.1305748115))))))
-  eld=0.9744043665+mx*(0.6132468054+mx*(0.6710966695+mx*(
-        0.8707276202+mx*(1.2295422312+mx*(1.8266059675+mx*(
-        2.8069345310+mx*(4.4187893291)))))))
-elseif(m.le.0.6) then
-  mx=0.45-mc
-  elb=0.8554696152+mx*(0.1708960727+mx*(0.1213352290+mx*(
-        0.1282018836+mx*(0.1646872815+mx*(0.2374189087+mx*(
-        0.3692081047))))))
-  eld=1.0434552951+mx*(0.7796257219+mx*(1.0297423609+mx*(
-        1.6220372234+mx*(2.7879895312+mx*(5.0483814874+mx*(
-        9.4632776119+mx*(18.181489949+mx*(35.580980591))))))))
-elseif(m.le.0.7) then
-  mx=0.35-mc
-  elb=0.8739200618+mx*(0.1998140575+mx*(0.1727696159+mx*(
-        0.2281069133+mx*(0.3704681411+mx*(0.6792712529+mx*(
-        1.3480084967+mx*(2.8276709769)))))))
-  eld=1.1336783366+mx*(1.0486431737+mx*(1.7534650412+mx*(
-        3.5231827268+mx*(7.7494764138+mx*(17.986450056+mx*(
-        43.255916346+mx*(106.68153445+mx*(268.09848657))))))))
-elseif(m.le.0.8) then
-  mx=0.25-mc
-  elb=0.8959028209+mx*(0.2431400038+mx*(0.2730818756+mx*(
-        0.4862800075+mx*(1.0827474372+mx*(2.7434452910+mx*(
-        7.5558178287+mx*(22.051940825+mx*(67.156406447+mx*(
-        211.27225379)))))))))
-  eld=1.2606128266+mx*(1.5486656381+mx*(3.5536694119+mx*(
-        9.9004446761+mx*(30.320566617+mx*(98.180258659+mx*(
-        329.77101043+mx*(1136.6559897+mx*(3993.8343357+mx*(
-        14242.729587+mx*(51394.757292))))))))))
-elseif(m.le.0.85) then
-  mx=0.175-mc
-  elb=0.9159220526+mx*(0.2947142524+mx*(0.4357767093+mx*(
-        1.0673282465+mx*(3.3278441186+mx*(11.904060044+mx*(
-        46.478388202+mx*(192.75560026)))))))
-  eld=1.4022005691+mx*(2.3222058979+mx*(7.4621583665+mx*(
-        29.435068908+mx*(128.15909243+mx*(591.08070369+mx*(
-        2830.5462296+mx*(13917.764319+mx*(69786.105252))))))))
-else
-    mx=0.125-mc
-  elb=0.9319060610+mx*(0.3484480295+mx*(0.6668091788+mx*(
-        2.2107691357+mx*(9.4917650489+mx*(47.093047910+mx*(
-        255.92004602+mx*(1480.0295327+mx*(8954.0409047+mx*(
-        56052.482210)))))))))
-  eld=1.5416901127+mx*(3.3791762146+mx*(14.940583857+mx*(
-        81.917739292+mx*(497.49005466+mx*(3205.1840102+mx*(
-        21457.322374+mx*(147557.01566+mx*(1.0350452902e6+mx*(
-        7.3719223348e6+mx*(5.3143443951e7))))))))))
-endif
-
-mcold=mc
-elbold=elb
-eldold=eld
-
-return
-end
-//---------------------------------------------------------------------------
-subroutine rcelbdj(nc,mc,bc,dc,jc)
-real*4 nc,mc,bc,dc,jc,kc,rcel
-integer err
-call rcelbd(mc,bc,dc)
-kc=sqrt(mc)
-jc=rcel(kc,nc,0.0,1.0,err)
-return
-end
-//---------------------------------------------------------------------------
-subroutine relcbdj(c0,n,mc,b,d,j)
-
-real*4 c0,n,mc,b,d,j
-real*4 c,x,y,s,m,sy,t,h
-real*4 yy(11),ss(11),cd(11)
-real*4 ruatan
-integer i,k
-
-c=c0
-x=c*c
-y=1.0-x
-s=sqrt(y)
-if(x.gt.0.05) then
-  call relsbdj(s,n,mc,b,d,j)
+        t *
+        (1.d0 +
+         z * (A3 +
+              z * (A5 +
+                   z * (A7 +
+                        z * (A9 +
+                             z * (A11 + z * (A13 + z * (A15 + z * A17))))))));
+  } else if (a < 3.4416203d - 02) {
     return
-endif
-m=1.0-mc
-ss(1)=s
-do i=1,10
-    d=sqrt(mc+m*x)
-  x=(c+d)/(1.0+d)
-  y=1.0-x
-  yy(i+1)=y
-  ss(i+1)=sqrt(y)
-  cd(i)=c*d
-    if(x.gt.0.05) then
-        goto 1
-  endif
-  c=sqrt(x)
-enddo
-write(*,*) "(relcbdj) too many iterations: c0,n,mc=",c0,n,mc
-1 continue
-s=ss(i+1)
-call relsbdj(s,n,mc,b,d,j)
-do k=i,1,-1
-  sy=ss(k)*yy(k+1)
-  t=sy/(1.0-n*(yy(k)-yy(k+1)*cd(k)))
-  b=2.0*b-sy
-  d=d+(d+sy)
-  j=j+(j+ruatan(t,h))
-enddo
-return
-end
-//---------------------------------------------------------------------------
-subroutine relsbdj(s0,n,mc,b,d,j)
-
-real*4 s0,n,mc,b,d,j
-real*4 m,h,del,s,y,c,sy,t
-real*4 yy(11),ss(11),cd(11)
-real*4 rserj,ruatan
-integer i,k
-
-m=1.0-mc
-h=n*(1.0-n)*(n-m)
-del=5.9091545e-02
-s=s0
-y=s*s
-if(y.lt.del) then
-  call rserbd(y,m,b,d)
-  b=s*b
-  d=s*y*d
-  j=s*rserj(y,n,m)
-  return
-endif
-yy(1)=y
-ss(1)=s
-do i=1,10
-    c=sqrt(1.0-y)
-    d=sqrt(1.0-m*y)
-    y=y/((1.0+c)*(1.0+d))
-  yy(i+1)=y
-  ss(i+1)=sqrt(y)
-  cd(i)=c*d
-  if(y.lt.del) then
-    goto 1
-  endif
-enddo
-write(*,*) "(relsbdj) too many iterations: s0,m=",s0,m
-1 continue
-call rserbd(y,m,b,d)
-b=ss(i+1)*b
-d=ss(i+1)*y*d
-j=ss(i+1)*rserj(y,n,m)
-do k=i,1,-1
-  sy=ss(k)*yy(k+1)
-  t=sy/(1.0-n*(yy(k)-yy(k+1)*cd(k)))
-  b=2.0*b-sy
-  d=d+(d+sy)
-  j=j+(j+ruatan(t,h))
-enddo
-return
-end
-//---------------------------------------------------------------------------
-subroutine rserbd(y,m,b,d)
-
-real*4 y,m,b,d
-real*4 F1,F2,F3,F4,F10,F20,F21,F30,F31,F40,F41,F42
-real*4 F5,F50,F51,F52,F6,F60,F61,F62,F63
-constexpr double F10=1.0/6.0)
-constexpr double F20=3.0/40.0)
-constexpr double F21=2.0/40.0)
-constexpr double F30=5.0/112.0)
-constexpr double F31=3.0/112.0)
-constexpr double F40=35.0/1152.0)
-constexpr double F41=20.0/1152.0)
-constexpr double F42=18.0/1152.0)
-constexpr double F50=63.0/2816.0)
-constexpr double F51=35.0/2816.0)
-constexpr double F52=30.0/2816.0)
-constexpr double F60=231.0/13312.0)
-constexpr double F61=126.0/13312.0)
-constexpr double F62=105.0/13312.0)
-constexpr double F63=100.0/13312.0)
-
-real*8 A1,A2,A3,A4,A5,A6
-constexpr double A1=3.0/5.0)
-constexpr double A2=5.0/7.0)
-constexpr double A3=7.0/9.0)
-constexpr double A4=9.0/11.0)
-constexpr double A5=11.0/13.0)
-constexpr double A6=13.0/15.0)
-
-real*8 B1,B2,B3,B4,B5,B6
-real*8 D0,D1,D2,D3,D4,D5,D6
-constexpr double D0=1.0/3.0)
-
-F1=F10+m*F10
-F2=F20+m*(F21+m*F20)
-F3=F30+m*(F31+m*(F31+m*F30))
-F4=F40+m*(F41+m*(F42+m*(F41+m*F40)))
-F5=F50+m*(F51+m*(F52+m*(F52+m*(F51+m*F50))))
-F6=F60+m*(F61+m*(F62+m*(F63+m*(F62+m*(F61+m*F60)))))
-
-D1=F1*A1
-D2=F2*A2
-D3=F3*A3
-D4=F4*A4
-D5=F5*A5
-D6=F6*A6
-
-d=D0+y*(D1+y*(D2+y*(D3+y*(D4+y*(D5+y*D6)))))
-
-B1=F1-D0
-B2=F2-D1
-B3=F3-D2
-B4=F4-D3
-B5=F5-D4
-B6=F6-D5
-
-b=1.0+y*(B1+y*(B2+y*(B3+y*(B4+y*(B5+y*B6)))))
-
-return
-end
-//---------------------------------------------------------------------------
-real*4 function rserj(y,n,m)
-
-real*4 y,n,m
-
-real*4 J1,J2,J3,J4,J5,J6,J7,J8,J9,JA
-
-real*4 J100,J200,J201,J210,J300,J301,J302,J310,J311,J320
-real*4 J400,J401,J402,J403,J410,J411,J412,J420,J421,J430
-real*4 J500,J501,J502,J503,J504,J510,J511,J512,J513,J520
-real*4 J521,J522,J530,J531,J540
-real*4 J600,J601,J602,J603,J604,J605,J610,J611,J612,J613,J614
-real*4 J620,J621,J622,J623,J630,J631,J632,J640,J641,J650
-real*4 J700,J701,J702,J703,J704,J705,J706
-real*4 J710,J711,J712,J713,J714,J715,J720,J721,J722,J723,J724
-real*4 J730,J731,J732,J733,J740,J741,J742,J750,J751,J760
-real*4 J800,J801,J802,J803,J804,J805,J806,J807
-real*4 J810,J811,J812,J813,J814,J815,J816
-real*4 J820,J821,J822,J823,J824,J825,J830,J831,J832,J833,J834
-real*4 J840,J841,J842,J843,J850,J851,J852,J860,J861,J870
-real*4 J900,J901,J902,J903,J904,J905,J906,J907,J908
-real*4 J910,J911,J912,J913,J914,J915,J916,J917
-real*4 J920,J921,J922,J923,J924,J925,J926
-real*4 J930,J931,J932,J933,J934,J935,J940,J941,J942,J943,J944
-real*4 J950,J951,J952,J953,J960,J961,J962,J970,J971,J980
-real*4 JA00,JA01,JA02,JA03,JA04,JA05,JA06,JA07,JA08,JA09
-real*4 JA10,JA11,JA12,JA13,JA14,JA15,JA16,JA17,JA18
-real*4 JA20,JA21,JA22,JA23,JA24,JA25,JA26,JA27
-real*4 JA30,JA31,JA32,JA33,JA34,JA35,JA36
-real*4 JA40,JA41,JA42,JA43,JA44,JA45,JA50,JA51,JA52,JA53,JA54
-real*4 JA60,JA61,JA62,JA63,JA70,JA71,JA72,JA80,JA81,JA90
-
-constexpr double J100=1./3.)
-
-constexpr double J200=1./10.)
-constexpr double J201=2./10.)
-constexpr double J210=1./10.)
-
-constexpr double J300=3./56.)
-constexpr double J301=4./56.)
-constexpr double J302=8./56.)
-constexpr double J310=2./56.)
-constexpr double J311=4./56.)
-constexpr double J320=3./56.)
-
-constexpr double J400=5./144.)
-constexpr double J401=6./144.)
-constexpr double J402=8./144.)
-constexpr double J403=16./144.)
-constexpr double J410=3./144.)
-constexpr double J411=4./144.)
-constexpr double J412=8./144.)
-constexpr double J420=3./144.)
-constexpr double J421=6./144.)
-constexpr double J430=5./144.)
-
-constexpr double J500=35./1408.)
-constexpr double J501=40./1408.)
-constexpr double J502=48./1408.)
-constexpr double J503=64./1408.)
-constexpr double J504=128./1408.)
-constexpr double J510=20./1408.)
-constexpr double J511=24./1408.)
-constexpr double J512=32./1408.)
-constexpr double J513=64./1408.)
-constexpr double J520=18./1408.)
-constexpr double J521=24./1408.)
-constexpr double J522=48./1408.)
-constexpr double J530=20./1408.)
-constexpr double J531=40./1408.)
-constexpr double J540=35./1408.)
-
-constexpr double J600=63./3328.)
-constexpr double J601=70./3328.)
-constexpr double J602=80./3328.)
-constexpr double J603=96./3328.)
-constexpr double J604=128./3328.)
-constexpr double J605=256./3328.)
-constexpr double J610=35./3328.)
-constexpr double J611=40./3328.)
-constexpr double J612=48./3328.)
-constexpr double J613=64./3328.)
-constexpr double J614=128./3328.)
-constexpr double J620=30./3328.)
-constexpr double J621=36./3328.)
-constexpr double J622=48./3328.)
-constexpr double J623=96./3328.)
-constexpr double J630=30./3328.)
-constexpr double J631=40./3328.)
-constexpr double J632=80./3328.)
-constexpr double J640=35./3328.)
-constexpr double J641=70./3328.)
-constexpr double J650=63./3328.)
-
-constexpr double J700=231./15360.)
-constexpr double J701=252./15360.)
-constexpr double J702=280./15360.)
-constexpr double J703=320./15360.)
-constexpr double J704=384./15360.)
-constexpr double J705=512./15360.)
-constexpr double J706=1024./15360.)
-constexpr double J710=126./15360.)
-constexpr double J711=140./15360.)
-constexpr double J712=160./15360.)
-constexpr double J713=192./15360.)
-constexpr double J714=256./15360.)
-constexpr double J715=512./15360.)
-constexpr double J720=105./15360.)
-constexpr double J721=120./15360.)
-constexpr double J722=144./15360.)
-constexpr double J723=192./15360.)
-constexpr double J724=384./15360.)
-constexpr double J730=100./15360.)
-constexpr double J731=120./15360.)
-constexpr double J732=160./15360.)
-constexpr double J733=320./15360.)
-constexpr double J740=105./15360.)
-constexpr double J741=140./15360.)
-constexpr double J742=280./15360.)
-constexpr double J750=126./15360.)
-constexpr double J751=252./15360.)
-constexpr double J760=231./15360.)
-
-constexpr double J800=429./34816.)
-constexpr double J801=462./34816.)
-constexpr double J802=504./34816.)
-constexpr double J803=560./34816.)
-constexpr double J804=640./34816.)
-constexpr double J805=768./34816.)
-constexpr double J806=1024./34816.)
-constexpr double J807=2048./34816.)
-constexpr double J810=231./34816.)
-constexpr double J811=252./34816.)
-constexpr double J812=280./34816.)
-constexpr double J813=320./34816.)
-constexpr double J814=384./34816.)
-constexpr double J815=512./34816.)
-constexpr double J816=1024./34816.)
-
-constexpr double J820=189./34816.)
-constexpr double J821=210./34816.)
-constexpr double J822=240./34816.)
-constexpr double J823=288./34816.)
-constexpr double J824=284./34816.)
-constexpr double J825=768./34816.)
-constexpr double J830=175./34816.)
-constexpr double J831=200./34816.)
-constexpr double J832=240./34816.)
-constexpr double J833=320./34816.)
-constexpr double J834=640./34816.)
-constexpr double J840=175./34816.)
-constexpr double J841=210./34816.)
-constexpr double J842=280./34816.)
-constexpr double J843=560./34816.)
-constexpr double J850=189./34816.)
-constexpr double J851=252./34816.)
-constexpr double J852=504./34816.)
-constexpr double J860=231./34816.)
-constexpr double J861=462./34816.)
-constexpr double J870=429./34816.)
-
-constexpr double J900=6435./622592.)
-constexpr double J901=6864./622592.)
-constexpr double J902=7392./622592.)
-constexpr double J903=8064./622592.)
-constexpr double J904=8960./622592.)
-constexpr double J905=10240./622592.)
-constexpr double J906=12288./622592.)
-constexpr double J907=16384./622592.)
-constexpr double J908=32768./622592.)
-constexpr double J910=3432./622592.)
-constexpr double J911=3696./622592.)
-constexpr double J912=4032./622592.)
-constexpr double J913=4480./622592.)
-constexpr double J914=5120./622592.)
-constexpr double J915=6144./622592.)
-constexpr double J916=8192./622592.)
-constexpr double J917=16384./622592.)
-constexpr double J920=2772./622592.)
-constexpr double J921=3024./622592.)
-constexpr double J922=3360./622592.)
-constexpr double J923=3840./622592.)
-constexpr double J924=4608./622592.)
-constexpr double J925=6144./622592.)
-constexpr double J926=12288./622592.)
-constexpr double J930=2520./622592.)
-constexpr double J931=2800./622592.)
-constexpr double J932=3200./622592.)
-constexpr double J933=3840./622592.)
-constexpr double J934=5120./622592.)
-constexpr double J935=10240./622592.)
-constexpr double J940=2450./622592.)
-constexpr double J941=2800./622592.)
-constexpr double J942=3360./622592.)
-constexpr double J943=4480./622592.)
-constexpr double J944=8960./622592.)
-constexpr double J950=2520./622592.)
-constexpr double J951=3024./622592.)
-constexpr double J952=4032./622592.)
-constexpr double J953=8064./622592.)
-constexpr double J960=2772./622592.)
-constexpr double J961=3696./622592.)
-constexpr double J962=7392./622592.)
-constexpr double J970=3432./622592.)
-constexpr double J971=6864./622592.)
-constexpr double J980=6435./622592.)
-
-constexpr double JA00=12155./1376256.)
-constexpr double JA01=12870./1376256.)
-constexpr double JA02=13728./1376256.)
-constexpr double JA03=14784./1376256.)
-constexpr double JA04=16128./1376256.)
-constexpr double JA05=17920./1376256.)
-constexpr double JA06=20480./1376256.)
-constexpr double JA07=24576./1376256.)
-constexpr double JA08=32768./1376256.)
-constexpr double JA09=65536./1376256.)
-constexpr double JA10=6435./1376256.)
-constexpr double JA11=6864./1376256.)
-constexpr double JA12=7392./1376256.)
-constexpr double JA13=8064./1376256.)
-constexpr double JA14=8960./1376256.)
-constexpr double JA15=10240./1376256.)
-constexpr double JA16=12288./1376256.)
-constexpr double JA17=16384./1376256.)
-constexpr double JA18=32768./1376256.)
-constexpr double JA20=5148./1376256.)
-constexpr double JA21=5544./1376256.)
-constexpr double JA22=6048./1376256.)
-constexpr double JA23=6720./1376256.)
-constexpr double JA24=7680./1376256.)
-constexpr double JA25=9216./1376256.)
-constexpr double JA26=12288./1376256.)
-constexpr double JA27=24576./1376256.)
-constexpr double JA30=4620./1376256.)
-constexpr double JA31=5040./1376256.)
-constexpr double JA32=5600./1376256.)
-constexpr double JA33=6400./1376256.)
-constexpr double JA34=7680./1376256.)
-constexpr double JA35=10240./1376256.)
-constexpr double JA36=20480./1376256.)
-constexpr double JA40=4410./1376256.)
-constexpr double JA41=4900./1376256.)
-constexpr double JA42=5600./1376256.)
-constexpr double JA43=6720./1376256.)
-constexpr double JA44=8960./1376256.)
-constexpr double JA45=17920./1376256.)
-constexpr double JA50=4410./1376256.)
-constexpr double JA51=5040./1376256.)
-constexpr double JA52=6048./1376256.)
-constexpr double JA53=8064./1376256.)
-constexpr double JA54=16128./1376256.)
-constexpr double JA60=4620./1376256.)
-constexpr double JA61=5544./1376256.)
-constexpr double JA62=7392./1376256.)
-constexpr double JA63=14784./1376256.)
-constexpr double JA70=5148./1376256.)
-constexpr double JA71=6864./1376256.)
-constexpr double JA72=13728./1376256.)
-constexpr double JA80=6435./1376256.)
-constexpr double JA81=12870./1376256.)
-constexpr double JA90=12155./1376256.)
-
-J1=J100
-J2=J200+n*J201+m*J210
-if(y.lt.2.1531179e-04) then
-    rserj=y*(J1+y*J2)
+        t *
+        (1.d0 +
+         z * (A3 +
+              z * (A5 +
+                   z * (A7 +
+                        z * (A9 +
+                             z * (A11 +
+                                  z * (A13 +
+                                       z * (A15 + z * (A17 + z * A19)))))))));
+  } else if (z < 0.d0) {
+    if (abs(h - hold) < 1.d - 16) {
+      r = rold;
+      ri = riold;
+    } else {
+      r = sqrt(h);
+      ri = 1.d0 / r;
+      hold = h;
+      rold = r;
+      riold = ri;
+    }
+    return atan(r * t) * ri;
+  } else if (a < 4.7138547d - 02) {
     return
-endif
-
-J3=J300+n*(J301+n*J302)+m*(J310+n*J311+m*J320)
-if(y.lt.3.5490637e-03) then
-    rserj=y*(J1+y*(J2+y*J3))
+        t *
+        (1.d0 +
+         z * (A3 +
+              z * (A5 +
+                   z * (A7 +
+                        z * (A9 +
+                             z * (A11 +
+                                  z * (A13 +
+                                       z * (A15 +
+                                            z * (A17 +
+                                                 z * (A19 + z * A21))))))))));
+  } else if (a < 6.1227405d - 02) {
     return
-endif
-
-J4=J400+n*(J401+n*(J402+n*J403))
-    +m*(J410+n*(J411+n*J412)+m*(J420+n*J421+m*J430))
-if(y.le.1.4459237e-02) then
-    rserj=y*(J1+y*(J2+y*(J3+y*J4)))
+        t *
+        (1.d0 +
+         z * (A3 +
+              z * (A5 +
+                   z * (A7 +
+                        z * (A9 +
+                             z * (A11 +
+                                  z * (A13 +
+                                       z * (A15 +
+                                            z * (A17 +
+                                                 z * (A19 +
+                                                      z * (A21 +
+                                                           z * A23)))))))))));
+  } else if (a < 7.6353468d - 02) {
     return
-endif
+        t *
+        (1.d0 +
+         z * (A3 +
+              z * (A5 +
+                   z * (A7 +
+                        z * (A9 +
+                             z * (A11 +
+                                  z * (A13 +
+                                       z * (A15 +
+                                            z * (A17 +
+                                                 z * (A19 +
+                                                      z * (A21 +
+                                                           z * (A23 +
+                                                                z * A25))))))))))));
+  } else {
+    if (abs(h - hold) < 1.d - 16) {
+      r = rold;
+      ri = riold;
+    } else {
+      r = sqrt(-h);
+      ri = 1.d0 / r;
+      hold = h;
+      rold = r;
+      riold = ri;
+    }
+    y = r * t;
+    x = log((1.d0 + y) / (1.d0 - y)) * 0.5d0;
+    return x * ri;
+  }
+}
 
-J5=J500+n*(J501+n*(J502+n*(J503+n*J504)))
-    +m*(J510+n*(J511+n*(J512+n*J513))
-    +m*(J520+n*(J521+n*J522)+m*(J530+n*J531+m*J540)))
-if(y.le.3.3634904e-02) then
-    rserj=y*(J1+y*(J2+y*(J3+y*(J4+y*J5))))
-    return
-endif
+// NOTE(phl): All the rest was single precision.
 
-J6=J600+n*(J601+n*(J602+n*(J603+n*(J604+n*J605))))
-    +m*(J610+n*(J611+n*(J612+n*(J613+n*J614)))
-    +m*(J620+n*(J621+n*(J622+n*J623))
-    +m*(J630+n*(J631+n*J632)+m*(J640+n*J641+m*J650))))
-if(y.le.5.9091545e-02) then
-    rserj=y*(J1+y*(J2+y*(J3+y*(J4+y*(J5+y*J6)))))
-    return
-endif
-
-J7=J700+n*(J701+n*(J702+n*(J703+n*(J704+n*(J705+n*J706)))))
-    +m*(J710+n*(J711+n*(J712+n*(J713+n*(J714+n*J715))))
-    +m*(J720+n*(J721+n*(J722+n*(J723+n*J724)))
-    +m*(J730+n*(J731+n*(J732+n*J733))
-    +m*(J740+n*(J741+n*J742)+m*(J750+n*J751+m*J760)))))
-if(y.le.8.8410234e-02) then
-    rserj=y*(J1+y*(J2+y*(J3+y*(J4+y*(J5+y*(J6+y*J7))))))
-   return
-endif
-
-J8=J800+n*(J801+n*(J802+n*(J803+n*(J804+n*(J805+n*(J806+n*J807))))))
-    +m*(J810+n*(J811+n*(J812+n*(J813+n*(J814+n*(J815+n*J816)))))
-    +m*(J820+n*(J821+n*(J822+n*(J823+n*(J824+n*J825))))
-    +m*(J830+n*(J831+n*(J832+n*(J833+n*J834)))
-    +m*(J840+n*(J841+n*(J842+n*J843))
-    +m*(J850+n*(J851+n*J852)+m*(J860+n*J861+m*J870))))))
-if(y.le.1.1962825e-01) then
-    rserj=y*(J1+y*(J2+y*(J3+y*(J4+y*(J5+y*(J6+y*(J7+y*J8)))))))
-    return
-endif
-
-J9=J900+n*(J901+n*(J902+n*(J903+n*(J904+n*(J905+n*(J906+n*(J907+n*J908)))))))
-    +m*(J910+n*(J911+n*(J912+n*(J913+n*(J914+n*(J915+n*(J916+n*J917))))))
-    +m*(J920+n*(J921+n*(J922+n*(J923+n*(J924+n*(J925+n*J926)))))
-    +m*(J930+n*(J931+n*(J932+n*(J933+n*(J934+n*J935))))
-    +m*(J940+n*(J941+n*(J942+n*(J943+n*J944)))
-    +m*(J950+n*(J951+n*(J952+n*J953))
-    +m*(J960+n*(J961+n*J962)+m*(J970+n*J971+m*J980)))))))
-if(y.le.1.5137077e-01) then
-    rserj=y*(J1+y*(J2+y*(J3+y*(J4+y*(J5+y*(J6+y*(J7+y*(J8+y*J9))))))))
-    return
-endif
-
-JA=JA00+n*(JA01+n*(JA02+n*(JA03+n*(JA04+n*(JA05+n*(JA06+n*(JA07+n*(JA08+n*JA09))))))))
-    +m*(JA10+n*(JA11+n*(JA12+n*(JA13+n*(JA14+n*(JA15+n*(JA16+n*(JA17+n*JA18)))))))
-    +m*(JA20+n*(JA21+n*(JA22+n*(JA23+n*(JA24+n*(JA25+n*(JA26+n*JA27))))))
-    +m*(JA30+n*(JA31+n*(JA32+n*(JA33+n*(JA34+n*(JA35+n*JA36)))))
-    +m*(JA40+n*(JA41+n*(JA42+n*(JA43+n*(JA44+n*JA45))))
-    +m*(JA50+n*(JA51+n*(JA52+n*(JA53+n*JA54)))
-    +m*(JA60+n*(JA61+n*(JA62+n*JA63))
-    +m*(JA70+n*(JA71+n*JA72)+m*(JA80+n*JA81+m*JA90))))))))
-rserj=y*(J1+y*(J2+y*(J3+y*(J4+y*(J5+y*(J6+y*(J7+y*(J8+y*(J9+y*JA)))))))))
-return
-end
-//---------------------------------------------------------------------------
-real*4 function ruatan(t,h)
-real*4 t,h,z,y,x
-real*4 a,r,ri,hold,rold,riold
-real*4 A3,A5,A7,A9,A11,A13,A15,A17,A19,A21,A23,A25
-data hold/1.0/, rold/1.0/,riold/1.0/
-save hold,rold,riold
-constexpr double A3=1.0/3.0)
-constexpr double A5=1.0/5.0)
-constexpr double A7=1.0/7.0)
-constexpr double A9=1.0/9.0)
-constexpr double A11=1.0/11.0)
-constexpr double A13=1.0/13.0)
-constexpr double A15=1.0/15.0)
-constexpr double A17=1.0/17.0)
-constexpr double A19=1.0/19.0)
-constexpr double A21=1.0/21.0)
-constexpr double A23=1.0/23.0)
-constexpr double A25=1.0/25.0)
-
-z=-h*t*t
-a=abs(z)
-
-if(a.lt.1.7881393e-07) then
-    ruatan=t
-elseif(a.lt.5.4591503e-04) then
-    ruatan=t*(1.0+z*A3)
-elseif(a.lt.7.4723874e-03) then
-    ruatan=t*(1.0+z*(A3+z*A5))
-elseif(a.lt.2.7063294e-02) then
-    ruatan=t*(1.0+z*(A3+z*(A5+z*A7)))
-elseif(a.lt.5.7987523e-02) then
-    ruatan=t*(1.0+z*(A3+z*(A5+z*(A7+z*A9))))
-elseif(a.lt.9.5837890e-02) then
-    ruatan=t*(1.0+z*(A3+z*(A5+z*(A7+z*(A9+z*A11)))))
-elseif(a.lt.1.3674460e-01) then
-    ruatan=t*(1.0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*A13))))))
-elseif(a.lt.1.7812141e-01) then
-    ruatan=t*(1.0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*A15)))))))
-elseif(a.lt.2.1844247e-01) then
-    ruatan=t*(1.0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*(A15+z*A17))))))))
-elseif(a.lt.2.5689162e-01) then
-    ruatan=t*(1.0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*(A15+z*(A17+z*A19)))))))))
-elseif(z.lt.0.0) then
-    if(abs(h-hold).lt.1.e-7) then
-        r=rold; ri=riold
-    else
-        r=sqrt(h); ri=1.0/r; hold=h; rold=r; riold=ri
-    endif
-    ruatan=atan(r*t)*ri
-elseif(a.lt.2.9308981e-01) then
-    ruatan=t*(1.0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*(A15+z*(A17+z*(A19+z*A21))))))))))
-elseif(a.lt.3.2691512e-01) then
-    ruatan=t*(1.0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*(A15+z*(A17+z*(A19+z*(A21+z*A23)))))))))))
-elseif(a.lt.3.5839110e-01) then
-    ruatan=t*(1.0+z*(A3+z*(A5+z*(A7+z*(A9+z*(A11+z*(A13+z*(A15+z*(A17+z*(A19+z*(A21+z*(A23+z*A25))))))))))))
-else
-    if(abs(h-hold).lt.1.e-7) then
-        r=rold; ri=riold
-    else
-        r=sqrt(-h); ri=1.0/r; hold=h; rold=r; riold=ri
-    endif
-    y=r*t
-    x=log((1.0+y)/(1.0-y))*0.5
-    ruatan=x*ri
-endif
-
-return
-end
 }  // namespace numerics
 }  // namespace principia
