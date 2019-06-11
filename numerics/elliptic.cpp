@@ -9,6 +9,8 @@
 // 2. Use Estrin evaluation for polynomials of high degree (possibly adding
 //    support for polynomials of two and three variables).
 // 3. Use 0-based arrays.
+// 4. Don't be thread hostile.
+// 5. Figure something for the uninitialize variables.
 
 namespace principia {
 namespace numerics {
@@ -29,6 +31,9 @@ namespace numerics {
 //             mc   = complementary parameter 0 <= mc   <= 1
 //
 //     Outputs: b, d, j
+//
+//     CAUTION: phi and phic must satisfy condition, phi + phic = PI/2
+//
 void Elbdj(double const phi,
            double const phic,
            double const n,
@@ -36,13 +41,13 @@ void Elbdj(double const phi,
            double& b,
            double& d,
            double& j) {
-  CHECK_EQ(π / 2, phi + phic);
-  double m,nc,h,c,x,d2,z,bc,dc,jc,sz,t,v,t2;
+  // TODO(phl): CHECK_EQ(π / 2, phi + phic);
+  double m, nc, h, c, x, d2, z, bc, dc, jc, sz, t, v, t2;
 
   if (phi < 1.345) {
     Elsbdj(sin(phi), n, mc, b, d, j);
   } else {
-    m = 1 - mc;
+    m = 1.0 - mc;
     nc = 1.0 - n;
     h = n * nc * (n - m);
     c = sin(phic);
@@ -59,7 +64,7 @@ void Elbdj(double const phi,
       j = jc - (j + Uatan(t, h));
     } else {
       v = mc * (1.0 - x);
-      if (v<x * d2) {
+      if (v < x * d2) {
         Elcbdj(c, n, mc, b, d, j);
       } else {
         t2 = (1.0 - x) / d2;
@@ -98,7 +103,7 @@ double Cel(double const kc0,
   //     Outputs: cel   = integral value
   //              err   = integer error indicator
   //
-  double out, a, b=0, e, f, g; //TODO(phl):Initial value?
+  double out, a, b = 0, e, f, g;  // TODO(phl):Initial value?
   double p, q, kc, em, qc;
   err = 0;
   kc = kc0;
@@ -169,50 +174,50 @@ void Celbd(double const mc,double& elb, double& eld) {
   constexpr double PI = 3.1415926535897932384626433832795;
   constexpr double PIINV = 0.31830988618379067153776752674503;
 
-  static double mcold,elbold,eldold;
+  static double mcold, elbold, eldold;
 
   constexpr double Q1 = 1.0 / 16.0;
   constexpr double Q2 = 1.0 / 32.0;
-  constexpr double Q3 = 21.0 / 1024.;
+  constexpr double Q3 = 21.0 / 1024.0;
   constexpr double Q4 = 31.0 / 2048.0;
-  constexpr double Q5 = 6257.0 / 524288.;
+  constexpr double Q5 = 6257.0 / 524288.0;
   constexpr double Q6 = 10293.0 / 1048576.0;
-  constexpr double Q7 = 279025.0 / 33554432.;
-  constexpr double Q8 = 483127.0 / 67108864.;
-  constexpr double Q9 = 435506703.0 / 68719476736.;
-  constexpr double Q10 = 776957575.0 / 137438953472.;
-  constexpr double Q11 = 22417045555.0 / 4398046511104.;
-  constexpr double Q12 = 40784671953.0 / 8796093022208.;
-  constexpr double Q13 = 9569130097211.0 / 2251799813685248.;
-  constexpr double Q14 = 17652604545791.0 / 4503599627370496.;
-  constexpr double Q15 = 523910972020563.0 / 144115188075855872.;
-  constexpr double Q16 = 976501268709949.0 / 288230376151711744.;
+  constexpr double Q7 = 279025.0 / 33554432.0;
+  constexpr double Q8 = 483127.0 / 67108864.0;
+  constexpr double Q9 = 435506703.0 / 68719476736.0;
+  constexpr double Q10 = 776957575.0 / 137438953472.0;
+  constexpr double Q11 = 22417045555.0 / 4398046511104.0;
+  constexpr double Q12 = 40784671953.0 / 8796093022208.0;
+  constexpr double Q13 = 9569130097211.0 / 2251799813685248.0;
+  constexpr double Q14 = 17652604545791.0 / 4503599627370496.0;
+  constexpr double Q15 = 523910972020563.0 / 144115188075855872.0;
+  constexpr double Q16 = 976501268709949.0 / 288230376151711744.0;
 
-  constexpr double K1 = 1.0 / 4.;
-  constexpr double K2 = 9.0 / 64.;
-  constexpr double K3 = 25.0 / 256.;
-  constexpr double K4 = 1225.0 / 16384.;
-  constexpr double K5 = 3969.0 / 65536.;
-  constexpr double K6 = 53361.0 / 1048576.;
-  constexpr double K7 = 184041.0 / 4194304.;
+  constexpr double K1 = 1.0 / 4.0;
+  constexpr double K2 = 9.0 / 64.0;
+  constexpr double K3 = 25.0 / 256.0;
+  constexpr double K4 = 1225.0 / 16384.0;
+  constexpr double K5 = 3969.0 / 65536.0;
+  constexpr double K6 = 53361.0 / 1048576.0;
+  constexpr double K7 = 184041.0 / 4194304.0;
 
-  constexpr double B1 = 1.0 / 2.;
-  constexpr double B2 = 1.0 / 16.;
-  constexpr double B3 = 3.0 / 128.;
-  constexpr double B4 = 25.0 / 2048.;
-  constexpr double B5 = 245.0 / 32768.;
-  constexpr double B6 = 1323.0 / 262144.;
-  constexpr double B7 = 7623.0 / 2097152.;
-  constexpr double B8 = 184041.0 / 67108864.;
+  constexpr double B1 = 1.0 / 2.0;
+  constexpr double B2 = 1.0 / 16.0;
+  constexpr double B3 = 3.0 / 128.0;
+  constexpr double B4 = 25.0 / 2048.0;
+  constexpr double B5 = 245.0 / 32768.0;
+  constexpr double B6 = 1323.0 / 262144.0;
+  constexpr double B7 = 7623.0 / 2097152.0;
+  constexpr double B8 = 184041.0 / 67108864.0;
 
-  constexpr double D1 = 1.0 / 2.;
-  constexpr double D2 = 3.0 / 16.;
-  constexpr double D3 = 15.0 / 128.;
-  constexpr double D4 = 175.0 / 2048.;
-  constexpr double D5 = 2205.0 / 32768.;
-  constexpr double D6 = 14553.0 / 262144.;
-  constexpr double D7 = 99099.0 / 2097152.;
-  constexpr double D8 = 2760615.0 / 67108864.;
+  constexpr double D1 = 1.0 / 2.0;
+  constexpr double D2 = 3.0 / 16.0;
+  constexpr double D3 = 15.0 / 128.0;
+  constexpr double D4 = 175.0 / 2048.0;
+  constexpr double D5 = 2205.0 / 32768.0;
+  constexpr double D6 = 14553.0 / 262144.0;
+  constexpr double D7 = 99099.0 / 2097152.0;
+  constexpr double D8 = 2760615.0 / 67108864.0;
 
   double logq2, dkkc, dddc, dele, delb, elk1;
 
@@ -343,7 +348,7 @@ void Celbd(double const mc,double& elb, double& eld) {
         +mx*(0.238708097425597860161720875806632864507536
         +mx*(0.256707203545463755643710021815937785120030
         )))))))))));
-  } else if (m<=0.3) {
+  } else if (m <= 0.3) {
     mx = 0.75 - mc;
     elb=     0.81259777291992049322557009456643357559904
         +mx*(0.12110961794551011284012693733241967660542
@@ -638,9 +643,9 @@ void Celbd(double const mc,double& elb, double& eld) {
           ))))))))))))))))))));
   }
 
-  mcold=mc;
-  elbold=elb;
-  eldold=eld;
+  mcold = mc;
+  elbold = elb;
+  eldold = eld;
 }
 
 void Celbdj(double const nc,
@@ -661,7 +666,7 @@ void Elcbdj(double const c0,
             double& b,
             double& d,
             double& j) {
-  double c, x, y, s, m, sy, t, h=0;//TODO(phl):Initial value?
+  double c, x, y, s, m, sy, t, h = 0;  // TODO(phl):Initial value?
   double yy[12];
   double ss[12];
   double cd[12];
@@ -675,6 +680,8 @@ void Elcbdj(double const c0,
     return;
   }
   m = 1.0 - mc;
+  //TODO(phl): Speculative: h = n * (1.0 - n) * (n - m);
+  LOG(ERROR)<<h<<" "<<n<<" "<<m;
   ss[1] = s;
   int i;
   for (i = 1; i <= 10; ++i) {
@@ -687,12 +694,11 @@ void Elcbdj(double const c0,
     if (x > 0.1) {
       break;
     }
-    if (i == 10) {
-      LOG(FATAL) << "(elcbdj) too many iterations: c0,n,mc=" << c0 << n << mc;
-    }
+    LOG_IF(FATAL, i == 10) << "(elcbdj) too many iterations: c0,n,mc=" << c0
+                           << " " << n << " " << mc;
     c = sqrt(x);
   }
-  s = ss[11];
+  s = ss[i + 1];  // TODO(phl): Loop variable.
   Elsbdj(s, n, mc, b, d, j);
   for (int k = i; k >= 1; --k) {
     sy = ss[k] * yy[k + 1];
@@ -739,14 +745,13 @@ void Elsbdj(double const s0,
     if (y < del) {
       break;
     }
-    if (i == 10) {
-      LOG(FATAL) << "(elsbdj) too many iterations: s0,m=" << s0 << m;
-    }
+    LOG_IF(FATAL, i == 10) << "(elsbdj) too many iterations: s0,m=" << s0 << " "
+                           << m;
   }
   Serbd(y, m, b, d);
-  b = ss[11] * b;
-  d = ss[11] * y * d;
-  j = ss[11] * Serj(y, n, m);
+  b = ss[i + 1] * b;
+  d = ss[i + 1] * y * d;
+  j = ss[i + 1] * Serj(y, n, m);
   for (int k = i; k >= 1; --k) {
     sy = ss[k] * yy[k + 1];
     t = sy / (1.0 - n * (yy[k] - yy[k + 1] * cd[k]));
@@ -757,61 +762,63 @@ void Elsbdj(double const s0,
 }
 
 void Serbd(double const y, double const m, double& b, double& d) {
-  constexpr double F10 = 1.0 / 6.;
-  constexpr double F20 = 3.0 / 40.;
-  constexpr double F21 = 2.0 / 40.;
-  constexpr double F30 = 5.0 / 112.;
-  constexpr double F31 = 3.0 / 112.;
-  constexpr double F40 = 35.0 / 1152.;
-  constexpr double F41 = 20.0 / 1152.;
-  constexpr double F42 = 18.0 / 1152.;
-  constexpr double F50 = 63.0 / 2816.;
-  constexpr double F51 = 35.0 / 2816.;
-  constexpr double F52 = 30.0 / 2816.;
-  constexpr double F60 = 231.0 / 13312.;
-  constexpr double F61 = 126.0 / 13312.;
-  constexpr double F62 = 105.0 / 13312.;
-  constexpr double F63 = 100.0 / 13312.;
-  constexpr double F70 = 429.0 / 30720.;
-  constexpr double F71 = 231.0 / 30720.;
-  constexpr double F72 = 189.0 / 30720.;
-  constexpr double F73 = 175.0 / 30720.;
-  constexpr double F80 = 6435.0 / 557056.;
-  constexpr double F81 = 3432.0 / 557056.;
-  constexpr double F82 = 2722.0 / 557056.;
-  constexpr double F83 = 2520.0 / 557056.;
-  constexpr double F84 = 2450.0 / 557056.;
-  constexpr double F90 = 12155.0 / 1245184.;
-  constexpr double F91 = 6435.0 / 1245184.;
-  constexpr double F92 = 5148.0 / 1245184.;
-  constexpr double F93 = 4620.0 / 1245184.;
-  constexpr double F94 = 4410.0 / 1245184.;
-  constexpr double FA0 = 46189.0 / 5505024.;
-  constexpr double FA1 = 24310.0 / 5505024.;
-  constexpr double FA2 = 19305.0 / 5505024.;
-  constexpr double FA3 = 17160.0 / 5505024.;
-  constexpr double FA4 = 16170.0 / 5505024.;
-  constexpr double FA5 = 15876.0 / 5505024.;
-  constexpr double FB0 = 88179.0 / 12058624.;
-  constexpr double FB1 = 46189.0 / 12058624.;
-  constexpr double FB2 = 36465.0 / 12058624.;
-  constexpr double FB3 = 32175.0 / 12058624.;
-  constexpr double FB4 = 30030.0 / 12058624.;
-  constexpr double FB5 = 29106.0 / 12058624.;
+  constexpr double F10 = 1.0 / 6.0;
+  constexpr double F20 = 3.0 / 40.0;
+  constexpr double F21 = 2.0 / 40.0;
+  constexpr double F30 = 5.0 / 112.0;
+  constexpr double F31 = 3.0 / 112.0;
+  constexpr double F40 = 35.0 / 1152.0;
+  constexpr double F41 = 20.0 / 1152.0;
+  constexpr double F42 = 18.0 / 1152.0;
+  constexpr double F50 = 63.0 / 2816.0;
+  constexpr double F51 = 35.0 / 2816.0;
+  constexpr double F52 = 30.0 / 2816.0;
+  constexpr double F60 = 231.0 / 13312.0;
+  constexpr double F61 = 126.0 / 13312.0;
+  constexpr double F62 = 105.0 / 13312.0;
+  constexpr double F63 = 100.0 / 13312.0;
+  constexpr double F70 = 429.0 / 30720.0;
+  constexpr double F71 = 231.0 / 30720.0;
+  constexpr double F72 = 189.0 / 30720.0;
+  constexpr double F73 = 175.0 / 30720.0;
+  constexpr double F80 = 6435.0 / 557056.0;
+  constexpr double F81 = 3432.0 / 557056.0;
+  constexpr double F82 = 2722.0 / 557056.0;
+  constexpr double F83 = 2520.0 / 557056.0;
+  constexpr double F84 = 2450.0 / 557056.0;
+  constexpr double F90 = 12155.0 / 1245184.0;
+  constexpr double F91 = 6435.0 / 1245184.0;
+  constexpr double F92 = 5148.0 / 1245184.0;
+  constexpr double F93 = 4620.0 / 1245184.0;
+  constexpr double F94 = 4410.0 / 1245184.0;
+  constexpr double FA0 = 46189.0 / 5505024.0;
+  constexpr double FA1 = 24310.0 / 5505024.0;
+  constexpr double FA2 = 19305.0 / 5505024.0;
+  constexpr double FA3 = 17160.0 / 5505024.0;
+  constexpr double FA4 = 16170.0 / 5505024.0;
+  constexpr double FA5 = 15876.0 / 5505024.0;
+  constexpr double FB0 = 88179.0 / 12058624.0;
+  constexpr double FB1 = 46189.0 / 12058624.0;
+  constexpr double FB2 = 36465.0 / 12058624.0;
+  constexpr double FB3 = 32175.0 / 12058624.0;
+  constexpr double FB4 = 30030.0 / 12058624.0;
+  constexpr double FB5 = 29106.0 / 12058624.0;
 
-  constexpr double A1 = 3.0 / 5.;
-  constexpr double A2 = 5.0 / 7.;
-  constexpr double A3 = 7.0 / 9.;
-  constexpr double A4 = 9.0 / 11.;
-  constexpr double A5 = 11.0 / 13.;
-  constexpr double A6 = 13.0 / 15.;
-  constexpr double A7 = 15.0 / 17.;
-  constexpr double A8 = 17.0 / 19.;
-  constexpr double A9 = 19.0 / 21.;
-  constexpr double AA = 21.0 / 23.;
-  constexpr double AB = 23.0 / 25.;
+  constexpr double A1 = 3.0 / 5.0;
+  constexpr double A2 = 5.0 / 7.0;
+  constexpr double A3 = 7.0 / 9.0;
+  constexpr double A4 = 9.0 / 11.0;
+  constexpr double A5 = 11.0 / 13.0;
+  constexpr double A6 = 13.0 / 15.0;
+  constexpr double A7 = 15.0 / 17.0;
+  constexpr double A8 = 17.0 / 19.0;
+  constexpr double A9 = 19.0 / 21.0;
+  constexpr double AA = 21.0 / 23.0;
+  constexpr double AB = 23.0 / 25.0;
 
-  constexpr double D0 = 1.0 / 3.;
+  double B1, B2, B3, B4, B5, B6, B7, B8, B9, BA, BB;
+  double D1, D2, D3, D4, D5, D6, D7, D8, D9, DA, DB;
+  constexpr double D0 = 1.0 / 3.0;
 
   double F1,F2,F3,F4,F5,F6,F7,F8,F9,FA,FB;
   F1=F10+m*F10;
@@ -826,8 +833,6 @@ void Serbd(double const y, double const m, double& b, double& d) {
   FA=FA0+m*(FA1+m*(FA2+m*(FA3+m*(FA4+m*(FA5+m*(FA4+m*(FA3+m*(FA2+m*(FA1+m*FA0)))))))));
   FB=FB0+m*(FB1+m*(FB2+m*(FB3+m*(FB4+m*(FB5+m*(FB5+m*(FB4+m*(FB3+m*(FB2+m*(FB1+m*FB0))))))))));
 
-  double B1, B2, B3, B4, B5, B6, B7, B8, B9, BA, BB;
-  double D1, D2, D3, D4, D5, D6, D7, D8, D9, DA, DB;
   D1 = F1 * A1;
   D2 = F2 * A2;
   D3 = F3 * A3;
@@ -858,235 +863,235 @@ void Serbd(double const y, double const m, double& b, double& d) {
 }
 
 double Serj(double const y, double const n, double const m) {
-  constexpr double J100 = 1.0 / 3.;
+  constexpr double J100 = 1.0 / 3.0;
 
-  constexpr double J200 = 1.0 / 10.;
-  constexpr double J201 = 2.0 / 10.;
-  constexpr double J210 = 1.0 / 10.;
+  constexpr double J200 = 1.0 / 10.0;
+  constexpr double J201 = 2.0 / 10.0;
+  constexpr double J210 = 1.0 / 10.0;
 
-  constexpr double J300 = 3.0 / 56.;
-  constexpr double J301 = 4.0 / 56.;
-  constexpr double J302 = 8.0 / 56.;
-  constexpr double J310 = 2.0 / 56.;
-  constexpr double J311 = 4.0 / 56.;
-  constexpr double J320 = 3.0 / 56.;
+  constexpr double J300 = 3.0 / 56.0;
+  constexpr double J301 = 4.0 / 56.0;
+  constexpr double J302 = 8.0 / 56.0;
+  constexpr double J310 = 2.0 / 56.0;
+  constexpr double J311 = 4.0 / 56.0;
+  constexpr double J320 = 3.0 / 56.0;
 
-  constexpr double J400 = 5.0 / 144.;
-  constexpr double J401 = 6.0 / 144.;
-  constexpr double J402 = 8.0 / 144.;
-  constexpr double J403 = 16.0 / 144.;
-  constexpr double J410 = 3.0 / 144.;
-  constexpr double J411 = 4.0 / 144.;
-  constexpr double J412 = 8.0 / 144.;
-  constexpr double J420 = 3.0 / 144.;
-  constexpr double J421 = 6.0 / 144.;
-  constexpr double J430 = 5.0 / 144.;
+  constexpr double J400 = 5.0 / 144.0;
+  constexpr double J401 = 6.0 / 144.0;
+  constexpr double J402 = 8.0 / 144.0;
+  constexpr double J403 = 16.0 / 144.0;
+  constexpr double J410 = 3.0 / 144.0;
+  constexpr double J411 = 4.0 / 144.0;
+  constexpr double J412 = 8.0 / 144.0;
+  constexpr double J420 = 3.0 / 144.0;
+  constexpr double J421 = 6.0 / 144.0;
+  constexpr double J430 = 5.0 / 144.0;
 
-  constexpr double J500 = 35.0 / 1408.;
-  constexpr double J501 = 40.0 / 1408.;
-  constexpr double J502 = 48.0 / 1408.;
-  constexpr double J503 = 64.0 / 1408.;
-  constexpr double J504 = 128.0 / 1408.;
-  constexpr double J510 = 20.0 / 1408.;
-  constexpr double J511 = 24.0 / 1408.;
-  constexpr double J512 = 32.0 / 1408.;
-  constexpr double J513 = 64.0 / 1408.;
-  constexpr double J520 = 18.0 / 1408.;
-  constexpr double J521 = 24.0 / 1408.;
-  constexpr double J522 = 48.0 / 1408.;
-  constexpr double J530 = 20.0 / 1408.;
-  constexpr double J531 = 40.0 / 1408.;
-  constexpr double J540 = 35.0 / 1408.;
+  constexpr double J500 = 35.0 / 1408.0;
+  constexpr double J501 = 40.0 / 1408.0;
+  constexpr double J502 = 48.0 / 1408.0;
+  constexpr double J503 = 64.0 / 1408.0;
+  constexpr double J504 = 128.0 / 1408.0;
+  constexpr double J510 = 20.0 / 1408.0;
+  constexpr double J511 = 24.0 / 1408.0;
+  constexpr double J512 = 32.0 / 1408.0;
+  constexpr double J513 = 64.0 / 1408.0;
+  constexpr double J520 = 18.0 / 1408.0;
+  constexpr double J521 = 24.0 / 1408.0;
+  constexpr double J522 = 48.0 / 1408.0;
+  constexpr double J530 = 20.0 / 1408.0;
+  constexpr double J531 = 40.0 / 1408.0;
+  constexpr double J540 = 35.0 / 1408.0;
 
-  constexpr double J600 = 63.0 / 3328.;
-  constexpr double J601 = 70.0 / 3328.;
-  constexpr double J602 = 80.0 / 3328.;
-  constexpr double J603 = 96.0 / 3328.;
-  constexpr double J604 = 128.0 / 3328.;
-  constexpr double J605 = 256.0 / 3328.;
-  constexpr double J610 = 35.0 / 3328.;
-  constexpr double J611 = 40.0 / 3328.;
-  constexpr double J612 = 48.0 / 3328.;
-  constexpr double J613 = 64.0 / 3328.;
-  constexpr double J614 = 128.0 / 3328.;
-  constexpr double J620 = 30.0 / 3328.;
-  constexpr double J621 = 36.0 / 3328.;
-  constexpr double J622 = 48.0 / 3328.;
-  constexpr double J623 = 96.0 / 3328.;
-  constexpr double J630 = 30.0 / 3328.;
-  constexpr double J631 = 40.0 / 3328.;
-  constexpr double J632 = 80.0 / 3328.;
-  constexpr double J640 = 35.0 / 3328.;
-  constexpr double J641 = 70.0 / 3328.;
-  constexpr double J650 = 63.0 / 3328.;
+  constexpr double J600 = 63.0 / 3328.0;
+  constexpr double J601 = 70.0 / 3328.0;
+  constexpr double J602 = 80.0 / 3328.0;
+  constexpr double J603 = 96.0 / 3328.0;
+  constexpr double J604 = 128.0 / 3328.0;
+  constexpr double J605 = 256.0 / 3328.0;
+  constexpr double J610 = 35.0 / 3328.0;
+  constexpr double J611 = 40.0 / 3328.0;
+  constexpr double J612 = 48.0 / 3328.0;
+  constexpr double J613 = 64.0 / 3328.0;
+  constexpr double J614 = 128.0 / 3328.0;
+  constexpr double J620 = 30.0 / 3328.0;
+  constexpr double J621 = 36.0 / 3328.0;
+  constexpr double J622 = 48.0 / 3328.0;
+  constexpr double J623 = 96.0 / 3328.0;
+  constexpr double J630 = 30.0 / 3328.0;
+  constexpr double J631 = 40.0 / 3328.0;
+  constexpr double J632 = 80.0 / 3328.0;
+  constexpr double J640 = 35.0 / 3328.0;
+  constexpr double J641 = 70.0 / 3328.0;
+  constexpr double J650 = 63.0 / 3328.0;
 
-  constexpr double J700 = 231.0 / 15360.;
-  constexpr double J701 = 252.0 / 15360.;
-  constexpr double J702 = 280.0 / 15360.;
-  constexpr double J703 = 320.0 / 15360.;
-  constexpr double J704 = 384.0 / 15360.;
-  constexpr double J705 = 512.0 / 15360.;
-  constexpr double J706 = 1024.0 / 15360.;
-  constexpr double J710 = 126.0 / 15360.;
-  constexpr double J711 = 140.0 / 15360.;
-  constexpr double J712 = 160.0 / 15360.;
-  constexpr double J713 = 192.0 / 15360.;
-  constexpr double J714 = 256.0 / 15360.;
-  constexpr double J715 = 512.0 / 15360.;
-  constexpr double J720 = 105.0 / 15360.;
-  constexpr double J721 = 120.0 / 15360.;
-  constexpr double J722 = 144.0 / 15360.;
-  constexpr double J723 = 192.0 / 15360.;
-  constexpr double J724 = 384.0 / 15360.;
-  constexpr double J730 = 100.0 / 15360.;
-  constexpr double J731 = 120.0 / 15360.;
-  constexpr double J732 = 160.0 / 15360.;
-  constexpr double J733 = 320.0 / 15360.;
-  constexpr double J740 = 105.0 / 15360.;
-  constexpr double J741 = 140.0 / 15360.;
-  constexpr double J742 = 280.0 / 15360.;
-  constexpr double J750 = 126.0 / 15360.;
-  constexpr double J751 = 252.0 / 15360.;
-  constexpr double J760 = 231.0 / 15360.;
+  constexpr double J700 = 231.0 / 15360.0;
+  constexpr double J701 = 252.0 / 15360.0;
+  constexpr double J702 = 280.0 / 15360.0;
+  constexpr double J703 = 320.0 / 15360.0;
+  constexpr double J704 = 384.0 / 15360.0;
+  constexpr double J705 = 512.0 / 15360.0;
+  constexpr double J706 = 1024.0 / 15360.0;
+  constexpr double J710 = 126.0 / 15360.0;
+  constexpr double J711 = 140.0 / 15360.0;
+  constexpr double J712 = 160.0 / 15360.0;
+  constexpr double J713 = 192.0 / 15360.0;
+  constexpr double J714 = 256.0 / 15360.0;
+  constexpr double J715 = 512.0 / 15360.0;
+  constexpr double J720 = 105.0 / 15360.0;
+  constexpr double J721 = 120.0 / 15360.0;
+  constexpr double J722 = 144.0 / 15360.0;
+  constexpr double J723 = 192.0 / 15360.0;
+  constexpr double J724 = 384.0 / 15360.0;
+  constexpr double J730 = 100.0 / 15360.0;
+  constexpr double J731 = 120.0 / 15360.0;
+  constexpr double J732 = 160.0 / 15360.0;
+  constexpr double J733 = 320.0 / 15360.0;
+  constexpr double J740 = 105.0 / 15360.0;
+  constexpr double J741 = 140.0 / 15360.0;
+  constexpr double J742 = 280.0 / 15360.0;
+  constexpr double J750 = 126.0 / 15360.0;
+  constexpr double J751 = 252.0 / 15360.0;
+  constexpr double J760 = 231.0 / 15360.0;
 
-  constexpr double J800 = 429.0 / 34816.;
-  constexpr double J801 = 462.0 / 34816.;
-  constexpr double J802 = 504.0 / 34816.;
-  constexpr double J803 = 560.0 / 34816.;
-  constexpr double J804 = 640.0 / 34816.;
-  constexpr double J805 = 768.0 / 34816.;
-  constexpr double J806 = 1024.0 / 34816.;
-  constexpr double J807 = 2048.0 / 34816.;
-  constexpr double J810 = 231.0 / 34816.;
-  constexpr double J811 = 252.0 / 34816.;
-  constexpr double J812 = 280.0 / 34816.;
-  constexpr double J813 = 320.0 / 34816.;
-  constexpr double J814 = 384.0 / 34816.;
-  constexpr double J815 = 512.0 / 34816.;
-  constexpr double J816 = 1024.0 / 34816.;
-  constexpr double J820 = 189.0 / 34816.;
-  constexpr double J821 = 210.0 / 34816.;
-  constexpr double J822 = 240.0 / 34816.;
-  constexpr double J823 = 288.0 / 34816.;
-  constexpr double J824 = 284.0 / 34816.;
-  constexpr double J825 = 768.0 / 34816.;
-  constexpr double J830 = 175.0 / 34816.;
-  constexpr double J831 = 200.0 / 34816.;
-  constexpr double J832 = 240.0 / 34816.;
-  constexpr double J833 = 320.0 / 34816.;
-  constexpr double J834 = 640.0 / 34816.;
-  constexpr double J840 = 175.0 / 34816.;
-  constexpr double J841 = 210.0 / 34816.;
-  constexpr double J842 = 280.0 / 34816.;
-  constexpr double J843 = 560.0 / 34816.;
-  constexpr double J850 = 189.0 / 34816.;
-  constexpr double J851 = 252.0 / 34816.;
-  constexpr double J852 = 504.0 / 34816.;
-  constexpr double J860 = 231.0 / 34816.;
-  constexpr double J861 = 462.0 / 34816.;
-  constexpr double J870 = 429.0 / 34816.;
+  constexpr double J800 = 429.0 / 34816.0;
+  constexpr double J801 = 462.0 / 34816.0;
+  constexpr double J802 = 504.0 / 34816.0;
+  constexpr double J803 = 560.0 / 34816.0;
+  constexpr double J804 = 640.0 / 34816.0;
+  constexpr double J805 = 768.0 / 34816.0;
+  constexpr double J806 = 1024.0 / 34816.0;
+  constexpr double J807 = 2048.0 / 34816.0;
+  constexpr double J810 = 231.0 / 34816.0;
+  constexpr double J811 = 252.0 / 34816.0;
+  constexpr double J812 = 280.0 / 34816.0;
+  constexpr double J813 = 320.0 / 34816.0;
+  constexpr double J814 = 384.0 / 34816.0;
+  constexpr double J815 = 512.0 / 34816.0;
+  constexpr double J816 = 1024.0 / 34816.0;
+  constexpr double J820 = 189.0 / 34816.0;
+  constexpr double J821 = 210.0 / 34816.0;
+  constexpr double J822 = 240.0 / 34816.0;
+  constexpr double J823 = 288.0 / 34816.0;
+  constexpr double J824 = 284.0 / 34816.0;
+  constexpr double J825 = 768.0 / 34816.0;
+  constexpr double J830 = 175.0 / 34816.0;
+  constexpr double J831 = 200.0 / 34816.0;
+  constexpr double J832 = 240.0 / 34816.0;
+  constexpr double J833 = 320.0 / 34816.0;
+  constexpr double J834 = 640.0 / 34816.0;
+  constexpr double J840 = 175.0 / 34816.0;
+  constexpr double J841 = 210.0 / 34816.0;
+  constexpr double J842 = 280.0 / 34816.0;
+  constexpr double J843 = 560.0 / 34816.0;
+  constexpr double J850 = 189.0 / 34816.0;
+  constexpr double J851 = 252.0 / 34816.0;
+  constexpr double J852 = 504.0 / 34816.0;
+  constexpr double J860 = 231.0 / 34816.0;
+  constexpr double J861 = 462.0 / 34816.0;
+  constexpr double J870 = 429.0 / 34816.0;
 
-  constexpr double J900 = 6435.0 / 622592.;
-  constexpr double J901 = 6864.0 / 622592.;
-  constexpr double J902 = 7392.0 / 622592.;
-  constexpr double J903 = 8064.0 / 622592.;
-  constexpr double J904 = 8960.0 / 622592.;
-  constexpr double J905 = 10240.0 / 622592.;
-  constexpr double J906 = 12288.0 / 622592.;
-  constexpr double J907 = 16384.0 / 622592.;
-  constexpr double J908 = 32768.0 / 622592.;
-  constexpr double J910 = 3432.0 / 622592.;
-  constexpr double J911 = 3696.0 / 622592.;
-  constexpr double J912 = 4032.0 / 622592.;
-  constexpr double J913 = 4480.0 / 622592.;
-  constexpr double J914 = 5120.0 / 622592.;
-  constexpr double J915 = 6144.0 / 622592.;
-  constexpr double J916 = 8192.0 / 622592.;
-  constexpr double J917 = 16384.0 / 622592.;
-  constexpr double J920 = 2772.0 / 622592.;
-  constexpr double J921 = 3024.0 / 622592.;
-  constexpr double J922 = 3360.0 / 622592.;
-  constexpr double J923 = 3840.0 / 622592.;
-  constexpr double J924 = 4608.0 / 622592.;
-  constexpr double J925 = 6144.0 / 622592.;
-  constexpr double J926 = 12288.0 / 622592.;
-  constexpr double J930 = 2520.0 / 622592.;
-  constexpr double J931 = 2800.0 / 622592.;
-  constexpr double J932 = 3200.0 / 622592.;
-  constexpr double J933 = 3840.0 / 622592.;
-  constexpr double J934 = 5120.0 / 622592.;
-  constexpr double J935 = 10240.0 / 622592.;
-  constexpr double J940 = 2450.0 / 622592.;
-  constexpr double J941 = 2800.0 / 622592.;
-  constexpr double J942 = 3360.0 / 622592.;
-  constexpr double J943 = 4480.0 / 622592.;
-  constexpr double J944 = 8960.0 / 622592.;
-  constexpr double J950 = 2520.0 / 622592.;
-  constexpr double J951 = 3024.0 / 622592.;
-  constexpr double J952 = 4032.0 / 622592.;
-  constexpr double J953 = 8064.0 / 622592.;
-  constexpr double J960 = 2772.0 / 622592.;
-  constexpr double J961 = 3696.0 / 622592.;
-  constexpr double J962 = 7392.0 / 622592.;
-  constexpr double J970 = 3432.0 / 622592.;
-  constexpr double J971 = 6864.0 / 622592.;
-  constexpr double J980 = 6435.0 / 622592.;
+  constexpr double J900 = 6435.0 / 622592.0;
+  constexpr double J901 = 6864.0 / 622592.0;
+  constexpr double J902 = 7392.0 / 622592.0;
+  constexpr double J903 = 8064.0 / 622592.0;
+  constexpr double J904 = 8960.0 / 622592.0;
+  constexpr double J905 = 10240.0 / 622592.0;
+  constexpr double J906 = 12288.0 / 622592.0;
+  constexpr double J907 = 16384.0 / 622592.0;
+  constexpr double J908 = 32768.0 / 622592.0;
+  constexpr double J910 = 3432.0 / 622592.0;
+  constexpr double J911 = 3696.0 / 622592.0;
+  constexpr double J912 = 4032.0 / 622592.0;
+  constexpr double J913 = 4480.0 / 622592.0;
+  constexpr double J914 = 5120.0 / 622592.0;
+  constexpr double J915 = 6144.0 / 622592.0;
+  constexpr double J916 = 8192.0 / 622592.0;
+  constexpr double J917 = 16384.0 / 622592.0;
+  constexpr double J920 = 2772.0 / 622592.0;
+  constexpr double J921 = 3024.0 / 622592.0;
+  constexpr double J922 = 3360.0 / 622592.0;
+  constexpr double J923 = 3840.0 / 622592.0;
+  constexpr double J924 = 4608.0 / 622592.0;
+  constexpr double J925 = 6144.0 / 622592.0;
+  constexpr double J926 = 12288.0 / 622592.0;
+  constexpr double J930 = 2520.0 / 622592.0;
+  constexpr double J931 = 2800.0 / 622592.0;
+  constexpr double J932 = 3200.0 / 622592.0;
+  constexpr double J933 = 3840.0 / 622592.0;
+  constexpr double J934 = 5120.0 / 622592.0;
+  constexpr double J935 = 10240.0 / 622592.0;
+  constexpr double J940 = 2450.0 / 622592.0;
+  constexpr double J941 = 2800.0 / 622592.0;
+  constexpr double J942 = 3360.0 / 622592.0;
+  constexpr double J943 = 4480.0 / 622592.0;
+  constexpr double J944 = 8960.0 / 622592.0;
+  constexpr double J950 = 2520.0 / 622592.0;
+  constexpr double J951 = 3024.0 / 622592.0;
+  constexpr double J952 = 4032.0 / 622592.0;
+  constexpr double J953 = 8064.0 / 622592.0;
+  constexpr double J960 = 2772.0 / 622592.0;
+  constexpr double J961 = 3696.0 / 622592.0;
+  constexpr double J962 = 7392.0 / 622592.0;
+  constexpr double J970 = 3432.0 / 622592.0;
+  constexpr double J971 = 6864.0 / 622592.0;
+  constexpr double J980 = 6435.0 / 622592.0;
 
-  constexpr double JA00 = 12155.0 / 1376256.;
-  constexpr double JA01 = 12870.0 / 1376256.;
-  constexpr double JA02 = 13728.0 / 1376256.;
-  constexpr double JA03 = 14784.0 / 1376256.;
-  constexpr double JA04 = 16128.0 / 1376256.;
-  constexpr double JA05 = 17920.0 / 1376256.;
-  constexpr double JA06 = 20480.0 / 1376256.;
-  constexpr double JA07 = 24576.0 / 1376256.;
-  constexpr double JA08 = 32768.0 / 1376256.;
-  constexpr double JA09 = 65536.0 / 1376256.;
-  constexpr double JA10 = 6435.0 / 1376256.;
-  constexpr double JA11 = 6864.0 / 1376256.;
-  constexpr double JA12 = 7392.0 / 1376256.;
-  constexpr double JA13 = 8064.0 / 1376256.;
-  constexpr double JA14 = 8960.0 / 1376256.;
-  constexpr double JA15 = 10240.0 / 1376256.;
-  constexpr double JA16 = 12288.0 / 1376256.;
-  constexpr double JA17 = 16384.0 / 1376256.;
-  constexpr double JA18 = 32768.0 / 1376256.;
-  constexpr double JA20 = 5148.0 / 1376256.;
-  constexpr double JA21 = 5544.0 / 1376256.;
-  constexpr double JA22 = 6048.0 / 1376256.;
-  constexpr double JA23 = 6720.0 / 1376256.;
-  constexpr double JA24 = 7680.0 / 1376256.;
-  constexpr double JA25 = 9216.0 / 1376256.;
-  constexpr double JA26 = 12288.0 / 1376256.;
-  constexpr double JA27 = 24576.0 / 1376256.;
-  constexpr double JA30 = 4620.0 / 1376256.;
-  constexpr double JA31 = 5040.0 / 1376256.;
-  constexpr double JA32 = 5600.0 / 1376256.;
-  constexpr double JA33 = 6400.0 / 1376256.;
-  constexpr double JA34 = 7680.0 / 1376256.;
-  constexpr double JA35 = 10240.0 / 1376256.;
-  constexpr double JA36 = 20480.0 / 1376256.;
-  constexpr double JA40 = 4410.0 / 1376256.;
-  constexpr double JA41 = 4900.0 / 1376256.;
-  constexpr double JA42 = 5600.0 / 1376256.;
-  constexpr double JA43 = 6720.0 / 1376256.;
-  constexpr double JA44 = 8960.0 / 1376256.;
-  constexpr double JA45 = 17920.0 / 1376256.;
-  constexpr double JA50 = 4410.0 / 1376256.;
-  constexpr double JA51 = 5040.0 / 1376256.;
-  constexpr double JA52 = 6048.0 / 1376256.;
-  constexpr double JA53 = 8064.0 / 1376256.;
-  constexpr double JA54 = 16128.0 / 1376256.;
-  constexpr double JA60 = 4620.0 / 1376256.;
-  constexpr double JA61 = 5544.0 / 1376256.;
-  constexpr double JA62 = 7392.0 / 1376256.;
-  constexpr double JA63 = 14784.0 / 1376256.;
-  constexpr double JA70 = 5148.0 / 1376256.;
-  constexpr double JA71 = 6864.0 / 1376256.;
-  constexpr double JA72 = 13728.0 / 1376256.;
-  constexpr double JA80 = 6435.0 / 1376256.;
-  constexpr double JA81 = 12870.0 / 1376256.;
-  constexpr double JA90 = 12155.0 / 1376256.;
+  constexpr double JA00 = 12155.0 / 1376256.0;
+  constexpr double JA01 = 12870.0 / 1376256.0;
+  constexpr double JA02 = 13728.0 / 1376256.0;
+  constexpr double JA03 = 14784.0 / 1376256.0;
+  constexpr double JA04 = 16128.0 / 1376256.0;
+  constexpr double JA05 = 17920.0 / 1376256.0;
+  constexpr double JA06 = 20480.0 / 1376256.0;
+  constexpr double JA07 = 24576.0 / 1376256.0;
+  constexpr double JA08 = 32768.0 / 1376256.0;
+  constexpr double JA09 = 65536.0 / 1376256.0;
+  constexpr double JA10 = 6435.0 / 1376256.0;
+  constexpr double JA11 = 6864.0 / 1376256.0;
+  constexpr double JA12 = 7392.0 / 1376256.0;
+  constexpr double JA13 = 8064.0 / 1376256.0;
+  constexpr double JA14 = 8960.0 / 1376256.0;
+  constexpr double JA15 = 10240.0 / 1376256.0;
+  constexpr double JA16 = 12288.0 / 1376256.0;
+  constexpr double JA17 = 16384.0 / 1376256.0;
+  constexpr double JA18 = 32768.0 / 1376256.0;
+  constexpr double JA20 = 5148.0 / 1376256.0;
+  constexpr double JA21 = 5544.0 / 1376256.0;
+  constexpr double JA22 = 6048.0 / 1376256.0;
+  constexpr double JA23 = 6720.0 / 1376256.0;
+  constexpr double JA24 = 7680.0 / 1376256.0;
+  constexpr double JA25 = 9216.0 / 1376256.0;
+  constexpr double JA26 = 12288.0 / 1376256.0;
+  constexpr double JA27 = 24576.0 / 1376256.0;
+  constexpr double JA30 = 4620.0 / 1376256.0;
+  constexpr double JA31 = 5040.0 / 1376256.0;
+  constexpr double JA32 = 5600.0 / 1376256.0;
+  constexpr double JA33 = 6400.0 / 1376256.0;
+  constexpr double JA34 = 7680.0 / 1376256.0;
+  constexpr double JA35 = 10240.0 / 1376256.0;
+  constexpr double JA36 = 20480.0 / 1376256.0;
+  constexpr double JA40 = 4410.0 / 1376256.0;
+  constexpr double JA41 = 4900.0 / 1376256.0;
+  constexpr double JA42 = 5600.0 / 1376256.0;
+  constexpr double JA43 = 6720.0 / 1376256.0;
+  constexpr double JA44 = 8960.0 / 1376256.0;
+  constexpr double JA45 = 17920.0 / 1376256.0;
+  constexpr double JA50 = 4410.0 / 1376256.0;
+  constexpr double JA51 = 5040.0 / 1376256.0;
+  constexpr double JA52 = 6048.0 / 1376256.0;
+  constexpr double JA53 = 8064.0 / 1376256.0;
+  constexpr double JA54 = 16128.0 / 1376256.0;
+  constexpr double JA60 = 4620.0 / 1376256.0;
+  constexpr double JA61 = 5544.0 / 1376256.0;
+  constexpr double JA62 = 7392.0 / 1376256.0;
+  constexpr double JA63 = 14784.0 / 1376256.0;
+  constexpr double JA70 = 5148.0 / 1376256.0;
+  constexpr double JA71 = 6864.0 / 1376256.0;
+  constexpr double JA72 = 13728.0 / 1376256.0;
+  constexpr double JA80 = 6435.0 / 1376256.0;
+  constexpr double JA81 = 12870.0 / 1376256.0;
+  constexpr double JA90 = 12155.0 / 1376256.0;
 
   double J1, J2, J3, J4, J5, J6, J7, J8, J9, JA;
 
@@ -1232,18 +1237,18 @@ double Uatan(double const t, double const h) {
   static double hold = 1.0;
   static double rold = 1.0;
   static double riold = 1.0;
-  constexpr double A3 = 1.0 / 3.;
-  constexpr double A5 = 1.0 / 5.;
-  constexpr double A7 = 1.0 / 7.;
-  constexpr double A9 = 1.0 / 9.;
-  constexpr double A11 = 1.0 / 11.;
-  constexpr double A13 = 1.0 / 13.;
-  constexpr double A15 = 1.0 / 15.;
-  constexpr double A17 = 1.0 / 17.;
-  constexpr double A19 = 1.0 / 19.;
-  constexpr double A21 = 1.0 / 21.;
-  constexpr double A23 = 1.0 / 23.;
-  constexpr double A25 = 1.0 / 25.;
+  constexpr double A3 = 1.0 / 3.0;
+  constexpr double A5 = 1.0 / 5.0;
+  constexpr double A7 = 1.0 / 7.0;
+  constexpr double A9 = 1.0 / 9.0;
+  constexpr double A11 = 1.0 / 11.0;
+  constexpr double A13 = 1.0 / 13.0;
+  constexpr double A15 = 1.0 / 15.0;
+  constexpr double A17 = 1.0 / 17.0;
+  constexpr double A19 = 1.0 / 19.0;
+  constexpr double A21 = 1.0 / 21.0;
+  constexpr double A23 = 1.0 / 23.0;
+  constexpr double A25 = 1.0 / 25.0;
 
   z = -h * t * t;
   a = abs(z);

@@ -7,6 +7,8 @@ namespace numerics {
 
 class EllipticTest : public ::testing::Test {};
 
+// TODO(phl): This is far from covering all the code paths.  In particular, it
+// doesn't seem to go through Elcbdj.
 TEST_F(EllipticTest, Xelbdj) {
   constexpr double PI = 3.1415926535897932384626433;
   constexpr double PIHALF = 1.5707963267948966192313216916398;
@@ -25,6 +27,10 @@ TEST_F(EllipticTest, Xelbdj) {
     nc = static_cast<double>(l - 1) * dnc;
     if (nc <= 1.05e-8) {
       nc = 1.05e-8;
+    }
+    float rnc = static_cast<float>(nc);
+    if (rnc <= 2.44e-4) {
+      nc = 2.44e-4;
     }
     nn = 1.0 - nc;
     for (int k = 1; k <= kend; ++k) {
