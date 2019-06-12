@@ -10,7 +10,7 @@
 //    support for polynomials of two and three variables).
 // 3. Use 0-based arrays.
 // 4. Don't be thread hostile.
-// 5. Figure something for the uninitialize variables.
+// 5. Figure something for the uninitialized variables.
 
 namespace principia {
 namespace numerics {
@@ -114,29 +114,28 @@ void Elbdj(double const phi,
   }
 }
 
+//  Double precision general complete elliptic integral "cel"
+//
+//  created by Burlisch
+//
+//  coded by T. Fukushima <Toshio.Fukushima@nao.ac.jp>
+//
+//  Reference: Bulirsch, R. (1969), Numer. Math., 13, 305-315
+//        "Numerical computation of elliptic integrals and elliptic functions
+//        III"
+//
+//     Inputs: kc0    = complimentary modulus        0 <= kc0  <= 1
+//             nc     = complimentary characteristic 0 <= nc   <= 1
+//             aa, bb = coefficients
+//
+//     Outputs: cel   = integral value
+//              err   = integer error indicator
+//
 double Cel(double const kc0,
            double const nc,
            double const aa,
            double const bb,
            int& err) {
-  //
-  //  Double precision general complete elliptic integral "cel"
-  //
-  //  created by Burlisch
-  //
-  //  coded by T. Fukushima <Toshio.Fukushima@nao.ac.jp>
-  //
-  //  Reference: Bulirsch, R. (1969), Numer. Math., 13, 305-315
-  //        "Numerical computation of elliptic integrals and elliptic functions
-  //        III"
-  //
-  //     Inputs: kc0    = complimentary modulus        0 <= kc0  <= 1
-  //             nc     = complimentary characteristic 0 <= nc   <= 1
-  //             aa, bb = coefficients
-  //
-  //     Outputs: cel   = integral value
-  //              err   = integer error indicator
-  //
   double out, a, b = 0, e, f, g;  // TODO(phl):Initial value?
   double p, q, kc, em, qc;
   err = 0;
@@ -187,8 +186,6 @@ double Cel(double const kc0,
   return out;
 }
 
-void Celbd(double const mc,double& elb, double& eld) {
-//
 //  Double precision general complete elliptic integrals of the second kind
 //
 //  Reference: T. Fukushima, (2011) Math. Comp., 80, 1725-1743
@@ -201,6 +198,7 @@ void Celbd(double const mc,double& elb, double& eld) {
 //
 //     Output: elb,eld
 //
+void Celbd(double const mc,double& elb, double& eld) {
   double elk, m, mx, kkc, nome;
 
   constexpr double PIQ = 0.78539816339744830961566084581988;
@@ -1431,8 +1429,6 @@ double Uatan(double const t, double const h) {
     return x * ri;
   }
 }
-
-// NOTE(phl): All the rest was single precision.
 
 }  // namespace numerics
 }  // namespace principia

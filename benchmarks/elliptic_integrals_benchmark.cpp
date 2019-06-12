@@ -15,16 +15,16 @@ void BM_Elbdj(benchmark::State& state) {
   constexpr int size = 20;
 
   std::mt19937_64 random(42);
-  // NOTE(phl): A negative lower bound here causes a failure "(elsbdj) too many
-  // iterations".  Not sure if this is normal.
-  std::uniform_real_distribution<> distribution(0.0, 10.0);
+  std::uniform_real_distribution<> distribution_phi(-10.0, 10.0);
+  std::uniform_real_distribution<> distribution_n(-10.0, 10.0);
+  std::uniform_real_distribution<> distribution_mc(0.0, 1.0);
   std::vector<double> phis;
   std::vector<double> ns;
   std::vector<double> mcs;
   for (int i = 0; i < size; ++i) {
-    phis.push_back(distribution(random));
-    ns.push_back(distribution(random));
-    mcs.push_back(distribution(random));
+    phis.push_back(distribution_phi(random));
+    ns.push_back(distribution_n(random));
+    mcs.push_back(distribution_mc(random));
   }
 
   while (state.KeepRunningBatch(size * size * size)) {
