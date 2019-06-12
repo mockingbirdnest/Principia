@@ -163,5 +163,8 @@
     <ClCompile Include="finite_difference_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="elliptic_functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
