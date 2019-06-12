@@ -9,7 +9,7 @@
     <ClInclude Include="combinatorics.hpp" />
     <ClInclude Include="combinatorics_body.hpp" />
     <ClInclude Include="cbrt.hpp" />
-    <ClInclude Include="elliptic.hpp" />
+    <ClInclude Include="elliptic_integrals.hpp" />
     <ClInclude Include="fast_sin_cos_2π.hpp" />
     <ClInclude Include="finite_difference.hpp" />
     <ClInclude Include="finite_difference.mathematica.h" />
@@ -45,8 +45,8 @@
     <ClCompile Include="cbrt_test.cpp" />
     <ClCompile Include="combinatorics_test.cpp" />
     <ClCompile Include="double_precision_test.cpp" />
-    <ClCompile Include="elliptic.cpp" />
-    <ClCompile Include="elliptic_test.cc" />
+    <ClCompile Include="elliptic_integrals.cpp" />
+    <ClCompile Include="elliptic_integrals_test.cc" />
     <ClCompile Include="fast_sin_cos_2π.cpp" />
     <ClCompile Include="fast_sin_cos_2π_test.cpp" />
     <ClCompile Include="finite_difference_test.cpp" />

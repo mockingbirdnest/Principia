@@ -1,6 +1,6 @@
 
-#include "numerics/elliptic.hpp"
 #include "gtest/gtest.h"
+#include "numerics/elliptic_integrals.hpp"
 
 namespace principia {
 namespace numerics {

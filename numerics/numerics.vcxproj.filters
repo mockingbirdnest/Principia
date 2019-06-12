@@ -110,7 +110,7 @@
     <ClInclude Include="finite_difference.mathematica.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="elliptic.hpp">
+    <ClInclude Include="elliptic_integrals.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -166,10 +166,10 @@
     <ClCompile Include="finite_difference_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="elliptic.cpp">
+    <ClCompile Include="elliptic_integrals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="elliptic_test.cc">
+    <ClCompile Include="elliptic_integrals_test.cc">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
