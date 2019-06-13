@@ -4,6 +4,10 @@
 namespace principia {
 namespace numerics {
 
+void Scd2(double const u, double const mc, double& s, double& c, double& d);
+
+double Elk(double const mc);
+
 // Double precision subroutine to compute three Jacobian elliptic functions
 // simultaneously
 //
@@ -23,16 +27,15 @@ namespace numerics {
 //     Output: s = sn(u|m), c=cn(u|m), d=dn(u|m)
 //
 void Gscd(double const u, double const mc, double& s, double& c, double& d) {
-  double m, kc, ux, k, kh, kh3, kh5, kh7, k2, k3, k4, sx, cx, dx;
-  double elk;
+  double m, kc, ux, k, kh, kh3, kh5, kh7, k2, k3, k4, sx;
 
   m = 1.0 - mc;
   kc = sqrt(mc);
   ux = abs(u);
   if (ux < 0.785) {
-    Scd2(ux, mc, s, c, d)
+    Scd2(ux, mc, s, c, d);
   } else {
-    k = elk(mc);
+    k = Elk(mc);
     kh = k * 0.5;
     kh3 = k * 1.5;
     kh5 = k * 2.5;
@@ -87,7 +90,7 @@ void Gscd(double const u, double const mc, double& s, double& c, double& d) {
     }
   }
   if (u < 0.0) {
-    s = -s
+    s = -s;
   }
 }
 
@@ -106,19 +109,21 @@ void Gscd(double const u, double const mc, double& s, double& c, double& d) {
 //     Output: s = sn(u|m), c=cn(u|m), d=dn(u|m)
 //
 void Scd2(double const u, double const mc, double& s, double& c, double& d) {
-  double B10, B11, B20, B21, B22, m, uA, uT, u0, v, a, b, y, z, my, mc2, m2, xz,
-      w;
-  int n, j, i;
+  double m, uA, uT, u0, v, a, b, x, y, z, my, mc2, m2, xz, w;
+  int n;  // TODO(phl): Used after the loop.
+
   constexpr double B10 = 1.0 / 24.0;
   constexpr double B11 = 1.0 / 6.0;
   constexpr double B20 = 1.0 / 720.0;
   constexpr double B21 = 11.0 / 180.0;
   constexpr double B22 = 1.0 / 45.0;
+
   m = 1.0 - mc;
   uA = 1.76269 + mc * 1.16357;
   uT = 5.217e-3 - m * 2.143e-3;
   u0 = u;
-  for (int n = 0; n <= 20; ++n) {
+
+  for (n = 0; n <= 20; ++n) {
     if (u0 < uT) {
       break;
     }
@@ -160,7 +165,7 @@ void Scd2(double const u, double const mc, double& s, double& c, double& d) {
         return;
       }
       b = (y * 2.0) * (z - my);
-      a = z * z - my * y
+      a = z * z - my * y;
     }
   }
   b = b / a;
@@ -183,8 +188,8 @@ void Scd2(double const u, double const mc, double& s, double& c, double& d) {
 //     Output: elk
 //
 double Elk(double const mc) {
-  double m, mx, P, Q;
-  double kkc, nome;
+  double m, mx;
+  double elk, kkc, nome;
 
   constexpr double D1 = 1.0 / 16.0;
   constexpr double D2 = 1.0 / 32.0;
@@ -213,13 +218,13 @@ double Elk(double const mc) {
     TINY = 1.e-99;
   }
   m = 1.0 - mc;
-  if (abs(m) < 1.d - 16) {
+  if (abs(m) < 1.0e-16) {
     elk = PIHALF;
-  } else if (abs(mc - mcold) < 1.11d - 16 * mc) {
+  } else if (abs(mc - mcold) < 1.11e-16 * mc) {
     elk = elkold;
   } else if (mc < TINY) {
     elk = 1.3862943611198906 - 0.5 * log(TINY);
-  } else if (mc < 1.11d - 16) {
+  } else if (mc < 1.11e-16) {
     elk = 1.3862943611198906 - 0.5 * log(mc);
   } else if (mc < 0.1) {
     nome=mc * (D1 + mc * (D2 + mc * (D3 + mc * (D4 + mc * (D5 + mc * (D6
@@ -240,7 +245,7 @@ double Elk(double const mc) {
          0.091439629201749751 + mx * (
          0.085842591595413900 + mx * (
          0.081541118718303215))))))))));
-    elk = -kkc * PIINV * log(nome)
+    elk = -kkc * PIINV * log(nome);
   } else if (m <= 0.1) {
     mx = m - 0.05;
     elk = 1.591003453790792180 + mx * (
@@ -365,13 +370,13 @@ double Elk(double const mc) {
          52076.66107599404803 + mx * (
          189493.6591462156887 + mx * (
          695184.5762413896145 + mx * (
-         2.567994048255284686d6 + mx * (
-         9.541921966748386322d6 + mx * (
-         3.563492744218076174d7 + mx * (
-         1.336692984612040871d8 + mx * (
-         5.033521866866284541d8 + mx * (
-         1.901975729538660119d9 + mx * (
-         7.208915015330103756d9)))))))))))))))))));
+         2.567994048255284686e6 + mx * (
+         9.541921966748386322e6 + mx * (
+         3.563492744218076174e7 + mx * (
+         1.336692984612040871e8 + mx * (
+         5.033521866866284541e8 + mx * (
+         1.901975729538660119e9 + mx * (
+         7.208915015330103756e9)))))))))))))))))));
   } else if (m <= 0.85) {
     mx = m - 0.825;
     elk = 2.318122621712510589 + mx * (
@@ -384,12 +389,12 @@ double Elk(double const mc) {
          14110.51991915180325 + mx * (
          70621.44088156540229 + mx * (
          358977.2665825309926 + mx * (
-         1.847238263723971684d6 + mx * (
-         9.600515416049214109d6 + mx * (
-         5.030767708502366879d7 + mx * (
-         2.654441886527127967d8 + mx * (
-         1.408862325028702687d9 + mx * (
-         7.515687935373774627d9)))))))))))))));
+         1.847238263723971684e6 + mx * (
+         9.600515416049214109e6 + mx * (
+         5.030767708502366879e7 + mx * (
+         2.654441886527127967e8 + mx * (
+         1.408862325028702687e9 + mx * (
+         7.515687935373774627e9)))))))))))))));
   } else {
     mx = m - 0.875;
     elk = 2.473596173751343912 + mx * (
@@ -400,22 +405,23 @@ double Elk(double const mc) {
          3252.277058145123644 + mx * (
          21713.24241957434256 + mx * (
          149037.0451890932766 + mx * (
-         1.043999331089990839d6 + mx * (
-         7.427974817042038995d6 + mx * (
-         5.350383967558661151d7 + mx * (
-         3.892498869948708474d8 + mx * (
-         2.855288351100810619d9 + mx * (
-         2.109007703876684053d10 + mx * (
-         1.566998339477902014d11 + mx * (
-         1.170222242422439893d12 + mx * (
-         8.777948323668937971d12 + mx * (
-         6.610124275248495041d13 + mx * (
-         4.994880537133887989d14 + mx * (
-         3.785974339724029920d15)))))))))))))))))));
+         1.043999331089990839e6 + mx * (
+         7.427974817042038995e6 + mx * (
+         5.350383967558661151e7 + mx * (
+         3.892498869948708474e8 + mx * (
+         2.855288351100810619e9 + mx * (
+         2.109007703876684053e10 + mx * (
+         1.566998339477902014e11 + mx * (
+         1.170222242422439893e12 + mx * (
+         8.777948323668937971e12 + mx * (
+         6.610124275248495041e13 + mx * (
+         4.994880537133887989e14 + mx * (
+         3.785974339724029920e15)))))))))))))))))));
   }
 
   mcold = mc;
   elkold = elk;
+  return elk;
 }
 
 }  // namespace numerics

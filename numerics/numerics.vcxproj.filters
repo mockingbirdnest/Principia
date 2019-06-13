@@ -110,6 +110,9 @@
     <ClInclude Include="finite_difference.mathematica.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="elliptic_functions.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
