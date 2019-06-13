@@ -61,16 +61,16 @@ TEST_F(EllipticFunctionsTest, Xgscd) {
       std::printf("%10.5f%10.5f%25.15e%25.15e%25.15e\n", m, u, s, c, d);
 
       auto const& expected_entry = xgscd_expected.entry(expected_index);
-      auto const expected_argument_u = expected_entry.argument(0);
-      auto const expected_argument_mc = expected_entry.argument(1);
+      auto const expected_argument_m = expected_entry.argument(0);
+      auto const expected_argument_u = expected_entry.argument(1);
       auto const expected_value_s = expected_entry.value(0);
       auto const expected_value_c = expected_entry.value(1);
       auto const expected_value_d = expected_entry.value(2);
+      EXPECT_THAT(m, IsNear(expected_argument_m, 1.001));
       EXPECT_THAT(u, IsNear(expected_argument_u, 1.001));
-      EXPECT_THAT(mc, IsNear(expected_argument_mc, 1.001));
-      EXPECT_THAT(s, AlmostEquals(expected_value_s, 0, 0));
-      EXPECT_THAT(c, AlmostEquals(expected_value_c, 0, 0));
-      EXPECT_THAT(d, AlmostEquals(expected_value_d, 0, 0));
+      EXPECT_THAT(s, AlmostEquals(expected_value_s, 0, 2));
+      EXPECT_THAT(c, AlmostEquals(expected_value_c, 0, 3));
+      EXPECT_THAT(d, AlmostEquals(expected_value_d, 0, 1));
       ++expected_index;
     }
     std::printf("\n");
