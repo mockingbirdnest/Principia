@@ -63,3 +63,14 @@ message PolynomialInMonomialBasis {
   repeated Coefficient coefficient = 1;
   optional Point origin = 2;  // Only in the affine case.
 }
+
+// An auxiliary message used to represent tabulated data.  Useful for tests that
+// verify precomputed results.  The arguments and values are to be interpreted
+// by the test.
+message TabulatedData {
+  message Entry {
+    repeated double argument = 1;
+    repeated double value = 2;
+  }
+  repeated Entry entry = 1;
+}

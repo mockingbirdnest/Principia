@@ -61,4 +61,7 @@
     <ClCompile Include="root_finders_test.cpp" />
     <ClCompile Include="чебышёв_series_test.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="xgscd.proto.txt" />
+  </ItemGroup>
 </Project>

@@ -12,6 +12,9 @@
     <Filter Include="Test Files">
       <UniqueIdentifier>{8c8613e1-43d5-4565-99e1-b67f11f6732f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{ee1793f0-53c0-4992-a450-f0c667b3a01d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="чебышёв_series.hpp">
@@ -172,5 +175,10 @@
     <ClCompile Include="elliptic_functions_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="xgscd.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
