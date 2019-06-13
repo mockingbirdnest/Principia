@@ -74,6 +74,7 @@
     <ClInclude Include="numerics.pb.h" />
     <ClInclude Include="physics.pb.h" />
     <ClInclude Include="quantities.pb.h" />
+    <ClInclude Include="testing_utilities.pb.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="astronomy.pb.cc" />
@@ -84,5 +85,23 @@
     <ClCompile Include="numerics.pb.cc" />
     <ClCompile Include="physics.pb.cc" />
     <ClCompile Include="quantities.pb.cc" />
+    <ClCompile Include="testing_utilities.pb.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="testing_utilities.proto">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Protoc)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">$(Protoc)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Protoc)</AdditionalInputs>
+    </CustomBuild>
   </ItemGroup>
 </Project>

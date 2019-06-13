@@ -1,47 +1,26 @@
 
 #include "numerics/elliptic_functions.hpp"
 
-#include <filesystem>
-#include <fstream>
-#include <utility>
-
 #include "glog/logging.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/text_format.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "serialization/numerics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/serialization.hpp"
 
 namespace principia {
 
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
+using testing_utilities::ReadFromTabulatedData;
 
 namespace numerics {
 
-class EllipticFunctionsTest : public ::testing::Test {
- protected:
-  serialization::TabulatedData ReadTabulatedData(
-      std::filesystem::path const& tabulated_data_filename) {
-    serialization::TabulatedData tabulated_data;
-    std::ifstream tabulated_data_ifstream(tabulated_data_filename);
-    CHECK(tabulated_data_ifstream.good());
-    google::protobuf::io::IstreamInputStream tabulated_data_zcs(
-        &tabulated_data_ifstream);
-    CHECK(google::protobuf::TextFormat::Parse(&tabulated_data_zcs,
-                                              &tabulated_data));
-    CHECK_LT(0, tabulated_data.entry_size());
-    return tabulated_data;
-  }
-};
+class EllipticFunctionsTest : public ::testing::Test {};
 
 TEST_F(EllipticFunctionsTest, Xgscd) {
-  // These expected values come from the output given by Fukushima at the end of
-  // his xgscd.txt.  For our purpose, an unit test with assertions is more
-  // useful than eyeballing the output.
-  auto xgscd_expected =
-      ReadTabulatedData(SOLUTION_DIR / "numerics" / "xgscd.proto.txt");
+  auto const xgscd_expected =
+      ReadFromTabulatedData(SOLUTION_DIR / "numerics" / "xgscd.proto.txt");
   constexpr double PI = 3.1415926535897932384626433;
   constexpr double PIHALF = PI * 0.5;
   double dmc, mc, m, du, u, s, c, d;
