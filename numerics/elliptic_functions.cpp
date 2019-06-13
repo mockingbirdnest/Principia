@@ -1,12 +1,12 @@
 
+#include "numerics/elliptic_functions.hpp"
+
 #include "glog/logging.h"
 
 namespace principia {
 namespace numerics {
 
 void Scd2(double const u, double const mc, double& s, double& c, double& d);
-
-double Elk(double const mc);
 
 // Double precision subroutine to compute three Jacobian elliptic functions
 // simultaneously
