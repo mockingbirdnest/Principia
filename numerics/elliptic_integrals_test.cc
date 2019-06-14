@@ -14,7 +14,7 @@ using testing_utilities::IsNear;
 
 namespace numerics {
 
-class EllipticTest : public ::testing::Test {
+class EllipticIntegralsTest : public ::testing::Test {
  protected:
   struct Arguments {
     double n;
@@ -30,7 +30,7 @@ class EllipticTest : public ::testing::Test {
 
 // TODO(phl): This is far from covering all the code paths.  In particular, it
 // doesn't seem to go through Elcbdj.
-TEST_F(EllipticTest, Xelbdj) {
+TEST_F(EllipticIntegralsTest, Xelbdj) {
   // These expected values come from the output given by Fukushima at the end of
   // his xelbdj.txt.  For our purpose, an unit test with assertions is more
   // useful than eyeballing the output.
