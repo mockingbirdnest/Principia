@@ -189,5 +189,8 @@
     <Text Include="xgscd.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="xelbdj.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
