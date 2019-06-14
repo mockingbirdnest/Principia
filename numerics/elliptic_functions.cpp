@@ -94,11 +94,13 @@ void Gscd(double const u, double const mc, double& s, double& c, double& d) {
   }
 }
 
-// Double precision subroutine to compute three Jacobian elliptic functions simultaneously
+// Double precision subroutine to compute three Jacobian elliptic functions
+// simultaneously
 //
 //   For limited argument: 0 <= u < K/2
 //
-//     Reference: T. Fukushima, (2012) Numer. Math. DOI 10.1007/s00211-012-0498-0
+//     Reference: T. Fukushima, (2012) Numer. Math.
+//       DOI 10.1007/s00211-012-0498-0
 //       "Precise and Fast Computation of Jacobian Elliptic Functions by
 //        Conditional Duplication"
 //
@@ -227,7 +229,7 @@ double Elk(double const mc) {
   } else if (mc < 1.11e-16) {
     elk = 1.3862943611198906 - 0.5 * log(mc);
   } else if (mc < 0.1) {
-    nome=mc * (D1 + mc * (D2 + mc * (D3 + mc * (D4 + mc * (D5 + mc * (D6
+    nome = mc * (D1 + mc * (D2 + mc * (D3 + mc * (D4 + mc * (D5 + mc * (D6
           + mc * (D7 + mc * (D8 + mc * (D9 + mc * (D10 + mc * (D11 + mc * (D12
           + mc * (D13 + mc * D14)))))))))))));
     mx = mc - 0.05;
