@@ -68,6 +68,12 @@
     <ClCompile Include="encoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\numerics\elliptic_integrals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="elliptic_integrals_benchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="elliptic_functions_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
