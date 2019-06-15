@@ -1,10 +1,11 @@
-
+﻿
 #include <filesystem>
 #include <vector>
 #include <utility>
 
 #include "numerics/elliptic_integrals.hpp"
 #include "gtest/gtest.h"
+#include "quantities/numbers.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
@@ -83,6 +84,40 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
         ++expected_index;
       }
     }
+  }
+}
+
+// Tabulated values produced with Mathematica for m close to 1 (where there were
+// bugs).
+TEST_F(EllipticIntegralsTest, MathematicaMNear1) {
+  auto const elliptic_integrals_expected = ReadFromTabulatedData(
+      SOLUTION_DIR / "numerics" / "elliptic_integrals.proto.txt");
+
+  for (auto const& entry : elliptic_integrals_expected.entry()) {
+    double const argument_n = entry.argument(0);
+    double const argument_m = entry.argument(1);
+    double const argument_φ = entry.argument(2);
+    double const expected_value_b = entry.value(0);
+    double const expected_value_d = entry.value(1);
+    double const expected_value_j = entry.value(2);
+
+    double actual_value_b;
+    double actual_value_d;
+    double actual_value_j;
+    Elbdj(argument_φ,
+          π / 2 - argument_φ,
+          argument_n,
+          1.0 - argument_m,
+          actual_value_b,
+          actual_value_d,
+          actual_value_j);
+
+    EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 7))
+        << argument_n << " " << argument_m << " " << argument_φ;
+    EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 27))
+        << argument_n << " " << argument_m << " " << argument_φ;
+    EXPECT_THAT(actual_value_j, AlmostEquals(expected_value_j, 0, 18835))
+        << argument_n << " " << argument_m << " " << argument_φ;
   }
 }
 

@@ -679,7 +679,8 @@ void Elcbdj(double const c0,
     return;
   }
   m = 1.0 - mc;
-  // TODO(phl): Speculative: h = n * (1.0 - n) * (n - m);
+  h = n * (1.0 - n) * (n - m);
+  yy[1] = y;
   ss[1] = s;
   int i;
   for (i = 1; i <= 10; ++i) {
