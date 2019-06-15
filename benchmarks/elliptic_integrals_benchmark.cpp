@@ -15,8 +15,8 @@ void BM_Elbdj(benchmark::State& state) {
   constexpr int size = 20;
 
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> distribution_phi(-10.0, 10.0);
-  std::uniform_real_distribution<> distribution_n(-10.0, 10.0);
+  std::uniform_real_distribution<> distribution_phi(0.0, π / 2);
+  std::uniform_real_distribution<> distribution_n(0.0, 1.0);
   std::uniform_real_distribution<> distribution_mc(0.0, 1.0);
   std::vector<double> phis;
   std::vector<double> ns;

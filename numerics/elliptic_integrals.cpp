@@ -78,7 +78,7 @@ void Elbdj(double const phi,
   // TODO(phl): CHECK_EQ(π / 2, phi + phic);
   double m, nc, h, c, x, d2, z, bc, dc, jc, sz, t, v, t2;
 
-  if (phi < 1.345) {
+  if (phi < 1.249) {
     Elsbdj(sin(phi), n, mc, b, d, j);
   } else {
     m = 1.0 - mc;
