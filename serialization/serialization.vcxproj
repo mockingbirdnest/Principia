@@ -64,6 +64,13 @@
       <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
       <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
+    <CustomBuild Include="testing_utilities.proto">
+      <FileType>Document</FileType>
+      <AdditionalInputs>$(Protoc)</AdditionalInputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="astronomy.pb.h" />
@@ -74,6 +81,7 @@
     <ClInclude Include="numerics.pb.h" />
     <ClInclude Include="physics.pb.h" />
     <ClInclude Include="quantities.pb.h" />
+    <ClInclude Include="testing_utilities.pb.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="astronomy.pb.cc" />
@@ -84,5 +92,6 @@
     <ClCompile Include="numerics.pb.cc" />
     <ClCompile Include="physics.pb.cc" />
     <ClCompile Include="quantities.pb.cc" />
+    <ClCompile Include="testing_utilities.pb.cc" />
   </ItemGroup>
 </Project>

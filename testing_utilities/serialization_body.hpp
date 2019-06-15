@@ -9,6 +9,9 @@
 #include <vector>
 
 #include "base/base32768.hpp"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/text_format.h"
+#include "serialization/testing_utilities.pb.h"
 
 namespace principia {
 namespace testing_utilities {
@@ -87,6 +90,19 @@ std::vector<std::string> ReadLinesFromHexadecimalFile(
   }
   file.close();
   return hex;
+}
+
+serialization::TabulatedData ReadFromTabulatedData(
+    std::filesystem::path const& filename) {
+  serialization::TabulatedData tabulated_data;
+  std::ifstream tabulated_data_ifstream(filename);
+  CHECK(tabulated_data_ifstream.good());
+  google::protobuf::io::IstreamInputStream tabulated_data_zcs(
+      &tabulated_data_ifstream);
+  CHECK(google::protobuf::TextFormat::Parse(&tabulated_data_zcs,
+                                            &tabulated_data));
+  CHECK_LT(0, tabulated_data.entry_size());
+  return tabulated_data;
 }
 
 #if PRINCIPIA_COMPILER_MSVC

@@ -10,9 +10,11 @@
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
+    <ClCompile Include="..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp" />
     <ClCompile Include="dynamic_frame.cpp" />
     <ClCompile Include="elliptic_integrals_benchmark.cpp" />
+    <ClCompile Include="elliptic_functions_benchmark.cpp" />
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp" />
     <ClCompile Include="encoder.cpp" />
     <ClCompile Include="ephemeris.cpp" />

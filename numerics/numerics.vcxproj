@@ -10,6 +10,7 @@
     <ClInclude Include="combinatorics_body.hpp" />
     <ClInclude Include="cbrt.hpp" />
     <ClInclude Include="elliptic_integrals.hpp" />
+    <ClInclude Include="elliptic_functions.hpp" />
     <ClInclude Include="fast_sin_cos_2π.hpp" />
     <ClInclude Include="finite_difference.hpp" />
     <ClInclude Include="finite_difference.mathematica.h" />
@@ -47,6 +48,8 @@
     <ClCompile Include="double_precision_test.cpp" />
     <ClCompile Include="elliptic_integrals.cpp" />
     <ClCompile Include="elliptic_integrals_test.cc" />
+    <ClCompile Include="elliptic_functions.cpp" />
+    <ClCompile Include="elliptic_functions_test.cpp" />
     <ClCompile Include="fast_sin_cos_2π.cpp" />
     <ClCompile Include="fast_sin_cos_2π_test.cpp" />
     <ClCompile Include="finite_difference_test.cpp" />
@@ -60,5 +63,8 @@
     <ClCompile Include="polynomial_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />
     <ClCompile Include="чебышёв_series_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="xgscd.proto.txt" />
   </ItemGroup>
 </Project>
