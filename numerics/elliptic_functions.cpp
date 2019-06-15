@@ -6,7 +6,7 @@
 namespace principia {
 namespace numerics {
 
-void Scd2(double const u, double const mc, double& s, double& c, double& d);
+void Scd2(double u, double mc, double& s, double& c, double& d);
 
 // Double precision subroutine to compute three Jacobian elliptic functions
 // simultaneously
