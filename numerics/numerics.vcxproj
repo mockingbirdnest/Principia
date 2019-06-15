@@ -47,7 +47,7 @@
     <ClCompile Include="combinatorics_test.cpp" />
     <ClCompile Include="double_precision_test.cpp" />
     <ClCompile Include="elliptic_integrals.cpp" />
-    <ClCompile Include="elliptic_integrals_test.cc" />
+    <ClCompile Include="elliptic_integrals_test.cpp" />
     <ClCompile Include="elliptic_functions.cpp" />
     <ClCompile Include="elliptic_functions_test.cpp" />
     <ClCompile Include="fast_sin_cos_2π.cpp" />
