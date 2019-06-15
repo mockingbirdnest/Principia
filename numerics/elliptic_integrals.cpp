@@ -15,39 +15,21 @@
 namespace principia {
 namespace numerics {
 
-double Cel(double const kc0,
-           double const nc,
-           double const aa,
-           double const bb,
-           int& err);
+double Cel(double kc0, double nc, double aa, double bb, int& err);
 
-void Celbd(double const mc, double& elb, double& eld);
+void Celbd(double mc, double& elb, double& eld);
 
-void Celbdj(double const nc,
-            double const mc,
-            double& bc,
-            double& dc,
-            double& jc);
+void Celbdj(double nc, double mc, double& bc, double& dc, double& jc);
 
-void Elcbdj(double const c0,
-            double const n,
-            double const mc,
-            double& b,
-            double& d,
-            double& j);
+void Elcbdj(double c0, double n, double mc, double& b, double& d, double& j);
 
-void Elsbdj(double const s0,
-            double const n,
-            double const mc,
-            double& b,
-            double& d,
-            double& j);
+void Elsbdj(double s0, double n, double mc, double& b, double& d, double& j);
 
-void Serbd(double const y, double const m, double& b, double& d);
+void Serbd(double y, double m, double& b, double& d);
 
-double Serj(double const y, double const n, double const m);
+double Serj(double y, double n, double m);
 
-double Uatan(double const t, double const h);
+double Uatan(double t, double h);
 
 // Double precision general incomplete elliptic integrals of all three kinds
 //
@@ -697,7 +679,8 @@ void Elcbdj(double const c0,
     return;
   }
   m = 1.0 - mc;
-  // TODO(phl): Speculative: h = n * (1.0 - n) * (n - m);
+  h = n * (1.0 - n) * (n - m);
+  yy[1] = y;
   ss[1] = s;
   int i;
   for (i = 1; i <= 10; ++i) {
