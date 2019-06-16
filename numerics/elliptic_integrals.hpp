@@ -18,5 +18,7 @@ void Elbdj(double const phi,
            double& d,
            double& j);
 
+double Elk(double mc);
+
 }  // namespace numerics
 }  // namespace principia

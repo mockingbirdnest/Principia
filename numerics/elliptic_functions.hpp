@@ -10,7 +10,5 @@ namespace numerics {
 
 void Gscd(double u, double mc, double& s, double& c, double& d);
 
-double Elk(double mc);
-
 }  // namespace numerics
 }  // namespace principia
