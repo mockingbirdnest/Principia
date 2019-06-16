@@ -1,5 +1,5 @@
 ﻿
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Gscd  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=JacobiSNCNDN  // NOLINT(whitespace/line_length)
 
 #include <random>
 #include <vector>
@@ -11,7 +11,7 @@
 namespace principia {
 namespace numerics {
 
-void BM_Gscd(benchmark::State& state) {
+void BM_JacobiSNCNDN(benchmark::State& state) {
   constexpr int size = 100;
 
   std::mt19937_64 random(42);
@@ -30,7 +30,7 @@ void BM_Gscd(benchmark::State& state) {
     double d;
     for (double const u : us) {
       for (double const mc : mcs) {
-        Gscd(u, mc, s, c, d);
+        JacobiSNCNDN(u, mc, s, c, d);
       }
     }
     benchmark::DoNotOptimize(s);
@@ -39,7 +39,7 @@ void BM_Gscd(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_Gscd);
+BENCHMARK(BM_JacobiSNCNDN);
 
 }  // namespace numerics
 }  // namespace principia

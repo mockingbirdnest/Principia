@@ -10,15 +10,15 @@
 namespace principia {
 namespace numerics {
 
-void Elbdj(double phi,
-           double phic,
-           double n,
-           double mc,
-           double& b,
-           double& d,
-           double& j);
+void FukushimaEllipticBDJ(double phi,
+                          double phic,
+                          double n,
+                          double mc,
+                          double& b,
+                          double& d,
+                          double& j);
 
-double Elk(double mc);
+double EllipticK(double mc);
 
 }  // namespace numerics
 }  // namespace principia

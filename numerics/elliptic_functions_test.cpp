@@ -19,6 +19,7 @@ namespace numerics {
 
 class EllipticFunctionsTest : public ::testing::Test {};
 
+// The test values found in Fukushima's xgscd.txt file.
 TEST_F(EllipticFunctionsTest, Xgscd) {
   auto const xgscd_expected =
       ReadFromTabulatedData(SOLUTION_DIR / "numerics" / "xgscd.proto.txt");
@@ -34,10 +35,10 @@ TEST_F(EllipticFunctionsTest, Xgscd) {
   for (int j = 1; j <= jend; ++j) {
     mc = static_cast<double>(j) * dmc;
     m = 1.0 - mc;
-    du = Elk(mc) / static_cast<double>(iend);
+    du = EllipticK(mc) / static_cast<double>(iend);
     for (int i = 0; i <= iend * 8; ++i) {
       u = du * static_cast<double>(i);
-      Gscd(u, mc, s, c, d);
+      JacobiSNCNDN(u, mc, s, c, d);
       std::printf("%10.5f%10.5f%25.15e%25.15e%25.15e\n", m, u, s, c, d);
 
       auto const& expected_entry = xgscd_expected.entry(expected_index);

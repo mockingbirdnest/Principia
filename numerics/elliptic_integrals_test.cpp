@@ -20,7 +20,8 @@ namespace numerics {
 
 class EllipticIntegralsTest : public ::testing::Test {};
 
-// TODO(phl): This is far from covering all the code paths.  In particular, it
+// The test values found in Fukushima's xelbdj_all.txt file.
+// NOTE(phl): This is far from covering all the code paths.  In particular, it
 // doesn't seem to go through Elcbdj.
 TEST_F(EllipticIntegralsTest, Xelbdj) {
   auto const xeldbj_expected =
@@ -59,7 +60,7 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
       for (int i = 0; i <= iend; ++i) {
         phi = dphi * static_cast<double>(i);
         phic = dphi * static_cast<double>(iend - i);
-        Elbdj(phi, phic, nn, mc, b, d, j);
+        FukushimaEllipticBDJ(phi, phic, nn, mc, b, d, j);
         std::printf("%10.5f%10.5f%10.5f%25.15f%25.15f%25.15f\n",
                     nn,
                     mm,
@@ -104,13 +105,13 @@ TEST_F(EllipticIntegralsTest, MathematicaMNear1) {
     double actual_value_b;
     double actual_value_d;
     double actual_value_j;
-    Elbdj(argument_φ,
-          π / 2 - argument_φ,
-          argument_n,
-          1.0 - argument_m,
-          actual_value_b,
-          actual_value_d,
-          actual_value_j);
+    FukushimaEllipticBDJ(argument_φ,
+                         π / 2 - argument_φ,
+                         argument_n,
+                         1.0 - argument_m,
+                         actual_value_b,
+                         actual_value_d,
+                         actual_value_j);
 
     EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 7))
         << argument_n << " " << argument_m << " " << argument_φ;

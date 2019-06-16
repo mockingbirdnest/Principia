@@ -11,26 +11,68 @@
 // 3. Use 0-based arrays.
 // 4. Figure something for the uninitialized variables.
 
+// Bibliography:
+// [Fuku11a] Fukushima (2011), Precise and fast computation of the general
+// complete elliptic integral of the second kind.
+// [Fuku11b] Fukushima (2011), Precise and fast computation of a general
+// incomplete elliptic integral of second kind by half and double argument
+// transformations.
+// [Fuku11c] Fukushima (2011), Precise and fast computation of a general
+// incomplete elliptic integral of third kind by half and double argument
+// transformations.
+// [NIST10] Olver, Lozier, Boisvert, Clark Eds. (2010), NIST Handbook of
+// Mathematical Functions.
+
 namespace principia {
 namespace numerics {
 
 namespace {
 
-double Cel(double kc0, double nc, double aa, double bb, int& err);
+// Bulirsch's cel function, [NIST10], 19.2(iii).
+double BulirschCel(double kc0, double nc, double aa, double bb, int& err);
 
-void Celbd(double mc, double& elb, double& eld);
+// Fukushima's complete elliptic integrals of the second kind [Fuku11a].
+void FukushimaEllipticBD(double mc, double& elb, double& eld);
 
-void Celbdj(double nc, double mc, double& bc, double& dc, double& jc);
+// Fukushima's complete elliptic integrals of the second and third kind
+// [Fuku11a], [Fuku11c].
+void FukushimaEllipticBDJ(double nc,
+                          double mc,
+                          double& bc,
+                          double& dc,
+                          double& jc);
 
-void Elcbdj(double c0, double n, double mc, double& b, double& d, double& j);
+// Fukushima's incomplete integrals of the second and third kind, arccos
+// argument [Fuku11b], [Fuku11c].
+void FukushimaEllipticBcDcJc(double c0,
+                             double n,
+                             double mc,
+                             double& b,
+                             double& d,
+                             double& j);
 
-void Elsbdj(double s0, double n, double mc, double& b, double& d, double& j);
+// Fukushima's incomplete integrals of the second and third kind, arcsin
+// argument [Fuku11b], [Fuku11c].
+void FukushimaEllipticBsDsJs(double s0,
+                             double n,
+                             double mc,
+                             double& b,
+                             double& d,
+                             double& j);
 
-void Serbd(double y, double m, double& b, double& d);
+// Maclaurin series expansion of Bs and Ds [Fuku11a].
+// NOTE(phl): I believe that this is a Maclaurin series but it's not completely
+// clear.
+void FukushimaEllipticBsDsMaclaurinSeries(double y,
+                                          double m,
+                                          double& b,
+                                          double& d);
 
-double Serj(double y, double n, double m);
+// Maclaurin series expansion of Js [Fuku11c].
+double FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 
-double Uatan(double t, double h);
+// Fukushima's T function [Fuku11c].
+double FukushimaT(double t, double h);
 
 //  Double precision general complete elliptic integral "cel"
 //
@@ -49,11 +91,11 @@ double Uatan(double t, double h);
 //     Outputs: cel   = integral value
 //              err   = integer error indicator
 //
-double Cel(double const kc0,
-           double const nc,
-           double const aa,
-           double const bb,
-           int& err) {
+double BulirschCel(double const kc0,
+                   double const nc,
+                   double const aa,
+                   double const bb,
+                   int& err) {
   double out, a, b = 0, e, f, g;  // TODO(phl): Initial value?
   double p, q, kc, em, qc;
   err = 0;
@@ -116,7 +158,7 @@ double Cel(double const kc0,
 //
 //     Output: elb,eld
 //
-void Celbd(double const mc, double& elb, double& eld) {
+void FukushimaEllipticBD(double const mc, double& elb, double& eld) {
   double elk, m, mx, kkc, nome;
 
   constexpr double PIQ = 0.78539816339744830961566084581988;
@@ -566,24 +608,24 @@ void Celbd(double const mc, double& elb, double& eld) {
   }
 }
 
-void Celbdj(double const nc,
-            double const mc,
-            double& bc,
-            double& dc,
-            double& jc) {
+void FukushimaEllipticBDJ(double const nc,
+                          double const mc,
+                          double& bc,
+                          double& dc,
+                          double& jc) {
   double kc;
   int err;
-  Celbd(mc, bc, dc);
+  FukushimaEllipticBD(mc, bc, dc);
   kc = sqrt(mc);
-  jc = Cel(kc, nc, 0.0, 1.0, err);
+  jc = BulirschCel(kc, nc, 0.0, 1.0, err);
 }
 
-void Elcbdj(double const c0,
-            double const n,
-            double const mc,
-            double& b,
-            double& d,
-            double& j) {
+void FukushimaEllipticBcDcJc(double const c0,
+                             double const n,
+                             double const mc,
+                             double& b,
+                             double& d,
+                             double& j) {
   double c, x, y, s, m, sy, t, h = 0;  // TODO(phl): Initial value?
   double yy[12];
   double ss[12];
@@ -594,7 +636,7 @@ void Elcbdj(double const c0,
   y = 1.0 - x;
   s = sqrt(y);
   if (x > 0.1) {
-    Elsbdj(s, n, mc, b, d, j);
+    FukushimaEllipticBsDsJs(s, n, mc, b, d, j);
     return;
   }
   m = 1.0 - mc;
@@ -617,22 +659,22 @@ void Elcbdj(double const c0,
     c = sqrt(x);
   }
   s = ss[i + 1];  // TODO(phl): Loop variable.
-  Elsbdj(s, n, mc, b, d, j);
+  FukushimaEllipticBsDsJs(s, n, mc, b, d, j);
   for (int k = i; k >= 1; --k) {
     sy = ss[k] * yy[k + 1];
     t = sy / (1.0 - n * (yy[k] - yy[k + 1] * cd[k]));
     b = 2.0 * b - sy;
     d = d + (d + sy);
-    j = j + (j + Uatan(t, h));
+    j = j + (j + FukushimaT(t, h));
   }
 }
 
-void Elsbdj(double const s0,
-            double const n,
-            double const mc,
-            double& b,
-            double& d,
-            double& j) {
+void FukushimaEllipticBsDsJs(double const s0,
+                             double const n,
+                             double const mc,
+                             double& b,
+                             double& d,
+                             double& j) {
   double m, h, del, s, y, c, sy, t;
   double yy[12];
   double ss[12];
@@ -644,10 +686,10 @@ void Elsbdj(double const s0,
   s = s0;
   y = s * s;
   if (y < del) {
-    Serbd(y, m, b, d);
+    FukushimaEllipticBsDsMaclaurinSeries(y, m, b, d);
     b = s * b;
     d = s * y * d;
-    j = s * Serj(y, n, m);
+    j = s * FukushimaEllipticJsMaclaurinSeries(y, n, m);
     return;
   }
   yy[1] = y;
@@ -666,20 +708,23 @@ void Elsbdj(double const s0,
     LOG_IF(FATAL, i == 10) << "(elsbdj) too many iterations: s0,m=" << s0 << " "
                            << m;
   }
-  Serbd(y, m, b, d);
+  FukushimaEllipticBsDsMaclaurinSeries(y, m, b, d);
   b = ss[i + 1] * b;
   d = ss[i + 1] * y * d;
-  j = ss[i + 1] * Serj(y, n, m);
+  j = ss[i + 1] * FukushimaEllipticJsMaclaurinSeries(y, n, m);
   for (int k = i; k >= 1; --k) {
     sy = ss[k] * yy[k + 1];
     t = sy / (1.0 - n * (yy[k] - yy[k + 1] * cd[k]));
     b = 2.0 * b - sy;
     d = d + (d + sy);
-    j = j + (j + Uatan(t, h));
+    j = j + (j + FukushimaT(t, h));
   }
 }
 
-void Serbd(double const y, double const m, double& b, double& d) {
+void FukushimaEllipticBsDsMaclaurinSeries(double const y,
+                                          double const m,
+                                          double& b,
+                                          double& d) {
   constexpr double F10 = 1.0 / 6.0;
   constexpr double F20 = 3.0 / 40.0;
   constexpr double F21 = 2.0 / 40.0;
@@ -806,7 +851,9 @@ void Serbd(double const y, double const m, double& b, double& d) {
                                                    y * (BA + y * BB))))))))));
 }
 
-double Serj(double const y, double const n, double const m) {
+double FukushimaEllipticJsMaclaurinSeries(double const y,
+                                          double const n,
+                                          double const m) {
   constexpr double J100 = 1.0 / 3.0;
 
   constexpr double J200 = 1.0 / 10.0;
@@ -1176,7 +1223,7 @@ double Serj(double const y, double const n, double const m) {
                                             y * (J8 + y * (J9 + y * JA)))))))));
 }
 
-double Uatan(double const t, double const h) {
+double FukushimaT(double const t, double const h) {
   double z, y, x, a, r, ri;
   constexpr double A3 = 1.0 / 3.0;
   constexpr double A5 = 1.0 / 5.0;
@@ -1314,13 +1361,13 @@ double Uatan(double const t, double const h) {
 //
 //     CAUTION: phi and phic must satisfy condition, phi + phic = PI/2
 //
-void Elbdj(double const phi,
-           double const phic,
-           double const n,
-           double const mc,
-           double& b,
-           double& d,
-           double& j) {
+void FukushimaEllipticBDJ(double const phi,
+                          double const phic,
+                          double const n,
+                          double const mc,
+                          double& b,
+                          double& d,
+                          double& j) {
   // TODO(phl): CHECK_EQ(π / 2, phi + phic);
   double m, nc, h, c, x, d2, z, bc, dc, jc, sz, t, v, t2;
 
@@ -1331,7 +1378,7 @@ void Elbdj(double const phi,
   // statement.  The discrepancy has a 5-10% impact on performance.  I am not
   // sure if it has an impact on correctness.
   if (phi < 1.249) {
-    Elsbdj(sin(phi), n, mc, b, d, j);
+    FukushimaEllipticBsDsJs(sin(phi), n, mc, b, d, j);
   } else {
     m = 1.0 - mc;
     nc = 1.0 - n;
@@ -1341,26 +1388,26 @@ void Elbdj(double const phi,
     d2 = mc + m * x;
     if (x < 0.9 * d2) {
       z = c / sqrt(d2);
-      Elsbdj(z, n, mc, b, d, j);
-      Celbdj(nc, mc, bc, dc, jc);
+      FukushimaEllipticBsDsJs(z, n, mc, b, d, j);
+      FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
       sz = z * sqrt(1.0 - x);
       t = sz / nc;
       b = bc - (b - sz);
       d = dc - (d + sz);
-      j = jc - (j + Uatan(t, h));
+      j = jc - (j + FukushimaT(t, h));
     } else {
       v = mc * (1.0 - x);
       if (v < x * d2) {
-        Elcbdj(c, n, mc, b, d, j);
+        FukushimaEllipticBcDcJc(c, n, mc, b, d, j);
       } else {
         t2 = (1.0 - x) / d2;
-        Elcbdj(sqrt(mc * t2), n, mc, b, d, j);
-        Celbdj(nc, mc, bc, dc, jc);
+        FukushimaEllipticBcDcJc(sqrt(mc * t2), n, mc, b, d, j);
+        FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
         sz = c * sqrt(t2);
         t = sz / nc;
         b = bc - (b - sz);
         d = dc - (d + sz);
-        j = jc - (j + Uatan(t, h));
+        j = jc - (j + FukushimaT(t, h));
       }
     }
   }
@@ -1376,9 +1423,7 @@ void Elbdj(double const phi,
 //
 //     Inputs: mc   = complementary parameter 0 <= mc   <= 1
 //
-//     Output: elk
-//
-double Elk(double const mc) {
+double EllipticK(double const mc) {
   double m, mx;
   double kkc, nome;
 
