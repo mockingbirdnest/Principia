@@ -10,10 +10,10 @@
 namespace principia {
 namespace numerics {
 
-void FukushimaEllipticBDJ(double const phi,
-                          double const phic,
-                          double const n,
-                          double const mc,
+void FukushimaEllipticBDJ(double phi,
+                          double phic,
+                          double n,
+                          double mc,
                           double& b,
                           double& d,
                           double& j);
