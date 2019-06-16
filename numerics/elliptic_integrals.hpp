@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // This code is a straightforward translation in C++ of:
 // Fukushima, Toshio. (2018). xelbdj.txt: Fortran test driver for
@@ -10,8 +10,7 @@
 namespace principia {
 namespace numerics {
 
-void FukushimaEllipticBDJ(double phi,
-                          double phic,
+void FukushimaEllipticBDJ(double φ,
                           double n,
                           double mc,
                           double& b,

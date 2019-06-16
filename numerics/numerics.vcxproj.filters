@@ -192,5 +192,8 @@
     <Text Include="xelbdj.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="elliptic_integrals.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
