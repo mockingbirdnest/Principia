@@ -683,7 +683,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
   // See [Fuku11c] section 3.5 for the determination of yB.
   constexpr double yB = 0.01622;
   // The maximum number of argument transformations, related to yB.  This is the
-  // maximim number of iterations in the first loop below.
+  // maximum number of iterations in the first loop below.
   constexpr int max_transformations = 10;
 
   double y[max_transformations + 1];
@@ -695,11 +695,10 @@ void FukushimaEllipticBsDsJs(double const s₀,
   double const h = n * (1.0 - n) * (n - m);
   double const y₀ = s₀ * s₀;
 
-  double yᵢ = y₀;
-  y[0] = yᵢ;
-  s[0] = s₀;
-
   // Half argument transformation of s.
+  y[0] = y₀;
+  s[0] = s₀;
+  double yᵢ = y₀;
   int i = 0;  // Note that this variable is used after the loop.
   for (; yᵢ >= yB; ++i) {
     DCHECK_LT(i, max_transformations);
