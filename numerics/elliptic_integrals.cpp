@@ -1324,6 +1324,12 @@ void Elbdj(double const phi,
   // TODO(phl): CHECK_EQ(π / 2, phi + phic);
   double m, nc, h, c, x, d2, z, bc, dc, jc, sz, t, v, t2;
 
+  // NOTE(phl): The original Fortran code had 1.345, which, according to the
+  // above-mentioned paper, is suitable for single precision.  However, this is
+  // double precision.  Importantly, this number should be roughly
+  // ArcSin[Sqrt[0.9]] where 0.9 is the factor appearing in the next if
+  // statement.  The discrepancy has a 5-10% impact on performance.  I am not
+  // sure if it has an impact on correctness.
   if (phi < 1.249) {
     Elsbdj(sin(phi), n, mc, b, d, j);
   } else {
