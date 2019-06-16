@@ -2,7 +2,10 @@
 #include "glog/logging.h"
 
 #include "numerics/elliptic_integrals.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 // TODO(phl):
 // 1. Use arrays for the coefficients.
@@ -24,6 +27,13 @@
 // Mathematical Functions.
 
 namespace principia {
+
+using quantities::Angle;
+using quantities::Cos;
+using quantities::Sin;
+using quantities::Sqrt;
+using quantities::si::Radian;
+
 namespace numerics {
 
 namespace {
@@ -1351,48 +1361,58 @@ double FukushimaT(double const t, double const h) {
 //
 //     Outputs: b, d, j
 //
-void FukushimaEllipticBDJ(double const φ,
+void FukushimaEllipticBDJ(Angle const& φ,
                           double const n,
                           double const mc,
                           double& b,
                           double& d,
                           double& j) {
-  double m, nc, h, c, x, d2, z, bc, dc, jc, sz, t, v, t2;
-
-  // NOTE(phl): The original Fortran code had 1.345, which, according to the
-  // above-mentioned paper, is suitable for single precision.  However, this is
-  // double precision.  Importantly, this number should be roughly
-  // ArcSin[Sqrt[0.9]] where 0.9 is the factor appearing in the next if
-  // statement.  The discrepancy has a 5-10% impact on performance.  I am not
+  // NOTE(phl): The original Fortran code had φs = 1.345 * Radian, which,
+  // according to the above-mentioned paper, is suitable for single precision.
+  // However, this is double precision.  Importantly, this doesn't match the
+  // value of ys.  The discrepancy has a 5-10% impact on performance.  I am not
   // sure if it has an impact on correctness.
-  if (φ < 1.249) {
-    FukushimaEllipticBsDsJs(sin(φ), n, mc, b, d, j);
+
+  // Sin(φs)^2 must be approximately ys.
+  constexpr Angle φs = 1.249 * Radian;
+  constexpr double ys = 0.9;
+
+  // The selection rule in [Fuku11b] section 2.1, equations (7-11) and [Fuku11c]
+  // section 3.2, equations (22) and (23).  The identifiers follow Fukushima's
+  // notation.
+  // NOTE(phl): The computation of 1 - c² loses accuracy with respect to the
+  // evaluation of Sin(φ).
+  if (φ < φs) {
+    FukushimaEllipticBsDsJs(Sin(φ), n, mc, b, d, j);
   } else {
-    m = 1.0 - mc;
-    nc = 1.0 - n;
-    h = n * nc * (n - m);
-    c = cos(φ);
-    x = c * c;
-    d2 = mc + m * x;
-    if (x < 0.9 * d2) {
-      z = c / sqrt(d2);
+    double const m = 1.0 - mc;
+    double const nc = 1.0 - n;
+    double const h = n * nc * (n - m);
+    double const c = Cos(φ);
+    double const c² = c * c;
+    double const z²_denominator = mc + m * c²;
+    if (c² < ys * z²_denominator) {
+      double bc, dc, jc;
+      double const z = c / Sqrt(z²_denominator);
       FukushimaEllipticBsDsJs(z, n, mc, b, d, j);
       FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
-      sz = z * sqrt(1.0 - x);
-      t = sz / nc;
+      double const sz = z * Sqrt(1.0 - c²);
+      double const t = sz / nc;
       b = bc - (b - sz);
       d = dc - (d + sz);
       j = jc - (j + FukushimaT(t, h));
     } else {
-      v = mc * (1.0 - x);
-      if (v < x * d2) {
+      double const w²_numerator = mc * (1.0 - c²);
+      if (w²_numerator < c² * z²_denominator) {
         FukushimaEllipticBcDcJc(c, n, mc, b, d, j);
       } else {
-        t2 = (1.0 - x) / d2;
-        FukushimaEllipticBcDcJc(sqrt(mc * t2), n, mc, b, d, j);
+        double bc, dc, jc;
+        double const w²_denominator = z²_denominator;
+        double const w²_over_mc = (1.0 - c²) / w²_denominator;
+        FukushimaEllipticBcDcJc(Sqrt(mc * w²_over_mc), n, mc, b, d, j);
         FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
-        sz = c * sqrt(t2);
-        t = sz / nc;
+        double const sz = c * Sqrt(w²_over_mc);
+        double const t = sz / nc;
         b = bc - (b - sz);
         d = dc - (d + sz);
         j = jc - (j + FukushimaT(t, h));
