@@ -175,18 +175,21 @@
     <ClCompile Include="elliptic_integrals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="elliptic_integrals_test.cc">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="elliptic_functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="elliptic_functions_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="elliptic_integrals_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="xelbdj.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
