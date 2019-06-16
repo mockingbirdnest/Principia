@@ -9,7 +9,7 @@ namespace principia {
 namespace numerics {
 namespace {
 
-void Scd2(double u, double mc, double& s, double& c, double& d);
+void JacobiSNCNDNReduced(double u, double mc, double& s, double& c, double& d);
 
 // Double precision subroutine to compute three Jacobian elliptic functions
 // simultaneously
@@ -27,7 +27,11 @@ void Scd2(double u, double mc, double& s, double& c, double& d);
 //
 //     Output: s = sn(u|m), c=cn(u|m), d=dn(u|m)
 //
-void Scd2(double const u, double const mc, double& s, double& c, double& d) {
+void JacobiSNCNDNReduced(double const u,
+                         double const mc,
+                         double& s,
+                         double& c,
+                         double& d) {
   double m, uA, uT, u0, v, a, b, x, y, z, my, mc2, m2, xz, w;
   int n;  // TODO(phl): Used after the loop.
 
@@ -125,7 +129,7 @@ void JacobiSNCNDN(double const u,
   kc = sqrt(mc);
   ux = abs(u);
   if (ux < 0.785) {
-    Scd2(ux, mc, s, c, d);
+    JacobiSNCNDNReduced(ux, mc, s, c, d);
   } else {
     k = EllipticK(mc);
     kh = k * 0.5;
@@ -137,47 +141,47 @@ void JacobiSNCNDN(double const u,
     k4 = k * 4.0;
     ux = ux - k4 * static_cast<double>(static_cast<int>(ux / k4));
     if (ux < kh) {
-      Scd2(ux, mc, s, c, d);
+      JacobiSNCNDNReduced(ux, mc, s, c, d);
     } else if (ux < k) {
       ux = k - ux;
-      Scd2(ux, mc, s, c, d);
+      JacobiSNCNDNReduced(ux, mc, s, c, d);
       sx = c / d;
       c = kc * s / d;
       s = sx;
       d = kc / d;
     } else if (ux < kh3) {
       ux = ux - k;
-      Scd2(ux, mc, s, c, d);
+      JacobiSNCNDNReduced(ux, mc, s, c, d);
       sx = c / d;
       c = -kc * s / d;
       s = sx;
       d = kc / d;
     } else if (ux < k2) {
       ux = k2 - ux;
-      Scd2(ux, mc, s, c, d);
+      JacobiSNCNDNReduced(ux, mc, s, c, d);
       c = -c;
     } else if (ux < kh5) {
       ux = ux - k2;
-      Scd2(ux, mc, s, c, d);
+      JacobiSNCNDNReduced(ux, mc, s, c, d);
       s = -s;
       c = -c;
     } else if (ux < k3) {
       ux = k3 - ux;
-      Scd2(ux, mc, s, c, d);
+      JacobiSNCNDNReduced(ux, mc, s, c, d);
       sx = -c / d;
       c = -kc * s / d;
       s = sx;
       d = kc / d;
     } else if (ux < kh7) {
       ux = ux - k3;
-      Scd2(ux, mc, s, c, d);
+      JacobiSNCNDNReduced(ux, mc, s, c, d);
       sx = -c / d;
       c = kc * s / d;
       s = sx;
       d = kc / d;
     } else {
       ux = k4 - ux;
-      Scd2(ux, mc, s, c, d);
+      JacobiSNCNDNReduced(ux, mc, s, c, d);
       s = -s;
     }
   }
