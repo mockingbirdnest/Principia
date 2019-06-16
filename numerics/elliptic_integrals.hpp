@@ -10,10 +10,10 @@
 namespace principia {
 namespace numerics {
 
-void Elbdj(double const phi,
-           double const phic,
-           double const n,
-           double const mc,
+void Elbdj(double phi,
+           double phic,
+           double n,
+           double mc,
            double& b,
            double& d,
            double& j);
