@@ -14,6 +14,8 @@
 namespace principia {
 namespace numerics {
 
+namespace {
+
 double Cel(double kc0, double nc, double aa, double bb, int& err);
 
 void Celbd(double mc, double& elb, double& eld);
@@ -29,77 +31,6 @@ void Serbd(double y, double m, double& b, double& d);
 double Serj(double y, double n, double m);
 
 double Uatan(double t, double h);
-
-// Double precision general incomplete elliptic integrals of all three kinds
-//
-//     Reference: T. Fukushima, (2011) J. Comp. Appl. Math., 236, 1961-1975
-//     "Precise and Fast Computation of a General Incomplete Elliptic Integral
-//     of Third Kind by Half and Double Argument Transformations"
-//
-//     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
-//
-//     Used subprograms: cel,celbd,celbdj,elcbdj,serbd,serj,uatan
-//
-//     Inputs: phi  = argument                0 <= phi  <= PI/2
-//             phic = complementar argument   0 <= phic <= PI/2
-//             n    = characteristic          0 <= n    <= 1
-//             mc   = complementary parameter 0 <= mc   <= 1
-//
-//     Outputs: b, d, j
-//
-//     CAUTION: phi and phic must satisfy condition, phi + phic = PI/2
-//
-void Elbdj(double const phi,
-           double const phic,
-           double const n,
-           double const mc,
-           double& b,
-           double& d,
-           double& j) {
-  // TODO(phl): CHECK_EQ(π / 2, phi + phic);
-  double m, nc, h, c, x, d2, z, bc, dc, jc, sz, t, v, t2;
-
-  // NOTE(phl): The original Fortran code had 1.345, which, according to the
-  // above-mentioned paper, is suitable for single precision.  However, this is
-  // double precision.  Importantly, this number should be roughly
-  // ArcSin[Sqrt[0.9]] where 0.9 is the factor appearing in the next if
-  // statement.  The discrepancy has a 5-10% impact on performance.  I am not
-  // sure if it has an impact on correctness.
-  if (phi < 1.249) {
-    Elsbdj(sin(phi), n, mc, b, d, j);
-  } else {
-    m = 1.0 - mc;
-    nc = 1.0 - n;
-    h = n * nc * (n - m);
-    c = sin(phic);
-    x = c * c;
-    d2 = mc + m * x;
-    if (x < 0.9 * d2) {
-      z = c / sqrt(d2);
-      Elsbdj(z, n, mc, b, d, j);
-      Celbdj(nc, mc, bc, dc, jc);
-      sz = z * sqrt(1.0 - x);
-      t = sz / nc;
-      b = bc - (b - sz);
-      d = dc - (d + sz);
-      j = jc - (j + Uatan(t, h));
-    } else {
-      v = mc * (1.0 - x);
-      if (v < x * d2) {
-        Elcbdj(c, n, mc, b, d, j);
-      } else {
-        t2 = (1.0 - x) / d2;
-        Elcbdj(sqrt(mc * t2), n, mc, b, d, j);
-        Celbdj(nc, mc, bc, dc, jc);
-        sz = c * sqrt(t2);
-        t = sz / nc;
-        b = bc - (b - sz);
-        d = dc - (d + sz);
-        j = jc - (j + Uatan(t, h));
-      }
-    }
-  }
-}
 
 //  Double precision general complete elliptic integral "cel"
 //
@@ -1359,6 +1290,314 @@ double Uatan(double const t, double const h) {
     y = r * t;
     x = log((1.0 + y) / (1.0 - y)) * 0.5;
     return x * ri;
+  }
+}
+
+}  // namespace
+
+// Double precision general incomplete elliptic integrals of all three kinds
+//
+//     Reference: T. Fukushima, (2011) J. Comp. Appl. Math., 236, 1961-1975
+//     "Precise and Fast Computation of a General Incomplete Elliptic Integral
+//     of Third Kind by Half and Double Argument Transformations"
+//
+//     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
+//
+//     Used subprograms: cel,celbd,celbdj,elcbdj,serbd,serj,uatan
+//
+//     Inputs: phi  = argument                0 <= phi  <= PI/2
+//             phic = complementar argument   0 <= phic <= PI/2
+//             n    = characteristic          0 <= n    <= 1
+//             mc   = complementary parameter 0 <= mc   <= 1
+//
+//     Outputs: b, d, j
+//
+//     CAUTION: phi and phic must satisfy condition, phi + phic = PI/2
+//
+void Elbdj(double const phi,
+           double const phic,
+           double const n,
+           double const mc,
+           double& b,
+           double& d,
+           double& j) {
+  // TODO(phl): CHECK_EQ(π / 2, phi + phic);
+  double m, nc, h, c, x, d2, z, bc, dc, jc, sz, t, v, t2;
+
+  // NOTE(phl): The original Fortran code had 1.345, which, according to the
+  // above-mentioned paper, is suitable for single precision.  However, this is
+  // double precision.  Importantly, this number should be roughly
+  // ArcSin[Sqrt[0.9]] where 0.9 is the factor appearing in the next if
+  // statement.  The discrepancy has a 5-10% impact on performance.  I am not
+  // sure if it has an impact on correctness.
+  if (phi < 1.249) {
+    Elsbdj(sin(phi), n, mc, b, d, j);
+  } else {
+    m = 1.0 - mc;
+    nc = 1.0 - n;
+    h = n * nc * (n - m);
+    c = sin(phic);
+    x = c * c;
+    d2 = mc + m * x;
+    if (x < 0.9 * d2) {
+      z = c / sqrt(d2);
+      Elsbdj(z, n, mc, b, d, j);
+      Celbdj(nc, mc, bc, dc, jc);
+      sz = z * sqrt(1.0 - x);
+      t = sz / nc;
+      b = bc - (b - sz);
+      d = dc - (d + sz);
+      j = jc - (j + Uatan(t, h));
+    } else {
+      v = mc * (1.0 - x);
+      if (v < x * d2) {
+        Elcbdj(c, n, mc, b, d, j);
+      } else {
+        t2 = (1.0 - x) / d2;
+        Elcbdj(sqrt(mc * t2), n, mc, b, d, j);
+        Celbdj(nc, mc, bc, dc, jc);
+        sz = c * sqrt(t2);
+        t = sz / nc;
+        b = bc - (b - sz);
+        d = dc - (d + sz);
+        j = jc - (j + Uatan(t, h));
+      }
+    }
+  }
+}
+
+//  Double precision complete elliptic integral of the first kind
+//
+//     Reference: T. Fukushima, (2009) Celest. Mech. Dyn. Astron. 105, 305-328
+//        "Fast Computation of Complete Elliptic Integrlals and Jacobian
+//         Elliptic Functions"
+//
+//     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
+//
+//     Inputs: mc   = complementary parameter 0 <= mc   <= 1
+//
+//     Output: elk
+//
+double Elk(double const mc) {
+  double m, mx;
+  double kkc, nome;
+
+  constexpr double D1 = 1.0 / 16.0;
+  constexpr double D2 = 1.0 / 32.0;
+  constexpr double D3 = 21.0 / 1024.0;
+  constexpr double D4 = 31.0 / 2048.0;
+  constexpr double D5 = 6257.0 / 524288.0;
+  constexpr double D6 = 10293.0 / 1048576.0;
+  constexpr double D7 = 279025.0 / 33554432.0;
+  constexpr double D8 = 483127.0 / 67108864.0;
+  constexpr double D9 = 435506703.0 / 68719476736.0;
+  constexpr double D10 = 776957575.0 / 137438953472.0;
+  constexpr double D11 = 22417045555.0 / 4398046511104.0;
+  constexpr double D12 = 40784671953.0 / 8796093022208.0;
+  constexpr double D13 = 9569130097211.0 / 2251799813685248.0;
+  constexpr double D14 = 17652604545791.0 / 4503599627370496.0;
+  constexpr double PIHALF = π / 2;
+  constexpr double PIINV = 0.5 / PIHALF;
+  constexpr double TINY = 1.0e-99;
+
+  m = 1.0 - mc;
+  if (abs(m) < 1.0e-16) {
+    return PIHALF;
+  } else if (mc < TINY) {
+    return 1.3862943611198906 - 0.5 * log(TINY);
+  } else if (mc < 1.11e-16) {
+    return 1.3862943611198906 - 0.5 * log(mc);
+  } else if (mc < 0.1) {
+    nome = mc * (D1 + mc * (D2 + mc * (D3 + mc * (D4 + mc * (D5 + mc * (D6
+          + mc * (D7 + mc * (D8 + mc * (D9 + mc * (D10 + mc * (D11 + mc * (D12
+          + mc * (D13 + mc * D14)))))))))))));
+    mx = mc - 0.05;
+    //
+    //  K'
+    //
+    kkc = 1.591003453790792180 + mx * (
+         0.416000743991786912 + mx * (
+         0.245791514264103415 + mx * (
+         0.179481482914906162 + mx * (
+         0.144556057087555150 + mx * (
+         0.123200993312427711 + mx * (
+         0.108938811574293531 + mx * (
+         0.098853409871592910 + mx * (
+         0.091439629201749751 + mx * (
+         0.085842591595413900 + mx * (
+         0.081541118718303215))))))))));
+    return -kkc * PIINV * log(nome);
+  } else if (m <= 0.1) {
+    mx = m - 0.05;
+    return 1.591003453790792180 + mx * (
+         0.416000743991786912 + mx * (
+         0.245791514264103415 + mx * (
+         0.179481482914906162 + mx * (
+         0.144556057087555150 + mx * (
+         0.123200993312427711 + mx * (
+         0.108938811574293531 + mx * (
+         0.098853409871592910 + mx * (
+         0.091439629201749751 + mx * (
+         0.085842591595413900 + mx * (
+         0.081541118718303215))))))))));
+  } else if (m <= 0.2) {
+    mx = m - 0.15;
+    return 1.635256732264579992 + mx * (
+         0.471190626148732291 + mx * (
+         0.309728410831499587 + mx * (
+         0.252208311773135699 + mx * (
+         0.226725623219684650 + mx * (
+         0.215774446729585976 + mx * (
+         0.213108771877348910 + mx * (
+         0.216029124605188282 + mx * (
+         0.223255831633057896 + mx * (
+         0.234180501294209925 + mx * (
+         0.248557682972264071 + mx * (
+         0.266363809892617521 + mx * (
+         0.287728452156114668))))))))))));
+  } else if (m <= 0.3) {
+    mx = m - 0.25;
+    return 1.685750354812596043 + mx * (
+         0.541731848613280329 + mx * (
+         0.401524438390690257 + mx * (
+         0.369642473420889090 + mx * (
+         0.376060715354583645 + mx * (
+         0.405235887085125919 + mx * (
+         0.453294381753999079 + mx * (
+         0.520518947651184205 + mx * (
+         0.609426039204995055 + mx * (
+         0.724263522282908870 + mx * (
+         0.871013847709812357 + mx * (
+         1.057652872753547036)))))))))));
+  } else if (m <= 0.4) {
+    mx = m - 0.35;
+    return 1.744350597225613243 + mx * (
+         0.634864275371935304 + mx * (
+         0.539842564164445538 + mx * (
+         0.571892705193787391 + mx * (
+         0.670295136265406100 + mx * (
+         0.832586590010977199 + mx * (
+         1.073857448247933265 + mx * (
+         1.422091460675497751 + mx * (
+         1.920387183402304829 + mx * (
+         2.632552548331654201 + mx * (
+         3.652109747319039160 + mx * (
+         5.115867135558865806 + mx * (
+         7.224080007363877411))))))))))));
+  } else if (m <= 0.5) {
+    mx = m - 0.45;
+    return 1.813883936816982644 + mx * (
+         0.763163245700557246 + mx * (
+         0.761928605321595831 + mx * (
+         0.951074653668427927 + mx * (
+         1.315180671703161215 + mx * (
+         1.928560693477410941 + mx * (
+         2.937509342531378755 + mx * (
+         4.594894405442878062 + mx * (
+         7.330071221881720772 + mx * (
+         11.87151259742530180 + mx * (
+         19.45851374822937738 + mx * (
+         32.20638657246426863 + mx * (
+         53.73749198700554656 + mx * (
+         90.27388602940998849)))))))))))));
+  } else if (m <= 0.6) {
+    mx = m - 0.55;
+    return 1.898924910271553526 + mx * (
+         0.950521794618244435 + mx * (
+         1.151077589959015808 + mx * (
+         1.750239106986300540 + mx * (
+         2.952676812636875180 + mx * (
+         5.285800396121450889 + mx * (
+         9.832485716659979747 + mx * (
+         18.78714868327559562 + mx * (
+         36.61468615273698145 + mx * (
+         72.45292395127771801 + mx * (
+         145.1079577347069102 + mx * (
+         293.4786396308497026 + mx * (
+         598.3851815055010179 + mx * (
+         1228.420013075863451 + mx * (
+         2536.529755382764488))))))))))))));
+  } else if (m <= 0.7) {
+    mx = m - 0.65;
+    return 2.007598398424376302 + mx * (
+         1.248457231212347337 + mx * (
+         1.926234657076479729 + mx * (
+         3.751289640087587680 + mx * (
+         8.119944554932045802 + mx * (
+         18.66572130873555361 + mx * (
+         44.60392484291437063 + mx * (
+         109.5092054309498377 + mx * (
+         274.2779548232413480 + mx * (
+         697.5598008606326163 + mx * (
+         1795.716014500247129 + mx * (
+         4668.381716790389910 + mx * (
+         12235.76246813664335 + mx * (
+         32290.17809718320818 + mx * (
+         85713.07608195964685 + mx * (
+         228672.1890493117096 + mx * (
+         612757.2711915852774))))))))))))))));
+  } else if (m <= 0.8) {
+    mx = m - 0.75;
+    return 2.156515647499643235 + mx * (
+         1.791805641849463243 + mx * (
+         3.826751287465713147 + mx * (
+         10.38672468363797208 + mx * (
+         31.40331405468070290 + mx * (
+         100.9237039498695416 + mx * (
+         337.3268282632272897 + mx * (
+         1158.707930567827917 + mx * (
+         4060.990742193632092 + mx * (
+         14454.00184034344795 + mx * (
+         52076.66107599404803 + mx * (
+         189493.6591462156887 + mx * (
+         695184.5762413896145 + mx * (
+         2.567994048255284686e6 + mx * (
+         9.541921966748386322e6 + mx * (
+         3.563492744218076174e7 + mx * (
+         1.336692984612040871e8 + mx * (
+         5.033521866866284541e8 + mx * (
+         1.901975729538660119e9 + mx * (
+         7.208915015330103756e9)))))))))))))))))));
+  } else if (m <= 0.85) {
+    mx = m - 0.825;
+    return 2.318122621712510589 + mx * (
+         2.616920150291232841 + mx * (
+         7.897935075731355823 + mx * (
+         30.50239715446672327 + mx * (
+         131.4869365523528456 + mx * (
+         602.9847637356491617 + mx * (
+         2877.024617809972641 + mx * (
+         14110.51991915180325 + mx * (
+         70621.44088156540229 + mx * (
+         358977.2665825309926 + mx * (
+         1.847238263723971684e6 + mx * (
+         9.600515416049214109e6 + mx * (
+         5.030767708502366879e7 + mx * (
+         2.654441886527127967e8 + mx * (
+         1.408862325028702687e9 + mx * (
+         7.515687935373774627e9)))))))))))))));
+  } else {
+    mx = m - 0.875;
+    return 2.473596173751343912 + mx * (
+         3.727624244118099310 + mx * (
+         15.60739303554930496 + mx * (
+         84.12850842805887747 + mx * (
+         506.9818197040613935 + mx * (
+         3252.277058145123644 + mx * (
+         21713.24241957434256 + mx * (
+         149037.0451890932766 + mx * (
+         1.043999331089990839e6 + mx * (
+         7.427974817042038995e6 + mx * (
+         5.350383967558661151e7 + mx * (
+         3.892498869948708474e8 + mx * (
+         2.855288351100810619e9 + mx * (
+         2.109007703876684053e10 + mx * (
+         1.566998339477902014e11 + mx * (
+         1.170222242422439893e12 + mx * (
+         8.777948323668937971e12 + mx * (
+         6.610124275248495041e13 + mx * (
+         4.994880537133887989e14 + mx * (
+         3.785974339724029920e15)))))))))))))))))));
   }
 }
 
