@@ -703,11 +703,11 @@ void FukushimaEllipticBsDsJs(double const s₀,
   int i = 0;  // Note that this variable is used after the loop.
   for (; yᵢ >= yB; ++i) {
     DCHECK_LT(i, max_transformations);
-    double const cᵢ = sqrt(1.0 - yᵢ);
-    double const dᵢ = sqrt(1.0 - m * yᵢ);
+    double const cᵢ = Sqrt(1.0 - yᵢ);
+    double const dᵢ = Sqrt(1.0 - m * yᵢ);
     yᵢ = yᵢ / ((1.0 + cᵢ) * (1.0 + dᵢ));
     y[i + 1] = yᵢ;
-    s[i + 1] = sqrt(yᵢ);
+    s[i + 1] = Sqrt(yᵢ);
     cd[i] = cᵢ * dᵢ;
   }
 
