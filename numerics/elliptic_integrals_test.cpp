@@ -35,15 +35,15 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
   constexpr int lend = 5;
   constexpr int kend = 5;
   constexpr int iend = 4;
-  constexpr double Δnc = 1.0 / static_cast<double>(lend - 1);
-  constexpr double Δmc = 1.0 / static_cast<double>(kend - 1);
-  constexpr Angle Δφ = (π / 2) * Radian / static_cast<double>(iend);
+  constexpr double Δnc = 1.0 / (lend - 1);
+  constexpr double Δmc = 1.0 / (kend - 1);
+  constexpr Angle Δφ = (π / 2) * Radian / iend;
   std::printf(
       "%10s%10s%10s%25s%25s%25s\n", "n", "m", "φ / π", "elb", "eld", "elj");
 
   int expected_index = 0;
   for (int l = 1; l <= lend; ++l) {
-    double nc = static_cast<double>(l - 1) * Δnc;
+    double nc = (l - 1) * Δnc;
     if (nc <= 1.05e-8) {
       nc = 1.05e-8;
     }
@@ -54,14 +54,14 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
     double const nn = 1.0 - nc;
     for (int k = 1; k <= kend; ++k) {
       std::printf("\n");
-      double mc = static_cast<double>(k - 1) * Δmc;
+      double mc = (k - 1) * Δmc;
       if (mc <= 0.0) {
         mc = 1.21e-32;
       }
       double const mm = 1.0 - mc;
       for (int i = 0; i <= iend; ++i) {
         double b, d, j;
-        Angle const φ = Δφ * static_cast<double>(i);
+        Angle const φ = Δφ * i;
         FukushimaEllipticBDJ(φ, nn, mc, b, d, j);
         std::printf("%10.5f%10.5f%10.5f%25.15f%25.15f%25.15f\n",
                     nn,
