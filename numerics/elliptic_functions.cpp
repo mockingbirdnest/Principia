@@ -1,7 +1,8 @@
-
+﻿
 #include "numerics/elliptic_functions.hpp"
 
 #include "glog/logging.h"
+#include "quantities/numbers.hpp"
 
 namespace principia {
 namespace numerics {
@@ -191,7 +192,7 @@ void Scd2(double const u, double const mc, double& s, double& c, double& d) {
 //
 double Elk(double const mc) {
   double m, mx;
-  double elk, kkc, nome;
+  double kkc, nome;
 
   constexpr double D1 = 1.0 / 16.0;
   constexpr double D2 = 1.0 / 32.0;
@@ -207,27 +208,17 @@ double Elk(double const mc) {
   constexpr double D12 = 40784671953.0 / 8796093022208.0;
   constexpr double D13 = 9569130097211.0 / 2251799813685248.0;
   constexpr double D14 = 17652604545791.0 / 4503599627370496.0;
+  constexpr double PIHALF = π / 2;
+  constexpr double PIINV = 0.5 / PIHALF;
+  constexpr double TINY = 1.0e-99;
 
-  static bool first = true;
-  static double mcold, PIHALF, PIINV, elkold, TINY;
-
-  if (first) {
-    first = false;
-    mcold = 1.0;
-    PIHALF = atan(1.0) * 2.0;
-    PIINV = 0.5 / PIHALF;
-    elkold = PIHALF;
-    TINY = 1.e-99;
-  }
   m = 1.0 - mc;
   if (abs(m) < 1.0e-16) {
-    elk = PIHALF;
-  } else if (abs(mc - mcold) < 1.11e-16 * mc) {
-    elk = elkold;
+    return PIHALF;
   } else if (mc < TINY) {
-    elk = 1.3862943611198906 - 0.5 * log(TINY);
+    return 1.3862943611198906 - 0.5 * log(TINY);
   } else if (mc < 1.11e-16) {
-    elk = 1.3862943611198906 - 0.5 * log(mc);
+    return 1.3862943611198906 - 0.5 * log(mc);
   } else if (mc < 0.1) {
     nome = mc * (D1 + mc * (D2 + mc * (D3 + mc * (D4 + mc * (D5 + mc * (D6
           + mc * (D7 + mc * (D8 + mc * (D9 + mc * (D10 + mc * (D11 + mc * (D12
@@ -247,10 +238,10 @@ double Elk(double const mc) {
          0.091439629201749751 + mx * (
          0.085842591595413900 + mx * (
          0.081541118718303215))))))))));
-    elk = -kkc * PIINV * log(nome);
+    return -kkc * PIINV * log(nome);
   } else if (m <= 0.1) {
     mx = m - 0.05;
-    elk = 1.591003453790792180 + mx * (
+    return 1.591003453790792180 + mx * (
          0.416000743991786912 + mx * (
          0.245791514264103415 + mx * (
          0.179481482914906162 + mx * (
@@ -263,7 +254,7 @@ double Elk(double const mc) {
          0.081541118718303215))))))))));
   } else if (m <= 0.2) {
     mx = m - 0.15;
-    elk = 1.635256732264579992 + mx * (
+    return 1.635256732264579992 + mx * (
          0.471190626148732291 + mx * (
          0.309728410831499587 + mx * (
          0.252208311773135699 + mx * (
@@ -278,7 +269,7 @@ double Elk(double const mc) {
          0.287728452156114668))))))))))));
   } else if (m <= 0.3) {
     mx = m - 0.25;
-    elk = 1.685750354812596043 + mx * (
+    return 1.685750354812596043 + mx * (
          0.541731848613280329 + mx * (
          0.401524438390690257 + mx * (
          0.369642473420889090 + mx * (
@@ -292,7 +283,7 @@ double Elk(double const mc) {
          1.057652872753547036)))))))))));
   } else if (m <= 0.4) {
     mx = m - 0.35;
-    elk = 1.744350597225613243 + mx * (
+    return 1.744350597225613243 + mx * (
          0.634864275371935304 + mx * (
          0.539842564164445538 + mx * (
          0.571892705193787391 + mx * (
@@ -307,7 +298,7 @@ double Elk(double const mc) {
          7.224080007363877411))))))))))));
   } else if (m <= 0.5) {
     mx = m - 0.45;
-    elk = 1.813883936816982644 + mx * (
+    return 1.813883936816982644 + mx * (
          0.763163245700557246 + mx * (
          0.761928605321595831 + mx * (
          0.951074653668427927 + mx * (
@@ -323,7 +314,7 @@ double Elk(double const mc) {
          90.27388602940998849)))))))))))));
   } else if (m <= 0.6) {
     mx = m - 0.55;
-    elk = 1.898924910271553526 + mx * (
+    return 1.898924910271553526 + mx * (
          0.950521794618244435 + mx * (
          1.151077589959015808 + mx * (
          1.750239106986300540 + mx * (
@@ -340,7 +331,7 @@ double Elk(double const mc) {
          2536.529755382764488))))))))))))));
   } else if (m <= 0.7) {
     mx = m - 0.65;
-    elk = 2.007598398424376302 + mx * (
+    return 2.007598398424376302 + mx * (
          1.248457231212347337 + mx * (
          1.926234657076479729 + mx * (
          3.751289640087587680 + mx * (
@@ -359,7 +350,7 @@ double Elk(double const mc) {
          612757.2711915852774))))))))))))))));
   } else if (m <= 0.8) {
     mx = m - 0.75;
-    elk = 2.156515647499643235 + mx * (
+    return 2.156515647499643235 + mx * (
          1.791805641849463243 + mx * (
          3.826751287465713147 + mx * (
          10.38672468363797208 + mx * (
@@ -381,7 +372,7 @@ double Elk(double const mc) {
          7.208915015330103756e9)))))))))))))))))));
   } else if (m <= 0.85) {
     mx = m - 0.825;
-    elk = 2.318122621712510589 + mx * (
+    return 2.318122621712510589 + mx * (
          2.616920150291232841 + mx * (
          7.897935075731355823 + mx * (
          30.50239715446672327 + mx * (
@@ -399,7 +390,7 @@ double Elk(double const mc) {
          7.515687935373774627e9)))))))))))))));
   } else {
     mx = m - 0.875;
-    elk = 2.473596173751343912 + mx * (
+    return 2.473596173751343912 + mx * (
          3.727624244118099310 + mx * (
          15.60739303554930496 + mx * (
          84.12850842805887747 + mx * (
@@ -420,10 +411,6 @@ double Elk(double const mc) {
          4.994880537133887989e14 + mx * (
          3.785974339724029920e15)))))))))))))))))));
   }
-
-  mcold = mc;
-  elkold = elk;
-  return elk;
 }
 
 }  // namespace numerics

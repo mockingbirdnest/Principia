@@ -9,8 +9,7 @@
 // 2. Use Estrin evaluation for polynomials of high degree (possibly adding
 //    support for polynomials of two and three variables).
 // 3. Use 0-based arrays.
-// 4. Don't be thread hostile.
-// 5. Figure something for the uninitialized variables.
+// 4. Figure something for the uninitialized variables.
 
 namespace principia {
 namespace numerics {
@@ -194,8 +193,6 @@ void Celbd(double const mc, double& elb, double& eld) {
   constexpr double PI = 3.1415926535897932384626433832795;
   constexpr double PIINV = 0.31830988618379067153776752674503;
 
-  static double mcold, elbold, eldold;
-
   constexpr double Q1 = 1.0 / 16.0;
   constexpr double Q2 = 1.0 / 32.0;
   constexpr double Q3 = 21.0 / 1024.0;
@@ -241,19 +238,8 @@ void Celbd(double const mc, double& elb, double& eld) {
 
   double logq2, dkkc, dddc, dele, delb, elk1;
 
-  static bool first = true;
-
-  if (first) {
-    first = false;
-    mcold = 1.0;
-    elbold = PIQ;
-    eldold = PIQ;
-  }
   m = 1.0 - mc;
-  if (abs(mc - mcold) < 1.11e-16 * mc) {
-    elb = elbold;
-    eld = eldold;
-  } else if (m < 1.11e-16) {
+  if (m < 1.11e-16) {
     elb = PIQ;
     eld = PIQ;
   } else if (mc < 1.11e-16) {
@@ -647,10 +633,6 @@ void Celbd(double const mc, double& elb, double& eld) {
         + mx *
           (2.868263194837819660109735981973458220407767e16))))))))))))))))))));
   }
-
-  mcold = mc;
-  elbold = elb;
-  eldold = eld;
 }
 
 void Celbdj(double const nc,
@@ -1265,9 +1247,6 @@ double Serj(double const y, double const n, double const m) {
 
 double Uatan(double const t, double const h) {
   double z, y, x, a, r, ri;
-  static double hold = 1.0;
-  static double rold = 1.0;
-  static double riold = 1.0;
   constexpr double A3 = 1.0 / 3.0;
   constexpr double A5 = 1.0 / 5.0;
   constexpr double A7 = 1.0 / 7.0;
@@ -1327,16 +1306,8 @@ double Uatan(double const t, double const h) {
                                   z * (A13 +
                                        z * (A15 + z * (A17 + z * A19)))))))));
   } else if (z < 0.0) {
-    if (abs(h - hold) < 1.e-16) {
-      r = rold;
-      ri = riold;
-    } else {
-      r = sqrt(h);
-      ri = 1.0 / r;
-      hold = h;
-      rold = r;
-      riold = ri;
-    }
+    r = sqrt(h);
+    ri = 1.0 / r;
     return atan(r * t) * ri;
   } else if (a < 4.7138547e-02) {
     return
@@ -1383,16 +1354,8 @@ double Uatan(double const t, double const h) {
                                                       z * (A23 +
                                                           z * A25))))))))))));
   } else {
-    if (abs(h - hold) < 1.e-16) {
-      r = rold;
-      ri = riold;
-    } else {
-      r = sqrt(-h);
-      ri = 1.0 / r;
-      hold = h;
-      rold = r;
-      riold = ri;
-    }
+    r = sqrt(-h);
+    ri = 1.0 / r;
     y = r * t;
     x = log((1.0 + y) / (1.0 - y)) * 0.5;
     return x * ri;
