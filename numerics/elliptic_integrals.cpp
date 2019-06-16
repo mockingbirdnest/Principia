@@ -674,52 +674,53 @@ void FukushimaEllipticBcDcJc(double const c0,
   }
 }
 
-void FukushimaEllipticBsDsJs(double const s0,
+void FukushimaEllipticBsDsJs(double const s₀,
                              double const n,
                              double const mc,
                              double& b,
                              double& d,
                              double& j) {
-  double m, h, del, s, y, c, sy, t;
-  double yy[12];
-  double ss[12];
-  double cd[12];
+  // See [Fuku11c] section 3.5 for the determination of yB.
+  constexpr double yB = 0.01622;
+  // The maximum number of argument transformations, related to yB.  This is the
+  // maximim number of iterations in the first loop below.
+  constexpr int max_transformations = 10;
 
-  m = 1.0 - mc;
-  h = n * (1.0 - n) * (n - m);
-  del = 0.01622;
-  s = s0;
-  y = s * s;
-  if (y < del) {
-    FukushimaEllipticBsDsMaclaurinSeries(y, m, b, d);
-    b = s * b;
-    d = s * y * d;
-    j = s * FukushimaEllipticJsMaclaurinSeries(y, n, m);
-    return;
+  double y[max_transformations + 1];
+  double s[max_transformations + 1];
+  double cd[max_transformations + 1];
+
+  // Half and double argument transformations, [Fuku11c] section 3.3.
+  double const m = 1.0 - mc;
+  double const h = n * (1.0 - n) * (n - m);
+  double const y₀ = s₀ * s₀;
+
+  double yᵢ = y₀;
+  y[0] = yᵢ;
+  s[0] = s₀;
+
+  // Half argument transformation of s.
+  int i = 0;  // Note that this variable is used after the loop.
+  for (; yᵢ >= yB; ++i) {
+    DCHECK_LT(i, max_transformations);
+    double const cᵢ = sqrt(1.0 - yᵢ);
+    double const dᵢ = sqrt(1.0 - m * yᵢ);
+    yᵢ = yᵢ / ((1.0 + cᵢ) * (1.0 + dᵢ));
+    y[i + 1] = yᵢ;
+    s[i + 1] = sqrt(yᵢ);
+    cd[i] = cᵢ * dᵢ;
   }
-  yy[1] = y;
-  ss[1] = s;
-  int i;
-  for (i = 1; i <= 10; ++i) {
-    c = sqrt(1.0 - y);
-    d = sqrt(1.0 - m * y);
-    y = y / ((1.0 + c) * (1.0 + d));
-    yy[i + 1] = y;
-    ss[i + 1] = sqrt(y);
-    cd[i] = c * d;
-    if (y < del) {
-      break;
-    }
-    LOG_IF(FATAL, i == 10) << "(elsbdj) too many iterations: s0,m=" << s0 << " "
-                           << m;
-  }
-  FukushimaEllipticBsDsMaclaurinSeries(y, m, b, d);
-  b = ss[i + 1] * b;
-  d = ss[i + 1] * y * d;
-  j = ss[i + 1] * FukushimaEllipticJsMaclaurinSeries(y, n, m);
-  for (int k = i; k >= 1; --k) {
-    sy = ss[k] * yy[k + 1];
-    t = sy / (1.0 - n * (yy[k] - yy[k + 1] * cd[k]));
+
+  // Maclaurin series.
+  FukushimaEllipticBsDsMaclaurinSeries(yᵢ, m, b, d);
+  b = s[i] * b;
+  d = s[i] * yᵢ * d;
+  j = s[i] * FukushimaEllipticJsMaclaurinSeries(yᵢ, n, m);
+
+  // Double argument transformation of J.
+  for (int k = i; k > 0; --k) {
+    double const sy = s[k - 1] * y[k];
+    double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
     b = 2.0 * b - sy;
     d = d + (d + sy);
     j = j + (j + FukushimaT(t, h));
