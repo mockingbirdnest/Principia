@@ -1331,13 +1331,13 @@ double Uatan(double const t, double const h) {
 //
 //     CAUTION: phi and phic must satisfy condition, phi + phic = PI/2
 //
-void Elbdj(double const phi,
-           double const phic,
-           double const n,
-           double const mc,
-           double& b,
-           double& d,
-           double& j) {
+void FukushimaEllipticBDJ(double const phi,
+                          double const phic,
+                          double const n,
+                          double const mc,
+                          double& b,
+                          double& d,
+                          double& j) {
   // TODO(phl): CHECK_EQ(π / 2, phi + phic);
   double m, nc, h, c, x, d2, z, bc, dc, jc, sz, t, v, t2;
 
@@ -1389,7 +1389,7 @@ void Elbdj(double const phi,
 //
 //     Output: elk
 //
-double Elk(double const mc) {
+double EllipticK(double const mc) {
   double m, mx;
   double kkc, nome;
 

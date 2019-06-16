@@ -1,5 +1,5 @@
 ﻿
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Elbdj  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=FukushimaEllipticBDJ  // NOLINT(whitespace/line_length)
 
 #include <random>
 #include <vector>
@@ -11,7 +11,7 @@
 namespace principia {
 namespace numerics {
 
-void BM_Elbdj(benchmark::State& state) {
+void BM_FukushimaEllipticBDJ(benchmark::State& state) {
   constexpr int size = 20;
 
   std::mt19937_64 random(42);
@@ -35,7 +35,7 @@ void BM_Elbdj(benchmark::State& state) {
       double const phic = π / 2 - phi;
       for (double const n : ns) {
         for (double const mc : mcs) {
-          Elbdj(phi, phic, n, mc, b, d, j);
+          FukushimaEllipticBDJ(phi, phic, n, mc, b, d, j);
         }
       }
     }
@@ -45,7 +45,7 @@ void BM_Elbdj(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_Elbdj);
+BENCHMARK(BM_FukushimaEllipticBDJ);
 
 }  // namespace numerics
 }  // namespace principia

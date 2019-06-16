@@ -114,7 +114,11 @@ void Scd2(double const u, double const mc, double& s, double& c, double& d) {
 //
 //     Output: s = sn(u|m), c=cn(u|m), d=dn(u|m)
 //
-void Gscd(double const u, double const mc, double& s, double& c, double& d) {
+void JacobiSNCNDN(double const u,
+                  double const mc,
+                  double& s,
+                  double& c,
+                  double& d) {
   double m, kc, ux, k, kh, kh3, kh5, kh7, k2, k3, k4, sx;
 
   m = 1.0 - mc;
@@ -123,7 +127,7 @@ void Gscd(double const u, double const mc, double& s, double& c, double& d) {
   if (ux < 0.785) {
     Scd2(ux, mc, s, c, d);
   } else {
-    k = Elk(mc);
+    k = EllipticK(mc);
     kh = k * 0.5;
     kh3 = k * 1.5;
     kh5 = k * 2.5;

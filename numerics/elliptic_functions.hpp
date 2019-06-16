@@ -8,7 +8,7 @@
 namespace principia {
 namespace numerics {
 
-void Gscd(double u, double mc, double& s, double& c, double& d);
+void JacobiSNCNDN(double u, double mc, double& s, double& c, double& d);
 
 }  // namespace numerics
 }  // namespace principia
