@@ -1423,8 +1423,6 @@ void FukushimaEllipticBDJ(double const phi,
 //
 //     Inputs: mc   = complementary parameter 0 <= mc   <= 1
 //
-//     Output: elk
-//
 double EllipticK(double const mc) {
   double m, mx;
   double kkc, nome;
