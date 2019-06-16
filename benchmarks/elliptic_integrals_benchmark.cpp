@@ -7,8 +7,13 @@
 #include "benchmark/benchmark.h"
 #include "numerics/elliptic_integrals.hpp"
 #include "quantities/numbers.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
+
+using quantities::Angle;
+using quantities::si::Radian;
+
 namespace numerics {
 
 void BM_FukushimaEllipticBDJ(benchmark::State& state) {
@@ -18,11 +23,11 @@ void BM_FukushimaEllipticBDJ(benchmark::State& state) {
   std::uniform_real_distribution<> distribution_φ(0.0, π / 2);
   std::uniform_real_distribution<> distribution_n(0.0, 1.0);
   std::uniform_real_distribution<> distribution_mc(0.0, 1.0);
-  std::vector<double> φs;
+  std::vector<Angle> φs;
   std::vector<double> ns;
   std::vector<double> mcs;
   for (int i = 0; i < size; ++i) {
-    φs.push_back(distribution_φ(random));
+    φs.push_back(distribution_φ(random) * Radian);
     ns.push_back(distribution_n(random));
     mcs.push_back(distribution_mc(random));
   }
@@ -31,7 +36,7 @@ void BM_FukushimaEllipticBDJ(benchmark::State& state) {
     double b;
     double d;
     double j;
-    for (double const φ : φs) {
+    for (Angle const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {
           FukushimaEllipticBDJ(φ, n, mc, b, d, j);

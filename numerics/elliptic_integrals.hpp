@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "quantities/quantities.hpp"
+
 // This code is a straightforward translation in C++ of:
 // Fukushima, Toshio. (2018). xelbdj.txt: Fortran test driver for
 // "elbdj"/"relbdj", subroutines to compute the double/single precision general
@@ -10,7 +12,7 @@
 namespace principia {
 namespace numerics {
 
-void FukushimaEllipticBDJ(double φ,
+void FukushimaEllipticBDJ(quantities::Angle const& φ,
                           double n,
                           double mc,
                           double& b,
