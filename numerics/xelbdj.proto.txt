@@ -1,6 +1,6 @@
 # These tabulated values come from the output given by Fukushima at the end of
 # his xelbdj_all.txt.
-#                 n                  m                  phi/PI          B                          D                             J
+#                 n                  m                  φ / π           B                          D                             J
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------
 entry { argument: 0.99976, argument: 1.00000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.99976, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.022570343177599 }

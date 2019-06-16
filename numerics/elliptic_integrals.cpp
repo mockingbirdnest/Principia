@@ -161,11 +161,6 @@ double BulirschCel(double const kc0,
 void FukushimaEllipticBD(double const mc, double& elb, double& eld) {
   double elk, m, mx, kkc, nome;
 
-  constexpr double PIQ = 0.78539816339744830961566084581988;
-  constexpr double PIHALF = 1.5707963267948966192313216916398;
-  constexpr double PI = 3.1415926535897932384626433832795;
-  constexpr double PIINV = 0.31830988618379067153776752674503;
-
   constexpr double Q1 = 1.0 / 16.0;
   constexpr double Q2 = 1.0 / 32.0;
   constexpr double Q3 = 21.0 / 1024.0;
@@ -213,8 +208,8 @@ void FukushimaEllipticBD(double const mc, double& elb, double& eld) {
 
   m = 1.0 - mc;
   if (m < 1.11e-16) {
-    elb = PIQ;
-    eld = PIQ;
+    elb = π / 4;
+    eld = π / 4;
   } else if (mc < 1.11e-16) {
     elb = 1.0;
     eld = 0.3862943611198906188344642429164 - 0.5 * log(mc);
@@ -230,7 +225,7 @@ void FukushimaEllipticBD(double const mc, double& elb, double& eld) {
     } else {
       mx = mc - 0.05;
 
-  // (K'-1)/(pi/2)
+  // (K'-1)/(π / 2)
       dkkc = 0.01286425658832983978282698630501405107893
           + mx * (0.26483429894479586582278131697637750604652
           + mx * (0.15647573786069663900214275050014481397750
@@ -245,7 +240,7 @@ void FukushimaEllipticBD(double const mc, double& elb, double& eld) {
           + mx * (0.04978344771840508342564702588639140680363
           + mx * (0.04812375496807025605361215168677991360500))))))))))));
 
-  // (K'-E')/(pi/2)
+  // (K'-E')/(π / 2)
       dddc = 0.02548395442966088473597712420249483947953
           + mx * (0.51967384324140471318255255900132590084179
           + mx * (0.20644951110163173131719312525729037023377
@@ -269,10 +264,10 @@ void FukushimaEllipticBD(double const mc, double& elb, double& eld) {
     elb = 1.0 + delb;
     eld = elk1 - delb;
   } else if (m <= 0.01) {
-    elb = PIHALF*(B1 + m * (B2 + m * (B3 + m * (B4 + m * (B5 + m * (B6 + m *
-                  (B7 + m * B8)))))));
-    eld = PIHALF*(D1 + m * (D2 + m * (D3 + m * (D4 + m * (D5 + m * (D6 + m *
-                  (D7 + m * D8)))))));
+    elb = (π / 2) * (B1 + m * (B2 + m * (B3 + m * (B4 + m * (B5 + m * (B6 + m *
+                    (B7 + m * B8)))))));
+    eld = (π / 2) * (D1 + m * (D2 + m * (D3 + m * (D4 + m * (D5 + m * (D6 + m *
+                    (D7 + m * D8)))))));
   } else if (m <= 0.1) {
     mx = 0.95 - mc;
     elb = 0.790401413584395132310045630540381158921005
@@ -1350,25 +1345,18 @@ double FukushimaT(double const t, double const h) {
 //
 //     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
 //
-//     Used subprograms: cel,celbd,celbdj,elcbdj,serbd,serj,uatan
-//
-//     Inputs: phi  = argument                0 <= phi  <= PI/2
-//             phic = complementar argument   0 <= phic <= PI/2
-//             n    = characteristic          0 <= n    <= 1
-//             mc   = complementary parameter 0 <= mc   <= 1
+//     Inputs: φ  = argument                  0 <= φ  <= π / 2
+//             n    = characteristic          0 <= n  <= 1
+//             mc   = complementary parameter 0 <= mc <= 1
 //
 //     Outputs: b, d, j
 //
-//     CAUTION: phi and phic must satisfy condition, phi + phic = PI/2
-//
-void FukushimaEllipticBDJ(double const phi,
-                          double const phic,
+void FukushimaEllipticBDJ(double const φ,
                           double const n,
                           double const mc,
                           double& b,
                           double& d,
                           double& j) {
-  // TODO(phl): CHECK_EQ(π / 2, phi + phic);
   double m, nc, h, c, x, d2, z, bc, dc, jc, sz, t, v, t2;
 
   // NOTE(phl): The original Fortran code had 1.345, which, according to the
@@ -1377,13 +1365,13 @@ void FukushimaEllipticBDJ(double const phi,
   // ArcSin[Sqrt[0.9]] where 0.9 is the factor appearing in the next if
   // statement.  The discrepancy has a 5-10% impact on performance.  I am not
   // sure if it has an impact on correctness.
-  if (phi < 1.249) {
-    FukushimaEllipticBsDsJs(sin(phi), n, mc, b, d, j);
+  if (φ < 1.249) {
+    FukushimaEllipticBsDsJs(sin(φ), n, mc, b, d, j);
   } else {
     m = 1.0 - mc;
     nc = 1.0 - n;
     h = n * nc * (n - m);
-    c = sin(phic);
+    c = cos(φ);
     x = c * c;
     d2 = mc + m * x;
     if (x < 0.9 * d2) {
@@ -1443,13 +1431,11 @@ double EllipticK(double const mc) {
   constexpr double D12 = 40784671953.0 / 8796093022208.0;
   constexpr double D13 = 9569130097211.0 / 2251799813685248.0;
   constexpr double D14 = 17652604545791.0 / 4503599627370496.0;
-  constexpr double PIHALF = π / 2;
-  constexpr double PIINV = 0.5 / PIHALF;
   constexpr double TINY = 1.0e-99;
 
   m = 1.0 - mc;
   if (abs(m) < 1.0e-16) {
-    return PIHALF;
+    return π / 2;
   } else if (mc < TINY) {
     return 1.3862943611198906 - 0.5 * log(TINY);
   } else if (mc < 1.11e-16) {
@@ -1473,7 +1459,7 @@ double EllipticK(double const mc) {
          0.091439629201749751 + mx * (
          0.085842591595413900 + mx * (
          0.081541118718303215))))))))));
-    return -kkc * PIINV * log(nome);
+    return -kkc * (1 / π) * log(nome);
   } else if (m <= 0.1) {
     mx = m - 0.05;
     return 1.591003453790792180 + mx * (

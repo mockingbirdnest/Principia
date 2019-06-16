@@ -15,14 +15,14 @@ void BM_FukushimaEllipticBDJ(benchmark::State& state) {
   constexpr int size = 20;
 
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> distribution_phi(0.0, π / 2);
+  std::uniform_real_distribution<> distribution_φ(0.0, π / 2);
   std::uniform_real_distribution<> distribution_n(0.0, 1.0);
   std::uniform_real_distribution<> distribution_mc(0.0, 1.0);
-  std::vector<double> phis;
+  std::vector<double> φs;
   std::vector<double> ns;
   std::vector<double> mcs;
   for (int i = 0; i < size; ++i) {
-    phis.push_back(distribution_phi(random));
+    φs.push_back(distribution_φ(random));
     ns.push_back(distribution_n(random));
     mcs.push_back(distribution_mc(random));
   }
@@ -31,11 +31,10 @@ void BM_FukushimaEllipticBDJ(benchmark::State& state) {
     double b;
     double d;
     double j;
-    for (double const phi : phis) {
-      double const phic = π / 2 - phi;
+    for (double const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {
-          FukushimaEllipticBDJ(phi, phic, n, mc, b, d, j);
+          FukushimaEllipticBDJ(φ, n, mc, b, d, j);
         }
       }
     }

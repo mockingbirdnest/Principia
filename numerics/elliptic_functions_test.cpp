@@ -1,4 +1,4 @@
-
+﻿
 #include "numerics/elliptic_functions.hpp"
 
 #include "glog/logging.h"
@@ -23,17 +23,15 @@ class EllipticFunctionsTest : public ::testing::Test {};
 TEST_F(EllipticFunctionsTest, Xgscd) {
   auto const xgscd_expected =
       ReadFromTabulatedData(SOLUTION_DIR / "numerics" / "xgscd.proto.txt");
-  constexpr double PI = 3.1415926535897932384626433;
-  constexpr double PIHALF = PI * 0.5;
-  double dmc, mc, m, du, u, s, c, d;
+  double Δmc, mc, m, du, u, s, c, d;
   int jend, iend;
   jend = 10;
   iend = 8;
-  dmc = 1.0 / static_cast<double>(jend);
+  Δmc = 1.0 / static_cast<double>(jend);
   std::printf("%10s%10s%25s%25s%25s\n", "m", "u", "s", "c", "d");
   int expected_index = 0;
   for (int j = 1; j <= jend; ++j) {
-    mc = static_cast<double>(j) * dmc;
+    mc = static_cast<double>(j) * Δmc;
     m = 1.0 - mc;
     du = EllipticK(mc) / static_cast<double>(iend);
     for (int i = 0; i <= iend * 8; ++i) {
