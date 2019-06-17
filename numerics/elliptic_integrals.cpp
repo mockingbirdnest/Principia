@@ -14,6 +14,8 @@
 // 3. Figure something for the uninitialized variables.
 
 // Bibliography:
+// [Buli69] Bulirsch (1969), Numerical Calculation of Elliptic Integrals and
+// Elliptic Fuctions.  III.
 // [Fuku11a] Fukushima (2011), Precise and fast computation of the general
 // complete elliptic integral of the second kind.
 // [Fuku11b] Fukushima (2011), Precise and fast computation of a general
@@ -27,6 +29,7 @@
 
 namespace principia {
 
+using quantities::Abs;
 using quantities::Angle;
 using quantities::Cos;
 using quantities::Sin;
@@ -37,8 +40,8 @@ namespace numerics {
 
 namespace {
 
-// Bulirsch's cel function, [NIST10], 19.2(iii).
-double BulirschCel(double kc0, double nc, double aa, double bb, int& err);
+// Bulirsch's cel function, [Buli69], [NIST10], 19.2(iii).
+double BulirschCel(double kc, double nc, double a, double b);
 
 // Fukushima's complete elliptic integrals of the second kind [Fuku11a].
 void FukushimaEllipticBD(double mc, double& elb, double& eld);
@@ -93,66 +96,66 @@ double FukushimaT(double t, double h);
 //        "Numerical computation of elliptic integrals and elliptic functions
 //        III"
 //
-//     Inputs: kc0    = complimentary modulus        0 <= kc0  <= 1
-//             nc     = complimentary characteristic 0 <= nc   <= 1
-//             aa, bb = coefficients
+//     Inputs: kc  = complementary modulus         0 <= kc <= 1
+//             nc   = complementary characteristic 0 <= nc <= 1
+//             a, b = coefficients
 //
-//     Outputs: cel   = integral value
-//              err   = integer error indicator
+//     Outputs: integral value
 //
-double BulirschCel(double const kc0,
+double BulirschCel(double kc,
                    double const nc,
-                   double const aa,
-                   double const bb,
-                   int& err) {
-  double out, a, b = 0, e, f, g;  // TODO(phl): Initial value?
-  double p, q, kc, em, qc;
-  err = 0;
-  kc = kc0;
+                   double a,
+                   double b) {
+  // These values should give us 14 digits of accuracy, see [Buli69].
+  constexpr double ca = 1.0e-7;
+  constexpr double kc_nearly_0 = 1.0e-14;
+
+  // The identifiers below follow exactly [Buli69].  Note the (uncommon) use of
+  // non-const parameters to mimic [Buli69].
+  double p = nc;
   if (kc == 0.0) {
-    if (b == 0.0) {
-      kc = 1.e-16;
-    } else {
-      err = 1;
-      return 1.e99;
-    }
+    // "In this case ... then cel is undefined."
+    DCHECK_EQ(0.0, b) << "kc = " << kc << " nc = " << nc << " a = " << a
+                      << " b = " << b;
+    kc = kc_nearly_0;
   }
-  qc = abs(kc);
-  a = aa;
-  b = bb;
-  p = nc;
-  e = qc;
-  em = 1.0;
+  kc = Abs(kc);
+  double e = kc;
+  double m = 1.0;
+
+  // Initial values for p, a, b.
   if (p > 0.0) {
-    p = sqrt(p);
+    p = Sqrt(p);
     b = b / p;
   } else {
-    f = qc * qc;
-    q = 1.0 - f;
-    g = 1.0 - p;
+    double f = kc * kc;
+    double q = 1.0 - f;
+    double g = 1.0 - p;
     f = f - p;
-    q = q * (b - a * p);
-    p = sqrt(f / g);
+    q = (b - a * p) * q;
+    p = Sqrt(f / g);
     a = (a - b) / g;
     b = a * p - q / (g * g * p);
   }
+
+  // Bartky's algorithm.
   for (;;) {
-    f = a;
-    a = a + b / p;
-    g = e / p;
-    b = b + f * g;
-    b = 2.0 * b;
-    p = p + g;
-    g = em;
-    em = em + qc;
-    if (abs(g - qc) < 1.e-7 * qc) {
+    double f = a;
+    a = b / p + a;
+    double g = e / p;
+    b = f * g + b;
+    b = b + b;
+    p = g + p;
+    g = m;
+    m = kc + m;
+    if (Abs(g - kc) <= g * ca) {
       break;
     }
-    qc = 2.0 * sqrt(e);
-    e = qc * em;
+    kc = sqrt(e);
+    kc = kc + kc;
+    e = kc * m;
   }
-  out = 1.5707963267948966 * (b + a * em) / (em * (em + p));
-  return out;
+  return (π / 2) * (a * m + b) / (m * (m + p));
 }
 
 //  Double precision general complete elliptic integrals of the second kind
@@ -617,11 +620,11 @@ void FukushimaEllipticBDJ(double const nc,
                           double& bc,
                           double& dc,
                           double& jc) {
-  double kc;
-  int err;
   FukushimaEllipticBD(mc, bc, dc);
-  kc = sqrt(mc);
-  jc = BulirschCel(kc, nc, 0.0, 1.0, err);
+
+  // See [Buli69], special examples after equation (1.2.2).
+  double const kc = Sqrt(mc);
+  jc = BulirschCel(kc, nc, /*a=*/0.0, /*b=*/1.0);
 }
 
 void FukushimaEllipticBcDcJc(double const c₀,
@@ -655,7 +658,8 @@ void FukushimaEllipticBcDcJc(double const c₀,
   double xᵢ = x₀;
   int i = 0;  // Note that this variable is used after the loop.
   for (; xᵢ <= xS; ++i) {
-    DCHECK_LT(i, max_transformations);
+    DCHECK_LT(i, max_transformations)
+        << "c₀ = " << c₀ << " n = " << n << " mc = " << mc;
     double const dᵢ = Sqrt(mc + m * xᵢ);
     xᵢ = (cᵢ + dᵢ) / (1.0 + dᵢ);
     double const yᵢ = 1.0 - xᵢ;
@@ -705,7 +709,8 @@ void FukushimaEllipticBsDsJs(double const s₀,
   double yᵢ = y₀;
   int i = 0;  // Note that this variable is used after the loop.
   for (; yᵢ >= yB; ++i) {
-    DCHECK_LT(i, max_transformations);
+    DCHECK_LT(i, max_transformations)
+        << "s₀ = " << s₀ << " n = " << n << " mc = " << mc;
     double const cᵢ = Sqrt(1.0 - yᵢ);
     double const dᵢ = Sqrt(1.0 - m * yᵢ);
     yᵢ = yᵢ / ((1.0 + cᵢ) * (1.0 + dᵢ));
