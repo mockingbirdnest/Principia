@@ -11,8 +11,7 @@
 // 1. Use arrays for the coefficients.
 // 2. Use Estrin evaluation for polynomials of high degree (possibly adding
 //    support for polynomials of two and three variables).
-// 3. Use 0-based arrays.
-// 4. Figure something for the uninitialized variables.
+// 3. Figure something for the uninitialized variables.
 
 // Bibliography:
 // [Fuku11a] Fukushima (2011), Precise and fast computation of the general
@@ -625,49 +624,54 @@ void FukushimaEllipticBDJ(double const nc,
   jc = BulirschCel(kc, nc, 0.0, 1.0, err);
 }
 
-void FukushimaEllipticBcDcJc(double const c0,
+void FukushimaEllipticBcDcJc(double const c₀,
                              double const n,
                              double const mc,
                              double& b,
                              double& d,
                              double& j) {
-  double c, x, y, s, m, sy, t, h = 0;  // TODO(phl): Initial value?
-  double yy[12];
-  double ss[12];
-  double cd[12];
+  // See [Fuku11b] section 2.2 for the determination of xS.
+  constexpr double xS = 0.1;
+  // The maximum number of iterations in the first loop below.
+  // NOTE(phl): I couldn't find a justification for this number.
+  constexpr int max_transformations = 10;
 
-  c = c0;
-  x = c * c;
-  y = 1.0 - x;
-  s = sqrt(y);
-  if (x > 0.1) {
-    FukushimaEllipticBsDsJs(s, n, mc, b, d, j);
-    return;
+  double y[max_transformations + 1];
+  double s[max_transformations + 1];
+  double cd[max_transformations + 1];
+
+  double const m = 1.0 - mc;
+  double const h = n * (1.0 - n) * (n - m);
+  double const x₀ = c₀ * c₀;
+  double const y₀ = 1.0 - x₀;
+
+  // Alternate half and double argument transformations, when cancellations
+  // would occur, [Fuku11c] section 3.3.
+
+  // Half argument transformation of c.
+  y[0] = y₀;
+  s[0] = Sqrt(y₀);
+  double cᵢ = c₀;
+  double xᵢ = x₀;
+  int i = 0;  // Note that this variable is used after the loop.
+  for (; xᵢ <= xS; ++i) {
+    DCHECK_LT(i, max_transformations);
+    double const dᵢ = Sqrt(mc + m * xᵢ);
+    xᵢ = (cᵢ + dᵢ) / (1.0 + dᵢ);
+    double const yᵢ = 1.0 - xᵢ;
+    y[i + 1] = yᵢ;
+    s[i + 1] = Sqrt(yᵢ);
+    cd[i] = cᵢ * dᵢ;
+    cᵢ = Sqrt(xᵢ);
   }
-  m = 1.0 - mc;
-  h = n * (1.0 - n) * (n - m);
-  yy[1] = y;
-  ss[1] = s;
-  int i;
-  for (i = 1; i <= 10; ++i) {
-    d = sqrt(mc + m * x);
-    x = (c + d) / (1.0 + d);
-    y = 1.0 - x;
-    yy[i + 1] = y;
-    ss[i + 1] = sqrt(y);
-    cd[i] = c * d;
-    if (x > 0.1) {
-      break;
-    }
-    LOG_IF(FATAL, i == 10) << "(elcbdj) too many iterations: c0,n,mc=" << c0
-                           << " " << n << " " << mc;
-    c = sqrt(x);
-  }
-  s = ss[i + 1];  // TODO(phl): Loop variable.
-  FukushimaEllipticBsDsJs(s, n, mc, b, d, j);
-  for (int k = i; k >= 1; --k) {
-    sy = ss[k] * yy[k + 1];
-    t = sy / (1.0 - n * (yy[k] - yy[k + 1] * cd[k]));
+
+  // Switch to the normal algorithm.
+  FukushimaEllipticBsDsJs(s[i], n, mc, b, d, j);
+
+  // Double argument transformation of B, D, J.
+  for (int k = i; k > 0; --k) {
+    double const sy = s[k - 1] * y[k];
+    double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
     b = 2.0 * b - sy;
     d = d + (d + sy);
     j = j + (j + FukushimaT(t, h));
@@ -716,7 +720,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
   d = s[i] * yᵢ * d;
   j = s[i] * FukushimaEllipticJsMaclaurinSeries(yᵢ, n, m);
 
-  // Double argument transformation of J.
+  // Double argument transformation of B, D, J.
   for (int k = i; k > 0; --k) {
     double const sy = s[k - 1] * y[k];
     double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
