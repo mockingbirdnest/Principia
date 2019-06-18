@@ -92,16 +92,20 @@ double FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 // Fukushima's T function [Fuku11c].
 double FukushimaT(double t, double h);
 
+// A generator for the Maclaurin series for Fukushima's T function.
 template<int n>
-struct FukushimaTMaclaurin {
-  static auto constexpr series =
-      std::tuple_cat(FukushimaTMaclaurin<n - 1>::series,
-                     std::tuple<double>{1.0 / (2.0 * n + 1.0)});
-};
+class FukushimaTMaclaurin {
+  template<typename>
+  struct Generator;
 
-template<>
-struct FukushimaTMaclaurin<0> {
-  static auto constexpr series = std::tuple<double>{1.0};
+  template<int... k>
+  struct Generator<std::index_sequence<k...>> {
+    static auto constexpr series = std::make_tuple(1.0 / (2.0 * k + 1.0)...);
+  };
+
+ public:
+  static constexpr auto series =
+      Generator<std::make_index_sequence<n + 1>>::series;
 };
 
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
