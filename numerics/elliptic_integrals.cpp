@@ -6,6 +6,8 @@
 #include <utility>
 
 #include "numerics/elliptic_integrals.hpp"
+#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
@@ -89,6 +91,43 @@ double FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 
 // Fukushima's T function [Fuku11c].
 double FukushimaT(double t, double h);
+
+template<int n>
+struct FukushimaTMaclaurin {
+  static auto constexpr series =
+      std::tuple_cat(FukushimaTMaclaurin<n - 1>::series,
+                     std::tuple<double>{1.0 / (2.0 * n + 1.0)});
+};
+
+template<>
+struct FukushimaTMaclaurin<0> {
+  static auto constexpr series = std::tuple<double>{1.0};
+};
+
+PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+    fukushima_t_maclaurin_1(FukushimaTMaclaurin<1>::series);
+PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+    fukushima_t_maclaurin_2(FukushimaTMaclaurin<2>::series);
+PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+    fukushima_t_maclaurin_3(FukushimaTMaclaurin<3>::series);
+PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
+    fukushima_t_maclaurin_4(FukushimaTMaclaurin<4>::series);
+PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
+    fukushima_t_maclaurin_5(FukushimaTMaclaurin<5>::series);
+PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
+    fukushima_t_maclaurin_6(FukushimaTMaclaurin<6>::series);
+PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
+    fukushima_t_maclaurin_7(FukushimaTMaclaurin<7>::series);
+PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
+    fukushima_t_maclaurin_8(FukushimaTMaclaurin<8>::series);
+PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
+    fukushima_t_maclaurin_9(FukushimaTMaclaurin<9>::series);
+PolynomialInMonomialBasis<double, double, 10, EstrinEvaluator>
+    fukushima_t_maclaurin_10(FukushimaTMaclaurin<10>::series);
+PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator>
+    fukushima_t_maclaurin_11(FukushimaTMaclaurin<11>::series);
+PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator>
+    fukushima_t_maclaurin_12(FukushimaTMaclaurin<12>::series);
 
 //  Double precision general complete elliptic integral "cel"
 //
@@ -1245,137 +1284,48 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                                             y * (J8 + y * (J9 + y * JA)))))))));
 }
 
-template<int n, int m>
-struct Maclaurin {
-  static auto constexpr series =
-      std::tuple_cat(Maclaurin<n, n>::series,
-                     Maclaurin<n + 1, m>::series);
-};
-
-template<int n>
-struct Maclaurin<n, n> {
-  static auto constexpr series = std::tuple<double>{1.0 / (2.0 * n + 1.0)};
-};
-
-constexpr auto ss = Maclaurin<1, 3>::series;
-static_assert(std::get<0>(ss) == 1.0/3.0);
-static_assert(std::get<1>(ss) == 1.0/5.0);
-static_assert(std::get<2>(ss) == 1.0/7.0);
-
 double FukushimaT(double const t, double const h) {
-  double z, y, x, a, r, ri;
-  constexpr double A3 = 1.0 / 3.0;
-  constexpr double A5 = 1.0 / 5.0;
-  constexpr double A7 = 1.0 / 7.0;
-  constexpr double A9 = 1.0 / 9.0;
-  constexpr double A11 = 1.0 / 11.0;
-  constexpr double A13 = 1.0 / 13.0;
-  constexpr double A15 = 1.0 / 15.0;
-  constexpr double A17 = 1.0 / 17.0;
-  constexpr double A19 = 1.0 / 19.0;
-  constexpr double A21 = 1.0 / 21.0;
-  constexpr double A23 = 1.0 / 23.0;
-  constexpr double A25 = 1.0 / 25.0;
+  double const z = -h * t * t;
+  double const abs_z = abs(z);
 
-  z = -h * t * t;
-  a = abs(z);
-
-  if (a < 3.3306691e-16) {
+  // NOTE(phl): One might be tempted to rewrite this statement using a binary
+  // split of the interval [0, 1], but according to Table 1 of [Fuku11c] the
+  // distribution of z is very biased towards the small values, so this is
+  // simpler and probably better.  (It also explains the position of z < 0 in
+  // the list.)
+  if (abs_z < 3.3306691e-16) {
     return t;
-  } else if (a < 2.3560805e-08) {
-    return t * (1.0 + z * A3);
-  } else if (a < 9.1939631e-06) {
-    return t * (1.0 + z * (A3 + z * A5));
-  } else if (a < 1.7779240e-04) {
-    return t * (1.0 + z * (A3 + z * (A5 + z * A7)));
-  } else if (a < 1.0407839e-03) {
-    return t * (1.0 + z * (A3 + z * (A5 + z * (A7 + z * A9))));
-  } else if (a < 3.3616998e-03) {
-    return t * (1.0 + z * (A3 + z * (A5 + z * (A7 + z * (A9 + z * A11)))));
-  } else if (a < 7.7408014e-03) {
-    return
-        t * (1.0 +
-             z * (A3 + z * (A5 + z * (A7 + z * (A9 + z * (A11 + z * A13))))));
-  } else if (a < 1.4437181e-02) {
-    return
-        t * (1.0 +
-             z * (A3 +
-                  z * (A5 +
-                       z * (A7 + z * (A9 + z * (A11 + z * (A13 + z * A15)))))));
-  } else if (a < 2.3407312e-02) {
-    return
-        t *
-        (1.0 +
-         z * (A3 +
-              z * (A5 +
-                   z * (A7 +
-                        z * (A9 +
-                             z * (A11 + z * (A13 + z * (A15 + z * A17))))))));
-  } else if (a < 3.4416203e-02) {
-    return
-        t *
-        (1.0 +
-         z * (A3 +
-              z * (A5 +
-                   z * (A7 +
-                        z * (A9 +
-                             z * (A11 +
-                                  z * (A13 +
-                                       z * (A15 + z * (A17 + z * A19)))))))));
+  } else if (abs_z < 2.3560805e-08) {
+    return t * fukushima_t_maclaurin_1.Evaluate(z);
+  } else if (abs_z < 9.1939631e-06) {
+    return t * fukushima_t_maclaurin_2.Evaluate(z);
+  } else if (abs_z < 1.7779240e-04) {
+    return t * fukushima_t_maclaurin_3.Evaluate(z);
+  } else if (abs_z < 1.0407839e-03) {
+    return t * fukushima_t_maclaurin_4.Evaluate(z);
+  } else if (abs_z < 3.3616998e-03) {
+    return t * fukushima_t_maclaurin_5.Evaluate(z);
+  } else if (abs_z < 7.7408014e-03) {
+    return t * fukushima_t_maclaurin_6.Evaluate(z);
+  } else if (abs_z < 1.4437181e-02) {
+    return t * fukushima_t_maclaurin_7.Evaluate(z);
+  } else if (abs_z < 2.3407312e-02) {
+    return t * fukushima_t_maclaurin_8.Evaluate(z);
+  } else if (abs_z < 3.4416203e-02) {
+    return t * fukushima_t_maclaurin_9.Evaluate(z);
   } else if (z < 0.0) {
-    r = sqrt(h);
-    ri = 1.0 / r;
-    return atan(r * t) * ri;
-  } else if (a < 4.7138547e-02) {
-    return
-        t *
-        (1.0 +
-         z * (A3 +
-              z * (A5 +
-                   z * (A7 +
-                        z * (A9 +
-                             z * (A11 +
-                                  z * (A13 +
-                                       z * (A15 +
-                                            z * (A17 +
-                                                 z * (A19 + z * A21))))))))));
-  } else if (a < 6.1227405e-02) {
-    return
-        t *
-        (1.0 +
-         z * (A3 +
-              z * (A5 +
-                   z * (A7 +
-                        z * (A9 +
-                             z * (A11 +
-                                  z * (A13 +
-                                       z * (A15 +
-                                            z * (A17 +
-                                                 z * (A19 +
-                                                      z * (A21 +
-                                                           z * A23)))))))))));
-  } else if (a < 7.6353468e-02) {
-    return
-        t *
-        (1.0 +
-         z * (A3 +
-              z * (A5 +
-                   z * (A7 +
-                        z * (A9 +
-                             z * (A11 +
-                                  z * (A13 +
-                                       z * (A15 +
-                                            z * (A17 +
-                                                 z * (A19 +
-                                                      z * (A21 +
-                                                      z * (A23 +
-                                                          z * A25))))))))))));
+    double const r = Sqrt(h);
+    double const ri = 1.0 / r;
+    return std::atan(r * t) / r;
+  } else if (abs_z < 4.7138547e-02) {
+    return t * fukushima_t_maclaurin_10.Evaluate(z);
+  } else if (abs_z < 6.1227405e-02) {
+    return t * fukushima_t_maclaurin_11.Evaluate(z);
+  } else if (abs_z < 7.6353468e-02) {
+    return t * fukushima_t_maclaurin_12.Evaluate(z);
   } else {
-    r = sqrt(-h);
-    ri = 1.0 / r;
-    y = r * t;
-    x = log((1.0 + y) / (1.0 - y)) * 0.5;
-    return x * ri;
+    double const r = Sqrt(-h);
+    return std::atanh(r * t) / r;
   }
 }
 
