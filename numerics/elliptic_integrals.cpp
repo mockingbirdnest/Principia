@@ -2,6 +2,8 @@
 #include "glog/logging.h"
 
 #include <limits>
+#include <tuple>
+#include <utility>
 
 #include "numerics/elliptic_integrals.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -1242,6 +1244,23 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                                        y * (J7 +
                                             y * (J8 + y * (J9 + y * JA)))))))));
 }
+
+template<int n, int m>
+struct Maclaurin {
+  static auto constexpr series =
+      std::tuple_cat(Maclaurin<n, n>::series,
+                     Maclaurin<n + 1, m>::series);
+};
+
+template<int n>
+struct Maclaurin<n, n> {
+  static auto constexpr series = std::tuple<double>{1.0 / (2.0 * n + 1.0)};
+};
+
+constexpr auto ss = Maclaurin<1, 3>::series;
+static_assert(std::get<0>(ss) == 1.0/3.0);
+static_assert(std::get<1>(ss) == 1.0/5.0);
+static_assert(std::get<2>(ss) == 1.0/7.0);
 
 double FukushimaT(double const t, double const h) {
   double z, y, x, a, r, ri;
