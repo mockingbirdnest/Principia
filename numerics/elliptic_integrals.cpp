@@ -1,6 +1,8 @@
 ﻿
 #include "glog/logging.h"
 
+#include <limits>
+
 #include "numerics/elliptic_integrals.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"
@@ -114,10 +116,14 @@ double BulirschCel(double kc,
   // non-const parameters to mimic [Buli69].
   double p = nc;
   if (kc == 0.0) {
-    // "In this case ... then cel is undefined."
-    DCHECK_EQ(0.0, b) << "kc = " << kc << " nc = " << nc << " a = " << a
-                      << " b = " << b;
-    kc = kc_nearly_0;
+    if (b == 0.0) {
+      kc = kc_nearly_0;
+    } else {
+      // "If in this case b ≠ 0 then cel is undefined."
+      DLOG(ERROR) << "kc = " << kc << " nc = " << nc << " a = " << a
+                  << " b = " << b;
+      return std::numeric_limits<double>::quiet_NaN();
+    }
   }
   kc = Abs(kc);
   double e = kc;
