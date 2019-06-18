@@ -655,7 +655,8 @@ void FukushimaEllipticBcDcJc(double const c₀,
   double xᵢ = x₀;
   int i = 0;  // Note that this variable is used after the loop.
   for (; xᵢ <= xS; ++i) {
-    DCHECK_LT(i, max_transformations);
+    DCHECK_LT(i, max_transformations)
+        << "c₀ = " << c₀ << " n = " << n << " mc = " << mc;
     double const dᵢ = Sqrt(mc + m * xᵢ);
     xᵢ = (cᵢ + dᵢ) / (1.0 + dᵢ);
     double const yᵢ = 1.0 - xᵢ;
@@ -705,7 +706,8 @@ void FukushimaEllipticBsDsJs(double const s₀,
   double yᵢ = y₀;
   int i = 0;  // Note that this variable is used after the loop.
   for (; yᵢ >= yB; ++i) {
-    DCHECK_LT(i, max_transformations);
+    DCHECK_LT(i, max_transformations)
+        << "s₀ = " << s₀ << " n = " << n << " mc = " << mc;
     double const cᵢ = Sqrt(1.0 - yᵢ);
     double const dᵢ = Sqrt(1.0 - m * yᵢ);
     yᵢ = yᵢ / ((1.0 + cᵢ) * (1.0 + dᵢ));
