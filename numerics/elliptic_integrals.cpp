@@ -49,6 +49,10 @@ namespace {
 // Bulirsch's cel function, [Buli69], [NIST10], 19.2(iii).
 double BulirschCel(double kc, double nc, double a, double b);
 
+// Jacobi's nome approximated by a series of the given degree.
+template<int degree>
+double EllipticNomeQ(double mc);
+
 // Fukushima's complete elliptic integrals of the second kind [Fuku11a].
 void FukushimaEllipticBD(double mc, double& elb, double& eld);
 
@@ -92,6 +96,41 @@ double FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 // Fukushima's T function [Fuku11c].
 double FukushimaT(double t, double h);
 
+// A generator for the Maclaurin series for q(m) / m where q is Jacobi's nome
+// function.
+template<int n>
+class EllipticNomeQMaclaurin {
+  static auto constexpr full_series = std::make_tuple(
+    1.0 / 16.0,
+    1.0 / 32.0,
+    21.0 / 1024.0,
+    31.0 / 2048.0,
+    6257.0 / 524288.0,
+    10293.0 / 1048576.0,
+    279025.0 / 33554432.0,
+    483127.0 / 67108864.0,
+    435506703.0 / 68719476736.0,
+    776957575.0 / 137438953472.0,
+    22417045555.0 / 4398046511104.0,
+    40784671953.0 / 8796093022208.0,
+    9569130097211.0 / 2251799813685248.0,
+    17652604545791.0 / 4503599627370496.0,
+    523910972020563.0 / 144115188075855872.0,
+    976501268709949.0 / 288230376151711744.0);
+
+  template<typename>
+  struct Generator;
+
+  template<int... k>
+  struct Generator<std::index_sequence<k...>> {
+    static auto constexpr series = std::make_tuple(std::get<k>(full_series)...);
+  };
+
+ public:
+  static constexpr auto series =
+      Generator<std::make_index_sequence<n + 1>>::series;
+};
+
 // A generator for the Maclaurin series for Fukushima's T function.
 template<int n>
 class FukushimaTMaclaurin {
@@ -108,29 +147,29 @@ class FukushimaTMaclaurin {
       Generator<std::make_index_sequence<n + 1>>::series;
 };
 
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> const
     fukushima_t_maclaurin_1(FukushimaTMaclaurin<1>::series);
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> const
     fukushima_t_maclaurin_2(FukushimaTMaclaurin<2>::series);
-PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> const
     fukushima_t_maclaurin_3(FukushimaTMaclaurin<3>::series);
-PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
+PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator> const
     fukushima_t_maclaurin_4(FukushimaTMaclaurin<4>::series);
-PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
+PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator> const
     fukushima_t_maclaurin_5(FukushimaTMaclaurin<5>::series);
-PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
+PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator> const
     fukushima_t_maclaurin_6(FukushimaTMaclaurin<6>::series);
-PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
+PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
     fukushima_t_maclaurin_7(FukushimaTMaclaurin<7>::series);
-PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
+PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator> const
     fukushima_t_maclaurin_8(FukushimaTMaclaurin<8>::series);
-PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
+PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator> const
     fukushima_t_maclaurin_9(FukushimaTMaclaurin<9>::series);
-PolynomialInMonomialBasis<double, double, 10, EstrinEvaluator>
+PolynomialInMonomialBasis<double, double, 10, EstrinEvaluator> const
     fukushima_t_maclaurin_10(FukushimaTMaclaurin<10>::series);
-PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator>
+PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
     fukushima_t_maclaurin_11(FukushimaTMaclaurin<11>::series);
-PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator>
+PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
     fukushima_t_maclaurin_12(FukushimaTMaclaurin<12>::series);
 
 //  Double precision general complete elliptic integral "cel"
@@ -209,6 +248,16 @@ double BulirschCel(double kc,
   return (π / 2) * (a * m + b) / (m * (m + p));
 }
 
+template<int degree>
+double EllipticNomeQ(double const mc) {
+  static PolynomialInMonomialBasis<double,
+                                   double,
+                                   degree - 1,
+                                   EstrinEvaluator> const
+      polynomial(EllipticNomeQMaclaurin<degree - 1>::series);
+  return mc * polynomial.Evaluate(mc);
+}
+
 //  Double precision general complete elliptic integrals of the second kind
 //
 //  Reference: T. Fukushima, (2011) Math. Comp., 80, 1725-1743
@@ -223,23 +272,6 @@ double BulirschCel(double kc,
 //
 void FukushimaEllipticBD(double const mc, double& elb, double& eld) {
   double elk, m, mx, kkc, nome;
-
-  constexpr double Q1 = 1.0 / 16.0;
-  constexpr double Q2 = 1.0 / 32.0;
-  constexpr double Q3 = 21.0 / 1024.0;
-  constexpr double Q4 = 31.0 / 2048.0;
-  constexpr double Q5 = 6257.0 / 524288.0;
-  constexpr double Q6 = 10293.0 / 1048576.0;
-  constexpr double Q7 = 279025.0 / 33554432.0;
-  constexpr double Q8 = 483127.0 / 67108864.0;
-  constexpr double Q9 = 435506703.0 / 68719476736.0;
-  constexpr double Q10 = 776957575.0 / 137438953472.0;
-  constexpr double Q11 = 22417045555.0 / 4398046511104.0;
-  constexpr double Q12 = 40784671953.0 / 8796093022208.0;
-  constexpr double Q13 = 9569130097211.0 / 2251799813685248.0;
-  constexpr double Q14 = 17652604545791.0 / 4503599627370496.0;
-  constexpr double Q15 = 523910972020563.0 / 144115188075855872.0;
-  constexpr double Q16 = 976501268709949.0 / 288230376151711744.0;
 
   constexpr double K1 = 1.0 / 4.0;
   constexpr double K2 = 9.0 / 64.0;
@@ -277,9 +309,7 @@ void FukushimaEllipticBD(double const mc, double& elb, double& eld) {
     elb = 1.0;
     eld = 0.3862943611198906188344642429164 - 0.5 * log(mc);
   } else if (mc < 0.1) {
-    nome = mc * (Q1 + mc * (Q2 + mc * (Q3 + mc * (Q4 + mc * (Q5 + mc * (Q6
-         + mc * (Q7 + mc * (Q8 + mc * (Q9 + mc * (Q10 + mc * (Q11 + mc * (Q12
-         + mc * (Q13 + mc * (Q14 + mc * (Q15 + mc * Q16)))))))))))))));
+    nome = EllipticNomeQ<16>(mc);
     if (mc < 0.01) {
       dkkc = mc * (K1 +
            mc * (K2 + mc * (K3 + mc * (K4 + mc * (K5 + mc * (K6 + mc * K7))))));
@@ -1447,9 +1477,7 @@ double EllipticK(double const mc) {
   } else if (mc < 1.11e-16) {
     return 1.3862943611198906 - 0.5 * log(mc);
   } else if (mc < 0.1) {
-    nome = mc * (D1 + mc * (D2 + mc * (D3 + mc * (D4 + mc * (D5 + mc * (D6
-          + mc * (D7 + mc * (D8 + mc * (D9 + mc * (D10 + mc * (D11 + mc * (D12
-          + mc * (D13 + mc * D14)))))))))))));
+    nome = EllipticNomeQ<14>(mc);
     mx = mc - 0.05;
     //
     //  K'
