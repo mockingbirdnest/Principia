@@ -98,7 +98,7 @@ double FukushimaT(double t, double h);
 
 // A generator for the Maclaurin series for q(m) / m where q is Jacobi's nome
 // function.
-template<int n>
+template<int n, template<typename, typename, int> class Evaluator>
 class EllipticNomeQMaclaurin {
   static auto constexpr full_series = std::make_tuple(
     1.0 / 16.0,
@@ -127,12 +127,12 @@ class EllipticNomeQMaclaurin {
   };
 
  public:
-  static constexpr auto series =
-      Generator<std::make_index_sequence<n + 1>>::series;
+  static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
+      polynomial{Generator<std::make_index_sequence<n + 1>>::series};
 };
 
 // A generator for the Maclaurin series for Fukushima's T function.
-template<int n>
+template<int n, template<typename, typename, int> class Evaluator>
 class FukushimaTMaclaurin {
   template<typename>
   struct Generator;
@@ -143,34 +143,22 @@ class FukushimaTMaclaurin {
   };
 
  public:
-  static constexpr auto series =
-      Generator<std::make_index_sequence<n + 1>>::series;
+  static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
+      polynomial{Generator<std::make_index_sequence<n + 1>>::series};
 };
 
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> const
-    fukushima_t_maclaurin_1(FukushimaTMaclaurin<1>::series);
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> const
-    fukushima_t_maclaurin_2(FukushimaTMaclaurin<2>::series);
-PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> const
-    fukushima_t_maclaurin_3(FukushimaTMaclaurin<3>::series);
-PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator> const
-    fukushima_t_maclaurin_4(FukushimaTMaclaurin<4>::series);
-PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator> const
-    fukushima_t_maclaurin_5(FukushimaTMaclaurin<5>::series);
-PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator> const
-    fukushima_t_maclaurin_6(FukushimaTMaclaurin<6>::series);
-PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
-    fukushima_t_maclaurin_7(FukushimaTMaclaurin<7>::series);
-PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator> const
-    fukushima_t_maclaurin_8(FukushimaTMaclaurin<8>::series);
-PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator> const
-    fukushima_t_maclaurin_9(FukushimaTMaclaurin<9>::series);
-PolynomialInMonomialBasis<double, double, 10, EstrinEvaluator> const
-    fukushima_t_maclaurin_10(FukushimaTMaclaurin<10>::series);
-PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    fukushima_t_maclaurin_11(FukushimaTMaclaurin<11>::series);
-PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_t_maclaurin_12(FukushimaTMaclaurin<12>::series);
+using FukushimaTMaclaurin1 = FukushimaTMaclaurin<1, HornerEvaluator>;
+using FukushimaTMaclaurin2 = FukushimaTMaclaurin<2, HornerEvaluator>;
+using FukushimaTMaclaurin3 = FukushimaTMaclaurin<3, HornerEvaluator>;
+using FukushimaTMaclaurin4 = FukushimaTMaclaurin<4, EstrinEvaluator>;
+using FukushimaTMaclaurin5 = FukushimaTMaclaurin<5, EstrinEvaluator>;
+using FukushimaTMaclaurin6 = FukushimaTMaclaurin<6, EstrinEvaluator>;
+using FukushimaTMaclaurin7 = FukushimaTMaclaurin<7, EstrinEvaluator>;
+using FukushimaTMaclaurin8 = FukushimaTMaclaurin<8, EstrinEvaluator>;
+using FukushimaTMaclaurin9 = FukushimaTMaclaurin<9, EstrinEvaluator>;
+using FukushimaTMaclaurin10 = FukushimaTMaclaurin<10, EstrinEvaluator>;
+using FukushimaTMaclaurin11 = FukushimaTMaclaurin<11, EstrinEvaluator>;
+using FukushimaTMaclaurin12 = FukushimaTMaclaurin<12, EstrinEvaluator>;
 
 //  Double precision general complete elliptic integral "cel"
 //
@@ -250,12 +238,9 @@ double BulirschCel(double kc,
 
 template<int degree>
 double EllipticNomeQ(double const mc) {
-  static PolynomialInMonomialBasis<double,
-                                   double,
-                                   degree - 1,
-                                   EstrinEvaluator> const
-      polynomial(EllipticNomeQMaclaurin<degree - 1>::series);
-  return mc * polynomial.Evaluate(mc);
+  return mc * 
+         EllipticNomeQMaclaurin<degree - 1, EstrinEvaluator>::polynomial.
+             Evaluate(mc);
 }
 
 //  Double precision general complete elliptic integrals of the second kind
@@ -1330,33 +1315,33 @@ double FukushimaT(double const t, double const h) {
   if (abs_z < 3.3306691e-16) {
     return t;
   } else if (abs_z < 2.3560805e-08) {
-    return t * fukushima_t_maclaurin_1.Evaluate(z);
+    return t * FukushimaTMaclaurin1::polynomial.Evaluate(z);
   } else if (abs_z < 9.1939631e-06) {
-    return t * fukushima_t_maclaurin_2.Evaluate(z);
+    return t * FukushimaTMaclaurin2::polynomial.Evaluate(z);
   } else if (abs_z < 1.7779240e-04) {
-    return t * fukushima_t_maclaurin_3.Evaluate(z);
+    return t * FukushimaTMaclaurin3::polynomial.Evaluate(z);
   } else if (abs_z < 1.0407839e-03) {
-    return t * fukushima_t_maclaurin_4.Evaluate(z);
+    return t * FukushimaTMaclaurin4::polynomial.Evaluate(z);
   } else if (abs_z < 3.3616998e-03) {
-    return t * fukushima_t_maclaurin_5.Evaluate(z);
+    return t * FukushimaTMaclaurin5::polynomial.Evaluate(z);
   } else if (abs_z < 7.7408014e-03) {
-    return t * fukushima_t_maclaurin_6.Evaluate(z);
+    return t * FukushimaTMaclaurin6::polynomial.Evaluate(z);
   } else if (abs_z < 1.4437181e-02) {
-    return t * fukushima_t_maclaurin_7.Evaluate(z);
+    return t * FukushimaTMaclaurin7::polynomial.Evaluate(z);
   } else if (abs_z < 2.3407312e-02) {
-    return t * fukushima_t_maclaurin_8.Evaluate(z);
+    return t * FukushimaTMaclaurin8::polynomial.Evaluate(z);
   } else if (abs_z < 3.4416203e-02) {
-    return t * fukushima_t_maclaurin_9.Evaluate(z);
+    return t * FukushimaTMaclaurin9::polynomial.Evaluate(z);
   } else if (z < 0.0) {
     double const r = Sqrt(h);
     double const ri = 1.0 / r;
     return std::atan(r * t) / r;
   } else if (abs_z < 4.7138547e-02) {
-    return t * fukushima_t_maclaurin_10.Evaluate(z);
+    return t * FukushimaTMaclaurin10::polynomial.Evaluate(z);
   } else if (abs_z < 6.1227405e-02) {
-    return t * fukushima_t_maclaurin_11.Evaluate(z);
+    return t * FukushimaTMaclaurin11::polynomial.Evaluate(z);
   } else if (abs_z < 7.6353468e-02) {
-    return t * fukushima_t_maclaurin_12.Evaluate(z);
+    return t * FukushimaTMaclaurin12::polynomial.Evaluate(z);
   } else {
     double const r = Sqrt(-h);
     return std::atanh(r * t) / r;
