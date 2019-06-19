@@ -1438,22 +1438,6 @@ double EllipticK(double const mc) {
   double m, mx;
   double kkc, nome;
 
-  constexpr double D1 = 1.0 / 16.0;
-  constexpr double D2 = 1.0 / 32.0;
-  constexpr double D3 = 21.0 / 1024.0;
-  constexpr double D4 = 31.0 / 2048.0;
-  constexpr double D5 = 6257.0 / 524288.0;
-  constexpr double D6 = 10293.0 / 1048576.0;
-  constexpr double D7 = 279025.0 / 33554432.0;
-  constexpr double D8 = 483127.0 / 67108864.0;
-  constexpr double D9 = 435506703.0 / 68719476736.0;
-  constexpr double D10 = 776957575.0 / 137438953472.0;
-  constexpr double D11 = 22417045555.0 / 4398046511104.0;
-  constexpr double D12 = 40784671953.0 / 8796093022208.0;
-  constexpr double D13 = 9569130097211.0 / 2251799813685248.0;
-  constexpr double D14 = 17652604545791.0 / 4503599627370496.0;
-  constexpr double TINY = 1.0e-99;
-
   m = 1.0 - mc;
   if (abs(m) < 1.0e-16) {
     return π / 2;
