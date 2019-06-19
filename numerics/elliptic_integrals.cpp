@@ -1438,6 +1438,8 @@ double EllipticK(double const mc) {
   double m, mx;
   double kkc, nome;
 
+  constexpr double TINY = 1.0e-99;
+
   m = 1.0 - mc;
   if (abs(m) < 1.0e-16) {
     return π / 2;
