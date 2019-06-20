@@ -238,7 +238,7 @@ double BulirschCel(double kc,
 
 template<int degree>
 double EllipticNomeQ(double const mc) {
-  return mc * 
+  return mc *
          EllipticNomeQMaclaurin<degree - 1, EstrinEvaluator>::polynomial.
              Evaluate(mc);
 }
