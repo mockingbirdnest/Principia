@@ -78,5 +78,11 @@
     <None Include="associated_legendre_function.wl">
       <Filter>Scripts</Filter>
     </None>
+    <None Include="elliptic_integrals.wl">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="fukushima_elliptic_bd.wl">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>

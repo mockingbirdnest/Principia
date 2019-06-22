@@ -24,6 +24,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="associated_legendre_function.wl" />
+    <None Include="elliptic_integrals.wl" />
+    <None Include="fukushima_elliptic_bd.wl" />
     <None Include="generate_graphs.wl" />
     <None Include="navball.wl" />
     <None Include="integration.wl" />
