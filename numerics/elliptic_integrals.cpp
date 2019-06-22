@@ -5,6 +5,7 @@
 #include <tuple>
 #include <utility>
 
+#include "numerics/combinatorics.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -130,6 +131,49 @@ class EllipticNomeQMaclaurin {
   static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
       polynomial{Generator<std::make_index_sequence<n + 1>>::series};
 };
+
+// A generator for the Maclaurin series for Fukushima's elliptic Fs integral.
+template<int n, template<typename, typename, int> class Evaluator>
+class FukushimaEllipticFsMaclaurin {
+  template<typename>
+  struct Generator;
+
+  template<int... k>
+  struct Generator<std::index_sequence<k...>> {
+    static auto constexpr series = std::make_tuple(
+        static_cast<double>(DoubleFactorial(2 * k - 1) *
+                            DoubleFactorial(2 * n - 2 * k - 1)) /
+        static_cast<double>((1 << n) * (2 * n + 1) *
+                            Factorial(k) * Factorial(n - k))...);
+  };
+
+ public:
+  static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
+      polynomial{Generator<std::make_index_sequence<n + 1>>::series};
+};
+
+using FukushimaEllipticFsMaclaurin1 =
+    FukushimaEllipticFsMaclaurin<1, HornerEvaluator>;
+using FukushimaEllipticFsMaclaurin2 =
+    FukushimaEllipticFsMaclaurin<2, HornerEvaluator>;
+using FukushimaEllipticFsMaclaurin3 =
+    FukushimaEllipticFsMaclaurin<3, HornerEvaluator>;
+using FukushimaEllipticFsMaclaurin4 =
+    FukushimaEllipticFsMaclaurin<4, EstrinEvaluator>;
+using FukushimaEllipticFsMaclaurin5 =
+    FukushimaEllipticFsMaclaurin<5, EstrinEvaluator>;
+using FukushimaEllipticFsMaclaurin6 =
+    FukushimaEllipticFsMaclaurin<6, EstrinEvaluator>;
+using FukushimaEllipticFsMaclaurin7 =
+    FukushimaEllipticFsMaclaurin<7, EstrinEvaluator>;
+using FukushimaEllipticFsMaclaurin8 =
+    FukushimaEllipticFsMaclaurin<8, EstrinEvaluator>;
+using FukushimaEllipticFsMaclaurin9 =
+    FukushimaEllipticFsMaclaurin<9, EstrinEvaluator>;
+using FukushimaEllipticFsMaclaurin10 =
+    FukushimaEllipticFsMaclaurin<10, EstrinEvaluator>;
+using FukushimaEllipticFsMaclaurin11 =
+    FukushimaEllipticFsMaclaurin<11, EstrinEvaluator>;
 
 // A generator for the Maclaurin series for Fukushima's T function.
 template<int n, template<typename, typename, int> class Evaluator>
@@ -1034,51 +1078,45 @@ void FukushimaEllipticBsDsJs(double const s₀,
   }
 }
 
+template<template<typename, typename, int> class Evaluator, typename... Args>
+class FukushimaEllipticDsBsMaclaurin {
+  static constexpr int n = sizeof... Args;
+
+  template<typename>
+  struct Generator;
+
+  template<int... k>
+  struct Generator<std::index_sequence<k...>> {
+    void MultiplyByBsCoefficient(std::tuple<Args...> const& arg) {
+      return std::make_tuple(std::get<k>(arg) * 2.0 /
+                             static_cast<double>(2 * k + 1)...);
+    }
+
+    void MultiplyByDsCoefficient(std::tuple<Args...> const& arg) {
+      return std::make_tuple(std::get<k>(arg) * static_cast<double>(2 * k - 1) /
+                             static_cast<double>(2 * k + 1)...);
+    }
+  };
+
+ public:
+  static PolynomialInMonomialBasis<double, double, n, Evaluator> const
+  MakeBsPolynomial(Args... args) {
+    return Generator<std::make_index_sequence<n + 1>>::MultiplyByBsCoefficient(
+        std::make_tuple(args...));
+  }
+
+  static PolynomialInMonomialBasis<double, double, n, Evaluator> const
+  MakeDsPolynomial(Args... args) {
+    return Generator<std::make_index_sequence<n + 1>>::MultiplyByDsCoefficient(
+        std::make_tuple(args...));
+  }
+};
+
+// See [Fuku11b], section 2.3 for this function.
 void FukushimaEllipticBsDsMaclaurinSeries(double const y,
                                           double const m,
                                           double& b,
                                           double& d) {
-  constexpr double F10 = 1.0 / 6.0;
-  constexpr double F20 = 3.0 / 40.0;
-  constexpr double F21 = 2.0 / 40.0;
-  constexpr double F30 = 5.0 / 112.0;
-  constexpr double F31 = 3.0 / 112.0;
-  constexpr double F40 = 35.0 / 1152.0;
-  constexpr double F41 = 20.0 / 1152.0;
-  constexpr double F42 = 18.0 / 1152.0;
-  constexpr double F50 = 63.0 / 2816.0;
-  constexpr double F51 = 35.0 / 2816.0;
-  constexpr double F52 = 30.0 / 2816.0;
-  constexpr double F60 = 231.0 / 13312.0;
-  constexpr double F61 = 126.0 / 13312.0;
-  constexpr double F62 = 105.0 / 13312.0;
-  constexpr double F63 = 100.0 / 13312.0;
-  constexpr double F70 = 429.0 / 30720.0;
-  constexpr double F71 = 231.0 / 30720.0;
-  constexpr double F72 = 189.0 / 30720.0;
-  constexpr double F73 = 175.0 / 30720.0;
-  constexpr double F80 = 6435.0 / 557056.0;
-  constexpr double F81 = 3432.0 / 557056.0;
-  constexpr double F82 = 2722.0 / 557056.0;
-  constexpr double F83 = 2520.0 / 557056.0;
-  constexpr double F84 = 2450.0 / 557056.0;
-  constexpr double F90 = 12155.0 / 1245184.0;
-  constexpr double F91 = 6435.0 / 1245184.0;
-  constexpr double F92 = 5148.0 / 1245184.0;
-  constexpr double F93 = 4620.0 / 1245184.0;
-  constexpr double F94 = 4410.0 / 1245184.0;
-  constexpr double FA0 = 46189.0 / 5505024.0;
-  constexpr double FA1 = 24310.0 / 5505024.0;
-  constexpr double FA2 = 19305.0 / 5505024.0;
-  constexpr double FA3 = 17160.0 / 5505024.0;
-  constexpr double FA4 = 16170.0 / 5505024.0;
-  constexpr double FA5 = 15876.0 / 5505024.0;
-  constexpr double FB0 = 88179.0 / 12058624.0;
-  constexpr double FB1 = 46189.0 / 12058624.0;
-  constexpr double FB2 = 36465.0 / 12058624.0;
-  constexpr double FB3 = 32175.0 / 12058624.0;
-  constexpr double FB4 = 30030.0 / 12058624.0;
-  constexpr double FB5 = 29106.0 / 12058624.0;
 
   constexpr double A1 = 3.0 / 5.0;
   constexpr double A2 = 5.0 / 7.0;
@@ -1096,24 +1134,17 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
   double D1, D2, D3, D4, D5, D6, D7, D8, D9, DA, DB;
   constexpr double D0 = 1.0 / 3.0;
 
-  double F1, F2, F3, F4, F5, F6, F7, F8, F9, FA, FB;
-  F1 = F10 + m * F10;
-  F2 = F20 + m * (F21 + m * F20);
-  F3 = F30 + m * (F31 + m * (F31 + m * F30));
-  F4 = F40 + m * (F41 + m * (F42 + m * (F41 + m * F40)));
-  F5 = F50 + m * (F51 + m * (F52 + m * (F52 + m * (F51 + m * F50))));
-  F6 = F60 + m * (F61 + m * (F62 + m * (F63 + m * (F62 + m * (F61 +
-       m * F60)))));
-  F7 = F70 + m * (F71 + m * (F72 + m * (F73 + m * (F73 + m * (F72 + m * (F71 +
-       m * F70))))));
-  F8 = F80 + m * (F81 + m * (F82 + m * (F83 + m * (F84 + m * (F83 + m * (F82 +
-       m * (F81 + m * F80)))))));
-  F9 = F90 + m * (F91 + m * (F92 + m * (F93 + m * (F94 + m * (F94 + m * (F93 +
-       m * (F92 + m * (F91 + m * F90))))))));
-  FA = FA0 + m * (FA1 + m * (FA2 + m * (FA3 + m * (FA4 + m * (FA5 + m * (FA4 +
-       m * (FA3 + m * (FA2 + m * (FA1 + m * FA0)))))))));
-  FB = FB0 + m * (FB1 + m * (FB2 + m * (FB3 + m * (FB4 + m * (FB5 + m * (FB5 +
-       m * (FB4 + m * (FB3 + m * (FB2 + m * (FB1 + m * FB0))))))))));
+  double const F1 = FukushimaEllipticFsMaclaurin1::polynomial.Evaluate(m);
+  double const F2 = FukushimaEllipticFsMaclaurin2::polynomial.Evaluate(m);
+  double const F3 = FukushimaEllipticFsMaclaurin3::polynomial.Evaluate(m);
+  double const F4 = FukushimaEllipticFsMaclaurin4::polynomial.Evaluate(m);
+  double const F5 = FukushimaEllipticFsMaclaurin5::polynomial.Evaluate(m);
+  double const F6 = FukushimaEllipticFsMaclaurin6::polynomial.Evaluate(m);
+  double const F7 = FukushimaEllipticFsMaclaurin7::polynomial.Evaluate(m);
+  double const F8 = FukushimaEllipticFsMaclaurin8::polynomial.Evaluate(m);
+  double const F9 = FukushimaEllipticFsMaclaurin9::polynomial.Evaluate(m);
+  double const FA = FukushimaEllipticFsMaclaurin10::polynomial.Evaluate(m);
+  double const FB = FukushimaEllipticFsMaclaurin11::polynomial.Evaluate(m);
 
   D1 = F1 * A1;
   D2 = F2 * A2;
