@@ -773,6 +773,7 @@ double EllipticNomeQ(double const mc) {
 void FukushimaEllipticBD(double const mc, double& b, double& d) {
   double elk, mx, kkc;
 
+  // 2 * KX(mc) - 1
   constexpr double K1 = 1.0 / 4.0;
   constexpr double K2 = 9.0 / 64.0;
   constexpr double K3 = 25.0 / 256.0;
@@ -781,6 +782,7 @@ void FukushimaEllipticBD(double const mc, double& b, double& d) {
   constexpr double K6 = 53361.0 / 1048576.0;
   constexpr double K7 = 184041.0 / 4194304.0;
 
+  // -2 * B*X(mc)
   constexpr double B1 = 1.0 / 2.0;
   constexpr double B2 = 1.0 / 16.0;
   constexpr double B3 = 3.0 / 128.0;
@@ -790,6 +792,7 @@ void FukushimaEllipticBD(double const mc, double& b, double& d) {
   constexpr double B7 = 7623.0 / 2097152.0;
   constexpr double B8 = 184041.0 / 67108864.0;
 
+  // 2 * EX(mc)
   constexpr double D1 = 1.0 / 2.0;
   constexpr double D2 = 3.0 / 16.0;
   constexpr double D3 = 15.0 / 128.0;
