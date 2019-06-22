@@ -1513,7 +1513,71 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
   PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> jsA9(
       std::make_tuple(JA90));
 
-
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js1(
+      std::make_tuple(js10.Evaluate(n)));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js2(
+      std::make_tuple(js20.Evaluate(n),
+                      js21.Evaluate(n)));
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js3(
+      std::make_tuple(js30.Evaluate(n),
+                      js31.Evaluate(n),
+                      js32.Evaluate(n)));
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js4(
+      std::make_tuple(js40.Evaluate(n),
+                      js41.Evaluate(n),
+                      js42.Evaluate(n),
+                      js43.Evaluate(n)));
+  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js5(
+      std::make_tuple(js50.Evaluate(n),
+                      js51.Evaluate(n),
+                      js52.Evaluate(n),
+                      js53.Evaluate(n),
+                      js54.Evaluate(n)));
+  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> js6(
+      std::make_tuple(js60.Evaluate(n),
+                      js61.Evaluate(n),
+                      js62.Evaluate(n),
+                      js63.Evaluate(n),
+                      js64.Evaluate(n),
+                      js65.Evaluate(n)));
+  PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> js7(
+      std::make_tuple(js70.Evaluate(n),
+                      js71.Evaluate(n),
+                      js72.Evaluate(n),
+                      js73.Evaluate(n),
+                      js74.Evaluate(n),
+                      js75.Evaluate(n),
+                      js76.Evaluate(n)));
+  PolynomialInMonomialBasis<double, double, 7, HornerEvaluator> js8(
+      std::make_tuple(js80.Evaluate(n),
+                      js81.Evaluate(n),
+                      js82.Evaluate(n),
+                      js83.Evaluate(n),
+                      js84.Evaluate(n),
+                      js85.Evaluate(n),
+                      js86.Evaluate(n),
+                      js87.Evaluate(n)));
+  PolynomialInMonomialBasis<double, double, 8, HornerEvaluator> js9(
+      std::make_tuple(js90.Evaluate(n),
+                      js91.Evaluate(n),
+                      js92.Evaluate(n),
+                      js93.Evaluate(n),
+                      js94.Evaluate(n),
+                      js95.Evaluate(n),
+                      js96.Evaluate(n),
+                      js97.Evaluate(n),
+                      js98.Evaluate(n)));
+  PolynomialInMonomialBasis<double, double, 9, HornerEvaluator> jsA(
+      std::make_tuple(jsA0.Evaluate(n),
+                      jsA1.Evaluate(n),
+                      jsA2.Evaluate(n),
+                      jsA3.Evaluate(n),
+                      jsA4.Evaluate(n),
+                      jsA5.Evaluate(n),
+                      jsA6.Evaluate(n),
+                      jsA7.Evaluate(n),
+                      jsA8.Evaluate(n),
+                      jsA9.Evaluate(n)));
 
   J1 = J100;
   J2 = J200 + n * J201 + m * J210;
