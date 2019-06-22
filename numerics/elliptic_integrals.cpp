@@ -1671,7 +1671,8 @@ double EllipticK(double const mc) {
   } else if (mc < 0.1) {
     double const nome = EllipticNomeQ<14>(mc);
     // Evaluate K'.
-    return -elliptic_k_taylor_0_05.Evaluate(mc - 0.05) * (1 / π) * std::log(nome);
+    return -elliptic_k_taylor_0_05.Evaluate(mc - 0.05) * (1 / π) *
+           std::log(nome);
   } else if (m <= 0.1) {
     return elliptic_k_taylor_0_05.Evaluate(m - 0.05);
   } else if (m <= 0.2) {
