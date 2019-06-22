@@ -851,7 +851,7 @@ void FukushimaEllipticBD(double const mc, double& b, double& d) {
   } else if (mc < 0.1) {
     // This algorithm differs from the one in [Fuku11a] because it divides
     // log(q(mc)), not just log(mc / 16).  It tries to retain the same notation,
-    // though.  Note that it differs quite a bit from Fukushima's original code.
+    // though.
     double const nome = EllipticNomeQ<16>(mc);
     double const x_mc = -std::log(nome);  // X(mc).
     double kx_mc;  // KX(mc).
@@ -864,13 +864,10 @@ void FukushimaEllipticBD(double const mc, double& b, double& d) {
       kx_mc = fukushima_kx_taylor_0_05.Evaluate(mx);
       ex_mc = fukushima_ex_taylor_0_05.Evaluate(mx);
     }
-    // NOTE(phl): Fukushima's code does a variety of operations involving
-    // quantities x_mc * kx_mc and x_mc * ex_mc.  This seems dangerous next to
-    // the logarithmic singularity.  I'd rather do the multiplication by x_mc
-    // late, even at the cost of one extra division.
+    // Equivalent to Fukushima's code, but much simplified.
     double const one_over_two_kx_mc = 0.5 / kx_mc;
     b = (x_mc * (ex_mc - mc * kx_mc) + one_over_two_kx_mc) / m;
-    d = (x_mc * (kx_mc - ex_mc) - one_over_two_kx_mc) / m;
+    d = x_mc * kx_mc - b;
   } else if (m <= 0.01) {
     b = (-π) * fukushima_b٭x_maclaurin.Evaluate(m);
     d = π * fukushima_ex_maclaurin.Evaluate(m);
