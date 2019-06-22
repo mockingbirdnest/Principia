@@ -1078,41 +1078,56 @@ void FukushimaEllipticBsDsJs(double const s₀,
   }
 }
 
-template<template<typename, typename, int> class Evaluator, typename... Args>
+template<template<typename, typename, int> class Evaluator>
 class FukushimaEllipticDsBsMaclaurin {
-  static constexpr int n = sizeof...(Args);
-
-  template<typename>
+  template<typename, typename>
   struct Generator;
 
-  template<int... k>
-  struct Generator<std::index_sequence<k...>> {
-    static std::tuple<Args...> MultiplyByBsCoefficient(
-        std::tuple<Args...> const& arg) {
-      return std::make_tuple(std::get<k>(arg) * 2.0 /
-                             static_cast<double>(2 * k + 1)...);
+  template<typename Tuple, int... k>
+  struct Generator<Tuple, std::index_sequence<k...>> {
+    static Tuple ComputeBsCoefficient(Tuple const& tuple) {
+      return std::make_tuple(std::get<k>(tuple) -
+                             std::get<k - 1>(tuple) *
+                                 static_cast<double>(2 * k - 1) /
+                                 static_cast<double>(2 * k + 1)...);
     }
 
-    static std::tuple<Args...> MultiplyByDsCoefficient(
-        std::tuple<Args...> const& arg) {
-      return std::make_tuple(std::get<k>(arg) * static_cast<double>(2 * k - 1) /
-                             static_cast<double>(2 * k + 1)...);
+    static Tuple ComputeDsCoefficient(Tuple const& tuple) {
+      return std::make_tuple(std::get<k>(tuple) *
+                             static_cast<double>(2 * k + 1) /
+                             static_cast<double>(2 * k + 3)...);
     }
   };
 
  public:
-  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
+  template<typename... Args>
+  static PolynomialInMonomialBasis<double,
+                                   double,
+                                   sizeof...(Args) - 1,
+                                   Evaluator> const
   MakeBsPolynomial(Args... args) {
-    return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
-        Generator<std::make_index_sequence<n>>::MultiplyByBsCoefficient(
-            std::make_tuple(args...)));
+    using Tuple = std::tuple<Args...>;
+    return PolynomialInMonomialBasis<double,
+                                     double,
+                                     sizeof...(Args) - 1,
+                                     Evaluator>(
+        Generator<Tuple, std::make_index_sequence<sizeof...(Args)>>::
+            ComputeBsCoefficient(std::make_tuple(args...)));
   }
 
-  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
+  template<typename... Args>
+  static PolynomialInMonomialBasis<double,
+                                   double,
+                                   sizeof...(Args) - 1,
+                                   Evaluator> const
   MakeDsPolynomial(Args... args) {
-    return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
-        Generator<std::make_index_sequence<n>>::MultiplyByDsCoefficient(
-            std::make_tuple(args...)));
+    using Tuple = std::tuple<Args...>;
+    return PolynomialInMonomialBasis<double,
+                                     double,
+                                     sizeof...(Args) - 1,
+                                     Evaluator>(
+        Generator<Tuple, std::make_index_sequence<sizeof...(Args)>>::
+            ComputeDsCoefficient(std::make_tuple(args...)));
   }
 };
 
@@ -1150,11 +1165,10 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
   double const FA = FukushimaEllipticFsMaclaurin10::polynomial.Evaluate(m);
   double const FB = FukushimaEllipticFsMaclaurin11::polynomial.Evaluate(m);
 
-  auto p = FukushimaEllipticDsBsMaclaurin<EstrinEvaluator/*,double,double,double,
-  double,double,double,
-    double,double,double,
-    double,double,double*/>::MakeDsPolynomial(
+  auto const fukushima_elliptic_ds_maclaurin =
+      FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeDsPolynomial(
       1.0, F1, F2, F3, F4, F5, F6, F7, F8, F9, FA, FB);
+  d = fukushima_elliptic_ds_maclaurin.Evaluate(y);
 
   D1 = F1 * A1;
   D2 = F2 * A2;
@@ -1168,18 +1182,6 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
   DA = FA * AA;
   DB = FB * AB;
 
-  d = D0 +
-      y * (D1 +
-           y * (D2 +
-                y * (D3 +
-                     y * (D4 +
-                          y * (D5 +
-                               y * (D6 +
-                                    y * (D7 +
-                                         y * (D8 +
-                                              y * (D9 +
-                                                   y * (DA + y * DB))))))))));
-
   B1 = F1 - D0;
   B2 = F2 - D1;
   B3 = F3 - D2;
@@ -1192,17 +1194,22 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
   BA = FA - D9;
   BB = FB - DA;
 
-  b = 1.0 +
-      y * (B1 +
-           y * (B2 +
-                y * (B3 +
-                     y * (B4 +
-                          y * (B5 +
-                               y * (B6 +
-                                    y * (B7 +
-                                         y * (B8 +
-                                              y * (B9 +
-                                                   y * (BA + y * BB))))))))));
+  auto const fukushima_elliptic_bs_maclaurin =
+      FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeBsPolynomial(
+      1.0, F1, F2, F3, F4, F5, F6, F7, F8, F9, FA, FB);
+  b = fukushima_elliptic_bs_maclaurin.Evaluate(y);
+
+  //b = 1.0 +
+  //    y * (B1 +
+  //         y * (B2 +
+  //              y * (B3 +
+  //                   y * (B4 +
+  //                        y * (B5 +
+  //                             y * (B6 +
+  //                                  y * (B7 +
+  //                                       y * (B8 +
+  //                                            y * (B9 +
+  //                                                 y * (BA + y * BB))))))))));
 }
 
 double FukushimaEllipticJsMaclaurinSeries(double const y,
