@@ -1392,6 +1392,129 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
 
   double J1, J2, J3, J4, J5, J6, J7, J8, J9, JA;
 
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js10(
+      std::make_tuple(J100));
+
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js20(
+      std::make_tuple(J200, J201));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js21(
+      std::make_tuple(J210));
+
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js30(
+      std::make_tuple(J300, J301, J302));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js31(
+      std::make_tuple(J310, J311));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js32(
+      std::make_tuple(J320));
+
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js40(
+      std::make_tuple(J400, J401, J402, J403));
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js41(
+      std::make_tuple(J410, J411, J412));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js42(
+      std::make_tuple(J420, J421));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js43(
+      std::make_tuple(J430));
+
+  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js50(
+      std::make_tuple(J500, J501, J502, J503, J504));
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js51(
+      std::make_tuple(J510, J511, J512, J513));
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js52(
+      std::make_tuple(J520, J521, J522));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js53(
+      std::make_tuple(J530, J531));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js54(
+      std::make_tuple(J540));
+
+  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> js60(
+      std::make_tuple(J600, J601, J602, J603, J604, J605));
+  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js61(
+      std::make_tuple(J610, J611, J612, J613, J614));
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js62(
+      std::make_tuple(J620, J621, J622, J623));
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js63(
+      std::make_tuple(J630, J631, J632));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js64(
+      std::make_tuple(J640, J641));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js65(
+      std::make_tuple(J650));
+
+  PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> js70(
+      std::make_tuple(J700, J701, J702, J703, J704, J705, J706));
+  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> js71(
+      std::make_tuple(J710, J711, J712, J713, J714, J715));
+  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js72(
+      std::make_tuple(J720, J721, J722, J723, J724));
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js73(
+      std::make_tuple(J730, J731, J732, J733));
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js74(
+      std::make_tuple(J740, J741, J742));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js75(
+      std::make_tuple(J750, J751));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js76(
+      std::make_tuple(J760));
+
+  PolynomialInMonomialBasis<double, double, 7, HornerEvaluator> js80(
+      std::make_tuple(J800, J801, J802, J803, J804, J805, J806, J807));
+  PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> js81(
+      std::make_tuple(J810, J811, J812, J813, J814, J815, J816));
+  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> js82(
+      std::make_tuple(J820, J821, J822, J823, J824, J825));
+  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js83(
+      std::make_tuple(J830, J831, J832, J833, J834));
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js84(
+      std::make_tuple(J840, J841, J842, J843));
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js85(
+      std::make_tuple(J850, J851, J852));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js86(
+      std::make_tuple(J860, J861));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js87(
+      std::make_tuple(J870));
+
+  PolynomialInMonomialBasis<double, double, 8, HornerEvaluator> js90(
+      std::make_tuple(J900, J901, J902, J903, J904, J905, J906, J907, J908));
+  PolynomialInMonomialBasis<double, double, 7, HornerEvaluator> js91(
+      std::make_tuple(J910, J911, J912, J913, J914, J915, J916, J917));
+  PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> js92(
+      std::make_tuple(J920, J921, J922, J923, J924, J925, J926));
+  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> js93(
+      std::make_tuple(J930, J931, J932, J933, J934, J935));
+  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js94(
+      std::make_tuple(J940, J941, J942, J943, J944));
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js95(
+      std::make_tuple(J950, J951, J952, J953));
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js96(
+      std::make_tuple(J960, J961, J962));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js97(
+      std::make_tuple(J970, J971));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js98(
+      std::make_tuple(J980));
+
+  PolynomialInMonomialBasis<double, double, 9, HornerEvaluator> jsA0(
+      std::make_tuple(
+          JA00, JA01, JA02, JA03, JA04, JA05, JA06, JA07, JA08, JA09));
+  PolynomialInMonomialBasis<double, double, 8, HornerEvaluator> jsA1(
+      std::make_tuple(JA10, JA11, JA12, JA13, JA14, JA15, JA16, JA17, JA18));
+  PolynomialInMonomialBasis<double, double, 7, HornerEvaluator> jsA2(
+      std::make_tuple(JA20, JA21, JA22, JA23, JA24, JA25, JA26, JA27));
+  PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> jsA3(
+      std::make_tuple(JA30, JA31, JA32, JA33, JA34, JA35, JA36));
+  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> jsA4(
+      std::make_tuple(JA40, JA41, JA42, JA43, JA44, JA45));
+  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> jsA5(
+      std::make_tuple(JA50, JA51, JA52, JA53, JA54));
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> jsA6(
+      std::make_tuple(JA60, JA61, JA62, JA63));
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> jsA7(
+      std::make_tuple(JA70, JA71, JA72));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> jsA8(
+      std::make_tuple(JA80, JA81));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> jsA9(
+      std::make_tuple(JA90));
+
+
+
   J1 = J100;
   J2 = J200 + n * J201 + m * J210;
   J3 = J300 + n * (J301 + n * J302) + m * (J310 + n * J311 + m * J320);
