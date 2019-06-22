@@ -175,6 +175,57 @@ using FukushimaEllipticFsMaclaurin10 =
 using FukushimaEllipticFsMaclaurin11 =
     FukushimaEllipticFsMaclaurin<11, EstrinEvaluator>;
 
+// A helper class for building the Maclaurin polynomials for the multivariate Bs
+// and Ds.
+template<template<typename, typename, int> class Evaluator>
+class FukushimaEllipticDsBsMaclaurin {
+  template<typename, typename>
+  struct Generator;
+
+  template<typename Tuple, int... k>
+  struct Generator<Tuple, std::index_sequence<k...>> {
+    template<int k>
+    static double ComputeBsCoefficient(Tuple const& tuple) {
+      if constexpr (k == 0) {
+        return 1.0;
+      } else {
+        return std::get<k>(tuple) -
+               std::get<k - 1>(tuple) * (static_cast<double>(2 * k - 1) /
+                                         static_cast<double>(2 * k + 1));
+      }
+    }
+
+    static Tuple ComputeBsCoefficients(Tuple const& tuple) {
+      return std::make_tuple(ComputeBsCoefficient<k>(tuple)...);
+    }
+
+    static Tuple ComputeDsCoefficients(Tuple const& tuple) {
+      return std::make_tuple(
+          std::get<k>(tuple) *
+          (static_cast<double>(2 * k + 1) / static_cast<double>(2 * k + 3))...);
+    }
+  };
+
+ public:
+  template<typename... Args, int n = sizeof...(Args)>
+  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
+  MakeBsPolynomial(Args... args) {
+    using Tuple = std::tuple<Args...>;
+    return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
+        Generator<Tuple, std::make_index_sequence<n>>::ComputeBsCoefficients(
+            std::make_tuple(args...)));
+  }
+
+  template<typename... Args, int n = sizeof...(Args)>
+  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
+  MakeDsPolynomial(Args... args) {
+    using Tuple = std::tuple<Args...>;
+    return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
+        Generator<Tuple, std::make_index_sequence<n>>::ComputeDsCoefficients(
+            std::make_tuple(args...)));
+  }
+};
+
 // A generator for the Maclaurin series for Fukushima's T function.
 template<int n, template<typename, typename, int> class Evaluator>
 class FukushimaTMaclaurin {
@@ -790,57 +841,6 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.05191068843704411873477650167894906357568,
                         0.04978344771840508342564702588639140680363,
                         0.04812375496807025605361215168677991360500));
-
-// A helper class for building the Maclaurin polynomials for the multivariate Bs
-// and Ds.
-template<template<typename, typename, int> class Evaluator>
-class FukushimaEllipticDsBsMaclaurin {
-  template<typename, typename>
-  struct Generator;
-
-  template<typename Tuple, int... k>
-  struct Generator<Tuple, std::index_sequence<k...>> {
-    template<int k>
-    static double ComputeBsCoefficient(Tuple const& tuple) {
-      if constexpr (k == 0) {
-        return 1.0;
-      } else {
-        return std::get<k>(tuple) - std::get<k - 1>(tuple) *
-                                        static_cast<double>(2 * k - 1) /
-                                        static_cast<double>(2 * k + 1);
-      }
-    }
-
-    static Tuple ComputeBsCoefficients(Tuple const& tuple) {
-      return std::make_tuple(ComputeBsCoefficient<k>(tuple)...);
-    }
-
-    static Tuple ComputeDsCoefficients(Tuple const& tuple) {
-      return std::make_tuple(std::get<k>(tuple) *
-                             static_cast<double>(2 * k + 1) /
-                             static_cast<double>(2 * k + 3)...);
-    }
-  };
-
- public:
-  template<typename... Args, int n = sizeof...(Args)>
-  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
-  MakeBsPolynomial(Args... args) {
-    using Tuple = std::tuple<Args...>;
-    return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
-        Generator<Tuple, std::make_index_sequence<n>>::ComputeBsCoefficients(
-            std::make_tuple(args...)));
-  }
-
-  template<typename... Args, int n = sizeof...(Args)>
-  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
-  MakeDsPolynomial(Args... args) {
-    using Tuple = std::tuple<Args...>;
-    return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
-        Generator<Tuple, std::make_index_sequence<n>>::ComputeDsCoefficients(
-            std::make_tuple(args...)));
-  }
-};
 
 //  Double precision general complete elliptic integral "cel"
 //
