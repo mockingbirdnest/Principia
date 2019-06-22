@@ -329,7 +329,7 @@ PolynomialInMonomialBasis<double, double, 19, EstrinEvaluator> const
 // Polynomials for FukushimaEllipticBD.  The last part of the name indicates the
 // value of m around which the approximation is valid.
 PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    fukushima_b_maclaurin_0_05(
+    fukushima_b_taylor_0_05(
         std::make_tuple(0.790401413584395132310045630540381158921005,
                         0.102006266220019154892513446364386528537788,
                         0.039878395558551460860377468871167215878458,
@@ -343,7 +343,7 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.003550452989196176932747744728766021440856,
                         0.003119229959988474753291950759202798352266));
 PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    fukushima_d_maclaurin_0_05(
+    fukushima_d_taylor_0_05(
         std::make_tuple(0.800602040206397047799296975176819811774784,
                         0.313994477771767756849615832867393028789057,
                         0.205913118705551954501930953451976374435088,
@@ -357,7 +357,7 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.0779906657291070378163237851392095284454654,
                         0.075080426851268007156477347905308063808848));
 PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    fukushima_b_maclaurin_0_15(
+    fukushima_b_taylor_0_15(
         std::make_tuple(0.80102406445284489393880821604009991524037,
                         0.11069534452963401497502459778015097487115,
                         0.047348746716993717753569559936346358937777,
@@ -371,7 +371,7 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.009849585546666211201566987057592610884309,
                         0.009656606347153765129943681090056980586986));
 PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    fukushima_d_maclaurin_0_15(
+    fukushima_d_taylor_0_15(
         std::make_tuple(0.834232667811735098431315595374145207701720,
                         0.360495281619098275577215529302260739976126,
                         0.262379664114505869328637749459234348287432,
@@ -385,7 +385,7 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.238708097425597860161720875806632864507536,
                         0.256707203545463755643710021815937785120030));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_b_maclaurin_0_25(
+    fukushima_b_taylor_0_25(
         std::make_tuple(0.81259777291992049322557009456643357559904,
                         0.12110961794551011284012693733241967660542,
                         0.057293376831239877456538980381277010644332,
@@ -400,7 +400,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.034384369179940975864103666824736551261799,
                         0.038738002072493935952384233588242422046537));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_d_maclaurin_0_25(
+    fukushima_d_taylor_0_25(
         std::make_tuple(0.873152581892675549645633563232643413901757,
                         0.420622230667770215976919792378536040460605,
                         0.344231061559450379368201151870166692934830,
@@ -415,7 +415,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         1.023268503573606060588689738498395211300483,
                         1.255859085136282496149035687741403985044122));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_b_maclaurin_0_35(
+    fukushima_b_taylor_0_35(
         std::make_tuple(0.8253235579835158949845697805395190063745,
                         0.1338621160836877898575391383950840569989,
                         0.0710112935979886745743770664203746758134,
@@ -430,7 +430,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.1465711325814398757043492181099197917984,
                         0.1902571373338462844225085057953823854177));
 PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
-    fukushima_d_maclaurin_0_35(
+    fukushima_d_taylor_0_35(
         std::make_tuple(0.9190270392420973478848471774160778462738,
                         0.5010021592882475139767453081737767171354,
                         0.4688312705664568629356644841691659415972,
@@ -446,7 +446,7 @@ PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
                         7.0338228700300311264031522795337352226926,
                         10.020043225034471401553194050933390974016));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_b_maclaurin_0_45(
+    fukushima_b_taylor_0_45(
         std::make_tuple(0.8394795702706129706783934654948360410325,
                         0.1499164403063963359478614453083470750543,
                         0.0908319358194288345999005586556105610069,
@@ -461,7 +461,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.7943896342593047502260866957039427731776,
                         1.2167625324297180206378753787253096783993));
 PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
-    fukushima_d_maclaurin_0_45(
+    fukushima_d_taylor_0_45(
         std::make_tuple(0.9744043665463696730314687662723484085813,
                         0.6132468053941609101234053415051402349752,
                         0.6710966695021669963502789954058993004082,
@@ -479,7 +479,7 @@ PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
                         149.56637449398047835236703116483092644714,
                         254.31790843104117434615624121937495622372));
 PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
-    fukushima_b_maclaurin_0_55(
+    fukushima_b_taylor_0_55(
         std::make_tuple(0.8554696151564199914087224774321783838373,
                         0.1708960726897395844132234165994754905373,
                         0.1213352290269482260207667564010437464156,
@@ -495,7 +495,7 @@ PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
                         11.269796855577941715109155203721740735793,
                         21.354577850382834496786315532111529462693));
 PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
-    fukushima_d_maclaurin_0_55(
+    fukushima_d_taylor_0_55(
         std::make_tuple(1.04345529511513353426326823569160142342838,
                         0.77962572192850485048535711388072271372632,
                         1.02974236093206758187389128668777397528702,
@@ -514,7 +514,7 @@ PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
                         5184.69242939480644062471334944523925163600,
                         10817.2133369041327524988910635205356016939));
 PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
-    fukushima_b_maclaurin_0_65(
+    fukushima_b_taylor_0_65(
         std::make_tuple(0.8739200618486431359820482173294324246058,
                         0.1998140574823769459497418213885348159654,
                         0.1727696158780152128147094051876565603862,
@@ -532,7 +532,7 @@ PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
                         1091.8547229028388292980623647414961662223,
                         2715.7658664038195881056269799613407111521));
 PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
-    fukushima_d_maclaurin_0_65(
+    fukushima_d_taylor_0_65(
         std::make_tuple(1.13367833657573316571671258513452768536080,
                         1.04864317372997039116746991765351150490010,
                         1.75346504119846451588826580872136305225406,
@@ -552,7 +552,7 @@ PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
                         605941.517281758859958050194535269219533685,
                         1.63108259953926832083633544697688841456604e6));
 PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
-    fukushima_b_maclaurin_0_75(
+    fukushima_b_taylor_0_75(
         std::make_tuple(0.895902820924731621258525533131864225704,
                         0.243140003766786661947749288357729051637,
                         0.273081875594105531575351304277604081620,
@@ -573,7 +573,7 @@ PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
                         3.807218502573632648224286313875985190526e6,
                         1.356638224422139551020110323739879481042e7));
 PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
-    fukushima_d_maclaurin_0_75(
+    fukushima_d_taylor_0_75(
         std::make_tuple(1.26061282657491161418014946566845780315983,
                         1.54866563808267658056930177790599939977154,
                         3.55366941187160761540650011660758187283401,
@@ -596,7 +596,7 @@ PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
                         7.16026753447893719179055010636502508063102e9,
                         2.72233079469633962247554894093591262281929e10));
 PolynomialInMonomialBasis<double, double, 14, EstrinEvaluator> const
-    fukushima_b_maclaurin_0_825(
+    fukushima_b_taylor_0_825(
         std::make_tuple(0.915922052601931494319853880201442948834592,
                         0.294714252429483394379515488141632749820347,
                         0.435776709264636140422971598963772380161131,
@@ -613,7 +613,7 @@ PolynomialInMonomialBasis<double, double, 14, EstrinEvaluator> const
                         1.876487670110449342170327796786290400635732e6,
                         9.216559908641567755240142886998737950775910e6));
 PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
-    fukushima_d_maclaurin_0_825(
+    fukushima_d_taylor_0_825(
         std::make_tuple(1.402200569110579095046054435635136986038164,
                         2.322205897861749446534352741005347103992773,
                         7.462158366466719682730245467372788273333992,
@@ -633,7 +633,7 @@ PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
                         4.004155595835610574316003488168804738481448e10,
                         2.154630668144966654449602981243932210695662e11));
 PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
-    fukushima_b_maclaurin_0_875(
+    fukushima_b_taylor_0_875(
         std::make_tuple(0.931906061029524827613331428871579482766771,
                         0.348448029538453860999386797137074571589376,
                         0.666809178846938247558793864839434184202736,
@@ -654,7 +654,7 @@ PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
                         2.539881257612812212004146637239987308133582e11,
                         1.808180007145359569674767150594344316702507e12));
 PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
-    fukushima_d_maclaurin_0_875(
+    fukushima_d_taylor_0_875(
         std::make_tuple(1.541690112721819084362258323861459983048179,
                         3.379176214579645449453938918349243359477706,
                         14.94058385670236671625328259137998668324435,
@@ -869,44 +869,44 @@ void FukushimaEllipticBD(double const mc, double& b, double& d) {
                     (D7 + m * D8)))))));
   } else if (m <= 0.1) {
     double const mx = 0.95 - mc;
-    b = fukushima_b_maclaurin_0_05.Evaluate(mx);
-    d = fukushima_d_maclaurin_0_05.Evaluate(mx);
+    b = fukushima_b_taylor_0_05.Evaluate(mx);
+    d = fukushima_d_taylor_0_05.Evaluate(mx);
   } else if (m <= 0.2) {
     double const mx = 0.85 - mc;
-    b = fukushima_b_maclaurin_0_15.Evaluate(mx);
-    d = fukushima_d_maclaurin_0_15.Evaluate(mx);
+    b = fukushima_b_taylor_0_15.Evaluate(mx);
+    d = fukushima_d_taylor_0_15.Evaluate(mx);
   } else if (m <= 0.3) {
     double const mx = 0.75 - mc;
-    b = fukushima_b_maclaurin_0_25.Evaluate(mx);
-    d = fukushima_d_maclaurin_0_25.Evaluate(mx);
+    b = fukushima_b_taylor_0_25.Evaluate(mx);
+    d = fukushima_d_taylor_0_25.Evaluate(mx);
   } else if (m <= 0.4) {
     double const mx = 0.65 - mc;
-    b = fukushima_b_maclaurin_0_35.Evaluate(mx);
-    d = fukushima_d_maclaurin_0_35.Evaluate(mx);
+    b = fukushima_b_taylor_0_35.Evaluate(mx);
+    d = fukushima_d_taylor_0_35.Evaluate(mx);
   } else if (m <= 0.5) {
     double const mx = 0.55 - mc;
-    b = fukushima_b_maclaurin_0_45.Evaluate(mx);
-    d = fukushima_d_maclaurin_0_45.Evaluate(mx);
+    b = fukushima_b_taylor_0_45.Evaluate(mx);
+    d = fukushima_d_taylor_0_45.Evaluate(mx);
   } else if (m <= 0.6) {
     double const mx = 0.45 - mc;
-    b = fukushima_b_maclaurin_0_55.Evaluate(mx);
-    d = fukushima_d_maclaurin_0_55.Evaluate(mx);
+    b = fukushima_b_taylor_0_55.Evaluate(mx);
+    d = fukushima_d_taylor_0_55.Evaluate(mx);
   } else if (m <= 0.7) {
     double const mx = 0.35 - mc;
-    b = fukushima_b_maclaurin_0_65.Evaluate(mx);
-    d = fukushima_d_maclaurin_0_65.Evaluate(mx);
+    b = fukushima_b_taylor_0_65.Evaluate(mx);
+    d = fukushima_d_taylor_0_65.Evaluate(mx);
   } else if (m <= 0.8) {
     double const mx = 0.25 - mc;
-    b = fukushima_b_maclaurin_0_75.Evaluate(mx);
-    d = fukushima_d_maclaurin_0_75.Evaluate(mx);
+    b = fukushima_b_taylor_0_75.Evaluate(mx);
+    d = fukushima_d_taylor_0_75.Evaluate(mx);
   } else if (m <= 0.85) {
     double const mx = 0.175 - mc;
-    b = fukushima_b_maclaurin_0_825.Evaluate(mx);
-    d = fukushima_d_maclaurin_0_825.Evaluate(mx);
+    b = fukushima_b_taylor_0_825.Evaluate(mx);
+    d = fukushima_d_taylor_0_825.Evaluate(mx);
   } else {
     double const mx = 0.125 - mc;
-    b = fukushima_b_maclaurin_0_875.Evaluate(mx);
-    d = fukushima_d_maclaurin_0_875.Evaluate(mx);
+    b = fukushima_b_taylor_0_875.Evaluate(mx);
+    d = fukushima_d_taylor_0_875.Evaluate(mx);
   }
 }
 
