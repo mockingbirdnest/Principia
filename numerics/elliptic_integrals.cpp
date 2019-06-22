@@ -677,6 +677,76 @@ PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
                         3.773018634056605404718444239040628892506293e15,
                         2.868263194837819660109735981973458220407767e16));
 
+// NOTE(phl): The following polynomials differ slightly from the original code
+// but they match more closely those in [Fuku11a].  The notation follows
+// [Fuku11a].
+// A polynomial for B٭X(m) / m.
+PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
+    fukushima_b٭x_maclaurin(std::make_tuple(-1.0 / 4.0,
+                                            -1.0 / 32.0,
+                                            -3.0 / 256.0,
+                                            -25.0 / 4096.0,
+                                            -245.0 / 65536.0,
+                                            -1323.0 / 524288.0,
+                                            -7623.0 / 4194304.0,
+                                            -184041.0 / 134217728.0));
+
+// A polynomial for EX(m) / m.
+PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
+    fukushima_ex_maclaurin(std::make_tuple(1.0 / 4.0,
+                                           3.0 / 32.0,
+                                           15.0 / 256.0,
+                                           175.0 / 4096.0,
+                                           2205.0 / 65536.0,
+                                           14553.0 / 524288.0,
+                                           99099.0 / 4194304.0,
+                                           2760615.0 / 134217728.0));
+
+// A polynomial for KX(m).
+PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
+    fukushima_kx_maclaurin(std::make_tuple(1.0 / 2.0,
+                                           1.0 / 8.0,
+                                           9.0 / 128.0,
+                                           25.0 / 512.0,
+                                           1225.0 / 32768.0,
+                                           3969.0 / 131072.0,
+                                           53361.0 / 2097152.0,
+                                           184041.0 / 8388608.0));
+
+// A polynomial for EX(m).
+PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
+    fukushima_ex_taylor_0_05(
+        std::make_tuple(0.02548395442966088473597712420249483947953,
+                        0.51967384324140471318255255900132590084179,
+                        0.20644951110163173131719312525729037023377,
+                        0.13610952125712137420240739057403788152260,
+                        0.10458014040566978574883406877392984277718,
+                        0.08674612915759188982465635633597382093113,
+                        0.07536380269617058326770965489534014190391,
+                        0.06754544594618781950496091910264174396541,
+                        0.06190939688096410201497509102047998554900,
+                        0.05771071515451786553160533778648705873199,
+                        0.05451217098672207169493767625617704078257,
+                        0.05204028407582600387265992107877094920787,
+                        0.05011532514520838441892567405879742720039));
+
+// A polynomial for KX(m).
+PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
+    fukushima_kx_taylor_0_05(
+        std::make_tuple(0.01286425658832983978282698630501405107893,
+                        0.26483429894479586582278131697637750604652,
+                        0.15647573786069663900214275050014481397750,
+                        0.11426146079748350067910196981167739749361,
+                        0.09202724415743445309239690377424239940545,
+                        0.07843218831801764082998285878311322932444,
+                        0.06935260142642158347117402021639363379689,
+                        0.06293203529021269706312943517695310879457,
+                        0.05821227592779397036582491084172892108196,
+                        0.05464909112091564816652510649708377642504,
+                        0.05191068843704411873477650167894906357568,
+                        0.04978344771840508342564702588639140680363,
+                        0.04812375496807025605361215168677991360500));
+
 //  Double precision general complete elliptic integral "cel"
 //
 //  created by Burlisch
@@ -771,102 +841,39 @@ double EllipticNomeQ(double const mc) {
 //     Inputs: mc   = complementary parameter 0 <= mc   <= 1
 //
 void FukushimaEllipticBD(double const mc, double& b, double& d) {
-  double elk, mx, kkc;
-
-  // 2 * KX(mc) - 1
-  constexpr double K1 = 1.0 / 4.0;
-  constexpr double K2 = 9.0 / 64.0;
-  constexpr double K3 = 25.0 / 256.0;
-  constexpr double K4 = 1225.0 / 16384.0;
-  constexpr double K5 = 3969.0 / 65536.0;
-  constexpr double K6 = 53361.0 / 1048576.0;
-  constexpr double K7 = 184041.0 / 4194304.0;
-
-  // -2 * B*X(mc)
-  constexpr double B1 = 1.0 / 2.0;
-  constexpr double B2 = 1.0 / 16.0;
-  constexpr double B3 = 3.0 / 128.0;
-  constexpr double B4 = 25.0 / 2048.0;
-  constexpr double B5 = 245.0 / 32768.0;
-  constexpr double B6 = 1323.0 / 262144.0;
-  constexpr double B7 = 7623.0 / 2097152.0;
-  constexpr double B8 = 184041.0 / 67108864.0;
-
-  // 2 * EX(mc)
-  constexpr double D1 = 1.0 / 2.0;
-  constexpr double D2 = 3.0 / 16.0;
-  constexpr double D3 = 15.0 / 128.0;
-  constexpr double D4 = 175.0 / 2048.0;
-  constexpr double D5 = 2205.0 / 32768.0;
-  constexpr double D6 = 14553.0 / 262144.0;
-  constexpr double D7 = 99099.0 / 2097152.0;
-  constexpr double D8 = 2760615.0 / 67108864.0;
-
-  double logq2, dkkc, dddc, dele, delb, elk1;
-
   double const m = 1.0 - mc;
   if (m < std::numeric_limits<double>::epsilon() / 2.0) {
     b = π / 4;
     d = π / 4;
   } else if (mc < std::numeric_limits<double>::epsilon() / 2.0) {
-    //TODO(phl):clarify
     b = 1.0;
     d = (2.0 * log_2 - 1.0) - 0.5 * std::log(mc);
   } else if (mc < 0.1) {
-    //TODO(phl):clarify
+    // This algorithm differs from the one in [Fuku11a] because it divides
+    // log(q(mc)), not just log(mc / 16).  It tries to retain the same notation,
+    // though.  Note that it differs quite a bit from Fukushima's original code.
     double const nome = EllipticNomeQ<16>(mc);
+    double const x_mc = -std::log(nome);  // X(mc).
+    double kx_mc;  // KX(mc).
+    double ex_mc;  // EX(mc).
     if (mc < 0.01) {
-      dkkc = mc * (K1 +
-           mc * (K2 + mc * (K3 + mc * (K4 + mc * (K5 + mc * (K6 + mc * K7))))));
-      dddc = mc * (D1 +
-           mc * (D2 + mc * (D3 + mc * (D4 + mc * (D5 + mc * (D6 + mc * D7))))));
+      kx_mc = fukushima_kx_maclaurin.Evaluate(mc);
+      ex_mc = mc * fukushima_ex_maclaurin.Evaluate(mc);
     } else {
-      mx = mc - 0.05;
-
-  // (K'-1)/(π / 2)
-      dkkc = 0.01286425658832983978282698630501405107893
-          + mx * (0.26483429894479586582278131697637750604652
-          + mx * (0.15647573786069663900214275050014481397750
-          + mx * (0.11426146079748350067910196981167739749361
-          + mx * (0.09202724415743445309239690377424239940545
-          + mx * (0.07843218831801764082998285878311322932444
-          + mx * (0.06935260142642158347117402021639363379689
-          + mx * (0.06293203529021269706312943517695310879457
-          + mx * (0.05821227592779397036582491084172892108196
-          + mx * (0.05464909112091564816652510649708377642504
-          + mx * (0.05191068843704411873477650167894906357568
-          + mx * (0.04978344771840508342564702588639140680363
-          + mx * (0.04812375496807025605361215168677991360500))))))))))));
-
-  // (K'-E')/(π / 2)
-      dddc = 0.02548395442966088473597712420249483947953
-          + mx * (0.51967384324140471318255255900132590084179
-          + mx * (0.20644951110163173131719312525729037023377
-          + mx * (0.13610952125712137420240739057403788152260
-          + mx * (0.10458014040566978574883406877392984277718
-          + mx * (0.08674612915759188982465635633597382093113
-          + mx * (0.07536380269617058326770965489534014190391
-          + mx * (0.06754544594618781950496091910264174396541
-          + mx * (0.06190939688096410201497509102047998554900
-          + mx * (0.05771071515451786553160533778648705873199
-          + mx * (0.05451217098672207169493767625617704078257
-          + mx * (0.05204028407582600387265992107877094920787
-          + mx * (0.05011532514520838441892567405879742720039))))))))))));
+      double const mx = mc - 0.05;
+      kx_mc = fukushima_kx_taylor_0_05.Evaluate(mx);
+      ex_mc = fukushima_ex_taylor_0_05.Evaluate(mx);
     }
-    kkc = 1.0 + dkkc;
-    logq2 = -0.5 * log(nome);
-    elk = kkc * logq2;
-    dele = -dkkc / kkc + logq2 * dddc;
-    elk1 = elk - 1.0;
-    delb = (dele - mc * elk1) / m;
-    b = 1.0 + delb;
-    d = elk1 - delb;
+    // NOTE(phl): Fukushima's code does a variety of operations involving
+    // quantities x_mc * kx_mc and x_mc * ex_mc.  This seems dangerous next to
+    // the logarithmic singularity.  I'd rather do the multiplication by x_mc
+    // late, even at the cost of one extra division.
+    double const one_over_two_kx_mc = 0.5 / kx_mc;
+    b = (x_mc * (ex_mc - mc * kx_mc) + one_over_two_kx_mc) / m;
+    d = (x_mc * (kx_mc - ex_mc) - one_over_two_kx_mc) / m;
   } else if (m <= 0.01) {
-    //TODO(phl):clarify
-    b = (π / 2) * (B1 + m * (B2 + m * (B3 + m * (B4 + m * (B5 + m * (B6 + m *
-                    (B7 + m * B8)))))));
-    d = (π / 2) * (D1 + m * (D2 + m * (D3 + m * (D4 + m * (D5 + m * (D6 + m *
-                    (D7 + m * D8)))))));
+    b = (-π) * fukushima_b٭x_maclaurin.Evaluate(m);
+    d = π * fukushima_ex_maclaurin.Evaluate(m);
   } else if (m <= 0.1) {
     double const mx = 0.95 - mc;
     b = fukushima_b_taylor_0_05.Evaluate(mx);
