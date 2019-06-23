@@ -1157,360 +1157,174 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
   b = fukushima_elliptic_bs_maclaurin.Evaluate(y);
 }
 
+
+
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js10(
+      std::make_tuple(1.0 / 3.0));
+
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js20(
+      std::make_tuple(1.0 / 10.0, 2.0 / 10.0));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js21(
+      std::make_tuple(1.0 / 10.0));
+
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js30(
+      std::make_tuple(3.0 / 56.0, 4.0 / 56.0, 8.0 / 56.0));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js31(
+      std::make_tuple(2.0 / 56.0, 4.0 / 56.0));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js32(
+      std::make_tuple(3.0 / 56.0));
+
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js40(
+      std::make_tuple(5.0 / 144.0, 6.0 / 144.0, 8.0 / 144.0, 16.0 / 144.0));
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js41(
+      std::make_tuple(3.0 / 144.0, 4.0 / 144.0, 8.0 / 144.0));
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js42(
+      std::make_tuple(3.0 / 144.0, 6.0 / 144.0));
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js43(
+      std::make_tuple(5.0 / 144.0));
+
+  PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator> js50(
+      std::make_tuple(35.0 / 1408.0, 40.0 / 1408.0, 48.0 / 1408.0, 64.0 / 1408.0, 128.0 / 1408.0));
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js51(
+      std::make_tuple(20.0 / 1408.0, 24.0 / 1408.0, 32.0 / 1408.0, 64.0 / 1408.0)
+);
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js52(
+      std::make_tuple(18.0 / 1408.0, 24.0 / 1408.0, 48.0 / 1408.0)
+);
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js53(
+      std::make_tuple(20.0 / 1408.0, 40.0 / 1408.0)
+);
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js54(
+      std::make_tuple(35.0 / 1408.0)
+);
+
+  PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator> js60(
+      std::make_tuple(63.0 / 3328.0, 70.0 / 3328.0, 80.0 / 3328.0, 96.0 / 3328.0, 128.0 / 3328.0, 256.0 / 3328.0)
+);
+  PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator> js61(
+      std::make_tuple(35.0 / 3328.0, 40.0 / 3328.0, 48.0 / 3328.0, 64.0 / 3328.0, 128.0 / 3328.0)
+);
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js62(
+      std::make_tuple(30.0 / 3328.0, 36.0 / 3328.0, 48.0 / 3328.0, 96.0 / 3328.0)
+);
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js63(
+      std::make_tuple(30.0 / 3328.0, 40.0 / 3328.0, 80.0 / 3328.0)
+);
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js64(
+      std::make_tuple(35.0 / 3328.0, 70.0 / 3328.0)
+);
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js65(
+      std::make_tuple(63.0 / 3328.0)
+);
+
+  PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator> js70(
+      std::make_tuple(231.0 / 15360.0, 252.0 / 15360.0, 280.0 / 15360.0, 320.0 / 15360.0, 384.0 / 15360.0, 512.0 / 15360.0, 1024.0 / 15360.0)
+);
+  PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator> js71(
+      std::make_tuple(126.0 / 15360.0, 140.0 / 15360.0, 160.0 / 15360.0, 192.0 / 15360.0, 256.0 / 15360.0, 512.0 / 15360.0)
+);
+  PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator> js72(
+      std::make_tuple(105.0 / 15360.0, 120.0 / 15360.0, 144.0 / 15360.0, 192.0 / 15360.0, 384.0 / 15360.0)
+);
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js73(
+      std::make_tuple(100.0 / 15360.0, 120.0 / 15360.0, 160.0 / 15360.0, 320.0 / 15360.0)
+);
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js74(
+      std::make_tuple(105.0 / 15360.0, 140.0 / 15360.0, 280.0 / 15360.0)
+);
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js75(
+      std::make_tuple(126.0 / 15360.0, 252.0 / 15360.0)
+);
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js76(
+      std::make_tuple(231.0 / 15360.0)
+);
+
+  PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> js80(
+      std::make_tuple(429.0 / 34816.0, 462.0 / 34816.0, 504.0 / 34816.0, 560.0 / 34816.0, 640.0 / 34816.0, 768.0 / 34816.0, 1024.0 / 34816.0, 2048.0 / 34816.0)
+);
+  PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator> js81(
+      std::make_tuple(231.0 / 34816.0, 252.0 / 34816.0, 280.0 / 34816.0, 320.0 / 34816.0, 384.0 / 34816.0, 512.0 / 34816.0, 1024.0 / 34816.0)
+);
+  PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator> js82(
+      std::make_tuple(189.0 / 34816.0, 210.0 / 34816.0, 240.0 / 34816.0, 288.0 / 34816.0, 284.0 / 34816.0, 768.0 / 34816.0)
+);
+  PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator> js83(
+      std::make_tuple(175.0 / 34816.0, 200.0 / 34816.0, 240.0 / 34816.0, 320.0 / 34816.0, 640.0 / 34816.0)
+);
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js84(
+      std::make_tuple(175.0 / 34816.0, 210.0 / 34816.0, 280.0 / 34816.0, 560.0 / 34816.0)
+);
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js85(
+      std::make_tuple(189.0 / 34816.0, 252.0 / 34816.0, 504.0 / 34816.0)
+);
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js86(
+      std::make_tuple(231.0 / 34816.0, 462.0 / 34816.0)
+);
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js87(
+      std::make_tuple(429.0 / 34816.0)
+);
+
+  PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator> js90(
+      std::make_tuple(6435.0 / 622592.0, 6864.0 / 622592.0, 7392.0 / 622592.0, 8064.0 / 622592.0, 8960.0 / 622592.0, 10240.0 / 622592.0, 12288.0 / 622592.0, 16384.0 / 622592.0, 32768.0 / 622592.0)
+);
+  PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> js91(
+      std::make_tuple(3432.0 / 622592.0, 3696.0 / 622592.0, 4032.0 / 622592.0, 4480.0 / 622592.0, 5120.0 / 622592.0, 6144.0 / 622592.0, 8192.0 / 622592.0, 16384.0 / 622592.0)
+);
+  PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator> js92(
+      std::make_tuple(2772.0 / 622592.0, 3024.0 / 622592.0, 3360.0 / 622592.0, 3840.0 / 622592.0, 4608.0 / 622592.0, 6144.0 / 622592.0, 12288.0 / 622592.0)
+);
+  PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator> js93(
+      std::make_tuple(2520.0 / 622592.0, 2800.0 / 622592.0, 3200.0 / 622592.0, 3840.0 / 622592.0, 5120.0 / 622592.0, 10240.0 / 622592.0)
+);
+  PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator> js94(
+      std::make_tuple(2450.0 / 622592.0, 2800.0 / 622592.0, 3360.0 / 622592.0, 4480.0 / 622592.0, 8960.0 / 622592.0)
+);
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js95(
+      std::make_tuple(2520.0 / 622592.0, 3024.0 / 622592.0, 4032.0 / 622592.0, 8064.0 / 622592.0)
+);
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js96(
+      std::make_tuple(2772.0 / 622592.0, 3696.0 / 622592.0, 7392.0 / 622592.0)
+);
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js97(
+      std::make_tuple(3432.0 / 622592.0, 6864.0 / 622592.0)
+);
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js98(
+      std::make_tuple(6435.0 / 622592.0)
+);
+
+  PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator> jsA0(
+      std::make_tuple(12155.0 / 1376256.0, 12870.0 / 1376256.0, 13728.0 / 1376256.0, 14784.0 / 1376256.0, 16128.0 / 1376256.0, 17920.0 / 1376256.0, 20480.0 / 1376256.0, 24576.0 / 1376256.0, 32768.0 / 1376256.0, 65536.0 / 1376256.0)
+);
+  PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator> jsA1(
+      std::make_tuple(6435.0 / 1376256.0, 6864.0 / 1376256.0, 7392.0 / 1376256.0, 8064.0 / 1376256.0, 8960.0 / 1376256.0, 10240.0 / 1376256.0, 12288.0 / 1376256.0, 16384.0 / 1376256.0, 32768.0 / 1376256.0)
+);
+  PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> jsA2(
+      std::make_tuple(5148.0 / 1376256.0, 5544.0 / 1376256.0, 6048.0 / 1376256.0, 6720.0 / 1376256.0, 7680.0 / 1376256.0, 9216.0 / 1376256.0, 12288.0 / 1376256.0, 24576.0 / 1376256.0)
+);
+  PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator> jsA3(
+      std::make_tuple(4620.0 / 1376256.0, 5040.0 / 1376256.0, 5600.0 / 1376256.0, 6400.0 / 1376256.0, 7680.0 / 1376256.0, 10240.0 / 1376256.0, 20480.0 / 1376256.0)
+);
+  PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator> jsA4(
+      std::make_tuple(4410.0 / 1376256.0, 4900.0 / 1376256.0, 5600.0 / 1376256.0, 6720.0 / 1376256.0, 8960.0 / 1376256.0, 17920.0 / 1376256.0)
+);
+  PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator> jsA5(
+      std::make_tuple(4410.0 / 1376256.0, 5040.0 / 1376256.0, 6048.0 / 1376256.0, 8064.0 / 1376256.0, 16128.0 / 1376256.0)
+);
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> jsA6(
+      std::make_tuple(4620.0 / 1376256.0, 5544.0 / 1376256.0, 7392.0 / 1376256.0, 14784.0 / 1376256.0)
+);
+  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> jsA7(
+      std::make_tuple(5148.0 / 1376256.0, 6864.0 / 1376256.0, 13728.0 / 1376256.0)
+);
+  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> jsA8(
+      std::make_tuple(6435.0 / 1376256.0, 12870.0 / 1376256.0)
+);
+  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> jsA9(
+      std::make_tuple(12155.0 / 1376256.0));
+
 double FukushimaEllipticJsMaclaurinSeries(double const y,
                                           double const n,
                                           double const m) {
-  constexpr double J100 = 1.0 / 3.0;
-
-  constexpr double J200 = 1.0 / 10.0;
-  constexpr double J201 = 2.0 / 10.0;
-  constexpr double J210 = 1.0 / 10.0;
-
-  constexpr double J300 = 3.0 / 56.0;
-  constexpr double J301 = 4.0 / 56.0;
-  constexpr double J302 = 8.0 / 56.0;
-  constexpr double J310 = 2.0 / 56.0;
-  constexpr double J311 = 4.0 / 56.0;
-  constexpr double J320 = 3.0 / 56.0;
-
-  constexpr double J400 = 5.0 / 144.0;
-  constexpr double J401 = 6.0 / 144.0;
-  constexpr double J402 = 8.0 / 144.0;
-  constexpr double J403 = 16.0 / 144.0;
-  constexpr double J410 = 3.0 / 144.0;
-  constexpr double J411 = 4.0 / 144.0;
-  constexpr double J412 = 8.0 / 144.0;
-  constexpr double J420 = 3.0 / 144.0;
-  constexpr double J421 = 6.0 / 144.0;
-  constexpr double J430 = 5.0 / 144.0;
-
-  constexpr double J500 = 35.0 / 1408.0;
-  constexpr double J501 = 40.0 / 1408.0;
-  constexpr double J502 = 48.0 / 1408.0;
-  constexpr double J503 = 64.0 / 1408.0;
-  constexpr double J504 = 128.0 / 1408.0;
-  constexpr double J510 = 20.0 / 1408.0;
-  constexpr double J511 = 24.0 / 1408.0;
-  constexpr double J512 = 32.0 / 1408.0;
-  constexpr double J513 = 64.0 / 1408.0;
-  constexpr double J520 = 18.0 / 1408.0;
-  constexpr double J521 = 24.0 / 1408.0;
-  constexpr double J522 = 48.0 / 1408.0;
-  constexpr double J530 = 20.0 / 1408.0;
-  constexpr double J531 = 40.0 / 1408.0;
-  constexpr double J540 = 35.0 / 1408.0;
-
-  constexpr double J600 = 63.0 / 3328.0;
-  constexpr double J601 = 70.0 / 3328.0;
-  constexpr double J602 = 80.0 / 3328.0;
-  constexpr double J603 = 96.0 / 3328.0;
-  constexpr double J604 = 128.0 / 3328.0;
-  constexpr double J605 = 256.0 / 3328.0;
-  constexpr double J610 = 35.0 / 3328.0;
-  constexpr double J611 = 40.0 / 3328.0;
-  constexpr double J612 = 48.0 / 3328.0;
-  constexpr double J613 = 64.0 / 3328.0;
-  constexpr double J614 = 128.0 / 3328.0;
-  constexpr double J620 = 30.0 / 3328.0;
-  constexpr double J621 = 36.0 / 3328.0;
-  constexpr double J622 = 48.0 / 3328.0;
-  constexpr double J623 = 96.0 / 3328.0;
-  constexpr double J630 = 30.0 / 3328.0;
-  constexpr double J631 = 40.0 / 3328.0;
-  constexpr double J632 = 80.0 / 3328.0;
-  constexpr double J640 = 35.0 / 3328.0;
-  constexpr double J641 = 70.0 / 3328.0;
-  constexpr double J650 = 63.0 / 3328.0;
-
-  constexpr double J700 = 231.0 / 15360.0;
-  constexpr double J701 = 252.0 / 15360.0;
-  constexpr double J702 = 280.0 / 15360.0;
-  constexpr double J703 = 320.0 / 15360.0;
-  constexpr double J704 = 384.0 / 15360.0;
-  constexpr double J705 = 512.0 / 15360.0;
-  constexpr double J706 = 1024.0 / 15360.0;
-  constexpr double J710 = 126.0 / 15360.0;
-  constexpr double J711 = 140.0 / 15360.0;
-  constexpr double J712 = 160.0 / 15360.0;
-  constexpr double J713 = 192.0 / 15360.0;
-  constexpr double J714 = 256.0 / 15360.0;
-  constexpr double J715 = 512.0 / 15360.0;
-  constexpr double J720 = 105.0 / 15360.0;
-  constexpr double J721 = 120.0 / 15360.0;
-  constexpr double J722 = 144.0 / 15360.0;
-  constexpr double J723 = 192.0 / 15360.0;
-  constexpr double J724 = 384.0 / 15360.0;
-  constexpr double J730 = 100.0 / 15360.0;
-  constexpr double J731 = 120.0 / 15360.0;
-  constexpr double J732 = 160.0 / 15360.0;
-  constexpr double J733 = 320.0 / 15360.0;
-  constexpr double J740 = 105.0 / 15360.0;
-  constexpr double J741 = 140.0 / 15360.0;
-  constexpr double J742 = 280.0 / 15360.0;
-  constexpr double J750 = 126.0 / 15360.0;
-  constexpr double J751 = 252.0 / 15360.0;
-  constexpr double J760 = 231.0 / 15360.0;
-
-  constexpr double J800 = 429.0 / 34816.0;
-  constexpr double J801 = 462.0 / 34816.0;
-  constexpr double J802 = 504.0 / 34816.0;
-  constexpr double J803 = 560.0 / 34816.0;
-  constexpr double J804 = 640.0 / 34816.0;
-  constexpr double J805 = 768.0 / 34816.0;
-  constexpr double J806 = 1024.0 / 34816.0;
-  constexpr double J807 = 2048.0 / 34816.0;
-  constexpr double J810 = 231.0 / 34816.0;
-  constexpr double J811 = 252.0 / 34816.0;
-  constexpr double J812 = 280.0 / 34816.0;
-  constexpr double J813 = 320.0 / 34816.0;
-  constexpr double J814 = 384.0 / 34816.0;
-  constexpr double J815 = 512.0 / 34816.0;
-  constexpr double J816 = 1024.0 / 34816.0;
-  constexpr double J820 = 189.0 / 34816.0;
-  constexpr double J821 = 210.0 / 34816.0;
-  constexpr double J822 = 240.0 / 34816.0;
-  constexpr double J823 = 288.0 / 34816.0;
-  constexpr double J824 = 284.0 / 34816.0;
-  constexpr double J825 = 768.0 / 34816.0;
-  constexpr double J830 = 175.0 / 34816.0;
-  constexpr double J831 = 200.0 / 34816.0;
-  constexpr double J832 = 240.0 / 34816.0;
-  constexpr double J833 = 320.0 / 34816.0;
-  constexpr double J834 = 640.0 / 34816.0;
-  constexpr double J840 = 175.0 / 34816.0;
-  constexpr double J841 = 210.0 / 34816.0;
-  constexpr double J842 = 280.0 / 34816.0;
-  constexpr double J843 = 560.0 / 34816.0;
-  constexpr double J850 = 189.0 / 34816.0;
-  constexpr double J851 = 252.0 / 34816.0;
-  constexpr double J852 = 504.0 / 34816.0;
-  constexpr double J860 = 231.0 / 34816.0;
-  constexpr double J861 = 462.0 / 34816.0;
-  constexpr double J870 = 429.0 / 34816.0;
-
-  constexpr double J900 = 6435.0 / 622592.0;
-  constexpr double J901 = 6864.0 / 622592.0;
-  constexpr double J902 = 7392.0 / 622592.0;
-  constexpr double J903 = 8064.0 / 622592.0;
-  constexpr double J904 = 8960.0 / 622592.0;
-  constexpr double J905 = 10240.0 / 622592.0;
-  constexpr double J906 = 12288.0 / 622592.0;
-  constexpr double J907 = 16384.0 / 622592.0;
-  constexpr double J908 = 32768.0 / 622592.0;
-  constexpr double J910 = 3432.0 / 622592.0;
-  constexpr double J911 = 3696.0 / 622592.0;
-  constexpr double J912 = 4032.0 / 622592.0;
-  constexpr double J913 = 4480.0 / 622592.0;
-  constexpr double J914 = 5120.0 / 622592.0;
-  constexpr double J915 = 6144.0 / 622592.0;
-  constexpr double J916 = 8192.0 / 622592.0;
-  constexpr double J917 = 16384.0 / 622592.0;
-  constexpr double J920 = 2772.0 / 622592.0;
-  constexpr double J921 = 3024.0 / 622592.0;
-  constexpr double J922 = 3360.0 / 622592.0;
-  constexpr double J923 = 3840.0 / 622592.0;
-  constexpr double J924 = 4608.0 / 622592.0;
-  constexpr double J925 = 6144.0 / 622592.0;
-  constexpr double J926 = 12288.0 / 622592.0;
-  constexpr double J930 = 2520.0 / 622592.0;
-  constexpr double J931 = 2800.0 / 622592.0;
-  constexpr double J932 = 3200.0 / 622592.0;
-  constexpr double J933 = 3840.0 / 622592.0;
-  constexpr double J934 = 5120.0 / 622592.0;
-  constexpr double J935 = 10240.0 / 622592.0;
-  constexpr double J940 = 2450.0 / 622592.0;
-  constexpr double J941 = 2800.0 / 622592.0;
-  constexpr double J942 = 3360.0 / 622592.0;
-  constexpr double J943 = 4480.0 / 622592.0;
-  constexpr double J944 = 8960.0 / 622592.0;
-  constexpr double J950 = 2520.0 / 622592.0;
-  constexpr double J951 = 3024.0 / 622592.0;
-  constexpr double J952 = 4032.0 / 622592.0;
-  constexpr double J953 = 8064.0 / 622592.0;
-  constexpr double J960 = 2772.0 / 622592.0;
-  constexpr double J961 = 3696.0 / 622592.0;
-  constexpr double J962 = 7392.0 / 622592.0;
-  constexpr double J970 = 3432.0 / 622592.0;
-  constexpr double J971 = 6864.0 / 622592.0;
-  constexpr double J980 = 6435.0 / 622592.0;
-
-  constexpr double JA00 = 12155.0 / 1376256.0;
-  constexpr double JA01 = 12870.0 / 1376256.0;
-  constexpr double JA02 = 13728.0 / 1376256.0;
-  constexpr double JA03 = 14784.0 / 1376256.0;
-  constexpr double JA04 = 16128.0 / 1376256.0;
-  constexpr double JA05 = 17920.0 / 1376256.0;
-  constexpr double JA06 = 20480.0 / 1376256.0;
-  constexpr double JA07 = 24576.0 / 1376256.0;
-  constexpr double JA08 = 32768.0 / 1376256.0;
-  constexpr double JA09 = 65536.0 / 1376256.0;
-  constexpr double JA10 = 6435.0 / 1376256.0;
-  constexpr double JA11 = 6864.0 / 1376256.0;
-  constexpr double JA12 = 7392.0 / 1376256.0;
-  constexpr double JA13 = 8064.0 / 1376256.0;
-  constexpr double JA14 = 8960.0 / 1376256.0;
-  constexpr double JA15 = 10240.0 / 1376256.0;
-  constexpr double JA16 = 12288.0 / 1376256.0;
-  constexpr double JA17 = 16384.0 / 1376256.0;
-  constexpr double JA18 = 32768.0 / 1376256.0;
-  constexpr double JA20 = 5148.0 / 1376256.0;
-  constexpr double JA21 = 5544.0 / 1376256.0;
-  constexpr double JA22 = 6048.0 / 1376256.0;
-  constexpr double JA23 = 6720.0 / 1376256.0;
-  constexpr double JA24 = 7680.0 / 1376256.0;
-  constexpr double JA25 = 9216.0 / 1376256.0;
-  constexpr double JA26 = 12288.0 / 1376256.0;
-  constexpr double JA27 = 24576.0 / 1376256.0;
-  constexpr double JA30 = 4620.0 / 1376256.0;
-  constexpr double JA31 = 5040.0 / 1376256.0;
-  constexpr double JA32 = 5600.0 / 1376256.0;
-  constexpr double JA33 = 6400.0 / 1376256.0;
-  constexpr double JA34 = 7680.0 / 1376256.0;
-  constexpr double JA35 = 10240.0 / 1376256.0;
-  constexpr double JA36 = 20480.0 / 1376256.0;
-  constexpr double JA40 = 4410.0 / 1376256.0;
-  constexpr double JA41 = 4900.0 / 1376256.0;
-  constexpr double JA42 = 5600.0 / 1376256.0;
-  constexpr double JA43 = 6720.0 / 1376256.0;
-  constexpr double JA44 = 8960.0 / 1376256.0;
-  constexpr double JA45 = 17920.0 / 1376256.0;
-  constexpr double JA50 = 4410.0 / 1376256.0;
-  constexpr double JA51 = 5040.0 / 1376256.0;
-  constexpr double JA52 = 6048.0 / 1376256.0;
-  constexpr double JA53 = 8064.0 / 1376256.0;
-  constexpr double JA54 = 16128.0 / 1376256.0;
-  constexpr double JA60 = 4620.0 / 1376256.0;
-  constexpr double JA61 = 5544.0 / 1376256.0;
-  constexpr double JA62 = 7392.0 / 1376256.0;
-  constexpr double JA63 = 14784.0 / 1376256.0;
-  constexpr double JA70 = 5148.0 / 1376256.0;
-  constexpr double JA71 = 6864.0 / 1376256.0;
-  constexpr double JA72 = 13728.0 / 1376256.0;
-  constexpr double JA80 = 6435.0 / 1376256.0;
-  constexpr double JA81 = 12870.0 / 1376256.0;
-  constexpr double JA90 = 12155.0 / 1376256.0;
-
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js10(
-      std::make_tuple(J100));
-
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js20(
-      std::make_tuple(J200, J201));
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js21(
-      std::make_tuple(J210));
-
-  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js30(
-      std::make_tuple(J300, J301, J302));
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js31(
-      std::make_tuple(J310, J311));
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js32(
-      std::make_tuple(J320));
-
-  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js40(
-      std::make_tuple(J400, J401, J402, J403));
-  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js41(
-      std::make_tuple(J410, J411, J412));
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js42(
-      std::make_tuple(J420, J421));
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js43(
-      std::make_tuple(J430));
-
-  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js50(
-      std::make_tuple(J500, J501, J502, J503, J504));
-  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js51(
-      std::make_tuple(J510, J511, J512, J513));
-  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js52(
-      std::make_tuple(J520, J521, J522));
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js53(
-      std::make_tuple(J530, J531));
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js54(
-      std::make_tuple(J540));
-
-  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> js60(
-      std::make_tuple(J600, J601, J602, J603, J604, J605));
-  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js61(
-      std::make_tuple(J610, J611, J612, J613, J614));
-  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js62(
-      std::make_tuple(J620, J621, J622, J623));
-  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js63(
-      std::make_tuple(J630, J631, J632));
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js64(
-      std::make_tuple(J640, J641));
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js65(
-      std::make_tuple(J650));
-
-  PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> js70(
-      std::make_tuple(J700, J701, J702, J703, J704, J705, J706));
-  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> js71(
-      std::make_tuple(J710, J711, J712, J713, J714, J715));
-  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js72(
-      std::make_tuple(J720, J721, J722, J723, J724));
-  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js73(
-      std::make_tuple(J730, J731, J732, J733));
-  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js74(
-      std::make_tuple(J740, J741, J742));
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js75(
-      std::make_tuple(J750, J751));
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js76(
-      std::make_tuple(J760));
-
-  PolynomialInMonomialBasis<double, double, 7, HornerEvaluator> js80(
-      std::make_tuple(J800, J801, J802, J803, J804, J805, J806, J807));
-  PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> js81(
-      std::make_tuple(J810, J811, J812, J813, J814, J815, J816));
-  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> js82(
-      std::make_tuple(J820, J821, J822, J823, J824, J825));
-  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js83(
-      std::make_tuple(J830, J831, J832, J833, J834));
-  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js84(
-      std::make_tuple(J840, J841, J842, J843));
-  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js85(
-      std::make_tuple(J850, J851, J852));
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js86(
-      std::make_tuple(J860, J861));
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js87(
-      std::make_tuple(J870));
-
-  PolynomialInMonomialBasis<double, double, 8, HornerEvaluator> js90(
-      std::make_tuple(J900, J901, J902, J903, J904, J905, J906, J907, J908));
-  PolynomialInMonomialBasis<double, double, 7, HornerEvaluator> js91(
-      std::make_tuple(J910, J911, J912, J913, J914, J915, J916, J917));
-  PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> js92(
-      std::make_tuple(J920, J921, J922, J923, J924, J925, J926));
-  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> js93(
-      std::make_tuple(J930, J931, J932, J933, J934, J935));
-  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js94(
-      std::make_tuple(J940, J941, J942, J943, J944));
-  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> js95(
-      std::make_tuple(J950, J951, J952, J953));
-  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> js96(
-      std::make_tuple(J960, J961, J962));
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js97(
-      std::make_tuple(J970, J971));
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js98(
-      std::make_tuple(J980));
-
-  PolynomialInMonomialBasis<double, double, 9, HornerEvaluator> jsA0(
-      std::make_tuple(
-          JA00, JA01, JA02, JA03, JA04, JA05, JA06, JA07, JA08, JA09));
-  PolynomialInMonomialBasis<double, double, 8, HornerEvaluator> jsA1(
-      std::make_tuple(JA10, JA11, JA12, JA13, JA14, JA15, JA16, JA17, JA18));
-  PolynomialInMonomialBasis<double, double, 7, HornerEvaluator> jsA2(
-      std::make_tuple(JA20, JA21, JA22, JA23, JA24, JA25, JA26, JA27));
-  PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> jsA3(
-      std::make_tuple(JA30, JA31, JA32, JA33, JA34, JA35, JA36));
-  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> jsA4(
-      std::make_tuple(JA40, JA41, JA42, JA43, JA44, JA45));
-  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> jsA5(
-      std::make_tuple(JA50, JA51, JA52, JA53, JA54));
-  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator> jsA6(
-      std::make_tuple(JA60, JA61, JA62, JA63));
-  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator> jsA7(
-      std::make_tuple(JA70, JA71, JA72));
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> jsA8(
-      std::make_tuple(JA80, JA81));
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> jsA9(
-      std::make_tuple(JA90));
-
   PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js1(
       std::make_tuple(js10.Evaluate(n)));
   PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> js2(
@@ -1525,20 +1339,20 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                       js41.Evaluate(n),
                       js42.Evaluate(n),
                       js43.Evaluate(n)));
-  PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> js5(
+  PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator> js5(
       std::make_tuple(js50.Evaluate(n),
                       js51.Evaluate(n),
                       js52.Evaluate(n),
                       js53.Evaluate(n),
                       js54.Evaluate(n)));
-  PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> js6(
+  PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator> js6(
       std::make_tuple(js60.Evaluate(n),
                       js61.Evaluate(n),
                       js62.Evaluate(n),
                       js63.Evaluate(n),
                       js64.Evaluate(n),
                       js65.Evaluate(n)));
-  PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> js7(
+  PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator> js7(
       std::make_tuple(js70.Evaluate(n),
                       js71.Evaluate(n),
                       js72.Evaluate(n),
@@ -1546,7 +1360,7 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                       js74.Evaluate(n),
                       js75.Evaluate(n),
                       js76.Evaluate(n)));
-  PolynomialInMonomialBasis<double, double, 7, HornerEvaluator> js8(
+  PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> js8(
       std::make_tuple(js80.Evaluate(n),
                       js81.Evaluate(n),
                       js82.Evaluate(n),
@@ -1555,7 +1369,7 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                       js85.Evaluate(n),
                       js86.Evaluate(n),
                       js87.Evaluate(n)));
-  PolynomialInMonomialBasis<double, double, 8, HornerEvaluator> js9(
+  PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator> js9(
       std::make_tuple(js90.Evaluate(n),
                       js91.Evaluate(n),
                       js92.Evaluate(n),
@@ -1565,7 +1379,7 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                       js96.Evaluate(n),
                       js97.Evaluate(n),
                       js98.Evaluate(n)));
-  PolynomialInMonomialBasis<double, double, 9, HornerEvaluator> jsA(
+  PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator> jsA(
       std::make_tuple(jsA0.Evaluate(n),
                       jsA1.Evaluate(n),
                       jsA2.Evaluate(n),
@@ -1584,36 +1398,36 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
   double const j5 = js5.Evaluate(m);
 
   if (y <= 6.0369310e-04) {
-    PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> jy(
+    PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator> jy(
         std::make_tuple(j1, j2, j3, j4, j5));
     return y * jy.Evaluate(y);
   }
   double const j6 = js6.Evaluate(m);
   if (y <= 2.0727505e-03) {
-    PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> jy(
+    PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator> jy(
         std::make_tuple(j1, j2, j3, j4, j5, j6));
     return y * jy.Evaluate(y);
   }
   double const j7 = js7.Evaluate(m);
   if (y <= 5.0047026e-03) {
-    PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> jy(
+    PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator> jy(
         std::make_tuple(j1, j2, j3, j4, j5, j6, j7));
     return y * jy.Evaluate(y);
   }
   double const j8 = js8.Evaluate(m);
   if (y <= 9.6961652e-03) {
-    PolynomialInMonomialBasis<double, double, 7, HornerEvaluator> jy(
+    PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> jy(
         std::make_tuple(j1, j2, j3, j4, j5, j6, j7, j8));
     return y * jy.Evaluate(y);
   }
   double const j9 = js9.Evaluate(m);
   if (y <= 1.6220210e-02) {
-    PolynomialInMonomialBasis<double, double, 8, HornerEvaluator> jy(
+    PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator> jy(
         std::make_tuple(j1, j2, j3, j4, j5, j6, j7, j8, j9));
     return y * jy.Evaluate(y);
   }
   double const jA = jsA.Evaluate(m);
-  PolynomialInMonomialBasis<double, double, 9, HornerEvaluator> jy(
+  PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator> jy(
       std::make_tuple(j1, j2, j3, j4, j5, j6, j7, j8, j9, jA));
   return y * jy.Evaluate(y);
 }
