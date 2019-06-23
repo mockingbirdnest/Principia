@@ -1,5 +1,5 @@
 $version = "16.2.0"
-$preview = "1"
+$preview = "2"
 
 $vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $names = &$vswhere                        `
