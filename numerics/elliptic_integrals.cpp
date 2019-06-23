@@ -228,7 +228,7 @@ class FukushimaEllipticDsBsMaclaurin {
 
 // Maclaurin series for Fukushima's elliptic integral Js.  These are polynomials
 // of n that will be used as coefficients of a polynomial in m.  The first index
-// is the total degree (l - 1 in Fukushim's notation), the second the degree in
+// is the total degree (l - 1 in Fukushima's notation), the second the degree in
 // m (k in Fukushima's notation).
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_0_0(std::make_tuple(1.0 / 3.0));
