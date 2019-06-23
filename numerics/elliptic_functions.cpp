@@ -25,7 +25,7 @@ void JacobiSNCNDNReduced(double u, double mc, double& s, double& c, double& d);
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
     fukushima_b₀_maclaurin_m_0(std::make_tuple(1.0 / 2.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_b₀_maclaurin_m_1(std::make_tuple(1.0 / 24.0, 1.0 / 6.0));
+    fukushima_b₀_maclaurin_m_1(std::make_tuple(-1.0 / 24.0, -1.0 / 6.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
     fukushima_b₀_maclaurin_m_2(std::make_tuple(1.0 / 720.0,
                                                11.0 / 180.0,
@@ -65,47 +65,51 @@ void JacobiSNCNDNReduced(double const u,
     u₀ = 0.5 * u₀;
   }
 
-  double const u₀² = u₀ * u₀;
-  double const b₀0 = fukushima_b₀_maclaurin_m_0.Evaluate(u₀²);
-  double const b₀1 = fukushima_b₀_maclaurin_m_1.Evaluate(u₀²);
-  double const b₀2 = fukushima_b₀_maclaurin_m_2.Evaluate(u₀²);
+  double const b₀0 = fukushima_b₀_maclaurin_m_0.Evaluate(m);
+  double const b₀1 = fukushima_b₀_maclaurin_m_1.Evaluate(m);
+  double const b₀2 = fukushima_b₀_maclaurin_m_2.Evaluate(m);
   PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
       fukushima_b₀_maclaurin_u₀²_2(std::make_tuple(b₀0, b₀1, b₀2));
-  double b = fukushima_b₀_maclaurin_u₀²_2.Evaluate(u₀²);
+  double const u₀² = u₀ * u₀;
+
+  // We use the subscript i to indicate variables that are computed as part of
+  // the iteration (Fukushima uses subscripts n and N).  This avoids confusion
+  // between c (the result) and cᵢ (the intermediate numerator of c).
+  double bᵢ = fukushima_b₀_maclaurin_u₀²_2.Evaluate(u₀²);
 
   double const uA = 1.76269 + mc * 1.16357;
   bool const may_have_cancellation = u > uA;
-  double a = 1.0;
+  double aᵢ = 1.0;
   for (int j = 0; j < n; ++j) {
-    double const y = b * (2.0 * a - b);
-    double const z = a * a;
-    double const my = m * y;
-    if (may_have_cancellation && z < 2.0 * my) {
-      double c = a - b;
+    double const yᵢ = bᵢ * (2.0 * aᵢ - bᵢ);
+    double const zᵢ = aᵢ * aᵢ;
+    double const myᵢ = m * yᵢ;
+    if (may_have_cancellation && zᵢ < 2.0 * myᵢ) {
+      double cᵢ = aᵢ - bᵢ;
       double const two_mc = 2.0 * mc;
       double const two_m = 2.0 * m;
-      for (int i = j; i <= n; ++i) {
-        double const x = c * c;
-        double const z = a * a;
-        double const w = m * x * x - mc * z * z;
-        double const xz = x * z;
-        c = two_mc * xz + w;
-        a = two_m * xz - w;
+      for (int i = j; i < n; ++i) {
+        double const xᵢ = cᵢ * cᵢ;
+        double const zᵢ = aᵢ * aᵢ;
+        double const wᵢ = m * xᵢ * xᵢ - mc * zᵢ * zᵢ;
+        double const xz = xᵢ * zᵢ;
+        cᵢ = two_mc * xz + wᵢ;
+        aᵢ = two_m * xz - wᵢ;
       }
-      c = c / a;
-      double const x = c * c;
-      s = Sqrt(1.0 - x);
-      d = Sqrt(mc + m * x);
+      c = cᵢ / aᵢ;
+      double const c² = c * c;
+      s = Sqrt(1.0 - c²);
+      d = Sqrt(mc + m * c²);
       return;
     }
-    b = 2.0 * y * (z - my);
-    a = z * z - my * y;
+    bᵢ = 2.0 * yᵢ * (zᵢ - myᵢ);
+    aᵢ = zᵢ * zᵢ - myᵢ * yᵢ;
   }
-  b = b / a;
-  double const y = b * (2.0 - b);
-  c = 1.0 - b;
-  s = Sqrt(y);
-  d = Sqrt(1.0 - m * y);
+  bᵢ = bᵢ / aᵢ;
+  double const yᵢ = bᵢ * (2.0 - bᵢ);
+  c = 1.0 - bᵢ;
+  s = Sqrt(yᵢ);
+  d = Sqrt(1.0 - m * yᵢ);
 }
 
 }  // namespace
