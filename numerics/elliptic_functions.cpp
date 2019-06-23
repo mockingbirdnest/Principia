@@ -21,7 +21,7 @@ namespace {
 void JacobiSNCNDNReduced(double u, double mc, double& s, double& c, double& d);
 
 // Maclaurin series for Fukushima b₀.  These are polynomials in m that are used
-// to build a polynomial in u₀².
+// to build a polynomial in u₀².  The index gives the degree of the polynomial.
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
     fukushima_b₀_maclaurin_m_0(std::make_tuple(1.0 / 2.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
@@ -68,16 +68,16 @@ void JacobiSNCNDNReduced(double const u,
   double const b₀0 = fukushima_b₀_maclaurin_m_0.Evaluate(m);
   double const b₀1 = fukushima_b₀_maclaurin_m_1.Evaluate(m);
   double const b₀2 = fukushima_b₀_maclaurin_m_2.Evaluate(m);
-  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-      fukushima_b₀_maclaurin_u₀²_2(std::make_tuple(b₀0, b₀1, b₀2));
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+      fukushima_b₀_maclaurin_u₀²_3(std::make_tuple(0.0, b₀0, b₀1, b₀2));
   double const u₀² = u₀ * u₀;
 
   // We use the subscript i to indicate variables that are computed as part of
   // the iteration (Fukushima uses subscripts n and N).  This avoids confusion
   // between c (the result) and cᵢ (the intermediate numerator of c).
-  double bᵢ = fukushima_b₀_maclaurin_u₀²_2.Evaluate(u₀²);
+  double bᵢ = fukushima_b₀_maclaurin_u₀²_3.Evaluate(u₀²);
 
-  double const uA = 1.76269 + mc * 1.16357;
+  double const uA = 1.76269 + 1.16357 * mc;
   bool const may_have_cancellation = u > uA;
   double aᵢ = 1.0;
   for (int j = 0; j < n; ++j) {
@@ -92,9 +92,9 @@ void JacobiSNCNDNReduced(double const u,
         double const xᵢ = cᵢ * cᵢ;
         double const zᵢ = aᵢ * aᵢ;
         double const wᵢ = m * xᵢ * xᵢ - mc * zᵢ * zᵢ;
-        double const xz = xᵢ * zᵢ;
-        cᵢ = two_mc * xz + wᵢ;
-        aᵢ = two_m * xz - wᵢ;
+        double const xᵢzᵢ = xᵢ * zᵢ;
+        cᵢ = two_mc * xᵢzᵢ + wᵢ;
+        aᵢ = two_m * xᵢzᵢ - wᵢ;
       }
       c = cᵢ / aᵢ;
       double const c² = c * c;
