@@ -1390,8 +1390,6 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
   constexpr double JA81 = 12870.0 / 1376256.0;
   constexpr double JA90 = 12155.0 / 1376256.0;
 
-  double J1, J2, J3, J4, J5, J6, J7, J8, J9, JA;
-
   PolynomialInMonomialBasis<double, double, 0, HornerEvaluator> js10(
       std::make_tuple(J100));
 
@@ -1579,141 +1577,45 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                       jsA8.Evaluate(n),
                       jsA9.Evaluate(n)));
 
-  J1 = J100;
-  J2 = J200 + n * J201 + m * J210;
-  J3 = J300 + n * (J301 + n * J302) + m * (J310 + n * J311 + m * J320);
-  J4 = J400 + n * (J401 + n * (J402 + n * J403)) +
-       m * (J410 + n * (J411 + n * J412) + m * (J420 + n * J421 + m * J430));
-  J5 = J500 + n * (J501 + n * (J502 + n * (J503 + n * J504))) +
-       m * (J510 + n * (J511 + n * (J512 + n * J513)) +
-            m * (J520 + n * (J521 + n * J522) +
-                 m * (J530 + n * J531 + m * J540)));
+  double const j1 = js1.Evaluate(m);
+  double const j2 = js2.Evaluate(m);
+  double const j3 = js3.Evaluate(m);
+  double const j4 = js4.Evaluate(m);
+  double const j5 = js5.Evaluate(m);
+
   if (y <= 6.0369310e-04) {
-    return y * (J1 + y * (J2 + y * (J3 + y * (J4 + y * J5))));
+    PolynomialInMonomialBasis<double, double, 4, HornerEvaluator> jy(
+        std::make_tuple(j1, j2, j3, j4, j5));
+    return y * jy.Evaluate(y);
   }
-
-  J6 = J600 + n * (J601 + n * (J602 + n * (J603 + n * (J604 + n * J605)))) +
-       m * (J610 + n * (J611 + n * (J612 + n * (J613 + n * J614))) +
-            m * (J620 + n * (J621 + n * (J622 + n * J623)) +
-                 m * (J630 + n * (J631 + n * J632) +
-                      m * (J640 + n * J641 + m * J650))));
+  double const j6 = js6.Evaluate(m);
   if (y <= 2.0727505e-03) {
-    return y * (J1 + y * (J2 + y * (J3 + y * (J4 + y * (J5 + y * J6)))));
+    PolynomialInMonomialBasis<double, double, 5, HornerEvaluator> jy(
+        std::make_tuple(j1, j2, j3, j4, j5, j6));
+    return y * jy.Evaluate(y);
   }
-
-  J7 =
-      J700 +
-      n * (J701 +
-           n * (J702 + n * (J703 + n * (J704 + n * (J705 + n * J706))))) +
-      m * (J710 + n * (J711 + n * (J712 + n * (J713 + n * (J714 + n * J715)))) +
-           m * (J720 + n * (J721 + n * (J722 + n * (J723 + n * J724))) +
-                m * (J730 + n * (J731 + n * (J732 + n * J733)) +
-                     m * (J740 + n * (J741 + n * J742) +
-                          m * (J750 + n * J751 + m * J760)))));
+  double const j7 = js7.Evaluate(m);
   if (y <= 5.0047026e-03) {
-    return y *
-           (J1 + y * (J2 + y * (J3 + y * (J4 + y * (J5 + y * (J6 + y * J7))))));
+    PolynomialInMonomialBasis<double, double, 6, HornerEvaluator> jy(
+        std::make_tuple(j1, j2, j3, j4, j5, j6, j7));
+    return y * jy.Evaluate(y);
   }
-
-  J8 =
-      J800 +
-      n * (J801 +
-           n * (J802 +
-                n * (J803 + n * (J804 + n * (J805 + n * (J806 + n * J807)))))) +
-      m * (J810 +
-           n * (J811 +
-                n * (J812 + n * (J813 + n * (J814 + n * (J815 + n * J816))))) +
-           m * (J820 +
-                n * (J821 + n * (J822 + n * (J823 + n * (J824 + n * J825)))) +
-                m * (J830 + n * (J831 + n * (J832 + n * (J833 + n * J834))) +
-                     m * (J840 + n * (J841 + n * (J842 + n * J843)) +
-                          m * (J850 + n * (J851 + n * J852) +
-                               m * (J860 + n * J861 + m * J870))))));
+  double const j8 = js8.Evaluate(m);
   if (y <= 9.6961652e-03) {
-    return y * (J1 +
-                y * (J2 +
-                     y * (J3 +
-                          y * (J4 + y * (J5 + y * (J6 + y * (J7 + y * J8)))))));
+    PolynomialInMonomialBasis<double, double, 7, HornerEvaluator> jy(
+        std::make_tuple(j1, j2, j3, j4, j5, j6, j7, j8));
+    return y * jy.Evaluate(y);
   }
-
-  J9 = J900 +
-       n * (J901 +
-            n * (J902 +
-                 n * (J903 +
-                      n * (J904 +
-                           n * (J905 + n * (J906 + n * (J907 + n * J908))))))) +
-       m * (J910 +
-            n * (J911 +
-                 n * (J912 +
-                      n * (J913 +
-                           n * (J914 + n * (J915 + n * (J916 + n * J917)))))) +
-            m * (J920 +
-                 n * (J921 +
-                      n * (J922 +
-                           n * (J923 + n * (J924 + n * (J925 + n * J926))))) +
-                 m * (J930 +
-                      n * (J931 +
-                           n * (J932 + n * (J933 + n * (J934 + n * J935)))) +
-                      m * (J940 +
-                           n * (J941 + n * (J942 + n * (J943 + n * J944))) +
-                           m * (J950 + n * (J951 + n * (J952 + n * J953)) +
-                                m * (J960 + n * (J961 + n * J962) +
-                                     m * (J970 + n * J971 + m * J980)))))));
+  double const j9 = js9.Evaluate(m);
   if (y <= 1.6220210e-02) {
-    return y *
-           (J1 +
-            y * (J2 +
-                 y * (J3 +
-                      y * (J4 +
-                           y * (J5 +
-                                y * (J6 + y * (J7 + y * (J8 + y * J9))))))));
+    PolynomialInMonomialBasis<double, double, 8, HornerEvaluator> jy(
+        std::make_tuple(j1, j2, j3, j4, j5, j6, j7, j8, j9));
+    return y * jy.Evaluate(y);
   }
-
-  JA =
-      JA00 +
-      n * (JA01 +
-           n * (JA02 +
-                n * (JA03 +
-                     n * (JA04 +
-                          n * (JA05 +
-                               n * (JA06 +
-                                    n * (JA07 + n * (JA08 + n * JA09)))))))) +
-      m * (JA10 +
-           n * (JA11 +
-                n * (JA12 +
-                     n * (JA13 +
-                          n * (JA14 +
-                               n * (JA15 +
-                                    n * (JA16 + n * (JA17 + n * JA18))))))) +
-           m * (JA20 +
-                n * (JA21 +
-                     n * (JA22 +
-                          n * (JA23 +
-                               n * (JA24 +
-                                    n * (JA25 + n * (JA26 + n * JA27)))))) +
-                m * (JA30 +
-                     n * (JA31 +
-                          n * (JA32 +
-                               n * (JA33 +
-                                    n * (JA34 + n * (JA35 + n * JA36))))) +
-                     m * (JA40 +
-                          n * (JA41 +
-                               n * (JA42 +
-                                    n * (JA43 + n * (JA44 + n * JA45)))) +
-                          m * (JA50 +
-                               n * (JA51 + n * (JA52 + n * (JA53 + n * JA54))) +
-                               m * (JA60 + n * (JA61 + n * (JA62 + n * JA63)) +
-                                    m * (JA70 + n * (JA71 + n * JA72) +
-                                         m * (JA80 + n * JA81 +
-                                              m * JA90))))))));
-  return y * (J1 +
-              y * (J2 +
-                   y * (J3 +
-                        y * (J4 +
-                             y * (J5 +
-                                  y * (J6 +
-                                       y * (J7 +
-                                            y * (J8 + y * (J9 + y * JA)))))))));
+  double const jA = jsA.Evaluate(m);
+  PolynomialInMonomialBasis<double, double, 9, HornerEvaluator> jy(
+      std::make_tuple(j1, j2, j3, j4, j5, j6, j7, j8, j9, jA));
+  return y * jy.Evaluate(y);
 }
 
 double FukushimaT(double const t, double const h) {
