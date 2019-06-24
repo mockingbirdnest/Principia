@@ -61,7 +61,7 @@ void JacobiSNCNDNReduced(double const u,
   int n = 0;  // Note that this variable is used after the loop.
   for (; u₀ >= uT; ++n) {
     DCHECK_LE(n, max_reductions)
-        << "u₀ = " << u₀ << " u = " << u << " mc = " << mc; 
+        << "u₀ = " << u₀ << " u = " << u << " mc = " << mc;
     u₀ = 0.5 * u₀;
   }
 
