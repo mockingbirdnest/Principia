@@ -1,15 +1,36 @@
 ﻿
 #include "numerics/elliptic_functions.hpp"
 
+#include <tuple>
+
 #include "glog/logging.h"
+#include "numerics/combinatorics.hpp"
 #include "numerics/elliptic_integrals.hpp"
+#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"
 
 namespace principia {
+
+using quantities::Sqrt;
+
 namespace numerics {
 namespace {
 
 void JacobiSNCNDNReduced(double u, double mc, double& s, double& c, double& d);
+
+// Maclaurin series for Fukushima b₀.  These are polynomials in m that are used
+// as coefficients of a polynomial in u₀².  The index gives the corresponding
+// power of u₀².
+PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
+    fukushima_b₀_maclaurin_m_1(std::make_tuple(1.0 / 2.0));
+PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+    fukushima_b₀_maclaurin_m_2(std::make_tuple(-1.0 / 24.0, -1.0 / 6.0));
+PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+    fukushima_b₀_maclaurin_m_3(std::make_tuple(1.0 / 720.0,
+                                               11.0 / 180.0,
+                                               1.0 / 45.0));
 
 // Double precision subroutine to compute three Jacobian elliptic functions
 // simultaneously
@@ -32,70 +53,64 @@ void JacobiSNCNDNReduced(double const u,
                          double& s,
                          double& c,
                          double& d) {
-  double m, uA, uT, u0, v, a, b, x, y, z, my, mc2, m2, xz, w;
-  int n;  // TODO(phl): Used after the loop.
+  constexpr int max_reductions = 20;
 
-  constexpr double B10 = 1.0 / 24.0;
-  constexpr double B11 = 1.0 / 6.0;
-  constexpr double B20 = 1.0 / 720.0;
-  constexpr double B21 = 11.0 / 180.0;
-  constexpr double B22 = 1.0 / 45.0;
+  double const m = 1.0 - mc;
+  double const uT = 5.217e-3 - 2.143e-3 * m;
 
-  m = 1.0 - mc;
-  uA = 1.76269 + mc * 1.16357;
-  uT = 5.217e-3 - m * 2.143e-3;
-  u0 = u;
-
-  for (n = 0; n <= 20; ++n) {
-    if (u0 < uT) {
-      break;
-    }
-    LOG_IF(FATAL, n == 20) << "(scd2) Too large input argument: u=" << u;
-    u0 = u0 * 0.5;
+  double u₀ = u;
+  int n = 0;  // Note that this variable is used after the loop.
+  for (; u₀ >= uT; ++n) {
+    DCHECK_LE(n, max_reductions)
+        << "u₀ = " << u₀ << " u = " << u << " mc = " << mc;
+    u₀ = 0.5 * u₀;
   }
-  v = u0 * u0;
-  a = 1.0;
-  b = v * (0.5 - v * (B10 + m * B11 - v * (B20 + m * (B21 + m * B22))));
-  if (u < uA) {
-    for (int j = 1; j <= n; ++j) {
-      y = b * (a * 2.0 - b);
-      z = a * a;
-      my = m * y;
-      b = (y * 2.0) * (z - my);
-      a = z * z - my * y;
-    }
-  } else {
-    for (int j = 1; j <= n; ++j) {
-      y = b * (a * 2.0 - b);
-      z = a * a;
-      my = m * y;
-      if (z < my * 2.0) {
-        c = a - b;
-        mc2 = mc * 2.0;
-        m2 = m * 2.0;
-        for (int i = j; i <= n; ++i) {
-          x = c * c;
-          z = a * a;
-          w = m * x * x - mc * z * z;
-          xz = x * z;
-          c = mc2 * xz + w;
-          a = m2 * xz - w;
-        }
-        c = c / a;
-        x = c * c;
-        s = sqrt(1.0 - x);
-        d = sqrt(mc + m * x);
-        return;
+
+  double const b₀1 = fukushima_b₀_maclaurin_m_1.Evaluate(m);
+  double const b₀2 = fukushima_b₀_maclaurin_m_2.Evaluate(m);
+  double const b₀3 = fukushima_b₀_maclaurin_m_3.Evaluate(m);
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+      fukushima_b₀_maclaurin_u₀²_3(std::make_tuple(0.0, b₀1, b₀2, b₀3));
+  double const u₀² = u₀ * u₀;
+
+  // We use the subscript i to indicate variables that are computed as part of
+  // the iteration (Fukushima uses subscripts n and N).  This avoids confusion
+  // between c (the result) and cᵢ (the intermediate numerator of c).
+  double bᵢ = fukushima_b₀_maclaurin_u₀²_3.Evaluate(u₀²);
+
+  double const uA = 1.76269 + 1.16357 * mc;
+  bool const may_have_cancellation = u > uA;
+  double aᵢ = 1.0;
+  for (int i = 0; i < n; ++i) {
+    double const yᵢ = bᵢ * (2.0 * aᵢ - bᵢ);
+    double const zᵢ = aᵢ * aᵢ;
+    double const myᵢ = m * yᵢ;
+    if (may_have_cancellation && zᵢ < 2.0 * myᵢ) {
+      double cᵢ = aᵢ - bᵢ;
+      double const two_mc = 2.0 * mc;
+      double const two_m = 2.0 * m;
+      for (; i < n; ++i) {
+        double const xᵢ = cᵢ * cᵢ;
+        double const zᵢ = aᵢ * aᵢ;
+        double const wᵢ = m * xᵢ * xᵢ - mc * zᵢ * zᵢ;
+        double const xᵢzᵢ = xᵢ * zᵢ;
+        cᵢ = two_mc * xᵢzᵢ + wᵢ;
+        aᵢ = two_m * xᵢzᵢ - wᵢ;
       }
-      b = (y * 2.0) * (z - my);
-      a = z * z - my * y;
+      c = cᵢ / aᵢ;
+      double const c² = c * c;
+      s = Sqrt(1.0 - c²);
+      d = Sqrt(mc + m * c²);
+      return;
     }
+    bᵢ = 2.0 * yᵢ * (zᵢ - myᵢ);
+    aᵢ = zᵢ * zᵢ - myᵢ * yᵢ;
   }
-  b = b / a;
-  y = b * (2.0 - b);
-  c = 1.0 - b;
-  s = sqrt(y);
-  d = sqrt(1.0 - m * y);
+  bᵢ = bᵢ / aᵢ;
+  double const yᵢ = bᵢ * (2.0 - bᵢ);
+  c = 1.0 - bᵢ;
+  s = Sqrt(yᵢ);
+  d = Sqrt(1.0 - m * yᵢ);
 }
 
 }  // namespace
