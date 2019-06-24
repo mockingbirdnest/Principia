@@ -21,13 +21,14 @@ namespace {
 void JacobiSNCNDNReduced(double u, double mc, double& s, double& c, double& d);
 
 // Maclaurin series for Fukushima b₀.  These are polynomials in m that are used
-// to build a polynomial in u₀².  The index gives the degree of the polynomial.
+// as coefficients of a polynomial in u₀².  The index gives the corresponding
+// power of u₀².
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_b₀_maclaurin_m_0(std::make_tuple(1.0 / 2.0));
+    fukushima_b₀_maclaurin_m_1(std::make_tuple(1.0 / 2.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_b₀_maclaurin_m_1(std::make_tuple(-1.0 / 24.0, -1.0 / 6.0));
+    fukushima_b₀_maclaurin_m_2(std::make_tuple(-1.0 / 24.0, -1.0 / 6.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_b₀_maclaurin_m_2(std::make_tuple(1.0 / 720.0,
+    fukushima_b₀_maclaurin_m_3(std::make_tuple(1.0 / 720.0,
                                                11.0 / 180.0,
                                                1.0 / 45.0));
 
@@ -65,11 +66,11 @@ void JacobiSNCNDNReduced(double const u,
     u₀ = 0.5 * u₀;
   }
 
-  double const b₀0 = fukushima_b₀_maclaurin_m_0.Evaluate(m);
   double const b₀1 = fukushima_b₀_maclaurin_m_1.Evaluate(m);
   double const b₀2 = fukushima_b₀_maclaurin_m_2.Evaluate(m);
+  double const b₀3 = fukushima_b₀_maclaurin_m_3.Evaluate(m);
   PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-      fukushima_b₀_maclaurin_u₀²_3(std::make_tuple(0.0, b₀0, b₀1, b₀2));
+      fukushima_b₀_maclaurin_u₀²_3(std::make_tuple(0.0, b₀1, b₀2, b₀3));
   double const u₀² = u₀ * u₀;
 
   // We use the subscript i to indicate variables that are computed as part of
@@ -80,7 +81,7 @@ void JacobiSNCNDNReduced(double const u,
   double const uA = 1.76269 + 1.16357 * mc;
   bool const may_have_cancellation = u > uA;
   double aᵢ = 1.0;
-  for (int j = 0; j < n; ++j) {
+  for (int i = 0; i < n; ++i) {
     double const yᵢ = bᵢ * (2.0 * aᵢ - bᵢ);
     double const zᵢ = aᵢ * aᵢ;
     double const myᵢ = m * yᵢ;
@@ -88,7 +89,7 @@ void JacobiSNCNDNReduced(double const u,
       double cᵢ = aᵢ - bᵢ;
       double const two_mc = 2.0 * mc;
       double const two_m = 2.0 * m;
-      for (int i = j; i < n; ++i) {
+      for (; i < n; ++i) {
         double const xᵢ = cᵢ * cᵢ;
         double const zᵢ = aᵢ * aᵢ;
         double const wᵢ = m * xᵢ * xᵢ - mc * zᵢ * zᵢ;
