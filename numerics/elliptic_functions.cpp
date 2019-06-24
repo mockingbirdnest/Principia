@@ -162,45 +162,38 @@ void JacobiSNCNDN(double const u,
     if (abs_u < k_over_2) {
       JacobiSNCNDNReduced(abs_u, mc, s, c, d);
     } else if (abs_u < k) {
-      abs_u = k - abs_u;
-      JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+      JacobiSNCNDNReduced(k - abs_u, mc, s, c, d);
       double const sx = c / d;
       c = kʹ * s / d;
       s = sx;
       d = kʹ / d;
     } else if (abs_u < three_k_over_2) {
-      abs_u = abs_u - k;
-      JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+      JacobiSNCNDNReduced(abs_u - k, mc, s, c, d);
       double const sx = c / d;
       c = -kʹ * s / d;
       s = sx;
       d = kʹ / d;
     } else if (abs_u < two_k) {
-      abs_u = two_k - abs_u;
-      JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+      JacobiSNCNDNReduced(two_k - abs_u, mc, s, c, d);
       c = -c;
     } else if (abs_u < five_k_over_2) {
-      abs_u = abs_u - two_k;
-      JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+      JacobiSNCNDNReduced(abs_u - two_k, mc, s, c, d);
       s = -s;
       c = -c;
     } else if (abs_u < three_k) {
-      abs_u = three_k - abs_u;
-      JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+      JacobiSNCNDNReduced(three_k - abs_u, mc, s, c, d);
       double const sx = -c / d;
       c = -kʹ * s / d;
       s = sx;
       d = kʹ / d;
     } else if (abs_u < seven_k_over_2) {
-      abs_u = abs_u - three_k;
-      JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+      JacobiSNCNDNReduced(abs_u - three_k, mc, s, c, d);
       double const sx = -c / d;
       c = kʹ * s / d;
       s = sx;
       d = kʹ / d;
     } else {
-      abs_u = four_k - abs_u;
-      JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+      JacobiSNCNDNReduced(four_k - abs_u, mc, s, c, d);
       s = -s;
     }
   }
