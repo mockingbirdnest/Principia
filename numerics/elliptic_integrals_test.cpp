@@ -44,11 +44,7 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
   int expected_index = 0;
   for (int l = 1; l <= lend; ++l) {
     double nc = (l - 1) * Δnc;
-    if (nc <= 1.05e-8) {
-      nc = 1.05e-8;
-    }
-    float rnc = static_cast<float>(nc);
-    if (rnc <= 2.44e-4) {
+    if (nc <= 2.44e-4) {
       nc = 2.44e-4;
     }
     double const nn = 1.0 - nc;
@@ -62,11 +58,22 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
       for (int i = 0; i <= iend; ++i) {
         double b, d, j;
         Angle const φ = Δφ * i;
+
+        // The following is useful for tracing the actual machine numbers passed
+        // to the elliptic integrals close to the pole.  We want to ensure that
+        // the parameters have the exact value used in Mathematica computations.
+        if (mm == 1.0 && i == iend) {
+          EXPECT_THAT(mc, AlmostEquals(1.21000'00000'00000'04719e-32, 0));
+          EXPECT_THAT(φ, AlmostEquals(1.57079'63267'94896'55800 * Radian, 0));
+          LOG(INFO) << " mc = " << quantities::DebugString(mc, 30) << u8" φ = "
+                    << quantities::DebugString(φ, 30);
+          if (l == 1) {
+            EXPECT_THAT(nn, AlmostEquals(9.99755'99999'99999'78023e-1, 0));
+            LOG(INFO) << " n = " << quantities::DebugString(nn, 30);
+          }
+        }
+
         FukushimaEllipticBDJ(φ, nn, mc, b, d, j);
-        LOG_IF(ERROR, mm == 1.0 && i == iend)
-            << " n = " << quantities::DebugString(nn, 30)
-            << " m = " << quantities::DebugString(mm, 30) << u8" φ = "
-            << quantities::DebugString(φ, 30);
         std::printf("%10.5f%10.5f%10.5f%25.15f%25.15f%25.15f\n",
                     nn,
                     mm,

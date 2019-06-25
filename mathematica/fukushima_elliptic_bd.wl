@@ -5,7 +5,7 @@
 
 
 (* ::Input:: *)
-(*fukushimaB[\[CurlyPhi]_,m_]:=(EllipticE[\[CurlyPhi],m]-m EllipticF[\[CurlyPhi],m])/m*)
+(*fukushimaB[\[CurlyPhi]_,m_]:=(EllipticE[\[CurlyPhi],m]-(1-m) EllipticF[\[CurlyPhi],m])/m*)
 
 
 (* ::Input:: *)
