@@ -63,6 +63,10 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
         double b, d, j;
         Angle const φ = Δφ * i;
         FukushimaEllipticBDJ(φ, nn, mc, b, d, j);
+        LOG_IF(ERROR, mm == 1.0 && i == iend)
+            << " n = " << quantities::DebugString(nn, 30)
+            << " m = " << quantities::DebugString(mm, 30) << u8" φ = "
+            << quantities::DebugString(φ, 30);
         std::printf("%10.5f%10.5f%10.5f%25.15f%25.15f%25.15f\n",
                     nn,
                     mm,
@@ -83,16 +87,8 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
         EXPECT_THAT(φ / (π * Radian),
                     IsNear(expected_argument_φ_over_π, 1.001));
         EXPECT_THAT(b, AlmostEquals(expected_value_b, 0, 8));
-
-        // TODO(phl): xelbdj_all.txt enshrines values that are incorrect for
-        // m close to 1 and φ close to (the machine representation of) π / 2.
-        // That seems to stem from the computation of the complementary angle
-        // φc = π / 2 - φ, which introduces a 1 ULP inconsistency between φc and
-        // φ.
-        if (mm != 1.0 || i != iend) {
-          EXPECT_THAT(d, AlmostEquals(expected_value_d, 0, 97));
-          EXPECT_THAT(j, AlmostEquals(expected_value_j, 0, 135));
-        }
+        EXPECT_THAT(d, AlmostEquals(expected_value_d, 0, 97));
+        EXPECT_THAT(j, AlmostEquals(expected_value_j, 0, 135));
         ++expected_index;
       }
     }

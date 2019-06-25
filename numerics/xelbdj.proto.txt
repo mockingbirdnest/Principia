@@ -6,7 +6,8 @@ entry { argument: 0.99976, argument: 1.00000, argument: 0.00000, value: 0.000000
 entry { argument: 0.99976, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.022570343177599 }
 entry { argument: 0.99976, argument: 1.00000, argument: 0.25000, value: 0.707106781186548, value:  0.174266805832995, value:      0.266382481911311 }
 entry { argument: 0.99976, argument: 1.00000, argument: 0.37500, value: 0.923879532511287, value:  0.691011383661808, value:      2.345064868304662 }
-entry { argument: 0.99976, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.132345669220292, value: 136391.378049815393751 }
+# The following entry was corrected using Mathematica
+entry { argument: 0.99976, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.025003373828867, value: 135951.450609686595486 }
 
 entry { argument: 0.99976, argument: 0.75000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.99976, argument: 0.75000, argument: 0.12500, value: 0.380165874573813, value:  0.020265117017211, value:      0.022288926653528 }
@@ -36,7 +37,8 @@ entry { argument: 0.75000, argument: 1.00000, argument: 0.00000, value: 0.000000
 entry { argument: 0.75000, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.022012232717184 }
 entry { argument: 0.75000, argument: 1.00000, argument: 0.25000, value: 0.707106781186548, value:  0.174266805832995, value:      0.233634924921085 }
 entry { argument: 0.75000, argument: 1.00000, argument: 0.37500, value: 0.923879532511287, value:  0.691011383661808, value:      1.383967203057269 }
-entry { argument: 0.75000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.132345669220292, value:    146.446614706473639 }
+# The following entry was corrected using Mathematica
+entry { argument: 0.75000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.025003373828867, value:    146.017245524907895 }
 
 entry { argument: 0.75000, argument: 0.75000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.75000, argument: 0.75000, argument: 0.12500, value: 0.380165874573813, value:  0.020265117017211, value:      0.021739095264120 }
@@ -66,7 +68,8 @@ entry { argument: 0.50000, argument: 1.00000, argument: 0.00000, value: 0.000000
 entry { argument: 0.50000, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.021485423570639 }
 entry { argument: 0.50000, argument: 1.00000, argument: 0.25000, value: 0.707106781186548, value:  0.174266805832995, value:      0.209074775614900 }
 entry { argument: 0.50000, argument: 1.00000, argument: 0.37500, value: 0.923879532511287, value:  0.691011383661808, value:      1.020774439803883 }
-entry { argument: 0.50000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.132345669220292, value:     73.771790377879654 }
+# The following entry was corrected using Mathematica
+entry { argument: 0.50000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.025003373828867, value:     73.557105787096811 }
 
 entry { argument: 0.50000, argument: 0.75000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.50000, argument: 0.75000, argument: 0.12500, value: 0.380165874573813, value:  0.020265117017211, value:      0.021220059796666 }
@@ -96,7 +99,8 @@ entry { argument: 0.25000, argument: 1.00000, argument: 0.00000, value: 0.000000
 entry { argument: 0.25000, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.020987613506348 }
 entry { argument: 0.25000, argument: 1.00000, argument: 0.25000, value: 0.707106781186548, value:  0.174266805832995, value:      0.189834190890406 }
 entry { argument: 0.25000, argument: 1.00000, argument: 0.37500, value: 0.923879532511287, value:  0.691011383661808, value:      0.820455985054876 }
-entry { argument: 0.25000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.132345669220292, value:     49.378311174069594 }
+# The following entry was corrected using Mathematica
+entry { argument: 0.25000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.025003373828867, value:     49.235188113547676 }
 
 entry { argument: 0.25000, argument: 0.75000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.25000, argument: 0.75000, argument: 0.12500, value: 0.380165874573813, value:  0.020265117017211, value:      0.020729558156099 }
@@ -126,7 +130,8 @@ entry { argument: 0.00000, argument: 1.00000, argument: 0.00000, value: 0.000000
 entry { argument: 0.00000, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.020516286796422 }
 entry { argument: 0.00000, argument: 1.00000, argument: 0.25000, value: 0.707106781186548, value:  0.174266805832995, value:      0.174266805832995 }
 entry { argument: 0.00000, argument: 1.00000, argument: 0.37500, value: 0.923879532511287, value:  0.691011383661808, value:      0.691011383661808 }
-entry { argument: 0.00000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.132345669220292, value:     37.132345669220300 }
+# The following entry was corrected using Mathematica
+entry { argument: 0.00000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.025003373828867, value:    999 }
 
 entry { argument: 0.00000, argument: 0.75000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.00000, argument: 0.75000, argument: 0.12500, value: 0.380165874573813, value:  0.020265117017211, value:      0.020265117017211 }
