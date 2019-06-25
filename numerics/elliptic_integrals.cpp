@@ -14,12 +14,6 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
-// TODO(phl):
-// 1. Use arrays for the coefficients.
-// 2. Use Estrin evaluation for polynomials of high degree (possibly adding
-//    support for polynomials of two and three variables).
-// 3. Figure something for the uninitialized variables.
-
 // Bibliography:
 // [Buli69] Bulirsch (1969), Numerical Calculation of Elliptic Integrals and
 // Elliptic Fuctions.  III.

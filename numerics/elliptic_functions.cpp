@@ -13,6 +13,7 @@
 
 namespace principia {
 
+using quantities::Abs;
 using quantities::Sqrt;
 
 namespace numerics {
@@ -127,8 +128,6 @@ void JacobiSNCNDNReduced(double const u,
 //
 //     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
 //
-//     Used subprograms: scd2, elk
-//
 //     Inputs: u = argument, mc = 1-m, 0 < mc <= 1
 //
 //     Output: s = sn(u|m), c=cn(u|m), d=dn(u|m)
@@ -138,65 +137,59 @@ void JacobiSNCNDN(double const u,
                   double& s,
                   double& c,
                   double& d) {
-  double m, kc, ux, k, kh, kh3, kh5, kh7, k2, k3, k4, sx;
+  constexpr double k_over_2_lower_bound = π / 4.0;
 
-  m = 1.0 - mc;
-  kc = sqrt(mc);
-  ux = abs(u);
-  if (ux < 0.785) {
-    JacobiSNCNDNReduced(ux, mc, s, c, d);
+  // The argument reduction follows Fukushima (2009), Fast computation of
+  // Jacobian elliptic function and incomplete elliptic integrals for constant
+  // values of elliptic parameter and elliptic characteristic, sections 2.4 and
+  // 3.5.2.
+  double const m = 1.0 - mc;
+  double const kʹ = Sqrt(mc);
+  double abs_u = Abs(u);
+  if (abs_u < k_over_2_lower_bound) {
+    JacobiSNCNDNReduced(abs_u, mc, s, c, d);
   } else {
-    k = EllipticK(mc);
-    kh = k * 0.5;
-    kh3 = k * 1.5;
-    kh5 = k * 2.5;
-    kh7 = k * 3.5;
-    k2 = k * 2.0;
-    k3 = k * 3.0;
-    k4 = k * 4.0;
-    ux = ux - k4 * static_cast<double>(static_cast<int>(ux / k4));
-    if (ux < kh) {
-      JacobiSNCNDNReduced(ux, mc, s, c, d);
-    } else if (ux < k) {
-      ux = k - ux;
-      JacobiSNCNDNReduced(ux, mc, s, c, d);
-      sx = c / d;
-      c = kc * s / d;
+    double const k = EllipticK(mc);
+    double const two_k = 2.0 * k;
+    double const three_k = 3.0 * k;
+    double const four_k = 4.0 * k;
+    abs_u =
+        abs_u - four_k * static_cast<double>(static_cast<int>(abs_u / four_k));
+    if (abs_u < 0.5 * k) {
+      JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+    } else if (abs_u < k) {
+      JacobiSNCNDNReduced(k - abs_u, mc, s, c, d);
+      double const sx = c / d;
+      c = kʹ * s / d;
       s = sx;
-      d = kc / d;
-    } else if (ux < kh3) {
-      ux = ux - k;
-      JacobiSNCNDNReduced(ux, mc, s, c, d);
-      sx = c / d;
-      c = -kc * s / d;
+      d = kʹ / d;
+    } else if (abs_u < 1.5 * k) {
+      JacobiSNCNDNReduced(abs_u - k, mc, s, c, d);
+      double const sx = c / d;
+      c = -kʹ * s / d;
       s = sx;
-      d = kc / d;
-    } else if (ux < k2) {
-      ux = k2 - ux;
-      JacobiSNCNDNReduced(ux, mc, s, c, d);
+      d = kʹ / d;
+    } else if (abs_u < two_k) {
+      JacobiSNCNDNReduced(two_k - abs_u, mc, s, c, d);
       c = -c;
-    } else if (ux < kh5) {
-      ux = ux - k2;
-      JacobiSNCNDNReduced(ux, mc, s, c, d);
+    } else if (abs_u < 2.5 * k) {
+      JacobiSNCNDNReduced(abs_u - two_k, mc, s, c, d);
       s = -s;
       c = -c;
-    } else if (ux < k3) {
-      ux = k3 - ux;
-      JacobiSNCNDNReduced(ux, mc, s, c, d);
-      sx = -c / d;
-      c = -kc * s / d;
+    } else if (abs_u < three_k) {
+      JacobiSNCNDNReduced(three_k - abs_u, mc, s, c, d);
+      double const sx = -c / d;
+      c = -kʹ * s / d;
       s = sx;
-      d = kc / d;
-    } else if (ux < kh7) {
-      ux = ux - k3;
-      JacobiSNCNDNReduced(ux, mc, s, c, d);
-      sx = -c / d;
-      c = kc * s / d;
+      d = kʹ / d;
+    } else if (abs_u < 3.5 * k) {
+      JacobiSNCNDNReduced(abs_u - three_k, mc, s, c, d);
+      double const sx = -c / d;
+      c = kʹ * s / d;
       s = sx;
-      d = kc / d;
+      d = kʹ / d;
     } else {
-      ux = k4 - ux;
-      JacobiSNCNDNReduced(ux, mc, s, c, d);
+      JacobiSNCNDNReduced(four_k - abs_u, mc, s, c, d);
       s = -s;
     }
   }
