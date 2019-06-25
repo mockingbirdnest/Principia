@@ -150,16 +150,12 @@ void JacobiSNCNDN(double const u,
     JacobiSNCNDNReduced(abs_u, mc, s, c, d);
   } else {
     double const k = EllipticK(mc);
-    double const k_over_2 = 0.5 * k;
-    double const three_k_over_2 = 1.5 * k;
     double const two_k = 2.0 * k;
-    double const five_k_over_2 = 2.5 * k;
     double const three_k = 3.0 * k;
-    double const seven_k_over_2 = 3.5 * k;
     double const four_k = 4.0 * k;
     abs_u =
         abs_u - four_k * static_cast<double>(static_cast<int>(abs_u / four_k));
-    if (abs_u < k_over_2) {
+    if (abs_u < 0.5 * k) {
       JacobiSNCNDNReduced(abs_u, mc, s, c, d);
     } else if (abs_u < k) {
       JacobiSNCNDNReduced(k - abs_u, mc, s, c, d);
@@ -167,7 +163,7 @@ void JacobiSNCNDN(double const u,
       c = kʹ * s / d;
       s = sx;
       d = kʹ / d;
-    } else if (abs_u < three_k_over_2) {
+    } else if (abs_u < 1.5 * k) {
       JacobiSNCNDNReduced(abs_u - k, mc, s, c, d);
       double const sx = c / d;
       c = -kʹ * s / d;
@@ -176,7 +172,7 @@ void JacobiSNCNDN(double const u,
     } else if (abs_u < two_k) {
       JacobiSNCNDNReduced(two_k - abs_u, mc, s, c, d);
       c = -c;
-    } else if (abs_u < five_k_over_2) {
+    } else if (abs_u < 2.5 * k) {
       JacobiSNCNDNReduced(abs_u - two_k, mc, s, c, d);
       s = -s;
       c = -c;
@@ -186,7 +182,7 @@ void JacobiSNCNDN(double const u,
       c = -kʹ * s / d;
       s = sx;
       d = kʹ / d;
-    } else if (abs_u < seven_k_over_2) {
+    } else if (abs_u < 3.5 * k) {
       JacobiSNCNDNReduced(abs_u - three_k, mc, s, c, d);
       double const sx = -c / d;
       c = kʹ * s / d;
