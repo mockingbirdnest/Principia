@@ -93,6 +93,12 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
         EXPECT_THAT(mm, IsNear(expected_argument_m, 1.001));
         EXPECT_THAT(φ / (π * Radian),
                     IsNear(expected_argument_φ_over_π, 1.001));
+
+        // The relatively large errors on D and J below are not significant.
+        // They come from the fact that the data given by Fukushima has 15
+        // digits after the decimal point (and no exponent) but D and J can get
+        // quite small on this dataset (around 0.2) so the given expected values
+        // don't have 53 bits in their mantissa.
         EXPECT_THAT(b, AlmostEquals(expected_value_b, 0, 8));
         EXPECT_THAT(d, AlmostEquals(expected_value_d, 0, 97));
         EXPECT_THAT(j, AlmostEquals(expected_value_j, 0, 135));
