@@ -230,6 +230,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       if (burn_editors_.Count == 0 &&
           UnityEngine.GUILayout.Button("Delete flight plan")) {
         plugin.FlightPlanDelete(vessel_guid);
+        ResetStatus();
         Shrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
@@ -291,10 +292,20 @@ class FlightPlanner : SupervisedWindowRenderer {
                              previous_burn : burn_editors_.LastOrDefault());
           Burn candidate_burn = editor.Burn();
           var status = plugin.FlightPlanAppend(vessel_guid, candidate_burn);
-          editor.Reset(plugin.FlightPlanGetManoeuvre(
-              vessel_guid, burn_editors_.Count));
-          burn_editors_.Add(editor);
-          UpdateStatus(status, burn_editors_.Count - 1);
+
+          // The previous call did not necessarily create a manœuvre.  Check if
+          // we need to add an editor.
+          int number_of_manœuvres =
+              plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
+          if (number_of_manœuvres > burn_editors_.Count) {
+            editor.Reset(plugin.FlightPlanGetManoeuvre(
+                vessel_guid, number_of_manœuvres - 1));
+            burn_editors_.Add(editor);
+            UpdateStatus(status, number_of_manœuvres - 1);
+          } else {
+            UpdateStatus(status, number_of_manœuvres);
+          }
+
           Shrink();
         }
       }
@@ -415,11 +426,15 @@ class FlightPlanner : SupervisedWindowRenderer {
     return true;
   }
 
+  private void ResetStatus() {
+    status_ = Status.OK;
+    first_error_manœuvre_ = null;
+    message_was_displayed_ = false;
+  }
+
   private void UpdateStatus(Status status, int? error_manœuvre) {
     if (message_was_displayed_) {
-      status_ = Status.OK;
-      first_error_manœuvre_ = null;
-      message_was_displayed_ = false;
+      ResetStatus();
     }
     if (status_.ok() && !status.ok()) {
       status_ = status;
@@ -469,19 +484,20 @@ class FlightPlanner : SupervisedWindowRenderer {
                                 ? "the start of the flight plan"
                                 : "manœuvre #" +
                                   first_error_manœuvre_.Value) + " or " +
-                           ((first_error_manœuvre_.Value == manœuvres - 1)
+                           ((manœuvres == 0 ||
+                             first_error_manœuvre_.Value == manœuvres - 1)
                                 ? "the end of the flight plan"
                                 : "manœuvre #" +
                                   (first_error_manœuvre_.Value + 2));
-          remedy_message = ((first_error_manœuvre_.Value == manœuvres - 1)
+          remedy_message = ((manœuvres == 0 ||
+                             first_error_manœuvre_.Value == manœuvres - 1)
                                ? "extending the flight plan or "
                                : "") +
                            "adjusting the initial time or reducing the " +
                            "duration of manœuvre #" +
                            (first_error_manœuvre_.Value + 1);
         } else {
-          status_message = "flight plan final time overlaps the last " +
-                           "manœuvre";
+          status_message = "flight plan is too short";
           remedy_message = "increasing the flight plan duration";
         }
       }
@@ -511,7 +527,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   private float warning_height_ = 1;
 
   private Status status_ = Status.OK;
-  private int? first_error_manœuvre_;
+  private int? first_error_manœuvre_;  // May exceed the number of manœuvres.
   private bool message_was_displayed_ = false;
   
   private const double log10_time_lower_rate = 0.0;
