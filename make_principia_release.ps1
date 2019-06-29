@@ -29,7 +29,10 @@ if (!($date -match '^\d{10}$')) {
 }
 
 $msbuild = &".\find_msbuild.ps1"
-$7zip = "${Env:ProgramFiles}\7-Zip\7z.exe"
+$7zip = "${Env:ProgramW6432}\7-Zip\7z.exe"
+if (!(test-path -path $7zip)) {
+  write-error ("Could not find 7-Zip.")
+}
 
 $tag = "$date-$mathematician"
 
@@ -45,10 +48,9 @@ if ($tag -in $(git tag)) {
 
 git checkout "$remote/master"
 git tag $tag -m $mathematician
-git push $remote --tags
 
 if (test-path .\Release) {
-  rm .\Release -recurse
+  rm .\Release -recurse -force
 }
 
 &$msbuild                           `
@@ -74,13 +76,19 @@ foreach ($ksp_version in $compatibility_ksp_versions) {
 # Sanity check: the error message in the adapter should mention all supported
 # versions.
 
-if (!(sls ([regex]::escape($primary_ksp_version)) -encoding Unicode `
+if (!(sls ([regex]::escape(
+               [text.encoding]::ascii.getstring(
+                   [text.encoding]::unicode.getbytes(
+                       $ksp_version)))) -encoding ASCII `
       ".\Release\GameData\Principia\ksp_plugin_adapter.dll")) {
   write-error ("Configuration Release does not target $primary_ksp_version.")
 }
 
 foreach ($ksp_version in $compatibility_ksp_versions) {
-  if (!(sls ([regex]::escape($ksp_version)) -encoding Unicode `
+  if (!(sls ([regex]::escape(
+                 [text.encoding]::ascii.getstring(
+                     [text.encoding]::unicode.getbytes(
+                         $ksp_version)))) -encoding ASCII `
         (".\Release\$ksp_version Compatibility\GameData\Principia\" +
              "ksp_plugin_adapter.dll"))) {
     write-error ("Configuration Release KSP $ksp_version does not target " +
@@ -98,4 +106,12 @@ foreach ($ksp_version in $compatibility_ksp_versions) {
      "principia $lowercase_mathematician for $ksp_version.zip"
   &$7zip a "principia $lowercase_mathematician for $ksp_version.zip" `
            ".\Release\$ksp_version Compatibility\GameData"
+}
+
+if ($mathematician.contains("TEST")) {
+  echo "Successfully built test release $tag.  Run"
+  echo "  git tag --delete $tag"
+  echo "to clean up."
+} else {
+  git push $remote --tags
 }
