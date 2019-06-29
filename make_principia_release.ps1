@@ -108,7 +108,7 @@ foreach ($ksp_version in $compatibility_ksp_versions) {
            ".\Release\$ksp_version Compatibility\GameData"
 }
 
-if ($mathematician -match "TEST") {
+if ($mathematician.contains("TEST")) {
   echo "Successfully built test release $tag.  Run"
   echo "  git tag --delete $tag"
   echo "to clean up."
