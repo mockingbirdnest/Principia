@@ -42,16 +42,17 @@ $remote = $(
 
 git fetch $remote
 
+
+if (test-path .\Release) {
+  rm .\Release -recurse
+}
+
 if ($tag -in $(git tag)) {
   write-error ("Tag $tag already exists.")
 }
 
 git checkout "$remote/master"
 git tag $tag -m $mathematician
-
-if (test-path .\Release) {
-  rm .\Release -recurse -force
-}
 
 &$msbuild                           `
     /t:Clean                        `
@@ -79,7 +80,7 @@ foreach ($ksp_version in $compatibility_ksp_versions) {
 if (!(sls ([regex]::escape(
                [text.encoding]::ascii.getstring(
                    [text.encoding]::unicode.getbytes(
-                       $ksp_version)))) -encoding ASCII `
+                       $primary_ksp_version)))) -encoding ASCII `
       ".\Release\GameData\Principia\ksp_plugin_adapter.dll")) {
   write-error ("Configuration Release does not target $primary_ksp_version.")
 }
