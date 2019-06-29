@@ -23,7 +23,7 @@ This directory should not contain any of the following subfolders:
 - `Google`.
 
 This project depends upon:
-- the KSP assembly `Assembly-CSharp.dll`, found in `<KSP directory>\KSP_Data\Managed`;
+- the KSP assembly `Assembly-CSharp.dll`, found in `<KSP directory>\KSP_x64_Data\Managed`;
 - the Unity assemblies `UnityEngine.dll` and `UnityEngine.UI.dll`, found in
   `<KSP directory>\KSP_Data\Managed` (on Mac you'll need `UnityEngine.CoreModule.dll`,
   `UnityEngine.PhysicsModule.dll`, `UnityEngine.ImageConversionModule.dll`,
