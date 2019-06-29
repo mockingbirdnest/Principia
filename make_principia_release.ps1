@@ -42,7 +42,6 @@ $remote = $(
 
 git fetch $remote
 
-
 if (test-path .\Release) {
   rm .\Release -recurse
 }
