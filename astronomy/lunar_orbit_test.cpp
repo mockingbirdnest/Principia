@@ -221,8 +221,8 @@ constexpr std::array<GeopotentialTruncation, 4> geopotential_truncations = {
          /*max_degree=*/50,
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00018,
-         /*first_period_descending_nodes=*/{-0.0055, +0.0051, +0.018, +0.027},
-         /*period_ends=*/{+0.0026, +0.0037, +0.0200, +0.021},
+         /*first_period_descending_nodes=*/{-0.0055, +0.0051, -0.027, -0.018},
+         /*period_ends=*/{+0.0026, +0.0037, -0.021, -0.0200},
          /*periods=*/10,
      },
      {
@@ -230,32 +230,32 @@ constexpr std::array<GeopotentialTruncation, 4> geopotential_truncations = {
          /*max_degree=*/30,
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00032,
-         /*first_period_descending_nodes=*/{-0.0058, +0.0048, +0.018, +0.027},
-         /*period_ends=*/{+0.0019, +0.0050, +0.0190, +0.022},
+         /*first_period_descending_nodes=*/{-0.0058, +0.0048, -0.027, -0.018},
+         /*period_ends=*/{+0.0019, +0.0050, -0.022, -0.0190},
          /*periods=*/28,
      },
      {
          /*max_degree=*/25,
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00110,
-         /*first_period_descending_nodes=*/{-0.0060, +0.0044, +0.018, +0.027},
-         /*period_ends=*/{-0.0017, +0.0089, +0.0110, +0.021},
+         /*first_period_descending_nodes=*/{-0.0060, +0.0044, -0.027, -0.018},
+         /*period_ends=*/{-0.0017, +0.0089, -0.021, -0.0110},
          /*periods=*/28,
      },
      {
          /*max_degree=*/20,
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00130,
-         /*first_period_descending_nodes=*/{-0.0064, +0.0045, +0.018, +0.028},
-         /*period_ends=*/{-0.0030, +0.0100, +0.0083, +0.021},
+         /*first_period_descending_nodes=*/{-0.0064, +0.0045, -0.028, -0.018},
+         /*period_ends=*/{-0.0030, +0.0100, -0.021, -0.0083},
          /*periods=*/28,
      },
      {
          /*max_degree=*/10,
          /*zonal_only=*/false,
          /*first_period_eccentricity_vector_drift=*/0.00370,
-         /*first_period_descending_nodes=*/{-0.0091, +0.0036, +0.018, +0.028},
-         /*period_ends=*/{-0.0160, +0.0210, -0.0160, +0.021},
+         /*first_period_descending_nodes=*/{-0.0091, +0.0036, -0.028, -0.018},
+         /*period_ends=*/{-0.0160, +0.0210, -0.021, +0.0160},
          /*periods=*/28,
 #if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
      },
@@ -263,8 +263,8 @@ constexpr std::array<GeopotentialTruncation, 4> geopotential_truncations = {
          /*max_degree=*/50,
          /*zonal_only=*/true,
          /*first_period_eccentricity_vector_drift=*/0.00098,
-         /*first_period_descending_nodes=*/{+0.0038, +0.0040, +0.021, +0.022},
-         /*period_ends=*/{-0.0047, +0.0040, +0.0170, +0.025},
+         /*first_period_descending_nodes=*/{+0.0038, +0.0040, -0.022, -0.021},
+         /*period_ends=*/{-0.0047, +0.0040, -0.025, -0.0170},
          /*periods=*/28,
 #endif
      }},
@@ -357,11 +357,9 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                 IsNear(1.4e-10));
     EXPECT_THAT(RelativeError(initial_osculating.inclination, i0),
                 IsNear(9.7e-9));
-    // TODO(egg): Figure out why we don't have the same sign as Russel and Lara
-    // here.
-    EXPECT_THAT(
-        RelativeError(*initial_osculating.argument_of_periapsis, -ω0),
-        IsNear(7.1e-11));
+    EXPECT_THAT(RelativeError(*initial_osculating.argument_of_periapsis,
+                              2 * π * Radian + ω0),
+                IsNear(2.0e-11));
     EXPECT_THAT(RelativeError(initial_osculating.longitude_of_ascending_node,
                               2 * π * Radian + Ω0),
                 IsNear(4.7e-13));

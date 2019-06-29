@@ -56,6 +56,8 @@ public partial class PrincipiaPluginAdapter
       "principia_gravity_model";
   private const string principia_numerics_blueprint_config_name_ =
       "principia_numerics_blueprint";
+  private const string principia_override_version_check_config_name_ =
+      "principia_override_version_check";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
@@ -198,9 +200,15 @@ public partial class PrincipiaPluginAdapter
       string expected_version =
           "1.7.2, 1.7.1, 1.7.0, 1.6.1, and 1.5.1";
 #endif
-      Log.Fatal("Unexpected KSP version " + Versioning.version_major + "." +
-                Versioning.version_minor + "." + Versioning.Revision +
-                "; this build targets " + expected_version + ".");
+      string message = $@"Unexpected KSP version {Versioning.version_major}.{
+          Versioning.version_minor}.{Versioning.Revision}; this build targets {
+          expected_version}.";
+      if (GameDatabase.Instance.GetAtMostOneNode(
+              principia_override_version_check_config_name_) == null) {
+        Log.Fatal(message);
+      } else {
+        Log.Error(message);
+      }
     }
     map_node_pool_ = new MapNodePool();
     flight_planner_ = new FlightPlanner(this);
