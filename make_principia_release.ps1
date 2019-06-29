@@ -42,12 +42,12 @@ $remote = $(
 
 git fetch $remote
 
-if (test-path .\Release) {
-  rm .\Release -recurse
-}
-
 if ($tag -in $(git tag)) {
   write-error ("Tag $tag already exists.")
+}
+
+if (test-path .\Release) {
+  rm .\Release -recurse
 }
 
 git checkout "$remote/master"
