@@ -178,14 +178,14 @@ class FukushimaEllipticDsBsMaclaurin {
 
   template<typename Tuple, int... k>
   struct Generator<Tuple, std::index_sequence<k...>> {
-    template<int k>
+    template<int j>
     static double ComputeBsCoefficient(Tuple const& tuple) {
-      if constexpr (k == 0) {
+      if constexpr (j == 0) {
         return 1.0;
       } else {
-        return std::get<k>(tuple) -
-               std::get<k - 1>(tuple) * (static_cast<double>(2 * k - 1) /
-                                         static_cast<double>(2 * k + 1));
+        return std::get<j>(tuple) -
+               std::get<j - 1>(tuple) * (static_cast<double>(2 * j - 1) /
+                                         static_cast<double>(2 * j + 1));
       }
     }
 
