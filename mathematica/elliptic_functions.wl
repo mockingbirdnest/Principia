@@ -45,7 +45,7 @@
 (* ::Input:: *)
 (*randomvals=Map[*)
 (*{*)
-(*JacobiSN[#[[1]],#[[2]]],JacobiCN[#[[1]],#[[2]]],JacobiDN[#[[1]],#[[2]]]}&,*)
+(*JacobiSN[#[[1]],#[[2]]],JacobiCN[#[[1]],#[[2]]],JacobiDN[#[[1]],#[[2]]],JacobiAmplitude[#[[1]],#[[2]]]}&,*)
 (*randomargs];*)
 
 
@@ -56,6 +56,7 @@
 (*" value: "<>decimalFloatLiteral[#[[3]],2]<>*)
 (*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
 (*" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[6]],2]<>*)
 (*"}"*)
 (*&,*)
 (*Join[randomargs,randomvals,2]];*)
