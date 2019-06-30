@@ -10,14 +10,20 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
+namespace numerics {
+namespace internal_elliptic_functions {
 
 using quantities::Abs;
+using quantities::ArcTan;
 using quantities::Sqrt;
+using quantities::si::Radian;
 
-namespace numerics {
 namespace {
+
+constexpr double k_over_2_lower_bound = π / 4.0;
 
 void JacobiSNCNDNReduced(double u, double mc, double& s, double& c, double& d);
 
@@ -114,8 +120,6 @@ void JacobiSNCNDNReduced(double const u,
   d = Sqrt(1.0 - m * yᵢ);
 }
 
-}  // namespace
-
 // Double precision subroutine to compute three Jacobian elliptic functions
 // simultaneously
 //
@@ -132,13 +136,12 @@ void JacobiSNCNDNReduced(double const u,
 //
 //     Output: s = sn(u|m), c=cn(u|m), d=dn(u|m)
 //
-void JacobiSNCNDN(double const u,
-                  double const mc,
-                  double& s,
-                  double& c,
-                  double& d) {
-  constexpr double k_over_2_lower_bound = π / 4.0;
-
+void JacobiSNCNDNWithK(double const u,
+                       double const mc,
+                       double const k,
+                       double& s,
+                       double& c,
+                       double& d) {
   // The argument reduction follows Fukushima (2009), Fast computation of
   // Jacobian elliptic function and incomplete elliptic integrals for constant
   // values of elliptic parameter and elliptic characteristic, sections 2.4 and
@@ -149,7 +152,6 @@ void JacobiSNCNDN(double const u,
   if (abs_u < k_over_2_lower_bound) {
     JacobiSNCNDNReduced(abs_u, mc, s, c, d);
   } else {
-    double const k = EllipticK(mc);
     double const two_k = 2.0 * k;
     double const three_k = 3.0 * k;
     double const four_k = 4.0 * k;
@@ -197,6 +199,55 @@ void JacobiSNCNDN(double const u,
     s = -s;
   }
 }
+}  // namespace
 
+Angle JacobiAmplitude(double u, double mc) {
+  constexpr double k_over_2_lower_bound = π / 4.0;
+  double s;
+  double c;
+  double d;
+  Angle offset;
+  double abs_u = Abs(u);
+  if (abs_u < k_over_2_lower_bound) {
+    JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+  } else {
+    double const k = EllipticK(mc);
+    JacobiSNCNDNWithK(u, mc, k, s, c, d);
+    offset = 2.0 * π * std::trunc(u / (4.0 * k)) * Radian;
+  }
+  return offset + ArcTan(s, c);
+}
+
+// Double precision subroutine to compute three Jacobian elliptic functions
+// simultaneously
+//
+//   For general argument: -infty < u < infty
+//
+//     Reference: T. Fukushima, (2012) Numer. Math.
+//     DOI 10.1007/s00211-012-0498-0
+//       "Precise and Fast Computation of Jacobian Elliptic Functions by
+//        Conditional Duplication"
+//
+//     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
+//
+//     Inputs: u = argument, mc = 1-m, 0 < mc <= 1
+//
+//     Output: s = sn(u|m), c=cn(u|m), d=dn(u|m)
+//
+void JacobiSNCNDN(double const u,
+                  double const mc,
+                  double& s,
+                  double& c,
+                  double& d) {
+  double abs_u = Abs(u);
+  if (abs_u < k_over_2_lower_bound) {
+    JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+  } else {
+    double const k = EllipticK(mc);
+    JacobiSNCNDNWithK(u, mc, k, s, c, d);
+  }
+}
+
+}  // namespace internal_elliptic_functions
 }  // namespace numerics
 }  // namespace principia
