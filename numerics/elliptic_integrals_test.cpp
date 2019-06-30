@@ -44,11 +44,7 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
   int expected_index = 0;
   for (int l = 1; l <= lend; ++l) {
     double nc = (l - 1) * Δnc;
-    if (nc <= 1.05e-8) {
-      nc = 1.05e-8;
-    }
-    float rnc = static_cast<float>(nc);
-    if (rnc <= 2.44e-4) {
+    if (nc <= 2.44e-4) {
       nc = 2.44e-4;
     }
     double const nn = 1.0 - nc;
@@ -62,6 +58,21 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
       for (int i = 0; i <= iend; ++i) {
         double b, d, j;
         Angle const φ = Δφ * i;
+
+        // The following is useful for tracing the actual machine numbers passed
+        // to the elliptic integrals close to the pole.  We want to ensure that
+        // the parameters have the exact value used in Mathematica computations.
+        if (mm == 1.0 && i == iend) {
+          EXPECT_THAT(mc, AlmostEquals(1.21000'00000'00000'04719e-32, 0));
+          EXPECT_THAT(φ, AlmostEquals(1.57079'63267'94896'55800 * Radian, 0));
+          LOG(INFO) << " mc = " << quantities::DebugString(mc, 30) << u8" φ = "
+                    << quantities::DebugString(φ, 30);
+          if (l == 1) {
+            EXPECT_THAT(nn, AlmostEquals(9.99755'99999'99999'78023e-1, 0));
+            LOG(INFO) << " n = " << quantities::DebugString(nn, 30);
+          }
+        }
+
         FukushimaEllipticBDJ(φ, nn, mc, b, d, j);
         std::printf("%10.5f%10.5f%10.5f%25.15f%25.15f%25.15f\n",
                     nn,
@@ -82,39 +93,60 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
         EXPECT_THAT(mm, IsNear(expected_argument_m, 1.001));
         EXPECT_THAT(φ / (π * Radian),
                     IsNear(expected_argument_φ_over_π, 1.001));
-        EXPECT_THAT(b, AlmostEquals(expected_value_b, 0, 8));
 
-        // TODO(phl): xelbdj_all.txt enshrines values that are incorrect for
-        // m close to 1 and φ close to (the machine representation of) π / 2.
-        // That seems to stem from the computation of the complementary angle
-        // φc = π / 2 - φ, which introduces a 1 ULP inconsistency between φc and
-        // φ.
-        if (mm != 1.0 || i != iend) {
-          EXPECT_THAT(d, AlmostEquals(expected_value_d, 0, 97));
-          EXPECT_THAT(j, AlmostEquals(expected_value_j, 0, 135));
-        }
+        // The relatively large errors on D and J below are not significant.
+        // They come from the fact that the data given by Fukushima has 15
+        // digits after the decimal point (and no exponent) but D and J can get
+        // quite small on this dataset (around 0.2) so the given expected values
+        // don't have 53 bits in their mantissa.
+        EXPECT_THAT(b, AlmostEquals(expected_value_b, 0, 8));
+        EXPECT_THAT(d, AlmostEquals(expected_value_d, 0, 97));
+        EXPECT_THAT(j, AlmostEquals(expected_value_j, 0, 135));
         ++expected_index;
       }
     }
   }
 }
 
-// Tabulated values produced with Mathematica for m close to 1 (where there were
-// bugs).
-TEST_F(EllipticIntegralsTest, MathematicaMNear1) {
-  auto const elliptic_integrals_expected = ReadFromTabulatedData(
-      SOLUTION_DIR / "numerics" / "elliptic_integrals.proto.txt");
+TEST_F(EllipticIntegralsTest, MathematicaBivariate) {
+  auto const bivariate_elliptic_integrals_expected = ReadFromTabulatedData(
+      SOLUTION_DIR / "numerics" / "bivariate_elliptic_integrals.proto.txt");
 
-  for (auto const& entry : elliptic_integrals_expected.entry()) {
-    double const argument_n = entry.argument(0);
+  for (auto const& entry : bivariate_elliptic_integrals_expected.entry()) {
+    Angle const argument_φ = entry.argument(0) * Radian;
     double const argument_m = entry.argument(1);
-    Angle const argument_φ = entry.argument(2) * Radian;
     double const expected_value_b = entry.value(0);
     double const expected_value_d = entry.value(1);
-    double const expected_value_j = entry.value(2);
 
     double actual_value_b;
     double actual_value_d;
+    double actual_value_j;  // Ignored.
+    FukushimaEllipticBDJ(argument_φ,
+                         /*n=*/1,
+                         1.0 - argument_m,
+                         actual_value_b,
+                         actual_value_d,
+                         actual_value_j);
+
+    EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 5))
+        << argument_φ << " " << argument_m;
+    EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 44))
+        << argument_φ << " " << argument_m;
+  }
+}
+
+TEST_F(EllipticIntegralsTest, MathematicaTrivariate) {
+  auto const trivariate_elliptic_integrals_expected = ReadFromTabulatedData(
+      SOLUTION_DIR / "numerics" / "trivariate_elliptic_integrals.proto.txt");
+
+  for (auto const& entry : trivariate_elliptic_integrals_expected.entry()) {
+    Angle const argument_φ = entry.argument(0) * Radian;
+    double const argument_n = entry.argument(1);
+    double const argument_m = entry.argument(2);
+    double const expected_value_j = entry.value(0);
+
+    double actual_value_b;  // Ignored.
+    double actual_value_d;  // Ignored.
     double actual_value_j;
     FukushimaEllipticBDJ(argument_φ,
                          argument_n,
@@ -123,12 +155,10 @@ TEST_F(EllipticIntegralsTest, MathematicaMNear1) {
                          actual_value_d,
                          actual_value_j);
 
-    EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 7))
-        << argument_n << " " << argument_m << " " << argument_φ;
-    EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 27))
-        << argument_n << " " << argument_m << " " << argument_φ;
-    EXPECT_THAT(actual_value_j, AlmostEquals(expected_value_j, 0, 18835))
-        << argument_n << " " << argument_m << " " << argument_φ;
+    // TODO(phl): The error is uncomfortably large here.  Figure out what's
+    // happening.
+    EXPECT_THAT(actual_value_j, AlmostEquals(expected_value_j, 0, 25004))
+        << argument_φ << " " << argument_n << " " << argument_m;
   }
 }
 

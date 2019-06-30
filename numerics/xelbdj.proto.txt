@@ -1,48 +1,49 @@
 # These tabulated values come from the output given by Fukushima at the end of
 # his xelbdj_all.txt.
+# The values for φ / π = 0.5 have been corrected using Mathematica.
 #                 n                  m                  φ / π           B                          D                             J
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------
 entry { argument: 0.99976, argument: 1.00000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.99976, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.022570343177599 }
 entry { argument: 0.99976, argument: 1.00000, argument: 0.25000, value: 0.707106781186548, value:  0.174266805832995, value:      0.266382481911311 }
 entry { argument: 0.99976, argument: 1.00000, argument: 0.37500, value: 0.923879532511287, value:  0.691011383661808, value:      2.345064868304662 }
-entry { argument: 0.99976, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.132345669220292, value: 136391.378049815393751 }
+entry { argument: 0.99976, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 36.601039904446423, value: 134213.895407299686615 }
 
 entry { argument: 0.99976, argument: 0.75000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.99976, argument: 0.75000, argument: 0.12500, value: 0.380165874573813, value:  0.020265117017211, value:      0.022288926653528 }
 entry { argument: 0.99976, argument: 0.75000, argument: 0.25000, value: 0.687224290919399, value:  0.163999458151786, value:      0.249346408412777 }
 entry { argument: 0.99976, argument: 0.75000, argument: 0.37500, value: 0.861000430354716, value:  0.559500504346794, value:      1.787983458054265 }
-entry { argument: 0.99976, argument: 0.75000, argument: 0.50000, value: 0.895902820924732, value:  1.260612826574912, value:    196.395167222240275 }
+entry { argument: 0.99976, argument: 0.75000, argument: 0.50000, value: 0.895902820924732, value:  1.260612826574911 , value:    196.39516722223973 }
 
 entry { argument: 0.99976, argument: 0.50000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.99976, argument: 0.50000, argument: 0.12500, value: 0.377737820324691, value:  0.020024676408965, value:      0.022019650853618 }
 entry { argument: 0.99976, argument: 0.50000, argument: 0.25000, value: 0.670355132106078, value:  0.155662744143168, value:      0.235645434075686 }
 entry { argument: 0.99976, argument: 0.50000, argument: 0.37500, value: 0.820671634698681, value:  0.491035758158865, value:      1.522223602858838 }
-entry { argument: 0.99976, argument: 0.50000, argument: 0.50000, value: 0.847213084793979, value:  1.006861592507393, value:    139.562982684668469 }
+entry { argument: 0.99976, argument: 0.50000, argument: 0.50000, value: 0.847213084793979, value:  1.006861592507393, value:    139.562982684668098 }
 
 entry { argument: 0.99976, argument: 0.25000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.99976, argument: 0.25000, argument: 0.12500, value: 0.375393116925529, value:  0.019794159144289, value:      0.021761598305347 }
 entry { argument: 0.99976, argument: 0.25000, argument: 0.25000, value: 0.655685639148294, value:  0.148680462083772, value:      0.224260632101247 }
 entry { argument: 0.99976, argument: 0.25000, argument: 0.37500, value: 0.790322477603527, value:  0.445663694750517, value:      1.354561202879649 }
-entry { argument: 0.99976, argument: 0.25000, argument: 0.50000, value: 0.812597772919921, value:  0.873152581892676, value:    114.192493470516609 }
+entry { argument: 0.99976, argument: 0.25000, argument: 0.50000, value: 0.812597772919920, value:  0.873152581892675, value:    114.192493470516296 }
 
 entry { argument: 0.99976, argument: 0.00000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.99976, argument: 0.00000, argument: 0.12500, value: 0.373126236145999, value:  0.019572845552725, value:      0.021513950041333 }
 entry { argument: 0.99976, argument: 0.00000, argument: 0.25000, value: 0.642699081698724, value:  0.142699081698724, value:      0.214572870954856 }
 entry { argument: 0.99976, argument: 0.00000, argument: 0.37500, value: 0.765825317844723, value:  0.412271927251449, value:      1.235274252890637 }
-entry { argument: 0.99976, argument: 0.00000, argument: 0.50000, value: 0.785398163397448, value:  0.785398163397448, value:     99.013293263192892 }
+entry { argument: 0.99976, argument: 0.00000, argument: 0.50000, value: 0.785398163397448, value:  0.785398163397448, value:     99.013293263192647 }
 
 entry { argument: 0.75000, argument: 1.00000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.75000, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.022012232717184 }
 entry { argument: 0.75000, argument: 1.00000, argument: 0.25000, value: 0.707106781186548, value:  0.174266805832995, value:      0.233634924921085 }
 entry { argument: 0.75000, argument: 1.00000, argument: 0.37500, value: 0.923879532511287, value:  0.691011383661808, value:      1.383967203057269 }
-entry { argument: 0.75000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.132345669220292, value:    146.446614706473639 }
+entry { argument: 0.75000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 36.601039904446423, value:    144.321391647378120 }
 
 entry { argument: 0.75000, argument: 0.75000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.75000, argument: 0.75000, argument: 0.12500, value: 0.380165874573813, value:  0.020265117017211, value:      0.021739095264120 }
 entry { argument: 0.75000, argument: 0.75000, argument: 0.25000, value: 0.687224290919399, value:  0.163999458151786, value:      0.219075035542894 }
 entry { argument: 0.75000, argument: 0.75000, argument: 0.37500, value: 0.861000430354716, value:  0.559500504346794, value:      1.086438640019290 }
-entry { argument: 0.75000, argument: 0.75000, argument: 0.50000, value: 0.895902820924732, value:  1.260612826574912, value:      3.583611283698927 }
+entry { argument: 0.75000, argument: 0.75000, argument: 0.50000, value: 0.895902820924732, value:  1.260612826574911, value:      3.583611283698926 }
 
 entry { argument: 0.75000, argument: 0.50000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.75000, argument: 0.50000, argument: 0.12500, value: 0.377737820324691, value:  0.020024676408965, value:      0.021477710411120 }
@@ -54,7 +55,7 @@ entry { argument: 0.75000, argument: 0.25000, argument: 0.00000, value: 0.000000
 entry { argument: 0.75000, argument: 0.25000, argument: 0.12500, value: 0.375393116925529, value:  0.019794159144289, value:      0.021227191478047 }
 entry { argument: 0.75000, argument: 0.25000, argument: 0.25000, value: 0.655685639148294, value:  0.148680462083772, value:      0.197541942156515 }
 entry { argument: 0.75000, argument: 0.25000, argument: 0.37500, value: 0.790322477603527, value:  0.445663694750517, value:      0.842350424403990 }
-entry { argument: 0.75000, argument: 0.25000, argument: 0.50000, value: 0.812597772919921, value:  0.873152581892676, value:      2.357292208141529 }
+entry { argument: 0.75000, argument: 0.25000, argument: 0.50000, value: 0.812597772919920, value:  0.873152581892675, value:      2.357292208141528 }
 
 entry { argument: 0.75000, argument: 0.00000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.75000, argument: 0.00000, argument: 0.12500, value: 0.373126236145999, value:  0.019572845552725, value:      0.020986746876685 }
@@ -66,25 +67,25 @@ entry { argument: 0.50000, argument: 1.00000, argument: 0.00000, value: 0.000000
 entry { argument: 0.50000, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.021485423570639 }
 entry { argument: 0.50000, argument: 1.00000, argument: 0.25000, value: 0.707106781186548, value:  0.174266805832995, value:      0.209074775614900 }
 entry { argument: 0.50000, argument: 1.00000, argument: 0.37500, value: 0.923879532511287, value:  0.691011383661808, value:      1.020774439803883 }
-entry { argument: 0.50000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.132345669220292, value:     73.771790377879654 }
+entry { argument: 0.50000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 36.601039904446423, value:     72.709178848331923 }
 
 entry { argument: 0.50000, argument: 0.75000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.50000, argument: 0.75000, argument: 0.12500, value: 0.380165874573813, value:  0.020265117017211, value:      0.021220059796666 }
 entry { argument: 0.50000, argument: 0.75000, argument: 0.25000, value: 0.687224290919399, value:  0.163999458151786, value:      0.196323448596668 }
 entry { argument: 0.50000, argument: 0.75000, argument: 0.37500, value: 0.861000430354716, value:  0.559500504346794, value:      0.813099999300043 }
-entry { argument: 0.50000, argument: 0.75000, argument: 0.50000, value: 0.895902820924732, value:  1.260612826574912, value:      2.156515647499643 }
+entry { argument: 0.50000, argument: 0.75000, argument: 0.50000, value: 0.895902820924732, value:  1.260612826574911, value:      2.156515647499643 }
 
 entry { argument: 0.50000, argument: 0.50000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.50000, argument: 0.50000, argument: 0.12500, value: 0.377737820324691, value:  0.020024676408965, value:      0.020966085381627 }
 entry { argument: 0.50000, argument: 0.50000, argument: 0.25000, value: 0.670355132106078, value:  0.155662744143168, value:      0.186009725832904 }
 entry { argument: 0.50000, argument: 0.50000, argument: 0.37500, value: 0.820671634698681, value:  0.491035758158865, value:      0.707394438302897 }
-entry { argument: 0.50000, argument: 0.50000, argument: 0.50000, value: 0.847213084793979, value:  1.006861592507393, value:      1.694426169587957 }
+entry { argument: 0.50000, argument: 0.50000, argument: 0.50000, value: 0.847213084793979, value:  1.006861592507393, value:      1.694426169587958 }
 
 entry { argument: 0.50000, argument: 0.25000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.50000, argument: 0.25000, argument: 0.12500, value: 0.375393116925529, value:  0.019794159144289, value:      0.020722642399758 }
 entry { argument: 0.50000, argument: 0.25000, argument: 0.25000, value: 0.655685639148294, value:  0.148680462083772, value:      0.177399255346557 }
 entry { argument: 0.50000, argument: 0.25000, argument: 0.37500, value: 0.790322477603527, value:  0.445663694750517, value:      0.638278769417304 }
-entry { argument: 0.50000, argument: 0.25000, argument: 0.50000, value: 0.812597772919921, value:  0.873152581892676, value:      1.455842298777197 }
+entry { argument: 0.50000, argument: 0.25000, argument: 0.50000, value: 0.812597772919920, value:  0.873152581892675, value:      1.455842298777197 }
 
 entry { argument: 0.50000, argument: 0.00000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.50000, argument: 0.00000, argument: 0.12500, value: 0.373126236145999, value:  0.019572845552725, value:      0.020488964835011 }
@@ -96,13 +97,13 @@ entry { argument: 0.25000, argument: 1.00000, argument: 0.00000, value: 0.000000
 entry { argument: 0.25000, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.020987613506348 }
 entry { argument: 0.25000, argument: 1.00000, argument: 0.25000, value: 0.707106781186548, value:  0.174266805832995, value:      0.189834190890406 }
 entry { argument: 0.25000, argument: 1.00000, argument: 0.37500, value: 0.923879532511287, value:  0.691011383661808, value:      0.820455985054876 }
-entry { argument: 0.25000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.132345669220292, value:     49.378311174069594 }
+entry { argument: 0.25000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 36.601039904446423, value:     48.669903487704417 }
 
 entry { argument: 0.25000, argument: 0.75000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.25000, argument: 0.75000, argument: 0.12500, value: 0.380165874573813, value:  0.020265117017211, value:      0.020729558156099 }
 entry { argument: 0.25000, argument: 0.75000, argument: 0.25000, value: 0.687224290919399, value:  0.163999458151786, value:      0.178468021910232 }
 entry { argument: 0.25000, argument: 0.75000, argument: 0.37500, value: 0.861000430354716, value:  0.559500504346794, value:      0.659754278441750 }
-entry { argument: 0.25000, argument: 0.75000, argument: 0.50000, value: 0.895902820924732, value:  1.260612826574912, value:      1.580795429464887 }
+entry { argument: 0.25000, argument: 0.75000, argument: 0.50000, value: 0.895902820924732, value:  1.260612826574911, value:      1.580795429464887 }
 
 entry { argument: 0.25000, argument: 0.50000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.25000, argument: 0.50000, argument: 0.12500, value: 0.377737820324691, value:  0.020024676408965, value:      0.020482551737041 }
@@ -114,7 +115,7 @@ entry { argument: 0.25000, argument: 0.25000, argument: 0.00000, value: 0.000000
 entry { argument: 0.25000, argument: 0.25000, argument: 0.12500, value: 0.375393116925529, value:  0.019794159144289, value:      0.020245763214615 }
 entry { argument: 0.25000, argument: 0.25000, argument: 0.25000, value: 0.655685639148294, value:  0.148680462083772, value:      0.161550873764594 }
 entry { argument: 0.25000, argument: 0.25000, argument: 0.37500, value: 0.790322477603527, value:  0.445663694750517, value:      0.522250714438824 }
-entry { argument: 0.25000, argument: 0.25000, argument: 0.50000, value: 0.812597772919921, value:  0.873152581892676, value:      1.083463697226561 }
+entry { argument: 0.25000, argument: 0.25000, argument: 0.50000, value: 0.812597772919920, value:  0.873152581892675, value:      1.083463697226561 }
 
 entry { argument: 0.25000, argument: 0.00000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.25000, argument: 0.00000, argument: 0.12500, value: 0.373126236145999, value:  0.019572845552725, value:      0.020018450492512 }
@@ -126,13 +127,13 @@ entry { argument: 0.00000, argument: 1.00000, argument: 0.00000, value: 0.000000
 entry { argument: 0.00000, argument: 1.00000, argument: 0.12500, value: 0.382683432365090, value:  0.020516286796422, value:      0.020516286796422 }
 entry { argument: 0.00000, argument: 1.00000, argument: 0.25000, value: 0.707106781186548, value:  0.174266805832995, value:      0.174266805832995 }
 entry { argument: 0.00000, argument: 1.00000, argument: 0.37500, value: 0.923879532511287, value:  0.691011383661808, value:      0.691011383661808 }
-entry { argument: 0.00000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 37.132345669220292, value:     37.132345669220300 }
+entry { argument: 0.00000, argument: 1.00000, argument: 0.50000, value: 1.000000000000000, value: 36.601039904446423, value:    36.6010399044464226 }
 
 entry { argument: 0.00000, argument: 0.75000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.00000, argument: 0.75000, argument: 0.12500, value: 0.380165874573813, value:  0.020265117017211, value:      0.020265117017211 }
 entry { argument: 0.00000, argument: 0.75000, argument: 0.25000, value: 0.687224290919399, value:  0.163999458151786, value:      0.163999458151786 }
 entry { argument: 0.00000, argument: 0.75000, argument: 0.37500, value: 0.861000430354716, value:  0.559500504346794, value:      0.559500504346794 }
-entry { argument: 0.00000, argument: 0.75000, argument: 0.50000, value: 0.895902820924732, value:  1.260612826574912, value:      1.260612826574911 }
+entry { argument: 0.00000, argument: 0.75000, argument: 0.50000, value: 0.895902820924732, value:  1.260612826574911, value:      1.260612826574911 }
 
 entry { argument: 0.00000, argument: 0.50000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.00000, argument: 0.50000, argument: 0.12500, value: 0.377737820324691, value:  0.020024676408965, value:      0.020024676408965 }
@@ -144,7 +145,7 @@ entry { argument: 0.00000, argument: 0.25000, argument: 0.00000, value: 0.000000
 entry { argument: 0.00000, argument: 0.25000, argument: 0.12500, value: 0.375393116925529, value:  0.019794159144289, value:      0.019794159144289 }
 entry { argument: 0.00000, argument: 0.25000, argument: 0.25000, value: 0.655685639148294, value:  0.148680462083772, value:      0.148680462083772 }
 entry { argument: 0.00000, argument: 0.25000, argument: 0.37500, value: 0.790322477603527, value:  0.445663694750517, value:      0.445663694750517 }
-entry { argument: 0.00000, argument: 0.25000, argument: 0.50000, value: 0.812597772919921, value:  0.873152581892676, value:      0.873152581892676 }
+entry { argument: 0.00000, argument: 0.25000, argument: 0.50000, value: 0.812597772919920, value:  0.873152581892675, value:      0.873152581892675 }
 
 entry { argument: 0.00000, argument: 0.00000, argument: 0.00000, value: 0.000000000000000, value:  0.000000000000000, value:      0.000000000000000 }
 entry { argument: 0.00000, argument: 0.00000, argument: 0.12500, value: 0.373126236145999, value:  0.019572845552725, value:      0.019572845552725 }
