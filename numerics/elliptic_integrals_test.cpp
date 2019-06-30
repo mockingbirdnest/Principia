@@ -108,22 +108,45 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
   }
 }
 
-// Tabulated values produced with Mathematica for m close to 1 (where there were
-// bugs).
-TEST_F(EllipticIntegralsTest, MathematicaMNear1) {
-  auto const elliptic_integrals_expected = ReadFromTabulatedData(
-      SOLUTION_DIR / "numerics" / "elliptic_integrals.proto.txt");
+TEST_F(EllipticIntegralsTest, MathematicaBivariate) {
+  auto const bivariate_elliptic_integrals_expected = ReadFromTabulatedData(
+      SOLUTION_DIR / "numerics" / "bivariate_elliptic_integrals.proto.txt");
 
-  for (auto const& entry : elliptic_integrals_expected.entry()) {
-    double const argument_n = entry.argument(0);
+  for (auto const& entry : bivariate_elliptic_integrals_expected.entry()) {
+    Angle const argument_φ = entry.argument(0) * Radian;
     double const argument_m = entry.argument(1);
-    Angle const argument_φ = entry.argument(2) * Radian;
     double const expected_value_b = entry.value(0);
     double const expected_value_d = entry.value(1);
-    double const expected_value_j = entry.value(2);
 
     double actual_value_b;
     double actual_value_d;
+    double actual_value_j;  // Ignored.
+    FukushimaEllipticBDJ(argument_φ,
+                         /*n=*/1,
+                         1.0 - argument_m,
+                         actual_value_b,
+                         actual_value_d,
+                         actual_value_j);
+
+    EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 5))
+        << argument_m << " " << argument_φ;
+    EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 44))
+        << argument_m << " " << argument_φ;
+  }
+}
+
+TEST_F(EllipticIntegralsTest, MathematicaTrivariate) {
+  auto const trivariate_elliptic_integrals_expected = ReadFromTabulatedData(
+      SOLUTION_DIR / "numerics" / "trivariate_elliptic_integrals.proto.txt");
+
+  for (auto const& entry : trivariate_elliptic_integrals_expected.entry()) {
+    Angle const argument_φ = entry.argument(0) * Radian;
+    double const argument_n = entry.argument(1);
+    double const argument_m = entry.argument(2);
+    double const expected_value_j = entry.value(0);
+
+    double actual_value_b;  // Ignored.
+    double actual_value_d;  // Ignored.
     double actual_value_j;
     FukushimaEllipticBDJ(argument_φ,
                          argument_n,
@@ -132,11 +155,7 @@ TEST_F(EllipticIntegralsTest, MathematicaMNear1) {
                          actual_value_d,
                          actual_value_j);
 
-    EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 7))
-        << argument_n << " " << argument_m << " " << argument_φ;
-    EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 27))
-        << argument_n << " " << argument_m << " " << argument_φ;
-    EXPECT_THAT(actual_value_j, AlmostEquals(expected_value_j, 0, 18835))
+    EXPECT_THAT(actual_value_j, AlmostEquals(expected_value_j, 0, 6698))
         << argument_n << " " << argument_m << " " << argument_φ;
   }
 }

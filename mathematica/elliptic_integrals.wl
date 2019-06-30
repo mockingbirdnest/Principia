@@ -30,12 +30,16 @@
 (*     StringSplit[ToString[m],"."]]]]*)
 
 
-(* ::Code:: *)
+(* ::Input:: *)
 (*decimalFloatLiteral[0,_]:="0"*)
 
 
 (* ::Section:: *)
-(*Yadayada*)
+(*Random arguments with denser distribution near \[CurlyPhi]=\[Pi]/2 and m=1*)
+
+
+(* ::Subsection:: *)
+(*Bivariate integrals*)
 
 
 (* ::Input:: *)
@@ -43,45 +47,38 @@
 
 
 (* ::Input:: *)
-(*random\[CurlyPhi]=Sort[RandomReal[{0,\[Pi]/2},10,WorkingPrecision->20]]*)
+(*random\[CurlyPhi]=Sort[Select[\[Pi]/2-RandomVariate[HalfNormalDistribution[2],50,WorkingPrecision->20],#>=0&]];*)
 
 
 (* ::Input:: *)
-(*randomn=Sort[RandomReal[{0,1},10,WorkingPrecision->20]]*)
+(*randomm=Sort[Select[1-RandomVariate[HalfNormalDistribution[3],50,WorkingPrecision->20],#>=0&]];*)
 
 
 (* ::Input:: *)
-(*randomm=Sort[RandomReal[{999/1000,1},10,WorkingPrecision->20]]*)
+(*randomargs2=Flatten[Outer[List,random\[CurlyPhi],randomm],1];*)
 
 
 (* ::Input:: *)
-(*args=Flatten[Outer[List,randomn,randomm,random\[CurlyPhi]],2];*)
-
-
-(* ::Input:: *)
-(*vals=Map[*)
+(*randomvals2=Map[*)
 (*{*)
-(*#[[1]],#[[2]],#[[3]],*)
-(*fukushimaB[#[[3]],#[[2]]],*)
-(*fukushimaD[#[[3]],#[[2]]],*)
-(*fukushimaJ[#[[3]],#[[1]],#[[2]]]*)
-(*}&,*)
-(*args,*)
-(*{1}];*)
+(*If[#[[2]]==0,*)
+(*Limit[fukushimaB[#[[1]],m],m->0],*)
+(*fukushimaB[#[[1]],#[[2]]]],*)
+(*If[#[[2]]==0,*)
+(*Limit[fukushimaD[#[[1]],m],m->0],*)
+(*fukushimaD[#[[1]],#[[2]]]]}&,*)
+(*randomargs2];*)
 
 
 (* ::Input:: *)
-(*strs=Map[*)
+(*randomstrs2=Map[*)
 (*"entry { argument: "<>decimalFloatLiteral[#[[1]],2]<>*)
 (*" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
-(*" argument: "<>decimalFloatLiteral[#[[3]],2]<>*)
-(*" value: "<>decimalFloatLiteral[fukushimaB[#[[3]],#[[2]]],2]<>*)
-(*" value: "<>decimalFloatLiteral[fukushimaD[#[[3]],#[[2]]],2]<>*)
-(*" value: "<>decimalFloatLiteral[fukushimaJ[#[[3]],#[[1]],#[[2]]],2] <>*)
+(*" value: "<>decimalFloatLiteral[#[[3]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
 (*"}"*)
 (*&,*)
-(*args,*)
-(*{1}];*)
+(*Join[randomargs2,randomvals2,2]];*)
 
 
 (* ::Input:: *)
@@ -90,52 +87,113 @@
 
 (* ::Input:: *)
 (*Export[*)
-(*"..\\numerics\\elliptic_integrals.proto.txt",*)
-(*StringRiffle[strs,"\n"],*)
+(*"..\\numerics\\bivariate_elliptic_integrals.proto.txt",*)
+(*StringRiffle[randomstrs2,"\n"],*)
+(*"text"]*)
+
+
+(* ::Subsection:: *)
+(*Trivariate integral*)
+
+
+(* ::Input:: *)
+(*SeedRandom[666]*)
+
+
+(* ::Input:: *)
+(*random\[CurlyPhi]=Sort[Select[\[Pi]/2-RandomVariate[HalfNormalDistribution[2],15,WorkingPrecision->20],#>=0&]];*)
+
+
+(* ::Input:: *)
+(*randomm=Sort[Select[1-RandomVariate[HalfNormalDistribution[3],15,WorkingPrecision->20],#>=0&]];*)
+
+
+(* ::Input:: *)
+(*randomn=Sort[RandomReal[{0,1},15,WorkingPrecision->20]];*)
+
+
+(* ::Input:: *)
+(*randomargs3=Flatten[Outer[List,random\[CurlyPhi],randomn,randomm],2];*)
+
+
+(* ::Input:: *)
+(*randomvals3=Map[*)
+(*{*)
+(*If[#[[2]]==0,*)
+(*Limit[fukushimaJ[#[[1]],n,#[[3]]],n->0],*)
+(*fukushimaJ[#[[1]],#[[2]],#[[3]]]]}&,*)
+(*randomargs3];*)
+
+
+(* ::Input:: *)
+(*randomstrs3=Map[*)
+(*"entry { argument: "<>decimalFloatLiteral[#[[1]],2]<>*)
+(*" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
+(*" argument: "<>decimalFloatLiteral[#[[3]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
+(*"}"*)
+(*&,*)
+(*Join[randomargs3,randomvals3,2]];*)
+
+
+(* ::Input:: *)
+(*SetDirectory[NotebookDirectory[]]*)
+
+
+(* ::Input:: *)
+(*Export[*)
+(*"..\\numerics\\trivariate_elliptic_integrals.proto.txt",*)
+(*StringRiffle[randomstrs3,"\n"],*)
 (*"text"]*)
 
 
 (* ::Section:: *)
-(*xeldbj near \[Pi]/2*)
+(*xeldbj near \[CurlyPhi]=\[Pi]/2*)
 
 
-xelbdj\[CurlyPhi]={14148475504056880/2^53}
+(* ::Input:: *)
+(*xelbdj\[CurlyPhi]={14148475504056880/2^53}*)
 
 
-xelbdjn={9005001498122835/2^53,3/4,1/2,1/4,0}
+(* ::Input:: *)
+(*xelbdjn={9005001498122835/2^53,3/4,1/2,1/4,0}*)
 
 
-xelbdjm={1-8842084905851963/2^159,3/4,1/2,1/4,0}
+(* ::Input:: *)
+(*xelbdjm={1-8842084905851963/2^159,3/4,1/2,1/4,0}*)
 
 
-xelbdjargs=Flatten[Outer[List,xelbdjn,xelbdjm,xelbdj\[CurlyPhi]],2];
+(* ::Input:: *)
+(*xelbdjargs=Flatten[Outer[List,xelbdjn,xelbdjm,xelbdj\[CurlyPhi]],2];*)
 
 
-xelbdjvals=Map[
-N[{
-If[#[[2]]==0,
-Limit[fukushimaB[#[[3]],m],m->0],
-fukushimaB[#[[3]],#[[2]]]],
-If[#[[2]]==0,
-Limit[fukushimaD[#[[3]],m],m->0],
-fukushimaD[#[[3]],#[[2]]]],
-If[#[[1]]==0,
-Limit[fukushimaJ[#[[3]],n,#[[2]]],n->0],
-fukushimaJ[#[[3]],#[[1]],#[[2]]]]
-},60]&,
-xelbdjargs];
+(* ::Input:: *)
+(*xelbdjvals=Map[*)
+(*N[{*)
+(*If[#[[2]]==0,*)
+(*Limit[fukushimaB[#[[3]],m],m->0],*)
+(*fukushimaB[#[[3]],#[[2]]]],*)
+(*If[#[[2]]==0,*)
+(*Limit[fukushimaD[#[[3]],m],m->0],*)
+(*fukushimaD[#[[3]],#[[2]]]],*)
+(*If[#[[1]]==0,*)
+(*Limit[fukushimaJ[#[[3]],n,#[[2]]],n->0],*)
+(*fukushimaJ[#[[3]],#[[1]],#[[2]]]]*)
+(*},60]&,*)
+(*xelbdjargs];*)
 
 
-xelbdjstrs=Map[
-"entry { argument: "<>decimalFloatLiteral[N[#[[1]],5],2]<>
-" argument: "<>decimalFloatLiteral[N[#[[2]],5],2]<>
-" argument: "<>decimalFloatLiteral[N[#[[3]]/\[Pi],5],2]<>
-" value: "<>decimalFloatLiteral[N[#[[4]],21],2]<>
-" value: "<>decimalFloatLiteral[N[#[[5]],21],2]<>
-" value: "<>decimalFloatLiteral[N[#[[6]],21],2] <>
-"}"
-&,
-Join[xelbdjargs,xelbdjvals,2]];
+(* ::Input:: *)
+(*xelbdjstrs=Map[*)
+(*"entry { argument: "<>decimalFloatLiteral[N[#[[1]],5],2]<>*)
+(*" argument: "<>decimalFloatLiteral[N[#[[2]],5],2]<>*)
+(*" argument: "<>decimalFloatLiteral[N[#[[3]]/\[Pi],5],2]<>*)
+(*" value: "<>decimalFloatLiteral[N[#[[4]],21],2]<>*)
+(*" value: "<>decimalFloatLiteral[N[#[[5]],21],2]<>*)
+(*" value: "<>decimalFloatLiteral[N[#[[6]],21],2] <>*)
+(*"}"*)
+(*&,*)
+(*Join[xelbdjargs,xelbdjvals,2]];*)
 
 
 (* ::Input:: *)
@@ -144,6 +202,6 @@ Join[xelbdjargs,xelbdjvals,2]];
 
 (* ::Input:: *)
 (*Export[*)
-(*"..\\numerics\\xelbdj_\[Pi]_over_2.proto.txt",*)
+(*"..\\temp\\xelbdj_\[Pi]_over_2.proto.txt",*)
 (*StringRiffle[xelbdjstrs,"\n"],*)
 (*"text"]*)
