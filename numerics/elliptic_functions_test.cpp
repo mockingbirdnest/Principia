@@ -56,5 +56,36 @@ TEST_F(EllipticFunctionsTest, Xgscd) {
   }
 }
 
+TEST_F(EllipticFunctionsTest, Mathematica) {
+  auto const elliptic_functions_expected = ReadFromTabulatedData(
+      SOLUTION_DIR / "numerics" / "elliptic_functions.proto.txt");
+
+  for (auto const& entry : elliptic_functions_expected.entry()) {
+    double const argument_u = entry.argument(0);
+    double const argument_m = entry.argument(1);
+    double const expected_value_s = entry.value(0);
+    double const expected_value_c = entry.value(1);
+    double const expected_value_d = entry.value(2);
+
+    double actual_value_s;
+    double actual_value_c;
+    double actual_value_d;
+    JacobiSNCNDN(argument_u,
+                 1.0 - argument_m,
+                 actual_value_s,
+                 actual_value_c,
+                 actual_value_d);
+
+    // TODO(phl): The errors are uncomfortably large here.  Figure out what's
+    // happening.
+    EXPECT_THAT(actual_value_s, AlmostEquals(expected_value_s, 0, 12507))
+        << argument_u << " " << argument_m;
+    EXPECT_THAT(actual_value_c, AlmostEquals(expected_value_c, 0, 7648))
+        << argument_u << " " << argument_m;
+    EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 85))
+        << argument_u << " " << argument_m;
+  }
+}
+
 }  // namespace numerics
 }  // namespace principia
