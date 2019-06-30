@@ -1,5 +1,9 @@
 (* ::Package:: *)
 
+(* ::Section:: *)
+(*Definitions*)
+
+
 (* ::Input:: *)
 (*fukushimaB[\[CurlyPhi]_,m_]:=(EllipticE[\[CurlyPhi],m]-(1-m)EllipticF[\[CurlyPhi],m])/m*)
 
@@ -26,7 +30,12 @@
 (*     StringSplit[ToString[m],"."]]]]*)
 
 
-decimalFloatLiteral[0,_]:="0"
+(* ::Code:: *)
+(*decimalFloatLiteral[0,_]:="0"*)
+
+
+(* ::Section:: *)
+(*Yadayada*)
 
 
 (* ::Input:: *)
@@ -86,7 +95,11 @@ decimalFloatLiteral[0,_]:="0"
 (*"text"]*)
 
 
-xelbdj\[CurlyPhi]={0,\[Pi]/8,\[Pi]/4,3\[Pi]/8,14148475504056880/2^53}
+(* ::Section:: *)
+(*xeldbj near \[Pi]/2*)
+
+
+xelbdj\[CurlyPhi]={14148475504056880/2^53}
 
 
 xelbdjn={9005001498122835/2^53,3/4,1/2,1/4,0}
@@ -100,26 +113,29 @@ xelbdjargs=Flatten[Outer[List,xelbdjn,xelbdjm,xelbdj\[CurlyPhi]],2];
 
 xelbdjvals=Map[
 N[{
-#[[1]],#[[2]],#[[3]],
-fukushimaB[#[[3]],#[[2]]],
-fukushimaD[#[[3]],#[[2]]],
-fukushimaJ[#[[3]],#[[1]],#[[2]]]
+If[#[[2]]==0,
+Limit[fukushimaB[#[[3]],m],m->0],
+fukushimaB[#[[3]],#[[2]]]],
+If[#[[2]]==0,
+Limit[fukushimaD[#[[3]],m],m->0],
+fukushimaD[#[[3]],#[[2]]]],
+If[#[[1]]==0,
+Limit[fukushimaJ[#[[3]],n,#[[2]]],n->0],
+fukushimaJ[#[[3]],#[[1]],#[[2]]]]
 },60]&,
-xelbdjargs,
-{1}]
+xelbdjargs];
 
 
 xelbdjstrs=Map[
 "entry { argument: "<>decimalFloatLiteral[N[#[[1]],5],2]<>
 " argument: "<>decimalFloatLiteral[N[#[[2]],5],2]<>
 " argument: "<>decimalFloatLiteral[N[#[[3]]/\[Pi],5],2]<>
-" value: "<>decimalFloatLiteral[N[fukushimaB[#[[3]],#[[2]]],16],2]<>
-" value: "<>decimalFloatLiteral[N[fukushimaD[#[[3]],#[[2]]],16],2]<>
-" value: "<>decimalFloatLiteral[N[fukushimaJ[#[[3]],#[[1]],#[[2]]],16],2] <>
+" value: "<>decimalFloatLiteral[N[#[[4]],21],2]<>
+" value: "<>decimalFloatLiteral[N[#[[5]],21],2]<>
+" value: "<>decimalFloatLiteral[N[#[[6]],21],2] <>
 "}"
 &,
-xelbdjargs,
-{1}]
+Join[xelbdjargs,xelbdjvals,2]];
 
 
 (* ::Input:: *)
@@ -128,6 +144,6 @@ xelbdjargs,
 
 (* ::Input:: *)
 (*Export[*)
-(*"..\\numerics\\xelbdj2.proto.txt",*)
+(*"..\\numerics\\xelbdj_\[Pi]_over_2.proto.txt",*)
 (*StringRiffle[xelbdjstrs,"\n"],*)
 (*"text"]*)
