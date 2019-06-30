@@ -136,6 +136,50 @@
 (*Join[randomargs3,randomvals3,2]];*)
 
 
+(* ::Subsubsection:: *)
+(*A case that used to have a bug*)
+
+
+(* ::Input:: *)
+(*SeedRandom[666]*)
+
+
+(* ::Input:: *)
+(*random1\[CurlyPhi]=Sort[RandomReal[{0,\[Pi]/2},10,WorkingPrecision->20]];*)
+
+
+(* ::Input:: *)
+(*random1m=Sort[RandomReal[{999/1000,1},10,WorkingPrecision->20]];*)
+
+
+(* ::Input:: *)
+(*random1n=Sort[RandomReal[{0,1},10,WorkingPrecision->20]];*)
+
+
+(* ::Input:: *)
+(*random1args3=Flatten[Outer[List,random1\[CurlyPhi],random1n,random1m],2];*)
+
+
+(* ::Input:: *)
+(*random1vals3=Map[*)
+(*{*)
+(*If[#[[2]]==0,*)
+(*Limit[fukushimaJ[#[[1]],n,#[[3]]],n->0],*)
+(*fukushimaJ[#[[1]],#[[2]],#[[3]]]]}&,*)
+(*random1args3];*)
+
+
+(* ::Input:: *)
+(*random1strs3=Map[*)
+(*"entry { argument: "<>decimalFloatLiteral[#[[1]],2]<>*)
+(*" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
+(*" argument: "<>decimalFloatLiteral[#[[3]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
+(*"}"*)
+(*&,*)
+(*Join[random1args3,random1vals3,2]];*)
+
+
 (* ::Input:: *)
 (*SetDirectory[NotebookDirectory[]]*)
 
@@ -143,7 +187,7 @@
 (* ::Input:: *)
 (*Export[*)
 (*"..\\numerics\\trivariate_elliptic_integrals.proto.txt",*)
-(*StringRiffle[randomstrs3,"\n"],*)
+(*StringRiffle[Flatten[{randomstrs3,random1strs3}],"\n"],*)
 (*"text"]*)
 
 
