@@ -47,11 +47,11 @@
 
 
 (* ::Input:: *)
-(*random\[CurlyPhi]=Sort[Select[\[Pi]/2-RandomVariate[HalfNormalDistribution[2],50,WorkingPrecision->20],#>=0&]];*)
+(*random\[CurlyPhi]=Sort[Select[\[Pi]/2-RandomVariate[HalfNormalDistribution[2],60,WorkingPrecision->20],#>=0&]];*)
 
 
 (* ::Input:: *)
-(*randomm=Sort[Select[1-RandomVariate[HalfNormalDistribution[3],50,WorkingPrecision->20],#>=0&]];*)
+(*randomm=Sort[Select[1-RandomVariate[HalfNormalDistribution[3],60,WorkingPrecision->20],#>=0&]];*)
 
 
 (* ::Input:: *)
