@@ -201,6 +201,10 @@ void JacobiSNCNDNWithK(double const u,
 }
 }  // namespace
 
+// This implementation follows Fukushima, Fast computation of elliptic functions
+// and incomplete integrals for constant values of elliptic parameter and
+// elliptic characteristic, formula (20).  Note that round, not trunc, is
+// correct here.
 Angle JacobiAmplitude(double u, double mc) {
   constexpr double k_over_2_lower_bound = π / 4.0;
   double s;
@@ -210,10 +214,13 @@ Angle JacobiAmplitude(double u, double mc) {
   double abs_u = Abs(u);
   if (abs_u < k_over_2_lower_bound) {
     JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+    if (u < 0.0) {
+      s = -s;
+    }
   } else {
     double const k = EllipticK(mc);
     JacobiSNCNDNWithK(u, mc, k, s, c, d);
-    offset = 2.0 * π * std::trunc(u / (4.0 * k)) * Radian;
+    offset = 2.0 * π * std::round(u / (4.0 * k)) * Radian;
   }
   return offset + ArcTan(s, c);
 }
@@ -242,6 +249,9 @@ void JacobiSNCNDN(double const u,
   double abs_u = Abs(u);
   if (abs_u < k_over_2_lower_bound) {
     JacobiSNCNDNReduced(abs_u, mc, s, c, d);
+    if (u < 0.0) {
+      s = -s;
+    }
   } else {
     double const k = EllipticK(mc);
     JacobiSNCNDNWithK(u, mc, k, s, c, d);
