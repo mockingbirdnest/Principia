@@ -65,7 +65,9 @@
     <ClCompile Include="чебышёв_series_test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="elliptic_integrals.proto.txt" />
+    <Text Include="bivariate_elliptic_integrals.proto.txt" />
+    <Text Include="elliptic_functions.proto.txt" />
+    <Text Include="trivariate_elliptic_integrals.proto.txt" />
     <Text Include="xelbdj.proto.txt" />
     <Text Include="xgscd.proto.txt" />
   </ItemGroup>

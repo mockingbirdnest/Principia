@@ -192,7 +192,13 @@
     <Text Include="xelbdj.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="elliptic_integrals.proto.txt">
+    <Text Include="bivariate_elliptic_integrals.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="elliptic_functions.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="trivariate_elliptic_integrals.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
