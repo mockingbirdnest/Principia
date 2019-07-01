@@ -19,6 +19,7 @@ using quantities::si::Radian;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::ReadFromTabulatedData;
+using ::testing::Le;
 
 class EllipticFunctionsTest : public ::testing::Test {};
 
@@ -93,6 +94,32 @@ TEST_F(EllipticFunctionsTest, Mathematica) {
 
     EXPECT_THAT(actual_value_a, AlmostEquals(expected_value_a, 0, 22073))
         << argument_u << " " << argument_m;
+  }
+}
+
+TEST_F(EllipticFunctionsTest, Monotonicity) {
+  for (double const mc : {0.01, 0.1, 0.5}) {
+    double const k = EllipticK(mc);
+    for (int i = -5; i <= 5; ++i) {
+      double const u = 2.0 * i * k;
+      Angle const am = JacobiAmplitude(u, mc);
+      LOG(ERROR) << "Testing around " << u << " and mc = " << mc
+                 << " starting with am = " << am << " (i = " << i << ")";
+      double u₊ = u;
+      double u₋ = u;
+      Angle previous_am₊ = am;
+      Angle previous_am₋ = am;
+      for (int j = 0; j < 1'000; ++j) {
+        u₊ = std::nextafter(u₊, std::numeric_limits<double>::infinity());
+        u₋ = std::nextafter(u₋, -std::numeric_limits<double>::infinity());
+        Angle const am₊ = JacobiAmplitude(u₊, mc);
+        Angle const am₋ = JacobiAmplitude(u₋, mc);
+        ASSERT_THAT(previous_am₊, Le(am₊)) << u₊ << " " << mc << " " << j;
+        ASSERT_THAT(am₋, Le(previous_am₋)) << u₋ << " " << mc << " " << j;
+        previous_am₋ = am₋;
+        previous_am₊ = am₊;
+      }
+    }
   }
 }
 
