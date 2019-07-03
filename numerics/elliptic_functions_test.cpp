@@ -109,7 +109,7 @@ TEST_F(EllipticFunctionsTest, Monotonicity) {
       double u₋ = u;
       Angle previous_am₊ = am;
       Angle previous_am₋ = am;
-      for (int j = 0; j < 1'000; ++j) {
+      for (int j = 0; j < 10'000; ++j) {
         u₊ = std::nextafter(u₊, std::numeric_limits<double>::infinity());
         u₋ = std::nextafter(u₋, -std::numeric_limits<double>::infinity());
         Angle const am₊ = JacobiAmplitude(u₊, mc);

@@ -201,28 +201,37 @@ void JacobiSNCNDNWithK(double const u,
 }
 }  // namespace
 
-// This implementation follows Fukushima, Fast computation of elliptic functions
-// and incomplete integrals for constant values of elliptic parameter and
-// elliptic characteristic, formula (20).  Note that round, not trunc, is
-// correct here.
 Angle JacobiAmplitude(double u, double mc) {
   constexpr double k_over_2_lower_bound = π / 4.0;
   double s;
   double c;
   double d;
-  Angle offset;
+  double n;
   double abs_u = Abs(u);
   if (abs_u < k_over_2_lower_bound) {
     JacobiSNCNDNReduced(abs_u, mc, s, c, d);
     if (u < 0.0) {
       s = -s;
     }
+    n = 0.0;
   } else {
+    // We *don't* follow Fukushima, Fast computation of elliptic functions and
+    // incomplete integrals for constant values of elliptic parameter and
+    // elliptic characteristic, formula (20).  It calls the ArcTan function with
+    // negative values of c and values of s close to 0, which corresponds to a
+    // branch cut: ArcTan can jump from -π or +π (or vice-versa) depending on
+    // the accuracy of s.  Similarly the truncation to integer can jump by 1
+    // depending on the accuracy of k.  These problems may result in jumps of
+    // 2π for the final value of am(u|m).
+    // Instead, we explicitly reduce u to the range [-k, k] and thus the ArcTan
+    // to the range [-π/2, π/2].  We avoid the branch cut, and any inaccuracy in
+    // the rounding has the innocuous effect of causing the ArcTan to go a bit
+    // beyond -π/2 or π/2.
     double const k = EllipticK(mc);
-    JacobiSNCNDNWithK(u, mc, k, s, c, d);
-    offset = 2.0 * π * std::round(u / (4.0 * k)) * Radian;
+    n = std::nearbyint(u / (2.0 * k));
+    JacobiSNCNDNWithK(u - 2.0 * n * k, mc, k, s, c, d);
   }
-  return offset + ArcTan(s, c);
+  return n * π * Radian + ArcTan(s, c);
 }
 
 // Double precision subroutine to compute three Jacobian elliptic functions
