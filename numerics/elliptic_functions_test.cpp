@@ -92,7 +92,7 @@ TEST_F(EllipticFunctionsTest, Mathematica) {
     EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 85))
         << argument_u << " " << argument_m;
 
-    EXPECT_THAT(actual_value_a, AlmostEquals(expected_value_a, 0, 22073))
+    EXPECT_THAT(actual_value_a, AlmostEquals(expected_value_a, 0, 22074))
         << argument_u << " " << argument_m;
   }
 }
