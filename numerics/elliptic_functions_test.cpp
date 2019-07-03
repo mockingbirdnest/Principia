@@ -101,7 +101,7 @@ TEST_F(EllipticFunctionsTest, Monotonicity) {
   for (double const mc : {0.01, 0.1, 0.5}) {
     double const k = EllipticK(mc);
     for (int i = -5; i <= 5; ++i) {
-      double const u = 2.0 * i * k;
+      double const u = i * k;
       Angle const am = JacobiAmplitude(u, mc);
       LOG(ERROR) << "Testing around " << u << " and mc = " << mc
                  << " starting with am = " << am << " (i = " << i << ")";
