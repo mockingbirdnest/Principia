@@ -1,6 +1,8 @@
 ﻿
 #include "numerics/elliptic_functions.hpp"
 
+#include <limits>
+
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
