@@ -1703,10 +1703,10 @@ void EllipticEFΠ(quantities::Angle const& φ,
   double b;
   double d;
   double j;
-  FukushimaEllipticBDJ( φ,n,mc,b,d,j);
+  FukushimaEllipticBDJ(φ, n, mc, b, d, j);
   e = b + mc * d;
   f = b + d;
-  pi = b + d + n * j;
+  pi = f + n * j;
 }
 
 //  Double precision complete elliptic integral of the first kind

@@ -66,7 +66,9 @@
 (*fukushimaB[#[[1]],#[[2]]]],*)
 (*If[#[[2]]==0,*)
 (*Limit[fukushimaD[#[[1]],m],m->0],*)
-(*fukushimaD[#[[1]],#[[2]]]]}&,*)
+(*fukushimaD[#[[1]],#[[2]]]],*)
+(*EllipticE[#[[1]],#[[2]]],*)
+(*EllipticF[#[[1]],#[[2]]]}&,*)
 (*randomargs2];*)
 
 
@@ -76,6 +78,8 @@
 (*" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
 (*" value: "<>decimalFloatLiteral[#[[3]],2]<>*)
 (*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[6]],2]<>*)
 (*"}"*)
 (*&,*)
 (*Join[randomargs2,randomvals2,2]];*)
@@ -121,7 +125,8 @@
 (*{*)
 (*If[#[[2]]==0,*)
 (*Limit[fukushimaJ[#[[1]],n,#[[3]]],n->0],*)
-(*fukushimaJ[#[[1]],#[[2]],#[[3]]]]}&,*)
+(*fukushimaJ[#[[1]],#[[2]],#[[3]]]],*)
+(*EllipticPi[#[[2]],#[[1]],#[[3]]]}&,*)
 (*randomargs3];*)
 
 
@@ -131,6 +136,7 @@
 (*" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
 (*" argument: "<>decimalFloatLiteral[#[[3]],2]<>*)
 (*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
 (*"}"*)
 (*&,*)
 (*Join[randomargs3,randomvals3,2]];*)
@@ -165,7 +171,8 @@
 (*{*)
 (*If[#[[2]]==0,*)
 (*Limit[fukushimaJ[#[[1]],n,#[[3]]],n->0],*)
-(*fukushimaJ[#[[1]],#[[2]],#[[3]]]]}&,*)
+(*fukushimaJ[#[[1]],#[[2]],#[[3]]]],*)
+(*EllipticPi[#[[2]],#[[1]],#[[3]]]}&,*)
 (*random1args3];*)
 
 
@@ -175,6 +182,7 @@
 (*" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
 (*" argument: "<>decimalFloatLiteral[#[[3]],2]<>*)
 (*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
 (*"}"*)
 (*&,*)
 (*Join[random1args3,random1vals3,2]];*)

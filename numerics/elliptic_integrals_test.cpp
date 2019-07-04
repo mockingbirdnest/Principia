@@ -117,6 +117,8 @@ TEST_F(EllipticIntegralsTest, MathematicaBivariate) {
     double const argument_m = entry.argument(1);
     double const expected_value_b = entry.value(0);
     double const expected_value_d = entry.value(1);
+    double const expected_value_e = entry.value(2);
+    double const expected_value_f = entry.value(3);
 
     double actual_value_b;
     double actual_value_d;
@@ -128,9 +130,23 @@ TEST_F(EllipticIntegralsTest, MathematicaBivariate) {
                          actual_value_d,
                          actual_value_j);
 
+    double actual_value_e;
+    double actual_value_f;
+    double actual_value_pi;  // Ignored.
+    EllipticEFΠ(argument_φ,
+                /*n=*/1,
+                1.0 - argument_m,
+                actual_value_e,
+                actual_value_f,
+                actual_value_pi);
+
     EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 5))
         << argument_φ << " " << argument_m;
     EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 44))
+        << argument_φ << " " << argument_m;
+    EXPECT_THAT(actual_value_e, AlmostEquals(expected_value_e, 0, 6))
+        << argument_φ << " " << argument_m;
+    EXPECT_THAT(actual_value_f, AlmostEquals(expected_value_f, 0, 6))
         << argument_φ << " " << argument_m;
   }
 }
@@ -144,6 +160,7 @@ TEST_F(EllipticIntegralsTest, MathematicaTrivariate) {
     double const argument_n = entry.argument(1);
     double const argument_m = entry.argument(2);
     double const expected_value_j = entry.value(0);
+    double const expected_value_pi = entry.value(1);
 
     double actual_value_b;  // Ignored.
     double actual_value_d;  // Ignored.
@@ -155,9 +172,21 @@ TEST_F(EllipticIntegralsTest, MathematicaTrivariate) {
                          actual_value_d,
                          actual_value_j);
 
+    double actual_value_e;  // Ignored.
+    double actual_value_f;  // Ignored.
+    double actual_value_pi;
+    EllipticEFΠ(argument_φ,
+                argument_n,
+                1.0 - argument_m,
+                actual_value_e,
+                actual_value_f,
+                actual_value_pi);
+
     // TODO(phl): The error is uncomfortably large here.  Figure out what's
     // happening.
     EXPECT_THAT(actual_value_j, AlmostEquals(expected_value_j, 0, 25004))
+        << argument_φ << " " << argument_n << " " << argument_m;
+    EXPECT_THAT(actual_value_pi, AlmostEquals(expected_value_pi, 0, 3934))
         << argument_φ << " " << argument_n << " " << argument_m;
   }
 }
