@@ -73,7 +73,7 @@ constexpr Instant From北斗Time(quantities::Time const& 北斗) {
 
 // Utilities for modern UTC (since 1972).
 
-constexpr std::array<int, (2019 - 1972) * 2 + 1> leap_seconds = {{
+constexpr std::array<int, (2020 - 1972) * 2> leap_seconds = {{
     +1, +1,  // 1972
     +0, +1,  // 1973
     +0, +1,  // 1974
@@ -121,7 +121,7 @@ constexpr std::array<int, (2019 - 1972) * 2 + 1> leap_seconds = {{
     +0, +1,  // 2016
     +0, +0,  // 2017
     +0, +0,  // 2018
-    +0,      // 2019
+    +0, +0,  // 2019
 }};
 
 // Returns +1 if a positive leap second was inserted at the end of the given
