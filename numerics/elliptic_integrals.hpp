@@ -24,7 +24,7 @@ void EllipticEFΠ(quantities::Angle const& φ,
                  double mc,
                  double& e,
                  double& f,
-                 double& pi);
+                 double& ᴨ);
 
 double EllipticK(double mc);
 

@@ -35,17 +35,17 @@ void BM_EllipticEFΠ(benchmark::State& state) {
   while (state.KeepRunningBatch(size * size * size)) {
     double e;
     double f;
-    double pi;
+    double ᴨ;
     for (Angle const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {
-          EllipticEFΠ(φ, n, mc, e, f, pi);
+          EllipticEFΠ(φ, n, mc, e, f, ᴨ);
         }
       }
     }
     benchmark::DoNotOptimize(e);
     benchmark::DoNotOptimize(f);
-    benchmark::DoNotOptimize(pi);
+    benchmark::DoNotOptimize(ᴨ);
   }
 }
 

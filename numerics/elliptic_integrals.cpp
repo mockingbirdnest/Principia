@@ -1699,14 +1699,14 @@ void EllipticEFΠ(quantities::Angle const& φ,
                  double const mc,
                  double& e,
                  double& f,
-                 double& pi) {
+                 double& ᴨ) {
   double b;
   double d;
   double j;
   FukushimaEllipticBDJ(φ, n, mc, b, d, j);
   e = b + mc * d;
   f = b + d;
-  pi = f + n * j;
+  ᴨ = f + n * j;
 }
 
 //  Double precision complete elliptic integral of the first kind

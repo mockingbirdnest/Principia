@@ -132,13 +132,13 @@ TEST_F(EllipticIntegralsTest, MathematicaBivariate) {
 
     double actual_value_e;
     double actual_value_f;
-    double actual_value_pi;  // Ignored.
+    double actual_value_ᴨ;  // Ignored.
     EllipticEFΠ(argument_φ,
                 /*n=*/1,
                 1.0 - argument_m,
                 actual_value_e,
                 actual_value_f,
-                actual_value_pi);
+                actual_value_ᴨ);
 
     EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 5))
         << argument_φ << " " << argument_m;
@@ -160,7 +160,7 @@ TEST_F(EllipticIntegralsTest, MathematicaTrivariate) {
     double const argument_n = entry.argument(1);
     double const argument_m = entry.argument(2);
     double const expected_value_j = entry.value(0);
-    double const expected_value_pi = entry.value(1);
+    double const expected_value_ᴨ = entry.value(1);
 
     double actual_value_b;  // Ignored.
     double actual_value_d;  // Ignored.
@@ -174,19 +174,19 @@ TEST_F(EllipticIntegralsTest, MathematicaTrivariate) {
 
     double actual_value_e;  // Ignored.
     double actual_value_f;  // Ignored.
-    double actual_value_pi;
+    double actual_value_ᴨ;
     EllipticEFΠ(argument_φ,
                 argument_n,
                 1.0 - argument_m,
                 actual_value_e,
                 actual_value_f,
-                actual_value_pi);
+                actual_value_ᴨ);
 
     // TODO(phl): The error is uncomfortably large here.  Figure out what's
     // happening.
     EXPECT_THAT(actual_value_j, AlmostEquals(expected_value_j, 0, 25004))
         << argument_φ << " " << argument_n << " " << argument_m;
-    EXPECT_THAT(actual_value_pi, AlmostEquals(expected_value_pi, 0, 3934))
+    EXPECT_THAT(actual_value_ᴨ, AlmostEquals(expected_value_ᴨ, 0, 3934))
         << argument_φ << " " << argument_n << " " << argument_m;
   }
 }
