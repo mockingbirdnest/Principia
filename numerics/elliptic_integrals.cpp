@@ -1694,6 +1694,21 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 }
 
+void EllipticEFΠ(quantities::Angle const& φ,
+                 double const n,
+                 double const mc,
+                 double& e,
+                 double& f,
+                 double& ᴨ) {
+  double b;
+  double d;
+  double j;
+  FukushimaEllipticBDJ(φ, n, mc, b, d, j);
+  e = b + mc * d;
+  f = b + d;
+  ᴨ = f + n * j;
+}
+
 //  Double precision complete elliptic integral of the first kind
 //
 //     Reference: T. Fukushima, (2009) Celest. Mech. Dyn. Astron. 105, 305-328
