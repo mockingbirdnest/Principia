@@ -13,9 +13,11 @@ namespace internal_euler_solver {
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
+using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::Energy;
 using quantities::MomentOfInertia;
+using quantities::NaN;
 
 class EulerSolver {
  public:
@@ -33,10 +35,22 @@ class EulerSolver {
       Instant const& t);
 
 private:
-  MomentOfInertia const moment_of_inertia₁_;
-  MomentOfInertia const moment_of_inertia₂_;
-  MomentOfInertia const moment_of_inertia₃_;
-  Energy const kinetic_energy_;
+  enum class Formula {
+    i,
+    ii,
+    iii
+  };
+
+  // Amusingly, the formula to use is a constant of motion.
+  Formula formula_;
+
+  AngularMomentum B₁₃_ = NaN<AngularMomentum>();
+  AngularMomentum B₃₁_ = NaN<AngularMomentum>();
+  AngularMomentum B₂₁_ = NaN<AngularMomentum>();
+  AngularMomentum B₂₃_ = NaN<AngularMomentum>();
+  AngularFrequency λ₁_ = NaN<AngularFrequency>();
+  AngularFrequency λ₃_ = NaN<AngularFrequency>();
+  double mc_ = NaN<double>();
 };
 
 }  // namespace internal_euler_solver
