@@ -23,6 +23,7 @@ class EulerSolver {
                                    serialization::Frame::PRINCIPAL_AXES,
                                    /*frame_is_inertial*/ false>;
 
+  //TODO(phl):m?
   EulerSolver(MomentOfInertia const& moment_of_inertia₁,
               MomentOfInertia const& moment_of_inertia₂,
               MomentOfInertia const& moment_of_inertia₃,
@@ -31,6 +32,11 @@ class EulerSolver {
   Bivector<AngularMomentum, PrincipalAxesFrame> ComputeAngularMomentum(
       Instant const& t);
 
+private:
+  MomentOfInertia const moment_of_inertia₁_;
+  MomentOfInertia const moment_of_inertia₂_;
+  MomentOfInertia const moment_of_inertia₃_;
+  Energy const kinetic_energy_;
 };
 
 }  // namespace internal_euler_solver
