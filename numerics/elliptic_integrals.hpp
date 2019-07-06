@@ -43,6 +43,9 @@ double EllipticK(double mc);
 
 }  // namespace internal_elliptic_integrals
 
+using internal_elliptic_integrals::EllipticE;
+using internal_elliptic_integrals::EllipticF;
+using internal_elliptic_integrals::EllipticΠ;
 using internal_elliptic_integrals::EllipticEFΠ;
 using internal_elliptic_integrals::EllipticK;
 using internal_elliptic_integrals::FukushimaEllipticBDJ;

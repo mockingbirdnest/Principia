@@ -1,6 +1,7 @@
 ﻿
 #include "physics/euler_solver.hpp"
 
+#include "numerics/elliptic_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -11,21 +12,27 @@ namespace internal_euler_solver {
 
 using geometry::Vector;
 using numerics::EllipticF;
+using numerics::JacobiSNCNDN;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::ArcTanh;
+using quantities::Cosh;
+using quantities::Tanh;
 using quantities::Energy;
 using quantities::Inverse;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
 using quantities::SIUnit;
+using quantities::Time;
 using quantities::si::Joule;
 using quantities::si::Radian;
 
 EulerSolver::EulerSolver(
     R3Element<MomentOfInertia> const& moments_of_inertia,
-    AngularMomentumBivector const& initial_angular_momentum) {
+    AngularMomentumBivector const& initial_angular_momentum,
+    Instant const& initial_time)
+    : initial_time_(initial_time) {
   auto const& I₁ = moments_of_inertia.x;
   auto const& I₂ = moments_of_inertia.y;
   auto const& I₃ = moments_of_inertia.z;
@@ -70,7 +77,8 @@ EulerSolver::EulerSolver(
     λ₁_ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
     formula_ = Formula::ii;
   } else if (2.0 * T * I₂ == G²) {
-    ν_= -ArcTanh(m.y / Sqrt(G²));
+    G_ =  Sqrt(G²);
+    ν_= -ArcTanh(m.y / G_);
     formula_ = Formula::iii;
   } else {
     LOG(FATAL) << "This should not happen";
@@ -78,8 +86,32 @@ EulerSolver::EulerSolver(
 }
 
 EulerSolver::AngularMomentumBivector EulerSolver::AngularMomentumAt(
-    Instant const& t) {
-  return AngularMomentumBivector();
+    Instant const& time) {
+  Time const Δt = time - initial_time_;
+  switch (formula_) {
+    case Formula::i: {
+      double sn;
+      double cn;
+      double dn;
+      JacobiSNCNDN((λ₃_ * Δt - ν_) / Radian, mc_, sn, cn, dn);
+      return AngularMomentumBivector({B₁₃_ * dn, -B₂₁_ * sn, B₃₁_ * cn});
+    }
+    case Formula::ii: {
+      double sn;
+      double cn;
+      double dn;
+      JacobiSNCNDN((λ₁_ * Δt - ν_) / Radian, mc_, sn, cn, dn);
+      return AngularMomentumBivector({B₁₃_ * cn, -B₂₃_ * sn, B₃₁_ * dn});
+    }
+    case Formula::iii: {
+      Angle const angle = λ₃_ * Δt - ν_;
+      double const sech = 1.0 / Cosh(angle);
+      return AngularMomentumBivector(
+          {B₁₃_ * sech, G_ * Tanh(angle), B₃₁_ * sech});
+    }
+    default:
+      LOG(FATAL) << "Unexpected formula";
+  };
 }
 
 }  // namespace internal_euler_solver

@@ -27,11 +27,11 @@ class EulerSolver {
                                    /*frame_is_inertial*/ false>;
   using AngularMomentumBivector = Bivector<AngularMomentum, PrincipalAxesFrame>;
 
-  //TODO(phl):m?
   EulerSolver(R3Element<MomentOfInertia> const& moments_of_inertia,
-              AngularMomentumBivector const& initial_angular_momentum);
+              AngularMomentumBivector const& initial_angular_momentum,
+              Instant const& initial_time);
 
-  AngularMomentumBivector AngularMomentumAt(Instant const& t);
+  AngularMomentumBivector AngularMomentumAt(Instant const& time);
 
 private:
   enum class Formula {
@@ -40,6 +40,8 @@ private:
     iii
   };
 
+  Instant const initial_time_;
+
   // Amusingly, the formula to use is a constant of motion.
   Formula formula_;
 
@@ -47,6 +49,7 @@ private:
   AngularMomentum B₃₁_ = NaN<AngularMomentum>();
   AngularMomentum B₂₁_ = NaN<AngularMomentum>();
   AngularMomentum B₂₃_ = NaN<AngularMomentum>();
+  AngularMomentum G_ = NaN<AngularMomentum>();
   AngularFrequency λ₁_ = NaN<AngularFrequency>();
   AngularFrequency λ₃_ = NaN<AngularFrequency>();
   double mc_ = NaN<double>();
