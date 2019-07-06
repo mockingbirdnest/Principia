@@ -14,6 +14,7 @@ using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::R3Element;
+using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::MomentOfInertia;
@@ -49,6 +50,7 @@ private:
   AngularFrequency λ₁_ = NaN<AngularFrequency>();
   AngularFrequency λ₃_ = NaN<AngularFrequency>();
   double mc_ = NaN<double>();
+  Angle ν_ = NaN<Angle>();
 };
 
 }  // namespace internal_euler_solver

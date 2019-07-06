@@ -19,6 +19,16 @@ void FukushimaEllipticBDJ(quantities::Angle const& φ,
                           double& d,
                           double& j);
 
+double EllipticE(quantities::Angle const& φ,
+                 double mc);
+
+double EllipticF(quantities::Angle const& φ,
+                 double mc);
+
+double EllipticΠ(quantities::Angle const& φ,
+                 double n,
+                 double mc);
+
 void EllipticEFΠ(quantities::Angle const& φ,
                  double n,
                  double mc,
