@@ -3,6 +3,8 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
+#include "geometry/r3_element.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -31,7 +33,7 @@ class EulerSolver {
               AngularMomentumBivector const& initial_angular_momentum,
               Instant const& initial_time);
 
-  AngularMomentumBivector AngularMomentumAt(Instant const& time);
+  AngularMomentumBivector AngularMomentumAt(Instant const& time) const;
 
 private:
   enum class Formula {

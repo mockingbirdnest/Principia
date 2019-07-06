@@ -86,7 +86,7 @@ EulerSolver::EulerSolver(
 }
 
 EulerSolver::AngularMomentumBivector EulerSolver::AngularMomentumAt(
-    Instant const& time) {
+    Instant const& time) const {
   Time const Δt = time - initial_time_;
   switch (formula_) {
     case Formula::i: {
