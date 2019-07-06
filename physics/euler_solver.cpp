@@ -47,9 +47,9 @@ EulerSolver::EulerSolver(
   auto const& m = initial_angular_momentum.coordinates();
   auto const T = (m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃) * 0.5;
 
-  auto const Δ₁ = G² - 2.0 * T * I₁;
-  auto const Δ₂ = G² - 2.0 * T * I₂;
-  auto const Δ₃ = G² - 2.0 * T * I₃;
+  auto const Δ₁ = Abs(G² - 2.0 * T * I₁);
+  auto const Δ₂ = Abs(G² - 2.0 * T * I₂);
+  auto const Δ₃ = Abs(G² - 2.0 * T * I₃);
 
   auto const I₁₂ = Abs(I₁ - I₂);
   auto const I₁₃ = Abs(I₁ - I₃);
