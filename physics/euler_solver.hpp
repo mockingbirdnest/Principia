@@ -13,9 +13,9 @@ namespace internal_euler_solver {
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
+using geometry::R3Element;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
-using quantities::Energy;
 using quantities::MomentOfInertia;
 using quantities::NaN;
 
@@ -24,15 +24,13 @@ class EulerSolver {
   using PrincipalAxesFrame = Frame<serialization::Frame::PhysicsTag,
                                    serialization::Frame::PRINCIPAL_AXES,
                                    /*frame_is_inertial*/ false>;
+  using AngularMomentumBivector = Bivector<AngularMomentum, PrincipalAxesFrame>;
 
   //TODO(phl):m?
-  EulerSolver(MomentOfInertia const& moment_of_inertia₁,
-              MomentOfInertia const& moment_of_inertia₂,
-              MomentOfInertia const& moment_of_inertia₃,
-              Energy const& kinetic_energy);
+  EulerSolver(R3Element<MomentOfInertia> const& moments_of_inertia,
+              AngularMomentumBivector const& initial_angular_momentum);
 
-  Bivector<AngularMomentum, PrincipalAxesFrame> ComputeAngularMomentum(
-      Instant const& t);
+  AngularMomentumBivector AngularMomentumAt(Instant const& t);
 
 private:
   enum class Formula {

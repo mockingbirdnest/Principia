@@ -8,31 +8,33 @@ namespace principia {
 namespace physics {
 namespace internal_euler_solver {
 
+using geometry::Vector;
 using quantities::Abs;
+using quantities::Energy;
 using quantities::Inverse;
 using quantities::Sqrt;
 using quantities::Square;
+using quantities::SquareRoot;
 using quantities::SIUnit;
 using quantities::si::Joule;
 using quantities::si::Radian;
 
-EulerSolver::EulerSolver(MomentOfInertia const& moment_of_inertia₁,
-                         MomentOfInertia const& moment_of_inertia₂,
-                         MomentOfInertia const& moment_of_inertia₃,
-                         Energy const& kinetic_energy){
+EulerSolver::EulerSolver(
+    R3Element<MomentOfInertia> const& moments_of_inertia,
+    AngularMomentumBivector const& initial_angular_momentum) {
+  auto const& I₁ = moments_of_inertia.x;
+  auto const& I₂ = moments_of_inertia.y;
+  auto const& I₃ = moments_of_inertia.z;
+
   // TODO(phl): What if they are not distinct?
-  CHECK_LT(moment_of_inertia₁, moment_of_inertia₂);
-  CHECK_LT(moment_of_inertia₂, moment_of_inertia₃);
-  CHECK_LE(0 * Joule, kinetic_energy);
+  CHECK_LT(I₁, I₂);
+  CHECK_LT(I₂, I₃);
 
-  AngularMomentum const G = SIUnit<AngularMomentum>();//TODO(phl):fixme.
+  Square<AngularMomentum> const G² = initial_angular_momentum.Norm²();
 
-  auto const& I₁ = moment_of_inertia₁;
-  auto const& I₂ = moment_of_inertia₂;
-  auto const& I₃ = moment_of_inertia₃;
-  auto const T = kinetic_energy * (Radian * Radian);
+  auto const& m = initial_angular_momentum.coordinates();
+  auto const T = (m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃) * 0.5;
 
-  Square<AngularMomentum> const G² = G * G;
   auto const Δ₁ = G²  - 2.0 * T * I₁;
   auto const Δ₂ = G² - 2.0 * T * I₂;
   auto const Δ₃ = G² - 2.0 * T * I₃;
@@ -66,9 +68,9 @@ EulerSolver::EulerSolver(MomentOfInertia const& moment_of_inertia₁,
   }
 }
 
-Bivector<AngularMomentum, EulerSolver::PrincipalAxesFrame>
-EulerSolver::ComputeAngularMomentum(Instant const& t) {
-  return Bivector<AngularMomentum, PrincipalAxesFrame>();
+EulerSolver::AngularMomentumBivector EulerSolver::AngularMomentumAt(
+    Instant const& t) {
+  return AngularMomentumBivector();
 }
 
 }  // namespace internal_euler_solver
