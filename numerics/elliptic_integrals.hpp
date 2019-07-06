@@ -11,6 +11,9 @@
 // this project.
 namespace principia {
 namespace numerics {
+namespace internal_elliptic_integrals {
+
+using quantities::Angle;
 
 void FukushimaEllipticBDJ(quantities::Angle const& φ,
                           double n,
@@ -37,6 +40,12 @@ void EllipticEFΠ(quantities::Angle const& φ,
                  double& ᴨ);
 
 double EllipticK(double mc);
+
+}  // namespace internal_elliptic_integrals
+
+using internal_elliptic_integrals::EllipticEFΠ;
+using internal_elliptic_integrals::EllipticK;
+using internal_elliptic_integrals::FukushimaEllipticBDJ;
 
 }  // namespace numerics
 }  // namespace principia

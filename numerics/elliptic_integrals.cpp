@@ -29,6 +29,8 @@
 // Mathematical Functions.
 
 namespace principia {
+namespace numerics {
+namespace internal_elliptic_integrals {
 
 using quantities::Abs;
 using quantities::Angle;
@@ -36,8 +38,6 @@ using quantities::Cos;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::si::Radian;
-
-namespace numerics {
 
 namespace {
 
@@ -1640,6 +1640,13 @@ void FukushimaEllipticBDJ(Angle const& φ,
                           double& b,
                           double& d,
                           double& j) {
+  DCHECK_LE(0 * Radian, φ);
+  DCHECK_GE(π / 2 * Radian, φ);
+  DCHECK_LE(0, n);
+  DCHECK_GE(1, n);
+  DCHECK_LE(0, mc);
+  DCHECK_GE(1, mc);
+
   // NOTE(phl): The original Fortran code had φs = 1.345 * Radian, which,
   // according to the above-mentioned paper, is suitable for single precision.
   // However, this is double precision.  Importantly, this doesn't match the
@@ -1727,6 +1734,12 @@ void EllipticEFΠ(quantities::Angle const& φ,
                  double& e,
                  double& f,
                  double& ᴨ) {
+  DCHECK_LE(0 * Radian, φ);
+  DCHECK_GE(π / 2 * Radian, φ);
+  DCHECK_LE(0, n);
+  DCHECK_GE(1, n);
+  DCHECK_LE(0, mc);
+  DCHECK_GE(1, mc);
   double b;
   double d;
   double j;
@@ -1747,6 +1760,8 @@ void EllipticEFΠ(quantities::Angle const& φ,
 //     Inputs: mc   = complementary parameter 0 <= mc   <= 1
 //
 double EllipticK(double const mc) {
+  DCHECK_LE(0, mc);
+  DCHECK_GE(1, mc);
   // TODO(phl): Use a binary split of [0, 1] to reduce the number of
   // comparisons.
   double const m = 1.0 - mc;
@@ -1782,5 +1797,6 @@ double EllipticK(double const mc) {
   }
 }
 
+}  // namespace internal_elliptic_integrals
 }  // namespace numerics
 }  // namespace principia

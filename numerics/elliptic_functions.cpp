@@ -203,6 +203,8 @@ void JacobiSNCNDNWithK(double const u,
 
 Angle JacobiAmplitude(double u, double mc) {
   constexpr double k_over_2_lower_bound = π / 4.0;
+  DCHECK_LE(0, mc);
+  DCHECK_GE(1, mc);
   double s;
   double c;
   double d;
@@ -255,6 +257,8 @@ void JacobiSNCNDN(double const u,
                   double& s,
                   double& c,
                   double& d) {
+  DCHECK_LE(0, mc);
+  DCHECK_GE(1, mc);
   double abs_u = Abs(u);
   if (abs_u < k_over_2_lower_bound) {
     JacobiSNCNDNReduced(abs_u, mc, s, c, d);
