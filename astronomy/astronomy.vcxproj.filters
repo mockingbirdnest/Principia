@@ -275,5 +275,8 @@
     <ClCompile Include="..\physics\protector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="orbit_recurrence_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
