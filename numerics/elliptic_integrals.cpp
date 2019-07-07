@@ -1702,17 +1702,17 @@ void FukushimaEllipticBDJ(Angle const& φ,
     }
   }
 
+  if (φ_reduced < 0.0 * Radian) {
+    b = -b;
+    d = -d;
+    j = -j;
+  }
   if (count != 0) {
     double const nc = 1.0 - n;
     double bc;
     double dc;
     double jc;
     FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
-    if (φ_reduced < 0.0 * Radian) {
-      b = -b;
-      d = -d;
-      j = -j;
-    }
     b = 2 * count * bc + b;
     d = 2 * count * dc + d;
     j = 2 * count * jc + j;
