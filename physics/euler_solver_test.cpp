@@ -89,7 +89,7 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
           solver1.AngularMomentumAt(Instant());
 
       EXPECT_THAT(computed_initial_angular_momentum1,
-                  AlmostEquals(initial_angular_momentum, 0, 2))
+                  AlmostEquals(initial_angular_momentum, 0, 283))
           << moments_of_inertia1 << " " << initial_angular_momentum;
     }
     {
@@ -99,7 +99,7 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
           solver2.AngularMomentumAt(Instant());
 
       EXPECT_THAT(computed_initial_angular_momentum2,
-                  AlmostEquals(initial_angular_momentum, 0, 2))
+                  AlmostEquals(initial_angular_momentum, 0, 32))
           << moments_of_inertia2 << " " << initial_angular_momentum;
     }
     {

@@ -60,12 +60,12 @@ EulerSolver::EulerSolver(
   DCHECK_LE(Square<AngularMomentum>(), Δ₁);
   DCHECK_LE(Square<AngularMomentum>(), Δ₃);
 
-  auto const I₁₂ = Abs(I₁ - I₂);
-  auto const I₁₃ = Abs(I₁ - I₃);
-  auto const I₂₁ = Abs(I₂ - I₁);
-  auto const I₂₃ = Abs(I₂ - I₃);
-  auto const I₃₁ = Abs(I₃ - I₁);
-  auto const I₃₂ = Abs(I₃ - I₂);
+  auto const I₁₂ = I₂ - I₁;
+  auto const I₁₃ = I₃ - I₁;
+  auto const I₂₁ = I₂ - I₁;
+  auto const I₂₃ = I₃ - I₂;
+  auto const I₃₁ = I₃ - I₁;
+  auto const I₃₂ = I₃ - I₂;
 
   B₁₃_ = Sqrt(I₁ * Δ₃ / I₁₃);
   B₃₁_ = Sqrt(I₃ * Δ₁ / I₃₁);
@@ -73,7 +73,7 @@ EulerSolver::EulerSolver(
   λ₃_ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
 
   // Note that Celledoni et al. give k, but we need mc = 1 - k^2.
-  if (2.0 * T * I₁ <= G² && G² < 2.0 * T * I₂) {
+  if (2.0 * T * I₁ < G² && G² < 2.0 * T * I₂) {
     B₂₁_ = Sqrt(I₂ * Δ₁ / I₂₁);
     mc_ = 1.0 - Δ₁ * I₃₂ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_) * Radian;
@@ -82,7 +82,7 @@ EulerSolver::EulerSolver(
       B₁₃_ = -B₁₃_;
     }
     formula_ = Formula::i;
-  } else if (2.0 * T * I₂ < G² && G² <= 2.0 * T * I₃) {
+  } else if (2.0 * T * I₂ < G² && G² < 2.0 * T * I₃) {
     B₂₃_ = Sqrt(I₂ * Δ₃ / I₂₃);
     mc_ = 1.0 - Δ₃ * I₂₁ / (Δ₁ * I₃₂);
     ν_ = EllipticF(ArcTan(m.y / B₂₃_, m.x / B₁₃_), mc_) * Radian;
