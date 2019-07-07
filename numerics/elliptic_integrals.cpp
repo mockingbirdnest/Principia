@@ -1647,6 +1647,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
 
   int const count = std::nearbyint(φ / (π * Radian));
   Angle const φ_reduced = φ - count * π * Radian;
+  Angle const abs_φ_reduced = Abs(φ_reduced);
 
   // NOTE(phl): The original Fortran code had φs = 1.345 * Radian, which,
   // according to the above-mentioned paper, is suitable for single precision.
@@ -1663,13 +1664,13 @@ void FukushimaEllipticBDJ(Angle const& φ,
   // notation.
   // NOTE(phl): The computation of 1 - c² loses accuracy with respect to the
   // evaluation of Sin(φ).
-  if (φ < φs) {
-    FukushimaEllipticBsDsJs(Sin(φ), n, mc, b, d, j);
+  if (abs_φ_reduced < φs) {
+    FukushimaEllipticBsDsJs(Sin(abs_φ_reduced), n, mc, b, d, j);
   } else {
     double const m = 1.0 - mc;
     double const nc = 1.0 - n;
     double const h = n * nc * (n - m);
-    double const c = Cos(φ);
+    double const c = Cos(abs_φ_reduced);
     double const c² = c * c;
     double const z²_denominator = mc + m * c²;
     if (c² < ys * z²_denominator) {
@@ -1707,6 +1708,11 @@ void FukushimaEllipticBDJ(Angle const& φ,
     double dc;
     double jc;
     FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
+    if (φ_reduced < 0.0 * Radian) {
+      b = -b;
+      d = -d;
+      j = -j;
+    }
     b = 2 * count * bc + b;
     d = 2 * count * dc + d;
     j = 2 * count * jc + j;
