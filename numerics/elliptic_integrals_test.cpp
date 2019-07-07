@@ -140,7 +140,7 @@ TEST_F(EllipticIntegralsTest, MathematicaBivariate) {
                 actual_value_f,
                 actual_value_ᴨ);
 
-    EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 5))
+    EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 6))
         << argument_φ << " " << argument_m;
     EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 44))
         << argument_φ << " " << argument_m;
