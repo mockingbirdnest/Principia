@@ -91,6 +91,12 @@ double FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 // Fukushima's T function [Fuku11c].
 double FukushimaT(double t, double h);
 
+// Argument reduction: angle = fractional_part + integer_part * π where
+// fractional_part is in [-π/2, π/2].
+void Reduce(Angle const& angle,
+            Angle& fractional_part,
+            std::int64_t& integer_part);
+
 // A generator for the Maclaurin series for q(m) / m where q is Jacobi's nome
 // function.
 template<int n, template<typename, typename, int> class Evaluator>
@@ -1618,6 +1624,27 @@ double FukushimaT(double const t, double const h) {
   }
 }
 
+// TODO(phl): This is extremely imprecise near large multiples of π.  Use a
+// better algorithm (Payne-Hanek?).
+void Reduce(Angle const& angle,
+            Angle& fractional_part,
+            std::int64_t& integer_part) {
+  double const angle_in_half_cycles = angle / (π * Radian);
+  double reduced_in_half_cycles;
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  auto const& x = angle_in_half_cycles;
+  __m128d const x_128d = _mm_set_sd(x);
+  integer_part = _mm_cvtsd_si64(x_128d);
+  reduced_in_half_cycles = _mm_cvtsd_f64(
+      _mm_sub_sd(x_128d,
+                 _mm_cvtsi64_sd(__m128d{}, integer_part)));
+#else
+  integer_part = std::nearbyint(angle_in_half_cycles);
+  reduced_in_half_cycles = angle_in_half_cycles - integer_part;
+#endif
+  fractional_part = reduced_in_half_cycles * π * Radian;
+}
+
 }  // namespace
 
 // Double precision general incomplete elliptic integrals of all three kinds
@@ -1640,12 +1667,19 @@ void FukushimaEllipticBDJ(Angle const& φ,
                           double& b,
                           double& d,
                           double& j) {
-  DCHECK_LE(0 * Radian, φ);
-  DCHECK_GE(π / 2 * Radian, φ);
   DCHECK_LE(0, n);
   DCHECK_GE(1, n);
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
+
+  // See Appendix B of [Fuku11b] and Appendix A.1 of [Fuku11c] for argument
+  // reduction.
+  // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
+  // better algorithm (Payne-Hanek?).
+  Angle φ_reduced;
+  std::int64_t count;
+  Reduce(φ, φ_reduced, count);
+  Angle const abs_φ_reduced = Abs(φ_reduced);
 
   // NOTE(phl): The original Fortran code had φs = 1.345 * Radian, which,
   // according to the above-mentioned paper, is suitable for single precision.
@@ -1657,22 +1691,26 @@ void FukushimaEllipticBDJ(Angle const& φ,
   constexpr Angle φs = 1.249 * Radian;
   constexpr double ys = 0.9;
 
+  bool has_computed_complete_integrals = false;
+  double bc;
+  double dc;
+  double jc;
+
   // The selection rule in [Fuku11b] section 2.1, equations (7-11) and [Fuku11c]
   // section 3.2, equations (22) and (23).  The identifiers follow Fukushima's
   // notation.
   // NOTE(phl): The computation of 1 - c² loses accuracy with respect to the
   // evaluation of Sin(φ).
-  if (φ < φs) {
-    FukushimaEllipticBsDsJs(Sin(φ), n, mc, b, d, j);
+  if (abs_φ_reduced < φs) {
+    FukushimaEllipticBsDsJs(Sin(abs_φ_reduced), n, mc, b, d, j);
   } else {
     double const m = 1.0 - mc;
     double const nc = 1.0 - n;
     double const h = n * nc * (n - m);
-    double const c = Cos(φ);
+    double const c = Cos(abs_φ_reduced);
     double const c² = c * c;
     double const z²_denominator = mc + m * c²;
     if (c² < ys * z²_denominator) {
-      double bc, dc, jc;
       double const z = c / Sqrt(z²_denominator);
       FukushimaEllipticBsDsJs(z, n, mc, b, d, j);
       FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
@@ -1681,12 +1719,12 @@ void FukushimaEllipticBDJ(Angle const& φ,
       b = bc - (b - sz);
       d = dc - (d + sz);
       j = jc - (j + FukushimaT(t, h));
+      has_computed_complete_integrals = true;
     } else {
       double const w²_numerator = mc * (1.0 - c²);
       if (w²_numerator < c² * z²_denominator) {
         FukushimaEllipticBcDcJc(c, n, mc, b, d, j);
       } else {
-        double bc, dc, jc;
         double const w²_denominator = z²_denominator;
         double const w²_over_mc = (1.0 - c²) / w²_denominator;
         FukushimaEllipticBcDcJc(Sqrt(mc * w²_over_mc), n, mc, b, d, j);
@@ -1696,8 +1734,24 @@ void FukushimaEllipticBDJ(Angle const& φ,
         b = bc - (b - sz);
         d = dc - (d + sz);
         j = jc - (j + FukushimaT(t, h));
+        has_computed_complete_integrals = true;
       }
     }
+  }
+
+  if (φ_reduced < 0.0 * Radian) {
+    b = -b;
+    d = -d;
+    j = -j;
+  }
+  if (count != 0) {
+    double const nc = 1.0 - n;
+    if (!has_computed_complete_integrals) {
+      FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
+    }
+    b = 2 * count * bc + b;
+    d = 2 * count * dc + d;
+    j = 2 * count * jc + j;
   }
 }
 
@@ -1734,8 +1788,6 @@ void EllipticEFΠ(quantities::Angle const& φ,
                  double& e,
                  double& f,
                  double& ᴨ) {
-  DCHECK_LE(0 * Radian, φ);
-  DCHECK_GE(π / 2 * Radian, φ);
   DCHECK_LE(0, n);
   DCHECK_GE(1, n);
   DCHECK_LE(0, mc);

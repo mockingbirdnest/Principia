@@ -85,6 +85,50 @@
 (*Join[randomargs2,randomvals2,2]];*)
 
 
+(* ::Subsubsection:: *)
+(*Argument reduction*)
+
+
+(* ::Input:: *)
+(*redm={1/10,1/2,9/10}*)
+
+
+(* ::Input:: *)
+(*red\[CurlyPhi]=Table[i/2,{i,-20,20}]*)
+
+
+(* ::Input:: *)
+(*redargs2=Flatten[Outer[List,red\[CurlyPhi],redm],1];*)
+
+
+(* ::Input:: *)
+(*redvals2=Map[*)
+(*N[{*)
+(*If[#[[2]]==0,*)
+(*Limit[fukushimaB[#[[1]],m],m->0],*)
+(*fukushimaB[#[[1]],#[[2]]]],*)
+(*If[#[[2]]==0,*)
+(*Limit[fukushimaD[#[[1]],m],m->0],*)
+(*fukushimaD[#[[1]],#[[2]]]],*)
+(*EllipticE[#[[1]],#[[2]]],*)
+(*EllipticF[#[[1]],#[[2]]]*)
+(*},20]&,*)
+(*redargs2];*)
+
+
+(* ::Input:: *)
+(*redstrs2=Map[*)
+(*"entry { argument: "<>decimalFloatLiteral[#[[1]],2]<>*)
+(*" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[3]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[6]],2]<>*)
+(*"}"*)
+(*&,*)
+(*Join[N[redargs2,20],redvals2,2]];*)
+
+
 (* ::Input:: *)
 (*SetDirectory[NotebookDirectory[]]*)
 
@@ -92,7 +136,7 @@
 (* ::Input:: *)
 (*Export[*)
 (*"..\\numerics\\bivariate_elliptic_integrals.proto.txt",*)
-(*StringRiffle[randomstrs2,"\n"],*)
+(*StringRiffle[Flatten[{randomstrs2,redstrs2}],"\n"],*)
 (*"text"]*)
 
 
@@ -188,6 +232,49 @@
 (*Join[random1args3,random1vals3,2]];*)
 
 
+(* ::Subsubsection:: *)
+(*Argument reduction*)
+
+
+(* ::Input:: *)
+(*redm={1/10,1/2,9/10}*)
+
+
+(* ::Input:: *)
+(*red\[CurlyPhi]=Table[i/2,{i,-20,20}]*)
+
+
+(* ::Input:: *)
+(*redn={1/10,1/2,9/10}*)
+
+
+(* ::Input:: *)
+(*redargs3=Flatten[Outer[List,red\[CurlyPhi],redn,redm],2];*)
+
+
+(* ::Input:: *)
+(*redvals3=Map[*)
+(*N[{*)
+(*If[#[[2]]==0,*)
+(*Limit[fukushimaJ[#[[1]],n,#[[3]]],n->0],*)
+(*fukushimaJ[#[[1]],#[[2]],#[[3]]]],*)
+(*EllipticPi[#[[2]],#[[1]],#[[3]]]*)
+(*},20]&,*)
+(*redargs3];*)
+
+
+(* ::Input:: *)
+(*redstrs3=Map[*)
+(*"entry { argument: "<>decimalFloatLiteral[#[[1]],2]<>*)
+(*" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
+(*" argument: "<>decimalFloatLiteral[#[[3]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
+(*" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
+(*"}"*)
+(*&,*)
+(*Join[N[redargs3,20],redvals3,2]];*)
+
+
 (* ::Input:: *)
 (*SetDirectory[NotebookDirectory[]]*)
 
@@ -195,7 +282,7 @@
 (* ::Input:: *)
 (*Export[*)
 (*"..\\numerics\\trivariate_elliptic_integrals.proto.txt",*)
-(*StringRiffle[Flatten[{randomstrs3,random1strs3}],"\n"],*)
+(*StringRiffle[Flatten[{randomstrs3,random1strs3,redstrs3}],"\n"],*)
 (*"text"]*)
 
 
