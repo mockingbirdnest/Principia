@@ -113,5 +113,54 @@ TEST_F(OrbitRecurrenceTest, Subcycle) {
   EXPECT_THAT(icesat.subcycle(), Eq(25));
 }
 
+TEST_F(OrbitRecurrenceTest, RetrogradeRotation) {
+  // Capderou does not study ground track recurrence around these bodies; the
+  // expected values for the recurrence triple are nothing more than a change
+  // detector.
+  // Example 16.1.
+  auto const magellan =
+      OrbitRecurrence::ClosestRecurrence(91.914680 * Minute,
+                                         -0.000464 * Degree / Day,
+                                         *venus_,
+                                         /*max_abs_Cᴛₒ=*/50);
+  EXPECT_THAT(AbsoluteError(0.094526 * Degree, magellan.equatorial_shift()),
+              Lt(0.000001 * Degree));
+  // There are approximately 3807 orbits per sidereal day; this value of νₒ is
+  // consistent with the low precession.
+  EXPECT_THAT(magellan,
+              AllOf(Property(&OrbitRecurrence::νₒ, -3808),
+                    Property(&OrbitRecurrence::Dᴛₒ, 1),
+                    Property(&OrbitRecurrence::Cᴛₒ, -2)));
+  // Example 16.9.
+  auto const triton_orbiter =
+      OrbitRecurrence::ClosestRecurrence(169.584671 * Minute,
+                                         -0.074331 * Degree / Day,
+                                         *triton_,
+                                         /*max_abs_Cᴛₒ=*/50);
+  EXPECT_THAT(AbsoluteError(7.2 * Degree, triton_orbiter.equatorial_shift()),
+              Lt(0.1 * Degree));
+  EXPECT_THAT(triton_orbiter,
+              AllOf(Property(&OrbitRecurrence::νₒ, -50),
+                    Property(&OrbitRecurrence::Dᴛₒ, -1),
+                    Property(&OrbitRecurrence::Cᴛₒ, -27)));
+}
+
+TEST_F(OrbitRecurrenceTest, OneDayRecurrenceCycle) {
+  AngularFrequency const Ωʹꜱ = 0.985647 * Degree / Day;
+  // Example 11.10: FORMOSAT-2, formerly ROCSAT-2.
+  auto const 福爾摩沙衛星二號 =
+      OrbitRecurrence::ClosestRecurrence(102.86 * Minute,
+                                         Ωʹꜱ,
+                                         *earth_,
+                                         /*max_abs_Cᴛₒ=*/50);
+  EXPECT_THAT(福爾摩沙衛星二號,
+              AllOf(Property(&OrbitRecurrence::νₒ, 14),
+                    Property(&OrbitRecurrence::Dᴛₒ, 0),
+                    Property(&OrbitRecurrence::Cᴛₒ, 1)));
+  EXPECT_THAT(福爾摩沙衛星二號.grid_interval(),
+              Eq(福爾摩沙衛星二號.base_interval()));
+  EXPECT_THAT(福爾摩沙衛星二號.subcycle(), Eq(0));
+}
+
 }  // namespace astronomy
 }  // namespace principia
