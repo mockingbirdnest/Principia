@@ -2,6 +2,8 @@
 
 #include "astronomy/orbit_recurrence.hpp"
 
+#include <limits>
+
 #include "base/mod.hpp"
 #include "geometry/sign.hpp"
 
