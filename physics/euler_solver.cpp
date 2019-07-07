@@ -69,16 +69,25 @@ EulerSolver::EulerSolver(
     B₂₁_ = Sqrt(I₂ * Δ₁ / I₂₁);
     mc_ = 1.0 - Δ₁ * I₂₃ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_) * Radian;
+    if (m.x < AngularMomentum()) {
+      λ₃_ = -λ₃_;
+      B₁₃_ = -B₁₃_;
+    }
     formula_ = Formula::i;
   } else if (2.0 * T * I₂ < G² && G² < 2.0 * T * I₃) {
     B₂₃_ = Sqrt(I₂ * Δ₃ / I₂₃);
     mc_ = 1.0 - Δ₃ * I₂₁ / (Δ₁ * I₂₃);
     ν_ = EllipticF(ArcTan(m.y / B₂₃_, m.x / B₁₃_), mc_) * Radian;
     λ₁_ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
+    if (m.z < AngularMomentum()) {
+      λ₁_ = -λ₁_;
+      B₃₁_ = -B₃₁_;
+    }
     formula_ = Formula::ii;
   } else if (2.0 * T * I₂ == G²) {
     G_ =  Sqrt(G²);
     ν_= -ArcTanh(m.y / G_);
+    // TODO(phl): The sign adjustments on this path are unclear.
     formula_ = Formula::iii;
   } else {
     LOG(FATAL) << "No formula for this case: G² = " << G²
