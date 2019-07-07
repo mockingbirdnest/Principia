@@ -37,7 +37,7 @@ EulerSolver::EulerSolver(
   auto const& I₂ = moments_of_inertia.y;
   auto const& I₃ = moments_of_inertia.z;
 
-  // TODO(phl): What if they are not distinct?  We'll get infinities below and
+  //TODO(phl): What if they are not distinct?  We'll get infinities below and
   // that's probably fine.
   CHECK_LT(I₁, I₂);
   CHECK_LT(I₂, I₃);
@@ -87,7 +87,7 @@ EulerSolver::EulerSolver(
   } else if (2.0 * T * I₂ == G²) {
     G_ =  Sqrt(G²);
     ν_= -ArcTanh(m.y / G_);
-    // TODO(phl): The sign adjustments on this path are unclear.
+    //TODO(phl): The sign adjustments on this path are unclear.
     formula_ = Formula::iii;
   } else {
     LOG(FATAL) << "No formula for this case: G² = " << G²
