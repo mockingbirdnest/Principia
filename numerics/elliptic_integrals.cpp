@@ -1645,6 +1645,10 @@ void FukushimaEllipticBDJ(Angle const& φ,
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
 
+  // See Appendix B of [Fuku11b] and Appendix A.1 of [Fuku11c] for argument
+  // reduction.
+  // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
+  // better algorithm (Payne-Hanek?).
   int const count = std::nearbyint(φ / (π * Radian));
   Angle const φ_reduced = φ - count * π * Radian;
   Angle const abs_φ_reduced = Abs(φ_reduced);
