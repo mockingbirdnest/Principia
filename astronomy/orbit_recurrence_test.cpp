@@ -5,6 +5,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/solar_system.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -12,12 +13,14 @@ namespace astronomy {
 using base::not_null;
 using physics::RotatingBody;
 using physics::SolarSystem;
+using quantities::AngularFrequency;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Minute;
-using quantities::AngularFrequency;
+using testing_utilities::AbsoluteError;
 using ::testing::AllOf;
 using ::testing::Property;
+using ::testing::Lt;
 
 class OrbitRecurrenceTest : public ::testing::Test {
  protected:
@@ -77,6 +80,14 @@ TEST_F(OrbitRecurrenceTest, ClosestRecurrence) {
                   95.097610 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50),
               AllOf(Property(&OrbitRecurrence::number_of_revolutions, 106),
                     Property(&OrbitRecurrence::Cᴛₒ, 7)));
+}
+
+TEST_F(OrbitRecurrenceTest, EquatorialShift) {
+  // Example 8.2: Метеор-3 № 7.
+  OrbitRecurrence const метеор_3_7_recurrence(13, +7, 71);
+  EXPECT_THAT(
+      AbsoluteError(-27.48 * Degree, метеор_3_7_recurrence.equatorial_shift()),
+      Lt(0.01 * Degree));
 }
 
 }  // namespace astronomy
