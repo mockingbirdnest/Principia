@@ -29,11 +29,13 @@ class EulerSolverTest : public ::testing::Test {
 // the moments of inertia and the angular momentum.
 TEST_F(EulerSolverTest, InitialState) {
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> distribution(-10.0, 10.0);
+  std::uniform_real_distribution<> moment_of_inertia_distribution(0.0, 10.0);
+  std::uniform_real_distribution<> angular_momentum_distribution(-10.0, 10.0);
   for (int i = 0; i < 1000; ++i) {
     // Make sure that the moments of inertia are properly ordered.
-    std::array<double, 3> randoms{
-        distribution(random), distribution(random), distribution(random)};
+    std::array<double, 3> randoms{moment_of_inertia_distribution(random),
+                                  moment_of_inertia_distribution(random),
+                                  moment_of_inertia_distribution(random)};
     std::sort(randoms.begin(), randoms.end());
     R3Element<MomentOfInertia> const& moments_of_inertia{
         randoms[0] * SIUnit<MomentOfInertia>(),
@@ -41,9 +43,9 @@ TEST_F(EulerSolverTest, InitialState) {
         randoms[2] * SIUnit<MomentOfInertia>()};
 
     EulerSolver::AngularMomentumBivector initial_angular_momentum(
-        {distribution(random) * SIUnit<AngularMomentum>(),
-         distribution(random) * SIUnit<AngularMomentum>(),
-         distribution(random) * SIUnit<AngularMomentum>()});
+        {angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
+         angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
+         angular_momentum_distribution(random) * SIUnit<AngularMomentum>()});
 
     EulerSolver const solver(
         moments_of_inertia, initial_angular_momentum, Instant());
@@ -51,7 +53,8 @@ TEST_F(EulerSolverTest, InitialState) {
         solver.AngularMomentumAt(Instant());
 
     EXPECT_THAT(computed_initial_angular_momentum,
-                AlmostEquals(initial_angular_momentum, 0));
+                AlmostEquals(initial_angular_momentum, 0, 20))
+        << moments_of_inertia << " " << initial_angular_momentum;
   }
 }
 

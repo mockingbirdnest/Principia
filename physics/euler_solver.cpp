@@ -81,7 +81,10 @@ EulerSolver::EulerSolver(
     ν_= -ArcTanh(m.y / G_);
     formula_ = Formula::iii;
   } else {
-    LOG(FATAL) << "This should not happen";
+    LOG(FATAL) << "No formula for this case: G² = " << G²
+               << ", 2.0 * T * I₁ = " << 2.0 * T * I₁
+               << ", 2.0 * T * I₂ = " << 2.0 * T * I₂ << ", 2.0 * T * I₃ = "
+               << 2.0 * T * I₃;
   }
 }
 
