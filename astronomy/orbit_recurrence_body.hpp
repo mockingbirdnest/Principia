@@ -108,6 +108,12 @@ inline int OrbitRecurrence::subcycle() const {
   return subcycle_;
 }
 
+inline std::ostream& operator<<(std::ostream& out,
+  OrbitRecurrence const& recurrence) {
+  return out << "[" << recurrence.νₒ() << "; " << recurrence.Dᴛₒ() << "; "
+             << recurrence.Cᴛₒ() << "]";
+}
+
 }  // namespace internal_orbit_recurrence
 }  // namespace astronomy
 }  // namespace principia

@@ -97,6 +97,8 @@ class OrbitRecurrence final {
   int subcycle_;
 };
 
+std::ostream& operator<<(std::ostream& out, OrbitRecurrence const& recurrence);
+
 }  // namespace internal_orbit_recurrence
 
 using internal_orbit_recurrence::OrbitRecurrence;
