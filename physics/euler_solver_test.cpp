@@ -118,7 +118,9 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
 }
 
 // Same as above, but exercises all the formulæ.  We compute an angular
-// momentum with second coordinate 0 that falls in the right interval.
+// momentum by fixing its first coordinate and picking the third coordinate so
+// that it falls in the right interval.  (The second coordinate turns out to be
+// irrelevant.)
 TEST_F(EulerSolverTest, InitialStateFormulæ) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> moment_of_inertia_distribution(0.0, 10.0);
@@ -163,8 +165,11 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
 
       auto const computed_initial_angular_momentum =
           solver.AngularMomentumAt(Instant());
+      // NOTE(phl): The largest error happens to actually go through
+      // Formula::ii and is on the z component (x and y are fine).  That's
+      // probably related to the fact that Δ₂ is very small.
       EXPECT_THAT(computed_initial_angular_momentum,
-                  AlmostEquals(initial_angular_momentum, 0, 476472))
+                  AlmostEquals(initial_angular_momentum, 0, 14749913))
           << moments_of_inertia << " " << initial_angular_momentum;
     }
 
@@ -181,7 +186,7 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       auto const computed_initial_angular_momentum =
           solver.AngularMomentumAt(Instant());
       EXPECT_THAT(computed_initial_angular_momentum,
-                  AlmostEquals(initial_angular_momentum, 0, 2531))
+                  AlmostEquals(initial_angular_momentum, 0, 12632))
           << moments_of_inertia << " " << initial_angular_momentum;
     }
   }

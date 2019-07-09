@@ -72,10 +72,11 @@ EulerSolver::EulerSolver(
 
   λ₃_ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
 
-  // Note that Celledoni et al. give k, but we need mc = 1 - k^2.
+  // Note that Celledoni et al. give k, but we need mc = 1 - k^2.  We write mc
+  // in a way that reduces cancellations when k is close to 1.
   if (2.0 * T * I₁ < G² && G² < 2.0 * T * I₂) {
     B₂₁_ = Sqrt(I₂ * Δ₁ / I₂₁);
-    mc_ = 1.0 - Δ₁ * I₃₂ / (Δ₃ * I₂₁);
+    mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_) * Radian;
     if (m.x < AngularMomentum()) {
       λ₃_ = -λ₃_;
@@ -84,7 +85,7 @@ EulerSolver::EulerSolver(
     formula_ = Formula::i;
   } else if (2.0 * T * I₂ < G² && G² < 2.0 * T * I₃) {
     B₂₃_ = Sqrt(I₂ * Δ₃ / I₂₃);
-    mc_ = 1.0 - Δ₃ * I₂₁ / (Δ₁ * I₃₂);
+    mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂);
     ν_ = EllipticF(ArcTan(m.y / B₂₃_, m.x / B₁₃_), mc_) * Radian;
     λ₁_ = Sqrt(Δ₁ * I₂₃ / (I₁ * I₂ * I₃));
     if (m.z < AngularMomentum()) {
