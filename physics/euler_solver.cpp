@@ -93,9 +93,21 @@ EulerSolver::EulerSolver(
     }
     formula_ = Formula::ii;
   } else if (2.0 * T * I₂ == G²) {
+    if (I₁₃ == MomentOfInertia()) {
+      // The degenerate case of a sphere.  It would create NaNs.
+      DCHECK_EQ(MomentOfInertia(), I₃₁);
+      B₁₃_ = Sqrt(2.0 * T * I₁);
+      B₃₁_ = Sqrt(2.0 * T * I₃);
+    }
     G_ =  Sqrt(G²);
     ν_= -ArcTanh(m.y / G_);
-    //TODO(phl): The sign adjustments on this path are unclear.
+    // NOTE(phl): The sign adjustments on this path are unclear.
+    if (m.x < AngularMomentum()) {
+      B₁₃_ = -B₁₃_;
+    }
+    if (m.z < AngularMomentum()) {
+      B₃₁_ = -B₃₁_;
+    }
     formula_ = Formula::iii;
   } else {
     LOG(FATAL) << "No formula for this case: G² = " << G²
