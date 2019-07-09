@@ -86,7 +86,11 @@ class OrbitRecurrence final {
   Angle grid_interval() const;
 
   // The subcycle Eᴛₒ*, see section 11.5.3.
-  // After Eᴛₒ* days, the ground track passes δ away from the origin.
+  // After about Eᴛₒ* days (n = round(Nᴛₒ Eᴛₒ* / Cᴛₒ) revolutions), the ground
+  // track passes δ away from the origin.
+  // In terms of continued fractions, Eᴛₒ* is the denominator of the penultimate
+  // convergent of Nᴛₒ / Cᴛₒ (it is the cycle that is closest to being exact
+  // before Cᴛₒ).
   // Note that Eᴛₒ* < 0 if the rotation of the primary is retrograde.
   int subcycle() const;
 
