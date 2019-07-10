@@ -38,68 +38,67 @@ EulerSolver::EulerSolver(
   auto const& I₁ = moments_of_inertia.x;
   auto const& I₂ = moments_of_inertia.y;
   auto const& I₃ = moments_of_inertia.z;
-
-  // NOTE(phl): What if they are not distinct?  We'll get infinities below and
-  // that's probably fine.
   CHECK_LE(I₁, I₂);
   CHECK_LE(I₂, I₃);
 
   auto const& m = initial_angular_momentum.coordinates();
-  auto const T = (m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃) * 0.5;
 
-  // Make sure that the total angular momentum is within the range permitted by
-  // the kinetic energy.
-  Square<AngularMomentum> const G² = std::min(
-      std::max(initial_angular_momentum.Norm²(),
-               2.0 * T * I₁),
-      2.0 * T * I₃);
+  auto const I₁₂ = I₁ - I₂;
+  auto const I₁₃ = I₁ - I₃;
+  auto const I₂₁ = -I₁₂;
+  auto const I₂₃ = I₂ - I₃;
+  auto const I₃₁ = -I₁₃;
+  auto const I₃₂ = -I₂₃;
 
-  auto const Δ₁ = G² - 2.0 * T * I₁;
-  auto const Δ₂ = Abs(G² - 2.0 * T * I₂);
-  auto const Δ₃ = 2.0 * T * I₃ - G²;
+  // The formulæ for the Δs in Celledoni cannot be used directly because of
+  // cancellations.
+  auto const Δ₁ = m.y * m.y * I₂₁ / I₂ + m.z * m.z * I₃₁ / I₃;
+  auto const Δ₂ = m.x * m.x * I₁₂ / I₁ + m.z * m.z * I₃₂ / I₃;
+  auto const Δ₃ = m.x * m.x * I₃₁ / I₁ + m.y * m.y * I₃₂ / I₂;
   DCHECK_LE(Square<AngularMomentum>(), Δ₁);
   DCHECK_LE(Square<AngularMomentum>(), Δ₃);
 
-  auto const I₁₂ = I₂ - I₁;
-  auto const I₁₃ = I₃ - I₁;
-  auto const I₂₁ = I₂ - I₁;
-  auto const I₂₃ = I₃ - I₂;
-  auto const I₃₁ = I₃ - I₁;
-  auto const I₃₂ = I₃ - I₂;
-
-  B₁₃_ = Sqrt(I₁ * Δ₃ / I₁₃);
+  B₁₃_ = Sqrt(I₁ * Δ₃ / I₃₁);
   B₃₁_ = Sqrt(I₃ * Δ₁ / I₃₁);
-
-  λ₃_ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
+  λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁ * I₂ * I₃));
 
   // Note that Celledoni et al. give k, but we need mc = 1 - k^2.  We write mc
   // in a way that reduces cancellations when k is close to 1.
-  if (2.0 * T * I₁ < G² && G² < 2.0 * T * I₂) {
+  if (Δ₂ < Square<AngularMomentum>()) {
     B₂₁_ = Sqrt(I₂ * Δ₁ / I₂₁);
-    mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
+    mc_ = -Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_) * Radian;
     if (m.x < AngularMomentum()) {
       λ₃_ = -λ₃_;
       B₁₃_ = -B₁₃_;
     }
     formula_ = Formula::i;
-  } else if (2.0 * T * I₂ < G² && G² < 2.0 * T * I₃) {
-    B₂₃_ = Sqrt(I₂ * Δ₃ / I₂₃);
+  } else if (Square<AngularMomentum>() < Δ₂) {
+    B₂₃_ = Sqrt(I₂ * Δ₃ / I₃₂);
     mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂);
     ν_ = EllipticF(ArcTan(m.y / B₂₃_, m.x / B₁₃_), mc_) * Radian;
-    λ₁_ = Sqrt(Δ₁ * I₂₃ / (I₁ * I₂ * I₃));
+    λ₁_ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
     if (m.z < AngularMomentum()) {
       λ₁_ = -λ₁_;
       B₃₁_ = -B₃₁_;
     }
     formula_ = Formula::ii;
-  } else if (2.0 * T * I₂ == G²) {
+  } else {  // Δ₂ == Square<AngularMomentum>()
+    auto const T = (m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃) * 0.5;
     if (I₁₃ == MomentOfInertia()) {
       // The degenerate case of a sphere.  It would create NaNs.
       DCHECK_EQ(MomentOfInertia(), I₃₁);
       B₁₃_ = Sqrt(2.0 * T * I₁);
       B₃₁_ = Sqrt(2.0 * T * I₃);
     }
+
+    // Make sure that the total angular momentum is within the range permitted
+    // by the kinetic energy.
+    Square<AngularMomentum> const G² = std::min(
+        std::max(initial_angular_momentum.Norm²(),
+                 2.0 * T * I₁),
+        2.0 * T * I₃);
+
     G_ =  Sqrt(G²);
     ν_= -ArcTanh(m.y / G_);
     // NOTE(phl): The sign adjustments on this path are unclear.
@@ -110,11 +109,6 @@ EulerSolver::EulerSolver(
       B₃₁_ = -B₃₁_;
     }
     formula_ = Formula::iii;
-  } else {
-    LOG(FATAL) << "No formula for this case: G² = " << G²
-               << ", 2.0 * T * I₁ = " << 2.0 * T * I₁
-               << ", 2.0 * T * I₂ = " << 2.0 * T * I₂ << ", 2.0 * T * I₃ = "
-               << 2.0 * T * I₃;
   }
 }
 

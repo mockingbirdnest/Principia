@@ -149,7 +149,7 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       auto const computed_initial_angular_momentum =
           solver.AngularMomentumAt(Instant());
       EXPECT_THAT(computed_initial_angular_momentum,
-                  AlmostEquals(initial_angular_momentum, 0, 2174))
+                  AlmostEquals(initial_angular_momentum, 0, 356))
           << moments_of_inertia << " " << initial_angular_momentum;
     }
 
@@ -169,7 +169,7 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       // Formula::ii and is on the z component (x and y are fine).  That's
       // probably related to the fact that Δ₂ is very small.
       EXPECT_THAT(computed_initial_angular_momentum,
-                  AlmostEquals(initial_angular_momentum, 0, 14749913))
+                  AlmostEquals(initial_angular_momentum, 0, 11126))
           << moments_of_inertia << " " << initial_angular_momentum;
     }
 
@@ -186,7 +186,7 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       auto const computed_initial_angular_momentum =
           solver.AngularMomentumAt(Instant());
       EXPECT_THAT(computed_initial_angular_momentum,
-                  AlmostEquals(initial_angular_momentum, 0, 12632))
+                  AlmostEquals(initial_angular_momentum, 0, 2711))
           << moments_of_inertia << " " << initial_angular_momentum;
     }
   }
