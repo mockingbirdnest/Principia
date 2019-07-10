@@ -43,6 +43,8 @@ class EulerSolver {
   AngularMomentumBivector AngularMomentumAt(Instant const& time) const;
 
 private:
+  // The formula to use, following Cellodoni et al., Section 2.2.  They don't
+  // have a formula for the spherical case.
   enum class Formula {
     i,
     ii,
@@ -50,12 +52,15 @@ private:
     Sphere
   };
 
+  // Construction parameters.
   AngularMomentumBivector const initial_angular_momentum_;
   Instant const initial_time_;
 
   // Amusingly, the formula to use is a constant of motion.
   Formula formula_;
 
+  // Only the parameters needed for the selected formula are non-NaN after
+  // construction.
   AngularMomentum B₁₃_ = NaN<AngularMomentum>();
   AngularMomentum B₃₁_ = NaN<AngularMomentum>();
   AngularMomentum B₂₁_ = NaN<AngularMomentum>();
