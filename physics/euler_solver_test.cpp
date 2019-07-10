@@ -134,7 +134,7 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
     auto const I₁ = randoms[0] * SIUnit<MomentOfInertia>();
     auto const I₂ = randoms[1] * SIUnit<MomentOfInertia>();
     auto const I₃ = randoms[2] * SIUnit<MomentOfInertia>();
-    R3Element<MomentOfInertia> const moments_of_inertia{I₁,I₂,I₃};
+    R3Element<MomentOfInertia> const moments_of_inertia{I₁, I₂, I₃};
 
     // G² = T * (I₁ + I₂)
     {

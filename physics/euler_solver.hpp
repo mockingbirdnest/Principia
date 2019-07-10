@@ -42,7 +42,7 @@ class EulerSolver {
   // Computes the angular momentum at the given time.
   AngularMomentumBivector AngularMomentumAt(Instant const& time) const;
 
-private:
+ private:
   // The formula to use, following Cellodoni et al., Section 2.2.  They don't
   // have a formula for the spherical case.
   enum class Formula {

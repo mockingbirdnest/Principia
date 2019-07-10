@@ -1755,8 +1755,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 }
 
-double EllipticE(quantities::Angle const& φ, double const mc)
-{
+double EllipticE(quantities::Angle const& φ, double const mc) {
   double e;
   double f;
   double ᴨ;
@@ -1764,8 +1763,7 @@ double EllipticE(quantities::Angle const& φ, double const mc)
   return e;
 }
 
-double EllipticF(quantities::Angle const& φ, double const mc)
-{
+double EllipticF(quantities::Angle const& φ, double const mc) {
   double e;
   double f;
   double ᴨ;
@@ -1773,8 +1771,7 @@ double EllipticF(quantities::Angle const& φ, double const mc)
   return f;
 }
 
-double EllipticΠ(quantities::Angle const& φ, double const n, double const mc)
-{
+double EllipticΠ(quantities::Angle const& φ, double const n, double const mc) {
   double e;
   double f;
   double ᴨ;

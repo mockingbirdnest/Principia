@@ -93,7 +93,7 @@ EulerSolver::EulerSolver(
       formula_ = Formula::Sphere;
     } else {
       G_ =  initial_angular_momentum_.Norm();
-      ν_= -ArcTanh(m.y / G_);
+      ν_ = -ArcTanh(m.y / G_);
       // NOTE(phl): The sign adjustments on this path are unclear.
       if (m.x < AngularMomentum()) {
         B₁₃_ = -B₁₃_;
