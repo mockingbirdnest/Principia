@@ -140,7 +140,10 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
     {
       auto const mx =
           angular_momentum_distribution(random) * SIUnit<AngularMomentum>();
-      auto const mz = mx * Sqrt(((I₂ - I₁) * I₃) / ((2.0 * I₃ - I₂ - I₁) * I₁));
+      auto mz = mx * Sqrt(((I₂ - I₁) * I₃) / ((2.0 * I₃ - I₂ - I₁) * I₁));
+      if (i % 2 == 0) {
+        mz = -mz;
+      }
       EulerSolver::AngularMomentumBivector initial_angular_momentum(
           {mx, SIUnit<AngularMomentum>(), mz});
       EulerSolver const solver(
@@ -157,7 +160,10 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
     {
       auto const mx =
           angular_momentum_distribution(random) * SIUnit<AngularMomentum>();
-      auto const mz = mx * Sqrt(((I₂ - I₁) * I₃) / ((I₃ - I₂) * I₁));
+      auto mz = mx * Sqrt(((I₂ - I₁) * I₃) / ((I₃ - I₂) * I₁));
+      if (i % 2 == 0) {
+        mz = -mz;
+      }
       EulerSolver::AngularMomentumBivector initial_angular_momentum(
           {mx, SIUnit<AngularMomentum>(), mz});
       EulerSolver const solver(
@@ -177,7 +183,10 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
     {
       auto const mx =
           angular_momentum_distribution(random) * SIUnit<AngularMomentum>();
-      auto const mz = mx * Sqrt(((I₂ + I₃ - 2.0 * I₁) * I₃) / ((I₃ - I₂) * I₁));
+      auto mz = mx * Sqrt(((I₂ + I₃ - 2.0 * I₁) * I₃) / ((I₃ - I₂) * I₁));
+      if (i % 2 == 0) {
+        mz = -mz;
+      }
       EulerSolver::AngularMomentumBivector initial_angular_momentum(
           {mx, SIUnit<AngularMomentum>(), mz});
       EulerSolver const solver(
