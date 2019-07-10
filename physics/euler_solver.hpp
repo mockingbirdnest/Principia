@@ -22,6 +22,9 @@ using quantities::AngularMomentum;
 using quantities::MomentOfInertia;
 using quantities::NaN;
 
+// A solver for Euler's rotation equations.  It follows Celledoni, Fassò,
+// Säfström and Zanna, 2007, The exact computation of the free rigid body motion
+// and its use in splitting method.
 class EulerSolver {
  public:
   using PrincipalAxesFrame = Frame<serialization::Frame::PhysicsTag,
@@ -29,10 +32,14 @@ class EulerSolver {
                                    /*frame_is_inertial*/ false>;
   using AngularMomentumBivector = Bivector<AngularMomentum, PrincipalAxesFrame>;
 
+  // Constructs a solver for a body with the given moments_of_inertia in its
+  // principal axes frame.  The moments must be in increasing order.  At
+  // initial_time the angular momentum is initial_angular_momentum.
   EulerSolver(R3Element<MomentOfInertia> const& moments_of_inertia,
               AngularMomentumBivector const& initial_angular_momentum,
               Instant const& initial_time);
 
+  // Computes the angular momentum at the given time.
   AngularMomentumBivector AngularMomentumAt(Instant const& time) const;
 
 private:
