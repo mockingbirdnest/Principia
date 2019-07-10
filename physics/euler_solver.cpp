@@ -92,16 +92,7 @@ EulerSolver::EulerSolver(
       DCHECK_EQ(AngularFrequency(), λ₃_);
       formula_ = Formula::Sphere;
     } else {
-      auto const T = (m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃) * 0.5;
-
-      // Make sure that the total angular momentum is within the range permitted
-      // by the kinetic energy.
-      Square<AngularMomentum> const G² = std::min(
-          std::max(initial_angular_momentum.Norm²(),
-                   2.0 * T * I₁),
-          2.0 * T * I₃);
-
-      G_ =  Sqrt(G²);
+      G_ =  initial_angular_momentum_.Norm();
       ν_= -ArcTanh(m.y / G_);
       // NOTE(phl): The sign adjustments on this path are unclear.
       if (m.x < AngularMomentum()) {
