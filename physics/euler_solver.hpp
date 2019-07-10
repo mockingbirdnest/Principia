@@ -70,7 +70,6 @@ private:
   AngularFrequency λ₃_ = NaN<AngularFrequency>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();
-  double σʹ_ = NaN<double>();
 };
 
 }  // namespace internal_euler_solver
