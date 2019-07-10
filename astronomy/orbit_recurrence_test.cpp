@@ -87,7 +87,7 @@ TEST_F(OrbitRecurrenceTest, EquatorialShift) {
   // Example 8.2: Метеор-3 № 7.
   OrbitRecurrence const метеор_3_7(13, +7, 71);
   EXPECT_THAT(AbsoluteError(-27.48 * Degree, метеор_3_7.equatorial_shift()),
-      Lt(0.01 * Degree));
+              Lt(0.01 * Degree));
 }
 
 TEST_F(OrbitRecurrenceTest, GridInterval) {

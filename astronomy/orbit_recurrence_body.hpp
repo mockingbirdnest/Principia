@@ -16,7 +16,9 @@ using geometry::Sign;
 using quantities::si::Radian;
 using quantities::Abs;
 
-inline OrbitRecurrence::OrbitRecurrence(int νₒ, int Dᴛₒ, int Cᴛₒ)
+inline OrbitRecurrence::OrbitRecurrence(int const νₒ,
+                                        int const Dᴛₒ,
+                                        int const Cᴛₒ)
     : νₒ_(νₒ), Dᴛₒ_(Dᴛₒ), Cᴛₒ_(Cᴛₒ) {
   CHECK_NE(Cᴛₒ, 0);
   if (νₒ != 0) {
