@@ -132,7 +132,7 @@ EulerSolver::AngularMomentumBivector EulerSolver::AngularMomentumAt(
     }
     case Formula::Sphere : {
       // NOTE(phl): It's unclear how the formulæ degenerate in this case, but
-      // surely λ₃_/ becomes 0, so the dependency in time disappears, so this is
+      // surely λ₃_ becomes 0, so the dependency in time disappears, so this is
       // my best guess.
       return initial_angular_momentum_;
     }
