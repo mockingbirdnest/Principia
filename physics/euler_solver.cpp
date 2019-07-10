@@ -34,7 +34,8 @@ EulerSolver::EulerSolver(
     R3Element<MomentOfInertia> const& moments_of_inertia,
     AngularMomentumBivector const& initial_angular_momentum,
     Instant const& initial_time)
-    : initial_time_(initial_time) {
+    : initial_angular_momentum_(initial_angular_momentum),
+      initial_time_(initial_time) {
   auto const& I₁ = moments_of_inertia.x;
   auto const& I₂ = moments_of_inertia.y;
   auto const& I₃ = moments_of_inertia.z;
@@ -83,32 +84,34 @@ EulerSolver::EulerSolver(
       B₃₁_ = -B₃₁_;
     }
     formula_ = Formula::ii;
-  } else {  // Δ₂ == Square<AngularMomentum>()
-    auto const T = (m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃) * 0.5;
-    if (I₁₃ == MomentOfInertia()) {
+  } else {
+    // Δ₂ == Square<AngularMomentum>()
+    if (I₃₁ == MomentOfInertia()) {
       // The degenerate case of a sphere.  It would create NaNs.
-      DCHECK_EQ(MomentOfInertia(), I₃₁);
-      B₁₃_ = Sqrt(2.0 * T * I₁);
-      B₃₁_ = Sqrt(2.0 * T * I₃);
-    }
+      DCHECK_EQ(MomentOfInertia(), I₂₁);
+      DCHECK_EQ(AngularFrequency(), λ₃_);
+      formula_ = Formula::Sphere;
+    } else {
+      auto const T = (m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃) * 0.5;
 
-    // Make sure that the total angular momentum is within the range permitted
-    // by the kinetic energy.
-    Square<AngularMomentum> const G² = std::min(
-        std::max(initial_angular_momentum.Norm²(),
-                 2.0 * T * I₁),
-        2.0 * T * I₃);
+      // Make sure that the total angular momentum is within the range permitted
+      // by the kinetic energy.
+      Square<AngularMomentum> const G² = std::min(
+          std::max(initial_angular_momentum.Norm²(),
+                   2.0 * T * I₁),
+          2.0 * T * I₃);
 
-    G_ =  Sqrt(G²);
-    ν_= -ArcTanh(m.y / G_);
-    // NOTE(phl): The sign adjustments on this path are unclear.
-    if (m.x < AngularMomentum()) {
-      B₁₃_ = -B₁₃_;
+      G_ =  Sqrt(G²);
+      ν_= -ArcTanh(m.y / G_);
+      // NOTE(phl): The sign adjustments on this path are unclear.
+      if (m.x < AngularMomentum()) {
+        B₁₃_ = -B₁₃_;
+      }
+      if (m.z < AngularMomentum()) {
+        B₃₁_ = -B₃₁_;
+      }
+      formula_ = Formula::iii;
     }
-    if (m.z < AngularMomentum()) {
-      B₃₁_ = -B₃₁_;
-    }
-    formula_ = Formula::iii;
   }
 }
 
@@ -135,6 +138,12 @@ EulerSolver::AngularMomentumBivector EulerSolver::AngularMomentumAt(
       double const sech = 1.0 / Cosh(angle);
       return AngularMomentumBivector(
           {B₁₃_ * sech, G_ * Tanh(angle), B₃₁_ * sech});
+    }
+    case Formula::Sphere : {
+      // NOTE(phl): It's unclear how the formulæ degenerate in this case, but
+      // surely λ₃_/ becomes 0, so the dependency in time disappears, so this is
+      // my best guess.
+      return initial_angular_momentum_;
     }
     default:
       LOG(FATAL) << "Unexpected formula";

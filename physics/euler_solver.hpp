@@ -39,9 +39,11 @@ private:
   enum class Formula {
     i,
     ii,
-    iii
+    iii,
+    Sphere
   };
 
+  AngularMomentumBivector const initial_angular_momentum_;
   Instant const initial_time_;
 
   // Amusingly, the formula to use is a constant of motion.
