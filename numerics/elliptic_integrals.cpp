@@ -546,167 +546,167 @@ using FukushimaTMaclaurin12 = FukushimaTMaclaurin<12, EstrinEvaluator>;
 // m around which the approximation is valid.
 // TODO(phl): Some of these polynomials use the Horner scheme because the Estrin
 // scheme introduces inaccuracies.  Investigate why.
-PolynomialInMonomialBasis<double, double, 10, HornerEvaluator> const
-    elliptic_k_taylor_0_05(std::make_tuple(1.591003453790792180,
-                                           0.416000743991786912,
-                                           0.245791514264103415,
-                                           0.179481482914906162,
-                                           0.144556057087555150,
-                                           0.123200993312427711,
-                                           0.108938811574293531,
-                                           0.098853409871592910,
-                                           0.091439629201749751,
-                                           0.085842591595413900,
-                                           0.081541118718303215));
-PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    elliptic_k_taylor_0_15(std::make_tuple(1.635256732264579992,
-                                           0.471190626148732291,
-                                           0.309728410831499587,
-                                           0.252208311773135699,
-                                           0.226725623219684650,
-                                           0.215774446729585976,
-                                           0.213108771877348910,
-                                           0.216029124605188282,
-                                           0.223255831633057896,
-                                           0.234180501294209925,
-                                           0.248557682972264071,
-                                           0.266363809892617521,
-                                           0.287728452156114668));
-PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    elliptic_k_taylor_0_25(std::make_tuple(1.685750354812596043,
-                                           0.541731848613280329,
-                                           0.401524438390690257,
-                                           0.369642473420889090,
-                                           0.376060715354583645,
-                                           0.405235887085125919,
-                                           0.453294381753999079,
-                                           0.520518947651184205,
-                                           0.609426039204995055,
-                                           0.724263522282908870,
-                                           0.871013847709812357,
-                                           1.057652872753547036));
-PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    elliptic_k_taylor_0_35(std::make_tuple(1.744350597225613243,
-                                           0.634864275371935304,
-                                           0.539842564164445538,
-                                           0.571892705193787391,
-                                           0.670295136265406100,
-                                           0.832586590010977199,
-                                           1.073857448247933265,
-                                           1.422091460675497751,
-                                           1.920387183402304829,
-                                           2.632552548331654201,
-                                           3.652109747319039160,
-                                           5.115867135558865806,
-                                           7.224080007363877411));
-PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
-    elliptic_k_taylor_0_45(std::make_tuple(1.813883936816982644,
-                                           0.763163245700557246,
-                                           0.761928605321595831,
-                                           0.951074653668427927,
-                                           1.315180671703161215,
-                                           1.928560693477410941,
-                                           2.937509342531378755,
-                                           4.594894405442878062,
-                                           7.330071221881720772,
-                                           11.87151259742530180,
-                                           19.45851374822937738,
-                                           32.20638657246426863,
-                                           53.73749198700554656,
-                                           90.27388602940998849));
-PolynomialInMonomialBasis<double, double, 14, HornerEvaluator> const
-    elliptic_k_taylor_0_55(std::make_tuple(1.898924910271553526,
-                                           0.950521794618244435,
-                                           1.151077589959015808,
-                                           1.750239106986300540,
-                                           2.952676812636875180,
-                                           5.285800396121450889,
-                                           9.832485716659979747,
-                                           18.78714868327559562,
-                                           36.61468615273698145,
-                                           72.45292395127771801,
-                                           145.1079577347069102,
-                                           293.4786396308497026,
-                                           598.3851815055010179,
-                                           1228.420013075863451,
-                                           2536.529755382764488));
-PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
-    elliptic_k_taylor_0_65(std::make_tuple(2.007598398424376302,
-                                           1.248457231212347337,
-                                           1.926234657076479729,
-                                           3.751289640087587680,
-                                           8.119944554932045802,
-                                           18.66572130873555361,
-                                           44.60392484291437063,
-                                           109.5092054309498377,
-                                           274.2779548232413480,
-                                           697.5598008606326163,
-                                           1795.716014500247129,
-                                           4668.381716790389910,
-                                           12235.76246813664335,
-                                           32290.17809718320818,
-                                           85713.07608195964685,
-                                           228672.1890493117096,
-                                           612757.2711915852774));
-PolynomialInMonomialBasis<double, double, 19, EstrinEvaluator> const
-    elliptic_k_taylor_0_75(std::make_tuple(2.156515647499643235,
-                                           1.791805641849463243,
-                                           3.826751287465713147,
-                                           10.38672468363797208,
-                                           31.40331405468070290,
-                                           100.9237039498695416,
-                                           337.3268282632272897,
-                                           1158.707930567827917,
-                                           4060.990742193632092,
-                                           14454.00184034344795,
-                                           52076.66107599404803,
-                                           189493.6591462156887,
-                                           695184.5762413896145,
-                                           2.567994048255284686e6,
-                                           9.541921966748386322e6,
-                                           3.563492744218076174e7,
-                                           1.336692984612040871e8,
-                                           5.033521866866284541e8,
-                                           1.901975729538660119e9,
-                                           7.208915015330103756e9));
-PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
-    elliptic_k_taylor_0_825(std::make_tuple(2.318122621712510589,
-                                            2.616920150291232841,
-                                            7.897935075731355823,
-                                            30.50239715446672327,
-                                            131.4869365523528456,
-                                            602.9847637356491617,
-                                            2877.024617809972641,
-                                            14110.51991915180325,
-                                            70621.44088156540229,
-                                            358977.2665825309926,
-                                            1.847238263723971684e6,
-                                            9.600515416049214109e6,
-                                            5.030767708502366879e7,
-                                            2.654441886527127967e8,
-                                            1.408862325028702687e9,
-                                            7.515687935373774627e9));
-PolynomialInMonomialBasis<double, double, 19, EstrinEvaluator> const
-    elliptic_k_taylor_0_875(std::make_tuple(2.473596173751343912,
-                                            3.727624244118099310,
-                                            15.60739303554930496,
-                                            84.12850842805887747,
-                                            506.9818197040613935,
-                                            3252.277058145123644,
-                                            21713.24241957434256,
-                                            149037.0451890932766,
-                                            1.043999331089990839e6,
-                                            7.427974817042038995e6,
-                                            5.350383967558661151e7,
-                                            3.892498869948708474e8,
-                                            2.855288351100810619e9,
-                                            2.109007703876684053e10,
-                                            1.566998339477902014e11,
-                                            1.170222242422439893e12,
-                                            8.777948323668937971e12,
-                                            6.610124275248495041e13,
-                                            4.994880537133887989e14,
-                                            3.785974339724029920e15));
+PolynomialInMonomialBasis<Angle, double, 10, HornerEvaluator> const
+    elliptic_k_taylor_0_05(std::make_tuple(1.591003453790792180 * Radian,
+                                           0.416000743991786912 * Radian,
+                                           0.245791514264103415 * Radian,
+                                           0.179481482914906162 * Radian,
+                                           0.144556057087555150 * Radian,
+                                           0.123200993312427711 * Radian,
+                                           0.108938811574293531 * Radian,
+                                           0.098853409871592910 * Radian,
+                                           0.091439629201749751 * Radian,
+                                           0.085842591595413900 * Radian,
+                                           0.081541118718303215 * Radian));
+PolynomialInMonomialBasis<Angle, double, 12, EstrinEvaluator> const
+    elliptic_k_taylor_0_15(std::make_tuple(1.635256732264579992 * Radian,
+                                           0.471190626148732291 * Radian,
+                                           0.309728410831499587 * Radian,
+                                           0.252208311773135699 * Radian,
+                                           0.226725623219684650 * Radian,
+                                           0.215774446729585976 * Radian,
+                                           0.213108771877348910 * Radian,
+                                           0.216029124605188282 * Radian,
+                                           0.223255831633057896 * Radian,
+                                           0.234180501294209925 * Radian,
+                                           0.248557682972264071 * Radian,
+                                           0.266363809892617521 * Radian,
+                                           0.287728452156114668 * Radian));
+PolynomialInMonomialBasis<Angle, double, 11, EstrinEvaluator> const
+    elliptic_k_taylor_0_25(std::make_tuple(1.685750354812596043 * Radian,
+                                           0.541731848613280329 * Radian,
+                                           0.401524438390690257 * Radian,
+                                           0.369642473420889090 * Radian,
+                                           0.376060715354583645 * Radian,
+                                           0.405235887085125919 * Radian,
+                                           0.453294381753999079 * Radian,
+                                           0.520518947651184205 * Radian,
+                                           0.609426039204995055 * Radian,
+                                           0.724263522282908870 * Radian,
+                                           0.871013847709812357 * Radian,
+                                           1.057652872753547036 * Radian));
+PolynomialInMonomialBasis<Angle, double, 12, EstrinEvaluator> const
+    elliptic_k_taylor_0_35(std::make_tuple(1.744350597225613243 * Radian,
+                                           0.634864275371935304 * Radian,
+                                           0.539842564164445538 * Radian,
+                                           0.571892705193787391 * Radian,
+                                           0.670295136265406100 * Radian,
+                                           0.832586590010977199 * Radian,
+                                           1.073857448247933265 * Radian,
+                                           1.422091460675497751 * Radian,
+                                           1.920387183402304829 * Radian,
+                                           2.632552548331654201 * Radian,
+                                           3.652109747319039160 * Radian,
+                                           5.115867135558865806 * Radian,
+                                           7.224080007363877411 * Radian));
+PolynomialInMonomialBasis<Angle, double, 13, EstrinEvaluator> const
+    elliptic_k_taylor_0_45(std::make_tuple(1.813883936816982644 * Radian,
+                                           0.763163245700557246 * Radian,
+                                           0.761928605321595831 * Radian,
+                                           0.951074653668427927 * Radian,
+                                           1.315180671703161215 * Radian,
+                                           1.928560693477410941 * Radian,
+                                           2.937509342531378755 * Radian,
+                                           4.594894405442878062 * Radian,
+                                           7.330071221881720772 * Radian,
+                                           11.87151259742530180 * Radian,
+                                           19.45851374822937738 * Radian,
+                                           32.20638657246426863 * Radian,
+                                           53.73749198700554656 * Radian,
+                                           90.27388602940998849 * Radian));
+PolynomialInMonomialBasis<Angle, double, 14, HornerEvaluator> const
+    elliptic_k_taylor_0_55(std::make_tuple(1.898924910271553526 * Radian,
+                                           0.950521794618244435 * Radian,
+                                           1.151077589959015808 * Radian,
+                                           1.750239106986300540 * Radian,
+                                           2.952676812636875180 * Radian,
+                                           5.285800396121450889 * Radian,
+                                           9.832485716659979747 * Radian,
+                                           18.78714868327559562 * Radian,
+                                           36.61468615273698145 * Radian,
+                                           72.45292395127771801 * Radian,
+                                           145.1079577347069102 * Radian,
+                                           293.4786396308497026 * Radian,
+                                           598.3851815055010179 * Radian,
+                                           1228.420013075863451 * Radian,
+                                           2536.529755382764488 * Radian));
+PolynomialInMonomialBasis<Angle, double, 16, EstrinEvaluator> const
+    elliptic_k_taylor_0_65(std::make_tuple(2.007598398424376302 * Radian,
+                                           1.248457231212347337 * Radian,
+                                           1.926234657076479729 * Radian,
+                                           3.751289640087587680 * Radian,
+                                           8.119944554932045802 * Radian,
+                                           18.66572130873555361 * Radian,
+                                           44.60392484291437063 * Radian,
+                                           109.5092054309498377 * Radian,
+                                           274.2779548232413480 * Radian,
+                                           697.5598008606326163 * Radian,
+                                           1795.716014500247129 * Radian,
+                                           4668.381716790389910 * Radian,
+                                           12235.76246813664335 * Radian,
+                                           32290.17809718320818 * Radian,
+                                           85713.07608195964685 * Radian,
+                                           228672.1890493117096 * Radian,
+                                           612757.2711915852774 * Radian));
+PolynomialInMonomialBasis<Angle, double, 19, EstrinEvaluator> const
+    elliptic_k_taylor_0_75(std::make_tuple(2.156515647499643235 * Radian,
+                                           1.791805641849463243 * Radian,
+                                           3.826751287465713147 * Radian,
+                                           10.38672468363797208 * Radian,
+                                           31.40331405468070290 * Radian,
+                                           100.9237039498695416 * Radian,
+                                           337.3268282632272897 * Radian,
+                                           1158.707930567827917 * Radian,
+                                           4060.990742193632092 * Radian,
+                                           14454.00184034344795 * Radian,
+                                           52076.66107599404803 * Radian,
+                                           189493.6591462156887 * Radian,
+                                           695184.5762413896145 * Radian,
+                                           2.567994048255284686e6 * Radian,
+                                           9.541921966748386322e6 * Radian,
+                                           3.563492744218076174e7 * Radian,
+                                           1.336692984612040871e8 * Radian,
+                                           5.033521866866284541e8 * Radian,
+                                           1.901975729538660119e9 * Radian,
+                                           7.208915015330103756e9 * Radian));
+PolynomialInMonomialBasis<Angle, double, 15, EstrinEvaluator> const
+    elliptic_k_taylor_0_825(std::make_tuple(2.318122621712510589 * Radian,
+                                            2.616920150291232841 * Radian,
+                                            7.897935075731355823 * Radian,
+                                            30.50239715446672327 * Radian,
+                                            131.4869365523528456 * Radian,
+                                            602.9847637356491617 * Radian,
+                                            2877.024617809972641 * Radian,
+                                            14110.51991915180325 * Radian,
+                                            70621.44088156540229 * Radian,
+                                            358977.2665825309926 * Radian,
+                                            1.847238263723971684e6 * Radian,
+                                            9.600515416049214109e6 * Radian,
+                                            5.030767708502366879e7 * Radian,
+                                            2.654441886527127967e8 * Radian,
+                                            1.408862325028702687e9 * Radian,
+                                            7.515687935373774627e9 * Radian));
+PolynomialInMonomialBasis<Angle, double, 19, EstrinEvaluator> const
+    elliptic_k_taylor_0_875(std::make_tuple(2.473596173751343912 * Radian,
+                                            3.727624244118099310 * Radian,
+                                            15.60739303554930496 * Radian,
+                                            84.12850842805887747 * Radian,
+                                            506.9818197040613935 * Radian,
+                                            3252.277058145123644 * Radian,
+                                            21713.24241957434256 * Radian,
+                                            149037.0451890932766 * Radian,
+                                            1.043999331089990839e6 * Radian,
+                                            7.427974817042038995e6 * Radian,
+                                            5.350383967558661151e7 * Radian,
+                                            3.892498869948708474e8 * Radian,
+                                            2.855288351100810619e9 * Radian,
+                                            2.109007703876684053e10 * Radian,
+                                            1.566998339477902014e11 * Radian,
+                                            1.170222242422439893e12 * Radian,
+                                            8.777948323668937971e12 * Radian,
+                                            6.610124275248495041e13 * Radian,
+                                            4.994880537133887989e14 * Radian,
+                                            3.785974339724029920e15 * Radian));
 
 // Polynomials for FukushimaEllipticBD.  The last part of the name indicates the
 // value of m around which the approximation is valid.
@@ -1664,9 +1664,9 @@ void Reduce(Angle const& angle,
 void FukushimaEllipticBDJ(Angle const& φ,
                           double const n,
                           double const mc,
-                          double& b,
-                          double& d,
-                          double& j) {
+                          Angle& b,
+                          Angle& d,
+                          Angle& j) {
   DCHECK_LE(0, n);
   DCHECK_GE(1, n);
   DCHECK_LE(0, mc);
@@ -1755,19 +1755,19 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 }
 
-void EllipticEFΠ(quantities::Angle const& φ,
+void EllipticEFΠ(Angle const& φ,
                  double const n,
                  double const mc,
-                 double& e,
-                 double& f,
-                 double& ᴨ) {
+                 Angle& e,
+                 Angle& f,
+                 Angle& ᴨ) {
   DCHECK_LE(0, n);
   DCHECK_GE(1, n);
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
-  double b;
-  double d;
-  double j;
+  Angle b;
+  Angle d;
+  Angle j;
   FukushimaEllipticBDJ(φ, n, mc, b, d, j);
   e = b + mc * d;
   f = b + d;
@@ -1784,16 +1784,16 @@ void EllipticEFΠ(quantities::Angle const& φ,
 //
 //     Inputs: mc   = complementary parameter 0 <= mc   <= 1
 //
-double EllipticK(double const mc) {
+Angle EllipticK(double const mc) {
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
   // TODO(phl): Use a binary split of [0, 1] to reduce the number of
   // comparisons.
   double const m = 1.0 - mc;
   if (m == 0.0) {
-    return π / 2;
+    return π / 2 * Radian;
   } else if (mc < std::numeric_limits<double>::epsilon() / 2.0) {
-    return 2.0 * log_2 - 0.5 * std::log(mc);
+    return (2.0 * log_2 - 0.5 * std::log(mc)) * Radian;
   } else if (mc < 0.1) {
     double const nome = EllipticNomeQ<14>(mc);
     // Evaluate K'.

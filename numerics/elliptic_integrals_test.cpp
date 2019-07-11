@@ -56,7 +56,7 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
       }
       double const mm = 1.0 - mc;
       for (int i = 0; i <= iend; ++i) {
-        double b, d, j;
+        Angle b, d, j;
         Angle const φ = Δφ * i;
 
         // The following is useful for tracing the actual machine numbers passed
@@ -78,17 +78,17 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
                     nn,
                     mm,
                     φ / (π * Radian),
-                    b,
-                    d,
-                    j);
+                    b / Radian,
+                    d / Radian,
+                    j / Radian);
 
         auto const& expected_entry = xeldbj_expected.entry(expected_index);
         auto const expected_argument_n = expected_entry.argument(0);
         auto const expected_argument_m = expected_entry.argument(1);
         auto const expected_argument_φ_over_π = expected_entry.argument(2);
-        auto const expected_value_b = expected_entry.value(0);
-        auto const expected_value_d = expected_entry.value(1);
-        auto const expected_value_j = expected_entry.value(2);
+        auto const expected_value_b = expected_entry.value(0) * Radian;
+        auto const expected_value_d = expected_entry.value(1) * Radian;
+        auto const expected_value_j = expected_entry.value(2) * Radian;
         EXPECT_THAT(nn, IsNear(expected_argument_n, 1.001));
         EXPECT_THAT(mm, IsNear(expected_argument_m, 1.001));
         EXPECT_THAT(φ / (π * Radian),
@@ -115,14 +115,14 @@ TEST_F(EllipticIntegralsTest, MathematicaBivariate) {
   for (auto const& entry : bivariate_elliptic_integrals_expected.entry()) {
     Angle const argument_φ = entry.argument(0) * Radian;
     double const argument_m = entry.argument(1);
-    double const expected_value_b = entry.value(0);
-    double const expected_value_d = entry.value(1);
-    double const expected_value_e = entry.value(2);
-    double const expected_value_f = entry.value(3);
+    Angle const expected_value_b = entry.value(0) * Radian;
+    Angle const expected_value_d = entry.value(1) * Radian;
+    Angle const expected_value_e = entry.value(2) * Radian;
+    Angle const expected_value_f = entry.value(3) * Radian;
 
-    double actual_value_b;
-    double actual_value_d;
-    double actual_value_j;  // Ignored.
+    Angle actual_value_b;
+    Angle actual_value_d;
+    Angle actual_value_j;  // Ignored.
     FukushimaEllipticBDJ(argument_φ,
                          /*n=*/1,
                          1.0 - argument_m,
@@ -130,9 +130,9 @@ TEST_F(EllipticIntegralsTest, MathematicaBivariate) {
                          actual_value_d,
                          actual_value_j);
 
-    double actual_value_e;
-    double actual_value_f;
-    double actual_value_ᴨ;  // Ignored.
+    Angle actual_value_e;
+    Angle actual_value_f;
+    Angle actual_value_ᴨ;  // Ignored.
     EllipticEFΠ(argument_φ,
                 /*n=*/1,
                 1.0 - argument_m,
@@ -159,12 +159,12 @@ TEST_F(EllipticIntegralsTest, MathematicaTrivariate) {
     Angle const argument_φ = entry.argument(0) * Radian;
     double const argument_n = entry.argument(1);
     double const argument_m = entry.argument(2);
-    double const expected_value_j = entry.value(0);
-    double const expected_value_ᴨ = entry.value(1);
+    Angle const expected_value_j = entry.value(0) * Radian;
+    Angle const expected_value_ᴨ = entry.value(1) * Radian;
 
-    double actual_value_b;  // Ignored.
-    double actual_value_d;  // Ignored.
-    double actual_value_j;
+    Angle actual_value_b;  // Ignored.
+    Angle actual_value_d;  // Ignored.
+    Angle actual_value_j;
     FukushimaEllipticBDJ(argument_φ,
                          argument_n,
                          1.0 - argument_m,
@@ -172,9 +172,9 @@ TEST_F(EllipticIntegralsTest, MathematicaTrivariate) {
                          actual_value_d,
                          actual_value_j);
 
-    double actual_value_e;  // Ignored.
-    double actual_value_f;  // Ignored.
-    double actual_value_ᴨ;
+    Angle actual_value_e;  // Ignored.
+    Angle actual_value_f;  // Ignored.
+    Angle actual_value_ᴨ;
     EllipticEFΠ(argument_φ,
                 argument_n,
                 1.0 - argument_m,
