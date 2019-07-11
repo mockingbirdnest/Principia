@@ -137,7 +137,7 @@ EulerSolver::AngularMomentumBivector EulerSolver::AngularMomentumAt(
       return initial_angular_momentum_;
     }
     default:
-      LOG(FATAL) << "Unexpected formula " << formula_;
+      LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
   };
 }
 
