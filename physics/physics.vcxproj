@@ -30,6 +30,7 @@
     <ClInclude Include="discrete_trajectory_body.hpp" />
     <ClInclude Include="dynamic_frame.hpp" />
     <ClInclude Include="dynamic_frame_body.hpp" />
+    <ClInclude Include="euler_solver.hpp" />
     <ClInclude Include="geopotential.hpp" />
     <ClInclude Include="geopotential_body.hpp" />
     <ClInclude Include="protector.hpp" />
@@ -65,6 +66,8 @@
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
+    <ClCompile Include="..\numerics\elliptic_functions.cpp" />
+    <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
     <ClCompile Include="apsides_test.cpp" />
     <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp" />
     <ClCompile Include="body_centred_non_rotating_dynamic_frame_test.cpp" />
@@ -77,6 +80,8 @@
     <ClCompile Include="degrees_of_freedom_test.cpp" />
     <ClCompile Include="discrete_trajectory_test.cpp" />
     <ClCompile Include="dynamic_frame_test.cpp" />
+    <ClCompile Include="euler_solver.cpp" />
+    <ClCompile Include="euler_solver_test.cpp" />
     <ClCompile Include="geopotential_test.cpp" />
     <ClCompile Include="hierarchical_system_test.cpp" />
     <ClCompile Include="jacobi_coordinates_test.cpp" />

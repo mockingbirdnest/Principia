@@ -22,6 +22,16 @@ void FukushimaEllipticBDJ(quantities::Angle const& φ,
                           double& d,
                           double& j);
 
+double EllipticE(quantities::Angle const& φ,
+                 double mc);
+
+double EllipticF(quantities::Angle const& φ,
+                 double mc);
+
+double EllipticΠ(quantities::Angle const& φ,
+                 double n,
+                 double mc);
+
 void EllipticEFΠ(quantities::Angle const& φ,
                  double n,
                  double mc,
@@ -33,6 +43,9 @@ double EllipticK(double mc);
 
 }  // namespace internal_elliptic_integrals
 
+using internal_elliptic_integrals::EllipticE;
+using internal_elliptic_integrals::EllipticF;
+using internal_elliptic_integrals::EllipticΠ;
 using internal_elliptic_integrals::EllipticEFΠ;
 using internal_elliptic_integrals::EllipticK;
 using internal_elliptic_integrals::FukushimaEllipticBDJ;
