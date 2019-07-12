@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 
+#include "base/tags.hpp"
 #include "benchmark/benchmark.h"
 #include "numerics/elliptic_integrals.hpp"
 #include "quantities/numbers.hpp"
@@ -11,8 +12,8 @@
 
 namespace principia {
 
+using base::uninitialized;
 using quantities::Angle;
-using quantities::uninitialized;
 using quantities::si::Radian;
 
 namespace numerics {

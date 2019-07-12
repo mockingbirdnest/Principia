@@ -3,7 +3,6 @@
 
 #include <tuple>
 
-#include "geometry/cartesian_product.hpp"
 #include "glog/logging.h"
 #include "numerics/combinatorics.hpp"
 #include "numerics/elliptic_integrals.hpp"
@@ -22,7 +21,6 @@ using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Pow;
 using quantities::Sqrt;
-using quantities::Square;
 using quantities::si::Radian;
 
 namespace {
@@ -81,12 +79,12 @@ void JacobiSNCNDNReduced(Angle const& u,
     u₀ = 0.5 * u₀;
   }
 
-  auto const b₀1 = fukushima_b₀_maclaurin_m_1.Evaluate(m) / Pow<2>(Radian);
-  auto const b₀2 = fukushima_b₀_maclaurin_m_2.Evaluate(m) / Pow<4>(Radian);
-  auto const b₀3 = fukushima_b₀_maclaurin_m_3.Evaluate(m) / Pow<6>(Radian);
-  PolynomialInMonomialBasis<double, Square<Angle>, 3, HornerEvaluator>
+  auto const b₀1 = fukushima_b₀_maclaurin_m_1.Evaluate(m);
+  auto const b₀2 = fukushima_b₀_maclaurin_m_2.Evaluate(m);
+  auto const b₀3 = fukushima_b₀_maclaurin_m_3.Evaluate(m);
+  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
       fukushima_b₀_maclaurin_u₀²_3(std::make_tuple(0.0, b₀1, b₀2, b₀3));
-  auto const u₀² = u₀ * u₀;
+  auto const u₀² = (u₀ * u₀) / Pow<2>(Radian);
 
   // We use the subscript i to indicate variables that are computed as part of
   // the iteration (Fukushima uses subscripts n and N).  This avoids confusion
