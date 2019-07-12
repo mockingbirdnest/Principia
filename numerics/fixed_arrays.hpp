@@ -4,17 +4,16 @@
 #include <array>
 #include <vector>
 
+#include "base/tags.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_fixed_arrays {
 
+using base::uninitialized_t;
 using quantities::Difference;
 using quantities::Product;
-
-struct uninitialized_t {};
-constexpr uninitialized_t uninitialized;
 
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;

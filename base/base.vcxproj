@@ -53,6 +53,7 @@
     <ClInclude Include="status_or.hpp" />
     <ClInclude Include="status_or_body.hpp" />
     <ClInclude Include="not_constructible.hpp" />
+    <ClInclude Include="tags.hpp" />
     <ClInclude Include="thread_pool.hpp" />
     <ClInclude Include="thread_pool_body.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />

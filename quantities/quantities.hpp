@@ -10,6 +10,7 @@
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "base/tags.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/generators.hpp"
 #include "quantities/traits.hpp"
@@ -22,13 +23,10 @@ namespace internal_quantities {
 
 using base::not_constructible;
 using base::not_null;
+using base::uninitialized_t;
 using internal_dimensions::Dimensions;
 using internal_generators::ProductGenerator;
 using internal_generators::QuotientGenerator;
-
-//TODO(phl): Move to a common place.
-struct uninitialized_t {};
-constexpr uninitialized_t uninitialized;
 
 template<typename D>
 class Quantity;
@@ -174,7 +172,6 @@ using internal_quantities::Quantity;
 using internal_quantities::SIUnit;
 using internal_quantities::Temperature;
 using internal_quantities::Time;
-using internal_quantities::uninitialized;
 
 }  // namespace quantities
 }  // namespace principia

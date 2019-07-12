@@ -68,7 +68,7 @@ EulerSolver::EulerSolver(
   if (Δ₂ < Square<AngularMomentum>()) {
     B₂₁_ = Sqrt(I₂ * Δ₁ / I₂₁);
     mc_ = -Δ₂ * I₃₁ / (Δ₃ * I₂₁);
-    ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_) * Radian;
+    ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_);
     if (m.x < AngularMomentum()) {
       λ₃_ = -λ₃_;
       B₁₃_ = -B₁₃_;
@@ -77,7 +77,7 @@ EulerSolver::EulerSolver(
   } else if (Square<AngularMomentum>() < Δ₂) {
     B₂₃_ = Sqrt(I₂ * Δ₃ / I₃₂);
     mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂);
-    ν_ = EllipticF(ArcTan(m.y / B₂₃_, m.x / B₁₃_), mc_) * Radian;
+    ν_ = EllipticF(ArcTan(m.y / B₂₃_, m.x / B₁₃_), mc_);
     λ₁_ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
     if (m.z < AngularMomentum()) {
       λ₁_ = -λ₁_;
@@ -114,14 +114,14 @@ EulerSolver::AngularMomentumBivector EulerSolver::AngularMomentumAt(
       double sn;
       double cn;
       double dn;
-      JacobiSNCNDN((λ₃_ * Δt - ν_) / Radian, mc_, sn, cn, dn);
+      JacobiSNCNDN(λ₃_ * Δt - ν_, mc_, sn, cn, dn);
       return AngularMomentumBivector({B₁₃_ * dn, -B₂₁_ * sn, B₃₁_ * cn});
     }
     case Formula::ii: {
       double sn;
       double cn;
       double dn;
-      JacobiSNCNDN((λ₁_ * Δt - ν_) / Radian, mc_, sn, cn, dn);
+      JacobiSNCNDN(λ₁_ * Δt - ν_, mc_, sn, cn, dn);
       return AngularMomentumBivector({B₁₃_ * cn, -B₂₃_ * sn, B₃₁_ * dn});
     }
     case Formula::iii: {
