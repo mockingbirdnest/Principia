@@ -14,9 +14,9 @@ namespace internal_elliptic_functions {
 
 using quantities::Angle;
 
-Angle JacobiAmplitude(double u, double mc);
+Angle JacobiAmplitude(Angle const& u, double mc);
 
-void JacobiSNCNDN(double u, double mc, double& s, double& c, double& d);
+void JacobiSNCNDN(Angle const& u, double mc, double& s, double& c, double& d);
 
 }  // namespace internal_elliptic_functions
 

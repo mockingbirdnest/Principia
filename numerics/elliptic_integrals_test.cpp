@@ -1,9 +1,10 @@
 ﻿
+#include "numerics/elliptic_integrals.hpp"
+
 #include <filesystem>
 #include <vector>
 #include <utility>
 
-#include "numerics/elliptic_integrals.hpp"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
 #include "quantities/si.hpp"

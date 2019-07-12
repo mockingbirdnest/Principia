@@ -33,7 +33,7 @@ namespace principia {
 namespace numerics {
 namespace internal_elliptic_integrals {
 
-using namespace geometry::cartesian_product;
+using geometry::cartesian_product::operator*;
 using quantities::Abs;
 using quantities::Angle;
 using quantities::ArcTan;
@@ -53,7 +53,7 @@ template<int degree>
 double EllipticNomeQ(double mc);
 
 // Fukushima's complete elliptic integrals of the second kind [Fuku11a].
-void FukushimaEllipticBD(double mc, double& b, double& d);
+void FukushimaEllipticBD(double mc, Angle& b, Angle& d);
 
 // Fukushima's complete elliptic integrals of the second and third kind
 // [Fuku11a], [Fuku11c].

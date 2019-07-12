@@ -8,11 +8,13 @@
 #include "numerics/elliptic_functions.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
 
 using quantities::Angle;
+using quantities::si::Radian;
 
 void BM_JacobiAmplitude(benchmark::State& state) {
   constexpr int size = 100;
@@ -20,16 +22,16 @@ void BM_JacobiAmplitude(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> distribution_u(-10.0, 10.0);
   std::uniform_real_distribution<> distribution_mc(0.0, 1.0);
-  std::vector<double> us;
+  std::vector<Angle> us;
   std::vector<double> mcs;
   for (int i = 0; i < size; ++i) {
-    us.push_back(distribution_u(random));
+    us.push_back(distribution_u(random) * Radian);
     mcs.push_back(distribution_mc(random));
   }
 
   while (state.KeepRunningBatch(size * size)) {
     Angle a;
-    for (double const u : us) {
+    for (Angle const u : us) {
       for (double const mc : mcs) {
         a = JacobiAmplitude(u, mc);
       }
@@ -44,10 +46,10 @@ void BM_JacobiSNCNDN(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> distribution_u(-10.0, 10.0);
   std::uniform_real_distribution<> distribution_mc(0.0, 1.0);
-  std::vector<double> us;
+  std::vector<Angle> us;
   std::vector<double> mcs;
   for (int i = 0; i < size; ++i) {
-    us.push_back(distribution_u(random));
+    us.push_back(distribution_u(random) * Radian);
     mcs.push_back(distribution_mc(random));
   }
 
@@ -55,7 +57,7 @@ void BM_JacobiSNCNDN(benchmark::State& state) {
     double s;
     double c;
     double d;
-    for (double const u : us) {
+    for (Angle const u : us) {
       for (double const mc : mcs) {
         JacobiSNCNDN(u, mc, s, c, d);
       }
