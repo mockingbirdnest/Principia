@@ -1251,7 +1251,7 @@ Angle BulirschCel(double kc, double const nc, double a, double b) {
     if (Abs(g - kc) <= g * ca) {
       break;
     }
-    kc = sqrt(e);
+    kc = Sqrt(e);
     kc = kc + kc;
     e = kc * m;
   }

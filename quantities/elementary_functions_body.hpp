@@ -121,6 +121,9 @@ inline Angle ArcSin(double const x) {
 inline Angle ArcCos(double const x) {
   return std::acos(x) * si::Radian;
 }
+inline Angle ArcTan(double const x) {
+  return std::atan(x) * si::Radian;
+}
 inline Angle ArcTan(double const y, double const x) {
   return std::atan2(y, x) * si::Radian;
 }
