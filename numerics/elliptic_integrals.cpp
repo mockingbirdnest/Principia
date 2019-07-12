@@ -5,6 +5,7 @@
 #include <tuple>
 #include <utility>
 
+#include "geometry/cartesian_product.hpp"
 #include "numerics/combinatorics.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "numerics/polynomial.hpp"
@@ -32,8 +33,11 @@ namespace principia {
 namespace numerics {
 namespace internal_elliptic_integrals {
 
+using namespace geometry::cartesian_product;
 using quantities::Abs;
 using quantities::Angle;
+using quantities::ArcTan;
+using quantities::ArcTanh;
 using quantities::Cos;
 using quantities::Sin;
 using quantities::Sqrt;
@@ -42,7 +46,7 @@ using quantities::si::Radian;
 namespace {
 
 // Bulirsch's cel function, [Buli69], [NIST10], 19.2(iii).
-double BulirschCel(double kc, double nc, double a, double b);
+Angle BulirschCel(double kc, double nc, double a, double b);
 
 // Jacobi's nome approximated by a series of the given degree.
 template<int degree>
@@ -55,41 +59,41 @@ void FukushimaEllipticBD(double mc, double& b, double& d);
 // [Fuku11a], [Fuku11c].
 void FukushimaEllipticBDJ(double nc,
                           double mc,
-                          double& bc,
-                          double& dc,
-                          double& jc);
+                          Angle& bc,
+                          Angle& dc,
+                          Angle& jc);
 
 // Fukushima's incomplete integrals of the second and third kind, arccos
 // argument [Fuku11b], [Fuku11c].
 void FukushimaEllipticBcDcJc(double c0,
                              double n,
                              double mc,
-                             double& b,
-                             double& d,
-                             double& j);
+                             Angle& b,
+                             Angle& d,
+                             Angle& j);
 
 // Fukushima's incomplete integrals of the second and third kind, arcsin
 // argument [Fuku11b], [Fuku11c].
 void FukushimaEllipticBsDsJs(double s0,
                              double n,
                              double mc,
-                             double& b,
-                             double& d,
-                             double& j);
+                             Angle& b,
+                             Angle& d,
+                             Angle& j);
 
 // Maclaurin series expansion of Bs and Ds [Fuku11a].
 // NOTE(phl): I believe that this is a Maclaurin series but it's not completely
 // clear.
 void FukushimaEllipticBsDsMaclaurinSeries(double y,
                                           double m,
-                                          double& b,
-                                          double& d);
+                                          Angle& b,
+                                          Angle& d);
 
 // Maclaurin series expansion of Js [Fuku11c].
-double FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
+Angle FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 
 // Fukushima's T function [Fuku11c].
-double FukushimaT(double t, double h);
+Angle FukushimaT(double t, double h);
 
 // Argument reduction: angle = fractional_part + integer_part * π where
 // fractional_part is in [-π/2, π/2].
@@ -208,19 +212,19 @@ class FukushimaEllipticDsBsMaclaurin {
 
  public:
   template<typename... Args, int n = sizeof...(Args)>
-  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
+  static PolynomialInMonomialBasis<Angle, double, n - 1, Evaluator> const
   MakeBsPolynomial(Args... args) {
     using Tuple = std::tuple<Args...>;
-    return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
+    return PolynomialInMonomialBasis<Angle, double, n - 1, Evaluator>(
         Generator<Tuple, std::make_index_sequence<n>>::ComputeBsCoefficients(
             std::make_tuple(args...)));
   }
 
   template<typename... Args, int n = sizeof...(Args)>
-  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
+  static PolynomialInMonomialBasis<Angle, double, n - 1, Evaluator> const
   MakeDsPolynomial(Args... args) {
     using Tuple = std::tuple<Args...>;
-    return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
+    return PolynomialInMonomialBasis<Angle, double, n - 1, Evaluator>(
         Generator<Tuple, std::make_index_sequence<n>>::ComputeDsCoefficients(
             std::make_tuple(args...)));
   }
@@ -230,124 +234,148 @@ class FukushimaEllipticDsBsMaclaurin {
 // of n that will be used as coefficients of a polynomial in m.  The first index
 // is the total degree (l - 1 in Fukushima's notation), the second the degree in
 // m (k in Fukushima's notation).
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_0_0(std::make_tuple(1.0 / 3.0));
+PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_0_0(std::make_tuple(1.0 / 3.0) * Radian);
 
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+PolynomialInMonomialBasis<Angle, double, 1, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_1_0(std::make_tuple(1.0 / 10.0,
-                                                          2.0 / 10.0));
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_1_1(std::make_tuple(1.0 / 10.0));
+                                                          2.0 / 10.0) * Radian);
+PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_1_1(std::make_tuple(1.0 / 10.0) * Radian);
 
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+PolynomialInMonomialBasis<Angle, double, 2, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_2_0(std::make_tuple(3.0 / 56.0,
                                                           4.0 / 56.0,
-                                                          8.0 / 56.0));
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+                                                          8.0 / 56.0) * Radian);
+PolynomialInMonomialBasis<Angle, double, 1, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_2_1(std::make_tuple(2.0 / 56.0,
-                                                          4.0 / 56.0));
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_2_2(std::make_tuple(3.0 / 56.0));
+                                                          4.0 / 56.0) * Radian);
+PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_2_2(std::make_tuple(3.0 / 56.0) * Radian);
 
-PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_0(
-        std::make_tuple(5.0 / 144.0, 6.0 / 144.0, 8.0 / 144.0, 16.0 / 144.0));
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+PolynomialInMonomialBasis<Angle, double, 3, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_3_0(std::make_tuple(5.0 / 144.0,
+                                                          6.0 / 144.0,
+                                                          8.0 / 144.0,
+                                                          16.0 / 144.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 2, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_3_1(std::make_tuple(3.0 / 144.0,
                                                           4.0 / 144.0,
-                                                          8.0 / 144.0));
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+                                                          8.0 / 144.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 1, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_3_2(std::make_tuple(3.0 / 144.0,
-                                                          6.0 / 144.0));
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_3(std::make_tuple(5.0 / 144.0));
+                                                          6.0 / 144.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_3_3(std::make_tuple(5.0 / 144.0) *
+                                          Radian);
 
-PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
+PolynomialInMonomialBasis<Angle, double, 4, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_4_0(std::make_tuple(35.0 / 1408.0,
                                                           40.0 / 1408.0,
                                                           48.0 / 1408.0,
                                                           64.0 / 1408.0,
-                                                          128.0 / 1408.0));
-PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+                                                          128.0 / 1408.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 3, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_4_1(std::make_tuple(20.0 / 1408.0,
                                                           24.0 / 1408.0,
                                                           32.0 / 1408.0,
-                                                          64.0 / 1408.0));
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+                                                          64.0 / 1408.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 2, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_4_2(std::make_tuple(18.0 / 1408.0,
                                                           24.0 / 1408.0,
-                                                          48.0 / 1408.0));
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+                                                          48.0 / 1408.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 1, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_4_3(std::make_tuple(20.0 / 1408.0,
-                                                          40.0 / 1408.0));
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_4(std::make_tuple(35.0 / 1408.0));
+                                                          40.0 / 1408.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_4_4(std::make_tuple(35.0 / 1408.0) *
+                                          Radian);
 
-PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
+PolynomialInMonomialBasis<Angle, double, 5, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_5_0(std::make_tuple(63.0 / 3328.0,
                                                           70.0 / 3328.0,
                                                           80.0 / 3328.0,
                                                           96.0 / 3328.0,
                                                           128.0 / 3328.0,
-                                                          256.0 / 3328.0));
-PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
+                                                          256.0 / 3328.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 4, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_5_1(std::make_tuple(35.0 / 3328.0,
                                                           40.0 / 3328.0,
                                                           48.0 / 3328.0,
                                                           64.0 / 3328.0,
-                                                          128.0 / 3328.0));
-PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+                                                          128.0 / 3328.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 3, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_5_2(std::make_tuple(30.0 / 3328.0,
                                                           36.0 / 3328.0,
                                                           48.0 / 3328.0,
-                                                          96.0 / 3328.0));
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+                                                          96.0 / 3328.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 2, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_5_3(std::make_tuple(30.0 / 3328.0,
                                                           40.0 / 3328.0,
-                                                          80.0 / 3328.0));
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+                                                          80.0 / 3328.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 1, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_5_4(std::make_tuple(35.0 / 3328.0,
-                                                          70.0 / 3328.0));
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_5(std::make_tuple(63.0 / 3328.0));
+                                                          70.0 / 3328.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_5_5(std::make_tuple(63.0 / 3328.0) *
+                                          Radian);
 
-PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
+PolynomialInMonomialBasis<Angle, double, 6, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_6_0(std::make_tuple(231.0 / 15360.0,
                                                           252.0 / 15360.0,
                                                           280.0 / 15360.0,
                                                           320.0 / 15360.0,
                                                           384.0 / 15360.0,
                                                           512.0 / 15360.0,
-                                                          1024.0 / 15360.0));
-PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
+                                                          1024.0 / 15360.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 5, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_6_1(std::make_tuple(126.0 / 15360.0,
                                                           140.0 / 15360.0,
                                                           160.0 / 15360.0,
                                                           192.0 / 15360.0,
                                                           256.0 / 15360.0,
-                                                          512.0 / 15360.0));
-PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
+                                                          512.0 / 15360.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 4, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_6_2(std::make_tuple(105.0 / 15360.0,
                                                           120.0 / 15360.0,
                                                           144.0 / 15360.0,
                                                           192.0 / 15360.0,
-                                                          384.0 / 15360.0));
-PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+                                                          384.0 / 15360.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 3, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_6_3(std::make_tuple(100.0 / 15360.0,
                                                           120.0 / 15360.0,
                                                           160.0 / 15360.0,
-                                                          320.0 / 15360.0));
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+                                                          320.0 / 15360.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 2, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_6_4(std::make_tuple(105.0 / 15360.0,
                                                           140.0 / 15360.0,
-                                                          280.0 / 15360.0));
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+                                                          280.0 / 15360.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 1, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_6_5(std::make_tuple(126.0 / 15360.0,
-                                                          252.0 / 15360.0));
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_6(std::make_tuple(231.0 / 15360.0));
+                                                          252.0 / 15360.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_6_6(std::make_tuple(231.0 / 15360.0) *
+                                          Radian);
 
-PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
+PolynomialInMonomialBasis<Angle, double, 7, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_7_0(std::make_tuple(429.0 / 34816.0,
                                                           462.0 / 34816.0,
                                                           504.0 / 34816.0,
@@ -355,44 +383,52 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
                                                           640.0 / 34816.0,
                                                           768.0 / 34816.0,
                                                           1024.0 / 34816.0,
-                                                          2048.0 / 34816.0));
-PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
+                                                          2048.0 / 34816.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 6, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_7_1(std::make_tuple(231.0 / 34816.0,
                                                           252.0 / 34816.0,
                                                           280.0 / 34816.0,
                                                           320.0 / 34816.0,
                                                           384.0 / 34816.0,
                                                           512.0 / 34816.0,
-                                                          1024.0 / 34816.0));
-PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
+                                                          1024.0 / 34816.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 5, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_7_2(std::make_tuple(189.0 / 34816.0,
                                                           210.0 / 34816.0,
                                                           240.0 / 34816.0,
                                                           288.0 / 34816.0,
                                                           284.0 / 34816.0,
-                                                          768.0 / 34816.0));
-PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
+                                                          768.0 / 34816.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 4, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_7_3(std::make_tuple(175.0 / 34816.0,
                                                           200.0 / 34816.0,
                                                           240.0 / 34816.0,
                                                           320.0 / 34816.0,
-                                                          640.0 / 34816.0));
-PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+                                                          640.0 / 34816.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 3, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_7_4(std::make_tuple(175.0 / 34816.0,
                                                           210.0 / 34816.0,
                                                           280.0 / 34816.0,
-                                                          560.0 / 34816.0));
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+                                                          560.0 / 34816.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 2, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_7_5(std::make_tuple(189.0 / 34816.0,
                                                           252.0 / 34816.0,
-                                                          504.0 / 34816.0));
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+                                                          504.0 / 34816.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 1, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_7_6(std::make_tuple(231.0 / 34816.0,
-                                                          462.0 / 34816.0));
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_7(std::make_tuple(429.0 / 34816.0));
+                                                          462.0 / 34816.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_7_7(std::make_tuple(429.0 / 34816.0) *
+                                          Radian);
 
-PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
+PolynomialInMonomialBasis<Angle, double, 8, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_8_0(std::make_tuple(6435.0 / 622592.0,
                                                           6864.0 / 622592.0,
                                                           7392.0 / 622592.0,
@@ -401,8 +437,9 @@ PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
                                                           10240.0 / 622592.0,
                                                           12288.0 / 622592.0,
                                                           16384.0 / 622592.0,
-                                                          32768.0 / 622592.0));
-PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
+                                                          32768.0 / 622592.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 7, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_8_1(std::make_tuple(3432.0 / 622592.0,
                                                           3696.0 / 622592.0,
                                                           4032.0 / 622592.0,
@@ -410,44 +447,52 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
                                                           5120.0 / 622592.0,
                                                           6144.0 / 622592.0,
                                                           8192.0 / 622592.0,
-                                                          16384.0 / 622592.0));
-PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
+                                                          16384.0 / 622592.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 6, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_8_2(std::make_tuple(2772.0 / 622592.0,
                                                           3024.0 / 622592.0,
                                                           3360.0 / 622592.0,
                                                           3840.0 / 622592.0,
                                                           4608.0 / 622592.0,
                                                           6144.0 / 622592.0,
-                                                          12288.0 / 622592.0));
-PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
+                                                          12288.0 / 622592.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 5, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_8_3(std::make_tuple(2520.0 / 622592.0,
                                                           2800.0 / 622592.0,
                                                           3200.0 / 622592.0,
                                                           3840.0 / 622592.0,
                                                           5120.0 / 622592.0,
-                                                          10240.0 / 622592.0));
-PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
+                                                          10240.0 / 622592.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 4, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_8_4(std::make_tuple(2450.0 / 622592.0,
                                                           2800.0 / 622592.0,
                                                           3360.0 / 622592.0,
                                                           4480.0 / 622592.0,
-                                                          8960.0 / 622592.0));
-PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+                                                          8960.0 / 622592.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 3, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_8_5(std::make_tuple(2520.0 / 622592.0,
                                                           3024.0 / 622592.0,
                                                           4032.0 / 622592.0,
-                                                          8064.0 / 622592.0));
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+                                                          8064.0 / 622592.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 2, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_8_6(std::make_tuple(2772.0 / 622592.0,
                                                           3696.0 / 622592.0,
-                                                          7392.0 / 622592.0));
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+                                                          7392.0 / 622592.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 1, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_8_7(std::make_tuple(3432.0 / 622592.0,
-                                                          6864.0 / 622592.0));
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_8(std::make_tuple(6435.0 / 622592.0));
+                                                          6864.0 / 622592.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_8_8(std::make_tuple(6435.0 / 622592.0) *
+                                          Radian);
 
-PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
+PolynomialInMonomialBasis<Angle, double, 9, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_9_0(std::make_tuple(12155.0 / 1376256.0,
                                                           12870.0 / 1376256.0,
                                                           13728.0 / 1376256.0,
@@ -457,8 +502,9 @@ PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
                                                           20480.0 / 1376256.0,
                                                           24576.0 / 1376256.0,
                                                           32768.0 / 1376256.0,
-                                                          65536.0 / 1376256.0));
-PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
+                                                          65536.0 / 1376256.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 8, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_9_1(std::make_tuple(6435.0 / 1376256.0,
                                                           6864.0 / 1376256.0,
                                                           7392.0 / 1376256.0,
@@ -467,8 +513,9 @@ PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
                                                           10240.0 / 1376256.0,
                                                           12288.0 / 1376256.0,
                                                           16384.0 / 1376256.0,
-                                                          32768.0 / 1376256.0));
-PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
+                                                          32768.0 / 1376256.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 7, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_9_2(std::make_tuple(5148.0 / 1376256.0,
                                                           5544.0 / 1376256.0,
                                                           6048.0 / 1376256.0,
@@ -476,42 +523,50 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
                                                           7680.0 / 1376256.0,
                                                           9216.0 / 1376256.0,
                                                           12288.0 / 1376256.0,
-                                                          24576.0 / 1376256.0));
-PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
+                                                          24576.0 / 1376256.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 6, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_9_3(std::make_tuple(4620.0 / 1376256.0,
                                                           5040.0 / 1376256.0,
                                                           5600.0 / 1376256.0,
                                                           6400.0 / 1376256.0,
                                                           7680.0 / 1376256.0,
                                                           10240.0 / 1376256.0,
-                                                          20480.0 / 1376256.0));
-PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
+                                                          20480.0 / 1376256.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 5, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_9_4(std::make_tuple(4410.0 / 1376256.0,
                                                           4900.0 / 1376256.0,
                                                           5600.0 / 1376256.0,
                                                           6720.0 / 1376256.0,
                                                           8960.0 / 1376256.0,
-                                                          17920.0 / 1376256.0));
-PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
+                                                          17920.0 / 1376256.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 4, EstrinEvaluator>
     fukushima_elliptic_js_maclaurin_n_9_5(std::make_tuple(4410.0 / 1376256.0,
                                                           5040.0 / 1376256.0,
                                                           6048.0 / 1376256.0,
                                                           8064.0 / 1376256.0,
-                                                          16128.0 / 1376256.0));
-PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+                                                          16128.0 / 1376256.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 3, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_9_6(std::make_tuple(4620.0 / 1376256.0,
                                                           5544.0 / 1376256.0,
                                                           7392.0 / 1376256.0,
-                                                          14784.0 / 1376256.0));
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+                                                          14784.0 / 1376256.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 2, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_9_7(std::make_tuple(5148.0 / 1376256.0,
                                                           6864.0 / 1376256.0,
-                                                          13728.0 / 1376256.0));
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+                                                          13728.0 / 1376256.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 1, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_9_8(std::make_tuple(6435.0 / 1376256.0,
-                                                          12870.0 / 1376256.0));
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_9(std::make_tuple(12155.0 / 1376256.0));
+                                                          12870.0 / 1376256.0) *
+                                          Radian);
+PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
+    fukushima_elliptic_js_maclaurin_n_9_9(std::make_tuple(12155.0 / 1376256.0) *
+                                          Radian);
 
 // A generator for the Maclaurin series for Fukushima's T function.
 template<int n, template<typename, typename, int> class Evaluator>
@@ -521,11 +576,12 @@ class FukushimaTMaclaurin {
 
   template<int... k>
   struct Generator<std::index_sequence<k...>> {
-    static auto constexpr series = std::make_tuple(1.0 / (2.0 * k + 1.0)...);
+    static auto constexpr series =
+        std::make_tuple(1.0 * Radian / (2.0 * k + 1.0)...);
   };
 
  public:
-  static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
+  static inline PolynomialInMonomialBasis<Angle, double, n, Evaluator> const
       polynomial{Generator<std::make_index_sequence<n + 1>>::series};
 };
 
@@ -547,170 +603,170 @@ using FukushimaTMaclaurin12 = FukushimaTMaclaurin<12, EstrinEvaluator>;
 // TODO(phl): Some of these polynomials use the Horner scheme because the Estrin
 // scheme introduces inaccuracies.  Investigate why.
 PolynomialInMonomialBasis<Angle, double, 10, HornerEvaluator> const
-    elliptic_k_taylor_0_05(std::make_tuple(1.591003453790792180 * Radian,
-                                           0.416000743991786912 * Radian,
-                                           0.245791514264103415 * Radian,
-                                           0.179481482914906162 * Radian,
-                                           0.144556057087555150 * Radian,
-                                           0.123200993312427711 * Radian,
-                                           0.108938811574293531 * Radian,
-                                           0.098853409871592910 * Radian,
-                                           0.091439629201749751 * Radian,
-                                           0.085842591595413900 * Radian,
-                                           0.081541118718303215 * Radian));
+    elliptic_k_taylor_0_05(std::make_tuple(1.591003453790792180,
+                                           0.416000743991786912,
+                                           0.245791514264103415,
+                                           0.179481482914906162,
+                                           0.144556057087555150,
+                                           0.123200993312427711,
+                                           0.108938811574293531,
+                                           0.098853409871592910,
+                                           0.091439629201749751,
+                                           0.085842591595413900,
+                                           0.081541118718303215) * Radian);
 PolynomialInMonomialBasis<Angle, double, 12, EstrinEvaluator> const
-    elliptic_k_taylor_0_15(std::make_tuple(1.635256732264579992 * Radian,
-                                           0.471190626148732291 * Radian,
-                                           0.309728410831499587 * Radian,
-                                           0.252208311773135699 * Radian,
-                                           0.226725623219684650 * Radian,
-                                           0.215774446729585976 * Radian,
-                                           0.213108771877348910 * Radian,
-                                           0.216029124605188282 * Radian,
-                                           0.223255831633057896 * Radian,
-                                           0.234180501294209925 * Radian,
-                                           0.248557682972264071 * Radian,
-                                           0.266363809892617521 * Radian,
-                                           0.287728452156114668 * Radian));
+    elliptic_k_taylor_0_15(std::make_tuple(1.635256732264579992,
+                                           0.471190626148732291,
+                                           0.309728410831499587,
+                                           0.252208311773135699,
+                                           0.226725623219684650,
+                                           0.215774446729585976,
+                                           0.213108771877348910,
+                                           0.216029124605188282,
+                                           0.223255831633057896,
+                                           0.234180501294209925,
+                                           0.248557682972264071,
+                                           0.266363809892617521,
+                                           0.287728452156114668) * Radian);
 PolynomialInMonomialBasis<Angle, double, 11, EstrinEvaluator> const
-    elliptic_k_taylor_0_25(std::make_tuple(1.685750354812596043 * Radian,
-                                           0.541731848613280329 * Radian,
-                                           0.401524438390690257 * Radian,
-                                           0.369642473420889090 * Radian,
-                                           0.376060715354583645 * Radian,
-                                           0.405235887085125919 * Radian,
-                                           0.453294381753999079 * Radian,
-                                           0.520518947651184205 * Radian,
-                                           0.609426039204995055 * Radian,
-                                           0.724263522282908870 * Radian,
-                                           0.871013847709812357 * Radian,
-                                           1.057652872753547036 * Radian));
+    elliptic_k_taylor_0_25(std::make_tuple(1.685750354812596043,
+                                           0.541731848613280329,
+                                           0.401524438390690257,
+                                           0.369642473420889090,
+                                           0.376060715354583645,
+                                           0.405235887085125919,
+                                           0.453294381753999079,
+                                           0.520518947651184205,
+                                           0.609426039204995055,
+                                           0.724263522282908870,
+                                           0.871013847709812357,
+                                           1.057652872753547036) * Radian);
 PolynomialInMonomialBasis<Angle, double, 12, EstrinEvaluator> const
-    elliptic_k_taylor_0_35(std::make_tuple(1.744350597225613243 * Radian,
-                                           0.634864275371935304 * Radian,
-                                           0.539842564164445538 * Radian,
-                                           0.571892705193787391 * Radian,
-                                           0.670295136265406100 * Radian,
-                                           0.832586590010977199 * Radian,
-                                           1.073857448247933265 * Radian,
-                                           1.422091460675497751 * Radian,
-                                           1.920387183402304829 * Radian,
-                                           2.632552548331654201 * Radian,
-                                           3.652109747319039160 * Radian,
-                                           5.115867135558865806 * Radian,
-                                           7.224080007363877411 * Radian));
+    elliptic_k_taylor_0_35(std::make_tuple(1.744350597225613243,
+                                           0.634864275371935304,
+                                           0.539842564164445538,
+                                           0.571892705193787391,
+                                           0.670295136265406100,
+                                           0.832586590010977199,
+                                           1.073857448247933265,
+                                           1.422091460675497751,
+                                           1.920387183402304829,
+                                           2.632552548331654201,
+                                           3.652109747319039160,
+                                           5.115867135558865806,
+                                           7.224080007363877411) * Radian);
 PolynomialInMonomialBasis<Angle, double, 13, EstrinEvaluator> const
-    elliptic_k_taylor_0_45(std::make_tuple(1.813883936816982644 * Radian,
-                                           0.763163245700557246 * Radian,
-                                           0.761928605321595831 * Radian,
-                                           0.951074653668427927 * Radian,
-                                           1.315180671703161215 * Radian,
-                                           1.928560693477410941 * Radian,
-                                           2.937509342531378755 * Radian,
-                                           4.594894405442878062 * Radian,
-                                           7.330071221881720772 * Radian,
-                                           11.87151259742530180 * Radian,
-                                           19.45851374822937738 * Radian,
-                                           32.20638657246426863 * Radian,
-                                           53.73749198700554656 * Radian,
-                                           90.27388602940998849 * Radian));
+    elliptic_k_taylor_0_45(std::make_tuple(1.813883936816982644,
+                                           0.763163245700557246,
+                                           0.761928605321595831,
+                                           0.951074653668427927,
+                                           1.315180671703161215,
+                                           1.928560693477410941,
+                                           2.937509342531378755,
+                                           4.594894405442878062,
+                                           7.330071221881720772,
+                                           11.87151259742530180,
+                                           19.45851374822937738,
+                                           32.20638657246426863,
+                                           53.73749198700554656,
+                                           90.27388602940998849) * Radian);
 PolynomialInMonomialBasis<Angle, double, 14, HornerEvaluator> const
-    elliptic_k_taylor_0_55(std::make_tuple(1.898924910271553526 * Radian,
-                                           0.950521794618244435 * Radian,
-                                           1.151077589959015808 * Radian,
-                                           1.750239106986300540 * Radian,
-                                           2.952676812636875180 * Radian,
-                                           5.285800396121450889 * Radian,
-                                           9.832485716659979747 * Radian,
-                                           18.78714868327559562 * Radian,
-                                           36.61468615273698145 * Radian,
-                                           72.45292395127771801 * Radian,
-                                           145.1079577347069102 * Radian,
-                                           293.4786396308497026 * Radian,
-                                           598.3851815055010179 * Radian,
-                                           1228.420013075863451 * Radian,
-                                           2536.529755382764488 * Radian));
+    elliptic_k_taylor_0_55(std::make_tuple(1.898924910271553526,
+                                           0.950521794618244435,
+                                           1.151077589959015808,
+                                           1.750239106986300540,
+                                           2.952676812636875180,
+                                           5.285800396121450889,
+                                           9.832485716659979747,
+                                           18.78714868327559562,
+                                           36.61468615273698145,
+                                           72.45292395127771801,
+                                           145.1079577347069102,
+                                           293.4786396308497026,
+                                           598.3851815055010179,
+                                           1228.420013075863451,
+                                           2536.529755382764488) * Radian);
 PolynomialInMonomialBasis<Angle, double, 16, EstrinEvaluator> const
-    elliptic_k_taylor_0_65(std::make_tuple(2.007598398424376302 * Radian,
-                                           1.248457231212347337 * Radian,
-                                           1.926234657076479729 * Radian,
-                                           3.751289640087587680 * Radian,
-                                           8.119944554932045802 * Radian,
-                                           18.66572130873555361 * Radian,
-                                           44.60392484291437063 * Radian,
-                                           109.5092054309498377 * Radian,
-                                           274.2779548232413480 * Radian,
-                                           697.5598008606326163 * Radian,
-                                           1795.716014500247129 * Radian,
-                                           4668.381716790389910 * Radian,
-                                           12235.76246813664335 * Radian,
-                                           32290.17809718320818 * Radian,
-                                           85713.07608195964685 * Radian,
-                                           228672.1890493117096 * Radian,
-                                           612757.2711915852774 * Radian));
+    elliptic_k_taylor_0_65(std::make_tuple(2.007598398424376302,
+                                           1.248457231212347337,
+                                           1.926234657076479729,
+                                           3.751289640087587680,
+                                           8.119944554932045802,
+                                           18.66572130873555361,
+                                           44.60392484291437063,
+                                           109.5092054309498377,
+                                           274.2779548232413480,
+                                           697.5598008606326163,
+                                           1795.716014500247129,
+                                           4668.381716790389910,
+                                           12235.76246813664335,
+                                           32290.17809718320818,
+                                           85713.07608195964685,
+                                           228672.1890493117096,
+                                           612757.2711915852774) * Radian);
 PolynomialInMonomialBasis<Angle, double, 19, EstrinEvaluator> const
-    elliptic_k_taylor_0_75(std::make_tuple(2.156515647499643235 * Radian,
-                                           1.791805641849463243 * Radian,
-                                           3.826751287465713147 * Radian,
-                                           10.38672468363797208 * Radian,
-                                           31.40331405468070290 * Radian,
-                                           100.9237039498695416 * Radian,
-                                           337.3268282632272897 * Radian,
-                                           1158.707930567827917 * Radian,
-                                           4060.990742193632092 * Radian,
-                                           14454.00184034344795 * Radian,
-                                           52076.66107599404803 * Radian,
-                                           189493.6591462156887 * Radian,
-                                           695184.5762413896145 * Radian,
-                                           2.567994048255284686e6 * Radian,
-                                           9.541921966748386322e6 * Radian,
-                                           3.563492744218076174e7 * Radian,
-                                           1.336692984612040871e8 * Radian,
-                                           5.033521866866284541e8 * Radian,
-                                           1.901975729538660119e9 * Radian,
-                                           7.208915015330103756e9 * Radian));
+    elliptic_k_taylor_0_75(std::make_tuple(2.156515647499643235,
+                                           1.791805641849463243,
+                                           3.826751287465713147,
+                                           10.38672468363797208,
+                                           31.40331405468070290,
+                                           100.9237039498695416,
+                                           337.3268282632272897,
+                                           1158.707930567827917,
+                                           4060.990742193632092,
+                                           14454.00184034344795,
+                                           52076.66107599404803,
+                                           189493.6591462156887,
+                                           695184.5762413896145,
+                                           2.567994048255284686e6,
+                                           9.541921966748386322e6,
+                                           3.563492744218076174e7,
+                                           1.336692984612040871e8,
+                                           5.033521866866284541e8,
+                                           1.901975729538660119e9,
+                                           7.208915015330103756e9) * Radian);
 PolynomialInMonomialBasis<Angle, double, 15, EstrinEvaluator> const
-    elliptic_k_taylor_0_825(std::make_tuple(2.318122621712510589 * Radian,
-                                            2.616920150291232841 * Radian,
-                                            7.897935075731355823 * Radian,
-                                            30.50239715446672327 * Radian,
-                                            131.4869365523528456 * Radian,
-                                            602.9847637356491617 * Radian,
-                                            2877.024617809972641 * Radian,
-                                            14110.51991915180325 * Radian,
-                                            70621.44088156540229 * Radian,
-                                            358977.2665825309926 * Radian,
-                                            1.847238263723971684e6 * Radian,
-                                            9.600515416049214109e6 * Radian,
-                                            5.030767708502366879e7 * Radian,
-                                            2.654441886527127967e8 * Radian,
-                                            1.408862325028702687e9 * Radian,
-                                            7.515687935373774627e9 * Radian));
+    elliptic_k_taylor_0_825(std::make_tuple(2.318122621712510589,
+                                            2.616920150291232841,
+                                            7.897935075731355823,
+                                            30.50239715446672327,
+                                            131.4869365523528456,
+                                            602.9847637356491617,
+                                            2877.024617809972641,
+                                            14110.51991915180325,
+                                            70621.44088156540229,
+                                            358977.2665825309926,
+                                            1.847238263723971684e6,
+                                            9.600515416049214109e6,
+                                            5.030767708502366879e7,
+                                            2.654441886527127967e8,
+                                            1.408862325028702687e9,
+                                            7.515687935373774627e9) * Radian);
 PolynomialInMonomialBasis<Angle, double, 19, EstrinEvaluator> const
-    elliptic_k_taylor_0_875(std::make_tuple(2.473596173751343912 * Radian,
-                                            3.727624244118099310 * Radian,
-                                            15.60739303554930496 * Radian,
-                                            84.12850842805887747 * Radian,
-                                            506.9818197040613935 * Radian,
-                                            3252.277058145123644 * Radian,
-                                            21713.24241957434256 * Radian,
-                                            149037.0451890932766 * Radian,
-                                            1.043999331089990839e6 * Radian,
-                                            7.427974817042038995e6 * Radian,
-                                            5.350383967558661151e7 * Radian,
-                                            3.892498869948708474e8 * Radian,
-                                            2.855288351100810619e9 * Radian,
-                                            2.109007703876684053e10 * Radian,
-                                            1.566998339477902014e11 * Radian,
-                                            1.170222242422439893e12 * Radian,
-                                            8.777948323668937971e12 * Radian,
-                                            6.610124275248495041e13 * Radian,
-                                            4.994880537133887989e14 * Radian,
-                                            3.785974339724029920e15 * Radian));
+    elliptic_k_taylor_0_875(std::make_tuple(2.473596173751343912,
+                                            3.727624244118099310,
+                                            15.60739303554930496,
+                                            84.12850842805887747,
+                                            506.9818197040613935,
+                                            3252.277058145123644,
+                                            21713.24241957434256,
+                                            149037.0451890932766,
+                                            1.043999331089990839e6,
+                                            7.427974817042038995e6,
+                                            5.350383967558661151e7,
+                                            3.892498869948708474e8,
+                                            2.855288351100810619e9,
+                                            2.109007703876684053e10,
+                                            1.566998339477902014e11,
+                                            1.170222242422439893e12,
+                                            8.777948323668937971e12,
+                                            6.610124275248495041e13,
+                                            4.994880537133887989e14,
+                                            3.785974339724029920e15) * Radian);
 
 // Polynomials for FukushimaEllipticBD.  The last part of the name indicates the
 // value of m around which the approximation is valid.
-PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
+PolynomialInMonomialBasis<Angle, double, 11, EstrinEvaluator> const
     fukushima_b_taylor_0_05(
         std::make_tuple(0.790401413584395132310045630540381158921005,
                         0.102006266220019154892513446364386528537788,
@@ -723,8 +779,8 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.004874249053581664096949448689997843978535,
                         0.004114606930310886136960940893002069423559,
                         0.003550452989196176932747744728766021440856,
-                        0.003119229959988474753291950759202798352266));
-PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
+                        0.003119229959988474753291950759202798352266) * Radian);
+PolynomialInMonomialBasis<Angle, double, 11, EstrinEvaluator> const
     fukushima_d_taylor_0_05(
         std::make_tuple(0.800602040206397047799296975176819811774784,
                         0.313994477771767756849615832867393028789057,
@@ -737,8 +793,8 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.0865653801481680871714054745336652101162894,
                         0.0817279846651030135350056216958053404884715,
                         0.0779906657291070378163237851392095284454654,
-                        0.075080426851268007156477347905308063808848));
-PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
+                        0.075080426851268007156477347905308063808848) * Radian);
+PolynomialInMonomialBasis<Angle, double, 11, EstrinEvaluator> const
     fukushima_b_taylor_0_15(
         std::make_tuple(0.80102406445284489393880821604009991524037,
                         0.11069534452963401497502459778015097487115,
@@ -751,8 +807,8 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.010868363672485520630005005782151743785248,
                         0.010231587232710564565903812652581252337697,
                         0.009849585546666211201566987057592610884309,
-                        0.009656606347153765129943681090056980586986));
-PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
+                        0.009656606347153765129943681090056980586986) * Radian);
+PolynomialInMonomialBasis<Angle, double, 11, EstrinEvaluator> const
     fukushima_d_taylor_0_15(
         std::make_tuple(0.834232667811735098431315595374145207701720,
                         0.360495281619098275577215529302260739976126,
@@ -765,8 +821,8 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.212387467960572375038025392458549025660994,
                         0.223948914061499360356873401571821627069173,
                         0.238708097425597860161720875806632864507536,
-                        0.256707203545463755643710021815937785120030));
-PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
+                        0.256707203545463755643710021815937785120030) * Radian);
+PolynomialInMonomialBasis<Angle, double, 12, EstrinEvaluator> const
     fukushima_b_taylor_0_25(
         std::make_tuple(0.81259777291992049322557009456643357559904,
                         0.12110961794551011284012693733241967660542,
@@ -780,8 +836,8 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.028464314554825704963640157657034405579849,
                         0.030995446237278954096189768338119395563447,
                         0.034384369179940975864103666824736551261799,
-                        0.038738002072493935952384233588242422046537));
-PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
+                        0.038738002072493935952384233588242422046537) * Radian);
+PolynomialInMonomialBasis<Angle, double, 12, EstrinEvaluator> const
     fukushima_d_taylor_0_25(
         std::make_tuple(0.873152581892675549645633563232643413901757,
                         0.420622230667770215976919792378536040460605,
@@ -795,8 +851,8 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.695799207728083164790111837174250683834359,
                         0.840018401472533403272555302636558338772258,
                         1.023268503573606060588689738498395211300483,
-                        1.255859085136282496149035687741403985044122));
-PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
+                        1.255859085136282496149035687741403985044122) * Radian);
+PolynomialInMonomialBasis<Angle, double, 12, EstrinEvaluator> const
     fukushima_b_taylor_0_35(
         std::make_tuple(0.8253235579835158949845697805395190063745,
                         0.1338621160836877898575391383950840569989,
@@ -810,8 +866,8 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.0914808451777334717996463421986810092918,
                         0.1147050921109978235104185800057554574708,
                         0.1465711325814398757043492181099197917984,
-                        0.1902571373338462844225085057953823854177));
-PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
+                        0.1902571373338462844225085057953823854177) * Radian);
+PolynomialInMonomialBasis<Angle, double, 13, EstrinEvaluator> const
     fukushima_d_taylor_0_35(
         std::make_tuple(0.9190270392420973478848471774160778462738,
                         0.5010021592882475139767453081737767171354,
@@ -826,8 +882,8 @@ PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
                         3.5374046552080413366422791595672470037341,
                         4.9692960029774259303491034652093672488707,
                         7.0338228700300311264031522795337352226926,
-                        10.020043225034471401553194050933390974016));
-PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
+                        10.020043225034471401553194050933390974016) * Radian);
+PolynomialInMonomialBasis<Angle, double, 12, EstrinEvaluator> const
     fukushima_b_taylor_0_45(
         std::make_tuple(0.8394795702706129706783934654948360410325,
                         0.1499164403063963359478614453083470750543,
@@ -841,8 +897,8 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.3564244768677188553323196975301769697977,
                         0.5270025622301027434418321205779314762241,
                         0.7943896342593047502260866957039427731776,
-                        1.2167625324297180206378753787253096783993));
-PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
+                        1.2167625324297180206378753787253096783993) * Radian);
+PolynomialInMonomialBasis<Angle, double, 15, EstrinEvaluator> const
     fukushima_d_taylor_0_45(
         std::make_tuple(0.9744043665463696730314687662723484085813,
                         0.6132468053941609101234053415051402349752,
@@ -859,8 +915,8 @@ PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
                         52.520729454575828537934780076768577185134,
                         88.384854735065298062125622417251073520996,
                         149.56637449398047835236703116483092644714,
-                        254.31790843104117434615624121937495622372));
-PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
+                        254.31790843104117434615624121937495622372) * Radian);
+PolynomialInMonomialBasis<Angle, double, 13, EstrinEvaluator> const
     fukushima_b_taylor_0_55(
         std::make_tuple(0.8554696151564199914087224774321783838373,
                         0.1708960726897395844132234165994754905373,
@@ -875,8 +931,8 @@ PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
                         3.2793776512738509375806561547016925831128,
                         6.0298883807175363312261449542978750456611,
                         11.269796855577941715109155203721740735793,
-                        21.354577850382834496786315532111529462693));
-PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
+                        21.354577850382834496786315532111529462693) * Radian);
+PolynomialInMonomialBasis<Angle, double, 16, EstrinEvaluator> const
     fukushima_d_taylor_0_55(
         std::make_tuple(1.04345529511513353426326823569160142342838,
                         0.77962572192850485048535711388072271372632,
@@ -894,8 +950,8 @@ PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
                         1207.06543522548061603657141890778290399603,
                         2495.58872724866422273012188618178997342537,
                         5184.69242939480644062471334944523925163600,
-                        10817.2133369041327524988910635205356016939));
-PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
+                        10817.2133369041327524988910635205356016939) * Radian);
+PolynomialInMonomialBasis<Angle, double, 15, EstrinEvaluator> const
     fukushima_b_taylor_0_65(
         std::make_tuple(0.8739200618486431359820482173294324246058,
                         0.1998140574823769459497418213885348159654,
@@ -912,8 +968,8 @@ PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
                         182.32144908775406957609058046006949657416,
                         443.51507644112648158679360783118806161062,
                         1091.8547229028388292980623647414961662223,
-                        2715.7658664038195881056269799613407111521));
-PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
+                        2715.7658664038195881056269799613407111521) * Radian);
+PolynomialInMonomialBasis<Angle, double, 17, EstrinEvaluator> const
     fukushima_d_taylor_0_65(
         std::make_tuple(1.13367833657573316571671258513452768536080,
                         1.04864317372997039116746991765351150490010,
@@ -932,8 +988,8 @@ PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
                         84621.2213590568080177035346867495326879117,
                         225956.423182907889987641304430180593010940,
                         605941.517281758859958050194535269219533685,
-                        1.63108259953926832083633544697688841456604e6));
-PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
+                        1.63108259953926832083633544697688841456604e6) * Radian);
+PolynomialInMonomialBasis<Angle, double, 18, EstrinEvaluator> const
     fukushima_b_taylor_0_75(
         std::make_tuple(0.895902820924731621258525533131864225704,
                         0.243140003766786661947749288357729051637,
@@ -953,111 +1009,111 @@ PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
                         306564.4242098446591430938434419151070722,
                         1.076036077811072193752770590363885180738e6,
                         3.807218502573632648224286313875985190526e6,
-                        1.356638224422139551020110323739879481042e7));
-PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
-    fukushima_d_taylor_0_75(
-        std::make_tuple(1.26061282657491161418014946566845780315983,
-                        1.54866563808267658056930177790599939977154,
-                        3.55366941187160761540650011660758187283401,
-                        9.90044467610439875577300608183010716301714,
-                        30.3205666174524719862025105898574414438275,
-                        98.1802586588830891484913119780870074464833,
-                        329.771010434557055036273670551546757245808,
-                        1136.65598974289039303581967838947708073239,
-                        3993.83433574622979757935610692842933356144,
-                        14242.7295865552708506232731633468180669284,
-                        51394.7572916887209594591528374806790960057,
-                        187246.702914623152141768788258141932569037,
-                        687653.092375389902708761221294282367947659,
-                        2.54238553565398227033448846432182516906624e6,
-                        9.45378121934749027243313241962076028066811e6,
-                        3.53283630179709170835024033154326126569613e7,
-                        1.32593262383393014923560730485845833322771e8,
-                        4.99544968184054821463279808395426941549833e8,
-                        1.88840934729443872364972817525484292678543e9,
-                        7.16026753447893719179055010636502508063102e9,
-                        2.72233079469633962247554894093591262281929e10));
-PolynomialInMonomialBasis<double, double, 14, EstrinEvaluator> const
-    fukushima_b_taylor_0_825(
-        std::make_tuple(0.915922052601931494319853880201442948834592,
-                        0.294714252429483394379515488141632749820347,
-                        0.435776709264636140422971598963772380161131,
-                        1.067328246493644238508159085364429570207744,
-                        3.327844118563268085074646976514979307993733,
-                        11.90406004445092906188837729711173326621810,
-                        46.47838820224626393512400481776284680677096,
-                        192.7556002578809476962739389101964074608802,
-                        835.3356299261900063712302517586717381557137,
-                        3743.124548343029102644419963712353854902019,
-                        17219.07731004063094108708549153310467326395,
-                        80904.60401669850158353080543152212152282878,
-                        386808.3292751742460123683674607895217760313,
-                        1.876487670110449342170327796786290400635732e6,
-                        9.216559908641567755240142886998737950775910e6));
-PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
-    fukushima_d_taylor_0_825(
-        std::make_tuple(1.402200569110579095046054435635136986038164,
-                        2.322205897861749446534352741005347103992773,
-                        7.462158366466719682730245467372788273333992,
-                        29.43506890797307903104978364254987042421285,
-                        128.1590924337895775262509354898066132182429,
-                        591.0807036911982326384997979640812493154316,
-                        2830.546229607726377048576057043685514661188,
-                        13917.76431889392229954434840686741305556862,
-                        69786.10525163921228258055074102587429394212,
-                        355234.1420341879634781808899208309503519936,
-                        1.830019186413931053503912913904321703777885e6,
-                        9.519610812032515607466102200648641326190483e6,
-                        4.992086875574849453986274042758566713803723e7,
-                        2.635677009826023473846461512029006874800883e8,
-                        1.399645765120061118824228996253541612110338e9,
-                        7.469935792837635004663183580452618726280406e9,
-                        4.004155595835610574316003488168804738481448e10,
-                        2.154630668144966654449602981243932210695662e11));
-PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
-    fukushima_b_taylor_0_875(
-        std::make_tuple(0.931906061029524827613331428871579482766771,
-                        0.348448029538453860999386797137074571589376,
-                        0.666809178846938247558793864839434184202736,
-                        2.210769135708128662563678717558631573758222,
-                        9.491765048913406881414290930355300611703187,
-                        47.09304791027740853381457907791343619298913,
-                        255.9200460211233087050940506395442544885608,
-                        1480.029532675805407554800779436693505109703,
-                        8954.040904734313578374783155553041065984547,
-                        56052.48220982686949967604699243627330816542,
-                        360395.7241626000916973524840479780937869149,
-                        2.367539415273216077520928806581689330885103e6,
-                        1.582994957277684102454906900025484391190264e7,
-                        1.074158093278511100137056972128875270067228e8,
-                        7.380585460239595691878086073095523043390649e8,
-                        5.126022002555101496684687154904781856830296e9,
-                        3.593534065502416588712409180013118409428367e10,
-                        2.539881257612812212004146637239987308133582e11,
-                        1.808180007145359569674767150594344316702507e12));
-PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
-    fukushima_d_taylor_0_875(
-        std::make_tuple(1.541690112721819084362258323861459983048179,
-                        3.379176214579645449453938918349243359477706,
-                        14.94058385670236671625328259137998668324435,
-                        81.91773929235074880784578753539752529822986,
-                        497.4900546551479866036061853049402721939835,
-                        3205.184010234846235275447901572262470252768,
-                        21457.32237355321925571253220641357074594515,
-                        147557.0156564174712105689758692929775004292,
-                        1.035045290185256525452269053775273002725343e6,
-                        7.371922334832212125197513363695905834126154e6,
-                        5.314344395142401141792228169170505958906345e7,
-                        3.868823475795976312985118115567305767603128e8,
-                        2.839458401528033778425531336599562337200510e9,
-                        2.098266122943898941547136470383199468548861e10,
-                        1.559617754017662417944194874282275405676282e11,
-                        1.165096220419884791236699872205721392201682e12,
-                        8.742012983013913804987431275193291316808766e12,
-                        6.584725462672366918676967847406180155459650e13,
-                        4.976798737062434393396993620379481464465749e14,
-                        3.773018634056605404718444239040628892506293e15,
-                        2.868263194837819660109735981973458220407767e16));
+                        1.356638224422139551020110323739879481042e7) * Radian);
+PolynomialInMonomialBasis<Angle, double, 20, EstrinEvaluator> const
+    fukushima_d_taylor_0_75(std::make_tuple(
+        1.26061282657491161418014946566845780315983,
+        1.54866563808267658056930177790599939977154,
+        3.55366941187160761540650011660758187283401,
+        9.90044467610439875577300608183010716301714,
+        30.3205666174524719862025105898574414438275,
+        98.1802586588830891484913119780870074464833,
+        329.771010434557055036273670551546757245808,
+        1136.65598974289039303581967838947708073239,
+        3993.83433574622979757935610692842933356144,
+        14242.7295865552708506232731633468180669284,
+        51394.7572916887209594591528374806790960057,
+        187246.702914623152141768788258141932569037,
+        687653.092375389902708761221294282367947659,
+        2.54238553565398227033448846432182516906624e6,
+        9.45378121934749027243313241962076028066811e6,
+        3.53283630179709170835024033154326126569613e7,
+        1.32593262383393014923560730485845833322771e8,
+        4.99544968184054821463279808395426941549833e8,
+        1.88840934729443872364972817525484292678543e9,
+        7.16026753447893719179055010636502508063102e9,
+        2.72233079469633962247554894093591262281929e10) * Radian);
+PolynomialInMonomialBasis<Angle, double, 14, EstrinEvaluator> const
+    fukushima_b_taylor_0_825(std::make_tuple(
+        0.915922052601931494319853880201442948834592,
+        0.294714252429483394379515488141632749820347,
+        0.435776709264636140422971598963772380161131,
+        1.067328246493644238508159085364429570207744,
+        3.327844118563268085074646976514979307993733,
+        11.90406004445092906188837729711173326621810,
+        46.47838820224626393512400481776284680677096,
+        192.7556002578809476962739389101964074608802,
+        835.3356299261900063712302517586717381557137,
+        3743.124548343029102644419963712353854902019,
+        17219.07731004063094108708549153310467326395,
+        80904.60401669850158353080543152212152282878,
+        386808.3292751742460123683674607895217760313,
+        1.876487670110449342170327796786290400635732e6,
+        9.216559908641567755240142886998737950775910e6) * Radian);
+PolynomialInMonomialBasis<Angle, double, 17, EstrinEvaluator> const
+    fukushima_d_taylor_0_825(std::make_tuple(
+        1.402200569110579095046054435635136986038164,
+        2.322205897861749446534352741005347103992773,
+        7.462158366466719682730245467372788273333992,
+        29.43506890797307903104978364254987042421285,
+        128.1590924337895775262509354898066132182429,
+        591.0807036911982326384997979640812493154316,
+        2830.546229607726377048576057043685514661188,
+        13917.76431889392229954434840686741305556862,
+        69786.10525163921228258055074102587429394212,
+        355234.1420341879634781808899208309503519936,
+        1.830019186413931053503912913904321703777885e6,
+        9.519610812032515607466102200648641326190483e6,
+        4.992086875574849453986274042758566713803723e7,
+        2.635677009826023473846461512029006874800883e8,
+        1.399645765120061118824228996253541612110338e9,
+        7.469935792837635004663183580452618726280406e9,
+        4.004155595835610574316003488168804738481448e10,
+        2.154630668144966654449602981243932210695662e11) * Radian);
+PolynomialInMonomialBasis<Angle, double, 18, EstrinEvaluator> const
+    fukushima_b_taylor_0_875(std::make_tuple(
+        0.931906061029524827613331428871579482766771,
+        0.348448029538453860999386797137074571589376,
+        0.666809178846938247558793864839434184202736,
+        2.210769135708128662563678717558631573758222,
+        9.491765048913406881414290930355300611703187,
+        47.09304791027740853381457907791343619298913,
+        255.9200460211233087050940506395442544885608,
+        1480.029532675805407554800779436693505109703,
+        8954.040904734313578374783155553041065984547,
+        56052.48220982686949967604699243627330816542,
+        360395.7241626000916973524840479780937869149,
+        2.367539415273216077520928806581689330885103e6,
+        1.582994957277684102454906900025484391190264e7,
+        1.074158093278511100137056972128875270067228e8,
+        7.380585460239595691878086073095523043390649e8,
+        5.126022002555101496684687154904781856830296e9,
+        3.593534065502416588712409180013118409428367e10,
+        2.539881257612812212004146637239987308133582e11,
+        1.808180007145359569674767150594344316702507e12) * Radian);
+PolynomialInMonomialBasis<Angle, double, 20, EstrinEvaluator> const
+    fukushima_d_taylor_0_875(std::make_tuple(
+        1.541690112721819084362258323861459983048179,
+        3.379176214579645449453938918349243359477706,
+        14.94058385670236671625328259137998668324435,
+        81.91773929235074880784578753539752529822986,
+        497.4900546551479866036061853049402721939835,
+        3205.184010234846235275447901572262470252768,
+        21457.32237355321925571253220641357074594515,
+        147557.0156564174712105689758692929775004292,
+        1.035045290185256525452269053775273002725343e6,
+        7.371922334832212125197513363695905834126154e6,
+        5.314344395142401141792228169170505958906345e7,
+        3.868823475795976312985118115567305767603128e8,
+        2.839458401528033778425531336599562337200510e9,
+        2.098266122943898941547136470383199468548861e10,
+        1.559617754017662417944194874282275405676282e11,
+        1.165096220419884791236699872205721392201682e12,
+        8.742012983013913804987431275193291316808766e12,
+        6.584725462672366918676967847406180155459650e13,
+        4.976798737062434393396993620379481464465749e14,
+        3.773018634056605404718444239040628892506293e15,
+        2.868263194837819660109735981973458220407767e16) * Radian);
 
 // NOTE(phl): The following polynomials differ slightly from the original code
 // but they match more closely those in [Fuku11a].  The notation follows
@@ -1145,10 +1201,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
 //
 //     Outputs: integral value
 //
-double BulirschCel(double kc,
-                   double const nc,
-                   double a,
-                   double b) {
+Angle BulirschCel(double kc, double const nc, double a, double b) {
   // These values should give us 14 digits of accuracy, see [Buli69].
   constexpr double ca = 1.0e-7;
   constexpr double kc_nearly_0 = 1.0e-14;
@@ -1163,7 +1216,7 @@ double BulirschCel(double kc,
       // "If in this case b ≠ 0 then cel is undefined."
       DLOG(ERROR) << "kc = " << kc << " nc = " << nc << " a = " << a
                   << " b = " << b;
-      return std::numeric_limits<double>::quiet_NaN();
+      return std::numeric_limits<Angle>::quiet_NaN();
     }
   }
   kc = Abs(kc);
@@ -1202,7 +1255,7 @@ double BulirschCel(double kc,
     kc = kc + kc;
     e = kc * m;
   }
-  return (π / 2) * (a * m + b) / (m * (m + p));
+  return (π / 2) * (a * m + b) / (m * (m + p)) * Radian;
 }
 
 template<int degree>
@@ -1222,14 +1275,14 @@ double EllipticNomeQ(double const mc) {
 //
 //     Inputs: mc   = complementary parameter 0 <= mc   <= 1
 //
-void FukushimaEllipticBD(double const mc, double& b, double& d) {
+void FukushimaEllipticBD(double const mc, Angle& b, Angle& d) {
   double const m = 1.0 - mc;
   if (m < std::numeric_limits<double>::epsilon() / 2.0) {
-    b = π / 4;
-    d = π / 4;
+    b = π / 4 * Radian;
+    d = π / 4 * Radian;
   } else if (mc < std::numeric_limits<double>::epsilon() / 2.0) {
-    b = 1.0;
-    d = (2.0 * log_2 - 1.0) - 0.5 * std::log(mc);
+    b = 1.0 * Radian;
+    d = ((2.0 * log_2 - 1.0) - 0.5 * std::log(mc)) * Radian;
   } else if (mc < 0.1) {
     // This algorithm differs from the one in [Fuku11a] because it divides
     // log(q(mc)), not just log(mc / 16).  It tries to retain the same notation,
@@ -1248,11 +1301,11 @@ void FukushimaEllipticBD(double const mc, double& b, double& d) {
     }
     // Equivalent to Fukushima's code, but much simplified.
     double const one_over_two_kx_mc = 0.5 / kx_mc;
-    b = (x_mc * (ex_mc - mc * kx_mc) + one_over_two_kx_mc) / m;
-    d = x_mc * kx_mc - b;
+    b = (x_mc * (ex_mc - mc * kx_mc) + one_over_two_kx_mc) * Radian / m;
+    d = x_mc * kx_mc * Radian - b;
   } else if (m <= 0.01) {
-    b = (-π) * fukushima_b٭x_maclaurin.Evaluate(m);
-    d = π * fukushima_ex_maclaurin.Evaluate(m);
+    b = (-π * Radian) * fukushima_b٭x_maclaurin.Evaluate(m);
+    d = (π * Radian) * fukushima_ex_maclaurin.Evaluate(m);
   } else if (m <= 0.1) {
     double const mx = 0.95 - mc;
     b = fukushima_b_taylor_0_05.Evaluate(mx);
@@ -1298,9 +1351,9 @@ void FukushimaEllipticBD(double const mc, double& b, double& d) {
 
 void FukushimaEllipticBDJ(double const nc,
                           double const mc,
-                          double& bc,
-                          double& dc,
-                          double& jc) {
+                          Angle& bc,
+                          Angle& dc,
+                          Angle& jc) {
   FukushimaEllipticBD(mc, bc, dc);
 
   // See [Buli69], special examples after equation (1.2.2).
@@ -1311,9 +1364,9 @@ void FukushimaEllipticBDJ(double const nc,
 void FukushimaEllipticBcDcJc(double const c₀,
                              double const n,
                              double const mc,
-                             double& b,
-                             double& d,
-                             double& j) {
+                             Angle& b,
+                             Angle& d,
+                             Angle& j) {
   // See [Fuku11b] section 2.2 for the determination of xS.
   constexpr double xS = 0.1;
   // The maximum number of iterations in the first loop below.
@@ -1357,8 +1410,8 @@ void FukushimaEllipticBcDcJc(double const c₀,
   for (int k = i; k > 0; --k) {
     double const sy = s[k - 1] * y[k];
     double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
-    b = 2.0 * b - sy;
-    d = d + (d + sy);
+    b = 2.0 * b - sy * Radian;
+    d = d + (d + sy * Radian);
     j = j + (j + FukushimaT(t, h));
   }
 }
@@ -1366,9 +1419,9 @@ void FukushimaEllipticBcDcJc(double const c₀,
 void FukushimaEllipticBsDsJs(double const s₀,
                              double const n,
                              double const mc,
-                             double& b,
-                             double& d,
-                             double& j) {
+                             Angle& b,
+                             Angle& d,
+                             Angle& j) {
   // See [Fuku11c] section 3.5 for the determination of yB.
   constexpr double yB = 0.01622;
   // The maximum number of argument transformations, related to yB.  This is the
@@ -1410,8 +1463,8 @@ void FukushimaEllipticBsDsJs(double const s₀,
   for (int k = i; k > 0; --k) {
     double const sy = s[k - 1] * y[k];
     double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
-    b = 2.0 * b - sy;
-    d = d + (d + sy);
+    b = 2.0 * b - sy * Radian;
+    d = d + (d + sy * Radian);
     j = j + (j + FukushimaT(t, h));
   }
 }
@@ -1419,8 +1472,8 @@ void FukushimaEllipticBsDsJs(double const s₀,
 // See [Fuku11b], section 2.3.
 void FukushimaEllipticBsDsMaclaurinSeries(double const y,
                                           double const m,
-                                          double& b,
-                                          double& d) {
+                                          Angle& b,
+                                          Angle& d) {
   double const Fs1 = FukushimaEllipticFsMaclaurin1::polynomial.Evaluate(m);
   double const Fs2 = FukushimaEllipticFsMaclaurin2::polynomial.Evaluate(m);
   double const Fs3 = FukushimaEllipticFsMaclaurin3::polynomial.Evaluate(m);
@@ -1445,52 +1498,52 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
 }
 
 // See [Fuku11c], section 3.4 and 3.5.
-double FukushimaEllipticJsMaclaurinSeries(double const y,
-                                          double const n,
-                                          double const m) {
+Angle FukushimaEllipticJsMaclaurinSeries(double const y,
+                                         double const n,
+                                         double const m) {
   // Maclaurin series in m whose coefficients are polynomials in n.  The index
   // is the degree in m (k in Fukushima's notation).
-  PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
+  PolynomialInMonomialBasis<Angle, double, 0, HornerEvaluator>
       fukushima_elliptic_js_maclaurin_m_0(
           std::make_tuple(fukushima_elliptic_js_maclaurin_n_0_0.Evaluate(n)));
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+  PolynomialInMonomialBasis<Angle, double, 1, HornerEvaluator>
       fukushima_elliptic_js_maclaurin_m_1(
           std::make_tuple(fukushima_elliptic_js_maclaurin_n_1_0.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_1_1.Evaluate(n)));
-  PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+  PolynomialInMonomialBasis<Angle, double, 2, HornerEvaluator>
       fukushima_elliptic_js_maclaurin_m_2(
           std::make_tuple(fukushima_elliptic_js_maclaurin_n_2_0.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_2_1.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_2_2.Evaluate(n)));
-  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+  PolynomialInMonomialBasis<Angle, double, 3, HornerEvaluator>
       fukushima_elliptic_js_maclaurin_m_3(
           std::make_tuple(fukushima_elliptic_js_maclaurin_n_3_0.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_3_1.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_3_2.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_3_3.Evaluate(n)));
-  PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
+  PolynomialInMonomialBasis<Angle, double, 4, EstrinEvaluator>
       fukushima_elliptic_js_maclaurin_m_4(
           std::make_tuple(fukushima_elliptic_js_maclaurin_n_4_0.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_4_1.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_4_2.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_4_3.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_4_4.Evaluate(n)));
-  double const js0 = fukushima_elliptic_js_maclaurin_m_0.Evaluate(m);
-  double const js1 = fukushima_elliptic_js_maclaurin_m_1.Evaluate(m);
-  double const js2 = fukushima_elliptic_js_maclaurin_m_2.Evaluate(m);
-  double const js3 = fukushima_elliptic_js_maclaurin_m_3.Evaluate(m);
-  double const js4 = fukushima_elliptic_js_maclaurin_m_4.Evaluate(m);
+  Angle const js0 = fukushima_elliptic_js_maclaurin_m_0.Evaluate(m);
+  Angle const js1 = fukushima_elliptic_js_maclaurin_m_1.Evaluate(m);
+  Angle const js2 = fukushima_elliptic_js_maclaurin_m_2.Evaluate(m);
+  Angle const js3 = fukushima_elliptic_js_maclaurin_m_3.Evaluate(m);
+  Angle const js4 = fukushima_elliptic_js_maclaurin_m_4.Evaluate(m);
   if (y <= 6.0369310e-04) {
     // A Maclaurin series in y whose coefficients are polynomials in n and m.
     // The index is the degree in y of the series.  Since Js has no constant
     // term, this is (l - 1) in Fukushima's notation.
-    PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
+    PolynomialInMonomialBasis<Angle, double, 4, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_4(
             std::make_tuple(js0, js1, js2, js3, js4));
     return y * fukushima_elliptic_js_maclaurin_y_4.Evaluate(y);
   }
 
-  PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
+  PolynomialInMonomialBasis<Angle, double, 5, EstrinEvaluator>
       fukushima_elliptic_js_maclaurin_m_5(
           std::make_tuple(fukushima_elliptic_js_maclaurin_n_5_0.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_5_1.Evaluate(n),
@@ -1498,15 +1551,15 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                           fukushima_elliptic_js_maclaurin_n_5_3.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_5_4.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_5_5.Evaluate(n)));
-  double const js5 = fukushima_elliptic_js_maclaurin_m_5.Evaluate(m);
+  Angle const js5 = fukushima_elliptic_js_maclaurin_m_5.Evaluate(m);
   if (y <= 2.0727505e-03) {
-    PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
+    PolynomialInMonomialBasis<Angle, double, 5, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_5(
             std::make_tuple(js0, js1, js2, js3, js4, js5));
     return y * fukushima_elliptic_js_maclaurin_y_5.Evaluate(y);
   }
 
-  PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
+  PolynomialInMonomialBasis<Angle, double, 6, EstrinEvaluator>
       fukushima_elliptic_js_maclaurin_m_6(
           std::make_tuple(fukushima_elliptic_js_maclaurin_n_6_0.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_6_1.Evaluate(n),
@@ -1515,15 +1568,15 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                           fukushima_elliptic_js_maclaurin_n_6_4.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_6_5.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_6_6.Evaluate(n)));
-  double const js6 = fukushima_elliptic_js_maclaurin_m_6.Evaluate(m);
+  Angle const js6 = fukushima_elliptic_js_maclaurin_m_6.Evaluate(m);
   if (y <= 5.0047026e-03) {
-    PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
+    PolynomialInMonomialBasis<Angle, double, 6, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_6(
             std::make_tuple(js0, js1, js2, js3, js4, js5, js6));
     return y * fukushima_elliptic_js_maclaurin_y_6.Evaluate(y);
   }
 
-  PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
+  PolynomialInMonomialBasis<Angle, double, 7, EstrinEvaluator>
       fukushima_elliptic_js_maclaurin_m_7(
           std::make_tuple(fukushima_elliptic_js_maclaurin_n_7_0.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_7_1.Evaluate(n),
@@ -1533,15 +1586,15 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                           fukushima_elliptic_js_maclaurin_n_7_5.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_7_6.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_7_7.Evaluate(n)));
-  double const js7 = fukushima_elliptic_js_maclaurin_m_7.Evaluate(m);
+  Angle const js7 = fukushima_elliptic_js_maclaurin_m_7.Evaluate(m);
   if (y <= 9.6961652e-03) {
-    PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
+    PolynomialInMonomialBasis<Angle, double, 7, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_7(
             std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7));
     return y * fukushima_elliptic_js_maclaurin_y_7.Evaluate(y);
   }
 
-  PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
+  PolynomialInMonomialBasis<Angle, double, 8, EstrinEvaluator>
       fukushima_elliptic_js_maclaurin_m_8(
           std::make_tuple(fukushima_elliptic_js_maclaurin_n_8_0.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_8_1.Evaluate(n),
@@ -1552,15 +1605,15 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                           fukushima_elliptic_js_maclaurin_n_8_6.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_8_7.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_8_8.Evaluate(n)));
-  double const js8 = fukushima_elliptic_js_maclaurin_m_8.Evaluate(m);
+  Angle const js8 = fukushima_elliptic_js_maclaurin_m_8.Evaluate(m);
   if (y <= 1.6220210e-02) {
-    PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
+    PolynomialInMonomialBasis<Angle, double, 8, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_8(
             std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7, js8));
     return y * fukushima_elliptic_js_maclaurin_y_8.Evaluate(y);
   }
 
-  PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
+  PolynomialInMonomialBasis<Angle, double, 9, EstrinEvaluator>
       fukushima_elliptic_js_maclaurin_m_9(
           std::make_tuple(fukushima_elliptic_js_maclaurin_n_9_0.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_9_1.Evaluate(n),
@@ -1572,14 +1625,14 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
                           fukushima_elliptic_js_maclaurin_n_9_7.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_9_8.Evaluate(n),
                           fukushima_elliptic_js_maclaurin_n_9_9.Evaluate(n)));
-  double const js9 = fukushima_elliptic_js_maclaurin_m_9.Evaluate(m);
-  PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
+  Angle const js9 = fukushima_elliptic_js_maclaurin_m_9.Evaluate(m);
+  PolynomialInMonomialBasis<Angle, double, 9, EstrinEvaluator>
       fukushima_elliptic_js_maclaurin_y_9(
           std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7, js8, js9));
   return y * fukushima_elliptic_js_maclaurin_y_9.Evaluate(y);
 }
 
-double FukushimaT(double const t, double const h) {
+Angle FukushimaT(double const t, double const h) {
   double const z = -h * t * t;
   double const abs_z = abs(z);
 
@@ -1589,7 +1642,7 @@ double FukushimaT(double const t, double const h) {
   // simpler and probably better.  (It also explains the position of z < 0 in
   // the list.)
   if (abs_z < 3.3306691e-16) {
-    return t;
+    return t * Radian;
   } else if (abs_z < 2.3560805e-08) {
     return t * FukushimaTMaclaurin1::polynomial.Evaluate(z);
   } else if (abs_z < 9.1939631e-06) {
@@ -1611,7 +1664,7 @@ double FukushimaT(double const t, double const h) {
   } else if (z < 0.0) {
     double const r = Sqrt(h);
     double const ri = 1.0 / r;
-    return std::atan(r * t) / r;
+    return ArcTan(r * t) / r;
   } else if (abs_z < 4.7138547e-02) {
     return t * FukushimaTMaclaurin10::polynomial.Evaluate(z);
   } else if (abs_z < 6.1227405e-02) {
@@ -1620,7 +1673,7 @@ double FukushimaT(double const t, double const h) {
     return t * FukushimaTMaclaurin12::polynomial.Evaluate(z);
   } else {
     double const r = Sqrt(-h);
-    return std::atanh(r * t) / r;
+    return ArcTanh(r * t) / r;
   }
 }
 
@@ -1692,9 +1745,9 @@ void FukushimaEllipticBDJ(Angle const& φ,
   constexpr double ys = 0.9;
 
   bool has_computed_complete_integrals = false;
-  double bc;
-  double dc;
-  double jc;
+  Angle bc;
+  Angle dc;
+  Angle jc;
 
   // The selection rule in [Fuku11b] section 2.1, equations (7-11) and [Fuku11c]
   // section 3.2, equations (22) and (23).  The identifiers follow Fukushima's
@@ -1716,8 +1769,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
       FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
       double const sz = z * Sqrt(1.0 - c²);
       double const t = sz / nc;
-      b = bc - (b - sz);
-      d = dc - (d + sz);
+      b = bc - (b - sz * Radian);
+      d = dc - (d + sz * Radian);
       j = jc - (j + FukushimaT(t, h));
       has_computed_complete_integrals = true;
     } else {
@@ -1731,8 +1784,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
         FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
         double const sz = c * Sqrt(w²_over_mc);
         double const t = sz / nc;
-        b = bc - (b - sz);
-        d = dc - (d + sz);
+        b = bc - (b - sz * Radian);
+        d = dc - (d + sz * Radian);
         j = jc - (j + FukushimaT(t, h));
         has_computed_complete_integrals = true;
       }
