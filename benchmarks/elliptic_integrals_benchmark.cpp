@@ -33,9 +33,9 @@ void BM_EllipticEFΠ(benchmark::State& state) {
   }
 
   while (state.KeepRunningBatch(size * size * size)) {
-    double e;
-    double f;
-    double ᴨ;
+    Angle e;
+    Angle f;
+    Angle ᴨ;
     for (Angle const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {
@@ -66,9 +66,9 @@ void BM_FukushimaEllipticBDJ(benchmark::State& state) {
   }
 
   while (state.KeepRunningBatch(size * size * size)) {
-    double b;
-    double d;
-    double j;
+    Angle b;
+    Angle d;
+    Angle j;
     for (Angle const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {

@@ -229,7 +229,7 @@ Angle JacobiAmplitude(double u, double mc) {
     // to the range [-π/2, π/2].  We avoid the branch cut, and any inaccuracy in
     // the rounding has the innocuous effect of causing the ArcTan to go a bit
     // beyond -π/2 or π/2.
-    double const k = EllipticK(mc);
+    Angle const k = EllipticK(mc);
     n = std::nearbyint(u / (2.0 * k));
     JacobiSNCNDNWithK(u - 2.0 * n * k, mc, k, s, c, d);
   }
@@ -266,7 +266,7 @@ void JacobiSNCNDN(double const u,
       s = -s;
     }
   } else {
-    double const k = EllipticK(mc);
+    Angle const k = EllipticK(mc);
     JacobiSNCNDNWithK(u, mc, k, s, c, d);
   }
 }

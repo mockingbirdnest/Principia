@@ -148,11 +148,11 @@ class FukushimaEllipticFsMaclaurin {
         static_cast<double>(DoubleFactorial(2 * k - 1) *
                             DoubleFactorial(2 * n - 2 * k - 1)) /
         static_cast<double>((1 << n) * (2 * n + 1) *
-                            Factorial(k) * Factorial(n - k))...);
+                            Factorial(k) * Factorial(n - k))...) * Radian;
   };
 
  public:
-  static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
+  static inline PolynomialInMonomialBasis<Angle, double, n, Evaluator> const
       polynomial{Generator<std::make_index_sequence<n + 1>>::series};
 };
 
@@ -189,9 +189,9 @@ class FukushimaEllipticDsBsMaclaurin {
   template<typename Tuple, int... k>
   struct Generator<Tuple, std::index_sequence<k...>> {
     template<int j>
-    static double ComputeBsCoefficient(Tuple const& tuple) {
+    static Angle ComputeBsCoefficient(Tuple const& tuple) {
       if constexpr (j == 0) {
-        return 1.0;
+        return 1.0 * Radian;
       } else {
         return std::get<j>(tuple) -
                std::get<j - 1>(tuple) * (static_cast<double>(2 * j - 1) /
@@ -204,9 +204,9 @@ class FukushimaEllipticDsBsMaclaurin {
     }
 
     static Tuple ComputeDsCoefficients(Tuple const& tuple) {
-      return std::make_tuple(
-          std::get<k>(tuple) *
-          (static_cast<double>(2 * k + 1) / static_cast<double>(2 * k + 3))...);
+      return std::make_tuple(std::get<k>(tuple) *
+                             (static_cast<double>(2 * k + 1) /
+                              static_cast<double>(2 * k + 3))...);
     }
   };
 
@@ -1474,26 +1474,26 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
                                           double const m,
                                           Angle& b,
                                           Angle& d) {
-  double const Fs1 = FukushimaEllipticFsMaclaurin1::polynomial.Evaluate(m);
-  double const Fs2 = FukushimaEllipticFsMaclaurin2::polynomial.Evaluate(m);
-  double const Fs3 = FukushimaEllipticFsMaclaurin3::polynomial.Evaluate(m);
-  double const Fs4 = FukushimaEllipticFsMaclaurin4::polynomial.Evaluate(m);
-  double const Fs5 = FukushimaEllipticFsMaclaurin5::polynomial.Evaluate(m);
-  double const Fs6 = FukushimaEllipticFsMaclaurin6::polynomial.Evaluate(m);
-  double const Fs7 = FukushimaEllipticFsMaclaurin7::polynomial.Evaluate(m);
-  double const Fs8 = FukushimaEllipticFsMaclaurin8::polynomial.Evaluate(m);
-  double const Fs9 = FukushimaEllipticFsMaclaurin9::polynomial.Evaluate(m);
-  double const Fs10 = FukushimaEllipticFsMaclaurin10::polynomial.Evaluate(m);
-  double const Fs11 = FukushimaEllipticFsMaclaurin11::polynomial.Evaluate(m);
+  Angle const Fs1 = FukushimaEllipticFsMaclaurin1::polynomial.Evaluate(m);
+  Angle const Fs2 = FukushimaEllipticFsMaclaurin2::polynomial.Evaluate(m);
+  Angle const Fs3 = FukushimaEllipticFsMaclaurin3::polynomial.Evaluate(m);
+  Angle const Fs4 = FukushimaEllipticFsMaclaurin4::polynomial.Evaluate(m);
+  Angle const Fs5 = FukushimaEllipticFsMaclaurin5::polynomial.Evaluate(m);
+  Angle const Fs6 = FukushimaEllipticFsMaclaurin6::polynomial.Evaluate(m);
+  Angle const Fs7 = FukushimaEllipticFsMaclaurin7::polynomial.Evaluate(m);
+  Angle const Fs8 = FukushimaEllipticFsMaclaurin8::polynomial.Evaluate(m);
+  Angle const Fs9 = FukushimaEllipticFsMaclaurin9::polynomial.Evaluate(m);
+  Angle const Fs10 = FukushimaEllipticFsMaclaurin10::polynomial.Evaluate(m);
+  Angle const Fs11 = FukushimaEllipticFsMaclaurin11::polynomial.Evaluate(m);
 
   auto const fukushima_elliptic_ds_maclaurin =
       FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeDsPolynomial(
-      1.0, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
+      1.0 * Radian, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
   d = fukushima_elliptic_ds_maclaurin.Evaluate(y);
 
   auto const fukushima_elliptic_bs_maclaurin =
       FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeBsPolynomial(
-      1.0, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
+      1.0 * Radian, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
   b = fukushima_elliptic_bs_maclaurin.Evaluate(y);
 }
 
