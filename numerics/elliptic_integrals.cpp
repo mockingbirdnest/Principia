@@ -41,6 +41,7 @@ using quantities::ArcTanh;
 using quantities::Cos;
 using quantities::Sin;
 using quantities::Sqrt;
+using quantities::uninitialized;
 using quantities::si::Radian;
 
 namespace {
@@ -1729,7 +1730,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   // reduction.
   // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
   // better algorithm (Payne-Hanek?).
-  Angle φ_reduced;
+  Angle φ_reduced{uninitialized};
   std::int64_t count;
   Reduce(φ, φ_reduced, count);
   Angle const abs_φ_reduced = Abs(φ_reduced);
@@ -1745,9 +1746,9 @@ void FukushimaEllipticBDJ(Angle const& φ,
   constexpr double ys = 0.9;
 
   bool has_computed_complete_integrals = false;
-  Angle bc;
-  Angle dc;
-  Angle jc;
+  Angle bc{uninitialized};
+  Angle dc{uninitialized};
+  Angle jc{uninitialized};
 
   // The selection rule in [Fuku11b] section 2.1, equations (7-11) and [Fuku11c]
   // section 3.2, equations (22) and (23).  The identifiers follow Fukushima's
@@ -1818,9 +1819,9 @@ void EllipticEFΠ(Angle const& φ,
   DCHECK_GE(1, n);
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
-  Angle b;
-  Angle d;
-  Angle j;
+  Angle b{uninitialized};
+  Angle d{uninitialized};
+  Angle j{uninitialized};
   FukushimaEllipticBDJ(φ, n, mc, b, d, j);
   e = b + mc * d;
   f = b + d;

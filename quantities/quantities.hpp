@@ -26,6 +26,10 @@ using internal_dimensions::Dimensions;
 using internal_generators::ProductGenerator;
 using internal_generators::QuotientGenerator;
 
+//TODO(phl): Move to a common place.
+struct uninitialized_t {};
+constexpr uninitialized_t uninitialized;
+
 template<typename D>
 class Quantity;
 
@@ -53,6 +57,7 @@ class Quantity final {
   using Dimensions = D;
 
   constexpr Quantity();
+  explicit constexpr Quantity(uninitialized_t);
 
   constexpr Quantity operator+() const;
   constexpr Quantity operator-() const;
@@ -169,6 +174,7 @@ using internal_quantities::Quantity;
 using internal_quantities::SIUnit;
 using internal_quantities::Temperature;
 using internal_quantities::Time;
+using internal_quantities::uninitialized;
 
 }  // namespace quantities
 }  // namespace principia

@@ -12,6 +12,7 @@
 namespace principia {
 
 using quantities::Angle;
+using quantities::uninitialized;
 using quantities::si::Radian;
 
 namespace numerics {
@@ -33,9 +34,9 @@ void BM_EllipticEFΠ(benchmark::State& state) {
   }
 
   while (state.KeepRunningBatch(size * size * size)) {
-    Angle e;
-    Angle f;
-    Angle ᴨ;
+    Angle e{uninitialized};
+    Angle f{uninitialized};
+    Angle ᴨ{uninitialized};
     for (Angle const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {
@@ -66,9 +67,9 @@ void BM_FukushimaEllipticBDJ(benchmark::State& state) {
   }
 
   while (state.KeepRunningBatch(size * size * size)) {
-    Angle b;
-    Angle d;
-    Angle j;
+    Angle b{uninitialized};
+    Angle d{uninitialized};
+    Angle j{uninitialized};
     for (Angle const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {
