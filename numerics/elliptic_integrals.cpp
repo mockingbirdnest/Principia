@@ -1760,6 +1760,30 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 }
 
+double EllipticE(Angle const& φ, double const mc) {
+  double e;
+  double f;
+  double ᴨ;
+  EllipticEFΠ(φ, /*n=*/1.0, mc, e, f, ᴨ);
+  return e;
+}
+
+double EllipticF(Angle const& φ, double const mc) {
+  double e;
+  double f;
+  double ᴨ;
+  EllipticEFΠ(φ, /*n=*/1.0, mc, e, f, ᴨ);
+  return f;
+}
+
+double EllipticΠ(Angle const& φ, double const n, double const mc) {
+  double e;
+  double f;
+  double ᴨ;
+  EllipticEFΠ(φ, n, mc, e, f, ᴨ);
+  return ᴨ;
+}
+
 void EllipticEFΠ(Angle const& φ,
                  double const n,
                  double const mc,
