@@ -5,7 +5,6 @@
 #include <tuple>
 #include <utility>
 
-#include "geometry/cartesian_product.hpp"
 #include "numerics/combinatorics.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "numerics/polynomial.hpp"
@@ -204,9 +203,9 @@ class FukushimaEllipticDsBsMaclaurin {
     }
 
     static Tuple ComputeDsCoefficients(Tuple const& tuple) {
-      return std::make_tuple(std::get<k>(tuple) *
-                             (static_cast<double>(2 * k + 1) /
-                              static_cast<double>(2 * k + 3))...);
+      return std::make_tuple(
+          std::get<k>(tuple) *
+          (static_cast<double>(2 * k + 1) / static_cast<double>(2 * k + 3))...);
     }
   };
 
@@ -527,8 +526,7 @@ class FukushimaTMaclaurin {
 
   template<int... k>
   struct Generator<std::index_sequence<k...>> {
-    static auto constexpr series =
-        std::make_tuple(1.0 / (2.0 * k + 1.0)...);
+    static auto constexpr series = std::make_tuple(1.0 / (2.0 * k + 1.0)...);
   };
 
  public:

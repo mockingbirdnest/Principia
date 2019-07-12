@@ -16,7 +16,6 @@ namespace principia {
 namespace numerics {
 namespace internal_elliptic_functions {
 
-using geometry::cartesian_product::operator/;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Pow;
@@ -79,12 +78,12 @@ void JacobiSNCNDNReduced(Angle const& u,
     u₀ = 0.5 * u₀;
   }
 
-  auto const b₀1 = fukushima_b₀_maclaurin_m_1.Evaluate(m);
-  auto const b₀2 = fukushima_b₀_maclaurin_m_2.Evaluate(m);
-  auto const b₀3 = fukushima_b₀_maclaurin_m_3.Evaluate(m);
+  double const b₀1 = fukushima_b₀_maclaurin_m_1.Evaluate(m);
+  double const b₀2 = fukushima_b₀_maclaurin_m_2.Evaluate(m);
+  double const b₀3 = fukushima_b₀_maclaurin_m_3.Evaluate(m);
   PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
       fukushima_b₀_maclaurin_u₀²_3(std::make_tuple(0.0, b₀1, b₀2, b₀3));
-  auto const u₀² = (u₀ * u₀) / Pow<2>(Radian);
+  double const u₀² = (u₀ * u₀) / Pow<2>(Radian);
 
   // We use the subscript i to indicate variables that are computed as part of
   // the iteration (Fukushima uses subscripts n and N).  This avoids confusion
