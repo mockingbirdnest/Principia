@@ -15,31 +15,31 @@ namespace internal_elliptic_integrals {
 
 using quantities::Angle;
 
-void FukushimaEllipticBDJ(quantities::Angle const& φ,
+void FukushimaEllipticBDJ(Angle const& φ,
                           double n,
                           double mc,
-                          double& b,
-                          double& d,
-                          double& j);
+                          Angle& b,
+                          Angle& d,
+                          Angle& j);
 
-double EllipticE(quantities::Angle const& φ,
-                 double mc);
+Angle EllipticE(Angle const& φ,
+                double mc);
 
-double EllipticF(quantities::Angle const& φ,
-                 double mc);
+Angle EllipticF(Angle const& φ,
+                double mc);
 
-double EllipticΠ(quantities::Angle const& φ,
-                 double n,
-                 double mc);
+Angle EllipticΠ(Angle const& φ,
+                double n,
+                double mc);
 
-void EllipticEFΠ(quantities::Angle const& φ,
+void EllipticEFΠ(Angle const& φ,
                  double n,
                  double mc,
-                 double& e,
-                 double& f,
-                 double& ᴨ);
+                 Angle& e,
+                 Angle& f,
+                 Angle& ᴨ);
 
-double EllipticK(double mc);
+Angle EllipticK(double mc);
 
 }  // namespace internal_elliptic_integrals
 

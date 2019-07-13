@@ -10,6 +10,7 @@
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "base/tags.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/generators.hpp"
 #include "quantities/traits.hpp"
@@ -22,6 +23,7 @@ namespace internal_quantities {
 
 using base::not_constructible;
 using base::not_null;
+using base::uninitialized_t;
 using internal_dimensions::Dimensions;
 using internal_generators::ProductGenerator;
 using internal_generators::QuotientGenerator;
@@ -53,6 +55,7 @@ class Quantity final {
   using Dimensions = D;
 
   constexpr Quantity();
+  explicit constexpr Quantity(uninitialized_t);
 
   constexpr Quantity operator+() const;
   constexpr Quantity operator-() const;

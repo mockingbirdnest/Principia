@@ -32,8 +32,11 @@ namespace principia {
 namespace numerics {
 namespace internal_elliptic_integrals {
 
+using base::uninitialized;
 using quantities::Abs;
 using quantities::Angle;
+using quantities::ArcTan;
+using quantities::ArcTanh;
 using quantities::Cos;
 using quantities::Sin;
 using quantities::Sqrt;
@@ -42,54 +45,54 @@ using quantities::si::Radian;
 namespace {
 
 // Bulirsch's cel function, [Buli69], [NIST10], 19.2(iii).
-double BulirschCel(double kc, double nc, double a, double b);
+Angle BulirschCel(double kc, double nc, double a, double b);
 
 // Jacobi's nome approximated by a series of the given degree.
 template<int degree>
 double EllipticNomeQ(double mc);
 
 // Fukushima's complete elliptic integrals of the second kind [Fuku11a].
-void FukushimaEllipticBD(double mc, double& b, double& d);
+void FukushimaEllipticBD(double mc, Angle& b, Angle& d);
 
 // Fukushima's complete elliptic integrals of the second and third kind
 // [Fuku11a], [Fuku11c].
 void FukushimaEllipticBDJ(double nc,
                           double mc,
-                          double& bc,
-                          double& dc,
-                          double& jc);
+                          Angle& bc,
+                          Angle& dc,
+                          Angle& jc);
 
 // Fukushima's incomplete integrals of the second and third kind, arccos
 // argument [Fuku11b], [Fuku11c].
 void FukushimaEllipticBcDcJc(double c0,
                              double n,
                              double mc,
-                             double& b,
-                             double& d,
-                             double& j);
+                             Angle& b,
+                             Angle& d,
+                             Angle& j);
 
 // Fukushima's incomplete integrals of the second and third kind, arcsin
 // argument [Fuku11b], [Fuku11c].
 void FukushimaEllipticBsDsJs(double s0,
                              double n,
                              double mc,
-                             double& b,
-                             double& d,
-                             double& j);
+                             Angle& b,
+                             Angle& d,
+                             Angle& j);
 
 // Maclaurin series expansion of Bs and Ds [Fuku11a].
 // NOTE(phl): I believe that this is a Maclaurin series but it's not completely
 // clear.
 void FukushimaEllipticBsDsMaclaurinSeries(double y,
                                           double m,
-                                          double& b,
-                                          double& d);
+                                          Angle& b,
+                                          Angle& d);
 
 // Maclaurin series expansion of Js [Fuku11c].
-double FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
+Angle FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 
 // Fukushima's T function [Fuku11c].
-double FukushimaT(double t, double h);
+Angle FukushimaT(double t, double h);
 
 // Argument reduction: angle = fractional_part + integer_part * π where
 // fractional_part is in [-π/2, π/2].
@@ -250,8 +253,10 @@ PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_2_2(std::make_tuple(3.0 / 56.0));
 
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_0(
-        std::make_tuple(5.0 / 144.0, 6.0 / 144.0, 8.0 / 144.0, 16.0 / 144.0));
+    fukushima_elliptic_js_maclaurin_n_3_0(std::make_tuple(5.0 / 144.0,
+                                                          6.0 / 144.0,
+                                                          8.0 / 144.0,
+                                                          16.0 / 144.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
     fukushima_elliptic_js_maclaurin_n_3_1(std::make_tuple(3.0 / 144.0,
                                                           4.0 / 144.0,
@@ -1145,10 +1150,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
 //
 //     Outputs: integral value
 //
-double BulirschCel(double kc,
-                   double const nc,
-                   double a,
-                   double b) {
+Angle BulirschCel(double kc, double const nc, double a, double b) {
   // These values should give us 14 digits of accuracy, see [Buli69].
   constexpr double ca = 1.0e-7;
   constexpr double kc_nearly_0 = 1.0e-14;
@@ -1163,7 +1165,7 @@ double BulirschCel(double kc,
       // "If in this case b ≠ 0 then cel is undefined."
       DLOG(ERROR) << "kc = " << kc << " nc = " << nc << " a = " << a
                   << " b = " << b;
-      return std::numeric_limits<double>::quiet_NaN();
+      return std::numeric_limits<Angle>::quiet_NaN();
     }
   }
   kc = Abs(kc);
@@ -1198,11 +1200,11 @@ double BulirschCel(double kc,
     if (Abs(g - kc) <= g * ca) {
       break;
     }
-    kc = sqrt(e);
+    kc = Sqrt(e);
     kc = kc + kc;
     e = kc * m;
   }
-  return (π / 2) * (a * m + b) / (m * (m + p));
+  return (π / 2) * (a * m + b) / (m * (m + p)) * Radian;
 }
 
 template<int degree>
@@ -1222,14 +1224,14 @@ double EllipticNomeQ(double const mc) {
 //
 //     Inputs: mc   = complementary parameter 0 <= mc   <= 1
 //
-void FukushimaEllipticBD(double const mc, double& b, double& d) {
+void FukushimaEllipticBD(double const mc, Angle& b, Angle& d) {
   double const m = 1.0 - mc;
   if (m < std::numeric_limits<double>::epsilon() / 2.0) {
-    b = π / 4;
-    d = π / 4;
+    b = π / 4 * Radian;
+    d = π / 4 * Radian;
   } else if (mc < std::numeric_limits<double>::epsilon() / 2.0) {
-    b = 1.0;
-    d = (2.0 * log_2 - 1.0) - 0.5 * std::log(mc);
+    b = 1.0 * Radian;
+    d = ((2.0 * log_2 - 1.0) - 0.5 * std::log(mc)) * Radian;
   } else if (mc < 0.1) {
     // This algorithm differs from the one in [Fuku11a] because it divides
     // log(q(mc)), not just log(mc / 16).  It tries to retain the same notation,
@@ -1248,59 +1250,59 @@ void FukushimaEllipticBD(double const mc, double& b, double& d) {
     }
     // Equivalent to Fukushima's code, but much simplified.
     double const one_over_two_kx_mc = 0.5 / kx_mc;
-    b = (x_mc * (ex_mc - mc * kx_mc) + one_over_two_kx_mc) / m;
-    d = x_mc * kx_mc - b;
+    b = (x_mc * (ex_mc - mc * kx_mc) + one_over_two_kx_mc) * Radian / m;
+    d = x_mc * kx_mc * Radian - b;
   } else if (m <= 0.01) {
-    b = (-π) * fukushima_b٭x_maclaurin.Evaluate(m);
-    d = π * fukushima_ex_maclaurin.Evaluate(m);
+    b = (-π * Radian) * fukushima_b٭x_maclaurin.Evaluate(m);
+    d = (π * Radian) * fukushima_ex_maclaurin.Evaluate(m);
   } else if (m <= 0.1) {
     double const mx = 0.95 - mc;
-    b = fukushima_b_taylor_0_05.Evaluate(mx);
-    d = fukushima_d_taylor_0_05.Evaluate(mx);
+    b = fukushima_b_taylor_0_05.Evaluate(mx) * Radian;
+    d = fukushima_d_taylor_0_05.Evaluate(mx) * Radian;
   } else if (m <= 0.2) {
     double const mx = 0.85 - mc;
-    b = fukushima_b_taylor_0_15.Evaluate(mx);
-    d = fukushima_d_taylor_0_15.Evaluate(mx);
+    b = fukushima_b_taylor_0_15.Evaluate(mx) * Radian;
+    d = fukushima_d_taylor_0_15.Evaluate(mx) * Radian;
   } else if (m <= 0.3) {
     double const mx = 0.75 - mc;
-    b = fukushima_b_taylor_0_25.Evaluate(mx);
-    d = fukushima_d_taylor_0_25.Evaluate(mx);
+    b = fukushima_b_taylor_0_25.Evaluate(mx) * Radian;
+    d = fukushima_d_taylor_0_25.Evaluate(mx) * Radian;
   } else if (m <= 0.4) {
     double const mx = 0.65 - mc;
-    b = fukushima_b_taylor_0_35.Evaluate(mx);
-    d = fukushima_d_taylor_0_35.Evaluate(mx);
+    b = fukushima_b_taylor_0_35.Evaluate(mx) * Radian;
+    d = fukushima_d_taylor_0_35.Evaluate(mx) * Radian;
   } else if (m <= 0.5) {
     double const mx = 0.55 - mc;
-    b = fukushima_b_taylor_0_45.Evaluate(mx);
-    d = fukushima_d_taylor_0_45.Evaluate(mx);
+    b = fukushima_b_taylor_0_45.Evaluate(mx) * Radian;
+    d = fukushima_d_taylor_0_45.Evaluate(mx) * Radian;
   } else if (m <= 0.6) {
     double const mx = 0.45 - mc;
-    b = fukushima_b_taylor_0_55.Evaluate(mx);
-    d = fukushima_d_taylor_0_55.Evaluate(mx);
+    b = fukushima_b_taylor_0_55.Evaluate(mx) * Radian;
+    d = fukushima_d_taylor_0_55.Evaluate(mx) * Radian;
   } else if (m <= 0.7) {
     double const mx = 0.35 - mc;
-    b = fukushima_b_taylor_0_65.Evaluate(mx);
-    d = fukushima_d_taylor_0_65.Evaluate(mx);
+    b = fukushima_b_taylor_0_65.Evaluate(mx) * Radian;
+    d = fukushima_d_taylor_0_65.Evaluate(mx) * Radian;
   } else if (m <= 0.8) {
     double const mx = 0.25 - mc;
-    b = fukushima_b_taylor_0_75.Evaluate(mx);
-    d = fukushima_d_taylor_0_75.Evaluate(mx);
+    b = fukushima_b_taylor_0_75.Evaluate(mx) * Radian;
+    d = fukushima_d_taylor_0_75.Evaluate(mx) * Radian;
   } else if (m <= 0.85) {
     double const mx = 0.175 - mc;
-    b = fukushima_b_taylor_0_825.Evaluate(mx);
-    d = fukushima_d_taylor_0_825.Evaluate(mx);
+    b = fukushima_b_taylor_0_825.Evaluate(mx) * Radian;
+    d = fukushima_d_taylor_0_825.Evaluate(mx) * Radian;
   } else {
     double const mx = 0.125 - mc;
-    b = fukushima_b_taylor_0_875.Evaluate(mx);
-    d = fukushima_d_taylor_0_875.Evaluate(mx);
+    b = fukushima_b_taylor_0_875.Evaluate(mx) * Radian;
+    d = fukushima_d_taylor_0_875.Evaluate(mx) * Radian;
   }
 }
 
 void FukushimaEllipticBDJ(double const nc,
                           double const mc,
-                          double& bc,
-                          double& dc,
-                          double& jc) {
+                          Angle& bc,
+                          Angle& dc,
+                          Angle& jc) {
   FukushimaEllipticBD(mc, bc, dc);
 
   // See [Buli69], special examples after equation (1.2.2).
@@ -1311,9 +1313,9 @@ void FukushimaEllipticBDJ(double const nc,
 void FukushimaEllipticBcDcJc(double const c₀,
                              double const n,
                              double const mc,
-                             double& b,
-                             double& d,
-                             double& j) {
+                             Angle& b,
+                             Angle& d,
+                             Angle& j) {
   // See [Fuku11b] section 2.2 for the determination of xS.
   constexpr double xS = 0.1;
   // The maximum number of iterations in the first loop below.
@@ -1357,8 +1359,8 @@ void FukushimaEllipticBcDcJc(double const c₀,
   for (int k = i; k > 0; --k) {
     double const sy = s[k - 1] * y[k];
     double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
-    b = 2.0 * b - sy;
-    d = d + (d + sy);
+    b = 2.0 * b - sy * Radian;
+    d = d + (d + sy * Radian);
     j = j + (j + FukushimaT(t, h));
   }
 }
@@ -1366,9 +1368,9 @@ void FukushimaEllipticBcDcJc(double const c₀,
 void FukushimaEllipticBsDsJs(double const s₀,
                              double const n,
                              double const mc,
-                             double& b,
-                             double& d,
-                             double& j) {
+                             Angle& b,
+                             Angle& d,
+                             Angle& j) {
   // See [Fuku11c] section 3.5 for the determination of yB.
   constexpr double yB = 0.01622;
   // The maximum number of argument transformations, related to yB.  This is the
@@ -1410,8 +1412,8 @@ void FukushimaEllipticBsDsJs(double const s₀,
   for (int k = i; k > 0; --k) {
     double const sy = s[k - 1] * y[k];
     double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
-    b = 2.0 * b - sy;
-    d = d + (d + sy);
+    b = 2.0 * b - sy * Radian;
+    d = d + (d + sy * Radian);
     j = j + (j + FukushimaT(t, h));
   }
 }
@@ -1419,8 +1421,8 @@ void FukushimaEllipticBsDsJs(double const s₀,
 // See [Fuku11b], section 2.3.
 void FukushimaEllipticBsDsMaclaurinSeries(double const y,
                                           double const m,
-                                          double& b,
-                                          double& d) {
+                                          Angle& b,
+                                          Angle& d) {
   double const Fs1 = FukushimaEllipticFsMaclaurin1::polynomial.Evaluate(m);
   double const Fs2 = FukushimaEllipticFsMaclaurin2::polynomial.Evaluate(m);
   double const Fs3 = FukushimaEllipticFsMaclaurin3::polynomial.Evaluate(m);
@@ -1436,18 +1438,18 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
   auto const fukushima_elliptic_ds_maclaurin =
       FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeDsPolynomial(
       1.0, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
-  d = fukushima_elliptic_ds_maclaurin.Evaluate(y);
+  d = fukushima_elliptic_ds_maclaurin.Evaluate(y) * Radian;
 
   auto const fukushima_elliptic_bs_maclaurin =
       FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeBsPolynomial(
       1.0, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
-  b = fukushima_elliptic_bs_maclaurin.Evaluate(y);
+  b = fukushima_elliptic_bs_maclaurin.Evaluate(y) * Radian;
 }
 
 // See [Fuku11c], section 3.4 and 3.5.
-double FukushimaEllipticJsMaclaurinSeries(double const y,
-                                          double const n,
-                                          double const m) {
+Angle FukushimaEllipticJsMaclaurinSeries(double const y,
+                                         double const n,
+                                         double const m) {
   // Maclaurin series in m whose coefficients are polynomials in n.  The index
   // is the degree in m (k in Fukushima's notation).
   PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
@@ -1487,7 +1489,7 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
     PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_4(
             std::make_tuple(js0, js1, js2, js3, js4));
-    return y * fukushima_elliptic_js_maclaurin_y_4.Evaluate(y);
+    return y * fukushima_elliptic_js_maclaurin_y_4.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
@@ -1503,7 +1505,7 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
     PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_5(
             std::make_tuple(js0, js1, js2, js3, js4, js5));
-    return y * fukushima_elliptic_js_maclaurin_y_5.Evaluate(y);
+    return y * fukushima_elliptic_js_maclaurin_y_5.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
@@ -1520,7 +1522,7 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
     PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_6(
             std::make_tuple(js0, js1, js2, js3, js4, js5, js6));
-    return y * fukushima_elliptic_js_maclaurin_y_6.Evaluate(y);
+    return y * fukushima_elliptic_js_maclaurin_y_6.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
@@ -1538,7 +1540,7 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
     PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_7(
             std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7));
-    return y * fukushima_elliptic_js_maclaurin_y_7.Evaluate(y);
+    return y * fukushima_elliptic_js_maclaurin_y_7.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
@@ -1557,7 +1559,7 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
     PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_8(
             std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7, js8));
-    return y * fukushima_elliptic_js_maclaurin_y_8.Evaluate(y);
+    return y * fukushima_elliptic_js_maclaurin_y_8.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
@@ -1576,10 +1578,10 @@ double FukushimaEllipticJsMaclaurinSeries(double const y,
   PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
       fukushima_elliptic_js_maclaurin_y_9(
           std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7, js8, js9));
-  return y * fukushima_elliptic_js_maclaurin_y_9.Evaluate(y);
+  return y * fukushima_elliptic_js_maclaurin_y_9.Evaluate(y) * Radian;
 }
 
-double FukushimaT(double const t, double const h) {
+Angle FukushimaT(double const t, double const h) {
   double const z = -h * t * t;
   double const abs_z = abs(z);
 
@@ -1589,38 +1591,38 @@ double FukushimaT(double const t, double const h) {
   // simpler and probably better.  (It also explains the position of z < 0 in
   // the list.)
   if (abs_z < 3.3306691e-16) {
-    return t;
+    return t * Radian;
   } else if (abs_z < 2.3560805e-08) {
-    return t * FukushimaTMaclaurin1::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin1::polynomial.Evaluate(z) * Radian;
   } else if (abs_z < 9.1939631e-06) {
-    return t * FukushimaTMaclaurin2::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin2::polynomial.Evaluate(z) * Radian;
   } else if (abs_z < 1.7779240e-04) {
-    return t * FukushimaTMaclaurin3::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin3::polynomial.Evaluate(z) * Radian;
   } else if (abs_z < 1.0407839e-03) {
-    return t * FukushimaTMaclaurin4::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin4::polynomial.Evaluate(z) * Radian;
   } else if (abs_z < 3.3616998e-03) {
-    return t * FukushimaTMaclaurin5::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin5::polynomial.Evaluate(z) * Radian;
   } else if (abs_z < 7.7408014e-03) {
-    return t * FukushimaTMaclaurin6::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin6::polynomial.Evaluate(z) * Radian;
   } else if (abs_z < 1.4437181e-02) {
-    return t * FukushimaTMaclaurin7::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin7::polynomial.Evaluate(z) * Radian;
   } else if (abs_z < 2.3407312e-02) {
-    return t * FukushimaTMaclaurin8::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin8::polynomial.Evaluate(z) * Radian;
   } else if (abs_z < 3.4416203e-02) {
-    return t * FukushimaTMaclaurin9::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin9::polynomial.Evaluate(z) * Radian;
   } else if (z < 0.0) {
     double const r = Sqrt(h);
     double const ri = 1.0 / r;
-    return std::atan(r * t) / r;
+    return ArcTan(r * t) / r;
   } else if (abs_z < 4.7138547e-02) {
-    return t * FukushimaTMaclaurin10::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin10::polynomial.Evaluate(z) * Radian;
   } else if (abs_z < 6.1227405e-02) {
-    return t * FukushimaTMaclaurin11::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin11::polynomial.Evaluate(z) * Radian;
   } else if (abs_z < 7.6353468e-02) {
-    return t * FukushimaTMaclaurin12::polynomial.Evaluate(z);
+    return t * FukushimaTMaclaurin12::polynomial.Evaluate(z) * Radian;
   } else {
     double const r = Sqrt(-h);
-    return std::atanh(r * t) / r;
+    return ArcTanh(r * t) / r;
   }
 }
 
@@ -1664,9 +1666,9 @@ void Reduce(Angle const& angle,
 void FukushimaEllipticBDJ(Angle const& φ,
                           double const n,
                           double const mc,
-                          double& b,
-                          double& d,
-                          double& j) {
+                          Angle& b,
+                          Angle& d,
+                          Angle& j) {
   DCHECK_LE(0, n);
   DCHECK_GE(1, n);
   DCHECK_LE(0, mc);
@@ -1676,7 +1678,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   // reduction.
   // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
   // better algorithm (Payne-Hanek?).
-  Angle φ_reduced;
+  Angle φ_reduced{uninitialized};
   std::int64_t count;
   Reduce(φ, φ_reduced, count);
   Angle const abs_φ_reduced = Abs(φ_reduced);
@@ -1692,9 +1694,9 @@ void FukushimaEllipticBDJ(Angle const& φ,
   constexpr double ys = 0.9;
 
   bool has_computed_complete_integrals = false;
-  double bc;
-  double dc;
-  double jc;
+  Angle bc{uninitialized};
+  Angle dc{uninitialized};
+  Angle jc{uninitialized};
 
   // The selection rule in [Fuku11b] section 2.1, equations (7-11) and [Fuku11c]
   // section 3.2, equations (22) and (23).  The identifiers follow Fukushima's
@@ -1716,8 +1718,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
       FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
       double const sz = z * Sqrt(1.0 - c²);
       double const t = sz / nc;
-      b = bc - (b - sz);
-      d = dc - (d + sz);
+      b = bc - (b - sz * Radian);
+      d = dc - (d + sz * Radian);
       j = jc - (j + FukushimaT(t, h));
       has_computed_complete_integrals = true;
     } else {
@@ -1731,8 +1733,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
         FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
         double const sz = c * Sqrt(w²_over_mc);
         double const t = sz / nc;
-        b = bc - (b - sz);
-        d = dc - (d + sz);
+        b = bc - (b - sz * Radian);
+        d = dc - (d + sz * Radian);
         j = jc - (j + FukushimaT(t, h));
         has_computed_complete_integrals = true;
       }
@@ -1755,43 +1757,43 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 }
 
-double EllipticE(quantities::Angle const& φ, double const mc) {
-  double e;
-  double f;
-  double ᴨ;
+Angle EllipticE(Angle const& φ, double const mc) {
+  Angle e{uninitialized};
+  Angle f{uninitialized};
+  Angle ᴨ{uninitialized};
   EllipticEFΠ(φ, /*n=*/1.0, mc, e, f, ᴨ);
   return e;
 }
 
-double EllipticF(quantities::Angle const& φ, double const mc) {
-  double e;
-  double f;
-  double ᴨ;
+Angle EllipticF(Angle const& φ, double const mc) {
+  Angle e{uninitialized};
+  Angle f{uninitialized};
+  Angle ᴨ{uninitialized};
   EllipticEFΠ(φ, /*n=*/1.0, mc, e, f, ᴨ);
   return f;
 }
 
-double EllipticΠ(quantities::Angle const& φ, double const n, double const mc) {
-  double e;
-  double f;
-  double ᴨ;
+Angle EllipticΠ(Angle const& φ, double const n, double const mc) {
+  Angle e{uninitialized};
+  Angle f{uninitialized};
+  Angle ᴨ{uninitialized};
   EllipticEFΠ(φ, n, mc, e, f, ᴨ);
   return ᴨ;
 }
 
-void EllipticEFΠ(quantities::Angle const& φ,
+void EllipticEFΠ(Angle const& φ,
                  double const n,
                  double const mc,
-                 double& e,
-                 double& f,
-                 double& ᴨ) {
+                 Angle& e,
+                 Angle& f,
+                 Angle& ᴨ) {
   DCHECK_LE(0, n);
   DCHECK_GE(1, n);
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
-  double b;
-  double d;
-  double j;
+  Angle b{uninitialized};
+  Angle d{uninitialized};
+  Angle j{uninitialized};
   FukushimaEllipticBDJ(φ, n, mc, b, d, j);
   e = b + mc * d;
   f = b + d;
@@ -1808,41 +1810,41 @@ void EllipticEFΠ(quantities::Angle const& φ,
 //
 //     Inputs: mc   = complementary parameter 0 <= mc   <= 1
 //
-double EllipticK(double const mc) {
+Angle EllipticK(double const mc) {
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
   // TODO(phl): Use a binary split of [0, 1] to reduce the number of
   // comparisons.
   double const m = 1.0 - mc;
   if (m == 0.0) {
-    return π / 2;
+    return π / 2 * Radian;
   } else if (mc < std::numeric_limits<double>::epsilon() / 2.0) {
-    return 2.0 * log_2 - 0.5 * std::log(mc);
+    return (2.0 * log_2 - 0.5 * std::log(mc)) * Radian;
   } else if (mc < 0.1) {
     double const nome = EllipticNomeQ<14>(mc);
     // Evaluate K'.
     return -elliptic_k_taylor_0_05.Evaluate(mc - 0.05) * (1 / π) *
-           std::log(nome);
+           std::log(nome) * Radian;
   } else if (m <= 0.1) {
-    return elliptic_k_taylor_0_05.Evaluate(m - 0.05);
+    return elliptic_k_taylor_0_05.Evaluate(m - 0.05) * Radian;
   } else if (m <= 0.2) {
-    return elliptic_k_taylor_0_15.Evaluate(m - 0.15);
+    return elliptic_k_taylor_0_15.Evaluate(m - 0.15) * Radian;
   } else if (m <= 0.3) {
-    return elliptic_k_taylor_0_25.Evaluate(m - 0.25);
+    return elliptic_k_taylor_0_25.Evaluate(m - 0.25) * Radian;
   } else if (m <= 0.4) {
-    return elliptic_k_taylor_0_35.Evaluate(m - 0.35);
+    return elliptic_k_taylor_0_35.Evaluate(m - 0.35) * Radian;
   } else if (m <= 0.5) {
-    return elliptic_k_taylor_0_45.Evaluate(m - 0.45);
+    return elliptic_k_taylor_0_45.Evaluate(m - 0.45) * Radian;
   } else if (m <= 0.6) {
-    return elliptic_k_taylor_0_55.Evaluate(m - 0.55);
+    return elliptic_k_taylor_0_55.Evaluate(m - 0.55) * Radian;
   } else if (m <= 0.7) {
-    return elliptic_k_taylor_0_65.Evaluate(m - 0.65);
+    return elliptic_k_taylor_0_65.Evaluate(m - 0.65) * Radian;
   } else if (m <= 0.8) {
-    return elliptic_k_taylor_0_75.Evaluate(m - 0.75);
+    return elliptic_k_taylor_0_75.Evaluate(m - 0.75) * Radian;
   } else if (m <= 0.85) {
-    return elliptic_k_taylor_0_825.Evaluate(m - 0.825);
+    return elliptic_k_taylor_0_825.Evaluate(m - 0.825) * Radian;
   } else {
-    return elliptic_k_taylor_0_875.Evaluate(m - 0.875);
+    return elliptic_k_taylor_0_875.Evaluate(m - 0.875) * Radian;
   }
 }
 

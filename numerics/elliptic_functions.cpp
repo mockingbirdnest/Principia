@@ -18,14 +18,19 @@ namespace internal_elliptic_functions {
 
 using quantities::Abs;
 using quantities::ArcTan;
+using quantities::Pow;
 using quantities::Sqrt;
 using quantities::si::Radian;
 
 namespace {
 
-constexpr double k_over_2_lower_bound = π / 4.0;
+constexpr Angle k_over_2_lower_bound = π / 4.0 * Radian;
 
-void JacobiSNCNDNReduced(double u, double mc, double& s, double& c, double& d);
+void JacobiSNCNDNReduced(Angle const& u,
+                         double mc,
+                         double& s,
+                         double& c,
+                         double& d);
 
 // Maclaurin series for Fukushima b₀.  These are polynomials in m that are used
 // as coefficients of a polynomial in u₀².  The index gives the corresponding
@@ -55,7 +60,7 @@ PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
 //
 //     Output: s = sn(u|m), c=cn(u|m), d=dn(u|m)
 //
-void JacobiSNCNDNReduced(double const u,
+void JacobiSNCNDNReduced(Angle const& u,
                          double const mc,
                          double& s,
                          double& c,
@@ -63,9 +68,9 @@ void JacobiSNCNDNReduced(double const u,
   constexpr int max_reductions = 20;
 
   double const m = 1.0 - mc;
-  double const uT = 5.217e-3 - 2.143e-3 * m;
+  Angle const uT = (5.217e-3 - 2.143e-3 * m) * Radian;
 
-  double u₀ = u;
+  Angle u₀ = u;
   int n = 0;  // Note that this variable is used after the loop.
   for (; u₀ >= uT; ++n) {
     DCHECK_LE(n, max_reductions)
@@ -78,14 +83,14 @@ void JacobiSNCNDNReduced(double const u,
   double const b₀3 = fukushima_b₀_maclaurin_m_3.Evaluate(m);
   PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
       fukushima_b₀_maclaurin_u₀²_3(std::make_tuple(0.0, b₀1, b₀2, b₀3));
-  double const u₀² = u₀ * u₀;
+  double const u₀² = (u₀ * u₀) / Pow<2>(Radian);
 
   // We use the subscript i to indicate variables that are computed as part of
   // the iteration (Fukushima uses subscripts n and N).  This avoids confusion
   // between c (the result) and cᵢ (the intermediate numerator of c).
   double bᵢ = fukushima_b₀_maclaurin_u₀²_3.Evaluate(u₀²);
 
-  double const uA = 1.76269 + 1.16357 * mc;
+  Angle const uA = (1.76269 + 1.16357 * mc) * Radian;
   bool const may_have_cancellation = u > uA;
   double aᵢ = 1.0;
   for (int i = 0; i < n; ++i) {
@@ -136,9 +141,9 @@ void JacobiSNCNDNReduced(double const u,
 //
 //     Output: s = sn(u|m), c=cn(u|m), d=dn(u|m)
 //
-void JacobiSNCNDNWithK(double const u,
+void JacobiSNCNDNWithK(Angle const& u,
                        double const mc,
-                       double const k,
+                       Angle const& k,
                        double& s,
                        double& c,
                        double& d) {
@@ -148,13 +153,13 @@ void JacobiSNCNDNWithK(double const u,
   // 3.5.2.
   double const m = 1.0 - mc;
   double const kʹ = Sqrt(mc);
-  double abs_u = Abs(u);
+  Angle abs_u = Abs(u);
   if (abs_u < k_over_2_lower_bound) {
     JacobiSNCNDNReduced(abs_u, mc, s, c, d);
   } else {
-    double const two_k = 2.0 * k;
-    double const three_k = 3.0 * k;
-    double const four_k = 4.0 * k;
+    Angle const two_k = 2.0 * k;
+    Angle const three_k = 3.0 * k;
+    Angle const four_k = 4.0 * k;
     abs_u =
         abs_u - four_k * static_cast<double>(static_cast<int>(abs_u / four_k));
     if (abs_u < 0.5 * k) {
@@ -195,24 +200,23 @@ void JacobiSNCNDNWithK(double const u,
       s = -s;
     }
   }
-  if (u < 0.0) {
+  if (u < Angle()) {
     s = -s;
   }
 }
 }  // namespace
 
-Angle JacobiAmplitude(double u, double mc) {
-  constexpr double k_over_2_lower_bound = π / 4.0;
+Angle JacobiAmplitude(Angle const& u, double mc) {
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
   double s;
   double c;
   double d;
   double n;
-  double abs_u = Abs(u);
+  Angle abs_u = Abs(u);
   if (abs_u < k_over_2_lower_bound) {
     JacobiSNCNDNReduced(abs_u, mc, s, c, d);
-    if (u < 0.0) {
+    if (u < Angle()) {
       s = -s;
     }
     n = 0.0;
@@ -229,7 +233,7 @@ Angle JacobiAmplitude(double u, double mc) {
     // to the range [-π/2, π/2].  We avoid the branch cut, and any inaccuracy in
     // the rounding has the innocuous effect of causing the ArcTan to go a bit
     // beyond -π/2 or π/2.
-    double const k = EllipticK(mc);
+    Angle const k = EllipticK(mc);
     n = std::nearbyint(u / (2.0 * k));
     JacobiSNCNDNWithK(u - 2.0 * n * k, mc, k, s, c, d);
   }
@@ -252,21 +256,21 @@ Angle JacobiAmplitude(double u, double mc) {
 //
 //     Output: s = sn(u|m), c=cn(u|m), d=dn(u|m)
 //
-void JacobiSNCNDN(double const u,
+void JacobiSNCNDN(Angle const& u,
                   double const mc,
                   double& s,
                   double& c,
                   double& d) {
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
-  double abs_u = Abs(u);
+  Angle const abs_u = Abs(u);
   if (abs_u < k_over_2_lower_bound) {
     JacobiSNCNDNReduced(abs_u, mc, s, c, d);
-    if (u < 0.0) {
+    if (u < Angle()) {
       s = -s;
     }
   } else {
-    double const k = EllipticK(mc);
+    Angle const k = EllipticK(mc);
     JacobiSNCNDNWithK(u, mc, k, s, c, d);
   }
 }

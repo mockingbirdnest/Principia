@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 
+#include "base/tags.hpp"
 #include "benchmark/benchmark.h"
 #include "numerics/elliptic_integrals.hpp"
 #include "quantities/numbers.hpp"
@@ -11,6 +12,7 @@
 
 namespace principia {
 
+using base::uninitialized;
 using quantities::Angle;
 using quantities::si::Radian;
 
@@ -33,9 +35,9 @@ void BM_EllipticEFΠ(benchmark::State& state) {
   }
 
   while (state.KeepRunningBatch(size * size * size)) {
-    double e;
-    double f;
-    double ᴨ;
+    Angle e{uninitialized};
+    Angle f{uninitialized};
+    Angle ᴨ{uninitialized};
     for (Angle const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {
@@ -66,9 +68,9 @@ void BM_FukushimaEllipticBDJ(benchmark::State& state) {
   }
 
   while (state.KeepRunningBatch(size * size * size)) {
-    double b;
-    double d;
-    double j;
+    Angle b{uninitialized};
+    Angle d{uninitialized};
+    Angle j{uninitialized};
     for (Angle const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {
