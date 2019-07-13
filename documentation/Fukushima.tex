@@ -21,7 +21,7 @@ On an Algorithm by Fukushima%
 \maketitle
 \begin{sloppypar}
 \noindent
-This document describes an algorithm used by Fukushima in his implementation of the complete elliptic integrals of the second kind $B$ and $D$.  It follows the notation and conventions of [Fuku11a], but effectively replaces section 2.2.
+This document describes an algorithm used by Fukushima in his implementation of the complete elliptic integrals of the second kind $B$ and $D$.  It follows the notation and conventions of \cite{Fukushima2011a}, but effectively replaces section 2.2.
 \end{sloppypar}
 
 \subsection*{Definitions}
@@ -40,9 +40,9 @@ X\of{m_c} &= -\log q\of{m_c}\\
 K_X\of{m_c} &= \frac{K\of{m_c}}{\gp}
 \end{dcases}
 \]
-where: $K\of{m} = K_X\of{m_c} X\of{m_c}$.
+We have: $K\of{m} = K_X\of{m_c} X\of{m_c}$.
 
-An expression for $E\of{m}$ can be obtained from Legrendre's relation ([Fuku11a] equation 2.11):
+An expression for $E\of{m}$ can be obtained from Legendre's relation ([Fuku11a] equation 2.11):
 \[
 E\of{m} = \pa{1 - \frac{E\of{m_c}}{K\of{m_c}}} K\of{m} + \frac{\gp}{2 K\of{m_c}}
 \]
@@ -75,7 +75,7 @@ D\of{m} &= \frac{1}{m}\pa{K_X\of{m_c} X\of{m_c} - E_X\of{m_c} X\of{m_c} - E_0\of
 &= \frac{1}{m}\pa{X\of{m_c}\pa{K_X\of{m_c} - E_X\of{m_c}} - \frac{1}{2 K_X\of{m_c}}}
 \end{align*}
 These formulæ provide a means to compute $B\of{m}$ and $D\of{m}$ for $m$ close to $1$.  First, a polynomial approximation of $q\of{m_c}$
-is computed, whose first term is of order $m_c / 16$.  Then the $\log$ of that approximation is evaluated, yielding $X\of{m_c}$ (this
+is computed, whose leading term is of order $m_c / 16$.  Then the $\log$ of that approximation is evaluated, yielding $X\of{m_c}$ (this
 is the part that carries the logarithmic singularity).  Finally, $E_X\of{m_c}$ and $K_X\of{m_c}$ are computed using
 Taylor or Maclaurin approximations.
 
@@ -84,7 +84,7 @@ $D\of{m}$ is known.
 
 \subsection*{Integrals of the second kind when $m$ tends towards $1$}
 We are now interested in computing the leading term of $B\of{m}$ and $D\of{m}$ when $\conv m 1$.  First, we have $B\of{1} = 1$ 
-([Fuku11a], equation 1.9).  However, $\conv {D\of{m}} +\infty$ when $\conv m 1$.  To deal with this singularity we write:
+([Fuku11a], equation 1.9).  However, $\conv {D\of{m}} +\infty$ when $\conv m 1$.  To deal with this singularity we recall that:
 \[
 B\of{m} = X\of{m_c} K_X\of{m_c} - D\of{m}
 \]
