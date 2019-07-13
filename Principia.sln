@@ -139,6 +139,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "parallel_test_runner", "par
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_physics", "ksp_physics\ksp_physics.vcxproj", "{3882467C-89D7-4DAE-9730-BB2E610F05AD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{FA689AE8-C152-4005-978E-1B701ABF9E1C}"
+	ProjectSection(SolutionItems) = preProject
+		documentation\basestyle.cls = documentation\basestyle.cls
+		documentation\bibliography.bib = documentation\bibliography.bib
+		documentation\bibliography.tex = documentation\bibliography.tex
+		documentation\Composition methods.tex = documentation\Composition methods.tex
+		documentation\Geopotential.tex = documentation\Geopotential.tex
+		documentation\Hamiltonian Mechanics.tex = documentation\Hamiltonian Mechanics.tex
+		documentation\J2 coefficient.tex = documentation\J2 coefficient.tex
+		documentation\Legendre.tex = documentation\Legendre.tex
+		documentation\ODEs and Runge-Kutta integrators.tex = documentation\ODEs and Runge-Kutta integrators.tex
+		documentation\Perspective hiding.tex = documentation\Perspective hiding.tex
+		documentation\semtex.sty = documentation\semtex.sty
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
