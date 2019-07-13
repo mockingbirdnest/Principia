@@ -188,15 +188,14 @@ internal class MainWindow : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           version,
           style : Style.Info(UnityEngine.GUI.skin.label));
-      bool changed_history_length = false;
-      RenderSelector(history_lengths_,
+      RenderSelector(enabled: true,
+                     history_lengths_,
                      ref history_length_index_,
                      "Max history length",
-                     ref changed_history_length,
                      "{0:0.00e00} s");
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
-        show_selection_ui = true;
+        show_selection_ui_ = true;
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           selecting_active_vessel_target = UnityEngine.GUILayout.Toggle(
               selecting_active_vessel_target, "Select target vessel...");
@@ -222,8 +221,8 @@ internal class MainWindow : SupervisedWindowRenderer {
         }
       } else {
         // This will remove the "Select" UI so it must shrink.
-        if (show_selection_ui) {
-          show_selection_ui = false;
+        if (show_selection_ui_) {
+          show_selection_ui_ = false;
           Shrink();
         }
         selecting_active_vessel_target = false;
@@ -376,10 +375,12 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderPredictionSettings() {
+    bool enabled = vessel_ != null;
     if (vessel_ != predicted_vessel_()) {
       vessel_ = predicted_vessel_();
       string vessel_guid = vessel_?.id.ToString();
       if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
+        enabled = true;
         AdaptiveStepParameters adaptive_step_parameters =
             plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
         prediction_length_tolerance_index_ = Array.FindIndex(
@@ -397,46 +398,49 @@ internal class MainWindow : SupervisedWindowRenderer {
         if (prediction_steps_index_ < 0) {
           prediction_steps_index_ = default_prediction_steps_index_;
         }
+      } else {
+        enabled = false;
       }
     }
 
-    bool changed_settings = false;
-    RenderSelector(prediction_length_tolerances_,
+    RenderSelector(enabled,
+                   prediction_length_tolerances_,
                    ref prediction_length_tolerance_index_,
                    "Tolerance",
-                   ref changed_settings,
                    "{0:0.0e0} m");
-    RenderSelector(prediction_steps_,
+    RenderSelector(enabled,
+                   prediction_steps_,
                    ref prediction_steps_index_,
                    "Steps",
-                   ref changed_settings,
                    "{0:0.00e0}");
   }
 
-  private void RenderSelector<T>(T[] array,
+  private void RenderSelector<T>(bool enabled,
+                                 T[] array,
                                  ref int index,
                                  string label,
-                                 ref bool changed,
                                  string format) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text    : label + ":",
                                   options : GUILayoutWidth(6));
       if (UnityEngine.GUILayout.Button(text    : index == 0 ? "min" : "-",
                                        options : GUILayoutWidth(2)) &&
+          enabled &&
           index != 0) {
         --index;
-        changed = true;
       }
       UnityEngine.GUILayout.TextArea(
-          text    : string.Format(Culture.culture, format, array[index]),
+          text    : enabled
+                        ? string.Format(Culture.culture, format, array[index])
+                        : "",
           style   : Style.RightAligned(UnityEngine.GUI.skin.textArea),
           options : GUILayoutWidth(3));
       if (UnityEngine.GUILayout.Button(
               text    : index == array.Length - 1 ? "max" : "+",
               options : GUILayoutWidth(2)) &&
+          enabled &&
           index != array.Length - 1) {
         ++index;
-        changed = true;
       }
     }
   }
@@ -483,7 +487,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool show_logging_settings_ = false;
   private bool show_prediction_settings_ = true;
 
-  private bool show_selection_ui = false;
+  private bool show_selection_ui_ = false;
 
   private bool should_load_compatibility_data_ = true;
   private int prediction_length_tolerance_index_ =
