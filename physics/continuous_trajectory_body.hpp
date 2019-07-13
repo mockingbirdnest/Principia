@@ -347,7 +347,9 @@ ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min_locked() const {
+#if defined(_DEBUG)
   lock_.AssertReaderHeld();
+#endif
   if (polynomials_.empty()) {
     return astronomy::InfiniteFuture;
   }
@@ -356,7 +358,9 @@ Instant ContinuousTrajectory<Frame>::t_min_locked() const {
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_max_locked() const {
+#if defined(_DEBUG)
   lock_.AssertReaderHeld();
+#endif
   if (polynomials_.empty()) {
     return astronomy::InfinitePast;
   }
@@ -486,7 +490,9 @@ template<typename Frame>
 typename ContinuousTrajectory<Frame>::InstantPolynomialPairs::const_iterator
 ContinuousTrajectory<Frame>::FindPolynomialForInstant(
     Instant const& time) const {
+#if defined(_DEBUG)
   lock_.AssertReaderHeld();
+#endif
   // This returns the first polynomial |p| such that |time <= p.t_max|.
   {
     auto const begin = polynomials_.begin();
