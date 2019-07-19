@@ -219,7 +219,10 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
        5.0 * SIUnit<AngularMomentum>(),
        7.0 * SIUnit<AngularMomentum>()});
 
-  AngularFrequency Ω = -2.0 * Radian / Second;
+  //NOTE(phl):Sign opposite to lecture 19.
+  AngularFrequency Ω = initial_angular_momentum.coordinates().z *
+                       (moments_of_inertia[2] - moments_of_inertia[0]) /
+                       (moments_of_inertia[0] * moments_of_inertia[2]);
 
   EulerSolver const solver(
       moments_of_inertia, initial_angular_momentum, Instant());
@@ -229,7 +232,7 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
                 AlmostEquals(EulerSolver::AngularMomentumBivector({
                     5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
                     5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>(),
-                    7.0 * SIUnit<AngularMomentum>()}), 0)) << t;
+                    7.0 * SIUnit<AngularMomentum>()}), 0, 34)) << t;
   }
 }
 
