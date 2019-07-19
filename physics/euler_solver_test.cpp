@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -18,10 +19,16 @@ namespace physics {
 
 using geometry::Instant;
 using geometry::R3Element;
+using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::MomentOfInertia;
+using quantities::Cos;
+using quantities::Sin;
 using quantities::SIUnit;
 using quantities::Sqrt;
+using quantities::Time;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 
 class EulerSolverTest : public ::testing::Test {
@@ -205,17 +212,25 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
   R3Element<MomentOfInertia> const moments_of_inertia{
       3.0 * SIUnit<MomentOfInertia>(),
       3.0 * SIUnit<MomentOfInertia>(),
-      6.0 * SIUnit<MomentOfInertia>()};
+      9.0 * SIUnit<MomentOfInertia>()};
 
-  EulerSolver::AngularMomentumBivector initial_angular_momentum(
-      {2.0 * SIUnit<AngularMomentum>(),
-       2.0 * SIUnit<AngularMomentum>(),
-       1.0 * SIUnit<AngularMomentum>()});
+  EulerSolver::AngularMomentumBivector const initial_angular_momentum(
+      {0.0 * SIUnit<AngularMomentum>(),
+       5.0 * SIUnit<AngularMomentum>(),
+       7.0 * SIUnit<AngularMomentum>()});
+
+  AngularFrequency Ω = -2.0 * Radian / Second;
 
   EulerSolver const solver(
       moments_of_inertia, initial_angular_momentum, Instant());
-  auto const computed_initial_angular_momentum =
-      solver.AngularMomentumAt(Instant());
+  for (Time t = 0 * Second; t < 5.0 * Second; t += 0.1 * Second) {
+    auto const angular_momentum_at_t = solver.AngularMomentumAt(Instant() + t);
+    EXPECT_THAT(angular_momentum_at_t,
+                AlmostEquals(EulerSolver::AngularMomentumBivector({
+                    5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
+                    5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>(),
+                    7.0 * SIUnit<AngularMomentum>()}), 0)) << t;
+  }
 }
 
 }  // namespace physics
