@@ -201,5 +201,22 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
   }
 }
 
+TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
+  R3Element<MomentOfInertia> const moments_of_inertia{
+      3.0 * SIUnit<MomentOfInertia>(),
+      3.0 * SIUnit<MomentOfInertia>(),
+      6.0 * SIUnit<MomentOfInertia>()};
+
+  EulerSolver::AngularMomentumBivector initial_angular_momentum(
+      {2.0 * SIUnit<AngularMomentum>(),
+       2.0 * SIUnit<AngularMomentum>(),
+       1.0 * SIUnit<AngularMomentum>()});
+
+  EulerSolver const solver(
+      moments_of_inertia, initial_angular_momentum, Instant());
+  auto const computed_initial_angular_momentum =
+      solver.AngularMomentumAt(Instant());
+}
+
 }  // namespace physics
 }  // namespace principia
