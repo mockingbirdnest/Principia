@@ -61,7 +61,6 @@ EulerSolver::EulerSolver(
 
   B₁₃_ = Sqrt(I₁ * Δ₃ / I₃₁);
   B₃₁_ = Sqrt(I₃ * Δ₁ / I₃₁);
-  λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁ * I₂ * I₃));
 
   // Note that Celledoni et al. give k, but we need mc = 1 - k^2.  We write mc
   // in a way that reduces cancellations when k is close to 1.
@@ -69,9 +68,11 @@ EulerSolver::EulerSolver(
     B₂₁_ = Sqrt(I₂ * Δ₁ / I₂₁);
     mc_ = -Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_);
+    λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁ * I₂ * I₃));
     if (m.x < AngularMomentum()) {
-      λ₃_ = -λ₃_;
       B₁₃_ = -B₁₃_;
+    } else {
+      λ₃_ = -λ₃_;
     }
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
@@ -80,12 +81,13 @@ EulerSolver::EulerSolver(
     ν_ = EllipticF(ArcTan(m.y / B₂₃_, m.x / B₁₃_), mc_);
     λ₁_ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
     if (m.z < AngularMomentum()) {
-      λ₁_ = -λ₁_;
       B₃₁_ = -B₃₁_;
+    } else {
+      λ₁_ = -λ₁_;
     }
     formula_ = Formula::ii;
   } else {
-    // Δ₂ == Square<AngularMomentum>()
+    CHECK_EQ(Square<AngularMomentum>(), Δ₂);
     if (I₃₁ == MomentOfInertia()) {
       // The degenerate case of a sphere.  It would create NaNs.
       DCHECK_EQ(MomentOfInertia(), I₂₁);
@@ -94,12 +96,14 @@ EulerSolver::EulerSolver(
     } else {
       G_ =  initial_angular_momentum_.Norm();
       ν_ = -ArcTanh(m.y / G_);
-      // NOTE(phl): The sign adjustments on this path are unclear.
+      λ₂_ = Sqrt(Δ₁ * Δ₃ / (I₁ * I₃)) / G_;
       if (m.x < AngularMomentum()) {
         B₁₃_ = -B₁₃_;
+        λ₂_ = -λ₂_;
       }
       if (m.z < AngularMomentum()) {
         B₃₁_ = -B₃₁_;
+        λ₂_ = -λ₂_;
       }
       formula_ = Formula::iii;
     }
@@ -125,7 +129,7 @@ EulerSolver::AngularMomentumBivector EulerSolver::AngularMomentumAt(
       return AngularMomentumBivector({B₁₃_ * cn, -B₂₃_ * sn, B₃₁_ * dn});
     }
     case Formula::iii: {
-      Angle const angle = λ₃_ * Δt - ν_;
+      Angle const angle = λ₂_ * Δt - ν_;
       double const sech = 1.0 / Cosh(angle);
       return AngularMomentumBivector(
           {B₁₃_ * sech, G_ * Tanh(angle), B₃₁_ * sech});
