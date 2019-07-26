@@ -91,7 +91,7 @@ EulerSolver::EulerSolver(
     if (I₃₁ == MomentOfInertia()) {
       // The degenerate case of a sphere.  It would create NaNs.
       DCHECK_EQ(MomentOfInertia(), I₂₁);
-      DCHECK_EQ(AngularFrequency(), λ₃_);
+      DCHECK_EQ(MomentOfInertia(), I₃₂);
       formula_ = Formula::Sphere;
     } else {
       G_ =  initial_angular_momentum_.Norm();
