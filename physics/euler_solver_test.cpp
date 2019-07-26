@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <array>
 #include <random>
+#include <set>
+#include <vector>
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
