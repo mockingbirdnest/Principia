@@ -267,8 +267,7 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
                 AlmostEquals(EulerSolver::AngularMomentumBivector({
                                  7.0 * SIUnit<AngularMomentum>(),
                                  5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
-                                 5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>(),
-                             }),
+                                 5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>()}),
                              0,
                              34))
         << t;
