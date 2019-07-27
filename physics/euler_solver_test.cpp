@@ -276,6 +276,11 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
   }
 }
 
+// This test demonstrates the Джанибеков effect, also known as tennis racket
+// theorem: the rotation of an object around its second principal axis is not
+// stable.  Here we choose the initial angular momentum to be mostly in the y
+// direction with a small component in the z direction.  This causes the object
+// to periodically flip, rotating along y or along -y.
 TEST_F(EulerSolverTest, ДжанибековEffect) {
   R3Element<MomentOfInertia> const moments_of_inertia{
       3.0 * SIUnit<MomentOfInertia>(),
