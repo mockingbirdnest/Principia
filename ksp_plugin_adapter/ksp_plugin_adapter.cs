@@ -192,13 +192,13 @@ public partial class PrincipiaPluginAdapter
           "The Principia DLL failed to load.\n" + load_error;
       bad_installation_dialog_.Show();
     }
-#if KSP_VERSION_1_7_2
+#if KSP_VERSION_1_7_3
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 6 && Versioning.Revision == 1) ||
-          (Versioning.version_minor == 7 && Versioning.Revision <= 2))) {
+          (Versioning.version_minor == 7 && Versioning.Revision <= 3))) {
       string expected_version =
-          "1.7.2, 1.7.1, 1.7.0, 1.6.1, and 1.5.1";
+          "1.7.3, 1.7.2, 1.7.1, 1.7.0, 1.6.1, and 1.5.1";
 #endif
       string message = $@"Unexpected KSP version {Versioning.version_major}.{
           Versioning.version_minor}.{Versioning.Revision}; this build targets {
@@ -453,7 +453,7 @@ public partial class PrincipiaPluginAdapter
         path;
     if (File.Exists(full_path)) {
       var texture2d = new UnityEngine.Texture2D(2, 2);
-#if KSP_VERSION_1_7_2
+#if KSP_VERSION_1_7_3
       bool success = UnityEngine.ImageConversion.LoadImage(
           texture2d, File.ReadAllBytes(full_path));
 #endif
