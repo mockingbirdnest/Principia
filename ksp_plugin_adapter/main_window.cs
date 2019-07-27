@@ -8,7 +8,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   private const string next_release_name_ = "Ferrari";
   private const int next_release_lunation_number_ = 242;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2019, 07, 01, 03, 12, 00, TimeSpan.Zero);
+      new DateTimeOffset(2019, 08, 01, 03, 12, 00, TimeSpan.Zero);
 
   public delegate Vessel PredictedVessel();
 
