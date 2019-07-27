@@ -8,7 +8,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   private const string next_release_name_ = "Ferrari";
   private const int next_release_lunation_number_ = 242;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2019, 08, 01, 03, 12, 00, TimeSpan.Zero);
+      new DateTimeOffset(2019, 07, 01, 03, 12, 00, TimeSpan.Zero);
 
   public delegate Vessel PredictedVessel();
 
@@ -167,20 +167,22 @@ internal class MainWindow : SupervisedWindowRenderer {
             style : Style.Warning(UnityEngine.GUI.skin.label));
       }
       if (DateTimeOffset.Now > next_release_date_) {
-        if (Versioning.Revision <= 4) {
+        if (Versioning.version_minor <= 4) {
           UnityEngine.GUILayout.TextArea(
               "Announcement: the new moon of lunation number " +
               next_release_lunation_number_ +
               " has come; please update KSP to version 1.6.1 and download " +
               "the latest Principia release, " + next_release_name_ + ". " +
               "Note that RealismOverhaul and RealSolarSystem now support " +
-              "KSP 1.6.1.");
+              "KSP 1.6.1.",
+              style : Style.Multiline(UnityEngine.GUI.skin.textArea));
         } else {
           UnityEngine.GUILayout.TextArea(
               "Announcement: the new moon of lunation number " +
               next_release_lunation_number_ +
               " has come; please download the latest Principia release, " +
-              next_release_name_ + ".");
+              next_release_name_ + ".",
+              style: Style.Multiline(UnityEngine.GUI.skin.textArea));
         }
       }
       Interface.GetVersion(build_date : out string unused_build_date,
