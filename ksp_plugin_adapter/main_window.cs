@@ -377,11 +377,9 @@ internal class MainWindow : SupervisedWindowRenderer {
     if (vessel_ != predicted_vessel_()) {
       vessel_ = predicted_vessel_();
     }
-    bool enabled = false;
     AdaptiveStepParameters? adaptive_step_parameters = null;
     string vessel_guid = vessel_?.id.ToString();
     if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
-      enabled = true;
       adaptive_step_parameters =
           plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
       prediction_length_tolerance_index_ = Array.FindIndex(
@@ -399,16 +397,14 @@ internal class MainWindow : SupervisedWindowRenderer {
       if (prediction_steps_index_ < 0) {
         prediction_steps_index_ = default_prediction_steps_index_;
       }
-    } else {
-      enabled = false;
     }
 
     // TODO(egg): make the speed tolerance independent.
-    if (RenderSelector(enabled,
-                       prediction_length_tolerances_,
+    if (RenderSelector(prediction_length_tolerances_,
                        ref prediction_length_tolerance_index_,
                        "Tolerance",
-                       "{0:0.0e0} m")) {
+                       "{0:0.0e0} m",
+                       enabled: adaptive_step_parameters.HasValue)) {
       AdaptiveStepParameters new_adaptive_step_parameters =
           new AdaptiveStepParameters{
             integrator_kind = adaptive_step_parameters.Value.integrator_kind,
@@ -418,11 +414,11 @@ internal class MainWindow : SupervisedWindowRenderer {
       plugin.VesselSetPredictionAdaptiveStepParameters(
           vessel_guid, new_adaptive_step_parameters);
     }
-    if (RenderSelector(enabled,
-                       prediction_steps_,
+    if (RenderSelector(prediction_steps_,
                        ref prediction_steps_index_,
                        "Steps",
-                       "{0:0.00e0}")) {
+                       "{0:0.00e0}",
+                       enabled: adaptive_step_parameters.HasValue)) {
       AdaptiveStepParameters new_adaptive_step_parameters =
           new AdaptiveStepParameters{
             integrator_kind = adaptive_step_parameters.Value.integrator_kind,
@@ -434,11 +430,11 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
   }
 
-  private bool RenderSelector<T>(bool enabled,
-                                 T[] array,
+  private bool RenderSelector<T>(T[] array,
                                  ref int index,
                                  string label,
-                                 string format) {
+                                 string format,
+                                 bool enabled) {
     bool changed = false;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text    : label + ":",
