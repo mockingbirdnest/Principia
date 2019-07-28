@@ -49,9 +49,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   public bool display_patched_conics { get; private set; } = false;
 
   public double history_length => history_lengths_[history_length_index_];
-  public double prediction_length_tolerance =>
-      prediction_length_tolerances_[prediction_length_tolerance_index_];
-  public long prediction_steps => prediction_steps_[prediction_steps_index_];
 
   public void LoadCompatibilityDataIfNeeded(int history_length_index) {
     if (should_load_compatibility_data_) {
@@ -190,11 +187,11 @@ internal class MainWindow : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           version,
           style : Style.Info(UnityEngine.GUI.skin.label));
-      RenderSelector(enabled: true,
-                     history_lengths_,
+      RenderSelector(history_lengths_,
                      ref history_length_index_,
                      "Max history length",
-                     "{0:0.00e00} s");
+                     "{0:0.00e00} s",
+                     enabled: true);
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
         show_selection_ui_ = true;
@@ -377,51 +374,68 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderPredictionSettings() {
-    bool enabled = vessel_ != null;
     if (vessel_ != predicted_vessel_()) {
       vessel_ = predicted_vessel_();
-      string vessel_guid = vessel_?.id.ToString();
-      if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
-        enabled = true;
-        AdaptiveStepParameters adaptive_step_parameters =
-            plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
-        prediction_length_tolerance_index_ = Array.FindIndex(
-            prediction_length_tolerances_,
-            (double tolerance) =>
-                tolerance >=
-                    adaptive_step_parameters.length_integration_tolerance);
-        if (prediction_length_tolerance_index_ < 0) {
-          prediction_length_tolerance_index_ =
-              default_prediction_length_tolerance_index_;
-        }
-        prediction_steps_index_ = Array.FindIndex(
-            prediction_steps_,
-            (long step) => step >= adaptive_step_parameters.max_steps);
-        if (prediction_steps_index_ < 0) {
-          prediction_steps_index_ = default_prediction_steps_index_;
-        }
-      } else {
-        enabled = false;
+    }
+    AdaptiveStepParameters? adaptive_step_parameters = null;
+    string vessel_guid = vessel_?.id.ToString();
+    if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
+      adaptive_step_parameters =
+          plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
+      prediction_length_tolerance_index_ = Array.FindIndex(
+          prediction_length_tolerances_,
+          (double tolerance) =>
+              tolerance >=
+                  adaptive_step_parameters.Value.length_integration_tolerance);
+      if (prediction_length_tolerance_index_ < 0) {
+        prediction_length_tolerance_index_ =
+            default_prediction_length_tolerance_index_;
+      }
+      prediction_steps_index_ = Array.FindIndex(
+          prediction_steps_,
+          (long step) => step >= adaptive_step_parameters.Value.max_steps);
+      if (prediction_steps_index_ < 0) {
+        prediction_steps_index_ = default_prediction_steps_index_;
       }
     }
 
-    RenderSelector(enabled,
-                   prediction_length_tolerances_,
-                   ref prediction_length_tolerance_index_,
-                   "Tolerance",
-                   "{0:0.0e0} m");
-    RenderSelector(enabled,
-                   prediction_steps_,
-                   ref prediction_steps_index_,
-                   "Steps",
-                   "{0:0.00e0}");
+    // TODO(egg): make the speed tolerance independent.
+    if (RenderSelector(prediction_length_tolerances_,
+                       ref prediction_length_tolerance_index_,
+                       "Tolerance",
+                       "{0:0.0e0} m",
+                       enabled: adaptive_step_parameters.HasValue)) {
+      AdaptiveStepParameters new_adaptive_step_parameters =
+          new AdaptiveStepParameters{
+            integrator_kind = adaptive_step_parameters.Value.integrator_kind,
+            max_steps = prediction_steps,
+            length_integration_tolerance = prediction_length_tolerance,
+            speed_integration_tolerance = prediction_length_tolerance};
+      plugin.VesselSetPredictionAdaptiveStepParameters(
+          vessel_guid, new_adaptive_step_parameters);
+    }
+    if (RenderSelector(prediction_steps_,
+                       ref prediction_steps_index_,
+                       "Steps",
+                       "{0:0.00e0}",
+                       enabled: adaptive_step_parameters.HasValue)) {
+      AdaptiveStepParameters new_adaptive_step_parameters =
+          new AdaptiveStepParameters{
+            integrator_kind = adaptive_step_parameters.Value.integrator_kind,
+            max_steps = prediction_steps,
+            length_integration_tolerance = prediction_length_tolerance,
+            speed_integration_tolerance = prediction_length_tolerance};
+      plugin.VesselSetPredictionAdaptiveStepParameters(
+          vessel_guid, new_adaptive_step_parameters);
+    }
   }
 
-  private void RenderSelector<T>(bool enabled,
-                                 T[] array,
+  private bool RenderSelector<T>(T[] array,
                                  ref int index,
                                  string label,
-                                 string format) {
+                                 string format,
+                                 bool enabled) {
+    bool changed = false;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text    : label + ":",
                                   options : GUILayoutWidth(6));
@@ -430,6 +444,7 @@ internal class MainWindow : SupervisedWindowRenderer {
           enabled &&
           index != 0) {
         --index;
+        changed = true;
       }
       UnityEngine.GUILayout.TextArea(
           text    : enabled
@@ -443,8 +458,10 @@ internal class MainWindow : SupervisedWindowRenderer {
           enabled &&
           index != array.Length - 1) {
         ++index;
+        changed = true;
       }
     }
+    return changed;
   }
 
   private void RenderToggleableSection(string name,
@@ -464,6 +481,9 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private IntPtr plugin => adapter_.Plugin();
+  private double prediction_length_tolerance =>
+      prediction_length_tolerances_[prediction_length_tolerance_index_];
+  private long prediction_steps => prediction_steps_[prediction_steps_index_];
 
   private static readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
