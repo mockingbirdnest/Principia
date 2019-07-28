@@ -403,7 +403,7 @@ internal class MainWindow : SupervisedWindowRenderer {
       enabled = false;
     }
 
-    // TODO(egg): make the speed tolerance independent.  Also max_steps.
+    // TODO(egg): make the speed tolerance independent.
     if (RenderSelector(enabled,
                        prediction_length_tolerances_,
                        ref prediction_length_tolerance_index_,
