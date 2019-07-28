@@ -187,11 +187,11 @@ internal class MainWindow : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           version,
           style : Style.Info(UnityEngine.GUI.skin.label));
-      RenderSelector(enabled: true,
-                     history_lengths_,
+      RenderSelector(history_lengths_,
                      ref history_length_index_,
                      "Max history length",
-                     "{0:0.00e00} s");
+                     "{0:0.00e00} s",
+                     enabled: true);
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
         show_selection_ui_ = true;
