@@ -317,6 +317,13 @@ public partial class PrincipiaPluginAdapter
           FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
       if (!plotting_frame_selector_.target_override &&
           target_id != null && plugin_.HasVessel(target_id)) {
+        // TODO(phl): It's not nice that we are overriding the target vessel
+        // parameters.
+        AdaptiveStepParameters adaptive_step_parameters =
+            plugin_.VesselGetPredictionAdaptiveStepParameters(
+                main_vessel.id.ToString());
+        plugin_.VesselSetPredictionAdaptiveStepParameters(
+            target_id, adaptive_step_parameters);
         plugin_.UpdatePrediction(target_id);
       }
     }
