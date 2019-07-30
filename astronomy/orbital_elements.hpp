@@ -25,6 +25,12 @@ using quantities::Time;
 
 class OrbitalElements {
  public:
+  template<typename PrimaryCentred>
+  static StatusOr<OrbitalElements> ForTrajectory(
+      DiscreteTrajectory<PrimaryCentred> const& trajectory,
+      MassiveBody const& primary,
+      Body const& secondary);
+
   // The classical Keplerian elements (a, e, i, Ω, ω, M),
   // together with an epoch.
   struct ClassicalElements {
@@ -37,11 +43,9 @@ class OrbitalElements {
     Angle mean_anomaly;
   };
 
-  template<typename PrimaryCentred>
-  static StatusOr<OrbitalElements> ForTrajectory(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory,
-      MassiveBody const& primary,
-      Body const& secondary);
+  // Mean element time series.  These elements are free of short-period
+  // variations, i.e., variations whose period is the orbital period.
+  std::vector<ClassicalElements> const& mean_elements() const;
 
   // The period of the (osculating) mean longitude λ = Ω + ω + M.
   // Note that since our mean elements are filtered by integration over this
@@ -63,10 +67,6 @@ class OrbitalElements {
   // recurrence computation or sun-synchronicity, one typically cares about ω′
   // only when requiring that ω′ be 0 (in a frozen orbit), in which case the
   // more relevant requirement is that ω stays close to some reference value.
-
-  // Mean element time series.  These elements are free of short-period
-  // variations, i.e., variations whose period is the orbital period.
-  std::vector<ClassicalElements> const& mean_elements() const;
 
   // Of the mean classical elements (a, e, i, Ω, ω, M), under the influence of
   // gravitational forces,

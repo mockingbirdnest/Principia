@@ -80,6 +80,11 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   return result;
 }
 
+inline std::vector<OrbitalElements::ClassicalElements> const&
+OrbitalElements::mean_elements() const {
+  return mean_classical_elements_;
+}
+
 inline Time OrbitalElements::sidereal_period() const {
   return sidereal_period_;
 }
@@ -94,11 +99,6 @@ inline Time OrbitalElements::anomalistic_period() const {
 
 inline AngularFrequency OrbitalElements::nodal_precession() const {
   return nodal_precession_;
-}
-
-inline std::vector<OrbitalElements::ClassicalElements> const&
-OrbitalElements::mean_elements() const {
-  return mean_classical_elements_;
 }
 
 inline OrbitalElements::Interval<Length>
