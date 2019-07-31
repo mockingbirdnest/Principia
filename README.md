@@ -1,8 +1,8 @@
 # Principia
 
-**[Fermat](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#fermat), the July version of Principia, is available, with new features and support for 1.7.2.  Download it [here](https://bit.ly/2Lsz23o).**
+**[Ferrari](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#ferrari), the first August version of Principia, is available, with support for 1.7.3.  Download it [here](https://bit.ly/2GEYSy5).**
 
-**For the convenience of Chinese users, downloads from 腾讯微云: [Principia Fermat](https://share.weiyun.com/5ZOMyCx), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
+**For the convenience of Chinese users, downloads from 腾讯微云: [Principia Ferrari](https://share.weiyun.com/5GGJAxk), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) and [here for 1.5.1, 1.6.1 and 1.7.x](https://bit.ly/2Lsz23o).  Download the [“Trappist-1 for Principia”](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions#installing-trappist-1-for-principia) mini-mod [here](https://bit.ly/2ZHf3Tt).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Fermat](https://github.com/mockingbirdnest/Principia/releases/tag/2019070219-Fermat) release.
+Download the binary (Ubuntu, macOS, and Windows) and [here for 1.5.1, 1.6.1 and 1.7.x](https://bit.ly/2GEYSy5).  Download the [“Trappist-1 for Principia”](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions#installing-trappist-1-for-principia) mini-mod [here](https://bit.ly/2ZHf3Tt).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Ferrari](https://github.com/mockingbirdnest/Principia/releases/tag/2019080103-Ferrari) release.
