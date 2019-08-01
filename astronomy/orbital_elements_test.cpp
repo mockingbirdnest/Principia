@@ -19,13 +19,19 @@ namespace principia {
 
 namespace mathematica {
 namespace internal_mathematica {
+
+using astronomy::J2000;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
+
 std::string ToMathematica(
     astronomy::OrbitalElements::EquinoctialElements const& elements) {
-  return ToMathematica(std::make_tuple(elements.t,
-                                       elements.a,
+  return ToMathematica(std::make_tuple((elements.t - J2000) / Second,
+                                       elements.a / Metre,
                                        elements.h,
                                        elements.k,
-                                       elements.λ,
+                                       elements.λ / Radian,
                                        elements.p,
                                        elements.q,
                                        elements.pʹ,
@@ -175,6 +181,7 @@ class OrbitalElementsTest : public ::testing::Test {
           it.time(),
           gcrs.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
     }
+    LOG(ERROR) << (result->last().time() - result->Begin().time()) / Day;
     return result;
   }
 
@@ -320,7 +327,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   EXPECT_THAT(elements.mean_argument_of_periapsis().measure(),
               IsNear(theoretical_ωʹ * mission_duration));
 
-  OFStream f(SOLUTION_DIR / "mathematica" / "j2_perturbed_elements");
+  OFStream f(SOLUTION_DIR / "mathematica" / "j2_perturbed_elements.generated.wl");
   f << mathematica::Assign("j2PerturbedOsculating",
                            elements.osculating_equinoctial_elements());
   f << mathematica::Assign("j2PerturbedMean",
