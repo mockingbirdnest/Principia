@@ -169,11 +169,11 @@ class OrbitalElementsTest : public ::testing::Test {
             EmbeddedExplicitRungeKuttaNyströmIntegrator<
                 DormandالمكاوىPrince1986RKN434FM,
                 Position<ICRS>>(),
-            /*max_steps=*/std::numeric_limits<std::int16_t>::max(),
+            /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second
         },
-        /*max_ephemeris_steps=*/std::numeric_limits<std::int16_t>::max(),
+        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
         /*last_point_only=*/false);
     auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();
     for (auto it = icrs_trajectory.Begin(); it != icrs_trajectory.End(); ++it) {
