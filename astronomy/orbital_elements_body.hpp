@@ -12,6 +12,7 @@ using base::Error;
 using base::Status;
 using quantities::ArcTan;
 using quantities::Cos;
+using quantities::NaN;
 using quantities::Pow;
 using quantities::Product;
 using quantities::Sin;
@@ -41,6 +42,16 @@ inline std::vector<Angle> Unwind(std::vector<Angle> const& angles) {
     unwound_angles.push_back(UnwindFrom(unwound_angles.back(), angles[i]));
   }
   return unwound_angles;
+}
+
+template<typename T>
+Difference<T> OrbitalElements::Interval<T>::measure() const {
+  return max >= min ? max - min : Difference<T>{};
+}
+
+template<typename T>
+T OrbitalElements::Interval<T>::midpoint() const {
+  return max >= min ? min + measure() / 2 : NaN<T>();
 }
 
 template<typename T>
@@ -158,7 +169,6 @@ OrbitalElements::OsculatingEquinoctialElements(
          /*.pʹ = */ cotg_½i * Sin(Ω),
          /*.qʹ = */ cotg_½i * Cos(Ω)});
   }
-  LOG(ERROR) << result.size();
   return result;
 }
 

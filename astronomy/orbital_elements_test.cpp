@@ -36,13 +36,16 @@ using physics::MasslessBody;
 using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::astronomy::JulianYear;
+using quantities::si::ArcSecond;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
+using quantities::si::Micro;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
+using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::IsOk;
@@ -162,11 +165,11 @@ class OrbitalElementsTest : public ::testing::Test {
 };
 
 
-TEST_F(OrbitalElementsTest, CircularEquatorialKeplerOrbit) {
+TEST_F(OrbitalElementsTest, KeplerOrbit) {
   KeplerianElements<GCRS> initial_osculating;
   initial_osculating.semimajor_axis = 7000 * Kilo(Metre);
-  initial_osculating.eccentricity = 1e-9;
-  initial_osculating.inclination = 1.0 / (60 * 60) * Degree;
+  initial_osculating.eccentricity = 1e-6;
+  initial_osculating.inclination = 10 * Milli(ArcSecond);
   initial_osculating.longitude_of_ascending_node = 10 * Degree;
   initial_osculating.argument_of_periapsis = 20 * Degree;
   initial_osculating.mean_anomaly = 30 * Degree;
@@ -179,27 +182,26 @@ TEST_F(OrbitalElementsTest, CircularEquatorialKeplerOrbit) {
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  EXPECT_THAT(elements.anomalistic_period(),
-              AlmostEquals(*initial_osculating.period, 0));
-  EXPECT_THAT(elements.nodal_period(),
-              AlmostEquals(*initial_osculating.period, 0));
-  EXPECT_THAT(elements.sidereal_period(),
-              AlmostEquals(*initial_osculating.period, 0));
+  EXPECT_THAT(
+      AbsoluteError(*initial_osculating.period, elements.anomalistic_period()),
+      IsNear(800 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError(*initial_osculating.period, elements.nodal_period()),
+      IsNear(3.1 * Milli(Second)));
+  EXPECT_THAT(
+      AbsoluteError(*initial_osculating.period, elements.sidereal_period()),
+      IsNear(11 * Micro(Second)));
 
-  EXPECT_THAT(elements.nodal_precession(),
-              AlmostEquals(0 * Degree / Second, 0));
+  EXPECT_THAT(elements.nodal_precession(), IsNear(1.1 * Degree / JulianYear));
 
-  EXPECT_THAT(elements.mean_semimajor_axis().min,
-              AlmostEquals(*initial_osculating.semimajor_axis, 0));
-  EXPECT_THAT(elements.mean_eccentricity().min,
-              AlmostEquals(*initial_osculating.eccentricity, 0));
-  EXPECT_THAT(elements.mean_inclination().min,
-              AlmostEquals(initial_osculating.inclination, 0));
+  EXPECT_THAT(elements.mean_semimajor_axis().measure(), IsNear(430 * Micro(Metre)));
+  EXPECT_THAT(elements.mean_eccentricity().measure(), IsNear(5.8e-11));
+  EXPECT_THAT(elements.mean_inclination().measure(), IsNear(0.61 * Micro(ArcSecond)));
 
-  EXPECT_THAT(elements.mean_longitude_of_ascending_node().min,
-              AlmostEquals(initial_osculating.longitude_of_ascending_node, 0));
-  EXPECT_THAT(elements.mean_argument_of_periapsis().min,
-              AlmostEquals(initial_osculating.longitude_of_ascending_node, 0));
+  EXPECT_THAT(elements.mean_longitude_of_ascending_node().measure(),
+              IsNear(33 * ArcSecond));
+  EXPECT_THAT(elements.mean_argument_of_periapsis().measure(),
+              IsNear(44 * ArcSecond));
 }
 
 }  // namespace astronomy

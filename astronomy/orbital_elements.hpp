@@ -19,6 +19,7 @@ using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using quantities::Angle;
 using quantities::AngularFrequency;
+using quantities::Difference;
 using quantities::Infinity;
 using quantities::Length;
 using quantities::Time;
@@ -96,6 +97,9 @@ class OrbitalElements {
   struct Interval {
     T min = +Infinity<T>();
     T max = -Infinity<T>();
+
+    Difference<T> measure() const;
+    T midpoint() const;
 
     // Extends this interval so that it contains x.
     void Include(T const& x);
