@@ -64,10 +64,11 @@ class OrbitalElements {
   // NOTE(egg): The argument of periapsis ω typically precesses as well.
   // However, long-period variations tend to be comparatively large, so that a
   // precession rate computed over a few orbits would be highly inaccurate.
-  // Further, whereas the actual value of Ω′ is relevant to, e.g., orbit
-  // recurrence computation or sun-synchronicity, one typically cares about ω′
-  // only when requiring that ω′ be 0 (in a frozen orbit), in which case the
-  // more relevant requirement is that ω stays close to some reference value.
+  // More importantly, whereas the actual value of Ω′ is relevant to, e.g.,
+  // orbit recurrence computation or sun-synchronicity, one typically cares
+  // about ω′ only when requiring that ω′ be 0 (in a frozen orbit), in which
+  // case the more relevant requirement is that ω stays close to some reference
+  // value.
 
   // Of the mean classical elements (a, e, i, Ω, ω, M), under the influence of
   // gravitational forces,

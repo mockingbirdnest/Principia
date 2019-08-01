@@ -33,8 +33,15 @@ using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MasslessBody;
+using physics::OblateBody;
 using physics::RotatingBody;
 using physics::SolarSystem;
+using quantities::Angle;
+using quantities::AngularFrequency;
+using quantities::Cos;
+using quantities::Pow;
+using quantities::Sqrt;
+using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::ArcSecond;
 using quantities::si::Day;
@@ -44,6 +51,7 @@ using quantities::si::Metre;
 using quantities::si::Micro;
 using quantities::si::Milli;
 using quantities::si::Minute;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
@@ -82,8 +90,8 @@ class OrbitalElementsTest : public ::testing::Test {
                                                      Position<ICRS>>(),
                   /*step=*/1 * JulianYear));
         }()),
-        oblate_earth_(
-            *solar_system_.massive_body(*oblate_earth_ephemeris_, "Earth")),
+        oblate_earth_(dynamic_cast<OblateBody<ICRS> const&>(
+            *solar_system_.massive_body(*oblate_earth_ephemeris_, "Earth"))),
         spherical_earth_ephemeris_([this] {
           solar_system_.LimitOblatenessToDegree("Earth", 0);
           return solar_system_.MakeEphemeris(
@@ -157,7 +165,7 @@ class OrbitalElementsTest : public ::testing::Test {
 
   // An oblate Earth with no other bodies.
   not_null<std::unique_ptr<Ephemeris<ICRS>>> oblate_earth_ephemeris_;
-  MassiveBody const& oblate_earth_;
+  OblateBody<ICRS> const& oblate_earth_;
 
   // A spherical Earth with no other bodies.
   not_null<std::unique_ptr<Ephemeris<ICRS>>> spherical_earth_ephemeris_;
@@ -194,14 +202,102 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
 
   EXPECT_THAT(elements.nodal_precession(), IsNear(1.1 * Degree / JulianYear));
 
-  EXPECT_THAT(elements.mean_semimajor_axis().measure(), IsNear(430 * Micro(Metre)));
-  EXPECT_THAT(elements.mean_eccentricity().measure(), IsNear(5.8e-11));
-  EXPECT_THAT(elements.mean_inclination().measure(), IsNear(0.61 * Micro(ArcSecond)));
+  // Mean element values.
+  EXPECT_THAT(AbsoluteError(*initial_osculating.semimajor_axis,
+                            elements.mean_semimajor_axis().midpoint()),
+              IsNear(180 * Micro(Metre)));
+  EXPECT_THAT(AbsoluteError(*initial_osculating.eccentricity,
+                            elements.mean_eccentricity().midpoint()),
+              IsNear(5.6e-12));
+  EXPECT_THAT(AbsoluteError(initial_osculating.inclination,
+                            elements.mean_inclination().midpoint()),
+              IsNear(0.56 * Micro(ArcSecond)));
+  EXPECT_THAT(
+      AbsoluteError(initial_osculating.longitude_of_ascending_node,
+                    elements.mean_longitude_of_ascending_node().midpoint()),
+      IsNear(14 * ArcSecond));
+  EXPECT_THAT(AbsoluteError(*initial_osculating.argument_of_periapsis,
+                            elements.mean_argument_of_periapsis().midpoint()),
+              IsNear(18 * ArcSecond));
 
+  // Mean element stability.
+  EXPECT_THAT(elements.mean_semimajor_axis().measure(),
+              IsNear(430 * Micro(Metre)));
+  EXPECT_THAT(elements.mean_eccentricity().measure(), IsNear(5.8e-11));
+  EXPECT_THAT(elements.mean_inclination().measure(),
+              IsNear(0.61 * Micro(ArcSecond)));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node().measure(),
               IsNear(33 * ArcSecond));
   EXPECT_THAT(elements.mean_argument_of_periapsis().measure(),
               IsNear(44 * ArcSecond));
+}
+
+TEST_F(OrbitalElementsTest, J2Perturbation) {
+  Time const mission_duration = 10 * Day;
+ 
+  KeplerianElements<GCRS> initial_osculating;
+  initial_osculating.semimajor_axis = 7000 * Kilo(Metre);
+  initial_osculating.eccentricity = 1e-6;
+  initial_osculating.inclination = 10 * Milli(ArcSecond);
+  initial_osculating.longitude_of_ascending_node = 10 * Degree;
+  initial_osculating.argument_of_periapsis = 20 * Degree;
+  initial_osculating.mean_anomaly = 30 * Degree;
+  auto const status_or_elements = OrbitalElements::ForTrajectory(
+      *EarthCentredTrajectory(initial_osculating,
+                              J2000,
+                              J2000 + mission_duration,
+                              *oblate_earth_ephemeris_),
+      oblate_earth_,
+      MasslessBody{});
+  ASSERT_THAT(status_or_elements, IsOk());
+  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  EXPECT_THAT(elements.anomalistic_period() - *initial_osculating.period,
+              IsNear(-7.8 * Second));
+  EXPECT_THAT(elements.nodal_period() - *initial_osculating.period,
+              IsNear(-23 * Second));
+  EXPECT_THAT(elements.sidereal_period() - *initial_osculating.period,
+              IsNear(-16 * Second));
+
+  // The notation for the computation of the theoretical precessions follows
+  // Capderou (2012), Satellites : de Kepler au GPS, section 7.1.1.
+  double const η = elements.mean_semimajor_axis().midpoint() /
+                   oblate_earth_.reference_radius();
+  Angle const i = elements.mean_inclination().midpoint();
+  AngularFrequency const K0 = 3.0 / 2.0 * oblate_earth_.j2() *
+                  Sqrt(oblate_earth_.gravitational_parameter() /
+                                   Pow<3>(oblate_earth_.reference_radius())) *
+                              Radian;
+  // See (7.6).
+  AngularFrequency const theoretical_Ωʹ = -K0 * Pow<-7>(Sqrt(η)) * Cos(i);
+  // See (7.13).
+  AngularFrequency const theoretical_ωʹ =
+      K0 * Pow<-7>(Sqrt(η)) * (5 * Pow<2>(Cos(i)) - 1);
+
+  EXPECT_THAT(theoretical_Ωʹ, IsNear(-7.3 * (2 * π * Radian / JulianYear)));
+  EXPECT_THAT(theoretical_ωʹ, IsNear(29 * (2 * π * Radian / JulianYear)));
+
+  EXPECT_THAT(elements.nodal_precession(), IsNear(theoretical_Ωʹ));
+
+  // Mean element values.  Since Ω and ω precess rapidly, the midpoint of the
+  // range of values is of no interest.
+  EXPECT_THAT(AbsoluteError(*initial_osculating.semimajor_axis,
+                            elements.mean_semimajor_axis().midpoint()),
+              IsNear(25 * Metre));
+  EXPECT_THAT(elements.mean_eccentricity().midpoint(), IsNear(0.0013));
+  EXPECT_THAT(AbsoluteError(initial_osculating.inclination,
+                            elements.mean_inclination().midpoint()),
+              IsNear(1.7 * Micro(ArcSecond)));
+
+  // Mean element stability: Ω and ω precess as expected.
+  EXPECT_THAT(elements.mean_semimajor_axis().measure(),
+              IsNear(70 * Milli(Metre)));
+  EXPECT_THAT(elements.mean_eccentricity().measure(), IsNear(3.7e-9));
+  EXPECT_THAT(elements.mean_inclination().measure(),
+              IsNear(0.64 * Micro(ArcSecond)));
+  EXPECT_THAT(elements.mean_longitude_of_ascending_node().measure(),
+              IsNear(-theoretical_Ωʹ * mission_duration));
+  EXPECT_THAT(elements.mean_argument_of_periapsis().measure(),
+              IsNear(theoretical_ωʹ * mission_duration));
 }
 
 }  // namespace astronomy
