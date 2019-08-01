@@ -284,5 +284,8 @@
     <ClCompile Include="orbit_recurrence_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="orbital_elements_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -89,6 +89,7 @@
     <ClCompile Include="ksp_system_test.cpp" />
     <ClCompile Include="geodesy_test.cpp" />
     <ClCompile Include="lunar_orbit_test.cpp" />
+    <ClCompile Include="orbital_elements_test.cpp" />
     <ClCompile Include="orbit_recurrence_test.cpp" />
     <ClCompile Include="solar_system_dynamics_test.cpp" />
     <ClCompile Include="standard_product_3.cpp" />
