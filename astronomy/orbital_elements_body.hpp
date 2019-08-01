@@ -172,6 +172,16 @@ OrbitalElements::OsculatingEquinoctialElements(
   return result;
 }
 
+inline std::vector<OrbitalElements::EquinoctialElements> const&
+OrbitalElements::osculating_equinoctial_elements() const {
+  return osculating_equinoctial_elements_;
+}
+
+inline std::vector<OrbitalElements::EquinoctialElements> const&
+OrbitalElements::mean_equinoctial_elements() const {
+  return mean_equinoctial_elements_;
+}
+
 inline Time OrbitalElements::SiderealPeriod(
     std::vector<EquinoctialElements> const& equinoctial_elements) {
   Time const Δt =

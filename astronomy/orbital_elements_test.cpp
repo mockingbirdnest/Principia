@@ -1,23 +1,44 @@
 ﻿#include "orbital_elements.hpp"
 
 #include "astronomy/frames.hpp"
+#include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "mathematica/mathematica.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
-#include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
+
+namespace mathematica {
+namespace internal_mathematica {
+std::string ToMathematica(
+    astronomy::OrbitalElements::EquinoctialElements const& elements) {
+  return ToMathematica(std::make_tuple(elements.t,
+                                       elements.a,
+                                       elements.h,
+                                       elements.k,
+                                       elements.λ,
+                                       elements.p,
+                                       elements.q,
+                                       elements.pʹ,
+                                       elements.qʹ));
+}
+}  // namespace internal_mathematica
+}  // namespace mathematica
+
 namespace astronomy {
 
 using base::make_not_null_unique;
 using base::not_null;
+using base::OFStream;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
@@ -298,6 +319,12 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
               IsNear(-theoretical_Ωʹ * mission_duration));
   EXPECT_THAT(elements.mean_argument_of_periapsis().measure(),
               IsNear(theoretical_ωʹ * mission_duration));
+
+  OFStream f(SOLUTION_DIR / "mathematica" / "j2_perturbed_elements");
+  f << mathematica::Assign("j2PerturbedOsculating",
+                           elements.osculating_equinoctial_elements());
+  f << mathematica::Assign("j2PerturbedMean",
+                           elements.mean_equinoctial_elements());
 }
 
 }  // namespace astronomy
