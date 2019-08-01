@@ -32,7 +32,7 @@ using quantities::Time;
 // definitions of the day:
 // — for a sun-synchronous orbit (see sections 7.5.4, 7.5.5), this day is the
 //   mean solar day;
-// — for an orbit with no nodal precession (, i.e., a strictly polar orbit, see
+// — for an orbit with no nodal precession (i.e., a strictly polar orbit, see
 //   section 7.1.3), this day is the stellar day.
 // These days are counted negatively for a body with retrograde rotation.
 class OrbitRecurrence final {
