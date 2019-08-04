@@ -106,6 +106,7 @@ class OrbitalElements {
     void Include(T const& x);
   };
 
+  // REMOVE BEFORE FLIGHT: rename these to mean_meow_range.
   Interval<Length> mean_semimajor_axis() const;
   Interval<double> mean_eccentricity() const;
   Interval<Angle> mean_inclination() const;

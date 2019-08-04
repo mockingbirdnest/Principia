@@ -269,7 +269,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
 
 TEST_F(OrbitalElementsTest, J2Perturbation) {
   Time const mission_duration = 10 * Day;
- 
+
   KeplerianElements<GCRS> initial_osculating;
   initial_osculating.semimajor_axis = 7000 * Kilo(Metre);
   initial_osculating.eccentricity = 1e-6;
@@ -299,7 +299,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
                    oblate_earth_.reference_radius();
   Angle const i = elements.mean_inclination().midpoint();
   AngularFrequency const K0 = 3.0 / 2.0 * oblate_earth_.j2() *
-                  Sqrt(oblate_earth_.gravitational_parameter() /
+                              Sqrt(oblate_earth_.gravitational_parameter() /
                                    Pow<3>(oblate_earth_.reference_radius())) *
                               Radian;
   // See (7.6).
@@ -335,10 +335,74 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   EXPECT_THAT(elements.mean_argument_of_periapsis().measure(),
               IsNear(theoretical_ωʹ * mission_duration));
 
-  OFStream f(SOLUTION_DIR / "mathematica" / "j2_perturbed_elements.generated.wl");
+  OFStream f(SOLUTION_DIR / "mathematica" /
+             "j2_perturbed_elements.generated.wl");
   f << mathematica::Assign("j2PerturbedOsculating",
                            elements.osculating_equinoctial_elements());
   f << mathematica::Assign("j2PerturbedMean",
+                           elements.mean_equinoctial_elements());
+}
+
+TEST_F(OrbitalElementsTest, RealPerturbation) {
+  Time const mission_duration = 10 * Day;
+
+  KeplerianElements<GCRS> initial_osculating;
+  initial_osculating.semimajor_axis = 7000 * Kilo(Metre);
+  initial_osculating.eccentricity = 1e-6;
+  initial_osculating.inclination = 10 * Milli(ArcSecond);
+  initial_osculating.longitude_of_ascending_node = 10 * Degree;
+  initial_osculating.argument_of_periapsis = 20 * Degree;
+  initial_osculating.mean_anomaly = 30 * Degree;
+  auto const status_or_elements = OrbitalElements::ForTrajectory(
+      *EarthCentredTrajectory(initial_osculating,
+                              J2000,
+                              J2000 + mission_duration,
+                              *real_ephemeris_),
+      real_earth_,
+      MasslessBody{});
+  ASSERT_THAT(status_or_elements, IsOk());
+  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  EXPECT_THAT(elements.anomalistic_period() - *initial_osculating.period,
+              IsNear(-7.8 * Second));
+  EXPECT_THAT(elements.nodal_period() - *initial_osculating.period,
+              IsNear(-14 * Second));
+  EXPECT_THAT(elements.sidereal_period() - *initial_osculating.period,
+              IsNear(-16 * Second));
+
+  // This value is meaningless, see below.
+  EXPECT_THAT(elements.nodal_precession(), IsNear(2.0 * Degree / Day));
+
+  // Mean element values.
+  EXPECT_THAT(AbsoluteError(*initial_osculating.semimajor_axis,
+                            elements.mean_semimajor_axis().midpoint()),
+              IsNear(100 * Metre));
+  EXPECT_THAT(elements.mean_eccentricity().midpoint(), IsNear(0.0014));
+  EXPECT_THAT(AbsoluteError(initial_osculating.inclination,
+                            elements.mean_inclination().midpoint()),
+              IsNear(6.0 * ArcSecond));
+
+  // Mean element stability: Ω and ω exhibit a daily oscillation (likely due to
+  // the tesseral terms of the geopotential) as the very low inclination means
+  // that these elements are singular.
+  // The other elements are stable.
+  // A closer analysis would show that the longitude of periapsis exhibits a
+  // precession that is largely free of oscillations, and that, if its
+  // oscillations are filtered, the argument of periapsis precesses as expected;
+  // the longitude of the ascending node exhibits no obvious precession even if
+  // its daily oscillation is filtered out.
+  EXPECT_THAT(elements.mean_semimajor_axis().measure(), IsNear(20 * Metre));
+  EXPECT_THAT(elements.mean_eccentricity().measure(), IsNear(9.2e-5));
+  EXPECT_THAT(elements.mean_inclination().measure(), IsNear(11 * ArcSecond));
+  EXPECT_THAT(elements.mean_longitude_of_ascending_node().measure(),
+              IsNear(140 * Degree));
+  EXPECT_THAT(elements.mean_argument_of_periapsis().measure(),
+              IsNear(150 * Degree));
+
+  OFStream f(SOLUTION_DIR / "mathematica" /
+             "fully_perturbed_elements.generated.wl");
+  f << mathematica::Assign("fullyPerturbedOsculating",
+                           elements.osculating_equinoctial_elements());
+  f << mathematica::Assign("fullyPerturbedMean",
                            elements.mean_equinoctial_elements());
 }
 
