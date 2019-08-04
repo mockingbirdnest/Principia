@@ -107,11 +107,11 @@ class OrbitalElements {
   };
 
   // REMOVE BEFORE FLIGHT: rename these to mean_meow_range.
-  Interval<Length> mean_semimajor_axis() const;
-  Interval<double> mean_eccentricity() const;
-  Interval<Angle> mean_inclination() const;
-  Interval<Angle> mean_longitude_of_ascending_node() const;
-  Interval<Angle> mean_argument_of_periapsis() const;
+  Interval<Length> mean_semimajor_axis_range() const;
+  Interval<double> mean_eccentricity_range() const;
+  Interval<Angle> mean_inclination_range() const;
+  Interval<Angle> mean_longitude_of_ascending_node_range() const;
+  Interval<Angle> mean_argument_of_periapsis_range() const;
 
   // The equinoctial elements, and in particular the osculating equinoctial
   // elements, are not directly interesting; anything that could be derived from
@@ -179,11 +179,11 @@ class OrbitalElements {
   Time nodal_period_;
   AngularFrequency nodal_precession_;
 
-  Interval<Length> mean_semimajor_axis_;
-  Interval<double> mean_eccentricity_;
-  Interval<Angle> mean_inclination_;
-  Interval<Angle> mean_longitude_of_ascending_node_;
-  Interval<Angle> mean_argument_of_periapsis_;
+  Interval<Length> mean_semimajor_axis_range_;
+  Interval<double> mean_eccentricity_range_;
+  Interval<Angle> mean_inclination_range_;
+  Interval<Angle> mean_longitude_of_ascending_node_range_;
+  Interval<Angle> mean_argument_of_periapsis_range_;
 };
 
 }  // namespace internal_orbital_elements

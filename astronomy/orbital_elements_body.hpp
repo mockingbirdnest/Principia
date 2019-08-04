@@ -113,26 +113,26 @@ inline AngularFrequency OrbitalElements::nodal_precession() const {
 }
 
 inline OrbitalElements::Interval<Length>
-OrbitalElements::mean_semimajor_axis() const {
-  return mean_semimajor_axis_;
+OrbitalElements::mean_semimajor_axis_range() const {
+  return mean_semimajor_axis_range_;
 }
 
-inline OrbitalElements::Interval<double> OrbitalElements::mean_eccentricity() const {
-  return mean_eccentricity_;
+inline OrbitalElements::Interval<double> OrbitalElements::mean_eccentricity_range() const {
+  return mean_eccentricity_range_;
 }
 
-inline OrbitalElements::Interval<Angle> OrbitalElements::mean_inclination() const {
-  return mean_inclination_;
-}
-
-inline OrbitalElements::Interval<Angle>
-OrbitalElements::mean_longitude_of_ascending_node() const {
-  return mean_longitude_of_ascending_node_;
+inline OrbitalElements::Interval<Angle> OrbitalElements::mean_inclination_range() const {
+  return mean_inclination_range_;
 }
 
 inline OrbitalElements::Interval<Angle>
-OrbitalElements::mean_argument_of_periapsis() const {
-  return mean_argument_of_periapsis_;
+OrbitalElements::mean_longitude_of_ascending_node_range() const {
+  return mean_longitude_of_ascending_node_range_;
+}
+
+inline OrbitalElements::Interval<Angle>
+OrbitalElements::mean_argument_of_periapsis_range() const {
+  return mean_argument_of_periapsis_range_;
 }
 
 template<typename PrimaryCentred>
@@ -352,12 +352,12 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
 
 inline void OrbitalElements::ComputeMeanElementRanges() {
   for (auto const& elements : mean_classical_elements_) {
-    mean_semimajor_axis_.Include(elements.semimajor_axis);
-    mean_eccentricity_.Include(elements.eccentricity);
-    mean_inclination_.Include(elements.inclination);
-    mean_longitude_of_ascending_node_.Include(
+    mean_semimajor_axis_range_.Include(elements.semimajor_axis);
+    mean_eccentricity_range_.Include(elements.eccentricity);
+    mean_inclination_range_.Include(elements.inclination);
+    mean_longitude_of_ascending_node_range_.Include(
         elements.longitude_of_ascending_node);
-    mean_argument_of_periapsis_.Include(elements.argument_of_periapsis);
+    mean_argument_of_periapsis_range_.Include(elements.argument_of_periapsis);
   }
 }
 
