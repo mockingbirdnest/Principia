@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <array>
 #include <random>
+#include <set>
+#include <vector>
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -11,21 +13,30 @@
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace physics {
 
 using geometry::Instant;
 using geometry::R3Element;
+using quantities::Abs;
+using quantities::AngularFrequency;
 using quantities::AngularMomentum;
+using quantities::Cos;
 using quantities::MomentOfInertia;
+using quantities::Sin;
 using quantities::SIUnit;
 using quantities::Sqrt;
+using quantities::Time;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::IsNear;
 
-class EulerSolverTest : public ::testing::Test {
-};
+class EulerSolverTest : public ::testing::Test {};
 
 // Check that we are able to retrieve the initial state for random choices of
 // the moments of inertia and the angular momentum.
@@ -197,6 +208,154 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       EXPECT_THAT(computed_initial_angular_momentum,
                   AlmostEquals(initial_angular_momentum, 0, 2711))
           << moments_of_inertia << " " << initial_angular_momentum;
+    }
+  }
+}
+
+// This test and the next come from
+// http://n.ethz.ch/~stiegerc/HS09/Mechanik/Unterlagen/Lecture19.pdf.
+TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
+  R3Element<MomentOfInertia> const moments_of_inertia{
+      3.0 * SIUnit<MomentOfInertia>(),
+      3.0 * SIUnit<MomentOfInertia>(),
+      9.0 * SIUnit<MomentOfInertia>()};
+
+  EulerSolver::AngularMomentumBivector const initial_angular_momentum(
+      {0.0 * SIUnit<AngularMomentum>(),
+       5.0 * SIUnit<AngularMomentum>(),
+       7.0 * SIUnit<AngularMomentum>()});
+
+  // Correspondence with the referential of lecture 19: x = e1, y = e2, z = e3.
+  AngularFrequency Ω = initial_angular_momentum.coordinates().z *
+                       (moments_of_inertia[0] - moments_of_inertia[2]) /
+                       (moments_of_inertia[0] * moments_of_inertia[2]);
+
+  EulerSolver const solver(
+      moments_of_inertia, initial_angular_momentum, Instant());
+  for (Time t = 0 * Second; t < 5.0 * Second; t += 0.1 * Second) {
+    auto const angular_momentum_at_t = solver.AngularMomentumAt(Instant() + t);
+    EXPECT_THAT(angular_momentum_at_t,
+                AlmostEquals(EulerSolver::AngularMomentumBivector(
+                                 {5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
+                                  5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>(),
+                                  7.0 * SIUnit<AngularMomentum>()}),
+                             0,
+                             102))
+        << t;
+  }
+}
+
+TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
+  R3Element<MomentOfInertia> const moments_of_inertia{
+      3.0 * SIUnit<MomentOfInertia>(),
+      9.0 * SIUnit<MomentOfInertia>(),
+      9.0 * SIUnit<MomentOfInertia>()};
+
+  EulerSolver::AngularMomentumBivector const initial_angular_momentum(
+      {7.0 * SIUnit<AngularMomentum>(),
+       0.0 * SIUnit<AngularMomentum>(),
+       5.0 * SIUnit<AngularMomentum>()});
+
+  // Correspondence with the referential of lecture 19:  x = e3, y = e1, z = e2.
+  AngularFrequency Ω = initial_angular_momentum.coordinates().x *
+                       (moments_of_inertia[1] - moments_of_inertia[0]) /
+                       (moments_of_inertia[1] * moments_of_inertia[0]);
+
+  EulerSolver const solver(
+      moments_of_inertia, initial_angular_momentum, Instant());
+  for (Time t = 0 * Second; t < 5.0 * Second; t += 0.1 * Second) {
+    auto const angular_momentum_at_t = solver.AngularMomentumAt(Instant() + t);
+    EXPECT_THAT(angular_momentum_at_t,
+                AlmostEquals(EulerSolver::AngularMomentumBivector({
+                                 7.0 * SIUnit<AngularMomentum>(),
+                                 5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
+                                 5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>()}),
+                             0,
+                             34))
+        << t;
+  }
+}
+
+// This test demonstrates the Джанибеков effect, also known as tennis racket
+// theorem: the rotation of an object around its second principal axis is not
+// stable.  Here we choose the initial angular momentum to be mostly in the y
+// direction with a small component in the z direction.  This causes the object
+// to periodically flip, rotating along y or along -y.
+TEST_F(EulerSolverTest, ДжанибековEffect) {
+  R3Element<MomentOfInertia> const moments_of_inertia{
+      3.0 * SIUnit<MomentOfInertia>(),
+      5.0 * SIUnit<MomentOfInertia>(),
+      9.0 * SIUnit<MomentOfInertia>()};
+
+  EulerSolver::AngularMomentumBivector const initial_angular_momentum(
+      {0.0 * SIUnit<AngularMomentum>(),
+       2.0 * SIUnit<AngularMomentum>(),
+       0.01 * SIUnit<AngularMomentum>()});
+
+  EulerSolver const solver(
+      moments_of_inertia, initial_angular_momentum, Instant());
+
+  // Find the maxima, minima and zeroes of the y coordinate of the angular
+  // momentum.
+  AngularMomentum previous_my = initial_angular_momentum.coordinates().y;
+  Instant previous_t;
+  std::vector<Instant> maxima;
+  std::vector<Instant> minima;
+  std::vector<Instant> zeroes;
+  bool is_abs_decreasing = false;
+  bool is_decreasing = false;
+  bool is_increasing = true;
+  for (Instant t; t < Instant() + 100.0 * Second; t += 0.1 * Second) {
+    auto const angular_momentum_at_t = solver.AngularMomentumAt(t);
+    auto const my = angular_momentum_at_t.coordinates().y;
+    if (is_increasing && my > 1.99 * SIUnit<AngularMomentum>()) {
+      if (my < previous_my) {
+        maxima.push_back(previous_t);
+        is_abs_decreasing = true;
+        is_decreasing = true;
+        is_increasing = false;
+      }
+    }
+    if (is_decreasing && my < -1.99 * SIUnit<AngularMomentum>()) {
+      if (my > previous_my) {
+        minima.push_back(previous_t);
+        is_abs_decreasing = true;
+        is_decreasing = false;
+        is_increasing = true;
+      }
+    }
+    if (is_abs_decreasing && Abs(my) < 0.1 * SIUnit<AngularMomentum>()) {
+      if (Abs(my) > Abs(previous_my)) {
+        zeroes.push_back(previous_t);
+        is_abs_decreasing = false;
+      }
+    }
+    previous_my = my;
+    previous_t = t;
+  }
+
+  // Check that the maxima, minima and zeroes properly alternate and are
+  // roughly equidistant.
+  std::set<Instant> all;
+  all.insert(maxima.begin(), maxima.end());
+  all.insert(minima.begin(), minima.end());
+  all.insert(zeroes.begin(), zeroes.end());
+  EXPECT_EQ(maxima.size() + minima.size() + zeroes.size(), all.size());
+  Time const quarter_period = (*all.rbegin() - *all.begin()) / (all.size() - 1);
+  for (auto it = all.begin(); it != all.end(); ++it) {
+    auto const t = *it;
+    int const i = std::distance(all.begin(), it);
+    if (i % 4 == 0) {
+      EXPECT_EQ(maxima[i / 4], t);
+    }
+    if (i % 4 == 2) {
+      EXPECT_EQ(minima[i / 4], t);
+    }
+    if (i % 4 == 1 || i % 4 == 3) {
+      EXPECT_EQ(zeroes[i / 2], t);
+    }
+    if (it != all.begin()) {
+      EXPECT_THAT(t - *std::prev(it), IsNear(quarter_period, 1.005));
     }
   }
 }

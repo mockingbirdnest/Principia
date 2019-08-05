@@ -62,6 +62,8 @@
     <ClInclude Include="date_time.hpp" />
     <ClInclude Include="date_time_body.hpp" />
     <ClInclude Include="fortran_astrodynamics_toolkit.hpp" />
+    <ClInclude Include="orbit_recurrence.hpp" />
+    <ClInclude Include="orbit_recurrence_body.hpp" />
     <ClInclude Include="solar_system_fingerprints.hpp" />
     <ClInclude Include="standard_product_3.hpp" />
     <ClInclude Include="stabilize_ksp.hpp" />
@@ -85,6 +87,7 @@
     <ClCompile Include="ksp_system_test.cpp" />
     <ClCompile Include="geodesy_test.cpp" />
     <ClCompile Include="lunar_orbit_test.cpp" />
+    <ClCompile Include="orbit_recurrence_test.cpp" />
     <ClCompile Include="solar_system_dynamics_test.cpp" />
     <ClCompile Include="standard_product_3.cpp" />
     <ClCompile Include="standard_product_3_test.cpp" />

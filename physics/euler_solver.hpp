@@ -25,6 +25,12 @@ using quantities::NaN;
 // A solver for Euler's rotation equations.  It follows Celledoni, Fassò,
 // Säfström and Zanna, 2007, The exact computation of the free rigid body motion
 // and its use in splitting method.
+// NOTE(phl): There are a number of errors in the formulæ in Proposition 2.1, as
+// can be seen by differentiation:
+//   In case (i) λ should be defined as -σ λ₃.
+//   In case (ii) λ should be defined as -σ λ₁.
+//   In case (iii) the first coordinate should include a factor σ (not σʹ) and
+//   λ should be defined as σ σʹ λ₂ (where λ₂ is the common value of λ₁ and λ₃).
 class EulerSolver {
  public:
   using PrincipalAxesFrame = Frame<serialization::Frame::PhysicsTag,
@@ -67,6 +73,7 @@ class EulerSolver {
   AngularMomentum B₂₃_ = NaN<AngularMomentum>();
   AngularMomentum G_ = NaN<AngularMomentum>();
   AngularFrequency λ₁_ = NaN<AngularFrequency>();
+  AngularFrequency λ₂_ = NaN<AngularFrequency>();
   AngularFrequency λ₃_ = NaN<AngularFrequency>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();
