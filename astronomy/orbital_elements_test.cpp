@@ -387,11 +387,11 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   // the tesseral terms of the geopotential) as the very low inclination means
   // that these elements are singular.
   // The other elements are stable.
-  // A closer analysis would show that the longitude of periapsis exhibits a
-  // precession that is largely free of oscillations, and that, if its
-  // oscillations are filtered, the argument of periapsis precesses as expected;
-  // the longitude of the ascending node exhibits no obvious precession even if
-  // its daily oscillation is filtered out.
+  // A closer analysis would show that the longitude of periapsis ϖ = Ω + ω
+  // exhibits a precession that is largely free of oscillations, and that, if
+  // its oscillations are filtered, the argument of periapsis ω precesses as
+  // expected; the longitude of the ascending node Ω exhibits no obvious
+  // precession even if its daily oscillation is filtered out.
   EXPECT_THAT(elements.mean_semimajor_axis_range().measure(),
               IsNear(20 * Metre));
   EXPECT_THAT(elements.mean_eccentricity_range().measure(), IsNear(9.2e-5));
