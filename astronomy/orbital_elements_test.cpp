@@ -136,7 +136,8 @@ class OrbitalElementsTest : public ::testing::Test {
 
   // Completes |initial_osculating_elements| and returns a GCRS trajectory
   // obtained by flowing the corresponding initial conditions in |ephemeris|.
-  static not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>> EarthCentredTrajectory(
+  static not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>>
+  EarthCentredTrajectory(
       KeplerianElements<GCRS>& initial_osculating_elements,
       Instant const& initial_time,
       Instant const& final_time,
@@ -240,13 +241,14 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   EXPECT_THAT(AbsoluteError(initial_osculating.inclination,
                             elements.mean_inclination_range().midpoint()),
               IsNear(0.56 * Micro(ArcSecond)));
+  EXPECT_THAT(AbsoluteError(
+                  initial_osculating.longitude_of_ascending_node,
+                  elements.mean_longitude_of_ascending_node_range().midpoint()),
+              IsNear(54 * ArcSecond));
   EXPECT_THAT(
-      AbsoluteError(initial_osculating.longitude_of_ascending_node,
-                    elements.mean_longitude_of_ascending_node_range().midpoint()),
-      IsNear(54 * ArcSecond));
-  EXPECT_THAT(AbsoluteError(*initial_osculating.argument_of_periapsis,
-                            elements.mean_argument_of_periapsis_range().midpoint()),
-              IsNear(61 * ArcSecond));
+      AbsoluteError(*initial_osculating.argument_of_periapsis,
+                    elements.mean_argument_of_periapsis_range().midpoint()),
+      IsNear(61 * ArcSecond));
 
   // Mean element stability.
   EXPECT_THAT(elements.mean_semimajor_axis_range().measure(),
@@ -390,9 +392,11 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   // oscillations are filtered, the argument of periapsis precesses as expected;
   // the longitude of the ascending node exhibits no obvious precession even if
   // its daily oscillation is filtered out.
-  EXPECT_THAT(elements.mean_semimajor_axis_range().measure(), IsNear(20 * Metre));
+  EXPECT_THAT(elements.mean_semimajor_axis_range().measure(),
+              IsNear(20 * Metre));
   EXPECT_THAT(elements.mean_eccentricity_range().measure(), IsNear(9.2e-5));
-  EXPECT_THAT(elements.mean_inclination_range().measure(), IsNear(11 * ArcSecond));
+  EXPECT_THAT(elements.mean_inclination_range().measure(),
+              IsNear(11 * ArcSecond));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_range().measure(),
               IsNear(140 * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_range().measure(),

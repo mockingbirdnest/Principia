@@ -27,23 +27,6 @@ inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
                  Radian;
 }
 
-// |angles| should be sampled from a slowly-varying continuous function
-// f: ℝ →  𝑆¹ = ℝ / 2π ℝ (specifically, consecutive angles should  differ by
-// less than π).  Returns the corresponding sampling of the continuous g: ℝ → ℝ
-// such that f = g mod 2π and f(0) = g(0).
-inline std::vector<Angle> Unwind(std::vector<Angle> const& angles) {
-  if (angles.empty()) {
-    return angles;
-  }
-  std::vector<Angle> unwound_angles;
-  unwound_angles.reserve(angles.size());
-  unwound_angles.push_back(angles.front());
-  for (int i = 1; i < angles.size(); ++i) {
-    unwound_angles.push_back(UnwindFrom(unwound_angles.back(), angles[i]));
-  }
-  return unwound_angles;
-}
-
 template<typename T>
 Difference<T> OrbitalElements::Interval<T>::measure() const {
   return max >= min ? max - min : Difference<T>{};
@@ -117,11 +100,13 @@ OrbitalElements::mean_semimajor_axis_range() const {
   return mean_semimajor_axis_range_;
 }
 
-inline OrbitalElements::Interval<double> OrbitalElements::mean_eccentricity_range() const {
+inline OrbitalElements::Interval<double>
+OrbitalElements::mean_eccentricity_range() const {
   return mean_eccentricity_range_;
 }
 
-inline OrbitalElements::Interval<Angle> OrbitalElements::mean_inclination_range() const {
+inline OrbitalElements::Interval<Angle>
+OrbitalElements::mean_inclination_range() const {
   return mean_inclination_range_;
 }
 
