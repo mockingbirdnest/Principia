@@ -610,6 +610,7 @@ void principia__InitGoogleLogging() {
 #else
     std::freopen("stderr.log", "w", stderr);
 #endif
+    google::SetLogFilenameExtension(".log");
     google::SetLogDestination(google::FATAL, "glog/Principia/FATAL.");
     google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
     google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
