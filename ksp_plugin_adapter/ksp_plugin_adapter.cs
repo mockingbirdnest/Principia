@@ -537,7 +537,7 @@ public partial class PrincipiaPluginAdapter
       in_principia_scene_ = true;
     });
     // Timing0, -8008 on the script execution order page.
-        TimingManager.FixedUpdateAdd(TimingManager.TimingStage.ObscenelyEarly,
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.ObscenelyEarly,
                                  ObscenelyEarly);
     // TimingPre, -101 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Precalc,
