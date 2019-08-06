@@ -1,5 +1,9 @@
 ﻿#include "orbital_elements.hpp"
 
+#include <limits>
+#include <string>
+#include <vector>
+
 #include "astronomy/frames.hpp"
 #include "base/file.hpp"
 #include "base/not_null.hpp"

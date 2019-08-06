@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <vector>
+
 #include "base/status_or.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/body.hpp"

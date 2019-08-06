@@ -2,6 +2,9 @@
 
 #include "astronomy/orbital_elements.hpp"
 
+#include <algorithm>
+#include <vector>
+
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
