@@ -349,6 +349,8 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
                            elements.mean_equinoctial_elements());
 }
 
+#if NDEBUG
+
 TEST_F(OrbitalElementsTest, RealPerturbation) {
   Time const mission_duration = 10 * Day;
 
@@ -413,6 +415,8 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   f << mathematica::Assign("fullyPerturbedMean",
                            elements.mean_equinoctial_elements());
 }
+
+#endif
 
 }  // namespace astronomy
 }  // namespace principia
