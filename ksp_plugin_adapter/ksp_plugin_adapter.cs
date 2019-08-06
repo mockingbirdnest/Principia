@@ -661,9 +661,9 @@ public partial class PrincipiaPluginAdapter
       toolbar_button_?.SetFalse(makeCall : false);
     }
 
-    if (hide_all_gui_) {
+    if (hide_all_gui_ || !in_principia_scene_) {
       clear_locks();
-    } else if (in_principia_scene_ && main_window_.Shown()) {
+    } else if (main_window_.Shown()) {
       render_windows();
     } else {
       clear_locks();
