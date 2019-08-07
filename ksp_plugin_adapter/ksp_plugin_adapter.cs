@@ -60,7 +60,10 @@ public partial class PrincipiaPluginAdapter
       "principia_override_version_check";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
+  // Whether the user has hidden the UI.
   private bool hide_all_gui_ = false;
+  // Whether we are in a scene/building where we wish to show our UI.
+  private bool in_principia_scene_ = true;
 
   private const int чебышёв_plotting_method_ = 2;
 
@@ -509,6 +512,30 @@ public partial class PrincipiaPluginAdapter
 
     GameEvents.onShowUI.Add(() => { hide_all_gui_ = false; });
     GameEvents.onHideUI.Add(() => { hide_all_gui_ = true; });
+    GameEvents.onGUIAdministrationFacilitySpawn.Add(() => {
+      in_principia_scene_ = false;
+    });
+    GameEvents.onGUIAdministrationFacilityDespawn.Add(() => {
+      in_principia_scene_ = true;
+    });
+    GameEvents.onGUIAstronautComplexSpawn.Add(() => {
+      in_principia_scene_ = false;
+    });
+    GameEvents.onGUIAstronautComplexDespawn.Add(() => {
+      in_principia_scene_ = true;
+    });
+    GameEvents.onGUIMissionControlSpawn.Add(() => {
+      in_principia_scene_ = false;
+    });
+    GameEvents.onGUIMissionControlDespawn.Add(() => {
+      in_principia_scene_ = true;
+    });
+    GameEvents.onGUIRnDComplexSpawn.Add(() => {
+      in_principia_scene_ = false;
+    });
+    GameEvents.onGUIRnDComplexDespawn.Add(() => {
+      in_principia_scene_ = true;
+    });
     // Timing0, -8008 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.ObscenelyEarly,
                                  ObscenelyEarly);
@@ -634,7 +661,7 @@ public partial class PrincipiaPluginAdapter
       toolbar_button_?.SetFalse(makeCall : false);
     }
 
-    if (hide_all_gui_) {
+    if (hide_all_gui_ || !in_principia_scene_) {
       clear_locks();
     } else if (main_window_.Shown()) {
       render_windows();
