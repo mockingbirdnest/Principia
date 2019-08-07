@@ -194,7 +194,7 @@ gravity_model {
     reference_radius        : "6.05100000000000e+06 m"
   }
   body {
-    # J2 coefficient and reference radius from MRO data,
+    # Spherical harmonic coefficients and reference radius from MRO data,
     # http://pds-geosciences.wustl.edu/mro/mro-m-rss-5-sdp-v1/mrors_1xxx/data/shadr/jgmro_110c_sha.tab.
     name                    : "Mars"
     gravitational_parameter : "4.282837362069909e+04 km^3/s^2"
