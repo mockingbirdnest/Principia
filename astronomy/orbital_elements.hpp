@@ -81,16 +81,16 @@ class OrbitalElements {
   //   that case, the frozen value may occasionally be relevant: for CoRoT, it
   //   determines the region of the sky that may be observed.
   // — ω exhibits a secular variation, except for frozen orbits or orbits at the
-  // critical inclination; For frozen
-  //   orbits (type II frozen orbits in the terminology of Ulrich Walter), its
-  //   constant value must be eithre 90° or 270°; for orbits at the critical
-  //   inclination (type I frozen orbits), ω is arbitrary; in highly eccentric
-  //   cases, it is often chosen to be 270° so that the apogee is at high
-  //   latitudes (Молния, みちびき, etc.).
+  //   critical inclination; For frozen orbits (type II frozen orbits in the
+  //   terminology of Ulrich Walter (2018), Astronautics: The Physics of Space
+  //   Flight), its constant value must be either 90° or 270°; for orbits at the
+  //   critical inclination (type I frozen orbits), ω is arbitrary; in highly
+  //   eccentric cases, it is often chosen to be 270° so that the apogee is at
+  //   high latitudes (Молния, みちびき, etc.).
   // — a, e, i exhibit no secular variation.
   // However, the elements that exhibit no secular variation still have
   // long-period variations; instead of trying to characterize these complex
-  // effects, we provide the range of values taken by these elements over the
+  // effects, we provide the interval of values taken by these elements over the
   // trajectory being analysed.
 
   // Represents the interval [min, max].
@@ -101,18 +101,20 @@ class OrbitalElements {
     T min = +Infinity<T>();
     T max = -Infinity<T>();
 
+    // The Lebesgue measure of this interval.
     Difference<T> measure() const;
+    // The midpoint of this interval; NaN if the interval is empty (min > max).
     T midpoint() const;
 
     // Extends this interval so that it contains x.
     void Include(T const& x);
   };
 
-  Interval<Length> mean_semimajor_axis_range() const;
-  Interval<double> mean_eccentricity_range() const;
-  Interval<Angle> mean_inclination_range() const;
-  Interval<Angle> mean_longitude_of_ascending_node_range() const;
-  Interval<Angle> mean_argument_of_periapsis_range() const;
+  Interval<Length> mean_semimajor_axis_interval() const;
+  Interval<double> mean_eccentricity_interval() const;
+  Interval<Angle> mean_inclination_interval() const;
+  Interval<Angle> mean_longitude_of_ascending_node_interval() const;
+  Interval<Angle> mean_argument_of_periapsis_interval() const;
 
   // The equinoctial elements, and in particular the osculating equinoctial
   // elements, are not directly interesting; anything that could be derived from
@@ -125,16 +127,27 @@ class OrbitalElements {
   // The equinoctial elements, together with an epoch.
   // See Broucke and Cefola (1972), On the equinoctial orbit elements.
   struct EquinoctialElements {
+    // The epoch of the elements.
     Instant t;
+    // The semimajor axis.
     Length a;
+    // e sin ϖ, where e is the eccentricity and ϖ = Ω + ω is the longitude of
+    // the periapsis.
     double h;
+    // e cos ϖ.
     double k;
+    // The mean longitude ϖ + M = Ω + ω + M.
     Angle λ;
+    // tg i/2 sin Ω, where i is the inclination and Ω the longitude of the
+    // ascending node.
     double p;
+    // tg i/2 cos Ω.
     double q;
     // pʹ and qʹ use the cotangent of the half-inclination instead of its
     // tangent; they are better suited to retrograde orbits.
+    // cotg i/2 sin Ω.
     double pʹ;
+    // cotg i/2 cos Ω.
     double qʹ;
   };
 
@@ -156,7 +169,8 @@ class OrbitalElements {
       std::vector<EquinoctialElements> const& equinoctial_elements);
 
   // |osculating| must contain at least 2 elements.
-  // The resulting elements are averaged over one period, centred on t.
+  // The resulting elements are averaged over one period, centred on
+  // their |EquinoctialElements::t|.
   static std::vector<EquinoctialElements> MeanEquinoctialElements(
       std::vector<EquinoctialElements> const& osculating,
       Time const& period);
@@ -170,7 +184,9 @@ class OrbitalElements {
   // element computation is based on it, so it gets computed earlier).
   void ComputePeriodsAndPrecession();
 
-  void ComputeMeanElementRanges();
+  // |mean_classical_elements_| must have been computed; sets
+  // |mean_*_interval_| accordingly.
+  void ComputeMeanElementIntervals();
 
   std::vector<EquinoctialElements> osculating_equinoctial_elements_;
   Time sidereal_period_;
@@ -180,11 +196,11 @@ class OrbitalElements {
   Time nodal_period_;
   AngularFrequency nodal_precession_;
 
-  Interval<Length> mean_semimajor_axis_range_;
-  Interval<double> mean_eccentricity_range_;
-  Interval<Angle> mean_inclination_range_;
-  Interval<Angle> mean_longitude_of_ascending_node_range_;
-  Interval<Angle> mean_argument_of_periapsis_range_;
+  Interval<Length> mean_semimajor_axis_interval_;
+  Interval<double> mean_eccentricity_interval_;
+  Interval<Angle> mean_inclination_interval_;
+  Interval<Angle> mean_longitude_of_ascending_node_interval_;
+  Interval<Angle> mean_argument_of_periapsis_interval_;
 };
 
 }  // namespace internal_orbital_elements

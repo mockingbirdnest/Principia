@@ -24,7 +24,7 @@ using quantities::Square;
 using quantities::Tan;
 using quantities::si::Radian;
 
-// Returns the element of {α + 2nπ| n ∈ ℤ} which is closest to |previous_angle|.
+// Returns the element of {α + 2nπ | n ∈ ℤ} which is closest to |previous_angle|.
 inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
   return α + std::nearbyint((previous_angle - α) / (2 * π * Radian)) * 2 * π *
                  Radian;
@@ -51,30 +51,29 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     DiscreteTrajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
-  OrbitalElements result;
+  OrbitalElements orbital_elements;
   if (trajectory.Size() < 2) {
     return Status(Error::INVALID_ARGUMENT,
-                  trajectory.Empty() ? "empty trajectory"
-                                     : "insufficient trajectory size");
+                  "trajectory.Size() is " + std::to_string(trajectory.Size()));
   }
-  result.osculating_equinoctial_elements_ =
+  orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
-  result.sidereal_period_ =
-      SiderealPeriod(result.osculating_equinoctial_elements_);
-  result.mean_equinoctial_elements_ = MeanEquinoctialElements(
-      result.osculating_equinoctial_elements_, result.sidereal_period_);
-  if (result.mean_equinoctial_elements_.size() < 2) {
+  orbital_elements.sidereal_period_ =
+      SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
+  orbital_elements.mean_equinoctial_elements_ = MeanEquinoctialElements(
+      orbital_elements.osculating_equinoctial_elements_, orbital_elements.sidereal_period_);
+  if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
     return Status(
         Error::OUT_OF_RANGE,
         "trajectory does not span one sidereal period: sidereal period is " +
-            DebugString(result.sidereal_period_) + ", trajectory spans " +
+            DebugString(orbital_elements.sidereal_period_) + ", trajectory spans " +
             DebugString(trajectory.last().time() - trajectory.Begin().time()));
   }
-  result.mean_classical_elements_ =
-      ToClassicalElements(result.mean_equinoctial_elements_);
-  result.ComputePeriodsAndPrecession();
-  result.ComputeMeanElementRanges();
-  return result;
+  orbital_elements.mean_classical_elements_ =
+      ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
+  orbital_elements.ComputePeriodsAndPrecession();
+  orbital_elements.ComputeMeanElementIntervals();
+  return orbital_elements;
 }
 
 inline std::vector<OrbitalElements::ClassicalElements> const&
@@ -99,28 +98,28 @@ inline AngularFrequency OrbitalElements::nodal_precession() const {
 }
 
 inline OrbitalElements::Interval<Length>
-OrbitalElements::mean_semimajor_axis_range() const {
-  return mean_semimajor_axis_range_;
+OrbitalElements::mean_semimajor_axis_interval() const {
+  return mean_semimajor_axis_interval_;
 }
 
 inline OrbitalElements::Interval<double>
-OrbitalElements::mean_eccentricity_range() const {
-  return mean_eccentricity_range_;
+OrbitalElements::mean_eccentricity_interval() const {
+  return mean_eccentricity_interval_;
 }
 
 inline OrbitalElements::Interval<Angle>
-OrbitalElements::mean_inclination_range() const {
-  return mean_inclination_range_;
+OrbitalElements::mean_inclination_interval() const {
+  return mean_inclination_interval_;
 }
 
 inline OrbitalElements::Interval<Angle>
-OrbitalElements::mean_longitude_of_ascending_node_range() const {
-  return mean_longitude_of_ascending_node_range_;
+OrbitalElements::mean_longitude_of_ascending_node_interval() const {
+  return mean_longitude_of_ascending_node_interval_;
 }
 
 inline OrbitalElements::Interval<Angle>
-OrbitalElements::mean_argument_of_periapsis_range() const {
-  return mean_argument_of_periapsis_range_;
+OrbitalElements::mean_argument_of_periapsis_interval() const {
+  return mean_argument_of_periapsis_interval_;
 }
 
 template<typename PrimaryCentred>
@@ -180,7 +179,8 @@ inline Time OrbitalElements::SiderealPeriod(
   auto const first = equinoctial_elements.begin();
   Time const first_t = first->t - t0;
   Product<Angle, Time> previous_λt = first->λ * first_t;
-  for (auto previous = first, it = first + 1; it != equinoctial_elements.end();
+  for (auto previous = first, it = first + 1;
+       it != equinoctial_elements.end();
        previous = it, ++it) {
     Time const t = it->t - t0;
     auto const λt = it->λ * t;
@@ -272,7 +272,7 @@ OrbitalElements::MeanEquinoctialElements(
 inline std::vector<OrbitalElements::ClassicalElements>
 OrbitalElements::ToClassicalElements(
     std::vector<EquinoctialElements> const& equinoctial_elements) {
-  std::vector<ClassicalElements> result;
+  std::vector<ClassicalElements> classical_elements;
   for (auto const& equinoctial : equinoctial_elements) {
     double const tg_½i = Sqrt(Pow<2>(equinoctial.p) + Pow<2>(equinoctial.q));
     double const cotg_½i =
@@ -285,19 +285,23 @@ OrbitalElements::ToClassicalElements(
     Angle const ϖ = ArcTan(equinoctial.h, equinoctial.k);
     Angle const ω = ϖ - Ω;
     Angle const M = equinoctial.λ - ϖ;
-    result.push_back(
+    classical_elements.push_back(
         {equinoctial.t,
          equinoctial.a,
          e,
          i,
-         result.empty()
+         classical_elements.empty()
              ? Ω
-             : UnwindFrom(result.back().longitude_of_ascending_node, Ω),
-         result.empty() ? ω
-                        : UnwindFrom(result.back().argument_of_periapsis, ω),
-         result.empty() ? M : UnwindFrom(result.back().mean_anomaly, M)});
+             : UnwindFrom(classical_elements.back().longitude_of_ascending_node,
+                          Ω),
+         classical_elements.empty()
+             ? ω
+             : UnwindFrom(classical_elements.back().argument_of_periapsis, ω),
+         classical_elements.empty()
+             ? M
+             : UnwindFrom(classical_elements.back().mean_anomaly, M)});
   }
-  return result;
+  return classical_elements;
 }
 
 inline void OrbitalElements::ComputePeriodsAndPrecession() {
@@ -338,14 +342,15 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
   nodal_precession_ = 12 * ſ_Ωt_dt / Pow<3>(Δt);
 }
 
-inline void OrbitalElements::ComputeMeanElementRanges() {
+inline void OrbitalElements::ComputeMeanElementIntervals() {
   for (auto const& elements : mean_classical_elements_) {
-    mean_semimajor_axis_range_.Include(elements.semimajor_axis);
-    mean_eccentricity_range_.Include(elements.eccentricity);
-    mean_inclination_range_.Include(elements.inclination);
-    mean_longitude_of_ascending_node_range_.Include(
+    mean_semimajor_axis_interval_.Include(elements.semimajor_axis);
+    mean_eccentricity_interval_.Include(elements.eccentricity);
+    mean_inclination_interval_.Include(elements.inclination);
+    mean_longitude_of_ascending_node_interval_.Include(
         elements.longitude_of_ascending_node);
-    mean_argument_of_periapsis_range_.Include(elements.argument_of_periapsis);
+    mean_argument_of_periapsis_interval_.Include(
+        elements.argument_of_periapsis);
   }
 }
 
