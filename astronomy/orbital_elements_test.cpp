@@ -350,7 +350,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
                            elements.mean_equinoctial_elements());
 }
 
-#if NDEBUG
+#if !defined(_DEBUG)
 
 TEST_F(OrbitalElementsTest, RealPerturbation) {
   Time const mission_duration = 10 * Day;
