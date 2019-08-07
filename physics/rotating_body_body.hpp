@@ -55,23 +55,14 @@ RotatingBody<Frame>::RotatingBody(
                       1.0,
                       parameters.declination_of_pole_,
                       parameters.right_ascension_of_pole_).ToCartesian()),
+      biequatorial_(RadiusLatitudeLongitude(
+                        1.0,
+                        0 * Radian,
+                        π / 2 * Radian +
+                            parameters.right_ascension_of_pole_).ToCartesian()),
+      equatorial_(Wedge(biequatorial_, polar_axis_).coordinates()),
       angular_velocity_(polar_axis_.coordinates() *
-                        parameters.angular_frequency_) {
-  biequatorial_ = NormalizeOrZero(Vector<double, Frame>(
-      {-polar_axis_.coordinates().y,
-       polar_axis_.coordinates().x,
-       0}));
-  if (biequatorial_ == Vector<double, Frame>{}) {
-    biequatorial_ = Vector<double, Frame>({1, 0, 0});
-    equatorial_ = Vector<double, Frame>({0, 1, 0});
-  } else {
-    // TODO(phl): It is somewhat unpleasant that we have to make this a vector
-    // when it would want to be a bivector.  The inner products in Geopotential
-    // would then yield trivectors and we are not sure what that means.
-    equatorial_ = Vector<double, Frame>(Cross(polar_axis_.coordinates(),
-                                              biequatorial_.coordinates()));
-  }
-}
+                        parameters.angular_frequency_) {}
 
 template<typename Frame>
 Length RotatingBody<Frame>::mean_radius() const {

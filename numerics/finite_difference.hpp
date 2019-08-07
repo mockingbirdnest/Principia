@@ -21,7 +21,7 @@ using quantities::Difference;
 // The error on the derivative is 𝒪(hⁿ⁻¹) as h → 0.
 // If f is a polynomial of degree less than or equal to n - 1, the result is
 // exact up to rounding errors.
-template<typename Value, typename Argument, int n>
+template<typename Value, typename Argument, std::size_t n>
 Derivative<Value, Argument> FiniteDifference(
     std::array<Value, n> const& values,
     Argument const& step,

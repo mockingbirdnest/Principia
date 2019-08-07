@@ -3,14 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace principia {
 namespace ksp_plugin_adapter {
 
-static class CelestialExtensions {
+internal static class CelestialExtensions {
   public static bool is_leaf(this CelestialBody celestial) {
     return celestial.orbitingBodies.Count == 0;
   }
@@ -20,7 +17,7 @@ static class CelestialExtensions {
   }
 }
 
-class ReferenceFrameSelector : SupervisedWindowRenderer {
+internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   public enum FrameType {
     BARYCENTRIC_ROTATING = 6001,
     BODY_CENTRED_NON_ROTATING = 6000,
@@ -30,10 +27,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public delegate void Callback(NavigationFrameParameters frame_parameters);
 
-  public ReferenceFrameSelector(
-      ISupervisor supervisor,
-      Callback on_change,
-      string name) : base(supervisor, UnityEngine.GUILayout.MinWidth(0)) {
+  public ReferenceFrameSelector(ISupervisor supervisor,
+                                Callback on_change,
+                                string name)
+      : base(supervisor, UnityEngine.GUILayout.MinWidth(0)) {
     on_change_ = on_change;
     name_ = name;
 
@@ -41,6 +38,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     // C++ side (we do for flight planning).
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     selected_celestial = FlightGlobals.GetHomeBody();
+    is_freshly_constructed_ = true;
 
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
@@ -51,59 +49,63 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public void UpdateMainBody() {
-    frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
-    selected_celestial =
-        FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
-    for (CelestialBody celestial = selected_celestial;
-         celestial.orbit != null;
-         celestial = celestial.orbit.referenceBody) {
-      if (!celestial.is_leaf()) {
-        expanded_[celestial] = true;
+    EffectChange(() => {
+      frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+      selected_celestial =
+          FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
+      for (CelestialBody celestial = selected_celestial;
+           celestial.orbit != null;
+           celestial = celestial.orbit.referenceBody) {
+        if (!celestial.is_leaf()) {
+          expanded_[celestial] = true;
+        }
       }
-    }
-    on_change_(FrameParameters());
+    });
   }
 
   public void SetFrameParameters(NavigationFrameParameters parameters) {
-    frame_type = (FrameType)parameters.extension;
-    switch (frame_type) {
-      case FrameType.BODY_CENTRED_NON_ROTATING:
-      case FrameType.BODY_SURFACE:
-        selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
-        break;
-      case FrameType.BARYCENTRIC_ROTATING:
-        selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
-        break;
-      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-        selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
-        break;
-    }
-    on_change_(FrameParameters());
+    EffectChange(() => {
+      frame_type = (FrameType)parameters.extension;
+      switch (frame_type) {
+        case FrameType.BODY_CENTRED_NON_ROTATING:
+        case FrameType.BODY_SURFACE:
+          selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
+          break;
+        case FrameType.BARYCENTRIC_ROTATING:
+          selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
+          break;
+        case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+          selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
+          break;
+      }
+    });
   }
 
   // Sets the |frame_type| to |type| unless this would be invalid for the
   // |selected_celestial|, in which case |frame_type| is set to
   // |BODY_CENTRED_NON_ROTATING|.
   public void SetFrameType(FrameType type) {
-    if (selected_celestial.is_root() &&
-        (type == FrameType.BARYCENTRIC_ROTATING ||
-         type == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
-      frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
-    } else {
-      frame_type = type;
-    }
-    on_change_(FrameParameters());
+    EffectChange(() => {
+      if (selected_celestial.is_root() &&
+          (type == FrameType.BARYCENTRIC_ROTATING ||
+           type == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
+        frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+      } else {
+        frame_type = type;
+      }
+    });
   }
 
   // Sets the |frame_type| to |BODY_SURFACE| and sets |selected_celestial| to
   // the given |celestial|.
   public void SetToSurfaceFrameOf(CelestialBody celestial) {
-    frame_type = FrameType.BODY_SURFACE;
-    selected_celestial = celestial;
-    on_change_(FrameParameters());
+    EffectChange(() => {
+      frame_type = FrameType.BODY_SURFACE;
+      selected_celestial = celestial;
+    });
   }
 
-  public static String Name(FrameType type,
+  public static string Name(FrameType type,
                             CelestialBody selected,
                             Vessel target_override) {
    if (target_override) {
@@ -134,7 +136,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
    }
   }
 
-  public static String ShortName(FrameType type,
+  public static string ShortName(FrameType type,
                                  CelestialBody selected,
                                  Vessel target_override) {
     if (target_override) {
@@ -164,7 +166,7 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public static String Description(FrameType type,
+  public static string Description(FrameType type,
                                    CelestialBody selected,
                                    Vessel target_override) {
     if (target_override) {
@@ -205,16 +207,31 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public String Name() {
+  public string Name() {
     return Name(frame_type, selected_celestial, target_override);
   }
 
-  public String ShortName() {
+  public string ShortName() {
     return ShortName(frame_type, selected_celestial, target_override);
   }
 
-  public String Description() {
+  public string Description() {
     return Description(frame_type, selected_celestial, target_override);
+  }
+
+  public string ReferencePlaneDescription() {
+    if (!target_override &&
+        (frame_type == FrameType.BODY_CENTRED_NON_ROTATING ||
+         frame_type == FrameType.BODY_SURFACE)) {
+      return $"equator of {selected_celestial.NameWithArticle()}";
+    }
+    string secondary = target_override != null
+        ? "the target"
+        : selected_celestial.NameWithArticle();
+    string primary = target_override != null
+        ? selected_celestial.NameWithArticle()
+        : selected_celestial.referenceBody.NameWithArticle();
+    return $"orbit of {secondary} around {primary}";
   }
 
   public CelestialBody[] FixedBodies() {
@@ -267,11 +284,11 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  protected override String Title {
-    get {
-      return name_ + " selection (" + Name() + ")";
-    }
-  }
+  public FrameType frame_type { get; private set; }
+  public CelestialBody selected_celestial { get; private set; }
+  public Vessel target_override { get; set; }
+
+  protected override string Title => name_ + " selection (" + Name() + ")";
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -284,10 +301,10 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
       using (new UnityEngine.GUILayout.VerticalScope()) {
         if (target_override) {
           UnityEngine.GUILayout.Label(
-              "Using target-centred frame selected on navball speed display",
-              GUILayoutWidth(6));
-          UnityEngine.GUILayout.Label(
+              "Using target-centred frame selected on navball speed " +
+              "display\n\n" +
               Description(frame_type, selected_celestial, target_override),
+              Style.Multiline(UnityEngine.GUI.skin.label),
               GUILayoutWidth(6));
         } else {
           TypeSelector(FrameType.BODY_SURFACE);
@@ -328,13 +345,12 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
       }
       if (UnityEngine.GUILayout.Toggle(selected_celestial == celestial,
                                        celestial.name)) {
-        if (selected_celestial != celestial) {
+        EffectChange(() => {
           selected_celestial = celestial;
           if (celestial.is_root() && frame_type != FrameType.BODY_SURFACE) {
             frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
           }
-          on_change_(FrameParameters());
-        }
+        });
       }
     }
     if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
@@ -345,29 +361,39 @@ class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private void TypeSelector(FrameType value) {
-   var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.toggle);
-   style.fixedHeight = 0;
-   style.wordWrap = true;
-   if (UnityEngine.GUILayout.Toggle(
-           frame_type == value,
-           Description(value, selected_celestial, target_override),
-           style,
-           GUILayoutWidth(6),
-           GUILayoutHeight(5))) {
-     if (frame_type != value) {
-       frame_type = value;
-       on_change_(FrameParameters());
-     }
+    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.toggle);
+    style.fixedHeight = 0;
+    style.wordWrap = true;
+    if (UnityEngine.GUILayout.Toggle(
+            frame_type == value,
+            Description(value, selected_celestial, target_override),
+            style,
+            GUILayoutWidth(6),
+            GUILayoutHeight(5))) {
+      EffectChange(() => {
+        frame_type = value;
+      });
     }
   }
 
-  public FrameType frame_type { get; private set; }
-  public CelestialBody selected_celestial { get; private set; }
-  public Vessel target_override { get; set; }
+  // Runs an action that may change the frame and run on_change_ if there
+  // actually was a change.
+  private void EffectChange(Action action) {
+    var old_frame_type = frame_type;
+    var old_selected_celestial = selected_celestial;
+    action();
+    if (is_freshly_constructed_ ||
+        frame_type != old_frame_type ||
+        selected_celestial != old_selected_celestial) {
+      on_change_(FrameParameters());
+      is_freshly_constructed_ = false;
+    }
+  }
 
   private readonly Callback on_change_;
   private readonly string name_;
-  private Dictionary<CelestialBody, bool> expanded_;
+  private readonly Dictionary<CelestialBody, bool> expanded_;
+  private bool is_freshly_constructed_;
 }
 
 }  // namespace ksp_plugin_adapter

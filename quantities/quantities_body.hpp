@@ -20,6 +20,9 @@ template<typename D>
 constexpr Quantity<D>::Quantity() : magnitude_(0) {}
 
 template<typename D>
+constexpr Quantity<D>::Quantity(uninitialized_t) {}
+
+template<typename D>
 constexpr Quantity<D>::Quantity(double const magnitude)
     : magnitude_(magnitude) {}
 

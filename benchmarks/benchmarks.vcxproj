@@ -2,17 +2,19 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7B174B21-0837-4BEE-864E-08AD3C74046A}</ProjectGuid>
-    <Keyword>Win32Proj</Keyword>
     <RootNamespace>benchmarks</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
+    <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
+    <ClCompile Include="..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp" />
     <ClCompile Include="dynamic_frame.cpp" />
+    <ClCompile Include="elliptic_integrals_benchmark.cpp" />
+    <ClCompile Include="elliptic_functions_benchmark.cpp" />
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp" />
     <ClCompile Include="encoder.cpp" />
     <ClCompile Include="ephemeris.cpp" />

@@ -3,13 +3,13 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{83A31DA7-3F62-464D-9F6B-09CCE07A865A}</ProjectGuid>
     <RootNamespace>mathematica</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClCompile Include="..\base\bundle.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
+    <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="integrator_plots.cpp" />
     <ClCompile Include="local_error_analysis.cpp" />
     <ClCompile Include="retrobop_dynamical_stability.cpp" />
@@ -24,6 +24,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="associated_legendre_function.wl" />
+    <None Include="elliptic_integrals.wl" />
+    <None Include="fukushima_elliptic_bd.wl" />
     <None Include="generate_graphs.wl" />
     <None Include="navball.wl" />
     <None Include="integration.wl" />

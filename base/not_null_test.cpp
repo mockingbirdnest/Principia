@@ -43,22 +43,25 @@ TEST_F(NotNullDeathTest, DeathByNullptr) {
 
 TEST_F(NotNullTest, Move) {
   not_null<std::unique_ptr<int>> int_ptr1 = make_not_null_unique<int>(3);
-#if !PRINCIPIA_COMPILER_MSVC ||     \
-    !(_MSC_FULL_VER == 190023506 || \
-      _MSC_FULL_VER == 190023918 || \
-      _MSC_FULL_VER == 190024210 || \
-      _MSC_FULL_VER == 190024213 || \
-      _MSC_FULL_VER == 190024215 || \
-      _MSC_FULL_VER == 191326215 || \
-      _MSC_FULL_VER == 191426316 || \
-      _MSC_FULL_VER == 191426412 || \
-      _MSC_FULL_VER == 191426428 || \
-      _MSC_FULL_VER == 191426429 || \
-      _MSC_FULL_VER == 191526608 || \
-      _MSC_FULL_VER == 191526731 || \
-      _MSC_FULL_VER == 191627024 || \
-      _MSC_FULL_VER == 191627025 || \
-      _MSC_FULL_VER == 191627027)
+#if !PRINCIPIA_COMPILER_MSVC || \
+    !(_MSC_FULL_VER == 190'023'506 || \
+      _MSC_FULL_VER == 190'023'918 || \
+      _MSC_FULL_VER == 190'024'210 || \
+      _MSC_FULL_VER == 190'024'213 || \
+      _MSC_FULL_VER == 190'024'215 || \
+      _MSC_FULL_VER == 191'326'215 || \
+      _MSC_FULL_VER == 191'426'316 || \
+      _MSC_FULL_VER == 191'426'412 || \
+      _MSC_FULL_VER == 191'426'428 || \
+      _MSC_FULL_VER == 191'426'429 || \
+      _MSC_FULL_VER == 191'526'608 || \
+      _MSC_FULL_VER == 191'526'731 || \
+      _MSC_FULL_VER == 191'627'024 || \
+      _MSC_FULL_VER == 191'627'025 || \
+      _MSC_FULL_VER == 191'627'027 || \
+      _MSC_FULL_VER == 192'027'508 || \
+      _MSC_FULL_VER == 192'227'706 || \
+      _MSC_FULL_VER == 192'227'724)
   EXPECT_THAT(*(std::unique_ptr<int> const&)int_ptr1, Eq(3));
 #endif
   not_null<std::unique_ptr<int>> int_ptr2 = std::move(int_ptr1);

@@ -3,7 +3,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{972E4E09-3B2C-4A23-9338-74D97D589207}</ProjectGuid>
     <RootNamespace>journal</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
@@ -19,6 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="player.generated.cc">
       <ExcludedFromBuild>true</ExcludedFromBuild>

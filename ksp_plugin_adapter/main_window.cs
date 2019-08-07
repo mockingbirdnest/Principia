@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class MainWindow : SupervisedWindowRenderer {
   // Update this section before each release.
-  private const String next_release_name_ = "Fáry";
-  private const int next_release_lunation_number_ = 239;
-  private DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2019, 05, 04, 22, 46, 00, TimeSpan.Zero);
+  private const string next_release_name_ = "del Ferro";
+  private const int next_release_lunation_number_ = 243;
+  private readonly DateTimeOffset next_release_date_ =
+      new DateTimeOffset(2019, 08, 30, 10, 37, 00, TimeSpan.Zero);
 
   public delegate Vessel PredictedVessel();
 
@@ -52,9 +49,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   public bool display_patched_conics { get; private set; } = false;
 
   public double history_length => history_lengths_[history_length_index_];
-  public double prediction_length_tolerance =>
-      prediction_length_tolerances_[prediction_length_tolerance_index_];
-  public Int64 prediction_steps => prediction_steps_[prediction_steps_index_];
 
   public void LoadCompatibilityDataIfNeeded(int history_length_index) {
     if (should_load_compatibility_data_) {
@@ -65,50 +59,50 @@ internal class MainWindow : SupervisedWindowRenderer {
   public override void Load(ConfigNode node) {
     base.Load(node);
 
-    String show_ksp_features_value =
+    string show_ksp_features_value =
         node.GetAtMostOneValue("show_ksp_features");
     if (show_ksp_features_value != null) {
       show_ksp_features_ = Convert.ToBoolean(show_ksp_features_value);
     }
-    String show_logging_settings_value =
+    string show_logging_settings_value =
         node.GetAtMostOneValue("show_logging_settings");
     if (show_logging_settings_value != null) {
       show_logging_settings_ = Convert.ToBoolean(show_logging_settings_value);
     }
-    String show_prediction_settings_value =
+    string show_prediction_settings_value =
         node.GetAtMostOneValue("show_prediction_settings");
     if (show_prediction_settings_value != null) {
       show_prediction_settings_ =
           Convert.ToBoolean(show_prediction_settings_value);
     }
 
-    String history_length_index_value =
+    string history_length_index_value =
         node.GetAtMostOneValue("history_length_index");
     if (history_length_index_value != null) {
       should_load_compatibility_data_ = false;
       history_length_index_ = Convert.ToInt32(history_length_index_value);
     }
 
-    String buffered_logging_value =
+    string buffered_logging_value =
         node.GetAtMostOneValue("buffered_logging");
     if (buffered_logging_value != null) {
       buffered_logging_ = Convert.ToInt32(buffered_logging_value);
     }
-    String stderr_logging_value = node.GetAtMostOneValue("stderr_logging");
+    string stderr_logging_value = node.GetAtMostOneValue("stderr_logging");
     if (stderr_logging_value != null) {
       stderr_logging_ = Convert.ToInt32(stderr_logging_value);
     }
-    String suppressed_logging_value =
+    string suppressed_logging_value =
         node.GetAtMostOneValue("suppressed_logging");
     if (suppressed_logging_value != null) {
       suppressed_logging_ = Convert.ToInt32(suppressed_logging_value);
     }
-    String verbose_logging_value = node.GetAtMostOneValue("verbose_logging");
+    string verbose_logging_value = node.GetAtMostOneValue("verbose_logging");
     if (verbose_logging_value != null) {
       verbose_logging_ = Convert.ToInt32(verbose_logging_value);
     }
 
-    String must_record_journal_value =
+    string must_record_journal_value =
         node.GetAtMostOneValue("must_record_journal");
     if (must_record_journal_value != null) {
       must_record_journal_ = Convert.ToBoolean(must_record_journal_value);
@@ -170,25 +164,37 @@ internal class MainWindow : SupervisedWindowRenderer {
             style : Style.Warning(UnityEngine.GUI.skin.label));
       }
       if (DateTimeOffset.Now > next_release_date_) {
-        UnityEngine.GUILayout.TextArea(
-            "Announcement: the new moon of lunation number " +
-            next_release_lunation_number_ +
-            " has come; please download the latest Principia release, " +
-            next_release_name_ + ".");
+        if (Versioning.version_minor <= 4) {
+          UnityEngine.GUILayout.TextArea(
+              "Announcement: the new moon of lunation number " +
+              next_release_lunation_number_ +
+              " has come; please update KSP to version 1.6.1 and download " +
+              "the latest Principia release, " + next_release_name_ + ". " +
+              "Note that RealismOverhaul and RealSolarSystem now support " +
+              "KSP 1.6.1.",
+              style : Style.Multiline(UnityEngine.GUI.skin.textArea));
+        } else {
+          UnityEngine.GUILayout.TextArea(
+              "Announcement: the new moon of lunation number " +
+              next_release_lunation_number_ +
+              " has come; please download the latest Principia release, " +
+              next_release_name_ + ".",
+              style: Style.Multiline(UnityEngine.GUI.skin.textArea));
+        }
       }
       Interface.GetVersion(build_date : out string unused_build_date,
                            version    : out string version);
       UnityEngine.GUILayout.Label(
           version,
           style : Style.Info(UnityEngine.GUI.skin.label));
-      bool changed_history_length = false;
       RenderSelector(history_lengths_,
                      ref history_length_index_,
                      "Max history length",
-                     ref changed_history_length,
-                     "{0:0.00e00} s");
+                     "{0:0.00e00} s",
+                     enabled: true);
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
+        show_selection_ui_ = true;
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           selecting_active_vessel_target = UnityEngine.GUILayout.Toggle(
               selecting_active_vessel_target, "Select target vessel...");
@@ -213,6 +219,11 @@ internal class MainWindow : SupervisedWindowRenderer {
           }
         }
       } else {
+        // This will remove the "Select" UI so it must shrink.
+        if (show_selection_ui_) {
+          show_selection_ui_ = false;
+          Shrink();
+        }
         selecting_active_vessel_target = false;
       }
       if (plugin != IntPtr.Zero) {
@@ -229,7 +240,6 @@ internal class MainWindow : SupervisedWindowRenderer {
                               show   : ref show_logging_settings_,
                               render : RenderLoggingSettings);
     }
-    Shrink();
     UnityEngine.GUI.DragWindow();
   }
 
@@ -352,7 +362,7 @@ internal class MainWindow : SupervisedWindowRenderer {
           value   : must_record_journal_,
           text    : "Record journal (starts on load)");
       UnityEngine.GUILayout.Label(
-          "Journalling is " + (journaling_ ? "ON" : "OFF"),
+          "Journaling is " + (journaling_ ? "ON" : "OFF"),
           style : Style.Info(Style.RightAligned(UnityEngine.GUI.skin.label)));
     }
     if (journaling_ && !must_record_journal_) {
@@ -366,73 +376,98 @@ internal class MainWindow : SupervisedWindowRenderer {
   private void RenderPredictionSettings() {
     if (vessel_ != predicted_vessel_()) {
       vessel_ = predicted_vessel_();
-      string vessel_guid = vessel_?.id.ToString();
-      if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
-        AdaptiveStepParameters adaptive_step_parameters =
-            plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
-        prediction_length_tolerance_index_ = Array.FindIndex(
-            prediction_length_tolerances_,
-            (double tolerance) =>
-                tolerance >=
-                    adaptive_step_parameters.length_integration_tolerance);
-        if (prediction_length_tolerance_index_ < 0) {
-          prediction_length_tolerance_index_ =
-              default_prediction_length_tolerance_index_;
-        }
-        prediction_steps_index_ = Array.FindIndex(
-            prediction_steps_,
-            (Int64 step) => step >= adaptive_step_parameters.max_steps);
-        if (prediction_steps_index_ < 0) {
-          prediction_steps_index_ = default_prediction_steps_index_;
-        }
+    }
+    AdaptiveStepParameters? adaptive_step_parameters = null;
+    string vessel_guid = vessel_?.id.ToString();
+    if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
+      adaptive_step_parameters =
+          plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
+      prediction_length_tolerance_index_ = Array.FindIndex(
+          prediction_length_tolerances_,
+          (double tolerance) =>
+              tolerance >=
+                  adaptive_step_parameters.Value.length_integration_tolerance);
+      if (prediction_length_tolerance_index_ < 0) {
+        prediction_length_tolerance_index_ =
+            default_prediction_length_tolerance_index_;
+      }
+      prediction_steps_index_ = Array.FindIndex(
+          prediction_steps_,
+          (long step) => step >= adaptive_step_parameters.Value.max_steps);
+      if (prediction_steps_index_ < 0) {
+        prediction_steps_index_ = default_prediction_steps_index_;
       }
     }
 
-    bool changed_settings = false;
-    RenderSelector(prediction_length_tolerances_,
-                   ref prediction_length_tolerance_index_,
-                   "Tolerance",
-                   ref changed_settings,
-                   "{0:0.0e0} m");
-    RenderSelector(prediction_steps_,
-                   ref prediction_steps_index_,
-                   "Steps",
-                   ref changed_settings,
-                   "{0:0.00e0}");
+    // TODO(egg): make the speed tolerance independent.
+    if (RenderSelector(prediction_length_tolerances_,
+                       ref prediction_length_tolerance_index_,
+                       "Tolerance",
+                       "{0:0.0e0} m",
+                       enabled: adaptive_step_parameters.HasValue)) {
+      AdaptiveStepParameters new_adaptive_step_parameters =
+          new AdaptiveStepParameters{
+            integrator_kind = adaptive_step_parameters.Value.integrator_kind,
+            max_steps = prediction_steps,
+            length_integration_tolerance = prediction_length_tolerance,
+            speed_integration_tolerance = prediction_length_tolerance};
+      plugin.VesselSetPredictionAdaptiveStepParameters(
+          vessel_guid, new_adaptive_step_parameters);
+    }
+    if (RenderSelector(prediction_steps_,
+                       ref prediction_steps_index_,
+                       "Steps",
+                       "{0:0.00e0}",
+                       enabled: adaptive_step_parameters.HasValue)) {
+      AdaptiveStepParameters new_adaptive_step_parameters =
+          new AdaptiveStepParameters{
+            integrator_kind = adaptive_step_parameters.Value.integrator_kind,
+            max_steps = prediction_steps,
+            length_integration_tolerance = prediction_length_tolerance,
+            speed_integration_tolerance = prediction_length_tolerance};
+      plugin.VesselSetPredictionAdaptiveStepParameters(
+          vessel_guid, new_adaptive_step_parameters);
+    }
   }
 
-  private void RenderSelector<T>(T[] array,
+  private bool RenderSelector<T>(T[] array,
                                  ref int index,
-                                 String label,
-                                 ref bool changed,
-                                 String format) {
+                                 string label,
+                                 string format,
+                                 bool enabled) {
+    bool changed = false;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text    : label + ":",
                                   options : GUILayoutWidth(6));
       if (UnityEngine.GUILayout.Button(text    : index == 0 ? "min" : "-",
                                        options : GUILayoutWidth(2)) &&
+          enabled &&
           index != 0) {
         --index;
         changed = true;
       }
       UnityEngine.GUILayout.TextArea(
-          text    : String.Format(Culture.culture, format, array[index]),
+          text    : enabled
+                        ? string.Format(Culture.culture, format, array[index])
+                        : "",
           style   : Style.RightAligned(UnityEngine.GUI.skin.textArea),
           options : GUILayoutWidth(3));
       if (UnityEngine.GUILayout.Button(
               text    : index == array.Length - 1 ? "max" : "+",
               options : GUILayoutWidth(2)) &&
+          enabled &&
           index != array.Length - 1) {
         ++index;
         changed = true;
       }
     }
+    return changed;
   }
 
-  private void RenderToggleableSection(String name,
+  private void RenderToggleableSection(string name,
                                        ref bool show,
                                        Action render) {
-    String toggle = show ? "↑ " + name + " ↑"
+    string toggle = show ? "↑ " + name + " ↑"
                          : "↓ " + name + " ↓";
     if (UnityEngine.GUILayout.Button(toggle)) {
       show = !show;
@@ -446,6 +481,9 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private IntPtr plugin => adapter_.Plugin();
+  private double prediction_length_tolerance =>
+      prediction_length_tolerances_[prediction_length_tolerance_index_];
+  private long prediction_steps => prediction_steps_[prediction_steps_index_];
 
   private static readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
@@ -453,7 +491,7 @@ internal class MainWindow : SupervisedWindowRenderer {
        1 << 26, 1 << 27, 1 << 28, 1 << 29, double.PositiveInfinity};
   private static readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
-  private static readonly Int64[] prediction_steps_ =
+  private static readonly long[] prediction_steps_ =
       {1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16,
        1 << 18, 1 << 20, 1 << 22, 1 << 24};
 
@@ -470,6 +508,8 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool show_ksp_features_ = false;
   private bool show_logging_settings_ = false;
   private bool show_prediction_settings_ = true;
+
+  private bool show_selection_ui_ = false;
 
   private bool should_load_compatibility_data_ = true;
   private int prediction_length_tolerance_index_ =

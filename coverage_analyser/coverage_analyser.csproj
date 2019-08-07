@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>coverage_analyser</RootNamespace>
     <AssemblyName>coverage_analyser</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -30,11 +31,12 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Coverage.Analysis, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(VCTargetsPath)\..\..\PrivateAssemblies\Microsoft.VisualStudio.Coverage.Analysis.dll</HintPath>
+      <HintPath>$(VCTargetsPath)\..\..\..\..\Common7\IDE\Extensions\TestPlatform\Microsoft.VisualStudio.Coverage.Analysis.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,7 +58,7 @@
       <Link>dbghelp.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="$(VCTargetsPath)\..\..\PrivateAssemblies\Microsoft.VisualStudio.Coverage.Symbols.dll">
+    <Content Include="$(VCTargetsPath)\..\..\..\..\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.Coverage.Symbols.dll">
       <Link>Microsoft.VisualStudio.Coverage.Symbols.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

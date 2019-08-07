@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace principia {
+﻿namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class Style {
@@ -39,6 +34,14 @@ internal static class Style {
     return right_aligned_style;
   }
 
+  public static UnityEngine.GUIStyle Multiline(UnityEngine.GUIStyle style) {
+    var multiline_style = new UnityEngine.GUIStyle(style);
+    multiline_style.alignment = UnityEngine.TextAnchor.UpperLeft;
+    multiline_style.fixedHeight = 0;
+    multiline_style.wordWrap = true;
+    return multiline_style;
+  }
+
   public static void HorizontalLine() {
     var horizontal_line_style = new UnityEngine.GUIStyle
                                     (UnityEngine.GUI.skin.horizontalSlider);
@@ -60,7 +63,7 @@ internal static class Style {
   }
 
   // Close to XKCD "cool grey", but hue-neutral
-  private static UnityEngine.Color ultra_cool_grey_ =
+  private static readonly UnityEngine.Color ultra_cool_grey_ =
       new UnityEngine.Color(0.64f, 0.64f, 0.64f);
 }
 

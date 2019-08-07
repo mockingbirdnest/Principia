@@ -7,6 +7,7 @@
 
 #include "base/array.hpp"
 #include "base/macros.hpp"
+#include "serialization/testing_utilities.pb.h"
 
 namespace principia {
 namespace testing_utilities {
@@ -23,6 +24,9 @@ inline std::string ReadFromHexadecimalFile(
     std::filesystem::path const& filename);
 
 inline std::vector<std::string> ReadLinesFromHexadecimalFile(
+    std::filesystem::path const& filename);
+
+inline serialization::TabulatedData ReadFromTabulatedData(
     std::filesystem::path const& filename);
 
 #if PRINCIPIA_COMPILER_MSVC

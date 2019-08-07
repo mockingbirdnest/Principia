@@ -3,7 +3,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3882467C-89D7-4DAE-9730-BB2E610F05AD}</ProjectGuid>
     <RootNamespace>ksp_physics</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
@@ -12,6 +11,7 @@
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\base\version.generated.cc" />
+    <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="ksp_physics_lib.cpp" />
   </ItemGroup>
 </Project>

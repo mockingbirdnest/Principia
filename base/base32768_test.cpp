@@ -79,11 +79,12 @@ using Base32768DeathTest = Base32768Test;
 
 // No tests because of a bug in 15.8 preview 3.
 #if !PRINCIPIA_COMPILER_MSVC || \
-    !(_MSC_FULL_VER == 191526608 || \
-      _MSC_FULL_VER == 191526731 || \
-      _MSC_FULL_VER == 191627024 || \
-      _MSC_FULL_VER == 191627025 || \
-      _MSC_FULL_VER == 191627027)
+    !(_MSC_FULL_VER == 191'526'608 || \
+      _MSC_FULL_VER == 191'526'731 || \
+      _MSC_FULL_VER == 191'627'024 || \
+      _MSC_FULL_VER == 191'627'025 || \
+      _MSC_FULL_VER == 191'627'027 || \
+      _MSC_FULL_VER == 192'027'508)
 TEST_F(Base32768Test, EncodeMultipleOf15Bits) {
   // First 15 bytes of the MD5 of the empty string.
   Array<std::uint8_t const> const binary("\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04"
@@ -277,10 +278,9 @@ TEST_F(Base32768Test, Random) {
       binary1.data[i] = bytes_distribution(random);
     }
 
-    UniqueArray<char16_t> const base32768 =
-        Base32768Encode(binary1.get(),
-                        /*null_terminated=*/false);
-    UniqueArray<std::uint8_t> binary2 = Base32768Decode(base32768.get());
+    Base32768Encoder</*null_terminated=*/false> encoder;
+    UniqueArray<char16_t> const base32768 = encoder.Encode(binary1.get());
+    UniqueArray<std::uint8_t> binary2 = encoder.Decode(base32768.get());
 
     EXPECT_THAT(binary2.get(), EqualsBytes(binary1.get())) << "test: " << test;
   }

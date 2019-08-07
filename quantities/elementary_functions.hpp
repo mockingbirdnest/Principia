@@ -41,7 +41,8 @@ double Tan(Angle const& α);
 
 Angle ArcSin(double x);
 Angle ArcCos(double x);
-Angle ArcTan(double y, double x = 1);
+Angle ArcTan(double x);
+Angle ArcTan(double y, double x);
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 

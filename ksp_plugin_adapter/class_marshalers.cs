@@ -6,7 +6,7 @@ namespace ksp_plugin_adapter {
 
 internal static partial class Interface {
 
-  static IntPtr At(this IntPtr pointer, Int64 offset) {
+  static IntPtr At(this IntPtr pointer, long offset) {
     return new IntPtr(pointer.ToInt64() + offset);
   }
 
@@ -14,21 +14,21 @@ internal static partial class Interface {
 
     [StructLayout(LayoutKind.Sequential)]
     internal partial class BodyParametersRepresentation {
-      public String name;
-      public String gravitational_parameter;
-      public String reference_instant;
-      public String mean_radius;
-      public String axis_right_ascension;
-      public String axis_declination;
-      public String reference_angle;
-      public String angular_frequency;
-      public String reference_radius;
-      public String j2;
+      public string name;
+      public string gravitational_parameter;
+      public string reference_instant;
+      public string mean_radius;
+      public string axis_right_ascension;
+      public string axis_declination;
+      public string reference_angle;
+      public string angular_frequency;
+      public string reference_radius;
+      public string j2;
       public IntPtr geopotential;
       public int geopotential_size;
     }
 
-    public static ICustomMarshaler GetInstance(String s) {
+    public static ICustomMarshaler GetInstance(string s) {
       return instance_;
     }
 
@@ -89,7 +89,7 @@ internal static partial class Interface {
       return -1;
     }
 
-    private readonly static InBodyParametersMarshaler instance_ =
+    private static readonly InBodyParametersMarshaler instance_ =
         new InBodyParametersMarshaler();
   }
 

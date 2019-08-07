@@ -3,7 +3,6 @@
 
 #include <list>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "benchmark/benchmark.h"
@@ -23,7 +22,7 @@ void BM_PlayForReal(benchmark::State& state) {
     Player player(
         R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20180311-192733)");
     int count = 0;
-    while (player.Play()) {
+    while (player.Play(count)) {
       ++count;
       LOG_IF(ERROR, (count % 100'000) == 0)
           << count << " journal entries replayed";
@@ -55,9 +54,7 @@ class PlayerTest : public ::testing::Test {
 };
 
 TEST_F(PlayerTest, PlayTiny) {
-  // Do the recording in a separate thread to make sure that it activates using
-  // a different static variable than the one in the plugin dynamic library.
-  std::thread recorder([this]() {
+  {
     Recorder* const r(new Recorder(test_name_ + ".journal.hex"));
     Recorder::Activate(r);
 
@@ -71,14 +68,13 @@ TEST_F(PlayerTest, PlayTiny) {
       m.Return();
     }
     Recorder::Deactivate();
-  });
-  recorder.join();
+  }
 
   Player player(test_name_ + ".journal.hex");
 
   // Replay the journal.
   int count = 0;
-  while (player.Play()) {
+  while (player.Play(count)) {
     ++count;
   }
   EXPECT_EQ(2, count);
@@ -92,10 +88,10 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(\\venezia.mockingbirdnest.com\Namespaces\Public\Public Mockingbird\Principia\Crashes\1703\JOURNAL.20180130-000310)";  // NOLINT
+      R"(C:\Program Files\Kerbal Space Program\1.7.0\glog\Principia\JOURNAL.20190713-140753)";  // NOLINT
   Player player(path);
   int count = 0;
-  while (player.Play()) {
+  while (player.Play(count)) {
     ++count;
     LOG_IF(ERROR, (count % 100'000) == 0) << count
                                           << " journal entries replayed";
@@ -110,20 +106,20 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::FutureWaitForVesselToCatchUp::extension);
+        serialization::FlightPlanGetManoeuvreFrenetTrihedron::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(222367552);
-    in->set_future(6209463568);
+    in->set_plugin(2312193072);
+    in->set_vessel_guid("bedd9d23-de56-4fb8-881c-f647e22f848f");
+    in->set_index(0);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::FutureWaitForVesselToCatchUp::extension);
+        serialization::FlightPlanGetManoeuvreFrenetTrihedron::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<FutureWaitForVesselToCatchUp>(method_in,
-                                                       method_out_return,
-                                                       player));
+  CHECK(RunIfAppropriate<FlightPlanGetManoeuvreFrenetTrihedron>(
+      method_in, method_out_return, player));
 #endif
 }
 

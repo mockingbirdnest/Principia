@@ -7,8 +7,7 @@ internal static class NullExtensions {
   internal static Value GetValueOrNull<Key, Value>(
       this Dictionary<Key, Value> dictionary,
       Key key) where Value : class {
-    Value value;
-    dictionary.TryGetValue(key, out value);
+    dictionary.TryGetValue(key, out Value value);
     return value;
   }
 }

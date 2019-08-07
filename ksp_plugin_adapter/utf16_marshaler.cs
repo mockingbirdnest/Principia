@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -13,7 +11,7 @@ internal class OutOwnedUTF16Marshaler : ICustomMarshaler {
     return -1;
   }
 
-  public static ICustomMarshaler GetInstance(String s) {
+  public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
 
@@ -29,7 +27,7 @@ internal class OutOwnedUTF16Marshaler : ICustomMarshaler {
     return Marshal.PtrToStringUni(native_data);
   }
 
-  private readonly static OutOwnedUTF16Marshaler instance_ =
+  private static readonly OutOwnedUTF16Marshaler instance_ =
       new OutOwnedUTF16Marshaler();
 }
 

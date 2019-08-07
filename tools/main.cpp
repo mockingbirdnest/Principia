@@ -11,6 +11,7 @@
 #include "tools/generate_profiles.hpp"
 
 int main(int argc, char const* argv[]) {
+  google::SetLogFilenameExtension(".log");
   google::InitGoogleLogging(argv[0]);
   google::LogToStderr();
   if (argc < 2) {

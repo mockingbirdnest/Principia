@@ -3,12 +3,11 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A3F94607-2666-408F-AF98-0E47D61C98BB}</ProjectGuid>
     <RootNamespace>ksp_plugin</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
-    <ClInclude Include="burn.hpp" />
     <ClInclude Include="celestial.hpp" />
+    <ClInclude Include="equator_relevance_threshold.hpp" />
     <ClInclude Include="identification.hpp" />
     <ClInclude Include="integrators.hpp" />
     <ClInclude Include="iterators.hpp" />
@@ -41,8 +40,8 @@
     <ClCompile Include="..\journal\profiles.cpp" />
     <ClCompile Include="..\journal\recorder.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
-    <ClCompile Include="burn.cpp" />
     <ClCompile Include="celestial.cpp" />
+    <ClCompile Include="equator_relevance_threshold.cpp" />
     <ClCompile Include="flight_plan.cpp" />
     <ClCompile Include="identification.cpp" />
     <ClCompile Include="integrators.cpp" />

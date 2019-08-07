@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -35,13 +33,12 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
   }
 
-  public bool show_guidance { get => show_guidance_; }
+  public bool show_guidance => show_guidance_;
 
   public override void Load(ConfigNode node) {
     base.Load(node);
 
-    String show_guidance_value =
-        node.GetAtMostOneValue("show_guidance");
+    string show_guidance_value = node.GetAtMostOneValue("show_guidance");
     if (show_guidance_value != null) {
       show_guidance_ = Convert.ToBoolean(show_guidance_value);
     }
@@ -55,7 +52,7 @@ class FlightPlanner : SupervisedWindowRenderer {
                   createIfNotFound : true);
   }
 
-  protected override String Title => "Flight plan";
+  protected override string Title => "Flight plan";
 
   protected override void RenderWindow(int window_id) {
     // We must ensure that the GUI elements don't change between Layout and
@@ -101,6 +98,7 @@ class FlightPlanner : SupervisedWindowRenderer {
             editor.Close();
           }
           burn_editors_ = null;
+          Shrink();
         }
         vessel_ = FlightGlobals.ActiveVessel;
       }
@@ -112,12 +110,11 @@ class FlightPlanner : SupervisedWindowRenderer {
           plugin.HasVessel(vessel_guid) &&
           plugin.FlightPlanExists(vessel_guid)) {
         burn_editors_ = new List<BurnEditor>();
+        final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
         for (int i = 0;
               i < plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
               ++i) {
           // Dummy initial time, we call |Reset| immediately afterwards.
-          final_time_.value =
-              plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
           burn_editors_.Add(
               new BurnEditor(adapter_,
                              vessel_,
@@ -133,12 +130,12 @@ class FlightPlanner : SupervisedWindowRenderer {
     if (burn_editors_ != null) {
       string vessel_guid = vessel_?.id.ToString();
       double current_time = plugin.CurrentTime();
-      first_future_manoeuvre_ = null;
+      first_future_manœuvre_ = null;
       for (int i = 0; i < burn_editors_.Count; ++i) {
-        NavigationManoeuvre manoeuvre =
+        NavigationManoeuvre manœuvre =
             plugin.FlightPlanGetManoeuvre(vessel_guid, i);
-        if (current_time < manoeuvre.final_time) {
-          first_future_manoeuvre_ = i;
+        if (current_time < manœuvre.final_time) {
+          first_future_manœuvre_ = i;
           break;
         }
       }
@@ -148,8 +145,9 @@ class FlightPlanner : SupervisedWindowRenderer {
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       if (final_time_.Render(enabled : true)) {
-        plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
-                                              final_time_.value);
+        var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
+                                                          final_time_.value);
+        UpdateStatus(status, null);
         final_time_.value =
             plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       }
@@ -168,17 +166,19 @@ class FlightPlanner : SupervisedWindowRenderer {
             UnityEngine.GUILayout.Button("min");
           } else if (UnityEngine.GUILayout.Button("-")) {
             parameters.max_steps /= factor;
-            plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                       parameters);
+            var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                                    parameters);
+            UpdateStatus(status, null);
           }
           UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
                                           GUILayoutWidth(3));
-          if (parameters.max_steps >= Int64.MaxValue / factor) {
+          if (parameters.max_steps >= long.MaxValue / factor) {
             UnityEngine.GUILayout.Button("max");
           } else if (UnityEngine.GUILayout.Button("+")) {
             parameters.max_steps *= factor;
-            plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                       parameters);
+            var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                                    parameters);
+            UpdateStatus(status, null);
           }
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -189,8 +189,9 @@ class FlightPlanner : SupervisedWindowRenderer {
           } else if (UnityEngine.GUILayout.Button("-")) {
             parameters.length_integration_tolerance /= 2;
             parameters.speed_integration_tolerance /= 2;
-            plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                       parameters);
+            var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                                    parameters);
+            UpdateStatus(status, null);
           }
           UnityEngine.GUILayout.TextArea(
               parameters.length_integration_tolerance.ToString("0.0e0") + " m",
@@ -200,8 +201,9 @@ class FlightPlanner : SupervisedWindowRenderer {
           } else if (UnityEngine.GUILayout.Button("+")) {
             parameters.length_integration_tolerance *= 2;
             parameters.speed_integration_tolerance *= 2;
-            plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                       parameters);
+            var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                                    parameters);
+            UpdateStatus(status, null);
           }
         }
       }
@@ -211,46 +213,61 @@ class FlightPlanner : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           "Total Δv : " + Δv.ToString("0.000") + " m/s");
 
-      string message = "";
-      if (final_time_.value != actual_final_time) {
-        message = "Timed out after " +
-                  FormatPositiveTimeSpan(TimeSpan.FromSeconds(
-                      actual_final_time -
-                      plugin.FlightPlanGetInitialTime(vessel_guid)));
+      {
+        var style = Style.Warning(Style.Multiline(UnityEngine.GUI.skin.label));
+        string message = GetStatusMessage();
+        // Size the label explicitly so that it doesn't decrease when the
+        // message goes away: that causes annoying flicker.  The enclosing
+        // window has a width of 20 units, but not all of that is available,
+        // hence 19.
+        warning_height_ = Math.Max(
+            warning_height_,
+            style.CalcHeight(new UnityEngine.GUIContent(message), Width(19)));
+        UnityEngine.GUILayout.Label(
+            message, style, UnityEngine.GUILayout.Height(warning_height_));
       }
-      UnityEngine.GUILayout.Label(
-          message, Style.Warning(UnityEngine.GUI.skin.label));
 
       if (burn_editors_.Count == 0 &&
           UnityEngine.GUILayout.Button("Delete flight plan")) {
         plugin.FlightPlanDelete(vessel_guid);
+        ResetStatus();
         Shrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
         if (burn_editors_.Count > 0) {
           RenderUpcomingEvents();
         }
+
+        // Compute the final times for each manœuvre before displaying them.
+        var final_times = new List<double>();
         for (int i = 0; i < burn_editors_.Count - 1; ++i) {
-          Style.HorizontalLine();
-          burn_editors_[i].Render(header: "Manœuvre #" + (i + 1),
-                                  enabled : false);
+          final_times.Add(
+              plugin.FlightPlanGetManoeuvre(vessel_guid, i + 1).
+                  burn.initial_time);
         }
-        if (burn_editors_.Count > 0) {
+        final_times.Add(plugin.FlightPlanGetActualFinalTime(vessel_guid));
+        int number_of_anomalous_manœuvres =
+            plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
+
+        for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
-          BurnEditor last_burn = burn_editors_.Last();
-          if (last_burn.Render(header            : "Editing manœuvre #" +
-                                                   (burn_editors_.Count),
-                               enabled           : true,
-                               actual_final_time : actual_final_time)) {
-            plugin.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
-            last_burn.Reset(
-                plugin.FlightPlanGetManoeuvre(vessel_guid,
-                                              burn_editors_.Count - 1));
+          BurnEditor burn = burn_editors_[i];
+          if (burn.Render(header     : "Manœuvre #" + (i + 1),
+                          anomalous  : i >= (burn_editors_.Count -
+                                             number_of_anomalous_manœuvres),
+                          final_time : final_times[i])) {
+            var status = plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
+            UpdateStatus(status, i);
+            burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
           }
+        }
+
+        if (burn_editors_.Count > 0) {
           if (UnityEngine.GUILayout.Button(
                   "Delete last manœuvre",
                   UnityEngine.GUILayout.ExpandWidth(true))) {
-            plugin.FlightPlanRemoveLast(vessel_guid);
+            var status = plugin.FlightPlanRemoveLast(vessel_guid);
+            UpdateStatus(status, null);
             burn_editors_.Last().Close();
             burn_editors_.RemoveAt(burn_editors_.Count - 1);
             Shrink();
@@ -274,13 +291,21 @@ class FlightPlanner : SupervisedWindowRenderer {
                              index         : burn_editors_.Count,
                              previous_burn : burn_editors_.LastOrDefault());
           Burn candidate_burn = editor.Burn();
-          bool inserted = plugin.FlightPlanAppend(vessel_guid,
-                                                  candidate_burn);
-          if (inserted) {
+          var status = plugin.FlightPlanAppend(vessel_guid, candidate_burn);
+
+          // The previous call did not necessarily create a manœuvre.  Check if
+          // we need to add an editor.
+          int number_of_manœuvres =
+              plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
+          if (number_of_manœuvres > burn_editors_.Count) {
             editor.Reset(plugin.FlightPlanGetManoeuvre(
-                vessel_guid, burn_editors_.Count));
+                vessel_guid, number_of_manœuvres - 1));
             burn_editors_.Add(editor);
+            UpdateStatus(status, number_of_manœuvres - 1);
+          } else {
+            UpdateStatus(status, number_of_manœuvres);
           }
+
           Shrink();
         }
       }
@@ -292,26 +317,26 @@ class FlightPlanner : SupervisedWindowRenderer {
     double current_time = plugin.CurrentTime();
 
     Style.HorizontalLine();
-    if (first_future_manoeuvre_.HasValue) {
-      int first_future_manoeuvre = first_future_manoeuvre_.Value;
-      NavigationManoeuvre manoeuvre =
-          plugin.FlightPlanGetManoeuvre(vessel_guid, first_future_manoeuvre);
-      if (manoeuvre.burn.initial_time > current_time) {
+    if (first_future_manœuvre_.HasValue) {
+      int first_future_manœuvre = first_future_manœuvre_.Value;
+      NavigationManoeuvre manœuvre =
+          plugin.FlightPlanGetManoeuvre(vessel_guid, first_future_manœuvre);
+      if (manœuvre.burn.initial_time > current_time) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label("Upcoming manœuvre #" +
-                                      (first_future_manoeuvre + 1) + ":");
+                                      (first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
               "Ignition " + FormatTimeSpan(TimeSpan.FromSeconds(
-                                current_time - manoeuvre.burn.initial_time)),
+                                current_time - manœuvre.burn.initial_time)),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label("Ongoing manœuvre #" +
-                                      (first_future_manoeuvre + 1) + ":");
+                                      (first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
               "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
-                              current_time - manoeuvre.final_time)),
+                              current_time - manœuvre.final_time)),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
       }
@@ -325,7 +350,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           show_guidance_ =
               UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
           if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
-            TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
+            TimeWarp.fetch.WarpTo(manœuvre.burn.initial_time - 60);
           }
         }
       }
@@ -338,7 +363,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
   }
 
-  internal static string FormatPositiveTimeSpan (TimeSpan span) {
+  internal static string FormatPositiveTimeSpan(TimeSpan span) {
     return (GameSettings.KERBIN_TIME
                 ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
                       " d6 " + (span.Hours % 6).ToString("0;0") + " h "
@@ -356,23 +381,22 @@ class FlightPlanner : SupervisedWindowRenderer {
   internal static bool TryParseTimeSpan(string str, out TimeSpan value) {
     value = TimeSpan.Zero;
     // Using a technology that is customarily used to parse HTML.
-    string pattern = @"^([-+]?)\s*(\d+)\s*"+
+    string pattern = @"^[+]?\s*(\d+)\s*" +
                      (GameSettings.KERBIN_TIME ? "d6" : "d") +
                      @"\s*(\d+)\s*h\s*(\d+)\s*min\s*([0-9.,']+)\s*s$";
-    Regex regex = new Regex(pattern);
-    var match = Regex.Match(str, pattern);
+    var regex = new Regex(pattern);
+    var match = regex.Match(str);
     if (!match.Success) {
       return false;
     }
-    string sign = match.Groups[1].Value;
-    string days = match.Groups[2].Value;
-    string hours = match.Groups[3].Value;
-    string minutes = match.Groups[4].Value;
-    string seconds = match.Groups[5].Value;
-    if (!Int32.TryParse(days, out int d) ||
-        !Int32.TryParse(hours, out int h) ||
-        !Int32.TryParse(minutes, out int min) ||
-        !Double.TryParse(seconds.Replace(',', '.'),
+    string days = match.Groups[1].Value;
+    string hours = match.Groups[2].Value;
+    string minutes = match.Groups[3].Value;
+    string seconds = match.Groups[4].Value;
+    if (!int.TryParse(days, out int d) ||
+        !int.TryParse(hours, out int h) ||
+        !int.TryParse(minutes, out int min) ||
+        !double.TryParse(seconds.Replace(',', '.'),
                          NumberStyles.AllowDecimalPoint |
                          NumberStyles.AllowThousands,
                          Culture.culture.NumberFormat,
@@ -383,9 +407,6 @@ class FlightPlanner : SupervisedWindowRenderer {
             TimeSpan.FromHours(h) +
             TimeSpan.FromMinutes(min) +
             TimeSpan.FromSeconds(s);
-    if (sign.Length > 0 && sign[0] == '-') {
-      value = value.Negate();
-    }
     return true;
   }
 
@@ -397,8 +418,7 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   internal bool TryParsePlanLength(string str, out double value) {
     value = 0;
-    TimeSpan ts;
-    if (!TryParseTimeSpan(str, out ts)) {
+    if (!TryParseTimeSpan(str, out TimeSpan ts)) {
       return false;
     }
     value = ts.TotalSeconds +
@@ -406,15 +426,109 @@ class FlightPlanner : SupervisedWindowRenderer {
     return true;
   }
 
+  private void ResetStatus() {
+    status_ = Status.OK;
+    first_error_manœuvre_ = null;
+    message_was_displayed_ = false;
+  }
+
+  private void UpdateStatus(Status status, int? error_manœuvre) {
+    if (message_was_displayed_) {
+      ResetStatus();
+    }
+    if (status_.ok() && !status.ok()) {
+      status_ = status;
+      first_error_manœuvre_ = error_manœuvre;
+    }
+  }
+
+  private string GetStatusMessage() {
+    string vessel_guid = vessel_?.id.ToString();
+    string message = "";
+    if (vessel_guid != null && !status_.ok()) {
+      int anomalous_manœuvres =
+          plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
+      int manœuvres = plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
+      double actual_final_time =
+          plugin.FlightPlanGetActualFinalTime(vessel_guid);
+      bool timed_out = actual_final_time < final_time_.value;
+
+      string remedy_message = "changing the flight plan";  // Preceded by "Try".
+      string status_message = "computation failed";  // Preceded by "The".
+      string time_out_message =
+          timed_out ? " after " +
+                      FormatPositiveTimeSpan(TimeSpan.FromSeconds(
+                           actual_final_time -
+                           plugin.FlightPlanGetInitialTime(vessel_guid)))
+                    : "";
+      if (status_.is_aborted()) {
+        status_message = "integrator reached the maximum number of steps" +
+                         time_out_message;
+        remedy_message = "increasing 'Max. steps per segment' or avoiding " +
+                         "collisions with a celestial";
+      } else if (status_.is_failed_precondition()) {
+        status_message = "integrator encountered a singularity (probably the " +
+                         "centre of a celestial)" + time_out_message;
+        remedy_message = "avoiding collisions with a celestial";
+      } else if (status_.is_invalid_argument()) {
+        status_message = "manœuvre #" + (first_error_manœuvre_.Value + 1) +
+                         " would result in an infinite or indeterminate " +
+                         "velocity";
+        remedy_message = "adjusting the duration of manœuvre #" +
+                         (first_error_manœuvre_.Value + 1);
+      } else if (status_.is_out_of_range()) {
+        if (first_error_manœuvre_.HasValue) {
+          status_message = "manœuvre #" + (first_error_manœuvre_.Value + 1) +
+                           " overlaps with " + 
+                           ((first_error_manœuvre_.Value == 0)
+                                ? "the start of the flight plan"
+                                : "manœuvre #" +
+                                  first_error_manœuvre_.Value) + " or " +
+                           ((manœuvres == 0 ||
+                             first_error_manœuvre_.Value == manœuvres - 1)
+                                ? "the end of the flight plan"
+                                : "manœuvre #" +
+                                  (first_error_manœuvre_.Value + 2));
+          remedy_message = ((manœuvres == 0 ||
+                             first_error_manœuvre_.Value == manœuvres - 1)
+                               ? "extending the flight plan or "
+                               : "") +
+                           "adjusting the initial time or reducing the " +
+                           "duration of manœuvre #" +
+                           (first_error_manœuvre_.Value + 1);
+        } else {
+          status_message = "flight plan is too short";
+          remedy_message = "increasing the flight plan duration";
+        }
+      }
+
+      if (anomalous_manœuvres > 0) {
+        message = "The last " + anomalous_manœuvres + " manœuvres could " +
+                  "not be drawn because the " + status_message + "; try " +
+                  remedy_message + " or adjusting manœuvre " +
+                  (manœuvres - anomalous_manœuvres - 1) + ".";
+      } else {
+        message = "The " + status_message + "; try " + remedy_message + ".";
+      }
+    }
+    message_was_displayed_ = true;
+    return message;
+  }
+
   private IntPtr plugin => adapter_.Plugin();
 
   private readonly PrincipiaPluginAdapter adapter_;
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
-  private DifferentialSlider final_time_;
-  private int? first_future_manoeuvre_;
+  private readonly DifferentialSlider final_time_;
+  private int? first_future_manœuvre_;
 
   private bool show_guidance_ = false;
+  private float warning_height_ = 1;
+
+  private Status status_ = Status.OK;
+  private int? first_error_manœuvre_;  // May exceed the number of manœuvres.
+  private bool message_was_displayed_ = false;
   
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;

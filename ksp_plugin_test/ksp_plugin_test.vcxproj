@@ -3,7 +3,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A942ADF0-62F4-435C-85B2-934D5B666DB8}</ProjectGuid>
     <RootNamespace>ksp_plugin_test</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
@@ -11,8 +10,8 @@
     <ClCompile Include="..\base\version.generated.cc" />
     <ClCompile Include="..\journal\profiles.cpp" />
     <ClCompile Include="..\journal\recorder.cpp" />
-    <ClCompile Include="..\ksp_plugin\burn.cpp" />
     <ClCompile Include="..\ksp_plugin\celestial.cpp" />
+    <ClCompile Include="..\ksp_plugin\equator_relevance_threshold.cpp" />
     <ClCompile Include="..\ksp_plugin\flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\identification.cpp" />
     <ClCompile Include="..\ksp_plugin\integrators.cpp" />
@@ -35,6 +34,7 @@
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="celestial_test.cpp" />
+    <ClCompile Include="equator_relevance_threshold_test.cpp" />
     <ClCompile Include="flight_plan_test.cpp" />
     <ClCompile Include="interface_external_test.cpp" />
     <ClCompile Include="interface_flight_plan_test.cpp" />
@@ -42,7 +42,6 @@
     <ClCompile Include="interface_renderer_test.cpp" />
     <ClCompile Include="interface_test.cpp" />
     <ClCompile Include="manœuvre_test.cpp" />
-    <ClCompile Include="mock_flight_plan.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
     <ClCompile Include="mock_renderer.cpp" />
     <ClCompile Include="part_test.cpp" />

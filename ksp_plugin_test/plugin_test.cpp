@@ -412,7 +412,21 @@ TEST_F(PluginTest, Serialization) {
   plugin->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->UpdatePrediction(satellite);
-  plugin->ForgetAllHistoriesBefore(HistoryTime(time, 2));
+
+  // The call to |UpdatePrediction| above may guard the ephemeris and delay
+  // forgetting the histories until after the plugin is serialized below.  To
+  // make this test deterministic, we poll until forgetting has actually
+  // happened.
+  for (;;) {
+    Instant const t_min = HistoryTime(time, 2);
+    plugin->ForgetAllHistoriesBefore(t_min);
+    if (t_min <=
+        plugin->GetCelestial(SolarSystemFactory::Sun).trajectory().t_min()) {
+      break;
+    }
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(100ms);
+  }
 
   plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);
   plugin->renderer().SetPlottingFrame(
@@ -760,7 +774,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillRepeatedly(ReturnRef(
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<Barycentric>>()));
-  EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(_)).Times(2);
+  EXPECT_CALL(plugin_->mock_ephemeris(), EventuallyForgetBefore(_))
+      .Times(2)
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
       .WillRepeatedly(Return(
           RigidMotion<Barycentric, Navigation>(
@@ -800,14 +816,20 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   VesselSet collided_vessels;
   plugin_->CatchUpLaggingVessels(collided_vessels);
 
-  auto const burn = [this, mock_dynamic_frame, time]() -> Burn {
-    return {/*thrust=*/1 * Newton,
+  auto const burn =
+      [this, mock_dynamic_frame, time]() -> NavigationManœuvre::Burn {
+    NavigationManœuvre::Intensity intensity;
+    intensity.Δv = Velocity<Frenet<Navigation>>({1 * Metre / Second,
+                                                 0 * Metre / Second,
+                                                 0 * Metre / Second});
+    NavigationManœuvre::Timing timing;
+    timing.initial_time = HistoryTime(time, 4);
+    return {intensity,
+            timing,
+            /*thrust=*/1 * Newton,
             /*specific_impulse=*/1 * Newton * Second / Kilogram,
             std::unique_ptr<MockDynamicFrame<Barycentric, Navigation>>(
                 mock_dynamic_frame),
-            /*initial_time=*/HistoryTime(time, 4),
-            Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
             /*is_inertially_fixed=*/true};
   };
   plugin_->CreateFlightPlan(guid,
@@ -886,8 +908,6 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
 
   Instant const initial_time = ParseTT(initial_time_);
   Instant const& time = initial_time + 1 * Second;
-  EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(HistoryTime(time, 5)))
-      .Times(1);
   plugin_->AdvanceTime(time, Angle());
   VesselSet collided_vessels;
   plugin_->CatchUpLaggingVessels(collided_vessels);
@@ -898,6 +918,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
                               inserted);
   plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
   plugin_->CatchUpLaggingVessels(collided_vessels);
+  EXPECT_CALL(plugin_->mock_ephemeris(), t_min_locked)
+      .WillRepeatedly(Return(HistoryTime(time, 0)));
   plugin_->UpdatePrediction(guid);
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
@@ -906,6 +928,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
                               inserted);
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin_->CatchUpLaggingVessels(collided_vessels);
+  EXPECT_CALL(plugin_->mock_ephemeris(),
+              EventuallyForgetBefore(HistoryTime(time, 5)))
+      .WillOnce(Return(true));
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
   auto const& prediction = plugin_->GetVessel(guid)->prediction();
   auto const rendered_prediction =

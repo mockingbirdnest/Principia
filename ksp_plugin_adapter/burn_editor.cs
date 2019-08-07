@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -14,6 +12,7 @@ class BurnEditor : ScalingRenderer {
                     BurnEditor previous_burn) {
     adapter_ = adapter;
     vessel_ = vessel;
+    initial_time_ = initial_time;
     index_ = index;
     previous_burn_ = previous_burn;
     Δv_tangent_ =
@@ -46,7 +45,7 @@ class BurnEditor : ScalingRenderer {
                 min_value        : 0,
                 formatter        : FormatPreviousCoastDuration,
                 parser           : TryParsePreviousCoastDuration);
-    previous_coast_duration_.value = initial_time - time_base;
+    previous_coast_duration_.value = initial_time_ - time_base;
     reference_frame_selector_ = new ReferenceFrameSelector(
                                     adapter_,
                                     ReferenceFrameChanged,
@@ -58,12 +57,11 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(string header,
-                     bool enabled,
-                     double? actual_final_time = null) {
+  public bool Render(string header, 
+                     bool anomalous,
+                     double final_time) {
     bool changed = false;
-    previous_coast_duration_.max_value =
-        (actual_final_time ?? double.PositiveInfinity) - time_base;
+    previous_coast_duration_.max_value = final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(header);
       string frame_info = "";
@@ -79,13 +77,18 @@ class BurnEditor : ScalingRenderer {
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
       // been set.  If we have fallen back to instant impulse, we should use this
       // mass to set the thrust.
-      if (first_time_rendering) {
-        first_time_rendering = false;
+      if (first_time_rendering_) {
+        first_time_rendering_ = false;
         changed = true;
         engine_warning_ = "";
         ComputeEngineCharacteristics();
       }
-      if (enabled) {
+
+      // The frame selector is disabled for an anomalous manœuvre as is has no
+      // effect.
+      if (anomalous) {
+         reference_frame_selector_.Hide();
+      } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           if (UnityEngine.GUILayout.Button("Active Engines")) {
             engine_warning_ = "";
@@ -102,8 +105,6 @@ class BurnEditor : ScalingRenderer {
           }
         }
         reference_frame_selector_.RenderButton();
-      } else {
-        reference_frame_selector_.Hide();
       }
       if (is_inertially_fixed_ !=
           UnityEngine.GUILayout.Toggle(is_inertially_fixed_,
@@ -111,16 +112,29 @@ class BurnEditor : ScalingRenderer {
         changed = true;
         is_inertially_fixed_ = !is_inertially_fixed_;
       }
-      changed |= Δv_tangent_.Render(enabled);
-      changed |= Δv_normal_.Render(enabled);
-      changed |= Δv_binormal_.Render(enabled);
-      changed |= previous_coast_duration_.Render(enabled);
+      changed |= changed_reference_frame_;
+
+      // The Δv controls are disabled for an anomalous manœuvre as they have no
+      // effect.
+      changed |= Δv_tangent_.Render(enabled : !anomalous);
+      changed |= Δv_normal_.Render(enabled : !anomalous);
+      changed |= Δv_binormal_.Render(enabled : !anomalous);
+      {
+        var render_time_base = time_base;
+        previous_coast_duration_.value = initial_time_ - render_time_base;
+
+        // The duration of the previous coast is always enabled as it can make
+        // a manœuvre non-anomalous.
+        if (previous_coast_duration_.Render(enabled : true)) {
+          changed = true;
+          initial_time_ = previous_coast_duration_.value + render_time_base;
+        }
+      }
       UnityEngine.GUILayout.Label(
           index_ == 0 ? "Time base: start of flight plan"
                       : $"Time base: end of manœuvre #{index_}",
           style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
               alignment = UnityEngine.TextAnchor.UpperLeft});
-      changed |= changed_reference_frame_;
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
@@ -132,7 +146,7 @@ class BurnEditor : ScalingRenderer {
                                   Style.Warning(UnityEngine.GUI.skin.label));
       changed_reference_frame_ = false;
     }
-    return changed && enabled;
+    return changed;
   }
 
   public double Δv() {
@@ -141,17 +155,16 @@ class BurnEditor : ScalingRenderer {
                         z = Δv_binormal_.value}.magnitude;
   }
 
-  public void Reset(NavigationManoeuvre manoeuvre) {
-    Burn burn = manoeuvre.burn;
+  public void Reset(NavigationManoeuvre manœuvre) {
+    Burn burn = manœuvre.burn;
     Δv_tangent_.value = burn.delta_v.x;
     Δv_normal_.value = burn.delta_v.y;
     Δv_binormal_.value = burn.delta_v.z;
-    previous_coast_duration_.value =
-        burn.initial_time - time_base;
+    initial_time_ = burn.initial_time;
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
-    duration_ = manoeuvre.duration;
-    initial_mass_in_tonnes_ = manoeuvre.initial_mass_in_tonnes;
+    duration_ = manœuvre.duration;
+    initial_mass_in_tonnes_ = manœuvre.initial_mass_in_tonnes;
   }
 
   public Burn Burn() {
@@ -159,7 +172,7 @@ class BurnEditor : ScalingRenderer {
         thrust_in_kilonewtons = thrust_in_kilonewtons_,
         specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
         frame = reference_frame_selector_.FrameParameters(),
-        initial_time = previous_coast_duration_.value + time_base,
+        initial_time = initial_time_,
         delta_v = new XYZ{x = Δv_tangent_.value,
                           y = Δv_normal_.value,
                           z = Δv_binormal_.value},
@@ -178,13 +191,12 @@ class BurnEditor : ScalingRenderer {
     ModuleEngines[] active_engines =
         (from part in vessel_.parts
          select (from PartModule module in part.Modules
-                 where module is ModuleEngines &&
-                       (module as ModuleEngines).EngineIgnited
+                 where (module as ModuleEngines)?.EngineIgnited == true
                  select module as ModuleEngines)).SelectMany(x => x).ToArray();
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
     double[] thrusts =
         (from engine in active_engines
-         select engine.maxThrust *
+         select engine.MaxThrustOutputVac(useThrustLimiter: true) *
              (from transform in engine.thrustTransforms
               select Math.Max(0,
                               Vector3d.Dot(reference_direction,
@@ -265,8 +277,7 @@ class BurnEditor : ScalingRenderer {
 
   internal bool TryParsePreviousCoastDuration(string str, out double value) {
     value = 0;
-    TimeSpan ts;
-    if (!FlightPlanner.TryParseTimeSpan(str, out ts)) {
+    if (!FlightPlanner.TryParseTimeSpan(str, out TimeSpan ts)) {
       return false;
     }
     value = ts.TotalSeconds;
@@ -277,23 +288,23 @@ class BurnEditor : ScalingRenderer {
                               plugin.FlightPlanGetInitialTime(
                                   vessel_.id.ToString());
 
-  private double final_time =>
-      time_base + previous_coast_duration_.value + duration_;
+  private double final_time => initial_time_ + duration_;
 
   private IntPtr plugin => adapter_.Plugin();
 
   private bool is_inertially_fixed_;
-  private DifferentialSlider Δv_tangent_;
-  private DifferentialSlider Δv_normal_;
-  private DifferentialSlider Δv_binormal_;
-  private DifferentialSlider previous_coast_duration_;
-  private ReferenceFrameSelector reference_frame_selector_;
+  private readonly DifferentialSlider Δv_tangent_;
+  private readonly DifferentialSlider Δv_normal_;
+  private readonly DifferentialSlider Δv_binormal_;
+  private readonly DifferentialSlider previous_coast_duration_;
+  private readonly ReferenceFrameSelector reference_frame_selector_;
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
   private double duration_;
   private double initial_mass_in_tonnes_;
+  private double initial_time_;
 
-  private bool first_time_rendering = true;
+  private bool first_time_rendering_ = true;
 
   private const double Log10ΔvLowerRate = -3.0;
   private const double Log10ΔvUpperRate = 3.5;

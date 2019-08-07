@@ -3,22 +3,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7E7CC89A-FC65-409C-A975-9C3A6A50786B}</ProjectGuid>
     <RootNamespace>base</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <AdditionalOptions>/w14061 /constexpr:steps200000 %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <AdditionalOptions>/w14061 /constexpr:steps200000 %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
-    <ClCompile />
-  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="array.hpp" />
     <ClInclude Include="array_body.hpp" />
@@ -27,6 +13,7 @@
     <ClInclude Include="base64.hpp" />
     <ClInclude Include="base64_body.hpp" />
     <ClInclude Include="bundle.hpp" />
+    <ClInclude Include="constant_function.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />
     <ClInclude Include="encoder.hpp" />
@@ -66,6 +53,7 @@
     <ClInclude Include="status_or.hpp" />
     <ClInclude Include="status_or_body.hpp" />
     <ClInclude Include="not_constructible.hpp" />
+    <ClInclude Include="tags.hpp" />
     <ClInclude Include="thread_pool.hpp" />
     <ClInclude Include="thread_pool_body.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />

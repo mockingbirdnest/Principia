@@ -399,7 +399,7 @@ SolarSystem<Frame>::MakeOblateBody(
     serialization::GravityModel::Body const& body) {
   Check(body);
   CHECK(body.has_mean_radius());
-  CHECK(body.has_j2());
+  CHECK(body.has_j2() || body.has_geopotential());
   auto const massive_body_parameters = MakeMassiveBodyParameters(body);
   auto const rotating_body_parameters = MakeRotatingBodyParameters(body);
   auto const oblate_body_parameters = MakeOblateBodyParameters(body);

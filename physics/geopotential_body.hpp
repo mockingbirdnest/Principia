@@ -7,6 +7,7 @@
 #include <queue>
 #include <vector>
 
+#include "base/tags.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -21,12 +22,12 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
+using base::uninitialized;
 using numerics::FixedLowerTriangularMatrix;
 using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::MaxAbsNormalizedAssociatedLegendreFunction;
-using numerics::uninitialized;
 using geometry::Bivector;
 using geometry::InnerProduct;
 using geometry::R3Element;
@@ -434,8 +435,8 @@ Acceleration(Geopotential<Frame> const& geopotential,
   UnitVector ŷ;
   UnitVector const ẑ = body.polar_axis();
   if (is_zonal) {
-    x̂ = body.biequatorial();
-    ŷ = body.equatorial();
+    x̂ = body.equatorial();
+    ŷ = body.biequatorial();
   } else {
     auto const from_surface_frame =
       body.template FromSurfaceFrame<SurfaceFrame>(t);

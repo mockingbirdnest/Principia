@@ -36,7 +36,11 @@ using ::testing::ElementsAreArray;
 
 namespace {
 int const deserializer_chunk_size = 99;
-int const runs_per_test = 1000;
+#if defined(_DEBUG)
+constexpr int runs_per_test = 100;
+#else
+constexpr int runs_per_test = 1000;
+#endif
 int const serializer_chunk_size = 99;
 int const number_of_chunks = 3;
 const char start[] = "START";

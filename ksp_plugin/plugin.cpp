@@ -10,11 +10,11 @@
 #include <list>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
-#include <set>
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/solar_system_fingerprints.hpp"
@@ -35,6 +35,7 @@
 #include "geometry/permutation.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
+#include "ksp_plugin/equator_relevance_threshold.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part_subsets.hpp"
 #include "physics/apsides.hpp"
@@ -54,9 +55,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
-using astronomy::ParseTT;
-using astronomy::KSPStockSystemFingerprint;
 using astronomy::KSPStabilizedSystemFingerprint;
+using astronomy::KSPStockSystemFingerprint;
+using astronomy::ParseTT;
 using astronomy::StabilizeKSP;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
@@ -65,8 +66,8 @@ using base::FindOrDie;
 using base::Fingerprint2011;
 using base::HexadecimalEncoder;
 using base::make_not_null_unique;
-using base::OFStream;
 using base::not_null;
+using base::OFStream;
 using base::SerializeAsBytes;
 using base::Status;
 using geometry::AffineMap;
@@ -784,7 +785,7 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   CHECK(!initializing_);
   CHECK_LT(t, current_time_);
-  ephemeris_->ForgetBefore(t);
+  ephemeris_->EventuallyForgetBefore(t);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
     vessel->ForgetBefore(t);
@@ -929,6 +930,24 @@ void Plugin::ComputeAndRenderNodes(
     std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
   auto const trajectory_in_plotting =
       renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
+
+  auto const* const cast_plotting_frame = dynamic_cast<
+      BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const*>(
+      &*renderer_->GetPlottingFrame());
+  // The body-centred non rotating frame does not rotate; its reference plane is
+  // not an inherent dynamical property.  When using this frame, discard the
+  // nodes if they are far enough from the central body that its equator is
+  // irrelevant.
+  Length const threshold =
+      cast_plotting_frame == nullptr
+          ? Infinity<Length>()
+          : EquatorRelevanceThreshold(
+                *dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
+                    cast_plotting_frame->centre()));
+  auto const show_node = [threshold](DegreesOfFreedom<Navigation> const& dof) {
+    return (dof.position() - Navigation::origin).Norm() < threshold;
+  };
+
   DiscreteTrajectory<Navigation> ascending_trajectory;
   DiscreteTrajectory<Navigation> descending_trajectory;
   // The so-called North is orthogonal to the plane of the trajectory.
@@ -936,7 +955,9 @@ void Plugin::ComputeAndRenderNodes(
                trajectory_in_plotting->End(),
                Vector<double, Navigation>({0, 0, 1}),
                ascending_trajectory,
-               descending_trajectory);
+               descending_trajectory,
+               show_node);
+
   ascending = renderer_->RenderPlottingTrajectoryInWorld(
                   current_time_,
                   ascending_trajectory.Begin(),

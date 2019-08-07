@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -25,11 +24,7 @@ class DisposableIterator : IDisposable {
   }
 
   // Exclusively for use by the marshaller.
-  public IntPtr IntPtr {
-    get {
-      return iterator_;
-    }
-  }
+  public IntPtr IntPtr => iterator_;
 
   private IntPtr iterator_ = IntPtr.Zero;
 }
@@ -55,11 +50,7 @@ class DisposablePlanetarium : IDisposable {
   }
 
   // Exclusively for use by the marshaller.
-  public IntPtr IntPtr {
-    get {
-      return planetarium_;
-    }
-  }
+  public IntPtr IntPtr => planetarium_;
 
   private IntPtr planetarium_ = IntPtr.Zero;
 }

@@ -158,6 +158,7 @@ message Frame {
   // The frame tags used in the physics library.
   enum PhysicsTag {
     FRENET = 1;
+    PRINCIPAL_AXES = 2;
   }
 
   // The frame tags used in the astronomical simulations.

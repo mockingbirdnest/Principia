@@ -3,7 +3,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5EEA5210-0FA9-4B44-8466-C40B22D24E8E}</ProjectGuid>
     <RootNamespace>astronomy</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
@@ -63,6 +62,8 @@
     <ClInclude Include="date_time.hpp" />
     <ClInclude Include="date_time_body.hpp" />
     <ClInclude Include="fortran_astrodynamics_toolkit.hpp" />
+    <ClInclude Include="orbit_recurrence.hpp" />
+    <ClInclude Include="orbit_recurrence_body.hpp" />
     <ClInclude Include="solar_system_fingerprints.hpp" />
     <ClInclude Include="standard_product_3.hpp" />
     <ClInclude Include="stabilize_ksp.hpp" />
@@ -79,12 +80,14 @@
     <ClCompile Include="..\base\bundle.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
+    <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="date_time_test.cpp" />
     <ClCompile Include="ksp_fingerprint_test.cpp" />
     <ClCompile Include="ksp_resonance_test.cpp" />
     <ClCompile Include="ksp_system_test.cpp" />
     <ClCompile Include="geodesy_test.cpp" />
     <ClCompile Include="lunar_orbit_test.cpp" />
+    <ClCompile Include="orbit_recurrence_test.cpp" />
     <ClCompile Include="solar_system_dynamics_test.cpp" />
     <ClCompile Include="standard_product_3.cpp" />
     <ClCompile Include="standard_product_3_test.cpp" />

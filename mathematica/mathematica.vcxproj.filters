@@ -35,6 +35,9 @@
     <ClCompile Include="..\numerics\cbrt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\physics\protector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mathematica.hpp">
@@ -73,6 +76,12 @@
       <Filter>Scripts</Filter>
     </None>
     <None Include="associated_legendre_function.wl">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="elliptic_integrals.wl">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="fukushima_elliptic_bd.wl">
       <Filter>Scripts</Filter>
     </None>
   </ItemGroup>
