@@ -149,7 +149,6 @@ class OrbitalElementsTest : public ::testing::Test {
   }
 };
 
-
 TEST_F(OrbitalElementsTest, KeplerOrbit) {
   // The satellite is under the influence of an isotropic Earth and no third
   // bodies.
@@ -357,7 +356,6 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
                                              Position<ICRS>>(),
           /*step=*/10 * Minute));
   MassiveBody const& earth = *solar_system.massive_body(*ephemeris, "Earth");
-
 
   Time const mission_duration = 10 * Day;
 
