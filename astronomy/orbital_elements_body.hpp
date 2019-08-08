@@ -342,20 +342,22 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
   auto const Δt³ = Pow<3>(Δt);
   // We compute the mean rate (slope) of the mean anomaly M(t), the mean
   // argument of latitude u(t), and the longitude of the ascending node Ω(t).
-  // On an interval [-Δt/2, Δt/2], the slope of э is computed as
-  //   ∫ э(t) t dt / ∫ t² dt;
+  // On an interval [t̄ - Δt/2, t̄ + Δt/2], the slope of э is computed as
+  //   ∫ (э(t) - э̄) (t - t̄) dt / ∫ (t - t̄)² dt;
   // this is the continuous analogue of a simple linear regression.
-  // With ∫ t² dt = Δt³ / 12, this simplifies to
-  //   12 ∫ э(t) t dt / Δt³.
-  // We first compute ∫ э(t) t dt for the three elements of interest.
+  // With ∫ (t - t̄)² dt = Δt³ / 12, and
+  //   ∫ э̄ (t - t̄) = э̄ ∫ (t - t̄) dt = 0,
+  // this simplifies to
+  //   12 ∫ э(t) (t - t̄) dt / Δt³.
+  // We first compute ∫ э(t) (t - t̄) dt for the three elements of interest.
 
   Product<Angle, Square<Time>> ſ_Mt_dt;
   Product<Angle, Square<Time>> ſ_ut_dt;
   Product<Angle, Square<Time>> ſ_Ωt_dt;
 
-  Instant const t0 = mean_classical_elements_.front().time + Δt / 2;
+  Instant const t̄ = mean_classical_elements_.front().time + Δt / 2;
   auto const first = mean_classical_elements_.begin();
-  Time first_t = first->time - t0;
+  Time first_t = first->time - t̄;
   Product<Angle, Time> previous_Mt = first->mean_anomaly * first_t;
   Product<Angle, Time> previous_ut =
       (first->argument_of_periapsis + first->mean_anomaly) * first_t;
@@ -367,7 +369,7 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
     Angle const u = it->argument_of_periapsis + it->mean_anomaly;
     Angle const& M = it->mean_anomaly;
     Angle const& Ω = it->longitude_of_ascending_node;
-    Time const t = it->time - t0;
+    Time const t = it->time - t̄;
     auto const Mt = M * t;
     auto const ut = u * t;
     auto const Ωt = Ω * t;
