@@ -24,7 +24,8 @@ using quantities::Square;
 using quantities::Tan;
 using quantities::si::Radian;
 
-// Returns the element of {α + 2nπ | n ∈ ℤ} which is closest to |previous_angle|.
+// Returns the element of {α + 2nπ | n ∈ ℤ} which is closest to
+// |previous_angle|.
 inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
   return α + std::nearbyint((previous_angle - α) / (2 * π * Radian)) * 2 * π *
                  Radian;
@@ -60,13 +61,15 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       OsculatingEquinoctialElements(trajectory, primary, secondary);
   orbital_elements.sidereal_period_ =
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
-  orbital_elements.mean_equinoctial_elements_ = MeanEquinoctialElements(
-      orbital_elements.osculating_equinoctial_elements_, orbital_elements.sidereal_period_);
+  orbital_elements.mean_equinoctial_elements_ =
+      MeanEquinoctialElements(orbital_elements.osculating_equinoctial_elements_,
+                              orbital_elements.sidereal_period_);
   if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
     return Status(
         Error::OUT_OF_RANGE,
         "trajectory does not span one sidereal period: sidereal period is " +
-            DebugString(orbital_elements.sidereal_period_) + ", trajectory spans " +
+            DebugString(orbital_elements.sidereal_period_) +
+            ", trajectory spans " +
             DebugString(trajectory.last().time() - trajectory.Begin().time()));
   }
   orbital_elements.mean_classical_elements_ =
