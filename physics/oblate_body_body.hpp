@@ -75,10 +75,15 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
         if (column.has_j()) {
           CHECK(!column.has_cos()) << "Cos and J specified for degree " << n;
           cos = -column.j() / LegendreNormalizationFactor[n][0];
+        } else {
+          CHECK(column.has_cos())
+              << "Cos missing for degree " << n << " order " << m;
         }
       } else {
         CHECK(!column.has_j())
-            << "J specified for nonzero order " << m << ", degree " << n;
+            << "J specified for degree " << n << " and nonzero order " << m;
+        CHECK(column.has_cos())
+            << "Cos missing for degree " << n << " order " << m;
       }
       parameters.cos_[n][m] = cos;
       parameters.sin_[n][m] = column.sin();
