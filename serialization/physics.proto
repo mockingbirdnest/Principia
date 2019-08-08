@@ -188,8 +188,11 @@ message OblateBody {
     message GeopotentialRow {
       message GeopotentialColumn {
         required int32 order = 1;
-        required double cos = 2;
+        optional double cos = 2;
         required double sin = 3;
+        // j can only be set if order is 0, and it cannot be set together with
+        // cos.
+        optional double j = 4;
       }
       // For a given |degree|, the |column| array must contain at most
       // |degree + 1| entries.
