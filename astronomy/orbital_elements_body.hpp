@@ -345,8 +345,7 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
   // On an interval [t̄ - Δt/2, t̄ + Δt/2], the slope of э is computed as
   //   ∫ (э(t) - э̄) (t - t̄) dt / ∫ (t - t̄)² dt;
   // this is the continuous analogue of a simple linear regression.
-  // With ∫ (t - t̄)² dt = Δt³ / 12, and
-  //   ∫ э̄ (t - t̄) = э̄ ∫ (t - t̄) dt = 0,
+  // With ∫ (t - t̄)² dt = Δt³ / 12 and ∫ э̄ (t - t̄) = э̄ ∫ (t - t̄) dt = 0,
   // this simplifies to
   //   12 ∫ э(t) (t - t̄) dt / Δt³.
   // We first compute ∫ э(t) (t - t̄) dt for the three elements of interest.
