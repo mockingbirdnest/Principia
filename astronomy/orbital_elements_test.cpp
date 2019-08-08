@@ -92,50 +92,15 @@ using testing_utilities::IsOk;
 
 class OrbitalElementsTest : public ::testing::Test {
  protected:
-  OrbitalElementsTest()
-      : solar_system_(
-            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
-            SOLUTION_DIR / "astronomy" /
-                "sol_initial_state_jd_2451545_000000000.proto.txt"),
-        real_ephemeris_(solar_system_.MakeEphemeris(
-            /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
-                                     /*geopotential_tolerance=*/0x1p-24},
-            Ephemeris<ICRS>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                   Position<ICRS>>(),
-                /*step=*/10 * Minute))),
-        real_earth_(*solar_system_.massive_body(*real_ephemeris_, "Earth")),
-        oblate_earth_ephemeris_([this] {
-          std::vector<std::string> const names = solar_system_.names();
-          for (auto const& name : names) {
-            if (name != "Earth") {
-              solar_system_.RemoveMassiveBody(name);
-            }
-          }
-          solar_system_.LimitOblatenessToDegree("Earth", 2);
-          solar_system_.LimitOblatenessToZonal("Earth");
-          return solar_system_.MakeEphemeris(
-              /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
-                                       /*geopotential_tolerance=*/0x1p-24},
-              Ephemeris<ICRS>::FixedStepParameters(
-                  SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                     Position<ICRS>>(),
-                  /*step=*/1 * JulianYear));
-        }()),
-        oblate_earth_(dynamic_cast<OblateBody<ICRS> const&>(
-            *solar_system_.massive_body(*oblate_earth_ephemeris_, "Earth"))),
-        spherical_earth_ephemeris_([this] {
-          solar_system_.LimitOblatenessToDegree("Earth", 0);
-          return solar_system_.MakeEphemeris(
-              /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
-                                       /*geopotential_tolerance=*/0x1p-24},
-              Ephemeris<ICRS>::FixedStepParameters(
-                  SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                     Position<ICRS>>(),
-                  /*step=*/1 * JulianYear));
-        }()),
-        spherical_earth_(
-            *solar_system_.massive_body(*spherical_earth_ephemeris_, "Earth")) {
+  OrbitalElementsTest() {}
+
+  static MassiveBody const& FindEarthOrDie(Ephemeris<ICRS> const& ephemeris) {
+    for (not_null<MassiveBody const*> const body : ephemeris.bodies()) {
+      if (body->name() == "Earth") {
+        return *body;
+      }
+    }
+    LOG(FATAL) << "Ephemeris has no Earth";
   }
 
   // Completes |initial_osculating_elements| and returns a GCRS trajectory
@@ -146,14 +111,7 @@ class OrbitalElementsTest : public ::testing::Test {
       Instant const& initial_time,
       Instant const& final_time,
       Ephemeris<ICRS>& ephemeris) {
-    MassiveBody const& earth = [&ephemeris]() -> MassiveBody const& {
-      for (not_null<MassiveBody const*> const body : ephemeris.bodies()) {
-        if (body->name() == "Earth") {
-          return *body;
-        }
-      }
-      LOG(FATAL) << "Ephemeris has no Earth";
-    }();
+    MassiveBody const& earth = FindEarthOrDie(ephemeris);
     ephemeris.Prolong(final_time);
     BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> gcrs{&ephemeris, &earth};
     DiscreteTrajectory<ICRS> icrs_trajectory;
@@ -189,24 +147,34 @@ class OrbitalElementsTest : public ::testing::Test {
     }
     return result;
   }
-
-  SolarSystem<ICRS> solar_system_;
-
-  // The solar system.
-  not_null<std::unique_ptr<Ephemeris<ICRS>>> real_ephemeris_;
-  MassiveBody const& real_earth_;
-
-  // An oblate Earth with no other bodies.
-  not_null<std::unique_ptr<Ephemeris<ICRS>>> oblate_earth_ephemeris_;
-  OblateBody<ICRS> const& oblate_earth_;
-
-  // A spherical Earth with no other bodies.
-  not_null<std::unique_ptr<Ephemeris<ICRS>>> spherical_earth_ephemeris_;
-  MassiveBody const& spherical_earth_;
 };
 
 
 TEST_F(OrbitalElementsTest, KeplerOrbit) {
+  // The satellite is under the influence of an isotropic Earth and no third
+  // bodies.
+
+  SolarSystem<ICRS> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
+  std::vector<std::string> const names = solar_system.names();
+  for (auto const& name : names) {
+    if (name != "Earth") {
+      solar_system.RemoveMassiveBody(name);
+    }
+  }
+  solar_system.LimitOblatenessToDegree("Earth", 0);
+  auto const ephemeris = solar_system.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<ICRS>>(),
+          /*step=*/1 * JulianYear));
+  MassiveBody const& spherical_earth =
+      *solar_system.massive_body(*ephemeris, "Earth");
+
   KeplerianElements<GCRS> initial_osculating;
   initial_osculating.semimajor_axis = 7000 * Kilo(Metre);
   initial_osculating.eccentricity = 1e-6;
@@ -217,9 +185,8 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   auto const status_or_elements = OrbitalElements::ForTrajectory(
       *EarthCentredTrajectory(initial_osculating,
                               J2000,
-                              J2000 + 10 * Day,
-                              *spherical_earth_ephemeris_),
-      spherical_earth_,
+                              J2000 + 10 * Day, *ephemeris),
+      spherical_earth,
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.ValueOrDie();
@@ -275,6 +242,31 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
 }
 
 TEST_F(OrbitalElementsTest, J2Perturbation) {
+  // The satellite is under the influence of an Earth with a zonal geopotential
+  // of degree 2 and no third bodies.
+
+  SolarSystem<ICRS> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
+  std::vector<std::string> const names = solar_system.names();
+  for (auto const& name : names) {
+    if (name != "Earth") {
+      solar_system.RemoveMassiveBody(name);
+    }
+  }
+  solar_system.LimitOblatenessToDegree("Earth", 2);
+  solar_system.LimitOblatenessToZonal("Earth");
+  auto const ephemeris = solar_system.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<ICRS>>(),
+          /*step=*/1 * JulianYear));
+  auto const& oblate_earth = dynamic_cast<OblateBody<ICRS> const&>(
+      *solar_system.massive_body(*ephemeris, "Earth"));
+
   Time const mission_duration = 10 * Day;
 
   KeplerianElements<GCRS> initial_osculating;
@@ -288,8 +280,8 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
       *EarthCentredTrajectory(initial_osculating,
                               J2000,
                               J2000 + mission_duration,
-                              *oblate_earth_ephemeris_),
-      oblate_earth_,
+                              *ephemeris),
+      oblate_earth,
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.ValueOrDie();
@@ -303,11 +295,11 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   // The notation for the computation of the theoretical precessions follows
   // Capderou (2012), Satellites : de Kepler au GPS, section 7.1.1.
   double const η = elements.mean_semimajor_axis_interval().midpoint() /
-                   oblate_earth_.reference_radius();
+                   oblate_earth.reference_radius();
   Angle const i = elements.mean_inclination_interval().midpoint();
-  AngularFrequency const K0 = 3.0 / 2.0 * oblate_earth_.j2() *
-                              Sqrt(oblate_earth_.gravitational_parameter() /
-                                   Pow<3>(oblate_earth_.reference_radius())) *
+  AngularFrequency const K0 = 3.0 / 2.0 * oblate_earth.j2() *
+                              Sqrt(oblate_earth.gravitational_parameter() /
+                                   Pow<3>(oblate_earth.reference_radius())) *
                               Radian;
   // See (7.6).
   AngularFrequency const theoretical_Ωʹ = -K0 * Pow<-7>(Sqrt(η)) * Cos(i);
@@ -353,6 +345,20 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
 #if !defined(_DEBUG)
 
 TEST_F(OrbitalElementsTest, RealPerturbation) {
+  SolarSystem<ICRS> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
+  auto const ephemeris = solar_system.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<ICRS>>(),
+          /*step=*/10 * Minute));
+  MassiveBody const& earth = *solar_system.massive_body(*ephemeris, "Earth");
+
+
   Time const mission_duration = 10 * Day;
 
   KeplerianElements<GCRS> initial_osculating;
@@ -363,11 +369,9 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   initial_osculating.argument_of_periapsis = 20 * Degree;
   initial_osculating.mean_anomaly = 30 * Degree;
   auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(initial_osculating,
-                              J2000,
-                              J2000 + mission_duration,
-                              *real_ephemeris_),
-      real_earth_,
+      *EarthCentredTrajectory(
+          initial_osculating, J2000, J2000 + mission_duration, *ephemeris),
+      earth,
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.ValueOrDie();
