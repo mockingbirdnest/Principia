@@ -196,6 +196,24 @@ OrbitalElements::MeanEquinoctialElements(
     std::vector<EquinoctialElements> const& osculating,
     Time const& period) {
   Instant const& t_min = osculating.front().t;
+  // This function averages the elements in |osculating| over |period|.
+  // For each |EquinoctialElements osculating_elements = osculating[i]| in
+  // |osculating| such that |osculating_elements.t <= osculating.back().t|, let
+  // |tᵢ = osculating_elements.t|; the result contains an
+  // |EquinoctialElements mean_elements| with
+  // |mean_elements.t = tᵢ + period / 2|.
+  // For all э in the set of equinoctial elements {a, h, k, λ, p, q, pʹ, qʹ},
+  // |mean_elements.э| is the integral of the osculating э from |tᵢ| to
+  // |tᵢ + period|, divided by |period|.
+
+  // Instead of computing the integral from |tᵢ| to |tᵢ + period| directly, we
+  // precompute the integrals from |t_min| to each of the |tᵢ|.
+  // The integral from |tᵢ| to |tᵢ + period| is then computed as the integral
+  // from |tᵢ| to the last |tⱼ₋₁| before |tᵢ + period| (obtained by subtracting
+  // the integrals to |tᵢ| and to |tⱼ₋₁|), plus the remainder integral from
+  // |tⱼ₋₁| to |tᵢ + period| (a partial trapezoid on [tⱼ₋₁, tⱼ]).
+
+  // Precompute the integrals from |t_min| to each of the |tᵢ|.
   struct IntegratedEquinoctialElements {
     Instant t_max;
     // The integrals are from t_min to t_max.
@@ -225,48 +243,62 @@ OrbitalElements::MeanEquinoctialElements(
     integrals.back().ſ_pʹ_dt += (it->pʹ + previous->pʹ) / 2 * dt;
     integrals.back().ſ_qʹ_dt += (it->qʹ + previous->qʹ) / 2 * dt;
   }
-  std::vector<EquinoctialElements> result;
-  int i = 0;
-  for (auto first = integrals.begin(); first != integrals.end(); ++first) {
-    Instant const t_first = first->t_max;
-    while (integrals[i].t_max - t_first < period) {
-      if (++i == integrals.size()) {
-        return result;
+
+  // Now compute the averages.
+  std::vector<EquinoctialElements> mean_elements;
+  int j = 0;
+  for (auto const& up_to_tᵢ : integrals) {
+    // We are averaging the elements over the interval [tᵢ, tᵢ + period].
+    Instant const tᵢ = up_to_tᵢ.t_max;
+    while (integrals[j].t_max < tᵢ + period) {
+      if (++j == integrals.size()) {
+        return mean_elements;
       }
     }
-    auto const& last = integrals[i - 1];
+    // We have tⱼ₋₁ < tᵢ + period ≤ tⱼ.
+    auto const& tⱼ = osculating[j].t;
+    auto const& tⱼ₋₁ = osculating[j - 1].t;
+
+    auto const& up_to_tⱼ₋₁ = integrals[j - 1];
     // |element| should be a pointer to a member of |EquinoctialElements|;
-    // Integrates from |last.t_max| to |t_first + period|.
-    auto ſ = [i, &period, &t_first, &osculating](auto element) {
-      auto const& next_osculating = osculating[i];
-      auto const& last_osculating = osculating[i - 1];
-      Time const Δt = next_osculating.t - last_osculating.t;
-      Time const dt = t_first + period - last_osculating.t;
+    // Integrates that element on [tⱼ₋₁, tᵢ + period].
+    auto ſ = [j, &period, &tᵢ, &tⱼ, &tⱼ₋₁, &osculating](auto element) {
+      auto const& next_osculating = osculating[j];
+      Time const Δt = tⱼ - tⱼ₋₁;
+      Time const dt = tᵢ + period - tⱼ₋₁;
       auto const element_at_end =
-          last_osculating.*element +
-          (next_osculating.*element - last_osculating.*element) * (dt / Δt);
-      return (last_osculating.*element + element_at_end) / 2 * dt;
+          osculating[j - 1].*element +
+          (osculating[j].*element - osculating[j - 1].*element) * (dt / Δt);
+      return (osculating[j - 1].*element + element_at_end) / 2 * dt;
     };
-    result.emplace_back();
-    result.back().t = t_first + period / 2;
-    result.back().a =
-        (last.ſ_a_dt - first->ſ_a_dt + ſ(&EquinoctialElements::a)) / period;
-    result.back().h =
-        (last.ſ_h_dt - first->ſ_h_dt + ſ(&EquinoctialElements::h)) / period;
-    result.back().k =
-        (last.ſ_k_dt - first->ſ_k_dt + ſ(&EquinoctialElements::k)) / period;
-    result.back().λ =
-        (last.ſ_λ_dt - first->ſ_λ_dt + ſ(&EquinoctialElements::λ)) / period;
-    result.back().p =
-        (last.ſ_p_dt - first->ſ_p_dt + ſ(&EquinoctialElements::p)) / period;
-    result.back().q =
-        (last.ſ_q_dt - first->ſ_q_dt + ſ(&EquinoctialElements::q)) / period;
-    result.back().pʹ =
-        (last.ſ_pʹ_dt - first->ſ_pʹ_dt + ſ(&EquinoctialElements::pʹ)) / period;
-    result.back().qʹ =
-        (last.ſ_qʹ_dt - first->ſ_qʹ_dt + ſ(&EquinoctialElements::qʹ)) / period;
+    mean_elements.emplace_back();
+    mean_elements.back().t = tᵢ + period / 2;
+    mean_elements.back().a =
+        (up_to_tⱼ₋₁.ſ_a_dt - up_to_tᵢ.ſ_a_dt + ſ(&EquinoctialElements::a)) /
+        period;
+    mean_elements.back().h =
+        (up_to_tⱼ₋₁.ſ_h_dt - up_to_tᵢ.ſ_h_dt + ſ(&EquinoctialElements::h)) /
+        period;
+    mean_elements.back().k =
+        (up_to_tⱼ₋₁.ſ_k_dt - up_to_tᵢ.ſ_k_dt + ſ(&EquinoctialElements::k)) /
+        period;
+    mean_elements.back().λ =
+        (up_to_tⱼ₋₁.ſ_λ_dt - up_to_tᵢ.ſ_λ_dt + ſ(&EquinoctialElements::λ)) /
+        period;
+    mean_elements.back().p =
+        (up_to_tⱼ₋₁.ſ_p_dt - up_to_tᵢ.ſ_p_dt + ſ(&EquinoctialElements::p)) /
+        period;
+    mean_elements.back().q =
+        (up_to_tⱼ₋₁.ſ_q_dt - up_to_tᵢ.ſ_q_dt + ſ(&EquinoctialElements::q)) /
+        period;
+    mean_elements.back().pʹ =
+        (up_to_tⱼ₋₁.ſ_pʹ_dt - up_to_tᵢ.ſ_pʹ_dt + ſ(&EquinoctialElements::pʹ)) /
+        period;
+    mean_elements.back().qʹ =
+        (up_to_tⱼ₋₁.ſ_qʹ_dt - up_to_tᵢ.ſ_qʹ_dt + ſ(&EquinoctialElements::qʹ)) /
+        period;
   }
-  return result;
+  return mean_elements;
 }
 
 inline std::vector<OrbitalElements::ClassicalElements>
@@ -307,11 +339,21 @@ OrbitalElements::ToClassicalElements(
 inline void OrbitalElements::ComputePeriodsAndPrecession() {
   Time const Δt = mean_classical_elements_.back().time -
                   mean_classical_elements_.front().time;
-  Instant const t0 = mean_classical_elements_.front().time + Δt / 2;
+  auto const Δt³ = Pow<3>(Δt);
+  // We compute the mean rate (slope) of the mean anomaly M(t), the mean
+  // argument of latitude u(t), and the longitude of the ascending node Ω(t).
+  // On an interval [-Δt/2, Δt/2], the slope of э is computed as
+  //   ∫ э(t) t dt / ∫ t² dt;
+  // this is the continuous analogue of a simple linear regression.
+  // With ∫ t² dt = Δt³ / 12, this simplifies to
+  //   12 ∫ э(t) t dt / Δt³.
+  // We first compute ∫ э(t) t dt for the three elements of interest.
+
   Product<Angle, Square<Time>> ſ_Mt_dt;
   Product<Angle, Square<Time>> ſ_ut_dt;
   Product<Angle, Square<Time>> ſ_Ωt_dt;
 
+  Instant const t0 = mean_classical_elements_.front().time + Δt / 2;
   auto const first = mean_classical_elements_.begin();
   Time first_t = first->time - t0;
   Product<Angle, Time> previous_Mt = first->mean_anomaly * first_t;
@@ -337,9 +379,13 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
     previous_ut = ut;
     previous_Ωt = Ωt;
   }
-  anomalistic_period_ = 2 * π * Radian * Pow<3>(Δt) / (12 * ſ_Mt_dt);
-  nodal_period_ = 2 * π * Radian * Pow<3>(Δt) / (12 * ſ_ut_dt);
-  nodal_precession_ = 12 * ſ_Ωt_dt / Pow<3>(Δt);
+
+  // The periods are 2π over the mean rate of the relevant element; the nodal
+  // precession is the mean rate of Ω.
+
+  anomalistic_period_ = 2 * π * Radian * Δt³ / (12 * ſ_Mt_dt);
+  nodal_period_ = 2 * π * Radian * Δt³ / (12 * ſ_ut_dt);
+  nodal_precession_ = 12 * ſ_Ωt_dt / Δt³;
 }
 
 inline void OrbitalElements::ComputeMeanElementIntervals() {
