@@ -81,11 +81,9 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
-using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
-using ::testing::Optional;
 
 namespace astronomy {
 
