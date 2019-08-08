@@ -127,28 +127,17 @@ class OrbitalElements {
   // The equinoctial elements, together with an epoch.
   // See Broucke and Cefola (1972), On the equinoctial orbit elements.
   struct EquinoctialElements {
-    // The epoch of the elements.
-    Instant t;
-    // The semimajor axis.
-    Length a;
-    // e sin ϖ, where e is the eccentricity and ϖ = Ω + ω is the longitude of
-    // the periapsis.
-    double h;
-    // e cos ϖ.
-    double k;
-    // The mean longitude ϖ + M = Ω + ω + M.
-    Angle λ;
-    // tg i/2 sin Ω, where i is the inclination and Ω the longitude of the
-    // ascending node.
-    double p;
-    // tg i/2 cos Ω.
-    double q;
+    Instant t;  // The epoch of the elements.
+    Length a;   // The semimajor axis.
+    double h;   // e sin ϖ = e sin (Ω + ω).
+    double k;   // e cos ϖ = e cos (Ω + ω).
+    Angle λ;    // The mean longitude ϖ + M = Ω + ω + M.
+    double p;   // tg i/2 sin Ω.
+    double q;   // tg i/2 cos Ω.
     // pʹ and qʹ use the cotangent of the half-inclination instead of its
     // tangent; they are better suited to retrograde orbits.
-    // cotg i/2 sin Ω.
-    double pʹ;
-    // cotg i/2 cos Ω.
-    double qʹ;
+    double pʹ;  // cotg i/2 sin Ω.
+    double qʹ;  // cotg i/2 cos Ω.
   };
 
   std::vector<EquinoctialElements> const& osculating_equinoctial_elements()
