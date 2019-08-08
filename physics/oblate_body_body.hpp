@@ -68,7 +68,19 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
       CHECK_LE(m, n);
       CHECK(orders_seen.insert(m).second)
           << "Degree " << n << " order " << m << " specified multiple times";
-      parameters.cos_[n][m] = column.cos();
+
+      // If j was specified, check that it is legit and compute cos.
+      double cos = column.cos();
+      if (m == 0) {
+        if (column.has_j()) {
+          CHECK(!column.has_cos()) << "Cos and J specified for degree " << n;
+          cos = -column.j() / LegendreNormalizationFactor[n][0];
+        }
+      } else {
+        CHECK(!column.has_j())
+            << "J specified for nonzero order " << m << ", degree " << n;
+      }
+      parameters.cos_[n][m] = cos;
       parameters.sin_[n][m] = column.sin();
     }
   }

@@ -42,8 +42,12 @@ gravity_model {
     axis_declination        : "64.495303 deg"
     reference_angle         : "284.95 deg"
     angular_frequency       : "870.5360000 deg / d"
-    j2                      : 14695.62e-6
     reference_radius        : "71492 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order:  0, j:  14695.62e-6, sin:  0}},
+    }
   }
   body {
     name                    : "Saturn"
