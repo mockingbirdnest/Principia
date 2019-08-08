@@ -35,8 +35,7 @@ gravity_model {
   # Gas giants.
   body {
     # Geopotential and reference radius from Iess et al. (2018), Measurement of
-    # Jupiter's asymmetric gravity field.  Note that this paper gives the J
-    # coefficients.  They were normalized using Mathematica.
+    # Jupiter's asymmetric gravity field.
     name                    : "Jupiter"
     gravitational_parameter : "1.266865349218008e+08 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
@@ -49,37 +48,37 @@ gravity_model {
     geopotential {
       row {
         degree: 2,
-        column {order:  0, cos: -6.5725068e-3, sin:  0}},
+        column {order: 0, j: 14696.572e-6, sin: 0}},
       row {
         degree: 3,
-        column {order:  0, cos: 1.6e-8, sin:  0}},
+        column {order: 0, j:    -0.042e-6, sin: 0}},
       row {
         degree: 4,
-        column {order:  0, cos: 1.95536e-4, sin:  0}},
+        column {order: 0, j:  -586.609e-6, sin: 0}},
       row {
         degree: 5,
-        column {order:  0, cos: 2.1e-8, sin:  0}},
+        column {order: 0, j:    -0.069e-6, sin: 0}},
       row {
         degree: 6,
-        column {order:  0, cos: -9.4848e-6, sin:  0}},
+        column {order: 0, j:    34.198e-6, sin: 0}},
       row {
         degree: 7,
-        column {order:  0, cos: -3.21e-8, sin:  0}},
+        column {order: 0, j:     0.124e-6, sin: 0}},
       row {
         degree: 8,
-        column {order:  0, cos: 5.884e-7, sin:  0}},
+        column {order: 0, j:    -2.426e-6, sin: 0}},
       row {
         degree: 9,
-        column {order:  0, cos: 2.43e-8, sin:  0}},
+        column {order: 0, j:    -0.106e-6, sin: 0}},
       row {
         degree: 10,
-        column {order:  0, cos: -3.75e-8, sin:  0}},
+        column {order: 0, j:     0.172e-6, sin: 0}},
       row {
         degree: 11,
-        column {order:  0, cos: -6.9e-8, sin:  0}},
+        column {order: 0, j:     0.033e-6, sin: 0}},
       row {
         degree: 12,
-        column {order:  0, cos: -9.4e-9, sin:  0}},
+        column {order: 0, j:     0.047e-6, sin: 0}},
     }
   }
   body {
