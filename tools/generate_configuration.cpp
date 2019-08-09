@@ -182,9 +182,14 @@ void GenerateConfiguration(std::string const& game_epoch,
                               << "        order = " << column.order() << "\n"
                               << std::scientific
                               << std::setprecision(
-                                     std::numeric_limits<double>::max_digits10)
-                              << "        cos   = " << column.cos() << "\n"
-                              << "        sin   = " << column.sin() << "\n"
+                                     std::numeric_limits<double>::max_digits10);
+            if (column.has_j()) {
+              gravity_model_cfg << "        j     = " << column.j() << "\n";
+            }
+            if (column.has_cos()) {
+              gravity_model_cfg << "        cos   = " << column.cos() << "\n";
+            }
+            gravity_model_cfg << "        sin   = " << column.sin() << "\n"
                               << "      }\n";
           }
           gravity_model_cfg << "    }\n";
