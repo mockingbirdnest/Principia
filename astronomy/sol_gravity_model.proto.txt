@@ -90,8 +90,42 @@ gravity_model {
     axis_declination        : "83.537 deg"
     reference_angle         : "38.90 deg"
     angular_frequency       : "810.7939024 deg / d"
-    j2                      : 16290.71e-6
     reference_radius        : "60330 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order: 0, j: 16290.564e-6, sin: 0}},
+      row {
+        degree: 3,
+        column {order: 0, j:     0.079e-6, sin: 0}},
+      row {
+        degree: 4,
+        column {order: 0, j:  -935.281e-6, sin: 0}},
+      row {
+        degree: 5,
+        column {order: 0, j:    -0.261e-6, sin: 0}},
+      row {
+        degree: 6,
+        column {order: 0, j:    86.395e-6, sin: 0}},
+      row {
+        degree: 7,
+        column {order: 0, j:     0.018e-6, sin: 0}},
+      row {
+        degree: 8,
+        column {order: 0, j:   -14.533e-6, sin: 0}},
+      row {
+        degree: 9,
+        column {order: 0, j:     0.190e-6, sin: 0}},
+      row {
+        degree: 10,
+        column {order: 0, j:     4.746e-6, sin: 0}},
+      row {
+        degree: 11,
+        column {order: 0, j:    -0.555e-6, sin: 0}},
+      row {
+        degree: 12,
+        column {order: 0, j:    -0.960e-6, sin: 0}},
+    }
   }
   body {
     name                    : "Neptune"
