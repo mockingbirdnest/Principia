@@ -60,7 +60,7 @@ using ICRS = Frame<serialization::Frame::SolarSystemTag,
 //   the BCRS; in particular, the equations of motion in the GCRS include de
 //   Sitter and Lense–Thirring precession.
 // - The time coordinate of the BCRS is TCB, and the time coordinate of the GCRS
-//   is TCG; TT is a linear scaling of TCG, and TDB is a linear scaling of TDB;
+//   is TCG; TT is a linear scaling of TCG, and TDB is a linear scaling of TCB;
 //   for practical purposes TT and TDB are within 2 ms of each other;
 //   Principia's |Instant| is TT.
 using GCRS = Frame<serialization::Frame::SolarSystemTag,
