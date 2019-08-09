@@ -107,10 +107,12 @@ internal static class ConfigNodeParsers {
           geopotential_row.GetNodes("geopotential_column");
       foreach (ConfigNode geopotential_column in geopotential_columns) {
         string order = geopotential_column.GetUniqueValue("order");
-        string cos = geopotential_column.GetUniqueValue("cos");
+        string j = geopotential_column.GetAtMostOneValue("j");
+        string cos = geopotential_column.GetAtMostOneValue("cos");
         string sin = geopotential_column.GetUniqueValue("sin");
         elements.Add(new BodyGeopotentialElement{degree = degree,
                                                  order = order,
+                                                 j = j,
                                                  cos = cos,
                                                  sin = sin});
       }
