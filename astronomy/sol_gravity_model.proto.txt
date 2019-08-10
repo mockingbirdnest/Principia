@@ -11,10 +11,6 @@ gravity_model {
   # kernel for DE431,
   # http://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/gm_de431.tpc.
 
-  # Some sources for gravity models give C2,0 instead of J2.
-  # In that case, J2 was computed using Mathematica, as
-  #   N[SetPrecision[-c20, Infinity] * Sqrt[5], 17].
-
   # Star.
   body {
     # J2 coefficient and reference radius from
@@ -82,7 +78,7 @@ gravity_model {
     }
   }
   body {
-    # Geopotential and reference radius from Durante. (2017), The gravity fields
+    # Geopotential and reference radius from Durante (2017), The gravity fields
     # of Jupiter and Saturn as determined by Juno and Cassini.
     name                    : "Saturn"
     gravitational_parameter : "3.793120749865224e+07 km^3/s^2"
@@ -130,6 +126,9 @@ gravity_model {
     }
   }
   body {
+    # Spherical harmonic coefficients and reference radius from Jacobson (2009),
+    # The orbit of the neptunian satellites and the orientations of the pole of
+    # Neptune.
     name                    : "Neptune"
     gravitational_parameter : "6.835099502439672e+06 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
@@ -138,10 +137,20 @@ gravity_model {
     axis_declination        : "43.46 deg"
     reference_angle         : "253.18 deg"
     angular_frequency       : "536.3128492 deg / d"
-    j2                      : 3408.43e-6
     reference_radius        : "25225 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order: 0, j: 3408.428530717952e-06, sin: 0}},
+      row {
+        degree: 4,
+        column {order: 0, j:  -33.398917590066e-06, sin: 0}},
+    }
   }
   body {
+    # Spherical harmonic coefficients and reference radius from Jacobson (2014),
+    # The orbits of the uranian satellites and rings, the gravity field of the
+    # uranian system, and the orientation of the pole of Uranus.
     name                    : "Uranus"
     gravitational_parameter : "5.793951322279009e+06 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
@@ -150,8 +159,15 @@ gravity_model {
     axis_declination        : "-15.175 deg"
     reference_angle         : "203.81 deg"
     angular_frequency       : "-501.1600928 deg / d"
-    j2                      : 3510.68e-6
     reference_radius        : "25559 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order: 0, j: 3510.7e-06, sin: 0}},
+      row {
+        degree: 4,
+        column {order: 0, j:  -34.2e-06, sin: 0}},
+    }
   }
 
   # Telluric planets.
