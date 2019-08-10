@@ -112,8 +112,8 @@ internal static class ConfigNodeParsers {
         string sin = geopotential_column.GetUniqueValue("sin");
         elements.Add(new BodyGeopotentialElement{degree = degree,
                                                  order = order,
-                                                 j = j,
                                                  cos = cos,
+                                                 j = j,
                                                  sin = sin});
       }
     }
