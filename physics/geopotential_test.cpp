@@ -763,16 +763,16 @@ TEST_F(GeopotentialTest, DampedForces) {
         (get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_radial_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
             get_radial_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(1, 210, 212));
+        AlmostEquals(1, 210, 1142));
     EXPECT_THAT(
         (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_latitudinal_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
             get_latitudinal_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(0.5, 920, 1773));
+        AlmostEquals(0.5, 920, 2781));
     EXPECT_THAT(
         get_longitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) /
             get_longitudinal_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(0.5, 103, 114));
+        AlmostEquals(0.5, 1, 114));
   }
 
   {
@@ -800,7 +800,7 @@ TEST_F(GeopotentialTest, DampedForces) {
         (get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_radial_acceleration(*geopotential_degree[2], (s0 + s1) / 2)) /
             get_radial_acceleration(*geopotential_degree[3], (s0 + s1) / 2),
-        AlmostEquals(0.875, 277, 278));
+        AlmostEquals(0.875, 277, 3044));
 
     EXPECT_THAT(
         (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
