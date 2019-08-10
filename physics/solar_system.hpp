@@ -28,6 +28,11 @@ using geometry::Instant;
 using quantities::GravitationalParameter;
 using quantities::Length;
 
+serialization::GravityModel ParseGravityModel(
+    std::filesystem::path const& gravity_model_filename);
+serialization::InitialState ParseInitialState(
+    std::filesystem::path const& initial_state_filename);
+
 template<typename Frame>
 class SolarSystem final {
  public:
@@ -168,6 +173,8 @@ class SolarSystem final {
 
 }  // namespace internal_solar_system
 
+using internal_solar_system::ParseGravityModel;
+using internal_solar_system::ParseInitialState;
 using internal_solar_system::SolarSystem;
 
 }  // namespace physics

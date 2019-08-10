@@ -60,6 +60,8 @@ using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MassiveBody;
+using physics::ParseGravityModel;
+using physics::ParseInitialState;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::Abs;
@@ -1309,11 +1311,15 @@ TEST_F(TrappistDynamicsTest, PlanetBPlanetDAlignment) {
 #endif
 
 TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
-  SolarSystem<Sky> const system(
-      SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
+  auto const gravity_model_message = ParseGravityModel(
+      SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt");
+  auto const preoptimization_initial_state_message = ParseInitialState(
       SOLUTION_DIR / "astronomy" /
-          "trappist_preoptimization_initial_state_jd_2457000_000000000"
-          ".proto.txt");
+      "trappist_preoptimization_initial_state_jd_2457000_000000000"
+      ".proto.txt");
+
+  SolarSystem<Sky> const system(gravity_model_message,
+                                preoptimization_initial_state_message);
 
   auto planet_names = system.names();
   planet_names.erase(
@@ -1324,27 +1330,34 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
         system.keplerian_initial_state_message(planet_name).elements()));
   }
 
-  auto compute_fitness =
-      [&planet_names, &system](genetics::Genome const& genome,
+  auto compute_fitness = [&planet_names,
+                          &gravity_model_message,
+                          &preoptimization_initial_state_message](
+                             genetics::Genome const& genome,
                                std::string& info) {
-        auto modified_system = system;
-        auto const& elements = genome.elements();
-        for (int i = 0; i < planet_names.size(); ++i) {
-          modified_system.ReplaceElements(planet_names[i], elements[i]);
-        }
-        double const χ² = ProlongAndComputeTransitsχ²(modified_system, info);
+    SolarSystem<Sky> modified_system(gravity_model_message,
+                                     preoptimization_initial_state_message);
+    auto const& elements = genome.elements();
+    for (int i = 0; i < planet_names.size(); ++i) {
+      modified_system.ReplaceElements(planet_names[i], elements[i]);
+    }
+    double const χ² = ProlongAndComputeTransitsχ²(modified_system, info);
 
-        // This is the place where we cook the sausage.  This function must be
-        // steep enough to efficiently separate the wheat from the chaff without
-        // leading to monoculture.
-        return 1 / χ²;
-      };
+    // This is the place where we cook the sausage.  This function must be
+    // steep enough to efficiently separate the wheat from the chaff without
+    // leading to monoculture.
+    return 1 / χ²;
+  };
 
   auto compute_log_pdf =
-      [&elements, &planet_names, &system](
+      [&elements,
+       &planet_names,
+       &gravity_model_message,
+       &preoptimization_initial_state_message](
           deмcmc::SystemParameters const& system_parameters,
           std::string& info) {
-        auto modified_system = system;
+        SolarSystem<Sky> modified_system(gravity_model_message,
+                                         preoptimization_initial_state_message);
         for (int i = 0; i < planet_names.size(); ++i) {
           modified_system.ReplaceElements(
               planet_names[i],
