@@ -108,5 +108,17 @@ BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
   }
 }
 
+BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
+  for (auto _ : state) {
+    DiscreteTrajectory<ICRS> ascending;
+    DiscreteTrajectory<ICRS> descending;
+    ComputeNodes(ilrsa_lageos2_trajectory_.Begin(),
+                 ilrsa_lageos2_trajectory_.End(),
+                 earth_->polar_axis(),
+                 ascending,
+                 descending);
+  }
+}
+
 }  // namespace physics
 }  // namespace principia
