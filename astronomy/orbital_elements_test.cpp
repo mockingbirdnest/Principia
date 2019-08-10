@@ -149,6 +149,8 @@ class OrbitalElementsTest : public ::testing::Test {
   }
 };
 
+#if !defined(_DEBUG)
+
 TEST_F(OrbitalElementsTest, KeplerOrbit) {
   // The satellite is under the influence of an isotropic Earth and no third
   // bodies.
@@ -340,8 +342,6 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   f << mathematica::Assign("j2PerturbedMean",
                            elements.mean_equinoctial_elements());
 }
-
-#if !defined(_DEBUG)
 
 TEST_F(OrbitalElementsTest, RealPerturbation) {
   SolarSystem<ICRS> solar_system(
