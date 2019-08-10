@@ -169,27 +169,6 @@ SolarSystem<Frame>::SolarSystem(
 }
 
 template<typename Frame>
-SolarSystem<Frame>::SolarSystem(SolarSystem const& other)
-    : SolarSystem(other.gravity_model_,
-                  other.initial_state_,
-                  /*ignore_frame=*/true) {}
-
-template<typename Frame>
-SolarSystem<Frame>& SolarSystem<Frame>::operator=(const SolarSystem& other) {
-  if (&other == this) {
-    return *this;
-  }
-  SolarSystem copy(other);  // NOLINT(build/include_what_you_use)
-  gravity_model_.Swap(copy.gravity_model_);
-  initial_state_.Swap(copy.initial_state_);
-  epoch_ = copy.epoch_;
-  names_.swap(copy.names_);
-  gravity_model_map_.swap(copy.gravity_model_map_);
-  cartesian_initial_state_map_.swap(copy.cartesian_initial_state_map_);
-  keplerian_initial_state_map_.swap(copy.keplerian_initial_state_map_);
-}
-
-template<typename Frame>
 not_null<std::unique_ptr<Ephemeris<Frame>>> SolarSystem<Frame>::MakeEphemeris(
     typename Ephemeris<Frame>::AccuracyParameters const& accuracy_parameters,
     typename Ephemeris<Frame>::FixedStepParameters const& fixed_step_parameters)
