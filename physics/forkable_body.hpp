@@ -26,7 +26,7 @@ bool ForkableIterator<Tr4jectory, It3rator>::operator==(
   // this function returns false (which it does repeatedly in loops), it might
   // as well do so quickly.  There is a complication, however, because the two
   // iterators may not point to the same container, and we believe that
-  // comparing them would be unbounded behavior; hence the size comparison,
+  // comparing them would be undefined behaviour; hence the size comparison,
   // which ensures that the two iterators are in the same fork and therefore can
   // legitimately be compared.
   return ancestry_.size() == right.ancestry_.size() &&
