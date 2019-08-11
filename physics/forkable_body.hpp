@@ -22,7 +22,9 @@ template<typename Tr4jectory, typename It3rator>
 bool ForkableIterator<Tr4jectory, It3rator>::operator==(
     It3rator const& right) const {
   DCHECK_EQ(trajectory(), right.trajectory());
-  return ancestry_ == right.ancestry_ && current_ == right.current_;
+  // This comparison is optimized for the case where == returns false, which
+  // happens frequently in loops.
+  return current_ == right.current_ && ancestry_ == right.ancestry_;
 }
 
 template<typename Tr4jectory, typename It3rator>
@@ -109,8 +111,9 @@ void ForkableIterator<Tr4jectory, It3rator>::NormalizeIfEnd() {
 
 template<typename Tr4jectory, typename It3rator>
 void ForkableIterator<Tr4jectory, It3rator>::CheckNormalizedIfEnd() {
-  CHECK(current_ != ancestry_.front()->timeline_end() ||
-        ancestry_.size() == 1);
+  // Short-circuit when the trajectory is a root.
+  CHECK(ancestry_.size() == 1 ||
+        current_ != ancestry_.front()->timeline_end());
 }
 
 template<typename Tr4jectory, typename It3rator>
