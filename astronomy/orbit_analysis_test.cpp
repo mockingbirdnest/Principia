@@ -215,15 +215,17 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
           2 * π * Radian),
       IsNear(317.632 * Degree, 1.000'6));
 
-  // The orbit is supposed to be frozen with ω = 0.0° (the nominal apsidal
-  // precession is 0).  Our mean elements seem to indicate otherwise, but frozen
-  // orbits are messy; perhaps the mean ω oscillates around 0?
-  // REMOVE BEFORE FLIGHT: No, they just actually take ω = 0 and their M means u...
+  // Note that the reference parameters have e = 0, and therefore conventionally
+  // set ω = 0, ω′ = 0.
+  // However, e is never quite 0; we can compute a mean ω.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(88 * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
               IsNear(6.3 * Degree));
 
+  // Since the reference parameters conventionally set ω = 0, the given mean
+  // anomaly is actually the mean argument of latitude; in order to get numbers
+  // consistent with theirs, we must look at ω + M.
   EXPECT_THAT(Mod(elements.mean_elements().front().argument_of_periapsis +
                       elements.mean_elements().front().mean_anomaly -
                       nominal_anomalistic_mean_motion *
@@ -295,12 +297,11 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
           2 * π * Radian),
       IsNear(56.198 * Degree, 1.02));
 
-  EXPECT_THAT(Mod(elements.mean_elements().front().argument_of_periapsis +
-                      elements.mean_elements().front().mean_anomaly -
+  EXPECT_THAT(Mod(elements.mean_elements().front().mean_anomaly -
                       nominal_anomalistic_mean_motion *
                           (initial_time - reference_epoch),
                   2 * π * Radian),
-              IsNear(225.153 * Degree, 1.005));
+              IsNear(136.069 * Degree, 1.04));
 }
 
 // COSPAR ID 2011-036A.
