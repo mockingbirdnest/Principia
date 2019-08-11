@@ -1883,11 +1883,13 @@ public partial class PrincipiaPluginAdapter
       plugin_.RenderedPredictionNodes(
           vessel_guid,
           sun_world_position,
+          MapNodePool.MaxRenderedNodes,
           out DisposableIterator ascending_nodes_iterator,
           out DisposableIterator descending_nodes_iterator);
       plugin_.RenderedPredictionClosestApproaches(
           vessel_guid,
           sun_world_position,
+          MapNodePool.MaxRenderedNodes,
           out DisposableIterator approaches_iterator);
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
@@ -1911,6 +1913,7 @@ public partial class PrincipiaPluginAdapter
             vessel_guid,
             celestial.flightGlobalsIndex,
             sun_world_position,
+            MapNodePool.MaxRenderedNodes,
             out DisposableIterator apoapsis_iterator,
             out DisposableIterator periapsis_iterator);
         map_node_pool_.RenderMarkers(
@@ -1930,6 +1933,7 @@ public partial class PrincipiaPluginAdapter
       plugin_.RenderedPredictionNodes(
           vessel_guid,
           sun_world_position,
+          MapNodePool.MaxRenderedNodes,
           out DisposableIterator ascending_nodes_iterator,
           out DisposableIterator descending_nodes_iterator);
       map_node_pool_.RenderMarkers(
@@ -1952,11 +1956,13 @@ public partial class PrincipiaPluginAdapter
       plugin_.FlightPlanRenderedNodes(
           vessel_guid,
           sun_world_position,
+          MapNodePool.MaxRenderedNodes,
           out DisposableIterator ascending_nodes_iterator,
           out DisposableIterator descending_nodes_iterator);
       plugin_.FlightPlanRenderedClosestApproaches(
           vessel_guid,
           sun_world_position,
+          MapNodePool.MaxRenderedNodes,
           out DisposableIterator approaches_iterator);
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
@@ -1980,6 +1986,7 @@ public partial class PrincipiaPluginAdapter
             vessel_guid,
             celestial.flightGlobalsIndex,
             sun_world_position,
+            MapNodePool.MaxRenderedNodes,
             out DisposableIterator apoapsis_iterator,
             out DisposableIterator periapsis_iterator);
         map_node_pool_.RenderMarkers(
@@ -1998,6 +2005,7 @@ public partial class PrincipiaPluginAdapter
       plugin_.FlightPlanRenderedNodes(
           vessel_guid,
           sun_world_position,
+          MapNodePool.MaxRenderedNodes,
           out DisposableIterator ascending_nodes_iterator,
           out DisposableIterator descending_nodes_iterator);
       map_node_pool_.RenderMarkers(

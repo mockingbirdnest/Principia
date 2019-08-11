@@ -751,6 +751,7 @@ message FlightPlanRenderedApsides {
     required string vessel_guid = 2;
     required int32 celestial_index = 3;
     required XYZ sun_world_position = 4;
+    required int32 max_points = 5;
   }
   message Out {
     required fixed64 apoapsides = 1 [(pointer_to) = "Iterator",
@@ -773,6 +774,7 @@ message FlightPlanRenderedClosestApproaches {
                                  (is_subject) = true];
     required string vessel_guid = 2;
     required XYZ sun_world_position = 3;
+    required int32 max_points = 4;
   }
   message Out {
     required fixed64 closest_approaches = 1
@@ -793,6 +795,7 @@ message FlightPlanRenderedNodes {
                                  (is_subject) = true];
     required string vessel_guid = 2;
     required XYZ sun_world_position = 4;
+    required int32 max_points = 5;
   }
   message Out {
     required fixed64 ascending = 1 [(pointer_to) = "Iterator",
@@ -1582,6 +1585,7 @@ message RenderedPredictionApsides {
     required string vessel_guid = 2;
     required int32 celestial_index = 3;
     required XYZ sun_world_position = 4;
+    required int32 max_points = 5;
   }
   message Out {
     required fixed64 apoapsides = 1 [(pointer_to) = "Iterator",
@@ -1604,6 +1608,7 @@ message RenderedPredictionClosestApproaches {
                                  (is_subject) = true];
     required string vessel_guid = 2;
     required XYZ sun_world_position = 3;
+    required int32 max_points = 4;
   }
   message Out {
     required fixed64 closest_approaches = 1
@@ -1624,6 +1629,7 @@ message RenderedPredictionNodes {
                                  (is_subject) = true];
     required string vessel_guid = 2;
     required XYZ sun_world_position = 3;
+    required int32 max_points = 4;
   }
   message Out {
     required fixed64 ascending = 1 [(pointer_to) = "Iterator",

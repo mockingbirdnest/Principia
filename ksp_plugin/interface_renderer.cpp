@@ -37,10 +37,11 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
                                           char const* const vessel_guid,
                                           int const celestial_index,
                                           XYZ const sun_world_position,
+                                          int const max_points,
                                           Iterator** const apoapsides,
                                           Iterator** const periapsides) {
   journal::Method<journal::RenderedPredictionApsides> m(
-      {plugin, vessel_guid, celestial_index, sun_world_position},
+      {plugin, vessel_guid, celestial_index, sun_world_position, max_points},
       {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
@@ -50,6 +51,7 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
                                   prediction.Fork(),
                                   prediction.End(),
                                   FromXYZ<Position<World>>(sun_world_position),
+                                  max_points,
                                   rendered_apoapsides,
                                   rendered_periapsides);
   *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
@@ -65,9 +67,10 @@ void principia__RenderedPredictionClosestApproaches(
     Plugin const* const plugin,
     char const* const vessel_guid,
     XYZ const sun_world_position,
+    int const max_points,
     Iterator** const closest_approaches) {
   journal::Method<journal::RenderedPredictionClosestApproaches> m(
-      {plugin, vessel_guid, sun_world_position},
+      {plugin, vessel_guid, sun_world_position, max_points},
       {closest_approaches});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
@@ -76,6 +79,7 @@ void principia__RenderedPredictionClosestApproaches(
       prediction.Fork(),
       prediction.End(),
       FromXYZ<Position<World>>(sun_world_position),
+      max_points,
       rendered_closest_approaches);
   *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
       check_not_null(std::move(rendered_closest_approaches)),
@@ -86,10 +90,11 @@ void principia__RenderedPredictionClosestApproaches(
 void principia__RenderedPredictionNodes(Plugin const* const plugin,
                                         char const* const vessel_guid,
                                         XYZ const sun_world_position,
+                                        int const max_points,
                                         Iterator** const ascending,
                                         Iterator** const descending) {
   journal::Method<journal::RenderedPredictionNodes> m(
-      {plugin, vessel_guid, sun_world_position},
+      {plugin, vessel_guid, sun_world_position, max_points},
       {ascending, descending});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
@@ -98,6 +103,7 @@ void principia__RenderedPredictionNodes(Plugin const* const plugin,
   plugin->ComputeAndRenderNodes(prediction.Fork(),
                                 prediction.End(),
                                 FromXYZ<Position<World>>(sun_world_position),
+                                max_points,
                                 rendered_ascending,
                                 rendered_descending);
   *ascending = new TypedIterator<DiscreteTrajectory<World>>(
