@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "physics/kepler_orbit.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -13,6 +14,9 @@ namespace internal_orbital_elements {
 
 using base::Error;
 using base::Status;
+using geometry::Velocity;
+using physics::DegreesOfFreedom;
+using physics::KeplerOrbit;
 using quantities::ArcTan;
 using quantities::Cos;
 using quantities::NaN;

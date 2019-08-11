@@ -1,4 +1,4 @@
-﻿#include "orbital_elements.hpp"
+﻿#include "astronomy/orbital_elements.hpp"
 
 #include <limits>
 #include <string>
@@ -94,15 +94,6 @@ class OrbitalElementsTest : public ::testing::Test {
  protected:
   OrbitalElementsTest() {}
 
-  static MassiveBody const& FindEarthOrDie(Ephemeris<ICRS> const& ephemeris) {
-    for (not_null<MassiveBody const*> const body : ephemeris.bodies()) {
-      if (body->name() == "Earth") {
-        return *body;
-      }
-    }
-    LOG(FATAL) << "Ephemeris has no Earth";
-  }
-
   // Completes |initial_osculating_elements| and returns a GCRS trajectory
   // obtained by flowing the corresponding initial conditions in |ephemeris|.
   static not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>>
@@ -146,6 +137,16 @@ class OrbitalElementsTest : public ::testing::Test {
           gcrs.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
     }
     return result;
+  }
+
+ private:
+  static MassiveBody const& FindEarthOrDie(Ephemeris<ICRS> const& ephemeris) {
+    for (not_null<MassiveBody const*> const body : ephemeris.bodies()) {
+      if (body->name() == "Earth") {
+        return *body;
+      }
+    }
+    LOG(FATAL) << "Ephemeris has no Earth";
   }
 };
 
