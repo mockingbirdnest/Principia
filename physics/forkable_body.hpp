@@ -28,7 +28,7 @@ bool ForkableIterator<Tr4jectory, It3rator>::operator==(
   // different containers, and in debug mode this is detected as a failure.
   // Trust me, I know what I am doing.
 #if defined(_DEBUG)
-  return ancestry_ == right.ancestry_ && current_ == right.current_ ;
+  return ancestry_ == right.ancestry_ && current_ == right.current_;
 #else
   return current_ == right.current_ && ancestry_ == right.ancestry_;
 #endif
