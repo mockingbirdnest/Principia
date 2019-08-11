@@ -140,6 +140,7 @@ BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
     ComputeApsides(*earth_trajectory_,
                    ilrsa_lageos2_trajectory_icrs_->Begin(),
                    ilrsa_lageos2_trajectory_icrs_->End(),
+                   /*max_points=*/std::numeric_limits<int>::max(),
                    apoapsides,
                    periapsides);
     CHECK_EQ(2364, apoapsides.Size());
@@ -154,6 +155,7 @@ BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
     ComputeNodes(ilrsa_lageos2_trajectory_gcrs_->Begin(),
                  ilrsa_lageos2_trajectory_gcrs_->End(),
                  Vector<double, GCRS>({0, 0, 1}),
+                 /*max_points=*/std::numeric_limits<int>::max(),
                  ascending,
                  descending);
     CHECK_EQ(2365, ascending.Size());
