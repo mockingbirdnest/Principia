@@ -1,6 +1,8 @@
 ﻿
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Apsides --benchmark_min_time=30  // NOLINT(whitespace/line_length)
 
+#include <limits>
+
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/standard_product_3.hpp"
@@ -107,7 +109,10 @@ class ApsidesBenchmark : public benchmark::Fixture {
   }
 
   void SetUp(benchmark::State&) override {
-    static int const set_up_fixture = [](){ SetUpFixture(); return 0; }();
+    static int const set_up_fixture = []() {
+      SetUpFixture();
+      return 0;
+    }();
   }
 
   static SolarSystem<ICRS>* solar_system_2010_;
