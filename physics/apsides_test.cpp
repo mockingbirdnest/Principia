@@ -110,6 +110,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   ComputeApsides(*ephemeris.trajectory(b),
                  trajectory.Begin(),
                  trajectory.End(),
+                 /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
 
@@ -208,6 +209,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
   ComputeNodes(trajectory.Begin(),
                trajectory.End(),
                north,
+               /*max_points=*/std::numeric_limits<int>::max(),
                ascending_nodes,
                descending_nodes);
 
@@ -249,6 +251,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
   ComputeNodes(trajectory.Begin(),
                trajectory.End(),
                mostly_south,
+               /*max_points=*/std::numeric_limits<int>::max(),
                south_ascending_nodes,
                south_descending_nodes);
   EXPECT_THAT(south_ascending_nodes.Size(), Eq(10));

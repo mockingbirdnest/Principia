@@ -1,6 +1,7 @@
 ﻿
 #include <algorithm>
 #include <filesystem>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -431,6 +432,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   ComputeNodes(surface_trajectory.Begin(),
                surface_trajectory.End(),
                /*north=*/Vector<double, LunarSurface>({0, 0, 1}),
+               /*max_points=*/std::numeric_limits<int>::max(),
                ascending_nodes,
                descending_nodes);
 
@@ -439,6 +441,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   ComputeApsides(*ephemeris_->trajectory(moon_),
                  trajectory.Begin(),
                  trajectory.End(),
+                 /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
 

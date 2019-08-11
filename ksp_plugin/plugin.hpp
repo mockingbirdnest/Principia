@@ -333,6 +333,7 @@ class Plugin {
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position,
+      int max_points,
       std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
       std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const;
 
@@ -342,6 +343,7 @@ class Plugin {
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position,
+      int max_points,
       std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const;
 
   // Computes the nodes of the trajectory defined by |begin| and |end| with
@@ -350,6 +352,7 @@ class Plugin {
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position,
+      int max_points,
       std::unique_ptr<DiscreteTrajectory<World>>& ascending,
       std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
 
