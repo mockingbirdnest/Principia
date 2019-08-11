@@ -160,7 +160,7 @@ class OrbitAnalysisTest : public ::testing::Test {
 // COSPAR ID 2016-030A.
 // Galileo-Full Operational Capability Flight Model 10 (GSAT0210) “Danielė”.
 // PRN E01, slot A02.
-TEST_F(OrbitAnalysisTest, Galileo) {
+TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   auto const status_or_elements = OrbitalElements::ForTrajectory(
       *EarthCentredTrajectory(
           {{StandardProduct3::SatelliteGroup::Galileo, 1}, SP3Files::GNSS()}),
@@ -223,6 +223,77 @@ TEST_F(OrbitAnalysisTest, Galileo) {
               IsNear(88 * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
               IsNear(6.3 * Degree));
+
+  EXPECT_THAT(Mod(elements.mean_elements().front().argument_of_periapsis +
+                      elements.mean_elements().front().mean_anomaly -
+                      nominal_anomalistic_mean_motion *
+                          (initial_time - reference_epoch),
+                  2 * π * Radian),
+              IsNear(225.153 * Degree, 1.005));
+}
+
+// COSPAR ID 2014-050B.
+// Galileo-Full Operational Capability Flight Model 2 (GSAT0202) “Milena”.
+// PRN E14, slot Ext02.
+TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
+  auto const status_or_elements = OrbitalElements::ForTrajectory(
+      *EarthCentredTrajectory(
+          {{StandardProduct3::SatelliteGroup::Galileo, 14}, SP3Files::GNSS()}),
+      earth_,
+      MasslessBody{});
+  ASSERT_THAT(status_or_elements, IsOk());
+  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  auto const recurrence =
+      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
+                                         elements.nodal_precession(),
+                                         earth_,
+                                         /*max_abs_Cᴛₒ=*/100);
+
+  EXPECT_THAT(recurrence,
+              AllOf(Property(&OrbitRecurrence::νₒ, 2),
+                    Property(&OrbitRecurrence::Dᴛₒ, -3),
+                    Property(&OrbitRecurrence::Cᴛₒ, 20)));
+
+  // Reference elements from
+  // https://www.gsc-europa.eu/system-status/orbital-and-technical-parameters.
+  Instant const reference_epoch = "2016-11-21T00:00:00"_UTC;
+  Instant const initial_time = elements.mean_elements().front().time;
+  Instant const mean_time =
+      initial_time + (elements.mean_elements().back().time - initial_time) / 2;
+
+  auto const nominal_nodal_precession = -0.03986760 * Degree / Day;
+  auto const nominal_apsidal_precession = 0.03383184 * Degree / Day;
+  auto const nominal_anomalistic_mean_motion = 667.86467481 * Degree / Day;
+
+  EXPECT_THAT(elements.nodal_precession(), IsNear(nominal_nodal_precession));
+  EXPECT_THAT(2 * π * Radian / elements.anomalistic_period(),
+              IsNear(nominal_anomalistic_mean_motion));
+
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              IsNear(27'977.6 * Kilo(Metre), 1.000'01));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
+              IsNear(00'000.096 * Kilo(Metre)));
+
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              IsNear(0.162, 1.06));
+  EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
+              IsNear(0.000'15));
+
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              IsNear(49.850 * Degree, 1.04));
+  EXPECT_THAT(elements.mean_inclination_interval().measure(),
+              IsNear(00.0044 * Degree));
+
+  EXPECT_THAT(
+      Mod(elements.mean_longitude_of_ascending_node_interval().midpoint() -
+              nominal_nodal_precession * (mean_time - reference_epoch),
+          2 * π * Radian),
+      IsNear(52.521 * Degree, 1.02));
+  EXPECT_THAT(
+      Mod(elements.mean_argument_of_periapsis_interval().midpoint() -
+              nominal_apsidal_precession * (mean_time - reference_epoch),
+          2 * π * Radian),
+      IsNear(56.198 * Degree, 1.02));
 
   EXPECT_THAT(Mod(elements.mean_elements().front().argument_of_periapsis +
                       elements.mean_elements().front().mean_anomaly -
