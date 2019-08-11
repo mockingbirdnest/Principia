@@ -22,8 +22,9 @@ template<typename Tr4jectory, typename It3rator>
 bool ForkableIterator<Tr4jectory, It3rator>::operator==(
     It3rator const& right) const {
   DCHECK_EQ(trajectory(), right.trajectory());
-  // This comparison is optimized for the case where == returns false, which
-  // happens frequently in loops.
+  // The comparison of iterators is faster than the comparison of deques, so if
+  // this function returns false (which it does repeatedly in loops), it might
+  // as well do so quickly.
   return current_ == right.current_ && ancestry_ == right.ancestry_;
 }
 
@@ -111,7 +112,8 @@ void ForkableIterator<Tr4jectory, It3rator>::NormalizeIfEnd() {
 
 template<typename Tr4jectory, typename It3rator>
 void ForkableIterator<Tr4jectory, It3rator>::CheckNormalizedIfEnd() {
-  // Short-circuit when the trajectory is a root.
+  // Checking if the trajectory is a root is faster than obtaining the end of
+  // the front of the deque, so it should be done first.
   CHECK(ancestry_.size() == 1 ||
         current_ != ancestry_.front()->timeline_end());
 }
