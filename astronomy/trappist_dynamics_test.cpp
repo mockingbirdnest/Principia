@@ -1334,7 +1334,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
                           &gravity_model_message,
                           &preoptimization_initial_state_message](
                              genetics::Genome const& genome,
-                               std::string& info) {
+                             std::string& info) {
     SolarSystem<Sky> modified_system(gravity_model_message,
                                      preoptimization_initial_state_message);
     auto const& elements = genome.elements();
