@@ -30,6 +30,7 @@ using physics::Ephemeris;
 using physics::MasslessBody;
 using physics::RotatingBody;
 using physics::SolarSystem;
+using quantities::Mod;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::ArcMinute;
@@ -175,8 +176,9 @@ TEST_F(OrbitAnalysisTest, Galileo) {
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
-                    Property(&OrbitRecurrence::Dᴛₒ, 0),
-                    Property(&OrbitRecurrence::Cᴛₒ, 1)));
+                    Property(&OrbitRecurrence::Dᴛₒ, -3),
+                    Property(&OrbitRecurrence::Cᴛₒ, 10)));
+
   // Reference elements from
   // https://www.gsc-europa.eu/system-status/orbital-and-technical-parameters.
   Instant const reference_epoch = "2016-11-21T00:00:00"_UTC;
@@ -184,29 +186,50 @@ TEST_F(OrbitAnalysisTest, Galileo) {
   Instant const mean_time =
       initial_time + (elements.mean_elements().back().time - initial_time) / 2;
 
-  auto const nominal_nodal_precession = 0.02764398 * Degree / Day;
-  auto const nominal_anomalistic_mean_motion = 613.72253566 * Degree / Day;
+  auto const nominal_nodal_precession = -0.02764398 * Degree / Day;
+  auto const nominal_anomalistic_mean_motion =
+      613.72253566 * Degree / Day;
 
   EXPECT_THAT(elements.nodal_precession(), IsNear(nominal_nodal_precession));
   EXPECT_THAT(2 * π * Radian / elements.anomalistic_period(),
               IsNear(nominal_anomalistic_mean_motion));
 
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(29'599.8 * Kilo(Metre)));
+              IsNear(29'599.8 * Kilo(Metre), 1.000'03));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(00'000.1 * Kilo(Metre)));
-  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.0086));
+              IsNear(00'000.084 * Kilo(Metre)));
+
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              IsNear(0.000'17));  // Nominal: 0.0.
+  EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
+              IsNear(0.000'015));
+
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(56.0 * Degree));
-  EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().midpoint() +
-                  nominal_nodal_precession * (mean_time - reference_epoch),
-              IsNear(317.632 * Degree));
-  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(0.0 * Degree));
+              IsNear(56.0 * Degree, 1.03));
+  EXPECT_THAT(elements.mean_inclination_interval().measure(),
+              IsNear(00.01 * Degree));
+
   EXPECT_THAT(
-      elements.mean_elements().front().mean_anomaly -
-          nominal_anomalistic_mean_motion * (initial_time - reference_epoch),
-      IsNear(225.153 * Degree));
+      Mod(elements.mean_longitude_of_ascending_node_interval().midpoint() -
+              nominal_nodal_precession * (mean_time - reference_epoch),
+          2 * π * Radian),
+      IsNear(317.632 * Degree, 1.000'6));
+
+  // The orbit is supposed to be frozen with ω = 0.0° (the nominal apsidal
+  // precession is 0).  Our mean elements seem to indicate otherwise, but frozen
+  // orbits are messy; perhaps the mean ω oscillates around 0?
+  // REMOVE BEFORE FLIGHT: No, they just actually take ω = 0 and their M means u...
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
+              IsNear(88 * Degree));
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
+              IsNear(6.3 * Degree));
+
+  EXPECT_THAT(Mod(elements.mean_elements().front().argument_of_periapsis +
+                      elements.mean_elements().front().mean_anomaly -
+                      nominal_anomalistic_mean_motion *
+                          (initial_time - reference_epoch),
+                  2 * π * Radian),
+              IsNear(225.153 * Degree, 1.005));
 }
 
 // COSPAR ID 2011-036A.
@@ -233,7 +256,7 @@ TEST_F(OrbitAnalysisTest, GPS) {
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               IsNear(26'560 * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(39 * Degree));
+              IsNear(55.86 * Degree));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.0086));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(39 * Degree));
