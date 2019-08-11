@@ -28,6 +28,11 @@ using geometry::Instant;
 using quantities::GravitationalParameter;
 using quantities::Length;
 
+serialization::GravityModel ParseGravityModel(
+    std::filesystem::path const& gravity_model_filename);
+serialization::InitialState ParseInitialState(
+    std::filesystem::path const& initial_state_filename);
+
 template<typename Frame>
 class SolarSystem final {
  public:
@@ -42,8 +47,11 @@ class SolarSystem final {
               serialization::InitialState const& initial_state,
               bool ignore_frame = false);
 
-  SolarSystem(SolarSystem const& other);
-  SolarSystem& operator=(const SolarSystem& other);
+  SolarSystem(SolarSystem const& other) = delete;
+  SolarSystem& operator=(const SolarSystem& other) = delete;
+
+  SolarSystem(SolarSystem&& other) = default;
+  SolarSystem& operator=(SolarSystem&& other) = default;
 
   // Constructs an ephemeris for this object using the specified parameters.
   // The bodies and initial state are constructed from the data passed to
@@ -165,6 +173,8 @@ class SolarSystem final {
 
 }  // namespace internal_solar_system
 
+using internal_solar_system::ParseGravityModel;
+using internal_solar_system::ParseInitialState;
 using internal_solar_system::SolarSystem;
 
 }  // namespace physics
