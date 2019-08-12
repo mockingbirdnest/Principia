@@ -24,14 +24,14 @@ bool ForkableIterator<Tr4jectory, It3rator>::operator==(
   DCHECK_EQ(trajectory(), right.trajectory());
   // The comparison of iterators is faster than the comparison of deques, so if
   // this function returns false (which it does repeatedly in loops), it might
-  // as well do so quickly.  However, we may end up comparing iterators from
-  // different containers, and in debug mode this is detected as a failure.
-  // Trust me, I know what I am doing.
-#if defined(_DEBUG)
-  return ancestry_ == right.ancestry_ && current_ == right.current_;
-#else
-  return current_ == right.current_ && ancestry_ == right.ancestry_;
-#endif
+  // as well do so quickly.  There is a complication, however, because the two
+  // iterators may not point to the same container, and we believe that
+  // comparing them would be undefined behaviour; hence the size comparison,
+  // which ensures that the two iterators are in the same fork and therefore can
+  // legitimately be compared.
+  return ancestry_.size() == right.ancestry_.size() &&
+         current_ == right.current_ &&
+         ancestry_ == right.ancestry_;
 }
 
 template<typename Tr4jectory, typename It3rator>
