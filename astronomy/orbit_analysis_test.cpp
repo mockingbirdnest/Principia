@@ -99,18 +99,18 @@ struct SP3Orbit {
 class OrbitAnalysisTest : public ::testing::Test {
  protected:
   OrbitAnalysisTest()
-      : earth_1950_(RemoveAllButEarth(SolarSystem<ICRS>(
+      : earth_1957_(RemoveAllButEarth(SolarSystem<ICRS>(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
-                "sol_initial_state_jd_2451545_000000000.proto.txt"))),
-        ephemeris_(earth_1950_.MakeEphemeris(
+                "sol_initial_state_jd_2436116_311504629.proto.txt"))),
+        ephemeris_(earth_1957_.MakeEphemeris(
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
                 SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                                    Position<ICRS>>(),
                 /*step=*/1 * JulianYear))),
-        earth_(*earth_1950_.rotating_body(*ephemeris_, "Earth")) {}
+        earth_(*earth_1957_.rotating_body(*ephemeris_, "Earth")) {}
 
 
   // Returns a GCRS trajectory obtained by stitching together the trajectories
@@ -152,7 +152,7 @@ class OrbitAnalysisTest : public ::testing::Test {
   }
 
  protected:
-  SolarSystem<ICRS> earth_1950_;
+  SolarSystem<ICRS> earth_1957_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> ephemeris_;
   RotatingBody<ICRS> const& earth_;
 };
@@ -332,6 +332,92 @@ TEST_F(OrbitAnalysisTest, GPS) {
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.0086));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(39 * Degree));
+}
+
+// COSPAR ID 1992-052A, TOPEX/Poséidon.
+TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
+  auto const status_or_elements = OrbitalElements::ForTrajectory(
+      *EarthCentredTrajectory(
+          {{StandardProduct3::SatelliteGroup::General, 1}, SP3Files::TOPEXPoséidon()}),
+      earth_,
+      MasslessBody{});
+  ASSERT_THAT(status_or_elements, IsOk());
+  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  auto const recurrence =
+      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
+                                         elements.nodal_precession(),
+                                         earth_,
+                                         /*max_abs_Cᴛₒ=*/100);
+
+  EXPECT_THAT(recurrence,
+              AllOf(Property(&OrbitRecurrence::νₒ, 13),
+                    Property(&OrbitRecurrence::Dᴛₒ, -3),
+                    Property(&OrbitRecurrence::Cᴛₒ, 10)));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              IsNear(7'714 * Kilo(Metre)));
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              IsNear(66.03 * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(9.9e-5));
+  // TODO(egg): We probably need to bring back the initial value of angular
+  // elements to their normal interval after filtering.
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
+              IsNear(-273.38 * Degree));
+}
+
+// COSPAR ID 2002-021A, SPOT-5 (Satellite Pour l’Observation de la Terre).
+TEST_F(OrbitAnalysisTest, SPOT5) {
+  auto const status_or_elements = OrbitalElements::ForTrajectory(
+      *EarthCentredTrajectory(
+          {{StandardProduct3::SatelliteGroup::General, 94}, SP3Files::SPOT5()}),
+      earth_,
+      MasslessBody{});
+  ASSERT_THAT(status_or_elements, IsOk());
+  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  auto const recurrence =
+      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
+                                         elements.nodal_precession(),
+                                         earth_,
+                                         /*max_abs_Cᴛₒ=*/100);
+
+  EXPECT_THAT(recurrence,
+              AllOf(Property(&OrbitRecurrence::νₒ, 14),
+                    Property(&OrbitRecurrence::Dᴛₒ, 5),
+                    Property(&OrbitRecurrence::Cᴛₒ, 26)));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              IsNear(7'200 * Kilo(Metre)));
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              IsNear(98.73 * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.0012));
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
+              IsNear(89.38 * Degree));
+}
+
+// COSPAR ID 2016-011A, Sentinel-3A.
+TEST_F(OrbitAnalysisTest, Sentinel3A) {
+  auto const status_or_elements = OrbitalElements::ForTrajectory(
+      *EarthCentredTrajectory(
+          {{StandardProduct3::SatelliteGroup::General, 74}, SP3Files::Sentinel3A()}),
+      earth_,
+      MasslessBody{});
+  ASSERT_THAT(status_or_elements, IsOk());
+  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  auto const recurrence =
+      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
+                                         elements.nodal_precession(),
+                                         earth_,
+                                         /*max_abs_Cᴛₒ=*/100);
+
+  EXPECT_THAT(recurrence,
+              AllOf(Property(&OrbitRecurrence::νₒ, 14),
+                    Property(&OrbitRecurrence::Dᴛₒ, 7),
+                    Property(&OrbitRecurrence::Cᴛₒ, 27)));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              IsNear(7'177 * Kilo(Metre)));
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              IsNear(98.63 * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.0011));
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
+              IsNear(90.01 * Degree));
 }
 
 }  // namespace astronomy
