@@ -304,6 +304,37 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
               IsNear(136.069 * Degree, 1.04));
 }
 
+// COSPAR ID 2009-070A.
+// ГЛОНАСС-М Космос 2456 (Ураган-М № 730).
+// PRN R01, plane 1.
+TEST_F(OrbitAnalysisTest, ГЛОНАСС) {
+  auto const status_or_elements = OrbitalElements::ForTrajectory(
+      *EarthCentredTrajectory(
+          {{StandardProduct3::SatelliteGroup::ГЛОНАСС, 1}, SP3Files::GNSS()}),
+      earth_,
+      MasslessBody{});
+  ASSERT_THAT(status_or_elements, IsOk());
+  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  auto const recurrence =
+      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
+                                         elements.nodal_precession(),
+                                         earth_,
+                                         /*max_abs_Cᴛₒ=*/100);
+
+  EXPECT_THAT(recurrence,
+              AllOf(Property(&OrbitRecurrence::νₒ, 2),
+                    Property(&OrbitRecurrence::Dᴛₒ, 1),
+                    Property(&OrbitRecurrence::Cᴛₒ, 8)));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              IsNear(25'507 * Kilo(Metre)));
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              IsNear(64.20 * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              IsNear(0.00040));
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
+              IsNear(-30.06 * Degree));
+}
+
 // COSPAR ID 2011-036A.
 // GPS block IIF satellite, SVN 063.
 // PRN G01, plane D, slot 2.
