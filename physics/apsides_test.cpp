@@ -102,8 +102,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
           std::numeric_limits<std::int64_t>::max(),
           1e-3 * Metre,
           1e-3 * Metre / Second),
-      Ephemeris<World>::unlimited_max_ephemeris_steps,
-      /*last_point_only=*/false);
+      Ephemeris<World>::unlimited_max_ephemeris_steps);
 
   DiscreteTrajectory<World> apoapsides;
   DiscreteTrajectory<World> periapsides;
@@ -199,8 +198,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
           std::numeric_limits<std::int64_t>::max(),
           1e-3 * Metre,
           1e-3 * Metre / Second),
-      Ephemeris<World>::unlimited_max_ephemeris_steps,
-      /*last_point_only=*/false);
+      Ephemeris<World>::unlimited_max_ephemeris_steps);
 
   Vector<double, World> const north({0, 0, 1});
 

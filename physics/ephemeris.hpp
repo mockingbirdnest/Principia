@@ -207,17 +207,14 @@ class Ephemeris {
   // Integrates, until exactly |t| (except for timeouts or singularities), the
   // |trajectory| followed by a massless body in the gravitational potential
   // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
-  // Prolongs the ephemeris by at most |max_ephemeris_steps|.  If
-  // |last_point_only| is true, only the last point is appended to the
-  // trajectory.  Returns OK if and only if |*trajectory| was integrated until
-  // |t|.
+  // Prolongs the ephemeris by at most |max_ephemeris_steps|.  Returns OK if and
+  // only if |*trajectory| was integrated until |t|.
   virtual Status FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       AdaptiveStepParameters const& parameters,
-      std::int64_t max_ephemeris_steps,
-      bool last_point_only) EXCLUDES(lock_);
+      std::int64_t max_ephemeris_steps) EXCLUDES(lock_);
 
   // Same as above, but uses a generalized integrator.
   virtual Status FlowWithAdaptiveStep(
@@ -225,8 +222,7 @@ class Ephemeris {
       GeneralizedIntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       GeneralizedAdaptiveStepParameters const& parameters,
-      std::int64_t max_ephemeris_steps,
-      bool last_point_only) EXCLUDES(lock_);
+      std::int64_t max_ephemeris_steps) EXCLUDES(lock_);
 
   // Integrates, until at most |t|, the trajectories followed by massless
   // bodies in the gravitational potential described by |*this|.  If
@@ -387,8 +383,7 @@ class Ephemeris {
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
       ODEAdaptiveStepParameters<ODE> const& parameters,
-      std::int64_t max_ephemeris_steps,
-      bool last_point_only) EXCLUDES(lock_);
+      std::int64_t max_ephemeris_steps) EXCLUDES(lock_);
 
   // Computes an estimate of the ratio |tolerance / error|.
   static double ToleranceToErrorRatio(

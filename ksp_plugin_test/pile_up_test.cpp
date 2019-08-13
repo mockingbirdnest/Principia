@@ -266,7 +266,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
 
   CheckPreAdvanceTimeInvariants(pile_up);
 
-  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _, _))
+  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _))
       .WillOnce(DoAll(
           AppendToDiscreteTrajectory(DegreesOfFreedom<Barycentric>(
               Barycentric::origin +
@@ -392,7 +392,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                          140.2 * Metre / Second,
                                          310.2 / 3.0 * Metre / Second}))),
           Return(Status::OK)));
-  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _, _))
+  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _))
       .WillOnce(DoAll(
           AppendToDiscreteTrajectory(DegreesOfFreedom<Barycentric>(
               Barycentric::origin +
@@ -667,7 +667,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
                                          &ephemeris,
                                          deletion_callback_.AsStdFunction());
 
-  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _, _))
+  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _))
       .WillOnce(DoAll(
           AppendToDiscreteTrajectory(DegreesOfFreedom<Barycentric>(
               Barycentric::origin +
