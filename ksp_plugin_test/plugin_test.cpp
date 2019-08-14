@@ -761,11 +761,11 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillRepeatedly(SaveArg<0>(&t_max));
   EXPECT_CALL(
       plugin_->mock_ephemeris(),
-      FlowWithAdaptiveStep(_, _, Ne(astronomy::InfiniteFuture), _, _, _))
+      FlowWithAdaptiveStep(_, _, Ne(astronomy::InfiniteFuture), _, _))
       .WillRepeatedly(
           DoAll(AppendToDiscreteTrajectory(dof), Return(Status::OK)));
   EXPECT_CALL(plugin_->mock_ephemeris(),
-              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
+              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .WillRepeatedly(Return(Status::OK));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
@@ -877,7 +877,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   EXPECT_CALL(plugin_->mock_ephemeris(), trajectory(_))
       .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::Sun)));
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
+  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof),
                             Return(Status(Error::DEADLINE_EXCEEDED, ""))));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))

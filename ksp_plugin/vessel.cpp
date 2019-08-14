@@ -517,8 +517,7 @@ Status Vessel::FlowPrognostication(
       Ephemeris<Barycentric>::NoIntrinsicAcceleration,
       ephemeris_->t_max(),
       prognosticator_parameters.adaptive_step_parameters,
-      FlightPlan::max_ephemeris_steps_per_frame,
-      /*last_point_only=*/false);
+      FlightPlan::max_ephemeris_steps_per_frame);
   bool const reached_t_max = status.ok();
   if (reached_t_max) {
     // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
@@ -527,8 +526,7 @@ Status Vessel::FlowPrognostication(
         Ephemeris<Barycentric>::NoIntrinsicAcceleration,
         InfiniteFuture,
         prognosticator_parameters.adaptive_step_parameters,
-        FlightPlan::max_ephemeris_steps_per_frame,
-        /*last_point_only=*/false);
+        FlightPlan::max_ephemeris_steps_per_frame);
   }
   LOG_IF(INFO, !status.ok())
       << "Prognostication from " << prognosticator_parameters.first_time

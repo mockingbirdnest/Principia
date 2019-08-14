@@ -93,8 +93,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
             std::numeric_limits<std::int64_t>::max(),
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
-        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
-        /*last_point_only=*/false);
+        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
 
     BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> const gcrs(ephemeris_,
                                                               earth_);

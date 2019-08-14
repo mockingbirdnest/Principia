@@ -337,17 +337,13 @@ Status PileUp::AdvanceTime(Instant const& t) {
     if (history_->last().time() < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
       // fixed-step integration.
-      // TODO(phl): Consider not setting |last_point_only| below as we would be
-      // fine with multiple points in the |psychohistory_| once all the classes
-      // have been changed.
       status.Update(
           ephemeris_->FlowWithAdaptiveStep(
               psychohistory_,
               Ephemeris<Barycentric>::NoIntrinsicAcceleration,
               t,
               adaptive_step_parameters_,
-              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-              /*last_point_only=*/true));
+              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps));
     }
   } else {
     // Destroy the fixed instance, it wouldn't be correct to use it the next
@@ -375,8 +371,7 @@ Status PileUp::AdvanceTime(Instant const& t) {
                  intrinsic_acceleration,
                  t,
                  adaptive_step_parameters_,
-                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-                 /*last_point_only=*/false);
+                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
     psychohistory_ = history_->NewForkAtLast();
   }
 

@@ -461,8 +461,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
     AdaptiveStepParameters const& parameters,
-    std::int64_t const max_ephemeris_steps,
-    bool const last_point_only) {
+    std::int64_t const max_ephemeris_steps) {
   auto compute_acceleration = [this, &intrinsic_acceleration](
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
@@ -483,8 +482,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
              trajectory,
              t,
              parameters,
-             max_ephemeris_steps,
-             last_point_only);
+             max_ephemeris_steps);
 }
 
 template<typename Frame>
@@ -493,8 +491,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     GeneralizedIntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
     GeneralizedAdaptiveStepParameters const& parameters,
-    std::int64_t max_ephemeris_steps,
-    bool last_point_only) {
+    std::int64_t max_ephemeris_steps) {
   auto compute_acceleration =
       [this, &intrinsic_acceleration](
           Instant const& t,
@@ -518,8 +515,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
              trajectory,
              t,
              parameters,
-             max_ephemeris_steps,
-             last_point_only);
+             max_ephemeris_steps);
 }
 
 template<typename Frame>
@@ -1158,8 +1154,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> trajectory,
     Instant const& t,
     ODEAdaptiveStepParameters<ODE> const& parameters,
-    std::int64_t max_ephemeris_steps,
-    bool last_point_only) {
+    std::int64_t max_ephemeris_steps) {
   Instant const& trajectory_last_time = trajectory->last().time();
   if (trajectory_last_time == t) {
     return Status::OK;
@@ -1203,15 +1198,8 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
                 _1, _2);
 
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state;
-  typename ODE::SystemState last_state;
-  if (last_point_only) {
-    append_state = [&last_state](typename ODE::SystemState const& state) {
-      last_state = state;
-    };
-  } else {
-    append_state = std::bind(
-        &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories));
-  }
+  append_state = std::bind(
+      &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories));
 
   auto const instance =
       parameters.integrator_->NewInstance(problem,
@@ -1226,10 +1214,6 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   // is used) should not cause the vessel to be deleted.
   if (status.error() == Error::OUT_OF_RANGE) {
     status = Status::OK;
-  }
-
-  if (last_point_only) {
-    AppendMasslessBodiesState(last_state, trajectories);
   }
 
   // TODO(egg): when we have events in trajectories, we should add a singularity

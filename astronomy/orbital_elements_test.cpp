@@ -137,8 +137,7 @@ class OrbitalElementsTest : public ::testing::Test {
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second
         },
-        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
-        /*last_point_only=*/false);
+        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
     auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();
     for (auto it = icrs_trajectory.Begin(); it != icrs_trajectory.End(); ++it) {
       result->Append(
