@@ -170,7 +170,7 @@ class OrbitAnalysisTest : public ::testing::Test {
 };
 
 // COSPAR ID 2010-001A, SVN C003.
-// 北斗二號-G1.
+// 北斗二號 GEO01.
 // PRN C01, GEO, 140.0° E.
 TEST_F(OrbitAnalysisTest, 北斗GEO) {
   auto [elements, recurrence] = ElementsAndRecurrence(
@@ -191,7 +191,7 @@ TEST_F(OrbitAnalysisTest, 北斗GEO) {
 }
 
 // COSPAR ID 2018-078B, SVN C216.
-// 北斗三號-M16 (Shanghai Engineering Center for Microsatellites).
+// 北斗三號 MEO15 (Shanghai Engineering Center for Microsatellites).
 // PRN C34, slot A-7.
 TEST_F(OrbitAnalysisTest, 北斗MEO) {
   auto [elements, recurrence] = ElementsAndRecurrence(
