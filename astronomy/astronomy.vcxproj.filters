@@ -104,6 +104,42 @@
     <None Include="standard_product_3\WUM0MGXFIN_20190270000_01D_15M_ORB.SP3">
       <Filter>Resource Files\Standard Product 3</Filter>
     </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20190970000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20190980000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20190990000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20191000000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20191010000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20191020000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20191030000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20191040000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20191050000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\WUM0MGXFIN_20191060000_01D_15M_ORB.SP3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\ssasp501.b10170.e10181.D__.sp3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
+    <None Include="standard_product_3\ssas3a20.b18358.e19003.DG_.sp3">
+      <Filter>Resource Files\Standard Product 3</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="sol_initial_state_jd_2433282_500000000.proto.txt">
