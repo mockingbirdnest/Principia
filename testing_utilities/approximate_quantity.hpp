@@ -49,6 +49,10 @@ Product<Left, Right> operator*(ApproximateQuantity<Left> const& left,
 ApproximateQuantity<double> operator""_⑴(char const* representation);
 
 }  // namespace internal_approximate_quantity
+
+using internal_approximate_quantity::operator*;
+using internal_approximate_quantity::operator ""_⑴;
+
 }  // namespace testing_utilities
 }  // namespace principia
 

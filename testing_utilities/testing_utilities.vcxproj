@@ -37,6 +37,7 @@
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="algebra_test.cpp" />
     <ClCompile Include="almost_equals_test.cpp" />
+    <ClCompile Include="approximate_quantity_test.cpp" />
     <ClCompile Include="componentwise_test.cpp" />
     <ClCompile Include="is_near_test.cpp" />
     <ClCompile Include="numerics_test.cpp" />

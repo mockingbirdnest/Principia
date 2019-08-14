@@ -57,12 +57,14 @@ ApproximateQuantity<double> operator""_⑴(char const* representation) {
     } else if ((!is_hexadecimal && (c == 'e' || c == 'E')) ||
                (is_hexadecimal && (c == 'p' || c == 'P'))) {
       CHECK(last_digit_index);
-      error_representation[*last_digit_index] = '1';
       break;
     }
   }
+  error_representation[*last_digit_index] = '1';
   double const value = std::strtod(representation, nullptr);
   double const error = std::strtod(error_representation.c_str(), nullptr);
+  LOG(ERROR)<<error_representation;
+  LOG(ERROR)<<error;
   return ApproximateQuantity<double>(representation,
                                      /*unit=*/1.0,
                                      value - error,
