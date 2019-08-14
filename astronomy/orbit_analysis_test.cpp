@@ -112,7 +112,6 @@ class OrbitAnalysisTest : public ::testing::Test {
                 /*step=*/1 * JulianYear))),
         earth_(*earth_1957_.rotating_body(*ephemeris_, "Earth")) {}
 
-
   // Returns a GCRS trajectory obtained by stitching together the trajectories
   // of |sp3_orbit.satellites| in |sp3_orbit.files|.
   not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>> EarthCentredTrajectory(
@@ -142,9 +141,10 @@ class OrbitAnalysisTest : public ::testing::Test {
 
   std::pair<OrbitalElements, OrbitRecurrence> ElementsAndRecurrence(
       SP3Orbit const& orbit) {
-    auto const status_or_elements = OrbitalElements::ForTrajectory(
-        *EarthCentredTrajectory(orbit), earth_, MasslessBody{});
-    OrbitalElements const& elements = status_or_elements.ValueOrDie();
+    auto const elements =
+        OrbitalElements::ForTrajectory(*EarthCentredTrajectory(orbit),
+                                       earth_,
+                                       MasslessBody{}).ValueOrDie();
     auto const recurrence =
         OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
                                            elements.nodal_precession(),
@@ -210,12 +210,61 @@ TEST_F(OrbitAnalysisTest, 北斗IGSO) {
               IsNear(232 * Degree));
 }
 
+// COSPAR ID 2010-045A, SVN J001.
+// みちびき初号機.
+// PRN J01, quasi-zenith orbit 
+TEST_F(OrbitAnalysisTest, みちびきQZO) {
+  auto [elements, recurrence] = ElementsAndRecurrence(
+      {{StandardProduct3::SatelliteGroup::みちびき, 1}, SP3Files::GNSS()});
+
+  EXPECT_THAT(recurrence,
+              AllOf(Property(&OrbitRecurrence::νₒ, 1),
+                    Property(&OrbitRecurrence::Dᴛₒ, 0),
+                    Property(&OrbitRecurrence::Cᴛₒ, 1)));
+  // Expected orbital elements from the Quasi-Zenith Satellite System
+  // Performance Standard (PS-QZSS-001).
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              IsNear(42'165 * Kilo(Metre)));
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              IsNear(41 * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.075));
+  // The operational range is 270° ± 2.5°.
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
+              IsNear(-90 * Degree));
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
+              IsNear(0.12 * Degree));
+}
+
+// COSPAR ID 2017-048A, SVN J003.
+// みちびき3号機.
+// PRN J07, GEO.
+TEST_F(OrbitAnalysisTest, みちびきGEO) {
+  auto j07_files = SP3Files::GNSS();
+  // J07 is missing from the last two files.
+  j07_files.names.resize(j07_files.names.size() - 2);
+  auto [elements, recurrence] = ElementsAndRecurrence(
+      {{StandardProduct3::SatelliteGroup::みちびき, 7}, j07_files});
+
+  EXPECT_THAT(recurrence,
+              AllOf(Property(&OrbitRecurrence::νₒ, 1),
+                    Property(&OrbitRecurrence::Dᴛₒ, 0),
+                    Property(&OrbitRecurrence::Cᴛₒ, 1)));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              IsNear(42'166 * Kilo(Metre)));
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              IsNear(0.067 * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              IsNear(0.00023));
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
+              IsNear(-136 * Degree));
+}
+
 // COSPAR ID 2018-078B, SVN C216.
 // 北斗三號 MEO15 (Shanghai Engineering Center for Microsatellites).
 // PRN C34, slot A-7.
 TEST_F(OrbitAnalysisTest, 北斗MEO) {
   auto [elements, recurrence] = ElementsAndRecurrence(
-          {{StandardProduct3::SatelliteGroup::北斗, 34}, SP3Files::GNSS()});
+      {{StandardProduct3::SatelliteGroup::北斗, 34}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
