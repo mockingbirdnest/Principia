@@ -140,6 +140,23 @@ class OrbitAnalysisTest : public ::testing::Test {
     return result;
   }
 
+  std::pair<OrbitalElements, OrbitRecurrence> ElementsAndRecurrence(
+      SP3Orbit const& orbit) {
+    auto const status_or_elements = OrbitalElements::ForTrajectory(
+        *EarthCentredTrajectory(orbit), earth_, MasslessBody{});
+    OrbitalElements const& elements = status_or_elements.ValueOrDie();
+    auto const recurrence =
+        OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
+                                           elements.nodal_precession(),
+                                           earth_,
+                                           /*max_abs_Cᴛₒ=*/100);
+    return {elements, recurrence};
+  }
+
+  SolarSystem<ICRS> earth_1957_;
+  not_null<std::unique_ptr<Ephemeris<ICRS>>> ephemeris_;
+  RotatingBody<ICRS> const& earth_;
+
  private:
   SolarSystem<ICRS> RemoveAllButEarth(SolarSystem<ICRS> solar_system) {
     std::vector<std::string> const names = solar_system.names();
@@ -150,29 +167,14 @@ class OrbitAnalysisTest : public ::testing::Test {
     }
     return solar_system;
   }
-
- protected:
-  SolarSystem<ICRS> earth_1957_;
-  not_null<std::unique_ptr<Ephemeris<ICRS>>> ephemeris_;
-  RotatingBody<ICRS> const& earth_;
 };
 
 // COSPAR ID 2010-001A, SVN C003.
 // 北斗二號-G1.
 // PRN C01, GEO, 140.0° E.
 TEST_F(OrbitAnalysisTest, 北斗GEO) {
-  auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(
-          {{StandardProduct3::SatelliteGroup::北斗, 1}, SP3Files::GNSS()}),
-      earth_,
-      MasslessBody{});
-  ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  auto const recurrence =
-      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
-                                         elements.nodal_precession(),
-                                         earth_,
-                                         /*max_abs_Cᴛₒ=*/100);
+  auto [elements, recurrence] = ElementsAndRecurrence(
+      {{StandardProduct3::SatelliteGroup::北斗, 1}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 1),
@@ -194,18 +196,8 @@ TEST_F(OrbitAnalysisTest, 北斗GEO) {
 // 北斗三號-M16 (Shanghai Engineering Center for Microsatellites).
 // PRN C34, slot A-7.
 TEST_F(OrbitAnalysisTest, 北斗MEO) {
-  auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(
-          {{StandardProduct3::SatelliteGroup::北斗, 34}, SP3Files::GNSS()}),
-      earth_,
-      MasslessBody{});
-  ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  auto const recurrence =
-      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
-                                         elements.nodal_precession(),
-                                         earth_,
-                                         /*max_abs_Cᴛₒ=*/100);
+  auto [elements, recurrence] = ElementsAndRecurrence(
+          {{StandardProduct3::SatelliteGroup::北斗, 34}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
@@ -225,18 +217,8 @@ TEST_F(OrbitAnalysisTest, 北斗MEO) {
 // Galileo-Full Operational Capability Flight Model 10 (GSAT0210) “Danielė”.
 // PRN E01, slot A02.
 TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
-  auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(
-          {{StandardProduct3::SatelliteGroup::Galileo, 1}, SP3Files::GNSS()}),
-      earth_,
-      MasslessBody{});
-  ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  auto const recurrence =
-      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
-                                         elements.nodal_precession(),
-                                         earth_,
-                                         /*max_abs_Cᴛₒ=*/100);
+  auto [elements, recurrence] = ElementsAndRecurrence(
+      {{StandardProduct3::SatelliteGroup::Galileo, 1}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
@@ -302,18 +284,8 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
 // Galileo-Full Operational Capability Flight Model 2 (GSAT0202) “Milena”.
 // PRN E14, slot Ext02.
 TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
-  auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(
-          {{StandardProduct3::SatelliteGroup::Galileo, 14}, SP3Files::GNSS()}),
-      earth_,
-      MasslessBody{});
-  ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  auto const recurrence =
-      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
-                                         elements.nodal_precession(),
-                                         earth_,
-                                         /*max_abs_Cᴛₒ=*/100);
+  auto [elements, recurrence] = ElementsAndRecurrence(
+      {{StandardProduct3::SatelliteGroup::Galileo, 14}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
@@ -372,18 +344,8 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
 // ГЛОНАСС-М Космос 2456, Ураган-М № 730.
 // PRN R01, plane 1.
 TEST_F(OrbitAnalysisTest, ГЛОНАСС) {
-  auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(
-          {{StandardProduct3::SatelliteGroup::ГЛОНАСС, 1}, SP3Files::GNSS()}),
-      earth_,
-      MasslessBody{});
-  ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  auto const recurrence =
-      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
-                                         elements.nodal_precession(),
-                                         earth_,
-                                         /*max_abs_Cᴛₒ=*/100);
+  auto [elements, recurrence] = ElementsAndRecurrence(
+      {{StandardProduct3::SatelliteGroup::ГЛОНАСС, 1}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
@@ -403,18 +365,8 @@ TEST_F(OrbitAnalysisTest, ГЛОНАСС) {
 // GPS block IIF satellite.
 // PRN G01, plane D, slot 2.
 TEST_F(OrbitAnalysisTest, GPS) {
-  auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(
-          {{StandardProduct3::SatelliteGroup::GPS, 1}, SP3Files::GNSS()}),
-      earth_,
-      MasslessBody{});
-  ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  auto const recurrence =
-      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
-                                         elements.nodal_precession(),
-                                         earth_,
-                                         /*max_abs_Cᴛₒ=*/100);
+  auto [elements, recurrence] = ElementsAndRecurrence(
+      {{StandardProduct3::SatelliteGroup::GPS, 1}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
@@ -431,18 +383,9 @@ TEST_F(OrbitAnalysisTest, GPS) {
 
 // COSPAR ID 1992-052A, TOPEX/Poséidon.
 TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
-  auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(
-          {{StandardProduct3::SatelliteGroup::General, 1}, SP3Files::TOPEXPoséidon()}),
-      earth_,
-      MasslessBody{});
-  ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  auto const recurrence =
-      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
-                                         elements.nodal_precession(),
-                                         earth_,
-                                         /*max_abs_Cᴛₒ=*/100);
+  auto [elements, recurrence] =
+      ElementsAndRecurrence({{StandardProduct3::SatelliteGroup::General, 1},
+                             SP3Files::TOPEXPoséidon()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 13),
@@ -461,18 +404,8 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
 
 // COSPAR ID 2002-021A, SPOT-5 (Satellite Pour l’Observation de la Terre).
 TEST_F(OrbitAnalysisTest, SPOT5) {
-  auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(
-          {{StandardProduct3::SatelliteGroup::General, 94}, SP3Files::SPOT5()}),
-      earth_,
-      MasslessBody{});
-  ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  auto const recurrence =
-      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
-                                         elements.nodal_precession(),
-                                         earth_,
-                                         /*max_abs_Cᴛₒ=*/100);
+  auto [elements, recurrence] = ElementsAndRecurrence(
+      {{StandardProduct3::SatelliteGroup::General, 94}, SP3Files::SPOT5()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 14),
@@ -489,18 +422,9 @@ TEST_F(OrbitAnalysisTest, SPOT5) {
 
 // COSPAR ID 2016-011A, Sentinel-3A.
 TEST_F(OrbitAnalysisTest, Sentinel3A) {
-  auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(
-          {{StandardProduct3::SatelliteGroup::General, 74}, SP3Files::Sentinel3A()}),
-      earth_,
-      MasslessBody{});
-  ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  auto const recurrence =
-      OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
-                                         elements.nodal_precession(),
-                                         earth_,
-                                         /*max_abs_Cᴛₒ=*/100);
+  auto [elements, recurrence] =
+      ElementsAndRecurrence({{StandardProduct3::SatelliteGroup::General, 74},
+                             SP3Files::Sentinel3A()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 14),
