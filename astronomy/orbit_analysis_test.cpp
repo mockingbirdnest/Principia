@@ -211,8 +211,8 @@ TEST_F(OrbitAnalysisTest, 北斗IGSO) {
 }
 
 // COSPAR ID 2010-045A, SVN J001.
-// みちびき初号機.
-// PRN J01, quasi-zenith orbit 
+// Block I-Q, みちびき初号機.
+// PRN J01, quasi-zenith orbit.
 TEST_F(OrbitAnalysisTest, みちびきQZO) {
   auto [elements, recurrence] = ElementsAndRecurrence(
       {{StandardProduct3::SatelliteGroup::みちびき, 1}, SP3Files::GNSS()});
@@ -236,7 +236,7 @@ TEST_F(OrbitAnalysisTest, みちびきQZO) {
 }
 
 // COSPAR ID 2017-048A, SVN J003.
-// みちびき3号機.
+// Block II-G, みちびき3号機.
 // PRN J07, GEO.
 TEST_F(OrbitAnalysisTest, みちびきGEO) {
   auto j07_files = SP3Files::GNSS();
