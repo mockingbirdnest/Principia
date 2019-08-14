@@ -230,7 +230,7 @@ TEST_F(OrbitAnalysisTest, みちびきQZO) {
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.075));
   // The operational range is 270° ± 2.5°.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(-90 * Degree));
+              IsNear(270 * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
               IsNear(0.12 * Degree));
 }
@@ -256,7 +256,7 @@ TEST_F(OrbitAnalysisTest, みちびきGEO) {
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.00023));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(-136 * Degree));
+              IsNear(224 * Degree));
 }
 
 // COSPAR ID 2018-078B, SVN C216.
@@ -425,7 +425,7 @@ TEST_F(OrbitAnalysisTest, ГЛОНАСС) {
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.00040));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(-30.06 * Degree));
+              IsNear(330 * Degree));
 }
 
 // COSPAR ID 2011-036A, SVN G063.
@@ -463,10 +463,8 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               IsNear(66.03 * Degree));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(9.9e-5));
-  // TODO(egg): We probably need to bring back the initial value of angular
-  // elements to their normal interval after filtering.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(-273.38 * Degree));
+              IsNear(86.62 * Degree));
 }
 
 // COSPAR ID 2002-021A, SPOT-5 (Satellite Pour l’Observation de la Terre).
