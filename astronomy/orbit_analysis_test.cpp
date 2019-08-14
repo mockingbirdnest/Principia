@@ -180,14 +180,12 @@ TEST_F(OrbitAnalysisTest, 北斗GEO) {
               AllOf(Property(&OrbitRecurrence::νₒ, 1),
                     Property(&OrbitRecurrence::Dᴛₒ, 0),
                     Property(&OrbitRecurrence::Cᴛₒ, 1)));
-  // Nominal values for e and i from
-  // https://ilrs.cddis.eosdis.nasa.gov/missions/satellite_missions/current_missions/cmg1_general.html.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               IsNear(42'166 * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(1.42 * Degree));  // Nominal: 1.53°.
+              IsNear(1.42 * Degree));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.000186));  // Nominal: 0.00018.
+              IsNear(0.000186));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(166 * Degree));
 }
