@@ -190,6 +190,26 @@ TEST_F(OrbitAnalysisTest, 北斗GEO) {
               IsNear(166 * Degree));
 }
 
+// COSPAR ID 2010-036A, SVN C005.
+// 北斗二號 IGSO01.
+// PRN C06, IGSO, 117°E.
+TEST_F(OrbitAnalysisTest, 北斗IGSO) {
+  auto [elements, recurrence] = ElementsAndRecurrence(
+      {{StandardProduct3::SatelliteGroup::北斗, 6}, SP3Files::GNSS()});
+
+  EXPECT_THAT(recurrence,
+              AllOf(Property(&OrbitRecurrence::νₒ, 1),
+                    Property(&OrbitRecurrence::Dᴛₒ, 0),
+                    Property(&OrbitRecurrence::Cᴛₒ, 1)));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              IsNear(42'161 * Kilo(Metre)));
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              IsNear(54.19 * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.0078));
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
+              IsNear(232 * Degree));
+}
+
 // COSPAR ID 2018-078B, SVN C216.
 // 北斗三號 MEO15 (Shanghai Engineering Center for Microsatellites).
 // PRN C34, slot A-7.
@@ -204,7 +224,7 @@ TEST_F(OrbitAnalysisTest, 北斗MEO) {
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               IsNear(27'906 * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(54.19 * Degree));
+              IsNear(55.01 * Degree));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.000558));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
