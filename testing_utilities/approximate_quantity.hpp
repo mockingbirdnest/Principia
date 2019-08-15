@@ -13,16 +13,17 @@ using quantities::Product;
 using quantities::Quantity;
 
 template<typename Quantity>
-class ApproximateQuantity {
- public:
-  static ApproximateQuantity<double> Parse(char const* representation, int ulp);
+class ApproximateQuantity;
 
-  Quantity min() const;
-  Quantity max() const;
+template<typename Dimensions>
+class ApproximateQuantity<Quantity<Dimensions>> {
+ public:
+  Quantity<Dimensions> min() const;
+  Quantity<Dimensions> max() const;
 
  private:
   ApproximateQuantity(std::string const& representation,
-                      Quantity const& unit,
+                      Quantity<Dimensions> const& unit,
                       double min_multiplier,
                       double max_multiplier);
 
@@ -31,7 +32,7 @@ class ApproximateQuantity {
 
   // The unit for the approximate quantity.  Could for instance be Degree for an
   // angle.
-  Quantity unit_;
+  Quantity<Dimensions> unit_;
 
   // The interval for the approximate quantity, expressed as multiples of unit_.
   double min_multiplier_;
@@ -40,6 +41,27 @@ class ApproximateQuantity {
   template<typename Left, typename Right>
   friend Product<Left, Right> operator*(ApproximateQuantity<Left> const& left,
                                         Right const& right);
+};
+
+template<>
+class ApproximateQuantity<double> {
+ public:
+  static ApproximateQuantity<double> Parse(char const* representation, int ulp);
+
+  double min() const;
+  double max() const;
+
+ private:
+  ApproximateQuantity(std::string const& representation,
+                      double min_multiplier,
+                      double max_multiplier);
+
+  // The original representation.
+  std::string representation_;
+
+  // The interval for the approximate quantity.
+  double min_multiplier_;
+  double max_multiplier_;
 };
 
 template<typename Left, typename Right>

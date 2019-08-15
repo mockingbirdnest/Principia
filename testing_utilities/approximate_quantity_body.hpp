@@ -8,8 +8,28 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_approximate_quantity {
 
-template<typename Quantity>
-ApproximateQuantity<double> ApproximateQuantity<Quantity>::Parse(
+template<typename Dimensions>
+Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::min() const {
+  return min_multiplier_ * unit_;
+}
+
+template<typename Dimensions>
+Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::max() const {
+  return max_multiplier_ * unit_;
+}
+
+template<typename Dimensions>
+ApproximateQuantity<Quantity<Dimensions>>::ApproximateQuantity(
+    std::string const& representation,
+    Quantity<Dimensions> const& unit,
+    double const min_multiplier,
+    double const max_multiplier)
+    : representation_(representation),
+      unit_(unit),
+      min_multiplier_(min_multiplier),
+      max_multiplier_(max_multiplier) {}
+
+ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
     char const* const representation,
     int const ulp) {
   std::string error_representation(representation);
@@ -39,28 +59,23 @@ ApproximateQuantity<double> ApproximateQuantity<Quantity>::Parse(
   LOG(ERROR)<<error_representation;
   LOG(ERROR)<<error;
   return ApproximateQuantity<double>(representation,
-                                     /*unit=*/1.0,
                                      value - error,
                                      value + error);
 }
-template<typename Quantity>
-Quantity ApproximateQuantity<Quantity>::min() const {
-  return min_multiplier_ * unit_;
+
+double ApproximateQuantity<double>::min() const {
+  return min_multiplier_;
 }
 
-template<typename Quantity>
-Quantity ApproximateQuantity<Quantity>::max() const {
-  return max_multiplier_ * unit_;
+double ApproximateQuantity<double>::max() const {
+  return max_multiplier_;
 }
 
-template<typename Quantity>
-ApproximateQuantity<Quantity>::ApproximateQuantity(
+ApproximateQuantity<double>::ApproximateQuantity(
     std::string const& representation,
-    Quantity const& unit,
     double const min_multiplier,
     double const max_multiplier)
     : representation_(representation),
-      unit_(unit),
       min_multiplier_(min_multiplier),
       max_multiplier_(max_multiplier) {}
 
