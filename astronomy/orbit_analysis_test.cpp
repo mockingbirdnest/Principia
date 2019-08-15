@@ -451,7 +451,7 @@ TEST_F(OrbitAnalysisTest, GPS) {
 
 // COSPAR ID 1992-052A, TOPEX/Poséidon.
 TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
-  auto [elements, recurrence] =
+  auto [elements, recurrence] =  // NOLINT(whitespace/braces)
       ElementsAndRecurrence({{StandardProduct3::SatelliteGroup::General, 1},
                              SP3Files::TOPEXPoséidon()});
 
@@ -488,7 +488,7 @@ TEST_F(OrbitAnalysisTest, SPOT5) {
 
 // COSPAR ID 2016-011A, Sentinel-3A.
 TEST_F(OrbitAnalysisTest, Sentinel3A) {
-  auto [elements, recurrence] =
+  auto [elements, recurrence] =  // NOLINT(whitespace/braces)
       ElementsAndRecurrence({{StandardProduct3::SatelliteGroup::General, 74},
                              SP3Files::Sentinel3A()});
 
