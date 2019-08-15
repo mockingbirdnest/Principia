@@ -21,13 +21,13 @@ Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::max() const {
 template<typename Dimensions>
 ApproximateQuantity<Quantity<Dimensions>>::ApproximateQuantity(
     std::string const& representation,
-    Quantity<Dimensions> const& unit,
     double const min_multiplier,
-    double const max_multiplier)
+    double const max_multiplier,
+    Quantity<Dimensions> const& unit)
     : representation_(representation),
-      unit_(unit),
       min_multiplier_(min_multiplier),
-      max_multiplier_(max_multiplier) {}
+      max_multiplier_(max_multiplier),
+      unit_(unit) {}
 
 ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
     char const* const representation,
@@ -79,13 +79,26 @@ ApproximateQuantity<double>::ApproximateQuantity(
       min_multiplier_(min_multiplier),
       max_multiplier_(max_multiplier) {}
 
-template<typename Left, typename Right>
-Product<Left, Right> operator*(ApproximateQuantity<Left> const& left,
-                               Right const& right) {
-  return ApproximateQuantity<Product<Left, Right>>(left.representation_,
-                                                   left.unit_ * right,
-                                                   left.min_multiplier_,
-                                                   left.max_multiplier_);
+template<typename Left, typename RDimensions>
+ApproximateQuantity<Product<Left, Quantity<RDimensions>>> operator*(
+    ApproximateQuantity<Left> const& left,
+    Quantity<RDimensions> const& right) {
+  return ApproximateQuantity<Product<Left, Quantity<RDimensions>>>(
+      left.representation_,
+      left.min_multiplier_,
+      left.max_multiplier_,
+      left.unit_ * right);
+}
+
+template<typename Left, typename RDimensions>
+ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>> operator/(
+    ApproximateQuantity<Left> const& left,
+    Quantity<RDimensions> const& right) {
+  return ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>>(
+      left.representation_,
+      left.min_multiplier_,
+      left.max_multiplier_,
+      left.unit_ / right);
 }
 
 ApproximateQuantity<double> operator""_⑴(char const* const representation) {

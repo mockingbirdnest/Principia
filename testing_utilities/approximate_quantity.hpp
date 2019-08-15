@@ -11,6 +11,7 @@ namespace internal_approximate_quantity {
 
 using quantities::Product;
 using quantities::Quantity;
+using quantities::Quotient;
 
 template<typename Quantity>
 class ApproximateQuantity;
@@ -23,24 +24,29 @@ class ApproximateQuantity<Quantity<Dimensions>> {
 
  private:
   ApproximateQuantity(std::string const& representation,
-                      Quantity<Dimensions> const& unit,
                       double min_multiplier,
-                      double max_multiplier);
+                      double max_multiplier,
+                      Quantity<Dimensions> const& unit);
 
   // The original representation.
   std::string representation_;
-
-  // The unit for the approximate quantity.  Could for instance be Degree for an
-  // angle.
-  Quantity<Dimensions> unit_;
 
   // The interval for the approximate quantity, expressed as multiples of unit_.
   double min_multiplier_;
   double max_multiplier_;
 
-  template<typename Left, typename Right>
-  friend Product<Left, Right> operator*(ApproximateQuantity<Left> const& left,
-                                        Right const& right);
+  // The unit for the approximate quantity.  Could for instance be Degree for an
+  // angle.
+  Quantity<Dimensions> unit_;
+
+  template<typename Left, typename RDimensions>
+  friend ApproximateQuantity<Product<Left, Quantity<RDimensions>>> operator*(
+      ApproximateQuantity<Left> const& left,
+      Quantity<RDimensions> const& right);
+  template<typename Left, typename RDimensions>
+  friend ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>> operator/(
+      ApproximateQuantity<Left> const& left,
+      Quantity<RDimensions> const& right);
 };
 
 template<>
@@ -62,11 +68,27 @@ class ApproximateQuantity<double> {
   // The interval for the approximate quantity.
   double min_multiplier_;
   double max_multiplier_;
+
+  static constexpr double unit_ = 1;
+
+  template<typename Left, typename RDimensions>
+  friend ApproximateQuantity<Product<Left, Quantity<RDimensions>>> operator*(
+      ApproximateQuantity<Left> const& left,
+      Quantity<RDimensions> const& right);
+  template<typename Left, typename RDimensions>
+  friend ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>> operator/(
+      ApproximateQuantity<Left> const& left,
+      Quantity<RDimensions> const& right);
 };
 
-template<typename Left, typename Right>
-Product<Left, Right> operator*(ApproximateQuantity<Left> const& left,
-                               Right const& right);
+template<typename Left, typename RDimensions>
+ApproximateQuantity<Product<Left, Quantity<RDimensions>>> operator*(
+    ApproximateQuantity<Left> const& left,
+    Quantity<RDimensions> const& right);
+template<typename Left, typename RDimensions>
+ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>> operator/(
+    ApproximateQuantity<Left> const& left,
+    Quantity<RDimensions> const& right);
 
 ApproximateQuantity<double> operator""_⑴(char const* representation);
 ApproximateQuantity<double> operator""_⑵(char const* representation);

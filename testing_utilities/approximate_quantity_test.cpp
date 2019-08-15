@@ -3,11 +3,20 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace testing_utilities {
 namespace internal_approximate_quantity {
+
+using quantities::Area;
+using quantities::Frequency;
+using quantities::Length;
+using quantities::Speed;
+using quantities::si::Metre;
+using quantities::si::Second;
 
 TEST(ApproximateQuantityTest, Literals_⑴) {
   ApproximateQuantity<double> const l1 = 123.45_⑴;
@@ -63,6 +72,25 @@ TEST(ApproximateQuantityTest, Literals_⑵_⑼) {
   ApproximateQuantity<double> const l9 = 123.45_⑼;
   EXPECT_THAT(l9.min(), AlmostEquals(123.36, 0));
   EXPECT_THAT(l9.max(), AlmostEquals(123.54, 0));
+}
+
+TEST(ApproximateQuantityTest, Units) {
+  ApproximateQuantity<Length> const l1 = 123.45_⑴ * Metre;
+  EXPECT_THAT(l1.min(), AlmostEquals(123.44 * Metre, 0));
+  EXPECT_THAT(l1.max(), AlmostEquals(123.46 * Metre, 1));
+
+  ApproximateQuantity<Area> const l2 = (123.45_⑴ * Metre) * Metre;
+  EXPECT_THAT(l2.min(), AlmostEquals(123.44 * Metre * Metre, 0));
+  EXPECT_THAT(l2.max(), AlmostEquals(123.46 * Metre * Metre, 1));
+
+  ApproximateQuantity<Frequency> const l3 = 123.45_⑴ / Second;
+  EXPECT_THAT(l3.min(), AlmostEquals(123.44 / Second, 0));
+  EXPECT_THAT(l3.max(), AlmostEquals(123.46 / Second, 1));
+
+  ApproximateQuantity<Speed> const l4 = 123.45_⑴ * Metre / Second;
+  EXPECT_THAT(l4.min(), AlmostEquals(123.44 * Metre / Second, 0));
+  EXPECT_THAT(l4.max(), AlmostEquals(123.46 * Metre / Second, 1));
+
 }
 
 }  // namespace internal_approximate_quantity
