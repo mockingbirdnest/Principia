@@ -1,6 +1,7 @@
 ﻿
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
@@ -173,7 +174,7 @@ class OrbitAnalysisTest : public ::testing::Test {
 // 北斗二號 GEO01.
 // PRN C01, GEO, 140.0° E.
 TEST_F(OrbitAnalysisTest, 北斗GEO) {
-  auto [elements, recurrence] = ElementsAndRecurrence(
+  auto [elements, recurrence] = ElementsAndRecurrence(  // NOLINT
       {{StandardProduct3::SatelliteGroup::北斗, 1}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
@@ -194,7 +195,7 @@ TEST_F(OrbitAnalysisTest, 北斗GEO) {
 // 北斗二號 IGSO01.
 // PRN C06, IGSO, 117°E.
 TEST_F(OrbitAnalysisTest, 北斗IGSO) {
-  auto [elements, recurrence] = ElementsAndRecurrence(
+  auto [elements, recurrence] = ElementsAndRecurrence(  // NOLINT
       {{StandardProduct3::SatelliteGroup::北斗, 6}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
@@ -214,7 +215,7 @@ TEST_F(OrbitAnalysisTest, 北斗IGSO) {
 // Block I-Q, みちびき初号機.
 // PRN J01, quasi-zenith orbit.
 TEST_F(OrbitAnalysisTest, みちびきQZO) {
-  auto [elements, recurrence] = ElementsAndRecurrence(
+  auto [elements, recurrence] = ElementsAndRecurrence(  // NOLINT
       {{StandardProduct3::SatelliteGroup::みちびき, 1}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
@@ -242,7 +243,7 @@ TEST_F(OrbitAnalysisTest, みちびきGEO) {
   auto j07_files = SP3Files::GNSS();
   // J07 is missing from the last two files.
   j07_files.names.resize(j07_files.names.size() - 2);
-  auto [elements, recurrence] = ElementsAndRecurrence(
+  auto [elements, recurrence] = ElementsAndRecurrence(  // NOLINT
       {{StandardProduct3::SatelliteGroup::みちびき, 7}, j07_files});
 
   EXPECT_THAT(recurrence,
@@ -263,7 +264,7 @@ TEST_F(OrbitAnalysisTest, みちびきGEO) {
 // 北斗三號 MEO15 (Shanghai Engineering Center for Microsatellites).
 // PRN C34, slot A-7.
 TEST_F(OrbitAnalysisTest, 北斗MEO) {
-  auto [elements, recurrence] = ElementsAndRecurrence(
+  auto [elements, recurrence] = ElementsAndRecurrence(  // NOLINT
       {{StandardProduct3::SatelliteGroup::北斗, 34}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
@@ -284,7 +285,7 @@ TEST_F(OrbitAnalysisTest, 北斗MEO) {
 // Galileo-Full Operational Capability Flight Model 10 (GSAT0210) “Danielė”.
 // PRN E01, slot A02.
 TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
-  auto [elements, recurrence] = ElementsAndRecurrence(
+  auto [elements, recurrence] = ElementsAndRecurrence(  // NOLINT
       {{StandardProduct3::SatelliteGroup::Galileo, 1}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
@@ -351,7 +352,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
 // Galileo-Full Operational Capability Flight Model 2 (GSAT0202) “Milena”.
 // PRN E14, slot Ext02.
 TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
-  auto [elements, recurrence] = ElementsAndRecurrence(
+  auto [elements, recurrence] = ElementsAndRecurrence(  // NOLINT
       {{StandardProduct3::SatelliteGroup::Galileo, 14}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
@@ -411,7 +412,7 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
 // ГЛОНАСС-М Космос 2456, Ураган-М № 730.
 // PRN R01, plane 1.
 TEST_F(OrbitAnalysisTest, ГЛОНАСС) {
-  auto [elements, recurrence] = ElementsAndRecurrence(
+  auto [elements, recurrence] = ElementsAndRecurrence(  // NOLINT
       {{StandardProduct3::SatelliteGroup::ГЛОНАСС, 1}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
@@ -432,7 +433,7 @@ TEST_F(OrbitAnalysisTest, ГЛОНАСС) {
 // GPS block IIF satellite.
 // PRN G01, plane D, slot 2.
 TEST_F(OrbitAnalysisTest, GPS) {
-  auto [elements, recurrence] = ElementsAndRecurrence(
+  auto [elements, recurrence] = ElementsAndRecurrence(  // NOLINT
       {{StandardProduct3::SatelliteGroup::GPS, 1}, SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
@@ -469,7 +470,7 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
 
 // COSPAR ID 2002-021A, SPOT-5 (Satellite Pour l’Observation de la Terre).
 TEST_F(OrbitAnalysisTest, SPOT5) {
-  auto [elements, recurrence] = ElementsAndRecurrence(
+  auto [elements, recurrence] = ElementsAndRecurrence(  // NOLINT
       {{StandardProduct3::SatelliteGroup::General, 94}, SP3Files::SPOT5()});
 
   EXPECT_THAT(recurrence,
