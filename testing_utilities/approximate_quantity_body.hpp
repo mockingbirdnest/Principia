@@ -19,6 +19,13 @@ Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::max() const {
 }
 
 template<typename Dimensions>
+std::string ApproximateQuantity<Quantity<Dimensions>>::DebugString() const {
+  return "[" + quantities::DebugString(min_multiplier_) + ", " +
+         quantities::DebugString(max_multiplier_) + "] * " +
+         quantities::DebugString(unit_);
+}
+
+template<typename Dimensions>
 ApproximateQuantity<Quantity<Dimensions>>::ApproximateQuantity(
     std::string const& representation,
     double const min_multiplier,
@@ -71,6 +78,11 @@ double ApproximateQuantity<double>::max() const {
   return max_multiplier_;
 }
 
+std::string ApproximateQuantity<double>::DebugString() const {
+  return "[" + quantities::DebugString(min_multiplier_) + ", " +
+         quantities::DebugString(max_multiplier_) + "]";
+}
+
 ApproximateQuantity<double>::ApproximateQuantity(
     std::string const& representation,
     double const min_multiplier,
@@ -99,6 +111,13 @@ ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>> operator/(
       left.min_multiplier_,
       left.max_multiplier_,
       left.unit_ / right);
+}
+
+template<typename Quantity>
+std::ostream& operator<<(std::ostream& out,
+                         ApproximateQuantity<Quantity> const& q) {
+  out << q.DebugString();
+  return out;
 }
 
 ApproximateQuantity<double> operator""_⑴(char const* const representation) {

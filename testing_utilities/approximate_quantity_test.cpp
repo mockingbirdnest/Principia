@@ -90,7 +90,14 @@ TEST(ApproximateQuantityTest, Units) {
   ApproximateQuantity<Speed> const l4 = 123.45_⑴ * Metre / Second;
   EXPECT_THAT(l4.min(), AlmostEquals(123.44 * Metre / Second, 0));
   EXPECT_THAT(l4.max(), AlmostEquals(123.46 * Metre / Second, 1));
+}
 
+TEST(ApproximateQuantityTest, DebugString) {
+  EXPECT_EQ("[+1.23439999999999998e+02, +1.23460000000000008e+02]",
+            (123.45_⑴).DebugString());
+  EXPECT_EQ("[+1.23439999999999998e+02, +1.23460000000000008e+02] * "
+            "+1.00000000000000000e+00 m",
+            (123.45_⑴ * Metre).DebugString());
 }
 
 }  // namespace internal_approximate_quantity

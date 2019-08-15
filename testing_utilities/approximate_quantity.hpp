@@ -22,6 +22,8 @@ class ApproximateQuantity<Quantity<Dimensions>> {
   Quantity<Dimensions> min() const;
   Quantity<Dimensions> max() const;
 
+  std::string DebugString() const;
+
  private:
   ApproximateQuantity(std::string const& representation,
                       double min_multiplier,
@@ -57,6 +59,8 @@ class ApproximateQuantity<double> {
   double min() const;
   double max() const;
 
+  std::string DebugString() const;
+
  private:
   ApproximateQuantity(std::string const& representation,
                       double min_multiplier,
@@ -89,6 +93,10 @@ template<typename Left, typename RDimensions>
 ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>> operator/(
     ApproximateQuantity<Left> const& left,
     Quantity<RDimensions> const& right);
+
+template<typename Quantity>
+std::ostream& operator<<(std::ostream& out,
+                         ApproximateQuantity<Quantity> const& q);
 
 ApproximateQuantity<double> operator""_⑴(char const* representation);
 ApproximateQuantity<double> operator""_⑵(char const* representation);
