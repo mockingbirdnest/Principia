@@ -9,6 +9,41 @@ namespace testing_utilities {
 namespace internal_approximate_quantity {
 
 template<typename Quantity>
+ApproximateQuantity<double> ApproximateQuantity<Quantity>::Parse(
+    char const* const representation,
+    int const ulp) {
+  std::string error_representation(representation);
+  std::optional<int> last_digit_index;
+  bool const is_hexadecimal =
+      error_representation.size() >= 2 &&
+      error_representation[0] == '0' &&
+      (error_representation[1] == 'x' || error_representation[1] == 'X');
+  for (int i = 0; i < error_representation.size(); ++i) {
+    char const c = error_representation[i];
+    if (c >= '1' && c <= '9') {
+      error_representation[i] = '0';
+      last_digit_index = i;
+    } else if (is_hexadecimal &&
+               ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+      error_representation[i] = '0';
+      last_digit_index = i;
+    } else if ((!is_hexadecimal && (c == 'e' || c == 'E')) ||
+               (is_hexadecimal && (c == 'p' || c == 'P'))) {
+      CHECK(last_digit_index);
+      break;
+    }
+  }
+  error_representation[*last_digit_index] = '0' + ulp;
+  double const value = std::strtod(representation, nullptr);
+  double const error = std::strtod(error_representation.c_str(), nullptr);
+  LOG(ERROR)<<error_representation;
+  LOG(ERROR)<<error;
+  return ApproximateQuantity<double>(representation,
+                                     /*unit=*/1.0,
+                                     value - error,
+                                     value + error);
+}
+template<typename Quantity>
 Quantity ApproximateQuantity<Quantity>::min() const {
   return min_multiplier_ * unit_;
 }
@@ -38,37 +73,40 @@ Product<Left, Right> operator*(ApproximateQuantity<Left> const& left,
                                                    left.max_multiplier_);
 }
 
-ApproximateQuantity<double> operator""_⑴(char const* representation) {
-  std::string error_representation(representation);
-  std::optional<int> last_digit_index;
-  bool const is_hexadecimal =
-      error_representation.size() >= 2 &&
-      error_representation[0] == '0' &&
-      (error_representation[1] == 'x' || error_representation[1] == 'X');
-  for (int i = 0; i < error_representation.size(); ++i) {
-    char const c = error_representation[i];
-    if (c >= '1' && c <= '9') {
-      error_representation[i] = '0';
-      last_digit_index = i;
-    } else if (is_hexadecimal &&
-               ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
-      error_representation[i] = '0';
-      last_digit_index = i;
-    } else if ((!is_hexadecimal && (c == 'e' || c == 'E')) ||
-               (is_hexadecimal && (c == 'p' || c == 'P'))) {
-      CHECK(last_digit_index);
-      break;
-    }
-  }
-  error_representation[*last_digit_index] = '1';
-  double const value = std::strtod(representation, nullptr);
-  double const error = std::strtod(error_representation.c_str(), nullptr);
-  LOG(ERROR)<<error_representation;
-  LOG(ERROR)<<error;
-  return ApproximateQuantity<double>(representation,
-                                     /*unit=*/1.0,
-                                     value - error,
-                                     value + error);
+ApproximateQuantity<double> operator""_⑴(char const* const representation) {
+  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/1);
+}
+
+ApproximateQuantity<double> operator""_⑵(char const* const representation) {
+  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/2);
+}
+
+ApproximateQuantity<double> operator""_⑶(char const* const representation) {
+  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/3);
+}
+
+ApproximateQuantity<double> operator""_⑷(char const* const representation) {
+  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/4);
+}
+
+ApproximateQuantity<double> operator""_⑸(char const* const representation) {
+  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/5);
+}
+
+ApproximateQuantity<double> operator""_⑹(char const* const representation) {
+  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/6);
+}
+
+ApproximateQuantity<double> operator""_⑺(char const* const representation) {
+  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/7);
+}
+
+ApproximateQuantity<double> operator""_⑻(char const* const representation) {
+  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/8);
+}
+
+ApproximateQuantity<double> operator""_⑼(char const* const representation) {
+  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/9);
 }
 
 }  // namespace internal_approximate_quantity

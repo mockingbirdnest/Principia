@@ -15,6 +15,8 @@ using quantities::Quantity;
 template<typename Quantity>
 class ApproximateQuantity {
  public:
+  static ApproximateQuantity<double> Parse(char const* representation, int ulp);
+
   Quantity min() const;
   Quantity max() const;
 
@@ -38,8 +40,6 @@ class ApproximateQuantity {
   template<typename Left, typename Right>
   friend Product<Left, Right> operator*(ApproximateQuantity<Left> const& left,
                                         Right const& right);
-
-  friend ApproximateQuantity<double> operator""_⑴(char const* representation);
 };
 
 template<typename Left, typename Right>
@@ -47,11 +47,27 @@ Product<Left, Right> operator*(ApproximateQuantity<Left> const& left,
                                Right const& right);
 
 ApproximateQuantity<double> operator""_⑴(char const* representation);
+ApproximateQuantity<double> operator""_⑵(char const* representation);
+ApproximateQuantity<double> operator""_⑶(char const* representation);
+ApproximateQuantity<double> operator""_⑷(char const* representation);
+ApproximateQuantity<double> operator""_⑸(char const* representation);
+ApproximateQuantity<double> operator""_⑹(char const* representation);
+ApproximateQuantity<double> operator""_⑺(char const* representation);
+ApproximateQuantity<double> operator""_⑻(char const* representation);
+ApproximateQuantity<double> operator""_⑼(char const* representation);
 
 }  // namespace internal_approximate_quantity
 
 using internal_approximate_quantity::operator*;
-using internal_approximate_quantity::operator ""_⑴;
+using internal_approximate_quantity::operator""_⑴;
+using internal_approximate_quantity::operator""_⑵;
+using internal_approximate_quantity::operator""_⑶;
+using internal_approximate_quantity::operator""_⑷;
+using internal_approximate_quantity::operator""_⑸;
+using internal_approximate_quantity::operator""_⑹;
+using internal_approximate_quantity::operator""_⑺;
+using internal_approximate_quantity::operator""_⑻;
+using internal_approximate_quantity::operator""_⑼;
 
 }  // namespace testing_utilities
 }  // namespace principia
