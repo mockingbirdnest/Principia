@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "base/status_or.hpp"
+#include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/body.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -16,6 +17,7 @@ namespace internal_orbital_elements {
 
 using base::StatusOr;
 using geometry::Instant;
+using geometry::Interval;
 using physics::Body;
 using physics::DiscreteTrajectory;
 using physics::MassiveBody;
@@ -92,23 +94,6 @@ class OrbitalElements {
   // long-period variations; instead of trying to characterize these complex
   // effects, we provide the interval of values taken by these elements over the
   // trajectory being analysed.
-
-  // Represents the interval [min, max].
-  // TODO(egg): This makes sense for T = instant, but InfinitePast and
-  // InfiniteFuture work differently from Infinity.
-  template<typename T>
-  struct Interval {
-    T min = +Infinity<T>();
-    T max = -Infinity<T>();
-
-    // The Lebesgue measure of this interval.
-    Difference<T> measure() const;
-    // The midpoint of this interval; NaN if the interval is empty (min > max).
-    T midpoint() const;
-
-    // Extends this interval so that it contains x.
-    void Include(T const& x);
-  };
 
   Interval<Length> mean_semimajor_axis_interval() const;
   Interval<double> mean_eccentricity_interval() const;

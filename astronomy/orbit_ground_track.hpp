@@ -3,6 +3,7 @@
 #include <optional>
 
 #include "astronomy/orbit_recurrence.hpp"
+#include "geometry/interval.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"
 
@@ -10,6 +11,7 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbit_ground_track {
 
+using geometry::Interval;
 using physics::DiscreteTrajectory;
 using physics::RotatingBody;
 

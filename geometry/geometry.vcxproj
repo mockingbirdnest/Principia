@@ -16,6 +16,8 @@
     <ClInclude Include="frame_body.hpp" />
     <ClInclude Include="identity.hpp" />
     <ClInclude Include="identity_body.hpp" />
+    <ClInclude Include="interval.hpp" />
+    <ClInclude Include="interval_body.hpp" />
     <ClInclude Include="linear_map_body.hpp" />
     <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="named_quantities_body.hpp" />
