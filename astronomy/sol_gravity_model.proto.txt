@@ -11,9 +11,7 @@ gravity_model {
   # kernel for DE431,
   # http://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/gm_de431.tpc.
 
-  # Some sources for gravity models give C2,0 instead of J2.
-  # In that case, J2 was computed using Mathematica, as
-  #   N[SetPrecision[-c20, Infinity] * Sqrt[5], 17].
+  # Degree 2 order 1 is systematically omitted in the geopotentials.
 
   # Star.
   body {
@@ -34,6 +32,8 @@ gravity_model {
 
   # Gas giants.
   body {
+    # Geopotential and reference radius from Iess et al. (2018), Measurement of
+    # Jupiter's asymmetric gravity field.
     name                    : "Jupiter"
     gravitational_parameter : "1.266865349218008e+08 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
@@ -42,10 +42,46 @@ gravity_model {
     axis_declination        : "64.495303 deg"
     reference_angle         : "284.95 deg"
     angular_frequency       : "870.5360000 deg / d"
-    j2                      : 14695.62e-6
     reference_radius        : "71492 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order: 0, j: 14696.572e-06, sin: 0}},
+      row {
+        degree: 3,
+        column {order: 0, j:    -0.042e-06, sin: 0}},
+      row {
+        degree: 4,
+        column {order: 0, j:  -586.609e-06, sin: 0}},
+      row {
+        degree: 5,
+        column {order: 0, j:    -0.069e-06, sin: 0}},
+      row {
+        degree: 6,
+        column {order: 0, j:    34.198e-06, sin: 0}},
+      row {
+        degree: 7,
+        column {order: 0, j:     0.124e-06, sin: 0}},
+      row {
+        degree: 8,
+        column {order: 0, j:    -2.426e-06, sin: 0}},
+      row {
+        degree: 9,
+        column {order: 0, j:    -0.106e-06, sin: 0}},
+      row {
+        degree: 10,
+        column {order: 0, j:     0.172e-06, sin: 0}},
+      row {
+        degree: 11,
+        column {order: 0, j:     0.033e-06, sin: 0}},
+      row {
+        degree: 12,
+        column {order: 0, j:     0.047e-06, sin: 0}},
+    }
   }
   body {
+    # Geopotential and reference radius from Durante (2017), The gravity fields
+    # of Jupiter and Saturn as determined by Juno and Cassini.
     name                    : "Saturn"
     gravitational_parameter : "3.793120749865224e+07 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
@@ -54,10 +90,47 @@ gravity_model {
     axis_declination        : "83.537 deg"
     reference_angle         : "38.90 deg"
     angular_frequency       : "810.7939024 deg / d"
-    j2                      : 16290.71e-6
     reference_radius        : "60330 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order: 0, j: 16290.564e-06, sin: 0}},
+      row {
+        degree: 3,
+        column {order: 0, j:     0.079e-06, sin: 0}},
+      row {
+        degree: 4,
+        column {order: 0, j:  -935.281e-06, sin: 0}},
+      row {
+        degree: 5,
+        column {order: 0, j:    -0.261e-06, sin: 0}},
+      row {
+        degree: 6,
+        column {order: 0, j:    86.395e-06, sin: 0}},
+      row {
+        degree: 7,
+        column {order: 0, j:     0.018e-06, sin: 0}},
+      row {
+        degree: 8,
+        column {order: 0, j:   -14.533e-06, sin: 0}},
+      row {
+        degree: 9,
+        column {order: 0, j:     0.190e-06, sin: 0}},
+      row {
+        degree: 10,
+        column {order: 0, j:     4.746e-06, sin: 0}},
+      row {
+        degree: 11,
+        column {order: 0, j:    -0.555e-06, sin: 0}},
+      row {
+        degree: 12,
+        column {order: 0, j:    -0.960e-06, sin: 0}},
+    }
   }
   body {
+    # Spherical harmonic coefficients and reference radius from Jacobson (2009),
+    # The orbit of the neptunian satellites and the orientations of the pole of
+    # Neptune.
     name                    : "Neptune"
     gravitational_parameter : "6.835099502439672e+06 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
@@ -66,10 +139,20 @@ gravity_model {
     axis_declination        : "43.46 deg"
     reference_angle         : "253.18 deg"
     angular_frequency       : "536.3128492 deg / d"
-    j2                      : 3408.43e-6
     reference_radius        : "25225 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order: 0, j: 3408.428530717952e-06, sin: 0}},
+      row {
+        degree: 4,
+        column {order: 0, j:  -33.398917590066e-06, sin: 0}},
+    }
   }
   body {
+    # Spherical harmonic coefficients and reference radius from Jacobson (2014),
+    # The orbits of the uranian satellites and rings, the gravity field of the
+    # uranian system, and the orientation of the pole of Uranus.
     name                    : "Uranus"
     gravitational_parameter : "5.793951322279009e+06 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
@@ -78,8 +161,15 @@ gravity_model {
     axis_declination        : "-15.175 deg"
     reference_angle         : "203.81 deg"
     angular_frequency       : "-501.1600928 deg / d"
-    j2                      : 3510.68e-6
     reference_radius        : "25559 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order: 0, j: 3510.7e-06, sin: 0}},
+      row {
+        degree: 4,
+        column {order: 0, j:  -34.2e-06, sin: 0}},
+    }
   }
 
   # Telluric planets.
@@ -99,8 +189,8 @@ gravity_model {
     geopotential {
       row {
         degree: 2,
-        column {order:  0, cos: -4.841694573200e-4, sin:  0},
-        column {order:  2, cos:  2.439373415940e-6, sin: -1.400294011836e-6}},
+        column {order:  0, cos: -4.8416945732000e-04, sin:  0},
+        column {order:  2, cos:  2.4393734159398e-06, sin: -1.4002940118364e-06}},
       row {
         degree: 3,
         column {order:  0, cos:  9.5716475834116e-07, sin:  0},
@@ -180,8 +270,10 @@ gravity_model {
     }
   }
   body {
-    # J2 coefficient and reference radius from MGN180U,
-    # https://github.com/haisamido/GMAT/blob/master/gmat/application/data/gravity/venus/MGNP180U.cof.
+    # Spherical harmonic coefficients and reference radius from MGNP180U,
+    # Konopliv, Banerdt, and Sjogren (1999), Venus Gravity: 180th Degree and
+    # Order Model.
+    # https://pds-geosciences.wustl.edu/mgn/mgn-v-rss-5-gravity-l2-v1/mg_5201/gravity/shgj180u.a01.
     name                    : "Venus"
     gravitational_parameter : "3.2485859200000006e+05 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
@@ -190,12 +282,95 @@ gravity_model {
     axis_declination        : "67.16 deg"
     reference_angle         : "160.20 deg"
     angular_frequency       : "-1.4813688 deg / d"
-    j2                      : 4.4044353248204983e-6
     reference_radius        : "6.05100000000000e+06 m"
+    geopotential {
+      row {
+        degree: 2,
+        column {order:  0, cos: -1.96972335776000e-06, sin:  0},
+        column {order:  2, cos:  8.57779845809000e-07, sin: -9.55361638001000e-08}},
+      row {
+        degree: 3,
+        column {order:  0, cos:  7.96824637191000e-07, sin:  0},
+        column {order:  1, cos:  2.34830384219000e-06, sin:  5.41628839100000e-07},
+        column {order:  2, cos: -8.53526187140000e-09, sin:  8.09061289069000e-07},
+        column {order:  3, cos: -1.88019306298000e-07, sin:  2.13485014872000e-07}},
+      row {
+        degree: 4,
+        column {order:  0, cos:  7.15808750045000e-07, sin:  0},
+        column {order:  1, cos: -4.57423281740000e-07, sin:  4.91607724960000e-07},
+        column {order:  2, cos:  1.26321198123000e-07, sin:  4.83573676234000e-07},
+        column {order:  3, cos: -1.74661921328000e-07, sin: -1.16497584253000e-07},
+        column {order:  4, cos:  1.72512836901000e-07, sin:  1.37661166882000e-06}},
+      row {
+        degree: 5,
+        column {order:  0, cos: -1.40788849936000e-07, sin:  0},
+        column {order:  1, cos:  1.73552678002000e-07, sin:  4.42142953424000e-07},
+        column {order:  2, cos:  7.90604960345000e-08, sin: -8.68535214711000e-07},
+        column {order:  3, cos:  5.08040690596000e-07, sin:  5.55885826489000e-07},
+        column {order:  4, cos:  3.91828720448000e-07, sin:  2.40075565086000e-07},
+        column {order:  5, cos:  2.56646844919000e-07, sin: -3.69108964292000e-07}},
+      row {
+        degree: 6,
+        column {order:  0, cos:  3.23127644398000e-08, sin:  0},
+        column {order:  1, cos:  3.93418644130000e-07, sin: -3.38942872501000e-07},
+        column {order:  2, cos:  1.86140621713000e-07, sin:  2.60679609359000e-07},
+        column {order:  3, cos:  7.42846004081000e-07, sin: -2.11340873081000e-07},
+        column {order:  4, cos: -1.99805065173000e-07, sin:  2.59096035772000e-07},
+        column {order:  5, cos:  2.56520163817000e-07, sin: -5.83598390230000e-08},
+        column {order:  6, cos: -2.94581890784000e-08, sin:  2.16109761711000e-07}},
+      row {
+        degree: 7,
+        column {order:  0, cos: -7.29578034332000e-08, sin:  0},
+        column {order:  1, cos:  3.05744005925000e-07, sin: -2.77665350396000e-07},
+        column {order:  2, cos:  1.51481348358000e-07, sin:  3.55286618390000e-08},
+        column {order:  3, cos:  1.67610027934000e-07, sin: -4.49483732685000e-07},
+        column {order:  4, cos: -1.96491948439000e-08, sin: -8.79148586429000e-08},
+        column {order:  5, cos:  3.19396528591000e-08, sin: -4.00008710576000e-08},
+        column {order:  6, cos: -5.19216872092000e-09, sin: -2.79591282159000e-07},
+        column {order:  7, cos: -1.93675835264000e-07, sin: -4.84129031019000e-07}},
+      row {
+        degree: 8,
+        column {order:  0, cos: -4.25832531474000e-07, sin:  0},
+        column {order:  1, cos: -1.97858005196000e-08, sin: -2.61463193793000e-07},
+        column {order:  2, cos:  1.63477675115000e-07, sin: -2.32108432597000e-07},
+        column {order:  3, cos:  3.06132013243000e-07, sin: -3.93795936874000e-09},
+        column {order:  4, cos: -1.09546245610000e-07, sin:  8.20832304879000e-08},
+        column {order:  5, cos: -3.55484878013000e-08, sin: -1.77529137038000e-08},
+        column {order:  6, cos: -5.92247928748000e-08, sin: -2.97194470268000e-07},
+        column {order:  7, cos: -3.16832604822000e-08, sin: -8.52087760261000e-08},
+        column {order:  8, cos:  9.47582305906000e-08, sin:  2.95091759971000e-07}},
+      row {
+        degree: 9,
+        column {order:  0, cos: -2.35102795624000e-07, sin:  0},
+        column {order:  1, cos: -9.76227225913000e-08, sin:  2.31225333712000e-08},
+        column {order:  2, cos: -2.41388180798000e-07, sin: -1.73278758693000e-07},
+        column {order:  3, cos:  2.58158855146000e-07, sin:  1.40158486106000e-08},
+        column {order:  4, cos: -1.57982225850000e-07, sin:  5.99197635642000e-08},
+        column {order:  5, cos:  5.60326197830000e-08, sin:  2.67783115324000e-08},
+        column {order:  6, cos: -3.47948445859000e-08, sin: -1.91293276916000e-07},
+        column {order:  7, cos: -1.92496903122000e-07, sin:  1.44989557767000e-07},
+        column {order:  8, cos:  9.39439943048000e-08, sin:  1.35982512917000e-07},
+        column {order:  9, cos:  2.52845540672000e-07, sin: -1.63264704004000e-09}},
+      row {
+        degree: 10,
+        column {order:  0, cos: -2.43651086082000e-07, sin:  0},
+        column {order:  1, cos: -1.01519431655000e-07, sin:  7.75741049843000e-08},
+        column {order:  2, cos: -2.83483163202000e-08, sin: -1.35987149871000e-07},
+        column {order:  3, cos: -5.71030640092000e-08, sin:  6.76237977826000e-08},
+        column {order:  4, cos:  3.41263062776000e-07, sin: -5.81873613050000e-08},
+        column {order:  5, cos: -2.92953810089000e-07, sin:  2.27894439060000e-08},
+        column {order:  6, cos: -2.04889687126000e-07, sin:  1.72223321904000e-07},
+        column {order:  7, cos: -1.61605271928000e-07, sin: -7.24300220001000e-08},
+        column {order:  8, cos:  1.39213026564000e-07, sin:  1.22221645955000e-07},
+        column {order:  9, cos:  1.73355586394000e-07, sin: -8.20685718579000e-08},
+        column {order: 10, cos: -4.27187834361000e-08, sin:  1.61075401825000e-08}},
+    }
   }
   body {
-    # J2 coefficient and reference radius from MRO data,
-    # http://pds-geosciences.wustl.edu/mro/mro-m-rss-5-sdp-v1/mrors_1xxx/data/shadr/jgmro_110c_sha.tab.
+    # Spherical harmonic coefficients and reference radius from MRO data,
+    # Konopliv et al. (2016), An improved JPL Mars gravity field and orientation
+    # from Mars orbiter and lander tracking data.
+    # http://pds-geosciences.wustl.edu/mro/mro-m-rss-5-sdp-v1/mrors_1xxx/data/shadr/jgmro_120d_sha.tab.
     name                    : "Mars"
     gravitational_parameter : "4.282837362069909e+04 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
@@ -204,11 +379,93 @@ gravity_model {
     axis_declination        : "52.88650 deg"
     reference_angle         : "176.630 deg"
     angular_frequency       : "350.89198226 deg / d"
-    j2                      : 0.0019566091594086663
     reference_radius        : "0.3396000000000000e+04 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order:  0, cos: -0.8750220924537000e-03, sin:  0},
+        column {order:  2, cos: -0.8463302655983001e-04, sin:  0.4893941832167000e-04}},
+      row {
+        degree: 3,
+        column {order:  0, cos: -0.1189701503730000e-04, sin:  0},
+        column {order:  1, cos:  0.3804998199101000e-05, sin:  0.2517711770763000e-04},
+        column {order:  2, cos: -0.1594743192372000e-04, sin:  0.8362393978466999e-05},
+        column {order:  3, cos:  0.3505629836033000e-04, sin:  0.2557132545737000e-04}},
+      row {
+        degree: 4,
+        column {order:  0, cos:  0.5129095830134000e-05, sin:  0},
+        column {order:  1, cos:  0.4216391158217000e-05, sin:  0.3763264356122000e-05},
+        column {order:  2, cos: -0.9530669529984000e-06, sin: -0.8980796841808000e-05},
+        column {order:  3, cos:  0.6456851984130000e-05, sin: -0.1937721228416000e-06},
+        column {order:  4, cos:  0.3082493624770000e-06, sin: -0.1287305697738000e-04}},
+      row {
+        degree: 5,
+        column {order:  0, cos: -0.1726770240426000e-05, sin:  0},
+        column {order:  1, cos:  0.4838421563066000e-06, sin:  0.2123112975395000e-05},
+        column {order:  2, cos: -0.4298176045679000e-05, sin: -0.1165695444086000e-05},
+        column {order:  3, cos:  0.3312667008555000e-05, sin:  0.2714409778579000e-06},
+        column {order:  4, cos: -0.4640760847412000e-05, sin: -0.3381553622249000e-05},
+        column {order:  5, cos: -0.4449264526897000e-05, sin:  0.3780478940952000e-05}},
+      row {
+        degree: 6,
+        column {order:  0, cos:  0.1346371486616000e-05, sin:  0},
+        column {order:  1, cos:  0.1802358369213000e-05, sin: -0.1518519399126000e-05},
+        column {order:  2, cos:  0.8617134284825000e-06, sin:  0.1469100737152000e-05},
+        column {order:  3, cos:  0.9556707543596000e-06, sin:  0.3329255868932000e-06},
+        column {order:  4, cos:  0.1008755362492000e-05, sin:  0.2638656947153000e-05},
+        column {order:  5, cos:  0.1657886615822000e-05, sin:  0.1622676484918000e-05},
+        column {order:  6, cos:  0.2762229666668000e-05, sin:  0.8213533324385000e-06}},
+      row {
+        degree: 7,
+        column {order:  0, cos:  0.1059896809288000e-05, sin:  0},
+        column {order:  1, cos:  0.1374999426681000e-05, sin: -0.2273719486605000e-06},
+        column {order:  2, cos:  0.2813978317042000e-05, sin: -0.6296769438136000e-06},
+        column {order:  3, cos:  0.8804898136171000e-06, sin: -0.3969828660607000e-06},
+        column {order:  4, cos:  0.2468989904982000e-05, sin: -0.4224552929743000e-06},
+        column {order:  5, cos: -0.1916816900894000e-06, sin: -0.1358521904210000e-05},
+        column {order:  6, cos: -0.5596010473648000e-06, sin: -0.1901364390573000e-05},
+        column {order:  7, cos:  0.4403955834996000e-06, sin: -0.1775670142683000e-05}},
+      row {
+        degree: 8,
+        column {order:  0, cos:  0.1443752355412000e-06, sin:  0},
+        column {order:  1, cos: -0.1325383727938000e-06, sin:  0.7505208176585000e-06},
+        column {order:  2, cos:  0.1810424443510000e-05, sin:  0.5070582302438000e-06},
+        column {order:  3, cos: -0.1207033608680000e-05, sin: -0.1341300916864000e-05},
+        column {order:  4, cos:  0.1588283768324000e-05, sin:  0.1481207429012000e-06},
+        column {order:  5, cos: -0.2791752469245000e-05, sin: -0.1629792611281000e-05},
+        column {order:  6, cos: -0.9144092825793000e-06, sin: -0.1789932470753000e-05},
+        column {order:  7, cos: -0.4736466741190000e-06, sin:  0.1644696459668000e-05},
+        column {order:  8, cos: -0.3106572592352000e-06, sin: -0.2502818487442000e-06}},
+      row {
+        degree: 9,
+        column {order:  0, cos: -0.2875590633971000e-06, sin:  0},
+        column {order:  1, cos:  0.4209631196926000e-06, sin: -0.4902120733571000e-06},
+        column {order:  2, cos:  0.1138731845942000e-05, sin:  0.3821998247805000e-06},
+        column {order:  3, cos: -0.9936511689482000e-06, sin: -0.1007616951716000e-05},
+        column {order:  4, cos:  0.2949787999841000e-06, sin:  0.1623582276776000e-05},
+        column {order:  5, cos: -0.2271904650867000e-05, sin: -0.1549306873643000e-05},
+        column {order:  6, cos:  0.8086062628526999e-06, sin:  0.5777311454631000e-06},
+        column {order:  7, cos: -0.6179540373049000e-06, sin:  0.8689199265382000e-06},
+        column {order:  8, cos:  0.1208079886086000e-05, sin: -0.1464473103889000e-06},
+        column {order:  9, cos: -0.1171904749528000e-05, sin: -0.6577921729520000e-06}},
+      row {
+        degree: 10,
+        column {order:  0, cos:  0.7266320959284000e-06, sin:  0},
+        column {order:  1, cos:  0.9239905431419000e-06, sin:  0.2232006947976000e-06},
+        column {order:  2, cos:  0.6995905207237000e-08, sin: -0.1115791602881000e-05},
+        column {order:  3, cos: -0.2990328863340000e-06, sin:  0.4435518098181000e-06},
+        column {order:  4, cos: -0.1213933087514000e-05, sin: -0.6971689359715001e-07},
+        column {order:  5, cos:  0.4214111852868000e-06, sin: -0.1062928525353000e-05},
+        column {order:  6, cos:  0.6696005571832000e-06, sin:  0.1117124833533000e-05},
+        column {order:  7, cos:  0.3178545460044000e-06, sin: -0.6202320049736000e-06},
+        column {order:  8, cos:  0.5405979560068000e-06, sin:  0.8205742571893000e-06},
+        column {order:  9, cos: -0.1457539183751000e-05, sin: -0.1463557922226000e-05},
+        column {order: 10, cos: -0.2747771823889000e-06, sin:  0.7532804263472000e-06}},    }
   }
   body {
-    # Gravitational characteristics from MESSENGER data,
+    # Spherical harmonic coefficients and reference radius from MESSENGER data,
+    # Mazarico et al. (2014), The gravity field, orientation, and ephemeris of
+    # Mercury from MESSENGER observations after three years in orbit.
     # http://pds-geosciences.wustl.edu/messenger/mess-h-rss_mla-5-sdp-v1/messrs_1001/data/shadr/ggmes_50v06_sha.tab.
     name                    : "Mercury"
     gravitational_parameter : "2.2031780000000021e+04 km^3/s^2"
@@ -218,8 +475,89 @@ gravity_model {
     axis_declination        : "61.4143 deg"
     reference_angle         : "329.5469 deg"
     angular_frequency       : "6.1385025 deg / d"
-    j2                      : 4.4044353248204983e-6
     reference_radius        : "2.4400000000000000e+03 km"
+    geopotential {
+      row {
+        degree: 2,
+        column {order:  0, cos: -2.2504494795548155e-05, sin:  0},
+        column {order:  2, cos:  1.2453831455077273e-05, sin: -2.0907808929226605e-08}},
+      row {
+        degree: 3,
+        column {order:  0, cos: -4.7658974641405817e-06, sin:  0},
+        column {order:  1, cos: -3.5970805101639293e-06, sin: -2.6300610705800838e-06},
+        column {order:  2, cos:  9.9795827301908530e-07, sin: -6.1658871020573644e-07},
+        column {order:  3, cos:  6.1329704144285676e-07, sin:  1.6690192220415697e-06}},
+      row {
+        degree: 4,
+        column {order:  0, cos: -5.8491134341695225e-06, sin:  0},
+        column {order:  1, cos:  1.7412009465381639e-06, sin:  3.3180870892295799e-06},
+        column {order:  2, cos:  1.8051180113808111e-06, sin:  2.8669691584634786e-06},
+        column {order:  3, cos: -7.8611175710153666e-07, sin:  1.4046520705502835e-06},
+        column {order:  4, cos: -1.3167419726323823e-08, sin: -3.1735988504874297e-07}},
+      row {
+        degree: 5,
+        column {order:  0, cos:  2.7949735882959458e-07, sin:  0},
+        column {order:  1, cos:  5.9741638501289356e-07, sin:  1.0174294227495020e-06},
+        column {order:  2, cos:  8.5739772139752519e-07, sin:  7.3193471840611649e-07},
+        column {order:  3, cos:  1.1445546757076634e-06, sin:  1.1249120816787075e-06},
+        column {order:  4, cos:  1.5313544537844549e-06, sin: -1.0511901070665310e-06},
+        column {order:  5, cos:  1.6080508397215393e-06, sin: -5.0859109149414183e-07}},
+      row {
+        degree: 6,
+        column {order:  0, cos:  1.4585314175080843e-06, sin:  0},
+        column {order:  1, cos:  8.2684194143035781e-07, sin:  9.1546534364411914e-07},
+        column {order:  2, cos: -1.4593298396480060e-07, sin:  4.8430566660301628e-07},
+        column {order:  3, cos: -8.8928930885644401e-08, sin:  4.6057816331377807e-08},
+        column {order:  4, cos: -1.3687842431473916e-06, sin: -5.2322441446343721e-07},
+        column {order:  5, cos:  2.3489610723947886e-06, sin:  3.1385125703845815e-06},
+        column {order:  6, cos:  1.3305116606862489e-06, sin: -1.5694808732754224e-06}},
+      row {
+        degree: 7,
+        column {order:  0, cos: -2.1852367768334425e-07, sin:  0},
+        column {order:  1, cos:  1.9536085376190740e-07, sin: -2.3182114674300509e-07},
+        column {order:  2, cos: -1.7496090760959149e-06, sin:  7.0160793362141880e-07},
+        column {order:  3, cos: -2.8025829849668759e-07, sin:  6.8904629309337373e-07},
+        column {order:  4, cos: -4.3745500759478240e-07, sin: -4.2189127579447878e-07},
+        column {order:  5, cos: -3.4514610563502668e-07, sin:  3.2097753627923853e-06},
+        column {order:  6, cos:  1.7947410351620055e-07, sin: -1.0986763258021031e-06},
+        column {order:  7, cos: -4.0301504752938484e-07, sin:  1.0620990771174037e-07}},
+      row {
+        degree: 8,
+        column {order:  0, cos: -1.3870356980458966e-06, sin:  0},
+        column {order:  1, cos:  3.7624366251120983e-07, sin: -1.5299692097148756e-07},
+        column {order:  2, cos: -6.5569370959661578e-07, sin:  1.7870147497774994e-06},
+        column {order:  3, cos: -1.9064995338016612e-06, sin:  4.5974835302873144e-07},
+        column {order:  4, cos: -4.9014292738022626e-07, sin: -8.9317906425028185e-08},
+        column {order:  5, cos: -7.0515651955995926e-07, sin: -9.6967346952040837e-07},
+        column {order:  6, cos:  2.1715763780569655e-07, sin: -9.5148988003187316e-07},
+        column {order:  7, cos:  3.9589422332799339e-07, sin: -6.6943385325178254e-07},
+        column {order:  8, cos: -1.2230150460017935e-06, sin:  3.9464263771148399e-07}},
+      row {
+        degree: 9,
+        column {order:  0, cos: -5.1973946113064347e-07, sin:  0},
+        column {order:  1, cos:  1.9572508392640721e-07, sin:  5.5414366104313299e-09},
+        column {order:  2, cos:  1.3674622006606949e-06, sin:  8.2835729399395797e-07},
+        column {order:  3, cos: -8.1673278548316186e-08, sin:  1.1604898328692514e-06},
+        column {order:  4, cos:  4.0628066102583395e-07, sin:  4.0943958304478471e-07},
+        column {order:  5, cos: -1.0735283273844036e-06, sin: -6.9427020199064090e-07},
+        column {order:  6, cos:  2.2590644679788266e-07, sin: -1.7489575027571018e-07},
+        column {order:  7, cos: -3.6465798277336191e-07, sin:  6.9422602390287975e-07},
+        column {order:  8, cos: -1.8224399355656670e-09, sin: -4.0238894969497374e-07},
+        column {order:  9, cos:  3.3485707524223448e-07, sin:  1.1230405299741017e-08}},
+      row {
+        degree: 10,
+        column {order:  0, cos: -4.5220059881582670e-07, sin:  0},
+        column {order:  1, cos:  4.6625806746051749e-07, sin: -8.4253394713055286e-07},
+        column {order:  2, cos:  8.6384413676235274e-07, sin:  6.4186789259486599e-07},
+        column {order:  3, cos:  1.0613867214213251e-06, sin:  1.5751318140924453e-07},
+        column {order:  4, cos: -5.3088608157589647e-08, sin:  6.2288878270976233e-07},
+        column {order:  5, cos: -2.1477837818569552e-07, sin: -2.8251092101506889e-07},
+        column {order:  6, cos: -5.1872431632298649e-07, sin:  6.0733388444351871e-07},
+        column {order:  7, cos:  2.3296038147871623e-07, sin:  4.4027556834867856e-07},
+        column {order:  8, cos: -2.9231749217072348e-07, sin: -5.9025994591121068e-07},
+        column {order:  9, cos:  4.3251774295726706e-07, sin: -6.1112523159021966e-07},
+        column {order: 10, cos: -3.8594860748194201e-07, sin: -4.8740152467449404e-07}},
+    }
   }
 
   # Moons, dwarf planets, and small Solar System bodies.

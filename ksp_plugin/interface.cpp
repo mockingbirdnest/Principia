@@ -158,14 +158,22 @@ serialization::OblateBody::Geopotential MakeGeopotential(
   std::map<int, serialization::OblateBody::Geopotential::GeopotentialRow> rows;
   for (int i = 0; i < geopotential_size; ++i) {
     BodyGeopotentialElement const& element = geopotential[i];
-    int const degree = std::stoi(element.degree);
-    int const order = std::stoi(element.order);
-    double const cos = ParseQuantity<double>(element.cos);
-    double const sin = ParseQuantity<double>(element.sin);
     serialization::OblateBody::Geopotential::GeopotentialRow::GeopotentialColumn
         column;
+    int const degree = std::stoi(element.degree);
+    int const order = std::stoi(element.order);
     column.set_order(order);
-    column.set_cos(cos);
+    if (element.j != nullptr) {
+      CHECK_EQ(element.cos, nullptr);
+      double const j = ParseQuantity<double>(element.j);
+      column.set_j(j);
+    }
+    if (element.cos != nullptr) {
+      CHECK_EQ(element.j, nullptr);
+      double const cos = ParseQuantity<double>(element.cos);
+      column.set_cos(cos);
+    }
+    double const sin = ParseQuantity<double>(element.sin);
     column.set_sin(sin);
     *rows[degree].add_column() = column;
     rows[degree].set_degree(degree);
@@ -610,6 +618,7 @@ void principia__InitGoogleLogging() {
 #else
     std::freopen("stderr.log", "w", stderr);
 #endif
+    google::SetLogFilenameExtension(".log");
     google::SetLogDestination(google::FATAL, "glog/Principia/FATAL.");
     google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
     google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");

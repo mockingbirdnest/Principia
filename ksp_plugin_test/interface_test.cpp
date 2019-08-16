@@ -393,8 +393,8 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
                   EqualsProto(gravity_model),
                   EqualsProto(initial_state)));
 
-  BodyGeopotentialElement j2 = {"2", "0", "123e-6", "456e-6"};
-  BodyGeopotentialElement j3 = {"3", "0", "123e-7", "-456e-7"};
+  BodyGeopotentialElement j2 = {"2", "0", "123e-6", nullptr, "456e-6"};
+  BodyGeopotentialElement j3 = {"3", "0", "123e-7", nullptr, "-456e-7"};
   BodyGeopotentialElement j[] = {j2, j3};
   BodyParameters const body_parameters = {"that is called Brian",
                                           "1.2345e6  km^3 / s^2",

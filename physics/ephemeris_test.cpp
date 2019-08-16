@@ -236,8 +236,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
-      Ephemeris<ICRS>::unlimited_max_ephemeris_steps,
-      /*last_point_only=*/false));
+      Ephemeris<ICRS>::unlimited_max_ephemeris_steps));
   EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       Ephemeris<ICRS>::NoIntrinsicAcceleration,
@@ -249,8 +248,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
-      Ephemeris<ICRS>::unlimited_max_ephemeris_steps,
-      /*last_point_only=*/false));
+      Ephemeris<ICRS>::unlimited_max_ephemeris_steps));
 }
 
 // The canonical Earth-Moon system, tuned to produce circular orbits.
@@ -457,8 +455,7 @@ TEST_P(EphemerisTest, EarthProbe) {
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
-      Ephemeris<ICRS>::unlimited_max_ephemeris_steps,
-      /*last_point_only=*/false);
+      Ephemeris<ICRS>::unlimited_max_ephemeris_steps);
 
   ContinuousTrajectory<ICRS> const& earth_trajectory =
       *ephemeris.trajectory(earth);
@@ -525,8 +522,7 @@ TEST_P(EphemerisTest, EarthProbe) {
                       max_steps,
                       1e-9 * Metre,
                       2.6e-15 * Metre / Second),
-                  /*max_ephemeris_steps=*/0,
-                  /*last_point_only=*/false),
+                  /*max_ephemeris_steps=*/0),
               StatusIs(Error::DEADLINE_EXCEEDED));
   EXPECT_THAT(ephemeris.t_max(), Eq(old_t_max));
   EXPECT_THAT(trajectory.last().time(), Eq(old_t_max));
@@ -758,8 +754,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
-      Ephemeris<ICRS>::unlimited_max_ephemeris_steps,
-      /*last_point_only=*/false);
+      Ephemeris<ICRS>::unlimited_max_ephemeris_steps);
 
   Speed const v_elephant_y =
       trajectory.last().degrees_of_freedom().velocity().coordinates().y;

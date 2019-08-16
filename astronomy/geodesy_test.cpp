@@ -144,8 +144,7 @@ TEST_F(GeodesyTest, LAGEOS2) {
                 std::numeric_limits<std::int64_t>::max(),
                 /*length_integration_tolerance=*/1 * Milli(Metre),
                 /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
-            /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
-            /*last_point_only=*/true);
+            /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
   };
   Bundle bundle;
   bundle.Add([&flow_lageos2, &primary_lageos2_trajectory]() {

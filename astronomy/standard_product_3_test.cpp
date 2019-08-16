@@ -385,8 +385,7 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
                 std::numeric_limits<std::int64_t>::max(),
                 /*length_integration_tolerance=*/1 * Milli(Metre),
                 /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
-            /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
-            /*last_point_only=*/true);
+            /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
       DegreesOfFreedom<ICRS> actual =
           integrated_arc.last().degrees_of_freedom();
       DegreesOfFreedom<ICRS> expected =

@@ -6,12 +6,14 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
+    <ClCompile Include="..\astronomy\standard_product_3.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
     <ClCompile Include="..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp" />
+    <ClCompile Include="apsides.cpp" />
     <ClCompile Include="dynamic_frame.cpp" />
     <ClCompile Include="elliptic_integrals_benchmark.cpp" />
     <ClCompile Include="elliptic_functions_benchmark.cpp" />

@@ -366,16 +366,14 @@ Status FlightPlan::BurnSegment(
                              manœuvre.InertialIntrinsicAcceleration(),
                              final_time,
                              adaptive_step_parameters_,
-                             max_ephemeris_steps_per_frame,
-                             /*last_point_only=*/false);
+                             max_ephemeris_steps_per_frame);
     } else {
       return ephemeris_->FlowWithAdaptiveStep(
                              segment,
                              manœuvre.FrenetIntrinsicAcceleration(),
                              final_time,
                              generalized_adaptive_step_parameters_,
-                             max_ephemeris_steps_per_frame,
-                             /*last_point_only=*/false);
+                             max_ephemeris_steps_per_frame);
     }
   } else {
     return Status::OK;
@@ -390,8 +388,7 @@ Status FlightPlan::CoastSegment(
                          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                          desired_final_time,
                          adaptive_step_parameters_,
-                         max_ephemeris_steps_per_frame,
-                         /*last_point_only=*/false);
+                         max_ephemeris_steps_per_frame);
 }
 
 Status FlightPlan::ComputeSegments(

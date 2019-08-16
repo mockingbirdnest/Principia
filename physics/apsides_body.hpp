@@ -29,6 +29,7 @@ template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
                     typename DiscreteTrajectory<Frame>::Iterator const begin,
                     typename DiscreteTrajectory<Frame>::Iterator const end,
+                    int const max_points,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides) {
   std::optional<Instant> previous_time;
@@ -110,6 +111,9 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       } else {
         periapsides.Append(apsis_time, apsis_degrees_of_freedom);
       }
+      if (apoapsides.Size() >= max_points && periapsides.Size() >= max_points) {
+        break;
+      }
     }
 
     previous_time = time;
@@ -123,6 +127,7 @@ template<typename Frame, typename Predicate>
 void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
                   typename DiscreteTrajectory<Frame>::Iterator end,
                   Vector<double, Frame> const& north,
+                  int const max_points,
                   DiscreteTrajectory<Frame>& ascending,
                   DiscreteTrajectory<Frame>& descending,
                   Predicate predicate) {
@@ -182,6 +187,9 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
           ascending.Append(node_time, node_degrees_of_freedom);
         } else {
           descending.Append(node_time, node_degrees_of_freedom);
+        }
+        if (ascending.Size() >= max_points && descending.Size() >= max_points) {
+          break;
         }
       }
     }

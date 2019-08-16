@@ -81,6 +81,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
+using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
 
@@ -91,8 +92,8 @@ class SolarSystemDynamicsTest : public ::testing::Test {
   struct OrbitError final {
     Angle separation_per_orbit;
     Angle inclination_drift_per_orbit;
-    std::optional<Angle> longitude_of_ascending_node_drift_per_orbit;
-    std::optional<Angle> argument_of_periapsis_drift_per_orbit;
+    Angle longitude_of_ascending_node_drift_per_orbit;
+    Angle argument_of_periapsis_drift_per_orbit;
   };
 
   SolarSystemDynamicsTest() {
@@ -234,17 +235,13 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     result.inclination_drift_per_orbit =
         AbsoluteError(expected_elements.inclination,
                       actual_elements.inclination) / orbits;
-    if (actual_elements.inclination > 0.1 * Degree) {
-      result.longitude_of_ascending_node_drift_per_orbit =
-          AbsoluteError(expected_elements.longitude_of_ascending_node,
-                        actual_elements.longitude_of_ascending_node) / orbits;
+    result.longitude_of_ascending_node_drift_per_orbit =
+        AbsoluteError(expected_elements.longitude_of_ascending_node,
+                      actual_elements.longitude_of_ascending_node) / orbits;
 
-      if (actual_elements.eccentricity > 0.1) {
-        result.argument_of_periapsis_drift_per_orbit =
-            AbsoluteError(*expected_elements.argument_of_periapsis,
-                          *actual_elements.argument_of_periapsis) / orbits;
-      }
-    }
+    result.argument_of_periapsis_drift_per_orbit =
+        AbsoluteError(*expected_elements.argument_of_periapsis,
+                      *actual_elements.argument_of_periapsis) / orbits;
     return result;
   }
 
@@ -272,75 +269,228 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
           /*step=*/45 * Minute));
   ephemeris->Prolong(ten_years_later.epoch());
 
+  // NOTE(phl):
+  // For Mercury and Venus the separation is about the order of magnitude we'd
+  // expect from GR for either of those bodies; since it's a combination of
+  // perihelion precession and change in anomaly, it's hard to get an exact
+  // figure for that.
+  // For Mercury the perihelion drift is what we expect from GR to within 1%.
+  // For Pluto, WTF is wrong?
+  std::map<int, OrbitError> const expected_planet_orbit_errors{
+      {SolarSystemFactory::Jupiter,
+       {/*separation_per_orbit=*/0.033516 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000013 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.010388 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.074008 * ArcSecond}},
+      {SolarSystemFactory::Saturn,
+       {/*separation_per_orbit=*/0.017580 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000850 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.070582 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.168527 * ArcSecond}},
+      {SolarSystemFactory::Neptune,
+       {/*separation_per_orbit=*/0.000356 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000403 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.028660 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.363661 * ArcSecond}},
+      {SolarSystemFactory::Uranus,
+       {/*separation_per_orbit=*/0.000137 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000175 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.019311 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.015473 * ArcSecond}},
+      {SolarSystemFactory::Earth,
+       {/*separation_per_orbit=*/0.085351 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.0000034 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.000101 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.036543 * ArcSecond}},
+      {SolarSystemFactory::Venus,
+       {/*separation_per_orbit=*/0.104901 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000001 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.0000057 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.072214 * ArcSecond}},
+      {SolarSystemFactory::Mars,
+       {/*separation_per_orbit=*/0.054834 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.0000027 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.000644 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.025516 * ArcSecond}},
+      {SolarSystemFactory::Mercury,
+       {/*separation_per_orbit=*/0.189560 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.0000037 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.000020 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.102786 * ArcSecond}},
+      {SolarSystemFactory::Eris,
+       {/*separation_per_orbit=*/0.000120 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.011906 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.005384 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.037147 * ArcSecond}},
+      {SolarSystemFactory::Pluto,
+       {/*separation_per_orbit=*/26.521661 * ArcSecond,
+        /*inclination_drift_per_orbit=*/7.660935 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/42.390087 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/807.009856 * ArcSecond}},
+      {SolarSystemFactory::Ceres,
+       {/*separation_per_orbit=*/0.033067 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000039 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.000956 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.001885 * ArcSecond}},
+      {SolarSystemFactory::Vesta,
+       {/*separation_per_orbit=*/0.042217 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000034 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.000103 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.021532 * ArcSecond}},
+  };
+
   for (int const planet_or_minor_planet :
        bodies_orbiting_[SolarSystemFactory::Sun]) {
     LOG(INFO) << "=== " << SolarSystemFactory::name(planet_or_minor_planet);
-    auto const error = CompareOrbits(planet_or_minor_planet,
-                                     *ephemeris,
-                                     solar_system_at_j2000,
-                                     ten_years_later);
+    auto const actual_orbit_error = CompareOrbits(planet_or_minor_planet,
+                                                  *ephemeris,
+                                                  solar_system_at_j2000,
+                                                  ten_years_later);
     LOG(INFO) << "separation = " << std::fixed
-              << error.separation_per_orbit / ArcSecond << u8"″/orbit";
+              << actual_orbit_error.separation_per_orbit / ArcSecond
+              << u8"″/orbit";
     LOG(INFO) << u8"Δi         = " << std::fixed
-              << error.inclination_drift_per_orbit / ArcSecond << u8"″/orbit";
-    if (error.longitude_of_ascending_node_drift_per_orbit) {
-      LOG(INFO) << u8"ΔΩ         = " << std::fixed
-                << *error.longitude_of_ascending_node_drift_per_orbit /
-                       ArcSecond
-                << u8"″/orbit";
-    }
-    if (error.argument_of_periapsis_drift_per_orbit) {
-      LOG(INFO) << u8"Δω         = " << std::fixed
-                << *error.argument_of_periapsis_drift_per_orbit /
-                       ArcSecond
-                << u8"″/orbit";
-    }
+              << actual_orbit_error.inclination_drift_per_orbit / ArcSecond
+              << u8"″/orbit";
+    LOG(INFO)
+        << u8"ΔΩ         = " << std::fixed
+        << actual_orbit_error.longitude_of_ascending_node_drift_per_orbit /
+               ArcSecond
+        << u8"″/orbit";
+    LOG(INFO) << u8"Δω         = " << std::fixed
+              << actual_orbit_error.argument_of_periapsis_drift_per_orbit /
+                     ArcSecond
+              << u8"″/orbit";
 
-    // This is about the order of magnitude we'd expect from GR for either of
-    // those bodies; since it's a combination of perihelion precession and
-    // change in anomaly, it's hard to get an exact figure for that.
-    if (planet_or_minor_planet == SolarSystemFactory::Mercury ||
-        planet_or_minor_planet == SolarSystemFactory::Venus) {
-      EXPECT_THAT(error.separation_per_orbit,
-                  IsNear(140 * Milli(ArcSecond), 2));
-    } else if (planet_or_minor_planet != SolarSystemFactory::Pluto) {
-      EXPECT_THAT(error.separation_per_orbit, Lt(100 * Milli(ArcSecond)));
-    }
-
-    if (error.argument_of_periapsis_drift_per_orbit) {
-      switch (planet_or_minor_planet) {
-        case SolarSystemFactory::Mercury:
-          // This is what we expect from GR to the last sigfig.
-          EXPECT_THAT(*error.argument_of_periapsis_drift_per_orbit,
-                      IsNear(103 * Milli(ArcSecond), 1.01));
-          break;
-        case SolarSystemFactory::Eris:
-          // I'm not sure what's going on with Eris; it's not clear what
-          // ephemeris HORIZONS uses either.
-          EXPECT_THAT(*error.argument_of_periapsis_drift_per_orbit,
-                      Lt(50 * Milli(ArcSecond)));
-          break;
-        case SolarSystemFactory::Pluto:
-          // WTF is wrong with Pluto?
-          break;
-        default:
-          LOG(FATAL) << u8"Unexpected Δω for "
-                     << SolarSystemFactory::name(planet_or_minor_planet);
-      }
-    }
-    switch (planet_or_minor_planet) {
-      case SolarSystemFactory::Pluto:
-      case SolarSystemFactory::Eris:
-        // Eris is likely from a non-integrated ephemeris; Pluto is mad.
-        break;
-      default:
-        EXPECT_THAT(error.inclination_drift_per_orbit,
-                    Lt(1 * Milli(ArcSecond)));
-        break;
-    }
+    auto const& expected_orbit_error =
+        expected_planet_orbit_errors.at(planet_or_minor_planet);
+    EXPECT_THAT(actual_orbit_error.separation_per_orbit,
+                IsNear(expected_orbit_error.separation_per_orbit));
+    EXPECT_THAT(actual_orbit_error.inclination_drift_per_orbit,
+                IsNear(expected_orbit_error.inclination_drift_per_orbit));
+    EXPECT_THAT(
+        actual_orbit_error.longitude_of_ascending_node_drift_per_orbit,
+        IsNear(expected_orbit_error.
+                   longitude_of_ascending_node_drift_per_orbit));
+    EXPECT_THAT(
+        actual_orbit_error.argument_of_periapsis_drift_per_orbit,
+        IsNear(expected_orbit_error.argument_of_periapsis_drift_per_orbit));
   }
 
-  // Moons.
+  std::map<int, OrbitError> const expected_moon_orbit_errors{
+      {SolarSystemFactory::Ganymede,
+       {/*separation_per_orbit=*/0.039264 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.001664 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.609354 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.637774 * ArcSecond}},
+      {SolarSystemFactory::Callisto,
+       {/*separation_per_orbit=*/0.000271 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000449 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.161789 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.159984 * ArcSecond}},
+      {SolarSystemFactory::Io,
+       {/*separation_per_orbit=*/0.076851 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000715 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/3.630260 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/3.613606 * ArcSecond}},
+      {SolarSystemFactory::Europa,
+       {/*separation_per_orbit=*/0.065989 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.004845 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.100670 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.077506 * ArcSecond}},
+
+      {SolarSystemFactory::Titan,
+       {/*separation_per_orbit=*/0.159615 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000111 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.231945 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.123316 * ArcSecond}},
+      {SolarSystemFactory::Rhea,
+       {/*separation_per_orbit=*/0.012811 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.004425 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.513725 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.496212 * ArcSecond}},
+      {SolarSystemFactory::Iapetus,
+       {/*separation_per_orbit=*/0.039661 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000035 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.001990 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.012199 * ArcSecond}},
+      {SolarSystemFactory::Dione,
+       {/*separation_per_orbit=*/0.019155 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000095 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.104567 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.117182 * ArcSecond}},
+      {SolarSystemFactory::Tethys,
+       {/*separation_per_orbit=*/0.033555 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000368 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.076115 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.045709 * ArcSecond}},
+      {SolarSystemFactory::Enceladus,
+       {/*separation_per_orbit=*/0.029619 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.002010 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/6.849855 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/6.873321 * ArcSecond}},
+      {SolarSystemFactory::Mimas,
+       {/*separation_per_orbit=*/0.021302 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.001474 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.113615 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.234724 * ArcSecond}},
+
+      {SolarSystemFactory::Triton,
+       {/*separation_per_orbit=*/0.837946 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.038544 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.531391 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.520478 * ArcSecond}},
+
+      {SolarSystemFactory::Titania,
+       {/*separation_per_orbit=*/0.070049 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000030 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.716652 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.775146 * ArcSecond}},
+      {SolarSystemFactory::Oberon,
+       {/*separation_per_orbit=*/0.008151 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000407 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.130778 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.037016 * ArcSecond}},
+      {SolarSystemFactory::Ariel,
+       {/*separation_per_orbit=*/0.004590 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.002529 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/20.130554 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/20.133889 * ArcSecond}},
+      {SolarSystemFactory::Umbriel,
+       {/*separation_per_orbit=*/0.002270 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000293 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/4.059379 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/4.069775 * ArcSecond}},
+      {SolarSystemFactory::Miranda,
+       {/*separation_per_orbit=*/0.005682 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.001982 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.075552 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.078943 * ArcSecond}},
+
+      {SolarSystemFactory::Moon,
+       {/*separation_per_orbit=*/0.167318 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000776 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.000584 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.022413 * ArcSecond}},
+
+      {SolarSystemFactory::Phobos,
+       {/*separation_per_orbit=*/1.352898 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.001504 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.133329 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.349016 * ArcSecond}},
+      {SolarSystemFactory::Deimos,
+       {/*separation_per_orbit=*/0.006838 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.002945 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.215807 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/0.213195 * ArcSecond}},
+
+      {SolarSystemFactory::Charon,
+       {/*separation_per_orbit=*/254.946860 * ArcSecond,
+        /*inclination_drift_per_orbit=*/0.000085 * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.113143 * ArcSecond,
+        /*argument_of_periapsis_drift_per_orbit=*/512.620855 * ArcSecond}},
+  };
+
   for (int const planet_or_minor_planet :
        bodies_orbiting_[SolarSystemFactory::Sun]) {
     if (bodies_orbiting_[planet_or_minor_planet].empty()) {
@@ -350,23 +500,36 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
               << SolarSystemFactory::name(planet_or_minor_planet);
     for (int const moon : bodies_orbiting_[planet_or_minor_planet]) {
       LOG(INFO) << "=== " << SolarSystemFactory::name(moon);
-      auto const error = CompareOrbits(
+      auto const actual_orbit_error = CompareOrbits(
           moon, *ephemeris, solar_system_at_j2000, ten_years_later);
       LOG(INFO) << "separation = " << std::fixed
-                << error.separation_per_orbit / ArcSecond << u8"″/orbit";
+                << actual_orbit_error.separation_per_orbit / ArcSecond
+                << u8"″/orbit";
       LOG(INFO) << u8"Δi         = " << std::fixed
-                << error.inclination_drift_per_orbit / ArcSecond << u8"″/orbit";
-      if (error.longitude_of_ascending_node_drift_per_orbit) {
-        LOG(INFO) << u8"ΔΩ         = " << std::fixed
-                  << *error.longitude_of_ascending_node_drift_per_orbit /
-                         ArcSecond
-                  << u8"″/orbit";
-      }
-      if (error.argument_of_periapsis_drift_per_orbit) {
-        LOG(INFO) << u8"Δω         = " << std::fixed
-                  << *error.argument_of_periapsis_drift_per_orbit / ArcSecond
-                  << u8"″/orbit";
-      }
+                << actual_orbit_error.inclination_drift_per_orbit / ArcSecond
+                << u8"″/orbit";
+      LOG(INFO)
+          << u8"ΔΩ         = " << std::fixed
+          << actual_orbit_error.longitude_of_ascending_node_drift_per_orbit /
+                 ArcSecond
+          << u8"″/orbit";
+      LOG(INFO) << u8"Δω         = " << std::fixed
+                << actual_orbit_error.argument_of_periapsis_drift_per_orbit /
+                       ArcSecond
+                << u8"″/orbit";
+
+      auto const& expected_orbit_error = expected_moon_orbit_errors.at(moon);
+      EXPECT_THAT(actual_orbit_error.separation_per_orbit,
+                  IsNear(expected_orbit_error.separation_per_orbit));
+      EXPECT_THAT(actual_orbit_error.inclination_drift_per_orbit,
+                  IsNear(expected_orbit_error.inclination_drift_per_orbit));
+      EXPECT_THAT(
+          actual_orbit_error.longitude_of_ascending_node_drift_per_orbit,
+          IsNear(expected_orbit_error.
+                     longitude_of_ascending_node_drift_per_orbit));
+      EXPECT_THAT(
+          actual_orbit_error.argument_of_periapsis_drift_per_orbit,
+          IsNear(expected_orbit_error.argument_of_periapsis_drift_per_orbit));
     }
   }
 }

@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#include <limits>
 #include <string>
 
 #include "absl/strings/str_cat.h"
@@ -238,6 +239,7 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   ComputeApsides(/*reference=*/immobile_reference,
                  coast.Begin(),
                  coast.End(),
+                 /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
   if (periapsides.Empty()) {

@@ -119,11 +119,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "benchmark_automation", "benchmark_automation\benchmark_automation.csproj", "{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EF5AB3D-F63B-48B9-80A0-B789A830413C}"
-	ProjectSection(SolutionItems) = preProject
-		profiling\BM_EphemerisL4ProbeMajorBodiesOnly.psess = profiling\BM_EphemerisL4ProbeMajorBodiesOnly.psess
-		profiling\BM_EphemerisSolarSystemMajorBodiesOnly.psess = profiling\BM_EphemerisSolarSystemMajorBodiesOnly.psess
-		profiling\BM_SolarSystemMajorBodiesOnly.psess = profiling\BM_SolarSystemMajorBodiesOnly.psess
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "astronomy", "astronomy\astronomy.vcxproj", "{5EEA5210-0FA9-4B44-8466-C40B22D24E8E}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -143,6 +138,21 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "parallel_test_runner", "parallel_test_runner\parallel_test_runner.csproj", "{A0E67E1B-E5A6-45A0-B42C-4330A6643CD7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_physics", "ksp_physics\ksp_physics.vcxproj", "{3882467C-89D7-4DAE-9730-BB2E610F05AD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{FA689AE8-C152-4005-978E-1B701ABF9E1C}"
+	ProjectSection(SolutionItems) = preProject
+		documentation\basestyle.cls = documentation\basestyle.cls
+		documentation\bibliography.bib = documentation\bibliography.bib
+		documentation\bibliography.tex = documentation\bibliography.tex
+		documentation\Composition methods.tex = documentation\Composition methods.tex
+		documentation\Geopotential.tex = documentation\Geopotential.tex
+		documentation\Hamiltonian Mechanics.tex = documentation\Hamiltonian Mechanics.tex
+		documentation\J2 coefficient.tex = documentation\J2 coefficient.tex
+		documentation\Legendre.tex = documentation\Legendre.tex
+		documentation\ODEs and Runge-Kutta integrators.tex = documentation\ODEs and Runge-Kutta integrators.tex
+		documentation\Perspective hiding.tex = documentation\Perspective hiding.tex
+		documentation\semtex.sty = documentation\semtex.sty
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

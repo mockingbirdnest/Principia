@@ -549,8 +549,7 @@ void FlowEphemerisWithAdaptiveStep(
           /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second),
-      Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-      /*last_point_only=*/false));
+      Ephemeris<Barycentric>::unlimited_max_ephemeris_steps));
 }
 
 void FlowEphemerisWithFixedStepSLMS(

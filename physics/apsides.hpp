@@ -21,6 +21,7 @@ template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
                     typename DiscreteTrajectory<Frame>::Iterator begin,
                     typename DiscreteTrajectory<Frame>::Iterator end,
+                    int max_points,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides);
 
@@ -33,6 +34,7 @@ template<typename Frame, typename Predicate = ConstantFunction<bool>>
 void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
                   typename DiscreteTrajectory<Frame>::Iterator end,
                   Vector<double, Frame> const& north,
+                  int max_points,
                   DiscreteTrajectory<Frame>& ascending,
                   DiscreteTrajectory<Frame>& descending,
                   Predicate predicate = Identically(true));

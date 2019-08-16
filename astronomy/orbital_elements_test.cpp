@@ -128,8 +128,7 @@ class OrbitalElementsTest : public ::testing::Test {
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second
         },
-        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
-        /*last_point_only=*/false);
+        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
     auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();
     for (auto it = icrs_trajectory.Begin(); it != icrs_trajectory.End(); ++it) {
       result->Append(
@@ -149,6 +148,8 @@ class OrbitalElementsTest : public ::testing::Test {
     LOG(FATAL) << "Ephemeris has no Earth";
   }
 };
+
+#if !defined(_DEBUG)
 
 TEST_F(OrbitalElementsTest, KeplerOrbit) {
   // The satellite is under the influence of an isotropic Earth and no third
@@ -341,8 +342,6 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   f << mathematica::Assign("j2PerturbedMean",
                            elements.mean_equinoctial_elements());
 }
-
-#if !defined(_DEBUG)
 
 TEST_F(OrbitalElementsTest, RealPerturbation) {
   SolarSystem<ICRS> solar_system(

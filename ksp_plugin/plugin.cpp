@@ -876,6 +876,7 @@ void Plugin::ComputeAndRenderApsides(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position,
+    int const max_points,
     std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
     std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const {
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
@@ -883,6 +884,7 @@ void Plugin::ComputeAndRenderApsides(
   ComputeApsides(FindOrDie(celestials_, celestial_index)->trajectory(),
                  begin,
                  end,
+                 max_points,
                  apoapsides_trajectory,
                  periapsides_trajectory);
   apoapsides = renderer_->RenderBarycentricTrajectoryInWorld(
@@ -903,6 +905,7 @@ void Plugin::ComputeAndRenderClosestApproaches(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position,
+    int const max_points,
     std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const {
   CHECK(renderer_->HasTargetVessel());
 
@@ -911,6 +914,7 @@ void Plugin::ComputeAndRenderClosestApproaches(
   ComputeApsides(renderer_->GetTargetVessel().prediction(),
                  begin,
                  end,
+                 max_points,
                  apoapsides_trajectory,
                  periapsides_trajectory);
   closest_approaches =
@@ -926,6 +930,7 @@ void Plugin::ComputeAndRenderNodes(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position,
+    int const max_points,
     std::unique_ptr<DiscreteTrajectory<World>>& ascending,
     std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
   auto const trajectory_in_plotting =
@@ -954,6 +959,7 @@ void Plugin::ComputeAndRenderNodes(
   ComputeNodes(trajectory_in_plotting->Begin(),
                trajectory_in_plotting->End(),
                Vector<double, Navigation>({0, 0, 1}),
+               max_points,
                ascending_trajectory,
                descending_trajectory,
                show_node);

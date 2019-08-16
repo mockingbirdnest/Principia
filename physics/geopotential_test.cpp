@@ -477,7 +477,7 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
   earth_message.mutable_geopotential()
       ->mutable_row(0)
       ->mutable_column(0)
-      ->clear_cos();
+      ->set_cos(0.0);
   earth = make_not_null_unique<OblateBody<ICRS>>(
       massive_body_parameters,
       rotating_body_parameters,
@@ -544,8 +544,8 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
   for (auto& row : *earth_message.mutable_geopotential()->mutable_row()) {
     for (auto& column : *row.mutable_column()) {
       if (column.order() != 0) {
-        column.clear_cos();
-        column.clear_sin();
+        column.set_cos(0.0);
+        column.set_sin(0.0);
       }
     }
   }
@@ -641,8 +641,8 @@ TEST_F(GeopotentialTest, DampedForces) {
          *earth_c22_s22_message.mutable_geopotential()->mutable_row()) {
       for (auto& column : *row.mutable_column()) {
         if (column.order() == 0 || row.degree() != 2) {
-          column.clear_cos();
-          column.clear_sin();
+          column.set_cos(0.0);
+          column.set_sin(0.0);
         }
       }
     }
@@ -659,8 +659,8 @@ TEST_F(GeopotentialTest, DampedForces) {
     for (auto& row : *earth_j2_message.mutable_geopotential()->mutable_row()) {
       for (auto& column : *row.mutable_column()) {
         if (column.order() != 0 || row.degree() != 2) {
-          column.clear_cos();
-          column.clear_sin();
+          column.set_cos(0.0);
+          column.set_sin(0.0);
         }
       }
     }
@@ -763,16 +763,16 @@ TEST_F(GeopotentialTest, DampedForces) {
         (get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_radial_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
             get_radial_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(1, 210, 212));
+        AlmostEquals(1, 210, 1142));
     EXPECT_THAT(
         (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_latitudinal_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
             get_latitudinal_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(0.5, 920, 1773));
+        AlmostEquals(0.5, 920, 2781));
     EXPECT_THAT(
         get_longitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) /
             get_longitudinal_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(0.5, 103, 114));
+        AlmostEquals(0.5, 1, 114));
   }
 
   {
@@ -800,7 +800,7 @@ TEST_F(GeopotentialTest, DampedForces) {
         (get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_radial_acceleration(*geopotential_degree[2], (s0 + s1) / 2)) /
             get_radial_acceleration(*geopotential_degree[3], (s0 + s1) / 2),
-        AlmostEquals(0.875, 277, 278));
+        AlmostEquals(0.875, 277, 3044));
 
     EXPECT_THAT(
         (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -

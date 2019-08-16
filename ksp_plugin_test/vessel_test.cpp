@@ -136,11 +136,11 @@ TEST_F(VesselTest, PrepareHistory) {
       .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
   vessel_.PrepareHistory(astronomy::J2000 + 1 * Second);
 
@@ -165,11 +165,11 @@ TEST_F(VesselTest, AdvanceTime) {
       .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
   vessel_.PrepareHistory(astronomy::J2000);
 
@@ -243,7 +243,7 @@ TEST_F(VesselTest, Prediction) {
       .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .WillOnce(
           DoAll(AppendToDiscreteTrajectory(
                     astronomy::J2000 + 1.0 * Second,
@@ -258,7 +258,7 @@ TEST_F(VesselTest, Prediction) {
       .WillRepeatedly(Return(Status::OK));
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .WillOnce(
           DoAll(AppendToDiscreteTrajectory(
                     astronomy::J2000 + 1.0 * Second,
@@ -316,7 +316,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
       .WillRepeatedly(Return(astronomy::J2000 + 0.5 * Second));
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 0.5 * Second, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 0.5 * Second, _, _))
       .WillRepeatedly(
           DoAll(AppendToDiscreteTrajectory(
                     astronomy::J2000 + 0.5 * Second,
@@ -331,7 +331,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                 Return(Status::OK)));
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .WillRepeatedly(
           DoAll(AppendToDiscreteTrajectory(
                     astronomy::J2000 + 1.0 * Second,
@@ -375,18 +375,18 @@ TEST_F(VesselTest, FlightPlan) {
       .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
   vessel_.PrepareHistory(astronomy::J2000);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 3 * Second, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 3 * Second, _, _))
       .WillOnce(Return(Status::OK));
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
@@ -408,17 +408,17 @@ TEST_F(VesselTest, SerializationSuccess) {
       .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
   vessel_.PrepareHistory(astronomy::J2000);
 
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 3 * Second, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 3 * Second, _, _))
       .WillRepeatedly(Return(Status::OK));
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
