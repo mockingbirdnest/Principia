@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <string>
+#include <string_view>
 
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -26,12 +27,14 @@ class ApproximateQuantity<Quantity<Dimensions>> {
 
  private:
   ApproximateQuantity(std::string const& representation,
+                      int ulp,
                       double min_multiplier,
                       double max_multiplier,
                       Quantity<Dimensions> const& unit);
 
   // The original representation.
   std::string representation_;
+  int ulp_;
 
   // The interval for the approximate quantity, expressed as multiples of unit_.
   double min_multiplier_;
@@ -54,7 +57,8 @@ class ApproximateQuantity<Quantity<Dimensions>> {
 template<>
 class ApproximateQuantity<double> {
  public:
-  static ApproximateQuantity<double> Parse(char const* representation, int ulp);
+  static ApproximateQuantity<double> Parse(std::string_view representation,
+                                           int ulp);
 
   double min() const;
   double max() const;
@@ -62,12 +66,14 @@ class ApproximateQuantity<double> {
   std::string DebugString() const;
 
  private:
-  ApproximateQuantity(std::string const& representation,
+  ApproximateQuantity(std::string_view representation,
+                      int ulp,
                       double min_multiplier,
                       double max_multiplier);
 
   // The original representation.
   std::string representation_;
+  int ulp_;
 
   // The interval for the approximate quantity.
   double min_multiplier_;
@@ -98,6 +104,7 @@ template<typename Quantity>
 std::ostream& operator<<(std::ostream& out,
                          ApproximateQuantity<Quantity> const& q);
 
+// The 🄐 to 🄕 operators are only for hexadecimal literals.
 ApproximateQuantity<double> operator""_⑴(char const* representation);
 ApproximateQuantity<double> operator""_⑵(char const* representation);
 ApproximateQuantity<double> operator""_⑶(char const* representation);
@@ -107,6 +114,12 @@ ApproximateQuantity<double> operator""_⑹(char const* representation);
 ApproximateQuantity<double> operator""_⑺(char const* representation);
 ApproximateQuantity<double> operator""_⑻(char const* representation);
 ApproximateQuantity<double> operator""_⑼(char const* representation);
+ApproximateQuantity<double> operator""_🄐(char const* representation);
+ApproximateQuantity<double> operator""_🄑(char const* representation);
+ApproximateQuantity<double> operator""_🄒(char const* representation);
+ApproximateQuantity<double> operator""_🄓(char const* representation);
+ApproximateQuantity<double> operator""_🄔(char const* representation);
+ApproximateQuantity<double> operator""_🄕(char const* representation);
 
 }  // namespace internal_approximate_quantity
 

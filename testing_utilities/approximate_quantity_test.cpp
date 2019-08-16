@@ -74,6 +74,33 @@ TEST(ApproximateQuantityTest, Literals_⑵_⑼) {
   EXPECT_THAT(l9.max(), AlmostEquals(123.54, 0));
 }
 
+TEST(ApproximateQuantityTest, Literals_🄐_🄕) {
+  ApproximateQuantity<double> const la = 0x1E3.45p0_🄐;
+  EXPECT_THAT(la.min(), AlmostEquals(0x1E3.3Bp0, 0));
+  EXPECT_THAT(la.max(), AlmostEquals(0x1E3.4Fp0, 0));
+
+  ApproximateQuantity<double> const lb = 0x1E3.45p0_🄑;
+  EXPECT_THAT(lb.min(), AlmostEquals(0x1E3.3Ap0, 0));
+  EXPECT_THAT(lb.max(), AlmostEquals(0x1E3.50p0, 0));
+
+  ApproximateQuantity<double> const lc = 0x1E3.45p0_🄒;
+  EXPECT_THAT(lc.min(), AlmostEquals(0x1E3.39p0, 0));
+  EXPECT_THAT(lc.max(), AlmostEquals(0x1E3.51p0, 0));
+
+  ApproximateQuantity<double> const ld = 0x1E3.45p0_🄓;
+  EXPECT_THAT(ld.min(), AlmostEquals(0x1E3.38p0, 0));
+  EXPECT_THAT(ld.max(), AlmostEquals(0x1E3.52p0, 0));
+
+  ApproximateQuantity<double> const le = 0x1E3.45p0_🄔;
+  EXPECT_THAT(le.min(), AlmostEquals(0x1E3.37p0, 0));
+  EXPECT_THAT(le.max(), AlmostEquals(0x1E3.53p0, 0));
+
+  ApproximateQuantity<double> const lf = 0x1E3.45p0_🄕;
+  EXPECT_THAT(lf.min(), AlmostEquals(0x1E3.36p0, 0));
+  EXPECT_THAT(lf.max(), AlmostEquals(0x1E3.54p0, 0));
+
+}
+
 TEST(ApproximateQuantityTest, Units) {
   ApproximateQuantity<Length> const l1 = 123.45_⑴ * Metre;
   EXPECT_THAT(l1.min(), AlmostEquals(123.44 * Metre, 0));
@@ -93,10 +120,8 @@ TEST(ApproximateQuantityTest, Units) {
 }
 
 TEST(ApproximateQuantityTest, DebugString) {
-  EXPECT_EQ("[+1.23439999999999998e+02, +1.23460000000000008e+02]",
-            (123.45_⑴).DebugString());
-  EXPECT_EQ("[+1.23439999999999998e+02, +1.23460000000000008e+02] * "
-            "+1.00000000000000000e+00 m",
+  EXPECT_EQ("123.45(1)", (123.45_⑴).DebugString());
+  EXPECT_EQ("123.45(1) * +1.00000000000000000e+00 m",
             (123.45_⑴ * Metre).DebugString());
 }
 

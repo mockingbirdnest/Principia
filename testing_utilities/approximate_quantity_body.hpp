@@ -20,24 +20,25 @@ Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::max() const {
 
 template<typename Dimensions>
 std::string ApproximateQuantity<Quantity<Dimensions>>::DebugString() const {
-  return "[" + quantities::DebugString(min_multiplier_) + ", " +
-         quantities::DebugString(max_multiplier_) + "] * " +
+  return representation_ + "(" + std::to_string(ulp_) + ") * " +
          quantities::DebugString(unit_);
 }
 
 template<typename Dimensions>
 ApproximateQuantity<Quantity<Dimensions>>::ApproximateQuantity(
     std::string const& representation,
+    int const ulp,
     double const min_multiplier,
     double const max_multiplier,
     Quantity<Dimensions> const& unit)
     : representation_(representation),
+      ulp_(ulp),
       min_multiplier_(min_multiplier),
       max_multiplier_(max_multiplier),
       unit_(unit) {}
 
 ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
-    char const* const representation,
+    std::string_view const representation,
     int const ulp) {
   std::string error_representation(representation);
   std::optional<int> last_digit_index;
@@ -45,6 +46,10 @@ ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
       error_representation.size() >= 2 &&
       error_representation[0] == '0' &&
       (error_representation[1] == 'x' || error_representation[1] == 'X');
+
+  // Replace all the digits before the exponent by zeroes, except for the last
+  // one which get the number of ulps.  The result is the string representation
+  // of the error on the quantity.
   for (int i = 0; i < error_representation.size(); ++i) {
     char const c = error_representation[i];
     if (c >= '1' && c <= '9') {
@@ -56,16 +61,20 @@ ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
       last_digit_index = i;
     } else if ((!is_hexadecimal && (c == 'e' || c == 'E')) ||
                (is_hexadecimal && (c == 'p' || c == 'P'))) {
-      CHECK(last_digit_index);
+      CHECK(last_digit_index.has_value());
       break;
     }
   }
-  error_representation[*last_digit_index] = '0' + ulp;
-  double const value = std::strtod(representation, nullptr);
+  if (ulp <= 9) {
+    error_representation[*last_digit_index] = '0' + ulp;
+  } else {
+    CHECK(is_hexadecimal);
+    error_representation[*last_digit_index] = 'A' + ulp - 10;
+  }
+  double const value = std::strtod(representation.data(), nullptr);
   double const error = std::strtod(error_representation.c_str(), nullptr);
-  LOG(ERROR)<<error_representation;
-  LOG(ERROR)<<error;
   return ApproximateQuantity<double>(representation,
+                                     ulp,
                                      value - error,
                                      value + error);
 }
@@ -79,15 +88,16 @@ double ApproximateQuantity<double>::max() const {
 }
 
 std::string ApproximateQuantity<double>::DebugString() const {
-  return "[" + quantities::DebugString(min_multiplier_) + ", " +
-         quantities::DebugString(max_multiplier_) + "]";
+  return representation_ + "(" + std::to_string(ulp_) + ")";
 }
 
 ApproximateQuantity<double>::ApproximateQuantity(
-    std::string const& representation,
+    std::string_view const representation,
+    int const ulp,
     double const min_multiplier,
     double const max_multiplier)
     : representation_(representation),
+      ulp_(ulp),
       min_multiplier_(min_multiplier),
       max_multiplier_(max_multiplier) {}
 
@@ -97,6 +107,7 @@ ApproximateQuantity<Product<Left, Quantity<RDimensions>>> operator*(
     Quantity<RDimensions> const& right) {
   return ApproximateQuantity<Product<Left, Quantity<RDimensions>>>(
       left.representation_,
+      left.ulp_,
       left.min_multiplier_,
       left.max_multiplier_,
       left.unit_ * right);
@@ -108,6 +119,7 @@ ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>> operator/(
     Quantity<RDimensions> const& right) {
   return ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>>(
       left.representation_,
+      left.ulp_,
       left.min_multiplier_,
       left.max_multiplier_,
       left.unit_ / right);
@@ -120,41 +132,29 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-ApproximateQuantity<double> operator""_⑴(char const* const representation) {
-  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/1);
-}
+#define PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(symbol, ulp) \
+  ApproximateQuantity<double> operator""_##symbol(                      \
+      char const* const representation) {                               \
+    return ApproximateQuantity<double>::Parse(representation, ulp);     \
+  }
 
-ApproximateQuantity<double> operator""_⑵(char const* const representation) {
-  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/2);
-}
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑴, 1)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑵, 2)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑶, 3)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑷, 4)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑸, 5)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑹, 6)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑺, 7)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑻, 8)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑼, 9)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄐, 10)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄑, 11)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄒, 12)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄓, 13)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄔, 14)
+PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄕, 15)
 
-ApproximateQuantity<double> operator""_⑶(char const* const representation) {
-  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/3);
-}
-
-ApproximateQuantity<double> operator""_⑷(char const* const representation) {
-  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/4);
-}
-
-ApproximateQuantity<double> operator""_⑸(char const* const representation) {
-  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/5);
-}
-
-ApproximateQuantity<double> operator""_⑹(char const* const representation) {
-  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/6);
-}
-
-ApproximateQuantity<double> operator""_⑺(char const* const representation) {
-  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/7);
-}
-
-ApproximateQuantity<double> operator""_⑻(char const* const representation) {
-  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/8);
-}
-
-ApproximateQuantity<double> operator""_⑼(char const* const representation) {
-  return ApproximateQuantity<double>::Parse(representation, /*ulp=*/9);
-}
+#undef PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION
 
 }  // namespace internal_approximate_quantity
 }  // namespace testing_utilities
