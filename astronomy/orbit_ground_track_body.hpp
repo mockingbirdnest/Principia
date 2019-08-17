@@ -25,17 +25,23 @@ OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
                ascending_nodes,
                descending_nodes);
   OrbitGroundTrack ground_track;
-  for (auto ascending_node = ascending_nodes.Begin();
-       ascending_node != ascending_nodes.End();
-       ++ascending_node) {
-    Angle const celestial_longitude = (ascending_node.degrees_of_freedom().position() -
-                             PrimaryCentred::origin)
-                                .coordinates()
-                                .ToSpherical()
-                                .longitude;
-    ground_track.reduced_longitude_of_ascending_node_->Include(
-        celestial_longitude - primary.AngleAt(ascending_node.time()) -
-        π / 2 * Radian);
+  if (nominal_recurrence.has_value()) {
+    int n = 0;
+    Angle previous_reduced_longitude;
+    for (auto ascending_node = ascending_nodes.Begin();
+         ascending_node != ascending_nodes.End();
+         ++ascending_node) {
+      Angle const celestial_longitude =
+          (ascending_node.degrees_of_freedom().position() -
+           PrimaryCentred::origin)
+              .coordinates()
+              .ToSpherical()
+              .longitude;
+      Angle const planetocentric_longitude =
+          celestial_longitude - primary.AngleAt(ascending_node.time()) -
+          π / 2 * Radian;
+      planetocentric_longitude - n * nominal_recurrence->equatorial_shift();
+    }
   }
   return ground_track;
 }
