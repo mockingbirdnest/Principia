@@ -117,10 +117,33 @@ TEST(ApproximateQuantityTest, Units) {
   EXPECT_THAT(l4.max(), AlmostEquals(123.46 * Metre / Second, 1));
 }
 
+TEST(ApproximateQuantityTest, Signs) {
+  ApproximateQuantity<double> const l1 = +123.45_⑴;
+  EXPECT_THAT(l1.min(), AlmostEquals(123.44, 0));
+  EXPECT_THAT(l1.max(), AlmostEquals(123.46, 1));
+
+  ApproximateQuantity<double> const l2 = -123.45_⑴;
+  EXPECT_THAT(l2.min(), AlmostEquals(-123.46, 1));
+  EXPECT_THAT(l2.max(), AlmostEquals(-123.44, 0));
+
+  ApproximateQuantity<Length> const l3 = +(123.45_⑴ * Metre);
+  EXPECT_THAT(l3.min(), AlmostEquals(123.44 * Metre, 0));
+  EXPECT_THAT(l3.max(), AlmostEquals(123.46 * Metre, 1));
+
+  ApproximateQuantity<Length> const l4 = -(123.45_⑴ * Metre);
+  EXPECT_THAT(l4.min(), AlmostEquals(-123.46 * Metre, 1));
+  EXPECT_THAT(l4.max(), AlmostEquals(-123.44 * Metre, 0));
+
+}
+
 TEST(ApproximateQuantityTest, DebugString) {
   EXPECT_EQ("123.45(1)", (123.45_⑴).DebugString());
   EXPECT_EQ("123.45(1) * +1.00000000000000000e+00 m",
             (123.45_⑴ * Metre).DebugString());
+
+  EXPECT_EQ("-123.45(1)", (-123.45_⑴).DebugString());
+  EXPECT_EQ("-123.45(1) * +1.00000000000000000e+00 m",
+            (-123.45_⑴ * Metre).DebugString());
 }
 
 }  // namespace testing_utilities

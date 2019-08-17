@@ -21,24 +21,26 @@ Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::max() const {
 
 template<typename Dimensions>
 std::string ApproximateQuantity<Quantity<Dimensions>>::DebugString() const {
-  return representation_ + "(" + std::to_string(ulp_) + ") * " +
-         quantities::DebugString(unit_);
+  return (negated_ ? "-" : "") + representation_ +
+         "(" + std::to_string(ulp_) + ") * " + quantities::DebugString(unit_);
 }
 
 template<typename Dimensions>
 ApproximateQuantity<Quantity<Dimensions>>::ApproximateQuantity(
     std::string const& representation,
     int const ulp,
+    bool const negated,
     double const min_multiplier,
     double const max_multiplier,
     Quantity<Dimensions> const& unit)
     : representation_(representation),
       ulp_(ulp),
+      negated_(negated),
       min_multiplier_(min_multiplier),
       max_multiplier_(max_multiplier),
       unit_(unit) {}
 
-ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
+inline ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
     std::string_view const representation,
     int const ulp) {
   std::string error_representation(representation);
@@ -76,31 +78,60 @@ ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
   double const error = std::strtod(error_representation.c_str(), nullptr);
   return ApproximateQuantity<double>(representation,
                                      ulp,
+                                     /*negated=*/false,
                                      value - error,
                                      value + error);
 }
 
-double ApproximateQuantity<double>::min() const {
+inline double ApproximateQuantity<double>::min() const {
   return min_multiplier_;
 }
 
-double ApproximateQuantity<double>::max() const {
+inline double ApproximateQuantity<double>::max() const {
   return max_multiplier_;
 }
 
-std::string ApproximateQuantity<double>::DebugString() const {
-  return representation_ + "(" + std::to_string(ulp_) + ")";
+inline std::string ApproximateQuantity<double>::DebugString() const {
+  return (negated_ ? "-" : "") + representation_ +
+         "(" + std::to_string(ulp_) + ")";
 }
 
-ApproximateQuantity<double>::ApproximateQuantity(
+inline ApproximateQuantity<double>::ApproximateQuantity(
     std::string_view const representation,
     int const ulp,
+    bool const negated,
     double const min_multiplier,
     double const max_multiplier)
     : representation_(representation),
       ulp_(ulp),
+      negated_(negated),
       min_multiplier_(min_multiplier),
       max_multiplier_(max_multiplier) {}
+
+template<typename Right>
+ApproximateQuantity<Right> operator+(ApproximateQuantity<Right> const& right) {
+  return right;
+}
+
+template<typename Right>
+ApproximateQuantity<Right> operator-(ApproximateQuantity<Right> const& right) {
+  return ApproximateQuantity<Right>(right.representation_,
+                                    right.ulp_,
+                                    !right.negated_,
+                                    -right.max_multiplier_,
+                                    -right.min_multiplier_,
+                                    right.unit_);
+}
+
+template<>
+inline ApproximateQuantity<double> operator-(
+    ApproximateQuantity<double> const& right) {
+  return ApproximateQuantity<double>(right.representation_,
+                                     right.ulp_,
+                                     !right.negated_,
+                                     -right.max_multiplier_,
+                                     -right.min_multiplier_);
+}
 
 template<typename Left, typename RDimensions>
 ApproximateQuantity<Product<Left, Quantity<RDimensions>>> operator*(
@@ -109,6 +140,7 @@ ApproximateQuantity<Product<Left, Quantity<RDimensions>>> operator*(
   return ApproximateQuantity<Product<Left, Quantity<RDimensions>>>(
       left.representation_,
       left.ulp_,
+      left.negated_,
       left.min_multiplier_,
       left.max_multiplier_,
       left.unit_ * right);
@@ -121,6 +153,7 @@ ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>> operator/(
   return ApproximateQuantity<Quotient<Left, Quantity<RDimensions>>>(
       left.representation_,
       left.ulp_,
+      left.negated_,
       left.min_multiplier_,
       left.max_multiplier_,
       left.unit_ / right);
@@ -134,7 +167,7 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 #define PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(symbol, ulp) \
-  ApproximateQuantity<double> operator""_##symbol(                      \
+  inline ApproximateQuantity<double> operator""_##symbol(               \
       char const* const representation) {                               \
     return ApproximateQuantity<double>::Parse(representation, ulp);     \
   }
