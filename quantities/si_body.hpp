@@ -8,6 +8,27 @@ namespace quantities {
 namespace si {
 
 template<typename D>
+std::string Format() {
+  auto const format_unit = [](std::string const& name,
+                              int const exponent) -> std::string {
+    switch (exponent) {
+      case 0:
+        return "";
+        break;
+      case 1:
+        return " " + name;
+      default:
+        return " " + name + "^" + std::to_string(exponent);
+    }
+  };
+
+  return format_unit("m", D::Length) + format_unit("kg", D::Mass) +
+         format_unit("s", D::Time) + format_unit("A", D::Current) +
+         format_unit("K", D::Temperature) + format_unit("mol", D::Amount) +
+         format_unit("cd", D::LuminousIntensity) + format_unit("rad", D::Angle);
+}
+
+template<typename D>
 constexpr Quantity<D> Yotta(Quantity<D> base) {
   return 1e24 * base;
 }

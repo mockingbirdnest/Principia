@@ -192,18 +192,6 @@ constexpr Q NaN() {
   return SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
 }
 
-inline std::string FormatUnit(std::string const& name, int const exponent) {
-  switch (exponent) {
-    case 0:
-      return "";
-      break;
-    case 1:
-      return " " + name;
-    default:
-      return " " + name + "^" + std::to_string(exponent);
-  }
-}
-
 inline std::string DebugString(double const number, int const precision) {
   char result[50];
 #if OS_WIN && PRINCIPIA_COMPILER_MSVC && (_MSC_VER < 1900)
@@ -224,10 +212,7 @@ inline std::string DebugString(double const number, int const precision) {
 template<typename D>
 std::string DebugString(Quantity<D> const& quantity, int const precision) {
   return DebugString(quantity / SIUnit<Quantity<D>>(), precision) +
-      FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
-      FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
-      FormatUnit("K", D::Temperature) + FormatUnit("mol", D::Amount) +
-      FormatUnit("cd", D::LuminousIntensity) + FormatUnit("rad", D::Angle);
+         si::Format<D>();
 }
 
 template<typename D>
