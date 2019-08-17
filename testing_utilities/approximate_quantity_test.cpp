@@ -99,7 +99,7 @@ TEST(ApproximateQuantityTest, Literals_🄐_🄕) {
   EXPECT_THAT(lf.max(), AlmostEquals(0x1E3.54p0, 0));
 }
 
-TEST(ApproximateQuantityTest, Units) {
+TEST(ApproximateQuantityTest, Quantities) {
   ApproximateQuantity<Length> const l1 = 123.45_⑴ * Metre;
   EXPECT_THAT(l1.min(), AlmostEquals(123.44 * Metre, 0));
   EXPECT_THAT(l1.max(), AlmostEquals(123.46 * Metre, 1));
@@ -133,7 +133,20 @@ TEST(ApproximateQuantityTest, Signs) {
   ApproximateQuantity<Length> const l4 = -(123.45_⑴ * Metre);
   EXPECT_THAT(l4.min(), AlmostEquals(-123.46 * Metre, 1));
   EXPECT_THAT(l4.max(), AlmostEquals(-123.44 * Metre, 0));
+}
 
+TEST(ApproximateQuantityTest, Unit) {
+  ApproximateQuantity<double> const l1 = 123.45_⑴;
+  EXPECT_EQ(1, l1.unit());
+  EXPECT_TRUE(l1.has_trivial_unit());
+
+  ApproximateQuantity<Length> const l2 = 123.45_⑴ * Metre;
+  EXPECT_EQ(Metre, l2.unit());
+  EXPECT_TRUE(l2.has_trivial_unit());
+
+  ApproximateQuantity<Length> const l3 = 123.45_⑴ * (2 * Metre);
+  EXPECT_EQ(2 * Metre, l3.unit());
+  EXPECT_FALSE(l3.has_trivial_unit());
 }
 
 TEST(ApproximateQuantityTest, DebugString) {

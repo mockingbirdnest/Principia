@@ -9,6 +9,8 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_approximate_quantity {
 
+using quantities::SIUnit;
+
 template<typename Dimensions>
 Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::min() const {
   return min_multiplier_ * unit_;
@@ -20,7 +22,19 @@ Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::max() const {
 }
 
 template<typename Dimensions>
+Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::unit() const {
+  return unit_;
+}
+
+template<typename Dimensions>
+bool ApproximateQuantity<Quantity<Dimensions>>::has_trivial_unit() const {
+  return unit_ == SIUnit<Quantity<Dimensions>>();
+}
+
+template<typename Dimensions>
 std::string ApproximateQuantity<Quantity<Dimensions>>::DebugString() const {
+  // TODO(phl): Simplify the output when has_trivial_unit is true.  This
+  // requires a way to print Dimensions.
   return (negated_ ? "-" : "") + representation_ +
          "(" + std::to_string(ulp_) + ") * " + quantities::DebugString(unit_);
 }
@@ -89,6 +103,14 @@ inline double ApproximateQuantity<double>::min() const {
 
 inline double ApproximateQuantity<double>::max() const {
   return max_multiplier_;
+}
+
+inline double ApproximateQuantity<double>::unit() const {
+  return unit_;
+}
+
+inline bool ApproximateQuantity<double>::has_trivial_unit() const {
+  return true;
 }
 
 inline std::string ApproximateQuantity<double>::DebugString() const {

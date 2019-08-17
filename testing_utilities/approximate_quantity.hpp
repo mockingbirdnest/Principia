@@ -23,6 +23,9 @@ class ApproximateQuantity<Quantity<Dimensions>> {
   Quantity<Dimensions> min() const;
   Quantity<Dimensions> max() const;
 
+  Quantity<Dimensions> unit() const;
+  bool has_trivial_unit() const;
+
   std::string DebugString() const;
 
  private:
@@ -67,6 +70,9 @@ class ApproximateQuantity<double> {
 
   double min() const;
   double max() const;
+
+  double unit() const;
+  bool has_trivial_unit() const;
 
   std::string DebugString() const;
 
