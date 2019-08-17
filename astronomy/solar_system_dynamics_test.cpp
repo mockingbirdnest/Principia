@@ -81,6 +81,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
+using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::operator""_⑴;
 using ::testing::Eq;
@@ -366,17 +367,21 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
 
     auto const& expected_orbit_error =
         expected_planet_orbit_errors.at(planet_or_minor_planet);
-    EXPECT_THAT(actual_orbit_error.separation_per_orbit,
-                IsNear(expected_orbit_error.separation_per_orbit));
-    EXPECT_THAT(actual_orbit_error.inclination_drift_per_orbit,
-                IsNear(expected_orbit_error.inclination_drift_per_orbit));
+    EXPECT_THAT(RelativeError(expected_orbit_error.separation_per_orbit,
+                              actual_orbit_error.separation_per_orbit),
+                IsNear(0.01_⑴));
+    EXPECT_THAT(RelativeError(expected_orbit_error.inclination_drift_per_orbit,
+                              actual_orbit_error.inclination_drift_per_orbit),
+                IsNear(0.01_⑴));
     EXPECT_THAT(
-        actual_orbit_error.longitude_of_ascending_node_drift_per_orbit,
-        IsNear(expected_orbit_error.
-                   longitude_of_ascending_node_drift_per_orbit));
-    EXPECT_THAT(
-        actual_orbit_error.argument_of_periapsis_drift_per_orbit,
-        IsNear(expected_orbit_error.argument_of_periapsis_drift_per_orbit));
+        RelativeError(
+            expected_orbit_error.longitude_of_ascending_node_drift_per_orbit,
+            actual_orbit_error.longitude_of_ascending_node_drift_per_orbit),
+        IsNear(0.01_⑴));
+    EXPECT_THAT(RelativeError(
+                    expected_orbit_error.argument_of_periapsis_drift_per_orbit,
+                    actual_orbit_error.argument_of_periapsis_drift_per_orbit),
+                IsNear(0.01_⑴));
   }
 
   std::map<int, OrbitError> const expected_moon_orbit_errors{
@@ -521,17 +526,23 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
                 << u8"″/orbit";
 
       auto const& expected_orbit_error = expected_moon_orbit_errors.at(moon);
-      EXPECT_THAT(actual_orbit_error.separation_per_orbit,
-                  IsNear(expected_orbit_error.separation_per_orbit));
-      EXPECT_THAT(actual_orbit_error.inclination_drift_per_orbit,
-                  IsNear(expected_orbit_error.inclination_drift_per_orbit));
+      EXPECT_THAT(RelativeError(expected_orbit_error.separation_per_orbit,
+                                actual_orbit_error.separation_per_orbit),
+                  IsNear(0.01_⑴));
       EXPECT_THAT(
-          actual_orbit_error.longitude_of_ascending_node_drift_per_orbit,
-          IsNear(expected_orbit_error.
-                     longitude_of_ascending_node_drift_per_orbit));
+          RelativeError(expected_orbit_error.inclination_drift_per_orbit,
+                        actual_orbit_error.inclination_drift_per_orbit),
+          IsNear(0.01_⑴));
       EXPECT_THAT(
-          actual_orbit_error.argument_of_periapsis_drift_per_orbit,
-          IsNear(expected_orbit_error.argument_of_periapsis_drift_per_orbit));
+          RelativeError(
+              expected_orbit_error.longitude_of_ascending_node_drift_per_orbit,
+              actual_orbit_error.longitude_of_ascending_node_drift_per_orbit),
+          IsNear(0.01_⑴));
+      EXPECT_THAT(
+          RelativeError(
+              expected_orbit_error.argument_of_periapsis_drift_per_orbit,
+              actual_orbit_error.argument_of_periapsis_drift_per_orbit),
+          IsNear(0.01_⑴));
     }
   }
 }

@@ -7,6 +7,7 @@
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/vanishes_before.hpp"
@@ -15,7 +16,9 @@ namespace principia {
 
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
+using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
+using testing_utilities::operator""_⑴;
 
 namespace numerics {
 
@@ -78,10 +81,12 @@ TEST_F(FastSinCos2πTest, Random1) {
   // These numbers come from the Mathematica minimax computation.
   EXPECT_LT(max_sin_error, 5.61e-7);
   EXPECT_LT(max_cos_error, 5.61e-7);
-  EXPECT_THAT(std::fmod(std::fabs(max_sin_error_x), 1.0 / 8.0),
-              IsNear(1.0 / 8.0 - 1.0 / 36.0));
-  EXPECT_THAT(std::fmod(std::fabs(max_cos_error_x), 1.0 / 8.0),
-              IsNear(1.0 / 8.0 - 1.0 / 36.0));
+  EXPECT_THAT(RelativeError(1.0 / 8.0 - 1.0 / 36.0,
+                            std::fmod(std::fabs(max_sin_error_x), 1.0 / 8.0)),
+              IsNear(0.01_⑴));
+  EXPECT_THAT(RelativeError(1.0 / 8.0 - 1.0 / 36.0,
+                            std::fmod(std::fabs(max_cos_error_x), 1.0 / 8.0)),
+              IsNear(0.01_⑴));
 }
 
 // Arguments in the range [-1e6, 1e6 + 1] to test argument reduction.

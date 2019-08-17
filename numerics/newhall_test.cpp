@@ -140,12 +140,15 @@ class NewhallTest : public ::testing::Test {
                     AbsoluteError(expected_speed, actual_speed));
     }
 
-    EXPECT_THAT(Abs(length_error_estimate),
-                IsNear(expected_length_error_estimate));
-    EXPECT_THAT(length_absolute_error,
-                IsNear(expected_length_absolute_error));
-    EXPECT_THAT(speed_absolute_error,
-                IsNear(expected_speed_absolute_error));
+    EXPECT_THAT(RelativeError(expected_length_error_estimate,
+                              Abs(length_error_estimate)),
+                IsNear(0.01_⑴));
+    EXPECT_THAT(
+        RelativeError(expected_length_absolute_error, length_absolute_error),
+        IsNear(0.01_⑴));
+    EXPECT_THAT(
+        RelativeError(expected_speed_absolute_error, speed_absolute_error),
+        IsNear(0.01_⑴));
   }
 
   Instant const t0_;

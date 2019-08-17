@@ -26,6 +26,8 @@ using astronomy::J2000;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::IsNear;
+using testing_utilities::RelativeError;
 using testing_utilities::operator""_⑴;
 
 namespace mathematica {
@@ -313,7 +315,8 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   EXPECT_THAT(theoretical_Ωʹ, IsNear(-7.2_⑴ * Degree / Day));
   EXPECT_THAT(theoretical_ωʹ, IsNear(14_⑴ * Degree / Day));
 
-  EXPECT_THAT(elements.nodal_precession(), IsNear(theoretical_Ωʹ));
+  EXPECT_THAT(RelativeError(theoretical_Ωʹ, elements.nodal_precession()),
+              IsNear(0.01_⑴));
 
   // Mean element values.  Since Ω and ω precess rapidly, the midpoint of the
   // range of values is of no interest.
@@ -334,10 +337,15 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
               IsNear(3.7e-9_⑴));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
               IsNear(1.1_⑴ * Micro(ArcSecond)));
-  EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().measure(),
-              IsNear(-theoretical_Ωʹ * mission_duration));
-  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
-              IsNear(theoretical_ωʹ * mission_duration));
+  EXPECT_THAT(
+      RelativeError(
+          -theoretical_Ωʹ * mission_duration,
+          elements.mean_longitude_of_ascending_node_interval().measure()),
+      IsNear(0.01_⑴));
+  EXPECT_THAT(
+      RelativeError(theoretical_ωʹ * mission_duration,
+                    elements.mean_argument_of_periapsis_interval().measure()),
+      IsNear(0.01_⑴));
 
   OFStream f(SOLUTION_DIR / "mathematica" /
              "j2_perturbed_elements.generated.wl");

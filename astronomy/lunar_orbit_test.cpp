@@ -527,9 +527,10 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     auto const e1 = descending_node_eccentricities[orbits_per_period];
     auto const ω0 = descending_node_arguments[0];
     auto const ω1 = descending_node_arguments[orbits_per_period];
-    EXPECT_THAT(Sqrt(Pow<2>(e1 * Cos(ω1) - e0 * Cos(ω0)) +
-                     Pow<2>(e1 * Sin(ω1) - e0 * Sin(ω0))),
-                IsNear(GetParam().first_period_eccentricity_vector_drift));
+    EXPECT_THAT(RelativeError(GetParam().first_period_eccentricity_vector_drift,
+                              Sqrt(Pow<2>(e1 * Cos(ω1) - e0 * Cos(ω0)) +
+                                   Pow<2>(e1 * Sin(ω1) - e0 * Sin(ω0)))),
+                IsNear(0.01_⑴));
   }
 
   {
@@ -543,14 +544,22 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
       actual.min_e_sin_ω = std::min(actual.min_e_sin_ω, e * Sin(ω));
       actual.max_e_sin_ω = std::max(actual.max_e_sin_ω, e * Sin(ω));
     }
-    EXPECT_THAT(actual_first_period_descending_nodes.min_e_cos_ω,
-                IsNear(GetParam().first_period_descending_nodes.min_e_cos_ω));
-    EXPECT_THAT(actual_first_period_descending_nodes.max_e_cos_ω,
-                IsNear(GetParam().first_period_descending_nodes.max_e_cos_ω));
-    EXPECT_THAT(actual_first_period_descending_nodes.min_e_sin_ω,
-                IsNear(GetParam().first_period_descending_nodes.min_e_sin_ω));
-    EXPECT_THAT(actual_first_period_descending_nodes.max_e_sin_ω,
-                IsNear(GetParam().first_period_descending_nodes.max_e_sin_ω));
+    EXPECT_THAT(
+        RelativeError(GetParam().first_period_descending_nodes.min_e_cos_ω,
+                      actual_first_period_descending_nodes.min_e_cos_ω),
+        IsNear(0.01_⑴));
+    EXPECT_THAT(
+        RelativeError(GetParam().first_period_descending_nodes.max_e_cos_ω,
+                      actual_first_period_descending_nodes.max_e_cos_ω),
+        IsNear(0.01_⑴));
+    EXPECT_THAT(
+        RelativeError(GetParam().first_period_descending_nodes.min_e_sin_ω,
+                      actual_first_period_descending_nodes.min_e_sin_ω),
+        IsNear(0.01_⑴));
+    EXPECT_THAT(
+        RelativeError(GetParam().first_period_descending_nodes.max_e_sin_ω,
+                      actual_first_period_descending_nodes.max_e_sin_ω),
+        IsNear(0.01_⑴));
   }
 
   {
@@ -566,14 +575,18 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
       actual.min_e_sin_ω = std::min(actual.min_e_sin_ω, e * Sin(ω));
       actual.max_e_sin_ω = std::max(actual.max_e_sin_ω, e * Sin(ω));
     }
-    EXPECT_THAT(actual_period_ends.min_e_cos_ω,
-                IsNear(GetParam().period_ends.min_e_cos_ω));
-    EXPECT_THAT(actual_period_ends.max_e_cos_ω,
-                IsNear(GetParam().period_ends.max_e_cos_ω));
-    EXPECT_THAT(actual_period_ends.min_e_sin_ω,
-                IsNear(GetParam().period_ends.min_e_sin_ω));
-    EXPECT_THAT(actual_period_ends.max_e_sin_ω,
-                IsNear(GetParam().period_ends.max_e_sin_ω));
+    EXPECT_THAT(RelativeError(GetParam().period_ends.min_e_cos_ω,
+                              actual_period_ends.min_e_cos_ω),
+                IsNear(0.01_⑴));
+    EXPECT_THAT(RelativeError(GetParam().period_ends.max_e_cos_ω,
+                              actual_period_ends.max_e_cos_ω),
+                IsNear(0.01_⑴));
+    EXPECT_THAT(RelativeError(GetParam().period_ends.min_e_sin_ω,
+                              actual_period_ends.min_e_sin_ω),
+                IsNear(0.01_⑴));
+    EXPECT_THAT(RelativeError(GetParam().period_ends.max_e_sin_ω,
+                              actual_period_ends.max_e_sin_ω),
+                IsNear(0.01_⑴));
   }
 }
 

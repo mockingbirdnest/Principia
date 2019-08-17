@@ -10,6 +10,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
 
@@ -21,6 +22,8 @@ using quantities::si::Radian;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::ReadFromTabulatedData;
+using testing_utilities::RelativeError;
+using testing_utilities::operator""_⑴;
 using ::testing::Le;
 
 class EllipticFunctionsTest : public ::testing::Test {};
@@ -53,8 +56,8 @@ TEST_F(EllipticFunctionsTest, Xgscd) {
       auto const expected_value_s = expected_entry.value(0);
       auto const expected_value_c = expected_entry.value(1);
       auto const expected_value_d = expected_entry.value(2);
-      EXPECT_THAT(m, IsNear(expected_argument_m, 1.001));
-      EXPECT_THAT(u, IsNear(expected_argument_u, 1.001));
+      EXPECT_THAT(RelativeError(expected_argument_m, m), IsNear(0.001_⑴));
+      EXPECT_THAT(RelativeError(expected_argument_u,u),  IsNear(0.001_⑴));
       EXPECT_THAT(s, AlmostEquals(expected_value_s, 0, 2));
       EXPECT_THAT(c, AlmostEquals(expected_value_c, 0, 3));
       EXPECT_THAT(d, AlmostEquals(expected_value_d, 0, 1));
