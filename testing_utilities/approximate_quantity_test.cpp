@@ -9,7 +9,6 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_approximate_quantity {
 
 using quantities::Area;
 using quantities::Frequency;
@@ -98,7 +97,6 @@ TEST(ApproximateQuantityTest, Literals_🄐_🄕) {
   ApproximateQuantity<double> const lf = 0x1E3.45p0_🄕;
   EXPECT_THAT(lf.min(), AlmostEquals(0x1E3.36p0, 0));
   EXPECT_THAT(lf.max(), AlmostEquals(0x1E3.54p0, 0));
-
 }
 
 TEST(ApproximateQuantityTest, Units) {
@@ -125,6 +123,5 @@ TEST(ApproximateQuantityTest, DebugString) {
             (123.45_⑴ * Metre).DebugString());
 }
 
-}  // namespace internal_approximate_quantity
 }  // namespace testing_utilities
 }  // namespace principia

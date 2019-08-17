@@ -123,7 +123,9 @@ ApproximateQuantity<double> operator""_🄕(char const* representation);
 
 }  // namespace internal_approximate_quantity
 
+using internal_approximate_quantity::ApproximateQuantity;
 using internal_approximate_quantity::operator*;
+using internal_approximate_quantity::operator/;
 using internal_approximate_quantity::operator""_⑴;
 using internal_approximate_quantity::operator""_⑵;
 using internal_approximate_quantity::operator""_⑶;
@@ -133,6 +135,12 @@ using internal_approximate_quantity::operator""_⑹;
 using internal_approximate_quantity::operator""_⑺;
 using internal_approximate_quantity::operator""_⑻;
 using internal_approximate_quantity::operator""_⑼;
+using internal_approximate_quantity::operator""_🄐;
+using internal_approximate_quantity::operator""_🄑;
+using internal_approximate_quantity::operator""_🄒;
+using internal_approximate_quantity::operator""_🄓;
+using internal_approximate_quantity::operator""_🄔;
+using internal_approximate_quantity::operator""_🄕;
 
 }  // namespace testing_utilities
 }  // namespace principia
