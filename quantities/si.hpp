@@ -1,8 +1,6 @@
 ﻿
 #pragma once
 
-#include <string>
-
 #include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
@@ -14,10 +12,6 @@ namespace quantities {
 // Becquerel, Gray and Sievert), as well as the Non-SI units accepted for use
 // with the SI.
 namespace si {
-
-// Formatting
-template<typename D>
-std::string Format();
 
 // Prefixes
 template<typename D> constexpr Quantity<D> Yotta(Quantity<D>);
