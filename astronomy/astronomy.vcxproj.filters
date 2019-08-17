@@ -264,6 +264,9 @@
     <ClInclude Include="orbit_ground_track.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="orbit_ground_track_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lunar_eclipse_test.cpp">

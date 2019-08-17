@@ -3,6 +3,7 @@
 #include <vector>
 #include <utility>
 
+#include "astronomy/orbit_ground_track.hpp"
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
 #include "astronomy/standard_product_3.hpp"
@@ -12,8 +13,8 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
-#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -142,15 +143,18 @@ class OrbitAnalysisTest : public ::testing::Test {
 
   std::pair<OrbitalElements, OrbitRecurrence> ElementsAndRecurrence(
       SP3Orbit const& orbit) {
-    auto const elements =
-        OrbitalElements::ForTrajectory(*EarthCentredTrajectory(orbit),
-                                       earth_,
-                                       MasslessBody{}).ValueOrDie();
+    auto const earth_centred_trajectory = EarthCentredTrajectory(orbit);
+    auto const elements = OrbitalElements::ForTrajectory(
+                              *earth_centred_trajectory,
+                              earth_,
+                              MasslessBody{}).ValueOrDie();
     auto const recurrence =
         OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
                                            elements.nodal_precession(),
                                            earth_,
                                            /*max_abs_Cᴛₒ=*/100);
+    auto const ground_track = OrbitGroundTrack::ForTrajectory(
+        *earth_centred_trajectory, earth_, recurrence);
     return {elements, recurrence};
   }
 

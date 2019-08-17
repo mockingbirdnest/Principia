@@ -14,31 +14,32 @@ namespace internal_orbit_ground_track {
 using geometry::Interval;
 using physics::DiscreteTrajectory;
 using physics::RotatingBody;
+using quantities::Angle;
 
 class OrbitGroundTrack {
  public:
   template<typename PrimaryCentred, typename Inertial>
-  OrbitGroundTrack ForTrajectory(
+  static OrbitGroundTrack ForTrajectory(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,
       RotatingBody<Inertial> const& primary,
       std::optional<OrbitRecurrence> const& nominal_recurrence);
 
   // The interval spanned by the geographical longitudes of the ascending nodes,
   // compensating for the nominal equatorial shift, with the initial value
-  // reduced to an eastward grid interval (longitudes [0, δ[).
-  // This is populated only if a recurrence was provided.
+  // reduced to an eastward grid interval (longitudes [0, δ]).
+  // This is populated only if a nominal recurrence was provided.
   std::optional<Interval<Angle>> const& reduced_longitude_of_ascending_node()
       const;
 
-  // The intervals spanned by the geographical coordinates of the apoapsides.
-  // These are populated only if a recurrence was provided.
-  // The longitude is reduced in the same way as
-  // `reduced_longitude_of_ascending_node`.
-  std::optional<Interval<Angle>> const& reduced_longitude_of_apoapsis() const;
-  std::optional<Interval<Angle>> const& latitude_of_apoapsis() const;
+  // The time average of each geographical coordinate of the ground track.
+  // These are populated only if the nominal recurrence is [1, 0, 1]
+  // (synchronous orbit).
+  std::optional<Angle> const& average_longitude() const;
+  std::optional<Angle> const& average_latitude() const;
 
   // The interval spanned by the local mean solar times at the ascending nodes.
   // This is populated only if a mean sun was provided.
+  // The initial value lies in [-π, π], with 0 being noon.
   // TODO(egg): since we do not have a mean sun class at this time, this is
   // always nullopt.
   std::optional<Interval<Angle>> const& mean_solar_time_of_ascending_node()
@@ -59,3 +60,5 @@ using internal_orbit_ground_track::OrbitGroundTrack;
 
 }  // namespace astronomy
 }  // namespace principia
+
+#include "astronomy/orbit_ground_track_body.hpp"
