@@ -45,11 +45,11 @@ double ApproximateQuantity<Quantity<Dimensions>>::UlpDistance(
 template<typename Dimensions>
 std::string ApproximateQuantity<Quantity<Dimensions>>::DebugString() const {
   if (has_trivial_unit()) {
-  return (negated_ ? "-" : "") + representation_ +
-         "(" + std::to_string(ulp_) + ") " + si::Format<Dimensions>();
+    return (negated_ ? "-" : "") + representation_ +
+           "(" + std::to_string(ulp_) + ") " + si::Format<Dimensions>();
   } else {
-  return (negated_ ? "-" : "") + representation_ +
-         "(" + std::to_string(ulp_) + ") * " + quantities::DebugString(unit_);
+    return (negated_ ? "-" : "") + representation_ +
+           "(" + std::to_string(ulp_) + ") * " + quantities::DebugString(unit_);
   }
 }
 
