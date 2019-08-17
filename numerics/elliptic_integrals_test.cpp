@@ -9,7 +9,6 @@
 #include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
 
@@ -23,7 +22,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::ReadFromTabulatedData;
 using testing_utilities::RelativeError;
-using testing_utilities::operator""_⑴;
+using ::testing::Lt;
 
 namespace numerics {
 
@@ -93,10 +92,10 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
         auto const expected_value_b = expected_entry.value(0) * Radian;
         auto const expected_value_d = expected_entry.value(1) * Radian;
         auto const expected_value_j = expected_entry.value(2) * Radian;
-        EXPECT_THAT(RelativeError(expected_argument_n, nn), IsNear(0.001_⑴));
-        EXPECT_THAT(RelativeError(expected_argument_m, mm), IsNear(0.001_⑴));
-        EXPECT_THAT(RelativeError(expected_argument_φ_over_π, φ / (π * Radian)),
-                    IsNear(0.001_⑴));
+        EXPECT_THAT(RelativeError(expected_argument_n, nn), Lt(5e-6));
+        EXPECT_THAT(mm, AlmostEquals(expected_argument_m, 0));
+        EXPECT_THAT(φ / (π * Radian),
+                    AlmostEquals(expected_argument_φ_over_π, 0));
 
         // The relatively large errors on D and J below are not significant.
         // They come from the fact that the data given by Fukushima has 15

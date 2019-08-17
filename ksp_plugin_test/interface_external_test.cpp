@@ -111,10 +111,10 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   // the apoapsis.
   EXPECT_THAT(
       barycentric_result,
-      Componentwise(Componentwise(IsNear(-12'000_⑴ * Kilo(Metre)),
+      Componentwise(Componentwise(IsNear(-11'972_⑴ * Kilo(Metre)),
                                   IsNear(-120_⑴ * Kilo(Metre)),
                                   AllOf(Gt(-50 * Metre), Lt(50 * Metre))),
-                    Componentwise(IsNear(-6.6_⑴ * Metre / Second),
+                    Componentwise(IsNear(-6.7_⑴ * Metre / Second),
                                   IsNear(-4.9_⑴ * Kilo(Metre) / Second),
                                   AllOf(Gt(-1 * Centi(Metre) / Second),
                                         Lt(1 * Centi(Metre) / Second)))));

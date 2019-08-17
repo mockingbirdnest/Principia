@@ -298,7 +298,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       first_acceleration(first_manœuvre.initial_time()).Norm(),
       IsNear(5.6_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(first_acceleration(range_zero + 600 * Second).Norm(),
-              IsNear(6.15_⑴ * Metre / Pow<2>(Second)));
+              IsNear(6.16_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(first_acceleration(first_manœuvre.final_time()).Norm(),
               IsNear(7.04_⑴ * Metre / Pow<2>(Second)));
 
@@ -341,7 +341,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   auto const second_acceleration =
       second_manœuvre.InertialIntrinsicAcceleration();
   EXPECT_THAT(second_acceleration(second_manœuvre.initial_time()).Norm(),
-              IsNear(7.2_⑴ * Metre / Pow<2>(Second)));
+              IsNear(7.08_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(second_acceleration(t6 + 650 * Second).Norm(),
               IsNear(8.01_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(second_acceleration(t6 + 700 * Second).Norm(),

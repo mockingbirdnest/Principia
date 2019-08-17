@@ -63,7 +63,7 @@ TEST_F(EquatorRelevanceThresholdTest, Planets) {
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Saturn")),
               IsNear(938_⑴ * mean_radius("Saturn")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Neptune")),
-              IsNear(423_⑴ * mean_radius("Neptune")));
+              IsNear(424_⑴ * mean_radius("Neptune")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Uranus")),
               IsNear(424_⑴ * mean_radius("Uranus")));
 }

@@ -293,7 +293,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
 #if !defined(_DEBUG)
   EXPECT_THAT(RelativeError(GetParam().order, q_convergence_order),
               Lt(0.02));
-  EXPECT_THAT(q_correlation, IsNear(1.0000_⑴));
+  EXPECT_THAT(q_correlation, IsNear(0.9998_⑴));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =

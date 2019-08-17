@@ -511,7 +511,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
                  AbsoluteError(expected_velocity, actual_velocity));
   }
   EXPECT_THAT(max_position_absolute_error, IsNear(31_⑴ * Milli(Metre)));
-  EXPECT_THAT(max_velocity_absolute_error, IsNear(1.45e-5_⑴ * Metre / Second));
+  EXPECT_THAT(max_velocity_absolute_error, IsNear(1.40e-5_⑴ * Metre / Second));
 
   trajectory->ForgetBefore(trajectory->t_min() - step);
 
@@ -538,7 +538,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
                  AbsoluteError(expected_velocity, actual_velocity));
   }
   EXPECT_THAT(max_position_absolute_error, IsNear(31_⑴ * Milli(Metre)));
-  EXPECT_THAT(max_velocity_absolute_error, IsNear(1.45e-5_⑴ * Metre / Second));
+  EXPECT_THAT(max_velocity_absolute_error, IsNear(1.43e-5_⑴ * Metre / Second));
 }
 
 TEST_F(ContinuousTrajectoryTest, Continuity) {

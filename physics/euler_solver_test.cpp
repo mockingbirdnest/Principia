@@ -359,7 +359,7 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
     }
     if (it != all.begin()) {
       EXPECT_THAT(RelativeError(quarter_period, t - *std::prev(it)),
-                  IsNear(0.005_⑴));
+                  IsNear(0.01_⑴));
     }
   }
 }

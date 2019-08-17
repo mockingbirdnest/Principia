@@ -302,7 +302,7 @@ TEST_F(LunarEclipseTest, Year1952) {
     constexpr auto P4 = "1952-08-05T22:06:35"_UT1;
 
     CheckLunarPenumbralEclipse(P1, U14, 8.4e-6_⑴ * Radian, 20_⑴ * Second);
-    CheckLunarUmbralEclipse(U1, U14,    9.5e-6_⑴ * Radian, 20_⑴ * Second);
+    CheckLunarUmbralEclipse(U1, U14,    9.6e-6_⑴ * Radian, 20_⑴ * Second);
     CheckLunarUmbralEclipse(U4, U14,    1.3e-5_⑴ * Radian, 27_⑴ * Second);
     CheckLunarPenumbralEclipse(P4, U14, 1.2e-5_⑴ * Radian, 28_⑴ * Second);
   }

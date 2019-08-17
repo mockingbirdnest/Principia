@@ -90,7 +90,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
-              IsNear(9.0_⑴ * Milli(Metre)));
+              IsNear(9.3_⑴ * Milli(Metre)));
   lower_bound = upper_bound;
   upper_bound = interpolation_points.back();
   Hermite3<Instant, Length> second_polynomial({lower_bound->t, upper_bound->t},
@@ -110,7 +110,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
-              IsNear(100_⑴ * Nano(Metre)));
+              IsNear(107_⑴ * Nano(Metre)));
 }
 
 TEST_F(FitHermiteSplineDeathTest, NoDownsampling) {

@@ -45,10 +45,10 @@ bool IsNearMatcher<T>::MatchAndExplain(
               << expected_.unit() << " and ";
   }
   if (match) {
-    *listener << "which is near " << expected_ << " (being "
+    *listener << "is near " << expected_ << " (being "
               << expected_.UlpDistance(actual) << " ulps away)";
   } else {
-    *listener << "which is not near " << expected_ << " (being "
+    *listener << "is not near " << expected_ << " (being "
               << expected_.UlpDistance(actual) << " ulps away)";
   }
   return match;

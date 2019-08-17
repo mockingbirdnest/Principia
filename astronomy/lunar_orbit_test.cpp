@@ -96,6 +96,7 @@ using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 using testing_utilities::operator""_⑴;
+using ::testing::Lt;
 
 namespace astronomy {
 
@@ -530,7 +531,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     EXPECT_THAT(RelativeError(GetParam().first_period_eccentricity_vector_drift,
                               Sqrt(Pow<2>(e1 * Cos(ω1) - e0 * Cos(ω0)) +
                                    Pow<2>(e1 * Sin(ω1) - e0 * Sin(ω0)))),
-                IsNear(0.01_⑴));
+                Lt(0.03));
   }
 
   {
@@ -547,19 +548,19 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     EXPECT_THAT(
         RelativeError(GetParam().first_period_descending_nodes.min_e_cos_ω,
                       actual_first_period_descending_nodes.min_e_cos_ω),
-        IsNear(0.01_⑴));
+        Lt(0.0008));
     EXPECT_THAT(
         RelativeError(GetParam().first_period_descending_nodes.max_e_cos_ω,
                       actual_first_period_descending_nodes.max_e_cos_ω),
-        IsNear(0.01_⑴));
+        Lt(0.012));
     EXPECT_THAT(
         RelativeError(GetParam().first_period_descending_nodes.min_e_sin_ω,
                       actual_first_period_descending_nodes.min_e_sin_ω),
-        IsNear(0.01_⑴));
+        Lt(0.007));
     EXPECT_THAT(
         RelativeError(GetParam().first_period_descending_nodes.max_e_sin_ω,
                       actual_first_period_descending_nodes.max_e_sin_ω),
-        IsNear(0.01_⑴));
+        Lt(0.017));
   }
 
   {
@@ -577,16 +578,16 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     }
     EXPECT_THAT(RelativeError(GetParam().period_ends.min_e_cos_ω,
                               actual_period_ends.min_e_cos_ω),
-                IsNear(0.01_⑴));
+                Lt(0.015));
     EXPECT_THAT(RelativeError(GetParam().period_ends.max_e_cos_ω,
                               actual_period_ends.max_e_cos_ω),
-                IsNear(0.01_⑴));
+                Lt(0.018));
     EXPECT_THAT(RelativeError(GetParam().period_ends.min_e_sin_ω,
                               actual_period_ends.min_e_sin_ω),
-                IsNear(0.01_⑴));
+                Lt(0.017));
     EXPECT_THAT(RelativeError(GetParam().period_ends.max_e_sin_ω,
                               actual_period_ends.max_e_sin_ω),
-                IsNear(0.01_⑴));
+                Lt(0.027));
   }
 }
 
