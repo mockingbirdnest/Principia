@@ -73,7 +73,6 @@ class ApproximateQuantity<double> {
                                            int ulp);
 
   double min() const;
-  double mid() const;
   double max() const;
 
   // Returns the distance of the argument from the centre of the interval for

@@ -115,10 +115,6 @@ inline double ApproximateQuantity<double>::min() const {
   return min_multiplier_;
 }
 
-inline double ApproximateQuantity<double>::mid() const {
-  return (min_multiplier_ + max_multiplier_) * 0.5;
-}
-
 inline double ApproximateQuantity<double>::max() const {
   return max_multiplier_;
 }
