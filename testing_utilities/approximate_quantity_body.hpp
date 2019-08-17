@@ -4,6 +4,7 @@
 #include <string>
 
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 
 namespace principia {
@@ -12,6 +13,7 @@ namespace internal_approximate_quantity {
 
 using quantities::Abs;
 using quantities::SIUnit;
+namespace si = quantities::si;
 
 template<typename Dimensions>
 Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::min() const {
@@ -42,10 +44,13 @@ double ApproximateQuantity<Quantity<Dimensions>>::UlpDistance(
 
 template<typename Dimensions>
 std::string ApproximateQuantity<Quantity<Dimensions>>::DebugString() const {
-  // TODO(phl): Simplify the output when has_trivial_unit is true.  This
-  // requires a way to print Dimensions.
+  if (has_trivial_unit()) {
+  return (negated_ ? "-" : "") + representation_ +
+         "(" + std::to_string(ulp_) + ") " + si::Format<Dimensions>();
+  } else {
   return (negated_ ? "-" : "") + representation_ +
          "(" + std::to_string(ulp_) + ") * " + quantities::DebugString(unit_);
+  }
 }
 
 template<typename Dimensions>

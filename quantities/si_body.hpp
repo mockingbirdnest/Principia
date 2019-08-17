@@ -22,10 +22,18 @@ std::string Format() {
     }
   };
 
-  return format_unit("m", D::Length) + format_unit("kg", D::Mass) +
-         format_unit("s", D::Time) + format_unit("A", D::Current) +
-         format_unit("K", D::Temperature) + format_unit("mol", D::Amount) +
-         format_unit("cd", D::LuminousIntensity) + format_unit("rad", D::Angle);
+  // This string has a leading space if it's not empty.
+  auto const format =
+      format_unit("m", D::Length) + format_unit("kg", D::Mass) +
+      format_unit("s", D::Time) + format_unit("A", D::Current) +
+      format_unit("K", D::Temperature) + format_unit("mol", D::Amount) +
+      format_unit("cd", D::LuminousIntensity) + format_unit("rad", D::Angle);
+
+  if (format.empty()) {
+    return format;
+  } else {
+    return format.substr(1, format.size() - 1);
+  }
 }
 
 template<typename D>

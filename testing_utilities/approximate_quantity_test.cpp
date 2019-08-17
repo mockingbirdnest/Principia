@@ -165,12 +165,14 @@ TEST(ApproximateQuantityTest, UlpDistance) {
 
 TEST(ApproximateQuantityTest, DebugString) {
   EXPECT_EQ("123.45(1)", (123.45_⑴).DebugString());
-  EXPECT_EQ("123.45(1) * +1.00000000000000000e+00 m",
-            (123.45_⑴ * Metre).DebugString());
+  EXPECT_EQ("123.45(1) m", (123.45_⑴ * Metre).DebugString());
+  EXPECT_EQ("123.45(1) * +2.00000000000000000e+00 m",
+            (123.45_⑴ * (2 * Metre)).DebugString());
 
   EXPECT_EQ("-123.45(1)", (-123.45_⑴).DebugString());
-  EXPECT_EQ("-123.45(1) * +1.00000000000000000e+00 m",
-            (-123.45_⑴ * Metre).DebugString());
+  EXPECT_EQ("-123.45(1) m", (-123.45_⑴ * Metre).DebugString());
+  EXPECT_EQ("-123.45(1) * +2.00000000000000000e+00 m",
+            (-123.45_⑴ * (2 * Metre)).DebugString());
 }
 
 }  // namespace testing_utilities

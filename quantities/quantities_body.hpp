@@ -211,7 +211,7 @@ inline std::string DebugString(double const number, int const precision) {
 
 template<typename D>
 std::string DebugString(Quantity<D> const& quantity, int const precision) {
-  return DebugString(quantity / SIUnit<Quantity<D>>(), precision) +
+  return DebugString(quantity / SIUnit<Quantity<D>>(), precision) + " " +
          si::Format<D>();
 }
 
