@@ -15,6 +15,8 @@ namespace principia {
 namespace quantities {
 namespace internal_elementary_functions {
 
+using si::Radian;
+
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
@@ -104,28 +106,28 @@ constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
 }
 
 inline double Sin(Angle const& α) {
-  return std::sin(α / si::Radian);
+  return std::sin(α / Radian);
 }
 
 inline double Cos(Angle const& α) {
-  return std::cos(α / si::Radian);
+  return std::cos(α / Radian);
 }
 
 inline double Tan(Angle const& α) {
-  return std::tan(α / si::Radian);
+  return std::tan(α / Radian);
 }
 
 inline Angle ArcSin(double const x) {
-  return std::asin(x) * si::Radian;
+  return std::asin(x) * Radian;
 }
 inline Angle ArcCos(double const x) {
-  return std::acos(x) * si::Radian;
+  return std::acos(x) * Radian;
 }
 inline Angle ArcTan(double const x) {
-  return std::atan(x) * si::Radian;
+  return std::atan(x) * Radian;
 }
 inline Angle ArcTan(double const y, double const x) {
-  return std::atan2(y, x) * si::Radian;
+  return std::atan2(y, x) * Radian;
 }
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
@@ -133,23 +135,28 @@ Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
 }
 
 inline double Sinh(Angle const& α) {
-  return std::sinh((α / si::Radian));
+  return std::sinh((α / Radian));
 }
 inline double Cosh(Angle const& α) {
-  return std::cosh((α / si::Radian));
+  return std::cosh((α / Radian));
 }
 inline double Tanh(Angle const& α) {
-  return std::tanh((α / si::Radian));
+  return std::tanh((α / Radian));
 }
 
 inline Angle ArcSinh(double const x) {
-  return std::asinh(x) * si::Radian;
+  return std::asinh(x) * Radian;
 }
 inline Angle ArcCosh(double const x) {
-  return std::acosh(x) * si::Radian;
+  return std::acosh(x) * Radian;
 }
 inline Angle ArcTanh(double const x) {
-  return std::atanh(x) * si::Radian;
+  return std::atanh(x) * Radian;
+}
+
+inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
+  return α + std::nearbyint((previous_angle - α) / (2 * π * Radian)) *
+                 (2 * π * Radian);
 }
 
 }  // namespace internal_elementary_functions

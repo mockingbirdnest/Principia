@@ -58,6 +58,10 @@ Angle ArcSinh(double x);
 Angle ArcCosh(double x);
 Angle ArcTanh(double x);
 
+// Returns the element of {α + 2nπ | n ∈ ℤ} which is closest to
+// |previous_angle|.
+Angle UnwindFrom(Angle const& previous_angle, Angle const& α);
+
 }  // namespace internal_elementary_functions
 
 using internal_elementary_functions::Abs;
@@ -78,6 +82,7 @@ using internal_elementary_functions::Sinh;
 using internal_elementary_functions::Sqrt;
 using internal_elementary_functions::Tan;
 using internal_elementary_functions::Tanh;
+using internal_elementary_functions::UnwindFrom;
 
 }  // namespace quantities
 }  // namespace principia

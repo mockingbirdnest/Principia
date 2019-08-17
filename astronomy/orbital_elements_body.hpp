@@ -26,14 +26,8 @@ using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::Tan;
+using quantities::UnwindFrom;
 using quantities::si::Radian;
-
-// Returns the element of {α + 2nπ | n ∈ ℤ} which is closest to
-// |previous_angle|.
-inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
-  return α + std::nearbyint((previous_angle - α) / (2 * π * Radian)) * 2 * π *
-                 Radian;
-}
 
 template<typename PrimaryCentred>
 StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
