@@ -23,19 +23,11 @@ class ApproximateQuantity<Quantity<Dimensions>> {
   Quantity<Dimensions> min() const;
   Quantity<Dimensions> max() const;
 
-  Quantity<Dimensions> unit() const;
-  bool has_trivial_unit() const;
-
-  // Returns the distance of the argument from the centre of the interval for
-  // this object, in ulps.
-  double UlpDistance(Quantity<Dimensions> const& q) const;
-
   std::string DebugString() const;
 
  private:
   ApproximateQuantity(std::string const& representation,
                       int ulp,
-                      bool negated,
                       double min_multiplier,
                       double max_multiplier,
                       Quantity<Dimensions> const& unit);
@@ -43,7 +35,6 @@ class ApproximateQuantity<Quantity<Dimensions>> {
   // The original representation.
   std::string representation_;
   int ulp_;
-  bool negated_;
 
   // The interval for the approximate quantity, expressed as multiples of unit_.
   double min_multiplier_;
@@ -53,9 +44,6 @@ class ApproximateQuantity<Quantity<Dimensions>> {
   // angle.
   Quantity<Dimensions> unit_;
 
-  template<typename Right>
-  friend ApproximateQuantity<Right> operator-(
-      ApproximateQuantity<Right> const& right);
   template<typename Left, typename RDimensions>
   friend ApproximateQuantity<Product<Left, Quantity<RDimensions>>> operator*(
       ApproximateQuantity<Left> const& left,
@@ -73,26 +61,19 @@ class ApproximateQuantity<double> {
                                            int ulp);
 
   double min() const;
-  double mid() const;
   double max() const;
-
-  // Returns the distance of the argument from the centre of the interval for
-  // this object, in ulps.
-  double UlpDistance(double d) const;
 
   std::string DebugString() const;
 
  private:
   ApproximateQuantity(std::string_view representation,
                       int ulp,
-                      bool negated,
                       double min_multiplier,
                       double max_multiplier);
 
   // The original representation.
   std::string representation_;
   int ulp_;
-  bool negated_;
 
   // The interval for the approximate quantity.
   double min_multiplier_;
@@ -100,9 +81,6 @@ class ApproximateQuantity<double> {
 
   static constexpr double unit_ = 1;
 
-  template<typename Right>
-  friend ApproximateQuantity<Right> operator-(
-      ApproximateQuantity<Right> const& right);
   template<typename Left, typename RDimensions>
   friend ApproximateQuantity<Product<Left, Quantity<RDimensions>>> operator*(
       ApproximateQuantity<Left> const& left,
@@ -113,12 +91,6 @@ class ApproximateQuantity<double> {
       Quantity<RDimensions> const& right);
 };
 
-template<typename Right>
-ApproximateQuantity<Right> operator+(ApproximateQuantity<Right> const& right);
-template<typename Right>
-ApproximateQuantity<Right> operator-(ApproximateQuantity<Right> const& right);
-template<>
-ApproximateQuantity<double> operator-(ApproximateQuantity<double> const& right);
 template<typename Left, typename RDimensions>
 ApproximateQuantity<Product<Left, Quantity<RDimensions>>> operator*(
     ApproximateQuantity<Left> const& left,
