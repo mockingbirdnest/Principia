@@ -3,6 +3,8 @@
 
 #include "quantities/si.hpp"
 
+#include <string>
+
 namespace principia {
 namespace quantities {
 namespace si {
