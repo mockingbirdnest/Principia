@@ -57,44 +57,49 @@ struct SP3Files {
   std::vector<std::string> names;
   StandardProduct3::Dialect dialect;
 
-  static SP3Files const& GNSS() {
-    static const SP3Files files = {{"WUM0MGXFIN_20190970000_01D_15M_ORB.SP3",
-                                    "WUM0MGXFIN_20190980000_01D_15M_ORB.SP3",
-                                    "WUM0MGXFIN_20190990000_01D_15M_ORB.SP3",
-                                    "WUM0MGXFIN_20191000000_01D_15M_ORB.SP3",
-                                    "WUM0MGXFIN_20191010000_01D_15M_ORB.SP3",
-                                    "WUM0MGXFIN_20191020000_01D_15M_ORB.SP3",
-                                    "WUM0MGXFIN_20191030000_01D_15M_ORB.SP3",
-                                    "WUM0MGXFIN_20191040000_01D_15M_ORB.SP3",
-                                    "WUM0MGXFIN_20191050000_01D_15M_ORB.SP3",
-                                    "WUM0MGXFIN_20191060000_01D_15M_ORB.SP3"},
-                                   StandardProduct3::Dialect::ChineseMGEX};
-    return files;
-  }
-
-  static SP3Files const& SPOT5() {
-    static const SP3Files files = {{"ssasp501.b10170.e10181.D__.sp3"},
-                                   StandardProduct3::Dialect::Standard};
-    return files;
-  }
-
-  static SP3Files const& Sentinel3A() {
-    static const SP3Files files = {{"ssas3a20.b18358.e19003.DG_.sp3"},
-                                   StandardProduct3::Dialect::Standard};
-    return files;
-  }
-
-  static SP3Files const& TOPEXPoséidon() {
-    static const SP3Files files = {{"grgtop03.b97344.e97348.D_S.sp3"},
-                                   StandardProduct3::Dialect::GRGS};
-    return files;
-  }
+  static SP3Files const& GNSS();
+  static SP3Files const& SPOT5();
+  static SP3Files const& Sentinel3A();
+  static SP3Files const& TOPEXPoséidon();
 };
 
 struct SP3Orbit {
   StandardProduct3::SatelliteIdentifier satellite;
   SP3Files files;
 };
+
+SP3Files const& SP3Files::GNSS() {
+  static const SP3Files files = {{"WUM0MGXFIN_20190970000_01D_15M_ORB.SP3",
+                                  "WUM0MGXFIN_20190980000_01D_15M_ORB.SP3",
+                                  "WUM0MGXFIN_20190990000_01D_15M_ORB.SP3",
+                                  "WUM0MGXFIN_20191000000_01D_15M_ORB.SP3",
+                                  "WUM0MGXFIN_20191010000_01D_15M_ORB.SP3",
+                                  "WUM0MGXFIN_20191020000_01D_15M_ORB.SP3",
+                                  "WUM0MGXFIN_20191030000_01D_15M_ORB.SP3",
+                                  "WUM0MGXFIN_20191040000_01D_15M_ORB.SP3",
+                                  "WUM0MGXFIN_20191050000_01D_15M_ORB.SP3",
+                                  "WUM0MGXFIN_20191060000_01D_15M_ORB.SP3"},
+                                 StandardProduct3::Dialect::ChineseMGEX};
+  return files;
+}
+
+SP3Files const& SP3Files::SPOT5() {
+  static const SP3Files files = {{"ssasp501.b10170.e10181.D__.sp3"},
+                                 StandardProduct3::Dialect::Standard};
+  return files;
+}
+
+SP3Files const& SP3Files::Sentinel3A() {
+  static const SP3Files files = {{"ssas3a20.b18358.e19003.DG_.sp3"},
+                                 StandardProduct3::Dialect::Standard};
+  return files;
+}
+
+SP3Files const& SP3Files::TOPEXPoséidon() {
+  static const SP3Files files = {{"grgtop03.b97344.e97348.D_S.sp3"},
+                                 StandardProduct3::Dialect::GRGS};
+  return files;
+}
 
 }  // namespace
 
@@ -105,6 +110,10 @@ class OrbitAnalysisTest : public ::testing::Test {
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2436116_311504629.proto.txt"))),
+        // As there is only one body left in this ephemeris, integration is
+        // exact up to roundoff error regardless of the step size.  Use a long
+        // step so that we do not waste time computing the ephemeris (it starts
+        // in 1957, and we need it until 2019).
         ephemeris_(earth_1957_.MakeEphemeris(
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
@@ -127,7 +136,8 @@ class OrbitAnalysisTest : public ::testing::Test {
       StandardProduct3 sp3(
           SOLUTION_DIR / "astronomy" / "standard_product_3" / file,
           sp3_orbit.files.dialect);
-      auto const& orbit = sp3.orbit(sp3_orbit.satellite);
+      std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const& orbit =
+          sp3.orbit(sp3_orbit.satellite);
       CHECK_EQ(orbit.size(), 1);
       auto const& arc = *orbit.front();
       for (auto it = arc.Begin(); it != arc.End(); ++it) {
