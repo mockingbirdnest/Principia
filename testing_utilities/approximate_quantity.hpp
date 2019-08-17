@@ -26,6 +26,10 @@ class ApproximateQuantity<Quantity<Dimensions>> {
   Quantity<Dimensions> unit() const;
   bool has_trivial_unit() const;
 
+  // Returns the distance of the argument from the centre of the interval for
+  // this object, in ulps.
+  double UlpDistance(Quantity<Dimensions> const& q) const;
+
   std::string DebugString() const;
 
  private:
@@ -69,10 +73,12 @@ class ApproximateQuantity<double> {
                                            int ulp);
 
   double min() const;
+  double mid() const;
   double max() const;
 
-  double unit() const;
-  bool has_trivial_unit() const;
+  // Returns the distance of the argument from the centre of the interval for
+  // this object, in ulps.
+  double UlpDistance(double d) const;
 
   std::string DebugString() const;
 

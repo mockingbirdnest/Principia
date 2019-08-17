@@ -136,17 +136,27 @@ TEST(ApproximateQuantityTest, Signs) {
 }
 
 TEST(ApproximateQuantityTest, Unit) {
-  ApproximateQuantity<double> const l1 = 123.45_⑴;
-  EXPECT_EQ(1, l1.unit());
+  ApproximateQuantity<Length> const l1 = 123.45_⑴ * Metre;
+  EXPECT_EQ(Metre, l1.unit());
   EXPECT_TRUE(l1.has_trivial_unit());
 
-  ApproximateQuantity<Length> const l2 = 123.45_⑴ * Metre;
-  EXPECT_EQ(Metre, l2.unit());
-  EXPECT_TRUE(l2.has_trivial_unit());
+  ApproximateQuantity<Length> const l2 = 123.45_⑴ * (2 * Metre);
+  EXPECT_EQ(2 * Metre, l2.unit());
+  EXPECT_FALSE(l2.has_trivial_unit());
+}
 
-  ApproximateQuantity<Length> const l3 = 123.45_⑴ * (2 * Metre);
-  EXPECT_EQ(2 * Metre, l3.unit());
-  EXPECT_FALSE(l3.has_trivial_unit());
+TEST(ApproximateQuantityTest, UlpDistance) {
+  ApproximateQuantity<double> const l1 = 123.45_⑴;
+  EXPECT_THAT(l1.UlpDistance(123.50), AlmostEquals(5, 3200));
+
+  ApproximateQuantity<double> const l2 = 123.45_⑵;
+  EXPECT_THAT(l2.UlpDistance(123.50), AlmostEquals(5, 800));
+
+  ApproximateQuantity<Length> const l3 = 123.45_⑴ * Metre;
+  EXPECT_THAT(l3.UlpDistance(123.50 * Metre), AlmostEquals(5, 3200));
+
+  ApproximateQuantity<Length> const l4 = 123.45_⑵ * Metre;
+  EXPECT_THAT(l4.UlpDistance(123.50 * Metre), AlmostEquals(5, 800));
 }
 
 TEST(ApproximateQuantityTest, DebugString) {

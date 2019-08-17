@@ -3,12 +3,14 @@
 #include <optional>
 #include <string>
 
+#include "quantities/elementary_functions.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 
 namespace principia {
 namespace testing_utilities {
 namespace internal_approximate_quantity {
 
+using quantities::Abs;
 using quantities::SIUnit;
 
 template<typename Dimensions>
@@ -29,6 +31,13 @@ Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::unit() const {
 template<typename Dimensions>
 bool ApproximateQuantity<Quantity<Dimensions>>::has_trivial_unit() const {
   return unit_ == SIUnit<Quantity<Dimensions>>();
+}
+
+template<typename Dimensions>
+double ApproximateQuantity<Quantity<Dimensions>>::UlpDistance(
+    Quantity<Dimensions> const& q) const {
+  return ulp_ * Abs(q - (min_multiplier_ + max_multiplier_) * 0.5 * unit_) /
+         ((max_multiplier_ - min_multiplier_) * 0.5 * unit_);
 }
 
 template<typename Dimensions>
@@ -101,16 +110,17 @@ inline double ApproximateQuantity<double>::min() const {
   return min_multiplier_;
 }
 
+inline double ApproximateQuantity<double>::mid() const {
+  return (min_multiplier_ + max_multiplier_) * 0.5;
+}
+
 inline double ApproximateQuantity<double>::max() const {
   return max_multiplier_;
 }
 
-inline double ApproximateQuantity<double>::unit() const {
-  return unit_;
-}
-
-inline bool ApproximateQuantity<double>::has_trivial_unit() const {
-  return true;
+inline double ApproximateQuantity<double>::UlpDistance(double const d) const {
+  return ulp_ * Abs(d - (min_multiplier_ + max_multiplier_) * 0.5) /
+         ((max_multiplier_ - min_multiplier_) * 0.5);
 }
 
 inline std::string ApproximateQuantity<double>::DebugString() const {
