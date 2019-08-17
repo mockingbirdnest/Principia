@@ -531,7 +531,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     EXPECT_THAT(RelativeError(GetParam().first_period_eccentricity_vector_drift,
                               Sqrt(Pow<2>(e1 * Cos(ω1) - e0 * Cos(ω0)) +
                                    Pow<2>(e1 * Sin(ω1) - e0 * Sin(ω0)))),
-                Lt(0.03));
+                Lt(0.035));
   }
 
   {
@@ -548,7 +548,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     EXPECT_THAT(
         RelativeError(GetParam().first_period_descending_nodes.min_e_cos_ω,
                       actual_first_period_descending_nodes.min_e_cos_ω),
-        Lt(0.0008));
+        Lt(0.007));
     EXPECT_THAT(
         RelativeError(GetParam().first_period_descending_nodes.max_e_cos_ω,
                       actual_first_period_descending_nodes.max_e_cos_ω),
@@ -556,7 +556,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     EXPECT_THAT(
         RelativeError(GetParam().first_period_descending_nodes.min_e_sin_ω,
                       actual_first_period_descending_nodes.min_e_sin_ω),
-        Lt(0.007));
+        Lt(0.017));
     EXPECT_THAT(
         RelativeError(GetParam().first_period_descending_nodes.max_e_sin_ω,
                       actual_first_period_descending_nodes.max_e_sin_ω),
@@ -581,7 +581,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                 Lt(0.015));
     EXPECT_THAT(RelativeError(GetParam().period_ends.max_e_cos_ω,
                               actual_period_ends.max_e_cos_ω),
-                Lt(0.018));
+                Lt(0.019));
     EXPECT_THAT(RelativeError(GetParam().period_ends.min_e_sin_ω,
                               actual_period_ends.min_e_sin_ω),
                 Lt(0.017));

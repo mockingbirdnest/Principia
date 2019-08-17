@@ -15,7 +15,7 @@ namespace internal_is_near {
 template<typename T>
 class IsNearMatcher;
 
-// Checks that |expected| is in the range defined by expected.
+// Checks that actual is in the range defined by expected.
 template<typename T>
 testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
     ApproximateQuantity<T> const& expected);

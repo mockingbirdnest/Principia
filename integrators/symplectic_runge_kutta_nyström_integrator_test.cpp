@@ -528,8 +528,8 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
 #if !defined(_DEBUG)
   EXPECT_THAT(AbsoluteError(static_cast<double>(GetParam().order),
                             q_convergence_order),
-              IsNear(0.04_⑴));
-  EXPECT_THAT(q_correlation, IsNear(1.000_⑴));
+              Lt(0.10));
+  EXPECT_THAT(q_correlation, IsNear(1.00_⑴));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
@@ -540,8 +540,8 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   // SPRKs with odd convergence order have a higher convergence order in p.
   EXPECT_THAT(AbsoluteError(GetParam().order + (GetParam().order % 2),
                             v_convergence_order),
-              IsNear(0.03_⑴));
-  EXPECT_THAT(v_correlation, IsNear(1.000_⑴));
+              Lt(0.10));
+  EXPECT_THAT(v_correlation, IsNear(1.00_⑴));
 #endif
 }
 
