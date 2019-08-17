@@ -4,13 +4,13 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin_test/fake_plugin.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
-namespace interface {
 
 using astronomy::ICRS;
 using base::make_not_null_unique;
@@ -35,11 +35,13 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsOk;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
+using testing_utilities::operator""_⑴;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 
+namespace interface {
 namespace {
 
 constexpr PartId part_id = 1729;
@@ -109,11 +111,11 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   // the apoapsis.
   EXPECT_THAT(
       barycentric_result,
-      Componentwise(Componentwise(IsNear(-12'000 * Kilo(Metre)),
-                                  IsNear(-120 * Kilo(Metre)),
+      Componentwise(Componentwise(IsNear(-12'000_⑴ * Kilo(Metre)),
+                                  IsNear(-120_⑴ * Kilo(Metre)),
                                   AllOf(Gt(-50 * Metre), Lt(50 * Metre))),
-                    Componentwise(IsNear(-6.6 * Metre / Second),
-                                  IsNear(-4.9 * Kilo(Metre) / Second),
+                    Componentwise(IsNear(-6.6_⑴ * Metre / Second),
+                                  IsNear(-4.9_⑴ * Kilo(Metre) / Second),
                                   AllOf(Gt(-1 * Centi(Metre) / Second),
                                         Lt(1 * Centi(Metre) / Second)))));
 }
@@ -128,7 +130,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       /*order=*/0,
       &coefficient);
   EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
-  EXPECT_THAT(-coefficient.x * Sqrt(5), IsNear(1.08e-3));
+  EXPECT_THAT(-coefficient.x * Sqrt(5), IsNear(1.08e-3_⑴));
   EXPECT_THAT(coefficient.y, Eq(0));
 
   status = principia__ExternalGeopotentialGetCoefficient(
@@ -138,8 +140,8 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       /*order=*/1,
       &coefficient);
   EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
-  EXPECT_THAT(coefficient.x, IsNear(2.03e-6));
-  EXPECT_THAT(coefficient.y, IsNear(0.248e-6));
+  EXPECT_THAT(coefficient.x, IsNear(2.03e-6_⑴));
+  EXPECT_THAT(coefficient.y, IsNear(0.248e-6_⑴));
 
   status = principia__ExternalGeopotentialGetCoefficient(
       &plugin_,

@@ -14,6 +14,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -31,6 +32,7 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
+using testing_utilities::operator""_⑴;
 
 // The adapters wrap the result of the Newhall approximation so that they can be
 // used consistently in this test.
@@ -765,7 +767,7 @@ TEST_F(NewhallTest, NonConstantDegree) {
             lengths, speeds, t_min_, t_max_, length_error_estimate);
 
     EXPECT_THAT(RelativeError(approximation->Evaluate(t_min_),
-                              length_function_1_(t_min_)), IsNear(9e-13));
+                              length_function_1_(t_min_)), IsNear(9e-13_⑴));
 }
 
 }  // namespace numerics

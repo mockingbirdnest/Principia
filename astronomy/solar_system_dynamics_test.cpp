@@ -24,6 +24,7 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -81,6 +82,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
+using testing_utilities::operator""_⑴;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
@@ -188,7 +190,7 @@ class SolarSystemDynamicsTest : public ::testing::Test {
       // https://arxiv.org/pdf/1607.03963.pdf.
       EXPECT_THAT(AngleBetween(solar_system_angular_momentum,
                                parent->angular_velocity()),
-                  IsNear(5.9 * Degree));
+                  IsNear(5.9_⑴ * Degree));
       auto const declination_of_invariable_plane =
           OrientedAngleBetween(z, solar_system_angular_momentum, normal);
       EXPECT_THAT(declination_of_invariable_plane, Gt(0 * Radian));

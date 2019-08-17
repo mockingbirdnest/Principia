@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -23,6 +24,7 @@ using quantities::si::Nano;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
+using testing_utilities::operator""_⑴;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -128,7 +130,7 @@ TEST_F(TimeScalesTest, ReferenceDates) {
   Instant const JD2415020_3135 = "JD2415020.3135"_TT;
   EXPECT_THAT(B1900, AlmostEquals(JD2415020_3135, 1));
   EXPECT_THAT(testing_utilities::AbsoluteError(JD2415020_3135, B1900),
-              IsNear(0.5 * Micro(Second)));
+              IsNear(0.5_⑴ * Micro(Second)));
 
   constexpr Instant B1950 = "1949-12-31T00:00:00"_TT + 0.9235 * Day;
   Instant const JD2433282_4235 = "JD2433282.4235"_TT;
@@ -445,17 +447,17 @@ TEST_F(TimeScalesTest, EarthRotationAngle) {
   // Compare with the WGCCRE 2009 elements.
   EXPECT_THAT(
       (EarthRotationAngle(J2000) - π / 2 * Radian) - 190.147 * Degree,
-      IsNear(0.0469 * Degree));
+      IsNear(0.0469_⑴ * Degree));
   EXPECT_THAT((EarthRotationAngle("2000-01-01T23:00:00"_TT) -
                EarthRotationAngle("2000-01-01T01:00:00"_TT)) /
                       (22 * Hour) -
                   360.9856235 * (Degree / Day),
-              IsNear(-0.0000149 * Degree / Day));
+              IsNear(-0.0000149_⑴ * Degree / Day));
   EXPECT_THAT((EarthRotationAngle("2010-01-01T23:00:00"_TT) -
                EarthRotationAngle("2010-01-01T01:00:00"_TT)) /
                       (22 * Hour) -
                   360.9856235 * (Degree / Day),
-              IsNear(-0.0000137 * Degree / Day));
+              IsNear(-0.0000137_⑴ * Degree / Day));
 }
 
 TEST_F(TimeScalesTest, GNSS) {

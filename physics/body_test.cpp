@@ -19,6 +19,7 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
@@ -60,6 +61,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
+using testing_utilities::operator""_⑴;
 using ::testing::IsNull;
 using ::testing::NotNull;
 
@@ -397,24 +399,24 @@ TEST_F(BodyTest, SolarNoon) {
                                      "2000-01-02T08:00:00"_UTC,
                                      "2000-01-02T16:00:00"_UTC);
   EXPECT_THAT(solar_noon_greenwich - "2000-01-02T12:04:00"_UTC,
-              IsNear(-15 * Milli(Second)));
+              IsNear(-15_⑴ * Milli(Second)));
   solar_noon_greenwich = Bisect(solar_noon,
                                 "2010-09-30T08:00:00"_UTC,
                                 "2010-09-30T16:00:00"_UTC);
   EXPECT_THAT(solar_noon_greenwich - "2010-09-30T11:51:00"_UTC,
-              IsNear(-58 * Second));
+              IsNear(-58_⑴ * Second));
 
   location = Vector<double, SurfaceFrame>(istanbul.ToCartesian());
   auto solar_noon_istanbul = Bisect(solar_noon,
                                     "2000-01-02T08:00:00"_UTC,
                                     "2000-01-02T16:00:00"_UTC);
   EXPECT_THAT(solar_noon_istanbul - "2000-01-02T10:08:00"_UTC,
-              IsNear(1.05 * Second));
+              IsNear(1.05_⑴ * Second));
   solar_noon_istanbul = Bisect(solar_noon,
                                "2010-09-30T08:00:00"_UTC,
                                "2010-09-30T16:00:00"_UTC);
   EXPECT_THAT(solar_noon_istanbul - "2010-09-30T09:55:00"_UTC,
-              IsNear(-53 * Second));
+              IsNear(-53_⑴ * Second));
 }
 
 #endif

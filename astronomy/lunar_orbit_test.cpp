@@ -30,6 +30,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
@@ -94,6 +95,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
+using testing_utilities::operator""_⑴;
 
 namespace astronomy {
 
@@ -311,8 +313,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                          (GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl))));
   EXPECT_THAT(moon_->gravitational_parameter() / (Pow<3>(LU) / Pow<2>(TU)),
               AlmostEquals(GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl)), 1));
-  EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3));
-  EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(9.0e-4));
+  EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3_⑴));
+  EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(9.0e-4_⑴));
 
   file << mathematica::Assign("tu", TU / Second);
   file << mathematica::Assign("lu", LU / Metre);
@@ -353,17 +355,17 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     // error on our LU with respect to the one in the paper: the semimajor axis
     // has the same value in LU.
     EXPECT_THAT(RelativeError(*initial_osculating.semimajor_axis, a0),
-                IsNear(9.0e-4));
+                IsNear(9.0e-4_⑴));
     EXPECT_THAT(RelativeError(*initial_osculating.eccentricity, e0),
-                IsNear(1.4e-10));
+                IsNear(1.4e-10_⑴));
     EXPECT_THAT(RelativeError(initial_osculating.inclination, i0),
-                IsNear(9.7e-9));
+                IsNear(9.7e-9_⑴));
     EXPECT_THAT(RelativeError(*initial_osculating.argument_of_periapsis,
                               2 * π * Radian + ω0),
-                IsNear(2.0e-11));
+                IsNear(2.0e-11_⑴));
     EXPECT_THAT(RelativeError(initial_osculating.longitude_of_ascending_node,
                               2 * π * Radian + Ω0),
-                IsNear(4.7e-13));
+                IsNear(4.7e-13_⑴));
   }
 
   DiscreteTrajectory<ICRS> trajectory;

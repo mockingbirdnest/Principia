@@ -12,6 +12,7 @@
 #include "mathematica/mathematica.hpp"
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -52,6 +53,7 @@ using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 using testing_utilities::VanishesBefore;
+using testing_utilities::operator""_⑴;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -291,7 +293,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
 #if !defined(_DEBUG)
   EXPECT_THAT(RelativeError(GetParam().order, q_convergence_order),
               Lt(0.02));
-  EXPECT_THAT(q_correlation, IsNear(1.0, /*tolerance=*/1.0005));
+  EXPECT_THAT(q_correlation, IsNear(1.0000_⑴));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
@@ -300,7 +302,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
   EXPECT_THAT(RelativeError(GetParam().order, v_convergence_order), Lt(0.02));
-  EXPECT_THAT(v_correlation, IsNear(1.0, /*tolerance=*/1.0002));
+  EXPECT_THAT(v_correlation, IsNear(1.0000_⑴));
 #endif
 }
 

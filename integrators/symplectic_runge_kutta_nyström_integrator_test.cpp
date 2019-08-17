@@ -11,6 +11,7 @@
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -49,6 +50,7 @@ using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::Slope;
 using testing_utilities::VanishesBefore;
+using testing_utilities::operator""_⑴;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -526,7 +528,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
 #if !defined(_DEBUG)
   EXPECT_THAT(q_convergence_order,
               IsNear(static_cast<double>(GetParam().order), 1.04));
-  EXPECT_THAT(q_correlation, IsNear(1.0, /*tolerance=*/1.02));
+  EXPECT_THAT(q_correlation, IsNear(1.00_⑴));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
@@ -537,7 +539,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   // SPRKs with odd convergence order have a higher convergence order in p.
   EXPECT_THAT(v_convergence_order,
               IsNear(GetParam().order + (GetParam().order % 2), 1.05));
-  EXPECT_THAT(v_correlation, IsNear(1.0, /*tolerance=*/1.02));
+  EXPECT_THAT(v_correlation, IsNear(1.00_⑴));
 #endif
 }
 

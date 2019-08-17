@@ -17,6 +17,7 @@
 #include "integrators/methods.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/astronomy.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -61,6 +62,7 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
+using testing_utilities::operator""_⑴;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Gt;
@@ -743,7 +745,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
       AbsoluteError(rendered_prediction->last().degrees_of_freedom().position(),
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
                         World::origin),
-      IsNear(29 * Milli(Metre), 1.05));
+      IsNear(29_⑴ * Milli(Metre)));
 }
 
 }  // namespace internal_plugin
