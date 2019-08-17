@@ -78,7 +78,7 @@ inline ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
   // of the error on the quantity.
   for (int i = 0; i < error_representation.size(); ++i) {
     char const c = error_representation[i];
-    if (c >= '1' && c <= '9') {
+    if (c >= '0' && c <= '9') {
       error_representation[i] = '0';
       last_digit_index = i;
     } else if (is_hexadecimal &&

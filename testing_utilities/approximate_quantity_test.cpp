@@ -71,6 +71,10 @@ TEST(ApproximateQuantityTest, Literals_⑵_⑼) {
   ApproximateQuantity<double> const l9 = 123.45_⑼;
   EXPECT_THAT(l9.min(), AlmostEquals(123.36, 0));
   EXPECT_THAT(l9.max(), AlmostEquals(123.54, 0));
+
+  ApproximateQuantity<double> const three = 3.0_⑶;
+  EXPECT_THAT(three.min(), AlmostEquals(2.7, 0));
+  EXPECT_THAT(three.max(), AlmostEquals(3.3, 0));
 }
 
 TEST(ApproximateQuantityTest, Literals_🄐_🄕) {
