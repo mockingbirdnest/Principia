@@ -103,25 +103,6 @@ char const* const Architecture = "x86-64";
 #  endif
 #endif
 
-// DLL-exported functions for isolated physics optimization.
-#if defined(PHYSICS_DLL)
-#  error "PHYSICS_DLL already defined"
-#else
-#  if OS_WIN
-#    if PHYSICS_DLL_IMPORT
-#      define PHYSICS_DLL __declspec(dllimport)
-#      define PHYSICS_DLL_TEMPLATE_CLASS extern template class PHYSICS_DLL
-#    else
-#      define PHYSICS_DLL __declspec(dllexport)
-#      define PHYSICS_DLL_TEMPLATE_CLASS template class PHYSICS_DLL
-#    endif
-#  else
-#    define PHYSICS_DLL __attribute__((visibility("default")))
-     // No isolated physics library on Linux or Macintosh at the moment.
-#    define PHYSICS_DLL_TEMPLATE_CLASS template class PHYSICS_DLL
-#  endif
-#endif
-
 // A function for use on control paths that don't return a value, typically
 // because they end with a |LOG(FATAL)|.
 #if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL

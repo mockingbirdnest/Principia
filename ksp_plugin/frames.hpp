@@ -112,7 +112,3 @@ using internal_frames::sun_looking_glass;
 
 }  // namespace ksp_plugin
 }  // namespace principia
-
-// Including this here ensures that anything using the specifications of the
-// physics API for the above frames will see the DLL imports.
-#include "ksp_physics/ksp_physics_lib.hpp"

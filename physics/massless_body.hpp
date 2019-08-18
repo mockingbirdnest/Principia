@@ -17,7 +17,7 @@ namespace internal_massless_body {
 
 using base::not_null;
 
-class PHYSICS_DLL MasslessBody : public Body {
+class MasslessBody : public Body {
  public:
   MasslessBody() = default;
 
@@ -47,8 +47,6 @@ using internal_massless_body::MasslessBody;
 }  // namespace physics
 }  // namespace principia
 
-#if !PHYSICS_DLL_IMPORT
 #include "physics/massless_body_body.hpp"
-#endif
 
 #endif  // PRINCIPIA_PHYSICS_MASSLESS_BODY_HPP_

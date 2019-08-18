@@ -117,7 +117,7 @@ class Ephemeris {
   using GeneralizedAdaptiveStepParameters =
       ODEAdaptiveStepParameters<GeneralizedNewtonianMotionEquation>;
 
-  class PHYSICS_DLL AccuracyParameters final {
+  class AccuracyParameters final {
    public:
     AccuracyParameters(Length const& fitting_tolerance,
                        double geopotential_tolerance);
@@ -134,7 +134,7 @@ class Ephemeris {
     friend class Ephemeris<Frame>;
   };
 
-  class PHYSICS_DLL FixedStepParameters final {
+  class FixedStepParameters final {
    public:
     FixedStepParameters(
         FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
@@ -282,7 +282,7 @@ class Ephemeris {
 
   // A |Guard| is an RAII object that protects a critical section against
   // changes to |t_min| due to calls to |EventuallyForgetBefore|.
-  class PHYSICS_DLL Guard final {
+  class Guard final {
    public:
     explicit Guard(not_null<Ephemeris<Frame> const*> ephemeris);
     ~Guard();
@@ -443,6 +443,4 @@ using internal_ephemeris::Ephemeris;
 }  // namespace physics
 }  // namespace principia
 
-#if !PHYSICS_DLL_IMPORT
 #include "physics/ephemeris_body.hpp"
-#endif
