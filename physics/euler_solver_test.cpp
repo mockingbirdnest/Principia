@@ -15,7 +15,6 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
@@ -37,7 +36,7 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
-using testing_utilities::operator""_⑴;
+using ::testing::Lt;
 
 class EulerSolverTest : public ::testing::Test {};
 
@@ -359,7 +358,7 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
     }
     if (it != all.begin()) {
       EXPECT_THAT(RelativeError(quarter_period, t - *std::prev(it)),
-                  IsNear(0.01_⑴));
+                  Lt(0.0023));
     }
   }
 }

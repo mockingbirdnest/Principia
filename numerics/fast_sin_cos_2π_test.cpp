@@ -83,10 +83,10 @@ TEST_F(FastSinCos2πTest, Random1) {
   EXPECT_LT(max_cos_error, 5.61e-7);
   EXPECT_THAT(RelativeError(1.0 / 8.0 - 1.0 / 36.0,
                             std::fmod(std::fabs(max_sin_error_x), 1.0 / 8.0)),
-              IsNear(0.01_⑴));
+              IsNear(5.0e-5_⑴));
   EXPECT_THAT(RelativeError(1.0 / 8.0 - 1.0 / 36.0,
                             std::fmod(std::fabs(max_cos_error_x), 1.0 / 8.0)),
-              IsNear(0.01_⑴));
+              IsNear(5.0e-5_⑴));
 }
 
 // Arguments in the range [-1e6, 1e6 + 1] to test argument reduction.
