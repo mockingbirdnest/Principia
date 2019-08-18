@@ -220,7 +220,7 @@ Matcher<Value const&> AbsoluteErrorFrom(Value const& expected,
       new AbsoluteErrorFromMatcher<Value>(expected, error_matcher));
 }
 
-template<typename Value, typename ErrorMatcher>
+template<typename Value>
 Matcher<Value const&> RelativeErrorFrom(Value const& expected,
                                         Matcher<double> const& error_matcher) {
   return MakeMatcher(

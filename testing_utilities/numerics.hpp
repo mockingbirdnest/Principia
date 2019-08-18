@@ -146,7 +146,7 @@ template<typename Value, typename ErrorMatcher>
 Matcher<Value const&> AbsoluteErrorFrom(Value const& expected,
                                         ErrorMatcher const& error_matcher);
 
-template<typename Value, typename ErrorMatcher>
+template<typename Value>
 Matcher<Value const&> RelativeErrorFrom(Value const& expected,
                                         Matcher<double> const& error_matcher);
 
