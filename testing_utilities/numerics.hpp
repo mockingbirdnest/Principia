@@ -87,7 +87,7 @@ double RelativeError(geometry::Multivector<Scalar, Frame, rank> const& expected,
                      geometry::Multivector<Scalar, Frame, rank> const& actual);
 
 template<typename Value>
-class DifferenceFromMatcher : public MatcherInterface<Value> {
+class DifferenceFromMatcher : public MatcherInterface<Value const&> {
  public:
   DifferenceFromMatcher(Value const& expected,
                         Matcher<Difference<Value>> const& error_matcher);
@@ -103,7 +103,7 @@ class DifferenceFromMatcher : public MatcherInterface<Value> {
 };
 
 template<typename Value>
-class AbsoluteErrorFromMatcher : public MatcherInterface<Value> {
+class AbsoluteErrorFromMatcher : public MatcherInterface<Value const&> {
  public:
   using Error =
       decltype(AbsoluteError(std::declval<Value>(), std::declval<Value>()));
@@ -122,7 +122,7 @@ class AbsoluteErrorFromMatcher : public MatcherInterface<Value> {
 };
 
 template<typename Value>
-class RelativeErrorFromMatcher : public MatcherInterface<Value> {
+class RelativeErrorFromMatcher : public MatcherInterface<Value const&> {
  public:
   RelativeErrorFromMatcher(Value const& expected,
                            Matcher<double> const& error_matcher);
@@ -138,16 +138,17 @@ class RelativeErrorFromMatcher : public MatcherInterface<Value> {
 };
 
 template<typename Value>
-Matcher<Value> DifferenceFrom(Value const& expected,
-                              Matcher<Difference<Value>> const& error_matcher);
+Matcher<Value const&> DifferenceFrom(
+    Value const& expected,
+    Matcher<Difference<Value>> const& error_matcher);
 
 template<typename Value, typename ErrorMatcher>
-Matcher<Value> AbsoluteErrorFrom(Value const& expected,
-                                 ErrorMatcher const& error_matcher);
+Matcher<Value const&> AbsoluteErrorFrom(Value const& expected,
+                                        ErrorMatcher const& error_matcher);
 
 template<typename Value, typename ErrorMatcher>
-Matcher<Value> RelativeErrorFrom(Value const& expected,
-                                 Matcher<double> const& error_matcher);
+Matcher<Value const&> RelativeErrorFrom(Value const& expected,
+                                        Matcher<double> const& error_matcher);
 
 }  // namespace internal_numerics
 

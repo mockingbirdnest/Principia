@@ -89,7 +89,7 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
-using testing_utilities::AbsoluteError;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::IsOk;
@@ -197,36 +197,32 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.ValueOrDie();
   EXPECT_THAT(
-      AbsoluteError(*initial_osculating.period, elements.anomalistic_period()),
-      Lt(510 * Micro(Second)));
+      elements.anomalistic_period(),
+      AbsoluteErrorFrom(*initial_osculating.period, Lt(510 * Micro(Second))));
   EXPECT_THAT(
-      AbsoluteError(*initial_osculating.period, elements.nodal_period()),
-      Lt(3.8 * Milli(Second)));
+      elements.nodal_period(),
+      AbsoluteErrorFrom(*initial_osculating.period, Lt(3.8 * Milli(Second))));
   EXPECT_THAT(
-      AbsoluteError(*initial_osculating.period, elements.sidereal_period()),
-      Lt(1.9 * Micro(Second)));
+      elements.sidereal_period(),
+      AbsoluteErrorFrom(*initial_osculating.period, Lt(1.9 * Micro(Second))));
 
   EXPECT_THAT(elements.nodal_precession(), Lt(1.3 * Degree / JulianYear));
 
   // Mean element values.
-  EXPECT_THAT(AbsoluteError(*initial_osculating.semimajor_axis,
-                            elements.mean_semimajor_axis_interval().midpoint()),
-              Lt(330 * Micro(Metre)));
-  EXPECT_THAT(AbsoluteError(*initial_osculating.eccentricity,
-                            elements.mean_eccentricity_interval().midpoint()),
-              Lt(4.6e-11));
-  EXPECT_THAT(AbsoluteError(initial_osculating.inclination,
-                            elements.mean_inclination_interval().midpoint()),
-              Lt(0.56 * Micro(ArcSecond)));
-  EXPECT_THAT(
-      AbsoluteError(
-          initial_osculating.longitude_of_ascending_node,
-          elements.mean_longitude_of_ascending_node_interval().midpoint()),
-      Lt(58 * ArcSecond));
-  EXPECT_THAT(
-      AbsoluteError(*initial_osculating.argument_of_periapsis,
-                    elements.mean_argument_of_periapsis_interval().midpoint()),
-      Lt(52 * ArcSecond));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
+                                Lt(330 * Micro(Metre))));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              AbsoluteErrorFrom(*initial_osculating.eccentricity, Lt(4.6e-11)));
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              AbsoluteErrorFrom(initial_osculating.inclination,
+                                Lt(0.56 * Micro(ArcSecond))));
+  EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().midpoint(),
+              AbsoluteErrorFrom(initial_osculating.longitude_of_ascending_node,
+                                Lt(58 * ArcSecond)));
+  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
+              AbsoluteErrorFrom(*initial_osculating.argument_of_periapsis,
+                                Lt(52 * ArcSecond)));
 
   // Mean element stability.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
@@ -322,14 +318,14 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
 
   // Mean element values.  Since Ω and ω precess rapidly, the midpoint of the
   // range of values is of no interest.
-  EXPECT_THAT(AbsoluteError(*initial_osculating.semimajor_axis,
-                            elements.mean_semimajor_axis_interval().midpoint()),
-              IsNear(25_⑴ * Metre));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
+                                IsNear(25_⑴ * Metre)));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.0013_⑴));
-  EXPECT_THAT(AbsoluteError(initial_osculating.inclination,
-                            elements.mean_inclination_interval().midpoint()),
-              Lt(2.0 * Micro(ArcSecond)));
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              AbsoluteErrorFrom(initial_osculating.inclination,
+                                Lt(2.0 * Micro(ArcSecond))));
 
   // Mean element stability: Ω and ω precess as expected, the other elements are
   // stable.
@@ -398,14 +394,14 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   EXPECT_THAT(elements.nodal_precession(), IsNear(2.0_⑴ * Degree / Day));
 
   // Mean element values.
-  EXPECT_THAT(AbsoluteError(*initial_osculating.semimajor_axis,
-                            elements.mean_semimajor_axis_interval().midpoint()),
-              IsNear(105_⑴ * Metre));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
+                                IsNear(105_⑴ * Metre)));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.0014_⑴));
-  EXPECT_THAT(AbsoluteError(initial_osculating.inclination,
-                            elements.mean_inclination_interval().midpoint()),
-              IsNear(6.0_⑴ * ArcSecond));
+  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
+              AbsoluteErrorFrom(initial_osculating.inclination,
+                                IsNear(6.0_⑴ * ArcSecond)));
 
   // Mean element stability: Ω and ω exhibit a daily oscillation (likely due to
   // the tesseral terms of the geopotential) as the very low inclination means

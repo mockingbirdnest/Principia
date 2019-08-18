@@ -160,7 +160,7 @@ bool AbsoluteErrorFromMatcher<Value>::MatchAndExplain(
   Error const error = AbsoluteError(expected_, actual);
   *listener << "whose absolute error from the expected value is " << error
             << " ";
-  return error_matcher_.MatchAndExplain(difference, listener);
+  return error_matcher_.MatchAndExplain(error, listener);
 }
 
 template<typename Value>
@@ -189,7 +189,7 @@ bool RelativeErrorFromMatcher<Value>::MatchAndExplain(
   double const error = RelativeError(expected_, actual);
   *listener << "whose relative error from the expected value is " << error
             << " ";
-  return error_matcher_.MatchAndExplain(difference, listener);
+  return error_matcher_.MatchAndExplain(error, listener);
 }
 
 template<typename Value>
@@ -207,21 +207,22 @@ inline void RelativeErrorFromMatcher<Value>::DescribeNegationTo(
 }
 
 template<typename Value>
-Matcher<Value> DifferenceFrom(Value const& expected,
-                              Matcher<Difference<Value>> const& error_matcher) {
+Matcher<Value const&> DifferenceFrom(
+    Value const& expected,
+    Matcher<Difference<Value>> const& error_matcher) {
   return MakeMatcher(new DifferenceFromMatcher<Value>(expected, error_matcher));
 }
 
 template<typename Value, typename ErrorMatcher>
-Matcher<Value> AbsoluteErrorFrom(Value const& expected,
-                                 ErrorMatcher const& error_matcher) {
+Matcher<Value const&> AbsoluteErrorFrom(Value const& expected,
+                                        ErrorMatcher const& error_matcher) {
   return MakeMatcher(
       new AbsoluteErrorFromMatcher<Value>(expected, error_matcher));
 }
 
 template<typename Value, typename ErrorMatcher>
-Matcher<Value> RelativeErrorFrom(Value const& expected,
-                                 Matcher<double> const& error_matcher) {
+Matcher<Value const&> RelativeErrorFrom(Value const& expected,
+                                        Matcher<double> const& error_matcher) {
   return MakeMatcher(
       new RelativeErrorFromMatcher<Value>(expected, error_matcher));
 }
