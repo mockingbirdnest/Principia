@@ -21,9 +21,17 @@ https://cddis.nasa.gov/docs/2016/cddis_IDSreport_2016.pdf.
   ftp://doris.ign.fr/pub/doris/products/orbits/grg/ja2/ <br>
   ftp://cddis.gsfc.nasa.gov/doris/products/orbits/grg/ja2/
 - [ssaja102.b03007.e03017.DGS.sp3](ssaja102.b03007.e03017.DGS.sp3):<br>
-  ftp://doris.ensg.eu/pub/doris/products/orbits/ssa/ja2/ <br>
-  ftp://doris.ign.fr/pub/doris/products/orbits/ssa/ja2/ <br>
-  ftp://cddis.gsfc.nasa.gov/doris/products/orbits/ssa/ja2/
+  ftp://doris.ensg.eu/pub/doris/products/orbits/ssa/ja1/ <br>
+  ftp://doris.ign.fr/pub/doris/products/orbits/ssa/ja1/ <br>
+  ftp://cddis.gsfc.nasa.gov/doris/products/orbits/ssa/ja1/
+- [ssas3a20.b18358.e19003.DG_.sp3](ssas3a20.b18358.e19003.DG_.sp3):<br>
+  ftp://doris.ensg.eu/pub/doris/products/orbits/ssa/s3a/ <br>
+  ftp://doris.ign.fr/pub/doris/products/orbits/ssa/s3a/ <br>
+  ftp://cddis.gsfc.nasa.gov/doris/products/orbits/ssa/s3a/
+- [ssasp501.b10170.e10181.D__.sp3](ssasp501.b10170.e10181.D__.sp3):<br>
+  ftp://doris.ensg.eu/pub/doris/products/orbits/ssa/sp5/ <br>
+  ftp://doris.ign.fr/pub/doris/products/orbits/ssa/sp5/ <br>
+  ftp://cddis.gsfc.nasa.gov/doris/products/orbits/ssa/sp5/
 
 ## International GNSS Service (IGS) products
 
@@ -53,6 +61,22 @@ See http://mgex.igs.org/IGS_MGEX_Products.php.
   ftp://igs.ensg.eu/pub/igs/products/mgex/2038/ <br>
   ftp://igs.ign.fr/pub/igs/products/mgex/2038/ <br>
   **not found** at ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2038/
+- [WUM0MGXFIN_20190970000_01D_15M_ORB](WUM0MGXFIN_20190970000_01D_15M_ORB), <br>
+  [WUM0MGXFIN_20190980000_01D_15M_ORB](WUM0MGXFIN_20190980000_01D_15M_ORB), <br>
+  [WUM0MGXFIN_20190990000_01D_15M_ORB](WUM0MGXFIN_20190990000_01D_15M_ORB), <br>
+  [WUM0MGXFIN_20191000000_01D_15M_ORB](WUM0MGXFIN_20191000000_01D_15M_ORB), <br>
+  [WUM0MGXFIN_20191010000_01D_15M_ORB](WUM0MGXFIN_20191010000_01D_15M_ORB), <br>
+  [WUM0MGXFIN_20191020000_01D_15M_ORB](WUM0MGXFIN_20191020000_01D_15M_ORB), <br>
+  [WUM0MGXFIN_20191030000_01D_15M_ORB](WUM0MGXFIN_20191030000_01D_15M_ORB): <br>
+  ftp://igs.ensg.eu/pub/igs/products/mgex/2048/ <br>
+  ftp://igs.ign.fr/pub/igs/products/mgex/2048/ <br>
+  **not found** at ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2048/
+- [WUM0MGXFIN_20191040000_01D_15M_ORB](WUM0MGXFIN_20191040000_01D_15M_ORB), <br>
+  [WUM0MGXFIN_20191050000_01D_15M_ORB](WUM0MGXFIN_20191050000_01D_15M_ORB), <br>
+  [WUM0MGXFIN_20191060000_01D_15M_ORB](WUM0MGXFIN_20191060000_01D_15M_ORB): <br>
+  ftp://igs.ensg.eu/pub/igs/products/mgex/2049/ <br>
+  ftp://igs.ign.fr/pub/igs/products/mgex/2049/ <br>
+  **not found** at ftp://cddis.gsfc.nasa.gov/gnss/products/mgex/2049/
 
 
 ### International GLONASS Experiment (IGEX) / International GLONASS Service Pilot Project (IGLOS-PP)

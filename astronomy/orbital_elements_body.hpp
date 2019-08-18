@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "physics/kepler_orbit.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -13,8 +14,12 @@ namespace internal_orbital_elements {
 
 using base::Error;
 using base::Status;
+using geometry::Velocity;
+using physics::DegreesOfFreedom;
+using physics::KeplerOrbit;
 using quantities::ArcTan;
 using quantities::Cos;
+using quantities::Mod;
 using quantities::NaN;
 using quantities::Pow;
 using quantities::Product;
@@ -326,14 +331,14 @@ OrbitalElements::ToClassicalElements(
          e,
          i,
          classical_elements.empty()
-             ? Ω
+             ? Mod(Ω, 2 * π * Radian)
              : UnwindFrom(classical_elements.back().longitude_of_ascending_node,
                           Ω),
          classical_elements.empty()
-             ? ω
+             ? Mod(ω, 2 * π * Radian)
              : UnwindFrom(classical_elements.back().argument_of_periapsis, ω),
          classical_elements.empty()
-             ? M
+             ? Mod(M, 2 * π * Radian)
              : UnwindFrom(classical_elements.back().mean_anomaly, M)});
   }
   return classical_elements;

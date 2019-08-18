@@ -827,7 +827,7 @@ public partial class PrincipiaPluginAdapter
       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
     }
-    if (must_set_plotting_frame_ && FlightGlobals.currentMainBody != null) {
+    if (must_set_plotting_frame_) {
       must_set_plotting_frame_ = false;
       plotting_frame_selector_.UpdateMainBody();
       previous_display_mode_ = null;
