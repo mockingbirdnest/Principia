@@ -180,6 +180,8 @@ class OrbitAnalysisTest : public ::testing::Test {
   }
 };
 
+#if !defined(_DEBUG)
+
 // COSPAR ID 2010-001A, SVN C003.
 // 北斗二號 GEO01.
 // PRN C01, GEO, 140.0° E.
@@ -514,6 +516,8 @@ TEST_F(OrbitAnalysisTest, Sentinel3A) {
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(90.01 * Degree));
 }
+
+#endif
 
 }  // namespace astronomy
 }  // namespace principia
