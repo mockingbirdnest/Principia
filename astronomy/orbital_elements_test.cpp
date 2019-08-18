@@ -318,7 +318,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   EXPECT_THAT(theoretical_ωʹ, IsNear(14_⑴ * Degree / Day));
 
   EXPECT_THAT(RelativeError(theoretical_Ωʹ, elements.nodal_precession()),
-              Lt(0.0029));
+              IsNear(0.0029_⑴));
 
   // Mean element values.  Since Ω and ω precess rapidly, the midpoint of the
   // range of values is of no interest.
@@ -329,7 +329,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
               IsNear(0.0013_⑴));
   EXPECT_THAT(AbsoluteError(initial_osculating.inclination,
                             elements.mean_inclination_interval().midpoint()),
-              Lt(1.9 * Micro(ArcSecond)));
+              Lt(2.0 * Micro(ArcSecond)));
 
   // Mean element stability: Ω and ω precess as expected, the other elements are
   // stable.
