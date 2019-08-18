@@ -316,7 +316,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   EXPECT_THAT(theoretical_ωʹ, IsNear(14_⑴ * Degree / Day));
 
   EXPECT_THAT(RelativeError(theoretical_Ωʹ, elements.nodal_precession()),
-              IsNear(0.01_⑴));
+              IsNear(0.0028_⑴));
 
   // Mean element values.  Since Ω and ω precess rapidly, the midpoint of the
   // range of values is of no interest.
@@ -341,11 +341,11 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
       RelativeError(
           -theoretical_Ωʹ * mission_duration,
           elements.mean_longitude_of_ascending_node_interval().measure()),
-      IsNear(0.01_⑴));
+      IsNear(0.0039_⑴));
   EXPECT_THAT(
       RelativeError(theoretical_ωʹ * mission_duration,
                     elements.mean_argument_of_periapsis_interval().measure()),
-      IsNear(0.01_⑴));
+      IsNear(0.0029_⑴));
 
   OFStream f(SOLUTION_DIR / "mathematica" /
              "j2_perturbed_elements.generated.wl");
