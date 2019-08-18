@@ -10,6 +10,9 @@ namespace internal_orbit_ground_track {
 
 using geometry::Vector;
 using physics::ComputeNodes;
+using quantities::Mod;
+using quantities::UnwindFrom;
+using quantities::si::Radian;
 
 template<typename PrimaryCentred, typename Inertial>
 OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
@@ -25,9 +28,11 @@ OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
                ascending_nodes,
                descending_nodes);
   OrbitGroundTrack ground_track;
-  if (nominal_recurrence.has_value()) {
+  if (nominal_recurrence.has_value() && ascending_nodes.Size() > 0) {
     int n = 0;
-    Angle previous_reduced_longitude;
+    std::optional<Angle> initial_offset;
+    std::optional<Angle> reduced_longitude;
+    ground_track.reduced_longitude_of_equator_crossing_.emplace();
     for (auto ascending_node = ascending_nodes.Begin();
          ascending_node != ascending_nodes.End();
          ++ascending_node) {
@@ -40,10 +45,27 @@ OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
       Angle const planetocentric_longitude =
           celestial_longitude - primary.AngleAt(ascending_node.time()) -
           π / 2 * Radian;
-      planetocentric_longitude - n * nominal_recurrence->equatorial_shift();
+      if (initial_offset.has_value()) {
+        reduced_longitude =
+            UnwindFrom(*reduced_longitude,
+                       planetocentric_longitude - *initial_offset -
+                           n * nominal_recurrence->equatorial_shift());
+      } else {
+        reduced_longitude =
+            Mod(planetocentric_longitude, nominal_recurrence->grid_interval());
+        initial_offset = planetocentric_longitude - *reduced_longitude;
+      }
+      ground_track.reduced_longitude_of_equator_crossing_->Include(
+          *reduced_longitude);
+      ++n;
     }
   }
   return ground_track;
+}
+
+inline std::optional<Interval<Angle>> const&
+OrbitGroundTrack::reduced_longitude_of_equator_crossing() const {
+  return reduced_longitude_of_equator_crossing_;
 }
 
 }  // namespace internal_orbit_ground_track

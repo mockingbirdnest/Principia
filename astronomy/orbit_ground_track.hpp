@@ -24,11 +24,11 @@ class OrbitGroundTrack {
       RotatingBody<Inertial> const& primary,
       std::optional<OrbitRecurrence> const& nominal_recurrence);
 
-  // The interval spanned by the geographical longitudes of the ascending nodes,
-  // compensating for the nominal equatorial shift, with the initial value
-  // reduced to an eastward grid interval (longitudes [0, δ]).
+  // The interval spanned by the longitudes of the crossings of the equators (on
+  // the ascending passes), compensating for the nominal equatorial shift, with
+  // the initial value reduced to an eastward grid interval (longitudes [0, δ]).
   // This is populated only if a nominal recurrence was provided.
-  std::optional<Interval<Angle>> const& reduced_longitude_of_ascending_node()
+  std::optional<Interval<Angle>> const& reduced_longitude_of_equator_crossing()
       const;
 
   // The time average of each geographical coordinate of the ground track.
@@ -40,17 +40,16 @@ class OrbitGroundTrack {
   // The interval spanned by the local mean solar times at the ascending nodes.
   // This is populated only if a mean sun was provided.
   // The initial value lies in [-π, π], with 0 being noon.
-  // TODO(egg): since we do not have a mean sun class at this time, this is
-  // always nullopt.
+  // TODO(egg): this is not yet implemented.
   std::optional<Interval<Angle>> const& mean_solar_time_of_ascending_node()
       const;
 
  private:
   OrbitGroundTrack() = default;
 
-  std::optional<Interval<Angle>> reduced_longitude_of_ascending_node_;
-  std::optional<Interval<Angle>> reduced_longitude_of_apoapsis_;
-  std::optional<Interval<Angle>> latitude_of_apoapsis_;
+  std::optional<Interval<Angle>> reduced_longitude_of_equator_crossing_;
+  std::optional<Angle> average_longitude_;
+  std::optional<Angle> average_latitude_;
   std::optional<Interval<Angle>> mean_solar_time_of_ascending_node_;
 };
 
