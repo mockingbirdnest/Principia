@@ -216,13 +216,13 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
               AbsoluteErrorFrom(*initial_osculating.eccentricity, Lt(4.6e-11)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.inclination,
-                                Lt(0.56 * Micro(ArcSecond))));
+                                Lt(0.57 * Micro(ArcSecond))));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.longitude_of_ascending_node,
                                 Lt(58 * ArcSecond)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.argument_of_periapsis,
-                                Lt(52 * ArcSecond)));
+                                Lt(62 * ArcSecond)));
 
   // Mean element stability.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
