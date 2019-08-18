@@ -30,6 +30,7 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -87,6 +88,7 @@ using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::StatusIs;
 using testing_utilities::VanishesBefore;
+using testing_utilities::operator""_⑴;
 using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -776,17 +778,17 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   // so there is a tiny residual in y too.  This greatly annoys the elephant.
   EXPECT_THAT(elephant_positions.size(), Eq(5));
   EXPECT_THAT(elephant_positions.back().coordinates().x,
-              IsNear(-9.8e-19 * Metre));
+              IsNear(-9.8e-19_⑴ * Metre));
   EXPECT_THAT(elephant_positions.back().coordinates().y,
-              AnyOf(IsNear(6.0e-35 * Metre), Eq(0 * Metre)));
+              AnyOf(IsNear(6.0e-35_⑴ * Metre), Eq(0 * Metre)));
   EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
                           TerrestrialPolarRadius), 8e-7);
 
   EXPECT_THAT(elephant_accelerations.size(), Eq(5));
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
-              IsNear(-2.0e-18 * Metre / Second / Second));
+              IsNear(-2.0e-18_⑴ * Metre / Second / Second));
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,
-              AnyOf(IsNear(1.2e-34 * Metre / Second / Second),
+              AnyOf(IsNear(1.2e-34_⑴ * Metre / Second / Second),
                     Eq(0 * Metre / Second / Second)));
   EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
                           -9.832 * SIUnit<Acceleration>()), 6.7e-6);

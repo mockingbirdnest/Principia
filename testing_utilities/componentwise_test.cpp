@@ -161,11 +161,11 @@ TEST_F(ComponentwiseTest, Variadic) {
                               6 * Metre / Second}));
   EXPECT_THAT(
       vv,
-      Componentwise(Componentwise(IsNear(1 * Metre),
-                                  IsNear(2 * Metre),
+      Componentwise(Componentwise(IsNear(1.0_⑴ * Metre),
+                                  IsNear(2.0_⑴ * Metre),
                                   AllOf(Gt(2 * Metre), Lt(4 * Metre))),
-                    Componentwise(IsNear(4 * Metre / Second),
-                                  IsNear(5 * Metre / Second),
+                    Componentwise(IsNear(4.0_⑴ * Metre / Second),
+                                  IsNear(5.0_⑴ * Metre / Second),
                                   AllOf(Gt(5 * Metre / Second),
                                         Lt(7 * Metre / Second)))));
 }

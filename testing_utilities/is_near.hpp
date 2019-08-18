@@ -6,6 +6,7 @@
 
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -14,27 +15,15 @@ namespace internal_is_near {
 template<typename T>
 class IsNearMatcher;
 
+// Checks that actual is in the range defined by expected.
 template<typename T>
-using ExpectedType =
-    std::conditional_t<std::is_arithmetic<T>::value, double, T>;
-
-// Calls the next function with |tolerance| set to 1.1.
-template<typename T>
-testing::PolymorphicMatcher<IsNearMatcher<ExpectedType<T>>> IsNear(
-    T const& expected);
-
-// Checks that |expected| is in the range
-// [expected / √tolerance, expected √tolerance].
-template<typename T>
-testing::PolymorphicMatcher<IsNearMatcher<ExpectedType<T>>> IsNear(
-    T const& expected,
-    double tolerance);
+testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
+    ApproximateQuantity<T> const& expected);
 
 template<typename T>
 class IsNearMatcher final {
  public:
-  IsNearMatcher(T const& expected,
-                double tolerance);
+  explicit IsNearMatcher(ApproximateQuantity<T> const& expected);
 
   template<typename Dimensions>
   bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,
@@ -46,10 +35,7 @@ class IsNearMatcher final {
   void DescribeNegationTo(std::ostream* out) const;
 
  private:
-  T const expected_;
-  T const low_;
-  T const high_;
-  double tolerance_;
+  ApproximateQuantity<T> const expected_;
 };
 
 }  // namespace internal_is_near

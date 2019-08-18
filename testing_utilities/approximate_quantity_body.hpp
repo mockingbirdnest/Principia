@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 
+#include "absl/strings/str_replace.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -102,8 +103,17 @@ inline ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
     CHECK(is_hexadecimal);
     error_representation[*last_digit_index] = 'A' + ulp - 10;
   }
-  double const value = std::strtod(representation.data(), nullptr);
-  double const error = std::strtod(error_representation.c_str(), nullptr);
+
+  // Apparently the stupid language doesn't know how to parse literals with
+  // quotes...
+  std::string const stripped_representation =
+      absl::StrReplaceAll(representation, {{"'", ""}});
+  std::string const stripped_error_representation =
+      absl::StrReplaceAll(error_representation, {{"'", ""}});
+  double const value = std::strtod(stripped_representation.data(),
+                                   nullptr);
+  double const error = std::strtod(stripped_error_representation.c_str(),
+                                   nullptr);
   return ApproximateQuantity<double>(representation,
                                      ulp,
                                      /*negated=*/false,

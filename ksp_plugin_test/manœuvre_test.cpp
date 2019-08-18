@@ -14,6 +14,7 @@
 #include "quantities/numbers.hpp"
 #include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/make_not_null.hpp"
@@ -50,6 +51,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
+using testing_utilities::operator""_⑴;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -294,11 +296,11 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       first_manœuvre.InertialIntrinsicAcceleration();
   EXPECT_THAT(
       first_acceleration(first_manœuvre.initial_time()).Norm(),
-      IsNear(5.6 * Metre / Pow<2>(Second)));
+      IsNear(5.6_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(first_acceleration(range_zero + 600 * Second).Norm(),
-              IsNear(6.15 * Metre / Pow<2>(Second), 1.01));
+              IsNear(6.16_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(first_acceleration(first_manœuvre.final_time()).Norm(),
-              IsNear(7.04 * Metre / Pow<2>(Second), 1.01));
+              IsNear(7.04_⑴ * Metre / Pow<2>(Second)));
 
   Manœuvre<World, Rendering>::Intensity second_burn_intensity;
   second_burn_intensity.direction = e_y;
@@ -339,20 +341,20 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   auto const second_acceleration =
       second_manœuvre.InertialIntrinsicAcceleration();
   EXPECT_THAT(second_acceleration(second_manœuvre.initial_time()).Norm(),
-              IsNear(7.2 * Metre / Pow<2>(Second), 1.05));
+              IsNear(7.08_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(second_acceleration(t6 + 650 * Second).Norm(),
-              IsNear(8.01 * Metre / Pow<2>(Second), 1.01));
+              IsNear(8.01_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(second_acceleration(t6 + 700 * Second).Norm(),
-              IsNear(8.9 * Metre / Pow<2>(Second), 1.01));
+              IsNear(8.9_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(second_acceleration(t6 + 750 * Second).Norm(),
-              IsNear(9.9 * Metre / Pow<2>(Second), 1.01));
+              IsNear(9.9_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(second_acceleration(t6 + 850 * Second).Norm(),
-              IsNear(12.97 * Metre / Pow<2>(Second), 1.001));
+              IsNear(12.97_⑴ * Metre / Pow<2>(Second)));
   EXPECT_THAT(second_acceleration(second_manœuvre.final_time()).Norm(),
-              IsNear(15.12 * Metre / Pow<2>(Second), 1.001));
+              IsNear(15.12_⑴ * Metre / Pow<2>(Second)));
 
   EXPECT_THAT(second_manœuvre.Δv().Norm(),
-              IsNear(3.2 * Kilo(Metre) / Second, 1.01));
+              IsNear(3.2_⑴ * Kilo(Metre) / Second));
 
   // From the Apollo 8 flight journal.
   EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second,

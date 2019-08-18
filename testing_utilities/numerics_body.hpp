@@ -75,13 +75,21 @@ Scalar AbsoluteError(geometry::Point<Scalar> const& expected,
 template<typename T, typename NormType>
 double RelativeError(T const& expected, T const& actual,
                      NormType (T::* norm)() const) {
-  return ((expected - actual).*norm)() / (expected.*norm)();
+  if (expected == actual) {
+    return 0;
+  } else {
+    return ((expected - actual).*norm)() / (expected.*norm)();
+  }
 }
 
 template<typename T, typename NormType, typename NormArg>
 double RelativeError(T const& expected, T const& actual,
                      NormType (*norm)(NormArg const)) {
-  return norm(expected - actual) / norm(expected);
+  if (expected == actual) {
+    return 0;
+  } else {
+    return norm(expected - actual) / norm(expected);
+  }
 }
 
 inline double RelativeError(double const expected, double const actual) {
