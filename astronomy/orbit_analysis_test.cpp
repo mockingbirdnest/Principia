@@ -509,6 +509,12 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
               IsNear(9.9e-5_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(86.62_⑴ * Degree));
+
+  EXPECT_THAT(ground_track.reduced_longitude_of_equator_crossing()->midpoint(),
+              IsNear(0.00_⑴ * Degree));
+  EXPECT_THAT(ground_track.reduced_longitude_of_equator_crossing()->measure(),
+              IsNear(0.00_⑴ * Degree));
+  EXPECT_THAT(recurrence.grid_interval(), IsNear(0.00_⑴ * Degree));
 }
 
 // COSPAR ID 2002-021A, SPOT-5 (Satellite Pour l’Observation de la Terre).
