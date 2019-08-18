@@ -90,6 +90,7 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteErrorFrom;
+using testing_utilities::DifferenceFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::IsOk;
@@ -288,12 +289,15 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  EXPECT_THAT(elements.anomalistic_period() - *initial_osculating.period,
-              IsNear(-7.8_⑴ * Second));
-  EXPECT_THAT(elements.nodal_period() - *initial_osculating.period,
-              IsNear(-23_⑴ * Second));
-  EXPECT_THAT(elements.sidereal_period() - *initial_osculating.period,
-              IsNear(-16_⑴ * Second));
+  EXPECT_THAT(
+      elements.anomalistic_period(),
+      DifferenceFrom(*initial_osculating.period, IsNear(-7.8_⑴ * Second)));
+  EXPECT_THAT(
+      elements.nodal_period(),
+      DifferenceFrom(*initial_osculating.period, IsNear(-23_⑴ * Second)));
+  EXPECT_THAT(
+      elements.sidereal_period(),
+      DifferenceFrom(*initial_osculating.period, IsNear(-16_⑴ * Second)));
 
   // The notation for the computation of the theoretical precessions follows
   // Capderou (2012), Satellites : de Kepler au GPS, section 7.1.1.
@@ -383,12 +387,15 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  EXPECT_THAT(elements.anomalistic_period() - *initial_osculating.period,
-              IsNear(-8.0_⑴ * Second));
-  EXPECT_THAT(elements.nodal_period() - *initial_osculating.period,
-              IsNear(-14_⑴ * Second));
-  EXPECT_THAT(elements.sidereal_period() - *initial_osculating.period,
-              IsNear(-16_⑴ * Second));
+  EXPECT_THAT(
+      elements.anomalistic_period(),
+      DifferenceFrom(*initial_osculating.period, IsNear(-8.0_⑴ * Second)));
+  EXPECT_THAT(
+      elements.nodal_period(),
+      DifferenceFrom(*initial_osculating.period, IsNear(-14_⑴ * Second)));
+  EXPECT_THAT(
+      elements.sidereal_period(),
+      DifferenceFrom(*initial_osculating.period, IsNear(-16_⑴ * Second)));
 
   // This value is meaningless, see below.
   EXPECT_THAT(elements.nodal_precession(), IsNear(2.0_⑴ * Degree / Day));
