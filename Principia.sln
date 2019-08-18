@@ -137,8 +137,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tools", "tools\tools.vcxpro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "parallel_test_runner", "parallel_test_runner\parallel_test_runner.csproj", "{A0E67E1B-E5A6-45A0-B42C-4330A6643CD7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_physics", "ksp_physics\ksp_physics.vcxproj", "{3882467C-89D7-4DAE-9730-BB2E610F05AD}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{FA689AE8-C152-4005-978E-1B701ABF9E1C}"
 	ProjectSection(SolutionItems) = preProject
 		documentation\basestyle.cls = documentation\basestyle.cls
@@ -280,12 +278,6 @@ Global
 		{A0E67E1B-E5A6-45A0-B42C-4330A6643CD7}.Release_LLVM|x64.Build.0 = Release|Any CPU
 		{A0E67E1B-E5A6-45A0-B42C-4330A6643CD7}.Release|x64.ActiveCfg = Release|Any CPU
 		{A0E67E1B-E5A6-45A0-B42C-4330A6643CD7}.Release|x64.Build.0 = Release|Any CPU
-		{3882467C-89D7-4DAE-9730-BB2E610F05AD}.Debug|x64.ActiveCfg = Debug|x64
-		{3882467C-89D7-4DAE-9730-BB2E610F05AD}.Debug|x64.Build.0 = Debug|x64
-		{3882467C-89D7-4DAE-9730-BB2E610F05AD}.Release_LLVM|x64.ActiveCfg = Release_LLVM|x64
-		{3882467C-89D7-4DAE-9730-BB2E610F05AD}.Release_LLVM|x64.Build.0 = Release_LLVM|x64
-		{3882467C-89D7-4DAE-9730-BB2E610F05AD}.Release|x64.ActiveCfg = Release|x64
-		{3882467C-89D7-4DAE-9730-BB2E610F05AD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

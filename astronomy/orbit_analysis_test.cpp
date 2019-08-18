@@ -13,8 +13,10 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
-#include "testing_utilities/is_near.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -46,9 +48,13 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::IsNear;
 using testing_utilities::IsOk;
+using testing_utilities::RelativeErrorFrom;
+using testing_utilities::operator""_⑴;
 using ::testing::AllOf;
+using ::testing::Lt;
 using ::testing::Property;
 
 namespace {
@@ -184,6 +190,8 @@ class OrbitAnalysisTest : public ::testing::Test {
   }
 };
 
+#if !defined(_DEBUG)
+
 // COSPAR ID 2010-001A, SVN C003.
 // 北斗二號 GEO01.
 // PRN C01, GEO, 140.0° E.
@@ -196,13 +204,13 @@ TEST_F(OrbitAnalysisTest, 北斗GEO) {
                     Property(&OrbitRecurrence::Dᴛₒ, 0),
                     Property(&OrbitRecurrence::Cᴛₒ, 1)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(42'166 * Kilo(Metre)));
+              IsNear(42'166_⑴ * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(1.42 * Degree));
+              IsNear(1.42_⑴ * Degree));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.000186));
+              IsNear(0.000186_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(166 * Degree));
+              IsNear(166_⑴ * Degree));
 }
 
 // COSPAR ID 2010-036A, SVN C005.
@@ -217,12 +225,13 @@ TEST_F(OrbitAnalysisTest, 北斗IGSO) {
                     Property(&OrbitRecurrence::Dᴛₒ, 0),
                     Property(&OrbitRecurrence::Cᴛₒ, 1)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(42'161 * Kilo(Metre)));
+              IsNear(42'161_⑴ * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(54.19 * Degree));
-  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.0078));
+              IsNear(54.19_⑴ * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              IsNear(0.0078_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(232 * Degree));
+              IsNear(232_⑴ * Degree));
 }
 
 // COSPAR ID 2010-045A, SVN J001.
@@ -238,16 +247,18 @@ TEST_F(OrbitAnalysisTest, みちびきQZO) {
                     Property(&OrbitRecurrence::Cᴛₒ, 1)));
   // Expected orbital elements from the Quasi-Zenith Satellite System
   // Performance Standard (PS-QZSS-001).
-  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(42'165 * Kilo(Metre)));
+  EXPECT_THAT(
+      elements.mean_semimajor_axis_interval().midpoint(),
+      AbsoluteErrorFrom(42'165 * Kilo(Metre), IsNear(6.3_⑴ * Kilo(Metre))));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(41 * Degree));
-  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.075));
+              IsNear(41_⑴ * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              IsNear(0.075_⑴));
   // The operational range is 270° ± 2.5°.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(270 * Degree));
+              IsNear(270_⑴ * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
-              IsNear(0.12 * Degree));
+              IsNear(0.12_⑴ * Degree));
 }
 
 // COSPAR ID 2017-048A, SVN J003.
@@ -265,13 +276,13 @@ TEST_F(OrbitAnalysisTest, みちびきGEO) {
                     Property(&OrbitRecurrence::Dᴛₒ, 0),
                     Property(&OrbitRecurrence::Cᴛₒ, 1)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(42'166 * Kilo(Metre)));
+              IsNear(42'166_⑴ * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(0.067 * Degree));
+              IsNear(0.067_⑴ * Degree));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.00023));
+              IsNear(0.00023_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(224 * Degree));
+              IsNear(224_⑴ * Degree));
 }
 
 // COSPAR ID 2018-078B, SVN C216.
@@ -286,13 +297,13 @@ TEST_F(OrbitAnalysisTest, 北斗MEO) {
                     Property(&OrbitRecurrence::Dᴛₒ, -1),
                     Property(&OrbitRecurrence::Cᴛₒ, 7)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(27'906 * Kilo(Metre)));
+              IsNear(27'906_⑴ * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(55.01 * Degree));
+              IsNear(55.10_⑴ * Degree));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.000558));
+              IsNear(0.000558_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(1.003 * Degree));
+              IsNear(1.003_⑴ * Degree));
 }
 
 // COSPAR ID 2016-030A.
@@ -318,38 +329,46 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   auto const nominal_anomalistic_mean_motion =
       613.72253566 * Degree / Day;
 
-  EXPECT_THAT(elements.nodal_precession(), IsNear(nominal_nodal_precession));
+  EXPECT_THAT(
+      elements.nodal_precession(),
+      AllOf(AbsoluteErrorFrom(nominal_nodal_precession,
+                              IsNear(0.00032_⑴ * Degree / Day)),
+            RelativeErrorFrom(nominal_nodal_precession, IsNear(0.011_⑴))));
   EXPECT_THAT(2 * π * Radian / elements.anomalistic_period(),
-              IsNear(nominal_anomalistic_mean_motion));
+              AllOf(AbsoluteErrorFrom(nominal_anomalistic_mean_motion,
+                                      IsNear(0.53_⑴ * Degree / Day)),
+                    RelativeErrorFrom(nominal_anomalistic_mean_motion,
+                                      IsNear(0.00086_⑴))));
 
-  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(29'599.8 * Kilo(Metre), 1.000'03));
+  EXPECT_THAT(
+      elements.mean_semimajor_axis_interval().midpoint(),
+      AbsoluteErrorFrom(29'599.8 * Kilo(Metre), IsNear(0.35_⑴ * Kilo(Metre))));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(00'000.084 * Kilo(Metre)));
+              IsNear(00'000.084_⑴ * Kilo(Metre)));
 
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.000'17));  // Nominal: 0.0.
+              IsNear(0.000'17_⑴));  // Nominal: 0.0.
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
-              IsNear(0.000'015));
+              IsNear(0.000'015_⑴));
 
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(56.0 * Degree, 1.03));
+              AbsoluteErrorFrom(56.0 * Degree, IsNear(0.61_⑴ * Degree)));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
-              IsNear(00.01 * Degree));
+              IsNear(00.01_⑴ * Degree));
 
   EXPECT_THAT(
       Mod(elements.mean_longitude_of_ascending_node_interval().midpoint() -
               nominal_nodal_precession * (mean_time - reference_epoch),
           2 * π * Radian),
-      IsNear(317.632 * Degree, 1.000'6));
+      AbsoluteErrorFrom(317.632 * Degree, IsNear(0.082_⑴ * Degree)));
 
   // Note that the reference parameters have e = 0, and therefore conventionally
   // set ω = 0, ω′ = 0.
   // However, e is never quite 0; we can compute a mean ω.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(88 * Degree));
+              IsNear(88_⑴ * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
-              IsNear(6.3 * Degree));
+              IsNear(6.3_⑴ * Degree));
 
   // Since the reference parameters conventionally set ω = 0, the given mean
   // anomaly is actually the mean argument of latitude; in order to get numbers
@@ -359,7 +378,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
                       nominal_anomalistic_mean_motion *
                           (initial_time - reference_epoch),
                   2 * π * Radian),
-              IsNear(225.153 * Degree, 1.005));
+              AbsoluteErrorFrom(225.153 * Degree, IsNear(0.53_⑴ * Degree)));
 }
 
 // COSPAR ID 2014-050B, SVN E202
@@ -385,41 +404,49 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
   auto const nominal_apsidal_precession = 0.03383184 * Degree / Day;
   auto const nominal_anomalistic_mean_motion = 667.86467481 * Degree / Day;
 
-  EXPECT_THAT(elements.nodal_precession(), IsNear(nominal_nodal_precession));
+  EXPECT_THAT(
+      elements.nodal_precession(),
+      AllOf(AbsoluteErrorFrom(nominal_nodal_precession,
+                              IsNear(0.00023_⑴ * Degree / Day)),
+            RelativeErrorFrom(nominal_nodal_precession, IsNear(0.0059_⑴))));
   EXPECT_THAT(2 * π * Radian / elements.anomalistic_period(),
-              IsNear(nominal_anomalistic_mean_motion));
+              AllOf(AbsoluteErrorFrom(nominal_anomalistic_mean_motion,
+                                      IsNear(0.00047_⑴ * Degree / Day)),
+                    RelativeErrorFrom(nominal_anomalistic_mean_motion,
+                                      IsNear(7.1e-07_⑴))));
 
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(27'977.6 * Kilo(Metre), 1.000'01));
+              AbsoluteErrorFrom(27'977.6 * Kilo(Metre),
+                                IsNear(0.0997_⑴ * Kilo(Metre))));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(00'000.096 * Kilo(Metre)));
+              IsNear(00'000.096_⑴ * Kilo(Metre)));
 
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.162, 1.06));
+              AbsoluteErrorFrom(0.162, IsNear(0.0041_⑴)));
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
-              IsNear(0.000'15));
+              IsNear(0.000'15_⑴));
 
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(49.850 * Degree, 1.04));
+              AbsoluteErrorFrom(49.850 * Degree, IsNear(0.77_⑴ * Degree)));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
-              IsNear(00.0044 * Degree));
+              IsNear(00.0044_⑴ * Degree));
 
   EXPECT_THAT(
       Mod(elements.mean_longitude_of_ascending_node_interval().midpoint() -
               nominal_nodal_precession * (mean_time - reference_epoch),
           2 * π * Radian),
-      IsNear(52.521 * Degree, 1.02));
+      AbsoluteErrorFrom(52.521 * Degree, IsNear(0.29_⑴ * Degree)));
   EXPECT_THAT(
       Mod(elements.mean_argument_of_periapsis_interval().midpoint() -
               nominal_apsidal_precession * (mean_time - reference_epoch),
           2 * π * Radian),
-      IsNear(56.198 * Degree, 1.02));
+      AbsoluteErrorFrom(56.198 * Degree, IsNear(0.48_⑴ * Degree)));
 
   EXPECT_THAT(Mod(elements.mean_elements().front().mean_anomaly -
                       nominal_anomalistic_mean_motion *
                           (initial_time - reference_epoch),
                   2 * π * Radian),
-              IsNear(136.069 * Degree, 1.04));
+              AbsoluteErrorFrom(136.069 * Degree, IsNear(2.5_⑴ * Degree)));
 }
 
 // COSPAR ID 2009-070A, SVN R730.
@@ -434,13 +461,13 @@ TEST_F(OrbitAnalysisTest, ГЛОНАСС) {
                     Property(&OrbitRecurrence::Dᴛₒ, 1),
                     Property(&OrbitRecurrence::Cᴛₒ, 8)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(25'507 * Kilo(Metre)));
+              IsNear(25'507_⑴ * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(64.20 * Degree));
+              IsNear(64.20_⑴ * Degree));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.00040));
+              IsNear(0.00040_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(330 * Degree));
+              IsNear(330_⑴ * Degree));
 }
 
 // COSPAR ID 2011-036A, SVN G063.
@@ -455,12 +482,13 @@ TEST_F(OrbitAnalysisTest, GPS) {
                     Property(&OrbitRecurrence::Dᴛₒ, 0),
                     Property(&OrbitRecurrence::Cᴛₒ, 1)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(26'560 * Kilo(Metre)));
+              IsNear(26'560_⑴ * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(55.86 * Degree));
-  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.0086));
+              IsNear(55.86_⑴ * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              IsNear(0.0086_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(39 * Degree));
+              IsNear(39_⑴ * Degree));
 }
 
 // COSPAR ID 1992-052A, TOPEX/Poséidon.
@@ -474,18 +502,13 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
                     Property(&OrbitRecurrence::Dᴛₒ, -3),
                     Property(&OrbitRecurrence::Cᴛₒ, 10)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(7'714 * Kilo(Metre)));
+              IsNear(7'714_⑴ * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(66.03 * Degree));
-  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(9.9e-5));
+              IsNear(66.03_⑴ * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              IsNear(9.9e-5_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(86.62 * Degree));
-
-  EXPECT_THAT(ground_track.reduced_longitude_of_equator_crossing()->midpoint(),
-              IsNear(0 * Degree));
-  EXPECT_THAT(ground_track.reduced_longitude_of_equator_crossing()->measure(),
-              IsNear(0 * Degree));
-  EXPECT_THAT(recurrence.grid_interval(), IsNear(0 * Degree));
+              IsNear(86.62_⑴ * Degree));
 }
 
 // COSPAR ID 2002-021A, SPOT-5 (Satellite Pour l’Observation de la Terre).
@@ -498,12 +521,13 @@ TEST_F(OrbitAnalysisTest, SPOT5) {
                     Property(&OrbitRecurrence::Dᴛₒ, 5),
                     Property(&OrbitRecurrence::Cᴛₒ, 26)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(7'200 * Kilo(Metre)));
+              IsNear(7'200_⑴ * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(98.73 * Degree));
-  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.0012));
+              IsNear(98.73_⑴ * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              IsNear(0.0012_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(89.38 * Degree));
+              IsNear(89.38_⑴ * Degree));
 }
 
 // COSPAR ID 2016-011A, Sentinel-3A.
@@ -517,13 +541,16 @@ TEST_F(OrbitAnalysisTest, Sentinel3A) {
                     Property(&OrbitRecurrence::Dᴛₒ, 7),
                     Property(&OrbitRecurrence::Cᴛₒ, 27)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              IsNear(7'177 * Kilo(Metre)));
+              IsNear(7'177_⑴ * Kilo(Metre)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              IsNear(98.63 * Degree));
-  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(), IsNear(0.0011));
+              IsNear(98.63_⑴ * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
+              IsNear(0.0011_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(90.01 * Degree));
+              IsNear(90.01_⑴ * Degree));
 }
+
+#endif
 
 }  // namespace astronomy
 }  // namespace principia

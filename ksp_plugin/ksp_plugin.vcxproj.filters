@@ -157,6 +157,9 @@
     <ClCompile Include="equator_relevance_threshold.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\physics\protector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\serialization\journal.proto" />

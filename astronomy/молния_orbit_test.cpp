@@ -23,6 +23,7 @@
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
@@ -65,6 +66,7 @@ using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
+using testing_utilities::operator""_⑴;
 
 namespace astronomy {
 
@@ -198,7 +200,7 @@ TEST_F(МолнияOrbitTest, Satellite) {
                               (3.0 / 2.0) * Cos(initial_elements.inclination);
   EXPECT_THAT(RelativeError(ΔΩ_per_period / (sidereal_day / 2.0),
                             actual_precession_speed),
-              IsNear(0.076));
+              IsNear(0.076_⑴));
 
   file << mathematica::Assign("ppaDisplacements",
                               mma_displacements);

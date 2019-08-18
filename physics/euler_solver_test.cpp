@@ -35,6 +35,8 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
+using testing_utilities::RelativeError;
+using ::testing::Lt;
 
 class EulerSolverTest : public ::testing::Test {};
 
@@ -355,7 +357,8 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       EXPECT_EQ(zeroes[i / 2], t);
     }
     if (it != all.begin()) {
-      EXPECT_THAT(t - *std::prev(it), IsNear(quarter_period, 1.005));
+      EXPECT_THAT(RelativeError(quarter_period, t - *std::prev(it)),
+                  Lt(0.0023));
     }
   }
 }

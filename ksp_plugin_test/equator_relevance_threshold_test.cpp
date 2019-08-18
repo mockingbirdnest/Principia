@@ -1,4 +1,4 @@
-
+﻿
 #include "ksp_plugin/equator_relevance_threshold.hpp"
 
 #include <string>
@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
@@ -21,6 +22,7 @@ using quantities::astronomy::JovianEquatorialRadius;
 using quantities::astronomy::SolarRadius;
 using quantities::astronomy::TerrestrialEquatorialRadius;
 using testing_utilities::IsNear;
+using testing_utilities::operator""_⑴;
 
 class EquatorRelevanceThresholdTest : public testing::Test {
  protected:
@@ -47,23 +49,23 @@ class EquatorRelevanceThresholdTest : public testing::Test {
 TEST_F(EquatorRelevanceThresholdTest, Planets) {
   // See the discussion on #1841.
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Sun")),
-              IsNear(58 * SolarRadius));
+              IsNear(58_⑴ * SolarRadius));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Mercury")),
-              IsNear(158 * mean_radius("Mercury")));
+              IsNear(158_⑴ * mean_radius("Mercury")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Venus")),
-              IsNear(403 * mean_radius("Venus")));
+              IsNear(403_⑴ * mean_radius("Venus")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Earth")),
-              IsNear(233 * TerrestrialEquatorialRadius));
+              IsNear(233_⑴ * TerrestrialEquatorialRadius));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Mars")),
-              IsNear(314 * mean_radius("Mars")));
+              IsNear(314_⑴ * mean_radius("Mars")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Jupiter")),
-              IsNear(860 * JovianEquatorialRadius));
+              IsNear(860_⑴ * JovianEquatorialRadius));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Saturn")),
-              IsNear(938 * mean_radius("Saturn")));
+              IsNear(938_⑴ * mean_radius("Saturn")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Neptune")),
-              IsNear(423 * mean_radius("Neptune")));
+              IsNear(424_⑴ * mean_radius("Neptune")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Uranus")),
-              IsNear(424 * mean_radius("Uranus")));
+              IsNear(424_⑴ * mean_radius("Uranus")));
 }
 
 }  // namespace internal_equator_relevance_threshold

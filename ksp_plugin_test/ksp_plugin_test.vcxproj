@@ -32,6 +32,7 @@
     <ClCompile Include="..\ksp_plugin\renderer.cpp" />
     <ClCompile Include="..\ksp_plugin\vessel.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
+    <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="equator_relevance_threshold_test.cpp" />

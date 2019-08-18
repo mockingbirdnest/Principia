@@ -36,7 +36,7 @@ class OblateBody : public RotatingBody<Frame> {
   using GeopotentialCoefficients =
       FixedLowerTriangularMatrix<double, max_geopotential_degree + 1>;
 
-  class PHYSICS_DLL Parameters final {
+  class Parameters final {
    public:
     Parameters(double j2,
                Length const& reference_radius);
@@ -113,8 +113,6 @@ using internal_oblate_body::OblateBody;
 }  // namespace physics
 }  // namespace principia
 
-#if !PHYSICS_DLL_IMPORT
 #include "physics/oblate_body_body.hpp"
-#endif
 
 #endif  // PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_

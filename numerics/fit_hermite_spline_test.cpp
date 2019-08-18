@@ -7,6 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/double_precision.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
@@ -26,6 +27,7 @@ using quantities::si::Nano;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::IsNear;
+using testing_utilities::operator""_⑴;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::ResultOf;
@@ -88,7 +90,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
-              IsNear(9 * Milli(Metre)));
+              IsNear(9.3_⑴ * Milli(Metre)));
   lower_bound = upper_bound;
   upper_bound = interpolation_points.back();
   Hermite3<Instant, Length> second_polynomial({lower_bound->t, upper_bound->t},
@@ -98,7 +100,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
-              IsNear(1 * Centi(Metre)));
+              IsNear(1.0_⑴ * Centi(Metre)));
   lower_bound = upper_bound;
   upper_bound = samples.cend() - 1;
   Hermite3<Instant, Length> tail_polynomial({lower_bound->t, upper_bound->t},
@@ -108,7 +110,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
-              IsNear(100 * Nano(Metre), 2.0));
+              IsNear(107_⑴ * Nano(Metre)));
 }
 
 TEST_F(FitHermiteSplineDeathTest, NoDownsampling) {

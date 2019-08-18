@@ -12,6 +12,7 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -39,6 +40,7 @@ using testing_utilities::ComputeЧебышёвPolynomialSecondDerivative;
 using testing_utilities::ComputeLegendrePolynomialSecondDerivative;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
+using testing_utilities::operator""_⑴;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -144,8 +146,8 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
     max_error = std::max(max_error, error);
     max_derivative_error = std::max(max_derivative_error, derivative_error);
   }
-  EXPECT_THAT(max_error, IsNear(172e-6));
-  EXPECT_THAT(max_derivative_error, IsNear(4.54e-3 / Second));
+  EXPECT_THAT(max_error, IsNear(172e-6_⑴));
+  EXPECT_THAT(max_derivative_error, IsNear(4.54e-3_⑴ / Second));
 }
 
 }  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT

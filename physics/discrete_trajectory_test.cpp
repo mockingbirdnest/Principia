@@ -17,6 +17,7 @@
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
@@ -48,6 +49,7 @@ using quantities::si::Second;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
+using testing_utilities::operator""_⑴;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -868,8 +870,8 @@ TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
     max_v_error =
         std::max(max_v_error, RelativeError(v, v_interpolated.Norm()));
   }
-  EXPECT_THAT(max_r_error, IsNear(0.015));
-  EXPECT_THAT(max_v_error, IsNear(0.012));
+  EXPECT_THAT(max_r_error, IsNear(0.015_⑴));
+  EXPECT_THAT(max_v_error, IsNear(0.012_⑴));
 }
 
 TEST_F(DiscreteTrajectoryTest, Downsampling) {

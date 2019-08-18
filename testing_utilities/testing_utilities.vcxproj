@@ -11,6 +11,8 @@
     <ClInclude Include="algebra_body.hpp" />
     <ClInclude Include="almost_equals.hpp" />
     <ClInclude Include="almost_equals_body.hpp" />
+    <ClInclude Include="approximate_quantity.hpp" />
+    <ClInclude Include="approximate_quantity_body.hpp" />
     <ClInclude Include="componentwise.hpp" />
     <ClInclude Include="componentwise_body.hpp" />
     <ClInclude Include="integration.hpp" />
@@ -35,6 +37,7 @@
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="algebra_test.cpp" />
     <ClCompile Include="almost_equals_test.cpp" />
+    <ClCompile Include="approximate_quantity_test.cpp" />
     <ClCompile Include="componentwise_test.cpp" />
     <ClCompile Include="is_near_test.cpp" />
     <ClCompile Include="numerics_test.cpp" />

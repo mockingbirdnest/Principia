@@ -86,6 +86,12 @@
     <ClInclude Include="is_near_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="approximate_quantity.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="approximate_quantity_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="almost_equals_test.cpp">
@@ -114,6 +120,9 @@
     </ClCompile>
     <ClCompile Include="..\numerics\cbrt.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="approximate_quantity_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

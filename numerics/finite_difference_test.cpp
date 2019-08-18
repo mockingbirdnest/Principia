@@ -20,11 +20,13 @@ namespace internal_finite_difference {
 using quantities::Infinity;
 using quantities::Pow;
 using quantities::Sqrt;
+using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 using ::testing::Each;
+using ::testing::Lt;
 using ::testing::Types;
 
 template<typename T>
@@ -82,7 +84,8 @@ TYPED_TEST(FiniteDifferenceTest, HighDegreePolynomial) {
     if constexpr (n == 1) {
       EXPECT_THAT(log_errors, Each(Infinity<double>()));
     } else {
-      EXPECT_THAT(Slope(log_steps, log_errors), IsNear(n - 1, 1.3))
+      EXPECT_THAT(AbsoluteError(n - 1, Slope(log_steps, log_errors)),
+                  Lt(0.47))
           << "with n = " << n << ", j = " << j;
     }
   }
