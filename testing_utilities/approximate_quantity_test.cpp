@@ -79,7 +79,6 @@ TEST(ApproximateQuantityTest, Literals_⑵_⑼) {
   ApproximateQuantity<double> const quote = 11'972_⑴;
   EXPECT_THAT(quote.min(), AlmostEquals(11971, 0));
   EXPECT_THAT(quote.max(), AlmostEquals(11973, 0));
-
 }
 
 TEST(ApproximateQuantityTest, Literals_🄐_🄕) {

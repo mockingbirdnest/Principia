@@ -93,6 +93,7 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::IsOk;
+using ::testing::Lt;
 
 class OrbitalElementsTest : public ::testing::Test {
  protected:
@@ -197,47 +198,47 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   OrbitalElements const& elements = status_or_elements.ValueOrDie();
   EXPECT_THAT(
       AbsoluteError(*initial_osculating.period, elements.anomalistic_period()),
-      IsNear(243_⑴ * Micro(Second)));
+      Lt(510 * Micro(Second)));
   EXPECT_THAT(
       AbsoluteError(*initial_osculating.period, elements.nodal_period()),
-      IsNear(3.7_⑴ * Milli(Second)));
+      Lt(3.8 * Milli(Second)));
   EXPECT_THAT(
       AbsoluteError(*initial_osculating.period, elements.sidereal_period()),
-      IsNear(1.8_⑴ * Micro(Second)));
+      Lt(1.9 * Micro(Second)));
 
-  EXPECT_THAT(elements.nodal_precession(), IsNear(1.2_⑴ * Degree / JulianYear));
+  EXPECT_THAT(elements.nodal_precession(), Lt(1.3 * Degree / JulianYear));
 
   // Mean element values.
   EXPECT_THAT(AbsoluteError(*initial_osculating.semimajor_axis,
                             elements.mean_semimajor_axis_interval().midpoint()),
-              IsNear(330_⑴ * Micro(Metre)));
+              Lt(330 * Micro(Metre)));
   EXPECT_THAT(AbsoluteError(*initial_osculating.eccentricity,
                             elements.mean_eccentricity_interval().midpoint()),
-              IsNear(4.5e-11_⑴));
+              Lt(4.6e-11));
   EXPECT_THAT(AbsoluteError(initial_osculating.inclination,
                             elements.mean_inclination_interval().midpoint()),
-              IsNear(0.19_⑴ * Micro(ArcSecond)));
+              Lt(0.56 * Micro(ArcSecond)));
   EXPECT_THAT(
       AbsoluteError(
           initial_osculating.longitude_of_ascending_node,
           elements.mean_longitude_of_ascending_node_interval().midpoint()),
-      IsNear(57_⑴ * ArcSecond));
+      Lt(58 * ArcSecond));
   EXPECT_THAT(
       AbsoluteError(*initial_osculating.argument_of_periapsis,
                     elements.mean_argument_of_periapsis_interval().midpoint()),
-      IsNear(49_⑴ * ArcSecond));
+      Lt(52 * ArcSecond));
 
   // Mean element stability.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(0.8_⑴ * Milli(Metre)));
+              Lt(1.0 * Milli(Metre)));
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
-              IsNear(1.0e-10_⑴));
+              Lt(1.1e-10));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
-              IsNear(0.66_⑴ * Micro(ArcSecond)));
+              Lt(0.67 * Micro(ArcSecond)));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().measure(),
-              IsNear(2.1_⑴ * ArcMinute));
+              Lt(2.1 * ArcMinute));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
-              IsNear(1.7_⑴ * ArcMinute));
+              Lt(2.2 * ArcMinute));
 
   OFStream f(SOLUTION_DIR / "mathematica" /
              "unperturbed_elements.generated.wl");
@@ -317,7 +318,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   EXPECT_THAT(theoretical_ωʹ, IsNear(14_⑴ * Degree / Day));
 
   EXPECT_THAT(RelativeError(theoretical_Ωʹ, elements.nodal_precession()),
-              IsNear(0.0028_⑴));
+              Lt(0.0029));
 
   // Mean element values.  Since Ω and ω precess rapidly, the midpoint of the
   // range of values is of no interest.
@@ -328,7 +329,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
               IsNear(0.0013_⑴));
   EXPECT_THAT(AbsoluteError(initial_osculating.inclination,
                             elements.mean_inclination_interval().midpoint()),
-              IsNear(1.4_⑴ * Micro(ArcSecond)));
+              Lt(1.9 * Micro(ArcSecond)));
 
   // Mean element stability: Ω and ω precess as expected, the other elements are
   // stable.
@@ -337,7 +338,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
               IsNear(3.8e-9_⑴));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
-              IsNear(0.8_⑴ * Micro(ArcSecond)));
+              Lt(1.1* Micro(ArcSecond)));
   EXPECT_THAT(
       RelativeError(
           -theoretical_Ωʹ * mission_duration,

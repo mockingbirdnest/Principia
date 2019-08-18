@@ -103,7 +103,7 @@ inline ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
     CHECK(is_hexadecimal);
     error_representation[*last_digit_index] = 'A' + ulp - 10;
   }
-  
+
   // Apparently the stupid language doesn't know how to parse literals with
   // quotes...
   std::string const stripped_representation =

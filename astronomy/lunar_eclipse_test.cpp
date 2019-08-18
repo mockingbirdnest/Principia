@@ -147,10 +147,11 @@ class LunarEclipseTest : public ::testing::Test {
 
   // A positive |time_error| means that the actual contact happens after
   // |current_time|.
-  void CheckLunarPenumbralEclipse(Instant const& current_time,
-                                  Sign const moon_offset_sign,
-                                  ApproximateQuantity<Angle> const& angular_error,
-                                  ApproximateQuantity<Time> const& time_error) {
+  void CheckLunarPenumbralEclipse(
+      Instant const& current_time,
+      Sign const moon_offset_sign,
+      ApproximateQuantity<Angle> const& angular_error,
+      ApproximateQuantity<Time> const& time_error) {
     ephemeris_->Prolong(current_time + bisection_interval);
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
