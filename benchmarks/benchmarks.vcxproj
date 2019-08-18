@@ -13,6 +13,7 @@
     <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
     <ClCompile Include="..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp" />
+    <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="apsides.cpp" />
     <ClCompile Include="dynamic_frame.cpp" />
     <ClCompile Include="elliptic_integrals_benchmark.cpp" />

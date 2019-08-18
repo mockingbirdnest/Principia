@@ -148,16 +148,8 @@ class StackTraceDecoder {
                            @"\(([0-9A-F]+)\)",
                        "interface\\.cpp",
                        stream);
-    Int64 physics_base_address =
-        GetBaseAddress(unity_crash,
-                       @"GameData\\Principia\\x64\\physics.dll:physics.dll " +
-                           @"\(([0-9A-F]+)\)",
-                       "ksp_physics_lib\\.cpp",
-                       stream);
     Console.Write(
         comment($"Using Principia base address {principia_base_address:X}"));
-    Console.Write(
-        comment($"Using Physics base address {physics_base_address:X}"));
     var stack_regex = new Regex(
         unity_crash ? @"0x([0-9A-F]+) .*"
                     : @"@\s+[0-9A-F]+\s+.* \[0x([0-9A-F]+)(\+[0-9]+)?\]");
@@ -182,15 +174,6 @@ class StackTraceDecoder {
                          Path.Combine(principia_directory, "principia.dll"),
                          null,
                          principia_base_address,
-                         0,
-                         IntPtr.Zero,
-                         0) != 0);
-    Win32Check(
-        SymLoadModuleExW(handle,
-                         IntPtr.Zero,
-                         Path.Combine(principia_directory, "physics.dll"),
-                         null,
-                         physics_base_address,
                          0,
                          IntPtr.Zero,
                          0) != 0);

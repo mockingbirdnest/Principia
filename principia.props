@@ -32,7 +32,6 @@
     <PrincipiaOptimize Condition="$(Configuration.StartsWith('Release'))">true</PrincipiaOptimize>
     <PrincipiaTestProject>true</PrincipiaTestProject>
     <PrincipiaTestProject Condition="$(ProjectName) == ksp_plugin or
-                                     $(ProjectName) == ksp_physics or
                                      $(ProjectName) == serialization or
                                      $(ProjectName) == benchmarks or
                                      $(ProjectName) == tools or
@@ -51,7 +50,6 @@
   <!--Target.-->
   <PropertyGroup>
     <ConfigurationType Condition="$(ProjectName) == ksp_plugin or
-                                  $(ProjectName) == ksp_physics or
                                   $(ProjectName) == serialization">DynamicLibrary</ConfigurationType>
     <ConfigurationType Condition="$(PrincipiaTestProject) or
                                   $(ProjectName) == tools or
@@ -200,21 +198,6 @@
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>
   </ItemGroup>
-  <!--ksp_plugin depends on the ksp_physics DLL.-->
-  <ItemDefinitionGroup Condition="$(ProjectName) == ksp_plugin or
-                                  $(ProjectName) == ksp_plugin_test or
-                                  $(ProjectName) == benchmarks">
-    <ClCompile>
-      <PreprocessorDefinitions>PHYSICS_DLL_IMPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemGroup Condition="$(ProjectName) == ksp_plugin or
-                        $(ProjectName) == ksp_plugin_test or
-                        $(ProjectName) == benchmarks">
-    <ProjectReference Include="$(SolutionDir)ksp_physics\ksp_physics.vcxproj">
-      <Project>{3882467c-89d7-4dae-9730-bb2e610f05ad}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <!--journal depends on the ksp_plugin DLL.-->
   <ItemDefinitionGroup Condition="$(ProjectName) == journal">
     <ClCompile>
@@ -229,9 +212,6 @@
 
   <PropertyGroup Condition="$(ProjectName) == ksp_plugin">
     <TargetName>principia</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="$(ProjectName) == ksp_physics">
-    <TargetName>physics</TargetName>
   </PropertyGroup>
   <!--Copy DLLs to GameData.-->
   <ItemDefinitionGroup Condition="$(ConfigurationType) == DynamicLibrary">

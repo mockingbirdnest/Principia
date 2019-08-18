@@ -14,7 +14,7 @@ namespace internal_body {
 using base::not_constructible;
 using base::not_null;
 
-class PHYSICS_DLL Body {
+class Body {
  public:
   virtual ~Body() = default;
 
@@ -57,8 +57,6 @@ using internal_body::Body;
 }  // namespace physics
 }  // namespace principia
 
-#if !PHYSICS_DLL_IMPORT
 #include "physics/body_body.hpp"
-#endif
 
 #endif  // PRINCIPIA_PHYSICS_BODY_HPP_
