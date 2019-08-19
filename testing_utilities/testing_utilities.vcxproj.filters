@@ -92,10 +92,10 @@
     <ClInclude Include="approximate_quantity_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="error_matchers.hpp">
+    <ClInclude Include="numerics_matchers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="error_matchers_body.hpp">
+    <ClInclude Include="numerics_matchers_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

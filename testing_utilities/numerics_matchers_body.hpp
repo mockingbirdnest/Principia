@@ -1,6 +1,6 @@
 #pragma once
 
-#include "testing_utilities/error_matchers.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 #include <ostream>
 
@@ -8,7 +8,7 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_error_matchers {
+namespace internal_numerics_matchers {
 
 using ::testing::MakeMatcher;
 using ::testing::MatcherInterface;
@@ -172,6 +172,6 @@ Matcher<Value const&> RelativeErrorFrom(Value const& expected,
       new RelativeErrorFromMatcher<Value>(expected, error_matcher));
 }
 
-}  // namespace internal_error_matchers
+}  // namespace internal_numerics_matchers
 }  // namespace testing_utilities
 }  // namespace principia
