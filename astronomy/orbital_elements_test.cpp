@@ -18,7 +18,7 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 
@@ -90,8 +90,8 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::DifferenceFrom;
 using testing_utilities::AlmostEquals;
+using testing_utilities::DifferenceFrom;
 using testing_utilities::IsNear;
 using testing_utilities::IsOk;
 using ::testing::Lt;
@@ -214,7 +214,8 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
               AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
                                 Lt(330 * Micro(Metre))));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              AbsoluteErrorFrom(*initial_osculating.eccentricity, Lt(4.6e-11)));
+              AbsoluteErrorFrom(*initial_osculating.eccentricity,
+                                Lt(4.6e-11)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.inclination,
                                 Lt(0.57 * Micro(ArcSecond))));
