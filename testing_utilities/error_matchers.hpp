@@ -23,14 +23,14 @@ template<typename Value>
 Matcher<Value const&> RelativeErrorFrom(Value const& expected,
                                         Matcher<double> const& error_matcher);
 
-}
+}  // namespace internal_error_matchers
 
 using internal_error_matchers::AbsoluteErrorFrom;
 using internal_error_matchers::DifferenceFrom;
 using internal_error_matchers::RelativeErrorFrom;
 
-}  // namespace internal_error_matchers
 }  // namespace testing_utilities
+}  // namespace principia
 
 #include "testing_utilities/numerics_body.hpp"
 #include "testing_utilities/error_matchers_body.hpp"
