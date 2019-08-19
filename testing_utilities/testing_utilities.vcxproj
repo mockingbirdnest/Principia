@@ -15,6 +15,8 @@
     <ClInclude Include="approximate_quantity_body.hpp" />
     <ClInclude Include="componentwise.hpp" />
     <ClInclude Include="componentwise_body.hpp" />
+    <ClInclude Include="error_matchers.hpp" />
+    <ClInclude Include="error_matchers_body.hpp" />
     <ClInclude Include="integration.hpp" />
     <ClInclude Include="integration_body.hpp" />
     <ClInclude Include="is_near.hpp" />
