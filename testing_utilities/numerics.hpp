@@ -6,7 +6,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
-#include "gmock/gmock-matchers.h"
+#include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
