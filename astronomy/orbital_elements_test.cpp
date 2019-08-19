@@ -89,11 +89,11 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
-using ::testing::Lt;
 using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::DifferenceFrom;
 using testing_utilities::IsNear;
+using testing_utilities::IsOk;
 using ::testing::Lt;
 
 class OrbitalElementsTest : public ::testing::Test {

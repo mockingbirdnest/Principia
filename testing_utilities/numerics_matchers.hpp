@@ -32,5 +32,4 @@ using internal_numerics_matchers::RelativeErrorFrom;
 }  // namespace testing_utilities
 }  // namespace principia
 
-#include "testing_utilities/numerics_body.hpp"
 #include "testing_utilities/numerics_matchers_body.hpp"
