@@ -1,7 +1,7 @@
 # Instructions for building Principia on Windows
 
 Before starting, make sure the following are installed on your machine:
-* Visual Studio 2019 version 16.2.0 preview 2 with C# and C++ support;
+* Visual Studio 2019 version 16.2.3 with C# and C++ support;
 * Windows SDK 10.0.18362;
 * .NET Framework 4.7.2 SDK (and Targeting Pack).
 
