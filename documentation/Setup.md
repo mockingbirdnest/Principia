@@ -12,7 +12,7 @@ tool for our own use, so if you use a different edition, just do
 and test the mod.
 
 These instructions use the git Powershell provided by [GitHub for Windows](https://windows.github.com/).
-We assume a working installation of Kerbal Space Program version 1.7.0 is found in `<KSP directory>`.
+We assume a working installation of Kerbal Space Program version 1.7.2 is found in `<KSP directory>`.
 
 The repository is found at https://github.com/mockingbirdnest/Principia.git.
 Pick a directory `<root>` in which you will install Principia and its
@@ -50,7 +50,7 @@ In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
 
 ### KSP and Unity assemblies
 
-In order to build for KSP 1.3.1, copy the corresponding KSP 1.3.1 assemblies to `<root>\KSP Assemblies\1.3.1`.  For KSP 1.7.0 copy the corresponding KSP 1.7.0 assemblies to `<root>\KSP Assemblies\1.7.0`
+In order to build for KSP 1.7.2, copy the corresponding KSP 1.7.2 assemblies to `<root>\KSP Assemblies\1.7.2`
 
 ### Downloading the Google libraries
 
