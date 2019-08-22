@@ -84,8 +84,18 @@ RotatingBody<Frame>::RotatingBody(
                         parameters.angular_frequency_) {}
 
 template<typename Frame>
+Length RotatingBody<Frame>::min_radius() const {
+  return parameters_.min_radius_;
+}
+
+template<typename Frame>
 Length RotatingBody<Frame>::mean_radius() const {
   return parameters_.mean_radius_;
+}
+
+template<typename Frame>
+Length RotatingBody<Frame>::max_radius() const {
+  return parameters_.max_radius_;
 }
 
 template<typename Frame>
