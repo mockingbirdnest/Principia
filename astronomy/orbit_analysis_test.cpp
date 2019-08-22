@@ -41,6 +41,7 @@ using quantities::si::ArcMinute;
 using quantities::si::ArcSecond;
 using quantities::si::Day;
 using quantities::si::Degree;
+using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Micro;
@@ -169,8 +170,23 @@ class OrbitAnalysisTest : public ::testing::Test {
                                            elements.nodal_precession(),
                                            earth_,
                                            /*max_abs_Cᴛₒ=*/100);
+    // Since our ITRS-to-ICRS conversion disregards the precession of the
+    // equinoxes, it is not completely clear which year we should be dealing
+    // with here.  Given that the SP3 files have data in the ITRS (whose equator
+    // is the equator of date), and that we map that to the ICRS equator, our
+    // IRCS here is more like an equator-of-date frame (although it is not clear
+    // whether its x axis resembles the equinox of the date), so we pick
+    // the tropical year.
+    // We use Newcomb's values.
     auto const ground_track = OrbitGroundTrack::ForTrajectory(
-        *earth_centred_trajectory, earth_, recurrence);
+        *earth_centred_trajectory,
+        earth_,
+        recurrence,
+        {{/*epoch=*/"1899-12-31T12:00:00"_TT,
+          /*mean_longitude_at_epoch=*/279 * Degree + 41 * ArcMinute +
+              48.04 * ArcSecond,
+          /*year*/ 2 * π * Radian /
+              (129'602'768.13 * ArcSecond / (100 * JulianYear))}});
     return {elements, recurrence, ground_track};
   }
 
@@ -534,6 +550,21 @@ TEST_F(OrbitAnalysisTest, SPOT5) {
               IsNear(0.0012_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(89.38_⑴ * Degree));
+
+  // The nominal mean solar times of the nodes are 22:30 ascending, 10:30
+  // descending.
+  EXPECT_THAT(ground_track.mean_solar_time_of_ascending_node()->midpoint() *
+                  (1 * Day / (2 * π * Radian)),
+              IsNear(22.452_⑴ * Hour));
+  EXPECT_THAT(ground_track.mean_solar_time_of_descending_node()->midpoint() *
+                  (1 * Day / (2 * π * Radian)),
+              IsNear(10.452_⑴ * Hour));
+  EXPECT_THAT(ground_track.mean_solar_time_of_ascending_node()->measure() *
+                  (1 * Day / (2 * π * Radian)),
+              IsNear(3.91_⑴ * Second));
+  EXPECT_THAT(ground_track.mean_solar_time_of_descending_node()->measure() *
+                  (1 * Day / (2 * π * Radian)),
+              IsNear(3.91_⑴ * Second));
 }
 
 // COSPAR ID 2016-011A, Sentinel-3A.
@@ -554,6 +585,21 @@ TEST_F(OrbitAnalysisTest, Sentinel3A) {
               IsNear(0.0011_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(90.01_⑴ * Degree));
+
+  // The nominal mean solar times of the nodes are 22:00 ascending, 10:00
+  // descending.
+  EXPECT_THAT(ground_track.mean_solar_time_of_ascending_node()->midpoint() *
+                  (1 * Day / (2 * π * Radian)),
+              IsNear(21.987_⑴ * Hour));
+  EXPECT_THAT(ground_track.mean_solar_time_of_descending_node()->midpoint() *
+                  (1 * Day / (2 * π * Radian)),
+              IsNear(09.987_⑴ * Hour));
+  EXPECT_THAT(ground_track.mean_solar_time_of_ascending_node()->measure() *
+                  (1 * Day / (2 * π * Radian)),
+              IsNear(1.70_⑴ * Second));
+  EXPECT_THAT(ground_track.mean_solar_time_of_descending_node()->measure() *
+                  (1 * Day / (2 * π * Radian)),
+              IsNear(1.63_⑴ * Second));
 }
 
 #endif
