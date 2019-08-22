@@ -5,15 +5,14 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static partial class Interface {
-
-  static IntPtr At(this IntPtr pointer, long offset) {
+  private static IntPtr At(this IntPtr pointer, long offset) {
     return new IntPtr(pointer.ToInt64() + offset);
   }
 
   internal class InBodyParametersMarshaler : ICustomMarshaler {
 
     [StructLayout(LayoutKind.Sequential)]
-    internal partial class BodyParametersRepresentation {
+    internal class BodyParametersRepresentation {
       public string name;
       public string gravitational_parameter;
       public string reference_instant;
@@ -24,6 +23,9 @@ internal static partial class Interface {
       public string angular_frequency;
       public string reference_radius;
       public string j2;
+      public double ksp_radius;
+      public double ksp_min_radius;
+      public double ksp_max_radius;
       public IntPtr geopotential;
       public int geopotential_size;
     }
@@ -53,12 +55,16 @@ internal static partial class Interface {
           axis_right_ascension    = parameters.axis_right_ascension,
           gravitational_parameter = parameters.gravitational_parameter,
           j2                      = parameters.j2,
+          ksp_max_radius          = parameters.ksp_max_radius,
+          ksp_min_radius          = parameters.ksp_min_radius,
+          ksp_radius              = parameters.ksp_radius,
           mean_radius             = parameters.mean_radius,
           name                    = parameters.name,
           reference_angle         = parameters.reference_angle,
           reference_instant       = parameters.reference_instant,
-          reference_radius        = parameters.reference_radius};
-      representation.geopotential_size = parameters.geopotential?.Length ?? 0;
+          reference_radius        = parameters.reference_radius,
+          geopotential_size       = parameters.geopotential?.Length ?? 0
+      };
       if (representation.geopotential_size == 0) {
         representation.geopotential = IntPtr.Zero;
       } else {

@@ -8,30 +8,26 @@ internal static class ConfigNodeParsers {
   public static BodyParameters NewCartesianBodyParameters(CelestialBody body,
                                                           ConfigNode node) {
     return new BodyParameters{
-        name = body.name,
+        name                    = body.name,
         gravitational_parameter =
             node.GetUniqueValue("gravitational_parameter"),
-        reference_instant       =
-            node.GetAtMostOneValue("reference_instant"),
-        mean_radius             =
-            node.GetAtMostOneValue("mean_radius"),
+        reference_instant       = node.GetAtMostOneValue("reference_instant"),
+        mean_radius             = node.GetAtMostOneValue("mean_radius"),
         axis_right_ascension    =
             node.GetAtMostOneValue("axis_right_ascension"),
-        axis_declination        =
-            node.GetAtMostOneValue("axis_declination"),
-        reference_angle         =
-            node.GetAtMostOneValue("reference_angle"),
-        angular_frequency       =
-            node.GetAtMostOneValue("angular_frequency"),
-        reference_radius        =
-            node.GetAtMostOneValue("reference_radius"),
-        j2                      =
-            node.GetAtMostOneValue("j2"),
-        geopotential            =
-            node.GetBodyGeopotentialElements().ToArray()};
+        axis_declination        = node.GetAtMostOneValue("axis_declination"),
+        reference_angle         = node.GetAtMostOneValue("reference_angle"),
+        angular_frequency       = node.GetAtMostOneValue("angular_frequency"),
+        reference_radius        = node.GetAtMostOneValue("reference_radius"),
+        j2                      = node.GetAtMostOneValue("j2"),
+        ksp_radius              = body.Radius,
+        ksp_min_radius          = body.pqsController?.radiusMin ?? body.Radius,
+        ksp_max_radius          = body.pqsController?.radiusMax ?? body.Radius,
+        geopotential            = node.GetBodyGeopotentialElements().ToArray()
+    };
   }
 
-  public static ConfigurationAccuracyParameters
+      public static ConfigurationAccuracyParameters
   NewConfigurationAccuracyParameters(ConfigNode node) {
     return new ConfigurationAccuracyParameters{
         fitting_tolerance      =
@@ -63,37 +59,33 @@ internal static class ConfigNodeParsers {
   public static BodyParameters NewKeplerianBodyParameters(CelestialBody body,
                                                           ConfigNode node) {
     return new BodyParameters{
-        name = body.name,
+        name                    = body.name,
         gravitational_parameter =
-            node?.GetAtMostOneValue("gravitational_parameter")
-                ?? (body.gravParameter + " m^3/s^2"),
+            node?.GetAtMostOneValue("gravitational_parameter") ??
+            (body.gravParameter + " m^3/s^2"),
         // The origin of rotation in KSP is the x of Barycentric, rather
         // than the y axis as is the case for Earth, so the right
         // ascension is -90 deg.
-        reference_instant    = 
-            node?.GetAtMostOneValue("reference_instant")
-                ?? "JD2451545.0",
-        mean_radius          =
-            node?.GetAtMostOneValue("mean_radius")
-                ?? (body.Radius + " m"),
-        axis_right_ascension =
-            node?.GetAtMostOneValue("axis_right_ascension")
-                ?? "-90 deg",
-        axis_declination     =
-            node?.GetAtMostOneValue("axis_declination")
-                ?? "90 deg",
-        reference_angle      =
-            node?.GetAtMostOneValue("reference_angle")
-                ?? (body.initialRotation + " deg"),
-        angular_frequency    =
-            node?.GetAtMostOneValue("angular_frequency")
-                ?? (body.angularV + " rad/s"),
-        reference_radius     =
-            node?.GetAtMostOneValue("reference_radius"),
-        j2                   =
-            node?.GetAtMostOneValue("j2"),
-        geopotential            =
-            node?.GetBodyGeopotentialElements()?.ToArray()};
+        reference_instant       =
+            node?.GetAtMostOneValue("reference_instant") ?? "JD2451545.0",
+        mean_radius             = node?.GetAtMostOneValue("mean_radius") ??
+                                  (body.Radius + " m"),
+        axis_right_ascension    =
+            node?.GetAtMostOneValue("axis_right_ascension") ?? "-90 deg",
+        axis_declination        =
+            node?.GetAtMostOneValue("axis_declination") ?? "90 deg",
+        reference_angle         = node?.GetAtMostOneValue("reference_angle") ??
+                                  (body.initialRotation + " deg"),
+        angular_frequency       =
+            node?.GetAtMostOneValue("angular_frequency") ??
+            (body.angularV + " rad/s"),
+        reference_radius        = node?.GetAtMostOneValue("reference_radius"),
+        j2                      = node?.GetAtMostOneValue("j2"),
+        ksp_radius              = body.Radius,
+        ksp_min_radius          = body.pqsController?.radiusMin ?? body.Radius,
+        ksp_max_radius          = body.pqsController?.radiusMax ?? body.Radius,
+        geopotential            = node?.GetBodyGeopotentialElements()?.ToArray()
+    };
   }
 
   private static List<BodyGeopotentialElement> GetBodyGeopotentialElements(

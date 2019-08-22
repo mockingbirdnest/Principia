@@ -2124,6 +2124,24 @@ public partial class PrincipiaPluginAdapter
         var body_parameters =
             ConfigNodeParsers.NewCartesianBodyParameters(body,
                                                          body_gravity_model);
+
+        UnityEngine.Debug.LogError(body.name + " " + body.Radius + " " +
+                                   (body.pqsController?.radiusMax ?? -1)+ " " +
+                                   (body.pqsController?.radiusMin ?? -1));
+        double min = 1e10;
+        double max = -1e10;
+        for (double lat = -90; lat <= 90; lat += 0.5) {
+          for (double lon = 0; lon <= 360; lon += 0.5) {
+            double alt = body.TerrainAltitude(lat, lon, true);
+            max = Math.Max(max, alt);
+            min = Math.Min(min, alt);
+          }
+        }
+        UnityEngine.Debug.LogError(min + " " + max);
+        UnityEngine.Debug.LogError(body.name + " " + body.Radius + " " +
+                                   (body.pqsController?.radiusMax ?? -1) + " " +
+                                   (body.pqsController?.radiusMin ?? -1));
+
         // GetUniqueValue since these are all required fields in
         // principia.serialization.InitialState.Cartesian.Body.
         plugin_.InsertCelestialAbsoluteCartesian(

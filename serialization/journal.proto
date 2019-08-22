@@ -53,6 +53,9 @@ message BodyParameters {
   optional string angular_frequency = 9;
   optional string reference_radius = 6;
   optional string j2 = 5;  // No parsing in C#.
+  required double ksp_radius = 12;
+  required double ksp_min_radius = 13;
+  required double ksp_max_radius = 14;
   repeated BodyGeopotentialElement geopotential = 11
       [(size) = "geopotential_size"];
 }
