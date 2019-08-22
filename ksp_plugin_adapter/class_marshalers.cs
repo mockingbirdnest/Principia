@@ -16,16 +16,15 @@ internal static partial class Interface {
       public string name;
       public string gravitational_parameter;
       public string reference_instant;
-      public string mean_radius;
       public string axis_right_ascension;
       public string axis_declination;
       public string reference_angle;
       public string angular_frequency;
       public string reference_radius;
       public string j2;
-      public double ksp_radius;
-      public double ksp_min_radius;
-      public double ksp_max_radius;
+      public double min_radius;
+      public double mean_radius;
+      public double max_radius;
       public IntPtr geopotential;
       public int geopotential_size;
     }
@@ -55,10 +54,9 @@ internal static partial class Interface {
           axis_right_ascension    = parameters.axis_right_ascension,
           gravitational_parameter = parameters.gravitational_parameter,
           j2                      = parameters.j2,
-          ksp_max_radius          = parameters.ksp_max_radius,
-          ksp_min_radius          = parameters.ksp_min_radius,
-          ksp_radius              = parameters.ksp_radius,
+          max_radius              = parameters.max_radius,
           mean_radius             = parameters.mean_radius,
+          min_radius              = parameters.min_radius,
           name                    = parameters.name,
           reference_angle         = parameters.reference_angle,
           reference_instant       = parameters.reference_instant,

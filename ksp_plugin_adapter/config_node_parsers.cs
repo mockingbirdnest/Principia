@@ -12,7 +12,6 @@ internal static class ConfigNodeParsers {
         gravitational_parameter =
             node.GetUniqueValue("gravitational_parameter"),
         reference_instant       = node.GetAtMostOneValue("reference_instant"),
-        mean_radius             = node.GetAtMostOneValue("mean_radius"),
         axis_right_ascension    =
             node.GetAtMostOneValue("axis_right_ascension"),
         axis_declination        = node.GetAtMostOneValue("axis_declination"),
@@ -20,9 +19,9 @@ internal static class ConfigNodeParsers {
         angular_frequency       = node.GetAtMostOneValue("angular_frequency"),
         reference_radius        = node.GetAtMostOneValue("reference_radius"),
         j2                      = node.GetAtMostOneValue("j2"),
-        ksp_radius              = body.Radius,
-        ksp_min_radius          = body.pqsController?.radiusMin ?? body.Radius,
-        ksp_max_radius          = body.pqsController?.radiusMax ?? body.Radius,
+        min_radius              = body.pqsController?.radiusMin ?? body.Radius,
+        mean_radius             = body.Radius,
+        max_radius              = body.pqsController?.radiusMax ?? body.Radius,
         geopotential            = node.GetBodyGeopotentialElements().ToArray()
     };
   }
@@ -68,8 +67,6 @@ internal static class ConfigNodeParsers {
         // ascension is -90 deg.
         reference_instant       =
             node?.GetAtMostOneValue("reference_instant") ?? "JD2451545.0",
-        mean_radius             = node?.GetAtMostOneValue("mean_radius") ??
-                                  (body.Radius + " m"),
         axis_right_ascension    =
             node?.GetAtMostOneValue("axis_right_ascension") ?? "-90 deg",
         axis_declination        =
@@ -81,9 +78,9 @@ internal static class ConfigNodeParsers {
             (body.angularV + " rad/s"),
         reference_radius        = node?.GetAtMostOneValue("reference_radius"),
         j2                      = node?.GetAtMostOneValue("j2"),
-        ksp_radius              = body.Radius,
-        ksp_min_radius          = body.pqsController?.radiusMin ?? body.Radius,
-        ksp_max_radius          = body.pqsController?.radiusMax ?? body.Radius,
+        min_radius              = body.pqsController?.radiusMin ?? body.Radius,
+        mean_radius             = body.Radius,
+        max_radius              = body.pqsController?.radiusMax ?? body.Radius,
         geopotential            = node?.GetBodyGeopotentialElements()?.ToArray()
     };
   }

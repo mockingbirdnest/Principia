@@ -18,7 +18,9 @@ message GravityModel {
     }
     // Rotating body.
     optional string reference_instant = 12;  // Terrestrial time.
+    optional string min_radius = 15;
     optional string mean_radius = 7;
+    optional string max_radius = 16;
     optional string axis_right_ascension = 3;
     optional string axis_declination = 4;
     optional string reference_angle = 8;

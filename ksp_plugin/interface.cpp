@@ -198,7 +198,6 @@ serialization::GravityModel::Body MakeGravityModel(
       << NAMED(make_optional_c_string(body_parameters.gravitational_parameter))
       << "\n"
       << NAMED(body_parameters.reference_instant) << "\n"
-      << NAMED(make_optional_c_string(body_parameters.mean_radius)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.axis_right_ascension))
       << "\n"
       << NAMED(make_optional_c_string(body_parameters.axis_declination)) << "\n"
@@ -213,9 +212,6 @@ serialization::GravityModel::Body MakeGravityModel(
       body_parameters.gravitational_parameter);
   if (body_parameters.reference_instant != nullptr) {
     gravity_model.set_reference_instant(body_parameters.reference_instant);
-  }
-  if (body_parameters.mean_radius != nullptr) {
-    gravity_model.set_mean_radius(body_parameters.mean_radius);
   }
   if (body_parameters.axis_right_ascension != nullptr) {
     gravity_model.set_axis_right_ascension(
@@ -237,6 +233,12 @@ serialization::GravityModel::Body MakeGravityModel(
   if (body_parameters.j2 != nullptr) {
     gravity_model.set_j2(ParseQuantity<double>(body_parameters.j2));
   }
+  gravity_model.set_min_radius(
+      quantities::DebugString(body_parameters.min_radius * Metre));
+  gravity_model.set_mean_radius(
+      quantities::DebugString(body_parameters.mean_radius * Metre));
+  gravity_model.set_max_radius(
+      quantities::DebugString(body_parameters.max_radius * Metre));
   if (body_parameters.geopotential_size > 0) {
     *gravity_model.mutable_geopotential() =
         MakeGeopotential(body_parameters.geopotential,
