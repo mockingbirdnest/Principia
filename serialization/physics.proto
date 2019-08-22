@@ -220,7 +220,9 @@ message RotatingBody {
   }
   extensions 4000 to 4999;  // Last used: 4000.
   required Frame frame = 1;
+  optional Quantity min_radius = 9;  // Added in Del Ferro.
   required Quantity mean_radius = 5;
+  optional Quantity max_radius = 10;  // Added in Del Ferro.
   required Quantity reference_angle = 2;
   required Point reference_instant = 3;
   required Quantity angular_frequency = 6;
