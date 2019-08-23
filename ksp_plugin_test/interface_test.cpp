@@ -254,7 +254,9 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
       R"(name                    : "Brian"
          gravitational_parameter : "1.2345e6  m^3/s^2"
          reference_instant       : "JD2451545"
+         min_radius              : "0.5 m"
          mean_radius             : "1 m"
+         max_radius              : "1.5 m"
          axis_right_ascension    : "0 deg"
          axis_declination        : "90 deg"
          reference_angle         : "0 deg"
@@ -281,7 +283,9 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
       "Brian",
       "1.2345e6  m^3/s^2",
       /*reference_instant=*/"JD2451545",
+      /*min_radius=*/"0.5 m",
       /*mean_radius=*/"1 m",
+      /*max_radius=*/"1.5 m",
       /*axis_right_ascension=*/"0 deg",
       /*axis_declination=*/"90 deg",
       /*reference_angle=*/"0 deg",
@@ -306,7 +310,9 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
       u8R"(name                    : "that is called Brian"
            gravitational_parameter : "1.2345e6  km^3 / s^2"
            reference_instant       : "JD2452545"
+           min_radius              : "600 km"
            mean_radius             : "666 km"
+           max_radius              : "700 km"
            axis_right_ascension    : "42 deg"
            axis_declination        : "8°"
            reference_angle         : "2 rad"
@@ -334,7 +340,9 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
   BodyParameters const body_parameters = {"that is called Brian",
                                           "1.2345e6  km^3 / s^2",
                                           "JD2452545",
+                                          "600 km",
                                           "666 km",
+                                          "700 km",
                                           "42 deg",
                                           u8"8°",
                                           "2 rad",
@@ -359,7 +367,9 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
       u8R"(name                    : "that is called Brian"
            gravitational_parameter : "1.2345e6  km^3 / s^2"
            reference_instant       : "JD2452545"
+           min_radius              : "600 km"
            mean_radius             : "666 km"
+           max_radius              : "700 km"
            axis_right_ascension    : "42 deg"
            axis_declination        : "8°"
            reference_angle         : "2 rad"
@@ -399,7 +409,9 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
   BodyParameters const body_parameters = {"that is called Brian",
                                           "1.2345e6  km^3 / s^2",
                                           "JD2452545",
+                                          "600 km",
                                           "666 km",
+                                          "700 km",
                                           "42 deg",
                                           u8"8°",
                                           "2 rad",

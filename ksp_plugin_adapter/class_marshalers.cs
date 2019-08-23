@@ -16,15 +16,15 @@ internal static partial class Interface {
       public string name;
       public string gravitational_parameter;
       public string reference_instant;
+      public string min_radius;
+      public string mean_radius;
+      public string max_radius;
       public string axis_right_ascension;
       public string axis_declination;
       public string reference_angle;
       public string angular_frequency;
       public string reference_radius;
       public string j2;
-      public double min_radius;
-      public double mean_radius;
-      public double max_radius;
       public IntPtr geopotential;
       public int geopotential_size;
     }

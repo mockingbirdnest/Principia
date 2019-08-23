@@ -577,9 +577,9 @@ SolarSystem<Frame>::MakeRotatingBodyParameters(
   auto const max_radius =
       body.has_max_radius() ? body.max_radius() : body.mean_radius();
   return make_not_null_unique<typename RotatingBody<Frame>::Parameters>(
-      ParseQuantity<Length>(body.min_radius()),
+      ParseQuantity<Length>(min_radius),
       ParseQuantity<Length>(body.mean_radius()),
-      ParseQuantity<Length>(body.max_radius()),
+      ParseQuantity<Length>(max_radius),
       ParseQuantity<Angle>(body.reference_angle()),
       ParseTT(body.reference_instant()),
       ParseQuantity<AngularFrequency>(body.angular_frequency()),

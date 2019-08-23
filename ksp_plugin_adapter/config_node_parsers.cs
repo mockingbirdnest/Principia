@@ -12,6 +12,11 @@ internal static class ConfigNodeParsers {
         gravitational_parameter =
             node.GetUniqueValue("gravitational_parameter"),
         reference_instant       = node.GetAtMostOneValue("reference_instant"),
+        min_radius              =
+            (body.pqsController?.radiusMin ?? body.Radius) + " m",
+        mean_radius             = body.Radius + " m",
+        max_radius              =
+            (body.pqsController?.radiusMax ?? body.Radius) + " m",
         axis_right_ascension    =
             node.GetAtMostOneValue("axis_right_ascension"),
         axis_declination        = node.GetAtMostOneValue("axis_declination"),
@@ -19,20 +24,15 @@ internal static class ConfigNodeParsers {
         angular_frequency       = node.GetAtMostOneValue("angular_frequency"),
         reference_radius        = node.GetAtMostOneValue("reference_radius"),
         j2                      = node.GetAtMostOneValue("j2"),
-        min_radius              = body.pqsController?.radiusMin ?? body.Radius,
-        mean_radius             = body.Radius,
-        max_radius              = body.pqsController?.radiusMax ?? body.Radius,
         geopotential            = node.GetBodyGeopotentialElements().ToArray()
     };
   }
 
-      public static ConfigurationAccuracyParameters
+  public static ConfigurationAccuracyParameters
   NewConfigurationAccuracyParameters(ConfigNode node) {
     return new ConfigurationAccuracyParameters{
-        fitting_tolerance      =
-            node.GetUniqueValue("fitting_tolerance"),
-        geopotential_tolerance =
-            node.GetUniqueValue("geopotential_tolerance")};
+        fitting_tolerance      = node.GetUniqueValue("fitting_tolerance"),
+        geopotential_tolerance = node.GetUniqueValue("geopotential_tolerance")};
   }
 
   public static ConfigurationAdaptiveStepParameters
@@ -67,6 +67,11 @@ internal static class ConfigNodeParsers {
         // ascension is -90 deg.
         reference_instant       =
             node?.GetAtMostOneValue("reference_instant") ?? "JD2451545.0",
+        min_radius =
+            (body.pqsController?.radiusMin ?? body.Radius) + " m",
+        mean_radius = body.Radius + " m",
+        max_radius =
+            (body.pqsController?.radiusMax ?? body.Radius) + " m",
         axis_right_ascension    =
             node?.GetAtMostOneValue("axis_right_ascension") ?? "-90 deg",
         axis_declination        =
@@ -78,10 +83,7 @@ internal static class ConfigNodeParsers {
             (body.angularV + " rad/s"),
         reference_radius        = node?.GetAtMostOneValue("reference_radius"),
         j2                      = node?.GetAtMostOneValue("j2"),
-        min_radius              = body.pqsController?.radiusMin ?? body.Radius,
-        mean_radius             = body.Radius,
-        max_radius              = body.pqsController?.radiusMax ?? body.Radius,
-        geopotential            = node?.GetBodyGeopotentialElements()?.ToArray()
+        geopotential = node?.GetBodyGeopotentialElements()?.ToArray()
     };
   }
 

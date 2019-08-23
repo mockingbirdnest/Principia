@@ -46,15 +46,15 @@ message BodyParameters {
   required string name = 10;
   required string gravitational_parameter = 1;
   optional string reference_instant = 7;
+  optional string min_radius = 12;
+  optional string mean_radius = 2;
+  optional string max_radius = 13;
   optional string axis_right_ascension = 3;
   optional string axis_declination = 4;
   optional string reference_angle = 8;
   optional string angular_frequency = 9;
   optional string reference_radius = 6;
   optional string j2 = 5;  // No parsing in C#.
-  required double min_radius = 12;
-  required double mean_radius = 13;
-  required double max_radius = 14;
   repeated BodyGeopotentialElement geopotential = 11
       [(size) = "geopotential_size"];
 }
