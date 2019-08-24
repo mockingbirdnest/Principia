@@ -60,7 +60,7 @@ class RotatingBody : public MassiveBody {
                Angle const& right_ascension_of_pole,
                Angle const& declination_of_pole);
 
-  private:
+   private:
     Length const min_radius_;
     Length const mean_radius_;
     Length const max_radius_;
