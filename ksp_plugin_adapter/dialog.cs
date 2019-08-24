@@ -2,6 +2,12 @@
 namespace ksp_plugin_adapter {
 
 internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
+  private Dialog() {}
+
+  public Dialog(bool persist_state) {
+    persist_state_ = persist_state;
+  }
+
   public string Message {
     set {
       message_ = value;
@@ -21,17 +27,29 @@ internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
   }
 
   public new void Load(ConfigNode node) {
-    // Whether a dialog is shown or not should not be a persisted property.
-    // It's convenient to save and restore show_ in the base class, but we
-    // override this behaviour here.  For the same reason, we don't persist the
-    // message.
-    bool saved_shown = Shown();
-    base.Load(node);
-    if (saved_shown != Shown()) {
-      Toggle();
+    if (persist_state_) {
+      base.Load(node);
+      message_ = node.GetAtMostOneValue("message");
+    } else {
+      // For a dialog whose state is not persisted, we still get the graphic
+      // properties from the base class, but we preserve show_ and we don't
+      // load the message.
+      bool saved_shown = Shown();
+      base.Load(node);
+      if (saved_shown != Shown()) {
+        Toggle();
+      }
     }
   }
 
+  public new void Save(ConfigNode node) {
+    base.Save(node);
+    if (persist_state_ && message_ != null) {
+      node.SetValue("message", message_, createIfNotFound: true);
+    }
+  }
+
+  private readonly bool persist_state_;
   private string message_;
 }
 
