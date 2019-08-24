@@ -17,23 +17,22 @@ internal static class Loader {
       return "32-bit platforms are no longer supported; " +
              "use the 64-bit KSP executable.";
     }
-    string[] possible_dll_paths = null;
+    string[] possible_dll_paths;
     bool? is_cxx_installed;
     string required_cxx_packages;
     switch (Environment.OSVersion.Platform) {
       case PlatformID.Win32NT:
         is_cxx_installed = IsVCRedistInstalled();
         required_cxx_packages =
-            "the Visual C++ Redistributable Packages for Visual Studio " +
-            "2017 on x64";
-        possible_dll_paths =
-            new string[] {@"GameData\Principia\x64\principia.dll"};
+            "the Microsoft Visual C++ 2015-2019 Redistributable (x86) - " +
+            "14.22.27821";
+        possible_dll_paths = new [] {@"GameData\Principia\x64\principia.dll"};
         break;
       // Both Mac and Linux report |PlatformID.Unix|, so we treat them together
       // (we probably don't actually encounter |PlatformID.MacOSX|).
       case PlatformID.Unix:
       case PlatformID.MacOSX:
-        possible_dll_paths = new string[] {
+        possible_dll_paths = new [] {
             @"GameData/Principia/Linux64/principia.so",
             @"GameData/Principia/MacOS64/principia.so"};
         is_cxx_installed = null;
@@ -46,7 +45,7 @@ internal static class Loader {
     }
     if (!possible_dll_paths.Any(File.Exists)) {
       return "The principia DLL was not found at '" +
-             string.Join("', '", possible_dll_paths) + "' in directory '" + 
+             string.Join("', '", possible_dll_paths) + "' in directory '" +
              Directory.GetCurrentDirectory() + "'.";
     }
     try {
@@ -54,9 +53,9 @@ internal static class Loader {
       // No kernel32 on *nix, so we throw an exception and immediately resume
       // after the try block.
       try {
-        // We dynamically link glog, protobuf, the serialization DLL, and an
-        // optimized subset of the physics library on Windows, so we need that
-        // to be in the DLL search path for the main DLL to load.
+        // We dynamically link glog, protobuf, and the serialization DLL on
+        // Windows, so we need that to be in the DLL search path for the main
+        // DLL to load.
         if (!SetDllDirectory(@"GameData\Principia\x64")) {
           return "Failed to set DLL directory (error code " +
                  Marshal.GetLastWin32Error() + ").";
@@ -80,20 +79,20 @@ internal static class Loader {
 
   private static bool IsVCRedistInstalled() {
     // NOTE(phl): This GUID is specific to:
-    //   Microsoft Visual C++ 2017 Redistributable (x64) - 14.16.27012
+    //   Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.22.27821
     // It will need to be updated when new versions of Visual C++
     // Redistributable are released by Microsoft.
     RegistryKey key = Registry.LocalMachine.OpenSubKey(
-         @"Software\Classes\Installer\Dependencies\" +
-         @"VC,redist.x64,amd64,14.16,bundle",
-         writable : false);
+        @"Software\Classes\Installer\Dependencies\" +
+        @"VC,redist.x64,amd64,14.22,bundle",
+        writable : false);
     if (key == null) {
       return false;
     } else {
       string version = (string)key.GetValue("Version");
       // NOTE(phl): This string needs to be updated when new versions of Visual
       // C++ Redistributable are released by Microsoft.
-      return version != null && version == "14.16.27012.6";
+      return version != null && version == "14.22.27821.0";
     }
   }
 
