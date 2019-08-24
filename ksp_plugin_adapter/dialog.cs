@@ -26,7 +26,7 @@ internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
     UnityEngine.GUI.DragWindow();
   }
 
-  public new void Load(ConfigNode node) {
+  public override void Load(ConfigNode node) {
     if (persist_state_) {
       base.Load(node);
       message_ = node.GetAtMostOneValue("message");
@@ -42,7 +42,7 @@ internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
     }
   }
 
-  public new void Save(ConfigNode node) {
+  public override void Save(ConfigNode node) {
     base.Save(node);
     if (persist_state_ && message_ != null) {
       node.SetValue("message", message_, createIfNotFound: true);
