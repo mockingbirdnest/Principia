@@ -162,12 +162,13 @@ public partial class PrincipiaPluginAdapter
 
   // UI for the apocalypse notification.
   [KSPField(isPersistant = true)]
-  private readonly Dialog apocalypse_dialog_ = new Dialog();
+  private readonly Dialog apocalypse_dialog_ = new Dialog(persist_state: true);
 
   // UI for the bad installation notification.
   private readonly bool is_bad_installation_ = false;  // Don't persist.
   [KSPField(isPersistant = true)]
-  private readonly Dialog bad_installation_dialog_ = new Dialog();
+  private readonly Dialog bad_installation_dialog_ =
+      new Dialog(persist_state: false);
 
   // The game windows.
   [KSPField(isPersistant = true)]

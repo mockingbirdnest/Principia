@@ -17,7 +17,7 @@ internal static class Loader {
       return "32-bit platforms are no longer supported; " +
              "use the 64-bit KSP executable.";
     }
-    string[] possible_dll_paths = null;
+    string[] possible_dll_paths;
     bool? is_cxx_installed;
     string required_cxx_packages;
     switch (Environment.OSVersion.Platform) {
@@ -26,14 +26,13 @@ internal static class Loader {
         required_cxx_packages =
             "the Microsoft Visual C++ 2015-2019 Redistributable (x86) - " +
             "14.22.27821";
-        possible_dll_paths =
-            new string[] {@"GameData\Principia\x64\principia.dll"};
+        possible_dll_paths = new [] {@"GameData\Principia\x64\principia.dll"};
         break;
       // Both Mac and Linux report |PlatformID.Unix|, so we treat them together
       // (we probably don't actually encounter |PlatformID.MacOSX|).
       case PlatformID.Unix:
       case PlatformID.MacOSX:
-        possible_dll_paths = new string[] {
+        possible_dll_paths = new [] {
             @"GameData/Principia/Linux64/principia.so",
             @"GameData/Principia/MacOS64/principia.so"};
         is_cxx_installed = null;
