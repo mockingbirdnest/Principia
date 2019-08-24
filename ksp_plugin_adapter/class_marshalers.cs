@@ -5,19 +5,20 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static partial class Interface {
-
-  static IntPtr At(this IntPtr pointer, long offset) {
+  private static IntPtr At(this IntPtr pointer, long offset) {
     return new IntPtr(pointer.ToInt64() + offset);
   }
 
   internal class InBodyParametersMarshaler : ICustomMarshaler {
 
     [StructLayout(LayoutKind.Sequential)]
-    internal partial class BodyParametersRepresentation {
+    internal class BodyParametersRepresentation {
       public string name;
       public string gravitational_parameter;
       public string reference_instant;
+      public string min_radius;
       public string mean_radius;
+      public string max_radius;
       public string axis_right_ascension;
       public string axis_declination;
       public string reference_angle;
@@ -53,12 +54,15 @@ internal static partial class Interface {
           axis_right_ascension    = parameters.axis_right_ascension,
           gravitational_parameter = parameters.gravitational_parameter,
           j2                      = parameters.j2,
+          max_radius              = parameters.max_radius,
           mean_radius             = parameters.mean_radius,
+          min_radius              = parameters.min_radius,
           name                    = parameters.name,
           reference_angle         = parameters.reference_angle,
           reference_instant       = parameters.reference_instant,
-          reference_radius        = parameters.reference_radius};
-      representation.geopotential_size = parameters.geopotential?.Length ?? 0;
+          reference_radius        = parameters.reference_radius,
+          geopotential_size       = parameters.geopotential?.Length ?? 0
+      };
       if (representation.geopotential_size == 0) {
         representation.geopotential = IntPtr.Zero;
       } else {

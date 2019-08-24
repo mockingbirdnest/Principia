@@ -46,7 +46,9 @@ message BodyParameters {
   required string name = 10;
   required string gravitational_parameter = 1;
   optional string reference_instant = 7;
+  optional string min_radius = 12;
   optional string mean_radius = 2;
+  optional string max_radius = 13;
   optional string axis_right_ascension = 3;
   optional string axis_declination = 4;
   optional string reference_angle = 8;

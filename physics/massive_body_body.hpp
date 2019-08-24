@@ -67,7 +67,15 @@ inline Mass const& MassiveBody::mass() const {
   return parameters_.mass_;
 }
 
+inline Length MassiveBody::min_radius() const {
+  return Length();
+}
+
 inline Length MassiveBody::mean_radius() const {
+  return Length();
+}
+
+inline Length MassiveBody::max_radius() const {
   return Length();
 }
 

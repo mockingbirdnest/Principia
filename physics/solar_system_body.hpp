@@ -534,6 +534,8 @@ void SolarSystem<Frame>::Check(serialization::GravityModel::Body const& body) {
   CHECK(body.has_name());
   CHECK(body.has_gravitational_parameter() || body.has_mass()) << body.name();
   CHECK_EQ(body.has_reference_instant(), body.has_mean_radius()) << body.name();
+  CHECK(body.has_mean_radius() || !body.has_min_radius()) << body.name();
+  CHECK(body.has_mean_radius() || !body.has_max_radius()) << body.name();
   CHECK_EQ(body.has_reference_instant(),
            body.has_axis_right_ascension()) << body.name();
   CHECK_EQ(body.has_reference_instant(),
@@ -570,8 +572,14 @@ template<typename Frame>
 not_null<std::unique_ptr<typename RotatingBody<Frame>::Parameters>>
 SolarSystem<Frame>::MakeRotatingBodyParameters(
     serialization::GravityModel::Body const& body) {
+  auto const min_radius =
+      body.has_min_radius() ? body.min_radius() : body.mean_radius();
+  auto const max_radius =
+      body.has_max_radius() ? body.max_radius() : body.mean_radius();
   return make_not_null_unique<typename RotatingBody<Frame>::Parameters>(
+      ParseQuantity<Length>(min_radius),
       ParseQuantity<Length>(body.mean_radius()),
+      ParseQuantity<Length>(max_radius),
       ParseQuantity<Angle>(body.reference_angle()),
       ParseTT(body.reference_instant()),
       ParseQuantity<AngularFrequency>(body.angular_frequency()),
