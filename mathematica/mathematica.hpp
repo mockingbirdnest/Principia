@@ -5,6 +5,7 @@
 #include <tuple>
 #include <vector>
 
+#include "astronomy/orbital_elements.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
@@ -58,6 +59,9 @@ std::string ToMathematica(Point<V> const& point);
 
 template<typename... Types>
 std::string ToMathematica(std::tuple<Types...> const& tuple);
+
+std::string ToMathematica(
+    astronomy::OrbitalElements::EquinoctialElements const& elements);
 
 // Returns its argument.
 std::string ToMathematica(std::string const& str);
