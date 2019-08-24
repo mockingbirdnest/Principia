@@ -16,8 +16,6 @@ using quantities::Abs;
 using quantities::Format;
 using quantities::SIUnit;
 
-namespace si = quantities::si;
-
 template<typename Dimensions>
 Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::min() const {
   return min_multiplier_ * unit_;
