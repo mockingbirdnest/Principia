@@ -208,7 +208,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
               Lt(1.1e-10));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
-              Lt(0.67 * Micro(ArcSecond)));
+              Lt(0.78 * Micro(ArcSecond)));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().measure(),
               Lt(2.1 * ArcMinute));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
