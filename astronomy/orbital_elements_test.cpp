@@ -188,7 +188,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   // Mean element values.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
-                                Lt(330 * Micro(Metre))));
+                                Lt(410 * Micro(Metre))));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.eccentricity,
                                 Lt(4.6e-11)));

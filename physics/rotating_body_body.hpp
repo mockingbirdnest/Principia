@@ -4,6 +4,7 @@
 #include "physics/rotating_body.hpp"
 
 #include <algorithm>
+#include <optional>
 #include <vector>
 
 #include "geometry/grassmann.hpp"
