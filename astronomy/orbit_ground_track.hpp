@@ -45,8 +45,8 @@ class OrbitGroundTrack {
   // The interval spanned by the longitudes of the crossings of the equators (on
   // the ascending passes), reduced in the sense that they are offset to
   // compensate for the nominal equatorial shift, with the initial value reduced
-  // to an eastward grid interval (longitudes [0, δ]). This is populated only if
-  // a nominal recurrence was provided.
+  // to an eastward grid interval from the zero meridian (longitudes [0, δ]).
+  // This is populated only if a nominal recurrence was provided.
   std::optional<Interval<Angle>> const& reduced_longitude_of_equator_crossing()
       const;
 
@@ -55,6 +55,7 @@ class OrbitGroundTrack {
   // The initial value lies in [0, 2π], with π being noon.
   std::optional<Interval<Angle>> const& mean_solar_time_of_ascending_node()
       const;
+  // Same as above with the descending nodes.
   std::optional<Interval<Angle>> const& mean_solar_time_of_descending_node()
       const;
 
