@@ -42,29 +42,30 @@ class OrbitGroundTrack {
       std::optional<OrbitRecurrence> const& nominal_recurrence,
       std::optional<MeanSun> const& mean_sun);
 
-  // The interval spanned by the longitudes of the crossings of the equators (on
-  // the ascending passes), reduced in the sense that they are offset to
+  // The interval spanned by the longitudes of the crossings of the equator on
+  // the ascending passes, reduced in the sense that they are offset to
   // compensate for the nominal equatorial shift, with the initial value reduced
   // to an eastward grid interval from the zero meridian (longitudes [0, δ]).
   // This is populated only if a nominal recurrence was provided.
-  std::optional<Interval<Angle>> const& reduced_longitude_of_equator_crossing()
-      const;
+  std::optional<Interval<Angle>> const&
+  reduced_longitudes_of_equator_crossings_of_ascending_passes() const;
 
   // The interval spanned by the local mean solar times at the ascending nodes.
   // This is populated only if a mean sun was provided.
   // The initial value lies in [0, 2π], with π being noon.
-  std::optional<Interval<Angle>> const& mean_solar_time_of_ascending_node()
+  std::optional<Interval<Angle>> const& mean_solar_times_of_ascending_nodes()
       const;
   // Same as above with the descending nodes.
-  std::optional<Interval<Angle>> const& mean_solar_time_of_descending_node()
+  std::optional<Interval<Angle>> const& mean_solar_times_of_descending_nodes()
       const;
 
  private:
   OrbitGroundTrack() = default;
 
-  std::optional<Interval<Angle>> reduced_longitude_of_equator_crossing_;
-  std::optional<Interval<Angle>> mean_solar_time_of_ascending_node_;
-  std::optional<Interval<Angle>> mean_solar_time_of_descending_node_;
+  std::optional<Interval<Angle>>
+      reduced_longitudes_of_equator_crossings_of_ascending_passes_;
+  std::optional<Interval<Angle>> mean_solar_times_of_ascending_nodes_;
+  std::optional<Interval<Angle>> mean_solar_times_of_descending_nodes_;
 };
 
 }  // namespace internal_orbit_ground_track

@@ -613,7 +613,9 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // We can see from figure 6 of Bhat et al. that, during the period under test,
   // the equatorial crossing is about 600 m east of the reference.
   EXPECT_THAT(
-      ground_track.reduced_longitude_of_equator_crossing()->midpoint(),
+      ground_track
+          .reduced_longitudes_of_equator_crossings_of_ascending_passes()
+          ->midpoint(),
       AbsoluteErrorFrom(0.7117 * Degree,
                         AllOf(IsNear(0.0051_⑴ * Degree),
                               IsNear(573_⑴ * Metre *
@@ -625,23 +627,30 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // lists it as 99.9249°.  However, the auxiliary data table in Benada gives a
   // longitude of 99.947° for pass 1, which looks like a typo.
   EXPECT_THAT(
-      Mod(ground_track.reduced_longitude_of_equator_crossing()->midpoint() -
+      Mod(ground_track
+                  .reduced_longitudes_of_equator_crossings_of_ascending_passes()
+                  ->midpoint() -
               ((135 - 1) / 2) * recurrence.equatorial_shift(),
           2 * π * Radian),
       AbsoluteErrorFrom(99.9242 * Degree, IsNear(0.0052_⑴ * Degree)));
 
   // Variability over the period under test (3.5 days).
-  EXPECT_THAT(ground_track.reduced_longitude_of_equator_crossing()->measure(),
+  EXPECT_THAT(ground_track
+                  .reduced_longitudes_of_equator_crossings_of_ascending_passes()
+                  ->measure(),
               IsNear(0.0025_⑴ * Degree));
-  EXPECT_THAT(ground_track.reduced_longitude_of_equator_crossing()->measure() *
-                  TerrestrialEquatorialRadius / Radian,
-              IsNear(273_⑴ * Metre));
+  EXPECT_THAT(
+      ground_track
+              .reduced_longitudes_of_equator_crossings_of_ascending_passes()
+              ->measure() *
+          TerrestrialEquatorialRadius / Radian,
+      IsNear(273_⑴ * Metre));
 
   // TOPEX/Poséidon is not sun-synchronous.
-  EXPECT_THAT(ground_track.mean_solar_time_of_ascending_node()->measure() *
+  EXPECT_THAT(ground_track.mean_solar_times_of_ascending_nodes()->measure() *
                   (1 * Day / (2 * π * Radian)),
               IsNear(42_⑴ * Minute));
-  EXPECT_THAT(ground_track.mean_solar_time_of_descending_node()->measure() *
+  EXPECT_THAT(ground_track.mean_solar_times_of_descending_nodes()->measure() *
                   (1 * Day / (2 * π * Radian)),
               IsNear(42_⑴ * Minute));
 }
@@ -668,16 +677,16 @@ TEST_F(OrbitAnalysisTest, SPOT5) {
 
   // The nominal mean solar times of the nodes are 22:30 ascending, 10:30
   // descending.
-  EXPECT_THAT(ground_track.mean_solar_time_of_ascending_node()->midpoint() *
+  EXPECT_THAT(ground_track.mean_solar_times_of_ascending_nodes()->midpoint() *
                   (1 * Day / (2 * π * Radian)),
               IsNear(22.452_⑴ * Hour));
-  EXPECT_THAT(ground_track.mean_solar_time_of_descending_node()->midpoint() *
+  EXPECT_THAT(ground_track.mean_solar_times_of_descending_nodes()->midpoint() *
                   (1 * Day / (2 * π * Radian)),
               IsNear(10.452_⑴ * Hour));
-  EXPECT_THAT(ground_track.mean_solar_time_of_ascending_node()->measure() *
+  EXPECT_THAT(ground_track.mean_solar_times_of_ascending_nodes()->measure() *
                   (1 * Day / (2 * π * Radian)),
               IsNear(3.91_⑴ * Second));
-  EXPECT_THAT(ground_track.mean_solar_time_of_descending_node()->measure() *
+  EXPECT_THAT(ground_track.mean_solar_times_of_descending_nodes()->measure() *
                   (1 * Day / (2 * π * Radian)),
               IsNear(3.91_⑴ * Second));
 }
@@ -703,16 +712,16 @@ TEST_F(OrbitAnalysisTest, Sentinel3A) {
 
   // The nominal mean solar times of the nodes are 22:00 ascending, 10:00
   // descending.
-  EXPECT_THAT(ground_track.mean_solar_time_of_ascending_node()->midpoint() *
+  EXPECT_THAT(ground_track.mean_solar_times_of_ascending_nodes()->midpoint() *
                   (1 * Day / (2 * π * Radian)),
               IsNear(21.987_⑴ * Hour));
-  EXPECT_THAT(ground_track.mean_solar_time_of_descending_node()->midpoint() *
+  EXPECT_THAT(ground_track.mean_solar_times_of_descending_nodes()->midpoint() *
                   (1 * Day / (2 * π * Radian)),
               IsNear(09.987_⑴ * Hour));
-  EXPECT_THAT(ground_track.mean_solar_time_of_ascending_node()->measure() *
+  EXPECT_THAT(ground_track.mean_solar_times_of_ascending_nodes()->measure() *
                   (1 * Day / (2 * π * Radian)),
               IsNear(1.70_⑴ * Second));
-  EXPECT_THAT(ground_track.mean_solar_time_of_descending_node()->measure() *
+  EXPECT_THAT(ground_track.mean_solar_times_of_descending_nodes()->measure() *
                   (1 * Day / (2 * π * Radian)),
               IsNear(1.63_⑴ * Second));
 }
