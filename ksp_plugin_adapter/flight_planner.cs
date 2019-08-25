@@ -13,8 +13,8 @@ class FlightPlanner : SupervisedWindowRenderer {
     final_time_ = new DifferentialSlider(
                       label            : "Plan length",
                       unit             : null,
-                      log10_lower_rate : log10_time_lower_rate,
-                      log10_upper_rate : log10_time_upper_rate,
+                      log10_lower_rate : log10_time_lower_rate_,
+                      log10_upper_rate : log10_time_upper_rate_,
                       min_value        : 10,
                       max_value        : double.PositiveInfinity,
                       formatter        : FormatPlanLength,
@@ -145,14 +145,12 @@ class FlightPlanner : SupervisedWindowRenderer {
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       if (final_time_.Render(enabled : true)) {
-        var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
-                                                          final_time_.value);
+        Status status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
+                                                             final_time_.value);
         UpdateStatus(status, null);
         final_time_.value =
             plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       }
-      double actual_final_time =
-          plugin.FlightPlanGetActualFinalTime(vessel_guid);
 
       FlightPlanAdaptiveStepParameters parameters =
           plugin.FlightPlanGetAdaptiveStepParameters(vessel_guid);
@@ -531,8 +529,8 @@ class FlightPlanner : SupervisedWindowRenderer {
   private int? first_error_manœuvre_;  // May exceed the number of manœuvres.
   private bool message_was_displayed_ = false;
 
-  private const double log10_time_lower_rate = 0.0;
-  private const double log10_time_upper_rate = 7.0;
+  private const double log10_time_lower_rate_ = 0.0;
+  private const double log10_time_upper_rate_ = 7.0;
 }
 
 }  // namespace ksp_plugin_adapter

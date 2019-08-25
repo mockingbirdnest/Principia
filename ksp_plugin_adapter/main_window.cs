@@ -182,7 +182,7 @@ internal class MainWindow : SupervisedWindowRenderer {
               style: Style.Multiline(UnityEngine.GUI.skin.textArea));
         }
       }
-      Interface.GetVersion(build_date : out string unused_build_date,
+      Interface.GetVersion(build_date : out string _,
                            version    : out string version);
       UnityEngine.GUILayout.Label(
           version,
@@ -260,7 +260,7 @@ internal class MainWindow : SupervisedWindowRenderer {
         }
         CelestialBody target_celestial =
             FlightGlobals.fetch.VesselTarget as CelestialBody;
-        if (target_celestial) {
+        if (target_celestial != null) {
           UnityEngine.GUILayout.Label("Target: " + target_celestial.name,
                                       UnityEngine.GUILayout.ExpandWidth(true));
           if (UnityEngine.GUILayout.Button("Clear", GUILayoutWidth(2))) {
@@ -374,9 +374,8 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderPredictionSettings() {
-    if (vessel_ != predicted_vessel_()) {
-      vessel_ = predicted_vessel_();
-    }
+    vessel_ = predicted_vessel_();
+
     AdaptiveStepParameters? adaptive_step_parameters = null;
     string vessel_guid = vessel_?.id.ToString();
     if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {

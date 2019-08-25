@@ -41,10 +41,6 @@ internal class ScalingRenderer {
     var pangram = new UnityEngine.GUIContent(
         "Portez ce vieux whisky au juge blond qui fume.");
     float button_height = skin.button.CalcHeight(pangram, width : 1000);
-    float horizontal_slider_height =
-        skin.horizontalSlider.CalcHeight(pangram, width : 1000);
-    float horizontal_slider_thumb_height =
-        skin.horizontalSliderThumb.CalcHeight(pangram, width : 1000);
     float label_height = skin.label.CalcHeight(pangram, width : 1000);
     float text_area_height = skin.textArea.CalcHeight(pangram, width : 1000);
     float text_field_height = skin.textField.CalcHeight(pangram, width : 1000);
@@ -90,11 +86,10 @@ internal class ScalingRenderer {
 }
 
 internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
-  protected BaseWindowRenderer(UnityEngine.GUILayoutOption[] options)
-      : base() {
+  protected BaseWindowRenderer(UnityEngine.GUILayoutOption[] options) {
     UnityEngine.GUILayoutOption[] default_options = {GUILayoutMinWidth(20)};
     options_ = options.Length == 0 ? default_options : options;
-    lock_name_ = GetType().ToString() + ":lock:" + GetHashCode();
+    lock_name_ = GetType() + ":lock:" + GetHashCode();
   }
 
   // Locking.
@@ -142,7 +137,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
                 id         : GetHashCode(),
                 screenRect : new UnityEngine.Rect(
                     x      : (UnityEngine.Screen.width - rectangle_.width) / 2,
-                    y      : UnityEngine.Screen.height / 3,
+                    y      : (float)UnityEngine.Screen.height / 3,
                     width  : 0,
                     height : 0),
                 func       : RenderWindow,
@@ -240,24 +235,24 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
 
 internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   public interface ISupervisor {
-    event Action clear_locks;
-    event Action dispose_windows;
-    event Action render_windows;
+    event Action ClearLocks;
+    event Action DisposeWindows;
+    event Action RenderWindows;
   }
 
   protected SupervisedWindowRenderer(
       ISupervisor supervisor,
       params UnityEngine.GUILayoutOption[] options) : base(options) {
     supervisor_ = supervisor;
-    supervisor_.clear_locks += ClearLock;
-    supervisor_.dispose_windows += DisposeWindow;
-    supervisor_.render_windows += RenderWindow;
+    supervisor_.ClearLocks += ClearLock;
+    supervisor_.DisposeWindows += DisposeWindow;
+    supervisor_.RenderWindows += RenderWindow;
   }
 
   public void DisposeWindow() {
-    supervisor_.clear_locks -= ClearLock;
-    supervisor_.dispose_windows -= DisposeWindow;
-    supervisor_.render_windows -= RenderWindow;
+    supervisor_.ClearLocks -= ClearLock;
+    supervisor_.DisposeWindows -= DisposeWindow;
+    supervisor_.RenderWindows -= RenderWindow;
   }
 
   private readonly ISupervisor supervisor_;

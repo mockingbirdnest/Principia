@@ -201,9 +201,9 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   internal MainWindow main_window_;
 
-  public event Action clear_locks;
-  public event Action dispose_windows;
-  public event Action render_windows;
+  public event Action ClearLocks;
+  public event Action DisposeWindows;
+  public event Action RenderWindows;
 
   PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -215,7 +215,7 @@ public partial class PrincipiaPluginAdapter
       bad_installation_dialog_.Hide();
     } else {
       is_bad_installation_ = true;
-      bad_installation_dialog_.Message =
+      bad_installation_dialog_.message =
           "The Principia DLL failed to load.\n" + load_error;
       bad_installation_dialog_.Show();
     }
@@ -689,11 +689,11 @@ public partial class PrincipiaPluginAdapter
     }
 
     if (hide_all_gui_ || !in_principia_scene_) {
-      clear_locks();
+      ClearLocks();
     } else if (main_window_.Shown()) {
-      render_windows();
+      RenderWindows();
     } else {
-      clear_locks();
+      ClearLocks();
     }
   }
 
@@ -888,7 +888,7 @@ public partial class PrincipiaPluginAdapter
           toolbar_button_);
     }
     Cleanup();
-    dispose_windows();
+    DisposeWindows();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
                                     ObscenelyEarly);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
@@ -1242,7 +1242,7 @@ public partial class PrincipiaPluginAdapter
         plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
         if (!apocalypse_dialog_.Shown()) {
           if (plugin_.HasEncounteredApocalypse(out string revelation)) {
-            apocalypse_dialog_.Message = revelation;
+            apocalypse_dialog_.message = revelation;
             apocalypse_dialog_.Show();
           }
         }
@@ -1805,7 +1805,7 @@ public partial class PrincipiaPluginAdapter
                         main_vessel_guid)) {
             GLLines.PlotRP2Lines(rp2_lines_iterator,
                                  XKCDColors.Lime,
-                                 GLLines.Style.FADED);
+                                 GLLines.Style.Faded);
           }
           using (DisposableIterator rp2_lines_iterator =
                     planetarium.PlanetariumPlotPrediction(
@@ -1814,7 +1814,7 @@ public partial class PrincipiaPluginAdapter
                         main_vessel_guid)) {
             GLLines.PlotRP2Lines(rp2_lines_iterator,
                                  XKCDColors.Fuchsia,
-                                 GLLines.Style.SOLID);
+                                 GLLines.Style.Solid);
           }
           string target_id =
               FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
@@ -1828,7 +1828,7 @@ public partial class PrincipiaPluginAdapter
                           target_id)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
                                    XKCDColors.Goldenrod,
-                                   GLLines.Style.FADED);
+                                   GLLines.Style.Faded);
             }
             using (DisposableIterator rp2_lines_iterator =
                       planetarium.PlanetariumPlotPrediction(
@@ -1837,7 +1837,7 @@ public partial class PrincipiaPluginAdapter
                           target_id)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
                                    XKCDColors.LightMauve,
-                                   GLLines.Style.SOLID);
+                                   GLLines.Style.Solid);
             }
           }
           if (plugin_.FlightPlanExists(main_vessel_guid)) {
@@ -1869,7 +1869,7 @@ public partial class PrincipiaPluginAdapter
                   GLLines.PlotRP2Lines(
                       rp2_lines_iterator,
                       is_burn ? XKCDColors.Pink : XKCDColors.PeriwinkleBlue,
-                      is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+                      is_burn ? GLLines.Style.Solid : GLLines.Style.Dashed);
                 }
                 if (is_burn) {
                   int manœuvre_index = i / 2;
@@ -1921,17 +1921,17 @@ public partial class PrincipiaPluginAdapter
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
-          MapNodePool.NodeSource.PREDICTION,
+          MapNodePool.NodeSource.Prediction,
           plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
-          MapNodePool.NodeSource.PREDICTION,
+          MapNodePool.NodeSource.Prediction,
           plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
-          MapNodePool.NodeSource.PREDICTION,
+          MapNodePool.NodeSource.Prediction,
           plotting_frame_selector_);
     } else {
       foreach (CelestialBody celestial in
@@ -1946,12 +1946,12 @@ public partial class PrincipiaPluginAdapter
         map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
-            MapNodePool.NodeSource.PREDICTION,
+            MapNodePool.NodeSource.Prediction,
             plotting_frame_selector_);
         map_node_pool_.RenderMarkers(
             periapsis_iterator,
             MapObject.ObjectType.Periapsis,
-            MapNodePool.NodeSource.PREDICTION,
+            MapNodePool.NodeSource.Prediction,
             plotting_frame_selector_);
       }
       var frame_type = plotting_frame_selector_.frame_type;
@@ -1966,12 +1966,12 @@ public partial class PrincipiaPluginAdapter
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
-          MapNodePool.NodeSource.PREDICTION,
+          MapNodePool.NodeSource.Prediction,
           plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
-          MapNodePool.NodeSource.PREDICTION,
+          MapNodePool.NodeSource.Prediction,
           plotting_frame_selector_);
     }
   }
@@ -1994,17 +1994,17 @@ public partial class PrincipiaPluginAdapter
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
-          MapNodePool.NodeSource.FLIGHT_PLAN,
+          MapNodePool.NodeSource.FlightPlan,
           plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
-          MapNodePool.NodeSource.FLIGHT_PLAN,
+          MapNodePool.NodeSource.FlightPlan,
           plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
-          MapNodePool.NodeSource.FLIGHT_PLAN,
+          MapNodePool.NodeSource.FlightPlan,
           plotting_frame_selector_);
     } else {
       foreach (CelestialBody celestial in
@@ -2019,12 +2019,12 @@ public partial class PrincipiaPluginAdapter
         map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
-            MapNodePool.NodeSource.FLIGHT_PLAN,
+            MapNodePool.NodeSource.FlightPlan,
             plotting_frame_selector_);
         map_node_pool_.RenderMarkers(
             periapsis_iterator,
             MapObject.ObjectType.Periapsis,
-            MapNodePool.NodeSource.FLIGHT_PLAN,
+            MapNodePool.NodeSource.FlightPlan,
             plotting_frame_selector_);
       }
       CelestialBody primary =
@@ -2038,12 +2038,12 @@ public partial class PrincipiaPluginAdapter
       map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
-          MapNodePool.NodeSource.FLIGHT_PLAN,
+          MapNodePool.NodeSource.FlightPlan,
           plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
-          MapNodePool.NodeSource.FLIGHT_PLAN,
+          MapNodePool.NodeSource.FlightPlan,
           plotting_frame_selector_);
     }
   }
@@ -2052,7 +2052,7 @@ public partial class PrincipiaPluginAdapter
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
     map_node_pool_.Clear();
-    clear_locks();
+    ClearLocks();
     Interface.DeletePlugin(ref plugin_);
     previous_display_mode_ = null;
     navball_changed_ = true;
