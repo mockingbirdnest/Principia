@@ -12,8 +12,8 @@ using quantities::Infinity;
 // Represents the interval [min, max]; T must be an ordered affine space.
 template<typename T>
 struct Interval {
-  T min = T{} + Infinity<Difference<T>>();
-  T max = T{} - Infinity<Difference<T>>();
+  T min = T{} + Infinity<Difference<T>>();  // NOLINT(whitespace/braces)
+  T max = T{} - Infinity<Difference<T>>();  // NOLINT(whitespace/braces)
 
   // The Lebesgue measure of this interval.
   Difference<T> measure() const;

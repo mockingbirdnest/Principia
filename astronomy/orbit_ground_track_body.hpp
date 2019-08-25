@@ -2,6 +2,8 @@
 
 #include "astronomy/orbit_ground_track.hpp"
 
+#include <limits>
+
 #include "physics/apsides.hpp"
 
 namespace principia {

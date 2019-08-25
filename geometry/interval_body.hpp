@@ -2,6 +2,8 @@
 
 #include "geometry/interval.hpp"
 
+#include <algorithm>
+
 namespace principia {
 namespace geometry {
 namespace internal_interval {
