@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEngine;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -142,7 +141,7 @@ public partial class PrincipiaPluginAdapter
      return space_tracking_;
     }
   }
-  
+
   private KSP.UI.Screens.DebugToolbar.DebugScreen debug_screen_;
   private KSP.UI.Screens.DebugToolbar.Screens.Cheats.HackGravity hack_gravity_;
   private KSP.UI.Screens.DebugToolbar.Screens.Cheats.HackGravity hack_gravity {
@@ -278,12 +277,6 @@ public partial class PrincipiaPluginAdapter
       foreach (CelestialBody child in body.orbitingBodies) {
         stack.Push(child);
       }
-    }
-  }
-
-  private void ApplyToManageableVessels(VesselProcessor process_vessel) {
-    foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_manageable)) {
-      process_vessel(vessel);
     }
   }
 
@@ -666,7 +659,7 @@ public partial class PrincipiaPluginAdapter
     apocalypse_dialog_.RenderWindow();
 
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
-      LoadTextureOrDie(out Texture toolbar_button_texture,
+      LoadTextureOrDie(out UnityEngine.Texture toolbar_button_texture,
                        "toolbar_button.png");
       toolbar_button_ =
           KSP.UI.Screens.ApplicationLauncher.Instance.AddModApplication(
@@ -1906,7 +1899,6 @@ public partial class PrincipiaPluginAdapter
   private void RenderPredictionMarkers(string vessel_guid,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_override) {
-      Vessel target = plotting_frame_selector_.target_override;
       plugin_.RenderedPredictionNodes(
           vessel_guid,
           sun_world_position,
@@ -1954,9 +1946,6 @@ public partial class PrincipiaPluginAdapter
             MapNodePool.NodeSource.Prediction,
             plotting_frame_selector_);
       }
-      var frame_type = plotting_frame_selector_.frame_type;
-      CelestialBody primary =
-          plotting_frame_selector_.selected_celestial.referenceBody;
       plugin_.RenderedPredictionNodes(
           vessel_guid,
           sun_world_position,
@@ -1979,7 +1968,6 @@ public partial class PrincipiaPluginAdapter
   private void RenderFlightPlanMarkers(string vessel_guid,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_override) {
-      Vessel target = plotting_frame_selector_.target_override;
       plugin_.FlightPlanRenderedNodes(
           vessel_guid,
           sun_world_position,
@@ -2027,8 +2015,6 @@ public partial class PrincipiaPluginAdapter
             MapNodePool.NodeSource.FlightPlan,
             plotting_frame_selector_);
       }
-      CelestialBody primary =
-          plotting_frame_selector_.selected_celestial.referenceBody;
       plugin_.FlightPlanRenderedNodes(
           vessel_guid,
           sun_world_position,
@@ -2154,15 +2140,15 @@ public partial class PrincipiaPluginAdapter
         // GetUniqueValue since these are all required fields in
         // principia.serialization.InitialState.Cartesian.Body.
         plugin_.InsertCelestialAbsoluteCartesian(
-            celestial_index         : body.flightGlobalsIndex,
-            parent_index            : parent_index,
-            body_parameters         : body_parameters,
-            x                       : body_initial_state.GetUniqueValue("x"),
-            y                       : body_initial_state.GetUniqueValue("y"),
-            z                       : body_initial_state.GetUniqueValue("z"),
-            vx                      : body_initial_state.GetUniqueValue("vx"),
-            vy                      : body_initial_state.GetUniqueValue("vy"),
-            vz                      : body_initial_state.GetUniqueValue("vz"));
+            celestial_index : body.flightGlobalsIndex,
+            parent_index    : parent_index,
+            body_parameters : body_parameters,
+            x               : body_initial_state.GetUniqueValue("x"),
+            y               : body_initial_state.GetUniqueValue("y"),
+            z               : body_initial_state.GetUniqueValue("z"),
+            vx              : body_initial_state.GetUniqueValue("vx"),
+            vy              : body_initial_state.GetUniqueValue("vy"),
+            vz              : body_initial_state.GetUniqueValue("vz"));
       };
       insert_body(Planetarium.fetch.Sun);
       ApplyToBodyTree(insert_body);
@@ -2187,11 +2173,10 @@ public partial class PrincipiaPluginAdapter
             ConfigNodeParsers.NewKeplerianBodyParameters(body,
                                                          body_gravity_model);
         plugin_.InsertCelestialJacobiKeplerian(
-            celestial_index             : body.flightGlobalsIndex,
-            parent_index                :
-                orbit?.referenceBody.flightGlobalsIndex,
-            body_parameters             : body_parameters,
-            keplerian_elements          : orbit?.Elements());
+            celestial_index    : body.flightGlobalsIndex,
+            parent_index       : orbit?.referenceBody.flightGlobalsIndex,
+            body_parameters    : body_parameters,
+            keplerian_elements : orbit?.Elements());
       };
       insert_body(Planetarium.fetch.Sun);
       ApplyToBodyTree(insert_body);
@@ -2205,7 +2190,7 @@ public partial class PrincipiaPluginAdapter
     }
     must_set_plotting_frame_ = true;
   } catch (Exception e) {
-    Log.Fatal("Exception while resetting plugin: " + e.ToString());
+    Log.Fatal("Exception while resetting plugin: " + e);
   }
   }
 
