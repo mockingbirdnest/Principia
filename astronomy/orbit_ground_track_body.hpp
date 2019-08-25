@@ -43,6 +43,55 @@ Angle MeanSolarTime(Iterator const& it,
           (2 * π * Radian * t / mean_sun.year));
 }
 
+template<typename PrimaryCentred>
+Interval<Angle> MeanSolarTimesOfNodes(
+    DiscreteTrajectory<PrimaryCentred> const& nodes,
+    OrbitGroundTrack::MeanSun const& mean_sun) {
+  Interval<Angle> mean_solar_times;
+  std::optional<Angle> mean_solar_time;
+  for (auto node = nodes.Begin(); node != nodes.End(); ++node) {
+    if (mean_solar_time.has_value()) {
+      mean_solar_time =
+          UnwindFrom(*mean_solar_time, MeanSolarTime(node, mean_sun));
+    } else {
+      mean_solar_time = Mod(MeanSolarTime(node, mean_sun), 2 * π * Radian);
+    }
+    mean_solar_times.Include(*mean_solar_time);
+  }
+  return mean_solar_times;
+}
+
+template<typename PrimaryCentred, typename Inertial>
+Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
+    DiscreteTrajectory<PrimaryCentred> const& nodes,
+    RotatingBody<Inertial> const& primary,
+    OrbitRecurrence const& nominal_recurrence,
+    std::optional<Angle>& initial_offset) {
+  Interval<Angle> reduced_longitudes;
+  int n = 0;
+  std::optional<Angle> reduced_longitude;
+  for (auto node = nodes.Begin(); node != nodes.End(); ++node) {
+    Angle const planetocentric_longitude =
+        PlanetocentricLongitude(node, primary);
+
+    if (!initial_offset.has_value()) {
+      reduced_longitude =
+          Mod(planetocentric_longitude, nominal_recurrence.grid_interval());
+      initial_offset = planetocentric_longitude - *reduced_longitude;
+    } else {
+      Angle const offset_longitude = planetocentric_longitude -
+                                     *initial_offset -
+                                     n * nominal_recurrence.equatorial_shift();
+      reduced_longitude = reduced_longitude.has_value()
+                              ? UnwindFrom(*reduced_longitude, offset_longitude)
+                              : Mod(offset_longitude, 2 * π * Radian);
+    }
+    reduced_longitudes.Include(*reduced_longitude);
+    ++n;
+  }
+  return reduced_longitudes;
+}
+
 template<typename PrimaryCentred, typename Inertial>
 OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
     DiscreteTrajectory<PrimaryCentred> const& trajectory,
@@ -58,67 +107,29 @@ OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
                /*max_points=*/std::numeric_limits<int>::max(),
                ascending_nodes,
                descending_nodes);
-  if (!descending_nodes.Empty()) {
-    if (mean_sun.has_value()) {
-      std::optional<Angle> mean_solar_time;
-      ground_track.mean_solar_times_of_descending_nodes_.emplace();
-      for (auto descending_node = descending_nodes.Begin();
-           descending_node != descending_nodes.End();
-           ++descending_node) {
-        if (mean_solar_time.has_value()) {
-          mean_solar_time = UnwindFrom(
-              *mean_solar_time, MeanSolarTime(descending_node, *mean_sun));
-        } else {
-          mean_solar_time =
-              Mod(MeanSolarTime(descending_node, *mean_sun), 2 * π * Radian);
-        }
-        ground_track.mean_solar_times_of_descending_nodes_->Include(
-            *mean_solar_time);
-      }
+  if (mean_sun.has_value()) {
+    if (!ascending_nodes.Empty()) {
+      ground_track.mean_solar_times_of_ascending_nodes_ =
+          MeanSolarTimesOfNodes(ascending_nodes, *mean_sun);
+    }
+    if (!descending_nodes.Empty()) {
+      ground_track.mean_solar_times_of_descending_nodes_ =
+          MeanSolarTimesOfNodes(descending_nodes, *mean_sun);
     }
   }
-  if (!ascending_nodes.Empty()) {
-    if (mean_sun.has_value()) {
-      std::optional<Angle> mean_solar_time;
-      ground_track.mean_solar_times_of_ascending_nodes_.emplace();
-      for (auto ascending_node = ascending_nodes.Begin();
-           ascending_node != ascending_nodes.End();
-           ++ascending_node) {
-        if (mean_solar_time.has_value()) {
-          mean_solar_time = UnwindFrom(
-              *mean_solar_time, MeanSolarTime(ascending_node, *mean_sun));
-        } else {
-          mean_solar_time =
-              Mod(MeanSolarTime(ascending_node, *mean_sun), 2 * π * Radian);
-        }
-        ground_track.mean_solar_times_of_ascending_nodes_->Include(
-            *mean_solar_time);
-      }
+  if (nominal_recurrence.has_value()) {
+    std::optional<Angle> initial_offset;
+    if (!ascending_nodes.Empty()) {
+      ground_track
+          .reduced_longitudes_of_equator_crossings_of_ascending_passes_ =
+          ReducedLongitudesOfEquatorialCrossings(
+              ascending_nodes, primary, *nominal_recurrence, initial_offset);
     }
-    if (nominal_recurrence.has_value()) {
-      int n = 0;
-      std::optional<Angle> initial_offset;
-      std::optional<Angle> reduced_longitude;
-      ground_track.reduced_longitudes_of_equator_crossings_of_ascending_passes_.emplace();
-      for (auto ascending_node = ascending_nodes.Begin();
-           ascending_node != ascending_nodes.End();
-           ++ascending_node) {
-        if (initial_offset.has_value()) {
-          reduced_longitude = UnwindFrom(
-              *reduced_longitude,
-              PlanetocentricLongitude(ascending_node, primary) -
-                  *initial_offset - n * nominal_recurrence->equatorial_shift());
-        } else {
-          auto const planetocentric_longitude =
-              PlanetocentricLongitude(ascending_node, primary);
-          reduced_longitude = Mod(planetocentric_longitude,
-                                  nominal_recurrence->grid_interval());
-          initial_offset = planetocentric_longitude - *reduced_longitude;
-        }
-        ground_track.reduced_longitudes_of_equator_crossings_of_ascending_passes_->Include(
-            *reduced_longitude);
-        ++n;
-      }
+    if (!descending_nodes.Empty()) {
+      ground_track
+          .reduced_longitudes_of_equator_crossings_of_descending_passes_ =
+          ReducedLongitudesOfEquatorialCrossings(
+              descending_nodes, primary, *nominal_recurrence, initial_offset);
     }
   }
   return ground_track;
@@ -128,6 +139,12 @@ inline std::optional<Interval<Angle>> const&
 OrbitGroundTrack::reduced_longitudes_of_equator_crossings_of_ascending_passes()
     const {
   return reduced_longitudes_of_equator_crossings_of_ascending_passes_;
+}
+
+inline std::optional<Interval<Angle>> const&
+OrbitGroundTrack::reduced_longitudes_of_equator_crossings_of_descending_passes()
+    const {
+  return reduced_longitudes_of_equator_crossings_of_descending_passes_;
 }
 
 inline std::optional<Interval<Angle>> const&

@@ -609,17 +609,25 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // Nominal longitude of the equatorial crossing of the first ascending pass
   // East of the ITRF zero-meridian (pass 135), as given in section 2 of Benada.
   // Blanc et al. round these longitudes to a hundredth of a degree, thus 0.71°
-  // for pass 1.
+  // for pass 135.
   // We can see from figure 6 of Bhat et al. that, during the period under test,
   // the equatorial crossing is about 600 m east of the reference.
   EXPECT_THAT(
       ground_track
           .reduced_longitudes_of_equator_crossings_of_ascending_passes()
           ->midpoint(),
-      AbsoluteErrorFrom(0.7117 * Degree,
-                        AllOf(IsNear(0.0051_⑴ * Degree),
-                              IsNear(573_⑴ * Metre *
-                                     (Radian / TerrestrialEquatorialRadius)))));
+      DifferenceFrom(0.7117 * Degree,
+                     AllOf(IsNear(0.0051_⑴ * Degree),
+                           IsNear(573_⑴ * Metre *
+                                  (Radian / TerrestrialEquatorialRadius)))));
+  // Nominal longitude of the equatorial crossing of the following (descending)
+  // pass (pass 136), as given in section 2 of Benada.  Blanc et al. round these
+  // longitudes to a hundredth of a degree, thus 166.54° for pass 136.
+  EXPECT_THAT(
+      ground_track
+          .reduced_longitudes_of_equator_crossings_of_descending_passes()
+          ->midpoint(),
+      DifferenceFrom(166.5385 * Degree, IsNear(0.0071_⑴ * Degree)));
 
   // Nominal longitude of the equatorial crossing of pass 1, as given in the
   // auxiliary data table in Blanc et al.  The reference grid there lists that
@@ -632,7 +640,7 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
                   ->midpoint() -
               ((135 - 1) / 2) * recurrence.equatorial_shift(),
           2 * π * Radian),
-      AbsoluteErrorFrom(99.9242 * Degree, IsNear(0.0052_⑴ * Degree)));
+      DifferenceFrom(99.9242 * Degree, IsNear(0.0052_⑴ * Degree)));
 
   // Variability over the period under test (3.5 days).
   EXPECT_THAT(ground_track

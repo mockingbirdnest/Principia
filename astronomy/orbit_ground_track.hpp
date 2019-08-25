@@ -49,6 +49,12 @@ class OrbitGroundTrack {
   // This is populated only if a nominal recurrence was provided.
   std::optional<Interval<Angle>> const&
   reduced_longitudes_of_equator_crossings_of_ascending_passes() const;
+  // Same as above, but for the descending passes, and reduced consistently with
+  // |reduced_longitudes_of_equator_crossings_of_ascending_passes|, so that if
+  // the former returns the longitude of pass 1, this function returns that of
+  // pass 2.
+  std::optional<Interval<Angle>> const&
+  reduced_longitudes_of_equator_crossings_of_descending_passes() const;
 
   // The interval spanned by the local mean solar times at the ascending nodes.
   // This is populated only if a mean sun was provided.
@@ -64,6 +70,8 @@ class OrbitGroundTrack {
 
   std::optional<Interval<Angle>>
       reduced_longitudes_of_equator_crossings_of_ascending_passes_;
+  std::optional<Interval<Angle>>
+      reduced_longitudes_of_equator_crossings_of_descending_passes_;
   std::optional<Interval<Angle>> mean_solar_times_of_ascending_nodes_;
   std::optional<Interval<Angle>> mean_solar_times_of_descending_nodes_;
 };
