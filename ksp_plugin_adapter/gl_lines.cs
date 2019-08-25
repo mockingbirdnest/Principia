@@ -5,9 +5,9 @@ namespace ksp_plugin_adapter {
 
 internal static class GLLines {
   public enum Style {
-    SOLID,
-    DASHED,
-    FADED,
+    Solid,
+    Dashed,
+    Faded,
   }
 
   public static void Draw(Action line_vertices) {
@@ -17,21 +17,19 @@ internal static class GLLines {
       UnityEngine.GL.LoadPixelMatrix();
       UnityEngine.GL.Begin(UnityEngine.GL.LINES);
 
-      Vector3d camera = ScaledSpace.ScaledToLocalSpace(
-          PlanetariumCamera.Camera.transform.position);
       line_vertices();
 
       UnityEngine.GL.End();
       UnityEngine.GL.PopMatrix();
     } catch (Exception e) {
-      Log.Fatal("Exception while drawing lines: " + e.ToString());
+      Log.Fatal("Exception while drawing lines: " + e);
     }
   }
 
   public static void AddSegment(Vector3d world_begin,
                                 Vector3d world_end) {
-    var begin = WorldToMapScreen(world_begin);
-    var end = WorldToMapScreen(world_end);
+    UnityEngine.Vector3 begin = WorldToMapScreen(world_begin);
+    UnityEngine.Vector3 end = WorldToMapScreen(world_end);
     if (begin.z > 0 && end.z > 0) {
       UnityEngine.GL.Vertex3(begin.x, begin.y, 0);
       UnityEngine.GL.Vertex3(end.x, end.y, 0);
@@ -110,11 +108,11 @@ internal static class GLLines {
           XY current_rp2_point = ToScreen(
               rp2_line_iterator.IteratorGetRP2LineXY());
           if (previous_rp2_point.HasValue) {
-            if (style == Style.FADED) {
+            if (style == Style.Faded) {
               colour.a = 1 - (float)(4 * index) / (float)(5 * size);
               UnityEngine.GL.Color(colour);
             }
-            if (style != Style.DASHED || index % 2 == 1) {
+            if (style != Style.Dashed || index % 2 == 1) {
               UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
                                       (float)previous_rp2_point.Value.y,
                                       0);

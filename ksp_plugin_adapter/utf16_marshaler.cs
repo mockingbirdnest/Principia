@@ -18,7 +18,7 @@ internal class OutOwnedUTF16Marshaler : ICustomMarshaler {
   void ICustomMarshaler.CleanUpNativeData(IntPtr native_data) {
     Interface.DeleteU16String(ref native_data);
   }
-  
+
   IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
     throw Log.Fatal("use |MarshalAs(UnmanagedType.LPWStr)| for in parameters");
   }

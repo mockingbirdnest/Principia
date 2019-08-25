@@ -49,9 +49,7 @@ internal class DifferentialSlider : ScalingRenderer {
   }
 
   public double max_value {
-    set {
-      max_value_ = value;
-    }
+    set => max_value_ = value;
   }
 
   public double value {
@@ -103,8 +101,8 @@ internal class DifferentialSlider : ScalingRenderer {
         // elsewhere, in which case we terminate text entry.
         bool terminate_text_entry = false;
         var current_event = UnityEngine.Event.current;
-        if (UnityEngine.Event.current.isKey &&
-            UnityEngine.Event.current.keyCode == UnityEngine.KeyCode.Return &&
+        if (current_event.isKey &&
+            current_event.keyCode == UnityEngine.KeyCode.Return &&
             UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name) {
           terminate_text_entry = true;
         } else if (UnityEngine.GUI.GetNameOfFocusedControl() !=

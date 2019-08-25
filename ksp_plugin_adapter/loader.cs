@@ -104,12 +104,6 @@ internal static class Loader {
   private static extern IntPtr LoadLibrary(
       [MarshalAs(UnmanagedType.LPStr)]string lpFileName);
 
-  private const int RTLD_NOW = 2;
-  [DllImport("dl")]
-  private static extern IntPtr dlopen(
-      [MarshalAs(UnmanagedType.LPTStr)] string filename,
-      int flags = RTLD_NOW);
-
   internal static bool loaded_principia_dll_ { get; private set; } = false;
 }
 

@@ -215,10 +215,6 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     return ShortName(frame_type, selected_celestial, target_override);
   }
 
-  public string Description() {
-    return Description(frame_type, selected_celestial, target_override);
-  }
-
   public string ReferencePlaneDescription() {
     if (!target_override &&
         (frame_type == FrameType.BODY_CENTRED_NON_ROTATING ||
@@ -242,7 +238,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       case FrameType.BODY_CENTRED_NON_ROTATING:
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
       case FrameType.BODY_SURFACE:
-        return new CelestialBody[]{selected_celestial};
+        return new []{selected_celestial};
       case FrameType.BARYCENTRIC_ROTATING:
         return new CelestialBody[]{};
       default:
@@ -310,7 +306,6 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           TypeSelector(FrameType.BODY_SURFACE);
           TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
           if (!selected_celestial.is_root()) {
-            CelestialBody parent = selected_celestial.orbit.referenceBody;
             TypeSelector(FrameType.BARYCENTRIC_ROTATING);
             TypeSelector(FrameType.BODY_CENTRED_PARENT_DIRECTION);
           }

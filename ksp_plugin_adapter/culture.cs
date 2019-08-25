@@ -7,9 +7,11 @@ internal static class Culture {
   static Culture() {
     // Unity/Mono is screwing with the current culture, let's get unambiguous
     // conventions from a copy of the invariant culture.
-    culture = new CultureInfo("");
-    culture.NumberFormat.NumberGroupSeparator = "'";
-    culture.NumberFormat.PositiveInfinitySymbol = "+∞";
+    culture = new CultureInfo(""){
+        NumberFormat = {
+            NumberGroupSeparator = "'", PositiveInfinitySymbol = "+∞"
+        }
+    };
   }
 
   public static readonly CultureInfo culture;

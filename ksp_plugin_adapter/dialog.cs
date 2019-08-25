@@ -8,7 +8,7 @@ internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
     persist_state_ = persist_state;
   }
 
-  public string Message {
+  public string message {
     set {
       message_ = value;
       UnityEngine.Debug.LogError(message_);

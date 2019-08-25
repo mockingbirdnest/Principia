@@ -12,8 +12,8 @@ internal class MapNodePool {
   public const int MaxRenderedNodes = 64;
 
   public enum NodeSource {
-    PREDICTION,
-    FLIGHT_PLAN,
+    Prediction,
+    FlightPlan,
   }
 
   public MapNodePool() {
@@ -169,9 +169,9 @@ internal class MapNodePool {
           if (buttons == Mouse.Buttons.Left) {
             MapNodeProperties properties = properties_[node];
             if (PlanetariumCamera.fetch.target !=
-                properties_[node].associated_map_object) {
+                properties.associated_map_object) {
               PlanetariumCamera.fetch.SetTarget(
-                  properties_[node].associated_map_object);
+                  properties.associated_map_object);
             }
           }
         };
@@ -203,10 +203,10 @@ internal class MapNodePool {
           var properties = properties_[node];
           string source;
           switch (properties.source) {
-            case NodeSource.FLIGHT_PLAN:
+            case NodeSource.FlightPlan:
               source = "Planned";
               break;
-            case NodeSource.PREDICTION:
+            case NodeSource.Prediction:
               source = "Predicted";
               break;
             default:

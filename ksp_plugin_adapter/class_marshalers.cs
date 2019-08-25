@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace principia {
@@ -48,6 +49,7 @@ internal static partial class Interface {
 
     public IntPtr MarshalManagedToNative(object managed_object) {
       var parameters = managed_object as BodyParameters;
+      Debug.Assert(parameters != null, nameof(parameters) + " != null");
       var representation = new BodyParametersRepresentation{
           angular_frequency       = parameters.angular_frequency,
           axis_declination        = parameters.axis_declination,

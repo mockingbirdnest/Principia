@@ -41,10 +41,6 @@ internal class ScalingRenderer {
     var pangram = new UnityEngine.GUIContent(
         "Portez ce vieux whisky au juge blond qui fume.");
     float button_height = skin.button.CalcHeight(pangram, width : 1000);
-    float horizontal_slider_height =
-        skin.horizontalSlider.CalcHeight(pangram, width : 1000);
-    float horizontal_slider_thumb_height =
-        skin.horizontalSliderThumb.CalcHeight(pangram, width : 1000);
     float label_height = skin.label.CalcHeight(pangram, width : 1000);
     float text_area_height = skin.textArea.CalcHeight(pangram, width : 1000);
     float text_field_height = skin.textField.CalcHeight(pangram, width : 1000);
@@ -90,11 +86,10 @@ internal class ScalingRenderer {
 }
 
 internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
-  protected BaseWindowRenderer(UnityEngine.GUILayoutOption[] options)
-      : base() {
+  protected BaseWindowRenderer(UnityEngine.GUILayoutOption[] options) {
     UnityEngine.GUILayoutOption[] default_options = {GUILayoutMinWidth(20)};
     options_ = options.Length == 0 ? default_options : options;
-    lock_name_ = GetType().ToString() + ":lock:" + GetHashCode();
+    lock_name_ = $"{GetType()}:lock:{GetHashCode()}";
   }
 
   // Locking.
@@ -135,14 +130,16 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
       // width.  So we go through this method until the width has been
       // determined, and we update the window based on the width.  Note that
       // |must_centre_| has to be persisted because there can be multiple
-      // scene changes because a window is shown for the first time.
+      // scene changes before a window is shown for the first time.  Also note
+      // the conversion to float to avoid losing decimals and to avoid double
+      // rounding.
       if (must_centre_ && rectangle_.width > 0) {
         rectangle_ =
             UnityEngine.GUILayout.Window(
                 id         : GetHashCode(),
                 screenRect : new UnityEngine.Rect(
                     x      : (UnityEngine.Screen.width - rectangle_.width) / 2,
-                    y      : UnityEngine.Screen.height / 3,
+                    y      : (float)UnityEngine.Screen.height / 3f,
                     width  : 0,
                     height : 0),
                 func       : RenderWindow,
@@ -240,24 +237,24 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
 
 internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   public interface ISupervisor {
-    event Action clear_locks;
-    event Action dispose_windows;
-    event Action render_windows;
+    event Action LockClearing;
+    event Action WindowsDisposal;
+    event Action WindowsRendering;
   }
 
   protected SupervisedWindowRenderer(
       ISupervisor supervisor,
       params UnityEngine.GUILayoutOption[] options) : base(options) {
     supervisor_ = supervisor;
-    supervisor_.clear_locks += ClearLock;
-    supervisor_.dispose_windows += DisposeWindow;
-    supervisor_.render_windows += RenderWindow;
+    supervisor_.LockClearing += ClearLock;
+    supervisor_.WindowsDisposal += DisposeWindow;
+    supervisor_.WindowsRendering += RenderWindow;
   }
 
   public void DisposeWindow() {
-    supervisor_.clear_locks -= ClearLock;
-    supervisor_.dispose_windows -= DisposeWindow;
-    supervisor_.render_windows -= RenderWindow;
+    supervisor_.LockClearing -= ClearLock;
+    supervisor_.WindowsDisposal -= DisposeWindow;
+    supervisor_.WindowsRendering -= RenderWindow;
   }
 
   private readonly ISupervisor supervisor_;
