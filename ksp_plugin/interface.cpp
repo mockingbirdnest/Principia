@@ -164,12 +164,12 @@ serialization::OblateBody::Geopotential MakeGeopotential(
     int const order = std::stoi(element.order);
     column.set_order(order);
     if (element.j != nullptr) {
-      CHECK_EQ(element.cos, nullptr);
+      CHECK(element.cos == nullptr);
       double const j = ParseQuantity<double>(element.j);
       column.set_j(j);
     }
     if (element.cos != nullptr) {
-      CHECK_EQ(element.j, nullptr);
+      CHECK(element.j == nullptr);
       double const cos = ParseQuantity<double>(element.cos);
       column.set_cos(cos);
     }
@@ -198,7 +198,9 @@ serialization::GravityModel::Body MakeGravityModel(
       << NAMED(make_optional_c_string(body_parameters.gravitational_parameter))
       << "\n"
       << NAMED(body_parameters.reference_instant) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.min_radius)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.mean_radius)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.max_radius)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.axis_right_ascension))
       << "\n"
       << NAMED(make_optional_c_string(body_parameters.axis_declination)) << "\n"
@@ -214,8 +216,14 @@ serialization::GravityModel::Body MakeGravityModel(
   if (body_parameters.reference_instant != nullptr) {
     gravity_model.set_reference_instant(body_parameters.reference_instant);
   }
+  if (body_parameters.min_radius != nullptr) {
+    gravity_model.set_min_radius(body_parameters.min_radius);
+  }
   if (body_parameters.mean_radius != nullptr) {
     gravity_model.set_mean_radius(body_parameters.mean_radius);
+  }
+  if (body_parameters.max_radius != nullptr) {
+    gravity_model.set_max_radius(body_parameters.max_radius);
   }
   if (body_parameters.axis_right_ascension != nullptr) {
     gravity_model.set_axis_right_ascension(

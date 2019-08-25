@@ -54,8 +54,10 @@ class MassiveBody : public Body {
   GravitationalParameter const& gravitational_parameter() const;
   Mass const& mass() const;
 
-  // Returns zero.
+  // Return zero.
+  virtual Length min_radius() const;
   virtual Length mean_radius() const;
+  virtual Length max_radius() const;
 
   // Returns false.
   bool is_massless() const override;

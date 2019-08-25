@@ -70,7 +70,7 @@ constexpr Length pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance
 constexpr Time max_time_between_checkpoints = 180 * Day;
 // Below this threshold detect a collision to prevent the integrator and the
 // downsampling from going postal.
-constexpr double mean_radius_tolerance = 0.9;
+constexpr double min_radius_tolerance = 0.99;
 
 inline Status const CollisionDetected() {
   return Status(Error::OUT_OF_RANGE, "Collision detected");
@@ -1034,7 +1034,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
   auto const& trajectory1 = *trajectories_[b1];
   Position<Frame> const position1 = trajectory1.EvaluatePosition(t);
   Length const body1_collision_radius =
-      mean_radius_tolerance * body1.mean_radius();
+      min_radius_tolerance * body1.min_radius();
   Error error = Error::OK;
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {

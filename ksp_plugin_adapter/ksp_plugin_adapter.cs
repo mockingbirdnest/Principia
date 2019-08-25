@@ -142,6 +142,29 @@ public partial class PrincipiaPluginAdapter
      return space_tracking_;
     }
   }
+  
+  private KSP.UI.Screens.DebugToolbar.DebugScreen debug_screen_;
+  private KSP.UI.Screens.DebugToolbar.Screens.Cheats.HackGravity hack_gravity_;
+  private KSP.UI.Screens.DebugToolbar.Screens.Cheats.HackGravity hack_gravity {
+    get {
+      if (hack_gravity_ == null) {
+        if (debug_screen_ == null) {
+          // Force a debug screen to be instantiated, by showing it.
+          KSP.UI.Screens.DebugToolbar.DebugScreenSpawner.ShowDebugScreen();
+          debug_screen_ = (KSP.UI.Screens.DebugToolbar.DebugScreen)
+              FindObjectOfType(typeof(KSP.UI.Screens.DebugToolbar.DebugScreen));
+          // Now hide it.
+          debug_screen_.Hide();
+        }
+        // Since we have the debug screen, we can restrict our search for the
+        // gravity-hacking control within it, so as not to slow things down to
+        // a grind until it is instantiated.
+        hack_gravity_ = debug_screen_.contentTransform.GetComponentInChildren<
+            KSP.UI.Screens.DebugToolbar.Screens.Cheats.HackGravity>();
+      }
+      return hack_gravity_;
+    }
+  }
 
   // TODO(egg): these should be moved to the C++; there it can be made a vector
   // because we can test whether we have the part or not. Set in
@@ -162,12 +185,13 @@ public partial class PrincipiaPluginAdapter
 
   // UI for the apocalypse notification.
   [KSPField(isPersistant = true)]
-  private readonly Dialog apocalypse_dialog_ = new Dialog();
+  private readonly Dialog apocalypse_dialog_ = new Dialog(persist_state: true);
 
   // UI for the bad installation notification.
   private readonly bool is_bad_installation_ = false;  // Don't persist.
   [KSPField(isPersistant = true)]
-  private readonly Dialog bad_installation_dialog_ = new Dialog();
+  private readonly Dialog bad_installation_dialog_ =
+      new Dialog(persist_state: false);
 
   // The game windows.
   [KSPField(isPersistant = true)]
@@ -399,6 +423,9 @@ public partial class PrincipiaPluginAdapter
     }
     if (vessel.isEVA && vessel.evaController?.Ready == false) {
       reasons.Add("vessel is an unready Kerbal");
+    }
+    if (vessel.loaded && hack_gravity?.toggle.isOn == true) {
+      reasons.Add("vessel is loaded and gravity is being hacked");
     }
     if (reasons.Count == 0) {
       return null;

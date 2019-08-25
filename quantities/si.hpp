@@ -15,10 +15,6 @@ namespace quantities {
 // with the SI.
 namespace si {
 
-// Formatting
-template<typename D>
-std::string Format();
-
 // Prefixes
 template<typename D> constexpr Quantity<D> Yotta(Quantity<D>);
 template<typename D> constexpr Quantity<D> Zetta(Quantity<D>);

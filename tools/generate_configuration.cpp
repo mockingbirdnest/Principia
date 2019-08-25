@@ -141,10 +141,8 @@ void GenerateConfiguration(std::string const& game_epoch,
       gravity_model_cfg << "    reference_instant       = "
                         << body.reference_instant() << "\n";
     }
-    if (body.has_mean_radius()) {
-      gravity_model_cfg << "    mean_radius             = "
-                        << NormalizeLength(body.mean_radius()) << "\n";
-    }
+    // The fields min_radius, mean_radius and max_radius come from the game and
+    // are not copied from the proto to the configuration.
     if (body.has_axis_right_ascension()) {
       gravity_model_cfg << "    axis_right_ascension    = "
                         << body.axis_right_ascension() << "\n";

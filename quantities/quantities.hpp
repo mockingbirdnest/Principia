@@ -145,6 +145,9 @@ constexpr bool IsFinite(Q const& x);
 template<typename Q>
 constexpr Q NaN();
 
+template<typename D>
+std::string Format();
+
 std::string DebugString(
     double number,
     int precision = std::numeric_limits<double>::max_digits10);
@@ -162,6 +165,7 @@ using internal_quantities::Amount;
 using internal_quantities::Angle;
 using internal_quantities::Current;
 using internal_quantities::DebugString;
+using internal_quantities::Format;
 using internal_quantities::Infinity;
 using internal_quantities::IsFinite;
 using internal_quantities::Length;
