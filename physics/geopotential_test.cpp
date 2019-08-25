@@ -767,7 +767,7 @@ TEST_F(GeopotentialTest, DampedForces) {
         (get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_radial_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
             get_radial_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(1, 210, 1142));
+        AlmostEquals(1, 111, 1142));
     EXPECT_THAT(
         (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_latitudinal_acceleration(*geopotential_j2, (s0 + s1) / 2)) /

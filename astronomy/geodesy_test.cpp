@@ -176,7 +176,7 @@ TEST_F(GeodesyTest, LAGEOS2) {
   EXPECT_THAT(
       AbsoluteError((primary_actual_final_dof.position() - ITRS::origin).Norm(),
                     (expected_final_dof.position() - ITRS::origin).Norm()),
-      IsNear(894_⑴ * Metre));
+      IsNear(0.89_⑴ * Kilo(Metre)));
 
   // Errors in orbital elements.
   KeplerianElements<ICRS> const expected_elements =

@@ -97,7 +97,7 @@ class ApproximateQuantity<double> {
   double min_multiplier_;
   double max_multiplier_;
 
-  static constexpr double unit_ = 1;
+  double const unit_ = 1;
 
   template<typename Right>
   friend ApproximateQuantity<Right> operator-(

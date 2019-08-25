@@ -164,12 +164,12 @@ serialization::OblateBody::Geopotential MakeGeopotential(
     int const order = std::stoi(element.order);
     column.set_order(order);
     if (element.j != nullptr) {
-      CHECK_EQ(element.cos, nullptr);
+      CHECK(element.cos == nullptr);
       double const j = ParseQuantity<double>(element.j);
       column.set_j(j);
     }
     if (element.cos != nullptr) {
-      CHECK_EQ(element.j, nullptr);
+      CHECK(element.j == nullptr);
       double const cos = ParseQuantity<double>(element.cos);
       column.set_cos(cos);
     }

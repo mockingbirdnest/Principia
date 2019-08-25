@@ -21,35 +21,9 @@
 #include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
-
-using astronomy::J2000;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::operator""_⑴;
-
-namespace mathematica {
-namespace internal_mathematica {
-
-std::string ToMathematica(
-    astronomy::OrbitalElements::EquinoctialElements const& elements) {
-  return ToMathematica(std::make_tuple((elements.t - J2000) / Second,
-                                       elements.a / Metre,
-                                       elements.h,
-                                       elements.k,
-                                       elements.λ / Radian,
-                                       elements.p,
-                                       elements.q,
-                                       elements.pʹ,
-                                       elements.qʹ));
-}
-}  // namespace internal_mathematica
-}  // namespace mathematica
-
 namespace astronomy {
 
+using astronomy::J2000;
 using base::make_not_null_unique;
 using base::not_null;
 using base::OFStream;
@@ -94,6 +68,8 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::DifferenceFrom;
 using testing_utilities::IsNear;
 using testing_utilities::IsOk;
+using testing_utilities::RelativeError;
+using testing_utilities::operator""_⑴;
 using ::testing::Lt;
 
 class OrbitalElementsTest : public ::testing::Test {
@@ -212,7 +188,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   // Mean element values.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
-                                Lt(330 * Micro(Metre))));
+                                Lt(410 * Micro(Metre))));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.eccentricity,
                                 Lt(4.6e-11)));

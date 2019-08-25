@@ -13,8 +13,8 @@ namespace testing_utilities {
 namespace internal_approximate_quantity {
 
 using quantities::Abs;
+using quantities::Format;
 using quantities::SIUnit;
-namespace si = quantities::si;
 
 template<typename Dimensions>
 Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::min() const {
@@ -46,8 +46,8 @@ double ApproximateQuantity<Quantity<Dimensions>>::UlpDistance(
 template<typename Dimensions>
 std::string ApproximateQuantity<Quantity<Dimensions>>::DebugString() const {
   if (has_trivial_unit()) {
-    return (negated_ ? "-" : "") + representation_ +
-           "(" + std::to_string(ulp_) + ") " + si::Format<Dimensions>();
+    return (negated_ ? "-" : "") + representation_ + "(" +
+           std::to_string(ulp_) + ") " + Format<Dimensions>();
   } else {
     return (negated_ ? "-" : "") + representation_ +
            "(" + std::to_string(ulp_) + ") * " + quantities::DebugString(unit_);
