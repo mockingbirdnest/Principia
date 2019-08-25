@@ -557,7 +557,7 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // al., and 66.04° in Benada.
   // Figure 9 of Bhat et al. shows that the observed values of the mean
   // inclination vary between 66.0375° and 66.0455° over the course of the
-  // mission; (66.0408° ± 0.0040° according to the abstract).  We can see from
+  // mission (66.0408° ± 0.0040° according to the abstract).  We can see from
   // the graph that during the period under test, in early December 1997, the
   // inclination is below the reference value, and varies by several thousandths
   // of a degree in a matter of days; the minimum and maximum that we compute
