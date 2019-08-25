@@ -12,6 +12,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
+#include "numerics/polynomial.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
@@ -31,6 +32,8 @@ using geometry::Interval;
 using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
+using numerics::EstrinEvaluator;
+using numerics::PolynomialInMonomialBasis;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
 using physics::DiscreteTrajectory;
@@ -40,6 +43,7 @@ using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::Angle;
 using quantities::Mod;
+using quantities::Pow;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::astronomy::TerrestrialEquatorialRadius;
@@ -197,7 +201,7 @@ class OrbitAnalysisTest : public ::testing::Test {
     // whether its x axis resembles the equinox of the date), so we pick
     // the tropical year.
     // We use values based Newcomb's formula for the mean longitude of the sun,
-    //   L = 279°41′48″.04 + 129 602 768″.13 T + 1.089″ T²
+    //   L = 279°41′48″.04 + 129 602 768″.13 T + 1.089″ T²,
     // where T is in Julian centuries since 1900, January 0, Greenwich Mean noon.
     // Ephemeris time (ET) was defined by the IAU (10th general assembly (1958),
     // commissions 4 and 31, recommendation 2) from Newcomb's tables, with
@@ -208,15 +212,21 @@ class OrbitAnalysisTest : public ::testing::Test {
     // in such a way as to achieve approximate continuity with ET, see 16th
     // general assembly (1976), commission 4, recommendation 5, note 2, and 21st
     // general assembly (1991), resolution A4, recommendation IV, note 4.
+    // We can therefore work with this formula in TT.
+    PolynomialInMonomialBasis<Angle, Instant, 2, EstrinEvaluator> const
+        newcomb_mean_longitude(
+            {279 * Degree + 41 * ArcMinute + 48.04 * ArcSecond,
+             129'602'768.13 * ArcSecond / (100 * JulianYear),
+             1.089 * ArcSecond / Pow<2>(100 * JulianYear)},
+            "1899-12-31T12:00:00"_TT);
     auto const ground_track = OrbitGroundTrack::ForTrajectory(
         *earth_centred_trajectory,
         earth_,
         recurrence,
-        {{/*epoch=*/"1899-12-31T12:00:00"_TT,
-          /*mean_longitude_at_epoch=*/279 * Degree + 41 * ArcMinute +
-              48.04 * ArcSecond,
+        {{/*epoch=*/J2000,
+          /*mean_longitude_at_epoch=*/newcomb_mean_longitude.Evaluate(J2000),
           /*year*/ 2 * π * Radian /
-              (129'602'768.13 * ArcSecond / (100 * JulianYear))}});
+              newcomb_mean_longitude.EvaluateDerivative(J2000)}});
     return {elements, recurrence, ground_track};
   }
 
