@@ -207,7 +207,7 @@ class OrbitAnalysisTest : public ::testing::Test {
     // commissions 4 and 31, recommendation 2) from Newcomb's tables, with
     // 1900, January 0 at 12 ET being the instant at which the mean longitude of
     // the sun was 279°41′48″.08, and the ET second being 1/31 556 925.9747 of
-    // the tropical year at that epoch, where 31 556 925.9747 s =
+    // the tropical year at that epoch—where 31 556 925.9747 s =
     // 2π rad / (129 602 768″.13 / 100 a).  TDT, and later TT, were then defined
     // in such a way as to achieve approximate continuity with ET, see 16th
     // general assembly (1976), commission 4, recommendation 5, note 2, and 21st
