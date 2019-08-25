@@ -7,9 +7,11 @@
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
 #include "astronomy/standard_product_3.hpp"
+#include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "mathematica/mathematica.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
@@ -23,6 +25,7 @@ namespace astronomy {
 
 using base::make_not_null_unique;
 using base::not_null;
+using base::OFStream;
 using geometry::Instant;
 using geometry::Interval;
 using geometry::Position;
@@ -170,6 +173,17 @@ class OrbitAnalysisTest : public ::testing::Test {
                               *earth_centred_trajectory,
                               earth_,
                               MasslessBody{}).ValueOrDie();
+
+    {
+      auto const identifier = (std::stringstream() << orbit.satellite).str();
+      OFStream f(SOLUTION_DIR / "mathematica" /
+                 (identifier + "_elements.generated.wl"));
+      f << mathematica::Assign(identifier + "osculatingEquinoctialElements",
+                               elements.osculating_equinoctial_elements());
+      f << mathematica::Assign(identifier + "meanEquinoctialElements",
+                               elements.mean_equinoctial_elements());
+    }
+
     auto const recurrence =
         OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
                                            elements.nodal_precession(),
@@ -182,18 +196,18 @@ class OrbitAnalysisTest : public ::testing::Test {
     // IRCS here is more like an equator-of-date frame (although it is not clear
     // whether its x axis resembles the equinox of the date), so we pick
     // the tropical year.
-    // We use Newcomb's values.  Note that Newcomb's epoch was originally
-    // 1900, January 0, Greenwich Mean noon.
+    // We use values based Newcomb's formula for the mean longitude of the sun,
+    //   L = 279°41′48″.04 + 129 602 768″.13 T + 1.089″ T²
+    // where T is in Julian centuries since 1900, January 0, Greenwich Mean noon.
     // Ephemeris time (ET) was defined by the IAU (10th general assembly (1958),
     // commissions 4 and 31, recommendation 2) from Newcomb's tables, with
     // 1900, January 0 at 12 ET being the instant at which the mean longitude of
-    // the sun was 279°41′48″.48, and the ET second being 1/31 556 925.9747 of
-    // the tropical year at that epoch.
-    // Note that 2π rad / (129 602 768″.13 / 100 a) = 31 556 925.9747 s.
-    // TDT, and later TT, were then defined in such a way as to achieve
-    // approximate continuity with ET, see 16th general assembly (1976),
-    // commission 4, recommendation 5, note 2, and 21st general assembly (1991),
-    // resolution A4, recommendation IV, note 4.
+    // the sun was 279°41′48″.08, and the ET second being 1/31 556 925.9747 of
+    // the tropical year at that epoch, where 31 556 925.9747 s =
+    // 2π rad / (129 602 768″.13 / 100 a).  TDT, and later TT, were then defined
+    // in such a way as to achieve approximate continuity with ET, see 16th
+    // general assembly (1976), commission 4, recommendation 5, note 2, and 21st
+    // general assembly (1991), resolution A4, recommendation IV, note 4.
     auto const ground_track = OrbitGroundTrack::ForTrajectory(
         *earth_centred_trajectory,
         earth_,
