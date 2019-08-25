@@ -9,16 +9,21 @@
 #include <vector>
 
 #include "base/not_constructible.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace mathematica {
 namespace internal_mathematica {
 
+using astronomy::J2000;
 using base::not_constructible;
 using base::not_null;
 using quantities::DebugString;
 using quantities::IsFinite;
 using quantities::SIUnit;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 
 // A helper struct to scan the elements of a tuple and stringify them.
 template<int index, typename... Types>
@@ -140,6 +145,19 @@ std::string ToMathematica(std::tuple<Types...> const& tuple) {
   TupleHelper<sizeof...(Types), Types...>::ToMathematicaStrings(
       tuple, expressions);
   return Apply("List", expressions);
+}
+
+inline std::string ToMathematica(
+    astronomy::OrbitalElements::EquinoctialElements const& elements) {
+  return ToMathematica(std::make_tuple((elements.t - J2000) / Second,
+                                       elements.a / Metre,
+                                       elements.h,
+                                       elements.k,
+                                       elements.λ / Radian,
+                                       elements.p,
+                                       elements.q,
+                                       elements.pʹ,
+                                       elements.qʹ));
 }
 
 inline std::string ToMathematica(std::string const& str) {
