@@ -33,19 +33,19 @@ class BurnEditor : ScalingRenderer {
                                log10_lower_rate : Log10ΔvLowerRate,
                                log10_upper_rate : Log10ΔvUpperRate,
                                text_colour      : Style.Binormal);
-    previous_coast_duration_ =
-        new DifferentialSlider(
-                label            : "t initial",
-                unit             : null,
-                log10_lower_rate : Log10TimeLowerRate,
-                log10_upper_rate : Log10TimeUpperRate,
-                // We cannot have a coast of length 0, so let's make it very
-                // short: that will be indistinguishable.
-                zero_value       : 0.001,
-                min_value        : 0,
-                formatter        : FormatPreviousCoastDuration,
-                parser           : TryParsePreviousCoastDuration);
-    previous_coast_duration_.value = initial_time_ - time_base;
+    previous_coast_duration_ = new DifferentialSlider(
+        label            : "t initial",
+        unit             : null,
+        log10_lower_rate : Log10TimeLowerRate,
+        log10_upper_rate : Log10TimeUpperRate,
+        // We cannot have a coast of length 0, so let's make it very
+        // short: that will be indistinguishable.
+        zero_value       : 0.001,
+        min_value        : 0,
+        formatter        : FormatPreviousCoastDuration,
+        parser           : TryParsePreviousCoastDuration){
+        value            = initial_time_ - time_base
+    };
     reference_frame_selector_ = new ReferenceFrameSelector(
                                     adapter_,
                                     ReferenceFrameChanged,
@@ -57,11 +57,11 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(string header, 
+  public bool Render(string header,
                      bool anomalous,
-                     double final_time) {
+                     double burn_final_time) {
     bool changed = false;
-    previous_coast_duration_.max_value = final_time - time_base;
+    previous_coast_duration_.max_value = burn_final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(header);
       string frame_info = "";
@@ -206,7 +206,7 @@ class BurnEditor : ScalingRenderer {
 
     // This would use zip if we had 4.0 or later.  We loop for now.
     double Σ_f_over_i_sp = 0;
-    for (int i = 0; i < active_engines.Count(); ++i) {
+    for (int i = 0; i < active_engines.Length; ++i) {
       Σ_f_over_i_sp +=
           thrusts[i] / active_engines[i].atmosphereCurve.Evaluate(0);
     }
@@ -223,8 +223,7 @@ class BurnEditor : ScalingRenderer {
     ModuleRCS[] active_rcs =
         (from part in vessel_.parts
          select (from PartModule module in part.Modules
-                 where module is ModuleRCS &&
-                       (module as ModuleRCS).rcsEnabled
+                 where module is ModuleRCS module_rcs && module_rcs.rcsEnabled
                  select module as ModuleRCS)).SelectMany(x => x).ToArray();
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
     // NOTE(egg): NathanKell informs me that in >= 1.0.5, RCS has a useZaxis
@@ -242,7 +241,7 @@ class BurnEditor : ScalingRenderer {
 
     // This would use zip if we had 4.0 or later.  We loop for now.
     double Σ_f_over_i_sp = 0;
-    for (int i = 0; i < active_rcs.Count(); ++i) {
+    for (int i = 0; i < active_rcs.Length; ++i) {
       Σ_f_over_i_sp +=
           thrusts[i] / active_rcs[i].atmosphereCurve.Evaluate(0);
     }

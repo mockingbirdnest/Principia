@@ -6,7 +6,7 @@ namespace ksp_plugin_adapter {
 // boxed value types, so that |T?| cannot be marshaled, and |object| is not
 // statically typed.
 internal class Boxed<T> where T : struct {
-  public T all { get; private set; }
+  public T all { get; }
 
   protected Boxed(T all) {
     this.all = all;

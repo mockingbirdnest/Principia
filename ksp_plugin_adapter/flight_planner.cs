@@ -252,10 +252,11 @@ class FlightPlanner : SupervisedWindowRenderer {
         for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
           BurnEditor burn = burn_editors_[i];
-          if (burn.Render(header     : "Manœuvre #" + (i + 1),
-                          anomalous  : i >= (burn_editors_.Count -
-                                             number_of_anomalous_manœuvres),
-                          final_time : final_times[i])) {
+          if (burn.Render(header          : "Manœuvre #" + (i + 1),
+                          anomalous       :
+                              i >= (burn_editors_.Count -
+                                    number_of_anomalous_manœuvres),
+                          burn_final_time : final_times[i])) {
             var status = plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
             UpdateStatus(status, i);
             burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
@@ -479,7 +480,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       } else if (status_.is_out_of_range()) {
         if (first_error_manœuvre_.HasValue) {
           status_message = "manœuvre #" + (first_error_manœuvre_.Value + 1) +
-                           " overlaps with " + 
+                           " overlaps with " +
                            ((first_error_manœuvre_.Value == 0)
                                 ? "the start of the flight plan"
                                 : "manœuvre #" +
@@ -529,7 +530,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   private Status status_ = Status.OK;
   private int? first_error_manœuvre_;  // May exceed the number of manœuvres.
   private bool message_was_displayed_ = false;
-  
+
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;
 }
