@@ -498,7 +498,7 @@ TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
       {SolarSystemFactory::Charon,
        {/*separation_per_orbit=*/254.946459_⑴ * ArcSecond,
         /*inclination_drift_per_orbit=*/0.000086_⑴ * ArcSecond,
-        /*longitude_of_ascending_node_drift_per_orbit=*/0.11318_⑴ * ArcSecond,
+        /*longitude_of_ascending_node_drift_per_orbit=*/0.1132_⑴ * ArcSecond,
         /*argument_of_periapsis_drift_per_orbit=*/512.625_⑴ * ArcSecond}},
   };
 
