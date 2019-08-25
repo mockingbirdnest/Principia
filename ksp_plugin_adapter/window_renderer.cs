@@ -89,7 +89,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   protected BaseWindowRenderer(UnityEngine.GUILayoutOption[] options) {
     UnityEngine.GUILayoutOption[] default_options = {GUILayoutMinWidth(20)};
     options_ = options.Length == 0 ? default_options : options;
-    lock_name_ = GetType() + ":lock:" + GetHashCode();
+    lock_name_ = $"{GetType()}:lock:{GetHashCode()}";
   }
 
   // Locking.
@@ -130,14 +130,16 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
       // width.  So we go through this method until the width has been
       // determined, and we update the window based on the width.  Note that
       // |must_centre_| has to be persisted because there can be multiple
-      // scene changes because a window is shown for the first time.
+      // scene changes before a window is shown for the first time.  Also note
+      // the conversion to float to avoid losing decimals and to avoid double
+      // rounding.
       if (must_centre_ && rectangle_.width > 0) {
         rectangle_ =
             UnityEngine.GUILayout.Window(
                 id         : GetHashCode(),
                 screenRect : new UnityEngine.Rect(
                     x      : (UnityEngine.Screen.width - rectangle_.width) / 2,
-                    y      : (float)UnityEngine.Screen.height / 3,
+                    y      : (float)UnityEngine.Screen.height / 3f,
                     width  : 0,
                     height : 0),
                 func       : RenderWindow,
@@ -235,24 +237,24 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
 
 internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   public interface ISupervisor {
-    event Action ClearLocks;
-    event Action DisposeWindows;
-    event Action RenderWindows;
+    event Action LockClearing;
+    event Action WindowsDisposal;
+    event Action WindowsRendering;
   }
 
   protected SupervisedWindowRenderer(
       ISupervisor supervisor,
       params UnityEngine.GUILayoutOption[] options) : base(options) {
     supervisor_ = supervisor;
-    supervisor_.ClearLocks += ClearLock;
-    supervisor_.DisposeWindows += DisposeWindow;
-    supervisor_.RenderWindows += RenderWindow;
+    supervisor_.LockClearing += ClearLock;
+    supervisor_.WindowsDisposal += DisposeWindow;
+    supervisor_.WindowsRendering += RenderWindow;
   }
 
   public void DisposeWindow() {
-    supervisor_.ClearLocks -= ClearLock;
-    supervisor_.DisposeWindows -= DisposeWindow;
-    supervisor_.RenderWindows -= RenderWindow;
+    supervisor_.LockClearing -= ClearLock;
+    supervisor_.WindowsDisposal -= DisposeWindow;
+    supervisor_.WindowsRendering -= RenderWindow;
   }
 
   private readonly ISupervisor supervisor_;

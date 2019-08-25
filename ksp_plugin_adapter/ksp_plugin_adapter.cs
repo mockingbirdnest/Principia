@@ -200,9 +200,9 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   internal MainWindow main_window_;
 
-  public event Action ClearLocks;
-  public event Action DisposeWindows;
-  public event Action RenderWindows;
+  public event Action LockClearing;
+  public event Action WindowsDisposal;
+  public event Action WindowsRendering;
 
   PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -682,11 +682,11 @@ public partial class PrincipiaPluginAdapter
     }
 
     if (hide_all_gui_ || !in_principia_scene_) {
-      ClearLocks();
+      LockClearing();
     } else if (main_window_.Shown()) {
-      RenderWindows();
+      WindowsRendering();
     } else {
-      ClearLocks();
+      LockClearing();
     }
   }
 
@@ -881,7 +881,7 @@ public partial class PrincipiaPluginAdapter
           toolbar_button_);
     }
     Cleanup();
-    DisposeWindows();
+    WindowsDisposal();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
                                     ObscenelyEarly);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
@@ -2038,7 +2038,7 @@ public partial class PrincipiaPluginAdapter
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
     map_node_pool_.Clear();
-    ClearLocks();
+    LockClearing();
     Interface.DeletePlugin(ref plugin_);
     previous_display_mode_ = null;
     navball_changed_ = true;
@@ -2190,7 +2190,7 @@ public partial class PrincipiaPluginAdapter
     }
     must_set_plotting_frame_ = true;
   } catch (Exception e) {
-    Log.Fatal("Exception while resetting plugin: " + e);
+    Log.Fatal($"Exception while resetting plugin: {e}");
   }
   }
 
