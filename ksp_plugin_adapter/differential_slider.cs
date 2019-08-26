@@ -10,14 +10,14 @@ internal class DifferentialSlider : ScalingRenderer {
 
   // Rates are in units of |value| per real-time second.
   public DifferentialSlider(string label,
-                            string unit,
+                            string? unit,
                             double log10_lower_rate,
                             double log10_upper_rate,
                             double zero_value = 0,
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
-                            ValueFormatter formatter = null,
-                            ValueParser parser = null,
+                            ValueFormatter? formatter = null,
+                            ValueParser? parser = null,
                             UnityEngine.Color? text_colour = null) {
     label_ = label;
     unit_ = unit;
@@ -174,7 +174,7 @@ internal class DifferentialSlider : ScalingRenderer {
   }
 
   private readonly string label_;
-  private readonly string unit_;
+  private readonly string? unit_;
 
   private readonly double log10_lower_rate_;
   private readonly double log10_upper_rate_;

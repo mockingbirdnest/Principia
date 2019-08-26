@@ -21,7 +21,7 @@ internal class DisposableIteratorMarshaller : ICustomMarshaler {
     if (managed_object == null) {
       return IntPtr.Zero;
     }
-    var disposable_iterator = managed_object as DisposableIterator;
+    var disposable_iterator = (managed_object as DisposableIterator)!;
     return disposable_iterator.IntPtr;
   }
 
@@ -50,7 +50,7 @@ internal class DisposablePlanetariumMarshaller : ICustomMarshaler {
     if (managed_object == null) {
       return IntPtr.Zero;
     }
-    var disposable_planetarium = managed_object as DisposablePlanetarium;
+    var disposable_planetarium = (managed_object as DisposablePlanetarium)!;
     return disposable_planetarium.IntPtr;
   }
 

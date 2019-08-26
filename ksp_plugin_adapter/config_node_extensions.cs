@@ -16,7 +16,8 @@ namespace ksp_plugin_adapter {
 // The KSP |GetValues|, |GetNodes| methods should be used directly for repeated
 // fields.
 internal static class ConfigNodeExtensions {
-  public static ConfigNode GetAtMostOneNode(this ConfigNode node, string name) {
+  public static ConfigNode? GetAtMostOneNode(this ConfigNode node,
+                                             string name) {
     var nodes = node.GetNodes(name);
     if (nodes.Length > 1) {
       Log.Fatal("Duplicate |" + name + "| in node |" + node.name + "|:\n" +
@@ -39,7 +40,7 @@ internal static class ConfigNodeExtensions {
     return nodes[0];
   }
 
-  public static string GetAtMostOneValue(this ConfigNode node, string name) {
+  public static string? GetAtMostOneValue(this ConfigNode node, string name) {
     var values = node.GetValues(name);
     if (values.Length > 1) {
       Log.Fatal("Duplicate |" + name + "| in node |" + node.name + "|:\n" +
@@ -64,8 +65,8 @@ internal static class ConfigNodeExtensions {
 }
 
 internal static class GameDatabaseExtensions {
-  public static ConfigNode GetAtMostOneNode(this GameDatabase database,
-                                            string name) {
+  public static ConfigNode? GetAtMostOneNode(this GameDatabase database,
+                                             string name) {
     var configs = database.GetConfigs(name);
     if (configs.Length > 1) {
       Log.Fatal(

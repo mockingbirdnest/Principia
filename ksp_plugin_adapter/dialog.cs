@@ -50,7 +50,7 @@ internal class Dialog : UnsupervisedWindowRenderer, IConfigNode {
   }
 
   private readonly bool persist_state_;
-  private string message_;
+  private string? message_;
 }
 
 }  // namespace ksp_plugin_adapter

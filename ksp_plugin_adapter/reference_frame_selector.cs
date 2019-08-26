@@ -282,7 +282,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public FrameType frame_type { get; private set; }
   public CelestialBody selected_celestial { get; private set; }
-  public Vessel target_override { get; set; }
+  public Vessel? target_override { get; set; }
 
   protected override string Title => name_ + " selection (" + Name() + ")";
 

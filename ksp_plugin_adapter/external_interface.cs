@@ -20,7 +20,7 @@ public class ExternalInterface {
     return result;
   }
 
-  public static ExternalInterface Get() {
+  public static ExternalInterface? Get() {
     List<ScenarioModule> modules;
     try {
       modules = ScenarioRunner.GetLoadedModules();

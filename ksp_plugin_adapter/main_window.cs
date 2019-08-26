@@ -10,7 +10,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   private readonly DateTimeOffset next_release_date_ =
       new DateTimeOffset(2019, 09, 28, 18, 27, 00, TimeSpan.Zero);
 
-  public delegate Vessel PredictedVessel();
+  public delegate Vessel? PredictedVessel();
 
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,

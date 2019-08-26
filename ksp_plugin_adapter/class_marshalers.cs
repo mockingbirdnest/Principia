@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace principia {
@@ -14,18 +13,18 @@ internal static partial class Interface {
 
     [StructLayout(LayoutKind.Sequential)]
     internal class BodyParametersRepresentation {
-      public string name;
-      public string gravitational_parameter;
-      public string reference_instant;
-      public string min_radius;
-      public string mean_radius;
-      public string max_radius;
-      public string axis_right_ascension;
-      public string axis_declination;
-      public string reference_angle;
-      public string angular_frequency;
-      public string reference_radius;
-      public string j2;
+      public string? name;
+      public string? gravitational_parameter;
+      public string? reference_instant;
+      public string? min_radius;
+      public string? mean_radius;
+      public string? max_radius;
+      public string? axis_right_ascension;
+      public string? axis_declination;
+      public string? reference_angle;
+      public string? angular_frequency;
+      public string? reference_radius;
+      public string? j2;
       public IntPtr geopotential;
       public int geopotential_size;
     }
@@ -48,8 +47,7 @@ internal static partial class Interface {
     }
 
     public IntPtr MarshalManagedToNative(object managed_object) {
-      var parameters = managed_object as BodyParameters;
-      Debug.Assert(parameters != null, nameof(parameters) + " != null");
+      var parameters = (managed_object as BodyParameters)!;
       var representation = new BodyParametersRepresentation{
           angular_frequency       = parameters.angular_frequency,
           axis_declination        = parameters.axis_declination,
@@ -70,7 +68,7 @@ internal static partial class Interface {
       } else {
         int sizeof_element = Marshal.SizeOf(typeof(BodyGeopotentialElement));
         representation.geopotential = Marshal.AllocHGlobal(
-            sizeof_element * parameters.geopotential.Length);
+            sizeof_element * parameters.geopotential!.Length);
         for (int i = 0; i < parameters.geopotential.Length; ++i) {
           Marshal.StructureToPtr(
               parameters.geopotential[i],

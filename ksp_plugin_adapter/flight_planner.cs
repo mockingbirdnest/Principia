@@ -26,7 +26,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       Toggle();
     }
     // Override the state of the toggle if there is no active vessel.
-    string vessel_guid = vessel_?.id.ToString();
+    string? vessel_guid = vessel_?.id.ToString();
     if (vessel_guid == null || !plugin.HasVessel(vessel_guid)) {
       Hide();
       vessel_ = FlightGlobals.ActiveVessel;
@@ -38,7 +38,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   public override void Load(ConfigNode node) {
     base.Load(node);
 
-    string show_guidance_value = node.GetAtMostOneValue("show_guidance");
+    string? show_guidance_value = node.GetAtMostOneValue("show_guidance");
     if (show_guidance_value != null) {
       show_guidance_ = Convert.ToBoolean(show_guidance_value);
     }
@@ -67,7 +67,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     // The UI code proper, executed identically for Layout and Repaint.  We
     // can freely change the state in events like clicks (e.g., in if statements
     // for buttons) as these don't happen between Layout and Repaint.
-    string vessel_guid = vessel_?.id.ToString();
+    string? vessel_guid = vessel_?.id.ToString();
     if (vessel_guid == null || !plugin.HasVessel(vessel_guid)) {
       return;
     }
@@ -77,7 +77,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     } else if (UnityEngine.GUILayout.Button("Create flight plan")) {
       plugin.FlightPlanCreate(vessel_guid,
                               plugin.CurrentTime() + 1000,
-                              vessel_.GetTotalMass());
+                              vessel_!.GetTotalMass());
       final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       Shrink();
     }
@@ -86,7 +86,7 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   private void UpdateVesselAndBurnEditors() {
     {
-      string vessel_guid = vessel_?.id.ToString();
+      string? vessel_guid = vessel_?.id.ToString();
       if (vessel_guid == null ||
           vessel_ != FlightGlobals.ActiveVessel ||
           !plugin.HasVessel(vessel_guid) ||
@@ -105,7 +105,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
 
     if (burn_editors_ == null) {
-      string vessel_guid = vessel_?.id.ToString();
+      string? vessel_guid = vessel_?.id.ToString();
       if (vessel_guid != null &&
           plugin.HasVessel(vessel_guid) &&
           plugin.FlightPlanExists(vessel_guid)) {
@@ -117,7 +117,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           // Dummy initial time, we call |Reset| immediately afterwards.
           burn_editors_.Add(
               new BurnEditor(adapter_,
-                             vessel_,
+                             vessel_!,
                              initial_time  : 0,
                              index         : burn_editors_.Count,
                              previous_burn : burn_editors_.LastOrDefault()));
@@ -128,7 +128,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
 
     if (burn_editors_ != null) {
-      string vessel_guid = vessel_?.id.ToString();
+      string vessel_guid = vessel_.id.ToString();
       double current_time = plugin.CurrentTime();
       first_future_manœuvre_ = null;
       for (int i = 0; i < burn_editors_.Count; ++i) {
@@ -442,7 +442,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   private string GetStatusMessage() {
-    string vessel_guid = vessel_?.id.ToString();
+    string? vessel_guid = vessel_?.id.ToString();
     string message = "";
     if (vessel_guid != null && !status_.ok()) {
       int anomalous_manœuvres =
@@ -517,8 +517,8 @@ class FlightPlanner : SupervisedWindowRenderer {
   private IntPtr plugin => adapter_.Plugin();
 
   private readonly PrincipiaPluginAdapter adapter_;
-  private Vessel vessel_;
-  private List<BurnEditor> burn_editors_;
+  private Vessel? vessel_;
+  private List<BurnEditor>? burn_editors_;
   private readonly DifferentialSlider final_time_;
   private int? first_future_manœuvre_;
 
