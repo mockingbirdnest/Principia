@@ -4,7 +4,7 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 class RenderingActions : UnityEngine.MonoBehaviour {
-  internal Action post_render {
+  internal Action? post_render {
     private get;
     set;
   }
@@ -13,7 +13,7 @@ class RenderingActions : UnityEngine.MonoBehaviour {
     post_render?.Invoke();
   }
 
-  internal Action pre_cull {
+  internal Action? pre_cull {
     private get;
     set;
   }

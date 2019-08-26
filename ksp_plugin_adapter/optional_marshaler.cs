@@ -55,7 +55,7 @@ internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
     return ptr;
   }
 
-  object ICustomMarshaler.MarshalNativeToManaged(IntPtr native_data) {
+  object? ICustomMarshaler.MarshalNativeToManaged(IntPtr native_data) {
     if (native_data == IntPtr.Zero) {
       return null;
     } else {

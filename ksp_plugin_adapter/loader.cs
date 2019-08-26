@@ -8,7 +8,7 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class Loader {
-  internal static string LoadPrincipiaDllAndInitGoogleLogging() {
+  internal static string? LoadPrincipiaDllAndInitGoogleLogging() {
     if (loaded_principia_dll_) {
       return null;
     }

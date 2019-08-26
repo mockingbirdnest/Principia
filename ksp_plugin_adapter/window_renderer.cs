@@ -114,7 +114,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     var old_skin = UnityEngine.GUI.skin;
     if (skin_ == null) {
       UnityEngine.GUI.skin = null;
-      skin_ = MakeSkin(UnityEngine.GUI.skin);
+      skin_ = MakeSkin(UnityEngine.GUI.skin!);
     }
     UnityEngine.GUI.skin = skin_;
     if (show_) {
@@ -192,19 +192,19 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   // Persistence.
 
   public virtual void Load(ConfigNode node) {
-    string must_centre_value = node.GetAtMostOneValue("must_centre");
+    string? must_centre_value = node.GetAtMostOneValue("must_centre");
     if (must_centre_value != null) {
       must_centre_ = Convert.ToBoolean(must_centre_value);
     }
-    string show_value = node.GetAtMostOneValue("show");
+    string? show_value = node.GetAtMostOneValue("show");
     if (show_value != null) {
       show_ = Convert.ToBoolean(show_value);
     }
-    string x_value = node.GetAtMostOneValue("x");
+    string? x_value = node.GetAtMostOneValue("x");
     if (x_value != null) {
       rectangle_.x = Convert.ToSingle(x_value);
     }
-    string y_value = node.GetAtMostOneValue("y");
+    string? y_value = node.GetAtMostOneValue("y");
     if (y_value != null) {
       rectangle_.y = Convert.ToSingle(y_value);
     }
@@ -229,7 +229,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
 
   private readonly UnityEngine.GUILayoutOption[] options_;
   private readonly string lock_name_;
-  private UnityEngine.GUISkin skin_;
+  private UnityEngine.GUISkin? skin_;
   private bool must_centre_ = true;
   private bool show_ = false;
   private UnityEngine.Rect rectangle_;

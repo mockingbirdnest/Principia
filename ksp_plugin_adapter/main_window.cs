@@ -59,50 +59,50 @@ internal class MainWindow : SupervisedWindowRenderer {
   public override void Load(ConfigNode node) {
     base.Load(node);
 
-    string show_ksp_features_value =
+    string? show_ksp_features_value =
         node.GetAtMostOneValue("show_ksp_features");
     if (show_ksp_features_value != null) {
       show_ksp_features_ = Convert.ToBoolean(show_ksp_features_value);
     }
-    string show_logging_settings_value =
+    string? show_logging_settings_value =
         node.GetAtMostOneValue("show_logging_settings");
     if (show_logging_settings_value != null) {
       show_logging_settings_ = Convert.ToBoolean(show_logging_settings_value);
     }
-    string show_prediction_settings_value =
+    string? show_prediction_settings_value =
         node.GetAtMostOneValue("show_prediction_settings");
     if (show_prediction_settings_value != null) {
       show_prediction_settings_ =
           Convert.ToBoolean(show_prediction_settings_value);
     }
 
-    string history_length_index_value =
+    string? history_length_index_value =
         node.GetAtMostOneValue("history_length_index");
     if (history_length_index_value != null) {
       should_load_compatibility_data_ = false;
       history_length_index_ = Convert.ToInt32(history_length_index_value);
     }
 
-    string buffered_logging_value =
+    string? buffered_logging_value =
         node.GetAtMostOneValue("buffered_logging");
     if (buffered_logging_value != null) {
       buffered_logging_ = Convert.ToInt32(buffered_logging_value);
     }
-    string stderr_logging_value = node.GetAtMostOneValue("stderr_logging");
+    string? stderr_logging_value = node.GetAtMostOneValue("stderr_logging");
     if (stderr_logging_value != null) {
       stderr_logging_ = Convert.ToInt32(stderr_logging_value);
     }
-    string suppressed_logging_value =
+    string? suppressed_logging_value =
         node.GetAtMostOneValue("suppressed_logging");
     if (suppressed_logging_value != null) {
       suppressed_logging_ = Convert.ToInt32(suppressed_logging_value);
     }
-    string verbose_logging_value = node.GetAtMostOneValue("verbose_logging");
+    string? verbose_logging_value = node.GetAtMostOneValue("verbose_logging");
     if (verbose_logging_value != null) {
       verbose_logging_ = Convert.ToInt32(verbose_logging_value);
     }
 
-    string must_record_journal_value =
+    string? must_record_journal_value =
         node.GetAtMostOneValue("must_record_journal");
     if (must_record_journal_value != null) {
       must_record_journal_ = Convert.ToBoolean(must_record_journal_value);
@@ -377,7 +377,7 @@ internal class MainWindow : SupervisedWindowRenderer {
     vessel_ = predicted_vessel_();
 
     AdaptiveStepParameters? adaptive_step_parameters = null;
-    string vessel_guid = vessel_?.id.ToString();
+    string? vessel_guid = vessel_?.id.ToString();
     if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
       adaptive_step_parameters =
           plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
@@ -526,7 +526,7 @@ internal class MainWindow : SupervisedWindowRenderer {
   // Whether a journal is currently being recorded.
   private static bool journaling_ = false;
 
-  private Vessel vessel_;
+  private Vessel? vessel_;
 }
 
 }  // namespace ksp_plugin_adapter
