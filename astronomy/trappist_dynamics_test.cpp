@@ -1310,7 +1310,7 @@ TEST_F(TrappistDynamicsTest, PlanetBPlanetDAlignment) {
 }
 #endif
 
-TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
+TEST_F(TrappistDynamicsTest, DISABLED_SECULAR_Optimization) {
   auto const gravity_model_message = ParseGravityModel(
       SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt");
   auto const preoptimization_initial_state_message = ParseInitialState(
