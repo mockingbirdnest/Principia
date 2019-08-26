@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 $msbuild = &".\find_msbuild.ps1"
 
 &$msbuild                            `
-    "/t:Build"                       `
+    "/t:Clean;Build"                 `
     /m                               `
     /property:Configuration=Release  `
     /property:Platform=x64           `
