@@ -45,7 +45,9 @@ class ParallelTestRunner {
   static void Main(string[] args) {
     Granularity? granularity_option = null;
     bool? instrument_option = null;
-    
+    bool? also_run_disabled_tests_option = null;
+    string filter_option = null;
+
     var death_test_processes = new List<Process>();
     var processes = new List<Process>();
     int test_process_counter = 0;
@@ -62,17 +64,28 @@ class ParallelTestRunner {
           granularity_option = ParseEnum<Granularity>(value);
         } else if (option == "instrument") {
           instrument_option = bool.Parse(value);
+        } else if (option == "also_run_disabled_tests") {
+          also_run_disabled_tests_option = bool.Parse(value);
+        } else if (option == "filter") {
+          filter_option = value;
         } else {
           Console.WriteLine("Unknown option " + option);
           Environment.Exit(1);
         }
         continue;
       }
-      Granularity granularity =
-          granularity_option.GetValueOrDefault(Granularity.Test);
-      bool instrument = instrument_option.GetValueOrDefault(false);
+      Granularity granularity = granularity_option ?? Granularity.Test;
+      bool instrument = instrument_option ?? false;
+      bool also_run_disabled_tests = also_run_disabled_tests_option ?? false;
+      string filter = filter_option;
       granularity_option = null;
       instrument_option = null;
+      filter_option = null;
+
+      if (filter != null && granularity == Granularity.Package) {
+        Console.WriteLine("--filter is not supported with --granularity:Package");
+        Environment.Exit(1);
+      }
 
       string[] test_binaries = Directory.GetFiles(arg, "*_tests.exe");
       foreach (string test_binary in test_binaries) {
@@ -100,10 +113,17 @@ class ParallelTestRunner {
           process.StartInfo.Arguments +=
               " --gtest_output=xml:TestResults\\gtest_results_" +
               test_process_counter++ + ".xml";
+          if (also_run_disabled_tests) {
+            process.StartInfo.Arguments += " --gtest_also_run_disabled_tests";
+          }
           death_test_processes.Add(process);
           continue;
         }
-        var info = new ProcessStartInfo(test_binary, "--gtest_list_tests");
+        var info = new ProcessStartInfo(
+            test_binary,
+            filter == null
+                ? "--gtest_list_tests"
+                : $"--gtest_list_tests --gtest_filter={filter}");
         info.UseShellExecute = false;
         info.RedirectStandardOutput = true;
         var list_tests = Process.Start(info);
@@ -125,6 +145,10 @@ class ParallelTestRunner {
               process.StartInfo.Arguments +=
                   " --gtest_output=xml:TestResults\\gtest_results_" +
                   test_process_counter++ + ".xml";
+              if (also_run_disabled_tests) {
+                process.StartInfo.Arguments +=
+                    " --gtest_also_run_disabled_tests";
+              }
               if (is_death_test.Value) {
                 death_test_processes.Add(process);
               } else {
@@ -143,6 +167,9 @@ class ParallelTestRunner {
             process.StartInfo.Arguments +=
                 " --gtest_output=xml:TestResults\\gtest_results_" +
                 test_process_counter++ + ".xml";
+            if (also_run_disabled_tests) {
+              process.StartInfo.Arguments += " --gtest_also_run_disabled_tests";
+            }
             if (is_death_test.Value) {
               death_test_processes.Add(process);
             } else {
