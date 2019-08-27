@@ -74,9 +74,9 @@ class BurnEditor : ScalingRenderer {
           Style.RightAligned(Style.Info(UnityEngine.GUI.skin.label)));
     }
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      // When we are first rendered, the |initial_mass_in_tonnes_| will just have
-      // been set.  If we have fallen back to instant impulse, we should use this
-      // mass to set the thrust.
+      // When we are first rendered, the |initial_mass_in_tonnes_| will just
+      // have been set.  If we have fallen back to instant impulse, we should
+      // use this mass to set the thrust.
       if (first_time_rendering_) {
         first_time_rendering_ = false;
         changed = true;

@@ -108,7 +108,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   public static string Name(FrameType type,
                             CelestialBody selected,
                             Vessel? target_override) {
-   if (target_override) {
+   if (target_override != null) {
      return "Target Local Vert./Horiz. at " + selected.NameWithArticle();
    }
    switch (type) {
@@ -139,7 +139,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   public static string ShortName(FrameType type,
                                  CelestialBody selected,
                                  Vessel? target_override) {
-    if (target_override) {
+    if (target_override != null) {
       return "Tgt LVLH@" + selected.name[0];
     }
     switch (type) {
@@ -231,7 +231,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public CelestialBody[] FixedBodies() {
-    if (target_override) {
+    if (target_override != null) {
       return new CelestialBody[]{};
     }
     switch (frame_type) {
@@ -295,11 +295,11 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
 
       // Right-hand side: toggles for reference frame type selection.
       using (new UnityEngine.GUILayout.VerticalScope()) {
-        if (target_override) {
+        if (target_override != null) {
           UnityEngine.GUILayout.Label(
               "Using target-centred frame selected on navball speed " +
               "display\n\n" +
-              Description(frame_type, selected_celestial, target_override!),
+              Description(frame_type, selected_celestial, target_override),
               Style.Multiline(UnityEngine.GUI.skin.label),
               GUILayoutWidth(6));
         } else {

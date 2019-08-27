@@ -1203,8 +1203,8 @@ public partial class PrincipiaPluginAdapter
       foreach (CelestialBody celestial in FlightGlobals.Bodies) {
         celestial.position += offset;
       }
-      foreach (
-          Vessel vessel in FlightGlobals.Vessels.Where(is_manageable_on_rails)) {
+      foreach (Vessel vessel in FlightGlobals.Vessels.Where(
+          is_manageable_on_rails)) {
         vessel.SetPosition(vessel.transform.position + offset);
       }
       // NOTE(egg): this is almost certainly incorrect, since we give the
@@ -1456,7 +1456,8 @@ public partial class PrincipiaPluginAdapter
         body.BodyFrame = new Planetarium.CelestialFrame{
             X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
             Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
-            Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}};
+            Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}
+        };
       }
     }
   }
