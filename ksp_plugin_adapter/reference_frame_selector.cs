@@ -168,8 +168,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public static string Description(FrameType type,
                                    CelestialBody selected,
-                                   Vessel target_override) {
-    if (target_override) {
+                                   Vessel? target_override) {
+    if (target_override != null) {
       return "Reference frame fixing the target vessel (" +
              target_override.vesselName + "), the plane of its orbit around " +
              selected.NameWithArticle() + ", and the line between them";

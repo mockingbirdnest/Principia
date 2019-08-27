@@ -128,7 +128,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
 
     if (burn_editors_ != null) {
-      string vessel_guid = vessel_.id.ToString();
+      string vessel_guid = vessel_!.id.ToString();
       double current_time = plugin.CurrentTime();
       first_future_manœuvre_ = null;
       for (int i = 0; i < burn_editors_.Count; ++i) {
@@ -225,7 +225,7 @@ class FlightPlanner : SupervisedWindowRenderer {
             message, style, UnityEngine.GUILayout.Height(warning_height_));
       }
 
-      if (burn_editors_.Count == 0 &&
+      if (burn_editors_!.Count == 0 &&
           UnityEngine.GUILayout.Button("Delete flight plan")) {
         plugin.FlightPlanDelete(vessel_guid);
         ResetStatus();
@@ -285,7 +285,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           }
           var editor =
               new BurnEditor(adapter_,
-                             vessel_,
+                             vessel_!,
                              initial_time,
                              index         : burn_editors_.Count,
                              previous_burn : burn_editors_.LastOrDefault());
@@ -312,7 +312,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   private void RenderUpcomingEvents() {
-    string vessel_guid = vessel_.id.ToString();
+    string vessel_guid = vessel_!.id.ToString();
     double current_time = plugin.CurrentTime();
 
     Style.HorizontalLine();
@@ -412,7 +412,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   internal string FormatPlanLength(double value) {
     return FormatPositiveTimeSpan(TimeSpan.FromSeconds(
                value -
-               plugin.FlightPlanGetInitialTime(vessel_.id.ToString())));
+               plugin.FlightPlanGetInitialTime(vessel_!.id.ToString())));
   }
 
   internal bool TryParsePlanLength(string str, out double value) {
@@ -421,7 +421,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       return false;
     }
     value = ts.TotalSeconds +
-            plugin.FlightPlanGetInitialTime(vessel_.id.ToString());
+            plugin.FlightPlanGetInitialTime(vessel_!.id.ToString());
     return true;
   }
 
@@ -470,7 +470,7 @@ class FlightPlanner : SupervisedWindowRenderer {
                          "centre of a celestial)" + time_out_message;
         remedy_message = "avoiding collisions with a celestial";
       } else if (status_.is_invalid_argument()) {
-        status_message = "manœuvre #" + (first_error_manœuvre_.Value + 1) +
+        status_message = "manœuvre #" + (first_error_manœuvre_!.Value + 1) +
                          " would result in an infinite or indeterminate " +
                          "velocity";
         remedy_message = "adjusting the duration of manœuvre #" +

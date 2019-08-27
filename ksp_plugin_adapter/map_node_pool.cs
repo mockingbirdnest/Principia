@@ -61,7 +61,7 @@ internal class MapNodePool {
               : fixed_body.orbitDriver.Renderer.nodeColor;
         break;
       case MapObject.ObjectType.ApproachIntersect:
-        associated_map_object = reference_frame.target_override.mapObject;
+        associated_map_object = reference_frame.target_override!.mapObject;
         colour = XKCDColors.Chartreuse;
         break;
       case MapObject.ObjectType.AscendingNode:
@@ -245,7 +245,8 @@ internal class MapNodePool {
               break;
             }
             case MapObject.ObjectType.ApproachIntersect: {
-              Vessel target_vessel = properties.reference_frame.target_override;
+              Vessel target_vessel =
+                  properties.reference_frame.target_override!;
               double separation = (target_vessel.GetWorldPos3D() -
                                    properties.world_position).magnitude;
               double speed = properties.velocity.magnitude;
@@ -286,8 +287,8 @@ internal class MapNodePool {
      // individual coordinates of this vector should be used here.
     public Vector3d velocity;
     public UnityEngine.Color colour;
-    public MapObject associated_map_object;
-    public ReferenceFrameSelector reference_frame;
+    public MapObject associated_map_object = default!;
+    public ReferenceFrameSelector reference_frame = default!;
     public NodeSource source;
     public double time;
   }

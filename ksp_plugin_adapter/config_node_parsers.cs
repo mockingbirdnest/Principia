@@ -56,7 +56,7 @@ internal static class ConfigNodeParsers {
   }
 
   public static BodyParameters NewKeplerianBodyParameters(CelestialBody body,
-                                                          ConfigNode node) {
+                                                          ConfigNode? node) {
     return new BodyParameters{
         name                    = body.name,
         gravitational_parameter =

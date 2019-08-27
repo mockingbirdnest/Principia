@@ -204,7 +204,7 @@ internal class MainWindow : SupervisedWindowRenderer {
           if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
             UnityEngine.GUILayout.Label(
                 "Target: " +
-                    FlightGlobals.fetch.VesselTarget.GetVessel().vesselName,
+                    FlightGlobals.fetch.VesselTarget!.GetVessel().vesselName,
                 UnityEngine.GUILayout.ExpandWidth(true));
             if (UnityEngine.GUILayout.Button("Clear", GUILayoutWidth(2))) {
               selecting_active_vessel_target = false;
@@ -258,7 +258,7 @@ internal class MainWindow : SupervisedWindowRenderer {
         if (selecting_target_celestial_) {
           selecting_active_vessel_target = false;
         }
-        CelestialBody target_celestial =
+        CelestialBody? target_celestial =
             FlightGlobals.fetch.VesselTarget as CelestialBody;
         if (target_celestial != null) {
           UnityEngine.GUILayout.Label("Target: " + target_celestial.name,
@@ -406,7 +406,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                        enabled: adaptive_step_parameters.HasValue)) {
       AdaptiveStepParameters new_adaptive_step_parameters =
           new AdaptiveStepParameters{
-            integrator_kind = adaptive_step_parameters.Value.integrator_kind,
+            integrator_kind = adaptive_step_parameters!.Value.integrator_kind,
             max_steps = prediction_steps,
             length_integration_tolerance = prediction_length_tolerance,
             speed_integration_tolerance = prediction_length_tolerance};
@@ -420,7 +420,7 @@ internal class MainWindow : SupervisedWindowRenderer {
                        enabled: adaptive_step_parameters.HasValue)) {
       AdaptiveStepParameters new_adaptive_step_parameters =
           new AdaptiveStepParameters{
-            integrator_kind = adaptive_step_parameters.Value.integrator_kind,
+            integrator_kind = adaptive_step_parameters!.Value.integrator_kind,
             max_steps = prediction_steps,
             length_integration_tolerance = prediction_length_tolerance,
             speed_integration_tolerance = prediction_length_tolerance};

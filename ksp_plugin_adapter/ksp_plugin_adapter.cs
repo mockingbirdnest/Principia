@@ -58,7 +58,7 @@ public partial class PrincipiaPluginAdapter
   private const string principia_override_version_check_config_name_ =
       "principia_override_version_check";
 
-  private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
+  private KSP.UI.Screens.ApplicationLauncherButton? toolbar_button_;
   // Whether the user has hidden the UI.
   private bool hide_all_gui_ = false;
   // Whether we are in a scene/building where we wish to show our UI.
@@ -87,16 +87,16 @@ public partial class PrincipiaPluginAdapter
 
   private bool time_is_advancing_;
 
-  private RenderingActions map_renderer_;
-  private RenderingActions galaxy_cube_rotator_;
+  private RenderingActions? map_renderer_;
+  private RenderingActions? galaxy_cube_rotator_;
 
-  private KSP.UI.Screens.Flight.NavBall navball_;
-  private UnityEngine.Texture compass_navball_texture_;
-  private UnityEngine.Texture inertial_navball_texture_;
-  private UnityEngine.Texture barycentric_navball_texture_;
-  private UnityEngine.Texture body_direction_navball_texture_;
-  private UnityEngine.Texture surface_navball_texture_;
-  private UnityEngine.Texture target_navball_texture_;
+  private KSP.UI.Screens.Flight.NavBall? navball_;
+  private UnityEngine.Texture? compass_navball_texture_;
+  private UnityEngine.Texture? inertial_navball_texture_;
+  private UnityEngine.Texture? barycentric_navball_texture_;
+  private UnityEngine.Texture? body_direction_navball_texture_;
+  private UnityEngine.Texture? surface_navball_texture_;
+  private UnityEngine.Texture? target_navball_texture_;
   private bool navball_changed_ = true;
   private FlightGlobals.SpeedDisplayModes? previous_display_mode_;
   private ReferenceFrameSelector.FrameType last_non_surface_frame_type_ =
@@ -118,7 +118,7 @@ public partial class PrincipiaPluginAdapter
 
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
 
-  private Krakensbane krakensbane_;
+  private Krakensbane? krakensbane_;
   private Krakensbane krakensbane {
     get {
      if (krakensbane_ == null) {
@@ -128,8 +128,8 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private KSP.UI.Screens.SpaceTracking space_tracking_;
-  private KSP.UI.Screens.SpaceTracking space_tracking {
+  private KSP.UI.Screens.SpaceTracking? space_tracking_;
+  private KSP.UI.Screens.SpaceTracking? space_tracking {
     get {
      if (space_tracking_ == null) {
        if (HighLogic.LoadedScene != GameScenes.TRACKSTATION) {
@@ -142,8 +142,8 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private KSP.UI.Screens.DebugToolbar.DebugScreen debug_screen_;
-  private KSP.UI.Screens.DebugToolbar.Screens.Cheats.HackGravity hack_gravity_;
+  private KSP.UI.Screens.DebugToolbar.DebugScreen? debug_screen_;
+  private KSP.UI.Screens.DebugToolbar.Screens.Cheats.HackGravity? hack_gravity_;
   private KSP.UI.Screens.DebugToolbar.Screens.Cheats.HackGravity hack_gravity {
     get {
       if (hack_gravity_ == null) {
@@ -169,8 +169,8 @@ public partial class PrincipiaPluginAdapter
   // because we can test whether we have the part or not. Set in
   // FashionablyLate, before the FlightIntegrator clears the forces.  Used in
   // WaitForFixedUpdate.
-  private readonly Dictionary<uint, Part.ForceHolder[]> part_id_to_intrinsic_forces_ =
-      new Dictionary<uint, Part.ForceHolder[]>();
+  private readonly Dictionary<uint, Part.ForceHolder[]>
+      part_id_to_intrinsic_forces_ = new Dictionary<uint, Part.ForceHolder[]>();
   private readonly Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
       new Dictionary<uint, Vector3d>();
 
@@ -180,7 +180,7 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, QP>();
 
   private readonly MapNodePool map_node_pool_;
-  private ManeuverNode guidance_node_;
+  private ManeuverNode? guidance_node_;
 
   // UI for the apocalypse notification.
   [KSPField(isPersistant = true)]
@@ -208,7 +208,7 @@ public partial class PrincipiaPluginAdapter
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     Directory.CreateDirectory("glog/Principia");
-    string load_error = Loader.LoadPrincipiaDllAndInitGoogleLogging();
+    string? load_error = Loader.LoadPrincipiaDllAndInitGoogleLogging();
     if (load_error == null) {
       is_bad_installation_ = false;
       bad_installation_dialog_.Hide();
@@ -256,7 +256,7 @@ public partial class PrincipiaPluginAdapter
     return plugin_ != IntPtr.Zero;
   }
 
-  private Vessel PredictedVessel() {
+  private Vessel? PredictedVessel() {
     return FlightGlobals.ActiveVessel ?? space_tracking?.SelectedVessel;
   }
 
@@ -325,15 +325,15 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void UpdatePredictions() {
-    Vessel main_vessel = PredictedVessel();
+    Vessel? main_vessel = PredictedVessel();
     bool ready_to_draw_active_vessel_trajectory =
         main_vessel != null &&
         MapView.MapIsEnabled &&
         plugin_.HasVessel(main_vessel.id.ToString());
 
     if (ready_to_draw_active_vessel_trajectory) {
-      plugin_.UpdatePrediction(main_vessel.id.ToString());
-      string target_id =
+      plugin_.UpdatePrediction(main_vessel!.id.ToString());
+      string? target_id =
           FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
       if (!plotting_frame_selector_.target_override &&
           target_id != null && plugin_.HasVessel(target_id)) {
@@ -392,7 +392,7 @@ public partial class PrincipiaPluginAdapter
     return UnmanageabilityReasons(vessel) == null;
   }
 
-  private string UnmanageabilityReasons(Vessel vessel) {
+  private string? UnmanageabilityReasons(Vessel vessel) {
     List<string> reasons = new List<string>(capacity : 3);
     if (vessel.state == Vessel.State.DEAD) {
       reasons.Add("vessel is dead");
@@ -457,7 +457,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   // Returns false and nulls |texture| if the file does not exist.
-  private bool LoadTextureIfExists(out UnityEngine.Texture texture,
+  private bool LoadTextureIfExists(out UnityEngine.Texture? texture,
                                    string path) {
     string full_path =
         KSPUtil.ApplicationRootPath + Path.DirectorySeparatorChar +
@@ -483,10 +483,12 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void LoadTextureOrDie(out UnityEngine.Texture texture, string path) {
-    bool success = LoadTextureIfExists(out texture, path);
+    bool success =
+        LoadTextureIfExists(out UnityEngine.Texture? texture_or_null, path);
     if (!success) {
       Log.Fatal("Missing texture " + path);
     }
+    texture = texture_or_null!;
   }
 
   #region ScenarioModule lifecycle
@@ -789,7 +791,7 @@ public partial class PrincipiaPluginAdapter
         var normal =
             (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString());
 
-        SetNavballVector(navball_.progradeVector, prograde);
+        SetNavballVector(navball_!.progradeVector, prograde);
         SetNavballVector(navball_.radialInVector, radial);
         SetNavballVector(navball_.normalVector, normal);
         SetNavballVector(navball_.retrogradeVector, -prograde);
@@ -928,7 +930,7 @@ public partial class PrincipiaPluginAdapter
     // |WaitForFixedUpdate|, since some may be destroyed (by collisions) during
     // the physics step.  See also #1281.
     foreach (Vessel vessel in FlightGlobals.Vessels) {
-      string unmanageability_reasons = UnmanageabilityReasons(vessel);
+      string? unmanageability_reasons = UnmanageabilityReasons(vessel);
       if (unmanageability_reasons != null) {
         if (plugin_.HasVessel(vessel.id.ToString())) {
           Log.Info("Removing vessel " + vessel.vesselName + "(" + vessel.id +
@@ -1037,7 +1039,7 @@ public partial class PrincipiaPluginAdapter
             plugin_.ReportPartCollision(
                 vessel1.rootPart.flightID,
                 closest_physical_parent(
-                    vessel1.evaController.LadderPart).flightID);
+                    vessel1.evaController.LadderPart!).flightID);
           } else {
             // vessel1 is either clambering (quite likely on the ground or on a
             // grounded vessel), or climbing a ladder on an unmanaged vessel.
@@ -1084,7 +1086,7 @@ public partial class PrincipiaPluginAdapter
               if (is_manageable(vessel2)) {
                 plugin_.ReportPartCollision(
                     closest_physical_parent(part1).flightID,
-                    closest_physical_parent(part2).flightID);
+                    closest_physical_parent(part2!).flightID);
               } else {
                 Log.Info("Reporting collision with the unmanageable vessel " +
                          vessel2.vesselName);
@@ -1154,7 +1156,7 @@ public partial class PrincipiaPluginAdapter
           new Origin{reference_part_is_at_origin  =
                          FloatingOrigin.fetch.continuous,
                      reference_part_is_unmoving =
-                         krakensbane_.FrameVel != Vector3d.zero,
+                         krakensbane!.FrameVel != Vector3d.zero,
                      main_body_centre_in_world =
                          (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
                      reference_part_id =
@@ -1186,7 +1188,7 @@ public partial class PrincipiaPluginAdapter
           new Origin{reference_part_is_at_origin  =
                          FloatingOrigin.fetch.continuous,
                      reference_part_is_unmoving =
-                         krakensbane_.FrameVel != Vector3d.zero,
+                         krakensbane!.FrameVel != Vector3d.zero,
                      main_body_centre_in_world =
                          (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
                      reference_part_id =
@@ -1413,12 +1415,12 @@ public partial class PrincipiaPluginAdapter
     // otherwise, the map nodes will lag behind when the camera is moved.
     // The only timing that satisfies these constraints is BetterLateThanNever
     // in LateUpdate.
-    string main_vessel_guid = PredictedVessel()?.id.ToString();
+    string? main_vessel_guid = PredictedVessel()?.id.ToString();
     if (MapView.MapIsEnabled && main_vessel_guid != null &&
         PluginRunning() && plugin_.HasVessel(main_vessel_guid)) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       RenderPredictionMarkers(main_vessel_guid, sun_world_position);
-      string target_id =
+      string? target_id =
           FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
       if (FlightGlobals.ActiveVessel != null &&
           !plotting_frame_selector_.target_override && target_id != null &&
@@ -1603,7 +1605,7 @@ public partial class PrincipiaPluginAdapter
       // Texture the ball.
       navball_changed_ = false;
       if (plotting_frame_selector_.target_override) {
-        set_navball_texture(target_navball_texture_);
+        set_navball_texture(target_navball_texture_!);
       } else {
         // If we are targeting an unmanageable vessel, keep the navball in
         // target mode; otherwise, put it in the mode that reflects the
@@ -1627,16 +1629,16 @@ public partial class PrincipiaPluginAdapter
         }
         switch (plotting_frame_selector_.frame_type) {
           case ReferenceFrameSelector.FrameType.BODY_SURFACE:
-            set_navball_texture(surface_navball_texture_);
+            set_navball_texture(surface_navball_texture_!);
             break;
           case ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING:
-            set_navball_texture(inertial_navball_texture_);
+            set_navball_texture(inertial_navball_texture_!);
             break;
           case ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING:
-            set_navball_texture(barycentric_navball_texture_);
+            set_navball_texture(barycentric_navball_texture_!);
             break;
           case ReferenceFrameSelector.FrameType.BODY_CENTRED_PARENT_DIRECTION:
-            set_navball_texture(body_direction_navball_texture_);
+            set_navball_texture(body_direction_navball_texture_!);
             break;
         }
       }
@@ -1647,7 +1649,7 @@ public partial class PrincipiaPluginAdapter
 
   private void SetNavballVector(UnityEngine.Transform vector,
                                 Vector3d direction) {
-     vector.localPosition = (UnityEngine.QuaternionD)navball_.attitudeGymbal *
+     vector.localPosition = (UnityEngine.QuaternionD)navball_!.attitudeGymbal *
                             direction * navball_.VectorUnitScale;
      vector.gameObject.SetActive(vector.localPosition.z >
                                  navball_.VectorUnitCutoff);
@@ -1778,7 +1780,7 @@ public partial class PrincipiaPluginAdapter
       vessel.mapObject.uiNode.OnClick += OnVesselNodeClick;
       RemoveStockTrajectoriesIfNeeded(vessel);
     }
-    Vessel main_vessel = PredictedVessel();
+    Vessel? main_vessel = PredictedVessel();
     if (main_vessel == null) {
       return;
     }
@@ -1809,7 +1811,7 @@ public partial class PrincipiaPluginAdapter
                                  XKCDColors.Fuchsia,
                                  GLLines.Style.Solid);
           }
-          string target_id =
+          string? target_id =
               FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
           if (FlightGlobals.ActiveVessel != null &&
               !plotting_frame_selector_.target_override &&
@@ -2058,12 +2060,12 @@ public partial class PrincipiaPluginAdapter
 
   private static void InitializeIntegrators(
       IntPtr plugin,
-      ConfigNode numerics_blueprint) {
+      ConfigNode? numerics_blueprint) {
     if (numerics_blueprint == null) {
       return;
     }
-    ConfigNode ephemeris_parameters =
-        numerics_blueprint.GetAtMostOneNode("ephemeris");
+    ConfigNode? ephemeris_parameters =
+        numerics_blueprint!.GetAtMostOneNode("ephemeris");
     if (ephemeris_parameters != null) {
       plugin.InitializeEphemerisParameters(
           ConfigNodeParsers.NewConfigurationAccuracyParameters(
@@ -2072,7 +2074,7 @@ public partial class PrincipiaPluginAdapter
               ephemeris_parameters));
     }
 
-    ConfigNode history_parameters =
+    ConfigNode? history_parameters =
         numerics_blueprint.GetAtMostOneNode("history");
     if (history_parameters != null) {
       plugin.InitializeHistoryParameters(
@@ -2080,7 +2082,7 @@ public partial class PrincipiaPluginAdapter
               history_parameters));
     }
 
-    ConfigNode psychohistory_parameters =
+    ConfigNode? psychohistory_parameters =
         numerics_blueprint.GetAtMostOneNode("psychohistory");
     if (psychohistory_parameters != null) {
       plugin.InitializePsychohistoryParameters(
@@ -2093,12 +2095,12 @@ public partial class PrincipiaPluginAdapter
   try {
     Cleanup();
     RemoveBuggyTidalLocking();
-    Dictionary<string, ConfigNode> name_to_gravity_model = null;
-    ConfigNode gravity_model = GameDatabase.Instance.GetAtMostOneNode(
+    Dictionary<string, ConfigNode>? name_to_gravity_model = null;
+    ConfigNode? gravity_model = GameDatabase.Instance.GetAtMostOneNode(
         principia_gravity_model_config_name_);
-    ConfigNode initial_state = GameDatabase.Instance.GetAtMostOneNode(
+    ConfigNode? initial_state = GameDatabase.Instance.GetAtMostOneNode(
         principia_initial_state_config_name_);
-    ConfigNode numerics_blueprint = GameDatabase.Instance.GetAtMostOneNode(
+    ConfigNode? numerics_blueprint = GameDatabase.Instance.GetAtMostOneNode(
         principia_numerics_blueprint_config_name_);
     if (gravity_model != null) {
       name_to_gravity_model = gravity_model.GetNodes("body").ToDictionary(
@@ -2121,7 +2123,7 @@ public partial class PrincipiaPluginAdapter
                                       node => node.GetUniqueValue("name"));
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
-        if (!name_to_gravity_model.TryGetValue(
+        if (!name_to_gravity_model!.TryGetValue(
                 body.name,
                 out ConfigNode body_gravity_model)) {
           Log.Fatal("missing gravity model for " + body.name);
@@ -2162,7 +2164,7 @@ public partial class PrincipiaPluginAdapter
       InitializeIntegrators(plugin_, numerics_blueprint);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
-        ConfigNode body_gravity_model = null;
+        ConfigNode? body_gravity_model = null;
         if (name_to_gravity_model?.TryGetValue(
                 body.name,
                 out body_gravity_model) == true) {

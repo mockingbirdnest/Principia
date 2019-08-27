@@ -21,25 +21,17 @@ internal class DifferentialSlider : ScalingRenderer {
                             UnityEngine.Color? text_colour = null) {
     label_ = label;
     unit_ = unit;
-    if (formatter == null) {
-      formatter_ = v => v.ToString("#,0.000", Culture.culture);
-    } else {
-      formatter_ = formatter;
-    }
-    if (parser == null) {
-      // As a special exemption we allow a comma as the decimal separator.
-      parser_ = (string s, out double value) =>
-                    double.TryParse(s.Replace(',', '.'),
-                                    NumberStyles.AllowDecimalPoint |
-                                    NumberStyles.AllowLeadingSign |
-                                    NumberStyles.AllowLeadingWhite |
-                                    NumberStyles.AllowThousands |
-                                    NumberStyles.AllowTrailingWhite,
-                                    Culture.culture.NumberFormat,
-                                    out value);
-    } else {
-      parser_ = parser;
-    }
+    formatter_ = formatter ?? (v => v.ToString("#,0.000", Culture.culture));
+    // As a special exemption we allow a comma as the decimal separator.
+    parser_ = parser ?? ((string s, out double value) => double.TryParse(
+                              s.Replace(',', '.'),
+                              NumberStyles.AllowDecimalPoint |
+                              NumberStyles.AllowLeadingSign |
+                              NumberStyles.AllowLeadingWhite |
+                              NumberStyles.AllowThousands |
+                              NumberStyles.AllowTrailingWhite,
+                              Culture.culture.NumberFormat,
+                              out value));
     log10_lower_rate_ = log10_lower_rate;
     log10_upper_rate_ = log10_upper_rate;
     zero_value_ = zero_value;
@@ -107,7 +99,7 @@ internal class DifferentialSlider : ScalingRenderer {
           terminate_text_entry = true;
         } else if (UnityEngine.GUI.GetNameOfFocusedControl() !=
                        text_field_name &&
-                   formatted_value_ != formatter_(value_.Value)) {
+                   formatted_value_ != formatter_(value)) {
           terminate_text_entry = true;
         }
         if (terminate_text_entry) {
@@ -122,7 +114,7 @@ internal class DifferentialSlider : ScalingRenderer {
             // and this is not nice.
           } else {
             // Go back to the previous legal value.
-            formatted_value_ = formatter_(value_.Value);
+            formatted_value_ = formatter_(value);
           }
         }
       } else {
@@ -193,7 +185,7 @@ internal class DifferentialSlider : ScalingRenderer {
   // optimized due to the existing value.  This happens at initialization and
   // during some events handling.
   private double? value_;
-  private string formatted_value_;
+  private string formatted_value_ = "";
 }
 
 }  // namespace ksp_plugin_adapter
