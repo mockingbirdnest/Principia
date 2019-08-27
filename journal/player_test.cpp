@@ -84,7 +84,7 @@ TEST_F(PlayerTest, DISABLED_Benchmarks) {
   benchmark::RunSpecifiedBenchmarks();
 }
 
-TEST_F(PlayerTest, DISABLED_Debug) {
+TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
