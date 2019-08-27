@@ -80,7 +80,7 @@ TEST_F(PlayerTest, PlayTiny) {
   EXPECT_EQ(2, count);
 }
 
-TEST_F(PlayerTest, DISABLED_Benchmarks) {
+TEST_F(PlayerTest, DISABLED_SECULAR_Benchmarks) {
   benchmark::RunSpecifiedBenchmarks();
 }
 
