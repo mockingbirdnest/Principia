@@ -668,7 +668,7 @@ TEST_F(InterfaceTest, DeserializePlugin) {
 }
 
 // Use for debugging saves given by users.
-TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
+TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
   Plugin const* plugin = nullptr;
 
   // Read a plugin from a file containing only the "serialized_plugin = " lines.
