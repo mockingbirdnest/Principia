@@ -116,7 +116,7 @@ public partial class PrincipiaPluginAdapter
   private Vector3d rsas_target_;
   private bool reset_rsas_target_ = false;
 
-  private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
+  private static Dictionary<CelestialBody, Orbit>? unmodified_orbits_;
 
   private Krakensbane? krakensbane_;
   private Krakensbane krakensbane {

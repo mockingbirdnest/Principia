@@ -141,7 +141,7 @@ internal static class GLLines {
                       0.5 * camera.pixelHeight};
    }
 
-  private static UnityEngine.Material line_material_;
+  private static UnityEngine.Material? line_material_;
   private static UnityEngine.Material line_material {
     get {
       if (line_material_ == null) {

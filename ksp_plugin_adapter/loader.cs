@@ -82,7 +82,7 @@ internal static class Loader {
     //   Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.22.27821
     // It will need to be updated when new versions of Visual C++
     // Redistributable are released by Microsoft.
-    RegistryKey key = Registry.LocalMachine.OpenSubKey(
+    RegistryKey? key = Registry.LocalMachine.OpenSubKey(
         @"Software\Classes\Installer\Dependencies\" +
         @"VC,redist.x64,amd64,14.22,bundle",
         writable : false);
