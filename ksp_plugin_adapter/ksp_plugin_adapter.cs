@@ -2171,7 +2171,7 @@ public partial class PrincipiaPluginAdapter
                 out body_gravity_model) == true) {
           Log.Info("using custom gravity model");
         }
-        Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
+        Orbit? orbit = unmodified_orbits_!.GetValueOrNull(body);
         var body_parameters =
             ConfigNodeParsers.NewKeplerianBodyParameters(body,
                                                          body_gravity_model);
