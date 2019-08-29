@@ -158,7 +158,7 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      if (plugin == IntPtr.Zero) {
+      if (!adapter_.PluginRunning()) {
         UnityEngine.GUILayout.Label(
             text : "Plugin is not started",
             style : Style.Warning(UnityEngine.GUI.skin.label));
@@ -226,13 +226,17 @@ internal class MainWindow : SupervisedWindowRenderer {
         }
         selecting_active_vessel_target = false;
       }
-      if (plugin != IntPtr.Zero) {
+
+      // The plugin is destroyed, e.g., when using the "Switch To" button.  Wait
+      // until it's back alive to display information that requires to cross the
+      // interface.
+      if (adapter_.PluginRunning()) {
         plotting_frame_selector_.RenderButton();
         flight_planner_.RenderButton();
+        RenderToggleableSection(name   : "Prediction Settings",
+                                show   : ref show_prediction_settings_,
+                                render : RenderPredictionSettings);
       }
-      RenderToggleableSection(name   : "Prediction Settings",
-                              show   : ref show_prediction_settings_,
-                              render : RenderPredictionSettings);
       RenderToggleableSection(name   : "KSP Features",
                               show   : ref show_ksp_features_,
                               render : RenderKSPFeatures);

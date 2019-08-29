@@ -252,7 +252,7 @@ public partial class PrincipiaPluginAdapter
     Interface.DeletePlugin(ref plugin_);
   }
 
-  private bool PluginRunning() {
+  public bool PluginRunning() {
     return plugin_ != IntPtr.Zero;
   }
 
