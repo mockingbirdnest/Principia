@@ -235,6 +235,9 @@ class JournalProtoProcessor final {
   std::map<FieldDescriptor const*, std::string> field_cs_type_;
   std::map<FieldDescriptor const*, std::string> field_cxx_type_;
 
+  // The C# default value for a field, suitable for use in a member declaration.
+  std::map<FieldDescriptor const*, std::string> field_cs_default_;
+
   // The C#/C++ declaration of an interface method corresponding to a method
   // message.  The key is a descriptor for a method message.
   std::map<Descriptor const*, std::string> cs_interface_method_declaration_;

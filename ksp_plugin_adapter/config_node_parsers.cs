@@ -83,7 +83,7 @@ internal static class ConfigNodeParsers {
             (body.angularV + " rad/s"),
         reference_radius        = node?.GetAtMostOneValue("reference_radius"),
         j2                      = node?.GetAtMostOneValue("j2"),
-        geopotential = node?.GetBodyGeopotentialElements()?.ToArray()
+        geopotential = node?.GetBodyGeopotentialElements().ToArray()
     };
   }
 

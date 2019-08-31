@@ -47,7 +47,7 @@ internal static partial class Interface {
     }
 
     public IntPtr MarshalManagedToNative(object managed_object) {
-      var parameters = (managed_object as BodyParameters)!;
+      var parameters = (BodyParameters)managed_object;
       var representation = new BodyParametersRepresentation{
           angular_frequency       = parameters.angular_frequency,
           axis_declination        = parameters.axis_declination,
@@ -63,12 +63,13 @@ internal static partial class Interface {
           reference_radius        = parameters.reference_radius,
           geopotential_size       = parameters.geopotential?.Length ?? 0
       };
-      if (representation.geopotential_size == 0) {
+      if (parameters.geopotential == null ||
+          representation.geopotential_size == 0) {
         representation.geopotential = IntPtr.Zero;
       } else {
         int sizeof_element = Marshal.SizeOf(typeof(BodyGeopotentialElement));
         representation.geopotential = Marshal.AllocHGlobal(
-            sizeof_element * parameters.geopotential!.Length);
+            sizeof_element * parameters.geopotential.Length);
         for (int i = 0; i < parameters.geopotential.Length; ++i) {
           Marshal.StructureToPtr(
               parameters.geopotential[i],

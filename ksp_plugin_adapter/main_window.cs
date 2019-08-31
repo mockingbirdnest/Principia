@@ -415,7 +415,7 @@ internal class MainWindow : SupervisedWindowRenderer {
             length_integration_tolerance = prediction_length_tolerance,
             speed_integration_tolerance = prediction_length_tolerance};
       plugin.VesselSetPredictionAdaptiveStepParameters(
-          vessel_guid, new_adaptive_step_parameters);
+          vessel_guid!, new_adaptive_step_parameters);
     }
     if (RenderSelector(prediction_steps_,
                        ref prediction_steps_index_,
@@ -429,7 +429,7 @@ internal class MainWindow : SupervisedWindowRenderer {
             length_integration_tolerance = prediction_length_tolerance,
             speed_integration_tolerance = prediction_length_tolerance};
       plugin.VesselSetPredictionAdaptiveStepParameters(
-          vessel_guid, new_adaptive_step_parameters);
+          vessel_guid!, new_adaptive_step_parameters);
     }
   }
 

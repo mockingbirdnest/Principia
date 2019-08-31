@@ -196,7 +196,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       << descriptor->full_name() << " is missing a (size) option";
   size_member_name_[descriptor] =
       options.GetExtension(journal::serialization::size);
-  field_cs_type_[descriptor] = message_type_name + "[]";
+  field_cs_type_[descriptor] = message_type_name + "[]?";
   field_cxx_type_[descriptor] = message_type_name + " const*";
 
   field_cxx_arguments_fn_[descriptor] =
@@ -281,7 +281,7 @@ void JournalProtoProcessor::ProcessOptionalDoubleField(
     FieldDescriptor const* descriptor) {
   ProcessOptionalNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"BoxedDouble",
+      /*cs_boxed_type=*/"BoxedDouble?",
       /*cs_unboxed_type=*/"double",
       /*cxx_type=*/"double");
 }
@@ -290,7 +290,7 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
     FieldDescriptor const* descriptor) {
   ProcessOptionalNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"BoxedInt32",
+      /*cs_boxed_type=*/"BoxedInt32?",
       /*cs_unboxed_type=*/"int",
       /*cxx_type=*/"int");
 }
@@ -301,7 +301,7 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
   std::string const& message_type_name = message_type->name();
   ProcessOptionalNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"Boxed" + message_type_name,
+      /*cs_boxed_type=*/"Boxed" + message_type_name + "?",
       /*cs_unboxed_type=*/message_type_name,
       /*cxx_type=*/message_type_name);
   ProcessSingleMessageField(descriptor);
@@ -413,7 +413,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   if (options.HasExtension(journal::serialization::encoding) &&
       (options.HasExtension(journal::serialization::is_produced) ||
        options.HasExtension(journal::serialization::is_produced_if))) {
-    field_cs_type_[descriptor] = "String";
+    field_cs_type_[descriptor] = "string";
     switch (options.GetExtension(journal::serialization::encoding)) {
       case journal::serialization::UTF_8:
         field_cs_marshal_[descriptor] =
@@ -543,6 +543,7 @@ void JournalProtoProcessor::ProcessRequiredStringField(
     FieldDescriptor const* descriptor) {
   ProcessSingleStringField(descriptor);
   field_cs_type_[descriptor] = "string";
+  field_cs_default_[descriptor] = "default!";
 }
 
 void JournalProtoProcessor::ProcessSingleMessageField(
@@ -954,7 +955,9 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       parameter_name + ") {\n  serialization::" + name + " m;\n";
 
   MessageOptions const& options = descriptor->options();
-  if (options.HasExtension(journal::serialization::in_custom_marshaler)) {
+  bool const is_class =
+      options.HasExtension(journal::serialization::in_custom_marshaler);
+  if (is_class) {
     cs_interface_type_declaration_[descriptor] =
         "internal partial class " + name + " {\n";
   } else {
@@ -1019,9 +1022,16 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     // in the interchange messages.  This will need fixing if we ever want to
     // pass non-ASCII strings or to return these structs.
     if (field_cs_private_type_[field_descriptor].empty()) {
-      cs_interface_type_declaration_[descriptor] +=
-          "  public " + field_cs_type_[field_descriptor] + " " +
-          field_descriptor_name + ";\n";
+      if (!is_class || field_cs_default_[field_descriptor].empty()) {
+        cs_interface_type_declaration_[descriptor] +=
+            "  public " + field_cs_type_[field_descriptor] + " " +
+            field_descriptor_name + ";\n";
+      } else {
+        cs_interface_type_declaration_[descriptor] +=
+            "  public " + field_cs_type_[field_descriptor] + " " +
+            field_descriptor_name + " = " +
+            field_cs_default_[field_descriptor] + ";\n";
+      }
     } else {
       std::string const field_private_member_name = field_descriptor_name + "_";
       std::vector<std::string> fn_arguments = {field_private_member_name};
