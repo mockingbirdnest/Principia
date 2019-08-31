@@ -610,10 +610,6 @@ class SolarSystemDynamicsConvergenceTest
                      "solar_system_convergence.generated.wl");
   }
 
-  static void TearDownTestCase() {
-    file_.~OFStream();
-  }
-
  protected:
   FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
   integrator() const {
