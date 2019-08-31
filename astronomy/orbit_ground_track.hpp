@@ -24,7 +24,7 @@ class OrbitGroundTrack {
  public:
   struct MeanSun {
     Instant epoch;
-    // This mean longitude of the sun is with respect the axes of
+    // This mean longitude of the sun is with respect to the axes of
     // |PrimaryCentred|.
     Angle mean_longitude_at_epoch;
     // This year is the period of the above mean longitude; which kind of year
@@ -35,6 +35,10 @@ class OrbitGroundTrack {
     Time year;
   };
 
+  // Returns an object that describes the properties of the ground track of
+  // |trajectory| as an orbit around |primary|; if |nominal_recurrence| is
+  // provided, the deviation from that nominal recurrence is analysed; if
+  // |mean_sun| is provided, sun-synchronicity is analysed.
   template<typename PrimaryCentred, typename Inertial>
   static OrbitGroundTrack ForTrajectory(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,

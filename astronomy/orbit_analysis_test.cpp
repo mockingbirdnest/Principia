@@ -201,19 +201,19 @@ class OrbitAnalysisTest : public ::testing::Test {
     // IRCS here is more like an equator-of-date frame (although it is not clear
     // whether its x axis resembles the equinox of the date), so we pick
     // the tropical year.
-    // We use values based Newcomb's formula for the mean longitude of the sun,
-    //   L = 279°41′48″.04 + 129 602 768″.13 T + 1.089″ T²,
-    // where T is in Julian centuries since 1900, January 0, Greenwich Mean
-    // noon.  Ephemeris time (ET) was defined by the IAU (10th general assembly
-    // (1958), commissions 4 and 31, recommendation 2) from Newcomb's tables,
-    // with 1900, January 0 at 12 ET being the instant at which the mean
-    // longitude of the sun was 279°41′48″.08, and the ET second being 1/31 556
-    // 925.9747 of the tropical year at that epoch—where 31 556 925.9747 s = 2π
-    // rad / (129 602 768″.13 / 100 a).  TDT, and later TT, were then defined in
-    // such a way as to achieve approximate continuity with ET, see 16th general
-    // assembly (1976), commission 4, recommendation 5, note 2, and 21st general
-    // assembly (1991), resolution A4, recommendation IV, note 4.  We can
-    // therefore work with this formula in TT.
+    // We use values based on Newcomb's formula for the mean longitude of the
+    // sun, L = 279°41′48″.04 + 129 602 768″.13 T + 1.089″ T², where T is in
+    // Julian centuries since 1900, January 0, Greenwich Mean noon.  Ephemeris
+    // time (ET) was defined by the IAU (10th general assembly (1958),
+    // commissions 4 and 31, recommendation 2) from Newcomb's tables, with 1900,
+    // January 0 at 12 ET being the instant at which the mean longitude of the
+    // sun was 279°41′48″.08, and the ET second being 1/31 556 925.9747 of the
+    // tropical year at that epoch—where 31 556 925.9747 s =
+    // 2π rad / (129 602 768″.13 / 100 a).  TDT, and later TT, were then defined
+    // in such a way as to achieve approximate continuity with ET, see 16th
+    // general assembly (1976), commission 4, recommendation 5, note 2, and 21st
+    // general assembly (1991), resolution A4, recommendation IV, note 4.  We
+    // can therefore work with this formula in TT.
     PolynomialInMonomialBasis<Angle, Instant, 2, EstrinEvaluator> const
         newcomb_mean_longitude(
             {279 * Degree + 41 * ArcMinute + 48.04 * ArcSecond,

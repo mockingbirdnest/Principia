@@ -70,9 +70,10 @@ Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
     OrbitRecurrence const& nominal_recurrence,
     std::optional<Angle>& initial_offset) {
   Interval<Angle> reduced_longitudes;
-  int n = 0;
   std::optional<Angle> reduced_longitude;
-  for (auto node = nodes.Begin(); node != nodes.End(); ++node) {
+  for (auto [node, n] = std::make_pair(nodes.Begin(), 0);
+       node != nodes.End();
+       ++node, ++n) {
     Angle const planetocentric_longitude =
         PlanetocentricLongitude(node, primary);
 
@@ -89,7 +90,6 @@ Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
                               : Mod(offset_longitude, 2 * π * Radian);
     }
     reduced_longitudes.Include(*reduced_longitude);
-    ++n;
   }
   return reduced_longitudes;
 }
