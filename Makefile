@@ -69,11 +69,11 @@ LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
-	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
+	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi -lc++fs
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
-INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)compatibility/filesystem \
+INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src \
 	-I$(DEP_DIR)gipfeli/include -I$(DEP_DIR)abseil-cpp
 SHARED_ARGS   := \
 	-std=c++1z -stdlib=libc++ -O3 -g                           \
@@ -96,7 +96,7 @@ ifeq ($(UNAME_S),Linux)
     SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
-    INCLUDES += -I$(DEP_DIR)compatibility/optional -I$(DEP_DIR)Optional
+    INCLUDES += -I$(DEP_DIR)compatibility/filesystem -I$(DEP_DIR)compatibility/optional -I$(DEP_DIR)Optional
     SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64
     MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
     SHAREDFLAG := -dynamiclib
@@ -282,7 +282,12 @@ $(ADAPTER): $(GENERATED_PROFILES)
 
 ######### Distribution
 
-release: $(ADAPTER) $(KSP_PLUGIN)
+# Something got broken in Disco where building the adapter is no longer possible
+# because /usr/lib/mono/msbuild/15.0/bin/System.Reflection.Metadata.dll points
+# to a missing Roslyn directory.  We don't care, we don't use the adapter built
+# on Linux
+# release: $(ADAPTER) $(KSP_PLUGIN)
+release: $(KSP_PLUGIN)
 	cd $(FINAL_PRODUCTS_DIR); tar -c -z -f - GameData/ > principia_$(UNAME_S)-$(shell git describe --tags --always --dirty --abbrev=40 --long).tar.gz
 ########## Cleaning
 
