@@ -307,6 +307,12 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
   ProcessSingleMessageField(descriptor);
 }
 
+void JournalProtoProcessor::ProcessOptionalStringField(
+    FieldDescriptor const* descriptor) {
+  ProcessSingleStringField(descriptor);
+  field_cs_type_[descriptor] = "string?";
+}
+
 void JournalProtoProcessor::ProcessRequiredFixed32Field(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "uint";
@@ -533,6 +539,12 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
   field_cxx_type_[descriptor] = "uint32_t";
 }
 
+void JournalProtoProcessor::ProcessRequiredStringField(
+    FieldDescriptor const* descriptor) {
+  ProcessSingleStringField(descriptor);
+  field_cs_type_[descriptor] = "string";
+}
+
 void JournalProtoProcessor::ProcessSingleMessageField(
     FieldDescriptor const* descriptor) {
   Descriptor const* message_type = descriptor->message_type();
@@ -575,7 +587,6 @@ void JournalProtoProcessor::ProcessSingleStringField(
                                   "MarshalTypeRef = typeof(InUTF8Marshaler))"
                                 : "MarshalAs(UnmanagedType.CustomMarshaler, "
                                   "MarshalTypeRef = typeof(OutUTF8Marshaler))";
-  field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
   if (options.HasExtension(journal::serialization::size)) {
     size_member_name_[descriptor] =
