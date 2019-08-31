@@ -2,6 +2,9 @@
 # vi: set ft=ruby :
 
 # Note: Use 'sudo su' in the ubuntu machine before make'ing.
+# To mount:
+# mkdir "/home/vagrant/KSP Assemblies"
+# mount -t vboxsf Assemblies "/home/vagrant/KSP Assemblies"
 Vagrant.configure("2") do |config|
 
   config.vm.define "bionic" do |bionic|
