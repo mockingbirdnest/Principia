@@ -380,10 +380,6 @@ class KSPSystemConvergenceTest
                      "ksp_system_convergence.generated.wl");
   }
 
-  static void TearDownTestCase() {
-    file_.~OFStream();
-  }
-
  protected:
   FixedStepSizeIntegrator<
       Ephemeris<KSP>::NewtonianMotionEquation> const&
