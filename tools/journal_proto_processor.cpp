@@ -638,7 +638,7 @@ void JournalProtoProcessor::ProcessOptionalField(
       ProcessOptionalMessageField(descriptor);
       break;
     case FieldDescriptor::TYPE_STRING:
-      ProcessSingleStringField(descriptor);
+      ProcessOptionalStringField(descriptor);
       break;
     default:
       LOG(FATAL) << descriptor->full_name() << " has unexpected type "
@@ -686,7 +686,7 @@ void JournalProtoProcessor::ProcessRequiredField(
       ProcessRequiredMessageField(descriptor);
       break;
     case FieldDescriptor::TYPE_STRING:
-      ProcessSingleStringField(descriptor);
+      ProcessRequiredStringField(descriptor);
       break;
     case FieldDescriptor::TYPE_UINT32:
       ProcessRequiredUint32Field(descriptor);
