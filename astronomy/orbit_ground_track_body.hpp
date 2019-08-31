@@ -71,7 +71,7 @@ Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
     std::optional<Angle>& initial_offset) {
   Interval<Angle> reduced_longitudes;
   std::optional<Angle> reduced_longitude;
-  for (auto [node, n] = std::make_pair(nodes.Begin(), 0);
+  for (auto [node, n] = std::make_pair(nodes.Begin(), 0);  // NOLINT
        node != nodes.End();
        ++node, ++n) {
     Angle const planetocentric_longitude =
