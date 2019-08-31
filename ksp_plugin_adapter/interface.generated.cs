@@ -35,24 +35,24 @@ internal partial struct AdaptiveStepParameters {
 internal partial struct BodyGeopotentialElement {
   public String degree;
   public String order;
-  public String cos;
-  public String j;
+  public string? cos;
+  public string? j;
   public String sin;
 }
 
 internal partial class BodyParameters {
   public String name;
   public String gravitational_parameter;
-  public String reference_instant;
-  public String min_radius;
-  public String mean_radius;
-  public String max_radius;
-  public String axis_right_ascension;
-  public String axis_declination;
-  public String reference_angle;
-  public String angular_frequency;
-  public String reference_radius;
-  public String j2;
+  public string? reference_instant;
+  public string? min_radius;
+  public string? mean_radius;
+  public string? max_radius;
+  public string? axis_right_ascension;
+  public string? axis_declination;
+  public string? reference_angle;
+  public string? angular_frequency;
+  public string? reference_radius;
+  public string? j2;
   public BodyGeopotentialElement[] geopotential;
 }
 
