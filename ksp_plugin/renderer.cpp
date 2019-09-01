@@ -83,8 +83,8 @@ Renderer::RenderBarycentricTrajectoryInWorld(
       RenderBarycentricTrajectoryInPlotting(begin, end);
   auto trajectory_in_world =
       RenderPlottingTrajectoryInWorld(time,
-                                      trajectory_in_plotting_frame->Begin(),
-                                      trajectory_in_plotting_frame->End(),
+                                      trajectory_in_plotting_frame->begin(),
+                                      trajectory_in_plotting_frame->end(),
                                       sun_world_position,
                                       planetarium_rotation);
   return trajectory_in_world;
@@ -193,7 +193,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const last = vessel.psychohistory().last();
+  auto const last = vessel.psychohistory().rbegin();
   Instant const& time = last.time();
   DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
       last.degrees_of_freedom();
@@ -213,7 +213,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     NavigationFrame const& navigation_frame,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const last = vessel.psychohistory().last();
+  auto const last = vessel.psychohistory().rbegin();
   auto const to_navigation = navigation_frame.ToThisFrameAtTime(last.time());
   auto const from_navigation = to_navigation.orthogonal_map().Inverse();
   auto const frenet_frame =

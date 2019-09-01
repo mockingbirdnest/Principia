@@ -76,7 +76,7 @@ Instant FlightPlan::initial_time() const {
 }
 
 Instant FlightPlan::actual_final_time() const {
-  return segments_.back()->last().time();
+  return segments_.back()->rbegin().time();
 }
 
 Instant FlightPlan::desired_final_time() const {
@@ -121,7 +121,7 @@ void FlightPlan::ForgetBefore(Instant const& time,
   // we only look at coasts.
   std::optional<int> first_to_keep;
   for (int i = 0; i < segments_.size(); i += 2) {
-    if (time <= segments_[i]->last().time()) {
+    if (time <= segments_[i]->rbegin().time()) {
       first_to_keep = i;
       break;
     }
@@ -138,8 +138,8 @@ void FlightPlan::ForgetBefore(Instant const& time,
       segments_[*first_to_keep]->DetachFork();
   new_first_coast->ForgetBefore(time);
   root_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
-  root_->Append(new_first_coast->Begin().time(),
-                new_first_coast->Begin().degrees_of_freedom());
+  root_->Append(new_first_coast->begin().time(),
+                new_first_coast->begin().degrees_of_freedom());
   root_->AttachFork(std::move(new_first_coast));
 
   // Remove from the vectors the trajectories and manœuvres that we don't want
@@ -149,7 +149,7 @@ void FlightPlan::ForgetBefore(Instant const& time,
   manœuvres_.erase(manœuvres_.cbegin(),
                    manœuvres_.cbegin() + *first_to_keep / 2);
 
-  auto const root_begin = root_->Begin();
+  auto const root_begin = root_->begin();
   initial_time_ = root_begin.time();
   initial_degrees_of_freedom_ = root_begin.degrees_of_freedom();
 }
@@ -241,14 +241,14 @@ void FlightPlan::GetSegment(
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
   begin = segments_[index]->Fork();
-  end = segments_[index]->End();
+  end = segments_[index]->end();
 }
 
 void FlightPlan::GetAllSegments(
     DiscreteTrajectory<Barycentric>::Iterator& begin,
     DiscreteTrajectory<Barycentric>::Iterator& end) const {
   begin = segments_.back()->Find(segments_.front()->Fork().time());
-  end = segments_.back()->End();
+  end = segments_.back()->end();
   CHECK(begin != end);
 }
 

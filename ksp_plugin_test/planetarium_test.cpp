@@ -152,8 +152,8 @@ TEST_F(PlanetariumTest, PlotMethod0) {
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
-      planetarium.PlotMethod0(discrete_trajectory->Begin(),
-                              discrete_trajectory->End(),
+      planetarium.PlotMethod0(discrete_trajectory->begin(),
+                              discrete_trajectory->end(),
                               t0_ + 10 * Second,
                               /*reverse=*/false);
 
@@ -193,8 +193,8 @@ TEST_F(PlanetariumTest, PlotMethod1) {
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
-      planetarium.PlotMethod1(discrete_trajectory->Begin(),
-                              discrete_trajectory->End(),
+      planetarium.PlotMethod1(discrete_trajectory->begin(),
+                              discrete_trajectory->end(),
                               t0_ + 10 * Second,
                               /*reverse=*/false);
 
@@ -224,8 +224,8 @@ TEST_F(PlanetariumTest, PlotMethod2) {
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
-      planetarium.PlotMethod2(discrete_trajectory->Begin(),
-                              discrete_trajectory->End(),
+      planetarium.PlotMethod2(discrete_trajectory->begin(),
+                              discrete_trajectory->end(),
                               t0_ + 10 * Second,
                               /*reverse=*/false);
 
@@ -276,9 +276,9 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
                           ephemeris.get(),
                           plotting_frame.get());
   auto const rp2_lines =
-      planetarium.PlotMethod2(discrete_trajectory->Begin(),
-                              discrete_trajectory->End(),
-                              discrete_trajectory->last().time(),
+      planetarium.PlotMethod2(discrete_trajectory->begin(),
+                              discrete_trajectory->end(),
+                              discrete_trajectory->rbegin().time(),
                               /*reverse=*/false);
 
   EXPECT_EQ(2, rp2_lines.size());

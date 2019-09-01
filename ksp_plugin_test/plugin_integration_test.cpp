@@ -248,18 +248,16 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
     auto const rendered_trajectory =
         plugin_->renderer().RenderBarycentricTrajectoryInWorld(
             plugin_->CurrentTime(),
-            psychohistory.Begin(),
-            psychohistory.End(),
+            psychohistory.begin(),
+            psychohistory.end(),
             sun_world_position,
             plugin_->PlanetariumRotation());
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::Earth).displacement());
-    for (auto it = rendered_trajectory->Begin();
-         it != rendered_trajectory->End();
-         ++it) {
+    for (auto const& [time, degrees_of_freedom] : *rendered_trajectory) {
       Length const distance =
-          (it.degrees_of_freedom().position() - earth_world_position).Norm();
+          (degrees_of_freedom.position() - earth_world_position).Norm();
       perigee = std::min(perigee, distance);
       apogee = std::max(apogee, distance);
     }
@@ -358,8 +356,8 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     auto const rendered_trajectory =
         plugin_->renderer().RenderBarycentricTrajectoryInWorld(
             plugin_->CurrentTime(),
-            psychohistory.Begin(),
-            psychohistory.End(),
+            psychohistory.begin(),
+            psychohistory.end(),
             sun_world_position,
             plugin_->PlanetariumRotation());
     Position<World> const earth_world_position =
@@ -374,10 +372,8 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
                 .displacement());
     Length const earth_moon =
         (moon_world_position - earth_world_position).Norm();
-    for (auto it = rendered_trajectory->Begin();
-         it != rendered_trajectory->End();
-         ++it) {
-      Position<World> const position = it.degrees_of_freedom().position();
+    for (auto const& [time, degrees_of_freedom] : *rendered_trajectory) {
+      Position<World> const position = degrees_of_freedom.position();
       Length const satellite_earth = (position - earth_world_position).Norm();
       Length const satellite_moon = (position - moon_world_position).Norm();
       EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0907));
@@ -387,14 +383,14 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   // Check that there are no spikes in the rendered trajectory, i.e., that three
   // consecutive points form a sufficiently flat triangle.  This tests issue
   // #256.
-  auto it0 = rendered_trajectory->Begin();
-  CHECK(it0 != rendered_trajectory->End());
+  auto it0 = rendered_trajectory->begin();
+  CHECK(it0 != rendered_trajectory->end());
   auto it1 = it0;
   ++it1;
-  CHECK(it1 != rendered_trajectory->End());
+  CHECK(it1 != rendered_trajectory->end());
   auto it2 = it1;
   ++it2;
-  while (it2 != rendered_trajectory->End()) {
+  while (it2 != rendered_trajectory->end()) {
     EXPECT_THAT((it0.degrees_of_freedom().position() -
                  it2.degrees_of_freedom().position())
                     .Norm(),
@@ -725,13 +721,13 @@ TEST_F(PluginIntegrationTest, Prediction) {
       plugin.renderer().RenderBarycentricTrajectoryInWorld(
           plugin.CurrentTime(),
           prediction.Fork(),
-          prediction.End(),
+          prediction.end(),
           World::origin,
           plugin.PlanetariumRotation());
   EXPECT_EQ(15, rendered_prediction->Size());
   int index = 0;
-  for (auto it = rendered_prediction->Begin();
-       it != rendered_prediction->End();
+  for (auto it = rendered_prediction->begin();
+       it != rendered_prediction->end();
        ++it, ++index) {
     auto const& position = it.degrees_of_freedom().position();
     EXPECT_THAT(AbsoluteError((position - World::origin).Norm(), 1 * Metre),
@@ -741,11 +737,11 @@ TEST_F(PluginIntegrationTest, Prediction) {
                   Gt(0.1 * Milli(Metre)));
     }
   }
-  EXPECT_THAT(
-      AbsoluteError(rendered_prediction->last().degrees_of_freedom().position(),
-                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
-                        World::origin),
-      IsNear(29_⑴ * Milli(Metre)));
+  EXPECT_THAT(AbsoluteError(
+                  rendered_prediction->rbegin().degrees_of_freedom().position(),
+                  Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
+                      World::origin),
+              IsNear(29_⑴ * Milli(Metre)));
 }
 
 }  // namespace internal_plugin

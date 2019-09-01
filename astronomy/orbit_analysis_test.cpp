@@ -160,12 +160,12 @@ class OrbitAnalysisTest : public ::testing::Test {
           sp3.orbit(sp3_orbit.satellite);
       CHECK_EQ(orbit.size(), 1);
       auto const& arc = *orbit.front();
-      for (auto it = arc.Begin(); it != arc.End(); ++it) {
-        ephemeris_->Prolong(it.time());
+      for (auto const& [time, degrees_of_freedom] : arc) {
+        ephemeris_->Prolong(time);
         result->Append(
-            it.time(),
-            gcrs.ToThisFrameAtTime(it.time())(
-                itrs.FromThisFrameAtTime(it.time())(it.degrees_of_freedom())));
+            time,
+            gcrs.ToThisFrameAtTime(time)(
+                itrs.FromThisFrameAtTime(time)(degrees_of_freedom)));
       }
     }
     return result;

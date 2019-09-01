@@ -38,7 +38,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
   CHECK_GE(arc.Size(), n);
   std::array<Instant, n> times;
   std::array<Position<ITRS>, n> positions;
-  auto it = arc.Begin();
+  auto it = arc.begin();
   for (int k = 0; k < n; ++k, ++it) {
     // TODO(egg): we should check when reading the file that the times are
     // equally spaced at the interval declared in columns 25-38 of SP3
@@ -59,7 +59,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
              offset)});
     // At every iteration, either |offset| advances, or the |positions|
     // window shifts and |it| advances.
-    if (offset < (n - 1) / 2 || it == arc.End()) {
+    if (offset < (n - 1) / 2 || it == arc.end()) {
       ++offset;
     } else {
       std::move(positions.begin() + 1, positions.end(), positions.begin());

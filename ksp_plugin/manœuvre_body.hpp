@@ -206,7 +206,7 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
   CHECK_NOTNULL(coasting_trajectory_);
   typename DiscreteTrajectory<InertialFrame>::Iterator const it =
       coasting_trajectory_->Find(initial_time());
-  CHECK(it != coasting_trajectory_->End());
+  CHECK(it != coasting_trajectory_->end());
   return ComputeFrenetFrame(initial_time(), it.degrees_of_freedom());
 }
 

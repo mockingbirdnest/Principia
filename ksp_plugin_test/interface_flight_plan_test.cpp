@@ -360,8 +360,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   segment->Append(t0_ + 1 * Second, immobile_origin);
   segment->Append(t0_ + 2 * Second, immobile_origin);
   EXPECT_CALL(flight_plan, GetSegment(3, _, _))
-      .WillOnce(DoAll(SetArgReferee<1>(segment->Begin()),
-                      SetArgReferee<2>(segment->End())));
+      .WillOnce(DoAll(SetArgReferee<1>(segment->begin()),
+                      SetArgReferee<2>(segment->end())));
   EXPECT_CALL(renderer,
               FillRenderedBarycentricTrajectoryInWorld(_, _, _, _, _, _))
       .WillOnce(FillUniquePtr<5>(rendered_trajectory.release()));

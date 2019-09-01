@@ -729,7 +729,7 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
   // Update the vessels.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
-    if (vessel.psychohistory().last().time() < current_time_) {
+    if (vessel.psychohistory().rbegin().time() < current_time_) {
       if (Contains(collided_vessels, &vessel)) {
         vessel.DisableDownsampling();
       }
@@ -804,7 +804,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
     vessel->set_parent(parent);
   }
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
-      vessel->psychohistory().last().degrees_of_freedom() -
+      vessel->psychohistory().rbegin().degrees_of_freedom() -
       vessel->parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
@@ -852,7 +852,7 @@ void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   if (renderer_->HasTargetVessel()) {
     Vessel& target_vessel = renderer_->GetTargetVessel();
     target_vessel.RefreshPrediction();
-    vessel.RefreshPrediction(target_vessel.prediction().last().time());
+    vessel.RefreshPrediction(target_vessel.prediction().rbegin().time());
   } else {
     vessel.RefreshPrediction();
   }
@@ -889,14 +889,14 @@ void Plugin::ComputeAndRenderApsides(
                  periapsides_trajectory);
   apoapsides = renderer_->RenderBarycentricTrajectoryInWorld(
                    current_time_,
-                   apoapsides_trajectory.Begin(),
-                   apoapsides_trajectory.End(),
+                   apoapsides_trajectory.begin(),
+                   apoapsides_trajectory.end(),
                    sun_world_position,
                    PlanetariumRotation());
   periapsides = renderer_->RenderBarycentricTrajectoryInWorld(
                     current_time_,
-                    periapsides_trajectory.Begin(),
-                    periapsides_trajectory.End(),
+                    periapsides_trajectory.begin(),
+                    periapsides_trajectory.end(),
                     sun_world_position,
                     PlanetariumRotation());
 }
@@ -920,8 +920,8 @@ void Plugin::ComputeAndRenderClosestApproaches(
   closest_approaches =
       renderer_->RenderBarycentricTrajectoryInWorld(
           current_time_,
-          periapsides_trajectory.Begin(),
-          periapsides_trajectory.End(),
+          periapsides_trajectory.begin(),
+          periapsides_trajectory.end(),
           sun_world_position,
           PlanetariumRotation());
 }
@@ -956,8 +956,8 @@ void Plugin::ComputeAndRenderNodes(
   DiscreteTrajectory<Navigation> ascending_trajectory;
   DiscreteTrajectory<Navigation> descending_trajectory;
   // The so-called North is orthogonal to the plane of the trajectory.
-  ComputeNodes(trajectory_in_plotting->Begin(),
-               trajectory_in_plotting->End(),
+  ComputeNodes(trajectory_in_plotting->begin(),
+               trajectory_in_plotting->end(),
                Vector<double, Navigation>({0, 0, 1}),
                max_points,
                ascending_trajectory,
@@ -966,14 +966,14 @@ void Plugin::ComputeAndRenderNodes(
 
   ascending = renderer_->RenderPlottingTrajectoryInWorld(
                   current_time_,
-                  ascending_trajectory.Begin(),
-                  ascending_trajectory.End(),
+                  ascending_trajectory.begin(),
+                  ascending_trajectory.end(),
                   sun_world_position,
                   PlanetariumRotation());
   descending = renderer_->RenderPlottingTrajectoryInWorld(
                    current_time_,
-                   descending_trajectory.Begin(),
-                   descending_trajectory.End(),
+                   descending_trajectory.begin(),
+                   descending_trajectory.end(),
                    sun_world_position,
                    PlanetariumRotation());
 }
@@ -1195,7 +1195,7 @@ Velocity<World> Plugin::UnmanageableVesselVelocity(
 
 Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   Vessel const& vessel = *FindOrDie(vessels_, vessel_guid);
-  auto const& last = vessel.psychohistory().last();
+  auto const& last = vessel.psychohistory().rbegin();
   return VesselVelocity(last.time(), last.degrees_of_freedom());
 }
 

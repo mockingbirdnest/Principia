@@ -104,11 +104,11 @@ ApplyDynamicFrame(
   }
 
   // Render the trajectory at current time in |Rendering|.
-  Instant const& current_time = intermediate_trajectory.last().time();
+  Instant const& current_time = intermediate_trajectory.rbegin().time();
   DiscreteTrajectory<Rendering>::Iterator initial_it =
-      intermediate_trajectory.Begin();
+      intermediate_trajectory.begin();
   DiscreteTrajectory<Rendering>::Iterator const intermediate_end =
-      intermediate_trajectory.End();
+      intermediate_trajectory.end();
   auto to_rendering_frame_at_current_time =
       dynamic_frame->FromThisFrameAtTime(current_time).rigid_transformation();
   if (initial_it != intermediate_end) {
@@ -168,8 +168,8 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
   while (state.KeepRunning()) {
     auto v = ApplyDynamicFrame(&probe,
                                &dynamic_frame,
-                               probe_trajectory.Begin(),
-                               probe_trajectory.End());
+                               probe_trajectory.begin(),
+                               probe_trajectory.end());
   }
 }
 
@@ -218,8 +218,8 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
   while (state.KeepRunning()) {
     auto v = ApplyDynamicFrame(&probe,
                                &dynamic_frame,
-                               probe_trajectory.Begin(),
-                               probe_trajectory.End());
+                               probe_trajectory.begin(),
+                               probe_trajectory.end());
   }
 }
 
