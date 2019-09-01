@@ -95,7 +95,7 @@ std::unique_ptr<Ephemeris<ICRS>> МолнияOrbitTest::ephemeris_;
 
 #if !defined(_DEBUG)
 
-TEST_F(МолнияOrbitTest, Satellite) {
+TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
   auto const earth_body = dynamic_cast_not_null<OblateBody<ICRS> const*>(
       solar_system_2000_.massive_body(*ephemeris_, "Earth"));
   auto const earth_degrees_of_freedom =

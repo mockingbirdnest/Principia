@@ -260,7 +260,7 @@ class SolarSystemDynamicsTest : public ::testing::Test {
 };
 
 #if !_DEBUG
-TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
+TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
   SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /

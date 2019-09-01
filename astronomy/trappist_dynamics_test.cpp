@@ -1186,7 +1186,7 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
   }
 }
 
-TEST_F(TrappistDynamicsTest, MathematicaTransits) {
+TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
   // Run this test with different ephemerides to make sure that the system is
   // converged.
   OFStream file(TEMP_DIR / "trappist_transits.generated.wl");
