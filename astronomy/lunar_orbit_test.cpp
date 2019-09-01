@@ -275,7 +275,7 @@ constexpr std::array<GeopotentialTruncation, 4> geopotential_truncations = {
 };
 
 INSTANTIATE_TEST_CASE_P(
-    TruncatedSelenopotentials,
+    DISABLED_TruncatedSelenopotentials,
     LunarOrbitTest,
     ::testing::ValuesIn(geopotential_truncations));
 

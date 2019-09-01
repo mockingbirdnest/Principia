@@ -89,7 +89,7 @@ class GeodesyTest : public ::testing::Test {
 
 #if !defined(_DEBUG)
 
-TEST_F(GeodesyTest, LAGEOS2) {
+TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
   MasslessBody lageos2;
 
   StandardProduct3 initial_ilrsa(SOLUTION_DIR / "astronomy" /
