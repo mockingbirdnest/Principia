@@ -119,7 +119,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
     Instant const time = it.time();
     all_apsides.emplace(time, it.degrees_of_freedom());
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 2792));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 2824));
     }
     previous_time = time;
   }
@@ -143,7 +143,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
     Position<World> const position = pair.second.position();
     if (previous_time) {
       EXPECT_THAT(time - *previous_time,
-                  AlmostEquals(0.5 * T, 103, 4936));
+                  AlmostEquals(0.5 * T, 103, 5098));
       EXPECT_THAT((position - *previous_position).Norm(),
                   AlmostEquals(2.0 * a, 0, 176));
     }
