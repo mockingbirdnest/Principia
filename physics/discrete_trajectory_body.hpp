@@ -496,9 +496,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
   Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
-  for (auto const& pair : timeline_) {
-    Instant const& instant = pair.first;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
+  for (auto const& [instant, degrees_of_freedom] : timeline_) {
     auto const instantaneous_degrees_of_freedom = message->add_timeline();
     instant.WriteToMessage(instantaneous_degrees_of_freedom->mutable_instant());
     degrees_of_freedom.WriteToMessage(
