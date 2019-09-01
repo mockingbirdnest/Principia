@@ -187,7 +187,7 @@ StandardProduct3::StandardProduct3(
         }
         id.index = integer_columns(c + 1, c + 2);
         CHECK_GT(id.index, 0) << full_location;
-        auto const [it, inserted] =  // NOLINT(whitespace/braces)
+        auto const [it, inserted] =
             orbits_.emplace(std::piecewise_construct,
                             std::forward_as_tuple(id),
                             std::forward_as_tuple());
@@ -421,14 +421,14 @@ StandardProduct3::StandardProduct3(
       }
     }
   }
-  for (auto& [id, orbit] : orbits_) {
-    auto const [it, inserted] =  // NOLINT(whitespace/braces)
+  for (auto const& [id, orbit] : orbits_) {
+    auto const [it, inserted] =
         const_orbits_.emplace(std::piecewise_construct,
                               std::forward_as_tuple(id),
                               std::forward_as_tuple());
     CHECK(inserted) << id;
     auto& const_orbit = it->second;
-    for (auto& arc : orbit) {
+    for (auto const& arc : orbit) {
       const_orbit.push_back(arc.get());
     }
   }
