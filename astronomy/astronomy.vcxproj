@@ -76,6 +76,8 @@
     <ClInclude Include="fortran_astrodynamics_toolkit.hpp" />
     <ClInclude Include="orbital_elements.hpp" />
     <ClInclude Include="orbital_elements_body.hpp" />
+    <ClInclude Include="orbit_ground_track.hpp" />
+    <ClInclude Include="orbit_ground_track_body.hpp" />
     <ClInclude Include="orbit_recurrence.hpp" />
     <ClInclude Include="orbit_recurrence_body.hpp" />
     <ClInclude Include="solar_system_fingerprints.hpp" />

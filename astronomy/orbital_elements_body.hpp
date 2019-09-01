@@ -20,37 +20,14 @@ using physics::KeplerOrbit;
 using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Mod;
-using quantities::NaN;
 using quantities::Pow;
 using quantities::Product;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::Tan;
+using quantities::UnwindFrom;
 using quantities::si::Radian;
-
-// Returns the element of {α + 2nπ | n ∈ ℤ} which is closest to
-// |previous_angle|.
-inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
-  return α + std::nearbyint((previous_angle - α) / (2 * π * Radian)) * 2 * π *
-                 Radian;
-}
-
-template<typename T>
-Difference<T> OrbitalElements::Interval<T>::measure() const {
-  return max >= min ? max - min : Difference<T>{};
-}
-
-template<typename T>
-T OrbitalElements::Interval<T>::midpoint() const {
-  return max >= min ? min + measure() / 2 : NaN<T>();
-}
-
-template<typename T>
-void OrbitalElements::Interval<T>::Include(T const& x) {
-  min = std::min(min, x);
-  max = std::max(max, x);
-}
 
 template<typename PrimaryCentred>
 StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
@@ -105,28 +82,25 @@ inline AngularFrequency OrbitalElements::nodal_precession() const {
   return nodal_precession_;
 }
 
-inline OrbitalElements::Interval<Length>
-OrbitalElements::mean_semimajor_axis_interval() const {
+inline Interval<Length> OrbitalElements::mean_semimajor_axis_interval() const {
   return mean_semimajor_axis_interval_;
 }
 
-inline OrbitalElements::Interval<double>
-OrbitalElements::mean_eccentricity_interval() const {
+inline Interval<double> OrbitalElements::mean_eccentricity_interval() const {
   return mean_eccentricity_interval_;
 }
 
-inline OrbitalElements::Interval<Angle>
-OrbitalElements::mean_inclination_interval() const {
+inline Interval<Angle> OrbitalElements::mean_inclination_interval() const {
   return mean_inclination_interval_;
 }
 
-inline OrbitalElements::Interval<Angle>
+inline Interval<Angle>
 OrbitalElements::mean_longitude_of_ascending_node_interval() const {
   return mean_longitude_of_ascending_node_interval_;
 }
 
-inline OrbitalElements::Interval<Angle>
-OrbitalElements::mean_argument_of_periapsis_interval() const {
+inline Interval<Angle> OrbitalElements::mean_argument_of_periapsis_interval()
+    const {
   return mean_argument_of_periapsis_interval_;
 }
 
