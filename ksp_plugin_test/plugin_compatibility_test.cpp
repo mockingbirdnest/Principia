@@ -49,18 +49,15 @@ class TestablePlugin : public Plugin {
 };
 
 void TestablePlugin::KeepAllVessels() {
-  for (auto const& pair : vessels_) {
-    auto const& vessel = pair.second;
+  for (auto const& [guid, vessel] : vessels_) {
     kept_vessels_.insert(vessel.get());
   }
 }
 
 std::map<GUID, not_null<Vessel const*>> TestablePlugin::vessels() const {
   std::map<GUID, not_null<Vessel const*>> result;
-  for (auto const& pair : vessels_) {
-    auto const& guid = pair.first;
-    Vessel const* const vessel = pair.second.get();
-    result.insert(std::make_pair(guid, vessel));
+  for (auto const& [guid, vessel] : vessels_) {
+    result.insert(std::make_pair(guid, vessel.get()));
   }
   return result;
 }
