@@ -37,7 +37,7 @@ class StackTraceDecoder {
   private static string ParseLine(IntPtr handle, IMAGEHLP_LINEW64 line,
                                   SYMBOL_INFOW symbol,
                                   string commit, bool snippets) {
-    var file_regex = new Regex(@".*\\principia\\([a-z_]+)\\(\S+)");
+    var file_regex = new Regex(@".*\\[Pp]rincipia\\([a-z_]+)\\(\S+)");
     Match file_match = file_regex.Match(line.FileName);
     if (!file_match.Success) {
       return null;
