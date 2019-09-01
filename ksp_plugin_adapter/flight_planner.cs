@@ -26,8 +26,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       Toggle();
     }
     // Override the state of the toggle if there is no active vessel.
-    string? vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid == null || !plugin.HasVessel(vessel_guid)) {
+    if (vessel_ == null || !plugin.HasVessel(vessel_.id.ToString())) {
       Hide();
       vessel_ = FlightGlobals.ActiveVessel;
     }
@@ -63,21 +62,24 @@ class FlightPlanner : SupervisedWindowRenderer {
     if (UnityEngine.Event.current.type == UnityEngine.EventType.Layout) {
       UpdateVesselAndBurnEditors();
     }
+    // Postcondition: vessel_ != null iff burn_editors_ != null.
 
     // The UI code proper, executed identically for Layout and Repaint.  We
     // can freely change the state in events like clicks (e.g., in if statements
     // for buttons) as these don't happen between Layout and Repaint.
-    string? vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid == null || !plugin.HasVessel(vessel_guid)) {
+    string vessel_guid;
+    if (vessel_ == null ||
+        !plugin.HasVessel(vessel_guid = vessel_.id.ToString())) {
       return;
     }
 
+    // Precondition: vessel_ != null and burn_editors_ != null.
     if (plugin.FlightPlanExists(vessel_guid)) {
       RenderFlightPlan(vessel_guid);
     } else if (UnityEngine.GUILayout.Button("Create flight plan")) {
       plugin.FlightPlanCreate(vessel_guid,
                               plugin.CurrentTime() + 1000,
-                              vessel_!.GetTotalMass());
+                              vessel_.GetTotalMass());
       final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       Shrink();
     }
@@ -86,10 +88,10 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   private void UpdateVesselAndBurnEditors() {
     {
-      string? vessel_guid = vessel_?.id.ToString();
-      if (vessel_guid == null ||
+      string vessel_guid;
+      if (vessel_ == null ||
           vessel_ != FlightGlobals.ActiveVessel ||
-          !plugin.HasVessel(vessel_guid) ||
+          !plugin.HasVessel(vessel_guid = vessel_.id.ToString()) ||
           !plugin.FlightPlanExists(vessel_guid) ||
           plugin.FlightPlanNumberOfManoeuvres(vessel_guid) !=
               burn_editors_?.Count) {
@@ -103,11 +105,12 @@ class FlightPlanner : SupervisedWindowRenderer {
         vessel_ = FlightGlobals.ActiveVessel;
       }
     }
+    // Postcondition: if vessel_ == null then burn_editors_ == null.
 
     if (burn_editors_ == null) {
-      string? vessel_guid = vessel_?.id.ToString();
-      if (vessel_guid != null &&
-          plugin.HasVessel(vessel_guid) &&
+      string vessel_guid;
+      if (vessel_ != null &&
+          plugin.HasVessel(vessel_guid = vessel_.id.ToString()) &&
           plugin.FlightPlanExists(vessel_guid)) {
         burn_editors_ = new List<BurnEditor>();
         final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
@@ -117,7 +120,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           // Dummy initial time, we call |Reset| immediately afterwards.
           burn_editors_.Add(
               new BurnEditor(adapter_,
-                             vessel_!,
+                             vessel_,
                              initial_time  : 0,
                              index         : burn_editors_.Count,
                              previous_burn : burn_editors_.LastOrDefault()));
@@ -126,7 +129,9 @@ class FlightPlanner : SupervisedWindowRenderer {
         }
       }
     }
+    // Postcondition: if vessel_ != null then burn_editors_ != null.
 
+    // Precondition: vessel_ != null iff burn_editors_ != null.
     if (burn_editors_ != null) {
       string vessel_guid = vessel_!.id.ToString();
       double current_time = plugin.CurrentTime();
@@ -143,6 +148,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   private void RenderFlightPlan(string vessel_guid) {
+    // Precondition: vessel_ != null and burn_editors_ != null.
     using (new UnityEngine.GUILayout.VerticalScope()) {
       if (final_time_.Render(enabled : true)) {
         var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
@@ -312,6 +318,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   private void RenderUpcomingEvents() {
+    // Precondition: vessel_ != null and burn_editors_ != null.
     string vessel_guid = vessel_!.id.ToString();
     double current_time = plugin.CurrentTime();
 
@@ -410,6 +417,8 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   internal string FormatPlanLength(double value) {
+    // Called when final_time_.value is changed, which only happens when vessel_
+    // is not null.
     return FormatPositiveTimeSpan(TimeSpan.FromSeconds(
                value -
                plugin.FlightPlanGetInitialTime(vessel_!.id.ToString())));
@@ -442,9 +451,9 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   private string GetStatusMessage() {
-    string? vessel_guid = vessel_?.id.ToString();
     string message = "";
-    if (vessel_guid != null && !status_.ok()) {
+    if (vessel_ != null && !status_.ok()) {
+      string vessel_guid = vessel_.id.ToString();
       int anomalous_manœuvres =
           plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
       int manœuvres = plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
@@ -470,6 +479,9 @@ class FlightPlanner : SupervisedWindowRenderer {
                          "centre of a celestial)" + time_out_message;
         remedy_message = "avoiding collisions with a celestial";
       } else if (status_.is_invalid_argument()) {
+        // This status is produced by Append and Replace on the flight plan.
+        // The calls to UpdateStatus always pass an error_manœuvre in these
+        // cases.
         status_message = "manœuvre #" + (first_error_manœuvre_!.Value + 1) +
                          " would result in an infinite or indeterminate " +
                          "velocity";
@@ -496,6 +508,7 @@ class FlightPlanner : SupervisedWindowRenderer {
                            "duration of manœuvre #" +
                            (first_error_manœuvre_.Value + 1);
         } else {
+          // NOTE(phl): When does this happen?
           status_message = "flight plan is too short";
           remedy_message = "increasing the flight plan duration";
         }

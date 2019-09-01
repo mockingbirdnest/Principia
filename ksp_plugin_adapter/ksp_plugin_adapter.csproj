@@ -24,8 +24,10 @@
     <OutputPath>..\Debug\GameData\Principia\</OutputPath>
     <DefineConstants>TRACE;DEBUG;KSP_VERSION_1_7_3</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>3</WarningLevel>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <NoWarn>8632</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -33,11 +35,11 @@
     <OutputPath>..\Release\GameData\Principia\</OutputPath>
     <DefineConstants>TRACE;KSP_VERSION_1_7_3</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>3</WarningLevel>
     <DebugSymbols>true</DebugSymbols>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>CS8632</NoWarn>
+    <NoWarn>8632</NoWarn>
   </PropertyGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release' Or '$(Configuration)' == 'Debug'">
     <Reference Include="Assembly-CSharp">
