@@ -178,12 +178,12 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
       AbsoluteErrorFrom(*initial_osculating.period, Lt(510 * Micro(Second))));
   EXPECT_THAT(
       elements.nodal_period(),
-      AbsoluteErrorFrom(*initial_osculating.period, Lt(3.8 * Milli(Second))));
+      AbsoluteErrorFrom(*initial_osculating.period, Lt(3.9 * Milli(Second))));
   EXPECT_THAT(
       elements.sidereal_period(),
       AbsoluteErrorFrom(*initial_osculating.period, Lt(1.9 * Micro(Second))));
 
-  EXPECT_THAT(elements.nodal_precession(), Lt(1.3 * Degree / JulianYear));
+  EXPECT_THAT(elements.nodal_precession(), Lt(1.4 * Degree / JulianYear));
 
   // Mean element values.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
@@ -194,10 +194,10 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
                                 Lt(4.6e-11)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.inclination,
-                                Lt(0.57 * Micro(ArcSecond))));
+                                Lt(0.64 * Micro(ArcSecond))));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.longitude_of_ascending_node,
-                                Lt(58 * ArcSecond)));
+                                Lt(62 * ArcSecond)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.argument_of_periapsis,
                                 Lt(62 * ArcSecond)));
@@ -208,9 +208,9 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
               Lt(1.1e-10));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
-              Lt(0.78 * Micro(ArcSecond)));
+              Lt(1.4 * Micro(ArcSecond)));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().measure(),
-              Lt(2.1 * ArcMinute));
+              Lt(2.2 * ArcMinute));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
               Lt(2.2 * ArcMinute));
 
@@ -320,7 +320,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
       RelativeError(
           -theoretical_Ωʹ * mission_duration,
           elements.mean_longitude_of_ascending_node_interval().measure()),
-      IsNear(0.0039_⑴));
+      IsNear(0.004_⑴));
   EXPECT_THAT(
       RelativeError(theoretical_ωʹ * mission_duration,
                     elements.mean_argument_of_periapsis_interval().measure()),
