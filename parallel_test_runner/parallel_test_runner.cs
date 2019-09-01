@@ -21,7 +21,7 @@ class ParallelTestRunner {
     return (T)Enum.Parse(typeof(T), value, true);
   }
 
-  const string vsinstr_ =
+  private const string vsinstr =
       @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\" +
       @"Team Tools\Performance Tools\x64\vsinstr.exe";
 
@@ -90,7 +90,7 @@ class ParallelTestRunner {
       foreach (string test_binary in test_binaries) {
         if (instrument) {
           instrument_tests.Add(
-              RunProcessAsync(vsinstr_, "/coverage \"" + test_binary + "\""));
+              RunProcessAsync(vsinstr, "/coverage \"" + test_binary + "\""));
         }
         if (granularity == Granularity.Package) {
           var process = new Process{

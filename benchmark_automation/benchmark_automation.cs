@@ -6,7 +6,7 @@ namespace principia {
 namespace benchmark_automation {
 
 class BenchmarkAutomation {
-  private const string benchmark_executable_ = @".\Release\x64\benchmarks.exe";
+  private const string benchmark_executable = @".\Release\x64\benchmarks.exe";
 
   private static void Main(string[] args) {
     DirectoryInfo benchmark_directory = new DirectoryInfo(args[0]);
@@ -33,12 +33,12 @@ class BenchmarkAutomation {
       StreamReader stream = file.OpenText();
       while (!stream.EndOfStream) {
         string command_line = stream.ReadLine();
-        if (command_line.StartsWith("// " + benchmark_executable_)) {
+        if (command_line.StartsWith("// " + benchmark_executable)) {
           // Get rid of the // NOLINT comments and of the actual command,
           // leaving only the arguments.
           command_line =
               command_line.Split(
-                  separator : new []{benchmark_executable_, "//"},
+                  separator : new []{benchmark_executable, "//"},
                   options   : StringSplitOptions.None)[2].Trim();
           bool has_repetitions =
               command_line.Contains("--benchmark_repetitions");
@@ -47,7 +47,7 @@ class BenchmarkAutomation {
           Console.WriteLine(command_line);
           Process process = new Process {
             StartInfo = new ProcessStartInfo {
-              FileName = benchmark_executable_,
+              FileName = benchmark_executable,
               Arguments = command_line,
               UseShellExecute = false,
               RedirectStandardOutput = true,
