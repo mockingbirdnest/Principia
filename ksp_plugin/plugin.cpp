@@ -480,12 +480,8 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
 }
 
 void Plugin::PrepareToReportCollisions() {
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    // TODO(egg): we're taking the address of a parameter passed by reference
-    // here; but then I don't think I want to pass this by pointer, it's quite
-    // convenient everywhere else...
-    vessel.ForAllParts(
+  for (auto const& [guid, vessel] : vessels_) {
+    vessel->ForAllParts(
         [](Part& part) { Subset<Part>::MakeSingleton(part, &part); });
   }
 }
@@ -545,10 +541,9 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
   // Bind the vessels.  This guarantees that all part subsets are disjoint
   // unions of vessels.
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    vessel.ForSomePart([&vessel](Part& first_part) {
-      vessel.ForAllParts([&first_part](Part& part) {
+  for (auto const& [guid, vessel] : vessels_) {
+    vessel->ForSomePart([&vessel](Part& first_part) {
+      vessel->ForAllParts([&first_part](Part& part) {
         Subset<Part>::Unite(Subset<Part>::Find(first_part),
                             Subset<Part>::Find(part));
       });
@@ -563,11 +558,10 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     // vessel destroys its parts, which invalidates the intrusive |Subset| data
     // structure.
     VesselSet grounded_vessels;
-    for (auto const& pair : vessels_) {
-      not_null<Vessel*> const vessel = pair.second.get();
-      vessel->ForSomePart([vessel, &grounded_vessels](Part& part) {
+    for (auto const& [guid, vessel] : vessels_) {
+      vessel->ForSomePart([&vessel, &grounded_vessels](Part& part) {
         if (Subset<Part>::Find(part).properties().grounded()) {
-          grounded_vessels.insert(vessel);
+          grounded_vessels.insert(vessel.get());
         }
       });
     }
@@ -581,10 +575,9 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
   // We only need to collect one part per vessel, since the other parts are in
   // the same subset.
-  for (auto const& pair : vessels_) {
-    not_null<Vessel*> const vessel = pair.second.get();
+  for (auto const& [guid, vessel] : vessels_) {
     Instant const vessel_time =
-        is_loaded(vessel) ? current_time_ - Δt : current_time_;
+        is_loaded(vessel.get()) ? current_time_ - Δt : current_time_;
     vessel->ForSomePart([&vessel_time, this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           pile_ups_,
@@ -725,13 +718,12 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
   }
 
   // Update the vessels.
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    if (vessel.psychohistory().last().time() < current_time_) {
-      if (Contains(collided_vessels, &vessel)) {
-        vessel.DisableDownsampling();
+  for (auto const& [guid, vessel] : vessels_) {
+    if (vessel->psychohistory().last().time() < current_time_) {
+      if (Contains(collided_vessels, vessel.get())) {
+        vessel->DisableDownsampling();
       }
-      vessel.AdvanceTime();
+      vessel->AdvanceTime();
     }
   }
 }
@@ -784,8 +776,7 @@ void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   CHECK(!initializing_);
   CHECK_LT(t, current_time_);
   ephemeris_->EventuallyForgetBefore(t);
-  for (auto const& pair : vessels_) {
-    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+  for (auto const& [guid, vessel] : vessels_) {
     vessel->ForgetBefore(t);
   }
 }
@@ -1250,18 +1241,16 @@ void Plugin::WriteToMessage(
       };
 
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
-  for (auto const& pair : vessels_) {
-    std::string const& guid = pair.first;
-    not_null<Vessel*> const vessel = pair.second.get();
-    vessel_to_guid.emplace(vessel, guid);
+  for (auto const& [guid, vessel] : vessels_) {
+    vessel_to_guid.emplace(vessel.get(), guid);
     auto* const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
     vessel->WriteToMessage(vessel_message->mutable_vessel(),
                            serialization_index_for_pile_up);
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
-    vessel_message->set_loaded(Contains(loaded_vessels_, vessel));
-    vessel_message->set_kept(Contains(kept_vessels_, vessel));
+    vessel_message->set_loaded(Contains(loaded_vessels_, vessel.get()));
+    vessel_message->set_kept(Contains(kept_vessels_, vessel.get()));
   }
   for (auto const& [part_id, vessel] : part_id_to_vessel_) {
     (*message->mutable_part_id_to_vessel())[part_id] = vessel_to_guid[vessel];
