@@ -21,12 +21,11 @@ class ParallelTestRunner {
     return (T)Enum.Parse(typeof(T), value, true);
   }
 
-  const string vsinstr =
+  const string vsinstr_ =
       @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\" +
       @"Team Tools\Performance Tools\x64\vsinstr.exe";
 
   static Task RunProcessAsync(string file_name, string args) {
-    var task_completion_source = new TaskCompletionSource<bool>();
     var process = new Process{StartInfo = {FileName = file_name,
                                            Arguments = args,
                                            UseShellExecute = false,
@@ -56,8 +55,7 @@ class ParallelTestRunner {
 
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
-        string[] split =
-            arg.Split(new string[]{"--", ":"}, StringSplitOptions.None);
+        string[] split = arg.Split(new []{"--", ":"}, StringSplitOptions.None);
         string option = split[1];
         string value = split[2];
         if (option == "granularity") {
@@ -83,7 +81,8 @@ class ParallelTestRunner {
       filter_option = null;
 
       if (filter != null && granularity == Granularity.Package) {
-        Console.WriteLine("--filter is not supported with --granularity:Package");
+        Console.WriteLine(
+            "--filter is not supported with --granularity:Package");
         Environment.Exit(1);
       }
 
@@ -91,25 +90,31 @@ class ParallelTestRunner {
       foreach (string test_binary in test_binaries) {
         if (instrument) {
           instrument_tests.Add(
-              RunProcessAsync(vsinstr, "/coverage \"" + test_binary + "\""));
+              RunProcessAsync(vsinstr_, "/coverage \"" + test_binary + "\""));
         }
         if (granularity == Granularity.Package) {
-          var process = new Process();
-          process.StartInfo.UseShellExecute = false;
-          process.StartInfo.RedirectStandardOutput = true;
-          process.StartInfo.RedirectStandardError = true;
-          process.StartInfo.FileName = test_binary;
-          process.StartInfo.Arguments = "--gtest_filter=-*DeathTest.*";
+          var process = new Process{
+              StartInfo = {
+                  UseShellExecute = false,
+                  RedirectStandardOutput = true,
+                  RedirectStandardError = true,
+                  FileName = test_binary,
+                  Arguments = "--gtest_filter=-*DeathTest.*"
+              }
+          };
           process.StartInfo.Arguments +=
               " --gtest_output=xml:TestResults\\gtest_results_" +
               test_process_counter++ + ".xml";
           processes.Add(process);
-          process = new Process();
-          process.StartInfo.UseShellExecute = false;
-          process.StartInfo.RedirectStandardOutput = false;
-          process.StartInfo.RedirectStandardError = false;
-          process.StartInfo.FileName = test_binary;
-          process.StartInfo.Arguments = "--gtest_filter=*DeathTest.*";
+          process = new Process{
+              StartInfo = {
+                  UseShellExecute = false,
+                  RedirectStandardOutput = false,
+                  RedirectStandardError = false,
+                  FileName = test_binary,
+                  Arguments = "--gtest_filter=*DeathTest.*"
+              }
+          };
           process.StartInfo.Arguments +=
               " --gtest_output=xml:TestResults\\gtest_results_" +
               test_process_counter++ + ".xml";
@@ -123,9 +128,10 @@ class ParallelTestRunner {
             test_binary,
             filter == null
                 ? "--gtest_list_tests"
-                : $"--gtest_list_tests --gtest_filter={filter}");
-        info.UseShellExecute = false;
-        info.RedirectStandardOutput = true;
+                : $"--gtest_list_tests --gtest_filter={filter}"){
+            UseShellExecute = false,
+            RedirectStandardOutput = true
+        };
         var list_tests = Process.Start(info);
         var output = list_tests.StandardOutput;
         string test_case = null;
@@ -136,12 +142,15 @@ class ParallelTestRunner {
             test_case = line;
             is_death_test = Regex.Match(line, ".*DeathTest").Success;
             if (granularity == Granularity.TestCase) {
-              var process = new Process();
-              process.StartInfo.UseShellExecute = false;
-              process.StartInfo.RedirectStandardOutput = true;
-              process.StartInfo.RedirectStandardError = true;
-              process.StartInfo.FileName = test_binary;
-              process.StartInfo.Arguments = "--gtest_filter=" + test_case + "*";
+              var process = new Process{
+                  StartInfo = {
+                      UseShellExecute = false,
+                      RedirectStandardOutput = true,
+                      RedirectStandardError = true,
+                      FileName = test_binary,
+                      Arguments = "--gtest_filter=" + test_case + "*"
+                  }
+              };
               process.StartInfo.Arguments +=
                   " --gtest_output=xml:TestResults\\gtest_results_" +
                   test_process_counter++ + ".xml";
@@ -156,14 +165,17 @@ class ParallelTestRunner {
               }
             }
           } else if (granularity == Granularity.Test) {
-            var process = new Process();
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.FileName = test_binary;
-            process.StartInfo.Arguments =
-               Encoding.Default.GetString(Encoding.UTF8.GetBytes(
-                    "--gtest_filter=" + test_case + line.Split(' ')[2]));
+            var process = new Process{
+                StartInfo = {
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    FileName = test_binary,
+                    Arguments = Encoding.Default.GetString(
+                        Encoding.UTF8.GetBytes(
+                            "--gtest_filter=" + test_case + line.Split(' ')[2]))
+                }
+            };
             process.StartInfo.Arguments +=
                 " --gtest_output=xml:TestResults\\gtest_results_" +
                 test_process_counter++ + ".xml";
