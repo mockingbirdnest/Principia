@@ -37,6 +37,12 @@ DiscreteTrajectoryIterator<Frame>::degrees_of_freedom() const {
 }
 
 template<typename Frame>
+std::pair<Instant const, DegreesOfFreedom<Frame>> const&
+    DiscreteTrajectoryIterator<Frame>::operator*() const {
+  return *this->current();
+}
+
+template<typename Frame>
 not_null<DiscreteTrajectoryIterator<Frame>*>
 DiscreteTrajectoryIterator<Frame>::that() {
   return this;
@@ -56,12 +62,6 @@ using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
 using numerics::FitHermiteSpline;
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::Iterator
-DiscreteTrajectory<Frame>::last() const {
-  return --this->End();
-}
 
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*>
@@ -111,7 +111,7 @@ void DiscreteTrajectory<Frame>::AttachFork(
   CHECK(!this->Empty());
 
   auto& fork_timeline = fork->timeline_;
-  auto const this_last = last();
+  auto const this_last = rbegin();
 
   // Determine if |fork| already has a point matching the end of this
   // trajectory.
@@ -176,8 +176,8 @@ void DiscreteTrajectory<Frame>::Append(
 
   if (!timeline_.empty() && timeline_.cbegin()->first == time) {
     LOG(WARNING) << "Append at existing time " << time
-                 << ", time range = [" << this->Begin().time() << ", "
-                 << last().time() << "]";
+                 << ", time range = [" << this->begin().time() << ", "
+                 << rbegin().time() << "]";
     return;
   }
   auto it = timeline_.emplace_hint(timeline_.end(),
@@ -191,7 +191,7 @@ void DiscreteTrajectory<Frame>::Append(
     if (timeline_.size() == 1) {
       downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
     } else {
-      this->CheckNoForksBefore(last().time());
+      this->CheckNoForksBefore(rbegin().time());
       downsampling_->increment_dense_intervals(timeline_);
       if (downsampling_->reached_max_dense_intervals()) {
         std::vector<TimelineConstIterator> dense_iterators;
@@ -291,12 +291,12 @@ void DiscreteTrajectory<Frame>::ClearDownsampling() {
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_min() const {
-  return this->Empty() ? InfiniteFuture : this->Begin().time();
+  return this->Empty() ? InfiniteFuture : this->begin().time();
 }
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_max() const {
-  return this->Empty() ? InfinitePast : last().time();
+  return this->Empty() ? InfinitePast : rbegin().time();
 }
 
 template<typename Frame>
@@ -537,7 +537,7 @@ Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
   // This is the upper bound of the interval upon which we will do the
   // interpolation.
   auto const upper = this->LowerBound(time);
-  auto const lower = upper == this->Begin() ? upper : --Iterator{upper};
+  auto const lower = upper == this->begin() ? upper : --Iterator{upper};
   return Hermite3<Instant, Position<Frame>>{
       {lower.time(), upper.time()},
       {lower.degrees_of_freedom().position(),

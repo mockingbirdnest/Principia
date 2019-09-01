@@ -107,17 +107,16 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   DiscreteTrajectory<World> apoapsides;
   DiscreteTrajectory<World> periapsides;
   ComputeApsides(*ephemeris.trajectory(b),
-                 trajectory.Begin(),
-                 trajectory.End(),
+                 trajectory.begin(),
+                 trajectory.end(),
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
 
   std::optional<Instant> previous_time;
   std::map<Instant, DegreesOfFreedom<World>> all_apsides;
-  for (auto it = apoapsides.Begin(); it != apoapsides.End(); ++it) {
-    Instant const time = it.time();
-    all_apsides.emplace(time, it.degrees_of_freedom());
+  for (auto const& [time, degrees_of_freedom] : apoapsides) {
+    all_apsides.emplace(time, degrees_of_freedom);
     if (previous_time) {
       EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 2824));
     }
@@ -125,9 +124,8 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   }
 
   previous_time = std::nullopt;
-  for (auto it = periapsides.Begin(); it != periapsides.End(); ++it) {
-    Instant const time = it.time();
-    all_apsides.emplace(time, it.degrees_of_freedom());
+  for (auto const& [time, degrees_of_freedom] : periapsides) {
+    all_apsides.emplace(time, degrees_of_freedom);
     if (previous_time) {
       EXPECT_THAT(time - *previous_time, AlmostEquals(T, 134, 257));
     }
@@ -204,17 +202,16 @@ TEST_F(ApsidesTest, ComputeNodes) {
 
   DiscreteTrajectory<World> ascending_nodes;
   DiscreteTrajectory<World> descending_nodes;
-  ComputeNodes(trajectory.Begin(),
-               trajectory.End(),
+  ComputeNodes(trajectory.begin(),
+               trajectory.end(),
                north,
                /*max_points=*/std::numeric_limits<int>::max(),
                ascending_nodes,
                descending_nodes);
 
   std::optional<Instant> previous_time;
-  for (auto it = ascending_nodes.Begin(); it != ascending_nodes.End(); ++it) {
-    Instant const time = it.time();
-    EXPECT_THAT((it.degrees_of_freedom().position() - World::origin)
+  for (auto const& [time, degrees_of_freedom] : ascending_nodes) {
+    EXPECT_THAT((degrees_of_freedom.position() - World::origin)
                     .coordinates()
                     .ToSpherical()
                     .longitude,
@@ -226,10 +223,9 @@ TEST_F(ApsidesTest, ComputeNodes) {
   }
 
   previous_time = std::nullopt;
-  for (auto it = descending_nodes.Begin(); it != descending_nodes.End(); ++it) {
-    Instant const time = it.time();
+  for (auto const& [time, degrees_of_freedom] : descending_nodes) {
     EXPECT_THAT(
-        (it.degrees_of_freedom().position() - World::origin)
+        (degrees_of_freedom.position() - World::origin)
                 .coordinates()
                 .ToSpherical()
                 .longitude,
@@ -246,8 +242,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
   DiscreteTrajectory<World> south_ascending_nodes;
   DiscreteTrajectory<World> south_descending_nodes;
   Vector<double, World> const mostly_south({1, 1, -1});
-  ComputeNodes(trajectory.Begin(),
-               trajectory.End(),
+  ComputeNodes(trajectory.begin(),
+               trajectory.end(),
                mostly_south,
                /*max_points=*/std::numeric_limits<int>::max(),
                south_ascending_nodes,
@@ -255,11 +251,11 @@ TEST_F(ApsidesTest, ComputeNodes) {
   EXPECT_THAT(south_ascending_nodes.Size(), Eq(10));
   EXPECT_THAT(south_descending_nodes.Size(), Eq(10));
 
-  for (auto south_ascending_it  = south_ascending_nodes.Begin(),
-            ascending_it        = ascending_nodes.Begin(),
-            south_descending_it = south_descending_nodes.Begin(),
-            descending_it       = descending_nodes.Begin();
-       south_ascending_it != south_ascending_nodes.End();
+  for (auto south_ascending_it  = south_ascending_nodes.begin(),
+            ascending_it        = ascending_nodes.begin(),
+            south_descending_it = south_descending_nodes.begin(),
+            descending_it       = descending_nodes.begin();
+       south_ascending_it != south_ascending_nodes.end();
        ++south_ascending_it,
        ++ascending_it,
        ++south_descending_it,

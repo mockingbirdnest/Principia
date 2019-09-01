@@ -432,10 +432,10 @@ Ephemeris<Frame>::NewInstance(
   };
 
   CHECK(!trajectories.empty());
-  Instant const trajectory_last_time = (*trajectories.begin())->last().time();
+  Instant const trajectory_last_time = (*trajectories.begin())->rbegin().time();
   problem.initial_state.time = DoublePrecision<Instant>(trajectory_last_time);
   for (auto const& trajectory : trajectories) {
-    auto const trajectory_last = trajectory->last();
+    auto const trajectory_last = trajectory->rbegin();
     auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
     CHECK_EQ(trajectory_last.time(), trajectory_last_time);
     problem.initial_state.positions.emplace_back(
@@ -1155,7 +1155,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     Instant const& t,
     ODEAdaptiveStepParameters<ODE> const& parameters,
     std::int64_t max_ephemeris_steps) {
-  Instant const& trajectory_last_time = trajectory->last().time();
+  Instant const& trajectory_last_time = trajectory->rbegin().time();
   if (trajectory_last_time == t) {
     return Status::OK;
   }
@@ -1176,7 +1176,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   IntegrationProblem<ODE> problem;
   problem.equation.compute_acceleration = std::move(compute_acceleration);
 
-  auto const trajectory_last = trajectory->last();
+  auto const trajectory_last = trajectory->rbegin();
   auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
   problem.initial_state = {{last_degrees_of_freedom.position()},
                            {last_degrees_of_freedom.velocity()},

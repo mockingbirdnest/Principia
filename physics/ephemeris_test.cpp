@@ -242,7 +242,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
   EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       Ephemeris<ICRS>::NoIntrinsicAcceleration,
-      trajectory.last().time(),
+      trajectory.rbegin().time(),
       Ephemeris<ICRS>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
@@ -488,16 +488,13 @@ TEST_P(EphemerisTest, EarthProbe) {
               AlmostEquals(1.00 * period * v_earth, 633, 635));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
-  Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
+  Length const q_probe = (trajectory.rbegin().degrees_of_freedom().position() -
                           ICRS::origin).coordinates().y;
   Speed const v_probe =
-      trajectory.last().degrees_of_freedom().velocity().coordinates().x;
+      trajectory.rbegin().degrees_of_freedom().velocity().coordinates().x;
   std::vector<Displacement<ICRS>> probe_positions;
-  for (DiscreteTrajectory<ICRS>::Iterator it = trajectory.Begin();
-       it != trajectory.End();
-       ++it) {
-    probe_positions.push_back(it.degrees_of_freedom().position() -
-                              ICRS::origin);
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
+    probe_positions.push_back(degrees_of_freedom.position() - ICRS::origin);
   }
   // The solution is a line, so the rounding errors dominate.  Different
   // libms result in different errors and thus different numbers of steps.
@@ -512,7 +509,7 @@ TEST_P(EphemerisTest, EarthProbe) {
               Eq(q_probe));
 
   Instant const old_t_max = ephemeris.t_max();
-  EXPECT_THAT(trajectory.last().time(), Lt(old_t_max));
+  EXPECT_THAT(trajectory.rbegin().time(), Lt(old_t_max));
   EXPECT_THAT(ephemeris.FlowWithAdaptiveStep(
                   &trajectory,
                   intrinsic_acceleration,
@@ -527,7 +524,7 @@ TEST_P(EphemerisTest, EarthProbe) {
                   /*max_ephemeris_steps=*/0),
               StatusIs(Error::DEADLINE_EXCEEDED));
   EXPECT_THAT(ephemeris.t_max(), Eq(old_t_max));
-  EXPECT_THAT(trajectory.last().time(), Eq(old_t_max));
+  EXPECT_THAT(trajectory.rbegin().time(), Eq(old_t_max));
 }
 
 // The Earth and two massless probes, similar to the previous test but flowing
@@ -619,27 +616,23 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
               AlmostEquals(1.00 * period * v_earth, 633, 635));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
-  Length const q_probe1 = (trajectory1.last().degrees_of_freedom().position() -
-                     ICRS::origin).coordinates().y;
-  Length const q_probe2 = (trajectory2.last().degrees_of_freedom().position() -
-                     ICRS::origin).coordinates().y;
+  Length const q_probe1 =
+      (trajectory1.rbegin().degrees_of_freedom().position() -
+       ICRS::origin).coordinates().y;
+  Length const q_probe2 =
+      (trajectory2.rbegin().degrees_of_freedom().position() -
+       ICRS::origin).coordinates().y;
   Speed const v_probe1 =
-      trajectory1.last().degrees_of_freedom().velocity().coordinates().x;
+      trajectory1.rbegin().degrees_of_freedom().velocity().coordinates().x;
   Speed const v_probe2 =
-      trajectory2.last().degrees_of_freedom().velocity().coordinates().x;
+      trajectory2.rbegin().degrees_of_freedom().velocity().coordinates().x;
   std::vector<Displacement<ICRS>> probe1_positions;
   std::vector<Displacement<ICRS>> probe2_positions;
-  for (DiscreteTrajectory<ICRS>::Iterator it = trajectory1.Begin();
-       it != trajectory1.End();
-       ++it) {
-    probe1_positions.push_back(it.degrees_of_freedom().position() -
-                               ICRS::origin);
+  for (auto const& [time, degrees_of_freedom] : trajectory1) {
+    probe1_positions.push_back(degrees_of_freedom.position() - ICRS::origin);
   }
-  for (DiscreteTrajectory<ICRS>::Iterator it = trajectory2.Begin();
-       it != trajectory2.End();
-       ++it) {
-    probe2_positions.push_back(it.degrees_of_freedom().position() -
-                               ICRS::origin);
+  for (auto const& [time, degrees_of_freedom] : trajectory2) {
+    probe2_positions.push_back(degrees_of_freedom.position() - ICRS::origin);
   }
   EXPECT_THAT(probe1_positions.size(), Eq(1001));
   EXPECT_THAT(probe2_positions.size(), Eq(1001));
@@ -759,17 +752,14 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
       Ephemeris<ICRS>::unlimited_max_ephemeris_steps);
 
   Speed const v_elephant_y =
-      trajectory.last().degrees_of_freedom().velocity().coordinates().y;
+      trajectory.rbegin().degrees_of_freedom().velocity().coordinates().y;
   std::vector<Displacement<ICRS>> elephant_positions;
   std::vector<Vector<Acceleration, ICRS>> elephant_accelerations;
-  for (DiscreteTrajectory<ICRS>::Iterator it = trajectory.Begin();
-       it != trajectory.End();
-       ++it) {
-    elephant_positions.push_back(it.degrees_of_freedom().position() -
-                                 ICRS::origin);
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
+    elephant_positions.push_back(degrees_of_freedom.position() - ICRS::origin);
     elephant_accelerations.push_back(
         ephemeris.ComputeGravitationalAccelerationOnMasslessBody(
-            &trajectory, it.time()));
+            &trajectory, time));
   }
 
   // The small residual in x comes from the fact that the cosine of the
@@ -1024,8 +1014,8 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
 
   std::optional<Instant> previous_time;
   std::set<Instant> all_times;
-  for (auto it1 = apoapsides1.Begin(), it2 = apoapsides2.Begin();
-       it1 != apoapsides1.End() && it2 != apoapsides2.End();
+  for (auto it1 = apoapsides1.begin(), it2 = apoapsides2.begin();
+       it1 != apoapsides1.end() && it2 != apoapsides2.end();
        ++it1, ++it2) {
     Instant const time = it1.time();
     all_times.emplace(time);
@@ -1042,8 +1032,8 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   }
 
   previous_time = std::nullopt;
-  for (auto it1 = periapsides1.Begin(), it2 = periapsides2.Begin();
-       it1 != periapsides1.End() && it2 != periapsides2.End();
+  for (auto it1 = periapsides1.begin(), it2 = periapsides2.begin();
+       it1 != periapsides1.end() && it2 != periapsides2.end();
        ++it1, ++it2) {
     Instant const time = it1.time();
     all_times.emplace(time);

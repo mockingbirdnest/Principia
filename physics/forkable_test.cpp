@@ -163,7 +163,7 @@ class ForkableTest : public testing::Test {
       Instant const& time) {
     std::vector<Instant> after;
     for (FakeTrajectory::Iterator it = trajectory->Find(time);
-         it != trajectory->End();
+         it != trajectory->end();
          ++it) {
       after.push_back(*it.current());
     }
@@ -172,7 +172,7 @@ class ForkableTest : public testing::Test {
 
   static Instant const& LastTime(
       not_null<FakeTrajectory const*> const trajectory) {
-    FakeTrajectory::Iterator it = trajectory->End();
+    FakeTrajectory::Iterator it = trajectory->end();
     --it;
     return *it.current();
   }
@@ -180,8 +180,8 @@ class ForkableTest : public testing::Test {
   static std::vector<Instant> Times(
       not_null<FakeTrajectory const*> const trajectory) {
     std::vector<Instant> times;
-    for (FakeTrajectory::Iterator it = trajectory->Begin();
-         it != trajectory->End();
+    for (FakeTrajectory::Iterator it = trajectory->begin();
+         it != trajectory->end();
          ++it) {
       times.push_back(*it.current());
     }
@@ -483,7 +483,7 @@ TEST_F(ForkableTest, CheckNoForksBeforeSuccess) {
 
 TEST_F(ForkableDeathTest, IteratorDecrementError) {
   EXPECT_DEATH({
-    auto it = trajectory_.End();
+    auto it = trajectory_.end();
     --it;
   }, "parent_.*non NULL");
 }
@@ -492,7 +492,7 @@ TEST_F(ForkableTest, IteratorDecrementNoForkSuccess) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
-  auto it = trajectory_.End();
+  auto it = trajectory_.end();
   --it;
   EXPECT_EQ(t3_, *it.current());
   --it;
@@ -507,7 +507,7 @@ TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
   auto fork = trajectory_.NewFork(trajectory_.timeline_find(t1_));
   trajectory_.push_back(t4_);
   fork->push_back(t3_);
-  auto it = fork->End();
+  auto it = fork->end();
   --it;
   EXPECT_EQ(t3_, *it.current());
   --it;
@@ -521,17 +521,17 @@ TEST_F(ForkableTest, IteratorDecrementMultipleForksSuccess) {
   auto fork2 = fork1->NewFork(fork1->timeline_find(t2_));
   auto fork3 = fork2->NewFork(fork2->timeline_find(t2_));
   fork2->push_back(t3_);
-  auto it = fork3->End();
+  auto it = fork3->end();
   --it;
   EXPECT_EQ(t2_, *it.current());
   --it;
   EXPECT_EQ(t1_, *it.current());
-  EXPECT_EQ(it, fork3->Begin());
+  EXPECT_EQ(it, fork3->begin());
 }
 
 TEST_F(ForkableDeathTest, IteratorIncrementError) {
   EXPECT_DEATH({
-    auto it = trajectory_.Begin();
+    auto it = trajectory_.begin();
     ++it;
   }, "current.*!=.*end");
 }
@@ -540,7 +540,7 @@ TEST_F(ForkableTest, IteratorIncrementNoForkSuccess) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
-  auto it = trajectory_.Begin();
+  auto it = trajectory_.begin();
   EXPECT_EQ(t1_, *it.current());
   ++it;
   EXPECT_EQ(t2_, *it.current());
@@ -554,12 +554,12 @@ TEST_F(ForkableTest, IteratorIncrementForkSuccess) {
   auto fork = trajectory_.NewFork(trajectory_.timeline_find(t1_));
   trajectory_.push_back(t4_);
   fork->push_back(t3_);
-  auto it = fork->Begin();
+  auto it = fork->begin();
   EXPECT_EQ(t1_, *it.current());
   ++it;
   EXPECT_EQ(t3_, *it.current());
   ++it;
-  EXPECT_EQ(it, fork->End());
+  EXPECT_EQ(it, fork->end());
 }
 
 TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
@@ -568,23 +568,23 @@ TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
   auto fork1 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
   auto fork2 = fork1->NewFork(fork1->timeline_find(t2_));
   auto fork3 = fork2->NewFork(fork2->timeline_find(t2_));
-  auto it = fork3->Begin();
+  auto it = fork3->begin();
   EXPECT_EQ(t1_, *it.current());
   ++it;
   EXPECT_EQ(t2_, *it.current());
   ++it;
-  EXPECT_EQ(it, fork3->End());
+  EXPECT_EQ(it, fork3->end());
   fork3->push_back(t3_);
   --it;
   EXPECT_EQ(t3_, *it.current());
-  it = fork3->Begin();
+  it = fork3->begin();
   EXPECT_EQ(t1_, *it.current());
   ++it;
   EXPECT_EQ(t2_, *it.current());
   ++it;
   EXPECT_EQ(t3_, *it.current());
   ++it;
-  EXPECT_EQ(it, fork3->End());
+  EXPECT_EQ(it, fork3->end());
 }
 
 #if !defined(_DEBUG)
@@ -593,8 +593,8 @@ TEST_F(ForkableTest, IteratorEndEquality) {
   trajectory_.push_back(t2_);
   auto fork1 = trajectory_.NewFork(trajectory_.timeline_find(t1_));
   auto fork2 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
-  auto it1 = fork1->End();
-  auto it2 = fork2->End();
+  auto it1 = fork1->end();
+  auto it2 = fork2->end();
   EXPECT_NE(it1, it2);
 }
 #endif
@@ -613,76 +613,76 @@ TEST_F(ForkableTest, Root) {
 }
 
 TEST_F(ForkableTest, IteratorBeginSuccess) {
-  auto it = trajectory_.Begin();
-  EXPECT_EQ(it, trajectory_.End());
+  auto it = trajectory_.begin();
+  EXPECT_EQ(it, trajectory_.end());
 
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
 
-  it = trajectory_.Begin();
-  EXPECT_NE(it, trajectory_.End());
+  it = trajectory_.begin();
+  EXPECT_NE(it, trajectory_.end());
   EXPECT_EQ(t1_, *it.current());
   ++it;
   EXPECT_EQ(t2_, *it.current());
   ++it;
   EXPECT_EQ(t3_, *it.current());
   ++it;
-  EXPECT_EQ(it, trajectory_.End());
+  EXPECT_EQ(it, trajectory_.end());
 
   not_null<FakeTrajectory*> const fork =
       trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork->push_back(t4_);
 
-  it = fork->Begin();
-  EXPECT_NE(it, fork->End());
+  it = fork->begin();
+  EXPECT_NE(it, fork->end());
   EXPECT_EQ(t1_, *it.current());
   ++it;
   EXPECT_EQ(t2_, *it.current());
   ++it;
   EXPECT_EQ(t4_, *it.current());
   ++it;
-  EXPECT_EQ(it, fork->End());
+  EXPECT_EQ(it, fork->end());
 }
 
 TEST_F(ForkableTest, IteratorFindSuccess) {
   auto it = trajectory_.Find(t0_);
-  EXPECT_EQ(it, trajectory_.End());
+  EXPECT_EQ(it, trajectory_.end());
 
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
 
   it = trajectory_.Find(t0_);
-  EXPECT_EQ(it, trajectory_.End());
+  EXPECT_EQ(it, trajectory_.end());
   it = trajectory_.Find(t1_);
-  EXPECT_NE(it, trajectory_.End());
+  EXPECT_NE(it, trajectory_.end());
   EXPECT_EQ(t1_, *it.current());
   it = trajectory_.Find(t2_);
   EXPECT_EQ(t2_, *it.current());
   it = trajectory_.Find(t4_);
-  EXPECT_EQ(it, trajectory_.End());
+  EXPECT_EQ(it, trajectory_.end());
 
   not_null<FakeTrajectory*> const fork =
       trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork->push_back(t4_);
 
   it = fork->Find(t0_);
-  EXPECT_EQ(it, fork->End());
+  EXPECT_EQ(it, fork->end());
   it = fork->Find(t1_);
-  EXPECT_NE(it, fork->End());
+  EXPECT_NE(it, fork->end());
   EXPECT_EQ(t1_, *it.current());
   it = fork->Find(t2_);
   EXPECT_EQ(t2_, *it.current());
   it = fork->Find(t4_);
   EXPECT_EQ(t4_, *it.current());
   it = fork->Find(t4_ + 1 * Second);
-  EXPECT_EQ(it, fork->End());
+  EXPECT_EQ(it, fork->end());
 }
 
 TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   auto it = trajectory_.LowerBound(t0_);
-  EXPECT_EQ(it, trajectory_.End());
+  EXPECT_EQ(it, trajectory_.end());
 
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
@@ -695,7 +695,7 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   it = trajectory_.LowerBound(t2_);
   EXPECT_EQ(t2_, *it.current());
   it = trajectory_.LowerBound(t4_);
-  EXPECT_EQ(it, trajectory_.End());
+  EXPECT_EQ(it, trajectory_.end());
 
   not_null<FakeTrajectory*> const fork1 =
       trajectory_.NewFork(trajectory_.timeline_find(t2_));
@@ -704,7 +704,7 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   it = fork1->LowerBound(t0_);
   EXPECT_EQ(t1_, *it.current());
   it = fork1->LowerBound(t1_);
-  EXPECT_NE(it, fork1->End());
+  EXPECT_NE(it, fork1->end());
   EXPECT_EQ(t1_, *it.current());
   it = fork1->LowerBound(t2_);
   EXPECT_EQ(t2_, *it.current());
@@ -716,7 +716,7 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   it = fork1->LowerBound(t4_);
   EXPECT_EQ(t4_, *it.current());
   it = fork1->LowerBound(t4_ + 1 * Second);
-  EXPECT_EQ(it, fork1->End());
+  EXPECT_EQ(it, fork1->end());
 
   not_null<FakeTrajectory*> const fork2 =
       fork1->NewFork(fork1->timeline_find(t2_));

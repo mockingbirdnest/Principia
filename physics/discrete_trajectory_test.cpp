@@ -104,10 +104,7 @@ class DiscreteTrajectoryTest : public testing::Test {
   std::map<Instant, Position<World>> Positions(
       DiscreteTrajectory<World> const& trajectory) const {
     std::map<Instant, Position<World>> result;
-    for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
-      Instant const& time = it.time();
-      DegreesOfFreedom<World> const& degrees_of_freedom =
-          it.degrees_of_freedom();
+    for (auto const& [time, degrees_of_freedom] : trajectory) {
       result.emplace_hint(result.end(), time, degrees_of_freedom.position());
     }
     return result;
@@ -116,10 +113,7 @@ class DiscreteTrajectoryTest : public testing::Test {
   std::map<Instant, Velocity<World>> Velocities(
       DiscreteTrajectory<World> const& trajectory) const {
     std::map<Instant, Velocity<World>> result;
-    for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
-      Instant const& time = it.time();
-      DegreesOfFreedom<World> const& degrees_of_freedom =
-          it.degrees_of_freedom();
+    for (auto const& [time, degrees_of_freedom] : trajectory) {
       result.emplace_hint(result.end(), time, degrees_of_freedom.velocity());
     }
     return result;
@@ -127,8 +121,8 @@ class DiscreteTrajectoryTest : public testing::Test {
 
   std::list<Instant> Times(DiscreteTrajectory<World> const& trajectory) const {
     std::list<Instant> result;
-    for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
-      result.push_back(it.time());
+    for (auto const& [time, degrees_of_freedom] : trajectory) {
+      result.push_back(time);
     }
     return result;
   }
@@ -247,11 +241,11 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
   not_null<DiscreteTrajectory<World>*> const fork1 =
       massive_trajectory_->NewForkWithCopy(t3_);
   not_null<DiscreteTrajectory<World>*> const fork2 =
-      fork1->NewForkWithCopy(fork1->last().time());
+      fork1->NewForkWithCopy(fork1->rbegin().time());
   not_null<DiscreteTrajectory<World>*> const fork3 =
-      fork2->NewForkWithCopy(fork1->last().time());
-  EXPECT_EQ(t3_, massive_trajectory_->last().time());
-  EXPECT_EQ(t3_, fork1->last().time());
+      fork2->NewForkWithCopy(fork1->rbegin().time());
+  EXPECT_EQ(t3_, massive_trajectory_->rbegin().time());
+  EXPECT_EQ(t3_, fork1->rbegin().time());
 
   std::map<Instant, Position<World>> positions = Positions(*fork2);
   std::map<Instant, Velocity<World>> velocities = Velocities(*fork2);
@@ -261,13 +255,13 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork2->last().time());
+  EXPECT_EQ(q3_, fork2->rbegin().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork2->rbegin().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork2->rbegin().time());
 
   std::vector<Instant> after;
   for (DiscreteTrajectory<World>::Iterator it = fork3->Find(t3_);
-       it != fork3->End();
+       it != fork3->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -282,13 +276,13 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork2->last().time());
+  EXPECT_EQ(q3_, fork2->rbegin().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork2->rbegin().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork2->rbegin().time());
 
   after.clear();
   for (DiscreteTrajectory<World>::Iterator it = fork2->Find(t3_);
-       it != fork2->End();
+       it != fork2->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -303,13 +297,13 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork2->last().time());
+  EXPECT_EQ(q3_, fork2->rbegin().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork2->rbegin().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork2->rbegin().time());
 
   after.clear();
   for (DiscreteTrajectory<World>::Iterator it = fork1->Find(t3_);
-       it != fork1->End();
+       it != fork1->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -323,14 +317,14 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork3->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork3->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork3->last().time());
+  EXPECT_EQ(q3_, fork3->rbegin().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork3->rbegin().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork3->rbegin().time());
 
   fork2->Append(t4_, d4_);
   after.clear();
   for (DiscreteTrajectory<World>::Iterator it = fork2->Find(t3_);
-       it != fork2->End();
+       it != fork2->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -339,7 +333,7 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
   fork3->Append(t4_, d4_);
   after.clear();
   for (DiscreteTrajectory<World>::Iterator it = fork3->Find(t3_);
-       it != fork3->End();
+       it != fork3->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -347,7 +341,7 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
 
   after.clear();
   for (DiscreteTrajectory<World>::Iterator it = fork3->Find(t2_);
-       it != fork3->End();
+       it != fork3->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -364,8 +358,8 @@ TEST_F(DiscreteTrajectoryTest, NewForkAtLast) {
       fork1->NewForkAtLast();
   not_null<DiscreteTrajectory<World>*> const fork3 =
       fork2->NewForkAtLast();
-  EXPECT_EQ(t3_, massive_trajectory_->last().time());
-  EXPECT_EQ(t3_, fork1->last().time());
+  EXPECT_EQ(t3_, massive_trajectory_->rbegin().time());
+  EXPECT_EQ(t3_, fork1->rbegin().time());
 
   std::map<Instant, Position<World>> positions = Positions(*fork2);
   std::map<Instant, Velocity<World>> velocities = Velocities(*fork2);
@@ -375,13 +369,13 @@ TEST_F(DiscreteTrajectoryTest, NewForkAtLast) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork2->last().time());
+  EXPECT_EQ(q3_, fork2->rbegin().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork2->rbegin().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork2->rbegin().time());
 
   std::vector<Instant> after;
   for (DiscreteTrajectory<World>::Iterator it = fork3->Find(t3_);
-       it != fork3->End();
+       it != fork3->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -396,13 +390,13 @@ TEST_F(DiscreteTrajectoryTest, NewForkAtLast) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork2->last().time());
+  EXPECT_EQ(q3_, fork2->rbegin().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork2->rbegin().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork2->rbegin().time());
 
   after.clear();
   for (DiscreteTrajectory<World>::Iterator it = fork2->Find(t3_);
-       it != fork2->End();
+       it != fork2->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -417,13 +411,13 @@ TEST_F(DiscreteTrajectoryTest, NewForkAtLast) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork2->last().time());
+  EXPECT_EQ(q3_, fork2->rbegin().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork2->rbegin().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork2->rbegin().time());
 
   after.clear();
   for (DiscreteTrajectory<World>::Iterator it = fork1->Find(t3_);
-       it != fork1->End();
+       it != fork1->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -437,14 +431,14 @@ TEST_F(DiscreteTrajectoryTest, NewForkAtLast) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork3->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork3->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork3->last().time());
+  EXPECT_EQ(q3_, fork3->rbegin().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork3->rbegin().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork3->rbegin().time());
 
   fork2->Append(t4_, d4_);
   after.clear();
   for (DiscreteTrajectory<World>::Iterator it = fork2->Find(t3_);
-       it != fork2->End();
+       it != fork2->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -453,7 +447,7 @@ TEST_F(DiscreteTrajectoryTest, NewForkAtLast) {
   fork3->Append(t4_, d4_);
   after.clear();
   for (DiscreteTrajectory<World>::Iterator it = fork3->Find(t3_);
-       it != fork3->End();
+       it != fork3->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -461,7 +455,7 @@ TEST_F(DiscreteTrajectoryTest, NewForkAtLast) {
 
   after.clear();
   for (DiscreteTrajectory<World>::Iterator it = fork3->Find(t2_);
-       it != fork3->End();
+       it != fork3->end();
        ++it) {
     after.push_back(it.time());
   }
@@ -596,9 +590,9 @@ TEST_F(DiscreteTrajectoryTest, ForgetAfter) {
   EXPECT_THAT(positions, ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_)));
   EXPECT_THAT(velocities, ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_));
-  EXPECT_EQ(q2_, fork->last().degrees_of_freedom().position());
-  EXPECT_EQ(p2_, fork->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t2_, fork->last().time());
+  EXPECT_EQ(q2_, fork->rbegin().degrees_of_freedom().position());
+  EXPECT_EQ(p2_, fork->rbegin().degrees_of_freedom().velocity());
+  EXPECT_EQ(t2_, fork->rbegin().time());
 
   positions = Positions(*massive_trajectory_);
   velocities = Velocities(*massive_trajectory_);
@@ -779,7 +773,7 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
 
 TEST_F(DiscreteTrajectoryDeathTest, LastError) {
   EXPECT_DEATH({
-    massive_trajectory_->last();
+    massive_trajectory_->rbegin();
   }, "parent_.*non NULL");
 }
 
@@ -787,27 +781,27 @@ TEST_F(DiscreteTrajectoryTest, LastSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  EXPECT_EQ(q3_, massive_trajectory_->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, massive_trajectory_->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, massive_trajectory_->last().time());
+  EXPECT_EQ(q3_, massive_trajectory_->rbegin().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, massive_trajectory_->rbegin().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, massive_trajectory_->rbegin().time());
 }
 
 TEST_F(DiscreteTrajectoryDeathTest, IteratorError) {
   EXPECT_DEATH({
-    DiscreteTrajectory<World>::Iterator it = massive_trajectory_->last();
+    DiscreteTrajectory<World>::Iterator it = massive_trajectory_->rbegin();
   }, "parent_.*non NULL");
 }
 
 TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
-  DiscreteTrajectory<World>::Iterator it = massive_trajectory_->Begin();
-  EXPECT_TRUE(it == massive_trajectory_->End());
+  DiscreteTrajectory<World>::Iterator it = massive_trajectory_->begin();
+  EXPECT_TRUE(it == massive_trajectory_->end());
 
   massless_trajectory_->Append(t1_, d1_);
   massless_trajectory_->Append(t2_, d2_);
   massless_trajectory_->Append(t3_, d3_);
 
-  it = massless_trajectory_->Begin();
-  EXPECT_FALSE(it == massless_trajectory_->End());
+  it = massless_trajectory_->begin();
+  EXPECT_FALSE(it == massless_trajectory_->end());
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(d1_, it.degrees_of_freedom());
   ++it;
@@ -817,14 +811,14 @@ TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
   EXPECT_EQ(t3_, it.time());
   EXPECT_EQ(d3_, it.degrees_of_freedom());
   ++it;
-  EXPECT_TRUE(it == massless_trajectory_->End());
+  EXPECT_TRUE(it == massless_trajectory_->end());
 
   not_null<DiscreteTrajectory<World>*> const fork =
       massless_trajectory_->NewForkWithCopy(t2_);
   fork->Append(t4_, d4_);
 
-  it = fork->Begin();
-  EXPECT_FALSE(it == fork->End());
+  it = fork->begin();
+  EXPECT_FALSE(it == fork->end());
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(d1_, it.degrees_of_freedom());
   ++it;
@@ -837,7 +831,7 @@ TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
   EXPECT_EQ(t4_, it.time());
   EXPECT_EQ(d4_, it.degrees_of_freedom());
   ++it;
-  EXPECT_TRUE(it == fork->End());
+  EXPECT_TRUE(it == fork->end());
 }
 
 TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
@@ -898,9 +892,9 @@ TEST_F(DiscreteTrajectoryTest, Downsampling) {
   EXPECT_THAT(circle.Size(), Eq(1001));
   EXPECT_THAT(downsampled_circle.Size(), Eq(77));
   std::vector<Length> errors;
-  for (auto it = circle.Begin(); it != circle.End(); ++it) {
-    errors.push_back((downsampled_circle.EvaluatePosition(it.time()) -
-                      it.degrees_of_freedom().position()).Norm());
+  for (auto const& [time, degrees_of_freedom] : circle) {
+    errors.push_back((downsampled_circle.EvaluatePosition(time) -
+                      degrees_of_freedom.position()).Norm());
   }
   EXPECT_THAT(errors, Each(Lt(1 * Milli(Metre))));
   EXPECT_THAT(errors, Contains(Gt(9 * Micro(Metre))))
@@ -946,8 +940,8 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   }
   EXPECT_THAT(circle.Size(), Eq(77));
   EXPECT_THAT(deserialized_circle->Size(), Eq(circle.Size()));
-  for (auto it1 = circle.Begin(), it2 = deserialized_circle->Begin();
-       it1 != circle.End();
+  for (auto it1 = circle.begin(), it2 = deserialized_circle->begin();
+       it1 != circle.end();
        ++it1, ++it2) {
     EXPECT_EQ(it1.time(), it2.time());
     EXPECT_EQ(it1.degrees_of_freedom(), it2.degrees_of_freedom());
@@ -977,7 +971,7 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForgetAfter) {
     forgotten_circle.Append(t, dof);
   }
   forgotten_circle.ForgetAfter(t0_ + 5 * Second);
-  t = forgotten_circle.last().time();
+  t = forgotten_circle.rbegin().time();
   for (t += 10 * Milli(Second); t <= t0_ + 10 * Second;
        t += 10 * Milli(Second)) {
     DegreesOfFreedom<World> const dof =
@@ -992,9 +986,9 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForgetAfter) {
   EXPECT_THAT(circle.Size(), Eq(77));
   EXPECT_THAT(forgotten_circle.Size(), Eq(circle.Size()));
   std::vector<Length> errors;
-  for (auto it = forgotten_circle.Begin(); it != forgotten_circle.End(); ++it) {
-    errors.push_back((circle.Find(it.time()).degrees_of_freedom().position() -
-                      it.degrees_of_freedom().position()).Norm());
+  for (auto const [time, degrees_of_freedom] : forgotten_circle) {
+    errors.push_back((circle.Find(time).degrees_of_freedom().position() -
+                      degrees_of_freedom.position()).Norm());
   }
   EXPECT_THAT(errors, Each(Eq(0 * Metre)));
 }
