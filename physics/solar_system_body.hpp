@@ -184,8 +184,7 @@ template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
 SolarSystem<Frame>::MakeAllMassiveBodies() const {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  for (auto const& pair : gravity_model_map_) {
-    serialization::GravityModel::Body const* const body = pair.second;
+  for (auto const& [name, body] : gravity_model_map_) {
     bodies.emplace_back(MakeMassiveBody(*body));
   }
   return bodies;
@@ -395,9 +394,7 @@ SolarSystem<Frame>::MakeHierarchicalSystem() const {
   std::map<std::string,
             not_null<std::unique_ptr<MassiveBody const>>> owned_bodies;
   std::map<std::string, not_null<MassiveBody const*>> unowned_bodies;
-  for (auto const& pair : keplerian_initial_state_map_) {
-    const auto& name = pair.first;
-    serialization::InitialState::Keplerian::Body* const body = pair.second;
+  for (auto const& [name, body] : keplerian_initial_state_map_) {
     CHECK_EQ(body->has_parent(), body->has_elements()) << name;
     if (!body->has_parent()) {
       CHECK(primary.empty()) << name;
@@ -415,9 +412,7 @@ SolarSystem<Frame>::MakeHierarchicalSystem() const {
   std::set<std::string> previous_layer = {primary};
   std::set<std::string> current_layer;
   do {
-    for (auto const& pair : keplerian_initial_state_map_) {
-      const auto& name = pair.first;
-      serialization::InitialState::Keplerian::Body* const body = pair.second;
+    for (auto const& [name, body] : keplerian_initial_state_map_) {
       if (Contains(previous_layer, body->parent())) {
         current_layer.insert(name);
         KeplerianElements<Frame> const elements =
@@ -612,9 +607,7 @@ std::vector<DegreesOfFreedom<Frame>>
 SolarSystem<Frame>::MakeAllDegreesOfFreedom() const {
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   if (!cartesian_initial_state_map_.empty()) {
-    for (auto const& pair : cartesian_initial_state_map_) {
-      serialization::InitialState::Cartesian::Body const* const body =
-          pair.second;
+    for (auto const& [name, body] : cartesian_initial_state_map_) {
       degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
     }
   }
