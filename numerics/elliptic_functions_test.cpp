@@ -104,6 +104,7 @@ TEST_F(EllipticFunctionsTest, Mathematica) {
   }
 }
 
+#if !defined(_DEBUG)
 TEST_F(EllipticFunctionsTest, Monotonicity) {
   for (double const mc : {0.01, 0.1, 0.5}) {
     Angle const k = EllipticK(mc);
@@ -131,6 +132,7 @@ TEST_F(EllipticFunctionsTest, Monotonicity) {
     }
   }
 }
+#endif
 
 }  // namespace numerics
 }  // namespace principia
