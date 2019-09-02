@@ -229,11 +229,8 @@ void Plugin::EndInitialization() {
   for (std::string const& name : solar_system.names()) {
     auto const rotating_body = solar_system.rotating_body(*ephemeris_, name);
     Index const celestial_index = FindOrDie(name_to_index_, name);
-    IndexToOwnedCelestial::iterator it;
-    bool inserted;
-    std::tie(it, inserted) =
-        celestials_.emplace(celestial_index,
-                            std::make_unique<Celestial>(rotating_body));
+    auto const [it, inserted] = celestials_.emplace(
+        celestial_index, std::make_unique<Celestial>(rotating_body));
     CHECK(inserted) << "Body already exists at index " << celestial_index;
     it->second->set_trajectory(ephemeris_->trajectory(rotating_body));
   }
@@ -764,7 +761,8 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
     for (not_null<Part*> const part : pile_up->parts()) {
       not_null<Vessel*> const vessel =
           FindOrDie(part_id_to_vessel_, part->part_id());
-      if (collided_vessels.insert(vessel).second) {
+      if (bool const inserted = collided_vessels.insert(vessel).second;
+          inserted) {
         LOG(WARNING) << "Vessel " << vessel->ShortDebugString()
                      << " collided with a celestial: " << status.ToString();
       }
@@ -1408,19 +1406,14 @@ Plugin::Plugin(
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
 
-void Plugin::InitializeIndices(
-    std::string const& name,
-    Index const celestial_index,
-    std::optional<Index> const& parent_index) {
-  bool inserted;
-  std::tie(std::ignore, inserted) =
-      name_to_index_.emplace(name, celestial_index);
+void Plugin::InitializeIndices(std::string const& name,
+                               Index const celestial_index,
+                               std::optional<Index> const& parent_index) {
+  bool inserted = name_to_index_.emplace(name, celestial_index).second;
   CHECK(inserted) << name;
-  std::tie(std::ignore, inserted) =
-      index_to_name_.emplace(celestial_index, name);
+  inserted = index_to_name_.emplace(celestial_index, name).second;
   CHECK(inserted) << celestial_index;
-  std::tie(std::ignore, inserted) =
-      parents_.emplace(celestial_index, parent_index);
+  inserted = parents_.emplace(celestial_index, parent_index).second;
   CHECK(inserted) << celestial_index;
 }
 
@@ -1470,9 +1463,7 @@ void Plugin::ReadCelestialsFromMessages(
     auto const& body = is_pre_cauchy
                            ? bodies[index++]
                            : bodies[celestial_message.ephemeris_index()];
-    bool inserted;
-    IndexToOwnedCelestial::iterator it;
-    std::tie(it, inserted) = celestials.emplace(
+    auto [it, inserted] = celestials.emplace(
         celestial_message.index(),
         make_not_null_unique<Celestial>(
             dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
@@ -1480,8 +1471,8 @@ void Plugin::ReadCelestialsFromMessages(
     CHECK(inserted) << celestial_message.index();
     it->second->set_trajectory(ephemeris.trajectory(body));
 
-    std::tie(std::ignore, inserted) =
-        name_to_index.emplace(body->name(), celestial_message.index());
+    inserted =
+        name_to_index.emplace(body->name(), celestial_message.index()).second;
     CHECK(inserted) << body->name();
   }
   for (auto const& celestial_message : celestial_messages) {
@@ -1500,10 +1491,8 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
                      std::string const& name,
                      Mass const mass,
                      DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  std::map<PartId, not_null<Vessel*>>::iterator it;
-  bool emplaced;
-  std::tie(it, emplaced) = part_id_to_vessel_.emplace(part_id, vessel);
-  CHECK(emplaced) << NAMED(part_id);
+  auto const [it, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
+  CHECK(inserted) << NAMED(part_id);
   auto deletion_callback = [it, &map = part_id_to_vessel_] {
     map.erase(it);
   };

@@ -109,16 +109,14 @@ SolarSystem<Frame>::SolarSystem(
 
   // Store the data in maps keyed by body name.
   for (auto& body : *gravity_model_.mutable_body()) {
-    bool inserted;
-    std::tie(std::ignore, inserted) =
-        gravity_model_map_.insert(std::make_pair(body.name(), &body));
+    bool const inserted =
+        gravity_model_map_.insert(std::make_pair(body.name(), &body)).second;
     CHECK(inserted) << body.name();
   }
   if (initial_state_.has_cartesian()) {
     for (auto const& body : initial_state_.cartesian().body()) {
-      bool inserted;
-      std::tie(std::ignore, inserted) =
-          cartesian_initial_state_map_.emplace(body.name(), &body);
+      bool const inserted =
+          cartesian_initial_state_map_.emplace(body.name(), &body).second;
       CHECK(inserted) << body.name();
     }
 
@@ -135,9 +133,8 @@ SolarSystem<Frame>::SolarSystem(
     CHECK(it2 == cartesian_initial_state_map_.end()) << it2->first;
   } else {
     for (auto& body : *initial_state_.mutable_keplerian()->mutable_body()) {
-      bool inserted;
-      std::tie(std::ignore, inserted) =
-          keplerian_initial_state_map_.emplace(body.name(), &body);
+      bool const inserted =
+          keplerian_initial_state_map_.emplace(body.name(), &body).second;
       CHECK(inserted) << body.name();
     }
 
