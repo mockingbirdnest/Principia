@@ -726,7 +726,7 @@ TEST_F(PluginDeathTest, InsertUnloadedPartError) {
         guid,
         RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                            satellite_initial_velocity_));
-  }, "emplaced");
+  }, "inserted");
 }
 
 TEST_F(PluginDeathTest, AdvanceTimeError) {
