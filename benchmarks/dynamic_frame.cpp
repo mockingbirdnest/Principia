@@ -98,9 +98,10 @@ ApplyDynamicFrame(
   // Compute the trajectory in the rendering frame.
   DiscreteTrajectory<Rendering> intermediate_trajectory;
   for (auto it = begin; it != end; ++it) {
+    auto const& [time, degrees_of_freedom] = *it;
     intermediate_trajectory.Append(
-        it->time,
-        dynamic_frame->ToThisFrameAtTime(it->time)(it->degrees_of_freedom));
+        time,
+        dynamic_frame->ToThisFrameAtTime(time)(degrees_of_freedom));
   }
 
   // Render the trajectory at current time in |Rendering|.

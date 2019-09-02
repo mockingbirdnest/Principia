@@ -96,16 +96,16 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
   for (auto it = begin; it != end; ++it) {
-    Instant const& t = it->time;
+    auto const& [time, degrees_of_freedom] = *it;
     if (target_) {
       auto const& prediction = target_->vessel->prediction();
-      if (t < prediction.t_min()) {
+      if (time < prediction.t_min()) {
         continue;
-      } else if (t > prediction.t_max()) {
+      } else if (time > prediction.t_max()) {
         break;
       }
     }
-    trajectory->Append(t, BarycentricToPlotting(t)(it->degrees_of_freedom));
+    trajectory->Append(time, BarycentricToPlotting(time)(degrees_of_freedom));
   }
   return trajectory;
 }
@@ -142,14 +142,15 @@ Renderer::RenderPlottingTrajectoryInWorld(
       from_plotting_frame_to_world_at_current_time =
           PlottingToWorld(time, sun_world_position, planetarium_rotation);
   for (auto it = begin; it != end; ++it) {
+    auto const& [time, degrees_of_freedom] = *it;
     DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
-        it->degrees_of_freedom;
+        degrees_of_freedom;
     DegreesOfFreedom<World> const world_degrees_of_freedom = {
         from_plotting_frame_to_world_at_current_time(
             navigation_degrees_of_freedom.position()),
         geometry::Identity<Navigation, World>{}(
             navigation_degrees_of_freedom.velocity())};
-    trajectory->Append(it->time, world_degrees_of_freedom);
+    trajectory->Append(time, world_degrees_of_freedom);
   }
   return trajectory;
 }

@@ -41,14 +41,13 @@ void ComputeApsides(Trajectory<Frame> const& reference,
   Instant const t_min = reference.t_min();
   Instant const t_max = reference.t_max();
   for (auto it = begin; it != end; ++it) {
-    Instant const& time = it->time;
+    auto const& [time, degrees_of_freedom] = *it;
     if (time < t_min) {
       continue;
     }
     if (time > t_max) {
       break;
     }
-    DegreesOfFreedom<Frame> const degrees_of_freedom = it->degrees_of_freedom;
     DegreesOfFreedom<Frame> const body_degrees_of_freedom =
         reference.EvaluateDegreesOfFreedom(time);
     RelativeDegreesOfFreedom<Frame> const relative =
@@ -142,8 +141,7 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
   std::optional<Speed> previous_z_speed;
 
   for (auto it = begin; it != end; ++it) {
-    Instant const time = it->time;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom = it->degrees_of_freedom;
+    auto const& [time, degrees_of_freedom] = *it;
     Length const z =
         (degrees_of_freedom.position() - Frame::origin).coordinates().z;
     Speed const z_speed = degrees_of_freedom.velocity().coordinates().z;
