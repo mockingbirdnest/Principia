@@ -1323,9 +1323,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     if (vessel_message.kept()) {
       plugin->kept_vessels_.insert(vessel.get());
     }
-    auto const inserted =
+    auto const [it, inserted] =
         plugin->vessels_.emplace(vessel_message.guid(), std::move(vessel));
-    CHECK(inserted.second);
+    CHECK(inserted);
   }
 
   for (auto const& [part_id, guid] : message.part_id_to_vessel()) {

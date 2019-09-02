@@ -267,14 +267,13 @@ Ephemeris<Frame>::Ephemeris(
     unowned_bodies_.emplace_back(body.get());
     unowned_bodies_indices_.emplace(body.get(), i);
 
-    auto const inserted = bodies_to_trajectories_.emplace(
-                              body.get(),
-                              std::make_unique<ContinuousTrajectory<Frame>>(
-                                  fixed_step_parameters_.step_,
-                                  accuracy_parameters_.fitting_tolerance_));
-    CHECK(inserted.second);
-    ContinuousTrajectory<Frame>* const trajectory =
-        inserted.first->second.get();
+    auto const [it, inserted] = bodies_to_trajectories_.emplace(
+        body.get(),
+        std::make_unique<ContinuousTrajectory<Frame>>(
+            fixed_step_parameters_.step_,
+            accuracy_parameters_.fitting_tolerance_));
+    CHECK(inserted);
+    ContinuousTrajectory<Frame>* const trajectory = it->second.get();
     CHECK_OK(trajectory->Append(initial_time, degrees_of_freedom));
 
     if (body->is_oblate()) {
