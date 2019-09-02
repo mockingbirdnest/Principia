@@ -108,8 +108,7 @@ Status ContinuousTrajectory<Frame>::Append(
     q.clear();
     v.clear();
 
-    for (auto const& pair : last_points_) {
-      DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
+    for (auto const& [_, degrees_of_freedom] : last_points_) {
       q.push_back(degrees_of_freedom.position() - Frame::origin);
       v.push_back(degrees_of_freedom.velocity());
     }
@@ -300,9 +299,7 @@ void ContinuousTrajectory<Frame>::WriteToCheckpoint(
   message->set_is_unstable(is_unstable_);
   message->set_degree(degree_);
   message->set_degree_age(degree_age_);
-  for (auto const& pair : last_points_) {
-    Instant const& instant = pair.first;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
+  for (auto const& [instant, degrees_of_freedom] : last_points_) {
     not_null<serialization::ContinuousTrajectory::
                  InstantaneousDegreesOfFreedom*> const
         instantaneous_degrees_of_freedom = message->add_last_point();

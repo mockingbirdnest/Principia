@@ -267,14 +267,13 @@ Ephemeris<Frame>::Ephemeris(
     unowned_bodies_.emplace_back(body.get());
     unowned_bodies_indices_.emplace(body.get(), i);
 
-    auto const inserted = bodies_to_trajectories_.emplace(
-                              body.get(),
-                              std::make_unique<ContinuousTrajectory<Frame>>(
-                                  fixed_step_parameters_.step_,
-                                  accuracy_parameters_.fitting_tolerance_));
-    CHECK(inserted.second);
-    ContinuousTrajectory<Frame>* const trajectory =
-        inserted.first->second.get();
+    auto const [it, inserted] = bodies_to_trajectories_.emplace(
+        body.get(),
+        std::make_unique<ContinuousTrajectory<Frame>>(
+            fixed_step_parameters_.step_,
+            accuracy_parameters_.fitting_tolerance_));
+    CHECK(inserted);
+    ContinuousTrajectory<Frame>* const trajectory = it->second.get();
     CHECK_OK(trajectory->Append(initial_time, degrees_of_freedom));
 
     if (body->is_oblate()) {
@@ -322,8 +321,7 @@ not_null<ContinuousTrajectory<Frame> const*> Ephemeris<Frame>::trajectory(
 
 template<typename Frame>
 bool Ephemeris<Frame>::empty() const {
-  for (auto const& pair : bodies_to_trajectories_) {
-    auto const& trajectory = pair.second;
+  for (auto const& [_, trajectory] : bodies_to_trajectories_) {
     if (trajectory->empty()) {
       return true;
     }
@@ -340,8 +338,7 @@ Instant Ephemeris<Frame>::t_min() const {
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
   Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
-  for (auto const& pair : bodies_to_trajectories_) {
-    auto const& trajectory = pair.second;
+  for (auto const& [_, trajectory] : bodies_to_trajectories_) {
     t_max = std::min(t_max, trajectory->t_max());
   }
   return t_max;
@@ -364,9 +361,8 @@ template<typename Frame>
 bool Ephemeris<Frame>::EventuallyForgetBefore(Instant const& t) {
   auto forget_before_t = [this, t]() {
     absl::MutexLock l(&lock_);
-    for (auto& pair : bodies_to_trajectories_) {
-      ContinuousTrajectory<Frame>& trajectory = *pair.second;
-      trajectory.ForgetBefore(t);
+    for (auto& [_, trajectory] : bodies_to_trajectories_) {
+      trajectory->ForgetBefore(t);
     }
     checkpointer_->ForgetBefore(t);
   };
@@ -943,8 +939,7 @@ template<typename Frame>
 Instant Ephemeris<Frame>::t_min_locked() const {
   lock_.AssertReaderHeld();
   Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
-  for (auto const& pair : bodies_to_trajectories_) {
-    auto const& trajectory = pair.second;
+  for (auto const& [_, trajectory] : bodies_to_trajectories_) {
     t_min = std::max(t_min, trajectory->t_min());
   }
   return t_min;

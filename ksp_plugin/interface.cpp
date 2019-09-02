@@ -180,8 +180,8 @@ serialization::OblateBody::Geopotential MakeGeopotential(
   }
 
   serialization::OblateBody::Geopotential result;
-  for (auto const& pair : rows) {
-    *result.add_row() = pair.second;
+  for (auto const& [_, row] : rows) {
+    *result.add_row() = row;
   }
   return result;
 }

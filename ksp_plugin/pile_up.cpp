@@ -97,10 +97,8 @@ std::list<not_null<Part*>> const& PileUp::parts() const {
 void PileUp::SetPartApparentDegreesOfFreedom(
     not_null<Part*> const part,
     DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom) {
-  PartTo<DegreesOfFreedom<ApparentBubble>>::iterator it;
-  bool inserted;
-  std::tie(it, inserted) =
-      apparent_part_degrees_of_freedom_.emplace(part, degrees_of_freedom);
+  bool const inserted = apparent_part_degrees_of_freedom_.emplace(
+      part, degrees_of_freedom).second;
   CHECK(inserted) << "Duplicate part " << part->ShortDebugString() << " at "
                   << degrees_of_freedom;
 }
@@ -142,15 +140,13 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   history_->WriteToMessage(message->mutable_history(),
                            /*forks=*/{psychohistory_});
-  for (auto const& pair : actual_part_degrees_of_freedom_) {
-    auto const part = pair.first;
-    auto const& degrees_of_freedom = pair.second;
+  for (auto const& [part, degrees_of_freedom] :
+       actual_part_degrees_of_freedom_) {
     degrees_of_freedom.WriteToMessage(&(
         (*message->mutable_actual_part_degrees_of_freedom())[part->part_id()]));
   }
-  for (auto const& pair : apparent_part_degrees_of_freedom_) {
-    auto const part = pair.first;
-    auto const& degrees_of_freedom = pair.second;
+  for (auto const& [part, degrees_of_freedom] :
+       apparent_part_degrees_of_freedom_) {
     degrees_of_freedom.WriteToMessage(&(
         (*message
               ->mutable_apparent_part_degrees_of_freedom())[part->part_id()]));
@@ -234,16 +230,14 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   pile_up->mass_ = Mass::ReadFromMessage(message.mass());
   pile_up->intrinsic_force_ =
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force());
-  for (auto const& pair : message.actual_part_degrees_of_freedom()) {
-    std::uint32_t const part_id = pair.first;
-    serialization::Pair const& degrees_of_freedom = pair.second;
+  for (auto const& [part_id, degrees_of_freedom] :
+       message.actual_part_degrees_of_freedom()) {
     pile_up->actual_part_degrees_of_freedom_.emplace(
         part_id_to_part(part_id),
         DegreesOfFreedom<RigidPileUp>::ReadFromMessage(degrees_of_freedom));
   }
-  for (auto const& pair : message.apparent_part_degrees_of_freedom()) {
-    std::uint32_t const part_id = pair.first;
-    serialization::Pair const& degrees_of_freedom = pair.second;
+  for (auto const& [part_id, degrees_of_freedom] :
+       message.apparent_part_degrees_of_freedom()) {
     pile_up->apparent_part_degrees_of_freedom_.emplace(
         part_id_to_part(part_id),
         DegreesOfFreedom<ApparentBubble>::ReadFromMessage(degrees_of_freedom));
@@ -285,9 +279,8 @@ void PileUp::DeformPileUpIfNeeded() {
 
   // Compute the apparent centre of mass of the parts.
   BarycentreCalculator<DegreesOfFreedom<ApparentBubble>, Mass> calculator;
-  for (auto const& pair : apparent_part_degrees_of_freedom_) {
-    auto const part = pair.first;
-    auto const& apparent_part_degrees_of_freedom = pair.second;
+  for (auto const& [part, apparent_part_degrees_of_freedom] :
+       apparent_part_degrees_of_freedom_) {
     calculator.Add(apparent_part_degrees_of_freedom, part->mass());
   }
   auto const apparent_centre_of_mass = calculator.Get();
@@ -307,9 +300,8 @@ void PileUp::DeformPileUpIfNeeded() {
 
   // Now update the positions of the parts in the pile-up frame.
   actual_part_degrees_of_freedom_.clear();
-  for (auto const& pair : apparent_part_degrees_of_freedom_) {
-    auto const part = pair.first;
-    auto const& apparent_part_degrees_of_freedom = pair.second;
+  for (auto const& [part, apparent_part_degrees_of_freedom] :
+       apparent_part_degrees_of_freedom_) {
     actual_part_degrees_of_freedom_.emplace(
         part,
         apparent_bubble_to_pile_up_motion(apparent_part_degrees_of_freedom));

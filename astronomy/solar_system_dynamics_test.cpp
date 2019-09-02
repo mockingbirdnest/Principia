@@ -669,9 +669,7 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
 
   std::map<std::string, std::vector<RelativeDegreesOfFreedom<ICRS>>>
       name_to_errors;
-  for (auto const& pair : name_to_degrees_of_freedom) {
-    auto const& name = pair.first;
-    auto const& degrees_of_freedom = pair.second;
+  for (auto const& [name, degrees_of_freedom] : name_to_degrees_of_freedom) {
     CHECK_EQ(degrees_of_freedom.size(), iterations());
     for (int i = 1; i < iterations(); ++i) {
       name_to_errors[name].emplace_back(degrees_of_freedom[i] -
@@ -686,9 +684,7 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
   std::vector<std::string> worst_body(iterations() - 1);
   MathematicaEntries mathematica_entries;
   for (int i = 0; i < iterations() - 1; ++i) {
-    for (auto const& pair : name_to_errors) {
-      auto const& name = pair.first;
-      auto const& errors = pair.second;
+    for (auto const& [name, errors] : name_to_errors) {
       if (position_errors[i] < errors[i].displacement().Norm()) {
         worst_body[i] = name;
       }
