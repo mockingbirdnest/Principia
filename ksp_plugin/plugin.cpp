@@ -478,6 +478,10 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
 
 void Plugin::PrepareToReportCollisions() {
   for (auto const& [guid, vessel] : vessels_) {
+    // NOTE(egg): The lifetime requirement on the second argument of
+    // |MakeSingleton| (which forwards to the argument of the constructor of
+    // |Subset<Part>::Properties|) is that |part| outlives the constructed
+    // |Properties|; since these are owned by |part|, this is true.
     vessel->ForAllParts(
         [](Part& part) { Subset<Part>::MakeSingleton(part, &part); });
   }

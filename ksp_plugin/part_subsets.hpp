@@ -35,6 +35,7 @@ class Subset<ksp_plugin::Part>::Properties final {
   using PileUps = std::list<ksp_plugin::PileUp*>;
 
  public:
+  // |*part| must outlive the constructed object.
   explicit Properties(not_null<ksp_plugin::Part*> part);
 
   // If |*this| and |other| are subsets of different |PileUp|s, or one is a
