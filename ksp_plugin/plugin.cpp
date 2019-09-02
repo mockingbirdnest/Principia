@@ -477,7 +477,7 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
 }
 
 void Plugin::PrepareToReportCollisions() {
-  for (auto const& [guid, vessel] : vessels_) {
+  for (auto const& [_, vessel] : vessels_) {
     // NOTE(egg): The lifetime requirement on the second argument of
     // |MakeSingleton| (which forwards to the argument of the constructor of
     // |Subset<Part>::Properties|) is that |part| outlives the constructed
@@ -542,7 +542,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
   // Bind the vessels.  This guarantees that all part subsets are disjoint
   // unions of vessels.
-  for (auto const& [guid, vessel] : vessels_) {
+  for (auto const& [_, vessel] : vessels_) {
     vessel->ForSomePart([&vessel](Part& first_part) {
       vessel->ForAllParts([&first_part](Part& part) {
         Subset<Part>::Unite(Subset<Part>::Find(first_part),
@@ -559,7 +559,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     // vessel destroys its parts, which invalidates the intrusive |Subset| data
     // structure.
     VesselSet grounded_vessels;
-    for (auto const& [guid, vessel] : vessels_) {
+    for (auto const& [_, vessel] : vessels_) {
       vessel->ForSomePart([&vessel, &grounded_vessels](Part& part) {
         if (Subset<Part>::Find(part).properties().grounded()) {
           grounded_vessels.insert(vessel.get());
@@ -576,7 +576,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
   // We only need to collect one part per vessel, since the other parts are in
   // the same subset.
-  for (auto const& [guid, vessel] : vessels_) {
+  for (auto const& [_, vessel] : vessels_) {
     Instant const vessel_time =
         is_loaded(vessel.get()) ? current_time_ - Δt : current_time_;
     vessel->ForSomePart([&vessel_time, this](Part& first_part) {
@@ -719,7 +719,7 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
   }
 
   // Update the vessels.
-  for (auto const& [guid, vessel] : vessels_) {
+  for (auto const& [_, vessel] : vessels_) {
     if (vessel->psychohistory().last().time() < current_time_) {
       if (Contains(collided_vessels, vessel.get())) {
         vessel->DisableDownsampling();
@@ -778,7 +778,7 @@ void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   CHECK(!initializing_);
   CHECK_LT(t, current_time_);
   ephemeris_->EventuallyForgetBefore(t);
-  for (auto const& [guid, vessel] : vessels_) {
+  for (auto const& [_, vessel] : vessels_) {
     vessel->ForgetBefore(t);
   }
 }

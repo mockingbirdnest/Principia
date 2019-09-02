@@ -155,7 +155,7 @@ void Vessel::FreeParts() {
 }
 
 void Vessel::ClearAllIntrinsicForces() {
-  for (auto const& [part_id, part] : parts_) {
+  for (auto const& [_, part] : parts_) {
     part->clear_intrinsic_force();
   }
 }
@@ -191,7 +191,7 @@ void Vessel::ForSomePart(std::function<void(Part&)> action) const {
 }
 
 void Vessel::ForAllParts(std::function<void(Part&)> action) const {
-  for (auto const& [part_id, part] : parts_) {
+  for (auto const& [_, part] : parts_) {
     action(*part);
   }
 }
@@ -251,7 +251,7 @@ void Vessel::AdvanceTime() {
     }
   }
 
-  for (auto const& [part_id, part] : parts_) {
+  for (auto const& [_, part] : parts_) {
     part->ClearHistory();
   }
 }
@@ -340,7 +340,7 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   body_.WriteToMessage(message->mutable_body());
   prediction_adaptive_step_parameters_.WriteToMessage(
       message->mutable_prediction_adaptive_step_parameters());
-  for (auto const& [part_id, part] : parts_) {
+  for (auto const& [_, part] : parts_) {
     part->WriteToMessage(message->add_parts(), serialization_index_for_pile_up);
   }
   for (auto const& part_id : kept_parts_) {
@@ -550,7 +550,7 @@ void Vessel::AppendToVesselTrajectory(
   std::vector<DiscreteTrajectory<Barycentric>::Iterator> ends;
   its.reserve(parts_.size());
   ends.reserve(parts_.size());
-  for (auto const& [part_id, part] : parts_) {
+  for (auto const& [_, part] : parts_) {
     its.push_back((*part.*part_trajectory_begin)());
     ends.push_back((*part.*part_trajectory_end)());
   }
@@ -565,7 +565,7 @@ void Vessel::AppendToVesselTrajectory(
     // Loop over the parts at a given time.
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     int i = 0;
-    for (auto const& [part_id, part] : parts_) {
+    for (auto const& [_, part] : parts_) {
       auto& it = its[i];
       CHECK_EQ(at_end_of_part_trajectory, it == ends[i]);
       if (!at_end_of_part_trajectory) {

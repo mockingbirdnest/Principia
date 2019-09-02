@@ -181,7 +181,7 @@ template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
 SolarSystem<Frame>::MakeAllMassiveBodies() const {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  for (auto const& [name, body] : gravity_model_map_) {
+  for (auto const& [_, body] : gravity_model_map_) {
     bodies.emplace_back(MakeMassiveBody(*body));
   }
   return bodies;
@@ -604,7 +604,7 @@ std::vector<DegreesOfFreedom<Frame>>
 SolarSystem<Frame>::MakeAllDegreesOfFreedom() const {
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   if (!cartesian_initial_state_map_.empty()) {
-    for (auto const& [name, body] : cartesian_initial_state_map_) {
+    for (auto const& [_, body] : cartesian_initial_state_map_) {
       degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
     }
   }

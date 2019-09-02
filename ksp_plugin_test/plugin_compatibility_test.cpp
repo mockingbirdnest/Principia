@@ -49,7 +49,7 @@ class TestablePlugin : public Plugin {
 };
 
 void TestablePlugin::KeepAllVessels() {
-  for (auto const& [guid, vessel] : vessels_) {
+  for (auto const& [_, vessel] : vessels_) {
     kept_vessels_.insert(vessel.get());
   }
 }

@@ -180,7 +180,7 @@ serialization::OblateBody::Geopotential MakeGeopotential(
   }
 
   serialization::OblateBody::Geopotential result;
-  for (auto const& [degree, row] : rows) {
+  for (auto const& [_, row] : rows) {
     *result.add_row() = row;
   }
   return result;

@@ -360,7 +360,7 @@ void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
   // |begin()| are referencing a point that will soon be removed from the
   // timeline.  They must now point at |end()| to indicate that their fork time
   // is not in |fork|'s timeline.
-  for (auto const& [fork_time, child] : fork->children_) {
+  for (auto const& [_, child] : fork->children_) {
     if (child->position_in_parent_timeline_ == fork_timeline_begin) {
       child->position_in_parent_timeline_ = fork_timeline_end;
     }
@@ -389,7 +389,7 @@ Forkable<Tr4jectory, It3rator>::DetachForkWithCopiedBegin() {
   // The children whose |position_in_parent_timeline_| was at |end()| are those
   // whose fork time was not in this object's timeline.  The caller must have
   // ensured that now it is, so point them to the beginning of this timeline.
-  for (auto const& [fork_time, child] : children_) {
+  for (auto const& [_, child] : children_) {
     if (child->position_in_parent_timeline_ == timeline_end()) {
       child->position_in_parent_timeline_ = timeline_begin();
     }
