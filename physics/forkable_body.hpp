@@ -192,11 +192,13 @@ It3rator Forkable<Tr4jectory, It3rator>::end() const {
 
 template<typename Tr4jectory, typename It3rator>
 typename It3rator::reference Forkable<Tr4jectory, It3rator>::front() const {
+  // TODO(phl): This can be implemented more efficiently.
   return *begin();
 }
 
 template<typename Tr4jectory, typename It3rator>
 typename It3rator::reference Forkable<Tr4jectory, It3rator>::back() const {
+  // TODO(phl): This can be implemented more efficiently.
   return *--end();
 }
 

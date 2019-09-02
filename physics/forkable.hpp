@@ -135,7 +135,6 @@ class Forkable {
   It3rator begin() const;
   It3rator end() const;
 
-  //TODO(phl):Test this
   typename It3rator::reference front() const;
   typename It3rator::reference back() const;
 
