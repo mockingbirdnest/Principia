@@ -32,7 +32,9 @@ class FakeTrajectoryIterator
     : public ForkableIterator<FakeTrajectory, FakeTrajectoryIterator> {
  public:
   using ForkableIterator<FakeTrajectory, FakeTrajectoryIterator>::current;
-  using reference = std::list<Instant>::reference;
+  using reference = Instant const&;
+
+  reference operator*() const;
 
  protected:
   not_null<FakeTrajectoryIterator*> that() override;
@@ -81,6 +83,10 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 Instant const& ForkableTraits<FakeTrajectory>::time(
     TimelineConstIterator const it) {
   return *it;
+}
+
+FakeTrajectoryIterator::reference FakeTrajectoryIterator::operator*() const {
+  return *current();
 }
 
 not_null<FakeTrajectoryIterator*> FakeTrajectoryIterator::that() {
@@ -724,6 +730,29 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   fork2->push_back(t5_);
   it = fork2->LowerBound(t4_ - 1 * Second);
   EXPECT_EQ(t5_, *it.current());
+}
+
+TEST_F(ForkableTest, FrontBack) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+
+  EXPECT_EQ(t1_, trajectory_.front());
+  EXPECT_EQ(t3_, trajectory_.back());
+
+  not_null<FakeTrajectory*> const fork1 =
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
+  fork1->push_back(t4_);
+
+  EXPECT_EQ(t1_, fork1->front());
+  EXPECT_EQ(t4_, fork1->back());
+
+  not_null<FakeTrajectory*> const fork2 =
+      fork1->NewFork(fork1->timeline_find(t2_));
+  fork2->push_back(t5_);
+
+  EXPECT_EQ(t1_, fork2->front());
+  EXPECT_EQ(t5_, fork2->back());
 }
 
 }  // namespace internal_forkable
