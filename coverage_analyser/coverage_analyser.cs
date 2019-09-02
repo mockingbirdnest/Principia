@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
 using Microsoft.VisualStudio.Coverage.Analysis;
 
 namespace principia {
@@ -49,23 +46,18 @@ class CoverageAnalyser {
           Regex ignored_files_regex = new Regex(
               @"((_test\.cpp|" + @"\.generated\.cc|" + @"\.generated\.h|" +
               @"\.pb\.h|" + @"\.pb\.cc)$|" + @"\\mock_)");
-          var covered = new Dictionary<CodeLine, Dictionary<UInt32, bool>>();
+          var covered = new Dictionary<CodeLine, Dictionary<uint, bool>>();
 
-          byte[] coverageBuffer = module.GetCoverageBuffer(null);
+          byte[] coverage_buffer = module.GetCoverageBuffer(null);
           using(ISymbolReader reader = module.Symbols.CreateReader()) {
-            uint methodId;
-            string methodName;
-            string undecoratedMethodName;
-            string className;
-            string namespaceName;
-            
             for (;;) {
+              string method_name;
               try {
-                if (!reader.GetNextMethod(out methodId,
-                                          out methodName,
-                                          out undecoratedMethodName,
-                                          out className,
-                                          out namespaceName,
+                if (!reader.GetNextMethod(out uint method_id,
+                                          out method_name,
+                                          out string undecorated_method_name,
+                                          out string class_name,
+                                          out string namespace_name,
                                           lines)) {
                   break;
                 }
@@ -73,14 +65,14 @@ class CoverageAnalyser {
                 Console.WriteLine(e.ToString());
                 continue;
               }
-              if (regex.Match(methodName).Success) {
+              if (regex.Match(method_name).Success) {
                 foreach (var line in lines) {
                   if (!ignored_files_regex.Match(line.SourceFile).Success) {
                     CoverageStatistics stats = CoverageInfo.GetMethodStatistics(
-                        coverageBuffer, new List<BlockLineRange>{line});
+                        coverage_buffer, new List<BlockLineRange>{line});
                     if (line.StartLine != line.EndLine ||
                         stats.LinesCovered + stats.LinesNotCovered != 1) {
-                      Console.WriteLine("in " + methodName);
+                      Console.WriteLine("in " + method_name);
                       Console.WriteLine(line.SourceFile + ":" + line.StartLine +
                                         "-" + line.EndLine);
                       Console.WriteLine(stats.LinesCovered + "," +
@@ -91,7 +83,7 @@ class CoverageAnalyser {
                     var code_line = new CodeLine{file = line.SourceFile,
                                                  line_number = line.StartLine};
                     if (!covered.ContainsKey(code_line)) {
-                      covered.Add(code_line, new Dictionary<UInt32, bool>());
+                      covered.Add(code_line, new Dictionary<uint, bool>());
                     }
                     if (covered[code_line].ContainsKey(line.BlockIndex)) {
                       covered[code_line][line.BlockIndex] |= block_is_covered;
@@ -163,9 +155,7 @@ class CoverageAnalyser {
   }
 
   private static string ValueAndPercentage(Int64 value, Int64 total) {
-    return String.Format("{0,10} ({1,8:P2})",
-                         value,
-                         (double)value / (double)total);
+    return $"{value,10} ({(double)value / (double)total,8:P2})";
   }
 
   private static void CommaSeparatedAppend(ref string csv, string value) {
