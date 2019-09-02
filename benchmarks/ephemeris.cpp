@@ -228,13 +228,13 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
                      *ephemeris,
                      SolarSystemFactory::name(SolarSystemFactory::Sun)).
                          EvaluatePosition(final_time) -
-                 trajectory.rbegin().degrees_of_freedom().position()).
+                 trajectory.back().degrees_of_freedom.position()).
                      Norm();
     earth_error = (at_спутник_1_launch->trajectory(
                        *ephemeris,
                        SolarSystemFactory::name(SolarSystemFactory::Earth)).
                            EvaluatePosition(final_time) -
-                   trajectory.rbegin().degrees_of_freedom().position()).
+                   trajectory.back().degrees_of_freedom.position()).
                        Norm();
     steps = trajectory.Size();
     state.ResumeTiming();
@@ -298,13 +298,13 @@ void BM_EphemerisTranslunarSpaceProbe(benchmark::State& state) {
                      *ephemeris,
                      SolarSystemFactory::name(SolarSystemFactory::Sun)).
                          EvaluatePosition(final_time) -
-                 trajectory.rbegin().degrees_of_freedom().position()).
+                 trajectory.back().degrees_of_freedom.position()).
                      Norm();
     earth_error = (at_спутник_1_launch->trajectory(
                        *ephemeris,
                        SolarSystemFactory::name(SolarSystemFactory::Earth)).
                            EvaluatePosition(final_time) -
-                   trajectory.rbegin().degrees_of_freedom().position()).
+                   trajectory.back().degrees_of_freedom.position()).
                        Norm();
     steps = trajectory.Size();
     state.ResumeTiming();
@@ -392,7 +392,7 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
     Length const earth_distance =
         (at_спутник_1_launch->trajectory(*ephemeris, earth_name).
              EvaluatePosition(final_time) -
-         trajectory.rbegin().degrees_of_freedom().position()).Norm();
+         trajectory.back().degrees_of_freedom.position()).Norm();
     ss << earth_distance << " ";
   }
   state.SetLabel(ss.str());
@@ -486,13 +486,13 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
              *ephemeris,
              SolarSystemFactory::name(
                  SolarSystemFactory::Sun)).EvaluatePosition(final_time) -
-         trajectory->rbegin().degrees_of_freedom().position()).Norm();
+         trajectory->back().degrees_of_freedom.position()).Norm();
     earth_error =
         (at_спутник_1_launch->trajectory(
              *ephemeris,
              SolarSystemFactory::name(
                  SolarSystemFactory::Earth)).EvaluatePosition(final_time) -
-         trajectory->rbegin().degrees_of_freedom().position()).Norm();
+         trajectory->back().degrees_of_freedom.position()).Norm();
     steps = trajectory->Size();
     state.ResumeTiming();
   }

@@ -46,7 +46,13 @@ class DiscreteTrajectoryIterator
   Instant const& time() const;
   DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
 
-  std::pair<Instant const, DegreesOfFreedom<Frame>> const& operator*() const;
+  struct reference {
+    Instant const& time;
+    DegreesOfFreedom<Frame> const& degrees_of_freedom;
+  };
+
+  reference operator*() const;
+  std::optional<reference> operator->() const;
 
  protected:
   not_null<DiscreteTrajectoryIterator*> that() override;

@@ -231,7 +231,7 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   immobile_reference.Append(coast.begin().time(),
                             {reference_position, Velocity<Navigation>{}});
   if (coast.Size() > 1) {
-    immobile_reference.Append(coast.rbegin().time(),
+    immobile_reference.Append(coast.back().time,
                               {reference_position, Velocity<Navigation>{}});
   }
   DiscreteTrajectory<Navigation> apoapsides;
@@ -246,12 +246,12 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
     bool const begin_is_nearest =
         (coast.begin().degrees_of_freedom().position() -
          reference_position).Norm²() <
-        (coast.rbegin().degrees_of_freedom().position() -
+        (coast.back().degrees_of_freedom.position() -
          reference_position).Norm²();
     *world_body_centred_nearest_degrees_of_freedom =
         ToQP(to_world_body_centred_inertial(
             begin_is_nearest ? coast.begin().degrees_of_freedom()
-                             : coast.rbegin().degrees_of_freedom()));
+                             : coast.back().degrees_of_freedom));
   } else {
     *world_body_centred_nearest_degrees_of_freedom =
         ToQP(to_world_body_centred_inertial(

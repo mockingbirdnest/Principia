@@ -199,8 +199,8 @@ TEST_F(FlightPlanTest, Singular) {
                 Velocity<Barycentric>()});
   flight_plan_ = std::make_unique<FlightPlan>(
       /*initial_mass=*/1 * Kilogram,
-      /*initial_time=*/root_.rbegin().time(),
-      /*initial_degrees_of_freedom=*/root_.rbegin().degrees_of_freedom(),
+      /*initial_time=*/root_.back().time,
+      /*initial_degrees_of_freedom=*/root_.back().degrees_of_freedom,
       /*final_time=*/singularity + 100 * Second,
       ephemeris_.get(),
       Ephemeris<Barycentric>::AdaptiveStepParameters(

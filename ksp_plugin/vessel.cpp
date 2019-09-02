@@ -74,8 +74,8 @@ Vessel::~Vessel() {
       absl::MutexLock l(&prognosticator_lock_);
       prognosticator_parameters_ =
           PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
-                                   psychohistory_->rbegin().time(),
-                                   psychohistory_->rbegin().degrees_of_freedom(),
+                                   psychohistory_->back().time,
+                                   psychohistory_->back().degrees_of_freedom,
                                    prediction_adaptive_step_parameters_,
                                    /*shutdown=*/true};
     }
@@ -262,7 +262,7 @@ void Vessel::ForgetBefore(Instant const& time) {
   // Make sure that the history keeps at least one point and don't change the
   // psychohistory or prediction.  We cannot use the parts because they may have
   // been moved to the future already.
-  history_->ForgetBefore(std::min(time, history_->rbegin().time()));
+  history_->ForgetBefore(std::min(time, history_->back().time));
   if (flight_plan_ != nullptr) {
     flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });
   }
@@ -275,11 +275,11 @@ void Vessel::CreateFlightPlan(
         flight_plan_adaptive_step_parameters,
     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
         flight_plan_generalized_adaptive_step_parameters) {
-  auto const history_last = history_->rbegin();
+  auto const history_back = history_->back();
   flight_plan_ = std::make_unique<FlightPlan>(
       initial_mass,
-      /*initial_time=*/history_last.time(),
-      /*initial_degrees_of_freedom=*/history_last.degrees_of_freedom(),
+      /*initial_time=*/history_back.time,
+      /*initial_degrees_of_freedom=*/history_back.degrees_of_freedom,
       final_time,
       ephemeris_,
       flight_plan_adaptive_step_parameters,
@@ -305,8 +305,8 @@ void Vessel::RefreshPrediction() {
   // this code might have to change.
   prognosticator_parameters_ =
       PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
-                               psychohistory_->rbegin().time(),
-                               psychohistory_->rbegin().degrees_of_freedom(),
+                               psychohistory_->back().time,
+                               psychohistory_->back().degrees_of_freedom,
                                prediction_adaptive_step_parameters_,
                                /*shutdown=*/false};
   if (synchronous_) {
@@ -396,13 +396,15 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                                          /*forks=*/{});
     // The |history_| has been created by the constructor above.  Reconstruct
     // it from the |psychohistory|.
-    for (auto it = psychohistory->begin(); it != psychohistory->end(); ++it) {
-      if (it == psychohistory->rbegin() &&
+    for (auto it = psychohistory->begin(); it != psychohistory->end();) {
+      auto const& [time, degrees_of_freedom] = *it;
+      ++it;
+      if (it == psychohistory->end() &&
           !message.psychohistory_is_authoritative()) {
         vessel->psychohistory_ = vessel->history_->NewForkAtLast();
-        vessel->psychohistory_->Append(it.time(), it.degrees_of_freedom());
+        vessel->psychohistory_->Append(time, degrees_of_freedom);
       } else {
-        vessel->history_->Append(it.time(), it.degrees_of_freedom());
+        vessel->history_->Append(time, degrees_of_freedom);
       }
     }
     if (message.psychohistory_is_authoritative()) {
@@ -420,7 +422,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         /*forks=*/{&vessel->psychohistory_, &vessel->prediction_});
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.  Doesn't hurt prior to Εὔδοξος.
-    ephemeris->Prolong(vessel->prediction_->rbegin().time());
+    ephemeris->Prolong(vessel->prediction_->back().time);
   }
 
   if (is_pre_陈景润) {
@@ -530,7 +532,7 @@ Status Vessel::FlowPrognostication(
   }
   LOG_IF(INFO, !status.ok())
       << "Prognostication from " << prognosticator_parameters.first_time
-      << " finished at " << prognostication->rbegin().time() << " with "
+      << " finished at " << prognostication->back().time << " with "
       << status.ToString() << " for " << ShortDebugString();
   return status;
 }
@@ -594,7 +596,7 @@ void Vessel::AppendToVesselTrajectory(
 
 void Vessel::AttachPrediction(
     not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory) {
-  trajectory->ForgetBefore(psychohistory_->rbegin().time());
+  trajectory->ForgetBefore(psychohistory_->back().time);
   if (trajectory->Empty()) {
     prediction_ = psychohistory_->NewForkAtLast();
   } else {

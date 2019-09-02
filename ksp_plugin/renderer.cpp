@@ -193,19 +193,18 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const last = vessel.psychohistory().rbegin();
-  Instant const& time = last.time();
+  auto const back = vessel.psychohistory().back();
   DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
-      last.degrees_of_freedom();
+      back.degrees_of_freedom;
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
-      BarycentricToPlotting(time)(barycentric_degrees_of_freedom);
+      BarycentricToPlotting(back.time)(barycentric_degrees_of_freedom);
   Rotation<Frenet<Navigation>, Navigation> const
       frenet_frame_to_plotting_frame =
           GetPlottingFrame()->FrenetFrame(
-              time,
+              back.time,
               plotting_frame_degrees_of_freedom);
 
-  return PlottingToWorld(time, planetarium_rotation) *
+  return PlottingToWorld(back.time, planetarium_rotation) *
          frenet_frame_to_plotting_frame.Forget();
 }
 
@@ -213,13 +212,13 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     NavigationFrame const& navigation_frame,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const last = vessel.psychohistory().rbegin();
-  auto const to_navigation = navigation_frame.ToThisFrameAtTime(last.time());
+  auto const back = vessel.psychohistory().back();
+  auto const to_navigation = navigation_frame.ToThisFrameAtTime(back.time);
   auto const from_navigation = to_navigation.orthogonal_map().Inverse();
   auto const frenet_frame =
       navigation_frame.FrenetFrame(
-          last.time(),
-          to_navigation(last.degrees_of_freedom())).Forget();
+          back.time,
+          to_navigation(back.degrees_of_freedom)).Forget();
   return BarycentricToWorld(planetarium_rotation) * from_navigation *
          frenet_frame;
 }

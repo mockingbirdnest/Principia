@@ -37,9 +37,17 @@ DiscreteTrajectoryIterator<Frame>::degrees_of_freedom() const {
 }
 
 template<typename Frame>
-std::pair<Instant const, DegreesOfFreedom<Frame>> const&
-    DiscreteTrajectoryIterator<Frame>::operator*() const {
-  return *this->current();
+typename DiscreteTrajectoryIterator<Frame>::reference
+DiscreteTrajectoryIterator<Frame>::operator*() const {
+  auto const& it = this->current();
+  return {it->first, it->second};
+}
+
+template<typename Frame>
+std::optional<typename DiscreteTrajectoryIterator<Frame>::reference>
+    DiscreteTrajectoryIterator<Frame>::operator->() const {
+  auto const& it = this->current();
+  return std::make_optional<reference>({it->first, it->second});
 }
 
 template<typename Frame>
@@ -111,7 +119,7 @@ void DiscreteTrajectory<Frame>::AttachFork(
   CHECK(!this->Empty());
 
   auto& fork_timeline = fork->timeline_;
-  auto const this_last = rbegin();
+  auto const this_last = --this->end();
 
   // Determine if |fork| already has a point matching the end of this
   // trajectory.
@@ -119,7 +127,7 @@ void DiscreteTrajectory<Frame>::AttachFork(
   if (fork_timeline.empty()) {
     must_prepend = true;
   } else {
-    CHECK_LE(this_last.time(), fork_timeline.begin()->first);
+    CHECK_LE(this_last->time, fork_timeline.begin()->first);
     auto const it = fork_timeline.find(this_last.time());
     if (it == fork_timeline.end()) {
       must_prepend = true;
@@ -177,7 +185,7 @@ void DiscreteTrajectory<Frame>::Append(
   if (!timeline_.empty() && timeline_.cbegin()->first == time) {
     LOG(WARNING) << "Append at existing time " << time
                  << ", time range = [" << this->begin().time() << ", "
-                 << rbegin().time() << "]";
+                 << back().time << "]";
     return;
   }
   auto it = timeline_.emplace_hint(timeline_.end(),
@@ -191,7 +199,7 @@ void DiscreteTrajectory<Frame>::Append(
     if (timeline_.size() == 1) {
       downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
     } else {
-      this->CheckNoForksBefore(rbegin().time());
+      this->CheckNoForksBefore(back().time);
       downsampling_->increment_dense_intervals(timeline_);
       if (downsampling_->reached_max_dense_intervals()) {
         std::vector<TimelineConstIterator> dense_iterators;
@@ -296,7 +304,7 @@ Instant DiscreteTrajectory<Frame>::t_min() const {
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_max() const {
-  return this->Empty() ? InfinitePast : rbegin().time();
+  return this->Empty() ? InfinitePast : back().time;
 }
 
 template<typename Frame>

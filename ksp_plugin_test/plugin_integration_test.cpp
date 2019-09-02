@@ -738,7 +738,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
     }
   }
   EXPECT_THAT(AbsoluteError(
-                  rendered_prediction->rbegin().degrees_of_freedom().position(),
+                  rendered_prediction->back().degrees_of_freedom.position(),
                   Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
                       World::origin),
               IsNear(29_⑴ * Milli(Metre)));

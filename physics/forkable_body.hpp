@@ -191,8 +191,13 @@ It3rator Forkable<Tr4jectory, It3rator>::end() const {
 }
 
 template<typename Tr4jectory, typename It3rator>
-It3rator Forkable<Tr4jectory, It3rator>::rbegin() const {
-  return --end();
+typename It3rator::reference Forkable<Tr4jectory, It3rator>::front() const {
+  return *begin();
+}
+
+template<typename Tr4jectory, typename It3rator>
+typename It3rator::reference Forkable<Tr4jectory, It3rator>::back() const {
+  return *--end();
 }
 
 template<typename Tr4jectory, typename It3rator>

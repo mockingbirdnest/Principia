@@ -107,7 +107,7 @@ void PileUp::SetPartApparentDegreesOfFreedom(
 
 void PileUp::NudgeParts() const {
   auto const actual_centre_of_mass =
-      psychohistory_->rbegin().degrees_of_freedom();
+      psychohistory_->back().degrees_of_freedom;
 
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
       RigidTransformation<Barycentric, RigidPileUp>{
@@ -126,7 +126,7 @@ void PileUp::NudgeParts() const {
 Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   absl::MutexLock l(lock_.get());
   Status status;
-  if (psychohistory_->rbegin().time() < t) {
+  if (psychohistory_->back().time < t) {
     DeformPileUpIfNeeded();
     status = AdvanceTime(t);
     NudgeParts();
@@ -321,7 +321,7 @@ Status PileUp::AdvanceTime(Instant const& t) {
   CHECK_NOTNULL(psychohistory_);
 
   Status status;
-  auto const history_last = history_->rbegin();
+  auto const history_last = --history_->end();
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
     history_->DeleteFork(psychohistory_);
@@ -331,10 +331,10 @@ Status PileUp::AdvanceTime(Instant const& t) {
           Ephemeris<Barycentric>::NoIntrinsicAccelerations,
           fixed_step_parameters_);
     }
-    CHECK_LT(history_->rbegin().time(), t);
+    CHECK_LT(history_->back().time, t);
     status = ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
     psychohistory_ = history_->NewForkAtLast();
-    if (history_->rbegin().time() < t) {
+    if (history_->back().time < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
       // fixed-step integration.
       status.Update(

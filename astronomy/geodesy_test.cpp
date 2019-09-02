@@ -156,13 +156,13 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
     return flow_lageos2(secondary_lageos2_trajectory);
   });
   bundle.Join();
-  EXPECT_THAT(primary_lageos2_trajectory.rbegin().time(), Eq(final_time));
-  EXPECT_THAT(secondary_lageos2_trajectory.rbegin().time(), Eq(final_time));
+  EXPECT_THAT(primary_lageos2_trajectory.back().time, Eq(final_time));
+  EXPECT_THAT(secondary_lageos2_trajectory.back().time, Eq(final_time));
 
   auto const primary_actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
-      primary_lageos2_trajectory.rbegin().degrees_of_freedom());
+      primary_lageos2_trajectory.back().degrees_of_freedom);
   auto const secondary_actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
-      secondary_lageos2_trajectory.rbegin().degrees_of_freedom());
+      secondary_lageos2_trajectory.back().degrees_of_freedom);
 
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(primary_actual_final_dof.position(),

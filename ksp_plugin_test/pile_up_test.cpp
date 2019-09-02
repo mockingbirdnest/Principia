@@ -110,7 +110,7 @@ class PileUpTest : public testing::Test {
     EXPECT_EQ(3 * Kilogram, pile_up.mass());
 
     EXPECT_THAT(
-        pile_up.psychohistory()->rbegin().degrees_of_freedom(),
+        pile_up.psychohistory()->back().degrees_of_freedom,
         Componentwise(AlmostEquals(Barycentric::origin +
                                        Displacement<Barycentric>(
                                            {13.0 / 3.0 * Metre,
@@ -307,7 +307,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
                                       890.0 / 9.0 * Metre / Second}), 0)));
   EXPECT_EQ(1, pile_up.psychohistory()->Size());
   EXPECT_THAT(
-      pile_up.psychohistory()->rbegin().degrees_of_freedom(),
+      pile_up.psychohistory()->back().degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {1.0 * Metre,
@@ -490,7 +490,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                       140.2 * Metre / Second,
                                       310.2 / 3.0 * Metre / Second}), 0)));
   EXPECT_THAT(
-      pile_up.psychohistory()->rbegin().degrees_of_freedom(),
+      pile_up.psychohistory()->back().degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {1.0 * Metre,

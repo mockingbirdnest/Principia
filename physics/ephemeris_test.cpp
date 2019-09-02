@@ -242,7 +242,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
   EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       Ephemeris<ICRS>::NoIntrinsicAcceleration,
-      trajectory.rbegin().time(),
+      trajectory.back().time,
       Ephemeris<ICRS>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
@@ -488,10 +488,10 @@ TEST_P(EphemerisTest, EarthProbe) {
               AlmostEquals(1.00 * period * v_earth, 633, 635));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
-  Length const q_probe = (trajectory.rbegin().degrees_of_freedom().position() -
+  Length const q_probe = (trajectory.back().degrees_of_freedom.position() -
                           ICRS::origin).coordinates().y;
   Speed const v_probe =
-      trajectory.rbegin().degrees_of_freedom().velocity().coordinates().x;
+      trajectory.back().degrees_of_freedom.velocity().coordinates().x;
   std::vector<Displacement<ICRS>> probe_positions;
   for (auto const& [time, degrees_of_freedom] : trajectory) {
     probe_positions.push_back(degrees_of_freedom.position() - ICRS::origin);
@@ -509,7 +509,7 @@ TEST_P(EphemerisTest, EarthProbe) {
               Eq(q_probe));
 
   Instant const old_t_max = ephemeris.t_max();
-  EXPECT_THAT(trajectory.rbegin().time(), Lt(old_t_max));
+  EXPECT_THAT(trajectory.back().time, Lt(old_t_max));
   EXPECT_THAT(ephemeris.FlowWithAdaptiveStep(
                   &trajectory,
                   intrinsic_acceleration,
@@ -524,7 +524,7 @@ TEST_P(EphemerisTest, EarthProbe) {
                   /*max_ephemeris_steps=*/0),
               StatusIs(Error::DEADLINE_EXCEEDED));
   EXPECT_THAT(ephemeris.t_max(), Eq(old_t_max));
-  EXPECT_THAT(trajectory.rbegin().time(), Eq(old_t_max));
+  EXPECT_THAT(trajectory.back().time, Eq(old_t_max));
 }
 
 // The Earth and two massless probes, similar to the previous test but flowing
@@ -617,15 +617,15 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe1 =
-      (trajectory1.rbegin().degrees_of_freedom().position() -
+      (trajectory1.back().degrees_of_freedom.position() -
        ICRS::origin).coordinates().y;
   Length const q_probe2 =
-      (trajectory2.rbegin().degrees_of_freedom().position() -
+      (trajectory2.back().degrees_of_freedom.position() -
        ICRS::origin).coordinates().y;
   Speed const v_probe1 =
-      trajectory1.rbegin().degrees_of_freedom().velocity().coordinates().x;
+      trajectory1.back().degrees_of_freedom.velocity().coordinates().x;
   Speed const v_probe2 =
-      trajectory2.rbegin().degrees_of_freedom().velocity().coordinates().x;
+      trajectory2.back().degrees_of_freedom.velocity().coordinates().x;
   std::vector<Displacement<ICRS>> probe1_positions;
   std::vector<Displacement<ICRS>> probe2_positions;
   for (auto const& [time, degrees_of_freedom] : trajectory1) {
@@ -752,7 +752,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
       Ephemeris<ICRS>::unlimited_max_ephemeris_steps);
 
   Speed const v_elephant_y =
-      trajectory.rbegin().degrees_of_freedom().velocity().coordinates().y;
+      trajectory.back().degrees_of_freedom.velocity().coordinates().y;
   std::vector<Displacement<ICRS>> elephant_positions;
   std::vector<Vector<Acceleration, ICRS>> elephant_accelerations;
   for (auto const& [time, degrees_of_freedom] : trajectory) {

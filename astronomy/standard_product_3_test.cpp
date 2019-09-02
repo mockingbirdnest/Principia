@@ -387,7 +387,7 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
                 /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
             /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
       DegreesOfFreedom<ICRS> actual =
-          integrated_arc.rbegin().degrees_of_freedom();
+          integrated_arc.back().degrees_of_freedom;
       DegreesOfFreedom<ICRS> expected =
           itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom());
       EXPECT_THAT(AbsoluteError(expected.position(), actual.position()),

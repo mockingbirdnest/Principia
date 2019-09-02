@@ -76,7 +76,7 @@ Instant FlightPlan::initial_time() const {
 }
 
 Instant FlightPlan::actual_final_time() const {
-  return segments_.back()->rbegin().time();
+  return segments_.back()->back().time;
 }
 
 Instant FlightPlan::desired_final_time() const {
@@ -121,7 +121,7 @@ void FlightPlan::ForgetBefore(Instant const& time,
   // we only look at coasts.
   std::optional<int> first_to_keep;
   for (int i = 0; i < segments_.size(); i += 2) {
-    if (time <= segments_[i]->rbegin().time()) {
+    if (time <= segments_[i]->back().time) {
       first_to_keep = i;
       break;
     }

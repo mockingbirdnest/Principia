@@ -52,7 +52,7 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
         "trajectory does not span one sidereal period: sidereal period is " +
             DebugString(orbital_elements.sidereal_period_) +
             ", trajectory spans " +
-            DebugString(trajectory.rbegin().time() -
+            DebugString(trajectory.back().time -
                         trajectory.begin().time()));
   }
   orbital_elements.mean_classical_elements_ =

@@ -32,6 +32,7 @@ class FakeTrajectoryIterator
     : public ForkableIterator<FakeTrajectory, FakeTrajectoryIterator> {
  public:
   using ForkableIterator<FakeTrajectory, FakeTrajectoryIterator>::current;
+  using reference = std::list<Instant>::reference;
 
  protected:
   not_null<FakeTrajectoryIterator*> that() override;

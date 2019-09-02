@@ -278,7 +278,7 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
   auto const rp2_lines =
       planetarium.PlotMethod2(discrete_trajectory->begin(),
                               discrete_trajectory->end(),
-                              discrete_trajectory->rbegin().time(),
+                              discrete_trajectory->back().time,
                               /*reverse=*/false);
 
   EXPECT_EQ(2, rp2_lines.size());

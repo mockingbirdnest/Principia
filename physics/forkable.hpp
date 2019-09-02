@@ -135,8 +135,9 @@ class Forkable {
   It3rator begin() const;
   It3rator end() const;
 
-  It3rator rbegin() const;
-  // TODO(phl): Add rend.
+  //TODO(phl):Test this
+  typename It3rator::reference front() const;
+  typename It3rator::reference back() const;
 
   It3rator Find(Instant const& time) const;
   It3rator LowerBound(Instant const& time) const;

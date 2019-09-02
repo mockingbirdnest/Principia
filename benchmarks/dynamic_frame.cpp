@@ -104,7 +104,7 @@ ApplyDynamicFrame(
   }
 
   // Render the trajectory at current time in |Rendering|.
-  Instant const& current_time = intermediate_trajectory.rbegin().time();
+  Instant const& current_time = intermediate_trajectory.back().time;
   DiscreteTrajectory<Rendering>::Iterator initial_it =
       intermediate_trajectory.begin();
   DiscreteTrajectory<Rendering>::Iterator const intermediate_end =
