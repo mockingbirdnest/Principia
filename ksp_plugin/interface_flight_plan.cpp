@@ -448,7 +448,7 @@ Iterator* principia__FlightPlanRenderedSegment(
           FromXYZ<Position<World>>(sun_world_position),
           plugin->PlanetariumRotation());
   if (index % 2 == 1 && !rendered_trajectory->Empty() &&
-      rendered_trajectory->begin()->time != begin->time) {
+      rendered_trajectory->front().time != begin->time) {
     // TODO(egg): this is ugly; we should centralize rendering.
     // If this is a burn and we cannot render the beginning of the burn, we
     // render none of it, otherwise we try to render the Frenet trihedron at the

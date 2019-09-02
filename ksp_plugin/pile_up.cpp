@@ -205,7 +205,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     // Fork a psychohistory for compatibility if there is a non-authoritative
     // point.
     if (pile_up->history_->Size() == 2) {
-      Instant const history_begin_time = pile_up->history_->begin()->time;
+      Instant const history_begin_time = pile_up->history_->front().time;
       pile_up->psychohistory_ =
           pile_up->history_->NewForkWithCopy(history_begin_time);
       pile_up->history_->ForgetAfter(history_begin_time);

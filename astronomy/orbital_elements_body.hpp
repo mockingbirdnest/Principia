@@ -53,7 +53,7 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
             DebugString(orbital_elements.sidereal_period_) +
             ", trajectory spans " +
             DebugString(trajectory.back().time -
-                        trajectory.begin()->time));
+                        trajectory.front().time));
   }
   orbital_elements.mean_classical_elements_ =
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);

@@ -479,7 +479,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                       890.0 / 9.0 * Metre / Second}), 0)));
   EXPECT_EQ(2, pile_up.psychohistory()->Size());
   EXPECT_THAT(
-      pile_up.psychohistory()->begin()->degrees_of_freedom,
+      pile_up.psychohistory()->front().degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {1.2 * Metre,

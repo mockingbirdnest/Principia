@@ -138,8 +138,8 @@ void FlightPlan::ForgetBefore(Instant const& time,
       segments_[*first_to_keep]->DetachFork();
   new_first_coast->ForgetBefore(time);
   root_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
-  root_->Append(new_first_coast->begin()->time,
-                new_first_coast->begin()->degrees_of_freedom);
+  root_->Append(new_first_coast->front().time,
+                new_first_coast->front().degrees_of_freedom);
   root_->AttachFork(std::move(new_first_coast));
 
   // Remove from the vectors the trajectories and manœuvres that we don't want

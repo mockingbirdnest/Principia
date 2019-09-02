@@ -101,8 +101,8 @@ class FlightPlanTest : public testing::Test {
                                          0 * Metre / Second})});
     flight_plan_ = std::make_unique<FlightPlan>(
         /*initial_mass=*/1 * Kilogram,
-        /*initial_time=*/root_.begin()->time,
-        /*initial_degrees_of_freedom=*/root_.begin()->degrees_of_freedom,
+        /*initial_time=*/root_.front().time,
+        /*initial_degrees_of_freedom=*/root_.front().degrees_of_freedom,
         /*desired_final_time=*/t0_ + 1.5 * Second,
         ephemeris_.get(),
         Ephemeris<Barycentric>::AdaptiveStepParameters(
@@ -184,7 +184,7 @@ TEST_F(FlightPlanTest, Singular) {
   Length const x0 = 1 * Metre;
   Instant const singularity = t0_ + π * Sqrt(Pow<3>(x0 / 2) / μ);
   flight_plan_.reset();
-  root_.ForgetAfter(root_.begin()->time);
+  root_.ForgetAfter(root_.front().time);
   // NOTE(egg): In order for to avoid singular Frenet frames NaNing everything,
   // we offset our test particle by 100 ε.  The resulting system is still
   // extremely stiff, indeed the integrator detects a singularity at the exact

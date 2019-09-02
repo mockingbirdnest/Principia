@@ -173,7 +173,7 @@ void DiscreteTrajectory<Frame>::Append(
 
   if (!timeline_.empty() && timeline_.cbegin()->first == time) {
     LOG(WARNING) << "Append at existing time " << time
-                 << ", time range = [" << this->begin()->time << ", "
+                 << ", time range = [" << this->front().time << ", "
                  << back().time << "]";
     return;
   }
@@ -288,7 +288,7 @@ void DiscreteTrajectory<Frame>::ClearDownsampling() {
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_min() const {
-  return this->Empty() ? InfiniteFuture : this->begin()->time;
+  return this->Empty() ? InfiniteFuture : this->front().time;
 }
 
 template<typename Frame>
