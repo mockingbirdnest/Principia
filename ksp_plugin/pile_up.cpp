@@ -97,8 +97,8 @@ std::list<not_null<Part*>> const& PileUp::parts() const {
 void PileUp::SetPartApparentDegreesOfFreedom(
     not_null<Part*> const part,
     DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom) {
-  bool const inserted =
-      apparent_part_degrees_of_freedom_.emplace(part, degrees_of_freedom);
+  bool const inserted = apparent_part_degrees_of_freedom_.emplace(
+      part, degrees_of_freedom).second;
   CHECK(inserted) << "Duplicate part " << part->ShortDebugString() << " at "
                   << degrees_of_freedom;
 }
