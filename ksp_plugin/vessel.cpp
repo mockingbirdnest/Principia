@@ -550,10 +550,9 @@ void Vessel::AppendToVesselTrajectory(
   std::vector<DiscreteTrajectory<Barycentric>::Iterator> ends;
   its.reserve(parts_.size());
   ends.reserve(parts_.size());
-  for (auto const& pair : parts_) {
-    Part& part = *pair.second;
-    its.push_back((part.*part_trajectory_begin)());
-    ends.push_back((part.*part_trajectory_end)());
+  for (auto const& [part_id, part] : parts_) {
+    its.push_back((*part.*part_trajectory_begin)());
+    ends.push_back((*part.*part_trajectory_end)());
   }
 
   // Loop over the times of the trajectory.
