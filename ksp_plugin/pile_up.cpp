@@ -205,7 +205,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     // Fork a psychohistory for compatibility if there is a non-authoritative
     // point.
     if (pile_up->history_->Size() == 2) {
-      Instant const history_begin_time = pile_up->history_->begin().time();
+      Instant const history_begin_time = pile_up->history_->begin()->time;
       pile_up->psychohistory_ =
           pile_up->history_->NewForkWithCopy(history_begin_time);
       pile_up->history_->ForgetAfter(history_begin_time);
@@ -355,7 +355,7 @@ Status PileUp::AdvanceTime(Instant const& t) {
     auto const psychohistory_end = psychohistory_->end();
     auto it = psychohistory_->Fork();
     for (++it; it != psychohistory_end; ++it) {
-      history_->Append(it.time(), it.degrees_of_freedom());
+      history_->Append(it->time, it->degrees_of_freedom);
     }
     history_->DeleteFork(psychohistory_);
 
@@ -389,14 +389,14 @@ Status PileUp::AdvanceTime(Instant const& t) {
   for (++it; it != psychohistory_end; ++it) {
     AppendToPart<&Part::AppendToPsychohistory>(it);
   }
-  history_->ForgetBefore(psychohistory_->Fork().time());
+  history_->ForgetBefore(psychohistory_->Fork()->time);
 
   return status;
 }
 
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>
 void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
-  auto const& pile_up_dof = it.degrees_of_freedom();
+  auto const& pile_up_dof = it->degrees_of_freedom;
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up(
       RigidTransformation<Barycentric, RigidPileUp>(
           pile_up_dof.position(),
@@ -407,7 +407,7 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
     (static_cast<Part*>(part)->*append_to_part_trajectory)(
-        it.time(),
+        it->time,
         pile_up_to_barycentric(
             FindOrDie(actual_part_degrees_of_freedom_, part)));
   }

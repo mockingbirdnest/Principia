@@ -1017,11 +1017,11 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   for (auto it1 = apoapsides1.begin(), it2 = apoapsides2.begin();
        it1 != apoapsides1.end() && it2 != apoapsides2.end();
        ++it1, ++it2) {
-    Instant const time = it1.time();
+    Instant const time = it1->time;
     all_times.emplace(time);
     Displacement<ICRS> const displacement =
-        it1.degrees_of_freedom().position() -
-        it2.degrees_of_freedom().position();
+        it1->degrees_of_freedom.position() -
+        it2->degrees_of_freedom.position();
     EXPECT_LT(AbsoluteError(displacement.Norm(), (1 + e) * a),
               1.9e-5 * fitting_tolerance);
     if (previous_time) {
@@ -1035,11 +1035,11 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   for (auto it1 = periapsides1.begin(), it2 = periapsides2.begin();
        it1 != periapsides1.end() && it2 != periapsides2.end();
        ++it1, ++it2) {
-    Instant const time = it1.time();
+    Instant const time = it1->time;
     all_times.emplace(time);
     Displacement<ICRS> const displacement =
-        it1.degrees_of_freedom().position() -
-        it2.degrees_of_freedom().position();
+        it1->degrees_of_freedom.position() -
+        it2->degrees_of_freedom.position();
     EXPECT_LT(AbsoluteError(displacement.Norm(), (1 - e) * a),
               5.3e-3 * fitting_tolerance);
     if (previous_time) {

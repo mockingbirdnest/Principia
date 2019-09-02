@@ -282,7 +282,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
   EXPECT_EQ(++p1_.history_begin(), p1_.history_end());
   EXPECT_EQ(p1_.psychohistory_begin(), p1_.psychohistory_end());
   EXPECT_THAT(
-      p1_.history_begin().degrees_of_freedom(),
+      p1_.history_begin()->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {-25.0 / 9.0 * Metre,
@@ -295,7 +295,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
   EXPECT_EQ(++p2_.history_begin(), p2_.history_end());
   EXPECT_EQ(p2_.psychohistory_begin(), p2_.psychohistory_end());
   EXPECT_THAT(
-      p2_.history_begin().degrees_of_freedom(),
+      p2_.history_begin()->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {26.0 / 9.0 * Metre,
@@ -408,7 +408,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
   EXPECT_EQ(++(++p1_.history_begin()), p1_.history_end());
   EXPECT_EQ(++p1_.psychohistory_begin(), p1_.psychohistory_end());
   EXPECT_THAT(
-      p1_.history_begin().degrees_of_freedom(),
+      p1_.history_begin()->degrees_of_freedom,
       Componentwise(
           AlmostEquals(Barycentric::origin +
                            Displacement<Barycentric>({-24.1 / 9.0 * Metre,
@@ -420,7 +420,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                               1010.3 / 9.0 * Metre / Second}),
                        1)));
   EXPECT_THAT(
-      (++p1_.history_begin()).degrees_of_freedom(),
+      (++p1_.history_begin())->degrees_of_freedom,
       Componentwise(
           AlmostEquals(Barycentric::origin +
                            Displacement<Barycentric>({-23.2 / 9.0 * Metre,
@@ -432,7 +432,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                               1010.6 / 9.0 * Metre / Second}),
                        1)));
   EXPECT_THAT(
-      p1_.psychohistory_begin().degrees_of_freedom(),
+      p1_.psychohistory_begin()->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {-25.0 / 9.0 * Metre,
@@ -445,7 +445,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
   EXPECT_EQ(++(++p2_.history_begin()), p2_.history_end());
   EXPECT_EQ(++p2_.psychohistory_begin(), p2_.psychohistory_end());
   EXPECT_THAT(
-      p2_.history_begin().degrees_of_freedom(),
+      p2_.history_begin()->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {26.9 / 9.0 * Metre,
@@ -456,7 +456,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                       430.3 / 3.0 * Metre / Second,
                                       890.3 / 9.0 * Metre / Second}), 1)));
   EXPECT_THAT(
-      (++p2_.history_begin()).degrees_of_freedom(),
+      (++p2_.history_begin())->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {27.8 / 9.0 * Metre,
@@ -467,7 +467,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                       430.6 / 3.0 * Metre / Second,
                                       890.6 / 9.0 * Metre / Second}), 1)));
   EXPECT_THAT(
-      p2_.psychohistory_begin().degrees_of_freedom(),
+      p2_.psychohistory_begin()->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {26.0 / 9.0 * Metre,
@@ -479,7 +479,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                       890.0 / 9.0 * Metre / Second}), 0)));
   EXPECT_EQ(2, pile_up.psychohistory()->Size());
   EXPECT_THAT(
-      pile_up.psychohistory()->begin().degrees_of_freedom(),
+      pile_up.psychohistory()->begin()->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {1.2 * Metre,

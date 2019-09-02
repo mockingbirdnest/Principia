@@ -211,8 +211,8 @@ TEST_F(VesselTest, AdvanceTime) {
   EXPECT_EQ(3, vessel_.psychohistory().Size());
   auto it = vessel_.psychohistory().begin();
   ++it;
-  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it.time());
-  EXPECT_THAT(it.degrees_of_freedom(),
+  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it->time);
+  EXPECT_THAT(it->degrees_of_freedom,
               Componentwise(AlmostEquals(Barycentric::origin +
                                          Displacement<Barycentric>(
                                              {13.3 / 3.0 * Metre,
@@ -223,8 +223,8 @@ TEST_F(VesselTest, AdvanceTime) {
                                        40.1 * Metre / Second,
                                        110.3 / 3.0 * Metre / Second}), 1)));
   ++it;
-  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it.time());
-  EXPECT_THAT(it.degrees_of_freedom(),
+  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
+  EXPECT_THAT(it->degrees_of_freedom,
               Componentwise(AlmostEquals(Barycentric::origin +
                                          Displacement<Barycentric>(
                                              {13.6 / 3.0 * Metre,
@@ -282,9 +282,9 @@ TEST_F(VesselTest, Prediction) {
 
   EXPECT_EQ(2, vessel_.prediction().Size());
   auto it = vessel_.prediction().begin();
-  EXPECT_EQ(astronomy::J2000, it.time());
+  EXPECT_EQ(astronomy::J2000, it->time);
   EXPECT_THAT(
-      it.degrees_of_freedom(),
+      it->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                       Displacement<Barycentric>(
                                           {13.0 / 3.0 * Metre,
@@ -295,9 +295,9 @@ TEST_F(VesselTest, Prediction) {
                                        40.0 * Metre / Second,
                                        110.0 / 3.0 * Metre / Second}), 0)));
   ++it;
-  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it.time());
+  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
   EXPECT_THAT(
-      it.degrees_of_freedom(),
+      it->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                       Displacement<Barycentric>(
                                           {14.0 / 3.0 * Metre,
@@ -354,11 +354,11 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
 
   auto it = vessel_.prediction().begin();
   ++it;
-  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it.time());
+  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it->time);
   ++it;
-  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it.time());
+  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
   EXPECT_THAT(
-      it.degrees_of_freedom(),
+      it->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                       Displacement<Barycentric>(
                                           {5.0 * Metre,

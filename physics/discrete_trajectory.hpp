@@ -43,9 +43,6 @@ class DiscreteTrajectoryIterator
     : public ForkableIterator<DiscreteTrajectory<Frame>,
                               DiscreteTrajectoryIterator<Frame>> {
  public:
-  Instant const& time() const;
-  DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
-
   struct reference {
     Instant const& time;
     DegreesOfFreedom<Frame> const& degrees_of_freedom;

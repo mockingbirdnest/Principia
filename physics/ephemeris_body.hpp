@@ -546,7 +546,7 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMasslessBody(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     Instant const& t) const {
   auto const it = trajectory->Find(t);
-  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.degrees_of_freedom();
+  DegreesOfFreedom<Frame> const& degrees_of_freedom = it->degrees_of_freedom;
   return ComputeGravitationalAccelerationOnMasslessBody(
              degrees_of_freedom.position(), t);
 }

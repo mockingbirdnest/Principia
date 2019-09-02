@@ -201,9 +201,9 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
       plugin->NewBodyCentredNonRotatingNavigationFrame(central_body_index);
   DiscreteTrajectory<Navigation> coast;
   for (auto it = coast_begin; it != coast_end; ++it) {
-    coast.Append(it.time(),
-                 body_centred_inertial->ToThisFrameAtTime(it.time())(
-                     it.degrees_of_freedom()));
+    coast.Append(it->time,
+                 body_centred_inertial->ToThisFrameAtTime(it->time)(
+                     it->degrees_of_freedom));
   }
 
   Instant const current_time = plugin->CurrentTime();
@@ -228,7 +228,7 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
       from_world_body_centred_inertial.rigid_transformation()(
           FromXYZ<Position<World>>(world_body_centred_reference_position));
   DiscreteTrajectory<Navigation> immobile_reference;
-  immobile_reference.Append(coast.begin().time(),
+  immobile_reference.Append(coast.begin()->time,
                             {reference_position, Velocity<Navigation>{}});
   if (coast.Size() > 1) {
     immobile_reference.Append(coast.back().time,
@@ -244,18 +244,18 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
                  periapsides);
   if (periapsides.Empty()) {
     bool const begin_is_nearest =
-        (coast.begin().degrees_of_freedom().position() -
+        (coast.begin()->degrees_of_freedom.position() -
          reference_position).Norm²() <
         (coast.back().degrees_of_freedom.position() -
          reference_position).Norm²();
     *world_body_centred_nearest_degrees_of_freedom =
         ToQP(to_world_body_centred_inertial(
-            begin_is_nearest ? coast.begin().degrees_of_freedom()
+            begin_is_nearest ? coast.begin()->degrees_of_freedom
                              : coast.back().degrees_of_freedom));
   } else {
     *world_body_centred_nearest_degrees_of_freedom =
         ToQP(to_world_body_centred_inertial(
-            periapsides.begin().degrees_of_freedom()));
+            periapsides.begin()->degrees_of_freedom));
   }
   return m.Return(OK());
 }

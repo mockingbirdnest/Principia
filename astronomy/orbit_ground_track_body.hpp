@@ -31,16 +31,16 @@ Angle CelestialLongitude(Position<PrimaryCentred> const& q) {
 template<typename Iterator, typename Inertial>
 Angle PlanetocentricLongitude(Iterator const& it,
                               RotatingBody<Inertial> const& primary) {
-  return CelestialLongitude(it.degrees_of_freedom().position()) -
-         primary.AngleAt(it.time()) - π / 2 * Radian;
+  return CelestialLongitude(it->degrees_of_freedom.position()) -
+         primary.AngleAt(it->time) - π / 2 * Radian;
 }
 
 // The resulting angle is not normalized.
 template<typename Iterator>
 Angle MeanSolarTime(Iterator const& it,
                     OrbitGroundTrack::MeanSun const& mean_sun) {
-  Time const t = it.time() - mean_sun.epoch;
-  return π * Radian + CelestialLongitude(it.degrees_of_freedom().position()) -
+  Time const t = it->time - mean_sun.epoch;
+  return π * Radian + CelestialLongitude(it->degrees_of_freedom.position()) -
          (mean_sun.mean_longitude_at_epoch +
           (2 * π * Radian * t / mean_sun.year));
 }

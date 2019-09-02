@@ -391,17 +391,17 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   auto it2 = it1;
   ++it2;
   while (it2 != rendered_trajectory->end()) {
-    EXPECT_THAT((it0.degrees_of_freedom().position() -
-                 it2.degrees_of_freedom().position())
+    EXPECT_THAT((it0->degrees_of_freedom.position() -
+                 it2->degrees_of_freedom.position())
                     .Norm(),
-                Gt(((it0.degrees_of_freedom().position() -
-                     it1.degrees_of_freedom().position())
+                Gt(((it0->degrees_of_freedom.position() -
+                     it1->degrees_of_freedom.position())
                         .Norm() +
-                    (it1.degrees_of_freedom().position() -
-                     it2.degrees_of_freedom().position())
+                    (it1->degrees_of_freedom.position() -
+                     it2->degrees_of_freedom.position())
                         .Norm()) /
                    1.5))
-        << it0.time();
+        << it0->time;
     ++it0;
     ++it1;
     ++it2;
@@ -729,7 +729,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   for (auto it = rendered_prediction->begin();
        it != rendered_prediction->end();
        ++it, ++index) {
-    auto const& position = it.degrees_of_freedom().position();
+    auto const& position = it->degrees_of_freedom.position();
     EXPECT_THAT(AbsoluteError((position - World::origin).Norm(), 1 * Metre),
                 Lt(0.5 * Milli(Metre)));
     if (index >= 5) {

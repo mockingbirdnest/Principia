@@ -153,7 +153,7 @@ Iterator* principia__PlanetariumPlotFlightPlanSegment(
   // start and we fail.
   if (index % 2 == 0 ||
       segment_begin == segment_end ||
-      segment_begin.time() >= plugin->renderer().GetPlottingFrame()->t_min()) {
+      segment_begin->time >= plugin->renderer().GetPlottingFrame()->t_min()) {
      rp2_lines = PlotMethodN(*planetarium,
                              method,
                              segment_begin,

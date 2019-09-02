@@ -138,8 +138,8 @@ void FlightPlan::ForgetBefore(Instant const& time,
       segments_[*first_to_keep]->DetachFork();
   new_first_coast->ForgetBefore(time);
   root_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
-  root_->Append(new_first_coast->begin().time(),
-                new_first_coast->begin().degrees_of_freedom());
+  root_->Append(new_first_coast->begin()->time,
+                new_first_coast->begin()->degrees_of_freedom);
   root_->AttachFork(std::move(new_first_coast));
 
   // Remove from the vectors the trajectories and manœuvres that we don't want
@@ -150,8 +150,8 @@ void FlightPlan::ForgetBefore(Instant const& time,
                    manœuvres_.cbegin() + *first_to_keep / 2);
 
   auto const root_begin = root_->begin();
-  initial_time_ = root_begin.time();
-  initial_degrees_of_freedom_ = root_begin.degrees_of_freedom();
+  initial_time_ = root_begin->time;
+  initial_degrees_of_freedom_ = root_begin->degrees_of_freedom;
 }
 
 Status FlightPlan::RemoveLast() {
@@ -247,7 +247,7 @@ void FlightPlan::GetSegment(
 void FlightPlan::GetAllSegments(
     DiscreteTrajectory<Barycentric>::Iterator& begin,
     DiscreteTrajectory<Barycentric>::Iterator& end) const {
-  begin = segments_.back()->Find(segments_.front()->Fork().time());
+  begin = segments_.back()->Find(segments_.front()->Fork()->time);
   end = segments_.back()->end();
   CHECK(begin != end);
 }
@@ -446,7 +446,7 @@ void FlightPlan::AddLastSegment() {
 }
 
 void FlightPlan::ResetLastSegment() {
-  segments_.back()->ForgetAfter(segments_.back()->Fork().time());
+  segments_.back()->ForgetAfter(segments_.back()->Fork()->time);
   if (anomalous_segments_ == 1) {
     anomalous_segments_ = 0;
   }

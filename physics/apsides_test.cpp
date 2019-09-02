@@ -260,12 +260,12 @@ TEST_F(ApsidesTest, ComputeNodes) {
        ++ascending_it,
        ++south_descending_it,
        ++descending_it) {
-    EXPECT_THAT(south_ascending_it.degrees_of_freedom(),
-                Eq(descending_it.degrees_of_freedom()));
-    EXPECT_THAT(south_ascending_it.time(), Eq(descending_it.time()));
-    EXPECT_THAT(south_descending_it.degrees_of_freedom(),
-                Eq(ascending_it.degrees_of_freedom()));
-    EXPECT_THAT(south_descending_it.time(), Eq(ascending_it.time()));
+    EXPECT_THAT(south_ascending_it->degrees_of_freedom,
+                Eq(descending_it->degrees_of_freedom));
+    EXPECT_THAT(south_ascending_it->time, Eq(descending_it->time));
+    EXPECT_THAT(south_descending_it->degrees_of_freedom,
+                Eq(ascending_it->degrees_of_freedom));
+    EXPECT_THAT(south_descending_it->time, Eq(ascending_it->time));
   }
 }
 

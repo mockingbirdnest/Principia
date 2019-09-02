@@ -149,8 +149,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       Pow<2>(parameters_.tan_angular_resolution_);
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const& trajectory = *begin.trajectory();
-  auto const begin_time = std::max(begin.time(), plotting_frame_->t_min());
-  auto const last_time = std::min(last.time(), plotting_frame_->t_max());
+  auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
+  auto const last_time = std::min(last->time, plotting_frame_->t_max());
   auto const final_time = reverse ? begin_time : last_time;
   auto previous_time = reverse ? last_time : begin_time;
   Sign const direction = reverse ? Sign(-1) : Sign(1);
@@ -275,22 +275,22 @@ Segments<Navigation> Planetarium::ComputePlottableSegments(
     return all_segments;
   }
   auto it1 = begin;
-  Instant t1 = it1.time();
+  Instant t1 = it1->time;
   RigidMotion<Barycentric, Navigation> rigid_motion_at_t1 =
       plotting_frame_->ToThisFrameAtTime(t1);
   Position<Navigation> p1 =
-      rigid_motion_at_t1(it1.degrees_of_freedom()).position();
+      rigid_motion_at_t1(it1->degrees_of_freedom).position();
 
   auto it2 = it1;
   while (++it2 != end) {
     // Processing one segment of the trajectory.
-    Instant const t2 = it2.time();
+    Instant const t2 = it2->time;
 
     // Transform the degrees of freedom to the plotting frame.
     RigidMotion<Barycentric, Navigation> const rigid_motion_at_t2 =
         plotting_frame_->ToThisFrameAtTime(t2);
     Position<Navigation> const p2 =
-        rigid_motion_at_t2(it2.degrees_of_freedom()).position();
+        rigid_motion_at_t2(it2->degrees_of_freedom).position();
 
     // Find the part of the segment that is behind the focal plane.  We don't
     // care about things that are in front of the focal plane.

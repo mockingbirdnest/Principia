@@ -75,17 +75,17 @@ class ApsidesBenchmark : public benchmark::Fixture {
     auto const ilrsa_lageos2_trajectory_itrs =
         ilrsa_lageos2_sp3.orbit(lageos2_id).front();
     auto const begin = ilrsa_lageos2_trajectory_itrs->begin();
-    ephemeris_->Prolong(begin.time());
+    ephemeris_->Prolong(begin->time);
 
     BodySurfaceDynamicFrame<ICRS, ITRS> const itrs(ephemeris_, earth_);
     ilrsa_lageos2_trajectory_icrs_ = new DiscreteTrajectory<ICRS>;
     ilrsa_lageos2_trajectory_icrs_->Append(
-        begin.time(),
-        itrs.FromThisFrameAtTime(begin.time())(begin.degrees_of_freedom()));
+        begin->time,
+        itrs.FromThisFrameAtTime(begin->time)(begin->degrees_of_freedom));
     ephemeris_->FlowWithAdaptiveStep(
         ilrsa_lageos2_trajectory_icrs_,
         Ephemeris<ICRS>::NoIntrinsicAcceleration,
-        begin.time() + 1 * JulianYear,
+        begin->time + 1 * JulianYear,
         Ephemeris<ICRS>::AdaptiveStepParameters(
             EmbeddedExplicitRungeKuttaNyströmIntegrator<
                 DormandالمكاوىPrince1986RKN434FM,

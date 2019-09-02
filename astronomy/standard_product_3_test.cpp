@@ -367,17 +367,17 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
       auto it = arc->begin();
       for (int i = 0;; ++i) {
         DiscreteTrajectory<ICRS> integrated_arc;
-        ephemeris_->Prolong(it.time());
+        ephemeris_->Prolong(it->time);
         integrated_arc.Append(
-            it.time(),
-            itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+            it->time,
+            itrs_.FromThisFrameAtTime(it->time)(it->degrees_of_freedom));
         if (++it == arc->end()) {
           break;
         }
       ephemeris_->FlowWithAdaptiveStep(
             &integrated_arc,
             Ephemeris<ICRS>::NoIntrinsicAcceleration,
-            it.time(),
+            it->time,
             Ephemeris<ICRS>::AdaptiveStepParameters(
                 EmbeddedExplicitRungeKuttaNyströmIntegrator<
                     DormandالمكاوىPrince1986RKN434FM,
@@ -389,7 +389,7 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
       DegreesOfFreedom<ICRS> actual =
           integrated_arc.back().degrees_of_freedom;
       DegreesOfFreedom<ICRS> expected =
-          itrs_.FromThisFrameAtTime(it.time())(it.degrees_of_freedom());
+          itrs_.FromThisFrameAtTime(it->time)(it->degrees_of_freedom);
       EXPECT_THAT(AbsoluteError(expected.position(), actual.position()),
                   Lt(25 * Metre))
           << "orbit of satellite " << satellite << " flowing from point " << i;

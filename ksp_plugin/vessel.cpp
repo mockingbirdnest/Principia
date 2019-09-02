@@ -566,7 +566,7 @@ void Vessel::AppendToVesselTrajectory(
     auto const& it0 = its[0];
     bool const at_end_of_part_trajectory = it0 == ends[0];
     Instant const first_time = at_end_of_part_trajectory ? Instant()
-                                                         : it0.time();
+                                                         : it0->time;
 
     // Loop over the parts at a given time.
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
@@ -576,8 +576,8 @@ void Vessel::AppendToVesselTrajectory(
       auto& it = its[i];
       CHECK_EQ(at_end_of_part_trajectory, it == ends[i]);
       if (!at_end_of_part_trajectory) {
-        calculator.Add(it.degrees_of_freedom(), part.mass());
-        CHECK_EQ(first_time, it.time());
+        calculator.Add(it->degrees_of_freedom, part.mass());
+        CHECK_EQ(first_time, it->time);
         ++it;
       }
       ++i;
