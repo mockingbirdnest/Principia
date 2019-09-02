@@ -23,7 +23,7 @@ void Insert(Player::PointerMap& pointer_map,
             T* const pointer) {
   void* const inserted_pointer = static_cast<void*>(
       const_cast<typename std::remove_cv<T>::type*>(pointer));
-  auto [it, inserted] = pointer_map.emplace(address, inserted_pointer);
+  auto const [it, inserted] = pointer_map.emplace(address, inserted_pointer);
   if (!inserted) {
     CHECK_EQ(it->second, inserted_pointer);
   }
