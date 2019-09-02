@@ -109,7 +109,6 @@ Status ContinuousTrajectory<Frame>::Append(
     v.clear();
 
     for (auto const& [time, degrees_of_freedom] : last_points_) {
-      DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
       q.push_back(degrees_of_freedom.position() - Frame::origin);
       v.push_back(degrees_of_freedom.velocity());
     }
