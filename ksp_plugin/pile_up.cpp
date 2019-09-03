@@ -105,7 +105,7 @@ void PileUp::SetPartApparentDegreesOfFreedom(
 
 void PileUp::NudgeParts() const {
   auto const actual_centre_of_mass =
-      psychohistory_->last().degrees_of_freedom();
+      psychohistory_->back().degrees_of_freedom;
 
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
       RigidTransformation<Barycentric, RigidPileUp>{
@@ -124,7 +124,7 @@ void PileUp::NudgeParts() const {
 Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   absl::MutexLock l(lock_.get());
   Status status;
-  if (psychohistory_->last().time() < t) {
+  if (psychohistory_->back().time < t) {
     DeformPileUpIfNeeded();
     status = AdvanceTime(t);
     NudgeParts();
@@ -201,7 +201,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     // Fork a psychohistory for compatibility if there is a non-authoritative
     // point.
     if (pile_up->history_->Size() == 2) {
-      Instant const history_begin_time = pile_up->history_->Begin().time();
+      Instant const history_begin_time = pile_up->history_->front().time;
       pile_up->psychohistory_ =
           pile_up->history_->NewForkWithCopy(history_begin_time);
       pile_up->history_->ForgetAfter(history_begin_time);
@@ -313,7 +313,7 @@ Status PileUp::AdvanceTime(Instant const& t) {
   CHECK_NOTNULL(psychohistory_);
 
   Status status;
-  auto const history_last = history_->last();
+  auto const history_last = --history_->end();
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
     history_->DeleteFork(psychohistory_);
@@ -323,10 +323,10 @@ Status PileUp::AdvanceTime(Instant const& t) {
           Ephemeris<Barycentric>::NoIntrinsicAccelerations,
           fixed_step_parameters_);
     }
-    CHECK_LT(history_->last().time(), t);
+    CHECK_LT(history_->back().time, t);
     status = ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
     psychohistory_ = history_->NewForkAtLast();
-    if (history_->last().time() < t) {
+    if (history_->back().time < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
       // fixed-step integration.
       status.Update(
@@ -344,10 +344,10 @@ Status PileUp::AdvanceTime(Instant const& t) {
     // We make the |psychohistory_|, if any, authoritative, i.e. append it to
     // the end of the |history_|. We integrate on top of it, and it gets
     // appended authoritatively to the part tails.
-    auto const psychohistory_end = psychohistory_->End();
+    auto const psychohistory_end = psychohistory_->end();
     auto it = psychohistory_->Fork();
     for (++it; it != psychohistory_end; ++it) {
-      history_->Append(it.time(), it.degrees_of_freedom());
+      history_->Append(it->time, it->degrees_of_freedom);
     }
     history_->DeleteFork(psychohistory_);
 
@@ -371,8 +371,8 @@ Status PileUp::AdvanceTime(Instant const& t) {
 
   // Append the |history_| authoritatively to the parts' tails and the
   // |psychohistory_| non-authoritatively.
-  auto const history_end = history_->End();
-  auto const psychohistory_end = psychohistory_->End();
+  auto const history_end = history_->end();
+  auto const psychohistory_end = psychohistory_->end();
   auto it = history_last;
   for (++it; it != history_end; ++it) {
     AppendToPart<&Part::AppendToHistory>(it);
@@ -381,14 +381,14 @@ Status PileUp::AdvanceTime(Instant const& t) {
   for (++it; it != psychohistory_end; ++it) {
     AppendToPart<&Part::AppendToPsychohistory>(it);
   }
-  history_->ForgetBefore(psychohistory_->Fork().time());
+  history_->ForgetBefore(psychohistory_->Fork()->time);
 
   return status;
 }
 
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>
 void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
-  auto const& pile_up_dof = it.degrees_of_freedom();
+  auto const& pile_up_dof = it->degrees_of_freedom;
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up(
       RigidTransformation<Barycentric, RigidPileUp>(
           pile_up_dof.position(),
@@ -399,7 +399,7 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
     (static_cast<Part*>(part)->*append_to_part_trajectory)(
-        it.time(),
+        it->time,
         pile_up_to_barycentric(
             FindOrDie(actual_part_degrees_of_freedom_, part)));
   }

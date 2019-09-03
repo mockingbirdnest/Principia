@@ -112,10 +112,8 @@ class OrbitalElementsTest : public ::testing::Test {
         },
         /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
     auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();
-    for (auto it = icrs_trajectory.Begin(); it != icrs_trajectory.End(); ++it) {
-      result->Append(
-          it.time(),
-          gcrs.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+    for (auto const& [time, degrees_of_freedom] : icrs_trajectory) {
+      result->Append(time, gcrs.ToThisFrameAtTime(time)(degrees_of_freedom));
     }
     return result;
   }

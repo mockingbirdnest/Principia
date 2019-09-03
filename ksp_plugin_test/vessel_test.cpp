@@ -146,9 +146,9 @@ TEST_F(VesselTest, PrepareHistory) {
 
   EXPECT_EQ(1, vessel_.psychohistory().Size());
   EXPECT_EQ(astronomy::J2000 + 1 * Second,
-            vessel_.psychohistory().last().time());
+            vessel_.psychohistory().back().time);
   EXPECT_THAT(
-      vessel_.psychohistory().last().degrees_of_freedom(),
+      vessel_.psychohistory().back().degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                       Displacement<Barycentric>(
                                           {13.0 / 3.0 * Metre,
@@ -209,10 +209,10 @@ TEST_F(VesselTest, AdvanceTime) {
   vessel_.AdvanceTime();
 
   EXPECT_EQ(3, vessel_.psychohistory().Size());
-  auto it = vessel_.psychohistory().Begin();
+  auto it = vessel_.psychohistory().begin();
   ++it;
-  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it.time());
-  EXPECT_THAT(it.degrees_of_freedom(),
+  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it->time);
+  EXPECT_THAT(it->degrees_of_freedom,
               Componentwise(AlmostEquals(Barycentric::origin +
                                          Displacement<Barycentric>(
                                              {13.3 / 3.0 * Metre,
@@ -223,8 +223,8 @@ TEST_F(VesselTest, AdvanceTime) {
                                        40.1 * Metre / Second,
                                        110.3 / 3.0 * Metre / Second}), 1)));
   ++it;
-  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it.time());
-  EXPECT_THAT(it.degrees_of_freedom(),
+  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
+  EXPECT_THAT(it->degrees_of_freedom,
               Componentwise(AlmostEquals(Barycentric::origin +
                                          Displacement<Barycentric>(
                                              {13.6 / 3.0 * Metre,
@@ -278,13 +278,13 @@ TEST_F(VesselTest, Prediction) {
     vessel_.RefreshPrediction(astronomy::J2000 + 1 * Second);
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
-  } while (vessel_.prediction().last().time() == astronomy::J2000);
+  } while (vessel_.prediction().back().time == astronomy::J2000);
 
   EXPECT_EQ(2, vessel_.prediction().Size());
-  auto it = vessel_.prediction().Begin();
-  EXPECT_EQ(astronomy::J2000, it.time());
+  auto it = vessel_.prediction().begin();
+  EXPECT_EQ(astronomy::J2000, it->time);
   EXPECT_THAT(
-      it.degrees_of_freedom(),
+      it->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                       Displacement<Barycentric>(
                                           {13.0 / 3.0 * Metre,
@@ -295,9 +295,9 @@ TEST_F(VesselTest, Prediction) {
                                        40.0 * Metre / Second,
                                        110.0 / 3.0 * Metre / Second}), 0)));
   ++it;
-  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it.time());
+  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
   EXPECT_THAT(
-      it.degrees_of_freedom(),
+      it->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                       Displacement<Barycentric>(
                                           {14.0 / 3.0 * Metre,
@@ -352,13 +352,13 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
     std::this_thread::sleep_for(100ms);
   } while (vessel_.prediction().Size() != 3);
 
-  auto it = vessel_.prediction().Begin();
+  auto it = vessel_.prediction().begin();
   ++it;
-  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it.time());
+  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it->time);
   ++it;
-  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it.time());
+  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
   EXPECT_THAT(
-      it.degrees_of_freedom(),
+      it->degrees_of_freedom,
       Componentwise(AlmostEquals(Barycentric::origin +
                                       Displacement<Barycentric>(
                                           {5.0 * Metre,

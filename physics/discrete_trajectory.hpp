@@ -43,8 +43,13 @@ class DiscreteTrajectoryIterator
     : public ForkableIterator<DiscreteTrajectory<Frame>,
                               DiscreteTrajectoryIterator<Frame>> {
  public:
-  Instant const& time() const;
-  DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+  struct reference {
+    Instant const& time;
+    DegreesOfFreedom<Frame> const& degrees_of_freedom;
+  };
+
+  reference operator*() const;
+  std::optional<reference> operator->() const;
 
  protected:
   not_null<DiscreteTrajectoryIterator*> that() override;
@@ -83,12 +88,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   DiscreteTrajectory(DiscreteTrajectory&&) = delete;
   DiscreteTrajectory& operator=(DiscreteTrajectory const&) = delete;
   DiscreteTrajectory& operator=(DiscreteTrajectory&&) = delete;
-
-  // Returns an iterator at the last point of the trajectory.  Complexity is
-  // O(1).  The trajectory must not be empty.
-  // TODO(phl): This is really RBegin, but Forkable doesn't have reverse
-  // iterators.
-  Iterator last() const;
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory shares its data with the current trajectory for times less
@@ -148,7 +147,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   // Implementation of the interface |Trajectory|.
 
-  // The bounds are the times of |Begin()| and |last()| if this trajectory is
+  // The bounds are the times of |begin()| and |rbegin()| if this trajectory is
   // nonempty, otherwise they are infinities of the appropriate signs.
   Instant t_min() const override;
   Instant t_max() const override;

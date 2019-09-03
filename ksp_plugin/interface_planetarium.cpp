@@ -153,7 +153,7 @@ Iterator* principia__PlanetariumPlotFlightPlanSegment(
   // start and we fail.
   if (index % 2 == 0 ||
       segment_begin == segment_end ||
-      segment_begin.time() >= plugin->renderer().GetPlottingFrame()->t_min()) {
+      segment_begin->time >= plugin->renderer().GetPlottingFrame()->t_min()) {
      rp2_lines = PlotMethodN(*planetarium,
                              method,
                              segment_begin,
@@ -179,7 +179,7 @@ Iterator* principia__PlanetariumPlotPrediction(
   auto const rp2_lines = PlotMethodN(*planetarium,
                                      method,
                                      prediction.Fork(),
-                                     prediction.End(),
+                                     prediction.end(),
                                      plugin->CurrentTime(),
                                      /*reverse=*/false);
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
@@ -205,8 +205,8 @@ Iterator* principia__PlanetariumPlotPsychohistory(
     auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
     auto const rp2_lines = PlotMethodN(*planetarium,
                                        method,
-                                       psychohistory.Begin(),
-                                       psychohistory.End(),
+                                       psychohistory.begin(),
+                                       psychohistory.end(),
                                        plugin->CurrentTime(),
                                        /*reverse=*/true);
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));

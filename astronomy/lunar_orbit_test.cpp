@@ -384,10 +384,9 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
   DiscreteTrajectory<LunarSurface> surface_trajectory;
-  for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
     surface_trajectory.Append(
-        it.time(),
-        lunar_frame_.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+        time, lunar_frame_.ToThisFrameAtTime(time)(degrees_of_freedom));
   }
 
   // Drop the units when logging to Mathematica, because it is ridiculously
@@ -432,8 +431,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   DiscreteTrajectory<LunarSurface> ascending_nodes;
   DiscreteTrajectory<LunarSurface> descending_nodes;
-  ComputeNodes(surface_trajectory.Begin(),
-               surface_trajectory.End(),
+  ComputeNodes(surface_trajectory.begin(),
+               surface_trajectory.end(),
                /*north=*/Vector<double, LunarSurface>({0, 0, 1}),
                /*max_points=*/std::numeric_limits<int>::max(),
                ascending_nodes,
@@ -442,8 +441,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   DiscreteTrajectory<ICRS> apoapsides;
   DiscreteTrajectory<ICRS> periapsides;
   ComputeApsides(*ephemeris_->trajectory(moon_),
-                 trajectory.Begin(),
-                 trajectory.End(),
+                 trajectory.begin(),
+                 trajectory.end(),
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
@@ -468,20 +467,17 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     std::vector<double> mma_node_arguments_of_periapsides;
     std::vector<double> mma_node_eccentricities;
 
-    for (auto it = nodes.trajectory.Begin();
-         it != nodes.trajectory.End();
-         ++it) {
-      auto const t = it.time();
+    for (auto const& [time, degrees_of_freedom] : nodes.trajectory) {
       auto const elements = KeplerOrbit<Selenocentric>(
           *moon_,
           satellite_,
-          ToSelenocentric(t)(
-              trajectory.EvaluateDegreesOfFreedom(t)) - selenocentre_,
-          t).elements_at_epoch();
+          ToSelenocentric(time)(
+              trajectory.EvaluateDegreesOfFreedom(time)) - selenocentre_,
+          time).elements_at_epoch();
 
-      mma_node_times.push_back((t - J2000) / Second);
+      mma_node_times.push_back((time - J2000) / Second);
       mma_node_displacements.push_back(
-          (it.degrees_of_freedom().position() - LunarSurface::origin) / Metre);
+          (degrees_of_freedom.position() - LunarSurface::origin) / Metre);
       mma_node_arguments_of_periapsides.push_back(
           *elements.argument_of_periapsis / Radian);
       mma_node_eccentricities.push_back(*elements.eccentricity);
@@ -506,15 +502,11 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     std::vector<double> mma_apsis_times;
     std::vector<Vector<double, LunarSurface>> mma_apsis_displacements;
 
-    for (auto it = apsides.trajectory.Begin();
-         it != apsides.trajectory.End();
-         ++it) {
-      auto const t = it.time();
-
-      mma_apsis_times.push_back((t - J2000) / Second);
+    for (auto const& [time, degrees_of_freedom] : apsides.trajectory) {
+      mma_apsis_times.push_back((time - J2000) / Second);
       mma_apsis_displacements.push_back(
-          (lunar_frame_.ToThisFrameAtTime(t).rigid_transformation()(
-               it.degrees_of_freedom().position()) -
+          (lunar_frame_.ToThisFrameAtTime(time).rigid_transformation()(
+               degrees_of_freedom.position()) -
            LunarSurface::origin) / Metre);
     }
     file << mathematica::Assign(absl::StrCat(apsides.name, "Times"),

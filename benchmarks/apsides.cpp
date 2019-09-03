@@ -74,18 +74,18 @@ class ApsidesBenchmark : public benchmark::Fixture {
 
     auto const ilrsa_lageos2_trajectory_itrs =
         ilrsa_lageos2_sp3.orbit(lageos2_id).front();
-    auto const begin = ilrsa_lageos2_trajectory_itrs->Begin();
-    ephemeris_->Prolong(begin.time());
+    auto const begin = ilrsa_lageos2_trajectory_itrs->begin();
+    ephemeris_->Prolong(begin->time);
 
     BodySurfaceDynamicFrame<ICRS, ITRS> const itrs(ephemeris_, earth_);
     ilrsa_lageos2_trajectory_icrs_ = new DiscreteTrajectory<ICRS>;
     ilrsa_lageos2_trajectory_icrs_->Append(
-        begin.time(),
-        itrs.FromThisFrameAtTime(begin.time())(begin.degrees_of_freedom()));
+        begin->time,
+        itrs.FromThisFrameAtTime(begin->time)(begin->degrees_of_freedom));
     ephemeris_->FlowWithAdaptiveStep(
         ilrsa_lageos2_trajectory_icrs_,
         Ephemeris<ICRS>::NoIntrinsicAcceleration,
-        begin.time() + 1 * JulianYear,
+        begin->time + 1 * JulianYear,
         Ephemeris<ICRS>::AdaptiveStepParameters(
             EmbeddedExplicitRungeKuttaNyströmIntegrator<
                 DormandالمكاوىPrince1986RKN434FM,
@@ -98,12 +98,10 @@ class ApsidesBenchmark : public benchmark::Fixture {
     BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> const gcrs(ephemeris_,
                                                               earth_);
     ilrsa_lageos2_trajectory_gcrs_ = new DiscreteTrajectory<GCRS>;
-    for (auto it = ilrsa_lageos2_trajectory_icrs_->Begin();
-         it != ilrsa_lageos2_trajectory_icrs_->End();
-         ++it) {
+    for (auto const& [time, degrees_of_freedom] :
+         *ilrsa_lageos2_trajectory_icrs_) {
       ilrsa_lageos2_trajectory_gcrs_->Append(
-          it.time(),
-          gcrs.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+          time, gcrs.ToThisFrameAtTime(time)(degrees_of_freedom));
     }
   }
 
@@ -137,8 +135,8 @@ BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
     DiscreteTrajectory<ICRS> apoapsides;
     DiscreteTrajectory<ICRS> periapsides;
     ComputeApsides(*earth_trajectory_,
-                   ilrsa_lageos2_trajectory_icrs_->Begin(),
-                   ilrsa_lageos2_trajectory_icrs_->End(),
+                   ilrsa_lageos2_trajectory_icrs_->begin(),
+                   ilrsa_lageos2_trajectory_icrs_->end(),
                    /*max_points=*/std::numeric_limits<int>::max(),
                    apoapsides,
                    periapsides);
@@ -151,8 +149,8 @@ BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
   for (auto _ : state) {
     DiscreteTrajectory<GCRS> ascending;
     DiscreteTrajectory<GCRS> descending;
-    ComputeNodes(ilrsa_lageos2_trajectory_gcrs_->Begin(),
-                 ilrsa_lageos2_trajectory_gcrs_->End(),
+    ComputeNodes(ilrsa_lageos2_trajectory_gcrs_->begin(),
+                 ilrsa_lageos2_trajectory_gcrs_->end(),
                  Vector<double, GCRS>({0, 0, 1}),
                  /*max_points=*/std::numeric_limits<int>::max(),
                  ascending,
