@@ -1048,9 +1048,7 @@ class TrappistDynamicsTest : public ::testing::Test {
     Time total_Δt;
     std::string transit_with_max_Δt;
     int number_of_observations = 0;
-    for (auto const& pair : observations) {
-      auto const& name = pair.first;
-      auto const& observed_transits = pair.second;
+    for (auto const& [name, observed_transits] : observations) {
       auto const& computed_transits = computations.at(name);
       if (computed_transits.empty()) {
         return std::numeric_limits<double>::infinity();

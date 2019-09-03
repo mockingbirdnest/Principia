@@ -136,9 +136,8 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
 
   previous_time = std::nullopt;
   std::optional<Position<World>> previous_position;
-  for (auto const& pair : all_apsides) {
-    Instant const time = pair.first;
-    Position<World> const position = pair.second.position();
+  for (auto const& [time, degrees_of_freedom] : all_apsides) {
+    Position<World> const position = degrees_of_freedom.position();
     if (previous_time) {
       EXPECT_THAT(time - *previous_time,
                   AlmostEquals(0.5 * T, 103, 5098));

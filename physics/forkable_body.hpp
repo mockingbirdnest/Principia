@@ -372,8 +372,7 @@ void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
   // |begin()| are referencing a point that will soon be removed from the
   // timeline.  They must now point at |end()| to indicate that their fork time
   // is not in |fork|'s timeline.
-  for (auto const& pair : fork->children_) {
-    std::unique_ptr<Tr4jectory> const& child = pair.second;
+  for (auto const& [_, child] : fork->children_) {
     if (child->position_in_parent_timeline_ == fork_timeline_begin) {
       child->position_in_parent_timeline_ = fork_timeline_end;
     }
@@ -402,8 +401,7 @@ Forkable<Tr4jectory, It3rator>::DetachForkWithCopiedBegin() {
   // The children whose |position_in_parent_timeline_| was at |end()| are those
   // whose fork time was not in this object's timeline.  The caller must have
   // ensured that now it is, so point them to the beginning of this timeline.
-  for (auto const& pair : children_) {
-    std::unique_ptr<Tr4jectory> const& child = pair.second;
+  for (auto const& [_, child] : children_) {
     if (child->position_in_parent_timeline_ == timeline_end()) {
       child->position_in_parent_timeline_ = timeline_begin();
     }
@@ -450,10 +448,7 @@ void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
     std::vector<Tr4jectory*>& forks) const {
   std::optional<Instant> last_instant;
   serialization::DiscreteTrajectory::Litter* litter = nullptr;
-  for (auto const& pair : children_) {
-    Instant const& fork_time = pair.first;
-    std::unique_ptr<Tr4jectory> const& child = pair.second;
-
+  for (auto const& [fork_time, child] : children_) {
     // Determine if this |child| needs to be serialized.  If so, record its
     // position in |fork_positions| and null out its pointer in |forks|.
     // Apologies for the O(N) search.

@@ -229,19 +229,14 @@ void Plugin::EndInitialization() {
   for (std::string const& name : solar_system.names()) {
     auto const rotating_body = solar_system.rotating_body(*ephemeris_, name);
     Index const celestial_index = FindOrDie(name_to_index_, name);
-    IndexToOwnedCelestial::iterator it;
-    bool inserted;
-    std::tie(it, inserted) =
-        celestials_.emplace(celestial_index,
-                            std::make_unique<Celestial>(rotating_body));
+    auto const [it, inserted] = celestials_.emplace(
+        celestial_index, std::make_unique<Celestial>(rotating_body));
     CHECK(inserted) << "Body already exists at index " << celestial_index;
     it->second->set_trajectory(ephemeris_->trajectory(rotating_body));
   }
 
   // Establish the parent relationships between the celestials.
-  for (auto const& pair : celestials_) {
-    Index const celestial_index = pair.first;
-    auto const& celestial = pair.second;
+  for (auto const& [celestial_index, celestial] : celestials_) {
     auto const& parent_index = FindOrDie(parents_, celestial_index);
     if (parent_index) {
       not_null<Celestial const*> parent =
@@ -482,12 +477,12 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
 }
 
 void Plugin::PrepareToReportCollisions() {
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    // TODO(egg): we're taking the address of a parameter passed by reference
-    // here; but then I don't think I want to pass this by pointer, it's quite
-    // convenient everywhere else...
-    vessel.ForAllParts(
+  for (auto const& [_, vessel] : vessels_) {
+    // NOTE(egg): The lifetime requirement on the second argument of
+    // |MakeSingleton| (which forwards to the argument of the constructor of
+    // |Subset<Part>::Properties|) is that |part| outlives the constructed
+    // |Properties|; since these are owned by |part|, this is true.
+    vessel->ForAllParts(
         [](Part& part) { Subset<Part>::MakeSingleton(part, &part); });
   }
 }
@@ -547,10 +542,9 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
   // Bind the vessels.  This guarantees that all part subsets are disjoint
   // unions of vessels.
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    vessel.ForSomePart([&vessel](Part& first_part) {
-      vessel.ForAllParts([&first_part](Part& part) {
+  for (auto const& [_, vessel] : vessels_) {
+    vessel->ForSomePart([&vessel](Part& first_part) {
+      vessel->ForAllParts([&first_part](Part& part) {
         Subset<Part>::Unite(Subset<Part>::Find(first_part),
                             Subset<Part>::Find(part));
       });
@@ -565,11 +559,10 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     // vessel destroys its parts, which invalidates the intrusive |Subset| data
     // structure.
     VesselSet grounded_vessels;
-    for (auto const& pair : vessels_) {
-      not_null<Vessel*> const vessel = pair.second.get();
-      vessel->ForSomePart([vessel, &grounded_vessels](Part& part) {
+    for (auto const& [_, vessel] : vessels_) {
+      vessel->ForSomePart([&vessel, &grounded_vessels](Part& part) {
         if (Subset<Part>::Find(part).properties().grounded()) {
-          grounded_vessels.insert(vessel);
+          grounded_vessels.insert(vessel.get());
         }
       });
     }
@@ -583,10 +576,9 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
   // We only need to collect one part per vessel, since the other parts are in
   // the same subset.
-  for (auto const& pair : vessels_) {
-    not_null<Vessel*> const vessel = pair.second.get();
+  for (auto const& [_, vessel] : vessels_) {
     Instant const vessel_time =
-        is_loaded(vessel) ? current_time_ - Δt : current_time_;
+        is_loaded(vessel.get()) ? current_time_ - Δt : current_time_;
     vessel->ForSomePart([&vessel_time, this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           pile_ups_,
@@ -727,13 +719,12 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
   }
 
   // Update the vessels.
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    if (vessel.psychohistory().back().time < current_time_) {
-      if (Contains(collided_vessels, &vessel)) {
-        vessel.DisableDownsampling();
+  for (auto const& [_, vessel] : vessels_) {
+    if (vessel->psychohistory().back().time < current_time_) {
+      if (Contains(collided_vessels, vessel.get())) {
+        vessel->DisableDownsampling();
       }
-      vessel.AdvanceTime();
+      vessel->AdvanceTime();
     }
   }
 }
@@ -774,7 +765,8 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
     for (not_null<Part*> const part : pile_up->parts()) {
       not_null<Vessel*> const vessel =
           FindOrDie(part_id_to_vessel_, part->part_id());
-      if (collided_vessels.insert(vessel).second) {
+      if (bool const inserted = collided_vessels.insert(vessel).second;
+          inserted) {
         LOG(WARNING) << "Vessel " << vessel->ShortDebugString()
                      << " collided with a celestial: " << status.ToString();
       }
@@ -786,8 +778,7 @@ void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   CHECK(!initializing_);
   CHECK_LT(t, current_time_);
   ephemeris_->EventuallyForgetBefore(t);
-  for (auto const& pair : vessels_) {
-    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+  for (auto const& [_, vessel] : vessels_) {
     vessel->ForgetBefore(t);
   }
 }
@@ -1225,14 +1216,10 @@ void Plugin::WriteToMessage(
   CHECK(!initializing_);
   ephemeris_->Prolong(current_time_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
-  for (auto const& pair : celestials_) {
-    Index const index = pair.first;
-    auto const& owned_celestial = pair.second;
+  for (auto const& [index, owned_celestial] : celestials_) {
     celestial_to_index.emplace(owned_celestial.get(), index);
   }
-  for (auto const& pair : celestials_) {
-    Index const index = pair.first;
-    auto const& owned_celestial = pair.second.get();
+  for (auto const& [index, owned_celestial] : celestials_) {
     auto* const celestial_message = message->add_celestial();
     celestial_message->set_index(index);
     if (owned_celestial->has_parent()) {
@@ -1256,22 +1243,18 @@ void Plugin::WriteToMessage(
       };
 
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
-  for (auto const& pair : vessels_) {
-    std::string const& guid = pair.first;
-    not_null<Vessel*> const vessel = pair.second.get();
-    vessel_to_guid.emplace(vessel, guid);
+  for (auto const& [guid, vessel] : vessels_) {
+    vessel_to_guid.emplace(vessel.get(), guid);
     auto* const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
     vessel->WriteToMessage(vessel_message->mutable_vessel(),
                            serialization_index_for_pile_up);
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
-    vessel_message->set_loaded(Contains(loaded_vessels_, vessel));
-    vessel_message->set_kept(Contains(kept_vessels_, vessel));
+    vessel_message->set_loaded(Contains(loaded_vessels_, vessel.get()));
+    vessel_message->set_kept(Contains(kept_vessels_, vessel.get()));
   }
-  for (auto const& pair : part_id_to_vessel_) {
-    PartId const part_id = pair.first;
-    not_null<Vessel*> const vessel = pair.second;
+  for (auto const& [part_id, vessel] : part_id_to_vessel_) {
     (*message->mutable_part_id_to_vessel())[part_id] = vessel_to_guid[vessel];
   }
 
@@ -1342,14 +1325,12 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     if (vessel_message.kept()) {
       plugin->kept_vessels_.insert(vessel.get());
     }
-    auto const inserted =
-        plugin->vessels_.emplace(vessel_message.guid(), std::move(vessel));
-    CHECK(inserted.second);
+    bool const inserted = plugin->vessels_.emplace(
+        vessel_message.guid(), std::move(vessel)).second;
+    CHECK(inserted);
   }
 
-  for (auto const& pair : message.part_id_to_vessel()) {
-    PartId const part_id = pair.first;
-    GUID const guid = pair.second;
+  for (auto const& [part_id, guid] : message.part_id_to_vessel()) {
     auto const& vessel = FindOrDie(plugin->vessels_, guid);
     plugin->part_id_to_vessel_.emplace(part_id, vessel.get());
   }
@@ -1429,19 +1410,14 @@ Plugin::Plugin(
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
 
-void Plugin::InitializeIndices(
-    std::string const& name,
-    Index const celestial_index,
-    std::optional<Index> const& parent_index) {
-  bool inserted;
-  std::tie(std::ignore, inserted) =
-      name_to_index_.emplace(name, celestial_index);
+void Plugin::InitializeIndices(std::string const& name,
+                               Index const celestial_index,
+                               std::optional<Index> const& parent_index) {
+  bool inserted = name_to_index_.emplace(name, celestial_index).second;
   CHECK(inserted) << name;
-  std::tie(std::ignore, inserted) =
-      index_to_name_.emplace(celestial_index, name);
+  inserted = index_to_name_.emplace(celestial_index, name).second;
   CHECK(inserted) << celestial_index;
-  std::tie(std::ignore, inserted) =
-      parents_.emplace(celestial_index, parent_index);
+  inserted = parents_.emplace(celestial_index, parent_index).second;
   CHECK(inserted) << celestial_index;
 }
 
@@ -1491,9 +1467,7 @@ void Plugin::ReadCelestialsFromMessages(
     auto const& body = is_pre_cauchy
                            ? bodies[index++]
                            : bodies[celestial_message.ephemeris_index()];
-    bool inserted;
-    IndexToOwnedCelestial::iterator it;
-    std::tie(it, inserted) = celestials.emplace(
+    auto [it, inserted] = celestials.emplace(
         celestial_message.index(),
         make_not_null_unique<Celestial>(
             dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
@@ -1501,8 +1475,8 @@ void Plugin::ReadCelestialsFromMessages(
     CHECK(inserted) << celestial_message.index();
     it->second->set_trajectory(ephemeris.trajectory(body));
 
-    std::tie(std::ignore, inserted) =
-        name_to_index.emplace(body->name(), celestial_message.index());
+    inserted =
+        name_to_index.emplace(body->name(), celestial_message.index()).second;
     CHECK(inserted) << body->name();
   }
   for (auto const& celestial_message : celestial_messages) {
@@ -1521,10 +1495,8 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
                      std::string const& name,
                      Mass const mass,
                      DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  std::map<PartId, not_null<Vessel*>>::iterator it;
-  bool emplaced;
-  std::tie(it, emplaced) = part_id_to_vessel_.emplace(part_id, vessel);
-  CHECK(emplaced) << NAMED(part_id);
+  auto const [it, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
+  CHECK(inserted) << NAMED(part_id);
   auto deletion_callback = [it, &map = part_id_to_vessel_] {
     map.erase(it);
   };

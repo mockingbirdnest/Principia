@@ -30,7 +30,8 @@ class Subset final {
   };
 
   // The |SubsetPropertiesArgs| are forwarded to the constructor of
-  // |Properties|.
+  // |Properties|; the constructed |Properties| are owned by
+  // |*Node::Get(element)|, and thus by element.
   template<typename... SubsetPropertiesArgs>
   static Subset MakeSingleton(
       T& element,
