@@ -3,14 +3,24 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A3F94607-2666-408F-AF98-0E47D61C98BB}</ProjectGuid>
     <RootNamespace>ksp_plugin</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Manifest>
       <AdditionalManifestFiles>$(ProjectDir)principia.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
-      <AdditionalOptions>-validate_manifest -hashupdate:$(OutDir)</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)principia.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)principia.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>

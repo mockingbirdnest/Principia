@@ -19,6 +19,7 @@
     <CustomBuild Include="integrators.proto" />
     <CustomBuild Include="astronomy.proto" />
     <CustomBuild Include="journal.proto" />
+    <CustomBuild Include="testing_utilities.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h">
@@ -79,6 +80,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="testing_utilities.proto" />
+    <Manifest Include="serialization.manifest" />
   </ItemGroup>
 </Project>
