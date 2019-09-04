@@ -22,6 +22,7 @@ namespace internal_orbit_analyser {
 
 using astronomy::OrbitalElements;
 using astronomy::OrbitGroundTrack;
+using astronomy::OrbitRecurrence;
 using base::not_null;
 using geometry::Instant;
 using physics::DegreesOfFreedom;
@@ -45,6 +46,7 @@ class OrbitAnalyser {
     Time mission_duration;
     not_null<RotatingBody<Barycentric> const*> primary;
     std::optional<OrbitalElements> elements;
+    std::optional<OrbitRecurrence> recurrence;
     std::optional<OrbitGroundTrack> ground_track;
   };
 

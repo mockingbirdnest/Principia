@@ -1,12 +1,17 @@
+﻿
 #include "ksp_plugin/orbit_analyser.hpp"
 
+#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace internal_orbit_analyser {
 
+using geometry::Frame;
 using physics::DiscreteTrajectory;
+using physics::MasslessBody;
+using physics::BodyCentredNonRotatingDynamicFrame;
 
 OrbitAnalyser::OrbitAnalyser(not_null<Ephemeris<Barycentric>*> const ephemeris,
                              Ephemeris<Barycentric>::FixedStepParameters const
@@ -34,19 +39,60 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       break;
     }
 
+    Analysis analysis{parameters->first_time,
+                      parameters->mission_duration,
+                      parameters->primary};
     DiscreteTrajectory<Barycentric> trajectory;
+    trajectory.Append(parameters->first_time, parameters->first_degrees_of_freedom);
     std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
-        trajectory};
-    auto instance = Ephemeris<Barycentric>::NewInstance(
+        &trajectory};
+    auto instance = ephemeris_->NewInstance(
         trajectories,
         Ephemeris<Barycentric>::NoIntrinsicAccelerations,
         analysed_trajectory_parameters_);
-    for (trajectory) {
-      ephemeris_->FlowWithFixedStep(t, instance);
+    for (Instant t =
+             parameters->first_time + parameters->mission_duration / 100;
+         trajectory.back().time <
+         parameters->first_time + parameters->mission_duration;
+         t += parameters->mission_duration / 100) {
+      if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
+        break;
+      }
+      next_analysis_percentage_ =
+          100 * (trajectory.back().time - parameters->first_time) /
+          parameters->mission_duration;
     }
+    enum class PrimaryCentredTag { tag };
+    using PrimaryCentred = Frame<PrimaryCentredTag,
+                                 PrimaryCentredTag::tag,
+                                 /*frame_is_inertial=*/false>;
+    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
+        primary_centred(ephemeris_, parameters->primary);
+    DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
+    for (auto const& [time, degrees_of_freedom] : trajectory) {
+      primary_centred_trajectory.Append(
+          time, primary_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
+    }
+
+    auto const elements = OrbitalElements::ForTrajectory(
+        primary_centred_trajectory, *parameters->primary, MasslessBody{});
+    if (elements.ok()) {
+      analysis.elements = elements.ValueOrDie();
+      analysis.recurrence = OrbitRecurrence::ClosestRecurrence(
+          analysis.elements->nodal_period(),
+          analysis.elements->nodal_precession(),
+          *parameters->primary,
+          /*max_abs_Cᴛₒ=*/100);
+      analysis.ground_track =
+          OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
+                                          *parameters->primary,
+                                          analysis.recurrence,
+                                          /*mean_sun=*/std::nullopt);
+    }
+
     {
-      absl::MutexLock l(&prognosticator_lock_);
-      SwapPrognostication(prognostication, status);
+      absl::MutexLock l(&lock_);
+      analysis_ = std::move(analysis);
     }
 
     std::this_thread::sleep_until(wakeup_time);
