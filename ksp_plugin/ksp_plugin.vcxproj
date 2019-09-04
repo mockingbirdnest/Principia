@@ -5,6 +5,22 @@
     <RootNamespace>ksp_plugin</RootNamespace>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)principia.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)principia.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)principia.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="celestial.hpp" />
     <ClInclude Include="equator_relevance_threshold.hpp" />
@@ -71,5 +87,8 @@
       <Message>$([System.String]::Format($(PrincipiaGenerateProfilesMessage), %(FullPath)))</Message>
       <Outputs>$(PrincipiaGenerateProfilesOutputs)</Outputs>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="principia.manifest" />
   </ItemGroup>
 </Project>

@@ -5,6 +5,21 @@
     <RootNamespace>serialization</RootNamespace>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)serialization.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)serialization.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)serialization.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <CustomBuild Include="geometry.proto">
       <FileType>Document</FileType>
@@ -93,5 +108,8 @@
     <ClCompile Include="physics.pb.cc" />
     <ClCompile Include="quantities.pb.cc" />
     <ClCompile Include="testing_utilities.pb.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="serialization.manifest" />
   </ItemGroup>
 </Project>
