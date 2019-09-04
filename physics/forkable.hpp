@@ -74,7 +74,7 @@ class ForkableIterator {
   virtual not_null<It3rator const*> that() const = 0;
 
   // Returns the point in the timeline that is denoted by this iterator.
-  TimelineConstIterator current() const;
+  TimelineConstIterator const& current() const;
 
  private:
   // We want a single representation for an end iterator.  In various places
@@ -132,8 +132,11 @@ class Forkable {
   not_null<Tr4jectory const*> parent() const;
   not_null<Tr4jectory*> parent();
 
-  It3rator Begin() const;
-  It3rator End() const;
+  It3rator begin() const;
+  It3rator end() const;
+
+  typename It3rator::reference front() const;
+  typename It3rator::reference back() const;
 
   It3rator Find(Instant const& time) const;
   It3rator LowerBound(Instant const& time) const;

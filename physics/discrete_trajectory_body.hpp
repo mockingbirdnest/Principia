@@ -26,14 +26,17 @@ Instant const& ForkableTraits<DiscreteTrajectory<Frame>>::time(
 }
 
 template<typename Frame>
-Instant const& DiscreteTrajectoryIterator<Frame>::time() const {
-  return this->current()->first;
+typename DiscreteTrajectoryIterator<Frame>::reference
+DiscreteTrajectoryIterator<Frame>::operator*() const {
+  auto const& it = this->current();
+  return {it->first, it->second};
 }
 
 template<typename Frame>
-DegreesOfFreedom<Frame> const&
-DiscreteTrajectoryIterator<Frame>::degrees_of_freedom() const {
-  return this->current()->second;
+std::optional<typename DiscreteTrajectoryIterator<Frame>::reference>
+    DiscreteTrajectoryIterator<Frame>::operator->() const {
+  auto const& it = this->current();
+  return std::make_optional<reference>({it->first, it->second});
 }
 
 template<typename Frame>
@@ -58,18 +61,12 @@ using base::make_not_null_unique;
 using numerics::FitHermiteSpline;
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::Iterator
-DiscreteTrajectory<Frame>::last() const {
-  return --this->End();
-}
-
-template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*>
 DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
   // May be at |timeline_end()| if |time| is the fork time of this object.
   auto timeline_it = timeline_.find(time);
   CHECK(timeline_it != timeline_end() ||
-        (!this->is_root() && time == this->Fork().time()))
+        (!this->is_root() && time == this->Fork()->time))
       << "NewForkWithCopy at nonexistent time " << time;
 
   auto const fork = this->NewFork(timeline_it);
@@ -87,7 +84,7 @@ DiscreteTrajectory<Frame>::NewForkWithoutCopy(Instant const& time) {
   // May be at |timeline_end()| if |time| is the fork time of this object.
   auto timeline_it = timeline_.find(time);
   CHECK(timeline_it != timeline_end() ||
-        (!this->is_root() && time == this->Fork().time()))
+        (!this->is_root() && time == this->Fork()->time))
       << "NewForkWithoutCopy at nonexistent time " << time;
 
   return this->NewFork(timeline_it);
@@ -111,7 +108,7 @@ void DiscreteTrajectory<Frame>::AttachFork(
   CHECK(!this->Empty());
 
   auto& fork_timeline = fork->timeline_;
-  auto const this_last = last();
+  auto const this_last = --this->end();
 
   // Determine if |fork| already has a point matching the end of this
   // trajectory.
@@ -119,13 +116,13 @@ void DiscreteTrajectory<Frame>::AttachFork(
   if (fork_timeline.empty()) {
     must_prepend = true;
   } else {
-    CHECK_LE(this_last.time(), fork_timeline.begin()->first);
-    auto const it = fork_timeline.find(this_last.time());
+    CHECK_LE(this_last->time, fork_timeline.begin()->first);
+    auto const it = fork_timeline.find(this_last->time);
     if (it == fork_timeline.end()) {
       must_prepend = true;
     } else {
       CHECK(it == fork_timeline.begin())
-          << it->first << " " << this_last.time();
+          << it->first << " " << this_last->time;
       must_prepend = false;
     }
   }
@@ -135,8 +132,8 @@ void DiscreteTrajectory<Frame>::AttachFork(
   // with points at the same time (but possibly distinct degrees of freedom).
   if (must_prepend) {
     fork_timeline.emplace_hint(fork_timeline.begin(),
-                               this_last.time(),
-                               this_last.degrees_of_freedom());
+                               this_last->time,
+                               this_last->degrees_of_freedom);
   }
 
   // Attach |fork| to this trajectory.
@@ -159,7 +156,7 @@ DiscreteTrajectory<Frame>::DetachFork() {
   // beginning of the timeline.
   auto const fork_it = this->Fork();
   auto const begin_it = timeline_.emplace_hint(
-      timeline_.begin(), fork_it.time(), fork_it.degrees_of_freedom());
+      timeline_.begin(), fork_it->time, fork_it->degrees_of_freedom);
   CHECK(begin_it == timeline_.begin());
 
   // Detach this trajectory and tell the caller that it owns the pieces.
@@ -170,14 +167,14 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  CHECK(this->is_root() || time > this->Fork().time())
+  CHECK(this->is_root() || time > this->Fork()->time)
        << "Append at " << time << " which is before fork time "
-       << this->Fork().time();
+       << this->Fork()->time;
 
   if (!timeline_.empty() && timeline_.cbegin()->first == time) {
     LOG(WARNING) << "Append at existing time " << time
-                 << ", time range = [" << this->Begin().time() << ", "
-                 << last().time() << "]";
+                 << ", time range = [" << this->front().time << ", "
+                 << back().time << "]";
     return;
   }
   auto it = timeline_.emplace_hint(timeline_.end(),
@@ -191,7 +188,7 @@ void DiscreteTrajectory<Frame>::Append(
     if (timeline_.size() == 1) {
       downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
     } else {
-      this->CheckNoForksBefore(last().time());
+      this->CheckNoForksBefore(back().time);
       downsampling_->increment_dense_intervals(timeline_);
       if (downsampling_->reached_max_dense_intervals()) {
         std::vector<TimelineConstIterator> dense_iterators;
@@ -291,12 +288,12 @@ void DiscreteTrajectory<Frame>::ClearDownsampling() {
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_min() const {
-  return this->Empty() ? InfiniteFuture : this->Begin().time();
+  return this->Empty() ? InfiniteFuture : this->front().time;
 }
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_max() const {
-  return this->Empty() ? InfinitePast : last().time();
+  return this->Empty() ? InfinitePast : back().time;
 }
 
 template<typename Frame>
@@ -535,13 +532,13 @@ Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
   // This is the upper bound of the interval upon which we will do the
   // interpolation.
   auto const upper = this->LowerBound(time);
-  auto const lower = upper == this->Begin() ? upper : --Iterator{upper};
+  auto const lower = upper == this->begin() ? upper : --Iterator{upper};
   return Hermite3<Instant, Position<Frame>>{
-      {lower.time(), upper.time()},
-      {lower.degrees_of_freedom().position(),
-       upper.degrees_of_freedom().position()},
-      {lower.degrees_of_freedom().velocity(),
-       upper.degrees_of_freedom().velocity()}};
+      {lower->time, upper->time},
+      {lower->degrees_of_freedom.position(),
+       upper->degrees_of_freedom.position()},
+      {lower->degrees_of_freedom.velocity(),
+       upper->degrees_of_freedom.velocity()}};
 }
 
 }  // namespace internal_discrete_trajectory

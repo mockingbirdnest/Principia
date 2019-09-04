@@ -190,8 +190,8 @@ void RunBenchmark(benchmark::State& state,
   // This is the time of a lunar eclipse in January 2000.
   constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   while (state.KeepRunning()) {
-    lines = planetarium.PlotMethod2(satellites.goes_8_trajectory().Begin(),
-                                    satellites.goes_8_trajectory().End(),
+    lines = planetarium.PlotMethod2(satellites.goes_8_trajectory().begin(),
+                                    satellites.goes_8_trajectory().end(),
                                     now,
                                     /*reverse=*/false);
     total_lines += lines.size();

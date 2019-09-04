@@ -49,7 +49,7 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   prediction.Fork(),
-                                  prediction.End(),
+                                  prediction.end(),
                                   FromXYZ<Position<World>>(sun_world_position),
                                   max_points,
                                   rendered_apoapsides,
@@ -77,7 +77,7 @@ void principia__RenderedPredictionClosestApproaches(
   std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
       prediction.Fork(),
-      prediction.End(),
+      prediction.end(),
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_closest_approaches);
@@ -101,7 +101,7 @@ void principia__RenderedPredictionNodes(Plugin const* const plugin,
   std::unique_ptr<DiscreteTrajectory<World>> rendered_ascending;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_descending;
   plugin->ComputeAndRenderNodes(prediction.Fork(),
-                                prediction.End(),
+                                prediction.end(),
                                 FromXYZ<Position<World>>(sun_world_position),
                                 max_points,
                                 rendered_ascending,

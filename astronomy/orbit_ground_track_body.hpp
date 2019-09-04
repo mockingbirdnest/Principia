@@ -31,16 +31,16 @@ Angle CelestialLongitude(Position<PrimaryCentred> const& q) {
 template<typename Iterator, typename Inertial>
 Angle PlanetocentricLongitude(Iterator const& it,
                               RotatingBody<Inertial> const& primary) {
-  return CelestialLongitude(it.degrees_of_freedom().position()) -
-         primary.AngleAt(it.time()) - π / 2 * Radian;
+  return CelestialLongitude(it->degrees_of_freedom.position()) -
+         primary.AngleAt(it->time) - π / 2 * Radian;
 }
 
 // The resulting angle is not normalized.
 template<typename Iterator>
 Angle MeanSolarTime(Iterator const& it,
                     OrbitGroundTrack::MeanSun const& mean_sun) {
-  Time const t = it.time() - mean_sun.epoch;
-  return π * Radian + CelestialLongitude(it.degrees_of_freedom().position()) -
+  Time const t = it->time - mean_sun.epoch;
+  return π * Radian + CelestialLongitude(it->degrees_of_freedom.position()) -
          (mean_sun.mean_longitude_at_epoch +
           (2 * π * Radian * t / mean_sun.year));
 }
@@ -51,7 +51,7 @@ Interval<Angle> MeanSolarTimesOfNodes(
     OrbitGroundTrack::MeanSun const& mean_sun) {
   Interval<Angle> mean_solar_times;
   std::optional<Angle> mean_solar_time;
-  for (auto node = nodes.Begin(); node != nodes.End(); ++node) {
+  for (auto node = nodes.begin(); node != nodes.end(); ++node) {
     if (mean_solar_time.has_value()) {
       mean_solar_time =
           UnwindFrom(*mean_solar_time, MeanSolarTime(node, mean_sun));
@@ -71,8 +71,8 @@ Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
     std::optional<Angle>& initial_offset) {
   Interval<Angle> reduced_longitudes;
   std::optional<Angle> reduced_longitude;
-  for (auto [node, n] = std::make_pair(nodes.Begin(), 0);
-       node != nodes.End();
+  for (auto [node, n] = std::make_pair(nodes.begin(), 0);
+       node != nodes.end();
        ++node, ++n) {
     Angle const planetocentric_longitude =
         PlanetocentricLongitude(node, primary);
@@ -103,8 +103,8 @@ OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
   DiscreteTrajectory<PrimaryCentred> ascending_nodes;
   DiscreteTrajectory<PrimaryCentred> descending_nodes;
   OrbitGroundTrack ground_track;
-  ComputeNodes(trajectory.Begin(),
-               trajectory.End(),
+  ComputeNodes(trajectory.begin(),
+               trajectory.end(),
                Vector<double, PrimaryCentred>({0, 0, 1}),
                /*max_points=*/std::numeric_limits<int>::max(),
                ascending_nodes,

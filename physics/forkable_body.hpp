@@ -101,7 +101,7 @@ It3rator& ForkableIterator<Tr4jectory, It3rator>::operator--() {
 }
 
 template<typename Tr4jectory, typename It3rator>
-typename ForkableIterator<Tr4jectory, It3rator>::TimelineConstIterator
+typename ForkableIterator<Tr4jectory, It3rator>::TimelineConstIterator const&
 ForkableIterator<Tr4jectory, It3rator>::current() const {
   return current_;
 }
@@ -175,19 +175,31 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::parent() {
 }
 
 template<typename Tr4jectory, typename It3rator>
-It3rator Forkable<Tr4jectory, It3rator>::Begin() const {
+It3rator Forkable<Tr4jectory, It3rator>::begin() const {
   not_null<Tr4jectory const*> ancestor = root();
   return Wrap(ancestor, ancestor->timeline_begin());
 }
 
 template<typename Tr4jectory, typename It3rator>
-It3rator Forkable<Tr4jectory, It3rator>::End() const {
+It3rator Forkable<Tr4jectory, It3rator>::end() const {
   not_null<Tr4jectory const*> const ancestor = that();
   It3rator iterator;
   iterator.ancestry_.push_front(ancestor);
   iterator.current_ = ancestor->timeline_end();
   iterator.CheckNormalizedIfEnd();
   return iterator;
+}
+
+template<typename Tr4jectory, typename It3rator>
+typename It3rator::reference Forkable<Tr4jectory, It3rator>::front() const {
+  // TODO(phl): This can be implemented more efficiently.
+  return *begin();
+}
+
+template<typename Tr4jectory, typename It3rator>
+typename It3rator::reference Forkable<Tr4jectory, It3rator>::back() const {
+  // TODO(phl): This can be implemented more efficiently.
+  return *--end();
 }
 
 template<typename Tr4jectory, typename It3rator>

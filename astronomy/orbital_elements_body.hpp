@@ -52,7 +52,8 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
         "trajectory does not span one sidereal period: sidereal period is " +
             DebugString(orbital_elements.sidereal_period_) +
             ", trajectory spans " +
-            DebugString(trajectory.last().time() - trajectory.Begin().time()));
+            DebugString(trajectory.back().time -
+                        trajectory.front().time));
   }
   orbital_elements.mean_classical_elements_ =
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
@@ -113,12 +114,12 @@ OrbitalElements::OsculatingEquinoctialElements(
   DegreesOfFreedom<PrimaryCentred> const primary_dof{
       PrimaryCentred::origin, Velocity<PrimaryCentred>{}};
   std::vector<EquinoctialElements> result;
-  for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
     auto const osculating_elements =
         KeplerOrbit<PrimaryCentred>(primary,
                                     secondary,
-                                    it.degrees_of_freedom() - primary_dof,
-                                    it.time())
+                                    degrees_of_freedom - primary_dof,
+                                    time)
             .elements_at_epoch();
     double const& e = *osculating_elements.eccentricity;
     Angle const& ϖ = *osculating_elements.longitude_of_periapsis;
@@ -128,7 +129,7 @@ OrbitalElements::OsculatingEquinoctialElements(
     double const tg_½i = Tan(i / 2);
     double const cotg_½i = 1 / tg_½i;
     result.push_back(
-        {/*.t = */ it.time(),
+        {/*.t = */ time,
          /*.a = */ *osculating_elements.semimajor_axis,
          /*.h = */ e * Sin(ϖ),
          /*.k = */ e * Cos(ϖ),

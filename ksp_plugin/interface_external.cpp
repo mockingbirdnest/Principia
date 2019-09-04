@@ -201,9 +201,9 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
       plugin->NewBodyCentredNonRotatingNavigationFrame(central_body_index);
   DiscreteTrajectory<Navigation> coast;
   for (auto it = coast_begin; it != coast_end; ++it) {
-    coast.Append(it.time(),
-                 body_centred_inertial->ToThisFrameAtTime(it.time())(
-                     it.degrees_of_freedom()));
+    coast.Append(it->time,
+                 body_centred_inertial->ToThisFrameAtTime(it->time)(
+                     it->degrees_of_freedom));
   }
 
   Instant const current_time = plugin->CurrentTime();
@@ -228,34 +228,34 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
       from_world_body_centred_inertial.rigid_transformation()(
           FromXYZ<Position<World>>(world_body_centred_reference_position));
   DiscreteTrajectory<Navigation> immobile_reference;
-  immobile_reference.Append(coast.Begin().time(),
+  immobile_reference.Append(coast.front().time,
                             {reference_position, Velocity<Navigation>{}});
   if (coast.Size() > 1) {
-    immobile_reference.Append(coast.last().time(),
+    immobile_reference.Append(coast.back().time,
                               {reference_position, Velocity<Navigation>{}});
   }
   DiscreteTrajectory<Navigation> apoapsides;
   DiscreteTrajectory<Navigation> periapsides;
   ComputeApsides(/*reference=*/immobile_reference,
-                 coast.Begin(),
-                 coast.End(),
+                 coast.begin(),
+                 coast.end(),
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
   if (periapsides.Empty()) {
     bool const begin_is_nearest =
-        (coast.Begin().degrees_of_freedom().position() -
+        (coast.front().degrees_of_freedom.position() -
          reference_position).Norm²() <
-        (coast.last().degrees_of_freedom().position() -
+        (coast.back().degrees_of_freedom.position() -
          reference_position).Norm²();
     *world_body_centred_nearest_degrees_of_freedom =
         ToQP(to_world_body_centred_inertial(
-            begin_is_nearest ? coast.Begin().degrees_of_freedom()
-                             : coast.last().degrees_of_freedom()));
+            begin_is_nearest ? coast.front().degrees_of_freedom
+                             : coast.back().degrees_of_freedom));
   } else {
     *world_body_centred_nearest_degrees_of_freedom =
         ToQP(to_world_body_centred_inertial(
-            periapsides.Begin().degrees_of_freedom()));
+            periapsides.front().degrees_of_freedom));
   }
   return m.Return(OK());
 }

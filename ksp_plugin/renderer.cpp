@@ -83,8 +83,8 @@ Renderer::RenderBarycentricTrajectoryInWorld(
       RenderBarycentricTrajectoryInPlotting(begin, end);
   auto trajectory_in_world =
       RenderPlottingTrajectoryInWorld(time,
-                                      trajectory_in_plotting_frame->Begin(),
-                                      trajectory_in_plotting_frame->End(),
+                                      trajectory_in_plotting_frame->begin(),
+                                      trajectory_in_plotting_frame->end(),
                                       sun_world_position,
                                       planetarium_rotation);
   return trajectory_in_world;
@@ -96,16 +96,16 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
   for (auto it = begin; it != end; ++it) {
-    Instant const& t = it.time();
+    auto const& [time, degrees_of_freedom] = *it;
     if (target_) {
       auto const& prediction = target_->vessel->prediction();
-      if (t < prediction.t_min()) {
+      if (time < prediction.t_min()) {
         continue;
-      } else if (t > prediction.t_max()) {
+      } else if (time > prediction.t_max()) {
         break;
       }
     }
-    trajectory->Append(t, BarycentricToPlotting(t)(it.degrees_of_freedom()));
+    trajectory->Append(time, BarycentricToPlotting(time)(degrees_of_freedom));
   }
   return trajectory;
 }
@@ -142,14 +142,15 @@ Renderer::RenderPlottingTrajectoryInWorld(
       from_plotting_frame_to_world_at_current_time =
           PlottingToWorld(time, sun_world_position, planetarium_rotation);
   for (auto it = begin; it != end; ++it) {
+    auto const& [time, degrees_of_freedom] = *it;
     DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
-        it.degrees_of_freedom();
+        degrees_of_freedom;
     DegreesOfFreedom<World> const world_degrees_of_freedom = {
         from_plotting_frame_to_world_at_current_time(
             navigation_degrees_of_freedom.position()),
         geometry::Identity<Navigation, World>{}(
             navigation_degrees_of_freedom.velocity())};
-    trajectory->Append(it.time(), world_degrees_of_freedom);
+    trajectory->Append(time, world_degrees_of_freedom);
   }
   return trajectory;
 }
@@ -193,19 +194,18 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const last = vessel.psychohistory().last();
-  Instant const& time = last.time();
+  auto const back = vessel.psychohistory().back();
   DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
-      last.degrees_of_freedom();
+      back.degrees_of_freedom;
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
-      BarycentricToPlotting(time)(barycentric_degrees_of_freedom);
+      BarycentricToPlotting(back.time)(barycentric_degrees_of_freedom);
   Rotation<Frenet<Navigation>, Navigation> const
       frenet_frame_to_plotting_frame =
           GetPlottingFrame()->FrenetFrame(
-              time,
+              back.time,
               plotting_frame_degrees_of_freedom);
 
-  return PlottingToWorld(time, planetarium_rotation) *
+  return PlottingToWorld(back.time, planetarium_rotation) *
          frenet_frame_to_plotting_frame.Forget();
 }
 
@@ -213,13 +213,13 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     NavigationFrame const& navigation_frame,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const last = vessel.psychohistory().last();
-  auto const to_navigation = navigation_frame.ToThisFrameAtTime(last.time());
+  auto const back = vessel.psychohistory().back();
+  auto const to_navigation = navigation_frame.ToThisFrameAtTime(back.time);
   auto const from_navigation = to_navigation.orthogonal_map().Inverse();
   auto const frenet_frame =
       navigation_frame.FrenetFrame(
-          last.time(),
-          to_navigation(last.degrees_of_freedom())).Forget();
+          back.time,
+          to_navigation(back.degrees_of_freedom)).Forget();
   return BarycentricToWorld(planetarium_rotation) * from_navigation *
          frenet_frame;
 }

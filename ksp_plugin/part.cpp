@@ -86,7 +86,7 @@ DiscreteTrajectory<Barycentric>::Iterator Part::history_begin() {
 }
 
 DiscreteTrajectory<Barycentric>::Iterator Part::history_end() {
-  return history_->End();
+  return history_->end();
 }
 
 DiscreteTrajectory<Barycentric>::Iterator Part::psychohistory_begin() {
@@ -102,7 +102,7 @@ DiscreteTrajectory<Barycentric>::Iterator Part::psychohistory_end() {
   if (psychohistory_ == nullptr) {
     psychohistory_ = history_->NewForkAtLast();
   }
-  return psychohistory_->End();
+  return psychohistory_->end();
 }
 
 void Part::AppendToHistory(
@@ -189,11 +189,13 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
         /*forks=*/{});
     // The |prehistory_| and |history_| have been created by the constructor
     // above.  Construct the various trajectories from the |tail|.
-    for (auto it = tail->Begin(); it != tail->End(); ++it) {
-      if (it == tail->last() && !message.tail_is_authoritative()) {
-        part->AppendToPsychohistory(it.time(), it.degrees_of_freedom());
+    for (auto it = tail->begin(); it != tail->end();) {
+      auto const& [time, degrees_of_freedom] = *it;
+      ++it;
+      if (it == tail->end() && !message.tail_is_authoritative()) {
+        part->AppendToPsychohistory(time, degrees_of_freedom);
       } else {
-        part->AppendToHistory(it.time(), it.degrees_of_freedom());
+        part->AppendToHistory(time, degrees_of_freedom);
       }
     }
   } else {
