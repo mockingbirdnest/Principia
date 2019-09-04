@@ -71,6 +71,9 @@
     <ClInclude Include="equator_relevance_threshold.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="orbit_analyser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
@@ -158,6 +161,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\physics\protector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="orbit_analyser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
