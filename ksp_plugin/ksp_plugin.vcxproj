@@ -9,8 +9,6 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Manifest>
       <AdditionalManifestFiles>$(ProjectDir)principia.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
-      <AdditionalOptions>
-      </AdditionalOptions>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
