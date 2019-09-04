@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity name="serialization.dll" version="2019.08.30.11" type="win32"/>
+  <assemblyIdentity name="serialization.dll" version="0.0.0.0" type="win32"/>
   <file name="libprotobuf.dll"/>
 </assembly>
