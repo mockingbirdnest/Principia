@@ -17,10 +17,18 @@ OrbitAnalyser::OrbitAnalyser(not_null<Ephemeris<Barycentric>*> const ephemeris,
                              Ephemeris<Barycentric>::FixedStepParameters const
                                  analysed_trajectory_parameters)
     : ephemeris_(ephemeris),
-      analysed_trajectory_parameters_(analysed_trajectory_parameters) {}
+      analysed_trajectory_parameters_(analysed_trajectory_parameters),
+      analyser_([this] { RepeatedlyAnalyseOrbit(); }) {}
+
+OrbitAnalyser::~OrbitAnalyser() {
+  if (analyser_.joinable()) {
+    keep_analysing_ = false;
+    analyser_.join();
+  }
+}
 
 void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
-  for (;;) {
+  while (keep_analysing_) {
     // No point in going faster than 50 Hz.
     std::chrono::steady_clock::time_point const wakeup_time =
         std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
@@ -33,10 +41,6 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
         continue;
       }
       std::swap(parameters, parameters_);
-    }
-
-    if (parameters_->shutdown) {
-      break;
     }
 
     Analysis analysis{parameters->first_time,
@@ -61,7 +65,11 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       next_analysis_percentage_ =
           100 * (trajectory.back().time - parameters->first_time) /
           parameters->mission_duration;
+      if (!keep_analysing_) {
+        return;
+      }
     }
+
     enum class PrimaryCentredTag { tag };
     using PrimaryCentred = Frame<PrimaryCentredTag,
                                  PrimaryCentredTag::tag,
@@ -92,7 +100,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
 
     {
       absl::MutexLock l(&lock_);
-      analysis_ = std::move(analysis);
+      next_analysis_ = std::move(analysis);
     }
 
     std::this_thread::sleep_until(wakeup_time);

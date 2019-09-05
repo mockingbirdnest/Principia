@@ -38,7 +38,6 @@ class OrbitAnalyser {
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
     Time mission_duration;
     not_null<RotatingBody<Barycentric> const*> primary;
-    bool shutdown = false;
   };
 
   struct Analysis {
@@ -53,6 +52,7 @@ class OrbitAnalyser {
   OrbitAnalyser(
       not_null<Ephemeris<Barycentric>*> ephemeris,
       Ephemeris<Barycentric>::FixedStepParameters analysed_trajectory_parameters);
+  ~OrbitAnalyser();
 
  private:
   void RepeatedlyAnalyseOrbit();
@@ -61,12 +61,23 @@ class OrbitAnalyser {
   Ephemeris<Barycentric>::FixedStepParameters const
       analysed_trajectory_parameters_;
 
+  std::optional<Analysis> analysis_;
+
   mutable absl::Mutex lock_;
   std::thread analyser_;
-  std::optional<Analysis> analysis_;
+  // |parameters_| is set by the main thread; it is read and cleared by the
+  // |analyser_| thread.
   std::optional<Parameters> parameters_ GUARDED_BY(lock_);
+  // |next_analysis_| is set by the |analyser_| thread; it is read and cleared
+  // by the main thread.
   std::optional<Analysis> next_analysis_ GUARDED_BY(lock_);
-  std::atomic_int8_t next_analysis_percentage_;
+  // |next_analysis_percentage_| is set by the |analyser_| thread; it tracks
+  // progress in computing |next_anlaysis_|.
+  std::atomic_int8_t next_analysis_percentage_ = 0;
+  // |keep_analysing_| is tested |analyser_| thread, which cooperatively aborts
+  // if it is false; it is set at construction, and cleared by the main thread
+  // at destruction.
+  std::atomic_bool keep_analysing_ = true;
 };
 
 }  // namespace internal_orbit_analyser
