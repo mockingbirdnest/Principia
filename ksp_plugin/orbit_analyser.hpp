@@ -32,13 +32,6 @@ using quantities::Time;
 
 class OrbitAnalyser {
  public:
-  struct Parameters {
-    Ephemeris<Barycentric>::Guard guard;
-    Instant first_time;
-    DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
-    Time mission_duration;
-    not_null<RotatingBody<Barycentric> const*> primary;
-  };
 
   struct Analysis {
     Instant first_time;
@@ -54,7 +47,27 @@ class OrbitAnalyser {
       Ephemeris<Barycentric>::FixedStepParameters analysed_trajectory_parameters);
   ~OrbitAnalyser();
 
+  // Sets the parameters that will be used for the computation of the next analysis.
+  void RequestAnalysis(
+      Instant const& first_time,
+      DegreesOfFreedom<Barycentric> const& first_degrees_of_freedom,
+      Time const& mission_duration,
+      not_null<RotatingBody<Barycentric> const*> primary);
+
+  // Sets |analysis()| to the latest computed analysis.
+  void RefreshAnalysis();
+
+  std::optional<Analysis> const& analysis();
+
  private:
+  struct Parameters {
+    Ephemeris<Barycentric>::Guard guard;
+    Instant first_time;
+    DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
+    Time mission_duration;
+    not_null<RotatingBody<Barycentric> const*> primary;
+  };
+
   void RepeatedlyAnalyseOrbit();
 
   not_null<Ephemeris<Barycentric>*> const ephemeris_;

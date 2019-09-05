@@ -27,6 +27,33 @@ OrbitAnalyser::~OrbitAnalyser() {
   }
 }
 
+void OrbitAnalyser::RequestAnalysis(
+    Instant const& first_time,
+    DegreesOfFreedom<Barycentric> const& first_degrees_of_freedom,
+    Time const& mission_duration,
+    not_null<RotatingBody<Barycentric> const*> primary) {
+  Ephemeris<Barycentric>::Guard guard(ephemeris_);
+  if (ephemeris_->t_min() > first_time) {
+    // Too much has been forgotten; we cannot perform this analysis.
+    return;
+  }
+  absl::MutexLock l(&lock_);
+  parameters_ = {std::move(guard),
+                 first_time,
+                 first_degrees_of_freedom,
+                 mission_duration,
+                 primary};
+}
+
+void OrbitAnalyser::RefreshAnalysis() {
+  absl::MutexLock l(&lock_);
+  analysis_ = next_analysis_;
+}
+
+std::optional<OrbitAnalyser::Analysis> const& OrbitAnalyser::analysis() {
+  return analysis_;
+}
+
 void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
   while (keep_analysing_) {
     // No point in going faster than 50 Hz.
