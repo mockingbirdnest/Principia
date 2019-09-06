@@ -5,6 +5,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
@@ -30,6 +31,16 @@ class SymmetricBilinearForm {
   Product<Scalar, Product<LScalar, RScalar>> operator()(
       Vector<LScalar, Frame> const& left,
       Vector<RScalar, Frame> const& right) const;
+
+  //TODO(phl): struct?
+  template<typename Eigenframe>
+  using Eigensystem = std::pair<SymmetricBilinearForm<Scalar, Eigenframe>,
+                                OrthogonalMap<Frame, Eigenframe>>;
+
+  // Computes a form equivalent to the current one but diagonalized with 
+  // decreasing eigenvalues.
+  template<typename Eigenframe>
+  Eigensystem<Eigenframe> Diagonalize() const;
 
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;

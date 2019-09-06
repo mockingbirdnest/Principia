@@ -27,6 +27,8 @@ class SymmetricBilinearFormTest : public ::testing::Test {
  protected:
   using World =
       Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
+  using Eigenworld =
+    Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, false>;
 
   SymmetricBilinearFormTest() {}
 
@@ -207,6 +209,13 @@ TEST_F(SymmetricBilinearFormTest, Serialization) {
   serialization::SymmetricBilinearForm message2;
   g.WriteToMessage(&message2);
   EXPECT_THAT(message2, EqualsProto(message1));
+}
+
+TEST_F(SymmetricBilinearFormTest, Diagonalize) {
+  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  0,  0},
+                                                              {0, -3,  0},
+                                                              {0,  0,  2}));
+  auto const fd = f.Diagonalize<Eigenworld>();
 }
 
 }  // namespace internal_symmetric_bilinear_form
