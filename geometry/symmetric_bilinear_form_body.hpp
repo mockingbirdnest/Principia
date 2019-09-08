@@ -5,8 +5,11 @@
 
 #include <string>
 
+#include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
@@ -16,6 +19,7 @@ using quantities::Angle;
 using quantities::ArcCos;
 using quantities::Cos;
 using quantities::Sqrt;
+using quantities::si::Radian;
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>& SymmetricBilinearForm<Scalar, Frame>::
@@ -56,15 +60,40 @@ SymmetricBilinearForm<Scalar, Frame>::Eigensystem<Eigenframe>
 SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   // https://en.wikipedia.org/wiki/Eigenvalue_algorithm#3%C3%973_matrices
   R3x3Matrix<Scalar> const& A = matrix_;
+  auto const I = R3x3Matrix<double>::Identity();
   Scalar const q = A.Trace() / 3;
-  R3x3Matrix<Scalar> const A_minus_qI = A - q * R3x3Matrix<double>::Identity();
+  R3x3Matrix<Scalar> const A_minus_qI = A - q * I;
   Scalar const p = Sqrt((A_minus_qI * A_minus_qI).Trace() / 6);
   R3x3Matrix<double> const B = A_minus_qI / p;
-  Scalar const det_B = B.Determinant();
+  double const det_B = B.Determinant();
   Angle const θ = ArcCos(det_B * 0.5);
   double const β₀ = 2 * Cos(θ / 3);
-  double const β₁ = 2 * Cos((θ + 2 * π) / 3);
-  double const β₂ = 2 * Cos((θ + 4 * π) / 3);
+  double const β₁ = 2 * Cos((θ + 2 * π * Radian) / 3);
+  double const β₂ = 2 * Cos((θ + 4 * π * Radian) / 3);
+  Scalar const α₀ = p * β₀ + q;
+  Scalar const α₁ = p * β₁ + q;
+  Scalar const α₂ = p * β₂ + q;
+  R3x3Matrix<Scalar> const A_minus_α₀I = A - α₀ * I;
+  R3x3Matrix<Scalar> const A_minus_α₁I = A - α₁ * I;
+  R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
+  Scalar const zero;
+  SymmetricBilinearForm<Scalar, Eigenframe> form(
+      R3x3Matrix<Scalar>({  α₀, zero, zero},
+                         {zero,   α₁, zero},
+                         {zero, zero,   α₂}));
+  // Use the Cayley-Hamilton theorem to efficiently find the eigenvectors.
+  auto const m₀ = A_minus_α₁I * A_minus_α₂I;
+  auto const m₁ = A_minus_α₂I * A_minus_α₀I;
+  auto const m₂ = A_minus_α₀I * A_minus_α₁I;
+  R3Element<double> v{1, 1, 1};//TODO(phl):Dodgy!
+  auto v0 = NormalizeOrZero(m₀ * v);
+  auto v1 = NormalizeOrZero(m₁ * v);
+  auto v2 = NormalizeOrZero(m₂ * v);
+  LOG(ERROR)<<v0<<" "<<v1<<" "<<v2;
+  Rotation<Frame, Eigenframe> const rotation{Vector<double, Frame>(v0),
+                                             Vector<double, Frame>(v1),
+                                             Bivector<double, Frame>(v2)};//TODO(phl):Dodgy!
+  return {form, rotation.Forget()};
 }
 
 template<typename Scalar, typename Frame>

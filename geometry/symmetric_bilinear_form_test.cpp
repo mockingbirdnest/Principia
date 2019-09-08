@@ -32,7 +32,8 @@ class SymmetricBilinearFormTest : public ::testing::Test {
 
   SymmetricBilinearFormTest() {}
 
-  SymmetricBilinearForm<Length, World> MakeSymmetricBilinearForm(
+  template<typename Frame>
+  SymmetricBilinearForm<Length, Frame> MakeSymmetricBilinearForm(
       R3x3Matrix<double> const& untyped_matrix) {
     R3x3Matrix<Length> const typed_matrix(
         R3Element<double>(
@@ -44,74 +45,85 @@ class SymmetricBilinearFormTest : public ::testing::Test {
         R3Element<double>(
             untyped_matrix(2, 0), untyped_matrix(2, 1), untyped_matrix(2, 2)) *
             Metre);
-    return SymmetricBilinearForm<Length, World>(typed_matrix);
+    return SymmetricBilinearForm<Length, Frame>(typed_matrix);
   }
 };
 
 TEST_F(SymmetricBilinearFormTest, Equality) {
-  auto const f1 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
-                                                               {2, -3,  5},
-                                                               {4,  5,  0}));
-  auto const f2 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1, 2, 3},
-                                                               {2, 4, 0},
-                                                               {3, 0, 5}));
+  auto const f1 = MakeSymmetricBilinearForm<World>(
+                      R3x3Matrix<double>({1,  2,  4},
+                                         {2, -3,  5},
+                                         {4,  5,  0}));
+  auto const f2 = MakeSymmetricBilinearForm<World>(
+                      R3x3Matrix<double>({1, 2, 3},
+                                         {2, 4, 0},
+                                         {3, 0, 5}));
   EXPECT_TRUE(f1 == f1);
   EXPECT_TRUE(f1 != f2);
 }
 
 TEST_F(SymmetricBilinearFormTest, UnaryOperators) {
-  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
-                                                              {2, -3,  5},
-                                                              {4,  5,  0}));
+  auto const f = MakeSymmetricBilinearForm<World>(
+                     R3x3Matrix<double>({1,  2,  4},
+                                        {2, -3,  5},
+                                        {4,  5,  0}));
   EXPECT_THAT(+f,
-              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
-                                                              {2, -3,  5},
-                                                              {4,  5,  0}))));
+              Eq(MakeSymmetricBilinearForm<World>(
+                  R3x3Matrix<double>({1,  2,  4},
+                                     {2, -3,  5},
+                                     {4,  5,  0}))));
   EXPECT_THAT(-f,
-              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({-1, -2, -4},
-                                                              {-2,  3, -5},
-                                                              {-4, -5,  0}))));
+              Eq(MakeSymmetricBilinearForm<World>(
+                  R3x3Matrix<double>({-1, -2, -4},
+                                     {-2,  3, -5},
+                                     {-4, -5,  0}))));
 }
 
 TEST_F(SymmetricBilinearFormTest, BinaryOperators) {
-  auto const f1 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
-                                                               {2, -3,  5},
-                                                               {4,  5,  0}));
-  auto const f2 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1, 2, 3},
-                                                               {2, 4, 0},
-                                                               {3, 0, 5}));
+  auto const f1 = MakeSymmetricBilinearForm<World>(
+                      R3x3Matrix<double>({1,  2,  4},
+                                         {2, -3,  5},
+                                         {4,  5,  0}));
+  auto const f2 = MakeSymmetricBilinearForm<World>(
+                      R3x3Matrix<double>({1, 2, 3},
+                                         {2, 4, 0},
+                                         {3, 0, 5}));
   EXPECT_THAT(f1 + f2,
-              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({2, 4, 7},
-                                                              {4, 1, 5},
-                                                              {7, 5, 5}))));
+              Eq(MakeSymmetricBilinearForm<World>(
+                  R3x3Matrix<double>({2, 4, 7},
+                                     {4, 1, 5},
+                                     {7, 5, 5}))));
   EXPECT_THAT(f1 - f2,
-              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({0,  0,  1},
-                                                              {0, -7,  5},
-                                                              {1,  5,  -5}))));
+              Eq(MakeSymmetricBilinearForm<World>(
+                  R3x3Matrix<double>({0,  0,  1},
+                                     {0, -7,  5},
+                                     {1,  5,  -5}))));
   EXPECT_THAT((-2) * f1,
-              Eq(MakeSymmetricBilinearForm(
+              Eq(MakeSymmetricBilinearForm<World>(
                      R3x3Matrix<double>({-2,  -4,  -8},
                                         {-4,   6, -10},
                                         {-8, -10,   0}))));
   EXPECT_THAT(f1 * 3,
-              Eq(MakeSymmetricBilinearForm(
+              Eq(MakeSymmetricBilinearForm<World>(
                      R3x3Matrix<double>({ 3,  6, 12},
                                         { 6, -9, 15},
                                         {12, 15,  0}))));
   EXPECT_THAT(f1 / 2,
-              Eq(MakeSymmetricBilinearForm(
+              Eq(MakeSymmetricBilinearForm<World>(
                      R3x3Matrix<double>({0.5,    1,   2},
                                         {  1, -1.5, 2.5},
                                         {  2,  2.5,   0}))));
 }
 
 TEST_F(SymmetricBilinearFormTest, Assignment) {
-  auto const f1 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
-                                                               {2, -3,  5},
-                                                               {4,  5,  0}));
-  auto const f2 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1, 2, 3},
-                                                               {2, 4, 0},
-                                                               {3, 0, 5}));
+  auto const f1 = MakeSymmetricBilinearForm<World>(
+                      R3x3Matrix<double>({1,  2,  4},
+                                         {2, -3,  5},
+                                         {4,  5,  0}));
+  auto const f2 = MakeSymmetricBilinearForm<World>(
+                      R3x3Matrix<double>({1, 2, 3},
+                                         {2, 4, 0},
+                                         {3, 0, 5}));
   auto a = f1;
   auto b = f1;
   auto c = f1;
@@ -121,29 +133,32 @@ TEST_F(SymmetricBilinearFormTest, Assignment) {
   c *= 3;
   d /= 2;
   EXPECT_THAT(a,
-              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({2, 4, 7},
-                                                              {4, 1, 5},
-                                                              {7, 5, 5}))));
+              Eq(MakeSymmetricBilinearForm<World>(
+                  R3x3Matrix<double>({2, 4, 7},
+                                     {4, 1, 5},
+                                     {7, 5, 5}))));
   EXPECT_THAT(b,
-              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({0,  0,  1},
-                                                              {0, -7,  5},
-                                                              {1,  5,  -5}))));
+              Eq(MakeSymmetricBilinearForm<World>(
+                  R3x3Matrix<double>({0,  0,  1},
+                                     {0, -7,  5},
+                                     {1,  5,  -5}))));
   EXPECT_THAT(c,
-              Eq(MakeSymmetricBilinearForm(
+              Eq(MakeSymmetricBilinearForm<World>(
                      R3x3Matrix<double>({ 3,  6, 12},
                                         { 6, -9, 15},
                                         {12, 15,  0}))));
   EXPECT_THAT(d,
-              Eq(MakeSymmetricBilinearForm(
+              Eq(MakeSymmetricBilinearForm<World>(
                      R3x3Matrix<double>({0.5,    1,   2},
                                         {  1, -1.5, 2.5},
                                         {  2,  2.5,   0}))));
 }
 
 TEST_F(SymmetricBilinearFormTest, LinearMap) {
-  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
-                                                              {2, -3,  5},
-                                                              {4,  5,  0}));
+  auto const f = MakeSymmetricBilinearForm<World>(
+                     R3x3Matrix<double>({1,  2,  4},
+                                        {2, -3,  5},
+                                        {4,  5,  0}));
   Vector<Length, World> v({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   EXPECT_THAT(
       f * v,
@@ -161,16 +176,17 @@ TEST_F(SymmetricBilinearFormTest, SymmetricProduct) {
   Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   Vector<double, World> v2({2.0, 6.0, -5.0});
   EXPECT_THAT(SymmetricProduct(v1, v2),
-              Eq(MakeSymmetricBilinearForm(
+              Eq(MakeSymmetricBilinearForm<World>(
                      R3x3Matrix<double>({   2,     6,  -3.5},
                                         {   6,    18, -10.5},
                                         {-3.5, -10.5,   5}))));
 }
 
 TEST_F(SymmetricBilinearFormTest, Anticommutator) {
-  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
-                                                              {2, -3,  5},
-                                                              {4,  5,  0}));
+  auto const f = MakeSymmetricBilinearForm<World>(
+                     R3x3Matrix<double>({1,  2,  4},
+                                        {2, -3,  5},
+                                        {4,  5,  0}));
   Bivector<Length, World> const b({1.0 * Metre, 3.0 * Metre, -5.0 * Metre});
   EXPECT_THAT(
       Anticommutator(f, b),
@@ -187,18 +203,20 @@ TEST_F(SymmetricBilinearFormTest, InnerProductForm) {
 }
 
 TEST_F(SymmetricBilinearFormTest, Apply) {
-  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
-                                                              {2, -3,  5},
-                                                              {4,  5,  0}));
+  auto const f = MakeSymmetricBilinearForm<World>(
+                     R3x3Matrix<double>({1,  2,  4},
+                                        {2, -3,  5},
+                                        {4,  5,  0}));
   Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   Vector<Length, World> v2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
   EXPECT_THAT(f(v1, v2), Eq(-161 * Pow<3>(Metre)));
 }
 
 TEST_F(SymmetricBilinearFormTest, Serialization) {
-  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
-                                                              {2, -3,  5},
-                                                              {4,  5,  0}));
+  auto const f = MakeSymmetricBilinearForm<World>(
+                     R3x3Matrix<double>({1,  2,  4},
+                                        {2, -3,  5},
+                                        {4,  5,  0}));
   serialization::SymmetricBilinearForm message1;
   f.WriteToMessage(&message1);
   EXPECT_TRUE(message1.has_frame());
@@ -212,10 +230,16 @@ TEST_F(SymmetricBilinearFormTest, Serialization) {
 }
 
 TEST_F(SymmetricBilinearFormTest, Diagonalize) {
-  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  0,  0},
-                                                              {0, -3,  0},
-                                                              {0,  0,  2}));
-  auto const fd = f.Diagonalize<Eigenworld>();
+  auto const f = MakeSymmetricBilinearForm<World>(
+                     R3x3Matrix<double>({1,  0,  0},
+                                        {0, -3,  0},
+                                        {0,  0,  2}));
+  auto const d = f.Diagonalize<Eigenworld>();
+  EXPECT_THAT(d.first, Eq(MakeSymmetricBilinearForm<Eigenworld>(
+                           R3x3Matrix<double>({1,  0, 0},
+                                              {0, -3, 0},
+                                              {0,  0, 2}))));
+
 }
 
 }  // namespace internal_symmetric_bilinear_form

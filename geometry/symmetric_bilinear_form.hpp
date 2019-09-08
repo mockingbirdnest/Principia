@@ -55,6 +55,9 @@ class SymmetricBilinearForm {
   // symmetric.
   R3x3Matrix<Scalar> matrix_;
 
+  template<typename S, typename F>
+  friend class SymmetricBilinearForm;
+
   template<typename F>
   friend SymmetricBilinearForm<double, F> const& InnerProductForm();
 
