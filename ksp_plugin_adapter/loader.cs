@@ -24,7 +24,7 @@ internal static class Loader {
       case PlatformID.Win32NT:
         is_cxx_installed = IsVCRedistInstalled();
         required_cxx_packages =
-            "the Microsoft Visual C++ 2015-2019 Redistributable (x86) - " +
+            "the Microsoft Visual C++ 2015-2019 Redistributable (x64) - " +
             "14.22.27821";
         possible_dll_paths = new [] {@"GameData\Principia\x64\principia.dll"};
         break;
