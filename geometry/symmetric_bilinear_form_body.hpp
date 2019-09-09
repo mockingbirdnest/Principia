@@ -3,6 +3,7 @@
 
 #include "geometry/symmetric_bilinear_form.hpp"
 
+#include <algorithm>
 #include <string>
 
 #include "geometry/grassmann.hpp"

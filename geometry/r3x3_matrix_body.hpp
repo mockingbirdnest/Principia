@@ -29,8 +29,7 @@ Scalar R3x3Matrix<Scalar>::Trace() const {
 }
 
 template<typename Scalar>
-Cube<Scalar> R3x3Matrix<Scalar>::Determinant() const
-{
+Cube<Scalar> R3x3Matrix<Scalar>::Determinant() const {
   return row_x_.x * row_y_.y * row_z_.z +
          row_x_.y * row_y_.z * row_z_.x +
          row_x_.z * row_y_.x * row_z_.y -
