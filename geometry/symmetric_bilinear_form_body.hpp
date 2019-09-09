@@ -70,9 +70,11 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   double const β₀ = 2 * Cos(θ / 3);
   double const β₁ = 2 * Cos((θ + 2 * π * Radian) / 3);
   double const β₂ = 2 * Cos((θ + 4 * π * Radian) / 3);
-  Scalar const α₀ = p * β₀ + q;
-  Scalar const α₁ = p * β₁ + q;
-  Scalar const α₂ = p * β₂ + q;
+  std::array<Scalar, 3> αs = {p * β₀ + q, p * β₁ + q, p * β₂ + q};
+  std::sort(αs.begin(), αs.end(), std::greater<Scalar>());
+  Scalar const& α₀ = αs[0];
+  Scalar const& α₁ = αs[1];
+  Scalar const& α₂ = αs[2];
   R3x3Matrix<Scalar> const A_minus_α₀I = A - α₀ * I;
   R3x3Matrix<Scalar> const A_minus_α₁I = A - α₁ * I;
   R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
