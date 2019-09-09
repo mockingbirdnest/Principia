@@ -247,28 +247,31 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     Vector<double, Eigenworld> const e₀({1, 0, 0});
     Vector<double, Eigenworld> const e₁({0, 1, 0});
     Vector<double, Eigenworld> const e₂({0, 0, 1});
-    EXPECT_THAT(f_eigensystem.first(e₀, e₀), AlmostEquals(-3 * Metre, 1));
-    EXPECT_THAT(f_eigensystem.first(e₀, e₁), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e₀, e₂), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e₁, e₀), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e₁, e₁), AlmostEquals(1 * Metre, 6));
-    EXPECT_THAT(f_eigensystem.first(e₁, e₂), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e₂, e₀), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e₂, e₁), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e₂, e₂), AlmostEquals(2 * Metre, 1));
+    EXPECT_THAT(f_eigensystem.form(e₀, e₀), AlmostEquals(-3 * Metre, 1));
+    EXPECT_THAT(f_eigensystem.form(e₀, e₁), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₀, e₂), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₁, e₀), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₁, e₁), AlmostEquals(1 * Metre, 6));
+    EXPECT_THAT(f_eigensystem.form(e₁, e₂), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₂, e₀), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₂, e₁), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₂, e₂), AlmostEquals(2 * Metre, 1));
 
     Vector<double, World> const w₀({ 0, 1, 0});
     Vector<double, World> const w₁({-1, 0, 0});
     Vector<double, World> const w₂({ 0, 0, 1});
-    EXPECT_THAT(f_eigensystem.second(w₀), Componentwise(AlmostEquals(1, 0),
-                                                        VanishesBefore(1, 1),
-                                                        VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.second(w₁), Componentwise(VanishesBefore(1, 2),
-                                                        AlmostEquals(1, 0),
-                                                        VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.second(w₂), Componentwise(VanishesBefore(1, 0),
-                                                        VanishesBefore(1, 0),
-                                                        AlmostEquals(1, 0)));
+    EXPECT_THAT(f_eigensystem.rotation(w₀),
+                Componentwise(AlmostEquals(1, 0),
+                              VanishesBefore(1, 1),
+                              VanishesBefore(1, 0)));
+    EXPECT_THAT(f_eigensystem.rotation(w₁),
+                Componentwise(VanishesBefore(1, 2),
+                              AlmostEquals(1, 0),
+                              VanishesBefore(1, 0)));
+    EXPECT_THAT(f_eigensystem.rotation(w₂),
+                Componentwise(VanishesBefore(1, 0),
+                              VanishesBefore(1, 0),
+                              AlmostEquals(1, 0)));
   }
 
   // A complex test where the eigensystem was computed using Mathematica.
@@ -282,11 +285,11 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     Vector<double, Eigenworld> const e₀({1, 0, 0});
     Vector<double, Eigenworld> const e₁({0, 1, 0});
     Vector<double, Eigenworld> const e₂({0, 0, 1});
-    EXPECT_THAT(f_eigensystem.first(e₀, e₀),
+    EXPECT_THAT(f_eigensystem.form(e₀, e₀),
                 AlmostEquals(-10.096452436666494320 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e₁, e₁),
+    EXPECT_THAT(f_eigensystem.form(e₁, e₁),
                 AlmostEquals(-0.79093267638983993780 * Metre, 34));
-    EXPECT_THAT(f_eigensystem.first(e₂, e₂),
+    EXPECT_THAT(f_eigensystem.form(e₂, e₂),
                 AlmostEquals(6.8873851130563342581 * Metre, 1));
 
     Vector<double, World> const w₀({-0.12466193785000435776,
@@ -298,15 +301,18 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     Vector<double, World> const w₂({0.50207513078793658603,
                                     0.52940122795673242036,
                                     0.68385298338325629274});
-    EXPECT_THAT(f_eigensystem.second(w₀), Componentwise(AlmostEquals(1, 0),
-                                                        VanishesBefore(1, 1),
-                                                        VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.second(w₁), Componentwise(VanishesBefore(1, 0),
-                                                        AlmostEquals(1, 0),
-                                                        VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.second(w₂), Componentwise(VanishesBefore(1, 0),
-                                                        VanishesBefore(1, 1),
-                                                        AlmostEquals(1, 0)));
+    EXPECT_THAT(f_eigensystem.rotation(w₀),
+                Componentwise(AlmostEquals(1, 0),
+                              VanishesBefore(1, 1),
+                              VanishesBefore(1, 0)));
+    EXPECT_THAT(f_eigensystem.rotation(w₁),
+                Componentwise(VanishesBefore(1, 0),
+                              AlmostEquals(1, 0),
+                             VanishesBefore(1, 0)));
+    EXPECT_THAT(f_eigensystem.rotation(w₂),
+                Componentwise(VanishesBefore(1, 0),
+                              VanishesBefore(1, 1),
+                              AlmostEquals(1, 0)));
   }
 }
 

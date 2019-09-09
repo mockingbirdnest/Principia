@@ -108,7 +108,7 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   Rotation<Frame, Eigenframe> const rotation{
       Vector<double, Frame>(v₀),
       Vector<double, Frame>(v₁),
-      Bivector<double, Frame>(v₂)};  // This bivector is dodgy.
+      Bivector<double, Frame>(v₂)};  // This bivector is a bit dodgy.
   return {form, rotation};
 }
 

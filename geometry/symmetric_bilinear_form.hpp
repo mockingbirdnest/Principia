@@ -32,10 +32,14 @@ class SymmetricBilinearForm {
       Vector<LScalar, Frame> const& left,
       Vector<RScalar, Frame> const& right) const;
 
-  //TODO(phl): struct?
+  // The eigensystem for a form is described by (1) the form in its eigenbasis,
+  // which gives the eigenvalues; and (2) a rotation from the current basis to
+  // the eigenbasis, which gives the eigenvectors.
   template<typename Eigenframe>
-  using Eigensystem = std::pair<SymmetricBilinearForm<Scalar, Eigenframe>,
-                                Rotation<Frame, Eigenframe>>;
+  struct Eigensystem {
+    SymmetricBilinearForm<Scalar, Eigenframe> form;
+    Rotation<Frame, Eigenframe> rotation;
+  };
 
   // Computes a form equivalent to the current one but diagonalized with
   // increasing eigenvalues.
@@ -51,7 +55,9 @@ class SymmetricBilinearForm {
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
 
-  //TODO(phl):comment
+  // Given a matrix that contains in columns eigenvectors for a form, picks the
+  // column with the largest norm and return its normalized value.  This is
+  // useful to extract eigenvectors when eigenvalues are known.
   template<typename S>
   static R3Element<double> PickEigenvector(R3x3Matrix<S> const& matrix);
 
