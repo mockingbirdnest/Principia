@@ -71,7 +71,7 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   double const β₁ = 2 * Cos((θ + 2 * π * Radian) / 3);
   double const β₂ = 2 * Cos((θ + 4 * π * Radian) / 3);
   std::array<Scalar, 3> αs = {p * β₀ + q, p * β₁ + q, p * β₂ + q};
-  std::sort(αs.begin(), αs.end(), std::greater<Scalar>());
+  std::sort(αs.begin(), αs.end());
   Scalar const& α₀ = αs[0];
   Scalar const& α₁ = αs[1];
   Scalar const& α₂ = αs[2];
@@ -91,10 +91,12 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   auto v0 = NormalizeOrZero(m₀ * v);
   auto v1 = NormalizeOrZero(m₁ * v);
   auto v2 = NormalizeOrZero(m₂ * v);
+  LOG(ERROR)<<α₀<<" "<<α₁<<" "<<α₂;
   LOG(ERROR)<<v0<<" "<<v1<<" "<<v2;
-  Rotation<Frame, Eigenframe> const rotation{Vector<double, Frame>(v0),
-                                             Vector<double, Frame>(v1),
-                                             Bivector<double, Frame>(v2)};//TODO(phl):Dodgy!
+  Rotation<Frame, Eigenframe> const rotation{
+      Vector<double, Frame>(v0),
+      Vector<double, Frame>(v1),
+      Bivector<double, Frame>(v2)};  // TODO(phl):Dodgy!
   return {form, rotation.Forget()};
 }
 

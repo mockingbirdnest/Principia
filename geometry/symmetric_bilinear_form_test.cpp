@@ -234,12 +234,17 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                      R3x3Matrix<double>({1,  0,  0},
                                         {0, -3,  0},
                                         {0,  0,  2}));
-  auto const d = f.Diagonalize<Eigenworld>();
-  EXPECT_THAT(d.first, Eq(MakeSymmetricBilinearForm<Eigenworld>(
+  auto const fd = f.Diagonalize<Eigenworld>();
+  EXPECT_THAT(fd.first, Eq(MakeSymmetricBilinearForm<Eigenworld>(
                            R3x3Matrix<double>({1,  0, 0},
                                               {0, -3, 0},
                                               {0,  0, 2}))));
 
+  auto const g = MakeSymmetricBilinearForm<World>(
+                     R3x3Matrix<double>({1,  2,  3},
+                                        {4, 5,  6},
+                                        {7,  8,  9}));
+  auto const gd = g.Diagonalize<Eigenworld>();
 }
 
 }  // namespace internal_symmetric_bilinear_form
