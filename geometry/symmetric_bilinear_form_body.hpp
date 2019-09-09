@@ -90,7 +90,7 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
                          {zero, zero,   α₂}));
 
   // Use the Cayley-Hamilton theorem to efficiently find the eigenvectors.  The
-  // m matrices contain, in columns, eigenvector for the corresponding α.
+  // m matrices contain, in columns, eigenvectors for the corresponding α.
   // However it's possible for a column to be identically 0.  To deal with this
   // the call to PickEigenvector extracts the column with the largest norm.
   auto const m₀ = A_minus_α₁I * A_minus_α₂I;
