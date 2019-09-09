@@ -79,9 +79,6 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   Scalar const& α₀ = αs[0];
   Scalar const& α₁ = αs[1];
   Scalar const& α₂ = αs[2];
-  R3x3Matrix<Scalar> const A_minus_α₀I = A - α₀ * I;
-  R3x3Matrix<Scalar> const A_minus_α₁I = A - α₁ * I;
-  R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
 
   // The form in its diagonal basis.
   Scalar const zero;
@@ -94,6 +91,9 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   // m matrices contain, in columns, eigenvectors for the corresponding α.
   // However it's possible for a column to be identically 0.  To deal with this
   // the call to PickEigenvector extracts the column with the largest norm.
+  R3x3Matrix<Scalar> const A_minus_α₀I = A - α₀ * I;
+  R3x3Matrix<Scalar> const A_minus_α₁I = A - α₁ * I;
+  R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
   auto const m₀ = A_minus_α₁I * A_minus_α₂I;
   auto const m₁ = A_minus_α₂I * A_minus_α₀I;
   auto const m₂ = A_minus_α₀I * A_minus_α₁I;
