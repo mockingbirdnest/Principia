@@ -37,8 +37,8 @@ class SymmetricBilinearForm {
   using Eigensystem = std::pair<SymmetricBilinearForm<Scalar, Eigenframe>,
                                 OrthogonalMap<Frame, Eigenframe>>;
 
-  // Computes a form equivalent to the current one but diagonalized with 
-  // decreasing eigenvalues.
+  // Computes a form equivalent to the current one but diagonalized with
+  // increasing eigenvalues.
   template<typename Eigenframe>
   Eigensystem<Eigenframe> Diagonalize() const;
 
@@ -50,6 +50,10 @@ class SymmetricBilinearForm {
  private:
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
+
+  //TODO(phl):comment
+  template<typename S>
+  static R3Element<double> PickEigenvector(R3x3Matrix<S> const& matrix);
 
   // All the operations on this class must ensure that this matrix remains
   // symmetric.

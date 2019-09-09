@@ -10,7 +10,10 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace geometry {
@@ -20,7 +23,10 @@ using quantities::Length;
 using quantities::Pow;
 using quantities::Square;
 using quantities::si::Metre;
+using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
+using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 
 class SymmetricBilinearFormTest : public ::testing::Test {
@@ -230,21 +236,78 @@ TEST_F(SymmetricBilinearFormTest, Serialization) {
 }
 
 TEST_F(SymmetricBilinearFormTest, Diagonalize) {
-  auto const f = MakeSymmetricBilinearForm<World>(
-                     R3x3Matrix<double>({1,  0,  0},
-                                        {0, -3,  0},
-                                        {0,  0,  2}));
-  auto const fd = f.Diagonalize<Eigenworld>();
-  EXPECT_THAT(fd.first, Eq(MakeSymmetricBilinearForm<Eigenworld>(
-                           R3x3Matrix<double>({1,  0, 0},
-                                              {0, -3, 0},
-                                              {0,  0, 2}))));
+  // A simple test where it's clear what the eigensystem should be.
+  {
+    auto const f = MakeSymmetricBilinearForm<World>(
+                       R3x3Matrix<double>({1,  0,  0},
+                                          {0, -3,  0},
+                                          {0,  0,  2}));
+    auto const f_eigensystem = f.Diagonalize<Eigenworld>();
 
-  auto const g = MakeSymmetricBilinearForm<World>(
-                     R3x3Matrix<double>({1,  2,  3},
-                                        {4, 5,  6},
-                                        {7,  8,  9}));
-  auto const gd = g.Diagonalize<Eigenworld>();
+    Vector<double, Eigenworld> const e0({1, 0, 0});
+    Vector<double, Eigenworld> const e1({0, 1, 0});
+    Vector<double, Eigenworld> const e2({0, 0, 1});
+    EXPECT_THAT(f_eigensystem.first(e0, e0), AlmostEquals(-3 * Metre, 1));
+    EXPECT_THAT(f_eigensystem.first(e0, e1), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e0, e2), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e1, e0), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e1, e1), AlmostEquals(1 * Metre, 6));
+    EXPECT_THAT(f_eigensystem.first(e1, e2), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e2, e0), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e2, e1), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e2, e2), AlmostEquals(2 * Metre, 1));
+
+    Vector<double, World> const w0({ 0, 1, 0});
+    Vector<double, World> const w1({-1, 0, 0});
+    Vector<double, World> const w2({ 0, 0, 1});
+    EXPECT_THAT(f_eigensystem.second(w0), Componentwise(AlmostEquals(1, 0),
+                                                        VanishesBefore(1, 1),
+                                                        VanishesBefore(1, 0)));
+    EXPECT_THAT(f_eigensystem.second(w1), Componentwise(VanishesBefore(1, 2),
+                                                        AlmostEquals(1, 0),
+                                                        VanishesBefore(1, 0)));
+    EXPECT_THAT(f_eigensystem.second(w2), Componentwise(VanishesBefore(1, 0),
+                                                        VanishesBefore(1, 0),
+                                                        AlmostEquals(1, 0)));
+  }
+
+  // A complex test where the eigensystem was computed using Mathematica.
+  {
+    auto const f = MakeSymmetricBilinearForm<World>(
+                       R3x3Matrix<double>({1,  3, 2},
+                                          {3, -5, 7},
+                                          {2,  7, 0}));
+    auto const f_eigensystem = f.Diagonalize<Eigenworld>();
+
+    Vector<double, Eigenworld> const e0({1, 0, 0});
+    Vector<double, Eigenworld> const e1({0, 1, 0});
+    Vector<double, Eigenworld> const e2({0, 0, 1});
+    EXPECT_THAT(f_eigensystem.first(e0, e0),
+                AlmostEquals(-10.096452436666494320 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e1, e1),
+                AlmostEquals(-0.79093267638983993780 * Metre, 34));
+    EXPECT_THAT(f_eigensystem.first(e2, e2),
+                AlmostEquals(6.8873851130563342581 * Metre, 1));
+
+    Vector<double, World> const w0({-0.12466193785000435776,
+                                     0.82678695026555030329,
+                                    -0.54852779339070148904});
+    Vector<double, World> const w1({-0.85579200995087470058,
+                                     0.19015172549439114900,
+                                     0.48110534916559355649});
+    Vector<double, World> const w2({0.50207513078793658603,
+                                    0.52940122795673242036,
+                                    0.68385298338325629274});
+    EXPECT_THAT(f_eigensystem.second(w0), Componentwise(AlmostEquals(1, 0),
+                                                        VanishesBefore(1, 1),
+                                                        VanishesBefore(1, 0)));
+    EXPECT_THAT(f_eigensystem.second(w1), Componentwise(VanishesBefore(1, 0),
+                                                        AlmostEquals(1, 0),
+                                                        VanishesBefore(1, 0)));
+    EXPECT_THAT(f_eigensystem.second(w2), Componentwise(VanishesBefore(1, 0),
+                                                        VanishesBefore(1, 1),
+                                                        AlmostEquals(1, 0)));
+  }
 }
 
 }  // namespace internal_symmetric_bilinear_form

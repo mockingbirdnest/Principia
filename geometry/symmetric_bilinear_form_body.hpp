@@ -56,7 +56,7 @@ SymmetricBilinearForm<Scalar, Frame>::operator()(
 
 template<typename Scalar, typename Frame>
 template<typename Eigenframe>
-SymmetricBilinearForm<Scalar, Frame>::Eigensystem<Eigenframe>
+typename SymmetricBilinearForm<Scalar, Frame>::Eigensystem<Eigenframe>
 SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   // https://en.wikipedia.org/wiki/Eigenvalue_algorithm#3%C3%973_matrices
   R3x3Matrix<Scalar> const& A = matrix_;
@@ -87,10 +87,9 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   auto const m₀ = A_minus_α₁I * A_minus_α₂I;
   auto const m₁ = A_minus_α₂I * A_minus_α₀I;
   auto const m₂ = A_minus_α₀I * A_minus_α₁I;
-  R3Element<double> v{1, 1, 1};//TODO(phl):Dodgy!
-  auto v0 = NormalizeOrZero(m₀ * v);
-  auto v1 = NormalizeOrZero(m₁ * v);
-  auto v2 = NormalizeOrZero(m₂ * v);
+  auto v0 = PickEigenvector(m₀);
+  auto v1 = PickEigenvector(m₁);
+  auto v2 = PickEigenvector(m₂);
   LOG(ERROR)<<α₀<<" "<<α₁<<" "<<α₂;
   LOG(ERROR)<<v0<<" "<<v1<<" "<<v2;
   Rotation<Frame, Eigenframe> const rotation{
@@ -132,6 +131,22 @@ SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
   DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
   DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
   DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
+}
+
+template<typename Scalar, typename Frame>
+template<typename S>
+R3Element<double> SymmetricBilinearForm<Scalar, Frame>::PickEigenvector(
+    R3x3Matrix<S> const& matrix) {
+  static R3Element<double> const e0{1, 0, 0};
+  static R3Element<double> const e1{0, 1, 0};
+  static R3Element<double> const e2{0, 0, 1};
+  std::array<R3Element<S>, 3> vs = {matrix * e0, matrix * e1, matrix * e2};
+  std::sort(vs.begin(),
+            vs.end(),
+            [](R3Element<S> const& left, R3Element<S> const& right) {
+              return left.Norm²() < right.Norm²();
+            });
+  return NormalizeOrZero(vs.back());
 }
 
 template<typename Frame>
