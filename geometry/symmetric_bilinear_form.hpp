@@ -5,8 +5,8 @@
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "geometry/rotation.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -35,7 +35,7 @@ class SymmetricBilinearForm {
   //TODO(phl): struct?
   template<typename Eigenframe>
   using Eigensystem = std::pair<SymmetricBilinearForm<Scalar, Eigenframe>,
-                                OrthogonalMap<Frame, Eigenframe>>;
+                                Rotation<Frame, Eigenframe>>;
 
   // Computes a form equivalent to the current one but diagonalized with
   // increasing eigenvalues.

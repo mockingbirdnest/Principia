@@ -58,9 +58,12 @@ template<typename Scalar, typename Frame>
 template<typename Eigenframe>
 typename SymmetricBilinearForm<Scalar, Frame>::Eigensystem<Eigenframe>
 SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
-  // https://en.wikipedia.org/wiki/Eigenvalue_algorithm#3%C3%973_matrices
   R3x3Matrix<Scalar> const& A = matrix_;
   auto const I = R3x3Matrix<double>::Identity();
+
+  // This algorithm follows
+  // https://en.wikipedia.org/wiki/Eigenvalue_algorithm#3%C3%973_matrices which
+  // gives closed-form formulæ for 3x3 matrices.
   Scalar const q = A.Trace() / 3;
   R3x3Matrix<Scalar> const A_minus_qI = A - q * I;
   Scalar const p = Sqrt((A_minus_qI * A_minus_qI).Trace() / 6);
@@ -78,25 +81,35 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   R3x3Matrix<Scalar> const A_minus_α₀I = A - α₀ * I;
   R3x3Matrix<Scalar> const A_minus_α₁I = A - α₁ * I;
   R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
+
+  // The form in its diagonal basis.
   Scalar const zero;
   SymmetricBilinearForm<Scalar, Eigenframe> form(
       R3x3Matrix<Scalar>({  α₀, zero, zero},
                          {zero,   α₁, zero},
                          {zero, zero,   α₂}));
-  // Use the Cayley-Hamilton theorem to efficiently find the eigenvectors.
+
+  // Use the Cayley-Hamilton theorem to efficiently find the eigenvectors.  The
+  // m matrices contain, in columns, eigenvector for the corresponding α.
+  // However it's possible for a column to be identically 0.  To deal with this
+  // the call to PickEigenvector extracts the column with the largest norm.
   auto const m₀ = A_minus_α₁I * A_minus_α₂I;
   auto const m₁ = A_minus_α₂I * A_minus_α₀I;
   auto const m₂ = A_minus_α₀I * A_minus_α₁I;
-  auto v0 = PickEigenvector(m₀);
-  auto v1 = PickEigenvector(m₁);
-  auto v2 = PickEigenvector(m₂);
-  LOG(ERROR)<<α₀<<" "<<α₁<<" "<<α₂;
-  LOG(ERROR)<<v0<<" "<<v1<<" "<<v2;
+  auto const v₀ = PickEigenvector(m₀);
+  auto const v₁ = PickEigenvector(m₁);
+
+  // The vectors (v₀, v₁, v₂) forms an orthonormal basis.  Make sure that it is
+  // direct.
+  auto v₂ = PickEigenvector(m₂);
+  if (R3x3Matrix(v₀, v₁, v₂).Determinant() < 0) {
+    v₂ = -v₂;
+  }
   Rotation<Frame, Eigenframe> const rotation{
-      Vector<double, Frame>(v0),
-      Vector<double, Frame>(v1),
-      Bivector<double, Frame>(v2)};  // TODO(phl):Dodgy!
-  return {form, rotation.Forget()};
+      Vector<double, Frame>(v₀),
+      Vector<double, Frame>(v₁),
+      Bivector<double, Frame>(v₂)};  // This bivector is dodgy.
+  return {form, rotation};
 }
 
 template<typename Scalar, typename Frame>
@@ -137,10 +150,10 @@ template<typename Scalar, typename Frame>
 template<typename S>
 R3Element<double> SymmetricBilinearForm<Scalar, Frame>::PickEigenvector(
     R3x3Matrix<S> const& matrix) {
-  static R3Element<double> const e0{1, 0, 0};
-  static R3Element<double> const e1{0, 1, 0};
-  static R3Element<double> const e2{0, 0, 1};
-  std::array<R3Element<S>, 3> vs = {matrix * e0, matrix * e1, matrix * e2};
+  static R3Element<double> const e₀{1, 0, 0};
+  static R3Element<double> const e₁{0, 1, 0};
+  static R3Element<double> const e₂{0, 0, 1};
+  std::array<R3Element<S>, 3> vs = {matrix * e₀, matrix * e₁, matrix * e₂};
   std::sort(vs.begin(),
             vs.end(),
             [](R3Element<S> const& left, R3Element<S> const& right) {

@@ -1,4 +1,4 @@
-
+﻿
 #include "geometry/symmetric_bilinear_form.hpp"
 
 #include "geometry/frame.hpp"
@@ -244,29 +244,29 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                                           {0,  0,  2}));
     auto const f_eigensystem = f.Diagonalize<Eigenworld>();
 
-    Vector<double, Eigenworld> const e0({1, 0, 0});
-    Vector<double, Eigenworld> const e1({0, 1, 0});
-    Vector<double, Eigenworld> const e2({0, 0, 1});
-    EXPECT_THAT(f_eigensystem.first(e0, e0), AlmostEquals(-3 * Metre, 1));
-    EXPECT_THAT(f_eigensystem.first(e0, e1), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e0, e2), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e1, e0), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e1, e1), AlmostEquals(1 * Metre, 6));
-    EXPECT_THAT(f_eigensystem.first(e1, e2), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e2, e0), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e2, e1), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e2, e2), AlmostEquals(2 * Metre, 1));
+    Vector<double, Eigenworld> const e₀({1, 0, 0});
+    Vector<double, Eigenworld> const e₁({0, 1, 0});
+    Vector<double, Eigenworld> const e₂({0, 0, 1});
+    EXPECT_THAT(f_eigensystem.first(e₀, e₀), AlmostEquals(-3 * Metre, 1));
+    EXPECT_THAT(f_eigensystem.first(e₀, e₁), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e₀, e₂), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e₁, e₀), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e₁, e₁), AlmostEquals(1 * Metre, 6));
+    EXPECT_THAT(f_eigensystem.first(e₁, e₂), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e₂, e₀), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e₂, e₁), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.first(e₂, e₂), AlmostEquals(2 * Metre, 1));
 
-    Vector<double, World> const w0({ 0, 1, 0});
-    Vector<double, World> const w1({-1, 0, 0});
-    Vector<double, World> const w2({ 0, 0, 1});
-    EXPECT_THAT(f_eigensystem.second(w0), Componentwise(AlmostEquals(1, 0),
+    Vector<double, World> const w₀({ 0, 1, 0});
+    Vector<double, World> const w₁({-1, 0, 0});
+    Vector<double, World> const w₂({ 0, 0, 1});
+    EXPECT_THAT(f_eigensystem.second(w₀), Componentwise(AlmostEquals(1, 0),
                                                         VanishesBefore(1, 1),
                                                         VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.second(w1), Componentwise(VanishesBefore(1, 2),
+    EXPECT_THAT(f_eigensystem.second(w₁), Componentwise(VanishesBefore(1, 2),
                                                         AlmostEquals(1, 0),
                                                         VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.second(w2), Componentwise(VanishesBefore(1, 0),
+    EXPECT_THAT(f_eigensystem.second(w₂), Componentwise(VanishesBefore(1, 0),
                                                         VanishesBefore(1, 0),
                                                         AlmostEquals(1, 0)));
   }
@@ -279,32 +279,32 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                                           {2,  7, 0}));
     auto const f_eigensystem = f.Diagonalize<Eigenworld>();
 
-    Vector<double, Eigenworld> const e0({1, 0, 0});
-    Vector<double, Eigenworld> const e1({0, 1, 0});
-    Vector<double, Eigenworld> const e2({0, 0, 1});
-    EXPECT_THAT(f_eigensystem.first(e0, e0),
+    Vector<double, Eigenworld> const e₀({1, 0, 0});
+    Vector<double, Eigenworld> const e₁({0, 1, 0});
+    Vector<double, Eigenworld> const e₂({0, 0, 1});
+    EXPECT_THAT(f_eigensystem.first(e₀, e₀),
                 AlmostEquals(-10.096452436666494320 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.first(e1, e1),
+    EXPECT_THAT(f_eigensystem.first(e₁, e₁),
                 AlmostEquals(-0.79093267638983993780 * Metre, 34));
-    EXPECT_THAT(f_eigensystem.first(e2, e2),
+    EXPECT_THAT(f_eigensystem.first(e₂, e₂),
                 AlmostEquals(6.8873851130563342581 * Metre, 1));
 
-    Vector<double, World> const w0({-0.12466193785000435776,
+    Vector<double, World> const w₀({-0.12466193785000435776,
                                      0.82678695026555030329,
                                     -0.54852779339070148904});
-    Vector<double, World> const w1({-0.85579200995087470058,
+    Vector<double, World> const w₁({-0.85579200995087470058,
                                      0.19015172549439114900,
                                      0.48110534916559355649});
-    Vector<double, World> const w2({0.50207513078793658603,
+    Vector<double, World> const w₂({0.50207513078793658603,
                                     0.52940122795673242036,
                                     0.68385298338325629274});
-    EXPECT_THAT(f_eigensystem.second(w0), Componentwise(AlmostEquals(1, 0),
+    EXPECT_THAT(f_eigensystem.second(w₀), Componentwise(AlmostEquals(1, 0),
                                                         VanishesBefore(1, 1),
                                                         VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.second(w1), Componentwise(VanishesBefore(1, 0),
+    EXPECT_THAT(f_eigensystem.second(w₁), Componentwise(VanishesBefore(1, 0),
                                                         AlmostEquals(1, 0),
                                                         VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.second(w2), Componentwise(VanishesBefore(1, 0),
+    EXPECT_THAT(f_eigensystem.second(w₂), Componentwise(VanishesBefore(1, 0),
                                                         VanishesBefore(1, 1),
                                                         AlmostEquals(1, 0)));
   }
