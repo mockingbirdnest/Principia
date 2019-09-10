@@ -76,16 +76,18 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
 
   private readonly PrincipiaPluginAdapter adapter_;
   private DifferentialSlider mission_duration_ = new DifferentialSlider(
-                      label            : "Plan length",
-                      unit             : null,
-                      log10_lower_rate : 0,
-                      log10_upper_rate : 7,
-                      min_value        : 10,
-                      max_value        : double.PositiveInfinity,
-                      formatter        : value =>
-                          FlightPlanner.FormatPositiveTimeSpan(
-                              TimeSpan.FromSeconds(value)),
-                      parser           : TryParseMissionDuration);
+      label            : "Mission duration",
+      unit             : null,
+      log10_lower_rate : 0,
+      log10_upper_rate : 7,
+      min_value        : 10,
+      max_value        : double.PositiveInfinity,
+      formatter        : value =>
+          FlightPlanner.FormatPositiveTimeSpan(
+              TimeSpan.FromSeconds(value)),
+      parser           : TryParseMissionDuration) {
+      value = 30 * 60
+  };
 }
 
 
