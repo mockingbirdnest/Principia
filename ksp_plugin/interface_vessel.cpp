@@ -63,6 +63,76 @@ XYZ principia__VesselNormal(Plugin const* const plugin,
   return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid)));
 }
 
+OrbitAnalysis principia__VesselRefreshAnalysis(Plugin const* const plugin,
+                                               char const* const vessel_guid,
+                                               int const primary_index,
+                                               double const mission_duration) {
+  journal::Method<journal::VesselRefreshAnalysis> m({plugin, vessel_guid, primary_index});
+  CHECK_NOTNULL(plugin);
+  Vessel& vessel = *plugin->GetVessel(vessel_guid);
+  vessel.RefreshOrbitAnalysis(plugin->GetCelestial(primary_index).body(),
+                              mission_duration * Second);
+  OrbitAnalysis analysis{};
+  analysis.progress_percentage = vessel.orbit_analysis_percentage();
+  if (vessel.orbit_analysis().has_value()) {
+    analysis.primary_index =
+        plugin->CelestialIndexOfBody(*vessel.orbit_analysis()->primary);
+    analysis.mission_duration =
+        vessel.orbit_analysis()->mission_duration / Second;
+    if (vessel.orbit_analysis()->elements.has_value()) {
+      auto const& elements = *vessel.orbit_analysis()->elements;
+      analysis.elements.anomalistic_period =
+          elements.anomalistic_period() / Second;
+      analysis.elements.nodal_period = elements.nodal_period() / Second;
+      analysis.elements.sidereal_period = elements.sidereal_period() / Second;
+      analysis.elements.mean_argument_of_periapsis =
+          ToInterval(elements.mean_argument_of_periapsis_interval());
+      analysis.elements.mean_eccentricity =
+          ToInterval(elements.mean_eccentricity_interval());
+      analysis.elements.mean_inclination =
+          ToInterval(elements.mean_inclination_interval());
+      analysis.elements.mean_longitude_of_ascending_nodes =
+          ToInterval(elements.mean_longitude_of_ascending_node_interval());
+      analysis.elements.mean_semimajor_axis =
+          ToInterval(elements.mean_semimajor_axis_interval());
+    }
+    if (vessel.orbit_analysis()->recurrence.has_value()) {
+      auto const& recurrence = *vessel.orbit_analysis()->recurrence;
+      analysis.recurrence.nuo = recurrence.νₒ();
+      analysis.recurrence.dto = recurrence.Dᴛₒ();
+      analysis.recurrence.cto = recurrence.Cᴛₒ();
+      analysis.recurrence.number_of_revolutions =
+          recurrence.number_of_revolutions();
+      analysis.recurrence.subcycle = recurrence.subcycle();
+      analysis.recurrence.equatorial_shift =
+          recurrence.equatorial_shift() / Radian;
+      analysis.recurrence.base_interval = recurrence.base_interval() / Radian;
+      analysis.recurrence.grid_interval = recurrence.grid_interval() / Radian;
+    }
+    if (vessel.orbit_analysis()->ground_track.has_value()) {
+      auto const& ground_track = *vessel.orbit_analysis()->ground_track;
+      if (auto const& longitudes =
+              ground_track
+                  .reduced_longitudes_of_equator_crossings_of_ascending_passes();
+          longitudes.has_value()) {
+        analysis.ground_track
+            .reduced_longitudes_of_equator_crossings_of_ascending_passes =
+            ToInterval(*longitudes);
+      }
+      if (auto const& longitudes =
+              ground_track
+                  .reduced_longitudes_of_equator_crossings_of_descending_passes();
+          longitudes.has_value()) {
+        analysis.ground_track
+            .reduced_longitudes_of_equator_crossings_of_descending_passes =
+            ToInterval(*longitudes);
+      }
+    }
+  }
+
+  return m.Return(analysis);
+}
+
 void principia__VesselSetPredictionAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid,

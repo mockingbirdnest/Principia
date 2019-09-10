@@ -50,8 +50,12 @@ void OrbitAnalyser::RefreshAnalysis() {
   analysis_ = next_analysis_;
 }
 
-std::optional<OrbitAnalyser::Analysis> const& OrbitAnalyser::analysis() {
+std::optional<OrbitAnalyser::Analysis> const& OrbitAnalyser::analysis() const {
   return analysis_;
+}
+
+int8_t OrbitAnalyser::next_analysis_percentage() const {
+  return next_analysis_percentage_;
 }
 
 void OrbitAnalyser::RepeatedlyAnalyseOrbit() {

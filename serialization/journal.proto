@@ -1,4 +1,4 @@
-syntax = "proto2";
+﻿syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
 
@@ -116,7 +116,7 @@ message NavigationManoeuvre {
   required double time_to_half_delta_v = 8;
 }
 
-// Frenet trihedron at the beginning of the man�uvre.
+// Frenet trihedron at the beginning of the manœuvre.
 message NavigationManoeuvreFrenetTrihedron {
   required XYZ binormal = 1;
   required XYZ normal = 2;
@@ -155,8 +155,53 @@ message XY {
   required double y = 2;
 }
 
+message Interval {
+  required double min = 1;
+  required double max = 2;
+}
+
+message OrbitalElements {
+  required double sidereal_period = 1;
+  required double nodal_period = 2;
+  required double anomalistic_period = 3;
+  required double nodal_precession = 4;
+  required Interval mean_semimajor_axis = 5;
+  required Interval mean_eccentricity = 6;
+  required Interval mean_inclination = 7;
+  required Interval mean_longitude_of_ascending_nodes = 8;
+  required Interval mean_argument_of_periapsis = 9;
+}
+
+message OrbitRecurrence {
+  // νₒ.
+  required int32 nuo = 1;
+  // Dᴛₒ.
+  required int32 dto = 2;
+  // Cᴛₒ.
+  required int32 cto = 3;
+  required int32 number_of_revolutions = 4;
+  required double equatorial_shift = 5;
+  required double base_interval = 6;
+  required double grid_interval = 7;
+  required int32 subcycle = 8;
+}
+
+message OrbitGroundTrack {
+  required Interval reduced_longitudes_of_equator_crossings_of_ascending_passes = 1;
+  required Interval reduced_longitudes_of_equator_crossings_of_descending_passes = 2;
+}
+
+message OrbitAnalysis {
+  required int32 progress_percentage = 1;
+  required int32 primary_index = 2;
+  required double mission_duration = 3;
+  required OrbitalElements elements = 4;
+  required OrbitRecurrence recurrence = 5;
+  required OrbitGroundTrack ground_track = 6;
+}
+
 message Method {
-  extensions 5000 to 5999;  // Last used: 5159.
+  extensions 5000 to 5999;  // Last used: 5160.
 }
 
 message AdvanceTime {
@@ -1917,6 +1962,24 @@ message VesselNormal {
   }
   message Return {
     required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselRefreshAnalysis {
+  extend Method {
+    optional VesselRefreshAnalysis extension = 5160;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 primary_index = 3;
+    required double mission_duration = 4;
+  }
+  message Return {
+    required OrbitAnalysis result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

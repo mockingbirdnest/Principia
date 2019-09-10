@@ -60,7 +60,9 @@ Vessel::Vessel(GUID const& guid,
       prediction_adaptive_step_parameters_(prediction_adaptive_step_parameters),
       parent_(parent),
       ephemeris_(ephemeris),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      // TODO(egg): get the real history parameters.
+      orbit_analyser_(ephemeris_, DefaultHistoryParameters()) {
   // Can't create the |psychohistory_| and |prediction_| here because |history_|
   // is empty;
 }
@@ -445,6 +447,24 @@ void Vessel::FillContainingPileUpsFromMessage(
   }
 }
 
+void Vessel::RefreshOrbitAnalysis(
+    not_null<RotatingBody<Barycentric> const*> const primary,
+    Time const& mission_duration) {
+  orbit_analyser_.RequestAnalysis(psychohistory_->back().time,
+                                  psychohistory_->back().degrees_of_freedom,
+                                  mission_duration,
+                                  primary);
+  orbit_analyser_.RefreshAnalysis();
+}
+
+int Vessel::orbit_analysis_percentage() const {
+  return orbit_analyser_.next_analysis_percentage();
+}
+
+std::optional<OrbitAnalyser::Analysis> const& Vessel::orbit_analysis() const {
+  return orbit_analyser_.analysis();
+}
+
 void Vessel::MakeAsynchronous() {
   synchronous_ = false;
 }
@@ -458,7 +478,8 @@ Vessel::Vessel()
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      orbit_analyser_(ephemeris_, DefaultHistoryParameters()) {}
 
 void Vessel::StartPrognosticatorIfNeeded() {
   prognosticator_lock_.AssertHeld();

@@ -57,7 +57,9 @@ class OrbitAnalyser {
   // Sets |analysis()| to the latest computed analysis.
   void RefreshAnalysis();
 
-  std::optional<Analysis> const& analysis();
+  std::optional<Analysis> const& analysis() const;
+
+  int8_t next_analysis_percentage() const;
 
  private:
   struct Parameters {
@@ -94,5 +96,8 @@ class OrbitAnalyser {
 };
 
 }  // namespace internal_orbit_analyser
+
+using internal_orbit_analyser::OrbitAnalyser;
+
 }  // namespace ksp_plugin
 }  // namespace principia
