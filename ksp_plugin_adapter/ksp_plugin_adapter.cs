@@ -196,6 +196,8 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private readonly FlightPlanner flight_planner_;
   [KSPField(isPersistant = true)]
+  private readonly OrbitAnalyser orbit_analyser_;
+  [KSPField(isPersistant = true)]
   internal ReferenceFrameSelector plotting_frame_selector_;
   [KSPField(isPersistant = true)]
   internal MainWindow main_window_;
@@ -238,11 +240,13 @@ public partial class PrincipiaPluginAdapter
     }
     map_node_pool_ = new MapNodePool();
     flight_planner_ = new FlightPlanner(this);
+    orbit_analyser_ = new OrbitAnalyser(this);
     plotting_frame_selector_ = new ReferenceFrameSelector(this,
                                                           UpdateRenderingFrame,
                                                           "Plotting frame");
     main_window_ = new MainWindow(this,
                                   flight_planner_,
+                                  orbit_analyser_,
                                   plotting_frame_selector_,
                                   PredictedVessel);
   }
