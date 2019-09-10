@@ -179,7 +179,7 @@ class Vessel {
   void RefreshOrbitAnalysis(not_null<RotatingBody<Barycentric> const*> primary,
                             Time const& mission_duration);
   int orbit_analysis_percentage() const;
-  std::optional<OrbitAnalyser::Analysis> const& orbit_analysis() const;
+  OrbitAnalyser::Analysis const* orbit_analysis() const;
 
   static void MakeAsynchronous();
   static void MakeSynchronous();
@@ -268,7 +268,7 @@ class Vessel {
 
   std::unique_ptr<FlightPlan> flight_plan_;
 
-  OrbitAnalyser orbit_analyser_;
+  std::optional<OrbitAnalyser> orbit_analyser_;
 
   static std::atomic_bool synchronous_;
 };

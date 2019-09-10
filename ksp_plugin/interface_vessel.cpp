@@ -74,7 +74,7 @@ OrbitAnalysis principia__VesselRefreshAnalysis(Plugin const* const plugin,
                               mission_duration * Second);
   OrbitAnalysis analysis{};
   analysis.progress_percentage = vessel.orbit_analysis_percentage();
-  if (vessel.orbit_analysis().has_value()) {
+  if (vessel.orbit_analysis() != nullptr) {
     analysis.primary_index =
         plugin->CelestialIndexOfBody(*vessel.orbit_analysis()->primary);
     analysis.mission_duration =
