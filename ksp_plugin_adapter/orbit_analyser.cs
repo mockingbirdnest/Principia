@@ -38,7 +38,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           $"Analysing orbit of {vessel.name} with respect to {primary.NameWithArticle()}...");
       UnityEngine.GUILayout.HorizontalScrollbar(
-          value      : analysis.progress_percentage * 0.5f,
+          value      : 0,
           size       : analysis.progress_percentage,
           leftValue  : 0,
           rightValue : 100);
@@ -48,22 +48,54 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
           $"Orbit of {vessel.name} with respect to {FlightGlobals.Bodies[analysis.primary_index].NameWithArticle()}");
       Style.HorizontalLine();
       UnityEngine.GUILayout.Label("Orbital elements");
-      UnityEngine.GUILayout.Label($"Sidereal period: {analysis.elements.sidereal_period / 60} min");
-      UnityEngine.GUILayout.Label($"Nodal period: {analysis.elements.nodal_period / 60} min");
-      UnityEngine.GUILayout.Label($"Anomalistic period: {analysis.elements.anomalistic_period / 60} min");
+      var elements = analysis.elements;
+      UnityEngine.GUILayout.Label(
+          "Sidereal period: "+
+          FlightPlanner.FormatPositiveTimeSpan(
+              TimeSpan.FromSeconds(elements.sidereal_period)));
+      UnityEngine.GUILayout.Label(
+          "Nodal period: " +
+          FlightPlanner.FormatPositiveTimeSpan(
+              TimeSpan.FromSeconds(elements.nodal_period)));
+      UnityEngine.GUILayout.Label(
+          "Anomalistic period: " +
+          FlightPlanner.FormatPositiveTimeSpan(
+              TimeSpan.FromSeconds(analysis.elements.anomalistic_period)));
       // TODO(egg): represent the intervals.
-      UnityEngine.GUILayout.Label($"Semimajor axis: {analysis.elements.mean_semimajor_axis.min} m");
-      UnityEngine.GUILayout.Label($"Eccentricity: {analysis.elements.mean_eccentricity.min}");
-      UnityEngine.GUILayout.Label($"Inclination: {analysis.elements.mean_inclination.min}");
-      UnityEngine.GUILayout.Label($"Longitude of ascending node: {analysis.elements.mean_longitude_of_ascending_nodes.min}");
-      UnityEngine.GUILayout.Label($"Argument of periapsis: {analysis.elements.mean_argument_of_periapsis.min}");
+      UnityEngine.GUILayout.Label(
+          $"Semimajor axis: {FormatInterval(elements.mean_semimajor_axis)} m");
+      UnityEngine.GUILayout.Label(
+          $"Eccentricity: {FormatInterval(elements.mean_eccentricity)}");
+      UnityEngine.GUILayout.Label(
+          $"Inclination: {FormatInterval(elements.mean_inclination, Math.PI / 180, "°")}");
+      UnityEngine.GUILayout.Label(
+          $"Longitude of ascending node: {FormatInterval(elements.mean_longitude_of_ascending_nodes, Math.PI / 180, "°")}");
+      UnityEngine.GUILayout.Label(
+          $"Argument of periapsis: {FormatInterval(elements.mean_argument_of_periapsis, Math.PI / 180, "°")}");
 
       Style.HorizontalLine();
 
     }
+    UnityEngine.GUI.DragWindow();
   }
 
-  static internal bool TryParseMissionDuration(string str, out double value) {
+  // Displays an interval as midpoint±half-width.
+  static private string FormatInterval(Interval interval,
+                                       double unit = 1,
+                                       string unit_symbol = "") {
+    double half_width = (interval.max - interval.min) / 2;
+    double midpoint = interval.min + (interval.max - interval.min) / 2;
+    int fractional_digits =
+        Math.Max(0, 1 - (int)Math.Floor(Math.Log10(half_width / unit)));
+    string format = $"N{fractional_digits}";
+    string formatted_midpoint =
+        (midpoint / unit).ToString(format, Culture.culture) + unit_symbol;
+    string formatted_half_width =
+        (half_width / unit).ToString(format, Culture.culture) + unit_symbol;
+    return $"{formatted_midpoint}±{formatted_half_width}";
+  }
+
+  static private bool TryParseMissionDuration(string str, out double value) {
     value = 0;
     if (!FlightPlanner.TryParseTimeSpan(str, out TimeSpan ts)) {
       return false;
