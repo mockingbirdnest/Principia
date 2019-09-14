@@ -84,6 +84,11 @@ class OrbitGroundTrack {
 
   std::vector<Angle> longitudes_of_equator_crossings_of_ascending_passes_;
   std::vector<Angle> longitudes_of_equator_crossings_of_descending_passes_;
+  // Whether |longitudes_of_equator_crossings_of_descending_passes_.front()| is
+  // the longitude of the pass preceding
+  // |longitudes_of_equator_crossings_of_ascending_passes_.front()|, rather than
+  // the following one.
+  bool first_descending_pass_before_first_ascending_pass_;
   std::optional<Interval<Angle>> mean_solar_times_of_ascending_nodes_;
   std::optional<Interval<Angle>> mean_solar_times_of_descending_nodes_;
 };
