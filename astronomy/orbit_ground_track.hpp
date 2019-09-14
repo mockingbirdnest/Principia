@@ -35,30 +35,40 @@ class OrbitGroundTrack {
     Time year;
   };
 
+  class EquatorCrossingLongitudes {
+   public:
+    // The longitudes of the equator crossings (ascending or descending,
+    // depending on the parity of pass_index), reduced to a grid interval around
+    // the pass with the given index.  This provides both an indication of how
+    // well the orbit follows the nominal recurrence grid, and where that grid
+    // is located.
+    Interval<Angle> longitudes_reduced_to_pass(int const pass_index) const;
+
+   private:
+    EquatorCrossingLongitudes(OrbitRecurrence const& nominal_recurrence);
+    OrbitRecurrence nominal_recurrence_;
+    Interval<Angle> ascending_longitudes_reduced_to_pass_1_;
+    Interval<Angle> descending_longitudes_reduced_to_pass_2_;
+    friend class OrbitGroundTrack;
+  };
+
   // Returns an object that describes the properties of the ground track of
-  // |trajectory| as an orbit around |primary|; if |nominal_recurrence| is
-  // provided, the deviation from that nominal recurrence is analysed; if
-  // |mean_sun| is provided, sun-synchronicity is analysed.
+  // |trajectory| as an orbit around |primary|; if |mean_sun| is provided,
+  // sun-synchronicity is analysed.
   template<typename PrimaryCentred, typename Inertial>
   static OrbitGroundTrack ForTrajectory(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,
       RotatingBody<Inertial> const& primary,
-      std::optional<OrbitRecurrence> const& nominal_recurrence,
       std::optional<MeanSun> const& mean_sun);
 
-  // The interval spanned by the longitudes of the crossings of the equator on
-  // the ascending passes, reduced in the sense that they are offset to
-  // compensate for the nominal equatorial shift, with the initial value reduced
-  // to an eastward grid interval from the zero meridian (longitudes [0, δ]).
-  // This is populated only if a nominal recurrence was provided.
-  std::optional<Interval<Angle>> const&
-  reduced_longitudes_of_equator_crossings_of_ascending_passes() const;
-  // Same as above, but for the descending passes, and reduced consistently with
-  // |reduced_longitudes_of_equator_crossings_of_ascending_passes|, so that if
-  // the former returns the longitude of pass 1, this function returns that of
-  // pass 2.
-  std::optional<Interval<Angle>> const&
-  reduced_longitudes_of_equator_crossings_of_descending_passes() const;
+  // Given a nominal recurrence and the index of the first ascending pass east
+  // of the equator (which must be odd and in [1, 2 Nᴛₒ - 1], where Nᴛₒ is
+  // |nominal_recurrence.number_of_revolutions()|), returns an object describing
+  // how the recurrence grid is aligned in longitude, and how well the actual
+  // orbit follows that grid.
+  EquatorCrossingLongitudes equator_crossing_longitudes(
+      OrbitRecurrence const& nominal_recurrence,
+      int first_ascending_pass_index) const;
 
   // The interval spanned by the local mean solar times at the ascending nodes.
   // This is populated only if a mean sun was provided.
@@ -72,10 +82,8 @@ class OrbitGroundTrack {
  private:
   OrbitGroundTrack() = default;
 
-  std::optional<Interval<Angle>>
-      reduced_longitudes_of_equator_crossings_of_ascending_passes_;
-  std::optional<Interval<Angle>>
-      reduced_longitudes_of_equator_crossings_of_descending_passes_;
+  std::vector<Angle> longitudes_of_equator_crossings_of_ascending_passes_;
+  std::vector<Angle> longitudes_of_equator_crossings_of_descending_passes_;
   std::optional<Interval<Angle>> mean_solar_times_of_ascending_nodes_;
   std::optional<Interval<Angle>> mean_solar_times_of_descending_nodes_;
 };
