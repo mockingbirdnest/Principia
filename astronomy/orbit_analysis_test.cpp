@@ -223,7 +223,6 @@ class OrbitAnalysisTest : public ::testing::Test {
     auto const ground_track = OrbitGroundTrack::ForTrajectory(
         *earth_centred_trajectory,
         earth_,
-        recurrence,
         {{/*epoch=*/J2000,
           /*mean_longitude_at_epoch=*/newcomb_mean_longitude.Evaluate(J2000),
           /*year*/ 2 * π * Radian /
@@ -613,8 +612,10 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // the equatorial crossing is about 600 m east of the reference.
   EXPECT_THAT(
       ground_track
-          .reduced_longitudes_of_equator_crossings_of_ascending_passes()
-          ->midpoint(),
+          .equator_crossing_longitudes(recurrence,
+                                       /*first_ascending_pass_index=*/135)
+          .longitudes_reduced_to_pass(135)
+          .midpoint(),
       DifferenceFrom(0.7117 * Degree,
                      AllOf(IsNear(0.0051_⑴ * Degree),
                            IsNear(573_⑴ * Metre *
@@ -622,36 +623,39 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // Nominal longitude of the equatorial crossing of the following (descending)
   // pass (pass 136), as given in section 2 of Benada.  Blanc et al. round these
   // longitudes to a hundredth of a degree, thus 166.54° for pass 136.
-  EXPECT_THAT(
-      ground_track
-          .reduced_longitudes_of_equator_crossings_of_descending_passes()
-          ->midpoint(),
-      DifferenceFrom(166.5385 * Degree, IsNear(0.0071_⑴ * Degree)));
+  EXPECT_THAT(ground_track
+                  .equator_crossing_longitudes(
+                      recurrence, /*first_ascending_pass_index=*/135)
+                  .longitudes_reduced_to_pass(136)
+                  .midpoint(),
+              DifferenceFrom(166.5385 * Degree, IsNear(0.0071_⑴ * Degree)));
 
   // Nominal longitude of the equatorial crossing of pass 1, as given in the
   // auxiliary data table in Blanc et al.  The reference grid there lists that
   // longitude as 99.92°, and the table of equator crossing longitudes in Benada
   // lists it as 99.9249°.  However, the auxiliary data table in Benada gives a
   // longitude of 99.947° for pass 1, which looks like a typo.
-  EXPECT_THAT(
-      Mod(ground_track
-                  .reduced_longitudes_of_equator_crossings_of_ascending_passes()
-                  ->midpoint() -
-              ((135 - 1) / 2) * recurrence.equatorial_shift(),
-          2 * π * Radian),
-      DifferenceFrom(99.9242 * Degree, IsNear(0.0052_⑴ * Degree)));
+  EXPECT_THAT(ground_track
+                  .equator_crossing_longitudes(
+                      recurrence, /*first_ascending_pass_index=*/135)
+                  .longitudes_reduced_to_pass(1)
+                  .midpoint(),
+              DifferenceFrom(99.9242 * Degree, IsNear(0.0052_⑴ * Degree)));
 
   // Variability over the period under test (3.5 days).
   EXPECT_THAT(ground_track
-                  .reduced_longitudes_of_equator_crossings_of_ascending_passes()
-                  ->measure(),
+                  .equator_crossing_longitudes(
+                      recurrence, /*first_ascending_pass_index=*/135)
+                  .longitudes_reduced_to_pass(1)
+                  .measure(),
               IsNear(0.0025_⑴ * Degree));
-  EXPECT_THAT(
-      ground_track
-              .reduced_longitudes_of_equator_crossings_of_ascending_passes()
-              ->measure() *
-          TerrestrialEquatorialRadius / Radian,
-      IsNear(273_⑴ * Metre));
+  EXPECT_THAT(ground_track
+                      .equator_crossing_longitudes(
+                          recurrence, /*first_ascending_pass_index=*/135)
+                      .longitudes_reduced_to_pass(1)
+                      .measure() *
+                  TerrestrialEquatorialRadius / Radian,
+              IsNear(273_⑴ * Metre));
 
   // TOPEX/Poséidon is not sun-synchronous.
   EXPECT_THAT(ground_track.mean_solar_times_of_ascending_nodes()->measure() *
