@@ -186,9 +186,14 @@ message OrbitRecurrence {
   required int32 subcycle = 8;
 }
 
+message EquatorialCrossings {
+  required Interval longitudes_reduced_to_ascending_pass = 1;
+  required Interval longitudes_reduced_to_descending_pass = 2;
+}
+
 message OrbitGroundTrack {
-  required Interval reduced_longitudes_of_equator_crossings_of_ascending_passes = 1;
-  required Interval reduced_longitudes_of_equator_crossings_of_descending_passes = 2;
+  required EquatorialCrossings equatorial_crossings = 1;
+  // TODO(egg): mean solar times of the nodes.
 }
 
 message OrbitAnalysis {
@@ -1977,6 +1982,9 @@ message VesselRefreshAnalysis {
     required string vessel_guid = 2;
     required int32 primary_index = 3;
     required double mission_duration = 4;
+    optional int32 revolutions_per_cycle = 5;
+    optional int32 days_per_cycle = 6;
+    required int32 ground_track_revolution = 7;
   }
   message Return {
     required OrbitAnalysis result = 1;

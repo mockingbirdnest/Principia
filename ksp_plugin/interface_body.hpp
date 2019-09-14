@@ -181,13 +181,18 @@ inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
          left.recurrence == right.recurrence;
 }
 
+inline bool operator==(EquatorialCrossings const& left,
+                       EquatorialCrossings const& right) {
+  return left.longitudes_reduced_to_ascending_pass ==
+             right.longitudes_reduced_to_ascending_pass &&
+         left.longitudes_reduced_to_descending_pass ==
+             right.longitudes_reduced_to_descending_pass;
+}
+
 inline bool operator==(OrbitGroundTrack const& left,
                        OrbitGroundTrack const& right) {
-  return left.reduced_longitudes_of_equator_crossings_of_ascending_passes ==
-             right
-                 .reduced_longitudes_of_equator_crossings_of_ascending_passes &&
-         left.reduced_longitudes_of_equator_crossings_of_descending_passes ==
-             right.reduced_longitudes_of_equator_crossings_of_descending_passes;
+  return left.equatorial_crossings ==
+             right.equatorial_crossings;
 }
 
 inline bool operator==(OrbitRecurrence const& left,

@@ -79,6 +79,8 @@ void CDECL principia__InitGoogleLogging();
 bool operator==(AdaptiveStepParameters const& left,
                 AdaptiveStepParameters const& right);
 bool operator==(Burn const& left, Burn const& right);
+bool operator==(EquatorialCrossings const& left,
+                EquatorialCrossings const& right);
 bool operator==(FlightPlanAdaptiveStepParameters const& left,
                 FlightPlanAdaptiveStepParameters const& right);
 bool operator==(Interval const& left, Interval const& right);

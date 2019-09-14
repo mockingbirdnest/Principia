@@ -125,7 +125,6 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       analysis.ground_track =
           OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
                                           *parameters->primary,
-                                          analysis.recurrence,
                                           /*mean_sun=*/std::nullopt);
     }
 

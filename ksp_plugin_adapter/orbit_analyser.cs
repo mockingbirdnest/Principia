@@ -32,7 +32,16 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
           vessel.id.ToString(),
           primary.flightGlobalsIndex,
-          mission_duration_.value);
+          mission_duration_.value,
+          autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
+          autodetect_recurrence_ ? null : (int?)days_per_cycle_,
+          ground_track_revolution_);
+      if (autodetect_recurrence_ &&
+          analysis.recurrence.number_of_revolutions != 0 &&
+          analysis.recurrence.cto != 0) {
+        revolutions_per_cycle_ = analysis.recurrence.number_of_revolutions;
+        days_per_cycle_ = analysis.recurrence.cto;
+      }
 
       mission_duration_.Render(enabled : true);
       UnityEngine.GUILayout.Label(
@@ -84,19 +93,43 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
 
       Style.HorizontalLine();
       OrbitRecurrence recurrence = analysis.recurrence;
-      UnityEngine.GUILayout.Label(
-          $"Ground track recurrence: [{recurrence.nuo}; {recurrence.dto}; {recurrence.cto}]");
-      UnityEngine.GUILayout.Label(
-          $"({recurrence.number_of_revolutions} revolutions every {recurrence.cto} days)");
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        UnityEngine.GUILayout.Label(
+            $"Ground track recurrence: [{recurrence.nuo}; {recurrence.dto}; {recurrence.cto}]");
+        autodetect_recurrence_ = UnityEngine.GUILayout.Toggle(autodetect_recurrence_, "Auto-detect");
+      }
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        string text = UnityEngine.GUILayout.TextField(
+            $"{revolutions_per_cycle_}");
+        if (int.TryParse(text, out int revolutions_per_cycle) &&
+            revolutions_per_cycle > 0) {
+          revolutions_per_cycle_ = revolutions_per_cycle;
+        }
+        UnityEngine.GUILayout.Label("revolutions =");
+        text = UnityEngine.GUILayout.TextField($"{days_per_cycle_}");
+        if (int.TryParse(text, out int days_per_cycle) &&
+            days_per_cycle != 0) {
+          days_per_cycle_ = days_per_cycle;
+        }
+        UnityEngine.GUILayout.Label("days");
+
+      }
       UnityEngine.GUILayout.Label(
           $"Subcycle: {recurrence.subcycle} days");
       UnityEngine.GUILayout.Label($"Equatorial shift: {recurrence.equatorial_shift * (180 / Math.PI):N2}° ({recurrence.equatorial_shift * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
       UnityEngine.GUILayout.Label($"Base interval: {recurrence.base_interval * (180 / Math.PI):N2}° ({recurrence.base_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
       UnityEngine.GUILayout.Label($"Grid interval: {recurrence.grid_interval * (180 / Math.PI):N2}° ({recurrence.grid_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
-      UnityEngine.GUILayout.Label("Longitudes of equatorial crossings:");
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        UnityEngine.GUILayout.Label("Longitudes of equatorial crossings of revolution #");
+        string text = UnityEngine.GUILayout.TextField($"{ground_track_revolution_}");
+        if (int.TryParse(text, out int revolution)) {
+          ground_track_revolution_ = revolution;
+        }
+      }
       double half_width_km(Interval interval) => (interval.max - interval.min) / 2 * primary.Radius / 1000;
-      UnityEngine.GUILayout.Label($"Pass 1 (ascending): {FormatAngleInterval(analysis.ground_track.reduced_longitudes_of_equator_crossings_of_ascending_passes)} (±{half_width_km(analysis.ground_track.reduced_longitudes_of_equator_crossings_of_ascending_passes):N0} km)");
-      UnityEngine.GUILayout.Label($"Pass 2 (descending): {FormatAngleInterval(analysis.ground_track.reduced_longitudes_of_equator_crossings_of_descending_passes)} (±{half_width_km(analysis.ground_track.reduced_longitudes_of_equator_crossings_of_descending_passes):N0} km)");
+      var equatorial_crossings = analysis.ground_track.equatorial_crossings;
+      UnityEngine.GUILayout.Label($"Ascending pass: {FormatAngleInterval(equatorial_crossings.longitudes_reduced_to_ascending_pass)} (±{half_width_km(equatorial_crossings.longitudes_reduced_to_ascending_pass):N0} km)");
+      UnityEngine.GUILayout.Label($"Descending pass: {FormatAngleInterval(equatorial_crossings.longitudes_reduced_to_descending_pass)} (±{half_width_km(equatorial_crossings.longitudes_reduced_to_descending_pass):N0} km)");
     }
     UnityEngine.GUI.DragWindow();
   }
@@ -176,6 +209,10 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       parser           : TryParseMissionDuration) {
       value = 30 * 60
   };
+  private bool autodetect_recurrence_ = true;
+  private int revolutions_per_cycle_ = 1;
+  private int days_per_cycle_ = 1;
+  private int ground_track_revolution_ = 1;
 }
 
 

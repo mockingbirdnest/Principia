@@ -22,6 +22,7 @@ using interface::Burn;
 using interface::ConfigurationAccuracyParameters;
 using interface::ConfigurationAdaptiveStepParameters;
 using interface::ConfigurationFixedStepParameters;
+using interface::EquatorialCrossings;
 using interface::FlightPlanAdaptiveStepParameters;
 using interface::Interval;
 using interface::Iterator;
