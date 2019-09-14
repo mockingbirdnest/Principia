@@ -3,6 +3,7 @@
 #include "astronomy/orbit_recurrence.hpp"
 
 #include <limits>
+#include <numeric>
 
 #include "base/mod.hpp"
 #include "geometry/sign.hpp"
@@ -25,6 +26,7 @@ inline OrbitRecurrence::OrbitRecurrence(int const νₒ,
     CHECK_EQ(Sign(νₒ), Sign(Cᴛₒ));
   }
   CHECK_LE(Abs(2 * Dᴛₒ), Abs(Cᴛₒ));
+  CHECK_EQ(std::gcd(Dᴛₒ, Cᴛₒ), 1);
 
   int const sign_Cᴛₒ = Sign(Cᴛₒ) * 1;
   int& Eᴛₒ = subcycle_;

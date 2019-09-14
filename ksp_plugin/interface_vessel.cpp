@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#include <numeric>
+
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "geometry/grassmann.hpp"
@@ -118,10 +120,11 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
       int const Cᴛₒ =
           Sign(vessel.orbit_analysis()->primary->angular_frequency()) *
           std::abs(*days_per_cycle);
-      int νₒ =
+      int const νₒ =
           std::nearbyint(static_cast<double>(*revolutions_per_cycle) / Cᴛₒ);
-      int Dᴛₒ = *revolutions_per_cycle - νₒ * Cᴛₒ;
-      recurrence.emplace(νₒ, Dᴛₒ, Cᴛₒ);
+      int const Dᴛₒ = *revolutions_per_cycle - νₒ * Cᴛₒ;
+      int const gcd = std::gcd(Dᴛₒ, Cᴛₒ);
+      recurrence.emplace(νₒ, Dᴛₒ / gcd, Cᴛₒ / gcd);
     } else {
       recurrence = vessel.orbit_analysis()->recurrence;
     }
