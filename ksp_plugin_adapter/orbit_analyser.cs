@@ -45,10 +45,19 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
 
       Style.HorizontalLine();
       UnityEngine.GUILayout.Label(
-          $"Orbit of {vessel.name} with respect to {FlightGlobals.Bodies[analysis.primary_index].NameWithArticle()}");
+          $@"Orbit of {vessel.name} with respect to {
+            FlightGlobals.Bodies[
+                analysis.primary_index].NameWithArticle()} over {
+            FlightPlanner.FormatPositiveTimeSpan(
+                TimeSpan.FromSeconds(analysis.mission_duration))}");
+      var elements = analysis.elements;
+      UnityEngine.GUILayout.Label(
+          $@"({analysis.mission_duration /
+               elements.anomalistic_period:N0} anomalistic rev., {
+               analysis.mission_duration / elements.nodal_period:N0} nodal rev., {
+               analysis.mission_duration / elements.sidereal_period:N0} sidereal rev.)".ToString(Culture.culture));
       Style.HorizontalLine();
       UnityEngine.GUILayout.Label("Orbital elements");
-      var elements = analysis.elements;
       UnityEngine.GUILayout.Label(
           "Sidereal period: "+
           FlightPlanner.FormatPositiveTimeSpan(
@@ -63,36 +72,83 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
               TimeSpan.FromSeconds(analysis.elements.anomalistic_period)));
       // TODO(egg): represent the intervals.
       UnityEngine.GUILayout.Label(
-          $"Semimajor axis: {FormatInterval(elements.mean_semimajor_axis)} m");
+          $"Semimajor axis: {FormatLengthInterval(elements.mean_semimajor_axis)}");
       UnityEngine.GUILayout.Label(
           $"Eccentricity: {FormatInterval(elements.mean_eccentricity)}");
       UnityEngine.GUILayout.Label(
-          $"Inclination: {FormatInterval(elements.mean_inclination, Math.PI / 180, "°")}");
+          $"Inclination: {FormatAngleInterval(elements.mean_inclination)}");
       UnityEngine.GUILayout.Label(
-          $"Longitude of ascending node: {FormatInterval(elements.mean_longitude_of_ascending_nodes, Math.PI / 180, "°")}");
+          $"Longitude of ascending node: {FormatAngleInterval(elements.mean_longitude_of_ascending_nodes) ?? "(precesses)"}");
       UnityEngine.GUILayout.Label(
-          $"Argument of periapsis: {FormatInterval(elements.mean_argument_of_periapsis, Math.PI / 180, "°")}");
+          $"Argument of periapsis: {FormatAngleInterval(elements.mean_argument_of_periapsis) ?? "(precesses)"}");
 
       Style.HorizontalLine();
-
+      OrbitRecurrence recurrence = analysis.recurrence;
+      UnityEngine.GUILayout.Label(
+          $"Ground track recurrence: [{recurrence.nuo}; {recurrence.dto}; {recurrence.cto}]");
+      UnityEngine.GUILayout.Label(
+          $"({recurrence.number_of_revolutions} revolutions every {recurrence.cto} days)");
+      UnityEngine.GUILayout.Label(
+          $"Subcycle: {recurrence.subcycle} days");
+      UnityEngine.GUILayout.Label($"Equatorial shift: {recurrence.equatorial_shift * (180 / Math.PI):N2}° ({recurrence.equatorial_shift * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
+      UnityEngine.GUILayout.Label($"Base interval: {recurrence.base_interval * (180 / Math.PI):N2}° ({recurrence.base_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
+      UnityEngine.GUILayout.Label($"Grid interval: {recurrence.grid_interval * (180 / Math.PI):N2}° ({recurrence.grid_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
+      UnityEngine.GUILayout.Label("Longitudes of equatorial crossings:");
+      double half_width_km(Interval interval) => (interval.max - interval.min) / 2 * primary.Radius / 1000;
+      UnityEngine.GUILayout.Label($"Pass 1 (ascending): {FormatAngleInterval(analysis.ground_track.reduced_longitudes_of_equator_crossings_of_ascending_passes)} (±{half_width_km(analysis.ground_track.reduced_longitudes_of_equator_crossings_of_ascending_passes):N0} km)");
+      UnityEngine.GUILayout.Label($"Pass 2 (descending): {FormatAngleInterval(analysis.ground_track.reduced_longitudes_of_equator_crossings_of_descending_passes)} (±{half_width_km(analysis.ground_track.reduced_longitudes_of_equator_crossings_of_descending_passes):N0} km)");
     }
     UnityEngine.GUI.DragWindow();
   }
 
   // Displays an interval as midpoint±half-width.
-  static private string FormatInterval(Interval interval,
-                                       double unit = 1,
-                                       string unit_symbol = "") {
+  static private string FormatInterval(Interval interval) {
     double half_width = (interval.max - interval.min) / 2;
     double midpoint = interval.min + (interval.max - interval.min) / 2;
     int fractional_digits =
-        Math.Max(0, 1 - (int)Math.Floor(Math.Log10(half_width / unit)));
+        Math.Max(0, 1 - (int)Math.Floor(Math.Log10(half_width)));
+    string format = $"N{fractional_digits}";
+    string formatted_midpoint = midpoint.ToString(format, Culture.culture);
+    string formatted_half_width = half_width.ToString(format, Culture.culture);
+    return $"{formatted_midpoint}±{formatted_half_width}";
+  }
+  
+  // Displays an interval of lengths as midpoint±half-width, in km if the
+  // half-width is 100 m or more.
+  static private string FormatLengthInterval(Interval interval) {
+    double half_width = (interval.max - interval.min) / 2;
+    double midpoint = interval.min + (interval.max - interval.min) / 2;
+    string unit = "m";
+    if (half_width >= 100) {
+      half_width *= 0.01;
+      midpoint *= 0.01;
+      unit = "km";
+    }
+    int fractional_digits =
+        Math.Max(0, 1 - (int)Math.Floor(Math.Log10(half_width)));
+    string format = $"N{fractional_digits}";
+    string formatted_midpoint = midpoint.ToString(format, Culture.culture);
+    string formatted_half_width = half_width.ToString(format, Culture.culture);
+    return $"{formatted_midpoint}±{formatted_half_width} {unit}";
+  }
+
+  // Displays an interval of angles (given in radians) as midpoint°±half-width°,
+  // or null if the half-width exceeds 180°.
+  static private string FormatAngleInterval(Interval interval) {
+    double half_width = (interval.max - interval.min) / 2;
+    double midpoint = interval.min + (interval.max - interval.min) / 2;
+    if (half_width > Math.PI) {
+      return null;
+    }
+    double degree = Math.PI / 180;
+    int fractional_digits =
+        Math.Max(0, 1 - (int)Math.Floor(Math.Log10(half_width / degree)));
     string format = $"N{fractional_digits}";
     string formatted_midpoint =
-        (midpoint / unit).ToString(format, Culture.culture) + unit_symbol;
+        (midpoint / degree).ToString(format, Culture.culture);
     string formatted_half_width =
-        (half_width / unit).ToString(format, Culture.culture) + unit_symbol;
-    return $"{formatted_midpoint}±{formatted_half_width}";
+        (half_width / degree).ToString(format, Culture.culture);
+    return $"{formatted_midpoint}°±{formatted_half_width}°";
   }
 
   static private bool TryParseMissionDuration(string str, out double value) {
