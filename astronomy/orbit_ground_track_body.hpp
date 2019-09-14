@@ -69,6 +69,10 @@ Interval<Angle> MeanSolarTimesOfNodes(
   return mean_solar_times;
 }
 
+// Returns the interval spanned by the unwound angles
+//   longitudes_of_equatorial_crossings[n] - initial_offset - n * Δλᴇ,
+// where Δλᴇ is |nominal_recurrence.equatorial_shift()|, and the first angle is
+// in [0, 2π].
 inline Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
     std::vector<Angle> const& longitudes_of_equatorial_crossings,
     OrbitRecurrence const& nominal_recurrence,
@@ -90,23 +94,22 @@ inline Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
 Interval<Angle>
 OrbitGroundTrack::EquatorCrossingLongitudes::longitudes_reduced_to_pass(
     int const pass_index) const {
+  // |shift| applies the number of equatorial shifts corresponding to the pass
+  // number; |reduction| puts the midpoint of the shifted interval in [0, 2π].
+  Angle shift;
+  Interval<Angle> longitudes;
   if (pass_index % 2 == 1) {
-    Angle const shift = ((pass_index - 1) / 2) *
-                        nominal_recurrence_.equatorial_shift();
-    Angle const min = Mod(ascending_longitudes_reduced_to_pass_1_.min + shift,
-                          2 * π * Radian);
-    Angle const max =
-        UnwindFrom(min, ascending_longitudes_reduced_to_pass_1_.max + shift);
-    return {min, max};
+    shift = ((pass_index - 1) / 2) * nominal_recurrence_.equatorial_shift();
+    longitudes = ascending_longitudes_reduced_to_pass_1_;
   } else {
-    Angle const shift =
-        ((pass_index - 2) / 2) * nominal_recurrence_.equatorial_shift();
-    Angle const min = Mod(descending_longitudes_reduced_to_pass_2_.min + shift,
-                          2 * π * Radian);
-    Angle const max =
-        UnwindFrom(min, descending_longitudes_reduced_to_pass_2_.max + shift);
-    return {min, max};
+    shift = ((pass_index - 2) / 2) * nominal_recurrence_.equatorial_shift();
+    longitudes = descending_longitudes_reduced_to_pass_2_;
   }
+  Angle const reduction =
+      -std::floor((longitudes.midpoint() + shift) / (2 * π * Radian)) *
+      (2 * π * Radian);
+  return {longitudes.min + shift + reduction,
+          longitudes.max + shift + reduction};
 }
 
 inline OrbitGroundTrack::EquatorCrossingLongitudes::EquatorCrossingLongitudes(
@@ -152,12 +155,11 @@ OrbitGroundTrack::equator_crossing_longitudes(
   if (longitudes_of_equator_crossings_of_ascending_passes_.empty()) {
     return equator_crossings;
   }
-
+  Angle const δ = nominal_recurrence.grid_interval();
+  Angle const λ₀ = longitudes_of_equator_crossings_of_ascending_passes_.front();
+  Angle const Δλᴇ = nominal_recurrence.equatorial_shift();
   Angle const initial_offset =
-      Mod(longitudes_of_equator_crossings_of_ascending_passes_.front(),
-          nominal_recurrence.grid_interval()) -
-      ((first_ascending_pass_index - 1) / 2) *
-          nominal_recurrence.equatorial_shift();
+      std::floor(λ₀ / δ) * δ + ((first_ascending_pass_index - 1) / 2) * Δλᴇ;
   equator_crossings.ascending_longitudes_reduced_to_pass_1_ =
       ReducedLongitudesOfEquatorialCrossings(
           longitudes_of_equator_crossings_of_ascending_passes_,
