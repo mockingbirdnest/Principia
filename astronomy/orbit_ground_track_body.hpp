@@ -144,6 +144,9 @@ OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
       PlanetocentricLongitudes(ascending_nodes, primary);
   ground_track.longitudes_of_equator_crossings_of_descending_passes_ =
       PlanetocentricLongitudes(descending_nodes, primary);
+  ground_track.first_descending_pass_before_first_ascending_pass_ =
+      !ascending_nodes.Empty() && !descending_nodes.Empty() &&
+      descending_nodes.front().time < ascending_nodes.front().time;
   return ground_track;
 }
 
@@ -158,13 +161,20 @@ OrbitGroundTrack::equator_crossing_longitudes(
   Angle const δ = nominal_recurrence.grid_interval();
   Angle const λ₀ = longitudes_of_equator_crossings_of_ascending_passes_.front();
   Angle const Δλᴇ = nominal_recurrence.equatorial_shift();
-  Angle const initial_offset =
+  Angle initial_offset =
       std::floor(λ₀ / δ) * δ + ((first_ascending_pass_index - 1) / 2) * Δλᴇ;
   equator_crossings.ascending_longitudes_reduced_to_pass_1_ =
       ReducedLongitudesOfEquatorialCrossings(
           longitudes_of_equator_crossings_of_ascending_passes_,
           nominal_recurrence,
           initial_offset);
+  if (first_descending_pass_before_first_ascending_pass_) {
+    // Since the first descending pass is before the first ascending pass, using
+    // the same offset in |ReducedLongitudesOfEquatorialCrossings| would compute
+    // the longitude reduced to pass 0; adjust by one equatorial shift to get
+    // pass 2.
+    initial_offset -= Δλᴇ;
+  }
   equator_crossings.descending_longitudes_reduced_to_pass_2_ =
       ReducedLongitudesOfEquatorialCrossings(
           longitudes_of_equator_crossings_of_descending_passes_,
