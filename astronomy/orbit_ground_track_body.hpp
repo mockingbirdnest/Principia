@@ -91,7 +91,7 @@ inline Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
   return reduced_longitudes;
 }
 
-Interval<Angle>
+inline Interval<Angle>
 OrbitGroundTrack::EquatorCrossingLongitudes::longitudes_reduced_to_pass(
     int const pass_index) const {
   // |shift| applies the number of equatorial shifts corresponding to the pass
