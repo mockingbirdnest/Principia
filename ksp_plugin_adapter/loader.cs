@@ -24,7 +24,7 @@ internal static class Loader {
       case PlatformID.Win32NT:
         is_cxx_installed = IsVCRedistInstalled();
         required_cxx_packages =
-            "the Microsoft Visual C++ 2015-2019 Redistributable (x86) - " +
+            "the Microsoft Visual C++ 2015-2019 Redistributable (x64) - " +
             "14.22.27821";
         possible_dll_paths = new [] {@"GameData\Principia\x64\principia.dll"};
         break;
@@ -50,17 +50,6 @@ internal static class Loader {
     }
     try {
       loaded_principia_dll_ = true;
-      // No kernel32 on *nix, so we throw an exception and immediately resume
-      // after the try block.
-      try {
-        // We dynamically link glog, protobuf, and the serialization DLL on
-        // Windows, so we need that to be in the DLL search path for the main
-        // DLL to load.
-        if (!SetDllDirectory(@"GameData\Principia\x64")) {
-          return "Failed to set DLL directory (error code " +
-                 Marshal.GetLastWin32Error() + ").";
-        }
-      } catch {}
       Log.InitGoogleLogging();
       return null;
     } catch (Exception e) {

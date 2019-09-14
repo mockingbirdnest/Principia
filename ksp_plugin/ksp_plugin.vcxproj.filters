@@ -170,4 +170,7 @@
   <ItemGroup>
     <CustomBuild Include="..\serialization\journal.proto" />
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="principia.manifest" />
+  </ItemGroup>
 </Project>

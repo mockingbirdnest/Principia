@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity name="principia.dll" version="0.0.0.0" type="win32"/>
+  <file name="libglog.dll"/>
+  <file name="libprotobuf.dll"/>
+  <file name="serialization.dll"/>
+</assembly>
