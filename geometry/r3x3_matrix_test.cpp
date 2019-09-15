@@ -34,6 +34,11 @@ TEST_F(R3x3MatrixTest, Trace) {
   EXPECT_THAT(m1_.Trace(), Eq(-13));
 }
 
+TEST_F(R3x3MatrixTest, Determinant) {
+  EXPECT_THAT(m1_.Determinant(), Eq(9));
+  EXPECT_THAT(m2_.Determinant(), Eq(3));
+}
+
 TEST_F(R3x3MatrixTest, Transpose) {
   EXPECT_THAT(m1_.Transpose(),
               Eq(R3x3Matrix<double>({-9, 7, -1}, {6, -5, 2}, {6, -4, 1})));

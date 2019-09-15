@@ -1,13 +1,26 @@
-
+﻿
 #pragma once
 
 #include "geometry/symmetric_bilinear_form.hpp"
 
+#include <algorithm>
 #include <string>
+
+#include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_symmetric_bilinear_form {
+
+using quantities::Angle;
+using quantities::ArcCos;
+using quantities::Cos;
+using quantities::Sqrt;
+using quantities::si::Radian;
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>& SymmetricBilinearForm<Scalar, Frame>::
@@ -43,6 +56,55 @@ SymmetricBilinearForm<Scalar, Frame>::operator()(
 }
 
 template<typename Scalar, typename Frame>
+template<typename Eigenframe>
+typename SymmetricBilinearForm<Scalar, Frame>::Eigensystem<Eigenframe>
+SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
+  R3x3Matrix<Scalar> const& A = matrix_;
+  auto const I = R3x3Matrix<double>::Identity();
+
+  // This algorithm follows
+  // https://en.wikipedia.org/wiki/Eigenvalue_algorithm#3%C3%973_matrices which
+  // gives closed-form formulæ for 3x3 matrices.
+  Scalar const q = A.Trace() / 3;
+  R3x3Matrix<Scalar> const A_minus_qI = A - q * I;
+  Scalar const p = Sqrt((A_minus_qI * A_minus_qI).Trace() / 6);
+  R3x3Matrix<double> const B = A_minus_qI / p;
+  double const det_B = B.Determinant();
+  Angle const θ = ArcCos(det_B * 0.5);
+  double const β₀ = 2 * Cos(θ / 3);
+  double const β₁ = 2 * Cos((θ + 2 * π * Radian) / 3);
+  double const β₂ = 2 * Cos((θ + 4 * π * Radian) / 3);
+  std::array<Scalar, 3> αs = {p * β₀ + q, p * β₁ + q, p * β₂ + q};
+  std::sort(αs.begin(), αs.end());
+  Scalar const& α₀ = αs[0];
+  Scalar const& α₁ = αs[1];
+  Scalar const& α₂ = αs[2];
+
+  // The form in its diagonal basis.
+  Scalar const zero;
+  SymmetricBilinearForm<Scalar, Eigenframe> form(
+      R3x3Matrix<Scalar>({  α₀, zero, zero},
+                         {zero,   α₁, zero},
+                         {zero, zero,   α₂}));
+
+  // Use the Cayley-Hamilton theorem to efficiently find the eigenvectors.  The
+  // m matrices contain, in columns, eigenvectors for the corresponding α.
+  // However it's possible for a column to be identically 0.  To deal with this
+  // the call to PickEigenvector extracts the column with the largest norm.
+  R3x3Matrix<Scalar> const A_minus_α₀I = A - α₀ * I;
+  R3x3Matrix<Scalar> const A_minus_α₁I = A - α₁ * I;
+  R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
+  auto const m₀ = A_minus_α₁I * A_minus_α₂I;
+  auto const m₁ = A_minus_α₂I * A_minus_α₀I;
+  auto const m₂ = A_minus_α₀I * A_minus_α₁I;
+  auto const v₀ = Vector<double, Frame>(PickEigenvector(m₀));
+  auto const v₁ = Vector<double, Frame>(PickEigenvector(m₁));
+
+  Rotation<Frame, Eigenframe> const rotation{v₀, v₁, Wedge(v₀, v₁)};
+  return {form, rotation};
+}
+
+template<typename Scalar, typename Frame>
 void SymmetricBilinearForm<Scalar, Frame>::WriteToMessage(
     not_null<serialization::SymmetricBilinearForm*> message) const {
   Frame::WriteToMessage(message->mutable_frame());
@@ -60,7 +122,8 @@ SymmetricBilinearForm<Scalar, Frame>::ReadFromMessage(
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
-    R3x3Matrix<Scalar> const& matrix) : matrix_(matrix) {
+    R3x3Matrix<Scalar> const& matrix)
+    : matrix_(matrix) {
   DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
   DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
   DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
@@ -68,10 +131,27 @@ SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
-    R3x3Matrix<Scalar>&& matrix) : matrix_(std::move(matrix)) {
+    R3x3Matrix<Scalar>&& matrix)
+    : matrix_(std::move(matrix)) {
   DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
   DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
   DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
+}
+
+template<typename Scalar, typename Frame>
+template<typename S>
+R3Element<double> SymmetricBilinearForm<Scalar, Frame>::PickEigenvector(
+    R3x3Matrix<S> const& matrix) {
+  static R3Element<double> const e₀{1, 0, 0};
+  static R3Element<double> const e₁{0, 1, 0};
+  static R3Element<double> const e₂{0, 0, 1};
+  std::array<R3Element<S>, 3> vs = {matrix * e₀, matrix * e₁, matrix * e₂};
+  std::sort(vs.begin(),
+            vs.end(),
+            [](R3Element<S> const& left, R3Element<S> const& right) {
+              return left.Norm²() < right.Norm²();
+            });
+  return NormalizeOrZero(vs.back());
 }
 
 template<typename Frame>
