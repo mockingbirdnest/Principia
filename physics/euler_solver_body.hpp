@@ -1,8 +1,11 @@
 ﻿
+#pragma once
+
 #include "physics/euler_solver.hpp"
 
 #include <algorithm>
 
+#include "geometry/grassmann.hpp"
 #include "numerics/elliptic_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -30,7 +33,8 @@ using quantities::Time;
 using quantities::si::Joule;
 using quantities::si::Radian;
 
-EulerSolver::EulerSolver(
+template<typename PrincipalAxesFrame>
+EulerSolver<PrincipalAxesFrame>::EulerSolver(
     R3Element<MomentOfInertia> const& moments_of_inertia,
     AngularMomentumBivector const& initial_angular_momentum,
     Instant const& initial_time)
@@ -110,7 +114,9 @@ EulerSolver::EulerSolver(
   }
 }
 
-EulerSolver::AngularMomentumBivector EulerSolver::AngularMomentumAt(
+template<typename PrincipalAxesFrame>
+typename EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector
+EulerSolver<PrincipalAxesFrame>::AngularMomentumAt(
     Instant const& time) const {
   Time const Δt = time - initial_time_;
   switch (formula_) {
