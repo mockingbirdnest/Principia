@@ -43,7 +43,7 @@ class OrbitGroundTrack {
     // the pass with the given index.  This provides both an indication of how
     // well the orbit follows the nominal recurrence grid, and where that grid
     // is located.
-    Interval<Angle> longitudes_reduced_to_pass(int const pass_index) const;
+    Interval<Angle> longitudes_reduced_to_pass(int pass_index) const;
 
    private:
     explicit EquatorCrossingLongitudes(OrbitRecurrence const& nominal_recurrence);
