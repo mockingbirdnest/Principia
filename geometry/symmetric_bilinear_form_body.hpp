@@ -100,16 +100,10 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   auto const v₀ = PickEigenvector(m₀);
   auto const v₁ = PickEigenvector(m₁);
 
-  // The vectors (v₀, v₁, v₂) forms an orthonormal basis.  Make sure that it is
-  // direct.
-  auto v₂ = PickEigenvector(m₂);
-  if (R3x3Matrix(v₀, v₁, v₂).Determinant() < 0) {
-    v₂ = -v₂;
-  }
   Rotation<Frame, Eigenframe> const rotation{
       Vector<double, Frame>(v₀),
       Vector<double, Frame>(v₁),
-      Bivector<double, Frame>(v₂)};  // This bivector is a bit dodgy.
+      Bivector<double, Frame>(Cross(v₀, v₁))};
   return {form, rotation};
 }
 

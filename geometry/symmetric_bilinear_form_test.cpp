@@ -303,15 +303,15 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                                     0.68385298338325629274});
     EXPECT_THAT(f_eigensystem.rotation(w₀),
                 Componentwise(AlmostEquals(1, 0),
-                              VanishesBefore(1, 1),
+                              VanishesBefore(1, 0),
                               VanishesBefore(1, 0)));
     EXPECT_THAT(f_eigensystem.rotation(w₁),
                 Componentwise(VanishesBefore(1, 0),
                               AlmostEquals(1, 0),
                               VanishesBefore(1, 0)));
     EXPECT_THAT(f_eigensystem.rotation(w₂),
-                Componentwise(VanishesBefore(1, 0),
-                              VanishesBefore(1, 1),
+                Componentwise(VanishesBefore(1, 1),
+                              VanishesBefore(1, 2),
                               AlmostEquals(1, 0)));
   }
 }
