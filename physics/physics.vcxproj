@@ -31,6 +31,7 @@
     <ClInclude Include="dynamic_frame.hpp" />
     <ClInclude Include="dynamic_frame_body.hpp" />
     <ClInclude Include="euler_solver.hpp" />
+    <ClInclude Include="euler_solver_body.hpp" />
     <ClInclude Include="geopotential.hpp" />
     <ClInclude Include="geopotential_body.hpp" />
     <ClInclude Include="protector.hpp" />
@@ -80,7 +81,6 @@
     <ClCompile Include="degrees_of_freedom_test.cpp" />
     <ClCompile Include="discrete_trajectory_test.cpp" />
     <ClCompile Include="dynamic_frame_test.cpp" />
-    <ClCompile Include="euler_solver.cpp" />
     <ClCompile Include="euler_solver_test.cpp" />
     <ClCompile Include="geopotential_test.cpp" />
     <ClCompile Include="hierarchical_system_test.cpp" />

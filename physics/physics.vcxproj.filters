@@ -182,6 +182,9 @@
     <ClInclude Include="euler_solver.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="euler_solver_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -255,9 +258,6 @@
     </ClCompile>
     <ClCompile Include="protector_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="euler_solver.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="euler_solver_test.cpp">
       <Filter>Test Files</Filter>
