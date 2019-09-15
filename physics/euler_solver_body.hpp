@@ -33,12 +33,14 @@ using quantities::Time;
 using quantities::si::Joule;
 using quantities::si::Radian;
 
-template<typename PrincipalAxesFrame>
-EulerSolver<PrincipalAxesFrame>::EulerSolver(
+template<typename InertialFrame, typename PrincipalAxesFrame>
+EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     R3Element<MomentOfInertia> const& moments_of_inertia,
     AngularMomentumBivector const& initial_angular_momentum,
+    AttitudeRotation const& initial_attitude,
     Instant const& initial_time)
     : initial_angular_momentum_(initial_angular_momentum),
+      initial_attitude_(initial_attitude),
       initial_time_(initial_time) {
   auto const& I₁ = moments_of_inertia.x;
   auto const& I₂ = moments_of_inertia.y;
@@ -114,9 +116,9 @@ EulerSolver<PrincipalAxesFrame>::EulerSolver(
   }
 }
 
-template<typename PrincipalAxesFrame>
-typename EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector
-EulerSolver<PrincipalAxesFrame>::AngularMomentumAt(
+template<typename InertialFrame, typename PrincipalAxesFrame>
+typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumBivector
+EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
     Instant const& time) const {
   Time const Δt = time - initial_time_;
   switch (formula_) {
@@ -149,6 +151,14 @@ EulerSolver<PrincipalAxesFrame>::AngularMomentumAt(
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
   };
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
+EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
+    AngularMomentumBivector const& angular_momentum,
+    Instant const& time) const {
+  return AttitudeRotation();
 }
 
 }  // namespace internal_euler_solver

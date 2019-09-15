@@ -4,6 +4,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -13,6 +14,7 @@ namespace internal_euler_solver {
 using geometry::Bivector;
 using geometry::Instant;
 using geometry::R3Element;
+using geometry::Rotation;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
@@ -28,20 +30,29 @@ using quantities::NaN;
 //   In case (ii) λ should be defined as -σ λ₁.
 //   In case (iii) the first coordinate should include a factor σ (not σʹ) and
 //   λ should be defined as σ σʹ λ₂ (where λ₂ is the common value of λ₁ and λ₃).
-template<typename PrincipalAxesFrame>
+template<typename InertialFrame, typename PrincipalAxesFrame>
 class EulerSolver {
+  static_assert(InertialFrame::is_inertial);
  public:
   using AngularMomentumBivector = Bivector<AngularMomentum, PrincipalAxesFrame>;
+  using AttitudeRotation = Rotation<InertialFrame, PrincipalAxesFrame>;
 
   // Constructs a solver for a body with the given moments_of_inertia in its
   // principal axes frame.  The moments must be in increasing order.  At
-  // initial_time the angular momentum is initial_angular_momentum.
+  // initial_time the angular momentum is initial_angular_momentum and the
+  // attitude initial_attitude.
   EulerSolver(R3Element<MomentOfInertia> const& moments_of_inertia,
               AngularMomentumBivector const& initial_angular_momentum,
+              AttitudeRotation const& initial_attitude,
               Instant const& initial_time);
 
   // Computes the angular momentum at the given time.
   AngularMomentumBivector AngularMomentumAt(Instant const& time) const;
+
+  // Computes the attitude at the given time, using the angular momentum
+  // computed by the previous function.
+  AttitudeRotation AttitudeAt(AngularMomentumBivector const& angular_momentum,
+                              Instant const& time) const;
 
  private:
   // The formula to use, following Cellodoni et al., Section 2.2.  They don't
@@ -55,6 +66,7 @@ class EulerSolver {
 
   // Construction parameters.
   AngularMomentumBivector const initial_angular_momentum_;
+  AttitudeRotation const initial_attitude_;
   Instant const initial_time_;
 
   // Amusingly, the formula to use is a constant of motion.
