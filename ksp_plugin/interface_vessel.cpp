@@ -98,7 +98,8 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
         plugin->CelestialIndexOfBody(*vessel.orbit_analysis()->primary);
     analysis.mission_duration =
         vessel.orbit_analysis()->mission_duration / Second;
-    if (vessel.orbit_analysis()->elements.has_value()) {
+    analysis.elements_has_value = vessel.orbit_analysis()->elements.has_value();
+    if (analysis.elements_has_value) {
       auto const& elements = *vessel.orbit_analysis()->elements;
       analysis.elements.anomalistic_period =
           elements.anomalistic_period() / Second;
@@ -128,6 +129,7 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
     } else {
       recurrence = vessel.orbit_analysis()->recurrence;
     }
+    analysis.recurrence_has_value = recurrence.has_value();
     if (recurrence.has_value()) {
       analysis.recurrence.nuo = recurrence->νₒ();
       analysis.recurrence.dto = recurrence->Dᴛₒ();
@@ -140,7 +142,9 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
       analysis.recurrence.base_interval = recurrence->base_interval() / Radian;
       analysis.recurrence.grid_interval = recurrence->grid_interval() / Radian;
     }
-    if (vessel.orbit_analysis()->ground_track.has_value()) {
+    analysis.ground_track_has_value =
+        vessel.orbit_analysis()->ground_track.has_value();
+    if (analysis.ground_track_has_value) {
       auto const& ground_track = *vessel.orbit_analysis()->ground_track;
       if (recurrence.has_value()) {
         analysis.ground_track.equatorial_crossings
