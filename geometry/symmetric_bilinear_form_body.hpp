@@ -97,13 +97,10 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   auto const m₀ = A_minus_α₁I * A_minus_α₂I;
   auto const m₁ = A_minus_α₂I * A_minus_α₀I;
   auto const m₂ = A_minus_α₀I * A_minus_α₁I;
-  auto const v₀ = PickEigenvector(m₀);
-  auto const v₁ = PickEigenvector(m₁);
+  auto const v₀ = Vector<double, Frame>(PickEigenvector(m₀));
+  auto const v₁ = Vector<double, Frame>(PickEigenvector(m₁));
 
-  Rotation<Frame, Eigenframe> const rotation{
-      Vector<double, Frame>(v₀),
-      Vector<double, Frame>(v₁),
-      Bivector<double, Frame>(Cross(v₀, v₁))};
+  Rotation<Frame, Eigenframe> const rotation{v₀, v₁, Wedge(v₀, v₁)};
   return {form, rotation};
 }
 
