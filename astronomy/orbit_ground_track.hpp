@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <optional>
+#include <vector>
 
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
@@ -45,7 +46,7 @@ class OrbitGroundTrack {
     Interval<Angle> longitudes_reduced_to_pass(int const pass_index) const;
 
    private:
-    EquatorCrossingLongitudes(OrbitRecurrence const& nominal_recurrence);
+    explicit EquatorCrossingLongitudes(OrbitRecurrence const& nominal_recurrence);
     OrbitRecurrence nominal_recurrence_;
     Interval<Angle> ascending_longitudes_reduced_to_pass_1_;
     Interval<Angle> descending_longitudes_reduced_to_pass_2_;

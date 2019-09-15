@@ -3,6 +3,7 @@
 #include "astronomy/orbit_ground_track.hpp"
 
 #include <limits>
+#include <vector>
 
 #include "physics/apsides.hpp"
 
