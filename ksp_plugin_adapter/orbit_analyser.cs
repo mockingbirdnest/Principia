@@ -57,45 +57,48 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
           $@"Orbit of {vessel.name} with respect to {
             FlightGlobals.Bodies[
                 analysis.primary_index].NameWithArticle()} over {
-            FlightPlanner.FormatPositiveTimeSpan(
-                TimeSpan.FromSeconds(analysis.mission_duration))}");
+            FormatDuration(analysis.mission_duration)}");
       var elements = analysis.elements;
       UnityEngine.GUILayout.Label(
-          $@"({analysis.mission_duration /
-               elements.anomalistic_period:N0} anomalistic rev., {
-               analysis.mission_duration / elements.nodal_period:N0} nodal rev., {
-               analysis.mission_duration / elements.sidereal_period:N0} sidereal rev.)".ToString(Culture.culture));
+          analysis.elements_has_value
+              ? $@"({analysis.mission_duration /
+                     elements.anomalistic_period:N0} anomalistic rev., {
+                     analysis.mission_duration / elements.nodal_period:N0} nodal rev., {
+                     analysis.mission_duration / elements.sidereal_period:N0} sidereal rev.)".ToString(Culture.culture)
+              : "(mission duration is less than one sidereal revolution)");
       Style.HorizontalLine();
       UnityEngine.GUILayout.Label("Orbital elements");
+      string element_string(string s) => analysis.elements_has_value ? s : "—";
       UnityEngine.GUILayout.Label(
-          "Sidereal period: "+
-          FlightPlanner.FormatPositiveTimeSpan(
-              TimeSpan.FromSeconds(elements.sidereal_period)));
+          "Sidereal period: " +
+          element_string(
+              FormatDuration(elements.sidereal_period)));
       UnityEngine.GUILayout.Label(
           "Nodal period: " +
-          FlightPlanner.FormatPositiveTimeSpan(
-              TimeSpan.FromSeconds(elements.nodal_period)));
+          element_string(
+              FormatDuration(elements.nodal_period)));
       UnityEngine.GUILayout.Label(
           "Anomalistic period: " +
-          FlightPlanner.FormatPositiveTimeSpan(
-              TimeSpan.FromSeconds(analysis.elements.anomalistic_period)));
+          element_string(
+              FormatDuration(analysis.elements.anomalistic_period)));
       // TODO(egg): represent the intervals.
       UnityEngine.GUILayout.Label(
-          $"Semimajor axis: {FormatLengthInterval(elements.mean_semimajor_axis)}");
+          $"Semimajor axis: {element_string(FormatLengthInterval(elements.mean_semimajor_axis))}");
       UnityEngine.GUILayout.Label(
-          $"Eccentricity: {FormatInterval(elements.mean_eccentricity)}");
+          $"Eccentricity: {element_string(FormatInterval(elements.mean_eccentricity))}");
       UnityEngine.GUILayout.Label(
-          $"Inclination: {FormatAngleInterval(elements.mean_inclination)}");
+          $"Inclination: {element_string(FormatAngleInterval(elements.mean_inclination))}");
       UnityEngine.GUILayout.Label(
-          $"Longitude of ascending node: {FormatAngleInterval(elements.mean_longitude_of_ascending_nodes) ?? "(precesses)"}");
+          $"Longitude of ascending node: {element_string(FormatAngleInterval(elements.mean_longitude_of_ascending_nodes) ?? "(precesses)")}");
       UnityEngine.GUILayout.Label(
-          $"Argument of periapsis: {FormatAngleInterval(elements.mean_argument_of_periapsis) ?? "(precesses)"}");
+          $"Argument of periapsis: {element_string(FormatAngleInterval(elements.mean_argument_of_periapsis) ?? "(precesses)")}");
 
       Style.HorizontalLine();
       OrbitRecurrence recurrence = analysis.recurrence;
+      string recurrence_string<T>(T s) => analysis.recurrence_has_value ? s.ToString() : "—";
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
-            $"Ground track recurrence: [{recurrence.nuo}; {recurrence.dto}; {recurrence.cto}]");
+            $"Ground track recurrence: [{recurrence_string(recurrence.nuo)}; {recurrence_string(recurrence.dto)}; {recurrence_string(recurrence.cto)}]");
         autodetect_recurrence_ = UnityEngine.GUILayout.Toggle(autodetect_recurrence_, "Auto-detect");
       }
       using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -115,7 +118,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
 
       }
       UnityEngine.GUILayout.Label(
-          $"Subcycle: {recurrence.subcycle} days");
+          $"Subcycle: {recurrence_string(recurrence.subcycle)} days");
       UnityEngine.GUILayout.Label($"Equatorial shift: {recurrence.equatorial_shift * (180 / Math.PI):N2}° ({recurrence.equatorial_shift * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
       UnityEngine.GUILayout.Label($"Base interval: {recurrence.base_interval * (180 / Math.PI):N2}° ({recurrence.base_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
       UnityEngine.GUILayout.Label($"Grid interval: {recurrence.grid_interval * (180 / Math.PI):N2}° ({recurrence.grid_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
@@ -182,6 +185,29 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
     string formatted_half_width =
         (half_width / degree).ToString(format, Culture.culture);
     return $"{formatted_midpoint}°±{formatted_half_width}°";
+  }
+
+  // Formats a duration, omitting leading components if they are 0, and omitting
+  // leading 0s on the days;
+  private static string FormatDuration(double seconds) {
+    var span = TimeSpan.FromSeconds(seconds);
+    int days = GameSettings.KERBIN_TIME ? span.Days * 4 + span.Hours / 6
+                                        : span.Days;
+    int hours = GameSettings.KERBIN_TIME ? span.Hours % 6
+                                         : span.Hours;
+    var components = new List<string>();
+    if (days > 0) {
+      components.Add(GameSettings.KERBIN_TIME ? $"{days} d6" : $"{days} d");
+    }
+    if (components.Count > 0 || hours > 0) {
+      components.Add(
+          GameSettings.KERBIN_TIME ? $"{hours:0} h" : $"{hours:00} h");
+    }
+    if (components.Count > 0 || span.Minutes > 0) {
+      components.Add($"{span.Minutes:00} min");
+    }
+    components.Add($"{span.Seconds + span.Milliseconds / 1000m:00.0} s");
+    return string.Join(" ", components.ToArray());
   }
 
   static private bool TryParseMissionDuration(string str, out double value) {
