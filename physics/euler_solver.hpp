@@ -65,9 +65,14 @@ class EulerSolver {
   };
 
   // Construction parameters.
+  R3Element<MomentOfInertia> const moments_of_inertia_;
   AngularMomentumBivector const initial_angular_momentum_;
   AttitudeRotation const initial_attitude_;
   Instant const initial_time_;
+
+  MomentOfInertia const& I₁_ = moments_of_inertia_.x;
+  MomentOfInertia const& I₂_ = moments_of_inertia_.y;
+  MomentOfInertia const& I₃_ = moments_of_inertia_.z;
 
   // Amusingly, the formula to use is a constant of motion.
   Formula formula_;

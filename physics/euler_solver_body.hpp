@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/quaternion.hpp"
 #include "numerics/elliptic_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -15,8 +16,10 @@ namespace principia {
 namespace physics {
 namespace internal_euler_solver {
 
+using geometry::Quaternion;
 using geometry::Vector;
 using numerics::EllipticF;
+using numerics::JacobiAmplitude;
 using numerics::JacobiSNCNDN;
 using quantities::Abs;
 using quantities::ArcTan;
@@ -39,42 +42,40 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     AngularMomentumBivector const& initial_angular_momentum,
     AttitudeRotation const& initial_attitude,
     Instant const& initial_time)
-    : initial_angular_momentum_(initial_angular_momentum),
+    : moments_of_inertia_(moments_of_inertia),
+      initial_angular_momentum_(initial_angular_momentum),
       initial_attitude_(initial_attitude),
       initial_time_(initial_time) {
-  auto const& I₁ = moments_of_inertia.x;
-  auto const& I₂ = moments_of_inertia.y;
-  auto const& I₃ = moments_of_inertia.z;
-  CHECK_LE(I₁, I₂);
-  CHECK_LE(I₂, I₃);
+  CHECK_LE(I₁_, I₂_);
+  CHECK_LE(I₂_, I₃_);
 
   auto const& m = initial_angular_momentum.coordinates();
 
-  auto const I₁₂ = I₁ - I₂;
-  auto const I₁₃ = I₁ - I₃;
+  auto const I₁₂ = I₁_ - I₂_;
+  auto const I₁₃ = I₁_ - I₃_;
   auto const I₂₁ = -I₁₂;
-  auto const I₂₃ = I₂ - I₃;
+  auto const I₂₃ = I₂_ - I₃_;
   auto const I₃₁ = -I₁₃;
   auto const I₃₂ = -I₂₃;
 
   // The formulæ for the Δs in Celledoni cannot be used directly because of
   // cancellations.
-  auto const Δ₁ = m.y * m.y * I₂₁ / I₂ + m.z * m.z * I₃₁ / I₃;
-  auto const Δ₂ = m.x * m.x * I₁₂ / I₁ + m.z * m.z * I₃₂ / I₃;
-  auto const Δ₃ = m.x * m.x * I₃₁ / I₁ + m.y * m.y * I₃₂ / I₂;
+  auto const Δ₁ = m.y * m.y * I₂₁ / I₂_ + m.z * m.z * I₃₁ / I₃_;
+  auto const Δ₂ = m.x * m.x * I₁₂ / I₁_ + m.z * m.z * I₃₂ / I₃_;
+  auto const Δ₃ = m.x * m.x * I₃₁ / I₁_ + m.y * m.y * I₃₂ / I₂_;
   DCHECK_LE(Square<AngularMomentum>(), Δ₁);
   DCHECK_LE(Square<AngularMomentum>(), Δ₃);
 
-  B₁₃_ = Sqrt(I₁ * Δ₃ / I₃₁);
-  B₃₁_ = Sqrt(I₃ * Δ₁ / I₃₁);
+  B₁₃_ = Sqrt(I₁_ * Δ₃ / I₃₁);
+  B₃₁_ = Sqrt(I₃_ * Δ₁ / I₃₁);
 
   // Note that Celledoni et al. give k, but we need mc = 1 - k^2.  We write mc
   // in a way that reduces cancellations when k is close to 1.
   if (Δ₂ < Square<AngularMomentum>()) {
-    B₂₁_ = Sqrt(I₂ * Δ₁ / I₂₁);
+    B₂₁_ = Sqrt(I₂_ * Δ₁ / I₂₁);
     mc_ = -Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_);
-    λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁ * I₂ * I₃));
+    λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁_ * I₂_ * I₃_));
     if (m.x < AngularMomentum()) {
       B₁₃_ = -B₁₃_;
     } else {
@@ -82,10 +83,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     }
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
-    B₂₃_ = Sqrt(I₂ * Δ₃ / I₃₂);
+    B₂₃_ = Sqrt(I₂_ * Δ₃ / I₃₂);
     mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂);
     ν_ = EllipticF(ArcTan(m.y / B₂₃_, m.x / B₁₃_), mc_);
-    λ₁_ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
+    λ₁_ = Sqrt(Δ₁ * I₃₂ / (I₁_ * I₂_ * I₃_));
     if (m.z < AngularMomentum()) {
       B₃₁_ = -B₃₁_;
     } else {
@@ -102,7 +103,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     } else {
       G_ =  initial_angular_momentum_.Norm();
       ν_ = -ArcTanh(m.y / G_);
-      λ₂_ = Sqrt(Δ₁ * Δ₃ / (I₁ * I₃)) / G_;
+      λ₂_ = Sqrt(Δ₁ * Δ₃ / (I₁_ * I₃_)) / G_;
       if (m.x < AngularMomentum()) {
         B₁₃_ = -B₁₃_;
         λ₂_ = -λ₂_;
@@ -158,6 +159,27 @@ typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     AngularMomentumBivector const& angular_momentum,
     Instant const& time) const {
+  auto const& m = angular_momentum.coordinates();
+  Time const Δt = time - initial_time_;
+  switch (formula_) {
+    case Formula::i: {
+      auto const two_real_part = Sqrt(2 * (1 + m.z));
+      Quaternion const p(0.5 * two_real_part,
+                         {m.y / two_real_part, -m.x / two_real_part, 0});
+      Angle const φ = JacobiAmplitude(λ * Δt - ν_);
+      Angle const ψ =
+          Δt / I₃ + (I₃₁ / (I₁ * I₃ * λ)) *
+                        (EllipticΠ(φ, n, k) + f - EllipticΠ(φ, n, k) - f);
+    }
+    case Formula::ii: {
+    }
+    case Formula::iii: {
+    }
+    case Formula::Sphere : {
+    }
+    default:
+      LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
+  };
   return AttitudeRotation();
 }
 
