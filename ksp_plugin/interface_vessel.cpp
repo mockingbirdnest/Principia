@@ -3,10 +3,10 @@
 
 #include <numeric>
 
-#include "journal/method.hpp"
-#include "journal/profiles.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "journal/method.hpp"
+#include "journal/profiles.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -105,6 +105,8 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
           elements.anomalistic_period() / Second;
       analysis.elements.nodal_period = elements.nodal_period() / Second;
       analysis.elements.sidereal_period = elements.sidereal_period() / Second;
+      analysis.elements.nodal_precession =
+          elements.nodal_precession() / (Radian / Second);
       analysis.elements.mean_argument_of_periapsis =
           ToInterval(elements.mean_argument_of_periapsis_interval());
       analysis.elements.mean_eccentricity =
@@ -174,8 +176,7 @@ void principia__VesselSetPredictionAdaptiveStepParameters(
       {plugin, vessel_guid, adaptive_step_parameters});
   CHECK_NOTNULL(plugin);
   plugin->SetPredictionAdaptiveStepParameters(
-      vessel_guid,
-      FromAdaptiveStepParameters(adaptive_step_parameters));
+      vessel_guid, FromAdaptiveStepParameters(adaptive_step_parameters));
   return m.Return();
 }
 

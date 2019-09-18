@@ -12,6 +12,7 @@ using geometry::Frame;
 using physics::DiscreteTrajectory;
 using physics::MasslessBody;
 using physics::BodyCentredNonRotatingDynamicFrame;
+using quantities::IsFinite;
 
 OrbitAnalyser::OrbitAnalyser(not_null<Ephemeris<Barycentric>*> const ephemeris,
                              Ephemeris<Barycentric>::FixedStepParameters const
@@ -117,15 +118,18 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
         primary_centred_trajectory, *parameters->primary, MasslessBody{});
     if (elements.ok()) {
       analysis.elements = elements.ValueOrDie();
-      analysis.recurrence = OrbitRecurrence::ClosestRecurrence(
-          analysis.elements->nodal_period(),
-          analysis.elements->nodal_precession(),
-          *parameters->primary,
-          /*max_abs_Cᴛₒ=*/100);
-      analysis.ground_track =
-          OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
-                                          *parameters->primary,
-                                          /*mean_sun=*/std::nullopt);
+      if (IsFinite(analysis.elements->nodal_period()) &&
+          IsFinite(analysis.elements->nodal_precession())) {
+        analysis.recurrence = OrbitRecurrence::ClosestRecurrence(
+            analysis.elements->nodal_period(),
+            analysis.elements->nodal_precession(),
+            *parameters->primary,
+            /*max_abs_Cᴛₒ=*/100);
+        analysis.ground_track =
+            OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
+                                            *parameters->primary,
+                                            /*mean_sun=*/std::nullopt);
+      }
     }
 
     {
