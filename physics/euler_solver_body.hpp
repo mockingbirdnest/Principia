@@ -25,6 +25,7 @@ using quantities::Abs;
 using quantities::ArcTan;
 using quantities::ArcTanh;
 using quantities::Cosh;
+using quantities::Pow;
 using quantities::Tanh;
 using quantities::Energy;
 using quantities::Inverse;
@@ -75,6 +76,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     B₂₁_ = Sqrt(I₂_ * Δ₁ / I₂₁);
     mc_ = -Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_);
+    φ₀_ = JacobiAmplitude(-ν_, mc_);  // TODO(phl): Sign? mc?
     λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁_ * I₂_ * I₃_));
     if (m.x < AngularMomentum()) {
       B₁₃_ = -B₁₃_;
@@ -166,10 +168,19 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       auto const two_real_part = Sqrt(2 * (1 + m.z));
       Quaternion const p(0.5 * two_real_part,
                          {m.y / two_real_part, -m.x / two_real_part, 0});
-      Angle const φ = JacobiAmplitude(λ * Δt - ν_);
+      //TODO(phl): What about the signs?
+      Angle const φ = JacobiAmplitude(λ₃_ * Δt - ν_);
+      //TODO(phl): Is this right?
+      double sn;
+      double cn;
+      double dn;
+      JacobiSNCNDN(λ₃_ * Δt - ν_, mc_, sn, cn, dn);
+      Angle const f = (B₁₃_ * B₃₁_ / B₂₁_) * ArcTan(sn * B₂₁_, dn * B₁₃_);
+      double const n = -Pow<2>(B₃₁_ / B₁₃_);
       Angle const ψ =
           Δt / I₃ + (I₃₁ / (I₁ * I₃ * λ)) *
-                        (EllipticΠ(φ, n, k) + f - EllipticΠ(φ, n, k) - f);
+                        (EllipticΠ(φ, n, k) + f - EllipticΠ(φ₀_, n, k) - f₀_);
+      Quaternion const y(Cos(ψ / 2), {0, 0, Sin(ψ / 2)});
     }
     case Formula::ii: {
     }

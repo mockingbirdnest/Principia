@@ -89,6 +89,8 @@ class EulerSolver {
   AngularFrequency λ₃_ = NaN<AngularFrequency>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();
+  Angle φ₀_ = NaN<Angle>();
+  Angle f₀_ = NaN<Angle>();
 };
 
 }  // namespace internal_euler_solver
