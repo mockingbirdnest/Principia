@@ -241,13 +241,13 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         using (new UnityEngine.GUILayout.VerticalScope()) {
           LabeledField(
-                "Longitude of asc. node",
+                "Long. of asc. node",
                 elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval(),
-                GUILayoutWidth(5));
+                GUILayoutWidth(4));
           LabeledField(
-                "Argument of periapsis",
+                "Arg. of periapsis",
                 elements?.mean_argument_of_periapsis.FormatAngleInterval(),
-                GUILayoutWidth(5));
+                GUILayoutWidth(4));
         }
         UnityEngine.GUILayout.Space(Width(1));
         LabeledField(
