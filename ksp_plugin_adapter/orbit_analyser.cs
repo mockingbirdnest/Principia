@@ -205,8 +205,8 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
           "Subcycle",
           $"{recurrence_string(recurrence.subcycle)} days".ToString(Culture.culture));
       LabeledField("Equatorial shift", $"{recurrence.equatorial_shift * (180 / Math.PI):N2}° ({recurrence.equatorial_shift * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
-      LabeledField("Base interval", $"{recurrence.base_interval * (180 / Math.PI):N2}° ({recurrence.base_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
       LabeledField("Grid interval", $"{recurrence.grid_interval * (180 / Math.PI):N2}° ({recurrence.grid_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
+      Style.HorizontalLine();
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label("Longitudes of equatorial crossings of revolution #", UnityEngine.GUILayout.ExpandWidth(false));
         string text = UnityEngine.GUILayout.TextField(
