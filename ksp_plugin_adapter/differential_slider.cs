@@ -18,8 +18,10 @@ internal class DifferentialSlider : ScalingRenderer {
                             double max_value = double.PositiveInfinity,
                             ValueFormatter formatter = null,
                             ValueParser parser = null,
-                            UnityEngine.Color? text_colour = null) {
+                            UnityEngine.Color? text_colour = null,
+                            int label_width = 3) {
     label_ = label;
+    label_width_ = label_width;
     unit_ = unit;
     if (formatter == null) {
       formatter_ = v => v.ToString("#,0.000", Culture.culture);
@@ -74,7 +76,7 @@ internal class DifferentialSlider : ScalingRenderer {
           style.normal.textColor = text_colour_.Value;
         }
         UnityEngine.GUILayout.Label(text    : label_,
-                                    options : GUILayoutWidth(3),
+                                    options : GUILayoutWidth(label_width_),
                                     style   : style);
       }
 
@@ -174,6 +176,7 @@ internal class DifferentialSlider : ScalingRenderer {
   }
 
   private readonly string label_;
+  private readonly int label_width_;
   private readonly string unit_;
 
   private readonly double log10_lower_rate_;

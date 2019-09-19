@@ -234,8 +234,10 @@ internal class MainWindow : SupervisedWindowRenderer {
       // interface.
       if (adapter_.PluginRunning()) {
         plotting_frame_selector_.RenderButton();
-        flight_planner_.RenderButton();
-        orbit_analyser_.RenderButton();
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          flight_planner_.RenderButton();
+          orbit_analyser_.RenderButton();
+        }
         RenderToggleableSection(name   : "Prediction Settings",
                                 show   : ref show_prediction_settings_,
                                 render : RenderPredictionSettings);

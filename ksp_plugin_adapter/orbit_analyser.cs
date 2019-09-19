@@ -177,114 +177,96 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             $"Ground track recurrence: [{recurrence_string(recurrence.nuo)}; {recurrence_string(recurrence.dto)}; {recurrence_string(recurrence.cto)}]");
-        autodetect_recurrence_ = UnityEngine.GUILayout.Toggle(autodetect_recurrence_, "Auto-detect");
+        autodetect_recurrence_ = UnityEngine.GUILayout.Toggle(autodetect_recurrence_, "Auto-detect", UnityEngine.GUILayout.ExpandWidth(false));
       }
       using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label("Cycle:");
+        UnityEngine.GUILayout.Label("Cycle");
         string text = UnityEngine.GUILayout.TextField(
-            $"{revolutions_per_cycle_}");
+            $"{revolutions_per_cycle_}",
+            Style.RightAligned(UnityEngine.GUI.skin.textField),
+            GUILayoutWidth(2));
         if (int.TryParse(text, out int revolutions_per_cycle) &&
             revolutions_per_cycle > 0) {
           revolutions_per_cycle_ = revolutions_per_cycle;
         }
-        UnityEngine.GUILayout.Label("revolutions =");
-        text = UnityEngine.GUILayout.TextField($"{days_per_cycle_}");
+        UnityEngine.GUILayout.Label("revolutions =",
+                                    UnityEngine.GUILayout.ExpandWidth(false));
+        text = UnityEngine.GUILayout.TextField(
+            $"{days_per_cycle_}",
+            Style.RightAligned(UnityEngine.GUI.skin.textField),
+            GUILayoutWidth(2));
         if (int.TryParse(text, out int days_per_cycle) &&
             days_per_cycle != 0) {
           days_per_cycle_ = days_per_cycle;
         }
-        UnityEngine.GUILayout.Label("days");
-
+        UnityEngine.GUILayout.Label("days", UnityEngine.GUILayout.ExpandWidth(false));
       }
-      UnityEngine.GUILayout.Label(
-          $"Subcycle: {recurrence_string(recurrence.subcycle)} days");
-      UnityEngine.GUILayout.Label($"Equatorial shift: {recurrence.equatorial_shift * (180 / Math.PI):N2}° ({recurrence.equatorial_shift * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
-      UnityEngine.GUILayout.Label($"Base interval: {recurrence.base_interval * (180 / Math.PI):N2}° ({recurrence.base_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
-      UnityEngine.GUILayout.Label($"Grid interval: {recurrence.grid_interval * (180 / Math.PI):N2}° ({recurrence.grid_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
+      LabeledField(
+          "Subcycle",
+          $"{recurrence_string(recurrence.subcycle)} days".ToString(Culture.culture));
+      LabeledField("Equatorial shift", $"{recurrence.equatorial_shift * (180 / Math.PI):N2}° ({recurrence.equatorial_shift * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
+      LabeledField("Base interval", $"{recurrence.base_interval * (180 / Math.PI):N2}° ({recurrence.base_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
+      LabeledField("Grid interval", $"{recurrence.grid_interval * (180 / Math.PI):N2}° ({recurrence.grid_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
       using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label("Longitudes of equatorial crossings of revolution #");
-        string text = UnityEngine.GUILayout.TextField($"{ground_track_revolution_}");
+        UnityEngine.GUILayout.Label("Longitudes of equatorial crossings of revolution #", UnityEngine.GUILayout.ExpandWidth(false));
+        string text = UnityEngine.GUILayout.TextField(
+            $"{ground_track_revolution_}",
+            GUILayoutWidth(2));
         if (int.TryParse(text, out int revolution)) {
           ground_track_revolution_ = revolution;
         }
       }
       double half_width_km(Interval interval) => (interval.max - interval.min) / 2 * primary.Radius / 1000;
       var equatorial_crossings = analysis.ground_track.equatorial_crossings;
-      UnityEngine.GUILayout.Label($"Ascending pass: {equatorial_crossings.longitudes_reduced_to_ascending_pass.FormatAngleInterval()} (±{half_width_km(equatorial_crossings.longitudes_reduced_to_ascending_pass):N0} km)");
-      UnityEngine.GUILayout.Label($"Descending pass: {equatorial_crossings.longitudes_reduced_to_descending_pass.FormatAngleInterval()} (±{half_width_km(equatorial_crossings.longitudes_reduced_to_descending_pass):N0} km)");
+      LabeledField("Ascending pass", $"{equatorial_crossings.longitudes_reduced_to_ascending_pass.FormatAngleInterval()} (±{half_width_km(equatorial_crossings.longitudes_reduced_to_ascending_pass):N0} km)");
+      LabeledField("Descending pass", $"{equatorial_crossings.longitudes_reduced_to_descending_pass.FormatAngleInterval()} (±{half_width_km(equatorial_crossings.longitudes_reduced_to_descending_pass):N0} km)");
     }
     UnityEngine.GUI.DragWindow();
   }
 
   private void RenderOrbitalElements(OrbitalElements? elements) {
       UnityEngine.GUILayout.Label("Orbital elements");
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label("Sidereal period:");
-        UnityEngine.GUILayout.Label(
-            elements?.sidereal_period.FormatDuration() ?? em_dash,
-            Style.RightAligned(UnityEngine.GUI.skin.label));
-      }
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label("Nodal period:");
-        UnityEngine.GUILayout.Label(
-            elements?.nodal_period.FormatDuration() ?? em_dash,
-            Style.RightAligned(UnityEngine.GUI.skin.label));
-      }
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label("Anomalistic period:");
-        UnityEngine.GUILayout.Label(
-            elements?.anomalistic_period.FormatDuration() ?? em_dash,
-            Style.RightAligned(UnityEngine.GUI.skin.label));
-      }
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label(
-            "Semimajor axis:");
-        UnityEngine.GUILayout.Label(
-            elements?.mean_semimajor_axis.FormatLengthInterval() ?? em_dash,
-            Style.RightAligned(UnityEngine.GUI.skin.label));
-      }
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label(
-            "Eccentricity:");
-        UnityEngine.GUILayout.Label(
-            elements?.mean_eccentricity.FormatLengthInterval() ?? em_dash,
-            Style.RightAligned(UnityEngine.GUI.skin.label));
-      }
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label(
-            "Inclination:");
-        UnityEngine.GUILayout.Label(
-            elements?.mean_inclination.FormatAngleInterval() ?? em_dash,
-            Style.RightAligned(UnityEngine.GUI.skin.label));
-      }
+      LabeledField("Sidereal period",
+                   elements?.sidereal_period.FormatDuration());
+      LabeledField("Nodal period",
+                   elements?.nodal_period.FormatDuration());
+      LabeledField("Anomalistic period",
+                   elements?.anomalistic_period.FormatDuration());
+      LabeledField("Semimajor axis",
+                   elements?.mean_semimajor_axis.FormatLengthInterval());
+      LabeledField("Eccentricity",
+                   elements?.mean_inclination.FormatInterval());
+      LabeledField("Inclination",
+                   elements?.mean_inclination.FormatAngleInterval());
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         using (new UnityEngine.GUILayout.VerticalScope()) {
-          using (new UnityEngine.GUILayout.HorizontalScope()) {
-            UnityEngine.GUILayout.Label(
-                "Longitude of ascending node:");
-            UnityEngine.GUILayout.Label(
-                elements?.mean_longitude_of_ascending_nodes.
-                    FormatAngleInterval() ?? em_dash,
-                Style.RightAligned(UnityEngine.GUI.skin.label));
-          }
-          using (new UnityEngine.GUILayout.HorizontalScope()) {
-            UnityEngine.GUILayout.Label(
-                "Argument of periapsis:");
-            UnityEngine.GUILayout.Label(
-                elements?.mean_argument_of_periapsis.FormatAngleInterval() ??
-                    em_dash,
-                Style.RightAligned(UnityEngine.GUI.skin.label));
-          }
+          LabeledField(
+                "Longitude of asc. node",
+                elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval(),
+                GUILayoutWidth(5));
+          LabeledField(
+                "Argument of periapsis",
+                elements?.mean_argument_of_periapsis.FormatAngleInterval(),
+                GUILayoutWidth(5));
         }
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Label(
-              "Nodal precession:");
-          UnityEngine.GUILayout.Label(
-              elements?.nodal_precession.FormatAngularFrequency() ??
-                  em_dash,
-              Style.RightAligned(UnityEngine.GUI.skin.label));
-        }
+        UnityEngine.GUILayout.Space(Width(1));
+        LabeledField(
+              "Nodal precession",
+              elements?.nodal_precession.FormatAngularFrequency(),
+              GUILayoutWidth(3));
       }
+  }
+
+  private void LabeledField(
+      string label,
+      string value,
+      params UnityEngine.GUILayoutOption[] value_options) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      UnityEngine.GUILayout.Label(label);
+      UnityEngine.GUILayout.Label(value ?? em_dash,
+          Style.RightAligned(UnityEngine.GUI.skin.label),
+          value_options);
+    }
   }
 
   static private bool TryParseMissionDuration(string str, out double value) {
@@ -311,7 +293,8 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       formatter        : value =>
           FlightPlanner.FormatPositiveTimeSpan(
               TimeSpan.FromSeconds(value)),
-      parser           : TryParseMissionDuration) {
+      parser           : TryParseMissionDuration,
+      label_width      : 4) {
       value = 7 * 24 * 60 * 60
   };
   private bool autodetect_recurrence_ = true;
