@@ -142,7 +142,7 @@
 
 % The dance with \(n)phantoms typesets the content first,
 % then the left bracket and finally the right one. XeLaTeX
-% does weird stuff when mathmode starts with a delimiter 
+% does weird stuff when mathmode starts with a delimiter
 % containing only a vphantom.
 \def\DeclareDelimiterX#1[#2]#3#4#5 {
   \DeclareRobustCommand{#1}[#2]{
@@ -206,7 +206,7 @@
 \@mathraisebox[\displaystyle]{.75pt}{
   \operatorname*{
     \left.{\kern-\nulldelimiterspace}
-    \vphantom{#3}\vphantom{\mathlarger{{\integralSign}}} 
+    \vphantom{#3}\vphantom{\mathlarger{{\integralSign}}}
     \middle
     \@delint
     \right.{\kern-\nulldelimiterspace}
@@ -230,12 +230,12 @@
 
 \makeatother
 
-%%% end Voodoo 
+%%% end Voodoo
 
 % We need ^ and _ to be active in order to ignore
-% them when sizing brackets. Beware that 
+% them when sizing brackets. Beware that
 % ^\frac{1}{2} will no longer work, use
-% ^{\frac{1}{2}} instead. (^, _, now work as normal 
+% ^{\frac{1}{2}} instead. (^, _, now work as normal
 % commands).
 
 \mathcode`\^="8000
@@ -280,11 +280,11 @@
 \let\@bar\bar
 \renewcommand\bar[1]{\if@delimsize{}\else\@bar{#1}\fi}
 \makeatother
- 
-\AtBeginDocument{   
+
+\AtBeginDocument{
 
 
-% Use the proper unicode line extender for long arrows in x*arrow, instead of 
+% Use the proper unicode line extender for long arrows in x*arrow, instead of
 % the minus sign which leads to holes in the arrows.
 \renewcommand{\relbar}{\mathrel{\harrowextender}}
 
@@ -316,7 +316,7 @@
 \DeclareDelimiterX\lsquareCommaLsquare[2]{[}{[}{#1, #2}
 \DeclareDelimiterX\rsquareCommaRsquare[2]{]}{]}{#1, #2}
 \DeclareDelimiterX\rsquareCommaLsquare[2]{]}{[}{#1, #2}
-\DeclareDelimiterX\langleBarRangle[2]{\langle}{\rangle}{#1\delimsize\vert #2} 
+\DeclareDelimiterX\langleBarRangle[2]{\langle}{\rangle}{#1\delimsize\vert #2}
 \DeclareDelimiterX\langleCommaRangle[2]{\langle}{\rangle}{#1, #2}
 \DeclareDelimiterX\lAngleCommaRAngle[2]{\lAngle}{\rAngle}{#1, #2}
 \DeclareDelimiterX\lparenCommaRparen[2]{\lparen}{\rparen}{#1, #2}
@@ -360,7 +360,7 @@
 
 %%% Operators, standard functions.
 %% Prefix operators and functions.
-% \DiracDelta[x] is the dirac delta distribution, with \DiracDelta[x]\of y = 0 
+% \DiracDelta[x] is the dirac delta distribution, with \DiracDelta[x]\of y = 0
 % for all x \neq 0. \DiracDelta is a shorter notation for \DiracDelta[0].
 \newcommand{\DiracDelta}[1][]{\operatorname{\delta}_{#1}}
 % \RiemannZeta is Riemann's zeta function.
@@ -373,6 +373,11 @@
 \DeclareMathOperator{\HyperbolicSine}{sh}
 % \HyperbolicTangent is the hyperbolic cosine.
 \DeclareMathOperator{\HyperbolicTangent}{th}
+% Jacobian elliptic functions.
+\DeclareMathOperator{\JacobiCN}{cn}
+\DeclareMathOperator{\JacobiDN}{dn}
+\DeclareMathOperator{\JacobiSN}{sn}
+\DeclareMathOperator{\JacobiAmplitude}{am}
 % \Sign is the sign function.
 \DeclareMathOperator{\Sign}{sgn}
 % \Laplacian is the Laplacian.
@@ -428,7 +433,7 @@
 \newcommand{\der}{'}
 %% Many-argument operators.
 % \deriv[n] x f is the nth derivative of f with respect to x.
-% Use \deriv x f for the first derivative, and 
+% Use \deriv x f for the first derivative, and
 % \derivop[n] x for the operator 'nth derivative with respect to x.
 \newcommand\deriv[3][]{\frac{\diffd^{#1} {#3}}{{\diffd {#2}}^{#1}}}
 \newcommand{\derivop}[2][]{\deriv[#1]{#2}{}}
@@ -560,7 +565,7 @@
 % we use \emptyDotEmpty as per ISO 80000-2:2009.
 \newcommand\InnerProduct[2]{\emptyDotEmpty{#1}{#2}}
 % \pascal is used for expressions which need to be parenthesised if the notation for the
-% scalar product \InnerProduct does not include delimiters, e.g. \emptyDotEmpty, but should not be if 
+% scalar product \InnerProduct does not include delimiters, e.g. \emptyDotEmpty, but should not be if
 % it does, e.g. \angleCommaAngle. 'pascal' stands for pa[rentheses] scal[ar].
 % Set \NeedPascal accordingly.
 \newif\ifNeedPascal \NeedPascaltrue
@@ -774,7 +779,7 @@
 % as in 'if f is linear, f\of{\gl\placeholder}=\gl f.'
 \newcommand\placeholder{\mbox{\:\cdot\:}}
 % \funcspec{f}{X}{Y} specifies that f is a function from X to Y.
-% \MapSpec [f] X Y does the same, in a more compact notation 
+% \MapSpec [f] X Y does the same, in a more compact notation
 % appropriate for chains, eg \MapSpec [f] X {\MapSpec [g] Y Z}
 \newcommand{\MapSpec}[3][]{
 \ifstrempty{#1}%
@@ -859,13 +864,13 @@
 \newcommand{\Intersection}{\cap}
 \newcommand{\SymmetricDifference}{\bigtriangleup}
 \newcommand{\DefineAs}{\coloneq}
-% When using ComputerModern, Subset will be undefined, 
+% When using ComputerModern, Subset will be undefined,
 % but it will be defined when using Utopia, so we use
 % a \def.
 \def\Subset{\subseteq}
 \def\Superset{\supseteq}
 \newcommand{\StrictSubset}{\subsetneq}
-% \Character[\gr] is the character of the 
+% \Character[\gr] is the character of the
 % representation \gr. Use \Character when
 % \gr is implicit.
 \newcommand\Character[1][]{\mathrm{\chi}_{#1}}

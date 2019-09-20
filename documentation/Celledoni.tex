@@ -1,0 +1,106 @@
+\documentclass[10pt, a4paper, twoside]{basestyle}
+
+\usepackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true]{biblatex}
+\bibliography{bibliography}
+
+\usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
+
+%%%% Shorthands.
+
+%%%% Title and authors.
+
+\title{%
+\textdisplay{%
+On an Article by Celledoni et al.%
+}%
+}
+\author{Pascal~Leroy (phl)}
+\begin{document}
+\maketitle
+\begin{sloppypar}
+\noindent
+This document provides clarifications, corrections, and accuracy improvements to the formul{\ae} presented in \cite{Celledoni2008}.  It follows the notation
+and conventions of that paper.
+\end{sloppypar}
+
+\section*{Preamble}
+We remind the reader of the derivation formul{\ae} for the Jacobian elliptic functions (\cite{NistHMF2010}, section 22.13(i)):
+\[
+\begin{dcases}
+\derivop{u}{\JacobiSN u} &= \JacobiCN u \JacobiDN u \\
+\derivop{u}{\JacobiCN u} &= -\JacobiSN u \JacobiDN u \\
+\derivop{u}{\JacobiDN u} &= -k^2 \JacobiSN u \JacobiCN u
+\end{dcases}
+\]
+
+\section*{The equations of motion}
+We start by writing equation (1) of \cite{Celledoni2008} in coordinates.  The coordinates of $m$ and $I$ are defined by:
+\[
+\vm\DefineAs
+\begin{pmatrix}
+m_1 \\ m_2 \\ m_3
+\end{pmatrix}
+\]
+and:
+\[
+\VectorSymbol{I}\DefineAs
+\begin{pmatrix}
+I_1 & 0 & 0 \\ 0 & I_2 & 0 \\ 0 & 0 & I_3
+\end{pmatrix}
+\]
+Euler's equation $\TimeDerivative{m} = m\Exterior\pa{I^{-1} m}$ can be written in coordinates:
+\[
+\TimeDerivative{\vm} =
+\begin{pmatrix}
+m_1 \\ m_2 \\ m_3
+\end{pmatrix}
+\Exterior
+\begin{pmatrix}
+m_1/I_1 \\ m_2/I_2 \\ m_3/I_3
+\end{pmatrix}
+\]
+thus:
+\begin{equation}
+\begin{dcases}
+\TimeDerivative{m}_1 &= m_2 m_3 \pa{1/I_3 - 1/I_2}\\
+\TimeDerivative{m}_2 &= m_3 m_1 \pa{1/I_1 - 1/I_3}\\
+\TimeDerivative{m}_3 &= m_1 m_2 \pa{1/I_2 - 1/I_1}
+\end{dcases}
+\label{eqneuler}
+\end{equation}
+\subsection*{Solution of Euler's equation, case (i)}
+The case (i) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is:
+\[
+{\vm}_t =
+\begin{pmatrix}
+\gs B_{13} \JacobiDN\of{\gl t - \gn, k} \\
+-B_{21} \JacobiSN\of{\gl t - \gn, k} \\
+B_{31} \JacobiCN\of{\gl t - \gn, k}
+\end{pmatrix}
+\]
+If we derive this expression with respect to $t$, inject in into (\ref{eqneuler}), and eliminate the elliptic functions we obtain:
+\begin{equation}
+\begin{dcases}
+-\gs \gl k^2 B_{13} &= -B_{21} B_{31} \pa{1/I_3 - 1/I_2} \\
+-\gl B_{21} &= \gs B_{13} B_{31} \pa{1/I_1 - 1/I_3} \\
+-\gl B_{31} &= -\gs B_{13} B_{21} \pa{1/I_2 - 1/I_1}
+\end{dcases}
+\label{solneuleri}
+\end{equation}
+The last equation of (\ref{solneuleri}) yields the following value for $\gl$:
+\[
+\gl = \gs \frac{B_{13} B_{21}}{B_{31}}\frac{I_1 - I_2}{I_1 I_2}
+= \gs\sqrt{\frac{I_1 \gD_3}{I_{13}} \frac{I_2 \gD_1}{I_{21}} \frac{I_{31}}{I_3 \gD_1}} \frac{I_1 - I_2}{I_1 I_2}
+= \gs\sqrt{\frac{\gD_3}{I_{21} I_1 I_2 I_3}} \pa{I_1 - I_2}
+= -\gs\sqrt{\frac{\gD_3 I_{21}}{I_1 I_2 I_3}}
+= -\gs \gl_3
+\]
+The sign change when moving $I_1 - I_2$ under the radical is necessary because $I_1 - I_2 < 0$.
+
+It is straightforward to check that this value of $\gl$ also satisfies the other equations of (\ref{solneuleri}).  Note that it
+differs in sign from the one given by \cite{Celledoni2008}: the sign error is visible in that it does not yield the proper precession 
+direction.
+\printbibliography
+\end{document}
