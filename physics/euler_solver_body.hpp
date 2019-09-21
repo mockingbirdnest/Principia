@@ -59,20 +59,20 @@ EulerSolver<PrincipalAxesFrame>::EulerSolver(
   // cancellations.
   auto const Δ₁ = m.y * m.y * I₂₁ / I₂ + m.z * m.z * I₃₁ / I₃;
   auto const Δ₂ = m.x * m.x * I₁₂ / I₁ + m.z * m.z * I₃₂ / I₃;
-  auto const Δ₃ = m.x * m.x * I₃₁ / I₁ + m.y * m.y * I₃₂ / I₂;
+  auto const Δ₃ = m.x * m.x * I₁₃ / I₁ + m.y * m.y * I₂₃ / I₂;
   DCHECK_LE(Square<AngularMomentum>(), Δ₁);
-  DCHECK_LE(Square<AngularMomentum>(), Δ₃);
+  DCHECK_LE(Δ₃, Square<AngularMomentum>());
 
-  B₁₃_ = Sqrt(I₁ * Δ₃ / I₃₁);
+  B₁₃_ = Sqrt(-I₁ * Δ₃ / I₃₁);
   B₃₁_ = Sqrt(I₃ * Δ₁ / I₃₁);
 
   // Note that Celledoni et al. give k, but we need mc = 1 - k^2.  We write mc
   // in a way that reduces cancellations when k is close to 1.
   if (Δ₂ < Square<AngularMomentum>()) {
     B₂₁_ = Sqrt(I₂ * Δ₁ / I₂₁);
-    mc_ = -Δ₂ * I₃₁ / (Δ₃ * I₂₁);
-    ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_);
-    λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁ * I₂ * I₃));
+    mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
+    ν_ = EllipticF(ArcTan(m.y * B₃₁_, m.z * B₂₁_), mc_);
+    λ₃_ = Sqrt(-Δ₃ * I₂₁ / (I₁ * I₂ * I₃));
     if (m.x < AngularMomentum()) {
       B₁₃_ = -B₁₃_;
     } else {
@@ -80,9 +80,9 @@ EulerSolver<PrincipalAxesFrame>::EulerSolver(
     }
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
-    B₂₃_ = Sqrt(I₂ * Δ₃ / I₃₂);
+    B₂₃_ = Sqrt(-I₂ * Δ₃ / I₃₂);
     mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂);
-    ν_ = EllipticF(ArcTan(m.y / B₂₃_, m.x / B₁₃_), mc_);
+    ν_ = EllipticF(ArcTan(m.y * B₁₃_, m.x * B₂₃_), mc_);
     λ₁_ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
     if (m.z < AngularMomentum()) {
       B₃₁_ = -B₃₁_;
@@ -100,7 +100,7 @@ EulerSolver<PrincipalAxesFrame>::EulerSolver(
     } else {
       G_ =  initial_angular_momentum_.Norm();
       ν_ = -ArcTanh(m.y / G_);
-      λ₂_ = Sqrt(Δ₁ * Δ₃ / (I₁ * I₃)) / G_;
+      λ₂_ = Sqrt(-Δ₁ * Δ₃ / (I₁ * I₃)) / G_;
       if (m.x < AngularMomentum()) {
         B₁₃_ = -B₁₃_;
         λ₂_ = -λ₂_;
