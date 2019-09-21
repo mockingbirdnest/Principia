@@ -248,5 +248,62 @@ For this formula to be homogeneous we need to restore the total angular momentum
 \[
 \gn = -\HyperbolicTangent^{-1}\of{\frac{m_{02}}{G}}
 \]
+
+\subsection*{Implementation considerations}
+Some of the formul{\ae} given by \cite{Celledoni2008} do not lend themselves to an easy implementation or lead to numerical inaccuracies.  We
+describe in this section the modifications we make to their formul{\ae} in our implementation.  We also restore dimensionful formul{\ae} as needed.
+
+First, it is simpler and more efficient to avoid absolute values, so we define:
+\[
+I_{jh} \DefineAs I_j - I_h
+\]
+This is the same quantity as in \cite{Celledoni2008} when $j \geq h$ but it has the opposite sign (it is negative) when $j < h$.
+
+Next we notice that the computation of $\gD_j$ may entail cancellations, so we go back to the definition of $\norm{\vm}$ and of the kinetic energy:
+\[
+\begin{dcases}
+G^2 &= m_1^2 + m_2^2 + m_3^2 \\
+2 T &= \frac{m_1^2}{I_1} + \frac{m_2^2}{I_2} + \frac{m_3^2}{I_3}
+\end{dcases}
+\]
+and we define $\gD_j$ without absolute values:
+\[
+\gD_j \DefineAs G^2 - 2 T I_j
+\]
+When, for instance, $j = 2$ this yields:
+\begin{align*}
+\gD_2 &= m_1^2 \pa{1 - \frac{I_2}{I_1}} + m_3^2 \pa{1 - \frac{I_2}{I_3}} \\
+&= m_1^2 \frac{I_{12}}{I_1} + m_3^2 \frac{I_{32}}{I_3}
+\end{align*}
+and similarly:
+\[
+\begin{dcases}
+\gD_1 &= m_2^2 \frac{I_{21}}{I_2} + m_3^2 \frac{I_{31}}{I_3} \\
+\gD_3 &= m_1^2 \frac{I_{13}}{I_1} + m_2^2 \frac{I_{23}}{I_2}
+\end{dcases}
+\]
+It is easy to see that $\gD_1$ and $\gD_3$ are the sums of terms of the same sign, so they can be computed without cancellations and $\gD_1 \geq 0$ and 
+$\gD_3 \leq 0$.  $\gD_2$ can have either sign, which correspond exactly to cases (i) ($\gD_2 < 0$), (ii) ($\gD_2 > 0$) and (iii) ($\gD_2 = 0$).
+
+Finally, for the computation of the elliptic functions and integrals \cite{Celledoni2008} gives the value of $k$ but we need the value of $m_c = 1 - m$ 
+(see \cite{NistHMF2010}, section 19.1.2 for an overview of the notation).  In case (i) we have:
+\[
+m_c = 1 - k^2 = 1 + \frac{\gD_1 I_{32}}{\gD_3 I_{21}}
+\]
+where we have used $\gD_3 \leq 0$.  This can be rewritten as follows:
+\begin{align*}
+m_c &= \frac{\gD_3 I_{21} + \gD_1 I_{32}}{\gD_3 I_{21}}
+=\frac{\pa{G^2 - 2 T I_3}\pa{I_2 - I_1} + \pa{G^2 - 2 T I_1}\pa{I_3 - I_2}}{\gD_3 I_{21}} \\
+&=\frac{G^2\pa{I_3 - I_1} + 2 T I_2\pa{I_1 - I_3}}{\gD_3 I_{21}}
+=\frac{\gD_2 I_{31}}{\gD_3 I_{21}}
+\end{align*}
+
+Similarly, in case (ii):
+\[
+m_c = 1 - k^{-2} = 1 + \frac{\gD_3 I_{21}}{\gD_1 I_{32}}
+=\frac{\gD_1 I_{32} + \gD_3 I_{21}}{\gD_1 I_{32}}
+=\frac{\gD_2 I_{31}}{\gD_1 I_{32}}
+\]
+Note that in both cases we have $m_c \geq 0$.
 \printbibliography
 \end{document}
