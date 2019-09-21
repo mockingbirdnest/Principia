@@ -321,6 +321,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
             recurrence?.dto.ToString("+0;-0") ?? em_dash}; {
             recurrence?.cto.ToString() ?? em_dash}]",
           GUILayoutWidth(8));
+      UnityEngine.GUILayout.FlexibleSpace();
       autodetect_recurrence_ = UnityEngine.GUILayout.Toggle(
           autodetect_recurrence_,
           "Auto-detect",

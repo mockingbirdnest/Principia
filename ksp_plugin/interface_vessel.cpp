@@ -129,7 +129,7 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
       int const gcd = std::gcd(Dᴛₒ, Cᴛₒ);
       recurrence.emplace(νₒ, Dᴛₒ / gcd, Cᴛₒ / gcd);
     } else {
-      recurrence = vessel.orbit_analysis()->recurrence;
+      recurrence = vessel.orbit_analysis()->auto_detected_recurrence;
     }
     analysis.recurrence_has_value = recurrence.has_value();
     if (recurrence.has_value()) {
@@ -149,18 +149,24 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
     if (analysis.ground_track_has_value) {
       auto const& ground_track = *vessel.orbit_analysis()->ground_track;
       if (recurrence.has_value()) {
+        if (vessel.orbit_analysis()->chosen_recurrence != recurrence) {
+          vessel.orbit_analysis()->chosen_recurrence = recurrence;
+          vessel.orbit_analysis()->equator_crossings_for_chosen_recurrence =
+              ground_track.equator_crossing_longitudes(
+                  *recurrence, /*first_ascending_pass_index=*/1);
+        }
+        astronomy::OrbitGroundTrack::EquatorCrossingLongitudes const&
+            equatorial_crossings =
+                *vessel.orbit_analysis()
+                     ->equator_crossings_for_chosen_recurrence;
         analysis.ground_track.equatorial_crossings
-            .longitudes_reduced_to_ascending_pass = ToInterval(
-            ground_track
-                .equator_crossing_longitudes(*recurrence,
-                                             /*first_ascending_pass_index=*/1)
-                .longitudes_reduced_to_pass(2 * ground_track_revolution - 1));
+            .longitudes_reduced_to_ascending_pass =
+            ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
+                2 * ground_track_revolution - 1));
         analysis.ground_track.equatorial_crossings
-            .longitudes_reduced_to_descending_pass = ToInterval(
-            ground_track
-                .equator_crossing_longitudes(*recurrence,
-                                             /*first_ascending_pass_index=*/1)
-                .longitudes_reduced_to_pass(2 * ground_track_revolution));
+            .longitudes_reduced_to_descending_pass =
+            ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
+                2 * ground_track_revolution));
       }
     }
   }

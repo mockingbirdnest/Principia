@@ -38,8 +38,11 @@ class OrbitAnalyser {
     Time mission_duration;
     not_null<RotatingBody<Barycentric> const*> primary;
     std::optional<OrbitalElements> elements;
-    std::optional<OrbitRecurrence> recurrence;
+    std::optional<OrbitRecurrence> auto_detected_recurrence;
+    std::optional<OrbitRecurrence> chosen_recurrence;
     std::optional<OrbitGroundTrack> ground_track;
+    std::optional<OrbitGroundTrack::EquatorCrossingLongitudes>
+        equator_crossings_for_chosen_recurrence;
   };
 
   OrbitAnalyser(
@@ -57,7 +60,7 @@ class OrbitAnalyser {
   // Sets |analysis()| to the latest computed analysis.
   void RefreshAnalysis();
 
-  std::optional<Analysis> const& analysis() const;
+  std::optional<Analysis>& analysis();
 
   int8_t next_analysis_percentage() const;
 

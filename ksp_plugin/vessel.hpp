@@ -179,7 +179,7 @@ class Vessel {
   void RefreshOrbitAnalysis(not_null<RotatingBody<Barycentric> const*> primary,
                             Time const& mission_duration);
   int orbit_analysis_percentage() const;
-  OrbitAnalyser::Analysis const* orbit_analysis() const;
+  OrbitAnalyser::Analysis* orbit_analysis();
 
   static void MakeAsynchronous();
   static void MakeSynchronous();

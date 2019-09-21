@@ -48,10 +48,13 @@ void OrbitAnalyser::RequestAnalysis(
 
 void OrbitAnalyser::RefreshAnalysis() {
   absl::MutexLock l(&lock_);
-  analysis_ = next_analysis_;
+  if (next_analysis_.has_value()) {
+    analysis_ = next_analysis_;
+    next_analysis_.reset();
+  }
 }
 
-std::optional<OrbitAnalyser::Analysis> const& OrbitAnalyser::analysis() const {
+std::optional<OrbitAnalyser::Analysis>& OrbitAnalyser::analysis() {
   return analysis_;
 }
 
@@ -120,7 +123,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       analysis.elements = elements.ValueOrDie();
       if (IsFinite(analysis.elements->nodal_period()) &&
           IsFinite(analysis.elements->nodal_precession())) {
-        analysis.recurrence = OrbitRecurrence::ClosestRecurrence(
+        analysis.auto_detected_recurrence = OrbitRecurrence::ClosestRecurrence(
             analysis.elements->nodal_period(),
             analysis.elements->nodal_precession(),
             *parameters->primary,

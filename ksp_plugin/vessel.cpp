@@ -466,8 +466,9 @@ int Vessel::orbit_analysis_percentage() const {
   return orbit_analyser_->next_analysis_percentage();
 }
 
-OrbitAnalyser::Analysis const* Vessel::orbit_analysis() const {
-  if (!orbit_analyser_.has_value() || !orbit_analyser_->analysis().has_value()) {
+OrbitAnalyser::Analysis* Vessel::orbit_analysis() {
+  if (!orbit_analyser_.has_value() ||
+      !orbit_analyser_->analysis().has_value()) {
     return nullptr;
   }
   return &*orbit_analyser_->analysis();

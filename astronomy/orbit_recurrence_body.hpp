@@ -114,8 +114,20 @@ inline int OrbitRecurrence::subcycle() const {
   return subcycle_;
 }
 
+inline bool operator==(OrbitRecurrence const& left,
+                       OrbitRecurrence const& right) {
+  return left.νₒ() == right.νₒ() && left.Dᴛₒ() == right.Dᴛₒ() &&
+         left.Cᴛₒ() == right.Cᴛₒ();
+}
+
+inline bool operator!=(OrbitRecurrence const& left,
+                       OrbitRecurrence const& right) {
+  return left.νₒ() != right.νₒ() || left.Dᴛₒ() != right.Dᴛₒ() ||
+         left.Cᴛₒ() != right.Cᴛₒ();
+}
+
 inline std::ostream& operator<<(std::ostream& out,
-  OrbitRecurrence const& recurrence) {
+                                OrbitRecurrence const& recurrence) {
   return out << "[" << recurrence.νₒ() << "; " << recurrence.Dᴛₒ() << "; "
              << recurrence.Cᴛₒ() << "]";
 }
