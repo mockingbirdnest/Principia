@@ -48,7 +48,7 @@ internal static class Formatters {
     if (half_width > Math.PI) {
       return "(precesses)";
     }
-    double degree = Math.PI / 180;
+    const double degree = Math.PI / 180;
     int fractional_digits =
         Math.Max(0, 1 - (int)Math.Floor(Math.Log10(half_width / degree)));
     string format = $"N{fractional_digits}";
@@ -58,7 +58,32 @@ internal static class Formatters {
         (half_width / degree).ToString(format, Culture.culture);
     return $"{formatted_midpoint}°±{formatted_half_width}°";
   }
-  
+
+  // Displays an angle (given in radians) in degrees, with the equivalent in km
+  // at the equator given in parentheses.
+  public static string FormatEquatorialAngle(this double angle,
+                                             CelestialBody primary) {
+    const double degree = Math.PI / 180;
+    double degrees = angle / degree;
+    double kilometres = angle * primary.Radius / 1000;
+    return $"{degrees:N1}° ({kilometres:N1} km)".ToString(Culture.culture);
+  }
+
+  // Similar to |FormatAngleInterval|, but annotated with the equivalent
+  // of the half-width as a distance at the equator in parentheses.
+  public static string FormatEquatorialAngleInterval(this Interval interval,
+                                                     CelestialBody primary) {
+    double half_width_angle = (interval.max - interval.min) / 2;
+    if (half_width_angle > Math.PI) {
+      return "(precesses)";
+    }
+    double half_width_distance = half_width_angle * primary.Radius;
+    string formatted_distance = half_width_distance > 1000
+        ? $"{half_width_distance / 1000:N1} km"
+        : $"{half_width_distance:N0} m";
+    return $"{interval.FormatAngleInterval()} ({formatted_distance})";
+  }
+
   // Formats a duration, omitting leading components if they are 0, and omitting
   // leading 0s on the days; optionally exclude seconds.
   public static string FormatDuration(this double seconds,
@@ -160,7 +185,8 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
         UnityEngine.GUILayout.Label("No active vessel");
         return;
       }
-      CelestialBody primary = adapter_.plotting_frame_selector_.selected_celestial;
+      CelestialBody primary =
+          adapter_.plotting_frame_selector_.selected_celestial;
 
       mission_duration_.Render(enabled : true);
       var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
@@ -194,9 +220,17 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
           rightValue : 100);
 
       OrbitalElements? elements = null;
+      OrbitRecurrence? recurrence = null;
+      OrbitGroundTrack? ground_track = null;
       double mission_duration = analysis.mission_duration;
       if (analysis.elements_has_value) {
         elements = analysis.elements;
+      }
+      if (analysis.recurrence_has_value) {
+          recurrence = analysis.recurrence;
+      }
+      if (analysis.ground_track_has_value) {
+          ground_track = analysis.ground_track;
       }
       primary = FlightGlobals.Bodies[analysis.primary_index];
 
@@ -237,54 +271,9 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       Style.HorizontalLine();
       RenderOrbitalElements(elements);
       Style.HorizontalLine();
-      OrbitRecurrence recurrence = analysis.recurrence;
-      string recurrence_string<T>(T s) => analysis.recurrence_has_value ? s.ToString() : "—";
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label(
-            $"Ground track recurrence: [{recurrence_string(recurrence.nuo)}; {recurrence_string(recurrence.dto)}; {recurrence_string(recurrence.cto)}]");
-        autodetect_recurrence_ = UnityEngine.GUILayout.Toggle(autodetect_recurrence_, "Auto-detect", UnityEngine.GUILayout.ExpandWidth(false));
-      }
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label("Cycle");
-        string text = UnityEngine.GUILayout.TextField(
-            $"{revolutions_per_cycle_}",
-            Style.RightAligned(UnityEngine.GUI.skin.textField),
-            GUILayoutWidth(2));
-        if (int.TryParse(text, out int revolutions_per_cycle) &&
-            revolutions_per_cycle > 0) {
-          revolutions_per_cycle_ = revolutions_per_cycle;
-        }
-        UnityEngine.GUILayout.Label("revolutions =",
-                                    UnityEngine.GUILayout.ExpandWidth(false));
-        text = UnityEngine.GUILayout.TextField(
-            $"{days_per_cycle_}",
-            Style.RightAligned(UnityEngine.GUI.skin.textField),
-            GUILayoutWidth(2));
-        if (int.TryParse(text, out int days_per_cycle) &&
-            days_per_cycle != 0) {
-          days_per_cycle_ = days_per_cycle;
-        }
-        UnityEngine.GUILayout.Label("days", UnityEngine.GUILayout.ExpandWidth(false));
-      }
-      LabeledField(
-          "Subcycle",
-          $"{recurrence_string(recurrence.subcycle)} days".ToString(Culture.culture));
-      LabeledField("Equatorial shift", $"{recurrence.equatorial_shift * (180 / Math.PI):N2}° ({recurrence.equatorial_shift * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
-      LabeledField("Grid interval", $"{recurrence.grid_interval * (180 / Math.PI):N2}° ({recurrence.grid_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
+      RenderOrbitRecurrence(recurrence, primary);
       Style.HorizontalLine();
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label("Longitudes of equatorial crossings of rev. #", UnityEngine.GUILayout.ExpandWidth(false));
-        string text = UnityEngine.GUILayout.TextField(
-            $"{ground_track_revolution_}",
-            GUILayoutWidth(2));
-        if (int.TryParse(text, out int revolution)) {
-          ground_track_revolution_ = revolution;
-        }
-      }
-      double half_width_km(Interval interval) => (interval.max - interval.min) / 2 * primary.Radius / 1000;
-      var equatorial_crossings = analysis.ground_track.equatorial_crossings;
-      LabeledField("Ascending pass", $"{equatorial_crossings.longitudes_reduced_to_ascending_pass.FormatAngleInterval()} (±{half_width_km(equatorial_crossings.longitudes_reduced_to_ascending_pass):N0} km)");
-      LabeledField("Descending pass", $"{equatorial_crossings.longitudes_reduced_to_descending_pass.FormatAngleInterval()} (±{half_width_km(equatorial_crossings.longitudes_reduced_to_descending_pass):N0} km)");
+      RenderOrbitGroundTrack(ground_track, primary);
     }
     UnityEngine.GUI.DragWindow();
   }
@@ -312,6 +301,78 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       LabeledField(
             "Argument of periapsis",
             elements?.mean_argument_of_periapsis.FormatAngleInterval());
+  }
+
+  private void RenderOrbitRecurrence(OrbitRecurrence? recurrence,
+                                     CelestialBody primary) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      UnityEngine.GUILayout.Label(
+          $@"Ground track recurrence: [{
+            recurrence?.nuo.ToString() ?? em_dash}; {
+            recurrence?.dto.ToString("+0;-0") ?? em_dash}; {
+            recurrence?.cto.ToString() ?? em_dash}]");
+      autodetect_recurrence_ = UnityEngine.GUILayout.Toggle(
+          autodetect_recurrence_,
+          "Auto-detect",
+          UnityEngine.GUILayout.ExpandWidth(false));
+    }
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      UnityEngine.GUILayout.Label("Cycle");
+      string text = UnityEngine.GUILayout.TextField(
+          $"{revolutions_per_cycle_}",
+          Style.RightAligned(UnityEngine.GUI.skin.textField),
+          GUILayoutWidth(2));
+      if (int.TryParse(text, out int revolutions_per_cycle) &&
+          revolutions_per_cycle > 0) {
+        revolutions_per_cycle_ = revolutions_per_cycle;
+      }
+      UnityEngine.GUILayout.Label("revolutions =",
+                                  UnityEngine.GUILayout.ExpandWidth(false));
+      text = UnityEngine.GUILayout.TextField(
+          $"{days_per_cycle_.ToString()}",
+          Style.RightAligned(UnityEngine.GUI.skin.textField),
+          GUILayoutWidth(2));
+      if (int.TryParse(text, out int days_per_cycle) &&
+          days_per_cycle != 0) {
+        days_per_cycle_ = days_per_cycle;
+      }
+      UnityEngine.GUILayout.Label("days",
+                                  UnityEngine.GUILayout.ExpandWidth(false));
+    }
+    LabeledField(
+        "Subcycle",
+        $@"{recurrence?.subcycle.ToString("N0", Culture.culture) ??
+            em_dash} days");
+    LabeledField(
+        "Equatorial shift",
+        recurrence?.equatorial_shift.FormatEquatorialAngle(primary));
+    LabeledField(
+        "Grid interval",
+        recurrence?.grid_interval.FormatEquatorialAngle(primary));
+  }
+
+  private void RenderOrbitGroundTrack(OrbitGroundTrack? ground_track,
+                                      CelestialBody primary) {
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      UnityEngine.GUILayout.Label(
+          "Longitudes of equatorial crossings of rev. #",
+          UnityEngine.GUILayout.ExpandWidth(false));
+      string text = UnityEngine.GUILayout.TextField(
+          $"{ground_track_revolution_}",
+          GUILayoutWidth(2));
+      if (int.TryParse(text, out int revolution)) {
+        ground_track_revolution_ = revolution;
+      }
+    }
+    var equatorial_crossings = ground_track?.equatorial_crossings;
+    LabeledField(
+        "Ascending pass",
+        equatorial_crossings?.longitudes_reduced_to_ascending_pass.
+            FormatEquatorialAngleInterval(primary));
+    LabeledField(
+        "Descending pass",
+        equatorial_crossings?.longitudes_reduced_to_ascending_pass.
+            FormatEquatorialAngleInterval(primary));
   }
 
   private void LabeledField(
