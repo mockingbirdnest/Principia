@@ -34,6 +34,13 @@ We remind the reader of the derivation formul{\ae} for the Jacobian elliptic fun
 \derivop{u}{\JacobiDN u} &= -k^2 \JacobiSN u \JacobiCN u
 \end{dcases}
 \]
+and for the hyperbolic functions (\cite{NistHMF2010}, section 4.34):
+\[
+\begin{dcases}
+\derivop{u}{\HyperbolicTangent u} &= \HyperbolicSecant^2 u \\
+\derivop{u}{\HyperbolicSecant u} &= -\HyperbolicSecant u \HyperbolicTangent u
+\end{dcases}
+\]
 
 \section*{The equations of motion}
 We start by writing equation (1) of \cite{Celledoni2008} in coordinates.  The coordinates of $m$ and $I$ are defined by:
@@ -91,7 +98,7 @@ If we derive this expression with respect to $t$, inject in into (\ref{eqneuler}
 \end{equation}
 The last equation of (\ref{solneuleri}) yields the following value for $\gl$:
 \[
-\gl = \gs \frac{B_{13} B_{21}}{B_{31}}\frac{I_1 - I_2}{I_1 I_2}
+\gl = \gs \frac{B_{13} B_{21}}{B_{31}} \frac{I_1 - I_2}{I_1 I_2}
 = \gs\sqrt{\frac{I_1 \gD_3}{I_{13}} \frac{I_2 \gD_1}{I_{21}} \frac{I_{31}}{I_3 \gD_1}} \frac{I_1 - I_2}{I_1 I_2}
 = \gs\sqrt{\frac{\gD_3}{I_{21} I_1 I_2 I_3}} \pa{I_1 - I_2}
 = -\gs\sqrt{\frac{\gD_3 I_{21}}{I_1 I_2 I_3}}
@@ -102,5 +109,144 @@ The sign change when moving $I_1 - I_2$ under the radical is necessary because $
 It is straightforward to check that this value of $\gl$ also satisfies the other equations of (\ref{solneuleri}).  Note that it
 differs in sign from the one given by \cite{Celledoni2008}: the sign error is visible in that it does not yield the proper precession 
 direction.
+
+\subsection*{Solution of Euler's equation, case (ii)}
+The case (ii) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is:
+\[
+{\vm}_t =
+\begin{pmatrix}
+B_{13} \JacobiCN\of{\gl t - \gn, k^{-1}} \\
+-B_{23} \JacobiSN\of{\gl t - \gn, k^{-1}} \\
+\gs B_{31} \JacobiDN\of{\gl t - \gn, k^{-1}}
+\end{pmatrix}
+\]
+Just as we did above, we derive this expression with respect to $t$, inject in into (\ref{eqneuler}), and eliminate the elliptic functions:
+\begin{equation}
+\begin{dcases}
+-\gl B_{13} &= -\gs B_{23} B_{31} \pa{1/I_3 - 1/I_2} \\
+-\gl B_{23} &= \gs B_{13} B_{31} \pa{1/I_1 - 1/I_3} \\
+-\gs \gl k^{-2} &= -B_{13} B_{21} \pa{1/I_2 - 1/I_1}
+\end{dcases}
+\label{solneulerii}
+\end{equation}
+The first equation of (\ref{solneulerii}) yields the following value for $\gl$:
+\[
+\gl = \gs \frac{B_{23} B_{31}}{B_{13}} \frac{I_2 - I_3}{I_2 I_3}
+= \gs\sqrt{\frac{I_2 \gD_3}{I_{23}} \frac{I_3 \gD_1}{I_{31}} \frac{I_{13}}{I_1 \gD_3}} \frac{I_2 - I_3}{I_2 I_3}
+= \gs\sqrt{\frac{\gD_1}{I_{23} I_1 I_2 I_3}} \pa{I_2 - I_3}
+= -\gs\sqrt{\frac{\gD_1 I_{23}}{I_1 I_2 I_3}}
+= -\gs \gl_1
+\]
+Again, note the change of sign due to the fact that $I_2 - I_3 < 0$.  And again, the same value of $\gl$ can be shown to satisfy the other
+equations of (\ref{solneulerii}).
+
+\subsection*{Solution of Euler's equation, case (iii)}
+The case (iii) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is clearly incorrect as it implies that $m_1$ and $m_3$
+always have the same sign, whereas it is straightforward to choose initial conditions where they do not.  Instead, we introduce an extra parameter
+$\gs'' = ±1$ and posit a solution of the form:
+\[
+{\vm}_t =
+\begin{pmatrix}
+\gs' B_{13} \HyperbolicSecant\of{\gl t - \gn} \\
+\HyperbolicTangent\of{\gl t - \gn} \\
+\gs'' B_{31} \HyperbolicSecant\of{\gl t - \gn}
+\end{pmatrix}
+\]
+Deriving this expression and injecting it into (\ref{eqneuler}) yields:
+\begin{equation}
+\begin{dcases}
+-\gs' \gl B_{13} &= \gs'' B_{31} \pa{1/I_3 - 1/I_2} \\
+\gl &= \gs' \gs'' B_{13} B_{31} \pa{1/I_1 - 1/I_3} \\
+-\gs'' \gl B_{31} &= \gs' B_{13} \pa{1/I_2 - 1/I_1}
+\end{dcases}
+\label{solneuleriii}
+\end{equation}
+The second equation of (\ref{solneuleriii}) gives the following value for $\gl$:
+\[
+\gl = \gs' \gs'' B_{13} B_{31} \frac{I_3 - I_1}{I_1 I_3}
+= \gs' \gs'' \sqrt{\frac{I_1 \gD_3}{I_{13}} \frac{I_3 \gD_1}{I_{31}}} \frac{I_3 - I_1}{I_1 I_3}
+= \gs' \gs'' \sqrt{\frac{\gD_1 \gD_3}{I_1 I_3}}
+\]
+In this case it is a bit less obvious that the other equations yield the same value of $\gl$.  We detail the derivation for the first equation,
+using the fact that ${\gs'}^2 = 1$:
+\[
+\gl = -\gs' \gs'' \frac{B_{31}}{B_{13}} \frac{I_2 - I_3}{I_2 I_3}
+= -\gs' \gs'' \sqrt{\frac{I_3 \gD_1}{I_{31}} \frac{I_{13}}{I_1 \gD_3}} \frac{I_2 - I_3}{I_2 I_3}
+= -\gs' \gs'' \sqrt{\frac{\gD_1}{I_1 I_3 \gD_3}} \frac{I_2 - I_3}{I_2}
+= \gs' \gs'' \sqrt{\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{I_3}{I_2} - 1}
+\]
+Now note that in case (iii) we have $2 T I_2 = 1$ thus $1/I_2 = 2 T$.  $\gl$ can be rewritten as:
+\[
+\gl = \gs' \gs'' \sqrt{\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{2 T I_3 - 1} = \gs' \gs'' \sqrt{\frac{\gD_1 \gD_3}{I_1 I_3}}
+\]
+where we have used the fact that $2 T I_3 - 1 = 2 T \pa{I_3 - I_2} > 0$.
+
+It is easy to see that the radical is the common value of $\gl_1$ and $\gl_3$, so $\gs'$ and $\gs''$ are free parameters and:
+\[
+\gl = \gs' \gs'' \gl_1 = \gs' \gs'' \gl_3
+\]
+
+\subsection*{Phase and initial value}
+The phase $\gn$ and the free parameters $\gs$, $\gs'$ and $\gs''$ are determined from the initial value ${\vm}_0$ by setting $t = 0$.
+\subsubsection*{Case (i)}
+We have:
+\[
+{\vm}_0 =
+\begin{pmatrix}
+\gs B_{13} \JacobiDN\of{-\gn, k} \\
+-B_{21} \JacobiSN\of{-\gn, k} \\
+B_{31} \JacobiCN\of{-\gn, k}
+\end{pmatrix}
+\]
+First, we set $\gs$ to be the sign of $m_{01}$.  Then, forming the quotient of the last two coordinates we find:
+\[
+\frac{m_{02}}{m_{03}} = \frac{B_{21}}{B_{31}}\tan\of{\JacobiAmplitude\of{\gn, k}}
+\]
+thus:
+\[
+\tan^{-1}\of{\frac{m_{02}}{m_{03}} \frac{B_{31}}{B_{21}}} = \JacobiAmplitude\of{\gn, k}
+\]
+and finally we obtain $\gn$ as:
+\[
+\gn = F\of{\tan^{-1}\of{\frac{m_{02}}{m_{03}} \frac{B_{31}}{B_{21}}}, k}
+\]
+
+\subsubsection*{Case (ii)}
+Starting from:
+\[
+{\vm}_0 =
+\begin{pmatrix}
+B_{13} \JacobiCN\of{-\gn, k^{-1}} \\
+-B_{23} \JacobiSN\of{-\gn, k^{-1}} \\
+\gs B_{31} \JacobiDN\of{-\gn, k^{-1}}
+\end{pmatrix}
+\]
+we set $\gs$ to be the sign of $m_{03}$ and form the quotient of the first two coordinates.  We obtain:
+\[
+\frac{m_{02}}{m_{01}} = \frac{B_{23}}{B_{13}} \tan\of{\JacobiAmplitude\of{\gn, k^{-1}}} 
+\]
+and for $\gn$:
+\[
+\gn = F\of{\tan^{-1}\of{\frac{m_{02}}{m_{01}} \frac{B_{13}}{B_{23}}}, k^{-1}}
+\]
+
+\subsubsection*{Case (iii)}
+The initial value ${\vm}_0$  is:
+\[
+{\vm}_0 =
+\begin{pmatrix}
+\gs' B_{13} \HyperbolicSecant\of{-\gn} \\
+\HyperbolicTangent\of{-\gn} \\
+\gs'' B_{31} \HyperbolicSecant\of{-\gn}
+\end{pmatrix}
+\]
+$\gs'$ and $\gs''$ are set to be the signs of $m_{01}$ and $m_{03}$, respectively.  The second coordinate immediately gives:
+\[
+\gn = -\HyperbolicTangent^{-1}\of{m_{02}}
+\]
+For this formula to be homogeneous we need to restore the total angular momentum $G$ thus:
+\[
+\gn = -\HyperbolicTangent^{-1}\of{\frac{m_{02}}{G}}
+\]
 \printbibliography
 \end{document}
