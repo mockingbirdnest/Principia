@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 namespace principia {
 namespace ksp_plugin_adapter {
 
+// Miscellaneous formatting utilities; these are extension methods to make null
+// handling easier, thanks to null-coalescing operators.
 internal static class Formatters {
   // Displays an interval as midpoint±half-width.
   public static string FormatInterval(this Interval interval) {
@@ -182,7 +184,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       Vessel vessel = FlightGlobals.ActiveVessel;
       if (plugin == IntPtr.Zero || vessel == null ||
           !plugin.HasVessel(vessel.id.ToString())) {
-        UnityEngine.GUILayout.Label("No active vessel");
+        Hide();
         return;
       }
       CelestialBody primary =
@@ -237,24 +239,31 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       Style.HorizontalLine();
       string duration_in_revolutions;
       if (elements.HasValue) {
-        int sidereal_revolutions =
-            (int)(mission_duration / elements.Value.sidereal_period);
-        int nodal_revolutions =
-            (int)(mission_duration / elements.Value.nodal_period);
-        int anomalistic_revolutions =
-            (int)(mission_duration / elements.Value.anomalistic_period);
-        int ground_track_cycles = analysis.recurrence_has_value
-          ? nodal_revolutions / analysis.recurrence.number_of_revolutions
-          : 0;
-        string duration_in_ground_track_cycles = ground_track_cycles > 0
-            ? $" ({ground_track_cycles:N0} ground track cycles)"
-            : "";
-        duration_in_revolutions = $@"{
-            sidereal_revolutions:N0} sidereal revolutions{"\n"}{
-            nodal_revolutions:N0} nodal revolutions{
-            duration_in_ground_track_cycles}{"\n"}{
-            anomalistic_revolutions:N0} anomalistic revolutions".ToString(
-                Culture.culture);
+        if (double.IsNaN(elements.Value.sidereal_period) ||
+            double.IsNaN(elements.Value.anomalistic_period) ||
+            double.IsNaN(elements.Value.sidereal_period)) {
+          duration_in_revolutions =
+              $"vessel is not gravitationally bound to {primary.NameWithArticle()}";
+        } else {
+          int sidereal_revolutions =
+              (int)(mission_duration / elements.Value.sidereal_period);
+          int nodal_revolutions =
+              (int)(mission_duration / elements.Value.nodal_period);
+          int anomalistic_revolutions =
+              (int)(mission_duration / elements.Value.anomalistic_period);
+          int ground_track_cycles = analysis.recurrence_has_value
+              ? nodal_revolutions / analysis.recurrence.number_of_revolutions
+              : 0;
+          string duration_in_ground_track_cycles = ground_track_cycles > 0
+              ? $" ({ground_track_cycles:N0} ground track cycles)"
+              : "";
+          duration_in_revolutions = $@"{
+              sidereal_revolutions:N0} sidereal revolutions{"\n"}{
+              nodal_revolutions:N0} nodal revolutions{
+              duration_in_ground_track_cycles}{"\n"}{
+              anomalistic_revolutions:N0} anomalistic revolutions".ToString(
+                  Culture.culture);
+        }
       } else {
         duration_in_revolutions =
             "mission duration is shorter than one sidereal revolution";
@@ -307,10 +316,11 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
                                      CelestialBody primary) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
-          $@"Ground track recurrence: [{
+          $@"Recurrence: [{
             recurrence?.nuo.ToString() ?? em_dash}; {
             recurrence?.dto.ToString("+0;-0") ?? em_dash}; {
-            recurrence?.cto.ToString() ?? em_dash}]");
+            recurrence?.cto.ToString() ?? em_dash}]",
+          GUILayoutWidth(8));
       autodetect_recurrence_ = UnityEngine.GUILayout.Toggle(
           autodetect_recurrence_,
           "Auto-detect",
