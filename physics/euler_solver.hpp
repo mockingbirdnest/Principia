@@ -1,19 +1,16 @@
 ﻿
 #pragma once
 
-#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/named_quantities.hpp"
-#include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace physics {
 namespace internal_euler_solver {
 
 using geometry::Bivector;
-using geometry::Frame;
 using geometry::Instant;
 using geometry::R3Element;
 using quantities::Angle;
@@ -31,11 +28,9 @@ using quantities::NaN;
 //   In case (ii) λ should be defined as -σ λ₁.
 //   In case (iii) the first coordinate should include a factor σ (not σʹ) and
 //   λ should be defined as σ σʹ λ₂ (where λ₂ is the common value of λ₁ and λ₃).
+template<typename PrincipalAxesFrame>
 class EulerSolver {
  public:
-  using PrincipalAxesFrame = Frame<serialization::Frame::PhysicsTag,
-                                   serialization::Frame::PRINCIPAL_AXES,
-                                   /*frame_is_inertial*/ false>;
   using AngularMomentumBivector = Bivector<AngularMomentum, PrincipalAxesFrame>;
 
   // Constructs a solver for a body with the given moments_of_inertia in its
@@ -85,3 +80,5 @@ using internal_euler_solver::EulerSolver;
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/euler_solver_body.hpp"

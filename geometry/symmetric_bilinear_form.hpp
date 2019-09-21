@@ -6,6 +6,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "geometry/rotation.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -31,6 +32,20 @@ class SymmetricBilinearForm {
       Vector<LScalar, Frame> const& left,
       Vector<RScalar, Frame> const& right) const;
 
+  // The eigensystem for a form is described by (1) the form in its eigenbasis,
+  // which gives the eigenvalues; and (2) a rotation from the current basis to
+  // the eigenbasis, which gives the eigenvectors.
+  template<typename Eigenframe>
+  struct Eigensystem {
+    SymmetricBilinearForm<Scalar, Eigenframe> form;
+    Rotation<Frame, Eigenframe> rotation;
+  };
+
+  // Computes a form equivalent to the current one but diagonalized with
+  // increasing eigenvalues.
+  template<typename Eigenframe>
+  Eigensystem<Eigenframe> Diagonalize() const;
+
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
   static SymmetricBilinearForm ReadFromMessage(
@@ -40,9 +55,18 @@ class SymmetricBilinearForm {
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
 
+  // Given a matrix that contains in columns eigenvectors for a form, picks the
+  // column with the largest norm and return its normalized value.  This is
+  // useful to extract eigenvectors when eigenvalues are known.
+  template<typename S>
+  static R3Element<double> PickEigenvector(R3x3Matrix<S> const& matrix);
+
   // All the operations on this class must ensure that this matrix remains
   // symmetric.
   R3x3Matrix<Scalar> matrix_;
+
+  template<typename S, typename F>
+  friend class SymmetricBilinearForm;
 
   template<typename F>
   friend SymmetricBilinearForm<double, F> const& InnerProductForm();
