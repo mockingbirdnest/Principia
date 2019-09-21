@@ -43,7 +43,7 @@ and for the hyperbolic functions (\cite{NistHMF2010}, section 4.34):
 \]
 
 \section*{The equations of motion}
-We start by writing equation (1) of \cite{Celledoni2008} in coordinates.  The coordinates of $m$ and $I$ are defined by:
+We start by writing equation (1) of \cite{Celledoni2008} in coordinates.  The coordinates of $\vm$ and $\VectorSymbol{I}$ are defined by:
 \[
 \vm\DefineAs
 \begin{pmatrix}
@@ -57,7 +57,9 @@ and:
 I_1 & 0 & 0 \\ 0 & I_2 & 0 \\ 0 & 0 & I_3
 \end{pmatrix}
 \]
-Euler's equation $\TimeDerivative{m} = m\Exterior\pa{I^{-1} m}$ can be written in coordinates:
+with $I_1 \leq I_2 \leq I_3$.
+
+Euler's equation $\TimeDerivative{\vm} = \vm\Exterior\pa{\VectorSymbol{I}^{-1} \vm}$ can be written in coordinates:
 \[
 \TimeDerivative{\vm} =
 \begin{pmatrix}
@@ -78,7 +80,7 @@ thus:
 \label{eqneuler}
 \end{equation}
 \subsection*{Solution of Euler's equation, case (i)}
-The case (i) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is:
+Case (i) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is:
 \[
 {\vm}_t =
 \begin{pmatrix}
@@ -111,7 +113,7 @@ differs in sign from the one given by \cite{Celledoni2008}: the sign error is vi
 direction.
 
 \subsection*{Solution of Euler's equation, case (ii)}
-The case (ii) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is:
+Case (ii) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is:
 \[
 {\vm}_t =
 \begin{pmatrix}
@@ -125,7 +127,7 @@ Just as we did above, we derive this expression with respect to $t$, inject in i
 \begin{dcases}
 -\gl B_{13} &= -\gs B_{23} B_{31} \pa{1/I_3 - 1/I_2} \\
 -\gl B_{23} &= \gs B_{13} B_{31} \pa{1/I_1 - 1/I_3} \\
--\gs \gl k^{-2} &= -B_{13} B_{21} \pa{1/I_2 - 1/I_1}
+-\gs \gl k^{-2} B_{31} &= -B_{13} B_{23} \pa{1/I_2 - 1/I_1}
 \end{dcases}
 \label{solneulerii}
 \end{equation}
@@ -141,7 +143,7 @@ Again, note the change of sign due to the fact that $I_2 - I_3 < 0$.  And again,
 equations of (\ref{solneulerii}).
 
 \subsection*{Solution of Euler's equation, case (iii)}
-The case (iii) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is clearly incorrect as it implies that $m_1$ and $m_3$
+Case (iii) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is clearly incorrect as it implies that $m_1$ and $m_3$
 always have the same sign, whereas it is straightforward to choose initial conditions where they do not.  Instead, we introduce an extra parameter
 $\gs'' = ±1$ and posit a solution of the form:
 \[
@@ -181,9 +183,13 @@ Now note that in case (iii) we have $2 T I_2 = 1$ thus $1/I_2 = 2 T$.  $\gl$ can
 \]
 where we have used the fact that $2 T I_3 - 1 = 2 T \pa{I_3 - I_2} > 0$.
 
-It is easy to see that the radical is the common value of $\gl_1$ and $\gl_3$, so $\gs'$ and $\gs''$ are free parameters and:
+We then define:
 \[
-\gl = \gs' \gs'' \gl_1 = \gs' \gs'' \gl_3
+\gl_2 = \sqrt{\frac{\gD_1 \gD_3}{I_1 I_3}}
+\]
+It is easy to see that $\gl_2$ is the common value of $\gl_1$ and $\gl_3$ in case (iii), that $\gs'$ and $\gs''$ are free parameters and that:
+\[
+\gl = \gs' \gs'' \gl_2
 \]
 
 \subsection*{Phase and initial value}
@@ -244,33 +250,31 @@ $\gs'$ and $\gs''$ are set to be the signs of $m_{01}$ and $m_{03}$, respectivel
 \[
 \gn = -\HyperbolicTangent^{-1}\of{m_{02}}
 \]
-For this formula to be homogeneous we need to restore the total angular momentum $G$ thus:
-\[
-\gn = -\HyperbolicTangent^{-1}\of{\frac{m_{02}}{G}}
-\]
 
 \subsection*{Implementation considerations}
 Some of the formul{\ae} given by \cite{Celledoni2008} do not lend themselves to an easy implementation or lead to numerical inaccuracies.  We
-describe in this section the modifications we make to their formul{\ae} in our implementation.  We also restore dimensionful formul{\ae} as needed.
+describe in this section the modifications we make to these formul{\ae} in our implementation.  We also restore dimensionful formul{\ae} as needed.
 
-First, it is simpler and more efficient to avoid absolute values, so we define:
+\subsubsection*{The quantity $I_{jh}$}
+It is simpler and more efficient to avoid absolute values, so we define:
 \[
 I_{jh} \DefineAs I_j - I_h
 \]
 This is the same quantity as in \cite{Celledoni2008} when $j \geq h$ but it has the opposite sign (it is negative) when $j < h$.
 
-Next we notice that the computation of $\gD_j$ may entail cancellations, so we go back to the definition of $\norm{\vm}$ and of the kinetic energy:
+\subsubsection*{The quantity $\gD_j$}
+We notice that the computation of $\gD_j$ may entail cancellations, so we go back to the definition of $\norm{\vm}$ and of the kinetic energy:
 \[
 \begin{dcases}
 G^2 &= m_1^2 + m_2^2 + m_3^2 \\
 2 T &= \frac{m_1^2}{I_1} + \frac{m_2^2}{I_2} + \frac{m_3^2}{I_3}
 \end{dcases}
 \]
-and we define $\gD_j$ without absolute values:
+and we define a dimensionful $\gD_j$ without absolute values:
 \[
 \gD_j \DefineAs G^2 - 2 T I_j
 \]
-When, for instance, $j = 2$ this yields:
+When, for instance, $j = 2$, this yields:
 \begin{align*}
 \gD_2 &= m_1^2 \pa{1 - \frac{I_2}{I_1}} + m_3^2 \pa{1 - \frac{I_2}{I_3}} \\
 &= m_1^2 \frac{I_{12}}{I_1} + m_3^2 \frac{I_{32}}{I_3}
@@ -282,11 +286,13 @@ and similarly:
 \gD_3 &= m_1^2 \frac{I_{13}}{I_1} + m_2^2 \frac{I_{23}}{I_2}
 \end{dcases}
 \]
-It is easy to see that $\gD_1$ and $\gD_3$ are the sums of terms of the same sign, so they can be computed without cancellations and $\gD_1 \geq 0$ and 
-$\gD_3 \leq 0$.  $\gD_2$ can have either sign, which correspond exactly to cases (i) ($\gD_2 < 0$), (ii) ($\gD_2 > 0$) and (iii) ($\gD_2 = 0$).
+It is easy to see that $\gD_1$ and $\gD_3$ are the sums of terms of the same sign, so they can be computed without cancellations.  Furthermore,
+$\gD_1 \geq 0$ and $\gD_3 \leq 0$.  $\gD_2$ can have either sign, which correspond exactly to cases (i) ($\gD_2 < 0$), (ii) ($\gD_2 > 0$) and 
+(iii) ($\gD_2 = 0$).
 
-Finally, for the computation of the elliptic functions and integrals \cite{Celledoni2008} gives the value of $k$ but we need the value of $m_c = 1 - m$ 
-(see \cite{NistHMF2010}, section 19.1.2 for an overview of the notation).  In case (i) we have:
+\subsubsection*{The elliptic modulus}
+For the computation of the elliptic functions and integrals \cite{Celledoni2008} gives the value of the elliptic modulus $k$ but we need the value of
+the complementary parameter $m_c = 1 - m$ (see \cite{NistHMF2010}, section 19.1.2 for an overview of the notation).  In case (i) we have:
 \[
 m_c = 1 - k^2 = 1 + \frac{\gD_1 I_{32}}{\gD_3 I_{21}}
 \]
@@ -305,5 +311,23 @@ m_c = 1 - k^{-2} = 1 + \frac{\gD_3 I_{21}}{\gD_1 I_{32}}
 =\frac{\gD_2 I_{31}}{\gD_1 I_{32}}
 \]
 Note that in both cases we have $m_c \geq 0$.
+
+\subsubsection*{The dimensionful equations}
+$I_{jh}$ has the physical dimension of an inertial momentum $L^2 M$.  $G$ has the dimension of an angular momentum $L^2 M T^{-1} A$.  $\gD_j$ has 
+the same dimension as $G^2$.  $B_{jh}$ has the same dimension as $\sqrt{\gD_h}$, i.e., the same dimension as $G$.  $\gl_1$ and $\gl_3$ have the
+same dimension as the quotient $\frac{G}{I_j}$, i.e., $T^{-1} A$ which is appropriate for their usage.
+
+This analysis shows that most of the formul{\ae} in \cite{Celledoni2008} have proper physical dimensions, expect for the $1$ in the definition of
+$\gD_j$ (which should be $G^2$) and for the second coordinate of $\vm$ in case (iii) which should be:
+\[
+m_{2t} = G \HyperbolicTangent\of{-\gn}
+\]
+With this adjustment we obtain the dimensionful formul{\ae}:
+\begin{align*}
+\gn &= -\HyperbolicTangent^{-1}\of{\frac{m_{02}}{G}} \\
+\gl_2 &= \frac{1}{G} \sqrt{\frac{\gD_1 \gD_3}{I_1 I_3}}
+\end{align*}
+It is easy to verify that the argument of the $\HyperbolicTangent^{-1}$ is dimensionless and that $\gl_2$ has the same dimension as the quotient 
+$\frac{\gD_j}{G I_j}$, which has the same dimension as $\frac{G}{I_j}$, namely, $T^{-1} A$.
 \printbibliography
 \end{document}
