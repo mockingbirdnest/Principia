@@ -381,7 +381,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
             FormatEquatorialAngleInterval(primary));
     LabeledField(
         "Descending pass",
-        equatorial_crossings?.longitudes_reduced_to_ascending_pass.
+        equatorial_crossings?.longitudes_reduced_to_descending_pass.
             FormatEquatorialAngleInterval(primary));
   }
 
