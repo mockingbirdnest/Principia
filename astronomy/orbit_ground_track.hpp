@@ -46,7 +46,9 @@ class OrbitGroundTrack {
     Interval<Angle> longitudes_reduced_to_pass(int pass_index) const;
 
    private:
-    explicit EquatorCrossingLongitudes(OrbitRecurrence const& nominal_recurrence);
+    explicit EquatorCrossingLongitudes(
+        OrbitRecurrence const& nominal_recurrence);
+
     OrbitRecurrence nominal_recurrence_;
     Interval<Angle> ascending_longitudes_reduced_to_pass_1_;
     Interval<Angle> descending_longitudes_reduced_to_pass_2_;
