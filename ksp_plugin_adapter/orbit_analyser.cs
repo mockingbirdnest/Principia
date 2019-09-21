@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-
+using System.Text.RegularExpressions;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -59,8 +60,9 @@ internal static class Formatters {
   }
   
   // Formats a duration, omitting leading components if they are 0, and omitting
-  // leading 0s on the days;
-  public static string FormatDuration(this double seconds) {
+  // leading 0s on the days; optionally exclude seconds.
+  public static string FormatDuration(this double seconds,
+                                      bool show_seconds = true) {
     if (double.IsNaN(seconds)) {
       return seconds.ToString();
     }
@@ -70,17 +72,22 @@ internal static class Formatters {
     int hours = GameSettings.KERBIN_TIME ? span.Hours % 6
                                          : span.Hours;
     var components = new List<string>();
+    const string nbsp = "\xA0";
     if (days > 0) {
-      components.Add(GameSettings.KERBIN_TIME ? $"{days} d6" : $"{days} d");
+      components.Add(GameSettings.KERBIN_TIME ? $"{days}{nbsp}d6"
+                                              : $"{days}{nbsp}d");
     }
     if (components.Count > 0 || hours > 0) {
       components.Add(
-          GameSettings.KERBIN_TIME ? $"{hours:0} h" : $"{hours:00} h");
+          GameSettings.KERBIN_TIME ? $"{hours:0}{nbsp}h"
+                                   : $"{hours:00}{nbsp}h");
     }
-    if (components.Count > 0 || span.Minutes > 0) {
-      components.Add($"{span.Minutes:00} min");
+    if (components.Count > 0 || span.Minutes > 0 || !show_seconds) {
+      components.Add($"{span.Minutes:00}{nbsp}min");
     }
-    components.Add($"{span.Seconds + span.Milliseconds / 1000m:00.0} s");
+    if (show_seconds) {
+      components.Add($"{span.Seconds + span.Milliseconds / 1000m:00.0}{nbsp}s");
+    }
     return string.Join(" ", components.ToArray());
   }
 
@@ -90,6 +97,44 @@ internal static class Formatters {
     string day_unit = GameSettings.KERBIN_TIME ? "d6" : "d";
     double degrees_per_day = radians_per_second / (degree / day);
     return $"{degrees_per_day:N2}°/{day_unit}";
+  }
+
+  // Never omit leading 0s (to make keyboard editing easier) but do not show
+  // seconds (they are irrelevant for a selector that shows durations much
+  // longer than a revolution).
+  public static string FormatMissionDuration(double seconds) {
+    var span = TimeSpan.FromSeconds(seconds);
+    return (GameSettings.KERBIN_TIME
+                ? (span.Days * 4 + span.Hours / 6).ToString("0000") +
+                      " d6 " + (span.Hours % 6).ToString("0") + " h "
+                : span.Days.ToString("000") + " d " +
+                      span.Hours.ToString("00") + " h ") +
+           span.Minutes.ToString("00") + " min";
+  }
+
+  public static bool TryParseMissionDuration(string str, out double value) {
+    value = 0;
+    // Using a technology that is customarily used to parse HTML.
+    string pattern = @"^[+]?\s*(\d+)\s*" +
+                     (GameSettings.KERBIN_TIME ? "d6" : "d") +
+                     @"\s*(\d+)\s*h\s*(\d+)\s*min$";
+    var regex = new Regex(pattern);
+    var match = regex.Match(str);
+    if (!match.Success) {
+      return false;
+    }
+    string days = match.Groups[1].Value;
+    string hours = match.Groups[2].Value;
+    string minutes = match.Groups[3].Value;
+    if (!int.TryParse(days, out int d) ||
+        !int.TryParse(hours, out int h) ||
+        !int.TryParse(minutes, out int min)) {
+      return false;
+    }
+    value = (TimeSpan.FromDays((double)d / (GameSettings.KERBIN_TIME ? 4 : 1)) +
+             TimeSpan.FromHours(h) +
+             TimeSpan.FromMinutes(min)).TotalSeconds;
+    return true;
   }
 }
 
@@ -118,8 +163,16 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       CelestialBody primary = adapter_.plotting_frame_selector_.selected_celestial;
 
       mission_duration_.Render(enabled : true);
+      var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
+      float two_lines = multiline_style.CalcHeight(
+          new UnityEngine.GUIContent("1\n2"), Width(1));
+      float five_lines = multiline_style.CalcHeight(
+          new UnityEngine.GUIContent("1\n2\n3\n4\n5"), Width(1));
       UnityEngine.GUILayout.Label(
-          $"Analysing orbit of {vessel.name} with respect to {primary.NameWithArticle()}...");
+          $@"Analysing orbit of {vessel.vesselName} with respect to {
+            primary.NameWithArticle()}...",
+          multiline_style,
+          UnityEngine.GUILayout.Height(two_lines));
 
       OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
           vessel.id.ToString(),
@@ -148,27 +201,39 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       primary = FlightGlobals.Bodies[analysis.primary_index];
 
       Style.HorizontalLine();
-      string parenthetical = "";
+      string duration_in_revolutions;
       if (elements.HasValue) {
-        int anomalistic_revolutions =
-            (int)(mission_duration / elements.Value.anomalistic_period);
-        int nodal_revolutions =
-            (int)(mission_duration / elements.Value.nodal_period);
         int sidereal_revolutions =
             (int)(mission_duration / elements.Value.sidereal_period);
-        parenthetical = $@"{
-            anomalistic_revolutions:N0} anomalistic rev., {
-            nodal_revolutions:N0} nodal rev., {
-            sidereal_revolutions:N0} sidereal rev.".ToString(Culture.culture);
+        int nodal_revolutions =
+            (int)(mission_duration / elements.Value.nodal_period);
+        int anomalistic_revolutions =
+            (int)(mission_duration / elements.Value.anomalistic_period);
+        int ground_track_cycles = analysis.recurrence_has_value
+          ? nodal_revolutions / analysis.recurrence.number_of_revolutions
+          : 0;
+        string duration_in_ground_track_cycles = ground_track_cycles > 0
+            ? $" ({ground_track_cycles:N0} ground track cycles)"
+            : "";
+        duration_in_revolutions = $@"{
+            sidereal_revolutions:N0} sidereal revolutions{"\n"}{
+            nodal_revolutions:N0} nodal revolutions{
+            duration_in_ground_track_cycles}{"\n"}{
+            anomalistic_revolutions:N0} anomalistic revolutions".ToString(
+                Culture.culture);
       } else {
-        parenthetical = "mission duration is shorter than one sidereal revolution";
+        duration_in_revolutions =
+            "mission duration is shorter than one sidereal revolution";
       }
       string analysis_description =
-          $"Orbit of {vessel.name} with respect to {primary.NameWithArticle()}" +
-          $"\nover {mission_duration.FormatDuration()}\n({parenthetical})";
+          $@"Orbit of {vessel.vesselName} with respect to {
+            primary.NameWithArticle()} over {
+            mission_duration.FormatDuration(show_seconds : false)}:{"\n"}{
+            duration_in_revolutions}";
       UnityEngine.GUILayout.Label(
           analysis_description,
-          Style.Multiline(UnityEngine.GUI.skin.label));
+          multiline_style,
+          UnityEngine.GUILayout.Height(five_lines));
       Style.HorizontalLine();
       RenderOrbitalElements(elements);
       Style.HorizontalLine();
@@ -208,7 +273,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       LabeledField("Grid interval", $"{recurrence.grid_interval * (180 / Math.PI):N2}° ({recurrence.grid_interval * primary.Radius / 1000:N0} km)".ToString(Culture.culture));
       Style.HorizontalLine();
       using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label("Longitudes of equatorial crossings of revolution #", UnityEngine.GUILayout.ExpandWidth(false));
+        UnityEngine.GUILayout.Label("Longitudes of equatorial crossings of rev. #", UnityEngine.GUILayout.ExpandWidth(false));
         string text = UnityEngine.GUILayout.TextField(
             $"{ground_track_revolution_}",
             GUILayoutWidth(2));
@@ -238,63 +303,44 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
                    elements?.mean_inclination.FormatInterval());
       LabeledField("Inclination",
                    elements?.mean_inclination.FormatAngleInterval());
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        using (new UnityEngine.GUILayout.VerticalScope()) {
-          LabeledField(
-                "Long. of asc. node",
-                elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval(),
-                GUILayoutWidth(4));
-          LabeledField(
-                "Arg. of periapsis",
-                elements?.mean_argument_of_periapsis.FormatAngleInterval(),
-                GUILayoutWidth(4));
-        }
-        UnityEngine.GUILayout.Space(Width(1));
-        LabeledField(
-              "Nodal precession",
-              elements?.nodal_precession.FormatAngularFrequency(),
-              GUILayoutWidth(3));
-      }
+      LabeledField(
+            "Longitude of ascending node",
+            elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval());
+      LabeledField(
+            "Nodal precession",
+            elements?.nodal_precession.FormatAngularFrequency());
+      LabeledField(
+            "Argument of periapsis",
+            elements?.mean_argument_of_periapsis.FormatAngleInterval());
   }
 
   private void LabeledField(
       string label,
-      string value,
-      params UnityEngine.GUILayoutOption[] value_options) {
+      string value) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(label);
       UnityEngine.GUILayout.Label(value ?? em_dash,
-          Style.RightAligned(UnityEngine.GUI.skin.label),
-          value_options);
+          Style.RightAligned(UnityEngine.GUI.skin.label));
     }
-  }
-
-  static private bool TryParseMissionDuration(string str, out double value) {
-    value = 0;
-    if (!FlightPlanner.TryParseTimeSpan(str, out TimeSpan ts)) {
-      return false;
-    }
-    value = ts.TotalSeconds;
-    return true;
   }
 
   private const string em_dash = "—";
+  private const string nbsp = "\xA0";
 
   private IntPtr plugin => adapter_.Plugin();
 
   private readonly PrincipiaPluginAdapter adapter_;
   private DifferentialSlider mission_duration_ = new DifferentialSlider(
-      label            : "Mission duration",
+      label            : "Duration",
       unit             : null,
       log10_lower_rate : 0,
       log10_upper_rate : 7,
       min_value        : 10,
       max_value        : double.PositiveInfinity,
-      formatter        : value =>
-          FlightPlanner.FormatPositiveTimeSpan(
-              TimeSpan.FromSeconds(value)),
-      parser           : TryParseMissionDuration,
-      label_width      : 4) {
+      formatter        : Formatters.FormatMissionDuration,
+      parser           : Formatters.TryParseMissionDuration,
+      label_width      : 2,
+      field_width      : 5) {
       value = 7 * 24 * 60 * 60
   };
   private bool autodetect_recurrence_ = true;

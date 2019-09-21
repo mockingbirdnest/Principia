@@ -19,9 +19,11 @@ internal class DifferentialSlider : ScalingRenderer {
                             ValueFormatter formatter = null,
                             ValueParser parser = null,
                             UnityEngine.Color? text_colour = null,
-                            int label_width = 3) {
+                            int label_width = 3,
+                            int field_width = 5) {
     label_ = label;
     label_width_ = label_width;
+    field_width_ = field_width;
     unit_ = unit;
     if (formatter == null) {
       formatter_ = v => v.ToString("#,0.000", Culture.culture);
@@ -97,7 +99,7 @@ internal class DifferentialSlider : ScalingRenderer {
         formatted_value_ = UnityEngine.GUILayout.TextField(
             text    : formatted_value_,
             style   : style,
-            options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
+            options : GUILayoutWidth(field_width_));
 
         // See if the user typed 'Return' in the field, or moved focus
         // elsewhere, in which case we terminate text entry.
@@ -177,6 +179,7 @@ internal class DifferentialSlider : ScalingRenderer {
 
   private readonly string label_;
   private readonly int label_width_;
+  private readonly int field_width_;
   private readonly string unit_;
 
   private readonly double log10_lower_rate_;

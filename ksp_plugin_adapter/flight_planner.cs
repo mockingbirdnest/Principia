@@ -18,7 +18,8 @@ class FlightPlanner : SupervisedWindowRenderer {
                       min_value        : 10,
                       max_value        : double.PositiveInfinity,
                       formatter        : FormatPlanLength,
-                      parser           : TryParsePlanLength);
+                      parser           : TryParsePlanLength,
+                      field_width      : 7);
   }
 
   public void RenderButton() {
