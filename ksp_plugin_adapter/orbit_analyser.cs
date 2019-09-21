@@ -119,7 +119,7 @@ internal static class Formatters {
   }
 
   public static string FormatAngularFrequency(this double radians_per_second) {
-    double degree = Math.PI / 180;
+    const double degree = Math.PI / 180;
     double day = GameSettings.KERBIN_TIME ? 6 * 60 * 60 : 24 * 60 * 60;
     string day_unit = GameSettings.KERBIN_TIME ? "d6" : "d";
     double degrees_per_day = radians_per_second / (degree / day);
@@ -396,7 +396,6 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
   }
 
   private const string em_dash = "—";
-  private const string nbsp = "\xA0";
 
   private IntPtr plugin => adapter_.Plugin();
 
