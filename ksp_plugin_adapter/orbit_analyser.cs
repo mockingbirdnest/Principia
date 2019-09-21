@@ -300,7 +300,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       LabeledField("Semimajor axis",
                    elements?.mean_semimajor_axis.FormatLengthInterval());
       LabeledField("Eccentricity",
-                   elements?.mean_inclination.FormatInterval());
+                   elements?.mean_eccentricity.FormatInterval());
       LabeledField("Inclination",
                    elements?.mean_inclination.FormatAngleInterval());
       LabeledField(
