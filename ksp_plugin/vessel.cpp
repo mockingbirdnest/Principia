@@ -467,11 +467,7 @@ int Vessel::orbit_analysis_percentage() const {
 }
 
 OrbitAnalyser::Analysis* Vessel::orbit_analysis() {
-  if (!orbit_analyser_.has_value() ||
-      !orbit_analyser_->analysis().has_value()) {
-    return nullptr;
-  }
-  return &*orbit_analyser_->analysis();
+  return orbit_analyser_->analysis();
 }
 
 void Vessel::MakeAsynchronous() {

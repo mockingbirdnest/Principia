@@ -330,20 +330,26 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label("Cycle");
       string text = UnityEngine.GUILayout.TextField(
-          $"{revolutions_per_cycle_}",
+          recurrence.HasValue || !autodetect_recurrence_
+              ? $"{revolutions_per_cycle_}"
+              : em_dash,
           Style.RightAligned(UnityEngine.GUI.skin.textField),
           GUILayoutWidth(2));
-      if (int.TryParse(text, out int revolutions_per_cycle) &&
+      if (!autodetect_recurrence_ &&
+          int.TryParse(text, out int revolutions_per_cycle) &&
           revolutions_per_cycle > 0) {
         revolutions_per_cycle_ = revolutions_per_cycle;
       }
       UnityEngine.GUILayout.Label("revolutions =",
                                   UnityEngine.GUILayout.ExpandWidth(false));
       text = UnityEngine.GUILayout.TextField(
-          $"{days_per_cycle_.ToString()}",
+          recurrence.HasValue || !autodetect_recurrence_
+              ? $"{days_per_cycle_}"
+              : em_dash,
           Style.RightAligned(UnityEngine.GUI.skin.textField),
           GUILayoutWidth(2));
-      if (int.TryParse(text, out int days_per_cycle) &&
+      if (!autodetect_recurrence_ &&
+          int.TryParse(text, out int days_per_cycle) &&
           days_per_cycle != 0) {
         days_per_cycle_ = days_per_cycle;
       }
