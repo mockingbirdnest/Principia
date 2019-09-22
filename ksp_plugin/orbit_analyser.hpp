@@ -32,17 +32,45 @@ using quantities::Time;
 
 class OrbitAnalyser {
  public:
+  class Analysis {
+   public:
+    Instant const& first_time() const;
+    Time const& mission_duration() const;
+    RotatingBody<Barycentric> const& primary() const;
+    std::optional<OrbitalElements> const& elements() const;
+    std::optional<OrbitRecurrence> const& recurrence() const;
+    std::optional<OrbitGroundTrack> const& ground_track() const;
+    // |equatorial_crossings().has_value()| if and only if
+    // |recurrence().has_value && ground_track().has_value()|;
+    // |*equatorial_crossings()| is
+    //   ground_track()->equator_crossing_longitudes(
+    //       *recurrence(), /*first_ascending_pass_index=*/1)
+    // precomputed to avoid performing this calculation at every frame.
+    std::optional<OrbitGroundTrack::EquatorCrossingLongitudes> const&
+    equatorial_crossings() const;
 
-  struct Analysis {
-    Instant first_time;
-    Time mission_duration;
-    not_null<RotatingBody<Barycentric> const*> primary;
-    std::optional<OrbitalElements> elements;
-    std::optional<OrbitRecurrence> auto_detected_recurrence;
-    std::optional<OrbitRecurrence> chosen_recurrence;
-    std::optional<OrbitGroundTrack> ground_track;
+    // Sets |recurrence|, updating |equatorial_crossings| if needed.
+    void set_recurrence(OrbitRecurrence const& recurrence);
+    // Resets |recurrence| to a value deduced from |*elements| by
+    // |OrbitRecurrence::ClosestRecurrence|, or to nullopt if
+    // |!elements.has_value()|, updating |equatorial_crossings| if needed.
+    void reset_recurrence();
+
+   private:
+    Analysis(Instant first_time,
+             not_null<RotatingBody<Barycentric> const*> primary);
+
+    Instant first_time_;
+    Time mission_duration_;
+    not_null<RotatingBody<Barycentric> const*> primary_;
+    std::optional<OrbitalElements> elements_;
+    std::optional<OrbitRecurrence> closest_recurrence_;
+    std::optional<OrbitRecurrence> recurrence_;
+    std::optional<OrbitGroundTrack> ground_track_;
     std::optional<OrbitGroundTrack::EquatorCrossingLongitudes>
-        equator_crossings_for_chosen_recurrence;
+        equatorial_crossings_;
+
+    friend class OrbitAnalyser;
   };
 
   OrbitAnalyser(
@@ -60,7 +88,7 @@ class OrbitAnalyser {
   // Sets |analysis()| to the latest computed analysis.
   void RefreshAnalysis();
 
-  std::optional<Analysis>& analysis();
+  Analysis* analysis();
 
   int8_t next_analysis_percentage() const;
 

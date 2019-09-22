@@ -95,12 +95,12 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
   analysis.progress_percentage = vessel.orbit_analysis_percentage();
   if (vessel.orbit_analysis() != nullptr) {
     analysis.primary_index =
-        plugin->CelestialIndexOfBody(*vessel.orbit_analysis()->primary);
+        plugin->CelestialIndexOfBody(vessel.orbit_analysis()->primary());
     analysis.mission_duration =
-        vessel.orbit_analysis()->mission_duration / Second;
-    analysis.elements_has_value = vessel.orbit_analysis()->elements.has_value();
+        vessel.orbit_analysis()->mission_duration() / Second;
+    analysis.elements_has_value = vessel.orbit_analysis()->elements().has_value();
     if (analysis.elements_has_value) {
-      auto const& elements = *vessel.orbit_analysis()->elements;
+      auto const& elements = *vessel.orbit_analysis()->elements();
       analysis.elements.anomalistic_period =
           elements.anomalistic_period() / Second;
       analysis.elements.nodal_period = elements.nodal_period() / Second;
@@ -118,47 +118,38 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
       analysis.elements.mean_semimajor_axis =
           ToInterval(elements.mean_semimajor_axis_interval());
     }
-    std::optional<astronomy::OrbitRecurrence> recurrence;
     if (has_nominal_recurrence) {
       int const Cᴛₒ =
-          Sign(vessel.orbit_analysis()->primary->angular_frequency()) *
+          Sign(vessel.orbit_analysis()->primary().angular_frequency()) *
           std::abs(*days_per_cycle);
       int const νₒ =
           std::nearbyint(static_cast<double>(*revolutions_per_cycle) / Cᴛₒ);
       int const Dᴛₒ = *revolutions_per_cycle - νₒ * Cᴛₒ;
       int const gcd = std::gcd(Dᴛₒ, Cᴛₒ);
-      recurrence.emplace(νₒ, Dᴛₒ / gcd, Cᴛₒ / gcd);
+      vessel.orbit_analysis()->set_recurrence({νₒ, Dᴛₒ / gcd, Cᴛₒ / gcd});
     } else {
-      recurrence = vessel.orbit_analysis()->auto_detected_recurrence;
+      vessel.orbit_analysis()->reset_recurrence();
     }
-    analysis.recurrence_has_value = recurrence.has_value();
-    if (recurrence.has_value()) {
-      analysis.recurrence.nuo = recurrence->νₒ();
-      analysis.recurrence.dto = recurrence->Dᴛₒ();
-      analysis.recurrence.cto = recurrence->Cᴛₒ();
+    analysis.recurrence_has_value = vessel.orbit_analysis()->recurrence().has_value();
+    if (analysis.recurrence_has_value) {
+      auto const& recurrence = *vessel.orbit_analysis()->recurrence();
+      analysis.recurrence.nuo = recurrence.νₒ();
+      analysis.recurrence.dto = recurrence.Dᴛₒ();
+      analysis.recurrence.cto = recurrence.Cᴛₒ();
       analysis.recurrence.number_of_revolutions =
-          recurrence->number_of_revolutions();
-      analysis.recurrence.subcycle = recurrence->subcycle();
+          recurrence.number_of_revolutions();
+      analysis.recurrence.subcycle = recurrence.subcycle();
       analysis.recurrence.equatorial_shift =
-          recurrence->equatorial_shift() / Radian;
-      analysis.recurrence.base_interval = recurrence->base_interval() / Radian;
-      analysis.recurrence.grid_interval = recurrence->grid_interval() / Radian;
+          recurrence.equatorial_shift() / Radian;
+      analysis.recurrence.base_interval = recurrence.base_interval() / Radian;
+      analysis.recurrence.grid_interval = recurrence.grid_interval() / Radian;
     }
     analysis.ground_track_has_value =
-        vessel.orbit_analysis()->ground_track.has_value();
+        vessel.orbit_analysis()->ground_track().has_value();
     if (analysis.ground_track_has_value) {
-      auto const& ground_track = *vessel.orbit_analysis()->ground_track;
-      if (recurrence.has_value()) {
-        if (vessel.orbit_analysis()->chosen_recurrence != recurrence) {
-          vessel.orbit_analysis()->chosen_recurrence = recurrence;
-          vessel.orbit_analysis()->equator_crossings_for_chosen_recurrence =
-              ground_track.equator_crossing_longitudes(
-                  *recurrence, /*first_ascending_pass_index=*/1);
-        }
-        astronomy::OrbitGroundTrack::EquatorCrossingLongitudes const&
-            equatorial_crossings =
-                *vessel.orbit_analysis()
-                     ->equator_crossings_for_chosen_recurrence;
+      if (vessel.orbit_analysis()->equatorial_crossings().has_value()) {
+        auto const& equatorial_crossings =
+            *vessel.orbit_analysis()->equatorial_crossings();
         analysis.ground_track.equatorial_crossings
             .longitudes_reduced_to_ascending_pass =
             ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
