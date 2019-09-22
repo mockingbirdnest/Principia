@@ -59,13 +59,13 @@ I_1 & 0 & 0 \\ 0 & I_2 & 0 \\ 0 & 0 & I_3
 \]
 with $I_1 \leq I_2 \leq I_3$.
 
-Euler's equation $\TimeDerivative{\vm} = \vm\Exterior\pa{\VectorSymbol{I}^{-1} \vm}$ can be written in coordinates:
+Euler's equation $\TimeDerivative{\vm} = \commutator{m}{\gw}$ can be written in coordinates in the principal axes frame:
 \[
 \TimeDerivative{\vm} =
 \begin{pmatrix}
 m_1 \\ m_2 \\ m_3
 \end{pmatrix}
-\Exterior
+\times
 \begin{pmatrix}
 m_1/I_1 \\ m_2/I_2 \\ m_3/I_3
 \end{pmatrix}
@@ -99,13 +99,13 @@ If we derive this expression with respect to $t$, inject in into (\ref{eqneuler}
 \label{solneuleri}
 \end{equation}
 The last equation of (\ref{solneuleri}) yields the following value for $\gl$:
-\[
-\gl = \gs \frac{B_{13} B_{21}}{B_{31}} \frac{I_1 - I_2}{I_1 I_2}
-= \gs\sqrt{\frac{I_1 \gD_3}{I_{13}} \frac{I_2 \gD_1}{I_{21}} \frac{I_{31}}{I_3 \gD_1}} \frac{I_1 - I_2}{I_1 I_2}
-= \gs\sqrt{\frac{\gD_3}{I_{21} I_1 I_2 I_3}} \pa{I_1 - I_2}
+\begin{align*}
+\gl &= \gs \frac{B_{13} B_{21}}{B_{31}} \frac{I_1 - I_2}{I_1 I_2}
+= \gs\sqrt{\frac{I_1 \gD_3}{I_{13}} \frac{I_2 \gD_1}{I_{21}} \frac{I_{31}}{I_3 \gD_1}} \frac{I_1 - I_2}{I_1 I_2} \\
+&= \gs\sqrt{\frac{\gD_3}{I_{21} I_1 I_2 I_3}} \pa{I_1 - I_2}
 = -\gs\sqrt{\frac{\gD_3 I_{21}}{I_1 I_2 I_3}}
 = -\gs \gl_3
-\]
+\end{align*}
 The sign change when moving $I_1 - I_2$ under the radical is necessary because $I_1 - I_2 < 0$.
 
 It is straightforward to check that this value of $\gl$ also satisfies the other equations of (\ref{solneuleri}).  Note that it
@@ -132,13 +132,13 @@ Just as we did above, we derive this expression with respect to $t$, inject in i
 \label{solneulerii}
 \end{equation}
 The first equation of (\ref{solneulerii}) yields the following value for $\gl$:
-\[
-\gl = \gs \frac{B_{23} B_{31}}{B_{13}} \frac{I_2 - I_3}{I_2 I_3}
-= \gs\sqrt{\frac{I_2 \gD_3}{I_{23}} \frac{I_3 \gD_1}{I_{31}} \frac{I_{13}}{I_1 \gD_3}} \frac{I_2 - I_3}{I_2 I_3}
-= \gs\sqrt{\frac{\gD_1}{I_{23} I_1 I_2 I_3}} \pa{I_2 - I_3}
+\begin{align*}
+\gl &= \gs \frac{B_{23} B_{31}}{B_{13}} \frac{I_2 - I_3}{I_2 I_3}
+= \gs\sqrt{\frac{I_2 \gD_3}{I_{23}} \frac{I_3 \gD_1}{I_{31}} \frac{I_{13}}{I_1 \gD_3}} \frac{I_2 - I_3}{I_2 I_3} \\
+&= \gs\sqrt{\frac{\gD_1}{I_{23} I_1 I_2 I_3}} \pa{I_2 - I_3}
 = -\gs\sqrt{\frac{\gD_1 I_{23}}{I_1 I_2 I_3}}
 = -\gs \gl_1
-\]
+\end{align*}
 Again, note the change of sign due to the fact that $I_2 - I_3 < 0$.  And again, the same value of $\gl$ can be shown to satisfy the other
 equations of (\ref{solneulerii}).
 
@@ -171,12 +171,12 @@ The second equation of (\ref{solneuleriii}) gives the following value for $\gl$:
 \]
 In this case it is a bit less obvious that the other equations yield the same value of $\gl$.  We detail the derivation for the first equation,
 using the fact that ${\gs'}^2 = 1$:
-\[
-\gl = -\gs' \gs'' \frac{B_{31}}{B_{13}} \frac{I_2 - I_3}{I_2 I_3}
-= -\gs' \gs'' \sqrt{\frac{I_3 \gD_1}{I_{31}} \frac{I_{13}}{I_1 \gD_3}} \frac{I_2 - I_3}{I_2 I_3}
-= -\gs' \gs'' \sqrt{\frac{\gD_1}{I_1 I_3 \gD_3}} \frac{I_2 - I_3}{I_2}
+\begin{align*}
+\gl &= -\gs' \gs'' \frac{B_{31}}{B_{13}} \frac{I_2 - I_3}{I_2 I_3}
+= -\gs' \gs'' \sqrt{\frac{I_3 \gD_1}{I_{31}} \frac{I_{13}}{I_1 \gD_3}} \frac{I_2 - I_3}{I_2 I_3} \\
+&= -\gs' \gs'' \sqrt{\frac{\gD_1}{I_1 I_3 \gD_3}} \frac{I_2 - I_3}{I_2}
 = \gs' \gs'' \sqrt{\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{I_3}{I_2} - 1}
-\]
+\end{align*}
 Now note that in case (iii) we have $2 T I_2 = 1$ thus $1/I_2 = 2 T$.  $\gl$ can be rewritten as:
 \[
 \gl = \gs' \gs'' \sqrt{\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{2 T I_3 - 1} = \gs' \gs'' \sqrt{\frac{\gD_1 \gD_3}{I_1 I_3}}
@@ -206,15 +206,15 @@ B_{31} \JacobiCN\of{-\gn, k}
 \]
 First, we set $\gs$ to be the sign of $m_{01}$.  Then, forming the quotient of the last two coordinates we find:
 \[
-\frac{m_{02}}{m_{03}} = \frac{B_{21}}{B_{31}}\tan\of{\JacobiAmplitude\of{\gn, k}}
+\frac{m_{02}}{m_{03}} = \frac{B_{21}}{B_{31}}\TrigonometricTangent\of{\JacobiAmplitude\of{\gn, k}}
 \]
 thus:
 \[
-\tan^{-1}\of{\frac{m_{02}}{m_{03}} \frac{B_{31}}{B_{21}}} = \JacobiAmplitude\of{\gn, k}
+\InverseTrigonometricTangent\of{\frac{m_{02}}{m_{03}} \frac{B_{31}}{B_{21}}} = \JacobiAmplitude\of{\gn, k}
 \]
 and finally we obtain $\gn$ as:
 \[
-\gn = F\of{\tan^{-1}\of{\frac{m_{02}}{m_{03}} \frac{B_{31}}{B_{21}}}, k}
+\gn = F\of{\InverseTrigonometricTangent\of{\frac{m_{02}}{m_{03}} \frac{B_{31}}{B_{21}}}, k}
 \]
 
 \subsubsection*{Case (ii)}
@@ -229,11 +229,11 @@ B_{13} \JacobiCN\of{-\gn, k^{-1}} \\
 \]
 we set $\gs$ to be the sign of $m_{03}$ and form the quotient of the first two coordinates.  We obtain:
 \[
-\frac{m_{02}}{m_{01}} = \frac{B_{23}}{B_{13}} \tan\of{\JacobiAmplitude\of{\gn, k^{-1}}} 
+\frac{m_{02}}{m_{01}} = \frac{B_{23}}{B_{13}} \TrigonometricTangent\of{\JacobiAmplitude\of{\gn, k^{-1}}} 
 \]
 and for $\gn$:
 \[
-\gn = F\of{\tan^{-1}\of{\frac{m_{02}}{m_{01}} \frac{B_{13}}{B_{23}}}, k^{-1}}
+\gn = F\of{\InverseTrigonometricTangent\of{\frac{m_{02}}{m_{01}} \frac{B_{13}}{B_{23}}}, k^{-1}}
 \]
 
 \subsubsection*{Case (iii)}
@@ -248,7 +248,7 @@ The initial value ${\vm}_0$  is:
 \]
 $\gs'$ and $\gs''$ are set to be the signs of $m_{01}$ and $m_{03}$, respectively.  The second coordinate immediately gives:
 \[
-\gn = -\HyperbolicTangent^{-1}\of{m_{02}}
+\gn = -\InverseHyperbolicTangent\of{m_{02}}
 \]
 
 \subsection*{Implementation considerations}
@@ -324,10 +324,10 @@ m_{2t} = G \HyperbolicTangent\of{-\gn}
 \]
 With this adjustment we obtain the dimensionful formul{\ae}:
 \begin{align*}
-\gn &= -\HyperbolicTangent^{-1}\of{\frac{m_{02}}{G}} \\
+\gn &= -\InverseHyperbolicTangent\of{\frac{m_{02}}{G}} \\
 \gl_2 &= \frac{1}{G} \sqrt{\frac{\gD_1 \gD_3}{I_1 I_3}}
 \end{align*}
-It is easy to verify that the argument of the $\HyperbolicTangent^{-1}$ is dimensionless and that $\gl_2$ has the same dimension as the quotient 
+It is easy to verify that the argument of the $\InverseHyperbolicTangent$ is dimensionless and that $\gl_2$ has the same dimension as the quotient 
 $\frac{\gD_j}{G I_j}$, which has the same dimension as $\frac{G}{I_j}$, namely, $T^{-1} A$.
 \printbibliography
 \end{document}
