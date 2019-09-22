@@ -239,31 +239,24 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       Style.HorizontalLine();
       string duration_in_revolutions;
       if (elements.HasValue) {
-        if (double.IsNaN(elements.Value.sidereal_period) ||
-            double.IsNaN(elements.Value.anomalistic_period) ||
-            double.IsNaN(elements.Value.sidereal_period)) {
-          duration_in_revolutions =
-              $"vessel is not gravitationally bound to {primary.NameWithArticle()}";
-        } else {
-          int sidereal_revolutions =
-              (int)(mission_duration / elements.Value.sidereal_period);
-          int nodal_revolutions =
-              (int)(mission_duration / elements.Value.nodal_period);
-          int anomalistic_revolutions =
-              (int)(mission_duration / elements.Value.anomalistic_period);
-          int ground_track_cycles = analysis.recurrence_has_value
-              ? nodal_revolutions / analysis.recurrence.number_of_revolutions
-              : 0;
-          string duration_in_ground_track_cycles = ground_track_cycles > 0
-              ? $" ({ground_track_cycles:N0} ground track cycles)"
-              : "";
-          duration_in_revolutions = $@"{
-              sidereal_revolutions:N0} sidereal revolutions{"\n"}{
-              nodal_revolutions:N0} nodal revolutions{
-              duration_in_ground_track_cycles}{"\n"}{
-              anomalistic_revolutions:N0} anomalistic revolutions".ToString(
-                  Culture.culture);
-        }
+        int sidereal_revolutions =
+            (int)(mission_duration / elements.Value.sidereal_period);
+        int nodal_revolutions =
+            (int)(mission_duration / elements.Value.nodal_period);
+        int anomalistic_revolutions =
+            (int)(mission_duration / elements.Value.anomalistic_period);
+        int ground_track_cycles = analysis.recurrence_has_value
+            ? nodal_revolutions / analysis.recurrence.number_of_revolutions
+            : 0;
+        string duration_in_ground_track_cycles = ground_track_cycles > 0
+            ? $" ({ground_track_cycles:N0} ground track cycles)"
+            : "";
+        duration_in_revolutions = $@"{
+            sidereal_revolutions:N0} sidereal revolutions{"\n"}{
+            nodal_revolutions:N0} nodal revolutions{
+            duration_in_ground_track_cycles}{"\n"}{
+            anomalistic_revolutions:N0} anomalistic revolutions".ToString(
+                Culture.culture);
       } else {
         duration_in_revolutions =
             "mission duration is shorter than one sidereal revolution";
