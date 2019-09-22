@@ -259,7 +259,10 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
                 Culture.culture);
       } else {
         duration_in_revolutions =
-            "mission duration is shorter than one sidereal revolution";
+            "could not determine elements; mission duration may be shorter " +
+            "than a revolution, or trajectory may not be gravitationally " +
+            $"bound to {primary.NameWithArticle()}.";
+        multiline_style = Style.Warning(multiline_style);
       }
       string analysis_description =
           $@"Orbit of {vessel.vesselName} with respect to {
