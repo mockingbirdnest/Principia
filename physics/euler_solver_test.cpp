@@ -285,6 +285,8 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
             0,
             102))
         << t;
+    auto const attitude_at_t = solver.AttitudeAt(angular_momentum_at_t,
+                                                 Instant() + t);
   }
 }
 

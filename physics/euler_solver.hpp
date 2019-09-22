@@ -18,8 +18,10 @@ using geometry::Rotation;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
+using quantities::Inverse;
 using quantities::MomentOfInertia;
 using quantities::NaN;
+using quantities::Product;
 
 // A solver for Euler's rotation equations.  It follows Celledoni, Fassò,
 // Säfström and Zanna, 2007, The exact computation of the free rigid body motion
@@ -79,18 +81,25 @@ class EulerSolver {
 
   // Only the parameters needed for the selected formula are non-NaN after
   // construction.
-  AngularMomentum B₁₃_ = NaN<AngularMomentum>();
-  AngularMomentum B₃₁_ = NaN<AngularMomentum>();
-  AngularMomentum B₂₁_ = NaN<AngularMomentum>();
-  AngularMomentum B₂₃_ = NaN<AngularMomentum>();
-  AngularMomentum G_ = NaN<AngularMomentum>();
+
+  // These variables are really σ λ₁, σʹσʺ λ₂ and σ λ₃, respectively.
   AngularFrequency λ₁_ = NaN<AngularFrequency>();
   AngularFrequency λ₂_ = NaN<AngularFrequency>();
   AngularFrequency λ₃_ = NaN<AngularFrequency>();
+
+  // These variables are really σ B₁₃ and σ B₃₁, respectively.
+  AngularMomentum B₁₃_ = NaN<AngularMomentum>();
+  AngularMomentum B₃₁_ = NaN<AngularMomentum>();
+
+  AngularMomentum B₂₁_ = NaN<AngularMomentum>();
+  AngularMomentum B₂₃_ = NaN<AngularMomentum>();
+  AngularMomentum G_ = NaN<AngularMomentum>();
+  double n_ = NaN<double>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();
-  Angle φ₀_ = NaN<Angle>();
-  Angle f₀_ = NaN<Angle>();
+  Angle ψ_offset_ = NaN<Angle>();
+  using WTF = Inverse<Product<MomentOfInertia, AngularFrequency>>;
+  WTF ψ_multiplier_ = NaN<WTF>();
 };
 
 }  // namespace internal_euler_solver

@@ -19,6 +19,7 @@ namespace internal_euler_solver {
 using geometry::Quaternion;
 using geometry::Vector;
 using numerics::EllipticF;
+using numerics::EllipticΠ;
 using numerics::JacobiAmplitude;
 using numerics::JacobiSNCNDN;
 using quantities::Abs;
@@ -74,15 +75,20 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   // in a way that reduces cancellations when k is close to 1.
   if (Δ₂ < Square<AngularMomentum>()) {
     B₂₁_ = Sqrt(I₂_ * Δ₁ / I₂₁);
+    n_ = -Pow<2>(B₃₁_ / B₁₃_);
     mc_ = -Δ₂ * I₃₁ / (Δ₃ * I₂₁);
-    ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_);
-    φ₀_ = JacobiAmplitude(-ν_, mc_);  // TODO(phl): Sign? mc?
+    //TODO(phl): Check these formulae!  Also, dimensions...
+    Angle const φ₀ = ArcTan(m.y / B₂₁_, m.z / B₃₁_);  //?
+    Angle const f₀ = (B₁₃_ * B₃₁_ / (G_ * B₂₁_)) * ArcTan(-m.y, m.z);  //?
+    ν_ = EllipticF(φ₀, mc_);
     λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁_ * I₂_ * I₃_));
     if (m.x < AngularMomentum()) {
       B₁₃_ = -B₁₃_;
     } else {
       λ₃_ = -λ₃_;
     }
+    ψ_offset_ = EllipticΠ(φ₀, n_, mc_) + f₀;  //?
+    ψ_multiplier_ = I₃₁ / (I₁_ * I₃_ * λ₃_);  //?
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
     B₂₃_ = Sqrt(I₂_ * Δ₃ / I₃₂);
@@ -165,21 +171,20 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
   Time const Δt = time - initial_time_;
   switch (formula_) {
     case Formula::i: {
-      auto const two_real_part = Sqrt(2 * (1 + m.z));
+      double const two_real_part = Sqrt(2 * (1 + m.z / G_));  //?
       Quaternion const p(0.5 * two_real_part,
                          {m.y / two_real_part, -m.x / two_real_part, 0});
-      //TODO(phl): What about the signs?
-      Angle const φ = JacobiAmplitude(λ₃_ * Δt - ν_);
-      //TODO(phl): Is this right?
+      // Note that the sign of λ has been integrated in λ₃_ at construction.
+      Angle const φ = JacobiAmplitude(λ₃_ * Δt - ν_, mc_);
       double sn;
       double cn;
       double dn;
       JacobiSNCNDN(λ₃_ * Δt - ν_, mc_, sn, cn, dn);
-      Angle const f = (B₁₃_ * B₃₁_ / B₂₁_) * ArcTan(sn * B₂₁_, dn * B₁₃_);
-      double const n = -Pow<2>(B₃₁_ / B₁₃_);
-      Angle const ψ =
-          Δt / I₃ + (I₃₁ / (I₁ * I₃ * λ)) *
-                        (EllipticΠ(φ, n, k) + f - EllipticΠ(φ₀_, n, k) - f₀_);
+      //NOTE(phl): sd = sn / dn, see 22.2.10.
+      Angle const f =
+          (B₁₃_ * B₃₁_ / (G_ * B₂₁_)) * ArcTan(sn * B₂₁_, dn * B₁₃_);  //?
+      auto const ψ =
+          Δt / I₃_ + ψ_multiplier_ * (EllipticΠ(φ, n_, mc_) + f - ψ_offset_);
       Quaternion const y(Cos(ψ / 2), {0, 0, Sin(ψ / 2)});
     }
     case Formula::ii: {
@@ -191,7 +196,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
   };
-  return AttitudeRotation();
+  return AttitudeRotation::Identity();
 }
 
 }  // namespace internal_euler_solver
