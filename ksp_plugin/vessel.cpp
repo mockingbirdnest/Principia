@@ -449,7 +449,11 @@ void Vessel::RefreshOrbitAnalysis(
     not_null<RotatingBody<Barycentric> const*> const primary,
     Time const& mission_duration) {
   if (!orbit_analyser_.has_value()) {
-    // TODO(egg): get the real history parameters.
+    // TODO(egg): perhaps we should get the history parameters from the plugin;
+    // on the other hand, these are probably overkill for high orbits anyway,
+    // and given that we know many things about our trajectory in the analyser,
+    // perhaps we should pick something appropriate automatically instead.  The
+    // default will do in the meantime.
     orbit_analyser_.emplace(ephemeris_, DefaultHistoryParameters());
   }
   orbit_analyser_->RequestAnalysis(psychohistory_->back().time,
