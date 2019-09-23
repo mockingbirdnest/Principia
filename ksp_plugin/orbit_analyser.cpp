@@ -15,11 +15,10 @@ using physics::BodyCentredNonRotatingDynamicFrame;
 using quantities::IsFinite;
 
 OrbitAnalyser::OrbitAnalyser(not_null<Ephemeris<Barycentric>*> const ephemeris,
-                             Ephemeris<Barycentric>::FixedStepParameters const
+                             Ephemeris<Barycentric>::FixedStepParameters const&
                                  analysed_trajectory_parameters)
     : ephemeris_(ephemeris),
-      analysed_trajectory_parameters_(analysed_trajectory_parameters),
-      analyser_([this] { RepeatedlyAnalyseOrbit(); }) {}
+      analysed_trajectory_parameters_(analysed_trajectory_parameters) {}
 
 OrbitAnalyser::~OrbitAnalyser() {
   if (analyser_.joinable()) {
@@ -33,6 +32,9 @@ void OrbitAnalyser::RequestAnalysis(
     DegreesOfFreedom<Barycentric> const& first_degrees_of_freedom,
     Time const& mission_duration,
     not_null<RotatingBody<Barycentric> const*> primary) {
+  if (!analyser_.joinable()) {
+    analyser_ = std::thread([this] { RepeatedlyAnalyseOrbit(); });
+  }
   Ephemeris<Barycentric>::Guard guard(ephemeris_);
   if (ephemeris_->t_min() > first_time) {
     // Too much has been forgotten; we cannot perform this analysis.
@@ -58,15 +60,19 @@ OrbitAnalyser::Analysis* OrbitAnalyser::analysis() {
   return analysis_.has_value() ? &*analysis_ : nullptr;
 }
 
-int8_t OrbitAnalyser::next_analysis_percentage() const {
-  return next_analysis_percentage_;
+double OrbitAnalyser::progress_of_next_analysis() const {
+  return progress_of_next_analysis_;
 }
 
 void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
-  while (keep_analysing_) {
+  for (;;) {
     // No point in going faster than 50 Hz.
     std::chrono::steady_clock::time_point const wakeup_time =
         std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
+
+    if (!keep_analysing_) {
+      return;
+    }
 
     std::optional<Parameters> parameters;
     {
@@ -89,15 +95,15 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
         Ephemeris<Barycentric>::NoIntrinsicAccelerations,
         analysed_trajectory_parameters_);
     for (Instant t =
-             parameters->first_time + parameters->mission_duration / 100;
+             parameters->first_time + parameters->mission_duration / 0x1p10;
          trajectory.back().time <
          parameters->first_time + parameters->mission_duration;
-         t += parameters->mission_duration / 100) {
+         t += parameters->mission_duration / 0x1p10) {
       if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
         break;
       }
-      next_analysis_percentage_ =
-          100 * (trajectory.back().time - parameters->first_time) /
+      progress_of_next_analysis_ =
+          0x1p10 * (trajectory.back().time - parameters->first_time) /
           parameters->mission_duration;
       if (!keep_analysing_) {
         return;
@@ -138,7 +144,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
           OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
                                           *parameters->primary,
                                           /*mean_sun=*/std::nullopt);
-      analysis.reset_recurrence();
+      analysis.ResetRecurrence();
     }
 
     {
@@ -182,7 +188,7 @@ OrbitAnalyser::Analysis::equatorial_crossings() const {
   return equatorial_crossings_;
 }
 
-void OrbitAnalyser::Analysis::set_recurrence(
+void OrbitAnalyser::Analysis::SetRecurrence(
     OrbitRecurrence const& recurrence) {
   if (recurrence_ != recurrence) {
     recurrence_ = recurrence;
@@ -193,9 +199,9 @@ void OrbitAnalyser::Analysis::set_recurrence(
   }
 }
 
-void OrbitAnalyser::Analysis::reset_recurrence() {
+void OrbitAnalyser::Analysis::ResetRecurrence() {
   if (closest_recurrence_.has_value()) {
-    set_recurrence(*closest_recurrence_);
+    SetRecurrence(*closest_recurrence_);
   } else {
     recurrence_.reset();
     equatorial_crossings_.reset();
@@ -203,8 +209,8 @@ void OrbitAnalyser::Analysis::reset_recurrence() {
 }
 
 OrbitAnalyser::Analysis::Analysis(
-    Instant first_time,
-    not_null<RotatingBody<Barycentric> const*> primary)
+    Instant const first_time,
+    not_null<RotatingBody<Barycentric> const*> const primary)
     : first_time_(first_time), primary_(primary) {}
 
 }  // namespace internal_orbit_analyser

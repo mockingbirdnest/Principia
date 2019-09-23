@@ -116,13 +116,15 @@ inline int OrbitRecurrence::subcycle() const {
 
 inline bool operator==(OrbitRecurrence const& left,
                        OrbitRecurrence const& right) {
-  return left.νₒ() == right.νₒ() && left.Dᴛₒ() == right.Dᴛₒ() &&
+  return left.νₒ() == right.νₒ() &&
+         left.Dᴛₒ() == right.Dᴛₒ() &&
          left.Cᴛₒ() == right.Cᴛₒ();
 }
 
 inline bool operator!=(OrbitRecurrence const& left,
                        OrbitRecurrence const& right) {
-  return left.νₒ() != right.νₒ() || left.Dᴛₒ() != right.Dᴛₒ() ||
+  return left.νₒ() != right.νₒ() ||
+         left.Dᴛₒ() != right.Dᴛₒ() ||
          left.Cᴛₒ() != right.Cᴛₒ();
 }
 
