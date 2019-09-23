@@ -127,20 +127,18 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
         primary_centred_trajectory, *parameters->primary, MasslessBody{});
     if (elements.ok()) {
       analysis.elements_ = elements.ValueOrDie();
-      if (IsFinite(analysis.elements_->nodal_period()) &&
-          IsFinite(analysis.elements_->nodal_precession())) {
-        // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
-        // revolutions.
-        analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
-            analysis.elements_->nodal_period(),
-            analysis.elements_->nodal_precession(),
-            *parameters->primary,
-            /*max_abs_Cᴛₒ=*/100);
-        analysis.ground_track_ =
-            OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
-                                            *parameters->primary,
-                                            /*mean_sun=*/std::nullopt);
-      }
+      // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
+      // revolutions.
+      analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
+          analysis.elements_->nodal_period(),
+          analysis.elements_->nodal_precession(),
+          *parameters->primary,
+          /*max_abs_Cᴛₒ=*/100);
+      analysis.ground_track_ =
+          OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
+                                          *parameters->primary,
+                                          /*mean_sun=*/std::nullopt);
+      analysis.reset_recurrence();
     }
 
     {

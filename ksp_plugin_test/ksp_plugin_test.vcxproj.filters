@@ -176,6 +176,15 @@
     <ClCompile Include="..\physics\protector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="orbit_analyser_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ksp_plugin\orbit_analyser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\astronomy\standard_product_3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">
