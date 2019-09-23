@@ -34,6 +34,7 @@ using quantities::ArcSin;
 using quantities::Length;
 using quantities::Sin;
 using quantities::Time;
+using quantities::astronomy::TerrestrialEquatorialRadius;
 using quantities::si::Day;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -78,7 +79,8 @@ class LunarEclipseTest : public ::testing::Test {
     // and http://www.imcce.fr/langues/fr/ephemerides/phenomenes/eclipses/lune/.
     // In particular, this means that we must use the equatorial radius for the
     // Earth, not the mean radius.
-    r_earth_ = 6378.1363 * Kilo(Metre);
+    // REMOVE BEFORE FLIGHT: what do we do with the dead link?
+    r_earth_ = TerrestrialEquatorialRadius;
     atmospheric_depth_ = (1.0 / 85.0 - 1.0 / 594.0) * r_earth_;
   }
 
