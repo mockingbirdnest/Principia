@@ -84,7 +84,7 @@ class OrbitAnalyserTest : public testing::Test {
 TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
   OrbitAnalyser analyser(ephemeris_.get(), DefaultHistoryParameters());
   EXPECT_THAT(analyser.analysis(), IsNull());
-  EXPECT_THAT(analyser.next_analysis_percentage(), Eq(0));
+  EXPECT_THAT(analyser.progress_of_next_analysis(), Eq(0));
   auto const& arc =
       *topex_poséidon_.orbit(
           {StandardProduct3::SatelliteGroup::General, 1}).front();
@@ -94,12 +94,13 @@ TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
                                arc.begin()->degrees_of_freedom),
                            3 * Hour,
                            &earth_);
-  while (analyser.next_analysis_percentage() != 100) {
+  while (analyser.progress_of_next_analysis() != 1) {
     absl::SleepFor(absl::Milliseconds(10));
   }
-  // Since the progress percentage only tracks the integration, not the
+  // Since |progress_of_next_analysis| only tracks the integration, not the
   // analysis, we have no guarantee that an analysis is available immediately.
   do {
+    absl::SleepFor(absl::Milliseconds(10));
     analyser.RefreshAnalysis();
   } while (analyser.analysis() == nullptr);
   EXPECT_THAT(analyser.analysis()
@@ -118,7 +119,7 @@ TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
                   TerrestrialEquatorialRadius / Radian,
               IsNear(93_⑴ * Metre));
   // [13; -1; 3] is the subcycle of [13; -3; 10].
-  analyser.analysis()->set_recurrence({13, -1, 3});
+  analyser.analysis()->SetRecurrence({13, -1, 3});
   EXPECT_THAT(analyser.analysis()
                       ->equatorial_crossings()
                       ->longitudes_reduced_to_pass(1)
@@ -126,7 +127,7 @@ TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
                   TerrestrialEquatorialRadius / Radian,
               IsNear(8211_⑴ * Metre));
   // Back to the auto-detected recurrence.
-  analyser.analysis()->reset_recurrence();
+  analyser.analysis()->ResetRecurrence();
   EXPECT_THAT(analyser.analysis()->recurrence(),
               Optional(AllOf(Property(&OrbitRecurrence::νₒ, 13),
                              Property(&OrbitRecurrence::Dᴛₒ, -3),

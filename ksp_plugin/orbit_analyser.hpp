@@ -30,8 +30,18 @@ using physics::Ephemeris;
 using physics::RotatingBody;
 using quantities::Time;
 
+// The |OrbitAnalyser| asynchronously integrates a trajectory, and computes
+// orbital elements, recurrence, and ground track properties of the resulting
+// orbit.
 class OrbitAnalyser {
  public:
+  // The analysis stores the computed orbital characteristics.  It is publicly
+  // mutable via |SetRecurrence| and |ResetRecurrence| to allow the caller to
+  // consider a nominal recurrence other than the one deduced from the orbital
+  // elements: analysing the precomputed ground track with respect to a
+  // different recurrence is relatively cheap, so it is inconvenient to wait for
+  // a whole new analysis to do so, but doing it at every frame is still
+  // wasteful, so we cache that in the |Analysis|.
   class Analysis {
    public:
     Instant const& first_time() const;
@@ -50,11 +60,11 @@ class OrbitAnalyser {
     equatorial_crossings() const;
 
     // Sets |recurrence|, updating |equatorial_crossings| if needed.
-    void set_recurrence(OrbitRecurrence const& recurrence);
+    void SetRecurrence(OrbitRecurrence const& recurrence);
     // Resets |recurrence| to a value deduced from |*elements| by
     // |OrbitRecurrence::ClosestRecurrence|, or to nullopt if
     // |!elements.has_value()|, updating |equatorial_crossings| if needed.
-    void reset_recurrence();
+    void ResetRecurrence();
 
    private:
     Analysis(Instant first_time,
@@ -73,9 +83,9 @@ class OrbitAnalyser {
     friend class OrbitAnalyser;
   };
 
-  OrbitAnalyser(
-      not_null<Ephemeris<Barycentric>*> ephemeris,
-      Ephemeris<Barycentric>::FixedStepParameters analysed_trajectory_parameters);
+  OrbitAnalyser(not_null<Ephemeris<Barycentric>*> ephemeris,
+                Ephemeris<Barycentric>::FixedStepParameters const&
+                    analysed_trajectory_parameters);
   ~OrbitAnalyser();
 
   // Sets the parameters that will be used for the computation of the next analysis.
@@ -88,9 +98,10 @@ class OrbitAnalyser {
   // Sets |analysis()| to the latest computed analysis.
   void RefreshAnalysis();
 
+  // Mutable so that the caller can call |SetRecurrence| and |ResetRecurrence|.
   Analysis* analysis();
 
-  int8_t next_analysis_percentage() const;
+  double progress_of_next_analysis() const;
 
  private:
   struct Parameters {
@@ -117,12 +128,12 @@ class OrbitAnalyser {
   // |next_analysis_| is set by the |analyser_| thread; it is read and cleared
   // by the main thread.
   std::optional<Analysis> next_analysis_ GUARDED_BY(lock_);
-  // |next_analysis_percentage_| is set by the |analyser_| thread; it tracks
-  // progress in computing |next_anlaysis_|.
-  std::atomic_int8_t next_analysis_percentage_ = 0;
-  // |keep_analysing_| is tested |analyser_| thread, which cooperatively aborts
-  // if it is false; it is set at construction, and cleared by the main thread
-  // at destruction.
+  // |progress_of_next_analysis_| is set by the |analyser_| thread; it tracks
+  // progress in computing |next_analysis_|.
+  std::atomic<double> progress_of_next_analysis_ = 0;
+  // |keep_analysing_| is tested by the |analyser_| thread, which cooperatively
+  // aborts if it is false; it is set at construction, and cleared by the main
+  // thread at destruction.
   std::atomic_bool keep_analysing_ = true;
 };
 
