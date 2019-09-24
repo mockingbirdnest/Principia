@@ -209,7 +209,7 @@ void OrbitAnalyser::Analysis::ResetRecurrence() {
 }
 
 OrbitAnalyser::Analysis::Analysis(
-    Instant const first_time,
+    Instant const& first_time,
     not_null<RotatingBody<Barycentric> const*> const primary)
     : first_time_(first_time), primary_(primary) {}
 

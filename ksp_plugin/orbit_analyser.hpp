@@ -67,7 +67,7 @@ class OrbitAnalyser {
     void ResetRecurrence();
 
    private:
-    Analysis(Instant first_time,
+    Analysis(Instant const& first_time,
              not_null<RotatingBody<Barycentric> const*> primary);
 
     Instant first_time_;
@@ -101,6 +101,9 @@ class OrbitAnalyser {
   // Mutable so that the caller can call |SetRecurrence| and |ResetRecurrence|.
   Analysis* analysis();
 
+  // The result is in [0, 1]; it tracks the progress of the computation of the
+  // next analysis.  Note that a new analysis may be ready even if this is not
+  // equal to 1, if a subsequent request is being processed.
   double progress_of_next_analysis() const;
 
  private:
