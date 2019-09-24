@@ -103,7 +103,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
         break;
       }
       progress_of_next_analysis_ =
-          0x1p10 * (trajectory.back().time - parameters->first_time) /
+          (trajectory.back().time - parameters->first_time) /
           parameters->mission_duration;
       if (!keep_analysing_) {
         return;
