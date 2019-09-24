@@ -92,7 +92,7 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
   vessel.RefreshOrbitAnalysis(plugin->GetCelestial(primary_index).body(),
                               mission_duration * Second);
   OrbitAnalysis analysis{};
-  analysis.progress_percentage = vessel.orbit_analysis_percentage();
+  analysis.progress_of_next_analysis = vessel.progress_of_orbit_analysis();
   if (vessel.orbit_analysis() != nullptr) {
     analysis.primary_index =
         plugin->CelestialIndexOfBody(vessel.orbit_analysis()->primary());
@@ -126,9 +126,9 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
           std::nearbyint(static_cast<double>(*revolutions_per_cycle) / Cᴛₒ);
       int const Dᴛₒ = *revolutions_per_cycle - νₒ * Cᴛₒ;
       int const gcd = std::gcd(Dᴛₒ, Cᴛₒ);
-      vessel.orbit_analysis()->set_recurrence({νₒ, Dᴛₒ / gcd, Cᴛₒ / gcd});
+      vessel.orbit_analysis()->SetRecurrence({νₒ, Dᴛₒ / gcd, Cᴛₒ / gcd});
     } else {
-      vessel.orbit_analysis()->reset_recurrence();
+      vessel.orbit_analysis()->ResetRecurrence();
     }
     analysis.recurrence_has_value = vessel.orbit_analysis()->recurrence().has_value();
     if (analysis.recurrence_has_value) {

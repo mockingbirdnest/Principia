@@ -197,7 +197,7 @@ message OrbitGroundTrack {
 }
 
 message OrbitAnalysis {
-  required int32 progress_percentage = 1;
+  required double progress_of_next_analysis = 1;
   required int32 primary_index = 2;
   required double mission_duration = 3;
   // NOTE(egg): we currently have no support in the interface generator for

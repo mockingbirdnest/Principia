@@ -177,7 +177,7 @@ inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
          left.ground_track == right.ground_track &&
          left.mission_duration == right.mission_duration &&
          left.primary_index == right.primary_index &&
-         left.progress_percentage && right.progress_percentage &&
+         left.progress_of_next_analysis && right.progress_of_next_analysis &&
          left.recurrence == right.recurrence;
 }
 

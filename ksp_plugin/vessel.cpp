@@ -463,11 +463,11 @@ void Vessel::RefreshOrbitAnalysis(
   orbit_analyser_->RefreshAnalysis();
 }
 
-int Vessel::orbit_analysis_percentage() const {
+double Vessel::progress_of_orbit_analysis() const {
   if (!orbit_analyser_.has_value()) {
     return 0;
   }
-  return orbit_analyser_->next_analysis_percentage();
+  return orbit_analyser_->progress_of_next_analysis();
 }
 
 OrbitAnalyser::Analysis* Vessel::orbit_analysis() {

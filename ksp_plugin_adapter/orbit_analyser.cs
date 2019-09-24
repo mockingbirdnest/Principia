@@ -217,9 +217,9 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       }
       UnityEngine.GUILayout.HorizontalScrollbar(
           value      : 0,
-          size       : analysis.progress_percentage,
+          size       : (float)analysis.progress_of_next_analysis,
           leftValue  : 0,
-          rightValue : 100);
+          rightValue : 1);
 
       OrbitalElements? elements = null;
       OrbitRecurrence? recurrence = null;
