@@ -1,6 +1,9 @@
 ﻿
 #include "ksp_plugin/orbit_analyser.hpp"
 
+#include <string>
+#include <vector>
+
 #include "astronomy/standard_product_3.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

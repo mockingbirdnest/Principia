@@ -88,7 +88,8 @@ class OrbitAnalyser {
                     analysed_trajectory_parameters);
   ~OrbitAnalyser();
 
-  // Sets the parameters that will be used for the computation of the next analysis.
+  // Sets the parameters that will be used for the computation of the next
+  // analysis.
   void RequestAnalysis(
       Instant const& first_time,
       DegreesOfFreedom<Barycentric> const& first_degrees_of_freedom,
@@ -103,7 +104,7 @@ class OrbitAnalyser {
 
   // The result is in [0, 1]; it tracks the progress of the computation of the
   // next analysis.  Note that a new analysis may be ready even if this is not
-  // equal to 1, if a subsequent request is being processed.
+  // equal to 1, if the analyser is working on a subsequent request.
   double progress_of_next_analysis() const;
 
  private:
