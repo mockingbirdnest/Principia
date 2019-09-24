@@ -1,6 +1,9 @@
 ﻿
 #include "ksp_plugin/orbit_analyser.hpp"
 
+#include <algorithm>
+#include <vector>
+
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 
@@ -87,7 +90,8 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     Analysis analysis{parameters->first_time,
                       parameters->primary};
     DiscreteTrajectory<Barycentric> trajectory;
-    trajectory.Append(parameters->first_time, parameters->first_degrees_of_freedom);
+    trajectory.Append(parameters->first_time,
+                      parameters->first_degrees_of_freedom);
     std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
         &trajectory};
     auto instance = ephemeris_->NewInstance(
@@ -209,7 +213,7 @@ void OrbitAnalyser::Analysis::ResetRecurrence() {
 }
 
 OrbitAnalyser::Analysis::Analysis(
-    Instant const first_time,
+    Instant const& first_time,
     not_null<RotatingBody<Barycentric> const*> const primary)
     : first_time_(first_time), primary_(primary) {}
 
