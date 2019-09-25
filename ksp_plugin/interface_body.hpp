@@ -136,6 +136,11 @@ inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
                           right.speed_integration_tolerance);
 }
 
+inline bool operator==(Interval const& left, Interval const& right) {
+  return NaNIndependentEq(left.min, right.min) &&
+         NaNIndependentEq(left.max, right.max);
+}
+
 inline bool operator==(NavigationFrameParameters const& left,
                        NavigationFrameParameters const& right) {
   return left.extension == right.extension &&
@@ -165,6 +170,52 @@ inline bool operator==(NavigationManoeuvreFrenetTrihedron const& left,
   return left.binormal == right.binormal &&
          left.normal == right.normal &&
          left.tangent == right.tangent;
+}
+
+inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
+  return left.elements == right.elements &&
+         left.ground_track == right.ground_track &&
+         left.mission_duration == right.mission_duration &&
+         left.primary_index == right.primary_index &&
+         left.progress_of_next_analysis && right.progress_of_next_analysis &&
+         left.recurrence == right.recurrence;
+}
+
+inline bool operator==(EquatorialCrossings const& left,
+                       EquatorialCrossings const& right) {
+  return left.longitudes_reduced_to_ascending_pass ==
+             right.longitudes_reduced_to_ascending_pass &&
+         left.longitudes_reduced_to_descending_pass ==
+             right.longitudes_reduced_to_descending_pass;
+}
+
+inline bool operator==(OrbitGroundTrack const& left,
+                       OrbitGroundTrack const& right) {
+  return left.equatorial_crossings == right.equatorial_crossings;
+}
+
+inline bool operator==(OrbitRecurrence const& left,
+                       OrbitRecurrence const& right) {
+  return NaNIndependentEq(left.base_interval, right.base_interval) &&
+         left.cto == right.cto && left.dto == right.dto &&
+         NaNIndependentEq(left.equatorial_shift, right.equatorial_shift) &&
+         NaNIndependentEq(left.grid_interval, right.grid_interval) &&
+         left.number_of_revolutions == right.number_of_revolutions &&
+         left.nuo == right.nuo && left.subcycle == right.subcycle;
+}
+
+inline bool operator==(OrbitalElements const& left,
+                       OrbitalElements const& right) {
+  return NaNIndependentEq(left.anomalistic_period, right.anomalistic_period) &&
+         left.mean_argument_of_periapsis == right.mean_argument_of_periapsis &&
+         left.mean_eccentricity == right.mean_eccentricity &&
+         left.mean_inclination == right.mean_inclination &&
+         left.mean_longitude_of_ascending_nodes ==
+             right.mean_longitude_of_ascending_nodes &&
+         left.mean_semimajor_axis == right.mean_semimajor_axis &&
+         NaNIndependentEq(left.nodal_period, right.nodal_period) &&
+         NaNIndependentEq(left.nodal_precession, right.nodal_precession) &&
+         NaNIndependentEq(left.sidereal_period, right.sidereal_period);
 }
 
 inline bool operator==(QP const& left, QP const& right) {
@@ -371,6 +422,12 @@ inline XYZ ToXYZ(Vector<double, World> const& direction) {
 
 inline XYZ ToXYZ(Velocity<World> const& velocity) {
   return XYZConverter<Velocity<World>>::ToXYZ(velocity);
+}
+
+template<typename T>
+Interval ToInterval(geometry::Interval<T> const& interval) {
+  return {interval.min / quantities::SIUnit<T>(),
+          interval.max / quantities::SIUnit<T>()};
 }
 
 inline Instant FromGameTime(Plugin const& plugin,
