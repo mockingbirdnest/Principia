@@ -98,7 +98,8 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
         plugin->CelestialIndexOfBody(vessel.orbit_analysis()->primary());
     analysis.mission_duration =
         vessel.orbit_analysis()->mission_duration() / Second;
-    analysis.elements_has_value = vessel.orbit_analysis()->elements().has_value();
+    analysis.elements_has_value =
+        vessel.orbit_analysis()->elements().has_value();
     if (analysis.elements_has_value) {
       auto const& elements = *vessel.orbit_analysis()->elements();
       analysis.elements.anomalistic_period =
@@ -130,7 +131,8 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
     } else {
       vessel.orbit_analysis()->ResetRecurrence();
     }
-    analysis.recurrence_has_value = vessel.orbit_analysis()->recurrence().has_value();
+    analysis.recurrence_has_value =
+        vessel.orbit_analysis()->recurrence().has_value();
     if (analysis.recurrence_has_value) {
       auto const& recurrence = *vessel.orbit_analysis()->recurrence();
       analysis.recurrence.nuo = recurrence.νₒ();
