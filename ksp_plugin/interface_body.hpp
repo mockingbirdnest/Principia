@@ -191,8 +191,7 @@ inline bool operator==(EquatorialCrossings const& left,
 
 inline bool operator==(OrbitGroundTrack const& left,
                        OrbitGroundTrack const& right) {
-  return left.equatorial_crossings ==
-             right.equatorial_crossings;
+  return left.equatorial_crossings == right.equatorial_crossings;
 }
 
 inline bool operator==(OrbitRecurrence const& left,
