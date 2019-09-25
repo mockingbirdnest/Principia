@@ -12,6 +12,7 @@
 #include "base/status.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
+#include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -32,9 +33,11 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::MasslessBody;
+using physics::RotatingBody;
 using quantities::Force;
 using quantities::GravitationalParameter;
 using quantities::Mass;
+using quantities::Time;
 
 // Represents a KSP |Vessel|.
 class Vessel {
@@ -173,6 +176,11 @@ class Vessel {
       PileUp::PileUpForSerializationIndex const&
           pile_up_for_serialization_index);
 
+  void RefreshOrbitAnalysis(not_null<RotatingBody<Barycentric> const*> primary,
+                            Time const& mission_duration);
+  double progress_of_orbit_analysis() const;
+  OrbitAnalyser::Analysis* orbit_analysis();
+
   static void MakeAsynchronous();
   static void MakeSynchronous();
 
@@ -259,6 +267,8 @@ class Vessel {
       GUARDED_BY(prognosticator_lock_);
 
   std::unique_ptr<FlightPlan> flight_plan_;
+
+  std::optional<OrbitAnalyser> orbit_analyser_;
 
   static std::atomic_bool synchronous_;
 };

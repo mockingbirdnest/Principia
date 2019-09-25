@@ -445,6 +445,35 @@ void Vessel::FillContainingPileUpsFromMessage(
   }
 }
 
+void Vessel::RefreshOrbitAnalysis(
+    not_null<RotatingBody<Barycentric> const*> const primary,
+    Time const& mission_duration) {
+  if (!orbit_analyser_.has_value()) {
+    // TODO(egg): perhaps we should get the history parameters from the plugin;
+    // on the other hand, these are probably overkill for high orbits anyway,
+    // and given that we know many things about our trajectory in the analyser,
+    // perhaps we should pick something appropriate automatically instead.  The
+    // default will do in the meantime.
+    orbit_analyser_.emplace(ephemeris_, DefaultHistoryParameters());
+  }
+  orbit_analyser_->RequestAnalysis(psychohistory_->back().time,
+                                   psychohistory_->back().degrees_of_freedom,
+                                   mission_duration,
+                                   primary);
+  orbit_analyser_->RefreshAnalysis();
+}
+
+double Vessel::progress_of_orbit_analysis() const {
+  if (!orbit_analyser_.has_value()) {
+    return 0;
+  }
+  return orbit_analyser_->progress_of_next_analysis();
+}
+
+OrbitAnalyser::Analysis* Vessel::orbit_analysis() {
+  return orbit_analyser_->analysis();
+}
+
 void Vessel::MakeAsynchronous() {
   synchronous_ = false;
 }
