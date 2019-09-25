@@ -22,6 +22,7 @@ using quantities::Inverse;
 using quantities::MomentOfInertia;
 using quantities::NaN;
 using quantities::Product;
+using quantities::Time;
 
 // A solver for Euler's rotation equations.  It follows Celledoni, Fassò,
 // Säfström and Zanna, 2007, The exact computation of the free rigid body motion
@@ -97,9 +98,8 @@ class EulerSolver {
   double n_ = NaN<double>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();
-  Angle ψ_offset_ = NaN<Angle>();
-  using WTF = Inverse<Product<MomentOfInertia, AngularFrequency>>;
-  WTF ψ_multiplier_ = NaN<WTF>();
+  Angle ψ_offset_= NaN<Angle>();
+  Inverse<Time> ψ_multiplier_ = NaN<Inverse<Time>>();
 };
 
 }  // namespace internal_euler_solver
