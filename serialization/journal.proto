@@ -155,6 +155,9 @@ message XY {
   required double y = 2;
 }
 
+// The messages used within OrbitAnalysis are defined first, so that the struct
+// definitions, being generated in the same order refer to already-defined
+// types.
 message Interval {
   required double min = 1;
   required double max = 2;
@@ -173,12 +176,9 @@ message OrbitalElements {
 }
 
 message OrbitRecurrence {
-  // νₒ.
-  required int32 nuo = 1;
-  // Dᴛₒ.
-  required int32 dto = 2;
-  // Cᴛₒ.
-  required int32 cto = 3;
+  required int32 nuo = 1;  // νₒ.
+  required int32 dto = 2;  // Dᴛₒ.
+  required int32 cto = 3;  // Cᴛₒ.
   required int32 number_of_revolutions = 4;
   required double equatorial_shift = 5;
   required double base_interval = 6;
