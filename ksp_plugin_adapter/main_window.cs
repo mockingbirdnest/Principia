@@ -14,11 +14,13 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
+                    OrbitAnalyser orbit_analyser,
                     ReferenceFrameSelector plotting_frame_selector,
                     PredictedVessel predicted_vessel)
       : base(adapter) {
     adapter_ = adapter;
     flight_planner_ = flight_planner;
+    orbit_analyser_ = orbit_analyser;
     plotting_frame_selector_ = plotting_frame_selector;
     predicted_vessel_ = predicted_vessel;
     Show();
@@ -232,7 +234,10 @@ internal class MainWindow : SupervisedWindowRenderer {
       // interface.
       if (adapter_.PluginRunning()) {
         plotting_frame_selector_.RenderButton();
-        flight_planner_.RenderButton();
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          flight_planner_.RenderButton();
+          orbit_analyser_.RenderButton();
+        }
         RenderToggleableSection(name   : "Prediction Settings",
                                 show   : ref show_prediction_settings_,
                                 render : RenderPredictionSettings);
@@ -503,6 +508,7 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   private readonly PrincipiaPluginAdapter adapter_;
   private readonly FlightPlanner flight_planner_;
+  private readonly OrbitAnalyser orbit_analyser_;
   private readonly ReferenceFrameSelector plotting_frame_selector_;
   private readonly PredictedVessel predicted_vessel_;
 
