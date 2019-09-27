@@ -14,7 +14,7 @@ internal static class Formatters {
   // Displays an interval as midpoint±half-width.
   public static string FormatInterval(this Interval interval) {
     double half_width = (interval.max - interval.min) / 2;
-    double midpoint = interval.min + (interval.max - interval.min) / 2;
+    double midpoint = interval.min + half_width;
     int fractional_digits =
         Math.Max(0, 1 - (int)Math.Floor(Math.Log10(half_width)));
     string format = $"N{fractional_digits}";
@@ -27,11 +27,11 @@ internal static class Formatters {
   // half-width is 100 m or more.
   public static string FormatLengthInterval(this Interval interval) {
     double half_width = (interval.max - interval.min) / 2;
-    double midpoint = interval.min + (interval.max - interval.min) / 2;
+    double midpoint = interval.min + half_width;
     string unit = "m";
     if (half_width >= 100) {
-      half_width *= 0.01;
-      midpoint *= 0.01;
+      half_width *= 0.001;
+      midpoint *= 0.001;
       unit = "km";
     }
     int fractional_digits =
@@ -46,7 +46,7 @@ internal static class Formatters {
   // or the string "(precesses)" if the half-width exceeds 180°.
   public static string FormatAngleInterval(this Interval interval) {
     double half_width = (interval.max - interval.min) / 2;
-    double midpoint = interval.min + (interval.max - interval.min) / 2;
+    double midpoint = interval.min + half_width;
     if (half_width > Math.PI) {
       return "(precesses)";
     }
@@ -118,6 +118,7 @@ internal static class Formatters {
     return string.Join(" ", components.ToArray());
   }
 
+  // Formats an angular frequency (passed in rad/s), in °/d or °/d6.
   public static string FormatAngularFrequency(this double radians_per_second) {
     const double degree = Math.PI / 180;
     double day = GameSettings.KERBIN_TIME ? 6 * 60 * 60 : 24 * 60 * 60;
@@ -388,9 +389,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
             FormatEquatorialAngleInterval(primary));
   }
 
-  private void LabeledField(
-      string label,
-      string value) {
+  private void LabeledField(string label, string value) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(label);
       UnityEngine.GUILayout.Label(value ?? em_dash,
@@ -398,9 +397,9 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
     }
   }
 
-  private const string em_dash = "—";
-
   private IntPtr plugin => adapter_.Plugin();
+
+  private const string em_dash = "—";
 
   private readonly PrincipiaPluginAdapter adapter_;
   private DifferentialSlider mission_duration_ = new DifferentialSlider(
