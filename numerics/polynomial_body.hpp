@@ -282,13 +282,13 @@ template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument,
-                          std_max(ldegree_, rdegree_), Evaluator>
+                          std::max(ldegree_, rdegree_), Evaluator>
 operator+(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
   return PolynomialInMonomialBasis<Value, Argument,
-                                   std_max(ldegree_, rdegree_), Evaluator>(
+                                   std::max(ldegree_, rdegree_), Evaluator>(
       left.coefficients_ + right.coefficients_);
 }
 
@@ -296,13 +296,13 @@ template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument,
-                          std_max(ldegree_, rdegree_), Evaluator>
+                          std::max(ldegree_, rdegree_), Evaluator>
 operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
   return PolynomialInMonomialBasis<Value, Argument,
-                                   std_max(ldegree_, rdegree_), Evaluator>(
+                                   std::max(ldegree_, rdegree_), Evaluator>(
       left.coefficients_ - right.coefficients_);
 }
 
