@@ -18,19 +18,19 @@ Pair<T1, T2>::Pair(T1 const& t1, T2 const& t2)
 
 template<typename T1, typename T2>
 Pair<T1, T2> Pair<T1, T2>::operator+(
-    typename vector_of<Pair>::type const& right) const {
+    typename vector_of<Pair<T1, T2>>::type const& right) const {
   return Pair<T1, T2>(t1_ + right.t1_, t2_ + right.t2_);
 }
 
 template<typename T1, typename T2>
 Pair<T1, T2> Pair<T1, T2>::operator-(
-    typename vector_of<Pair>::type const& right) const {
+    typename vector_of<Pair<T1, T2>>::type const& right) const {
   return Pair<T1, T2>(t1_ - right.t1_, t2_ - right.t2_);
 }
 
 template<typename T1, typename T2>
 Pair<T1, T2>& Pair<T1, T2>::operator+=(
-    typename vector_of<Pair>::type const& right) {
+    typename vector_of<Pair<T1, T2>>::type const& right) {
   t1_ += right.t1_;
   t2_ += right.t2_;
   return *this;
@@ -38,7 +38,7 @@ Pair<T1, T2>& Pair<T1, T2>::operator+=(
 
 template<typename T1, typename T2>
 Pair<T1, T2>& Pair<T1, T2>::operator-=(
-    typename vector_of<Pair>::type const& right) {
+    typename vector_of<Pair<T1, T2>>::type const& right) {
   t1_ -= right.t1_;
   t2_ -= right.t2_;
   return *this;

@@ -23,6 +23,14 @@ using quantities::Derivatives;
 using quantities::Product;
 using quantities::Quotient;
 
+// In Visual Studio 2019 16.2.3 using std::max directly below causes strange
+// ambiguity.  Possibly related to
+// https://developercommunity.visualstudio.com/content/problem/388596/compilation-fails-with-permissive.html.  // NOLINT
+template<typename... Args>
+constexpr auto&& std_max(Args&&... args) {
+  return std::max(std::forward<Args>(args)...);
+}
+
 // |Value| must belong to an affine space.  |Argument| must belong to a ring or
 // to Point based on a ring.
 // TODO(phl): We would like the base case to be the affine case (not limited to
@@ -92,12 +100,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
   template<typename V, typename A, int r, int l,
            template<typename, typename, int> class E>
-  constexpr PolynomialInMonomialBasis<V, A, std::max(r, l), E>
+  constexpr PolynomialInMonomialBasis<V, A, std_max(r, l), E>
   friend operator+(PolynomialInMonomialBasis<V, A, r, E> const& left,
                    PolynomialInMonomialBasis<V, A, l, E> const& right);
   template<typename V, typename A, int r, int l,
            template<typename, typename, int> class E>
-  constexpr PolynomialInMonomialBasis<V, A, std::max(r, l), E>
+  constexpr PolynomialInMonomialBasis<V, A, std_max(r, l), E>
   friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& left,
                    PolynomialInMonomialBasis<V, A, l, E> const& right);
   template<typename S,
@@ -165,7 +173,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument,
-                                    std::max(ldegree_, rdegree_), Evaluator>
+                                    std_max(ldegree_, rdegree_), Evaluator>
 operator+(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
@@ -174,7 +182,7 @@ operator+(
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument,
-                                    std::max(ldegree_, rdegree_), Evaluator>
+                                    std_max(ldegree_, rdegree_), Evaluator>
 operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
