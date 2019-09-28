@@ -69,7 +69,7 @@ LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
-	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi -lc++fs
+	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
@@ -91,7 +91,7 @@ ifeq ($(UNAME_S),Linux)
         SHARED_ARGS += -m32
     endif
     MDTOOL := mdtool
-    LIBS += -lsupc++
+    LIBS += -lsupc++ -lc++fs
     TEST_LIBS += -lsupc++
     SHAREDFLAG := -shared
 endif
