@@ -57,7 +57,7 @@ SymmetricBilinearForm<Scalar, Frame>::operator()(
 
 template<typename Scalar, typename Frame>
 template<typename Eigenframe>
-typename SymmetricBilinearForm<Scalar, Frame>::Eigensystem<Eigenframe>
+typename SymmetricBilinearForm<Scalar, Frame>::template Eigensystem<Eigenframe>
 SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   R3x3Matrix<Scalar> const& A = matrix_;
   auto const I = R3x3Matrix<double>::Identity();

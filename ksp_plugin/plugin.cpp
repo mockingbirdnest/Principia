@@ -543,7 +543,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   // Bind the vessels.  This guarantees that all part subsets are disjoint
   // unions of vessels.
   for (auto const& [_, vessel] : vessels_) {
-    vessel->ForSomePart([&vessel](Part& first_part) {
+    vessel->ForSomePart([&vessel = vessel](Part& first_part) {
       vessel->ForAllParts([&first_part](Part& part) {
         Subset<Part>::Unite(Subset<Part>::Find(first_part),
                             Subset<Part>::Find(part));
@@ -560,7 +560,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     // structure.
     VesselSet grounded_vessels;
     for (auto const& [_, vessel] : vessels_) {
-      vessel->ForSomePart([&vessel, &grounded_vessels](Part& part) {
+      vessel->ForSomePart([&vessel = vessel, &grounded_vessels](Part& part) {
         if (Subset<Part>::Find(part).properties().grounded()) {
           grounded_vessels.insert(vessel.get());
         }
@@ -1497,7 +1497,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
                      DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   auto const [it, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
   CHECK(inserted) << NAMED(part_id);
-  auto deletion_callback = [it, &map = part_id_to_vessel_] {
+  auto deletion_callback = [it = it, &map = part_id_to_vessel_] {
     map.erase(it);
   };
   auto part = make_not_null_unique<Part>(part_id,
