@@ -25,7 +25,7 @@ using quantities::Quotient;
 
 // In Visual Studio 2019 16.2.3 using std::max directly below causes strange
 // ambiguity.  Possibly related to
-// https://developercommunity.visualstudio.com/content/problem/388596/compilation-fails-with-permissive.html.  // NOLINT
+// https://developercommunity.visualstudio.com/content/problem/388596/compilation-fails-with-permissive.html.
 template<typename... Args>
 constexpr auto&& std_max(Args&&... args) {
   return std::max(std::forward<Args>(args)...);
