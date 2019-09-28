@@ -236,7 +236,9 @@ void Plugin::EndInitialization() {
   }
 
   // Establish the parent relationships between the celestials.
-  for (auto const& [celestial_index, celestial] : celestials_) {
+  for (auto const& pair : celestials_) {
+    Index const celestial_index = pair.first;
+    auto const& celestial = pair.second;
     auto const& parent_index = FindOrDie(parents_, celestial_index);
     if (parent_index) {
       not_null<Celestial const*> parent =
@@ -1216,10 +1218,14 @@ void Plugin::WriteToMessage(
   CHECK(!initializing_);
   ephemeris_->Prolong(current_time_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
-  for (auto const& [index, owned_celestial] : celestials_) {
+  for (auto const& pair : celestials_) {
+    Index const index = pair.first;
+    auto const& owned_celestial = pair.second;
     celestial_to_index.emplace(owned_celestial.get(), index);
   }
-  for (auto const& [index, owned_celestial] : celestials_) {
+  for (auto const& pair : celestials_) {
+    Index const index = pair.first;
+    auto const& owned_celestial = pair.second.get();
     auto* const celestial_message = message->add_celestial();
     celestial_message->set_index(index);
     if (owned_celestial->has_parent()) {
@@ -1254,7 +1260,9 @@ void Plugin::WriteToMessage(
     vessel_message->set_loaded(Contains(loaded_vessels_, vessel.get()));
     vessel_message->set_kept(Contains(kept_vessels_, vessel.get()));
   }
-  for (auto const& [part_id, vessel] : part_id_to_vessel_) {
+  for (auto const& pair : part_id_to_vessel_) {
+    PartId const part_id = pair.first;
+    not_null<Vessel*> const vessel = pair.second;
     (*message->mutable_part_id_to_vessel())[part_id] = vessel_to_guid[vessel];
   }
 
@@ -1330,7 +1338,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     CHECK(inserted);
   }
 
-  for (auto const& [part_id, guid] : message.part_id_to_vessel()) {
+  for (auto const& pair : message.part_id_to_vessel()) {
+    PartId const part_id = pair.first;
+    GUID const guid = pair.second;
     auto const& vessel = FindOrDie(plugin->vessels_, guid);
     plugin->part_id_to_vessel_.emplace(part_id, vessel.get());
   }
