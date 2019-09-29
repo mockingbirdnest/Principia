@@ -174,7 +174,7 @@ void DiscreteTrajectory<Frame>::Append(
   if (!timeline_.empty() && timeline_.cbegin()->first == time) {
     LOG(WARNING) << "Append at existing time " << time
                  << ", time range = [" << this->front().time << ", "
-                 << back().time << "]";
+                 << this->back().time << "]";
     return;
   }
   auto it = timeline_.emplace_hint(timeline_.end(),
@@ -188,7 +188,7 @@ void DiscreteTrajectory<Frame>::Append(
     if (timeline_.size() == 1) {
       downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
     } else {
-      this->CheckNoForksBefore(back().time);
+      this->CheckNoForksBefore(this->back().time);
       downsampling_->increment_dense_intervals(timeline_);
       if (downsampling_->reached_max_dense_intervals()) {
         std::vector<TimelineConstIterator> dense_iterators;
@@ -293,7 +293,7 @@ Instant DiscreteTrajectory<Frame>::t_min() const {
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_max() const {
-  return this->Empty() ? InfinitePast : back().time;
+  return this->Empty() ? InfinitePast : this->back().time;
 }
 
 template<typename Frame>

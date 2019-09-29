@@ -167,10 +167,13 @@ class StackTraceDecoder {
     IntPtr handle = new IntPtr(1729);
     SymSetOptions(SYMOPT_LOAD_LINES);
     Win32Check(SymInitializeW(handle, null, fInvadeProcess: false));
+    string principia_dll_path =
+        Path.Combine(principia_directory, "principia.dll");
+    Win32Check(File.Exists(principia_dll_path));
     Win32Check(
         SymLoadModuleExW(handle,
                          IntPtr.Zero,
-                         Path.Combine(principia_directory, "principia.dll"),
+                         principia_dll_path,
                          null,
                          principia_base_address,
                          0,
@@ -226,7 +229,7 @@ class StackTraceDecoder {
 
   private static void PrintUsage() {
     Console.WriteLine("Usage: stacktrace_decoder " +
-                      "<info_file_uri> <principia_directory> " +
+                      "<info_file_uri> <principia_dll_directory> " +
                       "[--unity-crash-at-commit=<sha1>] " +
                       "[--no-comment] [--no-snippet]");
   }

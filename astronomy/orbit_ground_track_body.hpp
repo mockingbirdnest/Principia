@@ -3,6 +3,7 @@
 #include "astronomy/orbit_ground_track.hpp"
 
 #include <limits>
+#include <vector>
 
 #include "physics/apsides.hpp"
 
@@ -27,12 +28,18 @@ Angle CelestialLongitude(Position<PrimaryCentred> const& q) {
   return (q - PrimaryCentred::origin).coordinates().ToSpherical().longitude;
 }
 
-// The resulting angle is not normalized.
-template<typename Iterator, typename Inertial>
-Angle PlanetocentricLongitude(Iterator const& it,
-                              RotatingBody<Inertial> const& primary) {
-  return CelestialLongitude(it->degrees_of_freedom.position()) -
-         primary.AngleAt(it->time) - π / 2 * Radian;
+// The resulting angles are neither normalized nor unwound.
+template<typename PrimaryCentred, typename Inertial>
+std::vector<Angle> PlanetocentricLongitudes(
+    DiscreteTrajectory<PrimaryCentred> const& nodes,
+    RotatingBody<Inertial> const& primary) {
+  std::vector<Angle> longitudes;
+  for (auto const& node : nodes) {
+    longitudes.push_back(
+        CelestialLongitude(node.degrees_of_freedom.position()) -
+        primary.AngleAt(node.time) - π / 2 * Radian);
+  }
+  return longitudes;
 }
 
 // The resulting angle is not normalized.
@@ -63,42 +70,57 @@ Interval<Angle> MeanSolarTimesOfNodes(
   return mean_solar_times;
 }
 
-template<typename PrimaryCentred, typename Inertial>
-Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
-    DiscreteTrajectory<PrimaryCentred> const& nodes,
-    RotatingBody<Inertial> const& primary,
+// Returns the interval spanned by the unwound angles
+//   longitudes_of_equatorial_crossings[n] - initial_offset - n * Δλᴇ,
+// where Δλᴇ is |nominal_recurrence.equatorial_shift()|, and the first angle is
+// in [0, 2π].
+inline Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
+    std::vector<Angle> const& longitudes_of_equatorial_crossings,
     OrbitRecurrence const& nominal_recurrence,
-    std::optional<Angle>& initial_offset) {
+    Angle const& initial_offset) {
   Interval<Angle> reduced_longitudes;
   std::optional<Angle> reduced_longitude;
-  for (auto [node, n] = std::make_pair(nodes.begin(), 0);
-       node != nodes.end();
-       ++node, ++n) {
-    Angle const planetocentric_longitude =
-        PlanetocentricLongitude(node, primary);
-
-    if (!initial_offset.has_value()) {
-      reduced_longitude =
-          Mod(planetocentric_longitude, nominal_recurrence.grid_interval());
-      initial_offset = planetocentric_longitude - *reduced_longitude;
-    } else {
-      Angle const offset_longitude = planetocentric_longitude -
-                                     *initial_offset -
-                                     n * nominal_recurrence.equatorial_shift();
-      reduced_longitude = reduced_longitude.has_value()
-                              ? UnwindFrom(*reduced_longitude, offset_longitude)
-                              : Mod(offset_longitude, 2 * π * Radian);
-    }
+  for (int n = 0; n != longitudes_of_equatorial_crossings.size(); ++n) {
+    Angle const longitude = longitudes_of_equatorial_crossings[n];
+    Angle const offset_longitude =
+        longitude - initial_offset - n * nominal_recurrence.equatorial_shift();
+    reduced_longitude = reduced_longitude.has_value()
+                            ? UnwindFrom(*reduced_longitude, offset_longitude)
+                            : Mod(offset_longitude, 2 * π * Radian);
     reduced_longitudes.Include(*reduced_longitude);
   }
   return reduced_longitudes;
 }
 
+inline Interval<Angle>
+OrbitGroundTrack::EquatorCrossingLongitudes::longitudes_reduced_to_pass(
+    int const pass_index) const {
+  // |shift| applies the number of equatorial shifts corresponding to the pass
+  // number; |reduction| puts the midpoint of the shifted interval in [0, 2π].
+  Angle shift;
+  Interval<Angle> longitudes;
+  if (pass_index % 2 == 1) {
+    shift = ((pass_index - 1) / 2) * nominal_recurrence_.equatorial_shift();
+    longitudes = ascending_longitudes_reduced_to_pass_1_;
+  } else {
+    shift = ((pass_index - 2) / 2) * nominal_recurrence_.equatorial_shift();
+    longitudes = descending_longitudes_reduced_to_pass_2_;
+  }
+  Angle const reduction =
+      -std::floor((longitudes.midpoint() + shift) / (2 * π * Radian)) *
+      (2 * π * Radian);
+  return {longitudes.min + shift + reduction,
+          longitudes.max + shift + reduction};
+}
+
+inline OrbitGroundTrack::EquatorCrossingLongitudes::EquatorCrossingLongitudes(
+    OrbitRecurrence const& nominal_recurrence)
+    : nominal_recurrence_(nominal_recurrence) {}
+
 template<typename PrimaryCentred, typename Inertial>
 OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
     DiscreteTrajectory<PrimaryCentred> const& trajectory,
     RotatingBody<Inertial> const& primary,
-    std::optional<OrbitRecurrence> const& nominal_recurrence,
     std::optional<MeanSun> const& mean_sun) {
   DiscreteTrajectory<PrimaryCentred> ascending_nodes;
   DiscreteTrajectory<PrimaryCentred> descending_nodes;
@@ -119,34 +141,47 @@ OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
           MeanSolarTimesOfNodes(descending_nodes, *mean_sun);
     }
   }
-  if (nominal_recurrence.has_value()) {
-    std::optional<Angle> initial_offset;
-    if (!ascending_nodes.Empty()) {
-      ground_track
-          .reduced_longitudes_of_equator_crossings_of_ascending_passes_ =
-          ReducedLongitudesOfEquatorialCrossings(
-              ascending_nodes, primary, *nominal_recurrence, initial_offset);
-    }
-    if (!descending_nodes.Empty()) {
-      ground_track
-          .reduced_longitudes_of_equator_crossings_of_descending_passes_ =
-          ReducedLongitudesOfEquatorialCrossings(
-              descending_nodes, primary, *nominal_recurrence, initial_offset);
-    }
-  }
+  ground_track.longitudes_of_equator_crossings_of_ascending_passes_ =
+      PlanetocentricLongitudes(ascending_nodes, primary);
+  ground_track.longitudes_of_equator_crossings_of_descending_passes_ =
+      PlanetocentricLongitudes(descending_nodes, primary);
+  ground_track.first_descending_pass_before_first_ascending_pass_ =
+      !ascending_nodes.Empty() && !descending_nodes.Empty() &&
+      descending_nodes.front().time < ascending_nodes.front().time;
   return ground_track;
 }
 
-inline std::optional<Interval<Angle>> const&
-OrbitGroundTrack::reduced_longitudes_of_equator_crossings_of_ascending_passes()
-    const {
-  return reduced_longitudes_of_equator_crossings_of_ascending_passes_;
-}
-
-inline std::optional<Interval<Angle>> const&
-OrbitGroundTrack::reduced_longitudes_of_equator_crossings_of_descending_passes()
-    const {
-  return reduced_longitudes_of_equator_crossings_of_descending_passes_;
+inline OrbitGroundTrack::EquatorCrossingLongitudes
+OrbitGroundTrack::equator_crossing_longitudes(
+    OrbitRecurrence const& nominal_recurrence,
+    int const first_ascending_pass_index) const {
+  EquatorCrossingLongitudes equator_crossings{nominal_recurrence};
+  if (longitudes_of_equator_crossings_of_ascending_passes_.empty()) {
+    return equator_crossings;
+  }
+  Angle const δ = nominal_recurrence.grid_interval();
+  Angle const λ₀ = longitudes_of_equator_crossings_of_ascending_passes_.front();
+  Angle const Δλᴇ = nominal_recurrence.equatorial_shift();
+  Angle initial_offset =
+      std::floor(λ₀ / δ) * δ + ((first_ascending_pass_index - 1) / 2) * Δλᴇ;
+  equator_crossings.ascending_longitudes_reduced_to_pass_1_ =
+      ReducedLongitudesOfEquatorialCrossings(
+          longitudes_of_equator_crossings_of_ascending_passes_,
+          nominal_recurrence,
+          initial_offset);
+  if (first_descending_pass_before_first_ascending_pass_) {
+    // Since the first descending pass is before the first ascending pass, using
+    // the same offset in |ReducedLongitudesOfEquatorialCrossings| would compute
+    // the longitude reduced to pass 0; adjust by one equatorial shift to get
+    // pass 2.
+    initial_offset -= Δλᴇ;
+  }
+  equator_crossings.descending_longitudes_reduced_to_pass_2_ =
+      ReducedLongitudesOfEquatorialCrossings(
+          longitudes_of_equator_crossings_of_descending_passes_,
+          nominal_recurrence,
+          initial_offset);
+  return equator_crossings;
 }
 
 inline std::optional<Interval<Angle>> const&

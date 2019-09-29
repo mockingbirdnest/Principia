@@ -6,6 +6,7 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
+    <ClCompile Include="..\astronomy\standard_product_3.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\base\version.generated.cc" />
     <ClCompile Include="..\journal\profiles.cpp" />
@@ -24,6 +25,7 @@
     <ClCompile Include="..\ksp_plugin\interface_planetarium.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_renderer.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_vessel.cpp" />
+    <ClCompile Include="..\ksp_plugin\orbit_analyser.cpp" />
     <ClCompile Include="..\ksp_plugin\part.cpp" />
     <ClCompile Include="..\ksp_plugin\part_subsets.cpp" />
     <ClCompile Include="..\ksp_plugin\pile_up.cpp" />
@@ -45,6 +47,7 @@
     <ClCompile Include="manœuvre_test.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
     <ClCompile Include="mock_renderer.cpp" />
+    <ClCompile Include="orbit_analyser_test.cpp" />
     <ClCompile Include="part_test.cpp" />
     <ClCompile Include="pile_up_test.cpp" />
     <ClCompile Include="planetarium_test.cpp" />

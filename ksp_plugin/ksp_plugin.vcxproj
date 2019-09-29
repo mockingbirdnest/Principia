@@ -28,6 +28,7 @@
     <ClInclude Include="integrators.hpp" />
     <ClInclude Include="iterators.hpp" />
     <ClInclude Include="iterators_body.hpp" />
+    <ClInclude Include="orbit_analyser.hpp" />
     <ClInclude Include="part_subsets.hpp" />
     <ClInclude Include="pile_up.hpp" />
     <ClInclude Include="flight_plan.hpp" />
@@ -71,6 +72,7 @@
     <ClCompile Include="interface_planetarium.cpp" />
     <ClCompile Include="interface_renderer.cpp" />
     <ClCompile Include="interface_vessel.cpp" />
+    <ClCompile Include="orbit_analyser.cpp" />
     <ClCompile Include="part.cpp" />
     <ClCompile Include="part_subsets.cpp" />
     <ClCompile Include="pile_up.cpp" />

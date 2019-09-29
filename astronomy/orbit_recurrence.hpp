@@ -105,6 +105,9 @@ class OrbitRecurrence final {
   int subcycle_;
 };
 
+bool operator==(OrbitRecurrence const& left, OrbitRecurrence const& right);
+bool operator!=(OrbitRecurrence const& left, OrbitRecurrence const& right);
+
 std::ostream& operator<<(std::ostream& out, OrbitRecurrence const& recurrence);
 
 }  // namespace internal_orbit_recurrence

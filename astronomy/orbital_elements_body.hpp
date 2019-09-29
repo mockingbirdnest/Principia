@@ -43,6 +43,12 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       OsculatingEquinoctialElements(trajectory, primary, secondary);
   orbital_elements.sidereal_period_ =
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
+  if (!IsFinite(orbital_elements.sidereal_period_)) {
+    // Guard against NaN sidereal periods (from hyperbolic orbits).
+    return Status(
+        Error::OUT_OF_RANGE,
+        "sidereal period is " + DebugString(orbital_elements.sidereal_period_));
+  }
   orbital_elements.mean_equinoctial_elements_ =
       MeanEquinoctialElements(orbital_elements.osculating_equinoctial_elements_,
                               orbital_elements.sidereal_period_);

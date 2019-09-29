@@ -19,7 +19,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  
+
   <!--Microsoft C++ stuff.-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 

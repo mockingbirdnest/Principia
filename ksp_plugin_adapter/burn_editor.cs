@@ -43,7 +43,8 @@ class BurnEditor : ScalingRenderer {
         zero_value       : 0.001,
         min_value        : 0,
         formatter        : FormatPreviousCoastDuration,
-        parser           : TryParsePreviousCoastDuration){
+        parser           : TryParsePreviousCoastDuration,
+        field_width      : 7){
         value            = initial_time_ - time_base
     };
     reference_frame_selector_ = new ReferenceFrameSelector(

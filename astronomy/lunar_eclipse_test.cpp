@@ -34,6 +34,7 @@ using quantities::ArcSin;
 using quantities::Length;
 using quantities::Sin;
 using quantities::Time;
+using quantities::astronomy::TerrestrialEquatorialRadius;
 using quantities::si::Day;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -75,10 +76,10 @@ class LunarEclipseTest : public ::testing::Test {
     r_moon_ = solar_system_1950_.mean_radius("Moon");
 
     // We follow A. Danjon, see http://eclipse.gsfc.nasa.gov/LEcat5/shadow.html
-    // and http://www.imcce.fr/langues/fr/ephemerides/phenomenes/eclipses/lune/.
+    // and http://web.archive.org/web/20170915031958/http://www.imcce.fr:80/langues/fr/ephemerides/phenomenes/eclipses/lune/.
     // In particular, this means that we must use the equatorial radius for the
     // Earth, not the mean radius.
-    r_earth_ = 6378.1363 * Kilo(Metre);
+    r_earth_ = TerrestrialEquatorialRadius;
     atmospheric_depth_ = (1.0 / 85.0 - 1.0 / 594.0) * r_earth_;
   }
 

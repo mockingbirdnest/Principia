@@ -3,6 +3,7 @@
 #include "astronomy/orbit_recurrence.hpp"
 
 #include <limits>
+#include <numeric>
 
 #include "base/mod.hpp"
 #include "geometry/sign.hpp"
@@ -20,11 +21,12 @@ inline OrbitRecurrence::OrbitRecurrence(int const νₒ,
                                         int const Dᴛₒ,
                                         int const Cᴛₒ)
     : νₒ_(νₒ), Dᴛₒ_(Dᴛₒ), Cᴛₒ_(Cᴛₒ) {
-  CHECK_NE(Cᴛₒ, 0);
+  CHECK_NE(Cᴛₒ, 0) << *this;
   if (νₒ != 0) {
-    CHECK_EQ(Sign(νₒ), Sign(Cᴛₒ));
+    CHECK_EQ(Sign(νₒ), Sign(Cᴛₒ)) << *this;
   }
-  CHECK_LE(Abs(2 * Dᴛₒ), Abs(Cᴛₒ));
+  CHECK_LE(Abs(2 * Dᴛₒ), Abs(Cᴛₒ)) << *this;
+  CHECK_EQ(std::gcd(Dᴛₒ, Cᴛₒ), 1) << *this;
 
   int const sign_Cᴛₒ = Sign(Cᴛₒ) * 1;
   int& Eᴛₒ = subcycle_;
@@ -112,8 +114,22 @@ inline int OrbitRecurrence::subcycle() const {
   return subcycle_;
 }
 
+inline bool operator==(OrbitRecurrence const& left,
+                       OrbitRecurrence const& right) {
+  return left.νₒ() == right.νₒ() &&
+         left.Dᴛₒ() == right.Dᴛₒ() &&
+         left.Cᴛₒ() == right.Cᴛₒ();
+}
+
+inline bool operator!=(OrbitRecurrence const& left,
+                       OrbitRecurrence const& right) {
+  return left.νₒ() != right.νₒ() ||
+         left.Dᴛₒ() != right.Dᴛₒ() ||
+         left.Cᴛₒ() != right.Cᴛₒ();
+}
+
 inline std::ostream& operator<<(std::ostream& out,
-  OrbitRecurrence const& recurrence) {
+                                OrbitRecurrence const& recurrence) {
   return out << "[" << recurrence.νₒ() << "; " << recurrence.Dᴛₒ() << "; "
              << recurrence.Cᴛₒ() << "]";
 }
