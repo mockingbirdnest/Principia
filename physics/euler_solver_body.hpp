@@ -66,6 +66,9 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   DCHECK_LE(Square<AngularMomentum>(), Δ₁);
   DCHECK_LE(Square<AngularMomentum>(), Δ₃);
 
+  auto const G² =  initial_angular_momentum_.Norm²();
+  auto const two_T = m.x * m.x / I₁_ + m.y * m.y / I₂_ + m.z * m.z / I₃_;
+
   B₁₃_ = Sqrt(I₁_ * Δ₃ / I₃₁);
   B₃₁_ = Sqrt(I₃_ * Δ₁ / I₃₁);
 
@@ -73,7 +76,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   // in a way that reduces cancellations when k is close to 1.
   if (Δ₂ < Square<AngularMomentum>()) {
     B₂₁_ = Sqrt(I₂_ * Δ₁ / I₂₁);
-    n_ = 1 / B₂₃_;  //?
     mc_ = -Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_);
     λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁_ * I₂_ * I₃_));
@@ -82,8 +84,11 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     } else {
       λ₃_ = -λ₃_;
     }
-    ψ_offset_ = EllipticΠ(-ν_, n_, mc_);
-    ψ_multiplier_ = Δ₂ / (λ₃_ * I₂_);  //?
+    auto const B₂₃² = I₂_ * Δ₃ / I₃₂;
+    n_ = G² / B₂₃²;
+    ψ_Π_offset = EllipticΠ(-ν_, n_, mc_);
+    ψ_Π_multiplier_ = Δ₂ / (λ₃_ * I₂_ * G_);
+    ψ_t_multiplier_ = two_T / G_;
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
     B₂₃_ = Sqrt(I₂_ * Δ₃ / I₃₂);
@@ -104,7 +109,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       DCHECK_EQ(MomentOfInertia(), I₃₂);
       formula_ = Formula::Sphere;
     } else {
-      G_ =  initial_angular_momentum_.Norm();
+      G_ =  Sqrt(G²);
       ν_ = -ArcTanh(m.y / G_);
       λ₂_ = Sqrt(Δ₁ * Δ₃ / (I₁_ * I₃_)) / G_;
       if (m.x < AngularMomentum()) {
@@ -168,8 +173,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     case Formula::i: {
       // Note that the sign of λ has been integrated in λ₃_ at construction.
       Angle const φ = JacobiAmplitude(λ₃_ * Δt - ν_, mc_);
-      Angle const ψ =
-          2 * T_ * Δt + ψ_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_offset_);
+      Angle const ψ = ψ_t_multiplier_ * Δt +
+                      ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
     }
     case Formula::ii: {
     }

@@ -18,7 +18,6 @@ using geometry::Rotation;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
-using quantities::Inverse;
 using quantities::MomentOfInertia;
 using quantities::NaN;
 using quantities::Product;
@@ -27,6 +26,7 @@ using quantities::Time;
 // A solver for Euler's rotation equations.  It follows Celledoni, Fassò,
 // Säfström and Zanna, 2007, The exact computation of the free rigid body motion
 // and its use in splitting method.
+//TODO(phl):Fix all the comments.
 // NOTE(phl): There are a number of errors in the formulæ in Proposition 2.1, as
 // can be seen by differentiation:
 //   In case (i) λ should be defined as -σ λ₃.
@@ -98,8 +98,9 @@ class EulerSolver {
   double n_ = NaN<double>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();
-  Angle ψ_offset_= NaN<Angle>();
-  Inverse<Time> ψ_multiplier_ = NaN<Inverse<Time>>();
+  Angle ψ_Π_offset = NaN<Angle>();
+  double ψ_Π_multiplier_ = NaN<double>();
+  AngularFrequency ψ_t_multiplier_ = NaN<AngularFrequency>();
 };
 
 }  // namespace internal_euler_solver
