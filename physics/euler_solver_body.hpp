@@ -203,7 +203,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
               (angle + n_ * std::log(n_ * Sinh(angle) - Cosh(angle)) * Radian -
                ψ_Π_offset);
     }
-    case Formula::Sphere : {
+    case Formula::Sphere: {
     }
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
