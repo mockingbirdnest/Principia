@@ -63,7 +63,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   // The formulæ for the Δs in Celledoni cannot be used directly because of
   // cancellations.
   auto const Δ₁ = m.y * m.y * I₂₁ / I₂ + m.z * m.z * I₃₁ / I₃;
-  auto const Δ₂ = m.x * m.x * I₁₂ / I₁ + m.z * m.z * I₃₂ / I₃;
+  auto const Δ₂ = m.z * m.z * I₃₂ / I₃ + m.x * m.x * I₁₂ / I₁;
   auto const Δ₃ = m.x * m.x * I₁₃ / I₁ + m.y * m.y * I₂₃ / I₂;
   DCHECK_LE(Square<AngularMomentum>(), Δ₁);
   DCHECK_LE(Δ₃, Square<AngularMomentum>());
@@ -73,7 +73,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
   DCHECK_LE(Square<AngularMomentum>(), B₂₁²);
 
-  B₁₃_ = Sqrt(-I₁ * Δ₃ / I₃₁);
+  B₁₃_ = Sqrt(I₁ * Δ₃ / I₁₃);
   B₃₁_ = Sqrt(I₃ * Δ₁ / I₃₁);
 
   auto const G² =  initial_angular_momentum_.Norm²();
@@ -85,7 +85,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     B₂₁_ = Sqrt(B₂₁²);
     mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y * B₃₁_, m.z * B₂₁_), mc_);
-    λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁ * I₂ * I₃));
+    λ₃_ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
     if (m.x < AngularMomentum()) {
       B₁₃_ = -B₁₃_;
     } else {
