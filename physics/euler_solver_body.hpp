@@ -69,13 +69,18 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   auto const G² =  initial_angular_momentum_.Norm²();
   auto const two_T = m.x * m.x / I₁_ + m.y * m.y / I₂_ + m.z * m.z / I₃_;
 
+  auto const B₂₃² = I₂_ * Δ₃ / I₃₂;
+  auto const B₂₁² = I₂_ * Δ₁ / I₂₁;
+  DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
+  DCHECK_LE(Square<AngularMomentum>(), B₂₁²);
+
   B₁₃_ = Sqrt(I₁_ * Δ₃ / I₃₁);
   B₃₁_ = Sqrt(I₃_ * Δ₁ / I₃₁);
 
   // Note that Celledoni et al. give k, but we need mc = 1 - k^2.  We write mc
   // in a way that reduces cancellations when k is close to 1.
   if (Δ₂ < Square<AngularMomentum>()) {
-    B₂₁_ = Sqrt(I₂_ * Δ₁ / I₂₁);
+    B₂₁_ = Sqrt(B₂₁²);
     mc_ = -Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y / B₂₁_, m.z / B₃₁_), mc_);
     λ₃_ = Sqrt(Δ₃ * I₂₁ / (I₁_ * I₂_ * I₃_));
@@ -84,15 +89,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     } else {
       λ₃_ = -λ₃_;
     }
-    auto const B₂₃² = -I₂_ * Δ₃ / I₃₂;
-    DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
     n_ = G² / B₂₃²;
     ψ_Π_offset = EllipticΠ(-ν_, n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ₃_ * I₂_ * G_);
     ψ_t_multiplier_ = two_T / G_;
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
-    B₂₃_ = Sqrt(I₂_ * Δ₃ / I₃₂);
+    B₂₃_ = Sqrt(B₂₃²);
     mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂);
     ν_ = EllipticF(ArcTan(m.y / B₂₃_, m.x / B₁₃_), mc_);
     λ₁_ = Sqrt(Δ₁ * I₃₂ / (I₁_ * I₂_ * I₃_));
@@ -101,8 +104,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     } else {
       λ₁_ = -λ₁_;
     }
-    auto const B₂₁² = I₂_ * Δ₁ / I₂₁;
-    DCHECK_LE(Square<AngularMomentum>(), B₂₁²);
     n_ = G² / B₂₁²;
     ψ_Π_offset = EllipticΠ(-ν_, n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ₁_ * I₂_ * G_);
@@ -127,6 +128,9 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
         B₃₁_ = -B₃₁_;
         λ₂_ = -λ₂_;
       }
+      // Not quite an elliptic integral characteristic, but we'll stick to that
+      // notation.
+      n_ = G² * G² / (B₂₁² * B₂₃²);
       formula_ = Formula::iii;
     }
   }
