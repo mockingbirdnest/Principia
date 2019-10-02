@@ -42,13 +42,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     AngularMomentumBivector const& initial_angular_momentum,
     AttitudeRotation const& initial_attitude,
     Instant const& initial_time)
-    : moments_of_inertia_(moments_of_inertia),
-      initial_angular_momentum_(initial_angular_momentum),
+    : initial_angular_momentum_(initial_angular_momentum),
       initial_attitude_(initial_attitude),
       initial_time_(initial_time) {
   auto const& I₁ = moments_of_inertia.x;
   auto const& I₂ = moments_of_inertia.y;
-  auto const& I₃ = moments_of_inertia.z;  CHECK_LE(I₁, I₂);
+  auto const& I₃ = moments_of_inertia.z;
+  CHECK_LE(I₁, I₂);
   CHECK_LE(I₂, I₃);
 
   auto const& m = initial_angular_momentum.coordinates();
@@ -68,7 +68,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   DCHECK_LE(Square<AngularMomentum>(), Δ₁);
   DCHECK_LE(Δ₃, Square<AngularMomentum>());
 
-  auto const B₂₃² = I₂ * Δ₃ / I₃₂;
+  auto const B₂₃² = I₂ * Δ₃ / I₂₃;
   auto const B₂₁² = I₂ * Δ₁ / I₂₁;
   DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
   DCHECK_LE(Square<AngularMomentum>(), B₂₁²);
