@@ -84,7 +84,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     } else {
       λ₃_ = -λ₃_;
     }
-    auto const B₂₃² = I₂_ * Δ₃ / I₃₂;
+    auto const B₂₃² = -I₂_ * Δ₃ / I₃₂;
+    DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
     n_ = G² / B₂₃²;
     ψ_Π_offset = EllipticΠ(-ν_, n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ₃_ * I₂_ * G_);
@@ -100,6 +101,12 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     } else {
       λ₁_ = -λ₁_;
     }
+    auto const B₂₁² = I₂_ * Δ₁ / I₂₁;
+    DCHECK_LE(Square<AngularMomentum>(), B₂₁²);
+    n_ = G² / B₂₁²;
+    ψ_Π_offset = EllipticΠ(-ν_, n_, mc_);
+    ψ_Π_multiplier_ = Δ₂ / (λ₁_ * I₂_ * G_);
+    ψ_t_multiplier_ = two_T / G_;
     formula_ = Formula::ii;
   } else {
     CHECK_EQ(Square<AngularMomentum>(), Δ₂);
@@ -177,6 +184,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
                       ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
     }
     case Formula::ii: {
+      // Note that the sign of λ has been integrated in λ₁_ at construction.
+      Angle const φ = JacobiAmplitude(λ₁_ * Δt - ν_, mc_);
+      Angle const ψ = ψ_t_multiplier_ * Δt +
+                      ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
     }
     case Formula::iii: {
     }
