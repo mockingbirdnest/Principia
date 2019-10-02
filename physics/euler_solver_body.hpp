@@ -25,6 +25,7 @@ using quantities::ArcTan;
 using quantities::ArcTanh;
 using quantities::Cosh;
 using quantities::Pow;
+using quantities::Sinh;
 using quantities::Tanh;
 using quantities::Energy;
 using quantities::Inverse;
@@ -78,6 +79,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
 
   auto const G² =  initial_angular_momentum_.Norm²();
   auto const two_T = m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃;
+  ψ_t_multiplier_ = two_T / G_;
 
   // Note that Celledoni et al. give k, but we need mc = 1 - k^2.  We write mc
   // in a way that reduces cancellations when k is close to 1.
@@ -94,7 +96,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     n_ = G² / B₂₃²;
     ψ_Π_offset = EllipticΠ(-ν_, n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ₃_ * I₂ * G_);
-    ψ_t_multiplier_ = two_T / G_;
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
     B₂₃_ = Sqrt(B₂₃²);
@@ -109,7 +110,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     n_ = G² / B₂₁²;
     ψ_Π_offset = EllipticΠ(-ν_, n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ₁_ * I₂ * G_);
-    ψ_t_multiplier_ = two_T / G_;
     formula_ = Formula::ii;
   } else {
     CHECK_EQ(Square<AngularMomentum>(), Δ₂);
@@ -133,6 +133,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       // Not quite an elliptic integral characteristic, but we'll stick to that
       // notation.
       n_ = G² * G² / (B₂₁² * B₂₃²);
+      ψ_Π_offset = (-ν_ + n_ * std::log(n_ * Sinh(-ν_) - Cosh(-ν_)) * Radian);
+      ψ_Π_multiplier_ = Δ₂ / (λ₂_ * I₂ * G_ * (1 - n_ * n_));
       formula_ = Formula::iii;
     }
   }
@@ -184,18 +186,22 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
   Time const Δt = time - initial_time_;
   switch (formula_) {
     case Formula::i: {
-      // Note that the sign of λ has been integrated in λ₃_ at construction.
       Angle const φ = JacobiAmplitude(λ₃_ * Δt - ν_, mc_);
       Angle const ψ = ψ_t_multiplier_ * Δt +
                       ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
     }
     case Formula::ii: {
-      // Note that the sign of λ has been integrated in λ₁_ at construction.
       Angle const φ = JacobiAmplitude(λ₁_ * Δt - ν_, mc_);
       Angle const ψ = ψ_t_multiplier_ * Δt +
                       ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
     }
     case Formula::iii: {
+      Angle const angle = λ₂_ * Δt - ν_;
+      Angle const ψ =
+          ψ_t_multiplier_ * Δt +
+          ψ_Π_multiplier_ *
+              (angle + n_ * std::log(n_ * Sinh(angle) - Cosh(angle)) * Radian -
+               ψ_Π_offset);
     }
     case Formula::Sphere : {
     }
