@@ -6,6 +6,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
@@ -68,6 +69,7 @@ class EulerSolver {
   };
 
   // Construction parameters.
+  R3Element<MomentOfInertia> const moments_of_inertia_;
   AngularMomentumBivector const initial_angular_momentum_;
   AttitudeRotation const initial_attitude_;
   Instant const initial_time_;

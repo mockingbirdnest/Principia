@@ -15,6 +15,7 @@ namespace principia {
 namespace physics {
 namespace internal_euler_solver {
 
+using geometry::Commutator;
 using geometry::Vector;
 using numerics::EllipticF;
 using numerics::EllipticΠ;
@@ -24,16 +25,18 @@ using quantities::Abs;
 using quantities::ArcTan;
 using quantities::ArcTanh;
 using quantities::Cosh;
-using quantities::Pow;
-using quantities::Sinh;
-using quantities::Tanh;
 using quantities::Energy;
 using quantities::Inverse;
+using quantities::Pow;
+using quantities::Quotient;
+using quantities::Sinh;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
 using quantities::SIUnit;
+using quantities::Tanh;
 using quantities::Time;
+using quantities::Variation;
 using quantities::si::Joule;
 using quantities::si::Radian;
 
@@ -43,7 +46,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     AngularMomentumBivector const& initial_angular_momentum,
     AttitudeRotation const& initial_attitude,
     Instant const& initial_time)
-    : initial_angular_momentum_(initial_angular_momentum),
+    : moments_of_inertia_(moments_of_inertia),
+      initial_angular_momentum_(initial_angular_momentum),
       initial_attitude_(initial_attitude),
       initial_time_(initial_time) {
   auto const& I₁ = moments_of_inertia.x;
@@ -55,11 +59,11 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   auto const& m = initial_angular_momentum.coordinates();
 
   auto const I₁₂ = I₁ - I₂;
-  auto const I₁₃ = I₁ - I₃;
-  auto const I₂₁ = -I₁₂;
   auto const I₂₃ = I₂ - I₃;
-  auto const I₃₁ = -I₁₃;
+  auto const I₃₁ = I₃ - I₁;
+  auto const I₂₁ = -I₁₂;
   auto const I₃₂ = -I₂₃;
+  auto const I₁₃ = -I₃₁;
 
   // The formulæ for the Δs in Celledoni cannot be used directly because of
   // cancellations.
@@ -182,7 +186,17 @@ typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     AngularMomentumBivector const& angular_momentum,
     Instant const& time) const {
-  auto const& m = angular_momentum.coordinates();
+  auto const& m = angular_momentum;
+  auto const& m_coordinates = m.coordinates();
+
+  auto const& I₁ = moments_of_inertia_.x;
+  auto const& I₂ = moments_of_inertia_.y;
+  auto const& I₃ = moments_of_inertia_.z;
+  Bivector<Quotient<AngularMomentum, MomentOfInertia>, PrincipalAxesFrame> const
+      ω({m_coordinates.x / I₁, m_coordinates.y / I₂, m_coordinates.z / I₃});
+  Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
+      Commutator(m, ω) / Radian;
+
   Time const Δt = time - initial_time_;
   switch (formula_) {
     case Formula::i: {
