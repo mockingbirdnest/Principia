@@ -1,4 +1,5 @@
 ﻿
+
 #pragma once
 
 #include "physics/euler_solver.hpp"
@@ -16,6 +17,7 @@ namespace physics {
 namespace internal_euler_solver {
 
 using geometry::Commutator;
+using geometry::Normalize;
 using geometry::Vector;
 using numerics::EllipticF;
 using numerics::EllipticΠ;
@@ -41,6 +43,33 @@ using quantities::si::Joule;
 using quantities::si::Radian;
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
+Rotation<InertialFrame, PrincipalAxesFrame> Compute𝒫Rotation(
+    R3Element<MomentOfInertia> const& moments_of_inertia,
+    Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum) {
+  auto const& m = angular_momentum;
+  auto const& m_coordinates = m.coordinates();
+
+  // Compute ṁ using the Euler equation.
+  auto const& I₁ = moments_of_inertia.x;
+  auto const& I₂ = moments_of_inertia.y;
+  auto const& I₃ = moments_of_inertia.z;
+  Bivector<Quotient<AngularMomentum, MomentOfInertia>, PrincipalAxesFrame> const
+      ω({m_coordinates.x / I₁, m_coordinates.y / I₂, m_coordinates.z / I₃});
+  Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
+      Commutator(m, ω) / Radian;
+
+  // Construct the orthonormal frame ℬₜ.
+  auto const m_normalized = Normalize(m);
+  auto const v = Normalize(ṁ);
+  auto const w = Commutator(m_normalized, v);
+
+  // 𝒫(m_normalized) = {0, 0, 1} , etc.
+  Rotation<InertialFrame, PrincipalAxesFrame> const 𝒫(v, w, m_normalized);
+
+  return 𝒫;
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     R3Element<MomentOfInertia> const& moments_of_inertia,
     AngularMomentumBivector const& initial_angular_momentum,
@@ -49,10 +78,14 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     : moments_of_inertia_(moments_of_inertia),
       initial_angular_momentum_(initial_angular_momentum),
       initial_attitude_(initial_attitude),
-      initial_time_(initial_time) {
-  auto const& I₁ = moments_of_inertia.x;
-  auto const& I₂ = moments_of_inertia.y;
-  auto const& I₃ = moments_of_inertia.z;
+      initial_time_(initial_time),
+      𝒫ₜ₀_inverse_(Compute𝒫Rotation<InertialFrame, PrincipalAxesFrame>(
+                       moments_of_inertia_,
+                       initial_angular_momentum_)
+                       .Inverse()) {
+  auto const& I₁ = moments_of_inertia_.x;
+  auto const& I₂ = moments_of_inertia_.y;
+  auto const& I₃ = moments_of_inertia_.z;
   CHECK_LE(I₁, I₂);
   CHECK_LE(I₂, I₃);
 
@@ -186,43 +219,42 @@ typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     AngularMomentumBivector const& angular_momentum,
     Instant const& time) const {
-  auto const& m = angular_momentum;
-  auto const& m_coordinates = m.coordinates();
-
-  auto const& I₁ = moments_of_inertia_.x;
-  auto const& I₂ = moments_of_inertia_.y;
-  auto const& I₃ = moments_of_inertia_.z;
-  Bivector<Quotient<AngularMomentum, MomentOfInertia>, PrincipalAxesFrame> const
-      ω({m_coordinates.x / I₁, m_coordinates.y / I₂, m_coordinates.z / I₃});
-  Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
-      Commutator(m, ω) / Radian;
+  Rotation<InertialFrame, PrincipalAxesFrame> const 𝒫ₜ =
+      Compute𝒫Rotation<InertialFrame, PrincipalAxesFrame>(moments_of_inertia_,
+                                                          angular_momentum);
 
   Time const Δt = time - initial_time_;
+  Angle ψ;
   switch (formula_) {
     case Formula::i: {
       Angle const φ = JacobiAmplitude(λ₃_ * Δt - ν_, mc_);
-      Angle const ψ = ψ_t_multiplier_ * Δt +
-                      ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
+      ψ = ψ_t_multiplier_ * Δt +
+          ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
+      break;
     }
     case Formula::ii: {
       Angle const φ = JacobiAmplitude(λ₁_ * Δt - ν_, mc_);
-      Angle const ψ = ψ_t_multiplier_ * Δt +
-                      ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
+      ψ = ψ_t_multiplier_ * Δt +
+          ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
+      break;
     }
     case Formula::iii: {
       Angle const angle = λ₂_ * Δt - ν_;
-      Angle const ψ =
-          ψ_t_multiplier_ * Δt +
+      ψ = ψ_t_multiplier_ * Δt +
           ψ_Π_multiplier_ *
               (angle + n_ * std::log(n_ * Sinh(angle) - Cosh(angle)) * Radian -
                ψ_Π_offset);
+      break;
     }
     case Formula::Sphere: {
     }
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
   };
-  return AttitudeRotation::Identity();
+  Bivector<double, PrincipalAxesFrame> const e₃({0, 0, 1});
+  Rotation<PrincipalAxesFrame, PrincipalAxesFrame> const 𝒴ₜ(ψ, e₃);
+
+  return 𝒫ₜ₀_inverse_ * (𝒴ₜ * 𝒫ₜ);
 }
 
 }  // namespace internal_euler_solver

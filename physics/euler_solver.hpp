@@ -73,6 +73,7 @@ class EulerSolver {
   AngularMomentumBivector const initial_angular_momentum_;
   AttitudeRotation const initial_attitude_;
   Instant const initial_time_;
+  Rotation<PrincipalAxesFrame, InertialFrame> const 𝒫ₜ₀_inverse_;
 
   // Amusingly, the formula to use is a constant of motion.
   Formula formula_;
