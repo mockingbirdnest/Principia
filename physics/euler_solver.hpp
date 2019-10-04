@@ -39,7 +39,10 @@ class EulerSolver {
   static_assert(InertialFrame::is_inertial);
  public:
   using AngularMomentumBivector = Bivector<AngularMomentum, PrincipalAxesFrame>;
-  using AttitudeRotation = Rotation<InertialFrame, PrincipalAxesFrame>;
+
+  // A rotation that transforms the principal axes of the body at t₀ into their
+  // position at t.
+  using AttitudeRotation = Rotation<InertialFrame, InertialFrame>;
 
   // Constructs a solver for a body with the given moments_of_inertia in its
   // principal axes frame.  The moments must be in increasing order.  At

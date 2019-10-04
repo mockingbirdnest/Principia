@@ -254,7 +254,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
   Bivector<double, PrincipalAxesFrame> const e₃({0, 0, 1});
   Rotation<PrincipalAxesFrame, PrincipalAxesFrame> const 𝒴ₜ(ψ, e₃);
 
-  return 𝒫ₜ₀_inverse_ * (𝒴ₜ * 𝒫ₜ);
+  return 𝒫ₜ₀_inverse_ * 𝒴ₜ * 𝒫ₜ;
 }
 
 }  // namespace internal_euler_solver
