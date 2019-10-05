@@ -39,10 +39,7 @@ class EulerSolver {
   static_assert(InertialFrame::is_inertial);
  public:
   using AngularMomentumBivector = Bivector<AngularMomentum, PrincipalAxesFrame>;
-
-  // A rotation that transforms the principal axes of the body at t₀ into their
-  // position at t.
-  using AttitudeRotation = Rotation<InertialFrame, InertialFrame>;
+  using AttitudeRotation = Rotation<PrincipalAxesFrame, InertialFrame>;
 
   // Constructs a solver for a body with the given moments_of_inertia in its
   // principal axes frame.  The moments must be in increasing order.  At
@@ -62,6 +59,9 @@ class EulerSolver {
                               Instant const& time) const;
 
  private:
+  struct ℬₜ;
+  struct ℬʹ;
+
   // The formula to use, following Cellodoni et al., Section 2.2.  They don't
   // have a formula for the spherical case.
   enum class Formula {
@@ -71,12 +71,15 @@ class EulerSolver {
     Sphere
   };
 
+  static Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
+      R3Element<MomentOfInertia> const& moments_of_inertia,
+      Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum);
+
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;
   AngularMomentumBivector const initial_angular_momentum_;
-  AttitudeRotation const initial_attitude_;
   Instant const initial_time_;
-  Rotation<PrincipalAxesFrame, InertialFrame> const 𝒫ₜ₀_inverse_;
+  Rotation<ℬʹ, InertialFrame> const ℛ_;
 
   // Amusingly, the formula to use is a constant of motion.
   Formula formula_;

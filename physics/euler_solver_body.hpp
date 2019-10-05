@@ -17,6 +17,7 @@ namespace physics {
 namespace internal_euler_solver {
 
 using geometry::Commutator;
+using geometry::DefinesFrame;
 using geometry::Normalize;
 using geometry::Vector;
 using numerics::EllipticF;
@@ -43,33 +44,6 @@ using quantities::si::Joule;
 using quantities::si::Radian;
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
-Rotation<InertialFrame, PrincipalAxesFrame> Compute𝒫Rotation(
-    R3Element<MomentOfInertia> const& moments_of_inertia,
-    Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum) {
-  auto const& m = angular_momentum;
-  auto const& m_coordinates = m.coordinates();
-
-  // Compute ṁ using the Euler equation.
-  auto const& I₁ = moments_of_inertia.x;
-  auto const& I₂ = moments_of_inertia.y;
-  auto const& I₃ = moments_of_inertia.z;
-  Bivector<Quotient<AngularMomentum, MomentOfInertia>, PrincipalAxesFrame> const
-      ω({m_coordinates.x / I₁, m_coordinates.y / I₂, m_coordinates.z / I₃});
-  Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
-      Commutator(m, ω) / Radian;
-
-  // Construct the orthonormal frame ℬₜ.
-  auto const m_normalized = Normalize(m);
-  auto const v = Normalize(ṁ);
-  auto const w = Commutator(m_normalized, v);
-
-  // 𝒫(m_normalized) = {0, 0, 1} , etc.
-  Rotation<InertialFrame, PrincipalAxesFrame> const 𝒫(v, w, m_normalized);
-
-  return 𝒫;
-}
-
-template<typename InertialFrame, typename PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     R3Element<MomentOfInertia> const& moments_of_inertia,
     AngularMomentumBivector const& initial_angular_momentum,
@@ -77,12 +51,22 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     Instant const& initial_time)
     : moments_of_inertia_(moments_of_inertia),
       initial_angular_momentum_(initial_angular_momentum),
-      initial_attitude_(initial_attitude),
       initial_time_(initial_time),
-      𝒫ₜ₀_inverse_(Compute𝒫Rotation<InertialFrame, PrincipalAxesFrame>(
-                       moments_of_inertia_,
-                       initial_angular_momentum_)
-                       .Inverse()) {
+      ℛ_([this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
+        auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
+        auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(moments_of_inertia_,
+                                    initial_angular_momentum_).Inverse();
+
+        // This ℛ follows the assumptions in the third paragraph of section 2.3
+        // of [CFSZ07], that is, the inertial frame is identified with the
+        // (initial) principal axes frame.
+        Rotation<ℬʹ, PrincipalAxesFrame> const ℛ = 𝒫ₜ₀⁻¹ * 𝒴ₜ₀⁻¹;
+
+        // The multiplication by initial_attitude makes up for the loss of
+        // generality due to the assumptions in the third paragraph of section
+        // 2.3 of [CFSZ07].
+        return initial_attitude * ℛ;
+      }()) {
   auto const& I₁ = moments_of_inertia_.x;
   auto const& I₂ = moments_of_inertia_.y;
   auto const& I₃ = moments_of_inertia_.z;
@@ -219,9 +203,8 @@ typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     AngularMomentumBivector const& angular_momentum,
     Instant const& time) const {
-  Rotation<InertialFrame, PrincipalAxesFrame> const 𝒫ₜ =
-      Compute𝒫Rotation<InertialFrame, PrincipalAxesFrame>(moments_of_inertia_,
-                                                          angular_momentum);
+  Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ =
+      Compute𝒫ₜ(moments_of_inertia_, angular_momentum);
 
   Time const Δt = time - initial_time_;
   Angle ψ;
@@ -251,10 +234,39 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
   };
-  Bivector<double, PrincipalAxesFrame> const e₃({0, 0, 1});
-  Rotation<PrincipalAxesFrame, PrincipalAxesFrame> const 𝒴ₜ(ψ, e₃);
+  Bivector<double, ℬₜ> const e₃({0, 0, 1});
+  Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₃, DefinesFrame<ℬʹ>{});
 
-  return 𝒫ₜ₀_inverse_ * 𝒴ₜ * 𝒫ₜ;
+  return ℛ_ * 𝒴ₜ * 𝒫ₜ;
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+Rotation<PrincipalAxesFrame,
+         typename EulerSolver<InertialFrame, PrincipalAxesFrame>::ℬₜ>
+EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
+    R3Element<MomentOfInertia> const& moments_of_inertia,
+    Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum) {
+  auto const& m = angular_momentum;
+  auto const& m_coordinates = m.coordinates();
+
+  // Compute ṁ using the Euler equation.
+  auto const& I₁ = moments_of_inertia.x;
+  auto const& I₂ = moments_of_inertia.y;
+  auto const& I₃ = moments_of_inertia.z;
+  Bivector<Quotient<AngularMomentum, MomentOfInertia>, PrincipalAxesFrame> const
+      ω({m_coordinates.x / I₁, m_coordinates.y / I₂, m_coordinates.z / I₃});
+  Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
+      Commutator(m, ω) / Radian;
+
+  // Construct the orthonormal frame ℬₜ.
+  auto const m_normalized = Normalize(m);
+  auto const v = Normalize(ṁ);
+  auto const w = Commutator(m_normalized, v);
+
+  // 𝒫ₜ(m_normalized).coordinates() = {0, 0, 1} , etc.
+  Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ(v, w, m_normalized);
+
+  return 𝒫ₜ;
 }
 
 }  // namespace internal_euler_solver
