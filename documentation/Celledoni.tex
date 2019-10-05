@@ -21,8 +21,9 @@ On an Article by Celledoni et al.%
 \maketitle
 \begin{sloppypar}
 \noindent
-This document provides clarifications, corrections, and accuracy improvements to the formul{\ae} presented in \cite{Celledoni2008}.  It follows the notation
-and conventions of that paper.
+This document provides clarifications, corrections, and accuracy improvements to the formul{\ae} presented in \cite{Celledoni2007}.  It follows the notation
+and conventions of that paper.  Note that the preprint \cite{Celledoni2007} differs in some of the formul{\ae} from the final publication \cite{Celledoni2008},
+and that we follow the former because the latter introduced errors.
 \end{sloppypar}
 
 \section*{Preamble}
@@ -43,7 +44,7 @@ and for the hyperbolic functions (\cite{NistHMF2010}, section 4.34):
 \]
 
 \section*{The equations of motion}
-We start by writing equation (1) of \cite{Celledoni2008} in coordinates.  The coordinates of $\vm$ and $\VectorSymbol{I}$ are defined by:
+We start by writing equation (1) of \cite{Celledoni2007} in coordinates.  The coordinates of $\vm$ and $\VectorSymbol{I}$ are defined by:
 \[
 \vm\DefineAs
 \begin{pmatrix}
@@ -59,7 +60,7 @@ I_1 & 0 & 0 \\ 0 & I_2 & 0 \\ 0 & 0 & I_3
 \]
 with $I_1 \leq I_2 \leq I_3$.
 
-Euler's equation $\TimeDerivative{\vm} = \commutator{m}{\gw}$ can be written in coordinates in the principal axes frame:
+Euler's equation $\TimeDerivative{\vm} = \commutator{\vm}{\VectorSymbol{\gw}}$ can be written in coordinates in the principal axes frame:
 \[
 \TimeDerivative{\vm} =
 \begin{pmatrix}
@@ -79,8 +80,37 @@ thus:
 \end{dcases}
 \label{eqneuler}
 \end{equation}
-\subsection*{Solution of Euler's equation, case (i)}
-Case (i) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is:
+\section*{Solution of Euler's equation}
+The solution of Euler's equation has three cases depending on the initial value of $\vm$ (more precisely, on the sign of
+$\gD_2 = m_1^2 \frac{I_{12}}{I_1} + m_3^2 \frac{I_{32}}{I_3}$, see discussion below).  Figure~\ref{figm} illustrates the 
+possible evolutions of $\vm$. The sphere is the surface $\norm\vm = G$, which is an invariant of motion.  The planes are
+the surfaces $\gD_2 = 0$ and separate different modes of the motion.
+The blue curve is called case (i) in \cite{Celledoni2007}: $\vm$ follows a periodic curve, and when that curve is close to the $m_1$
+axis we have a classical case of precession.  The red curve is case (ii), and again the motion of $\vm$ is periodic and exhibits 
+precession when the curve remains close to the $m_3$ axis.  The green curve is case (iii): $\vm$ takes an infinite amount
+of time to reach the point $\tuple{0, G, 0}$; furthermore, the motion is unstable as any perturbation will move it either to
+the blue or the red region; in this case $\vm$ oscillates between points close to $\tuple{0, G, 0}$ and $\tuple{0, -G, 0}$, which is 
+the Джанибеков effect.
+\begin{figure}[htb!]
+\centering
+\includegraphics[scale=0.45]{Celledoni-m}
+\caption{Possible trajectories of $\vm$: the blue and red curves are cases (i) and (ii), respectively, and correspond to motion
+with precession.  The green curve is the (unstable) case (iii) and any perturbation demonstrates the Джанибеков effect.\label{figm}}
+\end{figure}
+
+The solutions may also be visualized by intersecting the sphere $\norm\vm = 1$ with ellipsoids defined by the value of the kinetic energy $T$,
+which is also a constant of motion.  Since $T = \frac{G^2 - \gD_2}{2 I_2}$, different values of $T$ determine the same modes as above.
+\begin{figure}[htb!]
+\centering
+\includegraphics[scale=0.45]{Celledoni-G-T}
+\caption{Possible trajectories of $\vm$: the sphere is identical to those of Figure~\ref{figm}.
+The ellipsoids are surfaces of equal kinetic energy and intersect the sphere on the blue, red, and green curves depending on the
+value of $T$ .\label{figGT}}
+\end{figure}
+
+In the rest of this section, we derive (corrected) formul{\ae} for the three cases described above.
+\subsection*{Case (i)}
+Case (i) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2007} is:
 \[
 {\vm}_t =
 \begin{pmatrix}
@@ -109,11 +139,11 @@ The last equation of (\ref{solneuleri}) yields the following value for $\gl$:
 The sign change when moving $I_1 - I_2$ under the radical is necessary because $I_1 - I_2 < 0$.
 
 It is straightforward to check that this value of $\gl$ also satisfies the other equations of (\ref{solneuleri}).  Note that it
-differs in sign from the one given by \cite{Celledoni2008}: the sign error is visible in that it does not yield the proper precession 
+differs in sign from the one given by \cite{Celledoni2007}: the sign error is visible in that it does not yield the proper precession 
 direction.
 
-\subsection*{Solution of Euler's equation, case (ii)}
-Case (ii) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is:
+\subsection*{Case (ii)}
+Case (ii) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2007} is:
 \[
 {\vm}_t =
 \begin{pmatrix}
@@ -142,10 +172,10 @@ The first equation of (\ref{solneulerii}) yields the following value for $\gl$:
 Again, note the change of sign due to the fact that $I_2 - I_3 < 0$.  And again, the same value of $\gl$ can be shown to satisfy the other
 equations of (\ref{solneulerii}).
 
-\subsection*{Solution of Euler's equation, case (iii)}
-Case (iii) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2008} is clearly incorrect as it implies that $m_1$ and $m_3$
-always have the same sign, whereas it is straightforward to choose initial conditions where they do not.  Instead, we introduce an extra parameter
-$\gs'' = ±1$ and posit a solution of the form:
+\subsection*{Case (iii)}
+Case (iii) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2007} is clearly incorrect as it implies that $m_1$ and $m_3$
+always have the same sign, whereas it is straightforward to choose initial conditions where they do not (because the separatrix is made of two
+planes, see Figure~\ref{figm}).  Instead, we introduce an extra parameter $\gs'' = ±1$ and posit a solution of the form:
 \[
 {\vm}_t =
 \begin{pmatrix}
@@ -252,7 +282,7 @@ $\gs'$ and $\gs''$ are set to be the signs of $m_{01}$ and $m_{03}$, respectivel
 \]
 
 \subsection*{Implementation considerations}
-Some of the formul{\ae} given by \cite{Celledoni2008} do not lend themselves to an easy implementation or lead to numerical inaccuracies.  We
+Some of the formul{\ae} given by \cite{Celledoni2007} do not lend themselves to an easy implementation or lead to numerical inaccuracies.  We
 describe in this section the modifications we make to these formul{\ae} in our implementation.  We also restore dimensionful formul{\ae} as needed.
 
 \subsubsection*{The quantity $I_{jh}$}
@@ -260,7 +290,7 @@ It is simpler and more efficient to avoid absolute values, so we define:
 \[
 I_{jh} \DefineAs I_j - I_h
 \]
-This is the same quantity as in \cite{Celledoni2008} when $j \geq h$ but it has the opposite sign (it is negative) when $j < h$.
+This is the same quantity as in \cite{Celledoni2007} when $j \geq h$ but it has the opposite sign (it is negative) when $j < h$
 
 \subsubsection*{The quantity $\gD_j$}
 We notice that the computation of $\gD_j$ may entail cancellations, so we go back to the definition of $\norm{\vm}$ and of the kinetic energy:
@@ -291,7 +321,7 @@ $\gD_1 \geq 0$ and $\gD_3 \leq 0$.  $\gD_2$ can have either sign, which correspo
 (iii) ($\gD_2 = 0$).
 
 \subsubsection*{The elliptic modulus}
-For the computation of the elliptic functions and integrals \cite{Celledoni2008} gives the value of the elliptic modulus $k$ but we need the value of
+For the computation of the elliptic functions and integrals \cite{Celledoni2007} gives the value of the elliptic modulus $k$ but we need the value of
 the complementary parameter $m_c = 1 - m$ (see \cite{NistHMF2010}, section 19.1.2 for an overview of the notation).  In case (i) we have:
 \[
 m_c = 1 - k^2 = 1 + \frac{\gD_1 I_{32}}{\gD_3 I_{21}}
@@ -317,7 +347,7 @@ $I_{jh}$ has the physical dimension of an inertial momentum $L^2 M$.  $G$ has th
 the same dimension as $G^2$.  $B_{jh}$ has the same dimension as $\sqrt{\gD_h}$, i.e., the same dimension as $G$.  $\gl_1$ and $\gl_3$ have the
 same dimension as the quotient $\frac{G}{I_j}$, i.e., $T^{-1} A$ which is appropriate for their usage.
 
-This analysis shows that most of the formul{\ae} in \cite{Celledoni2008} have proper physical dimensions, expect for the $1$ in the definition of
+This analysis shows that most of the formul{\ae} in \cite{Celledoni2007} have proper physical dimensions, expect for the $1$ in the definition of
 $\gD_j$ (which should be $G^2$) and for the second coordinate of $\vm$ in case (iii) which should be:
 \[
 m_{2t} = G \HyperbolicTangent\of{-\gn}
