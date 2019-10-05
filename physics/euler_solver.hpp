@@ -62,7 +62,7 @@ class EulerSolver {
   struct ℬₜ;
   struct ℬʹ;
 
-  // The formula to use, following Cellodoni et al., Section 2.2.  They don't
+  // The formula to use, following Celledoni et al., Section 2.2.  They don't
   // have a formula for the spherical case.
   enum class Formula {
     i,
@@ -102,7 +102,7 @@ class EulerSolver {
   double n_ = NaN<double>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();
-  Angle ψ_Π_offset = NaN<Angle>();
+  Angle ψ_Π_offset_ = NaN<Angle>();
   double ψ_Π_multiplier_ = NaN<double>();
   AngularFrequency ψ_t_multiplier_ = NaN<AngularFrequency>();
 };

@@ -75,12 +75,14 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
 
   auto const& m = initial_angular_momentum.coordinates();
 
-  auto const I₁₂ = I₁ - I₂;
-  auto const I₂₃ = I₂ - I₃;
+  // These computations are such that if, say I₁ == I₂, I₂₁ is +0.0 and I₁₂ is
+  // -0.0.
+  auto const I₃₂ = I₃ - I₂;
   auto const I₃₁ = I₃ - I₁;
-  auto const I₂₁ = -I₁₂;
-  auto const I₃₂ = -I₂₃;
+  auto const I₂₁ = I₂ - I₁;
+  auto const I₂₃ = -I₃₂;
   auto const I₁₃ = -I₃₁;
+  auto const I₁₂ = -I₂₁;
 
   // The formulæ for the Δs in Celledoni cannot be used directly because of
   // cancellations.
@@ -99,6 +101,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   B₃₁_ = Sqrt(I₃ * Δ₁ / I₃₁);
 
   auto const G² =  initial_angular_momentum_.Norm²();
+  G_ =  Sqrt(G²);
   auto const two_T = m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃;
   ψ_t_multiplier_ = two_T / G_;
 
@@ -115,7 +118,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       λ₃_ = -λ₃_;
     }
     n_ = G² / B₂₃²;
-    ψ_Π_offset = EllipticΠ(-ν_, n_, mc_);
+    ψ_Π_offset_ = EllipticΠ(-ν_, n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ₃_ * I₂ * G_);
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
@@ -129,7 +132,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       λ₁_ = -λ₁_;
     }
     n_ = G² / B₂₁²;
-    ψ_Π_offset = EllipticΠ(-ν_, n_, mc_);
+    ψ_Π_offset_ = EllipticΠ(-ν_, n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ₁_ * I₂ * G_);
     formula_ = Formula::ii;
   } else {
@@ -140,7 +143,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       DCHECK_EQ(MomentOfInertia(), I₃₂);
       formula_ = Formula::Sphere;
     } else {
-      G_ =  Sqrt(G²);
       ν_ = -ArcTanh(m.y / G_);
       λ₂_ = Sqrt(-Δ₁ * Δ₃ / (I₁ * I₃)) / G_;
       if (m.x < AngularMomentum()) {
@@ -154,7 +156,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       // Not quite an elliptic integral characteristic, but we'll stick to that
       // notation.
       n_ = G² * G² / (B₂₁² * B₂₃²);
-      ψ_Π_offset = (-ν_ + n_ * std::log(n_ * Sinh(-ν_) - Cosh(-ν_)) * Radian);
+      ψ_Π_offset_ = (-ν_ + n_ * std::log(n_ * Sinh(-ν_) - Cosh(-ν_)) * Radian);
       ψ_Π_multiplier_ = Δ₂ / (λ₂_ * I₂ * G_ * (1 - n_ * n_));
       formula_ = Formula::iii;
     }
@@ -212,13 +214,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     case Formula::i: {
       Angle const φ = JacobiAmplitude(λ₃_ * Δt - ν_, mc_);
       ψ = ψ_t_multiplier_ * Δt +
-          ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
+          ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset_);
       break;
     }
     case Formula::ii: {
       Angle const φ = JacobiAmplitude(λ₁_ * Δt - ν_, mc_);
       ψ = ψ_t_multiplier_ * Δt +
-          ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset);
+          ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset_);
       break;
     }
     case Formula::iii: {
@@ -226,7 +228,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       ψ = ψ_t_multiplier_ * Δt +
           ψ_Π_multiplier_ *
               (angle + n_ * std::log(n_ * Sinh(angle) - Cosh(angle)) * Radian -
-               ψ_Π_offset);
+               ψ_Π_offset_);
       break;
     }
     case Formula::Sphere: {
@@ -259,6 +261,12 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
       Commutator(m, ω) / Radian;
 
   // Construct the orthonormal frame ℬₜ.
+  if (m.Norm() == AngularMomentum()) {
+  LOG(FATAL)<<"here";
+  }
+  if (ṁ.Norm() == Variation<AngularMomentum>()) {
+  LOG(FATAL)<<"here";
+  }
   auto const m_normalized = Normalize(m);
   auto const v = Normalize(ṁ);
   auto const w = Commutator(m_normalized, v);
