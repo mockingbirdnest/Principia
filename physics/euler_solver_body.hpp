@@ -113,6 +113,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y * B₃₁_, m.z * B₂₁_), mc_);
     auto const λ₃ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
+    // TODO(phl): These tests on the signs of coordinates should probably handle
+    // -0.0 correctly.
     if (m.x < AngularMomentum()) {
       σB₁₃_ = -B₁₃_;
       λ_ = λ₃;
