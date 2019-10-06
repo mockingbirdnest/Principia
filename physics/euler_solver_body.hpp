@@ -1,5 +1,4 @@
 ﻿
-
 #pragma once
 
 #include "physics/euler_solver.hpp"
@@ -84,7 +83,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   auto const I₁₃ = -I₃₁;
   auto const I₁₂ = -I₂₁;
 
-  // The formulæ for the Δs in Celledoni cannot be used directly because of
+  // The formulæ for the Δs in [CFSZ07] cannot be used directly because of
   // cancellations.
   auto const Δ₁ = m.y * m.y * I₂₁ / I₂ + m.z * m.z * I₃₁ / I₃;
   auto const Δ₂ = m.z * m.z * I₃₂ / I₃ + m.x * m.x * I₁₂ / I₁;
@@ -104,7 +103,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   auto const two_T = m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃;
   ψ_t_multiplier_ = two_T / G_;
 
-  // Note that Celledoni et al. give k, but we need mc = 1 - k^2.  We write mc
+  // Note that [CFSZ07] et al. give k, but we need mc = 1 - k^2.  We write mc
   // in a way that reduces cancellations when k is close to 1.
   if (Δ₂ < Square<AngularMomentum>()) {
     DCHECK_LE(Square<AngularMomentum>(), B₂₃²);

@@ -26,14 +26,8 @@ using quantities::Time;
 
 // A solver for Euler's rotation equations.  It follows Celledoni, Fassò,
 // Säfström and Zanna, 2007, The exact computation of the free rigid body motion
-// and its use in splitting method.
-//TODO(phl):Fix all the comments.
-// NOTE(phl): There are a number of errors in the formulæ in Proposition 2.1, as
-// can be seen by differentiation:
-//   In case (i) λ should be defined as -σ λ₃.
-//   In case (ii) λ should be defined as -σ λ₁.
-//   In case (iii) the first coordinate should include a factor σ (not σʹ) and
-//   λ should be defined as σ σʹ λ₂ (where λ₂ is the common value of λ₁ and λ₃).
+// and its use in splitting method [CFSZ07].  See documentation/Celledoni.pdf
+// for corrections and adaptations.
 template<typename InertialFrame, typename PrincipalAxesFrame>
 class EulerSolver {
   static_assert(InertialFrame::is_inertial);
@@ -62,8 +56,8 @@ class EulerSolver {
   struct ℬₜ;
   struct ℬʹ;
 
-  // The formula to use, following Celledoni et al., Section 2.2.  They don't
-  // have a formula for the spherical case.
+  // The formula to use, following [CFSZ07], Section 2.2.  They don't have a
+  // formula for the spherical case.
   enum class Formula {
     i,
     ii,
