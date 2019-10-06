@@ -68,7 +68,7 @@ class EulerSolver {
 
   static Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
       R3Element<MomentOfInertia> const& moments_of_inertia,
-      Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum);
+      AngularMomentumBivector const& angular_momentum);
 
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;

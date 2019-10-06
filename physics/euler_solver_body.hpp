@@ -72,6 +72,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   CHECK_LE(I₁, I₂);
   CHECK_LE(I₂, I₃);
 
+  // TODO(phl): Properly handle m == 0.
   auto const& m = initial_angular_momentum.coordinates();
 
   // These computations are such that if, say I₁ == I₂, I₂₁ is +0.0 and I₁₂ is
@@ -88,8 +89,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   auto const Δ₁ = m.y * m.y * I₂₁ / I₂ + m.z * m.z * I₃₁ / I₃;
   auto const Δ₂ = m.z * m.z * I₃₂ / I₃ + m.x * m.x * I₁₂ / I₁;
   auto const Δ₃ = m.x * m.x * I₁₃ / I₁ + m.y * m.y * I₂₃ / I₂;
-  DCHECK_LE(Square<AngularMomentum>(), Δ₁);
-  DCHECK_LE(Δ₃, Square<AngularMomentum>());
+  CHECK_LE(Square<AngularMomentum>(), Δ₁);
+  CHECK_LE(Δ₃, Square<AngularMomentum>());
 
   // These quantities are NaN in the spherical case, so they be used with care
   // before we have checked for this case.
@@ -106,8 +107,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   // Note that [CFSZ07] et al. give k, but we need mc = 1 - k^2.  We write mc
   // in a way that reduces cancellations when k is close to 1.
   if (Δ₂ < Square<AngularMomentum>()) {
-    DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
-    DCHECK_LE(Square<AngularMomentum>(), B₂₁²);
+    CHECK_LE(Square<AngularMomentum>(), B₂₃²);
+    CHECK_LE(Square<AngularMomentum>(), B₂₁²);
     B₂₁_ = Sqrt(B₂₁²);
     mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y * B₃₁_, m.z * B₂₁_), mc_);
@@ -124,8 +125,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
-    DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
-    DCHECK_LE(Square<AngularMomentum>(), B₂₁²);
+    CHECK_LE(Square<AngularMomentum>(), B₂₃²);
+    CHECK_LE(Square<AngularMomentum>(), B₂₁²);
     B₂₃_ = Sqrt(B₂₃²);
     mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂);
     ν_ = EllipticF(ArcTan(m.y * B₁₃_, m.x * B₂₃_), mc_);
@@ -145,8 +146,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     CHECK_EQ(Square<AngularMomentum>(), Δ₂);
     if (I₃₁ == MomentOfInertia()) {
       // The degenerate case of a sphere.  It would create NaNs.
-      DCHECK_EQ(MomentOfInertia(), I₂₁);
-      DCHECK_EQ(MomentOfInertia(), I₃₂);
+      CHECK_EQ(MomentOfInertia(), I₂₁);
+      CHECK_EQ(MomentOfInertia(), I₃₂);
       formula_ = Formula::Sphere;
     } else {
       ν_ = -ArcTanh(m.y / G_);
@@ -260,7 +261,7 @@ Rotation<PrincipalAxesFrame,
          typename EulerSolver<InertialFrame, PrincipalAxesFrame>::ℬₜ>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
     R3Element<MomentOfInertia> const& moments_of_inertia,
-    Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum) {
+    AngularMomentumBivector const& angular_momentum) {
   auto const& m = angular_momentum;
   auto const& m_coordinates = m.coordinates();
 
@@ -273,15 +274,20 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
   Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
       Commutator(m, ω) / Radian;
 
-  // If ṁ is constant in the principal axes frame, pick 𝒫ₜ = identity.
-  static Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const zero;
-  if (ṁ == zero) {
-    return Rotation<PrincipalAxesFrame, ℬₜ>::Identity();
-  }
-
-  // Construct the orthonormal frame ℬₜ.
+  // Construct the orthonormal frame ℬₜ.  If ṁ is constant in the principal axes
+  // frame, the choice is arbitrary.
+  static Bivector<double, PrincipalAxesFrame> const zero;
   auto const m_normalized = Normalize(m);
-  auto const v = Normalize(ṁ);
+  auto v = NormalizeOrZero(ṁ);
+  if (v == zero) {
+    v = NormalizeOrZero(AngularMomentumBivector(
+            {m_coordinates.y, -m_coordinates.x, AngularMomentum()}));
+  }
+  if (v == zero) {
+    v = NormalizeOrZero(AngularMomentumBivector(
+            {m_coordinates.y, AngularMomentum(), -m_coordinates.z}));
+  }
+  DCHECK_NE(v, zero);
   auto const w = Commutator(m_normalized, v);
 
   // 𝒫ₜ(m_normalized).coordinates() = {0, 0, 1} , etc.
