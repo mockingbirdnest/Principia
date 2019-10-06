@@ -356,10 +356,10 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
       angular_momenta,
       attitudes,
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 32),
-                    AlmostEquals(reference_momentum.coordinates().y, 0, 3),
+                    AlmostEquals(reference_momentum.coordinates().y, 0, 4),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 2)));
   CheckPoinsotConstruction(
-      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/10);
+      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/13);
 }
 
 TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
@@ -410,7 +410,7 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       attitudes,
       Componentwise(AlmostEquals(reference_momentum.coordinates().x, 0, 3),
                     VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 24),
-                    AlmostEquals(reference_momentum.coordinates().z, 0, 4)));
+                    AlmostEquals(reference_momentum.coordinates().z, 0, 6)));
   CheckPoinsotConstruction(
       moments_of_inertia, angular_momenta, attitudes, /*ulps=*/4);
 }
@@ -512,11 +512,11 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
   CheckAngularMomentumConservation(
       angular_momenta,
       attitudes,
-      Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 8),
-                    AlmostEquals(reference_momentum.coordinates().y, 0, 12),
-                    AlmostEquals(reference_momentum.coordinates().z, 1, 901)));
+      Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 10),
+                    AlmostEquals(reference_momentum.coordinates().y, 0, 13),
+                    AlmostEquals(reference_momentum.coordinates().z, 0, 965)));
   CheckPoinsotConstruction(
-      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/29);
+      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/33);
 }
 
 }  // namespace physics

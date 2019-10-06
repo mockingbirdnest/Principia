@@ -123,7 +123,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       λ_ = -λ₃;
     }
     n_ = std::min(G² / B₂₃², 1.0);
-    ψ_Π_offset_ = EllipticΠ(-ν_, n_, mc_);
+    ψ_Π_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
@@ -141,7 +141,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       λ_ = -λ₁;
     }
     n_ = std::min(G² / B₂₁², 1.0);
-    ψ_Π_offset_ = EllipticΠ(-ν_, n_, mc_);
+    ψ_Π_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
     formula_ = Formula::ii;
   } else {
@@ -252,8 +252,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
   };
-  Bivector<double, ℬₜ> const e₃({0, 0, 1});
-  Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₃, DefinesFrame<ℬʹ>{});
+  Bivector<double, ℬʹ> const e₃({0, 0, 1});
+  Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₃, DefinesFrame<ℬₜ>{});
 
   return ℛ_ * 𝒴ₜ * 𝒫ₜ;
 }
