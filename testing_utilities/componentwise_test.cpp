@@ -15,6 +15,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -77,6 +78,10 @@ TEST_F(ComponentwiseTest, Grassmann) {
   EXPECT_THAT(b, Not(Componentwise(AlmostEquals(1.0 * Metre, 4),
                                    VanishesBefore(1.0 * Metre, 4),
                                    Eq(2.5 * Metre))));
+  EXPECT_THAT(b,
+              Componentwise(AbsoluteErrorFrom(1.0 * Metre, Lt(0.001 * Metre)),
+                            VanishesBefore(1.0 * Metre, 450360),
+                            RelativeErrorFrom(2.5 * Metre, Lt(0.5))));
 }
 
 TEST_F(ComponentwiseTest, Pair) {
