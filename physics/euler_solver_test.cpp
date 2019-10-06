@@ -53,6 +53,7 @@ using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
@@ -560,35 +561,37 @@ TEST_F(EulerSolverTest, Toutatis) {
       RadiusLatitudeLongitude(1.0, -54.75 * Degree, 180.2 * Degree)
           .ToCartesian());
 
+  // Check that the angular momentum in the body frame is consistent with that
+  // in the inertial frame transformed by the initial attitude.  The data come
+  // from different sources, so this is not a trivial check.
   Bivector<double, PrincipalAxes> const angular_momentum_orientation_in_body =
       initial_attitude.Inverse()(angular_momentum_orientation_in_inertial);
-  // NOTE(phl): This doesn't compile...
-  //EXPECT_THAT(
-  //    Normalize(initial_angular_momentum),
-  //    Componentwise(RelativeErrorFrom(
-  //                      angular_momentum_orientation_in_body.coordinates().x,
-  //                      IsNear(0.003_⑴)),
-  //                  RelativeErrorFrom(
-  //                      angular_momentum_orientation_in_body.coordinates().y,
-  //                      IsNear(0.002_⑴)),
-  //                  RelativeErrorFrom(
-  //                      angular_momentum_orientation_in_body.coordinates().z,
-  //                      IsNear(0.003_⑴))));
   EXPECT_THAT(
-      Normalize(initial_angular_momentum).coordinates().x,
-      RelativeErrorFrom(angular_momentum_orientation_in_body.coordinates().x,
-                        IsNear(0.003_⑴)));
-  EXPECT_THAT(
-      Normalize(initial_angular_momentum).coordinates().y,
-      RelativeErrorFrom(angular_momentum_orientation_in_body.coordinates().y,
-                        IsNear(0.002_⑴)));
-  EXPECT_THAT(
-      Normalize(initial_angular_momentum).coordinates().z,
-      RelativeErrorFrom(angular_momentum_orientation_in_body.coordinates().z,
-                        IsNear(0.003_⑴)));
+      Normalize(initial_angular_momentum),
+      Componentwise(RelativeErrorFrom(
+                        angular_momentum_orientation_in_body.coordinates().x,
+                        IsNear(0.003_⑴)),
+                    RelativeErrorFrom(
+                        angular_momentum_orientation_in_body.coordinates().y,
+                        IsNear(0.002_⑴)),
+                    RelativeErrorFrom(
+                        angular_momentum_orientation_in_body.coordinates().z,
+                        IsNear(0.003_⑴))));
 
+  // Same check as above, but in the inertial frame.  The y coordinate is small
+  // because the longitute is close to 180°, so we only check the absolute error
+  // for it.
   EXPECT_THAT(Normalize(initial_attitude(initial_angular_momentum)),
-              AlmostEquals(angular_momentum_orientation_in_inertial, 0));
+              Componentwise(
+                  RelativeErrorFrom(
+                      angular_momentum_orientation_in_inertial.coordinates().x,
+                      IsNear(0.001_⑴)),
+                  AbsoluteErrorFrom(
+                      angular_momentum_orientation_in_inertial.coordinates().y,
+                      IsNear(0.002_⑴)),
+                  RelativeErrorFrom(
+                      angular_momentum_orientation_in_inertial.coordinates().z,
+                      IsNear(0.001_⑴))));
 
   Solver const solver(moments_of_inertia,
                       initial_angular_momentum,
