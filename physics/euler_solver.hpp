@@ -12,6 +12,7 @@ namespace principia {
 namespace physics {
 namespace internal_euler_solver {
 
+using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Instant;
 using geometry::R3Element;
@@ -48,6 +49,9 @@ class EulerSolver {
   // Computes the angular momentum at the given time.
   AngularMomentumBivector AngularMomentumAt(Instant const& time) const;
 
+  AngularVelocity<PrincipalAxesFrame> AngularVelocityFor(
+      AngularMomentumBivector const& angular_momentum) const;
+
   // Computes the attitude at the given time, using the angular momentum
   // computed by the previous function.
   AttitudeRotation AttitudeAt(AngularMomentumBivector const& angular_momentum,
@@ -66,9 +70,9 @@ class EulerSolver {
     Sphere
   };
 
-  static Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
-      R3Element<MomentOfInertia> const& moments_of_inertia,
-      Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum);
+  Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
+      Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum)
+      const;
 
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;

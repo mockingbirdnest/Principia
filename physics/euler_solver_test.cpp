@@ -32,6 +32,7 @@ namespace physics {
 using astronomy::ICRS;
 using astronomy::J2000;
 using astronomy::operator""_UTC;
+using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::EulerAngles;
@@ -93,7 +94,7 @@ class EulerSolverTest : public ::testing::Test {
   // Checks that the kinetic energy computed using the attitude has the right
   // value.
   void CheckPoinsotConstruction(
-      R3Element<MomentOfInertia> const& moments_of_inertia,
+      Solver const& solver,
       std::vector<Solver::AngularMomentumBivector> const& angular_momenta,
       std::vector<Solver::AttitudeRotation> const& attitudes,
       int const ulps) {
@@ -103,13 +104,11 @@ class EulerSolverTest : public ::testing::Test {
     for (int i = 0; i < angular_momenta.size(); ++i) {
       Bivector<AngularMomentum, PrincipalAxes> const angular_momentum =
           angular_momenta[i];
-      Bivector<AngularFrequency, PrincipalAxes> const angular_velocity(
-          {angular_momentum.coordinates().x / moments_of_inertia.x,
-           angular_momentum.coordinates().y / moments_of_inertia.y,
-           angular_momentum.coordinates().z / moments_of_inertia.z});
+      AngularVelocity<PrincipalAxes> const angular_velocity =
+          solver.AngularVelocityFor(angular_momentum);
       Bivector<AngularMomentum, ICRS> const angular_momentum_in_inertial =
           attitudes[i](angular_momentum);
-      Bivector<AngularFrequency, ICRS> const
+      AngularVelocity<ICRS> const
           angular_velocity_in_inertial = attitudes[i](angular_velocity);
       Energy const kinetic_energy = 0.5 *
                                     InnerProduct(angular_momentum_in_inertial,
@@ -370,8 +369,7 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 32),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 3),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 2)));
-  CheckPoinsotConstruction(
-      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/10);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/10);
 }
 
 TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
@@ -423,8 +421,7 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       Componentwise(AlmostEquals(reference_momentum.coordinates().x, 0, 3),
                     VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 24),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 4)));
-  CheckPoinsotConstruction(
-      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/4);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/4);
 }
 
 // This test demonstrates the Джанибеков effect, also known as tennis racket
@@ -527,8 +524,7 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 8),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 12),
                     AlmostEquals(reference_momentum.coordinates().z, 1, 901)));
-  CheckPoinsotConstruction(
-      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/29);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/29);
 }
 
 TEST_F(EulerSolverTest, Toutatis) {
@@ -550,7 +546,7 @@ TEST_F(EulerSolverTest, Toutatis) {
   // (i.e., our moments_of_inertia.y), their y axis is our I₃ and their z axis
   // is our I₁, see Table 2.  This appears to contradict Figure 1, but it is
   // consistent with ω₁, ω₂, ω₃ being along their x, y, z axes respectively.
-  Bivector<AngularFrequency, PrincipalAxes> const initial_angular_velocity(
+  AngularVelocity<PrincipalAxes> const initial_angular_velocity(
       {-98.5 * Degree / Day, 14.5 * Degree / Day, 33.7 * Degree / Day});
   Bivector<AngularMomentum, PrincipalAxes>  initial_angular_momentum(
       {initial_angular_velocity.coordinates().y * moments_of_inertia.y,
@@ -597,6 +593,44 @@ TEST_F(EulerSolverTest, Toutatis) {
                       initial_angular_momentum,
                       initial_attitude,
                       epoch);
+
+  Instant const t = "1992-12-02T21:40:00"_UTC;
+  Solver::AttitudeRotation const expected_attitude(
+      /*α=*/122.2 * Degree,
+      /*β=*/86.5 * Degree,
+      /*γ=*/107.0 * Degree,
+      EulerAngles::ZXZ,
+      DefinesFrame<PrincipalAxes>{});
+  AngularVelocity<PrincipalAxes> const expected_angular_velocity(
+      {-97.0 * Degree / Day, -35.6 * Degree / Day, 7.2 * Degree / Day});
+  Bivector<AngularMomentum, PrincipalAxes> expected_angular_momentum(
+      {expected_angular_velocity.coordinates().y * moments_of_inertia.y,
+       expected_angular_velocity.coordinates().z * moments_of_inertia.z,
+       expected_angular_velocity.coordinates().x * moments_of_inertia.x});
+
+  auto actual_angular_momentum = solver.AngularMomentumAt(t);
+  auto actual_angular_velocity =
+      solver.AngularVelocityFor(actual_angular_momentum);
+  auto actual_attitude = solver.AttitudeAt(actual_angular_momentum,t);
+
+  EXPECT_THAT(actual_angular_momentum,
+              AlmostEquals(expected_angular_momentum, 0));
+  EXPECT_THAT(actual_angular_velocity,
+              AlmostEquals(expected_angular_velocity, 0));
+  Bivector<double, PrincipalAxes> e1({1, 0, 0});
+  EXPECT_THAT(actual_attitude(e1), AlmostEquals(expected_attitude(e1), 0));
+
+  EXPECT_THAT(Normalize(actual_attitude(actual_angular_momentum)),
+              Componentwise(
+                  RelativeErrorFrom(
+                      angular_momentum_orientation_in_inertial.coordinates().x,
+                      IsNear(0.001_⑴)),
+                  AbsoluteErrorFrom(
+                      angular_momentum_orientation_in_inertial.coordinates().y,
+                      IsNear(0.002_⑴)),
+                  RelativeErrorFrom(
+                      angular_momentum_orientation_in_inertial.coordinates().z,
+                      IsNear(0.001_⑴))));
 }
 
 }  // namespace physics

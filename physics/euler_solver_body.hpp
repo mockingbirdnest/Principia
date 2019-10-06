@@ -53,8 +53,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       initial_time_(initial_time),
       ℛ_([this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
         auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
-        auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(moments_of_inertia_,
-                                    initial_angular_momentum_).Inverse();
+        auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_).Inverse();
 
         // This ℛ follows the assumptions in the third paragraph of section 2.3
         // of [CFSZ07], that is, the inertial frame is identified with the
@@ -203,12 +202,27 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
 }
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
+AngularVelocity<PrincipalAxesFrame>
+EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularVelocityFor(
+    AngularMomentumBivector const& angular_momentum) const {
+  auto const& m = angular_momentum;
+  auto const& m_coordinates = m.coordinates();
+
+  auto const& I₁ = moments_of_inertia_.x;
+  auto const& I₂ = moments_of_inertia_.y;
+  auto const& I₃ = moments_of_inertia_.z;
+  Bivector<Quotient<AngularMomentum, MomentOfInertia>, PrincipalAxesFrame> const
+      ω({m_coordinates.x / I₁, m_coordinates.y / I₂, m_coordinates.z / I₃});
+
+  return ω;
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
 typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     AngularMomentumBivector const& angular_momentum,
     Instant const& time) const {
-  Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ =
-      Compute𝒫ₜ(moments_of_inertia_, angular_momentum);
+  Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ = Compute𝒫ₜ(angular_momentum);
 
   Time const Δt = time - initial_time_;
   Angle ψ;
@@ -250,17 +264,13 @@ template<typename InertialFrame, typename PrincipalAxesFrame>
 Rotation<PrincipalAxesFrame,
          typename EulerSolver<InertialFrame, PrincipalAxesFrame>::ℬₜ>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
-    R3Element<MomentOfInertia> const& moments_of_inertia,
-    Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum) {
+    Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum)
+    const {
   auto const& m = angular_momentum;
   auto const& m_coordinates = m.coordinates();
 
   // Compute ṁ using the Euler equation.
-  auto const& I₁ = moments_of_inertia.x;
-  auto const& I₂ = moments_of_inertia.y;
-  auto const& I₃ = moments_of_inertia.z;
-  Bivector<Quotient<AngularMomentum, MomentOfInertia>, PrincipalAxesFrame> const
-      ω({m_coordinates.x / I₁, m_coordinates.y / I₂, m_coordinates.z / I₃});
+  AngularVelocity<PrincipalAxesFrame> const ω = AngularVelocityFor(m);
   Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
       Commutator(m, ω) / Radian;
 
