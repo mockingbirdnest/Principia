@@ -111,15 +111,17 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     B₂₁_ = Sqrt(B₂₁²);
     mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y * B₃₁_, m.z * B₂₁_), mc_);
-    λ₃_ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
+    auto const λ₃ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
     if (m.x < AngularMomentum()) {
-      B₁₃_ = -B₁₃_;
+      σB₁₃_ = -B₁₃_;
+      λ_ = λ₃;
     } else {
-      λ₃_ = -λ₃_;
+      σB₁₃_ = B₁₃_;
+      λ_ = -λ₃;
     }
     n_ = std::min(G² / B₂₃², 1.0);
     ψ_Π_offset_ = EllipticΠ(-ν_, n_, mc_);
-    ψ_Π_multiplier_ = Δ₂ / (λ₃_ * I₂ * G_);
+    ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
     DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
@@ -127,15 +129,17 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     B₂₃_ = Sqrt(B₂₃²);
     mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂);
     ν_ = EllipticF(ArcTan(m.y * B₁₃_, m.x * B₂₃_), mc_);
-    λ₁_ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
+    auto const λ₁ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
     if (m.z < AngularMomentum()) {
-      B₃₁_ = -B₃₁_;
+      σB₃₁_ = -B₃₁_;
+      λ_ = λ₁;
     } else {
-      λ₁_ = -λ₁_;
+      σB₃₁_ = B₃₁_;
+      λ_ = -λ₁;
     }
     n_ = std::min(G² / B₂₁², 1.0);
     ψ_Π_offset_ = EllipticΠ(-ν_, n_, mc_);
-    ψ_Π_multiplier_ = Δ₂ / (λ₁_ * I₂ * G_);
+    ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
     formula_ = Formula::ii;
   } else {
     CHECK_EQ(Square<AngularMomentum>(), Δ₂);
@@ -146,20 +150,25 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       formula_ = Formula::Sphere;
     } else {
       ν_ = -ArcTanh(m.y / G_);
-      λ₂_ = Sqrt(-Δ₁ * Δ₃ / (I₁ * I₃)) / G_;
+      auto const λ₂ = Sqrt(-Δ₁ * Δ₃ / (I₁ * I₃)) / G_;
+      λ_ = λ₂;
       if (m.x < AngularMomentum()) {
-        B₁₃_ = -B₁₃_;
-        λ₂_ = -λ₂_;
+        σʹB₁₃_ = -B₁₃_;
+        λ_ = -λ_;
+      } else {
+        σʹB₁₃_ = B₁₃_;
       }
       if (m.z < AngularMomentum()) {
-        B₃₁_ = -B₃₁_;
-        λ₂_ = -λ₂_;
+        σʺB₃₁_ = -B₃₁_;
+        λ_ = -λ_;
+      } else {
+        σʺB₃₁_ = B₃₁_;
       }
       // Not quite an elliptic integral characteristic, but we'll stick to that
       // notation.
       n_ = G² * G² / (B₂₁² * B₂₃²);
       ψ_Π_offset_ = (-ν_ + n_ * std::log(n_ * Sinh(-ν_) - Cosh(-ν_)) * Radian);
-      ψ_Π_multiplier_ = Δ₂ / (λ₂_ * I₂ * G_ * (1 - n_ * n_));
+      ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_ * (1 - n_ * n_));
       formula_ = Formula::iii;
     }
   }
@@ -175,21 +184,21 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
       double sn;
       double cn;
       double dn;
-      JacobiSNCNDN(λ₃_ * Δt - ν_, mc_, sn, cn, dn);
-      return AngularMomentumBivector({B₁₃_ * dn, -B₂₁_ * sn, B₃₁_ * cn});
+      JacobiSNCNDN(λ_ * Δt - ν_, mc_, sn, cn, dn);
+      return AngularMomentumBivector({σB₁₃_ * dn, -B₂₁_ * sn, B₃₁_ * cn});
     }
     case Formula::ii: {
       double sn;
       double cn;
       double dn;
-      JacobiSNCNDN(λ₁_ * Δt - ν_, mc_, sn, cn, dn);
-      return AngularMomentumBivector({B₁₃_ * cn, -B₂₃_ * sn, B₃₁_ * dn});
+      JacobiSNCNDN(λ_ * Δt - ν_, mc_, sn, cn, dn);
+      return AngularMomentumBivector({B₁₃_ * cn, -B₂₃_ * sn, σB₃₁_ * dn});
     }
     case Formula::iii: {
-      Angle const angle = λ₂_ * Δt - ν_;
+      Angle const angle = λ_ * Δt - ν_;
       double const sech = 1.0 / Cosh(angle);
       return AngularMomentumBivector(
-          {B₁₃_ * sech, G_ * Tanh(angle), B₃₁_ * sech});
+          {σʹB₁₃_ * sech, G_ * Tanh(angle), σʺB₃₁_ * sech});
     }
     case Formula::Sphere : {
       // NOTE(phl): It's unclear how the formulæ degenerate in this case, but
@@ -214,19 +223,19 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
   Angle ψ;
   switch (formula_) {
     case Formula::i: {
-      Angle const φ = JacobiAmplitude(λ₃_ * Δt - ν_, mc_);
+      Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
       ψ = ψ_t_multiplier_ * Δt +
           ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset_);
       break;
     }
     case Formula::ii: {
-      Angle const φ = JacobiAmplitude(λ₁_ * Δt - ν_, mc_);
+      Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
       ψ = ψ_t_multiplier_ * Δt +
           ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset_);
       break;
     }
     case Formula::iii: {
-      Angle const angle = λ₂_ * Δt - ν_;
+      Angle const angle = λ_ * Δt - ν_;
       ψ = ψ_t_multiplier_ * Δt +
           ψ_Π_multiplier_ *
               (angle + n_ * std::log(n_ * Sinh(angle) - Cosh(angle)) * Radian -
