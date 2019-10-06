@@ -7,6 +7,9 @@
 #include <set>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
+#include "astronomy/frames.hpp"
+#include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -17,17 +20,25 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace physics {
 
+using astronomy::ICRS;
+using astronomy::J2000;
+using astronomy::operator""_UTC;
 using geometry::Bivector;
+using geometry::DefinesFrame;
+using geometry::EulerAngles;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::R3Element;
+using geometry::RadiusLatitudeLongitude;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
@@ -38,41 +49,41 @@ using quantities::Sin;
 using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::si::Day;
+using quantities::si::Degree;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
+using testing_utilities::RelativeErrorFrom;
 using testing_utilities::VanishesBefore;
+using testing_utilities::operator""_⑴;
 using ::testing::Lt;
 using ::testing::Matcher;
 
 class EulerSolverTest : public ::testing::Test {
  protected:
-  using ICRSFrame = Frame<serialization::Frame::SolarSystemTag,
-                          serialization::Frame::ICRS,
-                          /*frame_is_inertial*/ true>;
-  using PrincipalAxesFrame = Frame<serialization::Frame::PhysicsTag,
-                                   serialization::Frame::PRINCIPAL_AXES,
-                                   /*frame_is_inertial*/ false>;
+  using PrincipalAxes = Frame<serialization::Frame::PhysicsTag,
+                              serialization::Frame::PRINCIPAL_AXES,
+                              /*frame_is_inertial*/ false>;
 
-  using Solver = EulerSolver<ICRSFrame, PrincipalAxesFrame>;
+  using Solver = EulerSolver<ICRS, PrincipalAxes>;
 
   EulerSolverTest()
       : identity_attitude_(
-            EulerSolver<ICRSFrame,
-                        PrincipalAxesFrame>::AttitudeRotation::Identity()) {}
+            EulerSolver<ICRS, PrincipalAxes>::AttitudeRotation::Identity()) {}
 
   // Checks that the angular momentum transformed by the attitude to the
   // inertial frame satisfies the given matcher.
   void CheckAngularMomentumConservation(
       std::vector<Solver::AngularMomentumBivector> const& angular_momenta,
       std::vector<Solver::AttitudeRotation> const& attitudes,
-      Matcher<Bivector<AngularMomentum, ICRSFrame>> const& matcher) {
+      Matcher<Bivector<AngularMomentum, ICRS>> const& matcher) {
     CHECK_EQ(angular_momenta.size(), attitudes.size());
     for (int i = 0; i < angular_momenta.size(); ++i) {
-      Bivector<AngularMomentum, ICRSFrame> const angular_momentum_in_inertial =
+      Bivector<AngularMomentum, ICRS> const angular_momentum_in_inertial =
           attitudes[i](angular_momenta[i]);
       EXPECT_THAT(angular_momentum_in_inertial, matcher);
     }
@@ -89,15 +100,15 @@ class EulerSolverTest : public ::testing::Test {
     Energy maximum_kinetic_energy;
     Energy minimum_kinetic_energy = quantities::Infinity<Energy>();
     for (int i = 0; i < angular_momenta.size(); ++i) {
-      Bivector<AngularMomentum, PrincipalAxesFrame> const angular_momentum =
+      Bivector<AngularMomentum, PrincipalAxes> const angular_momentum =
           angular_momenta[i];
-      Bivector<AngularFrequency, PrincipalAxesFrame> const angular_velocity(
+      Bivector<AngularFrequency, PrincipalAxes> const angular_velocity(
           {angular_momentum.coordinates().x / moments_of_inertia.x,
            angular_momentum.coordinates().y / moments_of_inertia.y,
            angular_momentum.coordinates().z / moments_of_inertia.z});
-      Bivector<AngularMomentum, ICRSFrame> const angular_momentum_in_inertial =
+      Bivector<AngularMomentum, ICRS> const angular_momentum_in_inertial =
           attitudes[i](angular_momentum);
-      Bivector<AngularFrequency, ICRSFrame> const
+      Bivector<AngularFrequency, ICRS> const
           angular_velocity_in_inertial = attitudes[i](angular_velocity);
       Energy const kinetic_energy = 0.5 *
                                     InnerProduct(angular_momentum_in_inertial,
@@ -350,7 +361,7 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
                                           Instant() + t));
   }
 
-  Bivector<AngularMomentum, ICRSFrame> const reference_momentum =
+  Bivector<AngularMomentum, ICRS> const reference_momentum =
       initial_attitude(initial_angular_momentum);
   CheckAngularMomentumConservation(
       angular_momenta,
@@ -403,7 +414,7 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
                                           Instant() + t));
   }
 
-  Bivector<AngularMomentum, ICRSFrame> const reference_momentum =
+  Bivector<AngularMomentum, ICRS> const reference_momentum =
       initial_attitude(initial_angular_momentum);
   CheckAngularMomentumConservation(
       angular_momenta,
@@ -507,7 +518,7 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
     }
   }
 
-  Bivector<AngularMomentum, ICRSFrame> const reference_momentum =
+  Bivector<AngularMomentum, ICRS> const reference_momentum =
       initial_attitude(initial_angular_momentum);
   CheckAngularMomentumConservation(
       angular_momenta,
@@ -517,6 +528,72 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
                     AlmostEquals(reference_momentum.coordinates().z, 1, 901)));
   CheckPoinsotConstruction(
       moments_of_inertia, angular_momenta, attitudes, /*ulps=*/29);
+}
+
+TEST_F(EulerSolverTest, Toutatis) {
+  Instant const epoch = "1992-11-09T17:49:47"_UTC;
+
+  R3Element<MomentOfInertia> const moments_of_inertia{
+      1 * SIUnit<MomentOfInertia>(),
+      3.0836 * SIUnit<MomentOfInertia>(),
+      3.235 * SIUnit<MomentOfInertia>()};
+
+  Solver::AttitudeRotation const initial_attitude(
+      /*α=*/147.5 * Degree,
+      /*β=*/63.9 * Degree,
+      /*γ=*/241.5 * Degree,
+      EulerAngles::ZXZ,
+      DefinesFrame<PrincipalAxes>{});
+
+  // Takahashi et al. adopt a bizarre convention where their x axis is our I₂
+  // (i.e., our moments_of_inertia.y), their y axis is our I₃ and their z axis
+  // is our I₁, see Table 2.  This appears to contradict Figure 1, but it is
+  // consistent with ω₁, ω₂, ω₃ being along their x, y, z axes respectively.
+  Bivector<AngularFrequency, PrincipalAxes> const initial_angular_velocity(
+      {-98.5 * Degree / Day, 14.5 * Degree / Day, 33.7 * Degree / Day});
+  Bivector<AngularMomentum, PrincipalAxes>  initial_angular_momentum(
+      {initial_angular_velocity.coordinates().y * moments_of_inertia.y,
+       initial_angular_velocity.coordinates().z * moments_of_inertia.z,
+       initial_angular_velocity.coordinates().x * moments_of_inertia.x});
+
+  auto const angular_momentum_orientation_in_inertial = Bivector<double, ICRS>(
+      RadiusLatitudeLongitude(1.0, -54.75 * Degree, 180.2 * Degree)
+          .ToCartesian());
+
+  Bivector<double, PrincipalAxes> const angular_momentum_orientation_in_body =
+      initial_attitude.Inverse()(angular_momentum_orientation_in_inertial);
+  // NOTE(phl): This doesn't compile...
+  //EXPECT_THAT(
+  //    Normalize(initial_angular_momentum),
+  //    Componentwise(RelativeErrorFrom(
+  //                      angular_momentum_orientation_in_body.coordinates().x,
+  //                      IsNear(0.003_⑴)),
+  //                  RelativeErrorFrom(
+  //                      angular_momentum_orientation_in_body.coordinates().y,
+  //                      IsNear(0.002_⑴)),
+  //                  RelativeErrorFrom(
+  //                      angular_momentum_orientation_in_body.coordinates().z,
+  //                      IsNear(0.003_⑴))));
+  EXPECT_THAT(
+      Normalize(initial_angular_momentum).coordinates().x,
+      RelativeErrorFrom(angular_momentum_orientation_in_body.coordinates().x,
+                        IsNear(0.003_⑴)));
+  EXPECT_THAT(
+      Normalize(initial_angular_momentum).coordinates().y,
+      RelativeErrorFrom(angular_momentum_orientation_in_body.coordinates().y,
+                        IsNear(0.002_⑴)));
+  EXPECT_THAT(
+      Normalize(initial_angular_momentum).coordinates().z,
+      RelativeErrorFrom(angular_momentum_orientation_in_body.coordinates().z,
+                        IsNear(0.003_⑴)));
+
+  EXPECT_THAT(Normalize(initial_attitude(initial_angular_momentum)),
+              AlmostEquals(angular_momentum_orientation_in_inertial, 0));
+
+  Solver const solver(moments_of_inertia,
+                      initial_angular_momentum,
+                      initial_attitude,
+                      epoch);
 }
 
 }  // namespace physics
