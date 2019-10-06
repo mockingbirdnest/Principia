@@ -17,11 +17,14 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace physics {
 
+using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::R3Element;
@@ -29,6 +32,7 @@ using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::Cos;
+using quantities::Energy;
 using quantities::MomentOfInertia;
 using quantities::Sin;
 using quantities::SIUnit;
@@ -37,15 +41,77 @@ using quantities::Time;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
+using testing_utilities::VanishesBefore;
 using ::testing::Lt;
+using ::testing::Matcher;
 
 class EulerSolverTest : public ::testing::Test {
  protected:
+  using ICRSFrame = Frame<serialization::Frame::SolarSystemTag,
+                          serialization::Frame::ICRS,
+                          /*frame_is_inertial*/ true>;
   using PrincipalAxesFrame = Frame<serialization::Frame::PhysicsTag,
                                    serialization::Frame::PRINCIPAL_AXES,
                                    /*frame_is_inertial*/ false>;
+
+  using Solver = EulerSolver<ICRSFrame, PrincipalAxesFrame>;
+
+  EulerSolverTest()
+      : identity_attitude_(
+            EulerSolver<ICRSFrame,
+                        PrincipalAxesFrame>::AttitudeRotation::Identity()) {}
+
+  // Checks that the angular momentum transformed by the attitude to the
+  // inertial frame satisfies the given matcher.
+  void CheckAngularMomentumConservation(
+      std::vector<Solver::AngularMomentumBivector> const& angular_momenta,
+      std::vector<Solver::AttitudeRotation> const& attitudes,
+      Matcher<Bivector<AngularMomentum, ICRSFrame>> const& matcher) {
+    CHECK_EQ(angular_momenta.size(), attitudes.size());
+    for (int i = 0; i < angular_momenta.size(); ++i) {
+      Bivector<AngularMomentum, ICRSFrame> const angular_momentum_in_inertial =
+          attitudes[i](angular_momenta[i]);
+      EXPECT_THAT(angular_momentum_in_inertial, matcher);
+    }
+  }
+
+  // Checks that the kinetic energy computed using the attitude has the right
+  // value.
+  void CheckPoinsotConstruction(
+      R3Element<MomentOfInertia> const& moments_of_inertia,
+      std::vector<Solver::AngularMomentumBivector> const& angular_momenta,
+      std::vector<Solver::AttitudeRotation> const& attitudes,
+      int const ulps) {
+    CHECK_EQ(angular_momenta.size(), attitudes.size());
+    Energy maximum_kinetic_energy;
+    Energy minimum_kinetic_energy = quantities::Infinity<Energy>();
+    for (int i = 0; i < angular_momenta.size(); ++i) {
+      Bivector<AngularMomentum, PrincipalAxesFrame> const angular_momentum =
+          angular_momenta[i];
+      Bivector<AngularFrequency, PrincipalAxesFrame> const angular_velocity(
+          {angular_momentum.coordinates().x / moments_of_inertia.x,
+           angular_momentum.coordinates().y / moments_of_inertia.y,
+           angular_momentum.coordinates().z / moments_of_inertia.z});
+      Bivector<AngularMomentum, ICRSFrame> const angular_momentum_in_inertial =
+          attitudes[i](angular_momentum);
+      Bivector<AngularFrequency, ICRSFrame> const
+          angular_velocity_in_inertial = attitudes[i](angular_velocity);
+      Energy const kinetic_energy = 0.5 *
+                                    InnerProduct(angular_momentum_in_inertial,
+                                                 angular_velocity_in_inertial) /
+                                    Radian / Radian;
+      maximum_kinetic_energy = std::max(maximum_kinetic_energy, kinetic_energy);
+      minimum_kinetic_energy = std::min(minimum_kinetic_energy, kinetic_energy);
+    }
+    EXPECT_THAT(minimum_kinetic_energy,
+                AlmostEquals(maximum_kinetic_energy, ulps));
+  }
+
+  // TODO(phl): Test with different initial attitudes.
+  Solver::AttitudeRotation identity_attitude_;
 };
 
 // Check that we are able to retrieve the initial state for random choices of
@@ -65,15 +131,17 @@ TEST_F(EulerSolverTest, InitialStateRandom) {
         randoms[1] * SIUnit<MomentOfInertia>(),
         randoms[2] * SIUnit<MomentOfInertia>()};
 
-    EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector
+    Solver::AngularMomentumBivector
         initial_angular_momentum(
             {angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
              angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
              angular_momentum_distribution(random) *
                  SIUnit<AngularMomentum>()});
 
-    EulerSolver const solver(
-        moments_of_inertia, initial_angular_momentum, Instant());
+    Solver const solver(moments_of_inertia,
+                        initial_angular_momentum,
+                        identity_attitude_,
+                        Instant());
     auto const computed_initial_angular_momentum =
         solver.AngularMomentumAt(Instant());
 
@@ -103,15 +171,17 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
       3 * SIUnit<MomentOfInertia>()};
 
   for (int i = 0; i < 100; ++i) {
-    EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector
+    Solver::AngularMomentumBivector
         initial_angular_momentum(
             {angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
              angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
              angular_momentum_distribution(random) *
                  SIUnit<AngularMomentum>()});
     {
-      EulerSolver const solver1(
-          moments_of_inertia1, initial_angular_momentum, Instant());
+      Solver const solver1(moments_of_inertia1,
+                           initial_angular_momentum,
+                           identity_attitude_,
+                           Instant());
       auto const computed_initial_angular_momentum1 =
           solver1.AngularMomentumAt(Instant());
 
@@ -120,8 +190,10 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
           << moments_of_inertia1 << " " << initial_angular_momentum;
     }
     {
-      EulerSolver const solver2(
-          moments_of_inertia2, initial_angular_momentum, Instant());
+      Solver const solver2(moments_of_inertia2,
+                           initial_angular_momentum,
+                           identity_attitude_,
+                           Instant());
       auto const computed_initial_angular_momentum2 =
           solver2.AngularMomentumAt(Instant());
 
@@ -130,14 +202,17 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
           << moments_of_inertia2 << " " << initial_angular_momentum;
     }
     {
-      EulerSolver const solver3(
-          moments_of_inertia3, initial_angular_momentum, Instant());
+      Solver const solver3(moments_of_inertia3,
+                           initial_angular_momentum,
+                           identity_attitude_,
+                           Instant());
       auto const computed_initial_angular_momentum3 =
           solver3.AngularMomentumAt(Instant());
 
       EXPECT_THAT(computed_initial_angular_momentum3,
                   AlmostEquals(initial_angular_momentum, 0, 0))
           << moments_of_inertia3 << " " << initial_angular_momentum;
+      // TODO(phl): Test the attitude in this case.
     }
   }
 }
@@ -169,10 +244,12 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       if (i % 2 == 0) {
         mz = -mz;
       }
-      EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector
+      Solver::AngularMomentumBivector
           initial_angular_momentum({mx, SIUnit<AngularMomentum>(), mz});
-      EulerSolver const solver(
-          moments_of_inertia, initial_angular_momentum, Instant());
+      Solver const solver(moments_of_inertia,
+                          initial_angular_momentum,
+                          identity_attitude_,
+                          Instant());
 
       auto const computed_initial_angular_momentum =
           solver.AngularMomentumAt(Instant());
@@ -189,10 +266,12 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       if (i % 2 == 0) {
         mz = -mz;
       }
-      EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector
+      Solver::AngularMomentumBivector
           initial_angular_momentum({mx, SIUnit<AngularMomentum>(), mz});
-      EulerSolver const solver(
-          moments_of_inertia, initial_angular_momentum, Instant());
+      Solver const solver(moments_of_inertia,
+                          initial_angular_momentum,
+                          identity_attitude_,
+                          Instant());
 
       auto const computed_initial_angular_momentum =
           solver.AngularMomentumAt(Instant());
@@ -212,10 +291,12 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       if (i % 2 == 0) {
         mz = -mz;
       }
-      EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector
+      Solver::AngularMomentumBivector
           initial_angular_momentum({mx, SIUnit<AngularMomentum>(), mz});
-      EulerSolver const solver(
-          moments_of_inertia, initial_angular_momentum, Instant());
+      Solver const solver(moments_of_inertia,
+                          initial_angular_momentum,
+                          identity_attitude_,
+                          Instant());
 
       auto const computed_initial_angular_momentum =
           solver.AngularMomentumAt(Instant());
@@ -234,30 +315,51 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
       3.0 * SIUnit<MomentOfInertia>(),
       9.0 * SIUnit<MomentOfInertia>()};
 
-  EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector const
+  Solver::AngularMomentumBivector const
       initial_angular_momentum({0.0 * SIUnit<AngularMomentum>(),
                                 5.0 * SIUnit<AngularMomentum>(),
                                 7.0 * SIUnit<AngularMomentum>()});
+  Solver::AttitudeRotation const initial_attitude = identity_attitude_;
 
   // Correspondence with the referential of lecture 19: x = e1, y = e2, z = e3.
   AngularFrequency Ω = initial_angular_momentum.coordinates().z *
                        (moments_of_inertia[0] - moments_of_inertia[2]) /
                        (moments_of_inertia[0] * moments_of_inertia[2]);
 
-  EulerSolver<PrincipalAxesFrame> const solver(
-      moments_of_inertia, initial_angular_momentum, Instant());
+  Solver const solver(moments_of_inertia,
+                      initial_angular_momentum,
+                      initial_attitude,
+                      Instant());
+
+  std::vector<Solver::AngularMomentumBivector> angular_momenta;
+  std::vector<Solver::AttitudeRotation> attitudes;
   for (Time t = 0 * Second; t < 5.0 * Second; t += 0.1 * Second) {
     auto const angular_momentum_at_t = solver.AngularMomentumAt(Instant() + t);
     EXPECT_THAT(
         angular_momentum_at_t,
-        AlmostEquals(EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector(
-                         {5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
-                          5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>(),
-                          7.0 * SIUnit<AngularMomentum>()}),
-                     0,
-                     102))
+        AlmostEquals(
+            Solver::AngularMomentumBivector(
+                {5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
+                 5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>(),
+                 7.0 * SIUnit<AngularMomentum>()}),
+            0,
+            102))
         << t;
+    angular_momenta.push_back(angular_momentum_at_t);
+    attitudes.push_back(solver.AttitudeAt(angular_momentum_at_t,
+                                          Instant() + t));
   }
+
+  Bivector<AngularMomentum, ICRSFrame> const reference_momentum =
+      initial_attitude(initial_angular_momentum);
+  CheckAngularMomentumConservation(
+      angular_momenta,
+      attitudes,
+      Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 32),
+                    AlmostEquals(reference_momentum.coordinates().y, 0, 3),
+                    AlmostEquals(reference_momentum.coordinates().z, 0, 2)));
+  CheckPoinsotConstruction(
+      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/10);
 }
 
 TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
@@ -266,30 +368,51 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       9.0 * SIUnit<MomentOfInertia>(),
       9.0 * SIUnit<MomentOfInertia>()};
 
-  EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector const
+  Solver::AngularMomentumBivector const
       initial_angular_momentum({7.0 * SIUnit<AngularMomentum>(),
                                 0.0 * SIUnit<AngularMomentum>(),
                                 5.0 * SIUnit<AngularMomentum>()});
+  Solver::AttitudeRotation const initial_attitude = identity_attitude_;
 
   // Correspondence with the referential of lecture 19:  x = e3, y = e1, z = e2.
   AngularFrequency Ω = initial_angular_momentum.coordinates().x *
                        (moments_of_inertia[1] - moments_of_inertia[0]) /
                        (moments_of_inertia[1] * moments_of_inertia[0]);
 
-  EulerSolver<PrincipalAxesFrame> const solver(
-      moments_of_inertia, initial_angular_momentum, Instant());
+  Solver const solver(moments_of_inertia,
+                      initial_angular_momentum,
+                      initial_attitude,
+                      Instant());
+
+  std::vector<Solver::AngularMomentumBivector> angular_momenta;
+  std::vector<Solver::AttitudeRotation> attitudes;
   for (Time t = 0 * Second; t < 5.0 * Second; t += 0.1 * Second) {
     auto const angular_momentum_at_t = solver.AngularMomentumAt(Instant() + t);
     EXPECT_THAT(
         angular_momentum_at_t,
-        AlmostEquals(EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector(
-                         {7.0 * SIUnit<AngularMomentum>(),
-                          5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
-                          5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>()}),
-                     0,
-                     34))
+        AlmostEquals(
+            Solver::AngularMomentumBivector(
+                {7.0 * SIUnit<AngularMomentum>(),
+                 5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
+                 5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>()}),
+            0,
+            34))
         << t;
+    angular_momenta.push_back(angular_momentum_at_t);
+    attitudes.push_back(solver.AttitudeAt(angular_momentum_at_t,
+                                          Instant() + t));
   }
+
+  Bivector<AngularMomentum, ICRSFrame> const reference_momentum =
+      initial_attitude(initial_angular_momentum);
+  CheckAngularMomentumConservation(
+      angular_momenta,
+      attitudes,
+      Componentwise(AlmostEquals(reference_momentum.coordinates().x, 0, 3),
+                    VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 24),
+                    AlmostEquals(reference_momentum.coordinates().z, 0, 4)));
+  CheckPoinsotConstruction(
+      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/4);
 }
 
 // This test demonstrates the Джанибеков effect, also known as tennis racket
@@ -303,13 +426,16 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       5.0 * SIUnit<MomentOfInertia>(),
       9.0 * SIUnit<MomentOfInertia>()};
 
-  EulerSolver<PrincipalAxesFrame>::AngularMomentumBivector const
+  Solver::AngularMomentumBivector const
       initial_angular_momentum({0.0 * SIUnit<AngularMomentum>(),
                                 2.0 * SIUnit<AngularMomentum>(),
                                 0.01 * SIUnit<AngularMomentum>()});
+  Solver::AttitudeRotation const initial_attitude = identity_attitude_;
 
-  EulerSolver<PrincipalAxesFrame> const solver(
-      moments_of_inertia, initial_angular_momentum, Instant());
+  Solver const solver(moments_of_inertia,
+                      initial_angular_momentum,
+                      initial_attitude,
+                      Instant());
 
   // Find the maxima, minima and zeroes of the y coordinate of the angular
   // momentum.
@@ -321,6 +447,8 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
   bool is_abs_decreasing = false;
   bool is_decreasing = false;
   bool is_increasing = true;
+  std::vector<Solver::AngularMomentumBivector> angular_momenta;
+  std::vector<Solver::AttitudeRotation> attitudes;
   for (Instant t; t < Instant() + 100.0 * Second; t += 0.1 * Second) {
     auto const angular_momentum_at_t = solver.AngularMomentumAt(t);
     auto const my = angular_momentum_at_t.coordinates().y;
@@ -348,6 +476,9 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
     }
     previous_my = my;
     previous_t = t;
+    angular_momenta.push_back(angular_momentum_at_t);
+    attitudes.push_back(solver.AttitudeAt(angular_momentum_at_t,
+                                          t));
   }
 
   // Check that the maxima, minima and zeroes properly alternate and are
@@ -375,6 +506,17 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
                   Lt(0.0023));
     }
   }
+
+  Bivector<AngularMomentum, ICRSFrame> const reference_momentum =
+      initial_attitude(initial_angular_momentum);
+  CheckAngularMomentumConservation(
+      angular_momenta,
+      attitudes,
+      Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 8),
+                    AlmostEquals(reference_momentum.coordinates().y, 0, 12),
+                    AlmostEquals(reference_momentum.coordinates().z, 1, 901)));
+  CheckPoinsotConstruction(
+      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/29);
 }
 
 }  // namespace physics
