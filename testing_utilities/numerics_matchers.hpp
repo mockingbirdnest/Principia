@@ -11,17 +11,17 @@ using quantities::Difference;
 using ::testing::Matcher;
 
 template<typename Value>
-Matcher<Value const&> DifferenceFrom(
+Matcher<Value> DifferenceFrom(
     Value const& expected,
     Matcher<Difference<Value>> const& error_matcher);
 
 template<typename Value, typename ErrorMatcher>
-Matcher<Value const&> AbsoluteErrorFrom(Value const& expected,
-                                        ErrorMatcher const& error_matcher);
+Matcher<Value> AbsoluteErrorFrom(Value const& expected,
+                                 ErrorMatcher const& error_matcher);
 
 template<typename Value>
-Matcher<Value const&> RelativeErrorFrom(Value const& expected,
-                                        Matcher<double> const& error_matcher);
+Matcher<Value> RelativeErrorFrom(Value const& expected,
+                                 Matcher<double> const& error_matcher);
 
 }  // namespace internal_numerics_matchers
 
