@@ -32,6 +32,7 @@ using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::Cos;
+using quantities::Energy;
 using quantities::MomentOfInertia;
 using quantities::Sin;
 using quantities::SIUnit;
@@ -71,12 +72,45 @@ class EulerSolverTest : public ::testing::Test {
       Matcher<Bivector<AngularMomentum, ICRSFrame>> const& matcher) {
     CHECK_EQ(angular_momenta.size(), attitudes.size());
     for (int i = 0; i < angular_momenta.size(); ++i) {
-      Bivector<AngularMomentum, ICRSFrame> const angular_momentum =
+      Bivector<AngularMomentum, ICRSFrame> const angular_momentum_in_inertial =
           attitudes[i](angular_momenta[i]);
-      EXPECT_THAT(angular_momentum, matcher);
+      EXPECT_THAT(angular_momentum_in_inertial, matcher);
     }
   }
 
+  // Checks that the kinetic energy computed using the attitude has the right
+  // value.
+  void CheckPoinsotConstruction(
+      R3Element<MomentOfInertia> const& moments_of_inertia,
+      std::vector<Solver::AngularMomentumBivector> const& angular_momenta,
+      std::vector<Solver::AttitudeRotation> const& attitudes,
+      int const ulps) {
+    CHECK_EQ(angular_momenta.size(), attitudes.size());
+    Energy maximum_kinetic_energy;
+    Energy minimum_kinetic_energy = quantities::Infinity<Energy>();
+    for (int i = 0; i < angular_momenta.size(); ++i) {
+      Bivector<AngularMomentum, PrincipalAxesFrame> const angular_momentum =
+          angular_momenta[i];
+      Bivector<AngularFrequency, PrincipalAxesFrame> const angular_velocity(
+          {angular_momentum.coordinates().x / moments_of_inertia.x,
+           angular_momentum.coordinates().y / moments_of_inertia.y,
+           angular_momentum.coordinates().z / moments_of_inertia.z});
+      Bivector<AngularMomentum, ICRSFrame> const angular_momentum_in_inertial =
+          attitudes[i](angular_momentum);
+      Bivector<AngularFrequency, ICRSFrame> const
+          angular_velocity_in_inertial = attitudes[i](angular_velocity);
+      Energy const kinetic_energy = 0.5 *
+                                    InnerProduct(angular_momentum_in_inertial,
+                                                 angular_velocity_in_inertial) /
+                                    Radian / Radian;
+      maximum_kinetic_energy = std::max(maximum_kinetic_energy, kinetic_energy);
+      minimum_kinetic_energy = std::min(minimum_kinetic_energy, kinetic_energy);
+    }
+    EXPECT_THAT(minimum_kinetic_energy,
+                AlmostEquals(maximum_kinetic_energy, ulps));
+  }
+
+  // TODO(phl): Test with different initial attitudes.
   Solver::AttitudeRotation identity_attitude_;
 };
 
@@ -178,6 +212,7 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
       EXPECT_THAT(computed_initial_angular_momentum3,
                   AlmostEquals(initial_angular_momentum, 0, 0))
           << moments_of_inertia3 << " " << initial_angular_momentum;
+      // TODO(phl): Test the attitude in this case.
     }
   }
 }
@@ -323,6 +358,8 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 32),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 3),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 2)));
+  CheckPoinsotConstruction(
+      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/10);
 }
 
 TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
@@ -374,6 +411,8 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       Componentwise(AlmostEquals(reference_momentum.coordinates().x, 0, 3),
                     VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 24),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 4)));
+  CheckPoinsotConstruction(
+      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/4);
 }
 
 // This test demonstrates the Джанибеков effect, also known as tennis racket
@@ -476,6 +515,8 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 8),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 12),
                     AlmostEquals(reference_momentum.coordinates().z, 1, 901)));
+  CheckPoinsotConstruction(
+      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/29);
 }
 
 }  // namespace physics

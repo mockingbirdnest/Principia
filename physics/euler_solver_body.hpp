@@ -92,11 +92,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   DCHECK_LE(Square<AngularMomentum>(), Δ₁);
   DCHECK_LE(Δ₃, Square<AngularMomentum>());
 
+  // These quantities are NaN in the spherical case, so they be used with care
+  // before we have checked for this case.
   auto const B₂₃² = I₂ * Δ₃ / I₂₃;
   auto const B₂₁² = I₂ * Δ₁ / I₂₁;
-  DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
-  DCHECK_LE(Square<AngularMomentum>(), B₂₁²);
-
   B₁₃_ = Sqrt(I₁ * Δ₃ / I₁₃);
   B₃₁_ = Sqrt(I₃ * Δ₁ / I₃₁);
 
@@ -108,6 +107,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   // Note that Celledoni et al. give k, but we need mc = 1 - k^2.  We write mc
   // in a way that reduces cancellations when k is close to 1.
   if (Δ₂ < Square<AngularMomentum>()) {
+    DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
+    DCHECK_LE(Square<AngularMomentum>(), B₂₁²);
     B₂₁_ = Sqrt(B₂₁²);
     mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
     ν_ = EllipticF(ArcTan(m.y * B₃₁_, m.z * B₂₁_), mc_);
@@ -117,11 +118,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     } else {
       λ₃_ = -λ₃_;
     }
-    n_ = G² / B₂₃²;
+    n_ = std::min(G² / B₂₃², 1.0);
     ψ_Π_offset_ = EllipticΠ(-ν_, n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ₃_ * I₂ * G_);
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
+    DCHECK_LE(Square<AngularMomentum>(), B₂₃²);
+    DCHECK_LE(Square<AngularMomentum>(), B₂₁²);
     B₂₃_ = Sqrt(B₂₃²);
     mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂);
     ν_ = EllipticF(ArcTan(m.y * B₁₃_, m.x * B₂₃_), mc_);
@@ -131,7 +134,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     } else {
       λ₁_ = -λ₁_;
     }
-    n_ = G² / B₂₁²;
+    n_ = std::min(G² / B₂₁², 1.0);
     ψ_Π_offset_ = EllipticΠ(-ν_, n_, mc_);
     ψ_Π_multiplier_ = Δ₂ / (λ₁_ * I₂ * G_);
     formula_ = Formula::ii;
@@ -232,6 +235,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       break;
     }
     case Formula::Sphere: {
+      ψ = ψ_t_multiplier_ * Δt;
+      break;
     }
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
@@ -260,13 +265,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
   Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
       Commutator(m, ω) / Radian;
 
+  // If ṁ is constant in the principal axes frame, pick 𝒫ₜ = identity.
+  static Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const zero;
+  if (ṁ == zero) {
+    return Rotation<PrincipalAxesFrame, ℬₜ>::Identity();
+  }
+
   // Construct the orthonormal frame ℬₜ.
-  if (m.Norm() == AngularMomentum()) {
-  LOG(FATAL)<<"here";
-  }
-  if (ṁ.Norm() == Variation<AngularMomentum>()) {
-  LOG(FATAL)<<"here";
-  }
   auto const m_normalized = Normalize(m);
   auto const v = Normalize(ṁ);
   auto const w = Commutator(m_normalized, v);
