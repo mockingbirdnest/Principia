@@ -31,6 +31,7 @@ using quantities::Time;
 template<typename InertialFrame, typename PrincipalAxesFrame>
 class EulerSolver {
   static_assert(InertialFrame::is_inertial);
+
  public:
   using AngularMomentumBivector = Bivector<AngularMomentum, PrincipalAxesFrame>;
   using AttitudeRotation = Rotation<PrincipalAxesFrame, InertialFrame>;
