@@ -71,8 +71,7 @@ class EulerSolver {
   };
 
   Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
-      Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum)
-      const;
+      AngularMomentumBivector const& angular_momentum) const;
 
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;
@@ -86,18 +85,19 @@ class EulerSolver {
   // Only the parameters needed for the selected formula are non-NaN after
   // construction.
 
-  // These variables are really σ λ₁, σʹσʺ λ₂ and σ λ₃, respectively.
-  AngularFrequency λ₁_ = NaN<AngularFrequency>();
-  AngularFrequency λ₂_ = NaN<AngularFrequency>();
-  AngularFrequency λ₃_ = NaN<AngularFrequency>();
+  AngularFrequency λ_ = NaN<AngularFrequency>();
 
-  // These variables are really σ B₁₃ and σ B₃₁, respectively.
+  AngularMomentum G_ = NaN<AngularMomentum>();
+  AngularMomentum B₂₃_ = NaN<AngularMomentum>();
   AngularMomentum B₁₃_ = NaN<AngularMomentum>();
   AngularMomentum B₃₁_ = NaN<AngularMomentum>();
-
   AngularMomentum B₂₁_ = NaN<AngularMomentum>();
-  AngularMomentum B₂₃_ = NaN<AngularMomentum>();
-  AngularMomentum G_ = NaN<AngularMomentum>();
+
+  AngularMomentum σB₁₃_ = NaN<AngularMomentum>();
+  AngularMomentum σB₃₁_ = NaN<AngularMomentum>();
+  AngularMomentum σʹB₁₃_ = NaN<AngularMomentum>();
+  AngularMomentum σʺB₃₁_ = NaN<AngularMomentum>();
+
   double n_ = NaN<double>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();
