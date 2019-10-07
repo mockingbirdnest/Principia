@@ -48,6 +48,7 @@ using geometry::R3Element;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Rotation;
 using quantities::Abs;
+using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::Cos;
@@ -63,6 +64,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
+using testing_utilities::ApproximateQuantity;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
@@ -619,32 +621,53 @@ TEST_F(EulerSolverTest, Toutatis) {
                       initial_attitude,
                       epoch);
 
-  {
-    Instant const t = "1992-12-02T21:40:00"_UTC;
+  Bivector<double, PrincipalAxes> const e1({1, 0, 0});
+  Bivector<double, PrincipalAxes> const e2({0, 1, 0});
+  Bivector<double, PrincipalAxes> const e3({0, 0, 1});
+
+  struct Observation {
+    Instant t;
+    Angle α;
+    Angle β;
+    Angle γ;
+    AngularFrequency ω₁;
+    AngularFrequency ω₂;
+    AngularFrequency ω₃;
+    ApproximateQuantity<double> angular_velocity_norm_error;
+    ApproximateQuantity<Angle> angular_velocity_direction_error;
+    ApproximateQuantity<Angle> e1_direction_error;
+    ApproximateQuantity<Angle> e2_direction_error;
+    ApproximateQuantity<Angle> e3_direction_error;
+  };
+
+  std::vector<Observation> const observations = {
+      {"1992-12-02T21:40:00"_UTC,
+       122.2 * Degree, 86.5 * Degree, 107.0 * Degree,
+       -35.6 * Degree / Day, 7.2 * Degree / Day, -97.0 * Degree / Day,
+       0.009_⑴, 3.5_⑴ * Degree,
+       8.0_⑴ * Degree, 7.1_⑴ * Degree, 5.7_⑴ * Degree},
+      {"2008-11-23T10:45:00"_UTC,
+       86.2 * Degree, 85.0 * Degree, 0.3 * Degree,
+       -0.4 * Degree / Day, -36.2 * Degree / Day, -98.9 * Degree / Day,
+       0.005_⑴, 18_⑴ * Degree,
+       91_⑴ * Degree, 145_⑴ * Degree, 98_⑴ * Degree}};
+
+  for (auto const& observation : observations) {
+    Instant const& t = observation.t;
     TakahashiAttitudeRotation const takahashi_expected_attitude(
-        /*α=*/122.2 * Degree,
-        /*β=*/86.5 * Degree,
-        /*γ=*/107.0 * Degree,
+        /*α=*/observation.α,
+        /*β=*/observation.β,
+        /*γ=*/observation.γ,
         EulerAngles::ZXZ,
         DefinesFrame<TakahashiPrincipalAxes>{});
     AngularVelocity<TakahashiPrincipalAxes> const
         takahashi_expected_angular_velocity(
-            {-35.6 * Degree / Day, 7.2 * Degree / Day, -97.0 * Degree / Day});
-    Bivector<AngularMomentum, TakahashiPrincipalAxes> const
-        takahashi_expected_angular_momentum(
-            {takahashi_expected_angular_velocity.coordinates().x *
-                 takahashi_moments_of_inertia.x,
-             takahashi_expected_angular_velocity.coordinates().y *
-                 takahashi_moments_of_inertia.y,
-             takahashi_expected_angular_velocity.coordinates().z *
-                 takahashi_moments_of_inertia.z});
+            {observation.ω₁, observation.ω₂, observation.ω₃});
 
     Solver::AttitudeRotation const expected_attitude =
         (takahashi_expected_attitude.Forget() *
          takahashi_to_vanilla.Inverse().Forget())
             .rotation();
-    Solver::AngularMomentumBivector const expected_angular_momentum =
-        takahashi_to_vanilla(takahashi_expected_angular_momentum);
     AngularVelocity<PrincipalAxes> const expected_angular_velocity =
         takahashi_to_vanilla(takahashi_expected_angular_velocity);
 
@@ -654,141 +677,19 @@ TEST_F(EulerSolverTest, Toutatis) {
     auto actual_attitude = solver.AttitudeAt(actual_angular_momentum, t);
 
     EXPECT_THAT(
-        actual_angular_momentum.Norm(),
-        RelativeErrorFrom(expected_angular_momentum.Norm(), IsNear(0.035_⑴)));
-    EXPECT_THAT(
-        AngleBetween(actual_angular_momentum, expected_angular_momentum),
-        IsNear(7.6_⑴ * Degree));
-    EXPECT_THAT(
         actual_angular_velocity.Norm(),
-        RelativeErrorFrom(expected_angular_velocity.Norm(), IsNear(0.009_⑴)));
+        RelativeErrorFrom(expected_angular_velocity.Norm(),
+                          IsNear(observation.angular_velocity_norm_error)));
     EXPECT_THAT(
         AngleBetween(actual_angular_velocity, expected_angular_velocity),
-        IsNear(3.5_⑴ * Degree));
+        IsNear(observation.angular_velocity_direction_error));
 
-    Bivector<double, PrincipalAxes> const e1({1, 0, 0});
-    Bivector<double, PrincipalAxes> const e2({0, 1, 0});
-    Bivector<double, PrincipalAxes> const e3({0, 0, 1});
     EXPECT_THAT(AngleBetween(actual_attitude(e1), expected_attitude(e1)),
-                IsNear(8.0_⑴ * Degree));
+                IsNear(observation.e1_direction_error));
     EXPECT_THAT(AngleBetween(actual_attitude(e2), expected_attitude(e2)),
-                IsNear(7.1_⑴ * Degree));
+                IsNear(observation.e2_direction_error));
     EXPECT_THAT(AngleBetween(actual_attitude(e3), expected_attitude(e3)),
-                IsNear(5.7_⑴ * Degree));
-  }
-  {
-    Instant const t = "2004-10-10T13:17:00"_UTC;
-    TakahashiAttitudeRotation const takahashi_expected_attitude(
-        /*α=*/327.7 * Degree,
-        /*β=*/20.4 * Degree,
-        /*γ=*/124.1 * Degree,
-        EulerAngles::ZXZ,
-        DefinesFrame<TakahashiPrincipalAxes>{});
-    AngularVelocity<TakahashiPrincipalAxes> const
-        takahashi_expected_angular_velocity(
-            {-10.7 * Degree / Day, 34.7 * Degree / Day, -97.3 * Degree / Day});
-    Bivector<AngularMomentum, TakahashiPrincipalAxes> const
-        takahashi_expected_angular_momentum(
-            {takahashi_expected_angular_velocity.coordinates().x *
-                 takahashi_moments_of_inertia.x,
-             takahashi_expected_angular_velocity.coordinates().y *
-                 takahashi_moments_of_inertia.y,
-             takahashi_expected_angular_velocity.coordinates().z *
-                 takahashi_moments_of_inertia.z});
-
-    Solver::AttitudeRotation const expected_attitude =
-        (takahashi_expected_attitude.Forget() *
-         takahashi_to_vanilla.Inverse().Forget())
-            .rotation();
-    Solver::AngularMomentumBivector const expected_angular_momentum =
-        takahashi_to_vanilla(takahashi_expected_angular_momentum);
-    AngularVelocity<PrincipalAxes> const expected_angular_velocity =
-        takahashi_to_vanilla(takahashi_expected_angular_velocity);
-
-    auto actual_angular_momentum = solver.AngularMomentumAt(t);
-    auto actual_angular_velocity =
-        solver.AngularVelocityFor(actual_angular_momentum);
-    auto actual_attitude = solver.AttitudeAt(actual_angular_momentum, t);
-
-    EXPECT_THAT(
-        actual_angular_momentum.Norm(),
-        RelativeErrorFrom(expected_angular_momentum.Norm(), IsNear(0.009_⑴)));
-    EXPECT_THAT(
-        AngleBetween(actual_angular_momentum, expected_angular_momentum),
-        IsNear(27_⑴ * Degree));
-    EXPECT_THAT(
-        actual_angular_velocity.Norm(),
-        RelativeErrorFrom(expected_angular_velocity.Norm(), IsNear(0.012_⑴)));
-    EXPECT_THAT(
-        AngleBetween(actual_angular_velocity, expected_angular_velocity),
-        IsNear(13_⑴ * Degree));
-
-    Bivector<double, PrincipalAxes> const e1({1, 0, 0});
-    Bivector<double, PrincipalAxes> const e2({0, 1, 0});
-    Bivector<double, PrincipalAxes> const e3({0, 0, 1});
-    EXPECT_THAT(AngleBetween(actual_attitude(e1), expected_attitude(e1)),
-                IsNear(93_⑴ * Degree));
-    EXPECT_THAT(AngleBetween(actual_attitude(e2), expected_attitude(e2)),
-                IsNear(171_⑴ * Degree));
-    EXPECT_THAT(AngleBetween(actual_attitude(e3), expected_attitude(e3)),
-                IsNear(86_⑴ * Degree));
-  }
-  {
-    Instant const t = "2008-11-23T10:45:00"_UTC;
-    TakahashiAttitudeRotation const takahashi_expected_attitude(
-        /*α=*/86.2 * Degree,
-        /*β=*/85.0 * Degree,
-        /*γ=*/0.3 * Degree,
-        EulerAngles::ZXZ,
-        DefinesFrame<TakahashiPrincipalAxes>{});
-    AngularVelocity<TakahashiPrincipalAxes> const
-        takahashi_expected_angular_velocity(
-            {-0.4 * Degree / Day, -36.2 * Degree / Day, -98.9 * Degree / Day});
-    Bivector<AngularMomentum, TakahashiPrincipalAxes> const
-        takahashi_expected_angular_momentum(
-            {takahashi_expected_angular_velocity.coordinates().x *
-                 takahashi_moments_of_inertia.x,
-             takahashi_expected_angular_velocity.coordinates().y *
-                 takahashi_moments_of_inertia.y,
-             takahashi_expected_angular_velocity.coordinates().z *
-                 takahashi_moments_of_inertia.z});
-
-    Solver::AttitudeRotation const expected_attitude =
-        (takahashi_expected_attitude.Forget() *
-         takahashi_to_vanilla.Inverse().Forget())
-            .rotation();
-    Solver::AngularMomentumBivector const expected_angular_momentum =
-        takahashi_to_vanilla(takahashi_expected_angular_momentum);
-    AngularVelocity<PrincipalAxes> const expected_angular_velocity =
-        takahashi_to_vanilla(takahashi_expected_angular_velocity);
-
-    auto actual_angular_momentum = solver.AngularMomentumAt(t);
-    auto actual_angular_velocity =
-        solver.AngularVelocityFor(actual_angular_momentum);
-    auto actual_attitude = solver.AttitudeAt(actual_angular_momentum, t);
-
-    EXPECT_THAT(
-        actual_angular_momentum.Norm(),
-        RelativeErrorFrom(expected_angular_momentum.Norm(), IsNear(0.002_⑴)));
-    EXPECT_THAT(
-        AngleBetween(actual_angular_momentum, expected_angular_momentum),
-        IsNear(39_⑴ * Degree));
-    EXPECT_THAT(
-        actual_angular_velocity.Norm(),
-        RelativeErrorFrom(expected_angular_velocity.Norm(), IsNear(0.005_⑴)));
-    EXPECT_THAT(
-        AngleBetween(actual_angular_velocity, expected_angular_velocity),
-        IsNear(18_⑴ * Degree));
-
-    Bivector<double, PrincipalAxes> const e1({1, 0, 0});
-    Bivector<double, PrincipalAxes> const e2({0, 1, 0});
-    Bivector<double, PrincipalAxes> const e3({0, 0, 1});
-    EXPECT_THAT(AngleBetween(actual_attitude(e1), expected_attitude(e1)),
-                IsNear(91_⑴ * Degree));
-    EXPECT_THAT(AngleBetween(actual_attitude(e2), expected_attitude(e2)),
-                IsNear(145_⑴ * Degree));
-    EXPECT_THAT(AngleBetween(actual_attitude(e3), expected_attitude(e3)),
-                IsNear(98_⑴ * Degree));
+                IsNear(observation.e3_direction_error));
   }
 }
 
