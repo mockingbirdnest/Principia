@@ -35,6 +35,7 @@ namespace physics {
 using astronomy::ICRS;
 using astronomy::J2000;
 using astronomy::operator""_UTC;
+using geometry::AngleBetween;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::DefinesFrame;
@@ -544,7 +545,7 @@ TEST_F(EulerSolverTest, Toutatis) {
   using TakahashiAttitudeRotation = Rotation<TakahashiPrincipalAxes, ICRS>;
   using TakahashiPermutation = Permutation<TakahashiPrincipalAxes,
                                            PrincipalAxes>;
-  TakahashiPermutation const takahashi_to_vanilla(TakahashiPermutation::YZX);
+  TakahashiPermutation const takahashi_to_vanilla(TakahashiPermutation::ZXY);
 
   R3Element<MomentOfInertia> const takahashi_moments_of_inertia{
       3.0836 * SIUnit<MomentOfInertia>(),
@@ -562,7 +563,7 @@ TEST_F(EulerSolverTest, Toutatis) {
       takahashi_initial_angular_velocity(
           {14.5 * Degree / Day, 33.7 * Degree / Day, -98.5 * Degree / Day});
 
-  Bivector<AngularMomentum, TakahashiPrincipalAxes>
+  Bivector<AngularMomentum, TakahashiPrincipalAxes> const
       takahashi_initial_angular_momentum(
           {takahashi_initial_angular_velocity.coordinates().x *
                takahashi_moments_of_inertia.x,
@@ -618,43 +619,59 @@ TEST_F(EulerSolverTest, Toutatis) {
                       initial_attitude,
                       epoch);
 
-  //Instant const t = "1992-12-02T21:40:00"_UTC;
-  //Solver::AttitudeRotation const expected_attitude(
-  //    /*α=*/122.2 * Degree,
-  //    /*β=*/86.5 * Degree,
-  //    /*γ=*/107.0 * Degree,
-  //    EulerAngles::ZXZ,
-  //    DefinesFrame<PrincipalAxes>{});
-  //AngularVelocity<PrincipalAxes> const expected_angular_velocity(
-  //    {-97.0 * Degree / Day, -35.6 * Degree / Day, 7.2 * Degree / Day});
-  //Bivector<AngularMomentum, PrincipalAxes> expected_angular_momentum(
-  //    {expected_angular_velocity.coordinates().y * moments_of_inertia.y,
-  //     expected_angular_velocity.coordinates().z * moments_of_inertia.z,
-  //     expected_angular_velocity.coordinates().x * moments_of_inertia.x});
+  Instant const t = "1992-12-02T21:40:00"_UTC;
+  TakahashiAttitudeRotation const takahashi_expected_attitude(
+      /*α=*/122.2 * Degree,
+      /*β=*/86.5 * Degree,
+      /*γ=*/107.0 * Degree,
+      EulerAngles::ZXZ,
+      DefinesFrame<TakahashiPrincipalAxes>{});
+  AngularVelocity<TakahashiPrincipalAxes> const
+      takahashi_expected_angular_velocity(
+          {-35.6 * Degree / Day, 7.2 * Degree / Day, -97.0 * Degree / Day});
+  Bivector<AngularMomentum, TakahashiPrincipalAxes> const
+      takahashi_expected_angular_momentum(
+          {takahashi_expected_angular_velocity.coordinates().x *
+               takahashi_moments_of_inertia.x,
+           takahashi_expected_angular_velocity.coordinates().y *
+               takahashi_moments_of_inertia.y,
+           takahashi_expected_angular_velocity.coordinates().z *
+               takahashi_moments_of_inertia.z});
 
-  //auto actual_angular_momentum = solver.AngularMomentumAt(t);
-  //auto actual_angular_velocity =
-  //    solver.AngularVelocityFor(actual_angular_momentum);
-  //auto actual_attitude = solver.AttitudeAt(actual_angular_momentum,t);
+  Solver::AttitudeRotation const expected_attitude =
+      (takahashi_expected_attitude.Forget() *
+       takahashi_to_vanilla.Inverse().Forget()).rotation();
+  Solver::AngularMomentumBivector const expected_angular_momentum =
+      takahashi_to_vanilla(takahashi_expected_angular_momentum);
+  AngularVelocity<PrincipalAxes> const expected_angular_velocity =
+      takahashi_to_vanilla(takahashi_expected_angular_velocity);
 
-  //EXPECT_THAT(actual_angular_momentum,
-  //            AlmostEquals(expected_angular_momentum, 0));
-  //EXPECT_THAT(actual_angular_velocity,
-  //            AlmostEquals(expected_angular_velocity, 0));
-  //Bivector<double, PrincipalAxes> e1({1, 0, 0});
-  //EXPECT_THAT(actual_attitude(e1), AlmostEquals(expected_attitude(e1), 0));
+  auto actual_angular_momentum = solver.AngularMomentumAt(t);
+  auto actual_angular_velocity =
+      solver.AngularVelocityFor(actual_angular_momentum);
+  auto actual_attitude = solver.AttitudeAt(actual_angular_momentum,t);
 
-  //EXPECT_THAT(Normalize(actual_attitude(actual_angular_momentum)),
-  //            Componentwise(
-  //                RelativeErrorFrom(
-  //                    angular_momentum_orientation_in_inertial.coordinates().x,
-  //                    IsNear(0.001_⑴)),
-  //                AbsoluteErrorFrom(
-  //                    angular_momentum_orientation_in_inertial.coordinates().y,
-  //                    IsNear(0.002_⑴)),
-  //                RelativeErrorFrom(
-  //                    angular_momentum_orientation_in_inertial.coordinates().z,
-  //                    IsNear(0.001_⑴))));
+  EXPECT_THAT(
+      actual_angular_momentum.Norm(),
+      RelativeErrorFrom(expected_angular_momentum.Norm(), IsNear(0.035_⑴)));
+  EXPECT_THAT(AngleBetween(actual_angular_momentum, expected_angular_momentum),
+              IsNear(7.6_⑴ * Degree));
+  EXPECT_THAT(
+      actual_angular_velocity.Norm(),
+      RelativeErrorFrom(expected_angular_velocity.Norm(), IsNear(0.009_⑴)));
+  EXPECT_THAT(AngleBetween(actual_angular_velocity, expected_angular_velocity),
+              IsNear(3.5_⑴ * Degree));
+
+
+  Bivector<double, PrincipalAxes> const e1({1, 0, 0});
+  Bivector<double, PrincipalAxes> const e2({0, 1, 0});
+  Bivector<double, PrincipalAxes> const e3({0, 0, 1});
+  EXPECT_THAT(AngleBetween(actual_attitude(e1), expected_attitude(e1)),
+              IsNear(8.0_⑴ * Degree));
+  EXPECT_THAT(AngleBetween(actual_attitude(e2), expected_attitude(e2)),
+              IsNear(7.1_⑴ * Degree));
+  EXPECT_THAT(AngleBetween(actual_attitude(e3), expected_attitude(e3)),
+              IsNear(5.7_⑴ * Degree));
 }
 
 }  // namespace physics
