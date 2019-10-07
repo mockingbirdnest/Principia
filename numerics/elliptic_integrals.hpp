@@ -15,12 +15,14 @@ namespace internal_elliptic_integrals {
 
 using quantities::Angle;
 
+// Computes Fukushima's general incomplete elliptic integrals
+// B(φ|m), D(φ|m), and J(φ, n|m), where m = 1 - mc.
 void FukushimaEllipticBDJ(Angle const& φ,
                           double n,
                           double mc,
-                          Angle& b,
-                          Angle& d,
-                          Angle& j);
+                          Angle& B_φ_m,
+                          Angle& D_φ_m,
+                          Angle& J_φ_n_m);
 
 Angle EllipticE(Angle const& φ,
                 double mc);
