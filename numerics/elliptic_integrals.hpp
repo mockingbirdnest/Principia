@@ -15,8 +15,15 @@ namespace internal_elliptic_integrals {
 
 using quantities::Angle;
 
-// Computes Fukushima's general incomplete elliptic integrals
-// B(φ|m), D(φ|m), and J(φ, n|m), where m = 1 - mc.
+// Computes the associate incomplete elliptic integrals of the second kind
+// B(φ|m) and D(φ|m), as well as Fukushima’s associate incomplete elliptic
+// integral of the third kind J(φ, n|m), where m = 1 - mc.
+// NOTE(egg): As far as I can tell, the origins of the notation are as follows:
+// — the integral D (complete and incomplete) is introduced in [JE33];
+// — the complete integral B is introduced in the re-edition [JE38];
+// — the incomplete B is introduced by [Buli65], generalizing [JEL60];
+// — the name “associate elliptic integral of the 2nd kind” is from [Fuku11b];
+// — the integral J is introduced in [Fuku11c].
 void FukushimaEllipticBDJ(Angle const& φ,
                           double n,
                           double mc,
