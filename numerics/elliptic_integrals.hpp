@@ -20,9 +20,9 @@ using quantities::Angle;
 void FukushimaEllipticBDJ(Angle const& φ,
                           double n,
                           double mc,
-                          Angle& B_φ_m,
-                          Angle& D_φ_m,
-                          Angle& J_φ_n_m);
+                          Angle& B_φǀm,
+                          Angle& D_φǀm,
+                          Angle& J_φ_nǀm);
 
 Angle EllipticE(Angle const& φ,
                 double mc);
