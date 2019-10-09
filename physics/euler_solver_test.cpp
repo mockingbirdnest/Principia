@@ -33,7 +33,6 @@ namespace principia {
 namespace physics {
 
 using astronomy::ICRS;
-using astronomy::J2000;
 using astronomy::operator""_UTC;
 using geometry::AngleBetween;
 using geometry::AngularVelocity;
