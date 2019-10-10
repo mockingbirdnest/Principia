@@ -145,7 +145,11 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     formula_ = Formula::ii;
   } else {
     CHECK_EQ(Square<AngularMomentum>(), Δ₂);
-    if (I₃₁ == MomentOfInertia()) {
+    if (G_ == AngularMomentum()) {
+      // No rotation.  Might as well go in the case of a sphere.
+      ψ_t_multiplier_ = AngularFrequency();
+      formula_ = Formula::Sphere;
+    } else if (I₃₁ == MomentOfInertia()) {
       // The degenerate case of a sphere.  It would create NaNs.
       CHECK_EQ(MomentOfInertia(), I₂₁);
       CHECK_EQ(MomentOfInertia(), I₃₂);
@@ -285,10 +289,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
   Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
       Commutator(m, ω) / Radian;
 
-  // Construct the orthonormal frame ℬₜ.  If ṁ is constant in the principal axes
+  // Construct the orthonormal frame ℬₜ.  If m is constant in the principal axes
   // frame, the choice is arbitrary.
   static Bivector<double, PrincipalAxesFrame> const zero;
-  auto const m_normalized = Normalize(m);
+  auto const m_normalized = NormalizeOrZero(m);
+  if (m_normalized == zero) {
+    return Rotation<PrincipalAxesFrame, ℬₜ>::Identity();
+  }
   auto v = NormalizeOrZero(ṁ);
   if (v == zero) {
     v = NormalizeOrZero(AngularMomentumBivector(

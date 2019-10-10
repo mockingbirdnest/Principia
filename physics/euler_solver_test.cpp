@@ -231,7 +231,6 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
       EXPECT_THAT(computed_initial_angular_momentum3,
                   AlmostEquals(initial_angular_momentum, 0, 0))
           << moments_of_inertia3 << " " << initial_angular_momentum;
-      // TODO(phl): Test the attitude in this case.
     }
   }
 }
@@ -533,6 +532,67 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
                     AlmostEquals(reference_momentum.coordinates().y, 0, 13),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 965)));
   CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/33);
+}
+
+TEST_F(EulerSolverTest, SpecialCases) {
+  Bivector<double, PrincipalAxes> const e1({1, 0, 0});
+  Bivector<double, PrincipalAxes> const e2({0, 1, 0});
+  Bivector<double, PrincipalAxes> const e3({0, 0, 1});
+
+  Bivector<double, ICRS> const i1({1, 0, 0});
+  Bivector<double, ICRS> const i2({0, 1, 0});
+  Bivector<double, ICRS> const i3({0, 0, 1});
+
+  R3Element<MomentOfInertia> const moments_of_inertia1{
+      2 * SIUnit<MomentOfInertia>(),
+      3 * SIUnit<MomentOfInertia>(),
+      5 * SIUnit<MomentOfInertia>()};
+  R3Element<MomentOfInertia> const moments_of_inertia2{
+      3 * SIUnit<MomentOfInertia>(),
+      3 * SIUnit<MomentOfInertia>(),
+      3 * SIUnit<MomentOfInertia>()};
+
+  // A general body that doesn't rotate.
+  {
+    Solver const solver1(moments_of_inertia1,
+                         Solver::AngularMomentumBivector(),
+                         identity_attitude_,
+                         Instant());
+    auto const t = Instant() + 10 * Second;
+    auto const actual_angular_momentum = solver1.AngularMomentumAt(t);
+    auto const actual_attitude = solver1.AttitudeAt(actual_angular_momentum, t);
+
+    EXPECT_THAT(actual_angular_momentum,
+                AlmostEquals(Solver::AngularMomentumBivector(), 0, 0));
+    EXPECT_THAT(actual_attitude(e1), AlmostEquals(i1, 0));
+    EXPECT_THAT(actual_attitude(e2), AlmostEquals(i2, 0));
+    EXPECT_THAT(actual_attitude(e3), AlmostEquals(i3, 0));
+  }
+  //{
+  //  Solver const solver2(moments_of_inertia2,
+  //                      initial_angular_momentum,
+  //                      identity_attitude_,
+  //                      Instant());
+  //  auto const computed_initial_angular_momentum2 =
+  //      solver2.AngularMomentumAt(Instant());
+
+  //  EXPECT_THAT(computed_initial_angular_momentum2,
+  //              AlmostEquals(initial_angular_momentum, 0, 50))
+  //      << moments_of_inertia2 << " " << initial_angular_momentum;
+  //}
+  //{
+  //  Solver const solver3(moments_of_inertia3,
+  //                      initial_angular_momentum,
+  //                      identity_attitude_,
+  //                      Instant());
+  //  auto const computed_initial_angular_momentum3 =
+  //      solver3.AngularMomentumAt(Instant());
+
+  //  EXPECT_THAT(computed_initial_angular_momentum3,
+  //              AlmostEquals(initial_angular_momentum, 0, 0))
+  //      << moments_of_inertia3 << " " << initial_angular_momentum;
+  //  // TODO(phl): Test the attitude in this case.
+  //}
 }
 
 // The data in this test are from Takahashi, Busch and Scheeres, Spin state and
