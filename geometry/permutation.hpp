@@ -77,10 +77,14 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
       not_null<serialization::Permutation*> message) const;
   static Permutation ReadFromMessage(serialization::Permutation const& message);
 
- private:
+ public:
+  // TODO(phl): This used to be private, but it's convenient for operating on
+  // R3Elements representing the principal moments of inertia.  Revert when we
+  // have proper transformations for the inertia tensor.
   template<typename Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 
+ private:
   CoordinatePermutation coordinate_permutation_;
 
   template<typename From, typename Through, typename To>

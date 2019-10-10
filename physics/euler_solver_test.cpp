@@ -7,9 +7,15 @@
 #include <set>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
+#include "astronomy/frames.hpp"
+#include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
@@ -17,18 +23,31 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace physics {
 
+using astronomy::ICRS;
+using astronomy::operator""_UTC;
+using geometry::AngleBetween;
+using geometry::AngularVelocity;
 using geometry::Bivector;
+using geometry::DefinesFrame;
+using geometry::EulerAngles;
 using geometry::Frame;
 using geometry::Instant;
+using geometry::OrthogonalMap;
+using geometry::Permutation;
 using geometry::R3Element;
+using geometry::RadiusLatitudeLongitude;
+using geometry::Rotation;
 using quantities::Abs;
+using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::Cos;
@@ -38,41 +57,43 @@ using quantities::Sin;
 using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::si::Day;
+using quantities::si::Degree;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
+using testing_utilities::ApproximateQuantity;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
+using testing_utilities::RelativeErrorFrom;
 using testing_utilities::VanishesBefore;
+using testing_utilities::operator""_⑴;
 using ::testing::Lt;
 using ::testing::Matcher;
 
 class EulerSolverTest : public ::testing::Test {
  protected:
-  using ICRSFrame = Frame<serialization::Frame::SolarSystemTag,
-                          serialization::Frame::ICRS,
-                          /*frame_is_inertial*/ true>;
-  using PrincipalAxesFrame = Frame<serialization::Frame::PhysicsTag,
-                                   serialization::Frame::PRINCIPAL_AXES,
-                                   /*frame_is_inertial*/ false>;
+  using PrincipalAxes = Frame<serialization::Frame::PhysicsTag,
+                              serialization::Frame::PRINCIPAL_AXES,
+                              /*frame_is_inertial*/ false>;
 
-  using Solver = EulerSolver<ICRSFrame, PrincipalAxesFrame>;
+  using Solver = EulerSolver<ICRS, PrincipalAxes>;
 
   EulerSolverTest()
       : identity_attitude_(
-            EulerSolver<ICRSFrame,
-                        PrincipalAxesFrame>::AttitudeRotation::Identity()) {}
+            EulerSolver<ICRS, PrincipalAxes>::AttitudeRotation::Identity()) {}
 
   // Checks that the angular momentum transformed by the attitude to the
   // inertial frame satisfies the given matcher.
   void CheckAngularMomentumConservation(
       std::vector<Solver::AngularMomentumBivector> const& angular_momenta,
       std::vector<Solver::AttitudeRotation> const& attitudes,
-      Matcher<Bivector<AngularMomentum, ICRSFrame>> const& matcher) {
+      Matcher<Bivector<AngularMomentum, ICRS>> const& matcher) {
     CHECK_EQ(angular_momenta.size(), attitudes.size());
     for (int i = 0; i < angular_momenta.size(); ++i) {
-      Bivector<AngularMomentum, ICRSFrame> const angular_momentum_in_inertial =
+      Bivector<AngularMomentum, ICRS> const angular_momentum_in_inertial =
           attitudes[i](angular_momenta[i]);
       EXPECT_THAT(angular_momentum_in_inertial, matcher);
     }
@@ -81,7 +102,7 @@ class EulerSolverTest : public ::testing::Test {
   // Checks that the kinetic energy computed using the attitude has the right
   // value.
   void CheckPoinsotConstruction(
-      R3Element<MomentOfInertia> const& moments_of_inertia,
+      Solver const& solver,
       std::vector<Solver::AngularMomentumBivector> const& angular_momenta,
       std::vector<Solver::AttitudeRotation> const& attitudes,
       int const ulps) {
@@ -89,15 +110,13 @@ class EulerSolverTest : public ::testing::Test {
     Energy maximum_kinetic_energy;
     Energy minimum_kinetic_energy = quantities::Infinity<Energy>();
     for (int i = 0; i < angular_momenta.size(); ++i) {
-      Bivector<AngularMomentum, PrincipalAxesFrame> const angular_momentum =
+      Bivector<AngularMomentum, PrincipalAxes> const angular_momentum =
           angular_momenta[i];
-      Bivector<AngularFrequency, PrincipalAxesFrame> const angular_velocity(
-          {angular_momentum.coordinates().x / moments_of_inertia.x,
-           angular_momentum.coordinates().y / moments_of_inertia.y,
-           angular_momentum.coordinates().z / moments_of_inertia.z});
-      Bivector<AngularMomentum, ICRSFrame> const angular_momentum_in_inertial =
+      AngularVelocity<PrincipalAxes> const angular_velocity =
+          solver.AngularVelocityFor(angular_momentum);
+      Bivector<AngularMomentum, ICRS> const angular_momentum_in_inertial =
           attitudes[i](angular_momentum);
-      Bivector<AngularFrequency, ICRSFrame> const
+      AngularVelocity<ICRS> const
           angular_velocity_in_inertial = attitudes[i](angular_velocity);
       Energy const kinetic_energy = 0.5 *
                                     InnerProduct(angular_momentum_in_inertial,
@@ -350,7 +369,7 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
                                           Instant() + t));
   }
 
-  Bivector<AngularMomentum, ICRSFrame> const reference_momentum =
+  Bivector<AngularMomentum, ICRS> const reference_momentum =
       initial_attitude(initial_angular_momentum);
   CheckAngularMomentumConservation(
       angular_momenta,
@@ -358,8 +377,7 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 32),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 4),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 2)));
-  CheckPoinsotConstruction(
-      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/13);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/13);
 }
 
 TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
@@ -403,7 +421,7 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
                                           Instant() + t));
   }
 
-  Bivector<AngularMomentum, ICRSFrame> const reference_momentum =
+  Bivector<AngularMomentum, ICRS> const reference_momentum =
       initial_attitude(initial_angular_momentum);
   CheckAngularMomentumConservation(
       angular_momenta,
@@ -411,8 +429,7 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       Componentwise(AlmostEquals(reference_momentum.coordinates().x, 0, 3),
                     VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 24),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 6)));
-  CheckPoinsotConstruction(
-      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/4);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/4);
 }
 
 // This test demonstrates the Джанибеков effect, also known as tennis racket
@@ -507,7 +524,7 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
     }
   }
 
-  Bivector<AngularMomentum, ICRSFrame> const reference_momentum =
+  Bivector<AngularMomentum, ICRS> const reference_momentum =
       initial_attitude(initial_angular_momentum);
   CheckAngularMomentumConservation(
       angular_momenta,
@@ -515,8 +532,275 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 10),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 13),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 965)));
-  CheckPoinsotConstruction(
-      moments_of_inertia, angular_momenta, attitudes, /*ulps=*/33);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/33);
+}
+
+// The data in this test are from Takahashi, Busch and Scheeres, Spin state and
+// moment of inertia characterization of 4179 Toutatis, 2013.
+TEST_F(EulerSolverTest, Toutatis) {
+  Instant const epoch = "1992-11-09T17:49:47"_UTC;
+
+  // Takahashi et al. adopt a bizarre convention where their x axis is our I₂,
+  // their y axis is our I₃ and their z axis is our I₁, see Table 2.  This
+  // appears to contradict Figure 1, but it is consistent with ω₁, ω₂, ω₃ being
+  // along their x, y, z axes respectively.
+  struct TakahashiPrincipalAxes;
+  using TakahashiAttitudeRotation = Rotation<TakahashiPrincipalAxes, ICRS>;
+  using TakahashiPermutation = Permutation<TakahashiPrincipalAxes,
+                                           PrincipalAxes>;
+  TakahashiPermutation const takahashi_to_vanilla(TakahashiPermutation::ZXY);
+
+  R3Element<MomentOfInertia> const takahashi_moments_of_inertia{
+      3.0836 * SIUnit<MomentOfInertia>(),
+      3.235 * SIUnit<MomentOfInertia>(),
+      1 * SIUnit<MomentOfInertia>()};
+
+  TakahashiAttitudeRotation const takahashi_initial_attitude(
+      /*α=*/145.498 * Degree,
+      /*β=*/65.865 * Degree,
+      /*γ=*/241.524 * Degree,
+      EulerAngles::ZXZ,
+      DefinesFrame<TakahashiPrincipalAxes>{});
+
+  AngularVelocity<TakahashiPrincipalAxes> const
+      takahashi_initial_angular_velocity({14.51 * Degree / Day,
+                                          33.529 * Degree / Day,
+                                          -98.709 * Degree / Day});
+
+  Bivector<AngularMomentum, TakahashiPrincipalAxes> const
+      takahashi_initial_angular_momentum(
+          {takahashi_initial_angular_velocity.coordinates().x *
+               takahashi_moments_of_inertia.x,
+           takahashi_initial_angular_velocity.coordinates().y *
+               takahashi_moments_of_inertia.y,
+           takahashi_initial_angular_velocity.coordinates().z *
+               takahashi_moments_of_inertia.z});
+
+  // From Zhao et al., Orientation and rotational parameters of asteroid 4179
+  // Toutatis: new insights from Change'e-2's close flyby.
+  auto const angular_momentum_orientation_in_inertial = Bivector<double, ICRS>(
+      RadiusLatitudeLongitude(1.0, -54.75 * Degree, 180.2 * Degree)
+          .ToCartesian());
+
+  Solver::AttitudeRotation const initial_attitude =
+      (takahashi_initial_attitude.Forget() *
+       takahashi_to_vanilla.Inverse().Forget()).rotation();
+  Solver::AngularMomentumBivector const initial_angular_momentum =
+      takahashi_to_vanilla(takahashi_initial_angular_momentum);
+
+  // Check that the angular momentum in the body frame is consistent with that
+  // in the inertial frame transformed by the initial attitude.  The data come
+  // from different sources, so this is not a trivial check.
+  Bivector<double, PrincipalAxes> const angular_momentum_orientation_in_body =
+      initial_attitude.Inverse()(angular_momentum_orientation_in_inertial);
+  EXPECT_THAT(
+      Normalize(initial_angular_momentum),
+      Componentwise(RelativeErrorFrom(
+                        angular_momentum_orientation_in_body.coordinates().x,
+                        IsNear(0.016_⑴)),
+                    RelativeErrorFrom(
+                        angular_momentum_orientation_in_body.coordinates().y,
+                        IsNear(0.061_⑴)),
+                    RelativeErrorFrom(
+                        angular_momentum_orientation_in_body.coordinates().z,
+                        IsNear(0.001_⑴))));
+
+  // Same check as above, but in the inertial frame.  The y coordinate is small
+  // because the longitute is close to 180°, so we only check the absolute error
+  // for it.
+  EXPECT_THAT(Normalize(initial_attitude(initial_angular_momentum)),
+              Componentwise(
+                  RelativeErrorFrom(
+                      angular_momentum_orientation_in_inertial.coordinates().x,
+                      IsNear(0.028_⑴)),
+                  AbsoluteErrorFrom(
+                      angular_momentum_orientation_in_inertial.coordinates().y,
+                      IsNear(0.008_⑴)),
+                  RelativeErrorFrom(
+                      angular_momentum_orientation_in_inertial.coordinates().z,
+                      IsNear(0.014_⑴))));
+
+  Solver const solver(takahashi_to_vanilla(takahashi_moments_of_inertia),
+                      initial_angular_momentum,
+                      initial_attitude,
+                      epoch);
+
+  Bivector<double, PrincipalAxes> const e1({1, 0, 0});
+  Bivector<double, PrincipalAxes> const e2({0, 1, 0});
+  Bivector<double, PrincipalAxes> const e3({0, 0, 1});
+
+  struct Observation {
+    Instant t;
+    Angle α;
+    Angle β;
+    Angle γ;
+    AngularFrequency ω₁;
+    AngularFrequency ω₂;
+    AngularFrequency ω₃;
+    ApproximateQuantity<double> angular_velocity_norm_error;
+    ApproximateQuantity<Angle> angular_velocity_direction_error;
+    ApproximateQuantity<Angle> e1_direction_error;
+    ApproximateQuantity<Angle> e2_direction_error;
+    ApproximateQuantity<Angle> e3_direction_error;
+  };
+
+  // The errors for 1992 seem consistent with the residuals from Takahashi (3 σ
+  // for the attitude on 1992-12-04, 1.5 σ on 1992-12-07, for instance, figures
+  // 7 and 8) and they are generally smaller for the angular velocity than for
+  // the attitude, in agreement with that paper.
+  // The errors for 2008 are caused by the fact that we ignore the torque
+  // exerted by the Earth and the Sun.  As shown in figure 6 of Takahashi, this
+  // results in a completely different orientation, estimated in the text to be
+  // around 100°, which is again generally consistent with our results.
+  std::vector<Observation> const observations = {
+      {"1992-12-02T21:40:00"_UTC,
+       122.2 * Degree, 86.5 * Degree, 107.0 * Degree,
+       -35.6 * Degree / Day, 7.2 * Degree / Day, -97.0 * Degree / Day,
+
+       0.011_⑴, 4.5_⑴ * Degree,
+       7.9_⑴ * Degree, 5.4_⑴ * Degree, 5.9_⑴ * Degree},
+      {"1992-12-03T19:30:00"_UTC,
+       86.3 * Degree, 81.8 * Degree, 24.5 * Degree,
+       -16.4 * Degree / Day, -29.1 * Degree / Day, -91.9 * Degree / Day,
+
+       0.076_⑴, 0.5_⑴ * Degree,
+       6.6_⑴ * Degree, 7.7_⑴ * Degree, 4.7_⑴ * Degree},
+      {"1992-12-04T18:10:00"_UTC,
+       47.8 * Degree, 60.7 * Degree, 284.0 * Degree,
+       29.1 * Degree / Day, -23.2 * Degree / Day, -97.8 * Degree / Day,
+
+       0.005_⑴, 5.0_⑴ * Degree,
+       13_⑴ * Degree, 15_⑴ * Degree, 9.4_⑴ * Degree},
+      {"1992-12-05T18:50:00"_UTC,
+       14.6 * Degree, 39.4 * Degree, 207.1 * Degree,
+       33.3 * Degree / Day, 8.2 * Degree / Day, -92.2 * Degree / Day,
+
+       0.064_⑴, 1.1_⑴ * Degree,
+       9.4_⑴ * Degree, 4.3_⑴ * Degree, 8.4_⑴ * Degree},
+      {"1992-12-06T17:30:00"_UTC,
+       331.3 * Degree, 23.7 * Degree, 151.6 * Degree,
+       6.6 * Degree / Day, 34.5 * Degree / Day, -95.8 * Degree / Day,
+
+       0.032_⑴, 0.8_⑴ * Degree,
+       2.0_⑴ * Degree, 0.6_⑴ * Degree, 2.1_⑴ * Degree},
+      {"1992-12-07T17:20:00"_UTC,
+       222.5 * Degree, 25.4 * Degree, 143.9 * Degree,
+       12.8 * Degree / Day, 25.4 * Degree / Day, -104.1 * Degree / Day,
+
+       0.028_⑴, 24_⑴ * Degree,
+       5.7_⑴ * Degree, 15_⑴ * Degree, 15_⑴ * Degree},
+      {"1992-12-08T16:40:00"_UTC,
+       169.8 * Degree, 45.5 * Degree, 106.9 * Degree,
+       -31.1 * Degree / Day, -21.9 * Degree / Day, -97.7 * Degree / Day,
+
+       0.0001_⑴, 2.7_⑴ * Degree,
+       3.0_⑴ * Degree, 2.6_⑴ * Degree, 2.6_⑴ * Degree},
+      {"1992-12-09T17:50:00"_UTC,
+       137.3 * Degree, 71.3 * Degree, 22.3 * Degree,
+       11.8 * Degree / Day, -36.9 * Degree / Day, -94.9 * Degree / Day,
+
+       0.028_⑴, 3.4_⑴ * Degree,
+       3.4_⑴ * Degree, 3.4_⑴ * Degree, 1.1_⑴ * Degree},
+      {"1992-12-10T17:20:00"_UTC,
+       103.1 * Degree, 85.2 * Degree, 292.6 * Degree,
+       35.8 * Degree / Day, -8.9 * Degree / Day, -97.9 * Degree / Day,
+
+       0.0009_⑴, 0.8_⑴ * Degree,
+       3.1_⑴ * Degree, 1.4_⑴ * Degree, 3.4_⑴ * Degree},
+      {"1992-12-11T09:40:00"_UTC,
+       77.0 * Degree, 85.7 * Degree, 225.5 * Degree,
+       31.0 * Degree / Day, 17.0 * Degree / Day, -96.3 * Degree / Day,
+
+       0.022_⑴, 1.0_⑴ * Degree,
+       2.8_⑴ * Degree, 1.6_⑴ * Degree, 2.7_⑴ * Degree},
+      {"1992-12-12T09:20:00"_UTC,
+       42.8 * Degree, 70.2 * Degree, 133.2 * Degree,
+       -1.3 * Degree / Day, 37.0 * Degree / Day, -95.9 * Degree / Day,
+
+       0.025_⑴, 2.2_⑴ * Degree,
+       2.0_⑴ * Degree, 3.2_⑴ * Degree, 2.6_⑴ * Degree},
+      {"1992-12-13T08:10:00"_UTC,
+       13.7 * Degree, 44.4 * Degree, 51.9 * Degree,
+       -38.3 * Degree / Day, 17.9 * Degree / Day, -97.3 * Degree / Day,
+
+       0.013_⑴, 3.4_⑴ * Degree,
+       2.5_⑴ * Degree, 5.3_⑴ * Degree, 5.3_⑴ * Degree},
+      {"1992-12-14T07:50:00"_UTC,
+       323.7 * Degree, 14.0 * Degree, 0.0 * Degree,
+       -70.5 * Degree / Day, -30.6 * Degree / Day, -91.1 * Degree / Day,
+
+       0.119_⑴, 22_⑴ * Degree,
+       4.1_⑴ * Degree, 3.8_⑴ * Degree, 4.5_⑴ * Degree},
+      {"1992-12-15T07:50:00"_UTC,
+       193.2 * Degree, 24.4 * Degree, 21.4 * Degree,
+       22.1 * Degree / Day, -26.6 * Degree / Day, -96.6 * Degree / Day,
+
+       0.026_⑴, 4.9_⑴ * Degree,
+       3.2_⑴ * Degree, 8.2_⑴ * Degree, 8.0_⑴ * Degree},
+      {"1992-12-16T07:10:00"_UTC,
+       165.1 * Degree, 46.4 * Degree, 310.6 * Degree,
+       33.4 * Degree / Day, -3.4 * Degree / Day, -93.7 * Degree / Day,
+
+       0.052_⑴, 2.6_⑴ * Degree,
+       7.3_⑴ * Degree, 5.8_⑴ * Degree, 8.0_⑴ * Degree},
+      {"1992-12-17T06:49:00"_UTC,
+       130.6 * Degree, 76.1 * Degree, 234.9 * Degree,
+       12.6 * Degree / Day, 33.9 * Degree / Day, -94.0 * Degree / Day,
+
+       0.045_⑴, 2.1_⑴ * Degree,
+       0.8_⑴ * Degree, 1.1_⑴ * Degree, 1.2_⑴ * Degree},
+      {"1992-12-18T07:09:00"_UTC,
+       91.6 * Degree, 81.6 * Degree, 142.4 * Degree,
+       -24.3 * Degree / Day, 29.6 * Degree / Day, -102.0 * Degree / Day,
+
+       0.036_⑴, 2.1_⑴ * Degree,
+       5.6_⑴ * Degree, 6.3_⑴ * Degree, 4.1_⑴ * Degree},
+      {"2008-11-23T10:45:00"_UTC,
+       86.2 * Degree, 85.0 * Degree, 0.3 * Degree,
+       -0.4 * Degree / Day, -36.2 * Degree / Day, -98.9 * Degree / Day,
+
+       0.0005_⑴, 40_⑴ * Degree,
+       29_⑴ * Degree, 122_⑴ * Degree, 131_⑴ * Degree}};
+
+  for (auto const& observation : observations) {
+    Instant const& t = observation.t;
+    TakahashiAttitudeRotation const takahashi_expected_attitude(
+        /*α=*/observation.α,
+        /*β=*/observation.β,
+        /*γ=*/observation.γ,
+        EulerAngles::ZXZ,
+        DefinesFrame<TakahashiPrincipalAxes>{});
+    AngularVelocity<TakahashiPrincipalAxes> const
+        takahashi_expected_angular_velocity(
+            {observation.ω₁, observation.ω₂, observation.ω₃});
+
+    Solver::AttitudeRotation const expected_attitude =
+        (takahashi_expected_attitude.Forget() *
+         takahashi_to_vanilla.Inverse().Forget())
+            .rotation();
+    AngularVelocity<PrincipalAxes> const expected_angular_velocity =
+        takahashi_to_vanilla(takahashi_expected_angular_velocity);
+
+    auto actual_angular_momentum = solver.AngularMomentumAt(t);
+    auto actual_angular_velocity =
+        solver.AngularVelocityFor(actual_angular_momentum);
+    auto actual_attitude = solver.AttitudeAt(actual_angular_momentum, t);
+
+    EXPECT_THAT(
+        actual_angular_velocity.Norm(),
+        RelativeErrorFrom(expected_angular_velocity.Norm(),
+                          IsNear(observation.angular_velocity_norm_error)));
+    EXPECT_THAT(
+        AngleBetween(actual_angular_velocity, expected_angular_velocity),
+        IsNear(observation.angular_velocity_direction_error));
+
+    EXPECT_THAT(AngleBetween(actual_attitude(e1), expected_attitude(e1)),
+                IsNear(observation.e1_direction_error));
+    EXPECT_THAT(AngleBetween(actual_attitude(e2), expected_attitude(e2)),
+                IsNear(observation.e2_direction_error));
+    EXPECT_THAT(AngleBetween(actual_attitude(e3), expected_attitude(e3)),
+                IsNear(observation.e3_direction_error));
+  }
 }
 
 }  // namespace physics
