@@ -71,7 +71,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   CHECK_LE(I₁, I₂);
   CHECK_LE(I₂, I₃);
 
-  // TODO(phl): Properly handle m == 0.
   auto const& m = initial_angular_momentum.coordinates();
 
   // These computations are such that if, say I₁ == I₂, I₂₁ is +0.0 and I₁₂ is
