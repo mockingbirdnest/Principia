@@ -564,15 +564,22 @@ TEST_F(EulerSolverTest, SpecialCases) {
     EXPECT_THAT(actual_attitude(e2), AlmostEquals(identity_attitude_(e2), 0));
     EXPECT_THAT(actual_attitude(e3), AlmostEquals(identity_attitude_(e3), 0));
   }
+  // A sphere that rotates around an axis with a random orientation.  Also, a
+  // non-trivial initial attitude.
   {
     Solver::AngularMomentumBivector const
         initial_angular_momentum({1.0 * SIUnit<AngularMomentum>(),
                                   2.0 * SIUnit<AngularMomentum>(),
                                   4.0 * SIUnit<AngularMomentum>()});
-    Solver::AttitudeRotation const initial_attitude = identity_attitude_;
+    Solver::AttitudeRotation const initial_attitude(
+        0.5 * Radian,
+        1.5 * Radian,
+        -2.5 * Radian,
+        EulerAngles::YZY,
+        DefinesFrame<PrincipalAxes>{});
     Solver const solver2(moments_of_inertia2,
                          initial_angular_momentum,
-                         identity_attitude_,
+                         initial_attitude,
                          Instant());
     auto const t = Instant() + 10 * Second;
     auto const actual_angular_momentum = solver2.AngularMomentumAt(t);
@@ -586,16 +593,16 @@ TEST_F(EulerSolverTest, SpecialCases) {
                                         4.0 / 3.0 * Radian / Second});
     auto const expected_angular_frequency = expected_angular_velocity.Norm();
     auto const expected_attitude =
-        Solver::AttitudeRotation(expected_angular_frequency * 10 * Second,
-                                 identity_attitude_(initial_angular_momentum),
-                                 DefinesFrame<PrincipalAxes>{});
+        initial_attitude *
+        Rotation<PrincipalAxes, PrincipalAxes>(
+            expected_angular_frequency * 10 * Second, initial_angular_momentum);
 
     EXPECT_THAT(actual_angular_momentum,
                 AlmostEquals(initial_angular_momentum, 0));
     EXPECT_THAT(actual_angular_velocity,
                 AlmostEquals(expected_angular_velocity, 0));
-    EXPECT_THAT(actual_attitude(e1), AlmostEquals(expected_attitude(e1), 31));
-    EXPECT_THAT(actual_attitude(e2), AlmostEquals(expected_attitude(e2), 56));
+    EXPECT_THAT(actual_attitude(e1), AlmostEquals(expected_attitude(e1), 29));
+    EXPECT_THAT(actual_attitude(e2), AlmostEquals(expected_attitude(e2), 68));
     EXPECT_THAT(actual_attitude(e3), AlmostEquals(expected_attitude(e3), 6));
   }
   //{
