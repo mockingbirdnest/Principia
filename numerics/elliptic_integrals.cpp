@@ -1742,46 +1742,50 @@ void FukushimaEllipticBDJ(Angle const& φ,
 }
 
 Angle EllipticE(Angle const& φ, double const mc) {
-  Angle e{uninitialized};
-  Angle f{uninitialized};
-  Angle ᴨ{uninitialized};
-  EllipticEFΠ(φ, /*n=*/1.0, mc, e, f, ᴨ);
-  return e;
+  Angle F{uninitialized};
+  Angle E{uninitialized};
+  Angle Π{uninitialized};
+  // TODO(egg): we are needlessly computing J (and Π) here, which is why we have
+  // to pass n.
+  EllipticFEΠ(φ, /*n=*/1, mc, F, E, Π);
+  return E;
 }
 
 Angle EllipticF(Angle const& φ, double const mc) {
-  Angle e{uninitialized};
-  Angle f{uninitialized};
-  Angle ᴨ{uninitialized};
-  EllipticEFΠ(φ, /*n=*/1.0, mc, e, f, ᴨ);
-  return f;
+  Angle F{uninitialized};
+  Angle E{uninitialized};
+  Angle Π{uninitialized};
+  // TODO(egg): we are needlessly computing J (and Π) here, which is why we have
+  // to pass n.
+  EllipticFEΠ(φ, /*n=*/1, mc, F, E, Π);
+  return F;
 }
 
 Angle EllipticΠ(Angle const& φ, double const n, double const mc) {
-  Angle e{uninitialized};
-  Angle f{uninitialized};
-  Angle ᴨ{uninitialized};
-  EllipticEFΠ(φ, n, mc, e, f, ᴨ);
-  return ᴨ;
+  Angle F{uninitialized};
+  Angle E{uninitialized};
+  Angle Π{uninitialized};
+  EllipticFEΠ(φ, n, mc, F, E, Π);
+  return Π;
 }
 
-void EllipticEFΠ(Angle const& φ,
+void EllipticFEΠ(Angle const& φ,
                  double const n,
                  double const mc,
-                 Angle& e,
-                 Angle& f,
-                 Angle& ᴨ) {
+                 Angle& F_φǀm,
+                 Angle& E_φǀm,
+                 Angle& Π_φ_nǀm) {
   DCHECK_LE(0, n);
   DCHECK_GE(1, n);
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
-  Angle b{uninitialized};
-  Angle d{uninitialized};
-  Angle j{uninitialized};
-  FukushimaEllipticBDJ(φ, n, mc, b, d, j);
-  e = b + mc * d;
-  f = b + d;
-  ᴨ = f + n * j;
+  Angle B{uninitialized};
+  Angle D{uninitialized};
+  Angle J{uninitialized};
+  FukushimaEllipticBDJ(φ, n, mc, B, D, J);
+  F_φǀm = B + mc * D;
+  E_φǀm = B + D;
+  Π_φ_nǀm = F_φǀm + n * J;
 }
 
 //  Double precision complete elliptic integral of the first kind

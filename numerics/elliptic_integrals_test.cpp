@@ -136,11 +136,11 @@ TEST_F(EllipticIntegralsTest, MathematicaBivariate) {
     Angle actual_value_e;
     Angle actual_value_f;
     Angle actual_value_ᴨ;  // Ignored.
-    EllipticEFΠ(argument_φ,
+    EllipticFEΠ(argument_φ,
                 /*n=*/1,
                 1.0 - argument_m,
-                actual_value_e,
                 actual_value_f,
+                actual_value_e,
                 actual_value_ᴨ);
 
     EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 6))
@@ -178,11 +178,11 @@ TEST_F(EllipticIntegralsTest, MathematicaTrivariate) {
     Angle actual_value_e;  // Ignored.
     Angle actual_value_f;  // Ignored.
     Angle actual_value_ᴨ;
-    EllipticEFΠ(argument_φ,
+    EllipticFEΠ(argument_φ,
                 argument_n,
                 1.0 - argument_m,
-                actual_value_e,
                 actual_value_f,
+                actual_value_e,
                 actual_value_ᴨ);
 
     // TODO(phl): The error is uncomfortably large here.  Figure out what's

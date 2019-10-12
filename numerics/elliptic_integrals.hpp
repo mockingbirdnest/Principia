@@ -59,12 +59,14 @@ Angle EllipticΠ(Angle const& φ,
                 double n,
                 double mc);
 
-void EllipticEFΠ(Angle const& φ,
+// Computes the incomplete elliptic integrals of all three kinds F(φ|m), E(φ|m),
+// and Π(φ, n|m), where m = 1 - mc.
+void EllipticFEΠ(Angle const& φ,
                  double n,
                  double mc,
-                 Angle& e,
-                 Angle& f,
-                 Angle& ᴨ);
+                 Angle& F_φǀm,
+                 Angle& E_φǀm,
+                 Angle& Π_φ_nǀm);
 
 Angle EllipticK(double mc);
 
@@ -73,7 +75,7 @@ Angle EllipticK(double mc);
 using internal_elliptic_integrals::EllipticE;
 using internal_elliptic_integrals::EllipticF;
 using internal_elliptic_integrals::EllipticΠ;
-using internal_elliptic_integrals::EllipticEFΠ;
+using internal_elliptic_integrals::EllipticFEΠ;
 using internal_elliptic_integrals::EllipticK;
 using internal_elliptic_integrals::FukushimaEllipticBDJ;
 
