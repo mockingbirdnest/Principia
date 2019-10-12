@@ -1659,11 +1659,11 @@ void FukushimaEllipticBDJ(Angle const& φ,
   Reduce(φ, φ_reduced, j);
   Angle const abs_φ_reduced = Abs(φ_reduced);
 
-  // NOTE(phl): The original Fortran code had φs = 1.345 * Radian, which,
-  // according to the above-mentioned paper, is suitable for single precision.
-  // However, this is double precision.  Importantly, this doesn't match the
-  // value of ys.  The discrepancy has a 5-10% impact on performance.  I am not
-  // sure if it has an impact on correctness.
+  // NOTE(phl): The original Fortran code [Fuk18] had φs = 1.345 * Radian,
+  // which, according to the above-mentioned paper, is suitable for single
+  // precision. However, this is double precision.  Importantly, this doesn't
+  // match the value of ys.  The discrepancy has a 5-10% impact on performance.
+  // I am not sure if it has an impact on correctness.
 
   // Sin(φs)^2 must be approximately ys.
   constexpr Angle φs = 1.249 * Radian;
