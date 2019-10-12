@@ -569,6 +569,117 @@ TEST_F(EulerSolverTest, SpecialCases) {
     EXPECT_THAT(actual_attitude(e2), AlmostEquals(identity_attitude_(e2), 0));
     EXPECT_THAT(actual_attitude(e3), AlmostEquals(identity_attitude_(e3), 0));
   }
+  // A general body that rotates along the first principal axis.
+  {
+    Solver::AngularMomentumBivector const
+        initial_angular_momentum({5.0 * SIUnit<AngularMomentum>(),
+                                  0.0 * SIUnit<AngularMomentum>(),
+                                  0.0 * SIUnit<AngularMomentum>()});
+    Solver const solver1(moments_of_inertia1,
+                         initial_angular_momentum,
+                         identity_attitude_,
+                         Instant());
+    AngularVelocity<PrincipalAxes> const initial_angular_velocity =
+        solver1.AngularVelocityFor(initial_angular_momentum);
+
+    auto const t = Instant() + 10 * Second;
+    auto const actual_angular_momentum = solver1.AngularMomentumAt(t);
+    auto const actual_angular_velocity =
+        solver1.AngularVelocityFor(actual_angular_momentum);
+    auto const actual_attitude = solver1.AttitudeAt(actual_angular_momentum, t);
+
+    auto const expected_angular_frequency = actual_angular_velocity.Norm();
+    auto const expected_attitude =
+        identity_attitude_ *
+        Rotation<PrincipalAxes, PrincipalAxes>(
+            expected_angular_frequency * 10 * Second, initial_angular_momentum);
+
+    EXPECT_THAT(actual_angular_momentum,
+                AlmostEquals(initial_angular_momentum, 0));
+    EXPECT_THAT(actual_angular_velocity,
+        AlmostEquals(solver1.AngularVelocityFor(initial_angular_momentum), 0));
+    EXPECT_THAT(actual_attitude(e1), AlmostEquals(expected_attitude(e1), 0));
+    EXPECT_THAT(actual_attitude(e2), AlmostEquals(expected_attitude(e2), 1));
+    EXPECT_THAT(actual_attitude(e3), AlmostEquals(expected_attitude(e3), 1));
+  }
+  // A general body that rotates along the second principal axis.
+  {
+    Solver::AngularMomentumBivector const
+        initial_angular_momentum({0.0 * SIUnit<AngularMomentum>(),
+                                  6.0 * SIUnit<AngularMomentum>(),
+                                  0.0 * SIUnit<AngularMomentum>()});
+    Solver const solver1(moments_of_inertia1,
+                         initial_angular_momentum,
+                         identity_attitude_,
+                         Instant());
+    AngularVelocity<PrincipalAxes> const initial_angular_velocity =
+        solver1.AngularVelocityFor(initial_angular_momentum);
+
+    auto const t = Instant() + 10 * Second;
+    auto const actual_angular_momentum = solver1.AngularMomentumAt(t);
+    auto const actual_angular_velocity =
+        solver1.AngularVelocityFor(actual_angular_momentum);
+    auto const actual_attitude = solver1.AttitudeAt(actual_angular_momentum, t);
+
+    auto const expected_angular_frequency = actual_angular_velocity.Norm();
+    auto const expected_attitude =
+        identity_attitude_ *
+        Rotation<PrincipalAxes, PrincipalAxes>(
+            expected_angular_frequency * 10 * Second, initial_angular_momentum);
+
+    EXPECT_THAT(actual_angular_momentum,
+                AlmostEquals(initial_angular_momentum, 0));
+    EXPECT_THAT(actual_angular_velocity,
+        AlmostEquals(solver1.AngularVelocityFor(initial_angular_momentum), 0));
+    EXPECT_THAT(
+        actual_attitude(e1),
+        Componentwise(AlmostEquals(expected_attitude(e1).coordinates().x, 0),
+                      VanishesBefore(1, 1),
+                      AlmostEquals(expected_attitude(e1).coordinates().z, 1)));
+    EXPECT_THAT(
+        actual_attitude(e2),
+        Componentwise(VanishesBefore(1, 1),
+                      AlmostEquals(expected_attitude(e2).coordinates().y, 0),
+                      VanishesBefore(1, 1)));
+    EXPECT_THAT(
+        actual_attitude(e3),
+        Componentwise(AlmostEquals(expected_attitude(e3).coordinates().x, 1),
+                      VanishesBefore(1, 0),
+                      AlmostEquals(expected_attitude(e3).coordinates().z, 0)));
+  }
+  // A general body that rotates along the third principal axis.
+  {
+    Solver::AngularMomentumBivector const
+        initial_angular_momentum({0.0 * SIUnit<AngularMomentum>(),
+                                  0.0 * SIUnit<AngularMomentum>(),
+                                  7.0 * SIUnit<AngularMomentum>()});
+    Solver const solver1(moments_of_inertia1,
+                         initial_angular_momentum,
+                         identity_attitude_,
+                         Instant());
+    AngularVelocity<PrincipalAxes> const initial_angular_velocity =
+        solver1.AngularVelocityFor(initial_angular_momentum);
+
+    auto const t = Instant() + 10 * Second;
+    auto const actual_angular_momentum = solver1.AngularMomentumAt(t);
+    auto const actual_angular_velocity =
+        solver1.AngularVelocityFor(actual_angular_momentum);
+    auto const actual_attitude = solver1.AttitudeAt(actual_angular_momentum, t);
+
+    auto const expected_angular_frequency = actual_angular_velocity.Norm();
+    auto const expected_attitude =
+        identity_attitude_ *
+        Rotation<PrincipalAxes, PrincipalAxes>(
+            expected_angular_frequency * 10 * Second, initial_angular_momentum);
+
+    EXPECT_THAT(actual_angular_momentum,
+                AlmostEquals(initial_angular_momentum, 0));
+    EXPECT_THAT(actual_angular_velocity,
+        AlmostEquals(solver1.AngularVelocityFor(initial_angular_momentum), 0));
+    EXPECT_THAT(actual_attitude(e1), AlmostEquals(expected_attitude(e1), 52));
+    EXPECT_THAT(actual_attitude(e2), AlmostEquals(expected_attitude(e2), 52));
+    EXPECT_THAT(actual_attitude(e3), AlmostEquals(expected_attitude(e3), 0));
+  }
   // A sphere that rotates around an axis with a random orientation.  Also, a
   // non-trivial initial attitude.
   {
@@ -611,51 +722,6 @@ TEST_F(EulerSolverTest, SpecialCases) {
     EXPECT_THAT(actual_attitude(e2), AlmostEquals(expected_attitude(e2), 68));
     EXPECT_THAT(actual_attitude(e3), AlmostEquals(expected_attitude(e3), 6));
   }
-  {
-    Solver::AngularMomentumBivector const
-        initial_angular_momentum({5.0 * SIUnit<AngularMomentum>(),
-                                  0.0 * SIUnit<AngularMomentum>(),
-                                  0.0 * SIUnit<AngularMomentum>()});
-    Solver const solver1(moments_of_inertia1,
-                         initial_angular_momentum,
-                         identity_attitude_,
-                         Instant());
-    AngularVelocity<PrincipalAxes> const initial_angular_velocity =
-        solver1.AngularVelocityFor(initial_angular_momentum);
-
-    auto const t = Instant() + 10 * Second;
-    auto const actual_angular_momentum = solver1.AngularMomentumAt(t);
-    auto const actual_angular_velocity =
-        solver1.AngularVelocityFor(actual_angular_momentum);
-    auto const actual_attitude = solver1.AttitudeAt(actual_angular_momentum, t);
-
-    auto const expected_angular_frequency = actual_angular_velocity.Norm();
-    auto const expected_attitude =
-        identity_attitude_ *
-        Rotation<PrincipalAxes, PrincipalAxes>(
-            expected_angular_frequency * 10 * Second, initial_angular_momentum);
-
-    EXPECT_THAT(actual_angular_momentum,
-                AlmostEquals(initial_angular_momentum, 0));
-    EXPECT_THAT(actual_angular_velocity,
-        AlmostEquals(solver1.AngularVelocityFor(initial_angular_momentum), 0));
-    EXPECT_THAT(actual_attitude(e1), AlmostEquals(expected_attitude(e1), 0));
-    EXPECT_THAT(actual_attitude(e2), AlmostEquals(expected_attitude(e2), 0));
-    EXPECT_THAT(actual_attitude(e3), AlmostEquals(expected_attitude(e3), 0));
-  }
-  //{
-  //  Solver const solver3(moments_of_inertia3,
-  //                      initial_angular_momentum,
-  //                      identity_attitude_,
-  //                      Instant());
-  //  auto const computed_initial_angular_momentum3 =
-  //      solver3.AngularMomentumAt(Instant());
-
-  //  EXPECT_THAT(computed_initial_angular_momentum3,
-  //              AlmostEquals(initial_angular_momentum, 0, 0))
-  //      << moments_of_inertia3 << " " << initial_angular_momentum;
-  //  // TODO(phl): Test the attitude in this case.
-  //}
 }
 
 // The data in this test are from Takahashi, Busch and Scheeres, Spin state and

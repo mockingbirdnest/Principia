@@ -71,7 +71,14 @@ class EulerSolver {
   };
 
   Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
-      AngularMomentumBivector const& angular_momentum) const;
+      AngularMomentumBivector const& angular_momentum,
+      bool& ṁ_is_zero) const;
+
+  // If m is constant in the principal axes frames, we cannot construct ℬₜ using
+  // ṁ as specified after the demonstration of proposition 2.2 in [CFSZ07].
+  // Instead, we use a constant v orthogonal to m.  This member is set when
+  // initializating ℛ_.
+  bool ṁ_is_zero_ = false;
 
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;
