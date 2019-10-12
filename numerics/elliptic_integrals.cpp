@@ -34,7 +34,7 @@ using quantities::si::Radian;
 
 namespace {
 
-// Bulirsch's cel function, [Bul69], [NIST10], 19.2(iii).
+// Bulirsch's cel function, [Bul69], [OLBC10], 19.2(iii).
 Angle BulirschCel(double kc, double nc, double a, double b);
 
 // Jacobi's nome approximated by a series of the given degree.
@@ -46,14 +46,14 @@ double EllipticNomeQ(double mc);
 void FukushimaEllipticBD(double mc, Angle& B_m, Angle& D_m);
 
 // Computes Emde’s complete elliptic integrals of the second kind B(m) and D(m),
-// as well as Fukushima’s complete elliptic integral of the third kind J(m),
-// where m = 1 - mc.  The methods are similar to those described in [Fuk11a] and
-// [Fuk11c].
+// as well as Fukushima’s complete elliptic integral of the third kind J(n, m),
+// where m = 1 - mc and n = 1 - nc.  The methods are similar to those described
+// in [Fuk11a] and [Fuk11c].
 void FukushimaEllipticBDJ(double nc,
                           double mc,
-                          Angle& bc,
-                          Angle& dc,
-                          Angle& jc);
+                          Angle& B_m,
+                          Angle& D_m,
+                          Angle& J_n_m);
 
 // Fukushima's incomplete integrals of the second and third kind, arccos
 // argument [Fuk11b], [Fuk11c].
@@ -1127,22 +1127,6 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
         0.04978344771840508342564702588639140680363 * 0.5,
         0.04812375496807025605361215168677991360500 * 0.5));
 
-//  Double precision general complete elliptic integral "cel"
-//
-//  created by Burlisch
-//
-//  coded by T. Fukushima <Toshio.Fukushima@nao.ac.jp>
-//
-//  Reference: Bulirsch, R. (1969), Numer. Math., 13, 305-315
-//        "Numerical computation of elliptic integrals and elliptic functions
-//        III"
-//
-//     Inputs: kc  = complementary modulus         0 <= kc <= 1
-//             nc   = complementary characteristic 0 <= nc <= 1
-//             a, b = coefficients
-//
-//     Outputs: integral value
-//
 Angle BulirschCel(double kc, double const nc, double a, double b) {
   // These values should give us 14 digits of accuracy, see [Bul69].
   constexpr double ca = 1.0e-7;
@@ -1283,14 +1267,14 @@ void FukushimaEllipticBD(double const mc, Angle& B_m, Angle& D_m) {
 
 void FukushimaEllipticBDJ(double const nc,
                           double const mc,
-                          Angle& bc,
-                          Angle& dc,
-                          Angle& jc) {
-  FukushimaEllipticBD(mc, bc, dc);
+                          Angle& B_m,
+                          Angle& D_m,
+                          Angle& J_n_m) {
+  FukushimaEllipticBD(mc, B_m, D_m);
 
   // See [Bul69], special examples after equation (1.2.2).
   double const kc = Sqrt(mc);
-  jc = BulirschCel(kc, nc, /*a=*/0.0, /*b=*/1.0);
+  J_n_m = BulirschCel(kc, nc, /*a=*/0.0, /*b=*/1.0);
 }
 
 void FukushimaEllipticBcDcJc(double const c₀,
