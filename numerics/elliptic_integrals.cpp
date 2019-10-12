@@ -55,23 +55,27 @@ void FukushimaEllipticBDJ(double nc,
                           Angle& D_m,
                           Angle& J_n_m);
 
-// Fukushima's incomplete integrals of the second and third kind, arccos
-// argument [Fuk11b], [Fuk11c].
-void FukushimaEllipticBcDcJc(double c0,
+// Computes Fukushima's incomplete integrals of the second kind and third kind
+// from the cosine of the amplitude: Bc(c|m) = B(arccos c|m),
+// Dc(c|m) = D(arccos c|m), Jc(c, n|m) = J(arccos c, n|m), where m = 1 - mc.
+// These functions are defined in [Fuk11b], [Fuk11c].
+void FukushimaEllipticBcDcJc(double c,
                              double n,
                              double mc,
-                             Angle& b,
-                             Angle& d,
-                             Angle& j);
+                             Angle& Bc_cǀm,
+                             Angle& Dc_cǀm,
+                             Angle& Jc_c_nǀm);
 
-// Fukushima's incomplete integrals of the second and third kind, arcsin
-// argument [Fuk11b], [Fuk11c].
-void FukushimaEllipticBsDsJs(double s0,
+// Computes Fukushima's incomplete integrals of the second kind and third kind
+// from the sine of the amplitude: Bs(s|m) = B(arcsin s|m),
+// Ds(s|m) = D(arcsin s|m), Js(s, n|m) = J(arcsin s, n|m), where m = 1 - mc.
+// These functions are defined in [Fuk11b], [Fuk11c].
+void FukushimaEllipticBsDsJs(double s,
                              double n,
                              double mc,
-                             Angle& b,
-                             Angle& d,
-                             Angle& j);
+                             Angle& Bs_sǀm,
+                             Angle& Ds_sǀm,
+                             Angle& Js_s_nǀm);
 
 // Maclaurin series expansion of Bs and Ds [Fuk11a].
 // NOTE(phl): I believe that this is a Maclaurin series but it's not completely
