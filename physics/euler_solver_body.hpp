@@ -146,7 +146,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   } else {
     CHECK_EQ(Square<AngularMomentum>(), Δ₂);
     if (G_ == AngularMomentum()) {
-      // No rotation.  Might as well go in the case of a sphere.
+      // No rotation.  Might as well handle it as a sphere.
       ψ_t_multiplier_ = AngularFrequency();
       formula_ = Formula::Sphere;
     } else if (I₃₁ == MomentOfInertia()) {
