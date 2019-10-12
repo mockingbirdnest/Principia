@@ -680,6 +680,53 @@ TEST_F(EulerSolverTest, SpecialCases) {
     EXPECT_THAT(actual_attitude(e2), AlmostEquals(expected_attitude(e2), 52));
     EXPECT_THAT(actual_attitude(e3), AlmostEquals(expected_attitude(e3), 0));
   }
+  // A general body that has an angular momentum close to the third principal
+  // axis.
+  {
+    Solver::AngularMomentumBivector const initial_angular_momentum(
+        {std::numeric_limits<double>::epsilon() * SIUnit<AngularMomentum>(),
+         0.0 * SIUnit<AngularMomentum>(),
+         1.0 * SIUnit<AngularMomentum>()});
+    Solver const solver1(moments_of_inertia1,
+                         initial_angular_momentum,
+                         identity_attitude_,
+                         Instant());
+    AngularVelocity<PrincipalAxes> const initial_angular_velocity =
+        solver1.AngularVelocityFor(initial_angular_momentum);
+
+    auto const t = Instant() + 10 * Second;
+    auto const actual_angular_momentum = solver1.AngularMomentumAt(t);
+    auto const actual_angular_velocity =
+        solver1.AngularVelocityFor(actual_angular_momentum);
+    auto const actual_attitude = solver1.AttitudeAt(actual_angular_momentum, t);
+
+    // The expected attitude ignores any precession and is just a rotation
+    // around z.
+    auto const expected_angular_frequency = actual_angular_velocity.Norm();
+    auto const expected_attitude =
+        identity_attitude_ *
+        Rotation<PrincipalAxes, PrincipalAxes>(
+            expected_angular_frequency * 10 * Second,
+            Solver::AngularMomentumBivector({0.0 * SIUnit<AngularMomentum>(),
+                                             0.0 * SIUnit<AngularMomentum>(),
+                                             1.0 * SIUnit<AngularMomentum>()}));
+
+    EXPECT_THAT(
+        actual_attitude(e1),
+        Componentwise(AlmostEquals(expected_attitude(e1).coordinates().x, 12),
+                      AlmostEquals(expected_attitude(e1).coordinates().y, 1),
+                      VanishesBefore(std::numeric_limits<double>::epsilon(), 8)));
+    EXPECT_THAT(
+        actual_attitude(e2),
+        Componentwise(AlmostEquals(expected_attitude(e2).coordinates().x, 1),
+                      AlmostEquals(expected_attitude(e2).coordinates().y, 12),
+                      VanishesBefore(1, 2)));
+    EXPECT_THAT(
+        actual_attitude(e3),
+        Componentwise(VanishesBefore(1, 2),
+                      VanishesBefore(1, 1),
+                      AlmostEquals(expected_attitude(e3).coordinates().z, 0)));
+  }
   // A sphere that rotates around an axis with a random orientation.  Also, a
   // non-trivial initial attitude.
   {
