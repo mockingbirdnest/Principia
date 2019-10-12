@@ -14,19 +14,9 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
-// Bibliography:
-// [Buli69] Bulirsch (1969), Numerical Calculation of Elliptic Integrals and
-// Elliptic Fuctions.  III.
-// [Fuku11a] Fukushima (2011), Precise and fast computation of the general
-// complete elliptic integral of the second kind.
-// [Fuku11b] Fukushima (2011), Precise and fast computation of a general
-// incomplete elliptic integral of second kind by half and double argument
-// transformations.
-// [Fuku11c] Fukushima (2011), Precise and fast computation of a general
-// incomplete elliptic integral of third kind by half and double argument
-// transformations.
-// [NIST10] Olver, Lozier, Boisvert, Clark Eds. (2010), NIST Handbook of
-// Mathematical Functions.
+// The implementation in this file is derived from [Fuk18] (license: MIT). The
+// original code has been translated into C++ and adapted to the needs of this
+// project.
 
 namespace principia {
 namespace numerics {
@@ -44,18 +34,18 @@ using quantities::si::Radian;
 
 namespace {
 
-// Bulirsch's cel function, [Buli69], [NIST10], 19.2(iii).
+// Bulirsch's cel function, [Bul69], [NIST10], 19.2(iii).
 Angle BulirschCel(double kc, double nc, double a, double b);
 
 // Jacobi's nome approximated by a series of the given degree.
 template<int degree>
 double EllipticNomeQ(double mc);
 
-// Fukushima's complete elliptic integrals of the second kind [Fuku11a].
+// Fukushima's complete elliptic integrals of the second kind [Fuk11a].
 void FukushimaEllipticBD(double mc, Angle& b, Angle& d);
 
 // Fukushima's complete elliptic integrals of the second and third kind
-// [Fuku11a], [Fuku11c].
+// [Fuk11a], [Fuk11c].
 void FukushimaEllipticBDJ(double nc,
                           double mc,
                           Angle& bc,
@@ -63,7 +53,7 @@ void FukushimaEllipticBDJ(double nc,
                           Angle& jc);
 
 // Fukushima's incomplete integrals of the second and third kind, arccos
-// argument [Fuku11b], [Fuku11c].
+// argument [Fuk11b], [Fuk11c].
 void FukushimaEllipticBcDcJc(double c0,
                              double n,
                              double mc,
@@ -72,7 +62,7 @@ void FukushimaEllipticBcDcJc(double c0,
                              Angle& j);
 
 // Fukushima's incomplete integrals of the second and third kind, arcsin
-// argument [Fuku11b], [Fuku11c].
+// argument [Fuk11b], [Fuk11c].
 void FukushimaEllipticBsDsJs(double s0,
                              double n,
                              double mc,
@@ -80,7 +70,7 @@ void FukushimaEllipticBsDsJs(double s0,
                              Angle& d,
                              Angle& j);
 
-// Maclaurin series expansion of Bs and Ds [Fuku11a].
+// Maclaurin series expansion of Bs and Ds [Fuk11a].
 // NOTE(phl): I believe that this is a Maclaurin series but it's not completely
 // clear.
 void FukushimaEllipticBsDsMaclaurinSeries(double y,
@@ -88,10 +78,10 @@ void FukushimaEllipticBsDsMaclaurinSeries(double y,
                                           Angle& b,
                                           Angle& d);
 
-// Maclaurin series expansion of Js [Fuku11c].
+// Maclaurin series expansion of Js [Fuk11c].
 Angle FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 
-// Fukushima's T function [Fuku11c].
+// Fukushima's T function [Fuk11c].
 Angle FukushimaT(double t, double h);
 
 // Argument reduction: angle = fractional_part + integer_part * π where
@@ -1065,8 +1055,8 @@ PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
                         2.868263194837819660109735981973458220407767e16));
 
 // NOTE(phl): The following polynomials differ slightly from the original code
-// but they match more closely those in [Fuku11a].  The notation follows
-// [Fuku11a].
+// but they match more closely those in [Fuk11a].  The notation follows
+// [Fuk11a].
 // A polynomial for B٭X(m) / m.
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
     fukushima_b٭x_maclaurin(std::make_tuple(-1.0 / 4.0,
@@ -1151,12 +1141,12 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
 //     Outputs: integral value
 //
 Angle BulirschCel(double kc, double const nc, double a, double b) {
-  // These values should give us 14 digits of accuracy, see [Buli69].
+  // These values should give us 14 digits of accuracy, see [Bul69].
   constexpr double ca = 1.0e-7;
   constexpr double kc_nearly_0 = 1.0e-14;
 
-  // The identifiers below follow exactly [Buli69].  Note the (uncommon) use of
-  // non-const parameters to mimic [Buli69].
+  // The identifiers below follow exactly [Bul69].  Note the (uncommon) use of
+  // non-const parameters to mimic [Bul69].
   double p = nc;
   if (kc == 0.0) {
     if (b == 0.0) {
@@ -1233,7 +1223,7 @@ void FukushimaEllipticBD(double const mc, Angle& b, Angle& d) {
     b = 1.0 * Radian;
     d = ((2.0 * log_2 - 1.0) - 0.5 * std::log(mc)) * Radian;
   } else if (mc < 0.1) {
-    // This algorithm differs from the one in [Fuku11a] because it divides
+    // This algorithm differs from the one in [Fuk11a] because it divides
     // log(q(mc)), not just log(mc / 16).  It tries to retain the same notation,
     // though.
     double const nome = EllipticNomeQ<16>(mc);
@@ -1305,7 +1295,7 @@ void FukushimaEllipticBDJ(double const nc,
                           Angle& jc) {
   FukushimaEllipticBD(mc, bc, dc);
 
-  // See [Buli69], special examples after equation (1.2.2).
+  // See [Bul69], special examples after equation (1.2.2).
   double const kc = Sqrt(mc);
   jc = BulirschCel(kc, nc, /*a=*/0.0, /*b=*/1.0);
 }
@@ -1316,7 +1306,7 @@ void FukushimaEllipticBcDcJc(double const c₀,
                              Angle& b,
                              Angle& d,
                              Angle& j) {
-  // See [Fuku11b] section 2.2 for the determination of xS.
+  // See [Fuk11b] section 2.2 for the determination of xS.
   constexpr double xS = 0.1;
   // The maximum number of iterations in the first loop below.
   // NOTE(phl): I couldn't find a justification for this number.
@@ -1332,7 +1322,7 @@ void FukushimaEllipticBcDcJc(double const c₀,
   double const y₀ = 1.0 - x₀;
 
   // Alternate half and double argument transformations, when cancellations
-  // would occur, [Fuku11c] section 3.3.
+  // would occur, [Fuk11c] section 3.3.
 
   // Half argument transformation of c.
   y[0] = y₀;
@@ -1371,7 +1361,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
                              Angle& b,
                              Angle& d,
                              Angle& j) {
-  // See [Fuku11c] section 3.5 for the determination of yB.
+  // See [Fuk11c] section 3.5 for the determination of yB.
   constexpr double yB = 0.01622;
   // The maximum number of argument transformations, related to yB.  This is the
   // maximum number of iterations in the first loop below.
@@ -1381,7 +1371,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
   double s[max_transformations + 1];
   double cd[max_transformations + 1];
 
-  // Half and double argument transformations, [Fuku11c] section 3.3.
+  // Half and double argument transformations, [Fuk11c] section 3.3.
   double const m = 1.0 - mc;
   double const h = n * (1.0 - n) * (n - m);
   double const y₀ = s₀ * s₀;
@@ -1418,7 +1408,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
   }
 }
 
-// See [Fuku11b], section 2.3.
+// See [Fuk11b], section 2.3.
 void FukushimaEllipticBsDsMaclaurinSeries(double const y,
                                           double const m,
                                           Angle& b,
@@ -1446,7 +1436,7 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
   b = fukushima_elliptic_bs_maclaurin.Evaluate(y) * Radian;
 }
 
-// See [Fuku11c], section 3.4 and 3.5.
+// See [Fuk11c], section 3.4 and 3.5.
 Angle FukushimaEllipticJsMaclaurinSeries(double const y,
                                          double const n,
                                          double const m) {
@@ -1586,7 +1576,7 @@ Angle FukushimaT(double const t, double const h) {
   double const abs_z = abs(z);
 
   // NOTE(phl): One might be tempted to rewrite this statement using a binary
-  // split of the interval [0, 1], but according to Table 1 of [Fuku11c] the
+  // split of the interval [0, 1], but according to Table 1 of [Fuk11c] the
   // distribution of z is very biased towards the small values, so this is
   // simpler and probably better.  (It also explains the position of z < 0 in
   // the list.)
@@ -1660,7 +1650,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
 
-  // See Appendix B of [Fuku11b] and Appendix A.1 of [Fuku11c] for argument
+  // See Appendix B of [Fuk11b] and Appendix A.1 of [Fuk11c] for argument
   // reduction.
   // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
   // better algorithm (Payne-Hanek?).
@@ -1684,7 +1674,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   Angle D{uninitialized};  // D(m).
   Angle J{uninitialized};  // J(n, m).
 
-  // The selection rule in [Fuku11b] section 2.1, equations (7-11) and [Fuku11c]
+  // The selection rule in [Fuk11b] section 2.1, equations (7-11) and [Fuk11c]
   // section 3.2, equations (22) and (23).  The identifiers follow Fukushima's
   // notation.
   // NOTE(phl): The computation of 1 - c² loses accuracy with respect to the
@@ -1744,7 +1734,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
     if (!has_computed_complete_integrals) {
       FukushimaEllipticBDJ(nc, mc, B, D, J);
     }
-    // See [Fuku11b], equations (B.2), and [Fuku11c], equation (A.2).
+    // See [Fuk11b], equations (B.2), and [Fuk11c], equation (A.2).
     B_φǀm += 2 * j * B;
     D_φǀm += 2 * j * D;
     J_φ_nǀm += 2 * j * J;

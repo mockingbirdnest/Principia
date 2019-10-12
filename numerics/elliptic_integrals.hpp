@@ -2,13 +2,31 @@
 
 #include "quantities/quantities.hpp"
 
-// This code is derived from: Fukushima, Toshio. (2018). xelbdj.txt: Fortran
-// test driver for "elbdj"/"relbdj", subroutines to compute the double/single
-// precision general incomplete elliptic integrals of all three kinds,
-// DOI: 10.13140/RG.2.2.11113.80489, License: MIT.  Downloaded from:
-// https://www.researchgate.net/publication/322702514_xelbdjtxt_Fortran_test_driver_for_elbdjrelbdj_subroutines_to_compute_the_doublesingle_precision_general_incomplete_elliptic_integrals_of_all_three_kinds
-// The original code has been translated into C++ and adapted to the needs of
-// this project.
+// Bibliography:
+// [JE33] Jahnke and Emde (1933), Funktionentafeln mit Formeln und Kurven—Tables
+// of functions with formulæ and curves.
+// [JE38]  Jahnke and Emde (1938), Funktionentafeln mit Formeln und Kurven—Tables
+// of functions with formulæ and curves.
+// [JEL60] Jahnke, Emde, and Lösch (1960) Tafeln Höherer Funktionen—Tables of
+// higher functions.
+// [Bul65] Bulirsch (1965), Numerical Calculation of Elliptic Integrals and
+// Elliptic Fuctions.
+// [Bul69] Bulirsch (1969), Numerical Calculation of Elliptic Integrals and
+// Elliptic Fuctions.  III.
+// [Fuk11a] Fukushima (2011), Precise and fast computation of the general
+// complete elliptic integral of the second kind.
+// [Fuk11b] Fukushima (2011), Precise and fast computation of a general
+// incomplete elliptic integral of second kind by half and double argument
+// transformations.
+// [Fuk12] Fukushima (2012), Precise and fast computation of a general
+// incomplete elliptic integral of third kind by half and double argument
+// transformations.
+// [Fuk18] Fukushima (2018), xelbdj.txt: Fortran test driver for
+// “elbdj”/“relbdj”, subroutines to compute the double / single precision
+// general incomplete elliptic integrals of all three kinds.
+// [OLBC10] Olver, Lozier, Boisvert, Clark Eds. (2010), NIST Handbook of
+// Mathematical Functions.
+
 namespace principia {
 namespace numerics {
 namespace internal_elliptic_integrals {
@@ -21,9 +39,9 @@ using quantities::Angle;
 // NOTE(egg): As far as I can tell, the origins of the notation are as follows:
 // — the integral D (complete and incomplete) is introduced in [JE33];
 // — the complete integral B is introduced in the re-edition [JE38];
-// — the incomplete B is introduced by [Buli65], generalizing [JEL60];
-// — the name “associate elliptic integral of the 2nd kind” is from [Fuku11b];
-// — the integral J is introduced in [Fuku11c].
+// — the incomplete B is introduced by [Bul65], generalizing [JEL60];
+// — the name “associate elliptic integral of the 2nd kind” is from [Fuk11b];
+// — the integral J is introduced in [Fuk11c].
 void FukushimaEllipticBDJ(Angle const& φ,
                           double n,
                           double mc,
