@@ -1741,16 +1741,6 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 }
 
-Angle EllipticE(Angle const& φ, double const mc) {
-  Angle F{uninitialized};
-  Angle E{uninitialized};
-  Angle Π{uninitialized};
-  // TODO(egg): we are needlessly computing J (and Π) here, which is why we have
-  // to pass n.
-  EllipticFEΠ(φ, /*n=*/1, mc, F, E, Π);
-  return E;
-}
-
 Angle EllipticF(Angle const& φ, double const mc) {
   Angle F{uninitialized};
   Angle E{uninitialized};
@@ -1759,6 +1749,16 @@ Angle EllipticF(Angle const& φ, double const mc) {
   // to pass n.
   EllipticFEΠ(φ, /*n=*/1, mc, F, E, Π);
   return F;
+}
+
+Angle EllipticE(Angle const& φ, double const mc) {
+  Angle F{uninitialized};
+  Angle E{uninitialized};
+  Angle Π{uninitialized};
+  // TODO(egg): we are needlessly computing J (and Π) here, which is why we have
+  // to pass n.
+  EllipticFEΠ(φ, /*n=*/1, mc, F, E, Π);
+  return E;
 }
 
 Angle EllipticΠ(Angle const& φ, double const n, double const mc) {
