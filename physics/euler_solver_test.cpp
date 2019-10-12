@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <limits>
 #include <random>
 #include <set>
 #include <vector>
@@ -761,13 +762,13 @@ TEST_F(EulerSolverTest, SpecialCases) {
 
     EXPECT_THAT(
         actual_attitude(e1),
-        Componentwise(AlmostEquals(expected_attitude(e1).coordinates().x, 0),
-                      AlmostEquals(expected_attitude(e1).coordinates().y, 0),
+        Componentwise(AlmostEquals(expected_attitude(e1).coordinates().x, 0, 8),
+                      AlmostEquals(expected_attitude(e1).coordinates().y, 0, 1),
                       Le(std::numeric_limits<double>::min())));
     EXPECT_THAT(
         actual_attitude(e2),
-        Componentwise(AlmostEquals(expected_attitude(e2).coordinates().x, 0),
-                      AlmostEquals(expected_attitude(e2).coordinates().y, 0),
+        Componentwise(AlmostEquals(expected_attitude(e2).coordinates().x, 0, 1),
+                      AlmostEquals(expected_attitude(e2).coordinates().y, 0, 8),
                       Le(std::numeric_limits<double>::min())));
     EXPECT_THAT(
         actual_attitude(e3),
