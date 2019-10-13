@@ -170,7 +170,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       } else {
         σʺB₃₁_ = B₃₁_;
       }
-      // Δ₂ shows up in the multiplier, so things simplify tremendously.
+      // Δ₂ shows up in the multiplier, and λ_ is finite in the non-spherical
+      // case, so things simplify tremendously.
       ψ_Π_offset_ = Angle();
       ψ_Π_multiplier_ = 0;
       formula_ = Formula::iii;
