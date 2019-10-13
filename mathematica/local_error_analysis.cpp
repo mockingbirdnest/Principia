@@ -38,7 +38,7 @@ LocalErrorAnalyser::LocalErrorAnalyser(
       step_(step) {
   // The system might not be defined from Keplerian elements, so we cannot
   // always turn it into a hierarchical system to take its fingerprint.
-  // TODO(eggrobin): arbitrary solar system fingerprinting.
+  // TODO(egg): arbitrary solar system fingerprinting.
   if (solar_system_->names()[0] == "Bop") {
     LOG(INFO) << "All hail retrobop!";
     astronomy::StabilizeKSP(*solar_system_);

@@ -475,7 +475,7 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
   EXPECT_THAT(geopotential.sectoral_damping().inner_threshold(),
               Eq(Infinity<Length>()));
 
-  // TODO(eggrobin): This is brittle; we should have |SolarSystem| utilities for
+  // TODO(egg): This is brittle; we should have |SolarSystem| utilities for
   // that.
   double const earth_c20 = earth_message.geopotential().row(0).column(0).cos();
   earth_message.mutable_geopotential()

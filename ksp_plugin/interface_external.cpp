@@ -210,7 +210,7 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   // The given |World| position and requested |World| degrees of freedom are
   // body-centred inertial, so |body_centred_inertial| up to an orthogonal map
   // to world coordinates.  Do the conversion directly.
-  // NOTE(eggrobin): it is correct to use the orthogonal map at |current_time|,
+  // NOTE(egg): it is correct to use the orthogonal map at |current_time|,
   // because |body_centred_inertial| does not rotate with respect to
   // |Barycentric|, so the orthogonal map does not depend on time.
   RigidMotion<Navigation, World> to_world_body_centred_inertial(
