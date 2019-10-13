@@ -53,7 +53,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       initial_time_(initial_time),
       ℛ_([this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
         auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
-        auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_).Inverse();
+        auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_,
+                                    ṁ_is_zero_).Inverse();
 
         // This ℛ follows the assumptions in the third paragraph of section 2.3
         // of [CFSZ07], that is, the inertial frame is identified with the
@@ -71,7 +72,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   CHECK_LE(I₁, I₂);
   CHECK_LE(I₂, I₃);
 
-  // TODO(phl): Properly handle m == 0.
   auto const& m = initial_angular_momentum.coordinates();
 
   // These computations are such that if, say I₁ == I₂, I₂₁ is +0.0 and I₁₂ is
@@ -103,13 +103,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   auto const two_T = m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃;
   ψ_t_multiplier_ = two_T / G_;
 
-  // Note that [CFSZ07] et al. give k, but we need mc = 1 - k^2.  We write mc
-  // in a way that reduces cancellations when k is close to 1.
+  // Note that [CFSZ07] gives k, but we need mc = 1 - k^2.  We write mc in a way
+  // that reduces cancellations when k is close to 1.
   if (Δ₂ < Square<AngularMomentum>()) {
     CHECK_LE(Square<AngularMomentum>(), B₂₃²);
     CHECK_LE(Square<AngularMomentum>(), B₂₁²);
     B₂₁_ = Sqrt(B₂₁²);
-    mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
+    mc_ = std::min(Δ₂ * I₃₁ / (Δ₃ * I₂₁), 1.0);
     ν_ = EllipticF(ArcTan(m.y * B₃₁_, m.z * B₂₁_), mc_);
     auto const λ₃ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
     // TODO(phl): These tests on the signs of coordinates should probably handle
@@ -123,13 +123,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     }
     n_ = std::min(G² / B₂₃², 1.0);
     ψ_Π_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_);
-    ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
+    ψ_Π_multiplier_ = ṁ_is_zero_ ? 0 : Δ₂ / (λ_ * I₂ * G_);
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
     CHECK_LE(Square<AngularMomentum>(), B₂₃²);
     CHECK_LE(Square<AngularMomentum>(), B₂₁²);
     B₂₃_ = Sqrt(B₂₃²);
-    mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂);
+    mc_ = std::min(Δ₂ * I₃₁ / (Δ₁ * I₃₂), 1.0);
     ν_ = EllipticF(ArcTan(m.y * B₁₃_, m.x * B₂₃_), mc_);
     auto const λ₁ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
     if (m.z < AngularMomentum()) {
@@ -141,11 +141,15 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     }
     n_ = std::min(G² / B₂₁², 1.0);
     ψ_Π_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_);
-    ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
+    ψ_Π_multiplier_ = ṁ_is_zero_ ? 0 : Δ₂ / (λ_ * I₂ * G_);
     formula_ = Formula::ii;
   } else {
     CHECK_EQ(Square<AngularMomentum>(), Δ₂);
-    if (I₃₁ == MomentOfInertia()) {
+    if (G_ == AngularMomentum()) {
+      // No rotation.  Might as well handle it as a sphere.
+      ψ_t_multiplier_ = AngularFrequency();
+      formula_ = Formula::Sphere;
+    } else if (I₃₁ == MomentOfInertia()) {
       // The degenerate case of a sphere.  It would create NaNs.
       CHECK_EQ(MomentOfInertia(), I₂₁);
       CHECK_EQ(MomentOfInertia(), I₃₂);
@@ -166,11 +170,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       } else {
         σʺB₃₁_ = B₃₁_;
       }
-      // Not quite an elliptic integral characteristic, but we'll stick to that
-      // notation.
-      n_ = G² * G² / (B₂₁² * B₂₃²);
-      ψ_Π_offset_ = (-ν_ + n_ * std::log(n_ * Sinh(-ν_) - Cosh(-ν_)) * Radian);
-      ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_ * (1 - n_ * n_));
+      // Δ₂ shows up in the multiplier, and λ_ is finite in the non-spherical
+      // case, so things simplify tremendously.
+      ψ_Π_offset_ = Angle();
+      ψ_Π_multiplier_ = 0;
       formula_ = Formula::iii;
     }
   }
@@ -234,33 +237,28 @@ typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     AngularMomentumBivector const& angular_momentum,
     Instant const& time) const {
-  Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ = Compute𝒫ₜ(angular_momentum);
+  bool ṁ_is_zero;
+  Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ = Compute𝒫ₜ(angular_momentum,
+                                                       ṁ_is_zero);
+  CHECK_EQ(ṁ_is_zero_, ṁ_is_zero);
 
   Time const Δt = time - initial_time_;
-  Angle ψ;
+  Angle ψ = ψ_t_multiplier_ * Δt;
   switch (formula_) {
     case Formula::i: {
       Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
-      ψ = ψ_t_multiplier_ * Δt +
-          ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset_);
+      ψ += ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset_);
       break;
     }
     case Formula::ii: {
       Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
-      ψ = ψ_t_multiplier_ * Δt +
-          ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset_);
+      ψ += ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset_);
       break;
     }
     case Formula::iii: {
-      Angle const angle = λ_ * Δt - ν_;
-      ψ = ψ_t_multiplier_ * Δt +
-          ψ_Π_multiplier_ *
-              (angle + n_ * std::log(n_ * Sinh(angle) - Cosh(angle)) * Radian -
-               ψ_Π_offset_);
       break;
     }
     case Formula::Sphere: {
-      ψ = ψ_t_multiplier_ * Δt;
       break;
     }
     default:
@@ -276,7 +274,8 @@ template<typename InertialFrame, typename PrincipalAxesFrame>
 Rotation<PrincipalAxesFrame,
          typename EulerSolver<InertialFrame, PrincipalAxesFrame>::ℬₜ>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
-    AngularMomentumBivector const& angular_momentum) const {
+    AngularMomentumBivector const& angular_momentum,
+    bool& ṁ_is_zero) const {
   auto const& m = angular_momentum;
   auto const& m_coordinates = m.coordinates();
 
@@ -285,18 +284,25 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
   Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
       Commutator(m, ω) / Radian;
 
-  // Construct the orthonormal frame ℬₜ.  If ṁ is constant in the principal axes
+  // Construct the orthonormal frame ℬₜ.  If m is constant in the principal axes
   // frame, the choice is arbitrary.
   static Bivector<double, PrincipalAxesFrame> const zero;
-  auto const m_normalized = Normalize(m);
+  ṁ_is_zero = false;
+  auto const m_normalized = NormalizeOrZero(m);
+  if (m_normalized == zero) {
+    ṁ_is_zero = true;
+    return Rotation<PrincipalAxesFrame, ℬₜ>::Identity();
+  }
   auto v = NormalizeOrZero(ṁ);
   if (v == zero) {
+    ṁ_is_zero = true;
     v = NormalizeOrZero(AngularMomentumBivector(
             {m_coordinates.y, -m_coordinates.x, AngularMomentum()}));
   }
   if (v == zero) {
+    ṁ_is_zero = true;
     v = NormalizeOrZero(AngularMomentumBivector(
-            {m_coordinates.y, AngularMomentum(), -m_coordinates.z}));
+            {AngularMomentum(), -m_coordinates.z, m_coordinates.y}));
   }
   DCHECK_NE(v, zero);
   auto const w = Commutator(m_normalized, v);
