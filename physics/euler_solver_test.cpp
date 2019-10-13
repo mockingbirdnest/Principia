@@ -995,10 +995,6 @@ TEST_F(EulerSolverTest, Toutatis) {
                       initial_attitude,
                       epoch);
 
-  Bivector<double, PrincipalAxes> const e1({1, 0, 0});
-  Bivector<double, PrincipalAxes> const e2({0, 1, 0});
-  Bivector<double, PrincipalAxes> const e3({0, 0, 1});
-
   struct Observation {
     Instant t;
     Angle α;
