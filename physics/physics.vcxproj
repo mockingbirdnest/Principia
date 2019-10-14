@@ -34,6 +34,8 @@
     <ClInclude Include="euler_solver_body.hpp" />
     <ClInclude Include="geopotential.hpp" />
     <ClInclude Include="geopotential_body.hpp" />
+    <ClInclude Include="inertia_tensor.hpp" />
+    <ClInclude Include="inertia_tensor_body.hpp" />
     <ClInclude Include="protector.hpp" />
     <ClInclude Include="hierarchical_system.hpp" />
     <ClInclude Include="hierarchical_system_body.hpp" />

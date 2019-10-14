@@ -185,6 +185,12 @@
     <ClInclude Include="euler_solver_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="inertia_tensor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inertia_tensor_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
