@@ -1,6 +1,7 @@
 #pragma once
 
 #include "geometry/named_quantities.hpp"
+#include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
@@ -12,6 +13,7 @@ namespace physics {
 namespace internal_inertia_tensor {
 
 using geometry::Displacement;
+using geometry::Point;
 using geometry::R3Element;
 using geometry::R3x3Matrix;
 using geometry::Rotation;
@@ -21,7 +23,10 @@ using quantities::MomentOfInertia;
 template<typename Frame>
 class InertiaTensor {
  public:
-  R3Element<MomentOfInertia> MomentsOfInertian() const;
+  InertiaTensor(R3x3Matrix<MomentOfInertia> const& coordinates,
+                Point<Frame> const& centre_of_mass);
+
+  R3Element<MomentOfInertia> MomentsOfInertia() const;
 
   template<typename ToFrame>
   InertiaTensor<ToFrame> Rotate(Rotation<Frame, ToFrame> const& rotation);
@@ -32,6 +37,10 @@ class InertiaTensor {
   InertiaTensor<ToFrame> Translate(Displacement<Frame> const& displacement);
   template<typename ToFrame>
   InertiaTensor<ToFrame> Translate(Displacement<ToFrame> const& displacement);
+  template<typename ToFrame>
+  InertiaTensor<ToFrame> Translate(Point<Frame> const& point);
+  template<typename ToFrame>
+  InertiaTensor<ToFrame> Translate(Point<ToFrame> const& point);
 
   template<typename PrincipalAxesFrame>
   struct PrincipalAxes {
@@ -43,8 +52,6 @@ class InertiaTensor {
   PrincipalAxes<PrincipalAxesFrame> Diagonalize() const;
 
  private:
-  explicit InertiaTensor(R3x3Matrix<MomentOfInertia> const& moments_of_inertia);
-
   SymmetricBilinearForm<MomentOfInertia, Frame> form_;
 };
 
