@@ -26,6 +26,10 @@ class InertiaTensor {
   InertiaTensor(R3x3Matrix<MomentOfInertia> const& coordinates,
                 Point<Frame> const& centre_of_mass);
 
+  InertiaTensor(R3x3Matrix<MomentOfInertia> const& coordinates,
+                Point<Frame> const& reference_point,
+                Point<Frame> const& centre_of_mass);
+
   R3Element<MomentOfInertia> MomentsOfInertia() const;
 
   template<typename ToFrame>
@@ -53,6 +57,7 @@ class InertiaTensor {
 
  private:
   SymmetricBilinearForm<MomentOfInertia, Frame> form_;
+  Point<Frame> const& centre_of_mass_;
 };
 
 }  // namespace internal_inertia_tensor
