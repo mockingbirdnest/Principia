@@ -4,12 +4,14 @@
 #include <limits>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "ksp_plugin/integrators.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
@@ -24,7 +26,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
+using astronomy::J2000;
 using base::Error;
+using base::make_not_null_shared;
 using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Displacement;
@@ -535,6 +539,67 @@ TEST_F(FlightPlanTest, GuidedBurn) {
   last = --end;
   Speed const guided_final_speed = last->degrees_of_freedom.velocity().Norm();
   EXPECT_THAT(guided_final_speed, IsNear(1.40_⑴ * unguided_final_speed));
+}
+
+TEST_F(FlightPlanTest, Issue2331) {
+  FlightPlan flight_plan(
+      11024.436950683594 * Kilogram,
+      J2000 + 1130.8399999993526 * Second,
+      DegreesOfFreedom<Barycentric>(
+          Barycentric::origin +
+              Displacement<Barycentric>({-13607881359.190962 * Metre,
+                                         -1183506.3832585660 * Metre,
+                                         -109366.09411247486 * Metre}),
+          Velocity<Barycentric>({-639.01032564318075 * Metre / Second,
+                                 -8663.2671328991710 * Metre / Second,
+                                 -129.00845706608661 * Metre / Second})),
+      J2000 + 4280.4599499295282 * Second,
+      ephemeris_.get(),
+      DefaultPredictionParameters(),
+      DefaultBurnParameters());
+  auto const frame =
+      make_not_null_shared<TestNavigationFrame>(*navigation_frame_);
+  NavigationManœuvre::Intensity intensity0;
+  intensity0.Δv =
+      Velocity<Frenet<NavigationFrame>>({2035.0000000000005 * Metre / Second,
+                                         0 * Metre / Second,
+                                         0 * Metre / Second});
+  NavigationManœuvre::Timing timing0;
+  timing0.initial_time = J2000 + 3894.6399999993528 * Second;
+  NavigationManœuvre::Burn burn0{intensity0,
+                                 timing0,
+                                 250000.10393791363 * Newton,
+                                 3432.3274999999999 * Metre / Second,
+                                 frame,
+                                 true};
+  flight_plan.Append(burn0);
+
+  NavigationManœuvre::Intensity intensity1;
+  intensity1.Δv =
+      Velocity<Frenet<NavigationFrame>>({819.29427681721018 * Metre / Second,
+                                         0 * Metre / Second,
+                                         0 * Metre / Second});
+  NavigationManœuvre::Timing timing1;
+  timing1.initial_time = J2000 + 4258.1383894665723 * Second;
+  NavigationManœuvre::Burn burn1{intensity1,
+                                 timing1,
+                                 250000.10393791363 * Newton,
+                                 3432.3274999999999 * Metre / Second,
+                                 frame,
+                                 true};
+  flight_plan.Append(burn1);
+
+  NavigationManœuvre::Intensity intensity2;
+  intensity2.Δv = Velocity<Frenet<NavigationFrame>>();
+  NavigationManœuvre::Timing timing2;
+  timing2.initial_time = J2000 + 3894.6399999993528 * Second;
+  NavigationManœuvre::Burn burn2{intensity2,
+                                 timing2,
+                                 250000.10393791363 * Newton,
+                                 3432.3274999999999 * Metre / Second,
+                                 frame,
+                                 true};
+  flight_plan.Replace(burn2, 0);
 }
 
 TEST_F(FlightPlanTest, Serialization) {
