@@ -557,8 +557,13 @@ TEST_F(FlightPlanTest, Issue2331) {
       ephemeris_.get(),
       DefaultPredictionParameters(),
       DefaultBurnParameters());
+
+  Force const thrust = 250000.10393791363 * Newton;
+  SpecificImpulse const specific_impulse = 3432.3274999999999 * Metre / Second;
   auto const frame =
       make_not_null_shared<TestNavigationFrame>(*navigation_frame_);
+  bool const inertially_fixed = true;
+
   NavigationManœuvre::Intensity intensity0;
   intensity0.Δv =
       Velocity<Frenet<NavigationFrame>>({2035.0000000000005 * Metre / Second,
@@ -566,12 +571,12 @@ TEST_F(FlightPlanTest, Issue2331) {
                                          0 * Metre / Second});
   NavigationManœuvre::Timing timing0;
   timing0.initial_time = J2000 + 3894.6399999993528 * Second;
-  NavigationManœuvre::Burn burn0{intensity0,
-                                 timing0,
-                                 250000.10393791363 * Newton,
-                                 3432.3274999999999 * Metre / Second,
-                                 frame,
-                                 true};
+  NavigationManœuvre::Burn const burn0{intensity0,
+                                       timing0,
+                                       thrust,
+                                       specific_impulse,
+                                       frame,
+                                       inertially_fixed};
   flight_plan.Append(burn0);
 
   NavigationManœuvre::Intensity intensity1;
@@ -581,24 +586,26 @@ TEST_F(FlightPlanTest, Issue2331) {
                                          0 * Metre / Second});
   NavigationManœuvre::Timing timing1;
   timing1.initial_time = J2000 + 4258.1383894665723 * Second;
-  NavigationManœuvre::Burn burn1{intensity1,
-                                 timing1,
-                                 250000.10393791363 * Newton,
-                                 3432.3274999999999 * Metre / Second,
-                                 frame,
-                                 true};
+  NavigationManœuvre::Burn const burn1{intensity1,
+                                       timing1,
+                                       thrust,
+                                       specific_impulse,
+                                       frame,
+                                       inertially_fixed};
   flight_plan.Append(burn1);
 
   NavigationManœuvre::Intensity intensity2;
   intensity2.Δv = Velocity<Frenet<NavigationFrame>>();
   NavigationManœuvre::Timing timing2;
   timing2.initial_time = J2000 + 3894.6399999993528 * Second;
-  NavigationManœuvre::Burn burn2{intensity2,
-                                 timing2,
-                                 250000.10393791363 * Newton,
-                                 3432.3274999999999 * Metre / Second,
-                                 frame,
-                                 true};
+  NavigationManœuvre::Burn const burn2{intensity2,
+                                       timing2,
+                                       thrust,
+                                       specific_impulse,
+                                       frame,
+                                       inertially_fixed};
+
+  // This call used to check-fail.
   flight_plan.Replace(burn2, 0);
 }
 
