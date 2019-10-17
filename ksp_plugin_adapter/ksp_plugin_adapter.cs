@@ -1472,10 +1472,10 @@ public partial class PrincipiaPluginAdapter
       // UpdateVesselAndBurnEditors but it's probably not worth factoring out.
       double current_time = plugin_.CurrentTime();
       // Note that we don't want to look at the anomalous manœuvres as we may
-      // even be able to build a Frenet frame for them.
+      // not even be able to build a Frenet frame for them.
       int number_of_nomalous_manœuvres =
           plugin_.FlightPlanNumberOfManoeuvres(vessel_guid) -
-          plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
+          plugin_.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
       int? first_future_manœuvre_index = null;
       for (int i = 0; i < number_of_nomalous_manœuvres; ++i) {
         NavigationManoeuvre manœuvre =
