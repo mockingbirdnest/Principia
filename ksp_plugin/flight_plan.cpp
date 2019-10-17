@@ -428,6 +428,12 @@ Status FlightPlan::ComputeSegments(
     AddLastSegment();
   }
   if (anomalous_segments_ == 0) {
+    // If the desired end time is before the end of the last burn, move it to
+    // that point.  Otherwise we might try to integrate towards the past in
+    // CoastSegment.  Also, it's the user-friendly thing to do: no point in
+    // having to extend the flight plan by hand.
+    desired_final_time_ =
+        std::max(desired_final_time_, segments_.back()->t_max());
     Status const status = CoastSegment(desired_final_time_, segments_.back());
     if (!status.ok()) {
       overall_status.Update(status);
