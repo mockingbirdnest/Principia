@@ -23,6 +23,24 @@ using quantities::Sqrt;
 using quantities::si::Radian;
 
 template<typename Scalar, typename Frame>
+SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
+    R3x3Matrix<Scalar> const& matrix)
+    : matrix_(matrix) {
+  DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
+  DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
+  DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
+}
+
+template<typename Scalar, typename Frame>
+SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
+    R3x3Matrix<Scalar>&& matrix)
+    : matrix_(std::move(matrix)) {
+  DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
+  DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
+  DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
+}
+
+template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>& SymmetricBilinearForm<Scalar, Frame>::
 operator+=(SymmetricBilinearForm const& right) {
   return *this = *this + right;
@@ -44,6 +62,12 @@ template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>& SymmetricBilinearForm<Scalar, Frame>::
 operator/=(double const right) {
   return *this = *this / right;
+}
+
+template<typename Scalar, typename Frame>
+R3x3Matrix<Scalar> const& SymmetricBilinearForm<Scalar, Frame>::coordinates()
+    const {
+  return matrix_;
 }
 
 template<typename Scalar, typename Frame>
@@ -118,24 +142,6 @@ SymmetricBilinearForm<Scalar, Frame>::ReadFromMessage(
   Frame::ReadFromMessage(message.frame());
   return SymmetricBilinearForm(
       R3x3Matrix<Scalar>::ReadFromMessage(message.matrix()));
-}
-
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
-    R3x3Matrix<Scalar> const& matrix)
-    : matrix_(matrix) {
-  DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
-  DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
-  DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
-}
-
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
-    R3x3Matrix<Scalar>&& matrix)
-    : matrix_(std::move(matrix)) {
-  DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
-  DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
-  DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
 }
 
 template<typename Scalar, typename Frame>

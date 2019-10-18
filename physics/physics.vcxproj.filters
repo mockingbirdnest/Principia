@@ -274,5 +274,8 @@
     <ClCompile Include="..\numerics\elliptic_integrals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="inertia_tensor_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

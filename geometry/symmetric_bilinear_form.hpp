@@ -20,10 +20,15 @@ using quantities::Product;
 template<typename Scalar, typename Frame>
 class SymmetricBilinearForm {
  public:
+  explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
+  explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
+
   SymmetricBilinearForm& operator+=(SymmetricBilinearForm const& right);
   SymmetricBilinearForm& operator-=(SymmetricBilinearForm const& right);
   SymmetricBilinearForm& operator*=(double right);
   SymmetricBilinearForm& operator/=(double right);
+
+  R3x3Matrix<Scalar> const& coordinates() const;
 
   // A SymmetricBilinearForm does *not* apply to bivectors.  See Anticommutator
   // below.
@@ -52,8 +57,6 @@ class SymmetricBilinearForm {
       serialization::SymmetricBilinearForm const& message);
 
  private:
-  explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
-  explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
 
   // Given a matrix that contains in columns eigenvectors for a form, picks the
   // column with the largest norm and return its normalized value.  This is

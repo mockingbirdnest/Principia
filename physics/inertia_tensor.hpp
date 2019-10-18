@@ -13,38 +13,43 @@ namespace physics {
 namespace internal_inertia_tensor {
 
 using geometry::Displacement;
-using geometry::Point;
+using geometry::Position;
 using geometry::R3Element;
 using geometry::R3x3Matrix;
 using geometry::Rotation;
 using geometry::SymmetricBilinearForm;
+using quantities::Mass;
 using quantities::MomentOfInertia;
 
 template<typename Frame>
 class InertiaTensor {
  public:
-  InertiaTensor(R3x3Matrix<MomentOfInertia> const& coordinates,
-                Point<Frame> const& centre_of_mass);
+  InertiaTensor(Mass const& mass,
+                R3x3Matrix<MomentOfInertia> const& coordinates,
+                Position<Frame> const& centre_of_mass);
 
-  InertiaTensor(R3x3Matrix<MomentOfInertia> const& coordinates,
-                Point<Frame> const& reference_point,
-                Point<Frame> const& centre_of_mass);
+  InertiaTensor(Mass const& mass,
+                R3x3Matrix<MomentOfInertia> const& coordinates,
+                Position<Frame> const& reference_point,
+                Position<Frame> const& centre_of_mass);
 
   R3Element<MomentOfInertia> MomentsOfInertia() const;
 
   template<typename ToFrame>
-  InertiaTensor<ToFrame> Rotate(Rotation<Frame, ToFrame> const& rotation);
+  InertiaTensor<ToFrame> Rotate(Rotation<Frame, ToFrame> const& rotation) const;
   template<typename ToFrame>
-  InertiaTensor<ToFrame> Rotate(Rotation<ToFrame, Frame> const& rotation);
+  InertiaTensor<ToFrame> Rotate(Rotation<ToFrame, Frame> const& rotation) const;
 
   template<typename ToFrame>
-  InertiaTensor<ToFrame> Translate(Displacement<Frame> const& displacement);
+  InertiaTensor<ToFrame> Translate(
+      Displacement<Frame> const& displacement) const;
   template<typename ToFrame>
-  InertiaTensor<ToFrame> Translate(Displacement<ToFrame> const& displacement);
+  InertiaTensor<ToFrame> Translate(
+      Displacement<ToFrame> const& displacement) const;
   template<typename ToFrame>
-  InertiaTensor<ToFrame> Translate(Point<Frame> const& point);
+  InertiaTensor<ToFrame> Translate(Position<Frame> const& point) const;
   template<typename ToFrame>
-  InertiaTensor<ToFrame> Translate(Point<ToFrame> const& point);
+  InertiaTensor<ToFrame> Translate(Position<ToFrame> const& point) const;
 
   template<typename PrincipalAxesFrame>
   struct PrincipalAxes {
@@ -56,13 +61,32 @@ class InertiaTensor {
   PrincipalAxes<PrincipalAxesFrame> Diagonalize() const;
 
  private:
-  SymmetricBilinearForm<MomentOfInertia, Frame> form_;
-  Point<Frame> const& centre_of_mass_;
+  InertiaTensor(Mass const& mass,
+                SymmetricBilinearForm<MomentOfInertia, Frame> const& form,
+                Position<Frame> const& reference_point,
+                Position<Frame> const& centre_of_mass);
+
+  static SymmetricBilinearForm<MomentOfInertia, Frame>
+  MakeSymmetricBilinearForm(R3x3Matrix<MomentOfInertia> const& tensor);
+
+  Mass const mass_;
+  SymmetricBilinearForm<MomentOfInertia, Frame> const form_;
+  Position<Frame> const reference_point_;
+  Position<Frame> const centre_of_mass_;
+
+  template<typename F>
+  friend InertiaTensor<F> operator+(InertiaTensor<F> const& left,
+                                    InertiaTensor<F> const& right);
 };
+
+template<typename Frame>
+InertiaTensor<Frame> operator+(InertiaTensor<Frame> const& left,
+                               InertiaTensor<Frame> const& right);
 
 }  // namespace internal_inertia_tensor
 
 using internal_inertia_tensor::InertiaTensor;
+using internal_inertia_tensor::operator+;
 
 }  // namespace physics
 }  // namespace principia
