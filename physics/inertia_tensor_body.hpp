@@ -37,6 +37,13 @@ InertiaTensor<ToFrame> InertiaTensor<Frame>::Rotate(
 
 template<typename Frame>
 template<typename ToFrame>
+InertiaTensor<ToFrame> InertiaTensor<Frame>::Rotate(
+    Rotation<ToFrame, Frame> const& rotation) const {
+  return InertiaTensor<ToFrame>();
+}
+
+template<typename Frame>
+template<typename ToFrame>
 InertiaTensor<ToFrame> InertiaTensor<Frame>::Translate(
     Position<Frame> const& point) const {
   static Identity<Frame, ToFrame> const identity{};

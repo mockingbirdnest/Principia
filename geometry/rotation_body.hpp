@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/identity.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
@@ -206,6 +207,35 @@ template<typename Scalar>
 Trivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return trivector;
+}
+
+template<typename FromFrame, typename ToFrame>
+template<typename Scalar>
+SymmetricBilinearForm<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
+    SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
+  static Identity<ToFrame, FromFrame> const identity();
+  // If R is the rotation and F the form, we compute R * F * R⁻¹.  Note however
+  // that we only have mechanisms for applying rotations to column vectors.  If
+  // r is a row of F, we compute the corresponding row of the result as
+  // R * ᵗ(R * ᵗr).
+  R3x3Matrix<Scalar> const form_coordinates = form.coordinates();
+
+  // The matrix is symmetric, so what you call rows I call columns.
+  Vector<Scalar, FromFrame> const column_x(form_coordinates.row_x());
+  Vector<Scalar, FromFrame> const column_y(form_coordinates.row_y());
+  Vector<Scalar, FromFrame> const column_z(form_coordinates.row_z());
+
+  Vector<Scalar, ToFrame> const result_row_x =
+      (*this)(identity((*this)(column_x)));
+  Vector<Scalar, ToFrame> const result_row_y =
+      (*this)(identity((*this)(column_y)));
+  Vector<Scalar, ToFrame> const result_row_z =
+      (*this)(identity((*this)(column_z)));
+
+  return SymmetricBilinearForm<Scalar, ToFrame>(
+      R3x3Matrix(result_row_x.coordinates(),
+                 result_row_y.coordinates(),
+                 result_row_z.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>
