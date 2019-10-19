@@ -3,6 +3,7 @@
 #include "physics/inertia_tensor.hpp"
 
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 
 namespace principia {
@@ -10,6 +11,7 @@ namespace physics {
 namespace internal_inertia_tensor {
 
 using geometry::Barycentre;
+using geometry::Identity;
 using geometry::SymmetricProduct;
 
 template<typename Frame>
@@ -17,17 +19,8 @@ InertiaTensor<Frame>::InertiaTensor(
     Mass const& mass,
     R3x3Matrix<MomentOfInertia> const& coordinates,
     Position<Frame> const& centre_of_mass)
-    : InertiaTensor(mass, coordinates, centre_of_mass, centre_of_mass) {}
-
-template<typename Frame>
-InertiaTensor<Frame>::InertiaTensor(
-    Mass const& mass,
-    R3x3Matrix<MomentOfInertia> const& coordinates,
-    Position<Frame> const& reference_point,
-    Position<Frame> const& centre_of_mass)
     : InertiaTensor(mass,
                     MakeSymmetricBilinearForm(coordinates),
-                    reference_point,
                     centre_of_mass) {}
 
 template<typename Frame>
@@ -45,47 +38,18 @@ InertiaTensor<ToFrame> InertiaTensor<Frame>::Rotate(
 template<typename Frame>
 template<typename ToFrame>
 InertiaTensor<ToFrame> InertiaTensor<Frame>::Translate(
-    Displacement<Frame> const& displacement) const {
-  return InertiaTensor(
-      mass_,
-      form_ + 2 * mass_ * SymmetricProduct(displacement, displacement),
-      reference_point_ + displacement,
-      centre_of_mass_);
-}
-
-template<typename Frame>
-template<typename ToFrame>
-InertiaTensor<ToFrame> InertiaTensor<Frame>::Translate(
-    Displacement<ToFrame> const& displacement) const {
-  return InertiaTensor(
-      mass_,
-      form_ + 2 * mass_ * SymmetricProduct(displacement, displacement),
-      reference_point_ + displacement,
-      centre_of_mass_);
-}
-
-template<typename Frame>
-template<typename ToFrame>
-InertiaTensor<ToFrame> InertiaTensor<Frame>::Translate(
     Position<Frame> const& point) const {
-  auto const displacement = point - reference_point_;
-  return InertiaTensor(
-      mass_,
-      form_ + 2 * mass_ * SymmetricProduct(displacement, displacement),
-      point,
-      centre_of_mass_);
-}
+  static Identity<Frame, ToFrame> const identity{};
 
-template<typename Frame>
-template<typename ToFrame>
-InertiaTensor<ToFrame> InertiaTensor<Frame>::Translate(
-    Position<ToFrame> const& point) const {
-  auto const displacement = point - reference_point_;
-  return InertiaTensor(
-      mass_,
-      form_ + 2 * mass_ * SymmetricProduct(displacement, displacement),
-      point,
-      centre_of_mass_);
+  auto const translation = point - Frame::origin;
+  auto const translated_form =
+      form_ + 2 * mass_ * SymmetricProduct(translation, translation);
+  auto const translated_centre_of_mass = centre_of_mass_ - translation;
+  Position<ToFrame> b = identity(translated_centre_of_mass);
+  SymmetricBilinearForm<MomentOfInertia, ToFrame> a = identity(translated_form);
+  return InertiaTensor<ToFrame>(mass_,
+                                identity(translated_form),
+                                identity(translated_centre_of_mass));
 }
 
 template<typename Frame>
@@ -104,11 +68,9 @@ template<typename Frame>
 InertiaTensor<Frame>::InertiaTensor(
     Mass const& mass,
     SymmetricBilinearForm<MomentOfInertia, Frame> const& form,
-    Position<Frame> const& reference_point,
     Position<Frame> const& centre_of_mass)
     : mass_(mass),
       form_(form),
-      reference_point_(reference_point),
       centre_of_mass_(centre_of_mass) {}
 
 template<typename Frame>

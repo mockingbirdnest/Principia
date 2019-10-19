@@ -6,6 +6,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -40,6 +41,10 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
   template<typename Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
+
+  template<typename Scalar>
+  SymmetricBilinearForm<Scalar, ToFrame> operator()(
+      SymmetricBilinearForm<Scalar, FromFrame> const& form) const;
 
   template<typename T>
   typename base::Mappable<Identity, T>::type operator()(T const& t) const;

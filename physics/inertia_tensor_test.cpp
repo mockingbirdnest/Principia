@@ -35,6 +35,9 @@ TEST(InertiaTensorTest, Abdulghany) {
   using F2 = Frame<serialization::Frame::TestTag,
                    serialization::Frame::TEST2,
                    /*frame_is_inertial=*/true>;
+  using F3 = Frame<serialization::Frame::TestTag,
+                   serialization::Frame::TEST2,
+                   /*frame_is_inertial=*/true>;
 
   Density const ρ = 13593 * Kilogram / Pow<3>(Metre);
   Length const r = 3 * Metre;
@@ -64,11 +67,11 @@ TEST(InertiaTensorTest, Abdulghany) {
                              {0.0, 0.0, 1.0 / 2.0}},
       F2::origin);
 
-  InertiaTensor<F1> itcu =
-      inertia_tensor_cuboid.Translate(overall_centre_of_mass);
-  InertiaTensor<F1> itcy =
-      inertia_tensor_cylinder.Translate(overall_centre_of_mass);
-  InertiaTensor<F1> ittot = itcu + itcy;
+  InertiaTensor<F3> itcu =
+      inertia_tensor_cuboid.Translate<F3>(overall_centre_of_mass);
+  //InertiaTensor<F3> itcy =
+  //    inertia_tensor_cylinder.Translate<F3>(overall_centre_of_mass);
+  //InertiaTensor<F3> ittot = itcu + itcy;
 }
 
 }  // namespace physics

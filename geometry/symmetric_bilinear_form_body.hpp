@@ -193,25 +193,28 @@ SymmetricBilinearForm<Scalar, Frame> operator-(
   return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ - right.matrix_);
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator*(
-    double const left,
-    SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm<Scalar, Frame>(left * right.matrix_);
+template<typename LScalar, typename RScalar, typename Frame>
+SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> operator*(
+    LScalar const left,
+    SymmetricBilinearForm<RScalar, Frame> const& right) {
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>(left *
+                                                                 right.matrix_);
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator*(
-    SymmetricBilinearForm<Scalar, Frame> const& left,
-    double const right) {
-  return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ * right);
+template<typename LScalar, typename RScalar, typename Frame>
+SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> operator*(
+    SymmetricBilinearForm<LScalar, Frame> const& left,
+    RScalar const right) {
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>(left.matrix_ *
+                                                                 right);
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator/(
-    SymmetricBilinearForm<Scalar, Frame> const& left,
-    double const right) {
-  return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ / right);
+template<typename LScalar, typename RScalar, typename Frame>
+SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame> operator/(
+    SymmetricBilinearForm<LScalar, Frame> const& left,
+    RScalar const right) {
+  return SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame>(left.matrix_ /
+                                                                  right);
 }
 
 template<typename LScalar, typename RScalar, typename Frame>

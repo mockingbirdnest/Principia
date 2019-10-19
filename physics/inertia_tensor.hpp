@@ -24,13 +24,9 @@ using quantities::MomentOfInertia;
 template<typename Frame>
 class InertiaTensor {
  public:
+  //At the origin
   InertiaTensor(Mass const& mass,
                 R3x3Matrix<MomentOfInertia> const& coordinates,
-                Position<Frame> const& centre_of_mass);
-
-  InertiaTensor(Mass const& mass,
-                R3x3Matrix<MomentOfInertia> const& coordinates,
-                Position<Frame> const& reference_point,
                 Position<Frame> const& centre_of_mass);
 
   R3Element<MomentOfInertia> MomentsOfInertia() const;
@@ -41,15 +37,7 @@ class InertiaTensor {
   InertiaTensor<ToFrame> Rotate(Rotation<ToFrame, Frame> const& rotation) const;
 
   template<typename ToFrame>
-  InertiaTensor<ToFrame> Translate(
-      Displacement<Frame> const& displacement) const;
-  template<typename ToFrame>
-  InertiaTensor<ToFrame> Translate(
-      Displacement<ToFrame> const& displacement) const;
-  template<typename ToFrame>
   InertiaTensor<ToFrame> Translate(Position<Frame> const& point) const;
-  template<typename ToFrame>
-  InertiaTensor<ToFrame> Translate(Position<ToFrame> const& point) const;
 
   template<typename PrincipalAxesFrame>
   struct PrincipalAxes {
@@ -63,7 +51,6 @@ class InertiaTensor {
  private:
   InertiaTensor(Mass const& mass,
                 SymmetricBilinearForm<MomentOfInertia, Frame> const& form,
-                Position<Frame> const& reference_point,
                 Position<Frame> const& centre_of_mass);
 
   static SymmetricBilinearForm<MomentOfInertia, Frame>
@@ -71,7 +58,6 @@ class InertiaTensor {
 
   Mass const mass_;
   SymmetricBilinearForm<MomentOfInertia, Frame> const form_;
-  Position<Frame> const reference_point_;
   Position<Frame> const centre_of_mass_;
 
   template<typename F>
