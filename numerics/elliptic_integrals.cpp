@@ -1284,12 +1284,19 @@ void FukushimaEllipticBDJ(double const nc,
   J_n_m = BulirschCel(kc, nc, /*a=*/0.0, /*b=*/1.0);
 }
 
+// Note that the identifiers in the function definition are not the same as
+// those in the function declaration.
+// The declaration follows [Fuk11b], equations (9) and (10), and [Fuk12],
+// equation (24), whereas the definition follows [Fuk11b], section 2.2, and
+// [Fuk12], section 3.3.
+// [Fuk11b] (for B and D) calls the index j and [Fuk12] (for J) calls it i; we
+// use i everywhere.
 void FukushimaEllipticBcDcJc(double const c₀,
                              double const n,
                              double const mc,
-                             Angle& b,
-                             Angle& d,
-                             Angle& j) {
+                             Angle& Bᵢ,
+                             Angle& Dᵢ,
+                             Angle& Jᵢ) {
   // See [Fuk11b] section 2.2 for the determination of xS.
   constexpr double xS = 0.1;
   // The maximum number of iterations in the first loop below.
@@ -1325,17 +1332,18 @@ void FukushimaEllipticBcDcJc(double const c₀,
     cd[i] = cᵢ * dᵢ;
     cᵢ = Sqrt(xᵢ);
   }
+  int const I = i;  // The index at termination.
 
   // Switch to the normal algorithm.
-  FukushimaEllipticBsDsJs(s[i], n, mc, b, d, j);
+  FukushimaEllipticBsDsJs(s[I], n, mc, Bᵢ, Dᵢ, Jᵢ);
 
   // Double argument transformation of B, D, J.
-  for (int k = i; k > 0; --k) {
-    double const sy = s[k - 1] * y[k];
-    double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
-    b = 2.0 * b - sy * Radian;
-    d = d + (d + sy * Radian);
-    j = j + (j + FukushimaT(t, h));
+  for (int i = I; i > 0; --i) {
+    double const sy = s[i - 1] * y[i];
+    double const t = sy / (1.0 - n * (y[i - 1] - y[i] * cd[i - 1]));
+    Bᵢ = 2.0 * Bᵢ - sy * Radian;
+    Dᵢ = Dᵢ + (Dᵢ + sy * Radian);
+    Jᵢ = Jᵢ + (Jᵢ + FukushimaT(t, h));
   }
 }
 
@@ -1382,7 +1390,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
     s[i + 1] = Sqrt(yᵢ);
     cd[i] = cᵢ * dᵢ;
   }
-  int I = i;  // The index at termination.
+  int const I = i;  // The index at termination.
 
   // Maclaurin series, [Fuk11b] equation (15) and [Fuk12] equation (32).
   Angle Σ_Bₗ_m_yˡ{uninitialized};
@@ -1788,7 +1796,10 @@ void EllipticFEΠ(Angle const& φ,
   Π_φ_nǀm = F_φǀm + n * J;
 }
 
-// The notation follows [Fuk09].
+// Note that the identifiers in the function definition are not the same as
+// those in the function declaration.
+// The notation here follows [Fuk09], whereas the notation in the function
+// declaration uses |mc| for consistency with the other functions.
 Angle EllipticK(double const mʹ) {
   DCHECK_LE(0, mʹ);
   DCHECK_GE(1, mʹ);
