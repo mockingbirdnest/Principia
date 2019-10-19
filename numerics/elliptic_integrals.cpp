@@ -58,7 +58,8 @@ void FukushimaEllipticBDJ(double nc,
 // Computes Fukushima's incomplete integrals of the second kind and third kind
 // from the cosine of the amplitude: Bc(c|m) = B(arccos c|m),
 // Dc(c|m) = D(arccos c|m), Jc(c, n|m) = J(arccos c, n|m), where m = 1 - mc.
-// These functions are defined in [Fuk11b], [Fuk11c].
+// These functions are defined in [Fuk11b], equations (9) and (10), and
+// [Fuk11c], equation (24).
 void FukushimaEllipticBcDcJc(double c,
                              double n,
                              double mc,
@@ -69,7 +70,8 @@ void FukushimaEllipticBcDcJc(double c,
 // Computes Fukushima's incomplete integrals of the second kind and third kind
 // from the sine of the amplitude: Bs(s|m) = B(arcsin s|m),
 // Ds(s|m) = D(arcsin s|m), Js(s, n|m) = J(arcsin s, n|m), where m = 1 - mc.
-// These functions are defined in [Fuk11b], [Fuk11c].
+// These functions are defined in [Fuk11b], equations (9) and (10), and
+// [Fuk11c], equation (24).
 void FukushimaEllipticBsDsJs(double s,
                              double n,
                              double mc,
@@ -77,13 +79,14 @@ void FukushimaEllipticBsDsJs(double s,
                              Angle& Ds_sǀm,
                              Angle& Js_s_nǀm);
 
-// Maclaurin series expansion of Bs and Ds [Fuk11a].
+// Computes the Maclaurin series expansion ∑ Bₗ(m) yˡ and ∑ Dₗ(m) yˡ used in the
+// computation of of Bs and Ds, see [Fuk11b], equation (15).
 // NOTE(phl): I believe that this is a Maclaurin series but it's not completely
 // clear.
 void FukushimaEllipticBsDsMaclaurinSeries(double y,
                                           double m,
-                                          Angle& b,
-                                          Angle& d);
+                                          Angle& Σ_Bₗ_m_yˡ,
+                                          Angle& Σ_Dₗ_m_yˡ);
 
 // Maclaurin series expansion of Js [Fuk11c].
 Angle FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
@@ -1336,12 +1339,19 @@ void FukushimaEllipticBcDcJc(double const c₀,
   }
 }
 
+// Note that the identifiers in the function definition are not the same as
+// those in the function declaration.
+// The declaration follows [Fuk11b], equations (9) and (10), and [Fuk11c],
+// equation (24), whereas the definition follows [Fuk11b], section 2.2, and
+// [Fuk11c], section 3.3.
+// [Fuk11b] (for B and D) calls the index j and [Fuk11c] (for J) calls it i; we
+// use i everywhere.
 void FukushimaEllipticBsDsJs(double const s₀,
                              double const n,
                              double const mc,
-                             Angle& b,
-                             Angle& d,
-                             Angle& j) {
+                             Angle& Bᵢ,
+                             Angle& Dᵢ,
+                             Angle& Jᵢ) {
   // See [Fuk11c] section 3.5 for the determination of yB.
   constexpr double yB = 0.01622;
   // The maximum number of argument transformations, related to yB.  This is the
@@ -1372,20 +1382,24 @@ void FukushimaEllipticBsDsJs(double const s₀,
     s[i + 1] = Sqrt(yᵢ);
     cd[i] = cᵢ * dᵢ;
   }
+  int I = i;  // The index at termination.
 
-  // Maclaurin series.
-  FukushimaEllipticBsDsMaclaurinSeries(yᵢ, m, b, d);
-  b = s[i] * b;
-  d = s[i] * yᵢ * d;
-  j = s[i] * FukushimaEllipticJsMaclaurinSeries(yᵢ, n, m);
+  // Maclaurin series, [Fuk11b] equation (15) and [Fuk11c] equation (32).
+  Angle Σ_Bₗ_m_yˡ{uninitialized};
+  Angle Σ_Dₗ_m_yˡ{uninitialized};
+  FukushimaEllipticBsDsMaclaurinSeries(yᵢ, m, Σ_Bₗ_m_yˡ, Σ_Dₗ_m_yˡ);
+  Bᵢ = s[I] * Σ_Bₗ_m_yˡ;
+  Dᵢ = s[I] * yᵢ * Σ_Dₗ_m_yˡ;
+  Jᵢ = s[I] * FukushimaEllipticJsMaclaurinSeries(yᵢ, n, m);
 
-  // Double argument transformation of B, D, J.
-  for (int k = i; k > 0; --k) {
-    double const sy = s[k - 1] * y[k];
-    double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
-    b = 2.0 * b - sy * Radian;
-    d = d + (d + sy * Radian);
-    j = j + (j + FukushimaT(t, h));
+  // Double argument transformation of B, D, J, [Fuk11b] equation (16) and
+  // [Fuk11c] equations (33–35).
+  for (int i = I; i > 0; --i) {
+    double const sy = s[i - 1] * y[i];
+    double const t = sy / (1.0 - n * (y[i - 1] - y[i] * cd[i - 1]));
+    Bᵢ = 2.0 * Bᵢ - sy * Radian;
+    Dᵢ = Dᵢ + (Dᵢ + sy * Radian);
+    Jᵢ = Jᵢ + (Jᵢ + FukushimaT(t, h));
   }
 }
 
