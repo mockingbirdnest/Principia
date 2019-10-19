@@ -44,12 +44,11 @@ InertiaTensor<ToFrame> InertiaTensor<Frame>::Translate(
   auto const translation = point - Frame::origin;
   auto const translated_form =
       form_ + 2 * mass_ * SymmetricProduct(translation, translation);
-  auto const translated_centre_of_mass = centre_of_mass_ - translation;
-  Position<ToFrame> b = identity(translated_centre_of_mass);
-  SymmetricBilinearForm<MomentOfInertia, ToFrame> a = identity(translated_form);
-  return InertiaTensor<ToFrame>(mass_,
-                                identity(translated_form),
-                                identity(translated_centre_of_mass));
+  auto const translated_centre_of_mass_displacement = centre_of_mass_ - point;
+  return InertiaTensor<ToFrame>(
+      mass_,
+      identity(translated_form),
+      ToFrame::origin + identity(translated_centre_of_mass_displacement));
 }
 
 template<typename Frame>

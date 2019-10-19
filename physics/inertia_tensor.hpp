@@ -21,10 +21,10 @@ using geometry::SymmetricBilinearForm;
 using quantities::Mass;
 using quantities::MomentOfInertia;
 
+//At the origin
 template<typename Frame>
 class InertiaTensor {
  public:
-  //At the origin
   InertiaTensor(Mass const& mass,
                 R3x3Matrix<MomentOfInertia> const& coordinates,
                 Position<Frame> const& centre_of_mass);
@@ -59,6 +59,9 @@ class InertiaTensor {
   Mass const mass_;
   SymmetricBilinearForm<MomentOfInertia, Frame> const form_;
   Position<Frame> const centre_of_mass_;
+
+  template<typename F>
+  friend class InertiaTensor;
 
   template<typename F>
   friend InertiaTensor<F> operator+(InertiaTensor<F> const& left,
