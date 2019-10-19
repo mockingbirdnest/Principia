@@ -22,7 +22,7 @@
 // general incomplete elliptic integrals of all three kinds.
 // [JE33] Jahnke and Emde (1933), Funktionentafeln mit Formeln und Kurven—Tables
 // of functions with formulæ and curves.
-// [JE38]  Jahnke and Emde (1938), Funktionentafeln mit Formeln und Kurven—Tables
+// [JE38] Jahnke and Emde (1938), Funktionentafeln mit Formeln und Kurven—Tables
 // of functions with formulæ and curves.
 // [JEL60] Jahnke, Emde, and Lösch (1960) Tafeln Höherer Funktionen—Tables of
 // higher functions.
