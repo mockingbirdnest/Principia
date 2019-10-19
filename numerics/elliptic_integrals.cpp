@@ -234,90 +234,90 @@ class FukushimaEllipticDsBsMaclaurin {
 // is the total degree (l - 1 in Fukushima's notation), the second the degree in
 // m (k in Fukushima's notation).
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_0_0(std::make_tuple(1.0 / 3.0));
+    fukushima_elliptic_Js_maclaurin_n_0_0(std::make_tuple(1.0 / 3.0));
 
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_1_0(std::make_tuple(1.0 / 10.0,
+    fukushima_elliptic_Js_maclaurin_n_1_0(std::make_tuple(1.0 / 10.0,
                                                           2.0 / 10.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_1_1(std::make_tuple(1.0 / 10.0));
+    fukushima_elliptic_Js_maclaurin_n_1_1(std::make_tuple(1.0 / 10.0));
 
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_2_0(std::make_tuple(3.0 / 56.0,
+    fukushima_elliptic_Js_maclaurin_n_2_0(std::make_tuple(3.0 / 56.0,
                                                           4.0 / 56.0,
                                                           8.0 / 56.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_2_1(std::make_tuple(2.0 / 56.0,
+    fukushima_elliptic_Js_maclaurin_n_2_1(std::make_tuple(2.0 / 56.0,
                                                           4.0 / 56.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_2_2(std::make_tuple(3.0 / 56.0));
+    fukushima_elliptic_Js_maclaurin_n_2_2(std::make_tuple(3.0 / 56.0));
 
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_0(std::make_tuple(5.0 / 144.0,
+    fukushima_elliptic_Js_maclaurin_n_3_0(std::make_tuple(5.0 / 144.0,
                                                           6.0 / 144.0,
                                                           8.0 / 144.0,
                                                           16.0 / 144.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_1(std::make_tuple(3.0 / 144.0,
+    fukushima_elliptic_Js_maclaurin_n_3_1(std::make_tuple(3.0 / 144.0,
                                                           4.0 / 144.0,
                                                           8.0 / 144.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_2(std::make_tuple(3.0 / 144.0,
+    fukushima_elliptic_Js_maclaurin_n_3_2(std::make_tuple(3.0 / 144.0,
                                                           6.0 / 144.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_3(std::make_tuple(5.0 / 144.0));
+    fukushima_elliptic_Js_maclaurin_n_3_3(std::make_tuple(5.0 / 144.0));
 
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_0(std::make_tuple(35.0 / 1408.0,
+    fukushima_elliptic_Js_maclaurin_n_4_0(std::make_tuple(35.0 / 1408.0,
                                                           40.0 / 1408.0,
                                                           48.0 / 1408.0,
                                                           64.0 / 1408.0,
                                                           128.0 / 1408.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_1(std::make_tuple(20.0 / 1408.0,
+    fukushima_elliptic_Js_maclaurin_n_4_1(std::make_tuple(20.0 / 1408.0,
                                                           24.0 / 1408.0,
                                                           32.0 / 1408.0,
                                                           64.0 / 1408.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_2(std::make_tuple(18.0 / 1408.0,
+    fukushima_elliptic_Js_maclaurin_n_4_2(std::make_tuple(18.0 / 1408.0,
                                                           24.0 / 1408.0,
                                                           48.0 / 1408.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_3(std::make_tuple(20.0 / 1408.0,
+    fukushima_elliptic_Js_maclaurin_n_4_3(std::make_tuple(20.0 / 1408.0,
                                                           40.0 / 1408.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_4(std::make_tuple(35.0 / 1408.0));
+    fukushima_elliptic_Js_maclaurin_n_4_4(std::make_tuple(35.0 / 1408.0));
 
 PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_0(std::make_tuple(63.0 / 3328.0,
+    fukushima_elliptic_Js_maclaurin_n_5_0(std::make_tuple(63.0 / 3328.0,
                                                           70.0 / 3328.0,
                                                           80.0 / 3328.0,
                                                           96.0 / 3328.0,
                                                           128.0 / 3328.0,
                                                           256.0 / 3328.0));
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_1(std::make_tuple(35.0 / 3328.0,
+    fukushima_elliptic_Js_maclaurin_n_5_1(std::make_tuple(35.0 / 3328.0,
                                                           40.0 / 3328.0,
                                                           48.0 / 3328.0,
                                                           64.0 / 3328.0,
                                                           128.0 / 3328.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_2(std::make_tuple(30.0 / 3328.0,
+    fukushima_elliptic_Js_maclaurin_n_5_2(std::make_tuple(30.0 / 3328.0,
                                                           36.0 / 3328.0,
                                                           48.0 / 3328.0,
                                                           96.0 / 3328.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_3(std::make_tuple(30.0 / 3328.0,
+    fukushima_elliptic_Js_maclaurin_n_5_3(std::make_tuple(30.0 / 3328.0,
                                                           40.0 / 3328.0,
                                                           80.0 / 3328.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_4(std::make_tuple(35.0 / 3328.0,
+    fukushima_elliptic_Js_maclaurin_n_5_4(std::make_tuple(35.0 / 3328.0,
                                                           70.0 / 3328.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_5(std::make_tuple(63.0 / 3328.0));
+    fukushima_elliptic_Js_maclaurin_n_5_5(std::make_tuple(63.0 / 3328.0));
 
 PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_0(std::make_tuple(231.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_0(std::make_tuple(231.0 / 15360.0,
                                                           252.0 / 15360.0,
                                                           280.0 / 15360.0,
                                                           320.0 / 15360.0,
@@ -325,35 +325,35 @@ PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
                                                           512.0 / 15360.0,
                                                           1024.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_1(std::make_tuple(126.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_1(std::make_tuple(126.0 / 15360.0,
                                                           140.0 / 15360.0,
                                                           160.0 / 15360.0,
                                                           192.0 / 15360.0,
                                                           256.0 / 15360.0,
                                                           512.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_2(std::make_tuple(105.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_2(std::make_tuple(105.0 / 15360.0,
                                                           120.0 / 15360.0,
                                                           144.0 / 15360.0,
                                                           192.0 / 15360.0,
                                                           384.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_3(std::make_tuple(100.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_3(std::make_tuple(100.0 / 15360.0,
                                                           120.0 / 15360.0,
                                                           160.0 / 15360.0,
                                                           320.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_4(std::make_tuple(105.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_4(std::make_tuple(105.0 / 15360.0,
                                                           140.0 / 15360.0,
                                                           280.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_5(std::make_tuple(126.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_5(std::make_tuple(126.0 / 15360.0,
                                                           252.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_6(std::make_tuple(231.0 / 15360.0));
+    fukushima_elliptic_Js_maclaurin_n_6_6(std::make_tuple(231.0 / 15360.0));
 
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_0(std::make_tuple(429.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_0(std::make_tuple(429.0 / 34816.0,
                                                           462.0 / 34816.0,
                                                           504.0 / 34816.0,
                                                           560.0 / 34816.0,
@@ -362,7 +362,7 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
                                                           1024.0 / 34816.0,
                                                           2048.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_1(std::make_tuple(231.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_1(std::make_tuple(231.0 / 34816.0,
                                                           252.0 / 34816.0,
                                                           280.0 / 34816.0,
                                                           320.0 / 34816.0,
@@ -370,35 +370,35 @@ PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
                                                           512.0 / 34816.0,
                                                           1024.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_2(std::make_tuple(189.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_2(std::make_tuple(189.0 / 34816.0,
                                                           210.0 / 34816.0,
                                                           240.0 / 34816.0,
                                                           288.0 / 34816.0,
                                                           284.0 / 34816.0,
                                                           768.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_3(std::make_tuple(175.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_3(std::make_tuple(175.0 / 34816.0,
                                                           200.0 / 34816.0,
                                                           240.0 / 34816.0,
                                                           320.0 / 34816.0,
                                                           640.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_4(std::make_tuple(175.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_4(std::make_tuple(175.0 / 34816.0,
                                                           210.0 / 34816.0,
                                                           280.0 / 34816.0,
                                                           560.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_5(std::make_tuple(189.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_5(std::make_tuple(189.0 / 34816.0,
                                                           252.0 / 34816.0,
                                                           504.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_6(std::make_tuple(231.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_6(std::make_tuple(231.0 / 34816.0,
                                                           462.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_7(std::make_tuple(429.0 / 34816.0));
+    fukushima_elliptic_Js_maclaurin_n_7_7(std::make_tuple(429.0 / 34816.0));
 
 PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_0(std::make_tuple(6435.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_0(std::make_tuple(6435.0 / 622592.0,
                                                           6864.0 / 622592.0,
                                                           7392.0 / 622592.0,
                                                           8064.0 / 622592.0,
@@ -408,7 +408,7 @@ PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
                                                           16384.0 / 622592.0,
                                                           32768.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_1(std::make_tuple(3432.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_1(std::make_tuple(3432.0 / 622592.0,
                                                           3696.0 / 622592.0,
                                                           4032.0 / 622592.0,
                                                           4480.0 / 622592.0,
@@ -417,7 +417,7 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
                                                           8192.0 / 622592.0,
                                                           16384.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_2(std::make_tuple(2772.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_2(std::make_tuple(2772.0 / 622592.0,
                                                           3024.0 / 622592.0,
                                                           3360.0 / 622592.0,
                                                           3840.0 / 622592.0,
@@ -425,35 +425,35 @@ PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
                                                           6144.0 / 622592.0,
                                                           12288.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_3(std::make_tuple(2520.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_3(std::make_tuple(2520.0 / 622592.0,
                                                           2800.0 / 622592.0,
                                                           3200.0 / 622592.0,
                                                           3840.0 / 622592.0,
                                                           5120.0 / 622592.0,
                                                           10240.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_4(std::make_tuple(2450.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_4(std::make_tuple(2450.0 / 622592.0,
                                                           2800.0 / 622592.0,
                                                           3360.0 / 622592.0,
                                                           4480.0 / 622592.0,
                                                           8960.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_5(std::make_tuple(2520.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_5(std::make_tuple(2520.0 / 622592.0,
                                                           3024.0 / 622592.0,
                                                           4032.0 / 622592.0,
                                                           8064.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_6(std::make_tuple(2772.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_6(std::make_tuple(2772.0 / 622592.0,
                                                           3696.0 / 622592.0,
                                                           7392.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_7(std::make_tuple(3432.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_7(std::make_tuple(3432.0 / 622592.0,
                                                           6864.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_8(std::make_tuple(6435.0 / 622592.0));
+    fukushima_elliptic_Js_maclaurin_n_8_8(std::make_tuple(6435.0 / 622592.0));
 
 PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_0(std::make_tuple(12155.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_0(std::make_tuple(12155.0 / 1376256.0,
                                                           12870.0 / 1376256.0,
                                                           13728.0 / 1376256.0,
                                                           14784.0 / 1376256.0,
@@ -464,7 +464,7 @@ PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
                                                           32768.0 / 1376256.0,
                                                           65536.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_1(std::make_tuple(6435.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_1(std::make_tuple(6435.0 / 1376256.0,
                                                           6864.0 / 1376256.0,
                                                           7392.0 / 1376256.0,
                                                           8064.0 / 1376256.0,
@@ -474,7 +474,7 @@ PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
                                                           16384.0 / 1376256.0,
                                                           32768.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_2(std::make_tuple(5148.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_2(std::make_tuple(5148.0 / 1376256.0,
                                                           5544.0 / 1376256.0,
                                                           6048.0 / 1376256.0,
                                                           6720.0 / 1376256.0,
@@ -483,7 +483,7 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
                                                           12288.0 / 1376256.0,
                                                           24576.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_3(std::make_tuple(4620.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_3(std::make_tuple(4620.0 / 1376256.0,
                                                           5040.0 / 1376256.0,
                                                           5600.0 / 1376256.0,
                                                           6400.0 / 1376256.0,
@@ -491,32 +491,32 @@ PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
                                                           10240.0 / 1376256.0,
                                                           20480.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_4(std::make_tuple(4410.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_4(std::make_tuple(4410.0 / 1376256.0,
                                                           4900.0 / 1376256.0,
                                                           5600.0 / 1376256.0,
                                                           6720.0 / 1376256.0,
                                                           8960.0 / 1376256.0,
                                                           17920.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_5(std::make_tuple(4410.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_5(std::make_tuple(4410.0 / 1376256.0,
                                                           5040.0 / 1376256.0,
                                                           6048.0 / 1376256.0,
                                                           8064.0 / 1376256.0,
                                                           16128.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_6(std::make_tuple(4620.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_6(std::make_tuple(4620.0 / 1376256.0,
                                                           5544.0 / 1376256.0,
                                                           7392.0 / 1376256.0,
                                                           14784.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_7(std::make_tuple(5148.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_7(std::make_tuple(5148.0 / 1376256.0,
                                                           6864.0 / 1376256.0,
                                                           13728.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_8(std::make_tuple(6435.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_8(std::make_tuple(6435.0 / 1376256.0,
                                                           12870.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_9(std::make_tuple(12155.0 / 1376256.0));
+    fukushima_elliptic_Js_maclaurin_n_9_9(std::make_tuple(12155.0 / 1376256.0));
 
 // A generator for the Maclaurin series for Fukushima's T function.
 template<int n, template<typename, typename, int> class Evaluator>
@@ -1406,8 +1406,8 @@ void FukushimaEllipticBsDsJs(double const s₀,
 // See [Fuk11b], section 2.3.
 void FukushimaEllipticBsDsMaclaurinSeries(double const y,
                                           double const m,
-                                          Angle& b,
-                                          Angle& d) {
+                                          Angle& Σ_Bₗ_m_yˡ,
+                                          Angle& Σ_Dₗ_m_yˡ) {
   double const Fs1 = FukushimaEllipticFsMaclaurin1::polynomial.Evaluate(m);
   double const Fs2 = FukushimaEllipticFsMaclaurin2::polynomial.Evaluate(m);
   double const Fs3 = FukushimaEllipticFsMaclaurin3::polynomial.Evaluate(m);
@@ -1420,15 +1420,15 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
   double const Fs10 = FukushimaEllipticFsMaclaurin10::polynomial.Evaluate(m);
   double const Fs11 = FukushimaEllipticFsMaclaurin11::polynomial.Evaluate(m);
 
-  auto const fukushima_elliptic_ds_maclaurin =
+  auto const fukushima_elliptic_Ds_maclaurin =
       FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeDsPolynomial(
       1.0, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
-  d = fukushima_elliptic_ds_maclaurin.Evaluate(y) * Radian;
+  Σ_Dₗ_m_yˡ = fukushima_elliptic_Ds_maclaurin.Evaluate(y) * Radian;
 
-  auto const fukushima_elliptic_bs_maclaurin =
+  auto const fukushima_elliptic_Bs_maclaurin =
       FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeBsPolynomial(
       1.0, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
-  b = fukushima_elliptic_bs_maclaurin.Evaluate(y) * Radian;
+  Σ_Bₗ_m_yˡ = fukushima_elliptic_Bs_maclaurin.Evaluate(y) * Radian;
 }
 
 // See [Fuk11c], section 3.4 and 3.5.
@@ -1438,132 +1438,137 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
   // Maclaurin series in m whose coefficients are polynomials in n.  The index
   // is the degree in m (k in Fukushima's notation).
   PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-      fukushima_elliptic_js_maclaurin_m_0(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_0_0.Evaluate(n)));
+      fukushima_elliptic_Js_maclaurin_m_0(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_0_0.Evaluate(n)));
   PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-      fukushima_elliptic_js_maclaurin_m_1(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_1_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_1_1.Evaluate(n)));
+      fukushima_elliptic_Js_maclaurin_m_1(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_1_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_1_1.Evaluate(n)));
   PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-      fukushima_elliptic_js_maclaurin_m_2(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_2_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_2_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_2_2.Evaluate(n)));
+      fukushima_elliptic_Js_maclaurin_m_2(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_2_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_2_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_2_2.Evaluate(n)));
   PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-      fukushima_elliptic_js_maclaurin_m_3(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_3_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_3_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_3_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_3_3.Evaluate(n)));
+      fukushima_elliptic_Js_maclaurin_m_3(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_3_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_3_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_3_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_3_3.Evaluate(n)));
   PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_4(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_4_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_4_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_4_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_4_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_4_4.Evaluate(n)));
-  double const js0 = fukushima_elliptic_js_maclaurin_m_0.Evaluate(m);
-  double const js1 = fukushima_elliptic_js_maclaurin_m_1.Evaluate(m);
-  double const js2 = fukushima_elliptic_js_maclaurin_m_2.Evaluate(m);
-  double const js3 = fukushima_elliptic_js_maclaurin_m_3.Evaluate(m);
-  double const js4 = fukushima_elliptic_js_maclaurin_m_4.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_4(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_4_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_4.Evaluate(n)));
+  // The first five coefficients Jₗ(n|m); the others are computed as needed.
+  // TODO(egg): J₁(n|m) = 1/3; could we make it constexpr?
+  double const J₁ = fukushima_elliptic_Js_maclaurin_m_0.Evaluate(m);
+  double const J₂ = fukushima_elliptic_Js_maclaurin_m_1.Evaluate(m);
+  double const J₃ = fukushima_elliptic_Js_maclaurin_m_2.Evaluate(m);
+  double const J₄ = fukushima_elliptic_Js_maclaurin_m_3.Evaluate(m);
+  double const J₅ = fukushima_elliptic_Js_maclaurin_m_4.Evaluate(m);
+  // This function computes ∑ Jₗ(n|m) yˡ.  Since it has no constant term, we
+  // compute it as y ∑ Jₗ(n|m) yˡ⁻¹.  In the remainder of this function,
+  // |fukushima_elliptic_Js_maclaurin_y_*| is the polynomial ∑ Jₗ(n|m) yˡ⁻¹.
   if (y <= 6.0369310e-04) {
     // A Maclaurin series in y whose coefficients are polynomials in n and m.
     // The index is the degree in y of the series.  Since Js has no constant
     // term, this is (l - 1) in Fukushima's notation.
     PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-        fukushima_elliptic_js_maclaurin_y_4(
-            std::make_tuple(js0, js1, js2, js3, js4));
-    return y * fukushima_elliptic_js_maclaurin_y_4.Evaluate(y) * Radian;
+        fukushima_elliptic_Js_maclaurin_y_4(
+            std::make_tuple(J₁, J₂, J₃, J₄, J₅));
+    return y * fukushima_elliptic_Js_maclaurin_y_4.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_5(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_5_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_5_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_5_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_5_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_5_4.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_5_5.Evaluate(n)));
-  double const js5 = fukushima_elliptic_js_maclaurin_m_5.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_5(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_5_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_4.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_5.Evaluate(n)));
+  double const J₆ = fukushima_elliptic_Js_maclaurin_m_5.Evaluate(m);
   if (y <= 2.0727505e-03) {
     PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_5(
-            std::make_tuple(js0, js1, js2, js3, js4, js5));
+            std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆));
     return y * fukushima_elliptic_js_maclaurin_y_5.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_6(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_6_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_4.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_5.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_6.Evaluate(n)));
-  double const js6 = fukushima_elliptic_js_maclaurin_m_6.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_6(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_6_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_4.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_5.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_6.Evaluate(n)));
+  double const J₇ = fukushima_elliptic_Js_maclaurin_m_6.Evaluate(m);
   if (y <= 5.0047026e-03) {
     PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_6(
-            std::make_tuple(js0, js1, js2, js3, js4, js5, js6));
+            std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇));
     return y * fukushima_elliptic_js_maclaurin_y_6.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_7(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_7_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_4.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_5.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_6.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_7.Evaluate(n)));
-  double const js7 = fukushima_elliptic_js_maclaurin_m_7.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_7(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_7_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_4.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_5.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_6.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_7.Evaluate(n)));
+  double const J₈ = fukushima_elliptic_Js_maclaurin_m_7.Evaluate(m);
   if (y <= 9.6961652e-03) {
     PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_7(
-            std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7));
+            std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈));
     return y * fukushima_elliptic_js_maclaurin_y_7.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_8(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_8_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_4.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_5.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_6.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_7.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_8.Evaluate(n)));
-  double const js8 = fukushima_elliptic_js_maclaurin_m_8.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_8(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_8_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_4.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_5.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_6.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_7.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_8.Evaluate(n)));
+  double const J₉ = fukushima_elliptic_Js_maclaurin_m_8.Evaluate(m);
   if (y <= 1.6220210e-02) {
     PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
-        fukushima_elliptic_js_maclaurin_y_8(
-            std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7, js8));
-    return y * fukushima_elliptic_js_maclaurin_y_8.Evaluate(y) * Radian;
+        fukushima_elliptic_Js_maclaurin_y_8(
+            std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈, J₉));
+    return y * fukushima_elliptic_Js_maclaurin_y_8.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_9(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_9_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_4.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_5.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_6.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_7.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_8.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_9.Evaluate(n)));
-  double const js9 = fukushima_elliptic_js_maclaurin_m_9.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_9(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_9_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_4.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_5.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_6.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_7.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_8.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_9.Evaluate(n)));
+  double const J₁₀ = fukushima_elliptic_Js_maclaurin_m_9.Evaluate(m);
   PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_y_9(
-          std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7, js8, js9));
-  return y * fukushima_elliptic_js_maclaurin_y_9.Evaluate(y) * Radian;
+      fukushima_elliptic_Js_maclaurin_y_9(
+          std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈, J₉, J₁₀));
+  return y * fukushima_elliptic_Js_maclaurin_y_9.Evaluate(y) * Radian;
 }
 
 Angle FukushimaT(double const t, double const h) {
