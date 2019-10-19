@@ -13,6 +13,8 @@
 // Elliptic Fuctions.
 // [Bul69] Bulirsch (1969), Numerical Calculation of Elliptic Integrals and
 // Elliptic Fuctions.  III.
+// [Fuk09] Fukushima (2009), Fast computation of complete elliptic integrals and
+// Jacobian elliptic functions.
 // [Fuk11a] Fukushima (2011), Precise and fast computation of the general
 // complete elliptic integral of the second kind.
 // [Fuk11b] Fukushima (2011), Precise and fast computation of a general
