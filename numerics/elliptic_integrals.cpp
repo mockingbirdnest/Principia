@@ -552,7 +552,7 @@ using FukushimaTMaclaurin12 = FukushimaTMaclaurin<12, EstrinEvaluator>;
 // TODO(phl): Some of these polynomials use the Horner scheme because the Estrin
 // scheme introduces inaccuracies.  Investigate why.
 PolynomialInMonomialBasis<double, double, 10, HornerEvaluator> const
-    elliptic_k_taylor_0_05(std::make_tuple(1.591003453790792180,
+    elliptic_K_taylor_0_05(std::make_tuple(1.591003453790792180,
                                            0.416000743991786912,
                                            0.245791514264103415,
                                            0.179481482914906162,
@@ -564,7 +564,7 @@ PolynomialInMonomialBasis<double, double, 10, HornerEvaluator> const
                                            0.085842591595413900,
                                            0.081541118718303215));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    elliptic_k_taylor_0_15(std::make_tuple(1.635256732264579992,
+    elliptic_K_taylor_0_15(std::make_tuple(1.635256732264579992,
                                            0.471190626148732291,
                                            0.309728410831499587,
                                            0.252208311773135699,
@@ -578,7 +578,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                                            0.266363809892617521,
                                            0.287728452156114668));
 PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    elliptic_k_taylor_0_25(std::make_tuple(1.685750354812596043,
+    elliptic_K_taylor_0_25(std::make_tuple(1.685750354812596043,
                                            0.541731848613280329,
                                            0.401524438390690257,
                                            0.369642473420889090,
@@ -591,7 +591,7 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                                            0.871013847709812357,
                                            1.057652872753547036));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    elliptic_k_taylor_0_35(std::make_tuple(1.744350597225613243,
+    elliptic_K_taylor_0_35(std::make_tuple(1.744350597225613243,
                                            0.634864275371935304,
                                            0.539842564164445538,
                                            0.571892705193787391,
@@ -605,7 +605,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                                            5.115867135558865806,
                                            7.224080007363877411));
 PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
-    elliptic_k_taylor_0_45(std::make_tuple(1.813883936816982644,
+    elliptic_K_taylor_0_45(std::make_tuple(1.813883936816982644,
                                            0.763163245700557246,
                                            0.761928605321595831,
                                            0.951074653668427927,
@@ -620,7 +620,7 @@ PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
                                            53.73749198700554656,
                                            90.27388602940998849));
 PolynomialInMonomialBasis<double, double, 14, HornerEvaluator> const
-    elliptic_k_taylor_0_55(std::make_tuple(1.898924910271553526,
+    elliptic_K_taylor_0_55(std::make_tuple(1.898924910271553526,
                                            0.950521794618244435,
                                            1.151077589959015808,
                                            1.750239106986300540,
@@ -636,7 +636,7 @@ PolynomialInMonomialBasis<double, double, 14, HornerEvaluator> const
                                            1228.420013075863451,
                                            2536.529755382764488));
 PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
-    elliptic_k_taylor_0_65(std::make_tuple(2.007598398424376302,
+    elliptic_K_taylor_0_65(std::make_tuple(2.007598398424376302,
                                            1.248457231212347337,
                                            1.926234657076479729,
                                            3.751289640087587680,
@@ -654,7 +654,7 @@ PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
                                            228672.1890493117096,
                                            612757.2711915852774));
 PolynomialInMonomialBasis<double, double, 19, EstrinEvaluator> const
-    elliptic_k_taylor_0_75(std::make_tuple(2.156515647499643235,
+    elliptic_K_taylor_0_75(std::make_tuple(2.156515647499643235,
                                            1.791805641849463243,
                                            3.826751287465713147,
                                            10.38672468363797208,
@@ -675,7 +675,7 @@ PolynomialInMonomialBasis<double, double, 19, EstrinEvaluator> const
                                            1.901975729538660119e9,
                                            7.208915015330103756e9));
 PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
-    elliptic_k_taylor_0_825(std::make_tuple(2.318122621712510589,
+    elliptic_K_taylor_0_825(std::make_tuple(2.318122621712510589,
                                             2.616920150291232841,
                                             7.897935075731355823,
                                             30.50239715446672327,
@@ -692,7 +692,7 @@ PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
                                             1.408862325028702687e9,
                                             7.515687935373774627e9));
 PolynomialInMonomialBasis<double, double, 19, EstrinEvaluator> const
-    elliptic_k_taylor_0_875(std::make_tuple(2.473596173751343912,
+    elliptic_K_taylor_0_875(std::make_tuple(2.473596173751343912,
                                             3.727624244118099310,
                                             15.60739303554930496,
                                             84.12850842805887747,
@@ -1788,51 +1788,43 @@ void EllipticFEΠ(Angle const& φ,
   Π_φ_nǀm = F_φǀm + n * J;
 }
 
-//  Double precision complete elliptic integral of the first kind
-//
-//     Reference: T. Fukushima, (2009) Celest. Mech. Dyn. Astron. 105, 305-328
-//        "Fast Computation of Complete Elliptic Integrlals and Jacobian
-//         Elliptic Functions"
-//
-//     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
-//
-//     Inputs: mc   = complementary parameter 0 <= mc   <= 1
-//
-Angle EllipticK(double const mc) {
-  DCHECK_LE(0, mc);
-  DCHECK_GE(1, mc);
+// The notation follows [Fuk09].
+Angle EllipticK(double const mʹ) {
+  DCHECK_LE(0, mʹ);
+  DCHECK_GE(1, mʹ);
   // TODO(phl): Use a binary split of [0, 1] to reduce the number of
   // comparisons.
-  double const m = 1.0 - mc;
+  double const m = 1.0 - mʹ;
   if (m == 0.0) {
     return π / 2 * Radian;
-  } else if (mc < std::numeric_limits<double>::epsilon() / 2.0) {
-    return (2.0 * log_2 - 0.5 * std::log(mc)) * Radian;
-  } else if (mc < 0.1) {
-    double const nome = EllipticNomeQ<14>(mc);
-    // Evaluate K'.
-    return -elliptic_k_taylor_0_05.Evaluate(mc - 0.05) * (1 / π) *
-           std::log(nome) * Radian;
+  } else if (mʹ < std::numeric_limits<double>::epsilon() / 2.0) {
+    return (2.0 * log_2 - 0.5 * std::log(mʹ)) * Radian;
+  } else if (mʹ < 0.1) {
+    // The complementary nome.
+    double const qʹ = EllipticNomeQ<14>(mʹ);
+    // Use K′ = K(m′), see [Fuk09], equations (15) and (29).
+    double const Kʹ = elliptic_K_taylor_0_05.Evaluate(mʹ - 0.05);
+    return -Kʹ * (1 / π) * std::log(qʹ) * Radian;
   } else if (m <= 0.1) {
-    return elliptic_k_taylor_0_05.Evaluate(m - 0.05) * Radian;
+    return elliptic_K_taylor_0_05.Evaluate(m - 0.05) * Radian;
   } else if (m <= 0.2) {
-    return elliptic_k_taylor_0_15.Evaluate(m - 0.15) * Radian;
+    return elliptic_K_taylor_0_15.Evaluate(m - 0.15) * Radian;
   } else if (m <= 0.3) {
-    return elliptic_k_taylor_0_25.Evaluate(m - 0.25) * Radian;
+    return elliptic_K_taylor_0_25.Evaluate(m - 0.25) * Radian;
   } else if (m <= 0.4) {
-    return elliptic_k_taylor_0_35.Evaluate(m - 0.35) * Radian;
+    return elliptic_K_taylor_0_35.Evaluate(m - 0.35) * Radian;
   } else if (m <= 0.5) {
-    return elliptic_k_taylor_0_45.Evaluate(m - 0.45) * Radian;
+    return elliptic_K_taylor_0_45.Evaluate(m - 0.45) * Radian;
   } else if (m <= 0.6) {
-    return elliptic_k_taylor_0_55.Evaluate(m - 0.55) * Radian;
+    return elliptic_K_taylor_0_55.Evaluate(m - 0.55) * Radian;
   } else if (m <= 0.7) {
-    return elliptic_k_taylor_0_65.Evaluate(m - 0.65) * Radian;
+    return elliptic_K_taylor_0_65.Evaluate(m - 0.65) * Radian;
   } else if (m <= 0.8) {
-    return elliptic_k_taylor_0_75.Evaluate(m - 0.75) * Radian;
+    return elliptic_K_taylor_0_75.Evaluate(m - 0.75) * Radian;
   } else if (m <= 0.85) {
-    return elliptic_k_taylor_0_825.Evaluate(m - 0.825) * Radian;
+    return elliptic_K_taylor_0_825.Evaluate(m - 0.825) * Radian;
   } else {
-    return elliptic_k_taylor_0_875.Evaluate(m - 0.875) * Radian;
+    return elliptic_K_taylor_0_875.Evaluate(m - 0.875) * Radian;
   }
 }
 
