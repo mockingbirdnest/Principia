@@ -1337,7 +1337,8 @@ void FukushimaEllipticBcDcJc(double const c₀,
   // Switch to the normal algorithm.
   FukushimaEllipticBsDsJs(s[I], n, mc, Bᵢ, Dᵢ, Jᵢ);
 
-  // Double argument transformation of B, D, J.
+  // Double argument transformation of B, D, J, [Fuk11b] equation (16) and
+  // [Fuk12] equations (33–35).
   for (int i = I; i > 0; --i) {
     double const sy = s[i - 1] * y[i];
     double const t = sy / (1.0 - n * (y[i - 1] - y[i] * cd[i - 1]));
@@ -1682,7 +1683,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   Angle D{uninitialized};  // D(m).
   Angle J{uninitialized};  // J(n, m).
 
-  // The selection rule in [Fuk11b] section 2.1, equations (7-11) and [Fuk12]
+  // The selection rule in [Fuk11b] section 2.1, equations (7–11) and [Fuk12]
   // section 3.2, equations (22) and (23).  The identifiers follow Fukushima's
   // notation.
   // NOTE(phl): The computation of 1 - c² loses accuracy with respect to the
@@ -1738,8 +1739,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
     J_φ_nǀm = -J_φ_nǀm;
   }
   if (j != 0) {
-    double const nc = 1.0 - n;
     if (!has_computed_complete_integrals) {
+      double const nc = 1.0 - n;
       FukushimaEllipticBDJ(nc, mc, B, D, J);
     }
     // See [Fuk11b], equations (B.2), and [Fuk12], equation (A.2).
