@@ -3,12 +3,6 @@
 #include "quantities/quantities.hpp"
 
 // Bibliography:
-// [JE33] Jahnke and Emde (1933), Funktionentafeln mit Formeln und Kurven—Tables
-// of functions with formulæ and curves.
-// [JE38]  Jahnke and Emde (1938), Funktionentafeln mit Formeln und Kurven—Tables
-// of functions with formulæ and curves.
-// [JEL60] Jahnke, Emde, and Lösch (1960) Tafeln Höherer Funktionen—Tables of
-// higher functions.
 // [Bul65] Bulirsch (1965), Numerical Calculation of Elliptic Integrals and
 // Elliptic Fuctions.
 // [Bul69] Bulirsch (1969), Numerical Calculation of Elliptic Integrals and
@@ -26,6 +20,12 @@
 // [Fuk18] Fukushima (2018), xelbdj.txt: Fortran test driver for
 // “elbdj”/“relbdj”, subroutines to compute the double / single precision
 // general incomplete elliptic integrals of all three kinds.
+// [JE33] Jahnke and Emde (1933), Funktionentafeln mit Formeln und Kurven—Tables
+// of functions with formulæ and curves.
+// [JE38]  Jahnke and Emde (1938), Funktionentafeln mit Formeln und Kurven—Tables
+// of functions with formulæ and curves.
+// [JEL60] Jahnke, Emde, and Lösch (1960) Tafeln Höherer Funktionen—Tables of
+// higher functions.
 // [OLBC10] Olver, Lozier, Boisvert, Clark Eds. (2010), NIST Handbook of
 // Mathematical Functions.
 
