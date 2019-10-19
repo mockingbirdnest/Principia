@@ -1783,8 +1783,8 @@ void EllipticFEΠ(Angle const& φ,
   Angle D{uninitialized};
   Angle J{uninitialized};
   FukushimaEllipticBDJ(φ, n, mc, B, D, J);
-  F_φǀm = B + mc * D;
-  E_φǀm = B + D;
+  F_φǀm = B + D;
+  E_φǀm = B + mc * D;
   Π_φ_nǀm = F_φǀm + n * J;
 }
 
