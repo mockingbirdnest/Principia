@@ -79,10 +79,10 @@ SHARED_ARGS   := \
 	-std=c++1z -stdlib=libc++ -O3 -g                           \
 	-fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer \
 	-Wall -Wpedantic                                           \
-  -Wno-char-subscripts                                       \
-  -Wno-gnu-anonymous-struct                                  \
-  -Wno-nested-anon-types                                     \
-  -Wno-unknown-pragmas                                       \
+	-Wno-char-subscripts                                       \
+	-Wno-gnu-anonymous-struct                                  \
+	-Wno-nested-anon-types                                     \
+	-Wno-unknown-pragmas                                       \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'    \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'  \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                 \
