@@ -141,6 +141,7 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
       if (enum_descriptor == google::protobuf::GetEnumDescriptor<Tag>()) {
         switch (static_cast<Tag>(enum_value_descriptor->number())) {
           ROTATING_BODY_TAG_VALUE_CASE(FRENET);
+          ROTATING_BODY_TAG_VALUE_CASE(PRINCIPAL_AXES);
         }
       }
     }

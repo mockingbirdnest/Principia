@@ -96,7 +96,7 @@ typename P::Return Method<Profile>::Return(
   returned_ = true;
   if (Recorder::active_recorder_ != nullptr) {
     return_filler_ =
-        [this, result](not_null<typename Profile::Message*> const message) {
+        [result](not_null<typename Profile::Message*> const message) {
           Profile::Fill(result, message);
         };
   }

@@ -1,6 +1,4 @@
 ﻿
-#pragma once
-
 #include "numerics/fast_sin_cos_2π.hpp"
 
 #include <pmmintrin.h>
