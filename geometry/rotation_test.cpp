@@ -6,6 +6,7 @@
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -22,6 +23,7 @@ namespace internal_rotation {
 using quantities::ArcCos;
 using quantities::ArcSin;
 using quantities::Length;
+using quantities::Pow;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
@@ -50,9 +52,9 @@ class RotationTest : public testing::Test {
             R3Element<Length>(
                 1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
         trivector_(Trivector<Length, World>(4.0 * Metre)),
-        form_(SymmetricBilinearForm<Length, World1>(
+        form_(SymmetricBilinearForm<Length, World>(
             R3x3Matrix<Length>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre},
-                               {2.0 * Metre, 5.0 * Metre, 6.0 * Metre},
+                               {2.0 * Metre, -5.0 * Metre, 6.0 * Metre},
                                {3.0 * Metre, 6.0 * Metre, 4.0 * Metre}))),
         e1_(Vector<double, World>(R3Element<double>({1, 0, 0}))),
         e2_(Vector<double, World>(R3Element<double>({0, 1, 0}))),
@@ -67,7 +69,7 @@ class RotationTest : public testing::Test {
   Vector<Length, World> const vector_;
   Bivector<Length, World> const bivector_;
   Trivector<Length, World> const trivector_;
-  SymmetricBilinearForm<Length, World1> const form_;
+  SymmetricBilinearForm<Length, World> const form_;
   Vector<double, World> e1_;
   Vector<double, World> e2_;
   Vector<double, World> e3_;
@@ -133,21 +135,14 @@ TEST_F(RotationTest, AppliedToTrivector) {
 }
 
 TEST_F(RotationTest, AppliedToSymmetricBilinearForm) {
-  EXPECT_THAT(rotation_a_(form_),
-              AlmostEquals(Bivector<Length, World>(
-                  R3Element<Length>(3.0 * Metre,
-                                    1.0 * Metre,
-                                    2.0 * Metre)), 4));
-  EXPECT_THAT(rotation_b_(form_),
-              AlmostEquals(Bivector<Length, World>(
-                  R3Element<Length>(1.0 * Metre,
-                                    -3.0 * Metre,
-                                    2.0 * Metre)), 1, 2));
-  EXPECT_THAT(rotation_c_(form_),
-              AlmostEquals(Bivector<Length, World>(
-                  R3Element<Length>((0.5 + sqrt(3.0)) * Metre,
-                                    (1.0 - 0.5 * sqrt(3.0)) * Metre,
-                                    3.0 * Metre)), 0));
+  EXPECT_THAT(form_(vector_, vector_),
+              AlmostEquals(115.0 * Pow<3>(Metre), 0));
+  EXPECT_THAT(rotation_a_(form_)(rotation_a_(vector_), rotation_a_(vector_)),
+              AlmostEquals(115.0 * Pow<3>(Metre), 0));
+  EXPECT_THAT(rotation_b_(form_)(rotation_b_(vector_), rotation_b_(vector_)),
+              AlmostEquals(115.0 * Pow<3>(Metre), 5));
+  EXPECT_THAT(rotation_c_(form_)(rotation_c_(vector_), rotation_c_(vector_)),
+              AlmostEquals(115.0 * Pow<3>(Metre), 0));
 }
 
 TEST_F(RotationTest, Determinant) {

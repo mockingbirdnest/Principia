@@ -6,7 +6,6 @@
 #include <algorithm>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/identity.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
@@ -213,11 +212,11 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 SymmetricBilinearForm<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
-  static Identity<ToFrame, FromFrame> const identity();
   // If R is the rotation and F the form, we compute R * F * R⁻¹.  Note however
   // that we only have mechanisms for applying rotations to column vectors.  If
-  // r is a row of F, we compute the corresponding row of the result as
-  // R * ᵗ(R * ᵗr).
+  // r is a row of F, we first compute the corresponding row of the intermediate
+  // matrix F * R⁻¹ as R * ᵗr.  We then transpose the intermediate matrix and
+  // multiply each column by R.
   R3x3Matrix<Scalar> const form_coordinates = form.coordinates();
 
   // The matrix is symmetric, so what you call rows I call columns.
@@ -225,12 +224,27 @@ SymmetricBilinearForm<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
   Vector<Scalar, FromFrame> const column_y(form_coordinates.row_y());
   Vector<Scalar, FromFrame> const column_z(form_coordinates.row_z());
 
-  Vector<Scalar, ToFrame> const result_row_x =
-      (*this)(identity((*this)(column_x)));
-  Vector<Scalar, ToFrame> const result_row_y =
-      (*this)(identity((*this)(column_y)));
-  Vector<Scalar, ToFrame> const result_row_z =
-      (*this)(identity((*this)(column_z)));
+  Vector<Scalar, ToFrame> const intermediate_row_x = (*this)(column_x);
+  Vector<Scalar, ToFrame> const intermediate_row_y = (*this)(column_y);
+  Vector<Scalar, ToFrame> const intermediate_row_z = (*this)(column_z);
+
+  // Note that transposing here effectively changes frames.
+  Vector<Scalar, FromFrame> const intermediate_column_x({
+      intermediate_row_x.coordinates()[0],
+      intermediate_row_y.coordinates()[0],
+      intermediate_row_z.coordinates()[0]});
+  Vector<Scalar, FromFrame> const intermediate_column_y({
+      intermediate_row_x.coordinates()[1],
+      intermediate_row_y.coordinates()[1],
+      intermediate_row_z.coordinates()[1]});
+  Vector<Scalar, FromFrame> const intermediate_column_z({
+      intermediate_row_x.coordinates()[2],
+      intermediate_row_y.coordinates()[2],
+      intermediate_row_z.coordinates()[2]});
+
+  Vector<Scalar, ToFrame> const result_row_x = (*this)(intermediate_column_x);
+  Vector<Scalar, ToFrame> const result_row_y = (*this)(intermediate_column_y);
+  Vector<Scalar, ToFrame> const result_row_z = (*this)(intermediate_column_z);
 
   return SymmetricBilinearForm<Scalar, ToFrame>(
       R3x3Matrix(result_row_x.coordinates(),

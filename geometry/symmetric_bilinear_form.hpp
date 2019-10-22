@@ -3,15 +3,20 @@
 
 #include <string>
 
+#include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
-#include "geometry/rotation.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
+
+FORWARD_DECLARE_FROM(rotation,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Rotation);
+
 namespace internal_symmetric_bilinear_form {
 
 using base::not_null;

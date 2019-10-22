@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "base/macros.hpp"
 #include "base/mappable.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
@@ -8,7 +9,6 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/sign.hpp"
-#include "geometry/symmetric_bilinear_form.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -17,6 +17,9 @@ namespace geometry {
 FORWARD_DECLARE_FROM(orthogonal_map,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      OrthogonalMap);
+FORWARD_DECLARE_FROM(symmetric_bilinear_form,
+                     TEMPLATE(typename Scalar, typename Frame) class,
+                     SymmetricBilinearForm);
 
 namespace internal_rotation {
 

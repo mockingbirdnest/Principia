@@ -6,7 +6,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/sign.hpp"
-#include "geometry/symmetric_bilinear_form.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -15,6 +14,9 @@ namespace geometry {
 FORWARD_DECLARE_FROM(orthogonal_map,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      OrthogonalMap);
+FORWARD_DECLARE_FROM(symmetric_bilinear_form,
+                     TEMPLATE(typename Scalar, typename Frame) class,
+                     SymmetricBilinearForm);
 
 namespace internal_identity {
 
