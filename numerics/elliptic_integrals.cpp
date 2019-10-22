@@ -81,8 +81,6 @@ void FukushimaEllipticBsDsJs(double s,
 
 // Computes the Maclaurin series expansion ∑ Bₗ(m) yˡ and ∑ Dₗ(m) yˡ used in the
 // computation of of Bs and Ds, see [Fuk11b], equation (15).
-// NOTE(phl): I believe that this is a Maclaurin series but it's not completely
-// clear.
 void FukushimaEllipticBsDsMaclaurinSeries(double y,
                                           double m,
                                           Angle& Σ_Bₗ_m_yˡ,
@@ -1209,7 +1207,7 @@ void FukushimaEllipticBD(double const mc, Angle& B_m, Angle& D_m) {
   } else if (mc < 0.1) {
     // This algorithm (from [Fuk18]) differs from the one in [Fuk11a] because it
     // divides log(q(mc)), not just log(mc / 16).  It tries to retain the same
-    // notation, though.
+    // notation, though.  See the documentation (Fukushima.pdf).
     double const nome = EllipticNomeQ<16>(mc);
     double const X_mc = -std::log(nome);  // X(mc).
     double KX_mc;  // KX(mc).
