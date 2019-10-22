@@ -32,14 +32,20 @@ template<typename Frame>
 template<typename ToFrame>
 InertiaTensor<ToFrame> InertiaTensor<Frame>::Rotate(
     Rotation<Frame, ToFrame> const& rotation) const {
-  return InertiaTensor<ToFrame>();
+  auto const centre_of_mass_displacement = centre_of_mass_ - Frame::origin;
+  auto const rotated_centre_of_mass_displacement =
+      rotation(centre_of_mass_displacement);
+  return InertiaTensor<ToFrame>(
+      mass_,
+      rotation(form_),
+      ToFrame::origin + rotated_centre_of_mass_displacement);
 }
 
 template<typename Frame>
 template<typename ToFrame>
 InertiaTensor<ToFrame> InertiaTensor<Frame>::Rotate(
     Rotation<ToFrame, Frame> const& rotation) const {
-  return InertiaTensor<ToFrame>();
+  return Rotate(rotation.Inverse());
 }
 
 template<typename Frame>
@@ -62,12 +68,12 @@ template<typename Frame>
 template<typename PrincipalAxesFrame>
 typename InertiaTensor<Frame>::PrincipalAxes<PrincipalAxesFrame>
 InertiaTensor<Frame>::Diagonalize() const {
+  // Diagonalizing is possible in any frame, but it's only sensible in a frame
+  // centred at the centre of mass.
+  CHECK_EQ(Frame::origin, centre_of_mass_);
   auto const eigensystem = form_.Diagonalize();
-  //TODO(phl): What happens to the points?  reference_point_: identity;
-  // centre_of_mass_: rotation.
-  return {InertiaTensor<PrincipalAxesFrame>(
-              mass_, eigensystem.form, reference_point_, centre_of_mass_),
-          eigensystem.rotation};
+  return InertiaTensor<PrincipalAxesFrame>(
+      mass_, eigensystem.form, PrincipalAxes::origin);
 }
 
 template<typename Frame>
