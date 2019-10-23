@@ -24,11 +24,6 @@ InertiaTensor<Frame>::InertiaTensor(
                     centre_of_mass) {}
 
 template<typename Frame>
-R3Element<MomentOfInertia> InertiaTensor<Frame>::MomentsOfInertia() const {
-  return R3Element<MomentOfInertia>();
-}
-
-template<typename Frame>
 template<typename ToFrame>
 InertiaTensor<ToFrame> InertiaTensor<Frame>::Rotate(
     Rotation<Frame, ToFrame> const& rotation) const {
@@ -71,7 +66,9 @@ InertiaTensor<Frame>::Diagonalize() const {
   // Diagonalizing is possible in any frame, but it's only sensible in a frame
   // centred at the centre of mass.
   CHECK_EQ(Frame::origin, centre_of_mass_);
-  auto const eigensystem = form_.Diagonalize();
+  auto const eigensystem = form_.Diagonalize(std::greater<MomentOfInertia>{});
+  R3x3Matrix<MomentOfInertia> const eigensystem_form_coordinates =
+      eigensystem.form.coordinates();
   return InertiaTensor<PrincipalAxesFrame>(
       mass_, eigensystem.form, PrincipalAxes::origin);
 }

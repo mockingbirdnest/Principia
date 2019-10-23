@@ -29,8 +29,6 @@ class InertiaTensor {
                 R3x3Matrix<MomentOfInertia> const& coordinates,
                 Position<Frame> const& centre_of_mass);
 
-  R3Element<MomentOfInertia> MomentsOfInertia() const;
-
   template<typename ToFrame>
   InertiaTensor<ToFrame> Rotate(Rotation<Frame, ToFrame> const& rotation) const;
   template<typename ToFrame>
@@ -41,7 +39,7 @@ class InertiaTensor {
 
   template<typename PrincipalAxesFrame>
   struct PrincipalAxes {
-    InertiaTensor<PrincipalAxesFrame> tensor;
+    R3Element<MomentOfInertia> moments_of_inertia;
     Rotation<Frame, PrincipalAxesFrame> rotation;
   };
 
