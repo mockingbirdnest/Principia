@@ -1,17 +1,20 @@
-#pragma once
+﻿#pragma once
 
 #include "physics/inertia_tensor.hpp"
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/point.hpp"
+#include "geometry/rotation.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_inertia_tensor {
 
 using geometry::Barycentre;
+using geometry::Bivector;
 using geometry::Identity;
+using geometry::Rotation;
 using geometry::SymmetricProduct;
 
 template<typename Frame>
@@ -51,7 +54,7 @@ InertiaTensor<ToFrame> InertiaTensor<Frame>::Translate(
 
   auto const translation = point - Frame::origin;
   auto const translated_form =
-      form_ + 2 * mass_ * SymmetricProduct(translation, translation);
+      form_ + mass_ * SymmetricProduct(translation, translation);
   auto const translated_centre_of_mass_displacement = centre_of_mass_ - point;
   return InertiaTensor<ToFrame>(
       mass_,
@@ -65,12 +68,32 @@ typename InertiaTensor<Frame>::PrincipalAxes<PrincipalAxesFrame>
 InertiaTensor<Frame>::Diagonalize() const {
   // Diagonalizing is possible in any frame, but it's only sensible in a frame
   // centred at the centre of mass.
-  CHECK_EQ(Frame::origin, centre_of_mass_);
-  auto const eigensystem = form_.Diagonalize(std::greater<MomentOfInertia>{});
+  //CHECK_EQ(Frame::origin, centre_of_mass_);
+
+  struct IntermediateFrame {};
+
+  auto const eigensystem = form_.Diagonalize<IntermediateFrame>();
+
+  // The eigenvalues are {Σx², Σy², Σz²} in increasing order.
   R3x3Matrix<MomentOfInertia> const eigensystem_form_coordinates =
       eigensystem.form.coordinates();
-  return InertiaTensor<PrincipalAxesFrame>(
-      mass_, eigensystem.form, PrincipalAxes::origin);
+
+  // The moment of inertia in increasing order are
+  // {Σ(x² + y²), Σ(x² + z²), Σ(y² + z²)}, which does *not* correspond to the
+  // ordered eigenvalues of the "classical" inertia tensor, which are
+  // {Σ(y² + z²), Σ(x² + z²), Σ(x² + y²)}.  We address this by multiplying the
+  // rotation by another one that swaps x and z.
+  R3Element<MomentOfInertia> const moments_of_inertia(
+      eigensystem_form_coordinates(0, 0) + eigensystem_form_coordinates(1, 1),
+      eigensystem_form_coordinates(2, 2) + eigensystem_form_coordinates(0, 0),
+      eigensystem_form_coordinates(1, 1) + eigensystem_form_coordinates(2, 2));
+
+  Rotation<IntermediateFrame, PrincipalAxesFrame> const swap_x_and_z(
+      Bivector<double, IntermediateFrame>({0, 0, 1}),
+      Bivector<double, IntermediateFrame>({0, 1, 0}),
+      Bivector<double, IntermediateFrame>({-1, 0, 0}));
+
+  return {moments_of_inertia, swap_x_and_z * eigensystem.rotation};
 }
 
 template<typename Frame>
