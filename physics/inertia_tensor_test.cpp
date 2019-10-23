@@ -14,6 +14,11 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace physics {
@@ -32,7 +37,12 @@ using quantities::Pow;
 using quantities::SIUnit;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
-using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
+using testing_utilities::IsNear;
+using testing_utilities::RelativeErrorFrom;
+using testing_utilities::VanishesBefore;
+using testing_utilities::operator""_⑴;
+using ::testing::Matcher;
 
 // See https://en.wikipedia.org/wiki/List_of_moments_of_inertia.
 class InertiaTensorTest : public ::testing::Test {
@@ -50,12 +60,10 @@ class InertiaTensorTest : public ::testing::Test {
   template<typename Frame>
   void CheckMomentsOfInertia(
       InertiaTensor<Frame> const& tensor,
-      R3Element<MomentOfInertia> const& moments_of_inertia) {
+      Matcher<R3Element<MomentOfInertia>> const& matcher) {
     struct PrincipalAxesFrame {};
-
     auto const principal_axes = tensor.Diagonalize<PrincipalAxesFrame>();
-    EXPECT_THAT(principal_axes.moments_of_inertia,
-                AlmostEquals(moments_of_inertia, 0));
+    EXPECT_THAT(principal_axes.moments_of_inertia, matcher);
   }
 };
 
@@ -71,14 +79,23 @@ TEST_F(InertiaTensorTest, PointMass) {
                                                      {0, 0, 0},
                                                      {0, 0, 0}},
       CentreOfMass::origin);
+
+  auto const displacement =
+      Displacement<CentreOfMass>({1 * Metre, 2 * Metre, 4 * Metre});
   InertiaTensor<GeneralPoint> const inertia_tensor_general_point =
       inertia_tensor_centre_of_mass.Translate<GeneralPoint>(
-          CentreOfMass::origin +
-          Displacement<CentreOfMass>({1 * Metre, 2 * Metre, 4 * Metre}));
+          CentreOfMass::origin + displacement);
 
+  // One of the principal axes goes through the centre of mass and the general
+  // point, and it has no inertia.  The other principal axes are orthogonal and
+  // they have the same inertia, which is the elementary inertia of a point with
+  // respect to an axis.
+  MomentOfInertia const moment_of_inertia = mass * displacement.Norm²();
   CheckMomentsOfInertia(
       inertia_tensor_general_point,
-      SIUnit<MomentOfInertia>() * R3Element<double>(0, 0, 63));
+      Componentwise(VanishesBefore(moment_of_inertia, 2),
+                    RelativeErrorFrom(moment_of_inertia, IsNear(2.9e-9_⑴)),
+                    RelativeErrorFrom(moment_of_inertia, IsNear(2.9e-9_⑴))));
 }
 
 //TEST(InertiaTensorTest, Abdulghany) {

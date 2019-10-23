@@ -43,6 +43,8 @@ class InertiaTensor {
     Rotation<Frame, PrincipalAxesFrame> rotation;
   };
 
+  // Diagonalization is possible in any frame, but it's mostly used in a frame
+  // centred at the centre of mass.
   template<typename PrincipalAxesFrame>
   PrincipalAxes<PrincipalAxesFrame> Diagonalize() const;
 

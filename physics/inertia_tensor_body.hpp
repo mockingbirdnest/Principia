@@ -66,10 +66,6 @@ template<typename Frame>
 template<typename PrincipalAxesFrame>
 typename InertiaTensor<Frame>::PrincipalAxes<PrincipalAxesFrame>
 InertiaTensor<Frame>::Diagonalize() const {
-  // Diagonalizing is possible in any frame, but it's only sensible in a frame
-  // centred at the centre of mass.
-  //CHECK_EQ(Frame::origin, centre_of_mass_);
-
   struct IntermediateFrame {};
 
   auto const eigensystem = form_.Diagonalize<IntermediateFrame>();
