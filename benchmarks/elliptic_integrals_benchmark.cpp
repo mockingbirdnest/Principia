@@ -18,7 +18,7 @@ using quantities::si::Radian;
 
 namespace numerics {
 
-void BM_EllipticEFΠ(benchmark::State& state) {
+void BM_EllipticFEΠ(benchmark::State& state) {
   constexpr int size = 20;
 
   std::mt19937_64 random(42);
@@ -41,7 +41,7 @@ void BM_EllipticEFΠ(benchmark::State& state) {
     for (Angle const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {
-          EllipticEFΠ(φ, n, mc, e, f, ᴨ);
+          EllipticFEΠ(φ, n, mc, f, e, ᴨ);
         }
       }
     }
@@ -84,7 +84,7 @@ void BM_FukushimaEllipticBDJ(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_EllipticEFΠ);
+BENCHMARK(BM_EllipticFEΠ);
 BENCHMARK(BM_FukushimaEllipticBDJ);
 
 }  // namespace numerics
