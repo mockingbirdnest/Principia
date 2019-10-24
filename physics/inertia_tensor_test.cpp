@@ -3,10 +3,12 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "geometry/rotation.hpp"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
 #include "quantities/named_quantities.hpp"
@@ -24,17 +26,21 @@ namespace principia {
 namespace physics {
 
 using geometry::Barycentre;
+using geometry::Bivector;
+using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::R3x3Matrix;
+using geometry::Rotation;
 using quantities::Density;
 using quantities::Length;
 using quantities::Mass;
 using quantities::MomentOfInertia;
 using quantities::Pow;
 using quantities::SIUnit;
+using quantities::si::Degree;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using testing_utilities::Componentwise;
@@ -67,6 +73,7 @@ class InertiaTensorTest : public ::testing::Test {
   }
 };
 
+// A point mass at a certain distance of an axis.
 TEST_F(InertiaTensorTest, PointMass) {
   Mass const mass = 3 * Kilogram;
 
@@ -98,51 +105,104 @@ TEST_F(InertiaTensorTest, PointMass) {
                     RelativeErrorFrom(moment_of_inertia, IsNear(2.9e-9_⑴))));
 }
 
-//TEST(InertiaTensorTest, Abdulghany) {
-//  using F1 = Frame<serialization::Frame::TestTag,
-//                   serialization::Frame::TEST1,
-//                   /*frame_is_inertial=*/true>;
-//  using F2 = Frame<serialization::Frame::TestTag,
-//                   serialization::Frame::TEST2,
-//                   /*frame_is_inertial=*/true>;
-//  using F3 = Frame<serialization::Frame::TestTag,
-//                   serialization::Frame::TEST2,
-//                   /*frame_is_inertial=*/true>;
-//
-//  Density const ρ = 13593 * Kilogram / Pow<3>(Metre);
-//  Length const r = 3 * Metre;
-//  Mass const cuboid_mass = 32 * ρ * Pow<3>(r);
-//  Mass const cylinder_mass = 8 * π * ρ * Pow<3>(r);
-//
-//  Position<F1> const cuboid_centre_of_mass = F1::origin;
-//  Position<F1> const cylinder_centre_of_mass =
-//      F1::origin + Displacement<F1>({0 * r, 3 * r, 5 * r});
-//  Position<F1> const overall_centre_of_mass =
-//      Barycentre<Position<F1>, Mass>(
-//          {cuboid_centre_of_mass, cylinder_centre_of_mass},
-//          {cuboid_mass, cylinder_mass});
-//
-//  InertiaTensor<F1> const inertia_tensor_cuboid(
-//      cuboid_mass,
-//      32 * ρ * Pow<5>(r) *
-//          R3x3Matrix<double>{{68.0 / 12.0, 0.0, 0.0},
-//                             {0.0, 8.0 / 12.0, 0.0},
-//                             {0.0, 0.0, 68.0 / 12.0}},
-//      cuboid_centre_of_mass);
-//  InertiaTensor<F2> const inertia_tensor_cylinder(
-//      cylinder_mass,
-//      8 * π * ρ * Pow<5>(r) *
-//          R3x3Matrix<double>{{67.0 / 12.0, 0.0, 0.0},
-//                             {0.0, 67.0 / 12.0, 0.0},
-//                             {0.0, 0.0, 1.0 / 2.0}},
-//      F2::origin);
-//
-//  InertiaTensor<F3> itcu =
-//      inertia_tensor_cuboid.Translate<F3>(overall_centre_of_mass);
-//  InertiaTensor<F3> itcy =
-//      inertia_tensor_cylinder.Translate<F3>(overall_centre_of_mass);
-//  InertiaTensor<F3> ittot = itcu + itcy;
-//}
+// A rod with respect to an axis going through its extremity
+TEST_F(InertiaTensorTest, Rod) {
+  Mass const mass = 3 * Kilogram;
+  Length const length = 5 * Metre;
+
+  using CentreOfMass = Frame1;
+  using Extremity = Frame2;
+
+  InertiaTensor<CentreOfMass> const inertia_tensor_centre_of_mass(
+      mass,
+      mass * Pow<2>(length) * R3x3Matrix<double>{{0, 0, 0},
+                                                 {0, 1.0 / 12.0, 0},
+                                                 {0, 0, 1.0 / 12.0}},
+      CentreOfMass::origin);
+
+  auto const displacement =
+      Displacement<CentreOfMass>({length / 2.0, 0 * Metre, 0 * Metre});
+  InertiaTensor<Extremity> const inertia_tensor_extremity =
+      inertia_tensor_centre_of_mass.Translate<Extremity>(
+          CentreOfMass::origin + displacement);
+
+  // One of the principal axes goes through the axis of the rod, and it has no
+  // inertia.  The other principal axes are orthogonal and they have the same
+  // inertia.
+  MomentOfInertia const moment_of_inertia = mass * Pow<2>(length) / 3.0;
+  CheckMomentsOfInertia(
+      inertia_tensor_extremity,
+      Componentwise(VanishesBefore(moment_of_inertia, 1),
+                    RelativeErrorFrom(moment_of_inertia, IsNear(4.1e-9_⑴)),
+                    RelativeErrorFrom(moment_of_inertia, IsNear(4.1e-9_⑴))));
+}
+
+TEST_F(InertiaTensorTest, Abdulghany) {
+  constexpr MomentOfInertia zero;
+  Density const ρ = 13593 * Kilogram / Pow<3>(Metre);  // Hg.
+
+  using CylinderCentreOfMassZ = Frame1;
+  using CuboidCentreOfMassZ = Frame2;
+  using CuboidCentreOfMassY = Frame3;
+
+  Length const cylinder_radius = 3 * Metre;
+  Length const cylinder_height = 24 * Metre;
+  Mass const cylinder_mass = π * ρ * Pow<2>(cylinder_radius) * cylinder_height;
+
+  // The cylinder with its axis along z.
+  MomentOfInertia const cylinder_axis_inertia =
+      cylinder_mass * Pow<2>(cylinder_radius) / 2.0;
+  MomentOfInertia const cylinder_orthogonal_inertia =
+      cylinder_mass *
+      (3.0 * Pow<2>(cylinder_radius) + Pow<2>(cylinder_height)) / 12.0;
+  InertiaTensor<CylinderCentreOfMassZ> const
+      cylinder_inertia_centre_of_mass_z(
+          cylinder_mass,
+          R3x3Matrix<MomentOfInertia>{{cylinder_orthogonal_inertia, zero, zero},
+                                      {zero, cylinder_orthogonal_inertia, zero},
+                                      {zero, zero, cylinder_axis_inertia}},
+          CylinderCentreOfMassZ::origin);
+
+  Length const cuboid_small_side = 6 * Metre;
+  Length const cuboid_long_side = 24 * Metre;
+  Mass const cuboid_mass = ρ * Pow<2>(cuboid_small_side) * cuboid_long_side;
+
+  // The cuboid with its long axis along z.
+  MomentOfInertia const cuboid_long_axis_inertia =
+      cuboid_mass * (Pow<2>(cuboid_small_side) + Pow<2>(cuboid_small_side)) /
+      12.0;
+  MomentOfInertia const cuboid_short_axis_inertia =
+      cuboid_mass * (Pow<2>(cuboid_small_side) + Pow<2>(cuboid_long_side)) /
+      12.0;
+  InertiaTensor<CuboidCentreOfMassZ> const cuboid_inertia_centre_of_mass_z(
+      cuboid_mass,
+      R3x3Matrix<MomentOfInertia>{{cylinder_orthogonal_inertia, zero, zero},
+                                  {zero, cylinder_orthogonal_inertia, zero},
+                                  {zero, zero, cylinder_axis_inertia}},
+      CuboidCentreOfMassZ::origin);
+
+  // Rotate the cuboid around the x axis.
+  InertiaTensor<CuboidCentreOfMassY> const cuboid_inertia_centre_of_mass_y =
+      cuboid_inertia_centre_of_mass_z.Rotate(
+          Rotation<CuboidCentreOfMassZ, CuboidCentreOfMassY>(
+              90 * Degree,
+              Bivector<double, CuboidCentreOfMassZ>({1, 0, 0}),
+              DefinesFrame<CuboidCentreOfMassY>{}));
+
+  // Translate the cylinder.
+  Position<CylinderCentreOfMassZ> const translated_cylinder_centre_of_mass =
+      CylinderCentreOfMassZ::origin +
+      Displacement<CylinderCentreOfMassZ>(
+          {0 * Metre,
+           cuboid_long_side / 2.0 - cylinder_radius,
+           cylinder_height / 2.0 + cuboid_small_side / 2.0});
+  InertiaTensor<CuboidCentreOfMassY> const
+      translated_cylinder_inertia_centre_of_mass_z =
+          cylinder_inertia_centre_of_mass_z.Translate<CuboidCentreOfMassY>(
+              translated_cylinder_centre_of_mass);
+
+
+}
 
 }  // namespace physics
 }  // namespace principia
