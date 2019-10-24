@@ -217,7 +217,7 @@ SymmetricBilinearForm<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
   // r is a row of F, we first compute the corresponding row of the intermediate
   // matrix F * R⁻¹ as R * ᵗr.  We then transpose the intermediate matrix and
   // multiply each column by R.
-  R3x3Matrix<Scalar> const form_coordinates = form.coordinates();
+  R3x3Matrix<Scalar> const& form_coordinates = form.coordinates();
 
   // The matrix is symmetric, so what you call rows I call columns.
   Vector<Scalar, FromFrame> const column_x(form_coordinates.row_x());

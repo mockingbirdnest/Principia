@@ -29,6 +29,8 @@ class InertiaTensor {
                 R3x3Matrix<MomentOfInertia> const& coordinates,
                 Position<Frame> const& centre_of_mass);
 
+  Position<Frame> const& centre_of_mass() const;
+
   template<typename ToFrame>
   InertiaTensor<ToFrame> Rotate(Rotation<Frame, ToFrame> const& rotation) const;
   template<typename ToFrame>
@@ -66,6 +68,8 @@ class InertiaTensor {
   template<typename F>
   friend InertiaTensor<F> operator+(InertiaTensor<F> const& left,
                                     InertiaTensor<F> const& right);
+
+  friend class InertiaTensorTest;
 };
 
 template<typename Frame>

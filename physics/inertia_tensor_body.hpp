@@ -27,6 +27,11 @@ InertiaTensor<Frame>::InertiaTensor(
                     centre_of_mass) {}
 
 template<typename Frame>
+Position<Frame> const& InertiaTensor<Frame>::centre_of_mass() const {
+  return centre_of_mass_;
+}
+
+template<typename Frame>
 template<typename ToFrame>
 InertiaTensor<ToFrame> InertiaTensor<Frame>::Rotate(
     Rotation<Frame, ToFrame> const& rotation) const {
@@ -121,10 +126,8 @@ InertiaTensor<Frame>::MakeSymmetricBilinearForm(
 template<typename Frame>
 InertiaTensor<Frame> operator+(InertiaTensor<Frame> const& left,
                                InertiaTensor<Frame> const& right) {
-  CHECK_EQ(left.reference_point_, right.reference_point_);
   return InertiaTensor<Frame>(left.mass_ + right.mass_,
                               left.form_ + right.form_,
-                              left.reference_point_,
                               Barycentre<Position<Frame>, Mass>(
                                   {left.centre_of_mass_, right.centre_of_mass_},
                                   {left.mass_, right.mass_}));
