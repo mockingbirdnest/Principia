@@ -23,24 +23,19 @@ void BM_EllipticF(benchmark::State& state) {
 
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> distribution_φ(0.0, π / 2);
-  std::uniform_real_distribution<> distribution_n(0.0, 1.0);
   std::uniform_real_distribution<> distribution_mc(0.0, 1.0);
   std::vector<Angle> φs;
-  std::vector<double> ns;
   std::vector<double> mcs;
   for (int i = 0; i < size; ++i) {
     φs.push_back(distribution_φ(random) * Radian);
-    ns.push_back(distribution_n(random));
     mcs.push_back(distribution_mc(random));
   }
 
   while (state.KeepRunningBatch(size * size * size)) {
     Angle f;
     for (Angle const φ : φs) {
-      for (double const n : ns) {
-        for (double const mc : mcs) {
-          f += EllipticF(φ, mc);
-        }
+      for (double const mc : mcs) {
+        f += EllipticF(φ, mc);
       }
     }
     benchmark::DoNotOptimize(f);

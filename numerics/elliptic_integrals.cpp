@@ -54,15 +54,15 @@ struct UnusedResult {
   constexpr UnusedResult(base::uninitialized_t) {}
 };
 
-template<typename T, typename = EnableIfAngleResult<T>>
-inline constexpr bool should_compute = !std::is_same_v<T, UnusedResult const>;
-
 inline constexpr UnusedResult unused{uninitialized};
 
 template<typename T>
 using EnableIfAngleResult =
     std::enable_if_t<std::is_same_v<T, UnusedResult const> ||
                      std::is_same_v<T, Angle>>;
+
+template<typename T, typename = EnableIfAngleResult<T>>
+inline constexpr bool should_compute = !std::is_same_v<T, UnusedResult const>;
 
 // Computes Emde’s complete elliptic integrals of the second kind B(m) and D(m),
 // as well as Fukushima’s complete elliptic integral of the third kind J(n, m),
