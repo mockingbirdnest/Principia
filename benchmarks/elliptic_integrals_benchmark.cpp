@@ -31,7 +31,7 @@ void BM_EllipticF(benchmark::State& state) {
     mcs.push_back(distribution_mc(random));
   }
 
-  while (state.KeepRunningBatch(size * size * size)) {
+  while (state.KeepRunningBatch(size * size)) {
     Angle f;
     for (Angle const φ : φs) {
       for (double const mc : mcs) {
