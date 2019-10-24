@@ -9,6 +9,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
 #include "quantities/named_quantities.hpp"
@@ -24,6 +25,7 @@
 
 namespace principia {
 namespace physics {
+namespace internal_inertia_tensor {
 
 using geometry::Bivector;
 using geometry::DefinesFrame;
@@ -76,7 +78,7 @@ class InertiaTensorTest : public ::testing::Test {
 
   template<typename Frame>
   void Log(InertiaTensor<Frame> const& tensor) {
-    LOG(ERROR)<<internal_symmetric_bilinear_form::DebugString(tensor.form_);
+    LOG(ERROR)<<principia::geometry::internal_symmetric_bilinear_form::DebugString(tensor.form_);
   }
 };
 
@@ -219,7 +221,10 @@ TEST_F(InertiaTensorTest, Abdulghany) {
       overall_inertia_overall_centre_of_mass =
           overall_inertia_cuboid_centre_of_mass.Translate<OverallCentreOfMass>(
               overall_inertia_cuboid_centre_of_mass.centre_of_mass());
+
+  Log(overall_inertia_overall_centre_of_mass);
 }
 
+}  // namespace internal_inertia_tensor
 }  // namespace physics
 }  // namespace principia

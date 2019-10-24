@@ -228,28 +228,30 @@ SymmetricBilinearForm<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
   Vector<Scalar, ToFrame> const intermediate_row_y = (*this)(column_y);
   Vector<Scalar, ToFrame> const intermediate_row_z = (*this)(column_z);
 
+  R3x3Matrix<Scalar> intermediate_matrix(intermediate_row_x.coordinates(),
+                                         intermediate_row_y.coordinates(),
+                                         intermediate_row_z.coordinates());
+  intermediate_matrix = intermediate_matrix.Transpose();
+
   // Note that transposing here effectively changes frames.
-  Vector<Scalar, FromFrame> const intermediate_column_x({
-      intermediate_row_x.coordinates()[0],
-      intermediate_row_y.coordinates()[0],
-      intermediate_row_z.coordinates()[0]});
-  Vector<Scalar, FromFrame> const intermediate_column_y({
-      intermediate_row_x.coordinates()[1],
-      intermediate_row_y.coordinates()[1],
-      intermediate_row_z.coordinates()[1]});
-  Vector<Scalar, FromFrame> const intermediate_column_z({
-      intermediate_row_x.coordinates()[2],
-      intermediate_row_y.coordinates()[2],
-      intermediate_row_z.coordinates()[2]});
+  Vector<Scalar, FromFrame> const intermediate_column_x(
+      intermediate_matrix.row_x());
+  Vector<Scalar, FromFrame> const intermediate_column_y(
+      intermediate_matrix.row_y());
+  Vector<Scalar, FromFrame> const intermediate_column_z(
+      intermediate_matrix.row_z());
 
   Vector<Scalar, ToFrame> const result_row_x = (*this)(intermediate_column_x);
   Vector<Scalar, ToFrame> const result_row_y = (*this)(intermediate_column_y);
   Vector<Scalar, ToFrame> const result_row_z = (*this)(intermediate_column_z);
 
+  R3x3Matrix<Scalar> const result_matrix(result_row_x.coordinates(),
+                                         result_row_y.coordinates(),
+                                         result_row_z.coordinates());
+
+  // The averaging below ensures that the result is symmetric.
   return SymmetricBilinearForm<Scalar, ToFrame>(
-      R3x3Matrix(result_row_x.coordinates(),
-                 result_row_y.coordinates(),
-                 result_row_z.coordinates()));
+          0.5 * (result_matrix + result_matrix.Transpose()));
 }
 
 template<typename FromFrame, typename ToFrame>
