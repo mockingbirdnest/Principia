@@ -18,7 +18,31 @@ using quantities::si::Radian;
 
 namespace numerics {
 
-void BM_EllipticEFΠ(benchmark::State& state) {
+void BM_EllipticF(benchmark::State& state) {
+  constexpr int size = 20;
+
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> distribution_φ(0.0, π / 2);
+  std::uniform_real_distribution<> distribution_mc(0.0, 1.0);
+  std::vector<Angle> φs;
+  std::vector<double> mcs;
+  for (int i = 0; i < size; ++i) {
+    φs.push_back(distribution_φ(random) * Radian);
+    mcs.push_back(distribution_mc(random));
+  }
+
+  while (state.KeepRunningBatch(size * size)) {
+    Angle f;
+    for (Angle const φ : φs) {
+      for (double const mc : mcs) {
+        f += EllipticF(φ, mc);
+      }
+    }
+    benchmark::DoNotOptimize(f);
+  }
+}
+
+void BM_EllipticFEΠ(benchmark::State& state) {
   constexpr int size = 20;
 
   std::mt19937_64 random(42);
@@ -41,7 +65,7 @@ void BM_EllipticEFΠ(benchmark::State& state) {
     for (Angle const φ : φs) {
       for (double const n : ns) {
         for (double const mc : mcs) {
-          EllipticEFΠ(φ, n, mc, e, f, ᴨ);
+          EllipticFEΠ(φ, n, mc, f, e, ᴨ);
         }
       }
     }
@@ -84,7 +108,8 @@ void BM_FukushimaEllipticBDJ(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_EllipticEFΠ);
+BENCHMARK(BM_EllipticF);
+BENCHMARK(BM_EllipticFEΠ);
 BENCHMARK(BM_FukushimaEllipticBDJ);
 
 }  // namespace numerics

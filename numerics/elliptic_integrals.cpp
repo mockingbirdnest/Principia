@@ -14,19 +14,9 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
-// Bibliography:
-// [Buli69] Bulirsch (1969), Numerical Calculation of Elliptic Integrals and
-// Elliptic Fuctions.  III.
-// [Fuku11a] Fukushima (2011), Precise and fast computation of the general
-// complete elliptic integral of the second kind.
-// [Fuku11b] Fukushima (2011), Precise and fast computation of a general
-// incomplete elliptic integral of second kind by half and double argument
-// transformations.
-// [Fuku11c] Fukushima (2011), Precise and fast computation of a general
-// incomplete elliptic integral of third kind by half and double argument
-// transformations.
-// [NIST10] Olver, Lozier, Boisvert, Clark Eds. (2010), NIST Handbook of
-// Mathematical Functions.
+// The implementation in this file is derived from [Fuk18] (license: MIT). The
+// original code has been translated into C++ and adapted to the needs of this
+// project.
 
 namespace principia {
 namespace numerics {
@@ -44,54 +34,84 @@ using quantities::si::Radian;
 
 namespace {
 
-// Bulirsch's cel function, [Buli69], [NIST10], 19.2(iii).
+// Bulirsch's cel function, [Bul69], [OLBC10], 19.2(iii).
 Angle BulirschCel(double kc, double nc, double a, double b);
 
 // Jacobi's nome approximated by a series of the given degree.
 template<int degree>
 double EllipticNomeQ(double mc);
 
-// Fukushima's complete elliptic integrals of the second kind [Fuku11a].
-void FukushimaEllipticBD(double mc, Angle& b, Angle& d);
+// Computes Emde’s complete elliptic integrals of the second kind B(m) and D(m),
+// where m = 1 - mc.  The method is similar to that described in [Fuk11a].
+void FukushimaEllipticBD(double mc, Angle& B_m, Angle& D_m);
 
-// Fukushima's complete elliptic integrals of the second and third kind
-// [Fuku11a], [Fuku11c].
+// The functions that compute elliptic integrals of multiple kinds may be called
+// without computing the integral of the third kind.  Passing |unused| bypasses
+// the corresponding code path at compile time, passing a reference to an
+// |Angle| performs the computation.
+
+struct UnusedResult {
+  constexpr UnusedResult(base::uninitialized_t) {}
+};
+
+inline constexpr UnusedResult unused{uninitialized};
+
+template<typename T>
+using EnableIfAngleResult =
+    std::enable_if_t<std::is_same_v<T, UnusedResult const> ||
+                     std::is_same_v<T, Angle>>;
+
+template<typename T, typename = EnableIfAngleResult<T>>
+inline constexpr bool should_compute = !std::is_same_v<T, UnusedResult const>;
+
+// Computes Emde’s complete elliptic integrals of the second kind B(m) and D(m),
+// as well as Fukushima’s complete elliptic integral of the third kind J(n, m),
+// where m = 1 - mc and n = 1 - nc.  The methods are similar to those described
+// in [Fuk11a] and [Fuk12].
+template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void FukushimaEllipticBDJ(double nc,
                           double mc,
-                          Angle& bc,
-                          Angle& dc,
-                          Angle& jc);
+                          Angle& B_m,
+                          Angle& D_m,
+                          ThirdKind& J_n_m);
 
-// Fukushima's incomplete integrals of the second and third kind, arccos
-// argument [Fuku11b], [Fuku11c].
-void FukushimaEllipticBcDcJc(double c0,
+// Computes Fukushima's incomplete integrals of the second kind and third kind
+// from the cosine of the amplitude: Bc(c|m) = B(arccos c|m),
+// Dc(c|m) = D(arccos c|m), Jc(c, n|m) = J(arccos c, n|m), where m = 1 - mc.
+// These functions are defined in [Fuk11b], equations (9) and (10), and
+// [Fuk12], equation (24).
+template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
+void FukushimaEllipticBcDcJc(double c,
                              double n,
                              double mc,
-                             Angle& b,
-                             Angle& d,
-                             Angle& j);
+                             Angle& Bc_cǀm,
+                             Angle& Dc_cǀm,
+                             ThirdKind& Jc_c_nǀm);
 
-// Fukushima's incomplete integrals of the second and third kind, arcsin
-// argument [Fuku11b], [Fuku11c].
-void FukushimaEllipticBsDsJs(double s0,
+// Computes Fukushima's incomplete integrals of the second kind and third kind
+// from the sine of the amplitude: Bs(s|m) = B(arcsin s|m),
+// Ds(s|m) = D(arcsin s|m), Js(s, n|m) = J(arcsin s, n|m), where m = 1 - mc.
+// These functions are defined in [Fuk11b], equations (9) and (10), and
+// [Fuk12], equation (24).
+template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
+void FukushimaEllipticBsDsJs(double s,
                              double n,
                              double mc,
-                             Angle& b,
-                             Angle& d,
-                             Angle& j);
+                             Angle& Bs_sǀm,
+                             Angle& Ds_sǀm,
+                             ThirdKind& Js_s_nǀm);
 
-// Maclaurin series expansion of Bs and Ds [Fuku11a].
-// NOTE(phl): I believe that this is a Maclaurin series but it's not completely
-// clear.
+// Computes the Maclaurin series expansion ∑ Bₗ(m) yˡ and ∑ Dₗ(m) yˡ used in the
+// computation of of Bs and Ds, see [Fuk11b], equation (15).
 void FukushimaEllipticBsDsMaclaurinSeries(double y,
                                           double m,
-                                          Angle& b,
-                                          Angle& d);
+                                          Angle& Σ_Bₗ_m_yˡ,
+                                          Angle& Σ_Dₗ_m_yˡ);
 
-// Maclaurin series expansion of Js [Fuku11c].
+// Maclaurin series expansion of Js [Fuk12].
 Angle FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 
-// Fukushima's T function [Fuku11c].
+// Fukushima's T function [Fuk12].
 Angle FukushimaT(double t, double h);
 
 // Argument reduction: angle = fractional_part + integer_part * π where
@@ -100,11 +120,31 @@ void Reduce(Angle const& angle,
             Angle& fractional_part,
             std::int64_t& integer_part);
 
+// The common implementation underlying the functions |FukushimaEllipticBDJ| and
+// |FukushimaEllipticBD| declared in the header file.
+template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
+void FukushimaEllipticBDJ(Angle const& φ,
+                          double const n,
+                          double const mc,
+                          Angle& B_φǀm,
+                          Angle& D_φǀm,
+                          ThirdKind& J_φ_nǀm);
+
+// The common implementation underlying the functions |EllipticFEΠ| and
+// |EllipticFE| declared in the header file.
+template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
+void EllipticFEΠ(Angle const& φ,
+                 double const n,
+                 double const mc,
+                 Angle& F_φǀm,
+                 Angle& E_φǀm,
+                 ThirdKind& Π_φ_nǀm);
+
 // A generator for the Maclaurin series for q(m) / m where q is Jacobi's nome
 // function.
 template<int n, template<typename, typename, int> class Evaluator>
 class EllipticNomeQMaclaurin {
-  static auto constexpr full_series = std::make_tuple(
+  static constexpr auto full_series = std::make_tuple(
     1.0 / 16.0,
     1.0 / 32.0,
     21.0 / 1024.0,
@@ -234,90 +274,90 @@ class FukushimaEllipticDsBsMaclaurin {
 // is the total degree (l - 1 in Fukushima's notation), the second the degree in
 // m (k in Fukushima's notation).
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_0_0(std::make_tuple(1.0 / 3.0));
+    fukushima_elliptic_Js_maclaurin_n_0_0(std::make_tuple(1.0 / 3.0));
 
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_1_0(std::make_tuple(1.0 / 10.0,
+    fukushima_elliptic_Js_maclaurin_n_1_0(std::make_tuple(1.0 / 10.0,
                                                           2.0 / 10.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_1_1(std::make_tuple(1.0 / 10.0));
+    fukushima_elliptic_Js_maclaurin_n_1_1(std::make_tuple(1.0 / 10.0));
 
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_2_0(std::make_tuple(3.0 / 56.0,
+    fukushima_elliptic_Js_maclaurin_n_2_0(std::make_tuple(3.0 / 56.0,
                                                           4.0 / 56.0,
                                                           8.0 / 56.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_2_1(std::make_tuple(2.0 / 56.0,
+    fukushima_elliptic_Js_maclaurin_n_2_1(std::make_tuple(2.0 / 56.0,
                                                           4.0 / 56.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_2_2(std::make_tuple(3.0 / 56.0));
+    fukushima_elliptic_Js_maclaurin_n_2_2(std::make_tuple(3.0 / 56.0));
 
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_0(std::make_tuple(5.0 / 144.0,
+    fukushima_elliptic_Js_maclaurin_n_3_0(std::make_tuple(5.0 / 144.0,
                                                           6.0 / 144.0,
                                                           8.0 / 144.0,
                                                           16.0 / 144.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_1(std::make_tuple(3.0 / 144.0,
+    fukushima_elliptic_Js_maclaurin_n_3_1(std::make_tuple(3.0 / 144.0,
                                                           4.0 / 144.0,
                                                           8.0 / 144.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_2(std::make_tuple(3.0 / 144.0,
+    fukushima_elliptic_Js_maclaurin_n_3_2(std::make_tuple(3.0 / 144.0,
                                                           6.0 / 144.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_3_3(std::make_tuple(5.0 / 144.0));
+    fukushima_elliptic_Js_maclaurin_n_3_3(std::make_tuple(5.0 / 144.0));
 
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_0(std::make_tuple(35.0 / 1408.0,
+    fukushima_elliptic_Js_maclaurin_n_4_0(std::make_tuple(35.0 / 1408.0,
                                                           40.0 / 1408.0,
                                                           48.0 / 1408.0,
                                                           64.0 / 1408.0,
                                                           128.0 / 1408.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_1(std::make_tuple(20.0 / 1408.0,
+    fukushima_elliptic_Js_maclaurin_n_4_1(std::make_tuple(20.0 / 1408.0,
                                                           24.0 / 1408.0,
                                                           32.0 / 1408.0,
                                                           64.0 / 1408.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_2(std::make_tuple(18.0 / 1408.0,
+    fukushima_elliptic_Js_maclaurin_n_4_2(std::make_tuple(18.0 / 1408.0,
                                                           24.0 / 1408.0,
                                                           48.0 / 1408.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_3(std::make_tuple(20.0 / 1408.0,
+    fukushima_elliptic_Js_maclaurin_n_4_3(std::make_tuple(20.0 / 1408.0,
                                                           40.0 / 1408.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_4_4(std::make_tuple(35.0 / 1408.0));
+    fukushima_elliptic_Js_maclaurin_n_4_4(std::make_tuple(35.0 / 1408.0));
 
 PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_0(std::make_tuple(63.0 / 3328.0,
+    fukushima_elliptic_Js_maclaurin_n_5_0(std::make_tuple(63.0 / 3328.0,
                                                           70.0 / 3328.0,
                                                           80.0 / 3328.0,
                                                           96.0 / 3328.0,
                                                           128.0 / 3328.0,
                                                           256.0 / 3328.0));
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_1(std::make_tuple(35.0 / 3328.0,
+    fukushima_elliptic_Js_maclaurin_n_5_1(std::make_tuple(35.0 / 3328.0,
                                                           40.0 / 3328.0,
                                                           48.0 / 3328.0,
                                                           64.0 / 3328.0,
                                                           128.0 / 3328.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_2(std::make_tuple(30.0 / 3328.0,
+    fukushima_elliptic_Js_maclaurin_n_5_2(std::make_tuple(30.0 / 3328.0,
                                                           36.0 / 3328.0,
                                                           48.0 / 3328.0,
                                                           96.0 / 3328.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_3(std::make_tuple(30.0 / 3328.0,
+    fukushima_elliptic_Js_maclaurin_n_5_3(std::make_tuple(30.0 / 3328.0,
                                                           40.0 / 3328.0,
                                                           80.0 / 3328.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_4(std::make_tuple(35.0 / 3328.0,
+    fukushima_elliptic_Js_maclaurin_n_5_4(std::make_tuple(35.0 / 3328.0,
                                                           70.0 / 3328.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_5_5(std::make_tuple(63.0 / 3328.0));
+    fukushima_elliptic_Js_maclaurin_n_5_5(std::make_tuple(63.0 / 3328.0));
 
 PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_0(std::make_tuple(231.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_0(std::make_tuple(231.0 / 15360.0,
                                                           252.0 / 15360.0,
                                                           280.0 / 15360.0,
                                                           320.0 / 15360.0,
@@ -325,35 +365,35 @@ PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
                                                           512.0 / 15360.0,
                                                           1024.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_1(std::make_tuple(126.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_1(std::make_tuple(126.0 / 15360.0,
                                                           140.0 / 15360.0,
                                                           160.0 / 15360.0,
                                                           192.0 / 15360.0,
                                                           256.0 / 15360.0,
                                                           512.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_2(std::make_tuple(105.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_2(std::make_tuple(105.0 / 15360.0,
                                                           120.0 / 15360.0,
                                                           144.0 / 15360.0,
                                                           192.0 / 15360.0,
                                                           384.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_3(std::make_tuple(100.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_3(std::make_tuple(100.0 / 15360.0,
                                                           120.0 / 15360.0,
                                                           160.0 / 15360.0,
                                                           320.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_4(std::make_tuple(105.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_4(std::make_tuple(105.0 / 15360.0,
                                                           140.0 / 15360.0,
                                                           280.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_5(std::make_tuple(126.0 / 15360.0,
+    fukushima_elliptic_Js_maclaurin_n_6_5(std::make_tuple(126.0 / 15360.0,
                                                           252.0 / 15360.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_6_6(std::make_tuple(231.0 / 15360.0));
+    fukushima_elliptic_Js_maclaurin_n_6_6(std::make_tuple(231.0 / 15360.0));
 
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_0(std::make_tuple(429.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_0(std::make_tuple(429.0 / 34816.0,
                                                           462.0 / 34816.0,
                                                           504.0 / 34816.0,
                                                           560.0 / 34816.0,
@@ -362,7 +402,7 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
                                                           1024.0 / 34816.0,
                                                           2048.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_1(std::make_tuple(231.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_1(std::make_tuple(231.0 / 34816.0,
                                                           252.0 / 34816.0,
                                                           280.0 / 34816.0,
                                                           320.0 / 34816.0,
@@ -370,35 +410,35 @@ PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
                                                           512.0 / 34816.0,
                                                           1024.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_2(std::make_tuple(189.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_2(std::make_tuple(189.0 / 34816.0,
                                                           210.0 / 34816.0,
                                                           240.0 / 34816.0,
                                                           288.0 / 34816.0,
                                                           284.0 / 34816.0,
                                                           768.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_3(std::make_tuple(175.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_3(std::make_tuple(175.0 / 34816.0,
                                                           200.0 / 34816.0,
                                                           240.0 / 34816.0,
                                                           320.0 / 34816.0,
                                                           640.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_4(std::make_tuple(175.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_4(std::make_tuple(175.0 / 34816.0,
                                                           210.0 / 34816.0,
                                                           280.0 / 34816.0,
                                                           560.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_5(std::make_tuple(189.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_5(std::make_tuple(189.0 / 34816.0,
                                                           252.0 / 34816.0,
                                                           504.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_6(std::make_tuple(231.0 / 34816.0,
+    fukushima_elliptic_Js_maclaurin_n_7_6(std::make_tuple(231.0 / 34816.0,
                                                           462.0 / 34816.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_7_7(std::make_tuple(429.0 / 34816.0));
+    fukushima_elliptic_Js_maclaurin_n_7_7(std::make_tuple(429.0 / 34816.0));
 
 PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_0(std::make_tuple(6435.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_0(std::make_tuple(6435.0 / 622592.0,
                                                           6864.0 / 622592.0,
                                                           7392.0 / 622592.0,
                                                           8064.0 / 622592.0,
@@ -408,7 +448,7 @@ PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
                                                           16384.0 / 622592.0,
                                                           32768.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_1(std::make_tuple(3432.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_1(std::make_tuple(3432.0 / 622592.0,
                                                           3696.0 / 622592.0,
                                                           4032.0 / 622592.0,
                                                           4480.0 / 622592.0,
@@ -417,7 +457,7 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
                                                           8192.0 / 622592.0,
                                                           16384.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_2(std::make_tuple(2772.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_2(std::make_tuple(2772.0 / 622592.0,
                                                           3024.0 / 622592.0,
                                                           3360.0 / 622592.0,
                                                           3840.0 / 622592.0,
@@ -425,35 +465,35 @@ PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
                                                           6144.0 / 622592.0,
                                                           12288.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_3(std::make_tuple(2520.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_3(std::make_tuple(2520.0 / 622592.0,
                                                           2800.0 / 622592.0,
                                                           3200.0 / 622592.0,
                                                           3840.0 / 622592.0,
                                                           5120.0 / 622592.0,
                                                           10240.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_4(std::make_tuple(2450.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_4(std::make_tuple(2450.0 / 622592.0,
                                                           2800.0 / 622592.0,
                                                           3360.0 / 622592.0,
                                                           4480.0 / 622592.0,
                                                           8960.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_5(std::make_tuple(2520.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_5(std::make_tuple(2520.0 / 622592.0,
                                                           3024.0 / 622592.0,
                                                           4032.0 / 622592.0,
                                                           8064.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_6(std::make_tuple(2772.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_6(std::make_tuple(2772.0 / 622592.0,
                                                           3696.0 / 622592.0,
                                                           7392.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_7(std::make_tuple(3432.0 / 622592.0,
+    fukushima_elliptic_Js_maclaurin_n_8_7(std::make_tuple(3432.0 / 622592.0,
                                                           6864.0 / 622592.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_8_8(std::make_tuple(6435.0 / 622592.0));
+    fukushima_elliptic_Js_maclaurin_n_8_8(std::make_tuple(6435.0 / 622592.0));
 
 PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_0(std::make_tuple(12155.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_0(std::make_tuple(12155.0 / 1376256.0,
                                                           12870.0 / 1376256.0,
                                                           13728.0 / 1376256.0,
                                                           14784.0 / 1376256.0,
@@ -464,7 +504,7 @@ PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
                                                           32768.0 / 1376256.0,
                                                           65536.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_1(std::make_tuple(6435.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_1(std::make_tuple(6435.0 / 1376256.0,
                                                           6864.0 / 1376256.0,
                                                           7392.0 / 1376256.0,
                                                           8064.0 / 1376256.0,
@@ -474,7 +514,7 @@ PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
                                                           16384.0 / 1376256.0,
                                                           32768.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_2(std::make_tuple(5148.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_2(std::make_tuple(5148.0 / 1376256.0,
                                                           5544.0 / 1376256.0,
                                                           6048.0 / 1376256.0,
                                                           6720.0 / 1376256.0,
@@ -483,7 +523,7 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
                                                           12288.0 / 1376256.0,
                                                           24576.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_3(std::make_tuple(4620.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_3(std::make_tuple(4620.0 / 1376256.0,
                                                           5040.0 / 1376256.0,
                                                           5600.0 / 1376256.0,
                                                           6400.0 / 1376256.0,
@@ -491,32 +531,32 @@ PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
                                                           10240.0 / 1376256.0,
                                                           20480.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_4(std::make_tuple(4410.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_4(std::make_tuple(4410.0 / 1376256.0,
                                                           4900.0 / 1376256.0,
                                                           5600.0 / 1376256.0,
                                                           6720.0 / 1376256.0,
                                                           8960.0 / 1376256.0,
                                                           17920.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_5(std::make_tuple(4410.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_5(std::make_tuple(4410.0 / 1376256.0,
                                                           5040.0 / 1376256.0,
                                                           6048.0 / 1376256.0,
                                                           8064.0 / 1376256.0,
                                                           16128.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_6(std::make_tuple(4620.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_6(std::make_tuple(4620.0 / 1376256.0,
                                                           5544.0 / 1376256.0,
                                                           7392.0 / 1376256.0,
                                                           14784.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_7(std::make_tuple(5148.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_7(std::make_tuple(5148.0 / 1376256.0,
                                                           6864.0 / 1376256.0,
                                                           13728.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_8(std::make_tuple(6435.0 / 1376256.0,
+    fukushima_elliptic_Js_maclaurin_n_9_8(std::make_tuple(6435.0 / 1376256.0,
                                                           12870.0 / 1376256.0));
 PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-    fukushima_elliptic_js_maclaurin_n_9_9(std::make_tuple(12155.0 / 1376256.0));
+    fukushima_elliptic_Js_maclaurin_n_9_9(std::make_tuple(12155.0 / 1376256.0));
 
 // A generator for the Maclaurin series for Fukushima's T function.
 template<int n, template<typename, typename, int> class Evaluator>
@@ -552,7 +592,7 @@ using FukushimaTMaclaurin12 = FukushimaTMaclaurin<12, EstrinEvaluator>;
 // TODO(phl): Some of these polynomials use the Horner scheme because the Estrin
 // scheme introduces inaccuracies.  Investigate why.
 PolynomialInMonomialBasis<double, double, 10, HornerEvaluator> const
-    elliptic_k_taylor_0_05(std::make_tuple(1.591003453790792180,
+    elliptic_K_taylor_0_05(std::make_tuple(1.591003453790792180,
                                            0.416000743991786912,
                                            0.245791514264103415,
                                            0.179481482914906162,
@@ -564,7 +604,7 @@ PolynomialInMonomialBasis<double, double, 10, HornerEvaluator> const
                                            0.085842591595413900,
                                            0.081541118718303215));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    elliptic_k_taylor_0_15(std::make_tuple(1.635256732264579992,
+    elliptic_K_taylor_0_15(std::make_tuple(1.635256732264579992,
                                            0.471190626148732291,
                                            0.309728410831499587,
                                            0.252208311773135699,
@@ -578,7 +618,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                                            0.266363809892617521,
                                            0.287728452156114668));
 PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    elliptic_k_taylor_0_25(std::make_tuple(1.685750354812596043,
+    elliptic_K_taylor_0_25(std::make_tuple(1.685750354812596043,
                                            0.541731848613280329,
                                            0.401524438390690257,
                                            0.369642473420889090,
@@ -591,7 +631,7 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                                            0.871013847709812357,
                                            1.057652872753547036));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    elliptic_k_taylor_0_35(std::make_tuple(1.744350597225613243,
+    elliptic_K_taylor_0_35(std::make_tuple(1.744350597225613243,
                                            0.634864275371935304,
                                            0.539842564164445538,
                                            0.571892705193787391,
@@ -605,7 +645,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                                            5.115867135558865806,
                                            7.224080007363877411));
 PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
-    elliptic_k_taylor_0_45(std::make_tuple(1.813883936816982644,
+    elliptic_K_taylor_0_45(std::make_tuple(1.813883936816982644,
                                            0.763163245700557246,
                                            0.761928605321595831,
                                            0.951074653668427927,
@@ -620,7 +660,7 @@ PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
                                            53.73749198700554656,
                                            90.27388602940998849));
 PolynomialInMonomialBasis<double, double, 14, HornerEvaluator> const
-    elliptic_k_taylor_0_55(std::make_tuple(1.898924910271553526,
+    elliptic_K_taylor_0_55(std::make_tuple(1.898924910271553526,
                                            0.950521794618244435,
                                            1.151077589959015808,
                                            1.750239106986300540,
@@ -636,7 +676,7 @@ PolynomialInMonomialBasis<double, double, 14, HornerEvaluator> const
                                            1228.420013075863451,
                                            2536.529755382764488));
 PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
-    elliptic_k_taylor_0_65(std::make_tuple(2.007598398424376302,
+    elliptic_K_taylor_0_65(std::make_tuple(2.007598398424376302,
                                            1.248457231212347337,
                                            1.926234657076479729,
                                            3.751289640087587680,
@@ -654,7 +694,7 @@ PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
                                            228672.1890493117096,
                                            612757.2711915852774));
 PolynomialInMonomialBasis<double, double, 19, EstrinEvaluator> const
-    elliptic_k_taylor_0_75(std::make_tuple(2.156515647499643235,
+    elliptic_K_taylor_0_75(std::make_tuple(2.156515647499643235,
                                            1.791805641849463243,
                                            3.826751287465713147,
                                            10.38672468363797208,
@@ -675,7 +715,7 @@ PolynomialInMonomialBasis<double, double, 19, EstrinEvaluator> const
                                            1.901975729538660119e9,
                                            7.208915015330103756e9));
 PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
-    elliptic_k_taylor_0_825(std::make_tuple(2.318122621712510589,
+    elliptic_K_taylor_0_825(std::make_tuple(2.318122621712510589,
                                             2.616920150291232841,
                                             7.897935075731355823,
                                             30.50239715446672327,
@@ -692,7 +732,7 @@ PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
                                             1.408862325028702687e9,
                                             7.515687935373774627e9));
 PolynomialInMonomialBasis<double, double, 19, EstrinEvaluator> const
-    elliptic_k_taylor_0_875(std::make_tuple(2.473596173751343912,
+    elliptic_K_taylor_0_875(std::make_tuple(2.473596173751343912,
                                             3.727624244118099310,
                                             15.60739303554930496,
                                             84.12850842805887747,
@@ -716,7 +756,7 @@ PolynomialInMonomialBasis<double, double, 19, EstrinEvaluator> const
 // Polynomials for FukushimaEllipticBD.  The last part of the name indicates the
 // value of m around which the approximation is valid.
 PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    fukushima_b_taylor_0_05(
+    fukushima_B_taylor_0_05(
         std::make_tuple(0.790401413584395132310045630540381158921005,
                         0.102006266220019154892513446364386528537788,
                         0.039878395558551460860377468871167215878458,
@@ -730,7 +770,7 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.003550452989196176932747744728766021440856,
                         0.003119229959988474753291950759202798352266));
 PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    fukushima_d_taylor_0_05(
+    fukushima_D_taylor_0_05(
         std::make_tuple(0.800602040206397047799296975176819811774784,
                         0.313994477771767756849615832867393028789057,
                         0.205913118705551954501930953451976374435088,
@@ -744,7 +784,7 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.0779906657291070378163237851392095284454654,
                         0.075080426851268007156477347905308063808848));
 PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    fukushima_b_taylor_0_15(
+    fukushima_B_taylor_0_15(
         std::make_tuple(0.80102406445284489393880821604009991524037,
                         0.11069534452963401497502459778015097487115,
                         0.047348746716993717753569559936346358937777,
@@ -758,7 +798,7 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.009849585546666211201566987057592610884309,
                         0.009656606347153765129943681090056980586986));
 PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
-    fukushima_d_taylor_0_15(
+    fukushima_D_taylor_0_15(
         std::make_tuple(0.834232667811735098431315595374145207701720,
                         0.360495281619098275577215529302260739976126,
                         0.262379664114505869328637749459234348287432,
@@ -772,7 +812,7 @@ PolynomialInMonomialBasis<double, double, 11, EstrinEvaluator> const
                         0.238708097425597860161720875806632864507536,
                         0.256707203545463755643710021815937785120030));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_b_taylor_0_25(
+    fukushima_B_taylor_0_25(
         std::make_tuple(0.81259777291992049322557009456643357559904,
                         0.12110961794551011284012693733241967660542,
                         0.057293376831239877456538980381277010644332,
@@ -787,7 +827,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.034384369179940975864103666824736551261799,
                         0.038738002072493935952384233588242422046537));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_d_taylor_0_25(
+    fukushima_D_taylor_0_25(
         std::make_tuple(0.873152581892675549645633563232643413901757,
                         0.420622230667770215976919792378536040460605,
                         0.344231061559450379368201151870166692934830,
@@ -802,7 +842,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         1.023268503573606060588689738498395211300483,
                         1.255859085136282496149035687741403985044122));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_b_taylor_0_35(
+    fukushima_B_taylor_0_35(
         std::make_tuple(0.8253235579835158949845697805395190063745,
                         0.1338621160836877898575391383950840569989,
                         0.0710112935979886745743770664203746758134,
@@ -817,7 +857,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.1465711325814398757043492181099197917984,
                         0.1902571373338462844225085057953823854177));
 PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
-    fukushima_d_taylor_0_35(
+    fukushima_D_taylor_0_35(
         std::make_tuple(0.9190270392420973478848471774160778462738,
                         0.5010021592882475139767453081737767171354,
                         0.4688312705664568629356644841691659415972,
@@ -833,7 +873,7 @@ PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
                         7.0338228700300311264031522795337352226926,
                         10.020043225034471401553194050933390974016));
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_b_taylor_0_45(
+    fukushima_B_taylor_0_45(
         std::make_tuple(0.8394795702706129706783934654948360410325,
                         0.1499164403063963359478614453083470750543,
                         0.0908319358194288345999005586556105610069,
@@ -848,7 +888,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
                         0.7943896342593047502260866957039427731776,
                         1.2167625324297180206378753787253096783993));
 PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
-    fukushima_d_taylor_0_45(
+    fukushima_D_taylor_0_45(
         std::make_tuple(0.9744043665463696730314687662723484085813,
                         0.6132468053941609101234053415051402349752,
                         0.6710966695021669963502789954058993004082,
@@ -866,7 +906,7 @@ PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
                         149.56637449398047835236703116483092644714,
                         254.31790843104117434615624121937495622372));
 PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
-    fukushima_b_taylor_0_55(
+    fukushima_B_taylor_0_55(
         std::make_tuple(0.8554696151564199914087224774321783838373,
                         0.1708960726897395844132234165994754905373,
                         0.1213352290269482260207667564010437464156,
@@ -882,7 +922,7 @@ PolynomialInMonomialBasis<double, double, 13, EstrinEvaluator> const
                         11.269796855577941715109155203721740735793,
                         21.354577850382834496786315532111529462693));
 PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
-    fukushima_d_taylor_0_55(
+    fukushima_D_taylor_0_55(
         std::make_tuple(1.04345529511513353426326823569160142342838,
                         0.77962572192850485048535711388072271372632,
                         1.02974236093206758187389128668777397528702,
@@ -901,7 +941,7 @@ PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const
                         5184.69242939480644062471334944523925163600,
                         10817.2133369041327524988910635205356016939));
 PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
-    fukushima_b_taylor_0_65(
+    fukushima_B_taylor_0_65(
         std::make_tuple(0.8739200618486431359820482173294324246058,
                         0.1998140574823769459497418213885348159654,
                         0.1727696158780152128147094051876565603862,
@@ -919,7 +959,7 @@ PolynomialInMonomialBasis<double, double, 15, EstrinEvaluator> const
                         1091.8547229028388292980623647414961662223,
                         2715.7658664038195881056269799613407111521));
 PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
-    fukushima_d_taylor_0_65(
+    fukushima_D_taylor_0_65(
         std::make_tuple(1.13367833657573316571671258513452768536080,
                         1.04864317372997039116746991765351150490010,
                         1.75346504119846451588826580872136305225406,
@@ -939,7 +979,7 @@ PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
                         605941.517281758859958050194535269219533685,
                         1.63108259953926832083633544697688841456604e6));
 PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
-    fukushima_b_taylor_0_75(
+    fukushima_B_taylor_0_75(
         std::make_tuple(0.895902820924731621258525533131864225704,
                         0.243140003766786661947749288357729051637,
                         0.273081875594105531575351304277604081620,
@@ -960,7 +1000,7 @@ PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
                         3.807218502573632648224286313875985190526e6,
                         1.356638224422139551020110323739879481042e7));
 PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
-    fukushima_d_taylor_0_75(
+    fukushima_D_taylor_0_75(
         std::make_tuple(1.26061282657491161418014946566845780315983,
                         1.54866563808267658056930177790599939977154,
                         3.55366941187160761540650011660758187283401,
@@ -983,7 +1023,7 @@ PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
                         7.16026753447893719179055010636502508063102e9,
                         2.72233079469633962247554894093591262281929e10));
 PolynomialInMonomialBasis<double, double, 14, EstrinEvaluator> const
-    fukushima_b_taylor_0_825(
+    fukushima_B_taylor_0_825(
         std::make_tuple(0.915922052601931494319853880201442948834592,
                         0.294714252429483394379515488141632749820347,
                         0.435776709264636140422971598963772380161131,
@@ -1000,7 +1040,7 @@ PolynomialInMonomialBasis<double, double, 14, EstrinEvaluator> const
                         1.876487670110449342170327796786290400635732e6,
                         9.216559908641567755240142886998737950775910e6));
 PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
-    fukushima_d_taylor_0_825(
+    fukushima_D_taylor_0_825(
         std::make_tuple(1.402200569110579095046054435635136986038164,
                         2.322205897861749446534352741005347103992773,
                         7.462158366466719682730245467372788273333992,
@@ -1020,7 +1060,7 @@ PolynomialInMonomialBasis<double, double, 17, EstrinEvaluator> const
                         4.004155595835610574316003488168804738481448e10,
                         2.154630668144966654449602981243932210695662e11));
 PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
-    fukushima_b_taylor_0_875(
+    fukushima_B_taylor_0_875(
         std::make_tuple(0.931906061029524827613331428871579482766771,
                         0.348448029538453860999386797137074571589376,
                         0.666809178846938247558793864839434184202736,
@@ -1041,7 +1081,7 @@ PolynomialInMonomialBasis<double, double, 18, EstrinEvaluator> const
                         2.539881257612812212004146637239987308133582e11,
                         1.808180007145359569674767150594344316702507e12));
 PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
-    fukushima_d_taylor_0_875(
+    fukushima_D_taylor_0_875(
         std::make_tuple(1.541690112721819084362258323861459983048179,
                         3.379176214579645449453938918349243359477706,
                         14.94058385670236671625328259137998668324435,
@@ -1065,11 +1105,11 @@ PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
                         2.868263194837819660109735981973458220407767e16));
 
 // NOTE(phl): The following polynomials differ slightly from the original code
-// but they match more closely those in [Fuku11a].  The notation follows
-// [Fuku11a].
+// but they match more closely those in [Fuk11a].  The notation follows
+// [Fuk11a].
 // A polynomial for B٭X(m) / m.
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
-    fukushima_b٭x_maclaurin(std::make_tuple(-1.0 / 4.0,
+    fukushima_B٭X_maclaurin(std::make_tuple(-1.0 / 4.0,
                                             -1.0 / 32.0,
                                             -3.0 / 256.0,
                                             -25.0 / 4096.0,
@@ -1080,7 +1120,7 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
 
 // A polynomial for EX(m) / m.
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
-    fukushima_ex_maclaurin(std::make_tuple(1.0 / 4.0,
+    fukushima_EX_maclaurin(std::make_tuple(1.0 / 4.0,
                                            3.0 / 32.0,
                                            15.0 / 256.0,
                                            175.0 / 4096.0,
@@ -1091,7 +1131,7 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
 
 // A polynomial for KX(m).
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
-    fukushima_kx_maclaurin(std::make_tuple(1.0 / 2.0,
+    fukushima_KX_maclaurin(std::make_tuple(1.0 / 2.0,
                                            1.0 / 8.0,
                                            9.0 / 128.0,
                                            25.0 / 512.0,
@@ -1102,7 +1142,7 @@ PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
 
 // A polynomial for EX(m).
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_ex_taylor_0_05(
+    fukushima_EX_taylor_0_05(
         std::make_tuple(0.02548395442966088473597712420249483947953 * 0.5,
                         0.51967384324140471318255255900132590084179 * 0.5,
                         0.20644951110163173131719312525729037023377 * 0.5,
@@ -1119,7 +1159,7 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
 
 // A polynomial for KX(m).
 PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
-    fukushima_kx_taylor_0_05(std::make_tuple(
+    fukushima_KX_taylor_0_05(std::make_tuple(
         (1.0 + 0.01286425658832983978282698630501405107893) * 0.5,
         0.26483429894479586582278131697637750604652 * 0.5,
         0.15647573786069663900214275050014481397750 * 0.5,
@@ -1134,29 +1174,13 @@ PolynomialInMonomialBasis<double, double, 12, EstrinEvaluator> const
         0.04978344771840508342564702588639140680363 * 0.5,
         0.04812375496807025605361215168677991360500 * 0.5));
 
-//  Double precision general complete elliptic integral "cel"
-//
-//  created by Burlisch
-//
-//  coded by T. Fukushima <Toshio.Fukushima@nao.ac.jp>
-//
-//  Reference: Bulirsch, R. (1969), Numer. Math., 13, 305-315
-//        "Numerical computation of elliptic integrals and elliptic functions
-//        III"
-//
-//     Inputs: kc  = complementary modulus         0 <= kc <= 1
-//             nc   = complementary characteristic 0 <= nc <= 1
-//             a, b = coefficients
-//
-//     Outputs: integral value
-//
 Angle BulirschCel(double kc, double const nc, double a, double b) {
-  // These values should give us 14 digits of accuracy, see [Buli69].
+  // These values should give us 14 digits of accuracy, see [Bul69].
   constexpr double ca = 1.0e-7;
   constexpr double kc_nearly_0 = 1.0e-14;
 
-  // The identifiers below follow exactly [Buli69].  Note the (uncommon) use of
-  // non-const parameters to mimic [Buli69].
+  // The identifiers below follow exactly [Bul69].  Note the (uncommon) use of
+  // non-const parameters to mimic [Bul69].
   double p = nc;
   if (kc == 0.0) {
     if (b == 0.0) {
@@ -1214,109 +1238,110 @@ double EllipticNomeQ(double const mc) {
              Evaluate(mc);
 }
 
-//  Double precision general complete elliptic integrals of the second kind
-//
-//  Reference: T. Fukushima, (2011) Math. Comp., 80, 1725-1743
-//     "Precise and Fast Computation of General Complete Elliptic Integral
-//      of Second Kind"
-//
-//     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
-//
-//     Inputs: mc   = complementary parameter 0 <= mc   <= 1
-//
-void FukushimaEllipticBD(double const mc, Angle& b, Angle& d) {
+void FukushimaEllipticBD(double const mc, Angle& B_m, Angle& D_m) {
   double const m = 1.0 - mc;
   if (m < std::numeric_limits<double>::epsilon() / 2.0) {
-    b = π / 4 * Radian;
-    d = π / 4 * Radian;
+    B_m = π / 4 * Radian;
+    D_m = π / 4 * Radian;
   } else if (mc < std::numeric_limits<double>::epsilon() / 2.0) {
-    b = 1.0 * Radian;
-    d = ((2.0 * log_2 - 1.0) - 0.5 * std::log(mc)) * Radian;
+    B_m = 1.0 * Radian;
+    D_m = ((2.0 * log_2 - 1.0) - 0.5 * std::log(mc)) * Radian;
   } else if (mc < 0.1) {
-    // This algorithm differs from the one in [Fuku11a] because it divides
-    // log(q(mc)), not just log(mc / 16).  It tries to retain the same notation,
-    // though.
+    // This algorithm (from [Fuk18]) differs from the one in [Fuk11a] because it
+    // divides log(q(mc)), not just log(mc / 16).  It tries to retain the same
+    // notation, though.  See the documentation (Fukushima.pdf).
     double const nome = EllipticNomeQ<16>(mc);
-    double const x_mc = -std::log(nome);  // X(mc).
-    double kx_mc;  // KX(mc).
-    double ex_mc;  // EX(mc).
+    double const X_mc = -std::log(nome);  // X(mc).
+    double KX_mc;  // KX(mc).
+    double EX_mc;  // EX(mc).
     if (mc < 0.01) {
-      kx_mc = fukushima_kx_maclaurin.Evaluate(mc);
-      ex_mc = mc * fukushima_ex_maclaurin.Evaluate(mc);
+      KX_mc = fukushima_KX_maclaurin.Evaluate(mc);
+      EX_mc = mc * fukushima_EX_maclaurin.Evaluate(mc);
     } else {
       double const mx = mc - 0.05;
-      kx_mc = fukushima_kx_taylor_0_05.Evaluate(mx);
-      ex_mc = fukushima_ex_taylor_0_05.Evaluate(mx);
+      KX_mc = fukushima_KX_taylor_0_05.Evaluate(mx);
+      EX_mc = fukushima_EX_taylor_0_05.Evaluate(mx);
     }
-    // Equivalent to Fukushima's code, but much simplified.
-    double const one_over_two_kx_mc = 0.5 / kx_mc;
-    b = (x_mc * (ex_mc - mc * kx_mc) + one_over_two_kx_mc) * Radian / m;
-    d = x_mc * kx_mc * Radian - b;
+    // Equivalent to Fukushima’s code [Fuk18], but much simplified.
+    double const one_over_two_KX_mc = 0.5 / KX_mc;
+    B_m = (X_mc * (EX_mc - mc * KX_mc) + one_over_two_KX_mc) * Radian / m;
+    D_m = X_mc * KX_mc * Radian - B_m;
   } else if (m <= 0.01) {
-    b = (-π * Radian) * fukushima_b٭x_maclaurin.Evaluate(m);
-    d = (π * Radian) * fukushima_ex_maclaurin.Evaluate(m);
+    B_m = (-π * Radian) * fukushima_B٭X_maclaurin.Evaluate(m);
+    D_m = (π * Radian) * fukushima_EX_maclaurin.Evaluate(m);
   } else if (m <= 0.1) {
     double const mx = 0.95 - mc;
-    b = fukushima_b_taylor_0_05.Evaluate(mx) * Radian;
-    d = fukushima_d_taylor_0_05.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_05.Evaluate(mx) * Radian;
+    D_m = fukushima_D_taylor_0_05.Evaluate(mx) * Radian;
   } else if (m <= 0.2) {
     double const mx = 0.85 - mc;
-    b = fukushima_b_taylor_0_15.Evaluate(mx) * Radian;
-    d = fukushima_d_taylor_0_15.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_15.Evaluate(mx) * Radian;
+    D_m = fukushima_D_taylor_0_15.Evaluate(mx) * Radian;
   } else if (m <= 0.3) {
     double const mx = 0.75 - mc;
-    b = fukushima_b_taylor_0_25.Evaluate(mx) * Radian;
-    d = fukushima_d_taylor_0_25.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_25.Evaluate(mx) * Radian;
+    D_m = fukushima_D_taylor_0_25.Evaluate(mx) * Radian;
   } else if (m <= 0.4) {
     double const mx = 0.65 - mc;
-    b = fukushima_b_taylor_0_35.Evaluate(mx) * Radian;
-    d = fukushima_d_taylor_0_35.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_35.Evaluate(mx) * Radian;
+    D_m = fukushima_D_taylor_0_35.Evaluate(mx) * Radian;
   } else if (m <= 0.5) {
     double const mx = 0.55 - mc;
-    b = fukushima_b_taylor_0_45.Evaluate(mx) * Radian;
-    d = fukushima_d_taylor_0_45.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_45.Evaluate(mx) * Radian;
+    D_m = fukushima_D_taylor_0_45.Evaluate(mx) * Radian;
   } else if (m <= 0.6) {
     double const mx = 0.45 - mc;
-    b = fukushima_b_taylor_0_55.Evaluate(mx) * Radian;
-    d = fukushima_d_taylor_0_55.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_55.Evaluate(mx) * Radian;
+    D_m = fukushima_D_taylor_0_55.Evaluate(mx) * Radian;
   } else if (m <= 0.7) {
     double const mx = 0.35 - mc;
-    b = fukushima_b_taylor_0_65.Evaluate(mx) * Radian;
-    d = fukushima_d_taylor_0_65.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_65.Evaluate(mx) * Radian;
+    D_m = fukushima_D_taylor_0_65.Evaluate(mx) * Radian;
   } else if (m <= 0.8) {
     double const mx = 0.25 - mc;
-    b = fukushima_b_taylor_0_75.Evaluate(mx) * Radian;
-    d = fukushima_d_taylor_0_75.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_75.Evaluate(mx) * Radian;
+    D_m = fukushima_D_taylor_0_75.Evaluate(mx) * Radian;
   } else if (m <= 0.85) {
     double const mx = 0.175 - mc;
-    b = fukushima_b_taylor_0_825.Evaluate(mx) * Radian;
-    d = fukushima_d_taylor_0_825.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_825.Evaluate(mx) * Radian;
+    D_m = fukushima_D_taylor_0_825.Evaluate(mx) * Radian;
   } else {
     double const mx = 0.125 - mc;
-    b = fukushima_b_taylor_0_875.Evaluate(mx) * Radian;
-    d = fukushima_d_taylor_0_875.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_875.Evaluate(mx) * Radian;
+    D_m = fukushima_D_taylor_0_875.Evaluate(mx) * Radian;
   }
 }
 
+template<typename ThirdKind, typename>
 void FukushimaEllipticBDJ(double const nc,
                           double const mc,
-                          Angle& bc,
-                          Angle& dc,
-                          Angle& jc) {
-  FukushimaEllipticBD(mc, bc, dc);
+                          Angle& B_m,
+                          Angle& D_m,
+                          ThirdKind& J_n_m) {
+  FukushimaEllipticBD(mc, B_m, D_m);
 
-  // See [Buli69], special examples after equation (1.2.2).
-  double const kc = Sqrt(mc);
-  jc = BulirschCel(kc, nc, /*a=*/0.0, /*b=*/1.0);
+  if constexpr (should_compute<ThirdKind>) {
+    // See [Bul69], special examples after equation (1.2.2).
+    double const kc = Sqrt(mc);
+    J_n_m = BulirschCel(kc, nc, /*a=*/0.0, /*b=*/1.0);
+  }
 }
 
+// Note that the identifiers in the function definition are not the same as
+// those in the function declaration.
+// The declaration follows [Fuk11b], equations (9) and (10), and [Fuk12],
+// equation (24), whereas the definition follows [Fuk11b], section 2.2, and
+// [Fuk12], section 3.3.
+// [Fuk11b] (for B and D) calls the index j and [Fuk12] (for J) calls it i; we
+// use i everywhere.
+template<typename ThirdKind, typename>
 void FukushimaEllipticBcDcJc(double const c₀,
                              double const n,
                              double const mc,
-                             Angle& b,
-                             Angle& d,
-                             Angle& j) {
-  // See [Fuku11b] section 2.2 for the determination of xS.
+                             Angle& Bᵢ,
+                             Angle& Dᵢ,
+                             ThirdKind& Jᵢ) {
+  // See [Fuk11b] section 2.2 for the determination of xS.
   constexpr double xS = 0.1;
   // The maximum number of iterations in the first loop below.
   // NOTE(phl): I couldn't find a justification for this number.
@@ -1332,7 +1357,7 @@ void FukushimaEllipticBcDcJc(double const c₀,
   double const y₀ = 1.0 - x₀;
 
   // Alternate half and double argument transformations, when cancellations
-  // would occur, [Fuku11c] section 3.3.
+  // would occur, [Fuk12] section 3.3.
 
   // Half argument transformation of c.
   y[0] = y₀;
@@ -1351,27 +1376,39 @@ void FukushimaEllipticBcDcJc(double const c₀,
     cd[i] = cᵢ * dᵢ;
     cᵢ = Sqrt(xᵢ);
   }
+  int const I = i;  // The index at termination.
 
   // Switch to the normal algorithm.
-  FukushimaEllipticBsDsJs(s[i], n, mc, b, d, j);
+  FukushimaEllipticBsDsJs(s[I], n, mc, Bᵢ, Dᵢ, Jᵢ);
 
-  // Double argument transformation of B, D, J.
-  for (int k = i; k > 0; --k) {
-    double const sy = s[k - 1] * y[k];
-    double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
-    b = 2.0 * b - sy * Radian;
-    d = d + (d + sy * Radian);
-    j = j + (j + FukushimaT(t, h));
+  // Double argument transformation of B, D, J, [Fuk11b] equation (16) and
+  // [Fuk12] equations (33–35).
+  for (int i = I; i > 0; --i) {
+    double const sy = s[i - 1] * y[i];
+    Bᵢ = 2.0 * Bᵢ - sy * Radian;
+    Dᵢ = Dᵢ + (Dᵢ + sy * Radian);
+    if constexpr (should_compute<ThirdKind>) {
+      double const t = sy / (1.0 - n * (y[i - 1] - y[i] * cd[i - 1]));
+      Jᵢ = Jᵢ + (Jᵢ + FukushimaT(t, h));
+    }
   }
 }
 
+// Note that the identifiers in the function definition are not the same as
+// those in the function declaration.
+// The declaration follows [Fuk11b], equations (9) and (10), and [Fuk12],
+// equation (24), whereas the definition follows [Fuk11b], section 2.2, and
+// [Fuk12], section 3.3.
+// [Fuk11b] (for B and D) calls the index j and [Fuk12] (for J) calls it i; we
+// use i everywhere.
+template<typename ThirdKind, typename>
 void FukushimaEllipticBsDsJs(double const s₀,
                              double const n,
                              double const mc,
-                             Angle& b,
-                             Angle& d,
-                             Angle& j) {
-  // See [Fuku11c] section 3.5 for the determination of yB.
+                             Angle& Bᵢ,
+                             Angle& Dᵢ,
+                             ThirdKind& Jᵢ) {
+  // See [Fuk12] section 3.5 for the determination of yB.
   constexpr double yB = 0.01622;
   // The maximum number of argument transformations, related to yB.  This is the
   // maximum number of iterations in the first loop below.
@@ -1381,7 +1418,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
   double s[max_transformations + 1];
   double cd[max_transformations + 1];
 
-  // Half and double argument transformations, [Fuku11c] section 3.3.
+  // Half and double argument transformations, [Fuk12] section 3.3.
   double const m = 1.0 - mc;
   double const h = n * (1.0 - n) * (n - m);
   double const y₀ = s₀ * s₀;
@@ -1401,28 +1438,36 @@ void FukushimaEllipticBsDsJs(double const s₀,
     s[i + 1] = Sqrt(yᵢ);
     cd[i] = cᵢ * dᵢ;
   }
+  int const I = i;  // The index at termination.
 
-  // Maclaurin series.
-  FukushimaEllipticBsDsMaclaurinSeries(yᵢ, m, b, d);
-  b = s[i] * b;
-  d = s[i] * yᵢ * d;
-  j = s[i] * FukushimaEllipticJsMaclaurinSeries(yᵢ, n, m);
+  // Maclaurin series, [Fuk11b] equation (15) and [Fuk12] equation (32).
+  Angle Σ_Bₗ_m_yˡ{uninitialized};
+  Angle Σ_Dₗ_m_yˡ{uninitialized};
+  FukushimaEllipticBsDsMaclaurinSeries(yᵢ, m, Σ_Bₗ_m_yˡ, Σ_Dₗ_m_yˡ);
+  Bᵢ = s[I] * Σ_Bₗ_m_yˡ;
+  Dᵢ = s[I] * yᵢ * Σ_Dₗ_m_yˡ;
+  if constexpr (should_compute<ThirdKind>) {
+    Jᵢ = s[I] * FukushimaEllipticJsMaclaurinSeries(yᵢ, n, m);
+  }
 
-  // Double argument transformation of B, D, J.
-  for (int k = i; k > 0; --k) {
-    double const sy = s[k - 1] * y[k];
-    double const t = sy / (1.0 - n * (y[k - 1] - y[k] * cd[k - 1]));
-    b = 2.0 * b - sy * Radian;
-    d = d + (d + sy * Radian);
-    j = j + (j + FukushimaT(t, h));
+  // Double argument transformation of B, D, J, [Fuk11b] equation (16) and
+  // [Fuk12] equations (33–35).
+  for (int i = I; i > 0; --i) {
+    double const sy = s[i - 1] * y[i];
+    Bᵢ = 2.0 * Bᵢ - sy * Radian;
+    Dᵢ = Dᵢ + (Dᵢ + sy * Radian);
+    if constexpr (should_compute<ThirdKind>) {
+      double const t = sy / (1.0 - n * (y[i - 1] - y[i] * cd[i - 1]));
+      Jᵢ = Jᵢ + (Jᵢ + FukushimaT(t, h));
+    }
   }
 }
 
-// See [Fuku11b], section 2.3.
+// See [Fuk11b], section 2.3.
 void FukushimaEllipticBsDsMaclaurinSeries(double const y,
                                           double const m,
-                                          Angle& b,
-                                          Angle& d) {
+                                          Angle& Σ_Bₗ_m_yˡ,
+                                          Angle& Σ_Dₗ_m_yˡ) {
   double const Fs1 = FukushimaEllipticFsMaclaurin1::polynomial.Evaluate(m);
   double const Fs2 = FukushimaEllipticFsMaclaurin2::polynomial.Evaluate(m);
   double const Fs3 = FukushimaEllipticFsMaclaurin3::polynomial.Evaluate(m);
@@ -1435,150 +1480,155 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
   double const Fs10 = FukushimaEllipticFsMaclaurin10::polynomial.Evaluate(m);
   double const Fs11 = FukushimaEllipticFsMaclaurin11::polynomial.Evaluate(m);
 
-  auto const fukushima_elliptic_ds_maclaurin =
+  auto const fukushima_elliptic_Ds_maclaurin =
       FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeDsPolynomial(
       1.0, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
-  d = fukushima_elliptic_ds_maclaurin.Evaluate(y) * Radian;
+  Σ_Dₗ_m_yˡ = fukushima_elliptic_Ds_maclaurin.Evaluate(y) * Radian;
 
-  auto const fukushima_elliptic_bs_maclaurin =
+  auto const fukushima_elliptic_Bs_maclaurin =
       FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeBsPolynomial(
       1.0, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
-  b = fukushima_elliptic_bs_maclaurin.Evaluate(y) * Radian;
+  Σ_Bₗ_m_yˡ = fukushima_elliptic_Bs_maclaurin.Evaluate(y) * Radian;
 }
 
-// See [Fuku11c], section 3.4 and 3.5.
+// See [Fuk12], section 3.4 and 3.5.
 Angle FukushimaEllipticJsMaclaurinSeries(double const y,
                                          double const n,
                                          double const m) {
   // Maclaurin series in m whose coefficients are polynomials in n.  The index
   // is the degree in m (k in Fukushima's notation).
   PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
-      fukushima_elliptic_js_maclaurin_m_0(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_0_0.Evaluate(n)));
+      fukushima_elliptic_Js_maclaurin_m_0(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_0_0.Evaluate(n)));
   PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
-      fukushima_elliptic_js_maclaurin_m_1(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_1_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_1_1.Evaluate(n)));
+      fukushima_elliptic_Js_maclaurin_m_1(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_1_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_1_1.Evaluate(n)));
   PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
-      fukushima_elliptic_js_maclaurin_m_2(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_2_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_2_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_2_2.Evaluate(n)));
+      fukushima_elliptic_Js_maclaurin_m_2(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_2_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_2_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_2_2.Evaluate(n)));
   PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
-      fukushima_elliptic_js_maclaurin_m_3(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_3_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_3_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_3_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_3_3.Evaluate(n)));
+      fukushima_elliptic_Js_maclaurin_m_3(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_3_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_3_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_3_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_3_3.Evaluate(n)));
   PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_4(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_4_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_4_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_4_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_4_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_4_4.Evaluate(n)));
-  double const js0 = fukushima_elliptic_js_maclaurin_m_0.Evaluate(m);
-  double const js1 = fukushima_elliptic_js_maclaurin_m_1.Evaluate(m);
-  double const js2 = fukushima_elliptic_js_maclaurin_m_2.Evaluate(m);
-  double const js3 = fukushima_elliptic_js_maclaurin_m_3.Evaluate(m);
-  double const js4 = fukushima_elliptic_js_maclaurin_m_4.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_4(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_4_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_4.Evaluate(n)));
+  // The first five coefficients Jₗ(n|m); the others are computed as needed.
+  // TODO(egg): J₁(n|m) = 1/3; could we make it constexpr?
+  double const J₁ = fukushima_elliptic_Js_maclaurin_m_0.Evaluate(m);
+  double const J₂ = fukushima_elliptic_Js_maclaurin_m_1.Evaluate(m);
+  double const J₃ = fukushima_elliptic_Js_maclaurin_m_2.Evaluate(m);
+  double const J₄ = fukushima_elliptic_Js_maclaurin_m_3.Evaluate(m);
+  double const J₅ = fukushima_elliptic_Js_maclaurin_m_4.Evaluate(m);
+  // This function computes ∑ Jₗ(n|m) yˡ.  Since it has no constant term, we
+  // compute it as y ∑ Jₗ(n|m) yˡ⁻¹.  In the remainder of this function,
+  // |fukushima_elliptic_Js_maclaurin_y_*| is the polynomial ∑ Jₗ(n|m) yˡ⁻¹.
   if (y <= 6.0369310e-04) {
     // A Maclaurin series in y whose coefficients are polynomials in n and m.
     // The index is the degree in y of the series.  Since Js has no constant
     // term, this is (l - 1) in Fukushima's notation.
     PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
-        fukushima_elliptic_js_maclaurin_y_4(
-            std::make_tuple(js0, js1, js2, js3, js4));
-    return y * fukushima_elliptic_js_maclaurin_y_4.Evaluate(y) * Radian;
+        fukushima_elliptic_Js_maclaurin_y_4(
+            std::make_tuple(J₁, J₂, J₃, J₄, J₅));
+    return y * fukushima_elliptic_Js_maclaurin_y_4.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_5(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_5_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_5_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_5_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_5_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_5_4.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_5_5.Evaluate(n)));
-  double const js5 = fukushima_elliptic_js_maclaurin_m_5.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_5(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_5_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_4.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_5.Evaluate(n)));
+  double const J₆ = fukushima_elliptic_Js_maclaurin_m_5.Evaluate(m);
   if (y <= 2.0727505e-03) {
     PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_5(
-            std::make_tuple(js0, js1, js2, js3, js4, js5));
+            std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆));
     return y * fukushima_elliptic_js_maclaurin_y_5.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_6(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_6_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_4.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_5.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_6_6.Evaluate(n)));
-  double const js6 = fukushima_elliptic_js_maclaurin_m_6.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_6(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_6_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_4.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_5.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_6.Evaluate(n)));
+  double const J₇ = fukushima_elliptic_Js_maclaurin_m_6.Evaluate(m);
   if (y <= 5.0047026e-03) {
     PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_6(
-            std::make_tuple(js0, js1, js2, js3, js4, js5, js6));
+            std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇));
     return y * fukushima_elliptic_js_maclaurin_y_6.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_7(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_7_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_4.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_5.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_6.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_7_7.Evaluate(n)));
-  double const js7 = fukushima_elliptic_js_maclaurin_m_7.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_7(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_7_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_4.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_5.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_6.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_7.Evaluate(n)));
+  double const J₈ = fukushima_elliptic_Js_maclaurin_m_7.Evaluate(m);
   if (y <= 9.6961652e-03) {
     PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_7(
-            std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7));
+            std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈));
     return y * fukushima_elliptic_js_maclaurin_y_7.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_8(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_8_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_4.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_5.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_6.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_7.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_8_8.Evaluate(n)));
-  double const js8 = fukushima_elliptic_js_maclaurin_m_8.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_8(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_8_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_4.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_5.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_6.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_7.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_8.Evaluate(n)));
+  double const J₉ = fukushima_elliptic_Js_maclaurin_m_8.Evaluate(m);
   if (y <= 1.6220210e-02) {
     PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
-        fukushima_elliptic_js_maclaurin_y_8(
-            std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7, js8));
-    return y * fukushima_elliptic_js_maclaurin_y_8.Evaluate(y) * Radian;
+        fukushima_elliptic_Js_maclaurin_y_8(
+            std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈, J₉));
+    return y * fukushima_elliptic_Js_maclaurin_y_8.Evaluate(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_m_9(
-          std::make_tuple(fukushima_elliptic_js_maclaurin_n_9_0.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_1.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_2.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_3.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_4.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_5.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_6.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_7.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_8.Evaluate(n),
-                          fukushima_elliptic_js_maclaurin_n_9_9.Evaluate(n)));
-  double const js9 = fukushima_elliptic_js_maclaurin_m_9.Evaluate(m);
+      fukushima_elliptic_Js_maclaurin_m_9(
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_9_0.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_1.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_2.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_3.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_4.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_5.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_6.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_7.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_8.Evaluate(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_9.Evaluate(n)));
+  double const J₁₀ = fukushima_elliptic_Js_maclaurin_m_9.Evaluate(m);
   PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
-      fukushima_elliptic_js_maclaurin_y_9(
-          std::make_tuple(js0, js1, js2, js3, js4, js5, js6, js7, js8, js9));
-  return y * fukushima_elliptic_js_maclaurin_y_9.Evaluate(y) * Radian;
+      fukushima_elliptic_Js_maclaurin_y_9(
+          std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈, J₉, J₁₀));
+  return y * fukushima_elliptic_Js_maclaurin_y_9.Evaluate(y) * Radian;
 }
 
 Angle FukushimaT(double const t, double const h) {
@@ -1586,7 +1636,7 @@ Angle FukushimaT(double const t, double const h) {
   double const abs_z = abs(z);
 
   // NOTE(phl): One might be tempted to rewrite this statement using a binary
-  // split of the interval [0, 1], but according to Table 1 of [Fuku11c] the
+  // split of the interval [0, 1], but according to Table 1 of [Fuk12] the
   // distribution of z is very biased towards the small values, so this is
   // simpler and probably better.  (It also explains the position of z < 0 in
   // the list.)
@@ -1647,64 +1697,49 @@ void Reduce(Angle const& angle,
   fractional_part = reduced_in_half_cycles * π * Radian;
 }
 
-}  // namespace
-
-// Double precision general incomplete elliptic integrals of all three kinds
-//
-//     Reference: T. Fukushima, (2011) J. Comp. Appl. Math., 236, 1961-1975
-//     "Precise and Fast Computation of a General Incomplete Elliptic Integral
-//     of Third Kind by Half and Double Argument Transformations"
-//
-//     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
-//
-//     Inputs: φ  = argument                  0 <= φ  <= π / 2
-//             n    = characteristic          0 <= n  <= 1
-//             mc   = complementary parameter 0 <= mc <= 1
-//
-//     Outputs: b, d, j
-//
+template<typename ThirdKind, typename>
 void FukushimaEllipticBDJ(Angle const& φ,
                           double const n,
                           double const mc,
-                          Angle& b,
-                          Angle& d,
-                          Angle& j) {
+                          Angle& B_φǀm,
+                          Angle& D_φǀm,
+                          ThirdKind& J_φ_nǀm) {
   DCHECK_LE(0, n);
   DCHECK_GE(1, n);
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
 
-  // See Appendix B of [Fuku11b] and Appendix A.1 of [Fuku11c] for argument
+  // See Appendix B of [Fuk11b] and Appendix A.1 of [Fuk12] for argument
   // reduction.
   // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
   // better algorithm (Payne-Hanek?).
   Angle φ_reduced{uninitialized};
-  std::int64_t count;
-  Reduce(φ, φ_reduced, count);
+  std::int64_t j;
+  Reduce(φ, φ_reduced, j);
   Angle const abs_φ_reduced = Abs(φ_reduced);
 
-  // NOTE(phl): The original Fortran code had φs = 1.345 * Radian, which,
-  // according to the above-mentioned paper, is suitable for single precision.
-  // However, this is double precision.  Importantly, this doesn't match the
-  // value of ys.  The discrepancy has a 5-10% impact on performance.  I am not
-  // sure if it has an impact on correctness.
+  // NOTE(phl): The original Fortran code [Fuk18] had φs = 1.345 * Radian,
+  // which, according to the above-mentioned paper, is suitable for single
+  // precision. However, this is double precision.  Importantly, this doesn't
+  // match the value of ys.  The discrepancy has a 5-10% impact on performance.
+  // I am not sure if it has an impact on correctness.
 
   // Sin(φs)^2 must be approximately ys.
   constexpr Angle φs = 1.249 * Radian;
   constexpr double ys = 0.9;
 
   bool has_computed_complete_integrals = false;
-  Angle bc{uninitialized};
-  Angle dc{uninitialized};
-  Angle jc{uninitialized};
+  Angle B{uninitialized};      // B(m).
+  Angle D{uninitialized};      // D(m).
+  ThirdKind J{uninitialized};  // J(n, m).
 
-  // The selection rule in [Fuku11b] section 2.1, equations (7-11) and [Fuku11c]
+  // The selection rule in [Fuk11b] section 2.1, equations (7–11) and [Fuk12]
   // section 3.2, equations (22) and (23).  The identifiers follow Fukushima's
   // notation.
   // NOTE(phl): The computation of 1 - c² loses accuracy with respect to the
   // evaluation of Sin(φ).
   if (abs_φ_reduced < φs) {
-    FukushimaEllipticBsDsJs(Sin(abs_φ_reduced), n, mc, b, d, j);
+    FukushimaEllipticBsDsJs(Sin(abs_φ_reduced), n, mc, B_φǀm, D_φǀm, J_φ_nǀm);
   } else {
     double const m = 1.0 - mc;
     double const nc = 1.0 - n;
@@ -1714,137 +1749,180 @@ void FukushimaEllipticBDJ(Angle const& φ,
     double const z²_denominator = mc + m * c²;
     if (c² < ys * z²_denominator) {
       double const z = c / Sqrt(z²_denominator);
-      FukushimaEllipticBsDsJs(z, n, mc, b, d, j);
-      FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
+      Angle Bs{uninitialized};      // Bs(z|m).
+      Angle Ds{uninitialized};      // Ds(z|m).
+      ThirdKind Js{uninitialized};  // Js(z, n|m).
+      FukushimaEllipticBsDsJs(z, n, mc, Bs, Ds, Js);
+      FukushimaEllipticBDJ(nc, mc, B, D, J);
       double const sz = z * Sqrt(1.0 - c²);
-      double const t = sz / nc;
-      b = bc - (b - sz * Radian);
-      d = dc - (d + sz * Radian);
-      j = jc - (j + FukushimaT(t, h));
+      B_φǀm = B - (Bs - sz * Radian);
+      D_φǀm = D - (Ds + sz * Radian);
+      if constexpr (should_compute<ThirdKind>) {
+        double const t = sz / nc;
+        J_φ_nǀm = J - (Js + FukushimaT(t, h));
+      }
       has_computed_complete_integrals = true;
     } else {
       double const w²_numerator = mc * (1.0 - c²);
       if (w²_numerator < c² * z²_denominator) {
-        FukushimaEllipticBcDcJc(c, n, mc, b, d, j);
+        FukushimaEllipticBcDcJc(c, n, mc, B_φǀm, D_φǀm, J_φ_nǀm);
       } else {
         double const w²_denominator = z²_denominator;
         double const w²_over_mc = (1.0 - c²) / w²_denominator;
-        FukushimaEllipticBcDcJc(Sqrt(mc * w²_over_mc), n, mc, b, d, j);
-        FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
+        Angle Bc{uninitialized};      // Bc(w|m).
+        Angle Dc{uninitialized};      // Dc(w|m).
+        ThirdKind Jc{uninitialized};  // Jc(w, n|m).
+        FukushimaEllipticBcDcJc(Sqrt(mc * w²_over_mc), n, mc, Bc, Dc, Jc);
+        FukushimaEllipticBDJ(nc, mc, B, D, J);
         double const sz = c * Sqrt(w²_over_mc);
-        double const t = sz / nc;
-        b = bc - (b - sz * Radian);
-        d = dc - (d + sz * Radian);
-        j = jc - (j + FukushimaT(t, h));
+        B_φǀm = B - (Bc - sz * Radian);
+        D_φǀm = D - (Dc + sz * Radian);
+        if constexpr (should_compute<ThirdKind>) {
+          double const t = sz / nc;
+          J_φ_nǀm = J - (Jc + FukushimaT(t, h));
+        }
         has_computed_complete_integrals = true;
       }
     }
   }
 
   if (φ_reduced < 0.0 * Radian) {
-    b = -b;
-    d = -d;
-    j = -j;
-  }
-  if (count != 0) {
-    double const nc = 1.0 - n;
-    if (!has_computed_complete_integrals) {
-      FukushimaEllipticBDJ(nc, mc, bc, dc, jc);
+    // TODO(egg): Much ado about nothing's sign bit.
+    B_φǀm = -B_φǀm;
+    D_φǀm = -D_φǀm;
+    if constexpr (should_compute<ThirdKind>) {
+      J_φ_nǀm = -J_φ_nǀm;
     }
-    b = 2 * count * bc + b;
-    d = 2 * count * dc + d;
-    j = 2 * count * jc + j;
+  }
+  if (j != 0) {
+    if (!has_computed_complete_integrals) {
+      double const nc = 1.0 - n;
+      FukushimaEllipticBDJ(nc, mc, B, D, J);
+    }
+    // See [Fuk11b], equations (B.2), and [Fuk12], equation (A.2).
+    B_φǀm += 2 * j * B;
+    D_φǀm += 2 * j * D;
+    if constexpr (should_compute<ThirdKind>) {
+      J_φ_nǀm += 2 * j * J;
+    }
   }
 }
 
-Angle EllipticE(Angle const& φ, double const mc) {
-  Angle e{uninitialized};
-  Angle f{uninitialized};
-  Angle ᴨ{uninitialized};
-  EllipticEFΠ(φ, /*n=*/1.0, mc, e, f, ᴨ);
-  return e;
-}
-
-Angle EllipticF(Angle const& φ, double const mc) {
-  Angle e{uninitialized};
-  Angle f{uninitialized};
-  Angle ᴨ{uninitialized};
-  EllipticEFΠ(φ, /*n=*/1.0, mc, e, f, ᴨ);
-  return f;
-}
-
-Angle EllipticΠ(Angle const& φ, double const n, double const mc) {
-  Angle e{uninitialized};
-  Angle f{uninitialized};
-  Angle ᴨ{uninitialized};
-  EllipticEFΠ(φ, n, mc, e, f, ᴨ);
-  return ᴨ;
-}
-
-void EllipticEFΠ(Angle const& φ,
+template<typename ThirdKind, typename>
+void EllipticFEΠ(Angle const& φ,
                  double const n,
                  double const mc,
-                 Angle& e,
-                 Angle& f,
-                 Angle& ᴨ) {
+                 Angle& F_φǀm,
+                 Angle& E_φǀm,
+                 ThirdKind& Π_φ_nǀm) {
   DCHECK_LE(0, n);
   DCHECK_GE(1, n);
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
-  Angle b{uninitialized};
-  Angle d{uninitialized};
-  Angle j{uninitialized};
-  FukushimaEllipticBDJ(φ, n, mc, b, d, j);
-  e = b + mc * d;
-  f = b + d;
-  ᴨ = f + n * j;
+  Angle B{uninitialized};
+  Angle D{uninitialized};
+  ThirdKind J{uninitialized};
+  FukushimaEllipticBDJ(φ, n, mc, B, D, J);
+  F_φǀm = B + D;
+  E_φǀm = B + mc * D;
+  if constexpr (should_compute<ThirdKind>) {
+    Π_φ_nǀm = F_φǀm + n * J;
+  }
 }
 
-//  Double precision complete elliptic integral of the first kind
-//
-//     Reference: T. Fukushima, (2009) Celest. Mech. Dyn. Astron. 105, 305-328
-//        "Fast Computation of Complete Elliptic Integrlals and Jacobian
-//         Elliptic Functions"
-//
-//     Author: T. Fukushima Toshio.Fukushima@nao.ac.jp
-//
-//     Inputs: mc   = complementary parameter 0 <= mc   <= 1
-//
-Angle EllipticK(double const mc) {
-  DCHECK_LE(0, mc);
-  DCHECK_GE(1, mc);
+}  // namespace
+
+void FukushimaEllipticBDJ(Angle const& φ,
+                          double const n,
+                          double const mc,
+                          Angle& B_φǀm,
+                          Angle& D_φǀm,
+                          Angle& J_φ_nǀm) {
+  return FukushimaEllipticBDJ<Angle>(φ, n, mc, B_φǀm, D_φǀm, J_φ_nǀm);
+}
+
+void FukushimaEllipticBD(Angle const& φ,
+                         double const mc,
+                         Angle& B_φǀm,
+                         Angle& D_φǀm) {
+  FukushimaEllipticBDJ(φ, /*n=*/1, mc, B_φǀm, D_φǀm, /*J_φ_nǀm=*/unused);
+}
+
+Angle EllipticF(Angle const& φ, double const mc) {
+  Angle F{uninitialized};
+  Angle E{uninitialized};
+  EllipticFEΠ(φ, /*n=*/1, mc, F, E, /*Π=*/unused);
+  return F;
+}
+
+Angle EllipticE(Angle const& φ, double const mc) {
+  Angle F{uninitialized};
+  Angle E{uninitialized};
+  EllipticFEΠ(φ, /*n=*/1, mc, F, E, /*Π=*/unused);
+  return E;
+}
+
+Angle EllipticΠ(Angle const& φ, double const n, double const mc) {
+  Angle F{uninitialized};
+  Angle E{uninitialized};
+  Angle Π{uninitialized};
+  EllipticFEΠ(φ, n, mc, F, E, Π);
+  return Π;
+}
+
+void EllipticFE(Angle const& φ, double mc, Angle& F_φǀm, Angle& E_φǀm) {
+  EllipticFEΠ(φ, /*n=*/1, mc, F_φǀm, E_φǀm, /*Π=*/unused);
+}
+
+void EllipticFEΠ(Angle const& φ,
+                 double const n,
+                 double const mc,
+                 Angle& F_φǀm,
+                 Angle& E_φǀm,
+                 Angle& Π_φ_nǀm) {
+  EllipticFEΠ<Angle>(φ, n, mc, F_φǀm, E_φǀm, Π_φ_nǀm);
+}
+
+// Note that the identifiers in the function definition are not the same as
+// those in the function declaration.
+// The notation here follows [Fuk09], whereas the notation in the function
+// declaration uses |mc| for consistency with the other functions.
+Angle EllipticK(double const mʹ) {
+  DCHECK_LE(0, mʹ);
+  DCHECK_GE(1, mʹ);
   // TODO(phl): Use a binary split of [0, 1] to reduce the number of
   // comparisons.
-  double const m = 1.0 - mc;
+  double const m = 1.0 - mʹ;
   if (m == 0.0) {
     return π / 2 * Radian;
-  } else if (mc < std::numeric_limits<double>::epsilon() / 2.0) {
-    return (2.0 * log_2 - 0.5 * std::log(mc)) * Radian;
-  } else if (mc < 0.1) {
-    double const nome = EllipticNomeQ<14>(mc);
-    // Evaluate K'.
-    return -elliptic_k_taylor_0_05.Evaluate(mc - 0.05) * (1 / π) *
-           std::log(nome) * Radian;
+  } else if (mʹ < std::numeric_limits<double>::epsilon() / 2.0) {
+    return (2.0 * log_2 - 0.5 * std::log(mʹ)) * Radian;
+  } else if (mʹ < 0.1) {
+    // The complementary nome.
+    double const qʹ = EllipticNomeQ<14>(mʹ);
+    // Use K′ = K(m′), see [Fuk09], equations (15) and (29).
+    double const Kʹ = elliptic_K_taylor_0_05.Evaluate(mʹ - 0.05);
+    return -Kʹ * (1 / π) * std::log(qʹ) * Radian;
   } else if (m <= 0.1) {
-    return elliptic_k_taylor_0_05.Evaluate(m - 0.05) * Radian;
+    return elliptic_K_taylor_0_05.Evaluate(m - 0.05) * Radian;
   } else if (m <= 0.2) {
-    return elliptic_k_taylor_0_15.Evaluate(m - 0.15) * Radian;
+    return elliptic_K_taylor_0_15.Evaluate(m - 0.15) * Radian;
   } else if (m <= 0.3) {
-    return elliptic_k_taylor_0_25.Evaluate(m - 0.25) * Radian;
+    return elliptic_K_taylor_0_25.Evaluate(m - 0.25) * Radian;
   } else if (m <= 0.4) {
-    return elliptic_k_taylor_0_35.Evaluate(m - 0.35) * Radian;
+    return elliptic_K_taylor_0_35.Evaluate(m - 0.35) * Radian;
   } else if (m <= 0.5) {
-    return elliptic_k_taylor_0_45.Evaluate(m - 0.45) * Radian;
+    return elliptic_K_taylor_0_45.Evaluate(m - 0.45) * Radian;
   } else if (m <= 0.6) {
-    return elliptic_k_taylor_0_55.Evaluate(m - 0.55) * Radian;
+    return elliptic_K_taylor_0_55.Evaluate(m - 0.55) * Radian;
   } else if (m <= 0.7) {
-    return elliptic_k_taylor_0_65.Evaluate(m - 0.65) * Radian;
+    return elliptic_K_taylor_0_65.Evaluate(m - 0.65) * Radian;
   } else if (m <= 0.8) {
-    return elliptic_k_taylor_0_75.Evaluate(m - 0.75) * Radian;
+    return elliptic_K_taylor_0_75.Evaluate(m - 0.75) * Radian;
   } else if (m <= 0.85) {
-    return elliptic_k_taylor_0_825.Evaluate(m - 0.825) * Radian;
+    return elliptic_K_taylor_0_825.Evaluate(m - 0.825) * Radian;
   } else {
-    return elliptic_k_taylor_0_875.Evaluate(m - 0.875) * Radian;
+    return elliptic_K_taylor_0_875.Evaluate(m - 0.875) * Radian;
   }
 }
 
