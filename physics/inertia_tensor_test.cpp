@@ -148,7 +148,7 @@ TEST_F(InertiaTensorTest, Rod) {
 
 TEST_F(InertiaTensorTest, Abdulghany) {
   constexpr MomentOfInertia zero;
-  Density const ρ = 13593 * Kilogram / Pow<3>(Metre);  // Hg.
+  Density const ρ = 1/*3593*/ * Kilogram / Pow<3>(Metre);  // Hg.
 
   using CylinderCentreOfMass = Frame0;
   using CuboidCentreOfMassZ = Frame1;
@@ -176,6 +176,7 @@ TEST_F(InertiaTensorTest, Abdulghany) {
   Length const cuboid_small_side = 6 * Metre;
   Length const cuboid_long_side = 24 * Metre;
   Mass const cuboid_mass = ρ * Pow<2>(cuboid_small_side) * cuboid_long_side;
+  LOG(ERROR)<<cuboid_mass;
 
   // The cuboid with its long axis along z.
   MomentOfInertia const cuboid_long_axis_inertia =
@@ -184,11 +185,12 @@ TEST_F(InertiaTensorTest, Abdulghany) {
   MomentOfInertia const cuboid_short_axis_inertia =
       cuboid_mass * (Pow<2>(cuboid_small_side) + Pow<2>(cuboid_long_side)) /
       12.0;
+  LOG(ERROR)<<cuboid_long_axis_inertia<<" "<<cuboid_short_axis_inertia;
   InertiaTensor<CuboidCentreOfMassZ> const cuboid_inertia_centre_of_mass_z(
       cuboid_mass,
-      R3x3Matrix<MomentOfInertia>{{cylinder_orthogonal_inertia, zero, zero},
-                                  {zero, cylinder_orthogonal_inertia, zero},
-                                  {zero, zero, cylinder_axis_inertia}},
+      R3x3Matrix<MomentOfInertia>{{cuboid_short_axis_inertia, zero, zero},
+                                  {zero, cuboid_short_axis_inertia, zero},
+                                  {zero, zero, cuboid_long_axis_inertia}},
       CuboidCentreOfMassZ::origin);
 
   // Rotate the cuboid around the x axis.
@@ -198,6 +200,7 @@ TEST_F(InertiaTensorTest, Abdulghany) {
               90 * Degree,
               Bivector<double, CuboidCentreOfMassZ>({1, 0, 0}),
               DefinesFrame<CuboidCentreOfMassY>{}));
+  Log(cuboid_inertia_centre_of_mass_y);
 
   // Translate the cylinder.
   Position<CylinderCentreOfMass> const translated_cylinder_centre_of_mass =
@@ -222,7 +225,7 @@ TEST_F(InertiaTensorTest, Abdulghany) {
           overall_inertia_cuboid_centre_of_mass.Translate<OverallCentreOfMass>(
               overall_inertia_cuboid_centre_of_mass.centre_of_mass());
 
-  Log(overall_inertia_overall_centre_of_mass);
+  //Log(overall_inertia_overall_centre_of_mass);
 }
 
 }  // namespace internal_inertia_tensor

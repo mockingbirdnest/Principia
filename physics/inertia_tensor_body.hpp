@@ -120,7 +120,7 @@ InertiaTensor<Frame>::MakeSymmetricBilinearForm(
            -tensor(1, 2)},
           {-tensor(2, 0),
            -tensor(2, 1),
-           0.5 * (tensor(0, 0) + tensor(1, 1) - tensor(2, 2)) / 2}));
+           0.5 * (tensor(0, 0) + tensor(1, 1) - tensor(2, 2))}));
 }
 
 template<typename Frame>

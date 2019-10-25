@@ -250,6 +250,8 @@ SymmetricBilinearForm<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
                                          result_row_z.coordinates());
 
   // The averaging below ensures that the result is symmetric.
+  // TODO(phl): Investigate if using a Cholesky or LDL decomposition would help
+  // preserve symmetry and/or definiteness.
   return SymmetricBilinearForm<Scalar, ToFrame>(
           0.5 * (result_matrix + result_matrix.Transpose()));
 }
