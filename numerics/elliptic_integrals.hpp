@@ -51,6 +51,9 @@ void FukushimaEllipticBDJ(Angle const& φ,
                           Angle& D_φǀm,
                           Angle& J_φ_nǀm);
 
+// Same as above, but does not compute J.
+void FukushimaEllipticBD(Angle const& φ, double mc, Angle& B_φǀm, Angle& D_φǀm);
+
 // Returns the incomplete elliptic integral of the first kind F(φ|m), where
 // m = 1 - mc.
 Angle EllipticF(Angle const& φ, double mc);
@@ -62,6 +65,10 @@ Angle EllipticE(Angle const& φ, double mc);
 // Returns the incomplete elliptic integral of the third kind Π(φ, n|m), where
 // m = 1 - mc.
 Angle EllipticΠ(Angle const& φ, double n, double mc);
+
+// Computes the incomplete elliptic integrals the first and second kinds F(φ|m)
+// and E(φ|m), where m = 1 - mc.
+void EllipticFE(Angle const& φ, double mc, Angle& F_φǀm, Angle& E_φǀm);
 
 // Computes the incomplete elliptic integrals of all three kinds F(φ|m), E(φ|m),
 // and Π(φ, n|m), where m = 1 - mc.
