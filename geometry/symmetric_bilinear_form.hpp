@@ -63,7 +63,6 @@ class SymmetricBilinearForm {
       serialization::SymmetricBilinearForm const& message);
 
  private:
-
   // Given a matrix that contains in columns eigenvectors for a form, picks the
   // column with the largest norm and return its normalized value.  This is
   // useful to extract eigenvectors when eigenvalues are known.
