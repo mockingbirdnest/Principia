@@ -14,6 +14,9 @@ namespace geometry {
 FORWARD_DECLARE_FROM(orthogonal_map,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      OrthogonalMap);
+FORWARD_DECLARE_FROM(symmetric_bilinear_form,
+                     TEMPLATE(typename Scalar, typename Frame) class,
+                     SymmetricBilinearForm);
 
 namespace internal_identity {
 
@@ -40,6 +43,10 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
   template<typename Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
+
+  template<typename Scalar>
+  SymmetricBilinearForm<Scalar, ToFrame> operator()(
+      SymmetricBilinearForm<Scalar, FromFrame> const& form) const;
 
   template<typename T>
   typename base::Mappable<Identity, T>::type operator()(T const& t) const;
