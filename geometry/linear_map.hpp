@@ -38,10 +38,6 @@ class LinearMap {
 //   virtual Trivector<Scalar, ToFrame> operator()(
 //       Trivector<Scalar, FromFrame> const& trivector) const = 0;
 //
-//   template<typename Scalar>
-//   SymmetricBilinearForm<Scalar, ToFrame> operator()(
-//       SymmetricBilinearForm<Scalar, FromFrame> const& form) const = 0;
-//
 //   template<typename T>
 //   typename base::Mappable<LinearMap, T>::type operator()(T const& t) const;
 //

@@ -39,28 +39,6 @@ Cube<Scalar> R3x3Matrix<Scalar>::Determinant() const {
 }
 
 template<typename Scalar>
-R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Transpose() const {
-  return R3x3Matrix({row_x_.x, row_y_.x, row_z_.x},
-                    {row_x_.y, row_y_.y, row_z_.y},
-                    {row_x_.z, row_y_.z, row_z_.z});
-}
-
-template<typename Scalar>
-R3Element<Scalar> const& R3x3Matrix<Scalar>::row_x() const {
-  return row_x_;
-}
-
-template<typename Scalar>
-R3Element<Scalar> const& R3x3Matrix<Scalar>::row_y() const {
-  return row_y_;
-}
-
-template<typename Scalar>
-R3Element<Scalar> const& R3x3Matrix<Scalar>::row_z() const {
-  return row_z_;
-}
-
-template<typename Scalar>
 FORCE_INLINE(inline) Scalar R3x3Matrix<Scalar>::operator()(
     int const r, int const c) const {
   switch (r) {
@@ -75,6 +53,13 @@ FORCE_INLINE(inline) Scalar R3x3Matrix<Scalar>::operator()(
                   << " indices = {" << r << ", " << c << "}";
       base::noreturn();
   }
+}
+
+template<typename Scalar>
+R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Transpose() const {
+  return R3x3Matrix({row_x_.x, row_y_.x, row_z_.x},
+                    {row_x_.y, row_y_.y, row_z_.y},
+                    {row_x_.z, row_y_.z, row_z_.z});
 }
 
 template<typename Scalar>

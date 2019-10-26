@@ -6,7 +6,6 @@
 #include "geometry/frame.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
-#include "geometry/symmetric_bilinear_form.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -30,23 +29,19 @@ class IdentityTest : public testing::Test {
                        serialization::Frame::TEST2, true>;
   using Orth = OrthogonalMap<World1, World2>;
   using Id = Identity<World1, World2>;
-  using R3 = R3Element<Length>;
+  using R3 = R3Element<quantities::Length>;
 
-  IdentityTest()
-      : vector_(Vector<Length, World1>(
-            R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
-        bivector_(Bivector<Length, World1>(
-            R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
-        trivector_(Trivector<Length, World1>(4.0 * Metre)),
-        form_(SymmetricBilinearForm<Length, World1>(
-            R3x3Matrix<Length>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre},
-                               {2.0 * Metre, 5.0 * Metre, 6.0 * Metre},
-                               {3.0 * Metre, 6.0 * Metre, 4.0 * Metre}))) {}
+  IdentityTest() {
+    vector_ = Vector<quantities::Length, World1>(
+        R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
+    bivector_ = Bivector<quantities::Length, World1>(
+        R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
+    trivector_ = Trivector<quantities::Length, World1>(4.0 * Metre);
+  }
 
-  Vector<Length, World1> const vector_;
-  Bivector<Length, World1> const bivector_;
-  Trivector<Length, World1> const trivector_;
-  SymmetricBilinearForm<Length, World1> const form_;
+  Vector<quantities::Length, World1> vector_;
+  Bivector<quantities::Length, World1> bivector_;
+  Trivector<quantities::Length, World1> trivector_;
 };
 
 using IdentityDeathTest = IdentityTest;
@@ -70,19 +65,11 @@ TEST_F(IdentityTest, AppliedToTrivector) {
               Eq(4.0 * Metre));
 }
 
-TEST_F(IdentityTest, AppliedToSymmetricBilinearForm) {
-  R3x3Matrix<Length> const expected_coordinates(
-      {1.0 * Metre, 2.0 * Metre, 3.0 * Metre},
-      {2.0 * Metre, 5.0 * Metre, 6.0 * Metre},
-      {3.0 * Metre, 6.0 * Metre, 4.0 * Metre});
-  EXPECT_THAT(Id()(form_).coordinates(),
-              Eq(expected_coordinates));
-}
-
 TEST_F(IdentityTest, Inverse) {
-  Vector<Length, World1> const vector1 = vector_;
-  Vector<Length, World2> const vector2 =
-      Vector<Length, World2>(R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
+  Vector<quantities::Length, World1> const vector1 = vector_;
+  Vector<quantities::Length, World2> const vector2 =
+      Vector<quantities::Length, World2>(
+          R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
   EXPECT_THAT(Id().Inverse()(vector2).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
   Id id;
@@ -112,7 +99,7 @@ TEST_F(IdentityTest, Compose) {
   Id13 const id13 = id23 * id12;
   Orth13 const o13 = o23 * o12;
   for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
-    Vector<Length, World1> modified_vector(
+    Vector<quantities::Length, World1> modified_vector(
         {l, vector_.coordinates().y, vector_.coordinates().z});
     EXPECT_THAT(id13(modified_vector), Eq(o13(modified_vector)));
   }

@@ -37,10 +37,6 @@ class R3x3Matrix final {
   Cube<Scalar> Determinant() const;
   R3x3Matrix Transpose() const;
 
-  R3Element<Scalar> const& row_x() const;
-  R3Element<Scalar> const& row_y() const;
-  R3Element<Scalar> const& row_z() const;
-
   Scalar operator()(int r, int c) const;
 
   R3x3Matrix& operator+=(R3x3Matrix const& right);
