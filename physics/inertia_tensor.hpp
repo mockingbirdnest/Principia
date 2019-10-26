@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
@@ -21,21 +21,33 @@ using geometry::SymmetricBilinearForm;
 using quantities::Mass;
 using quantities::MomentOfInertia;
 
-//At the origin
+// The inertia tensor of a solid at the origin and in the axis of Frame.
 template<typename Frame>
 class InertiaTensor {
  public:
+  // Constructs an inertia tensor with the specified coordinates for an object
+  // of the given mass.  The centre of mass of the object must be specified.
+  // Typically, this constructor is used to implement formulæ like those in
+  // https://en.wikipedia.org/wiki/List_of_moments_of_inertia and the centre of
+  // mass is often Frame::origin.
   InertiaTensor(Mass const& mass,
                 R3x3Matrix<MomentOfInertia> const& coordinates,
                 Position<Frame> const& centre_of_mass);
 
+  // Obtains the centre of mass of the object in Frame.
   Position<Frame> const& centre_of_mass() const;
 
+  // Computes the inertia tensor in ToFrame, which is rotated from Frame using
+  // the given rotation, with the origins of the frames coïnciding.  This
+  // effectively defines ToFrame.
   template<typename ToFrame>
   InertiaTensor<ToFrame> Rotate(Rotation<Frame, ToFrame> const& rotation) const;
   template<typename ToFrame>
   InertiaTensor<ToFrame> Rotate(Rotation<ToFrame, Frame> const& rotation) const;
 
+  // Computes the inertia tensor in ToFrame, which is translated from Frame
+  // such that its origin is at the given points, with the axes of the frames
+  // coïnciding.  This effectively defines ToFrame.
   template<typename ToFrame>
   InertiaTensor<ToFrame> Translate(Position<Frame> const& point) const;
 
@@ -51,10 +63,22 @@ class InertiaTensor {
   PrincipalAxes<PrincipalAxesFrame> Diagonalize() const;
 
  private:
+  // Important: the form used internally to represent the inertia tensor does
+  // *not* follow the convention customary in physics.  The usual convention is
+  //  ⎛ Σ(y² + z²)    -xy       -xy    ⎞
+  //  ⎜     -yx   Σ(x² + z²)    -yz    ⎟
+  //  ⎝     -zx       -zy   Σ(x² + y²) ⎠
+  // but our convention is:
+  //  ⎛ Σx²  xy   xy  ⎞
+  //  ⎜ yx   Σy²  yz  ⎟
+  //  ⎝ zx   zy   Σz² ⎠
+  // This leads to simpler transformation formulæ at the expense of some care
+  // when actually computing moments of inertia.
   InertiaTensor(Mass const& mass,
                 SymmetricBilinearForm<MomentOfInertia, Frame> const& form,
                 Position<Frame> const& centre_of_mass);
 
+  // Computes our representation from the conventional representation.
   static SymmetricBilinearForm<MomentOfInertia, Frame>
   MakeSymmetricBilinearForm(R3x3Matrix<MomentOfInertia> const& tensor);
 

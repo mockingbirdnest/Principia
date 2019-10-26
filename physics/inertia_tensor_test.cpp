@@ -97,11 +97,6 @@ class InertiaTensorTest : public ::testing::Test {
           << row << " " << column;
     }
   }
-
-  template<typename Frame>
-  void Log(InertiaTensor<Frame> const& tensor) {
-    LOG(ERROR)<<principia::geometry::internal_symmetric_bilinear_form::DebugString(tensor.form_);
-  }
 };
 
 // A point mass at a certain distance of an axis.
