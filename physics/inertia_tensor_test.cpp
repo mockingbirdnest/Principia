@@ -27,6 +27,7 @@ namespace principia {
 namespace physics {
 namespace internal_inertia_tensor {
 
+using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::Displacement;
@@ -44,6 +45,7 @@ using quantities::SIUnit;
 using quantities::si::Degree;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
+using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
@@ -74,6 +76,26 @@ class InertiaTensorTest : public ::testing::Test {
     struct PrincipalAxesFrame {};
     auto const principal_axes = tensor.Diagonalize<PrincipalAxesFrame>();
     EXPECT_THAT(principal_axes.moments_of_inertia, matcher);
+  }
+
+  template<typename Frame>
+  void CheckInertiaTensorCoordinate(InertiaTensor<Frame> const& tensor,
+                                    int const row,
+                                    int const column,
+                                    Matcher<MomentOfInertia> const& matcher) {
+    auto const form_coordinates = tensor.form_.coordinates();
+    if (row == column) {
+      int const row1 = (row + 2) % 3;
+      int const column1 = (column + 2) % 3;
+      int const row2 = (row + 4) % 3;
+      int const column2 = (column + 4) % 3;
+      EXPECT_THAT(
+          form_coordinates(row1, column1) + form_coordinates(row2, column2),
+          matcher) << row << " " << column;
+    } else {
+      EXPECT_THAT(-form_coordinates(row, column), matcher)
+          << row << " " << column;
+    }
   }
 
   template<typename Frame>
@@ -176,7 +198,6 @@ TEST_F(InertiaTensorTest, Abdulghany) {
   Length const cuboid_small_side = 6 * Metre;
   Length const cuboid_long_side = 24 * Metre;
   Mass const cuboid_mass = ρ * Pow<2>(cuboid_small_side) * cuboid_long_side;
-  LOG(ERROR)<<cuboid_mass;
 
   // The cuboid with its long axis along z.
   MomentOfInertia const cuboid_long_axis_inertia =
@@ -185,7 +206,6 @@ TEST_F(InertiaTensorTest, Abdulghany) {
   MomentOfInertia const cuboid_short_axis_inertia =
       cuboid_mass * (Pow<2>(cuboid_small_side) + Pow<2>(cuboid_long_side)) /
       12.0;
-  LOG(ERROR)<<cuboid_long_axis_inertia<<" "<<cuboid_short_axis_inertia;
   InertiaTensor<CuboidCentreOfMassZ> const cuboid_inertia_centre_of_mass_z(
       cuboid_mass,
       R3x3Matrix<MomentOfInertia>{{cuboid_short_axis_inertia, zero, zero},
@@ -200,32 +220,90 @@ TEST_F(InertiaTensorTest, Abdulghany) {
               90 * Degree,
               Bivector<double, CuboidCentreOfMassZ>({1, 0, 0}),
               DefinesFrame<CuboidCentreOfMassY>{}));
-  Log(cuboid_inertia_centre_of_mass_y);
 
-  // Translate the cylinder.
-  Position<CylinderCentreOfMass> const translated_cylinder_centre_of_mass =
-      CylinderCentreOfMass::origin +
-      Displacement<CylinderCentreOfMass>(
-          {0 * Metre,
-           cuboid_long_side / 2.0 - cylinder_radius,
-           cylinder_height / 2.0 + cuboid_small_side / 2.0});
-  InertiaTensor<CuboidCentreOfMassY> const
-      translated_cylinder_inertia =
-          cylinder_inertia_centre_of_mass.Translate<CuboidCentreOfMassY>(
-              translated_cylinder_centre_of_mass);
+  // Determine the location of the overall centre of mass in both frames.
+  R3Element<Length> const cylinder_cuboid_displacement(
+      0 * Metre,
+      cuboid_long_side / 2.0 - cylinder_radius,
+      cylinder_height / 2.0 + cuboid_small_side / 2.0);
+  Position<CuboidCentreOfMassY> const overall_centre_of_mass_cuboid =
+      Barycentre<Position<CuboidCentreOfMassY>, Mass>(
+          {CuboidCentreOfMassY::origin,
+           CuboidCentreOfMassY::origin +
+               Displacement<CuboidCentreOfMassY>(cylinder_cuboid_displacement)},
+          {cuboid_mass, cylinder_mass});
+  Position<CylinderCentreOfMass> const overall_centre_of_mass_cylinder =
+      Barycentre<Position<CylinderCentreOfMass>, Mass>(
+          {CylinderCentreOfMass::origin -
+               Displacement<CylinderCentreOfMass>(cylinder_cuboid_displacement),
+           CylinderCentreOfMass::origin},
+          {cuboid_mass, cylinder_mass});
 
-  // Overall inertia at the centre of the cuboid.
-  InertiaTensor<CuboidCentreOfMassY> const
-      overall_inertia_cuboid_centre_of_mass =
-          cuboid_inertia_centre_of_mass_y + translated_cylinder_inertia;
+  // Compute the inertia of both objects with respect to the overall centre of
+  // mass.
+  InertiaTensor<OverallCentreOfMass> const
+      cuboid_inertia_overall_centre_of_mass =
+          cuboid_inertia_centre_of_mass_y.Translate<OverallCentreOfMass>(
+              overall_centre_of_mass_cuboid);
+  InertiaTensor<OverallCentreOfMass> const
+      cylinder_inertia_overall_centre_of_mass =
+          cylinder_inertia_centre_of_mass.Translate<OverallCentreOfMass>(
+              overall_centre_of_mass_cylinder);
 
-  // Overall inertia at the overall centre of mass.
+  // Finally, the overall inertia at the overall centre of mass.
   InertiaTensor<OverallCentreOfMass> const
       overall_inertia_overall_centre_of_mass =
-          overall_inertia_cuboid_centre_of_mass.Translate<OverallCentreOfMass>(
-              overall_inertia_cuboid_centre_of_mass.centre_of_mass());
+          cuboid_inertia_overall_centre_of_mass +
+          cylinder_inertia_overall_centre_of_mass;
 
-  //Log(overall_inertia_overall_centre_of_mass);
+  // The expectations come from Adbulghany.
+  CheckInertiaTensorCoordinate(
+      overall_inertia_overall_centre_of_mass,
+      0,
+      0,
+      AlmostEquals((162.0 * (1088.0 + 2172.0 * π + 67.0 * Pow<2>(π))) /
+                       (4.0 + π) * SIUnit<MomentOfInertia>(),
+                   1));
+  CheckInertiaTensorCoordinate(overall_inertia_overall_centre_of_mass,
+                               0,
+                               1,
+                               AlmostEquals(0 * SIUnit<MomentOfInertia>(), 0));
+  CheckInertiaTensorCoordinate(overall_inertia_overall_centre_of_mass,
+                               0,
+                               2,
+                               AlmostEquals(0 * SIUnit<MomentOfInertia>(), 0));
+  CheckInertiaTensorCoordinate(overall_inertia_overall_centre_of_mass,
+                               1,
+                               0,
+                               AlmostEquals(0 * SIUnit<MomentOfInertia>(), 0));
+  CheckInertiaTensorCoordinate(
+      overall_inertia_overall_centre_of_mass,
+      1,
+      1,
+      AlmostEquals((162.0 * (128.0 + 1500.0 * π + 67.0 * Pow<2>(π))) /
+                       (4.0 + π) * SIUnit<MomentOfInertia>(),
+                   2));
+  CheckInertiaTensorCoordinate(
+      overall_inertia_overall_centre_of_mass,
+      1,
+      2,
+      AlmostEquals(-116640.0 * π / (4.0 + π) * SIUnit<MomentOfInertia>(), 0));
+  CheckInertiaTensorCoordinate(overall_inertia_overall_centre_of_mass,
+                               2,
+                               0,
+                               AlmostEquals(0 * SIUnit<MomentOfInertia>(), 0));
+  CheckInertiaTensorCoordinate(
+      overall_inertia_overall_centre_of_mass,
+      2,
+      1,
+      AlmostEquals(-116640.0 * π / (4.0 + π) * SIUnit<MomentOfInertia>(), 0));
+  CheckInertiaTensorCoordinate(
+      overall_inertia_overall_centre_of_mass,
+      2,
+      2,
+      AlmostEquals((324.0 * (544.0 + 364.0 * π + 3.0 * Pow<2>(π))) / (4.0 + π) *
+                       SIUnit<MomentOfInertia>(),
+                   0));
 }
 
 }  // namespace internal_inertia_tensor
