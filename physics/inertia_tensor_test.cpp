@@ -163,6 +163,8 @@ TEST_F(InertiaTensorTest, Rod) {
                     RelativeErrorFrom(moment_of_inertia, IsNear(4.1e-9_⑴))));
 }
 
+// This test is from A. R. Abdulghany, Generalization of parallel axis theorem
+// for rotational inertia [Abd17].
 TEST_F(InertiaTensorTest, Abdulghany) {
   constexpr MomentOfInertia zero;
   Density const ρ = 1/*3593*/ * Kilogram / Pow<3>(Metre);  // Hg.
@@ -251,7 +253,7 @@ TEST_F(InertiaTensorTest, Abdulghany) {
           cuboid_inertia_overall_centre_of_mass +
           cylinder_inertia_overall_centre_of_mass;
 
-  // The expectations come from Adbulghany.
+  // The expectations come from [Abd17].
   CheckInertiaTensorCoordinate(
       overall_inertia_overall_centre_of_mass,
       0,
