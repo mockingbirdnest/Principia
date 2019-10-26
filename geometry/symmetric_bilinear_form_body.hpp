@@ -8,6 +8,7 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -21,6 +22,24 @@ using quantities::ArcCos;
 using quantities::Cos;
 using quantities::Sqrt;
 using quantities::si::Radian;
+
+template<typename Scalar, typename Frame>
+SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
+    R3x3Matrix<Scalar> const& matrix)
+    : matrix_(matrix) {
+  DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
+  DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
+  DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
+}
+
+template<typename Scalar, typename Frame>
+SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
+    R3x3Matrix<Scalar>&& matrix)
+    : matrix_(std::move(matrix)) {
+  DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
+  DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
+  DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
+}
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>& SymmetricBilinearForm<Scalar, Frame>::
@@ -44,6 +63,12 @@ template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>& SymmetricBilinearForm<Scalar, Frame>::
 operator/=(double const right) {
   return *this = *this / right;
+}
+
+template<typename Scalar, typename Frame>
+R3x3Matrix<Scalar> const& SymmetricBilinearForm<Scalar, Frame>::coordinates()
+    const {
+  return matrix_;
 }
 
 template<typename Scalar, typename Frame>
@@ -121,24 +146,6 @@ SymmetricBilinearForm<Scalar, Frame>::ReadFromMessage(
 }
 
 template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
-    R3x3Matrix<Scalar> const& matrix)
-    : matrix_(matrix) {
-  DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
-  DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
-  DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
-}
-
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
-    R3x3Matrix<Scalar>&& matrix)
-    : matrix_(std::move(matrix)) {
-  DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
-  DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
-  DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
-}
-
-template<typename Scalar, typename Frame>
 template<typename S>
 R3Element<double> SymmetricBilinearForm<Scalar, Frame>::PickEigenvector(
     R3x3Matrix<S> const& matrix) {
@@ -187,25 +194,28 @@ SymmetricBilinearForm<Scalar, Frame> operator-(
   return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ - right.matrix_);
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator*(
-    double const left,
-    SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm<Scalar, Frame>(left * right.matrix_);
+template<typename LScalar, typename RScalar, typename Frame>
+SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> operator*(
+    LScalar const left,
+    SymmetricBilinearForm<RScalar, Frame> const& right) {
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>(left *
+                                                                 right.matrix_);
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator*(
-    SymmetricBilinearForm<Scalar, Frame> const& left,
-    double const right) {
-  return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ * right);
+template<typename LScalar, typename RScalar, typename Frame>
+SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> operator*(
+    SymmetricBilinearForm<LScalar, Frame> const& left,
+    RScalar const right) {
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>(left.matrix_ *
+                                                                 right);
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator/(
-    SymmetricBilinearForm<Scalar, Frame> const& left,
-    double const right) {
-  return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ / right);
+template<typename LScalar, typename RScalar, typename Frame>
+SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame> operator/(
+    SymmetricBilinearForm<LScalar, Frame> const& left,
+    RScalar const right) {
+  return SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame>(left.matrix_ /
+                                                                  right);
 }
 
 template<typename LScalar, typename RScalar, typename Frame>

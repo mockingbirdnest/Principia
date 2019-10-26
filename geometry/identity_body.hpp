@@ -46,6 +46,13 @@ Trivector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename Scalar>
+SymmetricBilinearForm<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
+    SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
+  return SymmetricBilinearForm<Scalar, ToFrame>(form.coordinates());
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename T>
 typename base::Mappable<Identity<FromFrame, ToFrame>, T>::type
 Identity<FromFrame, ToFrame>::operator()(T const& t) const {

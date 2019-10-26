@@ -3,27 +3,38 @@
 
 #include <string>
 
+#include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
-#include "geometry/rotation.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
+
+FORWARD_DECLARE_FROM(rotation,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Rotation);
+
 namespace internal_symmetric_bilinear_form {
 
 using base::not_null;
 using quantities::Product;
+using quantities::Quotient;
 
 template<typename Scalar, typename Frame>
 class SymmetricBilinearForm {
  public:
+  explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
+  explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
+
   SymmetricBilinearForm& operator+=(SymmetricBilinearForm const& right);
   SymmetricBilinearForm& operator-=(SymmetricBilinearForm const& right);
   SymmetricBilinearForm& operator*=(double right);
   SymmetricBilinearForm& operator/=(double right);
+
+  R3x3Matrix<Scalar> const& coordinates() const;
 
   // A SymmetricBilinearForm does *not* apply to bivectors.  See Anticommutator
   // below.
@@ -52,8 +63,6 @@ class SymmetricBilinearForm {
       serialization::SymmetricBilinearForm const& message);
 
  private:
-  explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
-  explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
 
   // Given a matrix that contains in columns eigenvectors for a form, picks the
   // column with the largest norm and return its normalized value.  This is
@@ -87,18 +96,18 @@ class SymmetricBilinearForm {
       SymmetricBilinearForm<S, F> const& left,
       SymmetricBilinearForm<S, F> const& right);
 
-  template<typename S, typename F>
-  friend SymmetricBilinearForm<S, F> operator*(
-      double left,
-      SymmetricBilinearForm<S, F> const& right);
-  template<typename S, typename F>
-  friend SymmetricBilinearForm<S, F> operator*(
-      SymmetricBilinearForm<S, F> const& left,
-      double right);
-  template<typename S, typename F>
-  friend SymmetricBilinearForm<S, F> operator/(
-      SymmetricBilinearForm<S, F> const& left,
-      double right);
+  template<typename L, typename R, typename F>
+  friend SymmetricBilinearForm<Product<L, R>, F> operator*(
+      L left,
+      SymmetricBilinearForm<R, F> const& right);
+  template<typename L, typename R, typename F>
+  friend SymmetricBilinearForm<Product<L, R>, F> operator*(
+      SymmetricBilinearForm<L, F> const& left,
+      R right);
+  template<typename L, typename R, typename F>
+  friend SymmetricBilinearForm<Quotient<L, R>, F> operator/(
+      SymmetricBilinearForm<L, F> const& left,
+      R right);
 
   template<typename L, typename R, typename F>
   friend Vector<Product<L, R>, F> operator*(
@@ -158,18 +167,18 @@ SymmetricBilinearForm<Scalar, Frame> operator-(
     SymmetricBilinearForm<Scalar, Frame> const& left,
     SymmetricBilinearForm<Scalar, Frame> const& right);
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator*(
-    double left,
-    SymmetricBilinearForm<Scalar, Frame> const& right);
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator*(
-    SymmetricBilinearForm<Scalar, Frame> const& left,
-    double right);
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator/(
-    SymmetricBilinearForm<Scalar, Frame> const& left,
-    double right);
+template<typename LScalar, typename RScalar, typename Frame>
+SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> operator*(
+    LScalar left,
+    SymmetricBilinearForm<RScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> operator*(
+    SymmetricBilinearForm<LScalar, Frame> const& left,
+    RScalar right);
+template<typename LScalar, typename RScalar, typename Frame>
+SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame> operator/(
+    SymmetricBilinearForm<LScalar, Frame> const& left,
+    RScalar right);
 
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<Product<LScalar, RScalar>, Frame> operator*(
