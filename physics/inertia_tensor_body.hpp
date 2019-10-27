@@ -13,6 +13,7 @@ namespace internal_inertia_tensor {
 
 using geometry::Barycentre;
 using geometry::Bivector;
+using geometry::Commutator;
 using geometry::Identity;
 using geometry::Rotation;
 using geometry::SymmetricProduct;
@@ -35,20 +36,15 @@ template<typename Frame>
 template<typename ToFrame>
 InertiaTensor<ToFrame> InertiaTensor<Frame>::Transform(
     RigidTransformation<Frame, ToFrame> const& transformation) const {
-  static Identity<Frame, ToFrame> const identity{};
-
-  auto const& from_origin = transformation.from_origin();
-  auto const& to_origin = transformation.to_origin();
-  auto const& linear_map = transformation.linear_map();
-
-  Displacement<ToFrame> const translation =
-      identity(from_origin - Frame::origin) - (to_origin - ToFrame::origin);
-  SymmetricBilinearForm<MomentOfInertia, ToFrame> const translated_form =
-      linear_map(form_) + mass_ * SymmetricProduct(translation, translation);
+  Displacement<ToFrame> const displacement =
+      ToFrame::origin - transformation(Frame::origin);
+  SymmetricBilinearForm<MomentOfInertia, ToFrame> const transformed_form =
+      transformation.linear_map()(form_) +
+      mass_ * SymmetricProduct(displacement, displacement);
   Position<ToFrame> const transformed_centre_of_mass =
       transformation(centre_of_mass_);
   return InertiaTensor<ToFrame>(mass_,
-                                translated_form,
+                                transformed_form,
                                 transformed_centre_of_mass);
 }
 
@@ -74,10 +70,10 @@ InertiaTensor<Frame>::Diagonalize() const {
       eigensystem_form_coordinates(2, 2) + eigensystem_form_coordinates(0, 0),
       eigensystem_form_coordinates(1, 1) + eigensystem_form_coordinates(2, 2));
 
+  auto const y = Bivector<double, IntermediateFrame>({0, 1, 0});
+  auto const z = Bivector<double, IntermediateFrame>({0, 0, 1});
   Rotation<IntermediateFrame, PrincipalAxesFrame> const swap_x_and_z(
-      Bivector<double, IntermediateFrame>({0, 0, 1}),
-      Bivector<double, IntermediateFrame>({0, 1, 0}),
-      Bivector<double, IntermediateFrame>({-1, 0, 0}));
+      z, y, Commutator(z, y));
 
   return {moments_of_inertia, swap_x_and_z * eigensystem.rotation};
 }

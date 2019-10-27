@@ -58,13 +58,13 @@ class InertiaTensor {
  private:
   // Important: the form used internally to represent the inertia tensor does
   // *not* follow the convention customary in physics.  The usual convention is
-  //  ⎛ ∑(y² + z²)    -xy       -xy    ⎞
-  //  ⎜     -yx   ∑(x² + z²)    -yz    ⎟
-  //  ⎝     -zx       -zy   ∑(x² + y²) ⎠
+  //  ⎛ ∑(y² + z²)   -∑xy      -∑xy    ⎞
+  //  ⎜    -∑yx   ∑(x² + z²)   -∑yz    ⎟
+  //  ⎝    -∑zx      -∑zy   ∑(x² + y²) ⎠
   // but our convention is:
-  //  ⎛ ∑x²  xy   xy  ⎞
-  //  ⎜ yx   ∑y²  yz  ⎟
-  //  ⎝ zx   zy   ∑z² ⎠
+  //  ⎛ ∑x²   ∑xy   ∑xy ⎞
+  //  ⎜ ∑yx   ∑y²   ∑yz ⎟
+  //  ⎝ ∑zx   ∑zy   ∑z² ⎠
   // This leads to simpler transformation formulæ at the expense of some care
   // when actually computing moments of inertia.
   InertiaTensor(Mass const& mass,
