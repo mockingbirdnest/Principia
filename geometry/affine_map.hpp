@@ -27,6 +27,8 @@ class AffineMap final {
 
   static AffineMap Identity();
 
+  Point<FromVector> const& from_origin() const;
+  Point<ToVector> const& to_origin() const;
   LinearMap<FromFrame, ToFrame> const& linear_map() const;
 
   void WriteToMessage(not_null<serialization::AffineMap*> message) const;

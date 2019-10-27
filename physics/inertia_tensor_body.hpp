@@ -33,38 +33,23 @@ Position<Frame> const& InertiaTensor<Frame>::centre_of_mass() const {
 
 template<typename Frame>
 template<typename ToFrame>
-InertiaTensor<ToFrame> InertiaTensor<Frame>::Rotate(
-    Rotation<Frame, ToFrame> const& rotation) const {
-  auto const centre_of_mass_displacement = centre_of_mass_ - Frame::origin;
-  auto const rotated_centre_of_mass_displacement =
-      rotation(centre_of_mass_displacement);
-  return InertiaTensor<ToFrame>(
-      mass_,
-      rotation(form_),
-      ToFrame::origin + rotated_centre_of_mass_displacement);
-}
-
-template<typename Frame>
-template<typename ToFrame>
-InertiaTensor<ToFrame> InertiaTensor<Frame>::Rotate(
-    Rotation<ToFrame, Frame> const& rotation) const {
-  return Rotate(rotation.Inverse());
-}
-
-template<typename Frame>
-template<typename ToFrame>
-InertiaTensor<ToFrame> InertiaTensor<Frame>::Translate(
-    Position<Frame> const& point) const {
+InertiaTensor<ToFrame> InertiaTensor<Frame>::Transform(
+    RigidTransformation<Frame, ToFrame> const& transformation) const {
   static Identity<Frame, ToFrame> const identity{};
 
-  auto const translation = point - Frame::origin;
-  auto const translated_form =
-      form_ + mass_ * SymmetricProduct(translation, translation);
-  auto const translated_centre_of_mass_displacement = centre_of_mass_ - point;
-  return InertiaTensor<ToFrame>(
-      mass_,
-      identity(translated_form),
-      ToFrame::origin + identity(translated_centre_of_mass_displacement));
+  auto const& from_origin = transformation.from_origin();
+  auto const& to_origin = transformation.to_origin();
+  auto const& linear_map = transformation.linear_map();
+
+  Displacement<ToFrame> const translation =
+      identity(from_origin - Frame::origin) - (to_origin - ToFrame::origin);
+  SymmetricBilinearForm<Length, ToFrame> const translated_form =
+      linear_map(form_) + mass_ * SymmetricProduct(translation, translation);
+  Position<ToFrame> const transformed_centre_of_mass =
+      transformation(centre_of_mass_);
+  return InertiaTensor<ToFrame>(mass_,
+                                translated_form,
+                                transformed_centre_of_mass);
 }
 
 template<typename Frame>

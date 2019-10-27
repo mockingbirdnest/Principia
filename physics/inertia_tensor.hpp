@@ -6,6 +6,7 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -37,19 +38,11 @@ class InertiaTensor {
   // Obtains the centre of mass of the object in Frame.
   Position<Frame> const& centre_of_mass() const;
 
-  // Computes the inertia tensor in ToFrame, which is rotated from Frame using
-  // the given rotation, with the origins of the frames coïnciding.  This
-  // effectively defines ToFrame.
+  // Computes the inertia tensor in ToFrame, which is transformed from Frame
+  // using the given rigid transformation.
   template<typename ToFrame>
-  InertiaTensor<ToFrame> Rotate(Rotation<Frame, ToFrame> const& rotation) const;
-  template<typename ToFrame>
-  InertiaTensor<ToFrame> Rotate(Rotation<ToFrame, Frame> const& rotation) const;
-
-  // Computes the inertia tensor in ToFrame, which is translated from Frame
-  // such that its origin is at the given points, with the axes of the frames
-  // coïnciding.  This effectively defines ToFrame.
-  template<typename ToFrame>
-  InertiaTensor<ToFrame> Translate(Position<Frame> const& point) const;
+  InertiaTensor<ToFrame> Transform(
+      RigidTransformation<Frame, ToFrame> const& transformation) const;
 
   template<typename PrincipalAxesFrame>
   struct PrincipalAxes {
@@ -65,13 +58,13 @@ class InertiaTensor {
  private:
   // Important: the form used internally to represent the inertia tensor does
   // *not* follow the convention customary in physics.  The usual convention is
-  //  ⎛ Σ(y² + z²)    -xy       -xy    ⎞
-  //  ⎜     -yx   Σ(x² + z²)    -yz    ⎟
-  //  ⎝     -zx       -zy   Σ(x² + y²) ⎠
+  //  ⎛ ∑(y² + z²)    -xy       -xy    ⎞
+  //  ⎜     -yx   ∑(x² + z²)    -yz    ⎟
+  //  ⎝     -zx       -zy   ∑(x² + y²) ⎠
   // but our convention is:
-  //  ⎛ Σx²  xy   xy  ⎞
-  //  ⎜ yx   Σy²  yz  ⎟
-  //  ⎝ zx   zy   Σz² ⎠
+  //  ⎛ ∑x²  xy   xy  ⎞
+  //  ⎜ yx   ∑y²  yz  ⎟
+  //  ⎝ zx   zy   ∑z² ⎠
   // This leads to simpler transformation formulæ at the expense of some care
   // when actually computing moments of inertia.
   InertiaTensor(Mass const& mass,

@@ -54,6 +54,26 @@ template<typename FromFrame,
          typename ToFrame,
          typename Scalar,
          template<typename, typename> class LinearMap>
+Point<typename AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::
+          FromVector> const&
+AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::from_origin() const {
+  return from_origin_;
+}
+
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
+Point<typename AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::
+          ToVector> const&
+AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::to_origin() const {
+  return to_origin_;
+}
+
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
 LinearMap<FromFrame, ToFrame> const&
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::linear_map() const {
   return linear_map_;
