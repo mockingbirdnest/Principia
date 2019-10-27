@@ -21,6 +21,9 @@ FORWARD_DECLARE_FROM(permutation,
 FORWARD_DECLARE_FROM(rotation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Rotation);
+FORWARD_DECLARE_FROM(symmetric_bilinear_form,
+                     TEMPLATE(typename Scalar, typename Frame) class,
+                     SymmetricBilinearForm);
 
 namespace internal_orthogonal_map {
 
@@ -49,6 +52,10 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   template<typename Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
+
+  template<typename Scalar>
+  SymmetricBilinearForm<Scalar, ToFrame> operator()(
+      SymmetricBilinearForm<Scalar, FromFrame> const& form) const;
 
   template<typename T>
   typename base::Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
