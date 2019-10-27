@@ -43,7 +43,7 @@ InertiaTensor<ToFrame> InertiaTensor<Frame>::Transform(
 
   Displacement<ToFrame> const translation =
       identity(from_origin - Frame::origin) - (to_origin - ToFrame::origin);
-  SymmetricBilinearForm<Length, ToFrame> const translated_form =
+  SymmetricBilinearForm<MomentOfInertia, ToFrame> const translated_form =
       linear_map(form_) + mass_ * SymmetricProduct(translation, translation);
   Position<ToFrame> const transformed_centre_of_mass =
       transformation(centre_of_mass_);

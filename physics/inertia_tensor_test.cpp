@@ -115,9 +115,12 @@ TEST_F(InertiaTensorTest, PointMass) {
 
   auto const displacement =
       Displacement<CentreOfMass>({1 * Metre, 2 * Metre, 4 * Metre});
+  RigidTransformation<CentreOfMass, GeneralPoint> const translation(
+      CentreOfMass::origin + displacement,
+      GeneralPoint::origin,
+      Identity<CentreOfMass, GeneralPoint>().Forget());
   InertiaTensor<GeneralPoint> const inertia_tensor_general_point =
-      inertia_tensor_centre_of_mass.Translate<GeneralPoint>(
-          CentreOfMass::origin + displacement);
+      inertia_tensor_centre_of_mass.Transform(translation);
 
   // One of the principal axes goes through the centre of mass and the general
   // point, and it has no inertia.  The other principal axes are orthogonal and
@@ -148,9 +151,12 @@ TEST_F(InertiaTensorTest, Rod) {
 
   auto const displacement =
       Displacement<CentreOfMass>({length / 2.0, 0 * Metre, 0 * Metre});
+  RigidTransformation<CentreOfMass, Extremity> const translation(
+      CentreOfMass::origin + displacement,
+      Extremity::origin,
+      Identity<CentreOfMass, Extremity>().Forget());
   InertiaTensor<Extremity> const inertia_tensor_extremity =
-      inertia_tensor_centre_of_mass.Translate<Extremity>(
-          CentreOfMass::origin + displacement);
+      inertia_tensor_centre_of_mass.Transform(translation);
 
   // One of the principal axes goes through the axis of the rod, and it has no
   // inertia.  The other principal axes are orthogonal and they have the same
@@ -211,12 +217,16 @@ TEST_F(InertiaTensorTest, Abdulghany) {
       CuboidCentreOfMassZ::origin);
 
   // Rotate the cuboid around the x axis.
+  RigidTransformation<CuboidCentreOfMassZ, CuboidCentreOfMassY> const
+      cuboid_rotation(CuboidCentreOfMassZ::origin,
+                      CuboidCentreOfMassY::origin,
+                      Rotation<CuboidCentreOfMassZ, CuboidCentreOfMassY>(
+                          90 * Degree,
+                          Bivector<double, CuboidCentreOfMassZ>({1, 0, 0}),
+                          DefinesFrame<CuboidCentreOfMassY>{})
+                          .Forget());
   InertiaTensor<CuboidCentreOfMassY> const cuboid_inertia_centre_of_mass_y =
-      cuboid_inertia_centre_of_mass_z.Rotate(
-          Rotation<CuboidCentreOfMassZ, CuboidCentreOfMassY>(
-              90 * Degree,
-              Bivector<double, CuboidCentreOfMassZ>({1, 0, 0}),
-              DefinesFrame<CuboidCentreOfMassY>{}));
+      cuboid_inertia_centre_of_mass_z.Transform(cuboid_rotation);
 
   // Determine the location of the overall centre of mass in both frames.
   R3Element<Length> const cylinder_cuboid_displacement(
@@ -239,13 +249,19 @@ TEST_F(InertiaTensorTest, Abdulghany) {
   // Compute the inertia of both objects with respect to the overall centre of
   // mass.
   InertiaTensor<OverallCentreOfMass> const
-      cuboid_inertia_overall_centre_of_mass =
-          cuboid_inertia_centre_of_mass_y.Translate<OverallCentreOfMass>(
-              overall_centre_of_mass_cuboid);
+  cuboid_inertia_overall_centre_of_mass =
+      cuboid_inertia_centre_of_mass_y.Transform(
+          RigidTransformation<CuboidCentreOfMassY, OverallCentreOfMass>(
+              overall_centre_of_mass_cuboid,
+              OverallCentreOfMass::origin,
+              Identity<CuboidCentreOfMassY, OverallCentreOfMass>().Forget()));
   InertiaTensor<OverallCentreOfMass> const
-      cylinder_inertia_overall_centre_of_mass =
-          cylinder_inertia_centre_of_mass.Translate<OverallCentreOfMass>(
-              overall_centre_of_mass_cylinder);
+  cylinder_inertia_overall_centre_of_mass =
+      cylinder_inertia_centre_of_mass.Transform(
+          RigidTransformation<CylinderCentreOfMass, OverallCentreOfMass>(
+              overall_centre_of_mass_cylinder,
+              OverallCentreOfMass::origin,
+              Identity<CylinderCentreOfMass, OverallCentreOfMass>().Forget()));
 
   // Finally, the overall inertia at the overall centre of mass.
   InertiaTensor<OverallCentreOfMass> const

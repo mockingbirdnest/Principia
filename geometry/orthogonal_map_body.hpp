@@ -50,6 +50,13 @@ Trivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename Scalar>
+SymmetricBilinearForm<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::
+operator()(SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
+  return rotation_(form);
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename T>
 typename base::Mappable<OrthogonalMap<FromFrame, ToFrame>, T>::type
 OrthogonalMap<FromFrame, ToFrame>::operator()(T const& t) const {
