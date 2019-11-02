@@ -1820,17 +1820,37 @@ void FukushimaEllipticBDJ(Angle const& φ,
   // [Fuk12] A.2: Reduction of parameter.
   // NOTE(phl): Not implementing the special values mc = 0, etc. on the
   // assumption that the normal implementation will work.
-  if (mc < 0) {
-    Angle const φR = ArcSin(Sqrt(1 - mc) * Sin(φ));
-    double const nR = n / (1 - mc);
-    double const mR = 1 / (1 - mc);
-    return mR * Sqrt(mR) * J(φR, nR, mR);
-  } else if (mc > 1) {
+  if (mc < 0) {  // m > 1
+    double const m = 1 - mc;
+    Angle const φR = ArcSin(Sqrt(m) * Sin(φ));
+    double const nR = n / m;
+    double const mR = 1 / m;
+    double const mcR = 1 - mR;
+    double const sqrt_mR = Sqrt(mR);
+    B = sqrt_mR * (B(φR, mcR) + mcR * D(φR, mcR));
+    D = mR * sqrt_mR * D(φR, mcR);
+    J = mR * sqrt_mR * J(φR, nR, mcR);
+  } else if (mc > 1) {  // m < 0
     double const sin_φ = Sin(φ);
     Angle const φN = ArcSin(Sqrt(mc / (1 - (1 - mc) * Pow<2>(sin_φ))) * sin_φ);
     double const nN = (n - (1 - mc)) / mc;
     double const mN = (mc - 1) / mc;
-    return mN * Sqrt(mN) * J(φN, nN, mN);
+    J = mN * Sqrt(mN) * J(φN, nN, 1 - mN);
+  }
+
+  // [Fuk12] A.3: Reduction of characteristics.
+  // NOTE(phl): Same as above, not implementing the special values.
+  if (n > 1) {
+    double const t1 = Tan(φ) / Sqrt(1 - (1 - mc) * Pow<2>(Sin(φ)));
+    double const h1 = (1 - n) * (n - (1 - mc)) / n;
+    double const n1 = (1 - mc) / n;
+    return (-F(φ, mc) + FukushimaT(t1, h1) - n1 * J(φ, n1, mc)) / n;
+  } else if (n < 0) {
+    double const sin_φ = Sin(φ);
+    double const t2 = sin_φ * Cos(φ) / Sqrt(1 - (1 - mc) * Pow<2>(sin_φ));
+    double const h2 = -n * (1 - mc - n) / (1 - n);
+    double const n2 = (1 - mc - n) / (1 - n);
+    return (F(φ, mc) + FukushimaT(t2, h2) - n2 * J(φ, n2, mc)) / (1 - n);
   }
 
   bool has_computed_complete_integrals = false;
