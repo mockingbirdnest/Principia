@@ -90,11 +90,11 @@
 
 
 (* ::Input:: *)
-(*redm={1/10,1/2,9/10}*)
+(*redm=Sort[Join[{1/10,1/2,9/10},Table[-i/10,{i,1,5}],Table[i/10,{i,11,15}]]]*)
 
 
 (* ::Input:: *)
-(*red\[CurlyPhi]=Table[i/2,{i,-20,20}]*)
+(*red\[CurlyPhi]=Sort[Join[Table[i/2,{i,-20,20}],Table[i/10,{i,-4,4}]]]*)
 
 
 (* ::Input:: *)
@@ -103,7 +103,7 @@
 
 (* ::Input:: *)
 (*redvals2=Map[*)
-(*N[{*)
+(*Re[N[{*)
 (*If[#[[2]]==0,*)
 (*Limit[fukushimaB[#[[1]],m],m->0],*)
 (*fukushimaB[#[[1]],#[[2]]]],*)
@@ -112,21 +112,24 @@
 (*fukushimaD[#[[1]],#[[2]]]],*)
 (*EllipticE[#[[1]],#[[2]]],*)
 (*EllipticF[#[[1]],#[[2]]]*)
-(*},20]&,*)
+(*},20]]&,*)
 (*redargs2];*)
 
 
 (* ::Input:: *)
 (*redstrs2=Map[*)
 (*"entry { argument: "<>decimalFloatLiteral[#[[1]],2]<>*)
-(*" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
-(*" value: "<>decimalFloatLiteral[#[[3]],2]<>*)
-(*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
-(*" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
-(*" value: "<>decimalFloatLiteral[#[[6]],2]<>*)
-(*"}"*)
+(*	" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
+(*	" value: "<>decimalFloatLiteral[#[[3]],2]<>*)
+(*	" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
+(*	" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
+(*	" value: "<>decimalFloatLiteral[#[[6]],2]<>*)
+(*	"}"*)
 (*&,*)
-(*Join[N[redargs2,20],redvals2,2]];*)
+(*Select[*)
+(*Join[N[redargs2,20],redvals2,2],*)
+(*	(#[[2]]<0||Sin[#[[1]]]^2<#[[2]])&]*)
+(*];*)
 
 
 (* ::Input:: *)
@@ -186,7 +189,7 @@
 (*Join[randomargs3,randomvals3,2]];*)
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*A case that used to have a bug*)
 
 
@@ -237,7 +240,7 @@
 
 
 (* ::Input:: *)
-(*redm={1/10,1/2,9/10}*)
+(*redm=Join[{1/10,1/2,9/10},Table[-i/10,{i,1,5}],Table[i/10,{i,11,15}]]*)
 
 
 (* ::Input:: *)
@@ -245,7 +248,7 @@
 
 
 (* ::Input:: *)
-(*redn={1/10,1/2,9/10}*)
+(*redn=Join[{1/10,1/2,9/10},Table[-i/10,{i,1,10}],Table[i/10,{i,10,20}]]*)
 
 
 (* ::Input:: *)
@@ -272,7 +275,10 @@
 (*" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
 (*"}"*)
 (*&,*)
-(*Join[N[redargs3,20],redvals3,2]];*)
+(*Select[*)
+(*Join[N[redargs3,20],redvals3,2],*)
+(*	(#[[4]]\[Element]Reals&&#[[5]]\[Element]Reals)&]*)
+(*];*)
 
 
 (* ::Input:: *)
@@ -286,7 +292,7 @@
 (*"text"]*)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*xeldbj near \[CurlyPhi]=\[Pi]/2*)
 
 

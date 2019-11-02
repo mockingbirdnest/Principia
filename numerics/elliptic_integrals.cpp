@@ -1829,9 +1829,9 @@ void FukushimaEllipticBDJ(Angle const& φ,
     double const mcR = -mc / m;
     double const sqrt_mR = Sqrt(mR);
 
-    Angle B_φRǀmR{uninitialized};      
-    Angle D_φRǀmR{uninitialized};        
-    ThirdKind J_φR_nRǀmR{uninitialized}; 
+    Angle B_φRǀmR{uninitialized};
+    Angle D_φRǀmR{uninitialized};
+    ThirdKind J_φR_nRǀmR{uninitialized};
     FukushimaEllipticBDJ(φR, nR, mcR, B_φRǀmR, D_φRǀmR, J_φR_nRǀmR);
 
     B_φǀm = sqrt_mR * (B_φRǀmR + mcR * D_φRǀmR);
@@ -1848,9 +1848,9 @@ void FukushimaEllipticBDJ(Angle const& φ,
     double const mN = -m / mc;
     double const mcN = 1 / mc;
 
-    Angle B_φNǀmN{uninitialized};      
-    Angle D_φNǀmN{uninitialized};        
-    ThirdKind J_φN_nNǀmN{uninitialized}; 
+    Angle B_φNǀmN{uninitialized};
+    Angle D_φNǀmN{uninitialized};
+    ThirdKind J_φN_nNǀmN{uninitialized};
     FukushimaEllipticBDJ(φN, nN, mcN, B_φNǀmN, D_φNǀmN, J_φN_nNǀmN);
 
     double const sin_φN = Sin(φN);
@@ -1875,7 +1875,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
       double const h1 = nc * (n - m) / n;
       double const n1 = m / n;
 
-      ThirdKind J_φ_n1ǀm{uninitialized}; 
+      ThirdKind J_φ_n1ǀm{uninitialized};
       FukushimaEllipticBDJ(φ, n1, mc, B_φǀm, D_φǀm, J_φ_n1ǀm);
 
       J_φ_nǀm = (-B_φǀm - D_φǀm + FukushimaT(t1, h1) - n1 * J_φ_n1ǀm) / n;
@@ -1888,7 +1888,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
       double const h2 = -n * (m - n) / (1 - n);
       double const n2 = (m - n) / nc;
 
-      ThirdKind J_φ_n2ǀm{uninitialized}; 
+      ThirdKind J_φ_n2ǀm{uninitialized};
       FukushimaEllipticBDJ(φ, n2, mc, B_φǀm, D_φǀm, J_φ_n2ǀm);
 
       J_φ_nǀm = (B_φǀm + D_φǀm + FukushimaT(t2, h2) - n2 * J_φ_n2ǀm) / nc;
@@ -1900,7 +1900,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   Angle B_m{uninitialized};        // B(m).
   Angle D_m{uninitialized};        // D(m).
   ThirdKind J_nǀm{uninitialized};  // J(n, m).
-  FukushimaEllipticBDJReduced(φ, n, mc, 
+  FukushimaEllipticBDJReduced(abs_φ_reduced, n, mc,
                               B_φǀm, D_φǀm, J_φ_nǀm,
                               B_m, D_m, J_nǀm,
                               has_computed_complete_integrals);
