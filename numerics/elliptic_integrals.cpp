@@ -24,10 +24,12 @@ namespace internal_elliptic_integrals {
 
 using base::uninitialized;
 using quantities::Abs;
+using quantities::ArcSin;
 using quantities::Angle;
 using quantities::ArcTan;
 using quantities::ArcTanh;
 using quantities::Cos;
+using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::si::Radian;
@@ -1804,14 +1806,32 @@ void FukushimaEllipticBDJ(Angle const& φ,
                           Angle& B_φǀm,
                           Angle& D_φǀm,
                           ThirdKind& J_φ_nǀm) {
-  // See Appendix B of [Fuk11b] and Appendix A.1 of [Fuk12] for argument
+  // See Appendix B of [Fuk11b] and Appendix A of [Fuk12] for argument
   // reduction.
+
+  // [Fuk12] A.1: Reduction of amplitude.
   // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
   // better algorithm (Payne-Hanek?).
   Angle φ_reduced{uninitialized};
   std::int64_t j;
   Reduce(φ, φ_reduced, j);
   Angle const abs_φ_reduced = Abs(φ_reduced);
+
+  // [Fuk12] A.2: Reduction of parameter.
+  // NOTE(phl): Not implementing the special values mc = 0, etc. on the
+  // assumption that the normal implementation will work.
+  if (mc < 0) {
+    Angle const φR = ArcSin(Sqrt(1 - mc) * Sin(φ));
+    double const nR = n / (1 - mc);
+    double const mR = 1 / (1 - mc);
+    return mR * Sqrt(mR) * J(φR, nR, mR);
+  } else if (mc > 1) {
+    double const sin_φ = Sin(φ);
+    Angle const φN = ArcSin(Sqrt(mc / (1 - (1 - mc) * Pow<2>(sin_φ))) * sin_φ);
+    double const nN = (n - (1 - mc)) / mc;
+    double const mN = (mc - 1) / mc;
+    return mN * Sqrt(mN) * J(φN, nN, mN);
+  }
 
   bool has_computed_complete_integrals = false;
   Angle B_m{uninitialized};        // B(m).
