@@ -1330,9 +1330,9 @@ void FukushimaEllipticBDJ(double const nc,
                           Angle& B_m,
                           Angle& D_m,
                           ThirdKind& J_n_m) {
-  if (mc < 0) {  // m > 1
-    DLOG(FATAL) << "NYI";
-  } else if (mc > 1) {  // m < 0
+  CHECK_LE(0, mc);
+  if (mc > 1) {  // m < 0
+    // See [Fuk11b] B.1.
     double const m = 1 - mc;
     double const mN = -m / mc;
     double const mcN = 1 / mc;
@@ -1734,6 +1734,9 @@ void FukushimaEllipticBDJReduced(Angle const& φ,
                                  Angle& B_φǀm,
                                  Angle& D_φǀm,
                                  ThirdKind& J_φ_nǀm) {
+  if (!(φ<= π/2 * Radian)) {
+    LOG(FATAL)<<"!!!";
+  }
   DCHECK_LE(φ, π/2 * Radian);
   DCHECK_GE(φ, 0 * Radian);
   DCHECK_LE(0, n);
