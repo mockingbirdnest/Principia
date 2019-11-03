@@ -1829,10 +1829,6 @@ void FukushimaEllipticBDJ(Angle const& φ,
     Reduce(φ, φ_reduced, j);
     Angle const abs_φ_reduced = Abs(φ_reduced);
 
-    bool has_computed_complete_integrals = false;
-    Angle B_m{uninitialized};        // B(m).
-    Angle D_m{uninitialized};        // D(m).
-    ThirdKind J_nǀm{uninitialized};  // J(n, m).
     FukushimaEllipticBDJ(abs_φ_reduced, n, mc, B_φǀm, D_φǀm, J_φ_nǀm);
 
     if (φ_reduced < 0.0 * Radian) {
@@ -1845,6 +1841,10 @@ void FukushimaEllipticBDJ(Angle const& φ,
     }
     if (j != 0) {
       double const nc = 1.0 - n;
+
+      Angle B_m{uninitialized};        // B(m).
+      Angle D_m{uninitialized};        // D(m).
+      ThirdKind J_nǀm{uninitialized};  // J(n, m).
       FukushimaEllipticBDJ(nc, mc, B_m, D_m, J_nǀm);
 
       // See [Fuk11b], equations (B.2), and [Fuk12], equation (A.2).
@@ -1899,7 +1899,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
     B_φǀm = sqrt_mcN * (D_φNǀmN + addend);
     D_φǀm = sqrt_mcN * (B_φNǀmN - addend);
     if constexpr (should_compute<ThirdKind>) {
-      J_φ_nǀm = mN * Sqrt(mN) * J_φN_nNǀmN;
+      // Note that [Fuk12] equation A.11 is incorrect.
+      J_φ_nǀm = mcN * sqrt_mcN * J_φN_nNǀmN;
     }
     return;
   }
