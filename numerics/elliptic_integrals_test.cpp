@@ -125,31 +125,25 @@ TEST_F(EllipticIntegralsTest, MathematicaBivariate) {
 
     Angle actual_value_b;
     Angle actual_value_d;
-    Angle actual_value_j;  // Ignored.
-    FukushimaEllipticBDJ(argument_φ,
-                         /*n=*/1,
-                         1.0 - argument_m,
-                         actual_value_b,
-                         actual_value_d,
-                         actual_value_j);
+    FukushimaEllipticBD(argument_φ,
+                        1.0 - argument_m,
+                        actual_value_b,
+                        actual_value_d);
 
     Angle actual_value_e;
     Angle actual_value_f;
-    Angle actual_value_ᴨ;  // Ignored.
-    EllipticFEΠ(argument_φ,
-                /*n=*/1,
-                1.0 - argument_m,
-                actual_value_f,
-                actual_value_e,
-                actual_value_ᴨ);
+    EllipticFE(argument_φ,
+               1.0 - argument_m,
+               actual_value_f,
+               actual_value_e);
 
     EXPECT_THAT(actual_value_b, AlmostEquals(expected_value_b, 0, 6))
         << argument_φ << " " << argument_m;
-    EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 44))
+    EXPECT_THAT(actual_value_d, AlmostEquals(expected_value_d, 0, 237))
         << argument_φ << " " << argument_m;
-    EXPECT_THAT(actual_value_e, AlmostEquals(expected_value_e, 0, 6))
+    EXPECT_THAT(actual_value_e, AlmostEquals(expected_value_e, 0, 18))
         << argument_φ << " " << argument_m;
-    EXPECT_THAT(actual_value_f, AlmostEquals(expected_value_f, 0, 6))
+    EXPECT_THAT(actual_value_f, AlmostEquals(expected_value_f, 0, 12))
         << argument_φ << " " << argument_m;
   }
 }

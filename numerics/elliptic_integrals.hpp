@@ -87,9 +87,11 @@ Angle EllipticK(double mc);
 
 using internal_elliptic_integrals::EllipticE;
 using internal_elliptic_integrals::EllipticF;
+using internal_elliptic_integrals::EllipticFE;
 using internal_elliptic_integrals::EllipticFEΠ;
 using internal_elliptic_integrals::EllipticK;
 using internal_elliptic_integrals::EllipticΠ;
+using internal_elliptic_integrals::FukushimaEllipticBD;
 using internal_elliptic_integrals::FukushimaEllipticBDJ;
 
 }  // namespace numerics
