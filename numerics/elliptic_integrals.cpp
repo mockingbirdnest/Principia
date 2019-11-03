@@ -1746,8 +1746,10 @@ void FukushimaEllipticBDJReduced(Angle const& φ,
                                  ThirdKind& J_φ_nǀm) {
   DCHECK_LE(φ, π/2 * Radian);
   DCHECK_GE(φ, 0 * Radian);
-  DCHECK_LE(0, n);
-  DCHECK_GT(1, n);  // n == 1 would cause NaNs in the computation of FukushimaT.
+  if constexpr (should_compute<ThirdKind>) {
+    DCHECK_LE(0, n);
+    DCHECK_GT(1, n);  // n < 1 to avoid NaNs in the computation of FukushimaT.
+  }
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
 
@@ -1828,7 +1830,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   // reduction.
 
   // [Fuk12] A.1: Reduction of amplitude.
-  if (φ < 0 * Radian || φ > π/2 * Radian ) {
+  if (φ < 0 * Radian || φ > π / 2 * Radian) {
     // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
     // better algorithm (Payne-Hanek?).
     Angle φ_reduced{uninitialized};
@@ -1913,9 +1915,19 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 
   // [Fuk12] A.3: Reduction of characteristics.
-  // NOTE(phl): Same as above, not implementing the special values.
+  // NOTE(phl): Special case n == 1 as at leads to NaN in the normal algorithm
+  // and to infinite recursion in the n > 1 branch below.
   if constexpr (should_compute<ThirdKind>) {
-    if (n >= 1) {
+    if (n == 1) {
+      double const m = 1 - mc;
+
+      auto const J = unused;
+      FukushimaEllipticBDJ(φ, /*n=*/1, mc, B_φǀm, D_φǀm, J);
+
+      J_φ_nǀm =
+          (Tan(φ) * Sqrt(1 - m * Pow<2>(Sin(φ))) * Radian - B_φǀm) / mc - D_φǀm;
+      return;
+    } else if (n > 1) {
       double const m = 1 - mc;
       double const nc = 1 - n;
       double const t1 = Tan(φ) / Sqrt(1 - m * Pow<2>(Sin(φ)));
