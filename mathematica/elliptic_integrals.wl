@@ -278,7 +278,7 @@
 (*&,*)
 (*Select[*)
 (*Join[N[redargs3,20],redvals3,2],*)
-(*	((Abs[#[[1]]]>\[Pi]/2 &&#[[3]]<1)||*)
+(*((#[[2]]>=0&&#[[2]]<= 1)||(#[[1]]>=-\[Pi]/2&&#[[1]]<=\[Pi]/2 ))(*This condition avoids what I believe to be a bug in Mathematica 11.0 where EllipticPi is confused for an amplitude that is a multiple of \[Pi]*)&&((Abs[#[[1]]]>\[Pi]/2 &&#[[3]]<1)||*)
 (*	(0<=#[[1]]&&#[[1]]<= \[Pi]/2 &&(#[[3]]<0||Sin[#[[1]]]^2<1/#[[3]])))&]*)
 (*];*)
 

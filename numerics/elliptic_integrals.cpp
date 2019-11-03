@@ -1663,7 +1663,7 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
 
 Angle FukushimaT(double const t, double const h) {
   double const z = -h * t * t;
-  double const abs_z = abs(z);
+  double const abs_z = Abs(z);
 
   // NOTE(phl): One might be tempted to rewrite this statement using a binary
   // split of the interval [0, 1], but according to Table 1 of [Fuk12] the
@@ -1702,7 +1702,17 @@ Angle FukushimaT(double const t, double const h) {
     return t * FukushimaTMaclaurin12::polynomial.Evaluate(z) * Radian;
   } else {
     double const r = Sqrt(-h);
-    return ArcTanh(r * t) / r;
+    double const rt = r * t;
+    // [Fuk12], equations A.15 and A.16, superbly hides the following problem
+    // with the phrase "universal rewriting": rt may be arbitrarily large when φ
+    // is close to π/2, in which case the ArcTanh would return a complex number
+    // (aka NaN).  We effectively drop the imaginary part of that number by
+    // switching to 1 / rt.
+    if (Abs(rt) > 1) {
+      return ArcTanh(1 / rt) / r;
+    } else {
+      return ArcTanh(rt) / r;
+    }
   }
 }
 
@@ -1734,13 +1744,10 @@ void FukushimaEllipticBDJReduced(Angle const& φ,
                                  Angle& B_φǀm,
                                  Angle& D_φǀm,
                                  ThirdKind& J_φ_nǀm) {
-  if (!(φ<= π/2 * Radian)) {
-    LOG(FATAL)<<"!!!";
-  }
   DCHECK_LE(φ, π/2 * Radian);
   DCHECK_GE(φ, 0 * Radian);
   DCHECK_LE(0, n);
-  DCHECK_GE(1, n);
+  DCHECK_GT(1, n);  // n == 1 would cause NaNs in the computation of FukushimaT.
   DCHECK_LE(0, mc);
   DCHECK_GE(1, mc);
 
@@ -1844,7 +1851,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
 
       Angle B_m{uninitialized};        // B(m).
       Angle D_m{uninitialized};        // D(m).
-      ThirdKind J_nǀm{uninitialized};  // J(n, m).
+      ThirdKind J_nǀm{uninitialized};  // J(n|m).
       FukushimaEllipticBDJ(nc, mc, B_m, D_m, J_nǀm);
 
       // See [Fuk11b], equations (B.2), and [Fuk12], equation (A.2).
@@ -1908,7 +1915,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   // [Fuk12] A.3: Reduction of characteristics.
   // NOTE(phl): Same as above, not implementing the special values.
   if constexpr (should_compute<ThirdKind>) {
-    if (n > 1) {
+    if (n >= 1) {
       double const m = 1 - mc;
       double const nc = 1 - n;
       double const t1 = Tan(φ) / Sqrt(1 - m * Pow<2>(Sin(φ)));
@@ -1931,7 +1938,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
       ThirdKind J_φ_n2ǀm{uninitialized};
       FukushimaEllipticBDJ(φ, n2, mc, B_φǀm, D_φǀm, J_φ_n2ǀm);
 
-      J_φ_nǀm = (B_φǀm + D_φǀm + FukushimaT(t2, h2) - n2 * J_φ_n2ǀm) / nc;
+      J_φ_nǀm =
+          (B_φǀm + D_φǀm - FukushimaT(t2, h2) - (mc / nc) * J_φ_n2ǀm) / nc;
       return;
     }
   }
