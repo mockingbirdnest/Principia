@@ -133,18 +133,41 @@ void FukushimaEllipticBDJ(Angle const& φ,
                           Angle& D_φǀm,
                           ThirdKind& J_φ_nǀm);
 
-// Same as above, but with reduced arguments.
+// Implementation of the B, D, J functions with all arguments reduced.
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
-void FukushimaEllipticBDJReduced(Angle const& φ,
-                                 double const n,
-                                 double const mc,
-                                 Angle& B_φǀm,
-                                 Angle& D_φǀm,
-                                 ThirdKind& J_φ_nǀm,
-                                 Angle& B_m,
-                                 Angle& D_m,
-                                 ThirdKind& J_nǀm,
-                                 bool& has_computed_complete_integrals);
+void FukushimaEllipticBDJFullyReduced(Angle const& φ,
+                                      double const n,
+                                      double const mc,
+                                      Angle& B_φǀm,
+                                      Angle& D_φǀm,
+                                      ThirdKind& J_φ_nǀm,
+                                      Angle& B_m,
+                                      Angle& D_m,
+                                      ThirdKind& J_nǀm,
+                                      bool& has_computed_complete_integrals);
+
+// Implementation of the B, D, J functions with only the amplitude reduced.
+template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
+void FukushimaEllipticBDJReducedAmplitude(Angle const& φ,
+                                          double const n,
+                                          double const mc,
+                                          Angle& B_φǀm,
+                                          Angle& D_φǀm,
+                                          ThirdKind& J_φ_nǀm);
+
+// Same a above, but propagates the complete integrals to the caller.
+template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
+void FukushimaEllipticBDJReducedAmplitude(
+    Angle const& φ,
+    double const n,
+    double const mc,
+    Angle& B_φǀm,
+    Angle& D_φǀm,
+    ThirdKind& J_φ_nǀm,
+    Angle& B_m,
+    Angle& D_m,
+    ThirdKind& J_nǀm,
+    bool& has_computed_complete_integrals);
 
 // The common implementation underlying the functions |EllipticFEΠ| and
 // |EllipticFE| declared in the header file.
@@ -1334,6 +1357,10 @@ void FukushimaEllipticBDJ(double const nc,
                           Angle& B_m,
                           Angle& D_m,
                           ThirdKind& J_n_m) {
+  DCHECK_LE(0, nc);
+  DCHECK_GE(1, nc);
+  DCHECK_LE(0, mc);
+  DCHECK_GE(1, mc);
   FukushimaEllipticBD(mc, B_m, D_m);
 
   if constexpr (should_compute<ThirdKind>) {
@@ -1714,7 +1741,7 @@ void Reduce(Angle const& angle,
 }
 
 template<typename ThirdKind, typename>
-void FukushimaEllipticBDJReduced(Angle const& φ,
+void FukushimaEllipticBDJFullyReduced(Angle const& φ,
                                  double const n,
                                  double const mc,
                                  Angle& B_φǀm,
@@ -1801,22 +1828,38 @@ void FukushimaEllipticBDJReduced(Angle const& φ,
 }
 
 template<typename ThirdKind, typename>
-void FukushimaEllipticBDJ(Angle const& φ,
-                          double const n,
-                          double const mc,
-                          Angle& B_φǀm,
-                          Angle& D_φǀm,
-                          ThirdKind& J_φ_nǀm) {
-  // See Appendix B of [Fuk11b] and Appendix A of [Fuk12] for argument
-  // reduction.
+void FukushimaEllipticBDJReducedAmplitude(Angle const& φ,
+                                          double const n,
+                                          double const mc,
+                                          Angle& B_φǀm,
+                                          Angle& D_φǀm,
+                                          ThirdKind& J_φ_nǀm) {
+  DCHECK_LE(φ, π/2 * Radian);
+  DCHECK_GE(φ, 0 * Radian);
+  bool has_computed_complete_integrals;
+  Angle B_m{uninitialized};        // B(m).
+  Angle D_m{uninitialized};        // D(m).
+  ThirdKind J_nǀm{uninitialized};  // J(n, m).
+  FukushimaEllipticBDJReducedAmplitude(φ, n, mc, B_φǀm, D_φǀm, J_φ_nǀm,
+                        B_m, D_m, J_nǀm,
+                        has_computed_complete_integrals );
+}
 
-  // [Fuk12] A.1: Reduction of amplitude.
-  // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
-  // better algorithm (Payne-Hanek?).
-  Angle φ_reduced{uninitialized};
-  std::int64_t j;
-  Reduce(φ, φ_reduced, j);
-  Angle const abs_φ_reduced = Abs(φ_reduced);
+template<typename ThirdKind, typename>
+void FukushimaEllipticBDJReducedAmplitude(
+    Angle const& φ,
+    double const n,
+    double const mc,
+    Angle& B_φǀm,
+    Angle& D_φǀm,
+    ThirdKind& J_φ_nǀm,
+    Angle& B_m,
+    Angle& D_m,
+    ThirdKind& J_nǀm,
+    bool& has_computed_complete_integrals) {
+  DCHECK_LE(φ, π/2 * Radian);
+  DCHECK_GE(φ, 0 * Radian);
+  has_computed_complete_integrals = false;
 
   // [Fuk11b] B.2, [Fuk12] A.2: Reduction of parameter.
   // NOTE(phl): Not implementing the special values mc = 0, etc. on the
@@ -1832,7 +1875,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
     Angle B_φRǀmR{uninitialized};
     Angle D_φRǀmR{uninitialized};
     ThirdKind J_φR_nRǀmR{uninitialized};
-    FukushimaEllipticBDJ(φR, nR, mcR, B_φRǀmR, D_φRǀmR, J_φR_nRǀmR);
+    FukushimaEllipticBDJReducedAmplitude(φR, nR, mcR,
+                                         B_φRǀmR, D_φRǀmR, J_φR_nRǀmR);
 
     B_φǀm = sqrt_mR * (B_φRǀmR + mcR * D_φRǀmR);
     D_φǀm = mR * sqrt_mR * D_φRǀmR;
@@ -1851,7 +1895,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
     Angle B_φNǀmN{uninitialized};
     Angle D_φNǀmN{uninitialized};
     ThirdKind J_φN_nNǀmN{uninitialized};
-    FukushimaEllipticBDJ(φN, nN, mcN, B_φNǀmN, D_φNǀmN, J_φN_nNǀmN);
+    FukushimaEllipticBDJReducedAmplitude(φN, nN, mcN,
+                                         B_φNǀmN, D_φNǀmN, J_φN_nNǀmN);
 
     double const sin_φN = Sin(φN);
     double const sqrt_mcN = Sqrt(mcN);
@@ -1876,7 +1921,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
       double const n1 = m / n;
 
       ThirdKind J_φ_n1ǀm{uninitialized};
-      FukushimaEllipticBDJ(φ, n1, mc, B_φǀm, D_φǀm, J_φ_n1ǀm);
+      FukushimaEllipticBDJReducedAmplitude(φ, n1, mc, B_φǀm, D_φǀm, J_φ_n1ǀm);
 
       J_φ_nǀm = (-B_φǀm - D_φǀm + FukushimaT(t1, h1) - n1 * J_φ_n1ǀm) / n;
       return;
@@ -1889,21 +1934,43 @@ void FukushimaEllipticBDJ(Angle const& φ,
       double const n2 = (m - n) / nc;
 
       ThirdKind J_φ_n2ǀm{uninitialized};
-      FukushimaEllipticBDJ(φ, n2, mc, B_φǀm, D_φǀm, J_φ_n2ǀm);
+      FukushimaEllipticBDJReducedAmplitude(φ, n2, mc, B_φǀm, D_φǀm, J_φ_n2ǀm);
 
       J_φ_nǀm = (B_φǀm + D_φǀm + FukushimaT(t2, h2) - n2 * J_φ_n2ǀm) / nc;
       return;
     }
   }
 
+  // No further reduction needed.
+  FukushimaEllipticBDJFullyReduced(φ, n, mc,
+                                   B_φǀm, D_φǀm, J_φ_nǀm,
+                                   B_m, D_m, J_nǀm,
+                                   has_computed_complete_integrals);
+}
+
+template<typename ThirdKind, typename>
+void FukushimaEllipticBDJ(Angle const& φ,
+                          double const n,
+                          double const mc,
+                          Angle& B_φǀm,
+                          Angle& D_φǀm,
+                          ThirdKind& J_φ_nǀm) {
+  // [Fuk12] A.1: Reduction of amplitude.
+  // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
+  // better algorithm (Payne-Hanek?).
+  Angle φ_reduced{uninitialized};
+  std::int64_t j;
+  Reduce(φ, φ_reduced, j);
+  Angle const abs_φ_reduced = Abs(φ_reduced);
+
   bool has_computed_complete_integrals = false;
   Angle B_m{uninitialized};        // B(m).
   Angle D_m{uninitialized};        // D(m).
   ThirdKind J_nǀm{uninitialized};  // J(n, m).
-  FukushimaEllipticBDJReduced(abs_φ_reduced, n, mc,
-                              B_φǀm, D_φǀm, J_φ_nǀm,
-                              B_m, D_m, J_nǀm,
-                              has_computed_complete_integrals);
+  FukushimaEllipticBDJReducedAmplitude(abs_φ_reduced, n, mc,
+                                       B_φǀm, D_φǀm, J_φ_nǀm,
+                                       B_m, D_m, J_nǀm,
+                                       has_computed_complete_integrals);
 
   if (φ_reduced < 0.0 * Radian) {
     // TODO(egg): Much ado about nothing's sign bit.
