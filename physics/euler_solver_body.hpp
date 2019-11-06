@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/quaternion.hpp"
 #include "numerics/elliptic_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -18,6 +19,7 @@ namespace internal_euler_solver {
 using geometry::Commutator;
 using geometry::DefinesFrame;
 using geometry::Normalize;
+using geometry::Quaternion;
 using geometry::Vector;
 using numerics::EllipticF;
 using numerics::EllipticΠ;
@@ -274,41 +276,18 @@ template<typename InertialFrame, typename PrincipalAxesFrame>
 Rotation<PrincipalAxesFrame,
          typename EulerSolver<InertialFrame, PrincipalAxesFrame>::ℬₜ>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
-    AngularMomentumBivector const& angular_momentum,
-    bool& ṁ_is_zero) const {
+    AngularMomentumBivector const& angular_momentum) const {
   auto const& m = angular_momentum;
   auto const& m_coordinates = m.coordinates();
 
-  // Compute ṁ using the Euler equation.
-  AngularVelocity<PrincipalAxesFrame> const ω = AngularVelocityFor(m);
-  Bivector<Variation<AngularMomentum>, PrincipalAxesFrame> const ṁ =
-      Commutator(m, ω) / Radian;
+  double const real_part = Sqrt(0.5 * (1 + m_coordinates.z / G_));
+  double const denominator = 2 * G_ * real_part;
+  Quaternion const pₜ(real_part,
+                      m_coordinates.y / denominator,
+                      -m_coordinates.x / denominator,
+                      0);
 
-  // Construct the orthonormal frame ℬₜ.  If m is constant in the principal axes
-  // frame, the choice is arbitrary.
-  static Bivector<double, PrincipalAxesFrame> const zero;
-  ṁ_is_zero = false;
-  auto const m_normalized = NormalizeOrZero(m);
-  if (m_normalized == zero) {
-    ṁ_is_zero = true;
-    return Rotation<PrincipalAxesFrame, ℬₜ>::Identity();
-  }
-  auto v = NormalizeOrZero(ṁ);
-  if (v == zero) {
-    ṁ_is_zero = true;
-    v = NormalizeOrZero(AngularMomentumBivector(
-            {m_coordinates.y, -m_coordinates.x, AngularMomentum()}));
-  }
-  if (v == zero) {
-    ṁ_is_zero = true;
-    v = NormalizeOrZero(AngularMomentumBivector(
-            {AngularMomentum(), -m_coordinates.z, m_coordinates.y}));
-  }
-  DCHECK_NE(v, zero);
-  auto const w = Commutator(m_normalized, v);
-
-  // 𝒫ₜ(m_normalized).coordinates() = {0, 0, 1} , etc.
-  Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ(v, w, m_normalized);
+  Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ(pₜ);
 
   return 𝒫ₜ;
 }

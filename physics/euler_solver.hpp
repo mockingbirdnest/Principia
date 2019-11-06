@@ -71,8 +71,7 @@ class EulerSolver {
   };
 
   Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
-      AngularMomentumBivector const& angular_momentum,
-      bool& ṁ_is_zero) const;
+      AngularMomentumBivector const& angular_momentum) const;
 
   // If m is constant in the principal axes frames, we cannot construct ℬₜ using
   // ṁ as specified after the demonstration of proposition 2.2 in [CFSZ07].
