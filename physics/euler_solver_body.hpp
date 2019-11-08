@@ -55,8 +55,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       initial_time_(initial_time),
       ℛ_([this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
         auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
-        auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_,
-                                    ṁ_is_zero_).Inverse();
+        auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_).Inverse();
 
         // This ℛ follows the assumptions in the third paragraph of section 2.3
         // of [CFSZ07], that is, the inertial frame is identified with the
@@ -125,7 +124,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     }
     n_ = std::min(G² / B₂₃², 1.0);
     ψ_Π_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_);
-    ψ_Π_multiplier_ = ṁ_is_zero_ ? 0 : Δ₂ / (λ_ * I₂ * G_);
+    ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
     CHECK_LE(Square<AngularMomentum>(), B₂₃²);
@@ -143,7 +142,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     }
     n_ = std::min(G² / B₂₁², 1.0);
     ψ_Π_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_);
-    ψ_Π_multiplier_ = ṁ_is_zero_ ? 0 : Δ₂ / (λ_ * I₂ * G_);
+    ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
     formula_ = Formula::ii;
   } else {
     CHECK_EQ(Square<AngularMomentum>(), Δ₂);
@@ -239,10 +238,7 @@ typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     AngularMomentumBivector const& angular_momentum,
     Instant const& time) const {
-  bool ṁ_is_zero;
-  Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ = Compute𝒫ₜ(angular_momentum,
-                                                       ṁ_is_zero);
-  CHECK_EQ(ṁ_is_zero_, ṁ_is_zero);
+  Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ = Compute𝒫ₜ(angular_momentum);
 
   Time const Δt = time - initial_time_;
   Angle ψ = ψ_t_multiplier_ * Δt;
@@ -278,7 +274,18 @@ Rotation<PrincipalAxesFrame,
 EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
     AngularMomentumBivector const& angular_momentum) const {
   auto const& m = angular_momentum;
-  auto const& m_coordinates = m.coordinates();
+  auto m_coordinates = m.coordinates();
+
+  // The first time through this function (at construction), determine if we'll
+  // flip m.z and m.x to avoid the singularity m.z == -G.  After that, stick to
+  // the decision made at construction.
+  if (!must_flip_m_.has_value()) {
+    must_flip_m_ = m_coordinates.z < AngularMomentum();
+  }
+  if (must_flip_m_.value()) {
+    m_coordinates.x *= -1;
+    m_coordinates.z *= -1;
+  }
 
   double const real_part = Sqrt(0.5 * (1 + m_coordinates.z / G_));
   double const denominator = 2 * G_ * real_part;

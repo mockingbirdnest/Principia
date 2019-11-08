@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <optional>
+
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -73,11 +75,11 @@ class EulerSolver {
   Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
       AngularMomentumBivector const& angular_momentum) const;
 
-  // If m is constant in the principal axes frames, we cannot construct ℬₜ using
-  // ṁ as specified after the demonstration of proposition 2.2 in [CFSZ07].
-  // Instead, we use a constant v orthogonal to m.  This member is set when
-  // initializating ℛ_.
-  bool ṁ_is_zero_ = false;
+  // If m.z is negative, we'll flip m.x and m.z to avoid the singularity
+  // m.z == -G.  This decision is made at construction but it is *not* a
+  // constant of motion, but m.z getting alternatively close to G and -G should
+  // only occur for very thin or very flat objects.
+  std::optional<bool> must_flip_m_;
 
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;
