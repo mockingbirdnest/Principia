@@ -862,8 +862,6 @@ public partial class PrincipiaPluginAdapter
           (FlightGlobals.currentMainBody
                ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
-      plugin_.ForgetAllHistoriesBefore(plugin_.CurrentTime() -
-                                       main_window_.history_length);
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
 
@@ -1814,7 +1812,10 @@ public partial class PrincipiaPluginAdapter
                 XKCDColors.SunshineYellow;
             using (DisposableIterator rp2_lines_iterator =
                       planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
-                          plugin_, celestial.flightGlobalsIndex, main_vessel_guid)) {
+                          plugin_,
+                          celestial.flightGlobalsIndex,
+                          main_vessel_guid,
+                          main_window_.history_length)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
                                    colour,
                                    GLLines.Style.Faded);
@@ -1838,7 +1839,8 @@ public partial class PrincipiaPluginAdapter
                     planetarium.PlanetariumPlotPsychohistory(
                         plugin_,
                         чебышёв_plotting_method_,
-                        main_vessel_guid)) {
+                        main_vessel_guid,
+                        main_window_.history_length)) {
             GLLines.PlotRP2Lines(rp2_lines_iterator,
                                  XKCDColors.Lime,
                                  GLLines.Style.Faded);
@@ -1862,7 +1864,8 @@ public partial class PrincipiaPluginAdapter
                       planetarium.PlanetariumPlotPsychohistory(
                           plugin_,
                           чебышёв_plotting_method_,
-                          target_id)) {
+                          target_id,
+                          main_window_.history_length)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
                                    XKCDColors.Goldenrod,
                                    GLLines.Style.Faded);

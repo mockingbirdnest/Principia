@@ -1571,6 +1571,7 @@ message PlanetariumPlotCelestialTrajectoryForPsychohistory {
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 celestial_index = 3;
     optional string vessel_guid = 4;
+    required double max_history_length = 5;
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
@@ -1656,6 +1657,7 @@ message PlanetariumPlotPsychohistory {
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 method = 3;
     required string vessel_guid = 4;
+    required double max_history_length = 5;
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",

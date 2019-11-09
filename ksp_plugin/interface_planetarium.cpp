@@ -189,11 +189,10 @@ Iterator* principia__PlanetariumPlotPsychohistory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const method,
-    char const* const vessel_guid) {
-  journal::Method<journal::PlanetariumPlotPsychohistory> m({planetarium,
-                                                            plugin,
-                                                            method,
-                                                            vessel_guid});
+    char const* const vessel_guid,
+    double const max_history_length) {
+  journal::Method<journal::PlanetariumPlotPsychohistory> m(
+      {planetarium, plugin, method, vessel_guid, max_history_length});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
 
@@ -203,12 +202,14 @@ Iterator* principia__PlanetariumPlotPsychohistory(
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
   } else {
     auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
-    auto const rp2_lines = PlotMethodN(*planetarium,
-                                       method,
-                                       psychohistory.begin(),
-                                       psychohistory.end(),
-                                       plugin->CurrentTime(),
-                                       /*reverse=*/true);
+    auto const rp2_lines =
+        PlotMethodN(*planetarium,
+                    method,
+                    psychohistory.LowerBound(plugin->CurrentTime() -
+                                             max_history_length * Second),
+                    psychohistory.end(),
+                    plugin->CurrentTime(),
+                    /*reverse=*/true);
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
   }
 }
@@ -217,9 +218,10 @@ Iterator* principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const celestial_index,
-    char const* const vessel_guid) {
+    char const* const vessel_guid,
+    double const max_history_length) {
   journal::Method<journal::PlanetariumPlotCelestialTrajectoryForPsychohistory>
-      m({planetarium, plugin, celestial_index, vessel_guid});
+      m({planetarium, plugin, celestial_index, vessel_guid, max_history_length});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
 
@@ -229,10 +231,11 @@ Iterator* principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
   } else {
     auto const& celestial_trajectory =
         plugin->GetCelestial(celestial_index).trajectory();
-    Instant const first_time =
+    Instant const first_time = std::max(
+        plugin->CurrentTime() - max_history_length * Second,
         vessel_guid == nullptr
             ? celestial_trajectory.t_min()
-            : plugin->GetVessel(vessel_guid)->psychohistory().front().time;
+            : plugin->GetVessel(vessel_guid)->psychohistory().front().time);
     auto const rp2_lines =
         planetarium->PlotMethod2(celestial_trajectory,
                                  first_time,
@@ -262,8 +265,9 @@ Iterator* principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan
     Instant const prediction_final_time = vessel.prediction().back().time;
     Instant const final_time =
         vessel.has_flight_plan()
-            ? std::max(vessel.flight_plan().actual_final_time(), final_time)
-            : final_time;
+            ? std::max(vessel.flight_plan().actual_final_time(),
+                       prediction_final_time)
+            : prediction_final_time;
     auto const& celestial_trajectory =
         plugin->GetCelestial(celestial_index).trajectory();
     auto const rp2_lines =
