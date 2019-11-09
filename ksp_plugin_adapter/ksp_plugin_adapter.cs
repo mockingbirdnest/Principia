@@ -1808,8 +1808,11 @@ public partial class PrincipiaPluginAdapter
             if (plotting_frame_selector_.FixedBodies().Contains(celestial)) {
               continue;
             }
-            var colour = celestial.orbitDriver?.Renderer.nodeColor ??
+            var colour = celestial.MapObject?.uiNode?.VisualIconData.color ??
                 XKCDColors.SunshineYellow;
+            if (colour.a == 0) {
+              continue;
+            }
             using (DisposableIterator rp2_lines_iterator =
                       planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
                           plugin_,
