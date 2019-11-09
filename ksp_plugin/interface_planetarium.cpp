@@ -213,5 +213,68 @@ Iterator* principia__PlanetariumPlotPsychohistory(
   }
 }
 
+Iterator* principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
+    Planetarium const* const planetarium,
+    Plugin const* const plugin,
+    int const celestial_index,
+    char const* const vessel_guid) {
+  journal::Method<journal::PlanetariumPlotCelestialTrajectoryForPsychohistory>
+      m({planetarium, plugin, celestial_index, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(planetarium);
+
+  // Do not plot the past when there is a target vessel as it is misleading.
+  if (plugin->renderer().HasTargetVessel()) {
+    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
+  } else {
+    auto const& celestial_trajectory =
+        plugin->GetCelestial(celestial_index).trajectory();
+    Instant const first_time =
+        vessel_guid == nullptr
+            ? celestial_trajectory.t_min()
+            : plugin->GetVessel(vessel_guid)->psychohistory().front().time;
+    auto const rp2_lines =
+        planetarium->PlotMethod2(celestial_trajectory,
+                                 first_time,
+                                 /*last_time=*/plugin->CurrentTime(),
+                                 /*now=*/plugin->CurrentTime(),
+                                 /*reverse=*/true);
+    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+  }
+}
+
+Iterator* principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
+    Planetarium const* const planetarium,
+    Plugin const* const plugin,
+    int const celestial_index,
+    char const* const vessel_guid) {
+  journal::Method<
+      journal::PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan>
+      m({planetarium, plugin, celestial_index, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(planetarium);
+
+  // Do not plot the past when there is a target vessel as it is misleading.
+  if (plugin->renderer().HasTargetVessel()) {
+    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
+  } else {
+    auto const& vessel = *plugin->GetVessel(vessel_guid);
+    Instant const prediction_final_time = vessel.prediction().back().time;
+    Instant const final_time =
+        vessel.has_flight_plan()
+            ? std::max(vessel.flight_plan().actual_final_time(), final_time)
+            : final_time;
+    auto const& celestial_trajectory =
+        plugin->GetCelestial(celestial_index).trajectory();
+    auto const rp2_lines =
+        planetarium->PlotMethod2(celestial_trajectory,
+                                 /*first_time=*/plugin->CurrentTime(),
+                                 /*last_time=*/final_time,
+                                 /*now=*/plugin->CurrentTime(),
+                                 /*reverse=*/false);
+    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+  }
+}
+
 }  // namespace interface
 }  // namespace principia

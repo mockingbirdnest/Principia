@@ -1677,6 +1677,16 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void RemoveStockTrajectoriesIfNeeded(CelestialBody celestial) {
+    if (celestial.orbitDriver == null) {
+      return;
+    }
+    celestial.orbitDriver.Renderer.drawMode =
+        main_window_.display_patched_conics
+            ? OrbitRenderer.DrawMode.REDRAW_AND_RECALCULATE
+            : OrbitRenderer.DrawMode.OFF;
+  }
+
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
     if (vessel.patchedConicRenderer != null) {
       vessel.patchedConicRenderer.relativityMode =
@@ -1776,6 +1786,7 @@ public partial class PrincipiaPluginAdapter
                                   c => c.MapObject?.uiNode != null)) {
       celestial.MapObject.uiNode.OnClick -= OnCelestialNodeClick;
       celestial.MapObject.uiNode.OnClick += OnCelestialNodeClick;
+      RemoveStockTrajectoriesIfNeeded(celestial);
     }
     foreach (var vessel in FlightGlobals.Vessels.Where(
                                v => v.mapObject?.uiNode != null)) {
@@ -1785,19 +1796,44 @@ public partial class PrincipiaPluginAdapter
       vessel.mapObject.uiNode.OnClick += OnVesselNodeClick;
       RemoveStockTrajectoriesIfNeeded(vessel);
     }
-    Vessel main_vessel = PredictedVessel();
-    if (main_vessel == null) {
-      return;
+    string main_vessel_guid = PredictedVessel()?.id.ToString();
+    if (main_vessel_guid != null && !plugin_.HasVessel(main_vessel_guid)) {
+      main_vessel_guid = null;
     }
-    string main_vessel_guid = main_vessel.id.ToString();
-    bool ready_to_draw_active_vessel_trajectory =
-        MapView.MapIsEnabled &&
-        plugin_.HasVessel(main_vessel_guid);
-    if (ready_to_draw_active_vessel_trajectory) {
+    if (MapView.MapIsEnabled) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =
                 GLLines.NewPlanetarium(plugin_, sun_world_position)) {
         GLLines.Draw(() => {
+          // Celestial trajectories.
+          foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+            if (plotting_frame_selector_.FixedBodies().Contains(celestial)) {
+              continue;
+            }
+            var colour = celestial.orbitDriver?.Renderer.nodeColor ??
+                XKCDColors.SunshineYellow;
+            using (DisposableIterator rp2_lines_iterator =
+                      planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
+                          plugin_, celestial.flightGlobalsIndex, main_vessel_guid)) {
+              GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                   colour,
+                                   GLLines.Style.Faded);
+            }
+            if (main_vessel_guid != null) {
+              using (DisposableIterator rp2_lines_iterator =
+                        planetarium.PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
+                            plugin_, celestial.flightGlobalsIndex, main_vessel_guid)) {
+                GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                     colour,
+                                     GLLines.Style.Solid);
+              }
+            }
+          }
+          // Vessel trajectories.
+          if (main_vessel_guid == null) {
+            return;
+          }
+          // Main vessel psychohistory and prediction.
           using (DisposableIterator rp2_lines_iterator =
                     planetarium.PlanetariumPlotPsychohistory(
                         plugin_,
@@ -1816,6 +1852,7 @@ public partial class PrincipiaPluginAdapter
                                  XKCDColors.Fuchsia,
                                  GLLines.Style.Solid);
           }
+          // Target psychohistory and prediction.
           string target_id =
               FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
           if (FlightGlobals.ActiveVessel != null &&
@@ -1840,6 +1877,7 @@ public partial class PrincipiaPluginAdapter
                                    GLLines.Style.Solid);
             }
           }
+          // Main vessel flight plan.
           if (plugin_.FlightPlanExists(main_vessel_guid)) {
             int number_of_anomalous_manœuvres =
                 plugin_.FlightPlanNumberOfAnomalousManoeuvres(main_vessel_guid);

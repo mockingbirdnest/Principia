@@ -213,7 +213,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5160.
+  extensions 5000 to 5999;  // Last used: 5162.
 }
 
 message AdvanceTime {
@@ -1558,6 +1558,48 @@ message PlanetariumDelete {
   }
   optional In in = 1;
   optional Out out = 2;
+}
+
+message PlanetariumPlotCelestialTrajectoryForPsychohistory {
+  extend Method {
+    optional PlanetariumPlotCelestialTrajectoryForPsychohistory extension = 5161;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required int32 celestial_index = 3;
+    optional string vessel_guid = 4;
+  }
+  message Return {
+    required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
+                                    (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan {
+  extend Method {
+    optional PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan extension = 5162;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required int32 celestial_index = 3;
+    required string vessel_guid = 4;
+  }
+  message Return {
+    required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
+                                    (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message PlanetariumPlotFlightPlanSegment {
