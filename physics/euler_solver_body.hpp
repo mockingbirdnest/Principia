@@ -93,11 +93,12 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   CHECK_LE(Δ₃, Square<AngularMomentum>());
 
   // These quantities are NaN in the spherical case, so they be used with care
-  // before we have checked for this case.
-  auto const B₂₃² = I₂ * Δ₃ / I₂₃;
-  auto const B₂₁² = I₂ * Δ₁ / I₂₁;
-  auto const B₁₃² = I₁ * Δ₃ / I₁₃;
+  // before we have checked for this case.  We don't use B₁₂² and B₃₂² as they
+  // might be negative with our definitions.
   auto const B₃₁² = I₃ * Δ₁ / I₃₁;
+  auto const B₂₁² = I₂ * Δ₁ / I₂₁;
+  auto const B₂₃² = I₂ * Δ₃ / I₂₃;
+  auto const B₁₃² = I₁ * Δ₃ / I₁₃;
   B₁₃_ = Sqrt(B₁₃²);
   B₃₁_ = Sqrt(B₃₁²);
 
@@ -130,10 +131,14 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     double dn;
     JacobiSNCNDN(-ν_, mc_, sn, cn, dn);
     n_ = -B₃₁² / B₁₃²;
-    ψ_ArcTan_multiplier_ = -B₁₃_ * B₃₁_ / (B₂₁_ * G_);
+    ψ_arctan_x_multiplier_ = B₁₃_;
+    ψ_arctan_y_multiplier_ = B₂₁_;
+    ψ_arctan_multiplier_ = -B₃₁_ * ψ_arctan_x_multiplier_ /
+                           (ψ_arctan_y_multiplier_ * G_);
     ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
-                ψ_ArcTan_multiplier_ * ArcTan(B₂₁_ * sn, B₁₃_ * dn);
-    ψ_Π_multiplier_ = G_ * I₃₁ / (λ_ * I₁ * I₃);
+                ψ_arctan_multiplier_ * ArcTan(ψ_arctan_y_multiplier_ * sn,
+                                              ψ_arctan_x_multiplier_ * dn);
+    ψ_integral_multiplier_ = G_ * I₃₁ / (λ_ * I₁ * I₃);
 
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
@@ -150,9 +155,21 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       σB₃₁_ = B₃₁_;
       λ_ = -λ₁;
     }
-    n_ = std::min(G² / B₂₁², 1.0);
-    ψ_Π_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_);
-    ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
+
+    double sn;
+    double cn;
+    double dn;
+    JacobiSNCNDN(-ν_, mc_, sn, cn, dn);
+    n_ = I₂₁ * I₃ / (I₂₃ * I₁);
+    ψ_arctan_x_multiplier_ = B₁₃_;
+    ψ_arctan_y_multiplier_ = B₂₃_;
+    ψ_arctan_multiplier_ = σB₃₁_ * ψ_arctan_x_multiplier_ /
+                           (ψ_arctan_y_multiplier_ * G_);
+    ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
+                ψ_arctan_multiplier_ * ArcTan(ψ_arctan_y_multiplier_ * sn,
+                                              ψ_arctan_x_multiplier_ * cn);
+    ψ_integral_multiplier_ = G_ * I₃₁ / (λ_ * I₁ * I₃);
+
     formula_ = Formula::ii;
   } else {
     CHECK_EQ(Square<AngularMomentum>(), Δ₂);
@@ -184,7 +201,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       // Δ₂ shows up in the multiplier, and λ_ is finite in the non-spherical
       // case, so things simplify tremendously.
       ψ_Π_offset_ = Angle();
-      ψ_Π_multiplier_ = 0;
+      ψ_integral_multiplier_ = 0;
       formula_ = Formula::iii;
     }
   }
@@ -259,14 +276,24 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       double dn;
       JacobiSNCNDN(λ_ * Δt - ν_, mc_, sn, cn, dn);
       Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
-      ψ += ψ_Π_multiplier_ *
+      ψ += ψ_integral_multiplier_ *
            (EllipticΠ(φ, n_, mc_) +
-            ψ_ArcTan_multiplier_ * ArcTan(B₂₁_ * sn, B₁₃_ * dn) - ψ_offset_);
+            ψ_arctan_multiplier_ * ArcTan(ψ_arctan_y_multiplier_ * sn,
+                                          ψ_arctan_x_multiplier_ * dn) -
+            ψ_offset_);
       break;
     }
     case Formula::ii: {
+      double sn;
+      double cn;
+      double dn;
+      JacobiSNCNDN(λ_ * Δt - ν_, mc_, sn, cn, dn);
       Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
-      ψ += ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset_);
+      ψ += ψ_integral_multiplier_ *
+           (EllipticΠ(φ, n_, mc_) +
+            ψ_arctan_multiplier_ * ArcTan(ψ_arctan_y_multiplier_ * sn,
+                                          ψ_arctan_x_multiplier_ * cn) -
+            ψ_offset_);
       break;
     }
     case Formula::iii: {
