@@ -34,6 +34,7 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::RigidMotion;
+using physics::Trajectory;
 using quantities::Angle;
 using quantities::Length;
 
@@ -85,6 +86,13 @@ class Planetarium {
   RP2Lines<Length, Camera> PlotMethod2(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Instant const& now,
+      bool reverse) const;
+
+  RP2Lines<Length, Camera> PlotMethod2(
+      Trajectory<Barycentric> const& trajectory,
+      Instant const& first_time,
+      Instant const& last_time,
       Instant const& now,
       bool reverse) const;
 

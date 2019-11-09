@@ -138,21 +138,30 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Instant const& now,
     bool const reverse) const {
-  RP2Lines<Length, Camera> lines;
   if (begin == end) {
-    return lines;
+    return {};
   }
   auto last = end;
   --last;
-
-  double const tan²_angular_resolution =
-      Pow<2>(parameters_.tan_angular_resolution_);
-  auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const& trajectory = *begin.trajectory();
   auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
   auto const last_time = std::min(last->time, plotting_frame_->t_max());
-  auto const final_time = reverse ? begin_time : last_time;
-  auto previous_time = reverse ? last_time : begin_time;
+  return PlotMethod2(trajectory, begin_time, last_time, now, reverse);
+}
+
+RP2Lines<Length, Camera> Planetarium::PlotMethod2(
+    Trajectory<Barycentric> const& trajectory,
+    Instant const& first_time,
+    Instant const& last_time,
+    Instant const& now,
+    bool reverse) const {
+  RP2Lines<Length, Camera> lines;
+  auto const plottable_spheres = ComputePlottableSpheres(now);
+  double const tan²_angular_resolution =
+      Pow<2>(parameters_.tan_angular_resolution_);
+  auto const final_time = reverse ? first_time : last_time;
+  auto previous_time = reverse ? last_time : first_time;
+
   Sign const direction = reverse ? Sign(-1) : Sign(1);
   if (direction * (final_time - previous_time) <= Time{}) {
     return lines;
