@@ -109,8 +109,9 @@ internal static class GLLines {
               rp2_line_iterator.IteratorGetRP2LineXY());
           if (previous_rp2_point.HasValue) {
             if (style == Style.Faded) {
-              colour.a = 1 - (float)(4 * index) / (float)(5 * size);
-              UnityEngine.GL.Color(colour);
+              var faded_colour = colour;
+              faded_colour.a *= 1 - (float)(4 * index) / (float)(5 * size);
+              UnityEngine.GL.Color(faded_colour);
             }
             if (style != Style.Dashed || index % 2 == 1) {
               UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
