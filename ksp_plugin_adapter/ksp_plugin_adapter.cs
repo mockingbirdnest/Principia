@@ -1810,6 +1810,19 @@ public partial class PrincipiaPluginAdapter
             }
             var colour = celestial.MapObject?.uiNode?.VisualIconData.color ??
                 XKCDColors.SunshineYellow;
+            if (colour.a != 1) {
+              // When zoomed into a planetary system, the trajectory of the
+              // planet is hidden in stock (because KSP then draws most things
+              // in the reference frame centred on that planet).
+              // Here we still want to display the trajectory of the primary,
+              // e.g., if we are drawing the trajectories of the Jovian system
+              // in the heliocentric frame.
+              foreach (CelestialBody child in celestial.orbitingBodies) {
+                colour.a = Math.Max(
+                    child.MapObject?.uiNode?.VisualIconData.color.a ?? 1,
+                    colour.a);
+              }
+            }
             if (colour.a == 0) {
               continue;
             }
