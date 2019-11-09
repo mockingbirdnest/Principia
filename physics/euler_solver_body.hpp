@@ -96,13 +96,15 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   // before we have checked for this case.
   auto const B₂₃² = I₂ * Δ₃ / I₂₃;
   auto const B₂₁² = I₂ * Δ₁ / I₂₁;
-  B₁₃_ = Sqrt(I₁ * Δ₃ / I₁₃);
-  B₃₁_ = Sqrt(I₃ * Δ₁ / I₃₁);
+  auto const B₁₃² = I₁ * Δ₃ / I₁₃;
+  auto const B₃₁² = I₃ * Δ₁ / I₃₁;
+  B₁₃_ = Sqrt(B₁₃²);
+  B₃₁_ = Sqrt(B₃₁²);
 
   auto const G² =  initial_angular_momentum_.Norm²();
   G_ =  Sqrt(G²);
   auto const two_T = m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃;
-  ψ_t_multiplier_ = two_T / G_;
+  ψ_t_multiplier_ = G_ / I₃;
 
   // Note that [CFSZ07] gives k, but we need mc = 1 - k^2.  We write mc in a way
   // that reduces cancellations when k is close to 1.
@@ -122,9 +124,17 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       σB₁₃_ = B₁₃_;
       λ_ = -λ₃;
     }
-    n_ = std::min(G² / B₂₃², 1.0);
-    ψ_Π_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_);
-    ψ_Π_multiplier_ = Δ₂ / (λ_ * I₂ * G_);
+
+    double sn;
+    double cn;
+    double dn;
+    JacobiSNCNDN(-ν_, mc_, sn, cn, dn);
+    n_ = -B₃₁² / B₁₃²;
+    ψ_ArcTan_multiplier_ = -B₁₃_ * B₃₁_ / (B₂₁_ * G_);
+    ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
+                ψ_ArcTan_multiplier_ * ArcTan(B₂₁_ * sn, B₁₃_ * dn);
+    ψ_Π_multiplier_ = G_ * I₃₁ / (λ_ * I₁ * I₃);
+
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
     CHECK_LE(Square<AngularMomentum>(), B₂₃²);
@@ -244,8 +254,14 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
   Angle ψ = ψ_t_multiplier_ * Δt;
   switch (formula_) {
     case Formula::i: {
+      double sn;
+      double cn;
+      double dn;
+      JacobiSNCNDN(λ_ * Δt - ν_, mc_, sn, cn, dn);
       Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
-      ψ += ψ_Π_multiplier_ * (EllipticΠ(φ, n_, mc_) - ψ_Π_offset_);
+      ψ += ψ_Π_multiplier_ *
+           (EllipticΠ(φ, n_, mc_) +
+            ψ_ArcTan_multiplier_ * ArcTan(B₂₁_ * sn, B₁₃_ * dn) - ψ_offset_);
       break;
     }
     case Formula::ii: {

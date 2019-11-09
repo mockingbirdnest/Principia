@@ -109,7 +109,8 @@ class EulerSolver {
   double n_ = NaN<double>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();
-  Angle ψ_Π_offset_ = NaN<Angle>();
+  Angle ψ_offset_ = NaN<Angle>();
+  double ψ_ArcTan_multiplier_ = NaN<double>();
   double ψ_Π_multiplier_ = NaN<double>();
   AngularFrequency ψ_t_multiplier_ = NaN<AngularFrequency>();
 };
