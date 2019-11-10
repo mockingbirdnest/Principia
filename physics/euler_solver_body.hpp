@@ -131,14 +131,15 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     double dn;
     JacobiSNCNDN(-ν_, mc_, sn, cn, dn);
     n_ = I₁ * I₃₂ / (I₃ * I₁₂);
-    ψ_arctan_x_multiplier_ = Sqrt(I₃ * I₂₁);
-    ψ_arctan_y_multiplier_ = Sqrt(I₂ * I₃₁);
-    ψ_arctan_multiplier_ = B₁₃_ * ψ_arctan_x_multiplier_ /
-                           (ψ_arctan_y_multiplier_ * G_);
+    ψ_cn_multiplier_ = Sqrt(I₃ * I₂₁);
+    ψ_sn_multiplier_ = Sqrt(I₂ * I₃₁);
+    ψ_arctan_multiplier_ = B₁₃_ * ψ_cn_multiplier_ /
+                           (ψ_sn_multiplier_ * G_);
     ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
-                ψ_arctan_multiplier_ * ArcTan(ψ_arctan_y_multiplier_ * sn,
-                                              ψ_arctan_x_multiplier_ * cn);
-    ψ_integral_multiplier_ = G² * I₁₃ / (λ_ * I₁ * I₃);
+                ψ_arctan_multiplier_ * ArcTan(ψ_sn_multiplier_ * sn,
+                                              ψ_cn_multiplier_ * cn);
+    ψ_integral_multiplier_ = G_ * I₁₃ / (λ_ * I₁ * I₃);
+    ψ_t_multiplier_ = G_ / I₁;
 
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
@@ -161,14 +162,15 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     double dn;
     JacobiSNCNDN(-ν_, mc_, sn, cn, dn);
     n_ = I₃ * I₂₁ / (I₁ * I₂₃);
-    ψ_arctan_x_multiplier_ = Sqrt(I₁ * I₃₂);
-    ψ_arctan_y_multiplier_ = Sqrt(I₂ * I₃₁);
-    ψ_arctan_multiplier_ = B₃₁_ * ψ_arctan_x_multiplier_ /
-                           (ψ_arctan_y_multiplier_ * G_);
+    ψ_cn_multiplier_ = Sqrt(I₁ * I₃₂);
+    ψ_sn_multiplier_ = Sqrt(I₂ * I₃₁);
+    ψ_arctan_multiplier_ = B₃₁_ * ψ_cn_multiplier_ /
+                           (ψ_sn_multiplier_ * G_);
     ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
-                ψ_arctan_multiplier_ * ArcTan(ψ_arctan_y_multiplier_ * sn,
-                                              ψ_arctan_x_multiplier_ * cn);
-    ψ_integral_multiplier_ = G² * I₃₁ / (λ_ * I₁ * I₃);
+                ψ_arctan_multiplier_ * ArcTan(ψ_sn_multiplier_ * sn,
+                                              ψ_cn_multiplier_ * cn);
+    ψ_integral_multiplier_ = G_ * I₃₁ / (λ_ * I₁ * I₃);
+    ψ_t_multiplier_ = G_ / I₃;
 
     formula_ = Formula::ii;
   } else {
@@ -198,10 +200,19 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       } else {
         σʺB₃₁_ = B₃₁_;
       }
-      // Δ₂ shows up in the multiplier, and λ_ is finite in the non-spherical
-      // case, so things simplify tremendously.
-      ψ_Π_offset_ = Angle();
-      ψ_integral_multiplier_ = 0;
+
+      if (B₁₃_ > B₃₁_) {
+        ψ_cosh_multiplier_ = B₃₁_;
+        ψ_sinh_multiplier_ = B₁₃_ - G_;
+        ψ_integral_multiplier_ = 2 * B₁₃_ / B₃₁_;
+        ψ_t_multiplier_ = G_ / I₁;
+      } else {
+        ψ_cosh_multiplier_ = B₁₃_;
+        ψ_sinh_multiplier_ = B₃₁_ - G_;
+        ψ_integral_multiplier_ = 2 * B₃₁_ / B₁₃_;
+        ψ_t_multiplier_ = G_ / I₃;
+      }
+      ψ_offset_ = ArcTan(ψ_sinh_multiplier_ * Tanh(-ν_ / 2), ψ_cosh_multiplier_);
       formula_ = Formula::iii;
     }
   }
@@ -265,6 +276,8 @@ typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     AngularMomentumBivector const& angular_momentum,
     Instant const& time) const {
+  Bivector<double, ℬʹ> const e₁({1, 0, 0});
+  Bivector<double, ℬʹ> const e₃({0, 0, 1});
   Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ = Compute𝒫ₜ(angular_momentum);
 
   Time const Δt = time - initial_time_;
@@ -278,8 +291,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
       ψ += ψ_integral_multiplier_ *
            (EllipticΠ(φ, n_, mc_) +
-            ψ_arctan_multiplier_ * ArcTan(ψ_arctan_y_multiplier_ * sn,
-                                          ψ_arctan_x_multiplier_ * dn) -
+            ψ_arctan_multiplier_ * ArcTan(ψ_sn_multiplier_ * sn,
+                                          ψ_cn_multiplier_ * cn) -
             ψ_offset_);
       break;
     }
@@ -291,12 +304,16 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
       ψ += ψ_integral_multiplier_ *
            (EllipticΠ(φ, n_, mc_) +
-            ψ_arctan_multiplier_ * ArcTan(ψ_arctan_y_multiplier_ * sn,
-                                          ψ_arctan_x_multiplier_ * cn) -
+            ψ_arctan_multiplier_ * ArcTan(ψ_sn_multiplier_ * sn,
+                                          ψ_cn_multiplier_ * cn) -
             ψ_offset_);
       break;
     }
     case Formula::iii: {
+      ψ += ψ_integral_multiplier_ *
+           (ArcTan(ψ_sinh_multiplier_ * Tanh(λ_ * Δt - ν_),
+                   ψ_cosh_multiplier_) -
+            ψ_offset_);
       break;
     }
     case Formula::Sphere: {
@@ -305,7 +322,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
   };
-  Bivector<double, ℬʹ> const e₃({0, 0, 1});
   Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₃, DefinesFrame<ℬₜ>{});
 
   return ℛ_ * 𝒴ₜ * 𝒫ₜ;
@@ -319,72 +335,65 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
   auto const& m = angular_momentum;
   auto m_coordinates = m.coordinates();
 
+  // For case (iii) we use project either on e₁ (as we do in case (i)) or on
+  // e₃ (as we do in case (ii)) depending on which of the x and z coordinates of
+  // m is larger (in absolute value).
+  Formula formula = formula_;
+  if (formula == Formula::iii) {
+    if (B₁₃_ > B₃₁_) {
+      formula = Formula::i;
+    } else {
+      formula = Formula::ii;
+    }
+  }
+
   // The decision to flip the signs below is a constant of motion because, for
   // a given formula, m is constrained to remain in a half-sphere.
   Quaternion pₜ;
-  switch (formula_) {
+  switch (formula) {
     case Formula::i: {
       if (m_coordinates.x > AngularMomentum()) {
         double const real_part = Sqrt(0.5 * (1 + m_coordinates.x / G_));
-        double const denominator = 2 * G_ * real_part;
+        AngularMomentum const denominator = 2 * G_ * real_part;
         pₜ = Quaternion(real_part,
-                        0,
-                        m_coordinates.z / denominator,
-                        -m_coordinates.y / denominator);
+                        {0,
+                         m_coordinates.z / denominator,
+                         -m_coordinates.y / denominator});
       } else {
         double const real_part = Sqrt(0.5 * (1 - m_coordinates.x / G_));
-        double const denominator = 2 * G_ * real_part;
+        AngularMomentum const denominator = 2 * G_ * real_part;
         pₜ = Quaternion(real_part,
-                        0,
-                        m_coordinates.z / denominator,
-                        m_coordinates.y / denominator);
+                        {0,
+                         m_coordinates.z / denominator,
+                         m_coordinates.y / denominator});
       }
       break;
     }
     case Formula::ii: {
       if (m_coordinates.z > AngularMomentum()) {
         double const real_part = Sqrt(0.5 * (1 + m_coordinates.z / G_));
-        double const denominator = 2 * G_ * real_part;
+        AngularMomentum const denominator = 2 * G_ * real_part;
         pₜ = Quaternion(real_part,
-                        m_coordinates.y / denominator,
-                        -m_coordinates.x / denominator,
-                        0);
+                        {m_coordinates.y / denominator,
+                         -m_coordinates.x / denominator,
+                         0});
       } else {
         double const real_part = Sqrt(0.5 * (1 - m_coordinates.z / G_));
-        double const denominator = 2 * G_ * real_part;
+        AngularMomentum const denominator = 2 * G_ * real_part;
         pₜ = Quaternion(real_part,
-                        m_coordinates.y / denominator,
-                        m_coordinates.x / denominator,
-                        0);
+                        {m_coordinates.y / denominator,
+                         m_coordinates.x / denominator,
+                         0});
       }
       break;
     }
-    case Formula::iii: {
-      break;
-    }
     case Formula::Sphere: {
+      pₜ = Quaternion(1);
     }
+    case Formula::iii:
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
   }
-
-  // The first time through this function (at construction), determine if we'll
-  // flip m.z and m.x to avoid the singularity m.z == -G.  After that, stick to
-  // the decision made at construction.
-  if (!must_flip_m_.has_value()) {
-    must_flip_m_ = m_coordinates.z < AngularMomentum();
-  }
-  if (must_flip_m_.value()) {
-    m_coordinates.x *= -1;
-    m_coordinates.z *= -1;
-  }
-
-  double const real_part = Sqrt(0.5 * (1 + m_coordinates.z / G_));
-  double const denominator = 2 * G_ * real_part;
-  Quaternion const pₜ(real_part,
-                      m_coordinates.y / denominator,
-                      -m_coordinates.x / denominator,
-                      0);
 
   Rotation<PrincipalAxesFrame, ℬₜ> const 𝒫ₜ(pₜ);
 

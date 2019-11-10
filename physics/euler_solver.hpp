@@ -105,8 +105,10 @@ class EulerSolver {
   Angle ν_ = NaN<Angle>();
   Angle ψ_offset_ = NaN<Angle>();
   double ψ_arctan_multiplier_ = NaN<double>();
-  AngularMomentum ψ_arctan_x_multiplier_ = NaN<AngularMomentum>();
-  AngularMomentum ψ_arctan_y_multiplier_ = NaN<AngularMomentum>();
+  MomentOfInertia ψ_cn_multiplier_ = NaN<MomentOfInertia>();
+  MomentOfInertia ψ_sn_multiplier_ = NaN<MomentOfInertia>();
+  AngularMomentum ψ_cosh_multiplier_ = NaN<AngularMomentum>();
+  AngularMomentum ψ_sinh_multiplier_ = NaN<AngularMomentum>();
   double ψ_integral_multiplier_ = NaN<double>();
   AngularFrequency ψ_t_multiplier_ = NaN<AngularFrequency>();
 };
