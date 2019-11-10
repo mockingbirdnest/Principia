@@ -130,15 +130,15 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     double cn;
     double dn;
     JacobiSNCNDN(-ν_, mc_, sn, cn, dn);
-    n_ = -B₃₁² / B₁₃²;
-    ψ_arctan_x_multiplier_ = B₁₃_;
-    ψ_arctan_y_multiplier_ = B₂₁_;
-    ψ_arctan_multiplier_ = -B₃₁_ * ψ_arctan_x_multiplier_ /
+    n_ = I₁ * I₃₂ / (I₃ * I₁₂);
+    ψ_arctan_x_multiplier_ = Sqrt(I₃ * I₂₁);
+    ψ_arctan_y_multiplier_ = Sqrt(I₂ * I₃₁);
+    ψ_arctan_multiplier_ = B₁₃_ * ψ_arctan_x_multiplier_ /
                            (ψ_arctan_y_multiplier_ * G_);
     ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
                 ψ_arctan_multiplier_ * ArcTan(ψ_arctan_y_multiplier_ * sn,
-                                              ψ_arctan_x_multiplier_ * dn);
-    ψ_integral_multiplier_ = G_ * I₃₁ / (λ_ * I₁ * I₃);
+                                              ψ_arctan_x_multiplier_ * cn);
+    ψ_integral_multiplier_ = G² * I₁₃ / (λ_ * I₁ * I₃);
 
     formula_ = Formula::i;
   } else if (Square<AngularMomentum>() < Δ₂) {
@@ -160,15 +160,15 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     double cn;
     double dn;
     JacobiSNCNDN(-ν_, mc_, sn, cn, dn);
-    n_ = I₂₁ * I₃ / (I₂₃ * I₁);
-    ψ_arctan_x_multiplier_ = B₁₃_;
-    ψ_arctan_y_multiplier_ = B₂₃_;
-    ψ_arctan_multiplier_ = σB₃₁_ * ψ_arctan_x_multiplier_ /
+    n_ = I₃ * I₂₁ / (I₁ * I₂₃);
+    ψ_arctan_x_multiplier_ = Sqrt(I₁ * I₃₂);
+    ψ_arctan_y_multiplier_ = Sqrt(I₂ * I₃₁);
+    ψ_arctan_multiplier_ = B₃₁_ * ψ_arctan_x_multiplier_ /
                            (ψ_arctan_y_multiplier_ * G_);
     ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
                 ψ_arctan_multiplier_ * ArcTan(ψ_arctan_y_multiplier_ * sn,
                                               ψ_arctan_x_multiplier_ * cn);
-    ψ_integral_multiplier_ = G_ * I₃₁ / (λ_ * I₁ * I₃);
+    ψ_integral_multiplier_ = G² * I₃₁ / (λ_ * I₁ * I₃);
 
     formula_ = Formula::ii;
   } else {
@@ -318,6 +318,55 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
     AngularMomentumBivector const& angular_momentum) const {
   auto const& m = angular_momentum;
   auto m_coordinates = m.coordinates();
+
+  // The decision to flip the signs below is a constant of motion because, for
+  // a given formula, m is constrained to remain in a half-sphere.
+  Quaternion pₜ;
+  switch (formula_) {
+    case Formula::i: {
+      if (m_coordinates.x > AngularMomentum()) {
+        double const real_part = Sqrt(0.5 * (1 + m_coordinates.x / G_));
+        double const denominator = 2 * G_ * real_part;
+        pₜ = Quaternion(real_part,
+                        0,
+                        m_coordinates.z / denominator,
+                        -m_coordinates.y / denominator);
+      } else {
+        double const real_part = Sqrt(0.5 * (1 - m_coordinates.x / G_));
+        double const denominator = 2 * G_ * real_part;
+        pₜ = Quaternion(real_part,
+                        0,
+                        m_coordinates.z / denominator,
+                        m_coordinates.y / denominator);
+      }
+      break;
+    }
+    case Formula::ii: {
+      if (m_coordinates.z > AngularMomentum()) {
+        double const real_part = Sqrt(0.5 * (1 + m_coordinates.z / G_));
+        double const denominator = 2 * G_ * real_part;
+        pₜ = Quaternion(real_part,
+                        m_coordinates.y / denominator,
+                        -m_coordinates.x / denominator,
+                        0);
+      } else {
+        double const real_part = Sqrt(0.5 * (1 - m_coordinates.z / G_));
+        double const denominator = 2 * G_ * real_part;
+        pₜ = Quaternion(real_part,
+                        m_coordinates.y / denominator,
+                        m_coordinates.x / denominator,
+                        0);
+      }
+      break;
+    }
+    case Formula::iii: {
+      break;
+    }
+    case Formula::Sphere: {
+    }
+    default:
+      LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
+  }
 
   // The first time through this function (at construction), determine if we'll
   // flip m.z and m.x to avoid the singularity m.z == -G.  After that, stick to

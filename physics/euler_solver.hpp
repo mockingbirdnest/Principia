@@ -75,12 +75,6 @@ class EulerSolver {
   Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
       AngularMomentumBivector const& angular_momentum) const;
 
-  // If m.z is negative, we'll flip m.x and m.z to avoid the singularity
-  // m.z == -G.  This decision is made at construction but it is *not* a
-  // constant of motion, but m.z getting alternatively close to G and -G should
-  // only occur for very thin or very flat objects.
-  std::optional<bool> must_flip_m_;
-
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;
   AngularMomentumBivector const initial_angular_momentum_;
