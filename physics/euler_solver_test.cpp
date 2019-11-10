@@ -383,7 +383,7 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 32),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 4),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 2)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/6);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/8);
 }
 
 TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
@@ -435,7 +435,7 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       Componentwise(AlmostEquals(reference_momentum.coordinates().x, 0, 3),
                     VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 24),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 6)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/4);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/3);
 }
 
 // This test demonstrates the Джанибеков effect, also known as tennis racket
@@ -536,9 +536,9 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       angular_momenta,
       attitudes,
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 10),
-                    AlmostEquals(reference_momentum.coordinates().y, 0, 14),
+                    AlmostEquals(reference_momentum.coordinates().y, 0, 16),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 965)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/43);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/45);
 }
 
 // A general body that doesn't rotate.
@@ -604,8 +604,8 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongFirstAxis) {
       actual_angular_velocity,
       AlmostEquals(solver.AngularVelocityFor(initial_angular_momentum), 0));
   EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 0));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 1));
-  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 1));
+  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 17));
+  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 17));
 }
 
 // A general body that rotates along the second principal axis.

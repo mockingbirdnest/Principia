@@ -178,7 +178,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
 
   switch (formula_) {
     case Formula::i: {
-      CHECK_LE(Square<AngularMomentum>(), B₂₃²);
       CHECK_LE(Square<AngularMomentum>(), B₂₁²);
       B₂₁_ = Sqrt(B₂₁²);
       mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
@@ -193,7 +192,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       n_ = I₁ * I₃₂ / (I₃ * I₁₂);
       ψ_cn_multiplier_ = Sqrt(I₃ * I₂₁);
       ψ_sn_multiplier_ = Sqrt(I₂ * I₃₁);
-      ψ_arctan_multiplier_ = B₁₃_ * ψ_cn_multiplier_ /
+      ψ_arctan_multiplier_ = -B₁₃_ * ψ_cn_multiplier_ /
                              (ψ_sn_multiplier_ * G_);
       ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
                   ψ_arctan_multiplier_ * ArcTan(ψ_sn_multiplier_ * sn,
@@ -205,7 +204,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     }
     case Formula::ii: {
       CHECK_LE(Square<AngularMomentum>(), B₂₃²);
-      CHECK_LE(Square<AngularMomentum>(), B₂₁²);
       B₂₃_ = Sqrt(B₂₃²);
       mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂), 1.0;
       ν_ = EllipticF(ArcTan(m.y * B₁₃_, m.x * B₂₃_), mc_);
@@ -219,7 +217,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       n_ = I₃ * I₂₁ / (I₁ * I₂₃);
       ψ_cn_multiplier_ = Sqrt(I₁ * I₃₂);
       ψ_sn_multiplier_ = Sqrt(I₂ * I₃₁);
-      ψ_arctan_multiplier_ = B₃₁_ * ψ_cn_multiplier_ /
+      ψ_arctan_multiplier_ = -B₃₁_ * ψ_cn_multiplier_ /
                              (ψ_sn_multiplier_ * G_);
       ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
                   ψ_arctan_multiplier_ * ArcTan(ψ_sn_multiplier_ * sn,
