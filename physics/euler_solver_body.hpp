@@ -61,7 +61,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   CHECK_LE(I₁, I₂);
   CHECK_LE(I₂, I₃);
 
-  auto const& m = initial_angular_momentum.coordinates();
+  auto m = initial_angular_momentum.coordinates();
 
   // These computations are such that if, say I₁ == I₂, I₂₁ is +0.0 and I₁₂ is
   // -0.0.
@@ -89,10 +89,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   auto const B₁₃² = I₁ * Δ₃ / I₁₃;
   B₁₃_ = Sqrt(B₁₃²);
   B₃₁_ = Sqrt(B₃₁²);
-
-  auto const G² =  initial_angular_momentum_.Norm²();
-  G_ =  Sqrt(G²);
-  ψ_t_multiplier_ = G_ / I₃;
 
   // Determine the formula and region to use.
   if (Δ₂ < Square<AngularMomentum>()) {
@@ -127,7 +123,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   Bivector<double, PreferredPrincipalAxesFrame> e₃({0, 0, 1});
   switch (region_) {
     case Region::e₁: {
-      if (m.x > AngularMomentum()) {
+      if (m.x >= AngularMomentum()) {
         𝒮_ = Rotation<PrincipalAxesFrame,
                       PreferredPrincipalAxesFrame>::Identity();
       } else {
@@ -137,7 +133,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       break;
     }
     case Region::e₃: {
-      if (m.z > AngularMomentum()) {
+      if (m.z >= AngularMomentum()) {
         𝒮_ = Rotation<PrincipalAxesFrame,
                       PreferredPrincipalAxesFrame>::Identity();
       } else {
@@ -150,8 +146,9 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
   }
 
-  // Now that 𝒮_ has been computed we can compute ℛ_.
+  // Now that 𝒮_ has been computed we can use it to adjust m and to compute ℛ_.
   initial_angular_momentum_ = 𝒮_(initial_angular_momentum);
+  m = initial_angular_momentum_.coordinates();
   ℛ_ = [this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
     auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
     auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_).Inverse();
@@ -168,6 +165,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     return initial_attitude * ℛ;
   }();
 
+  auto const G² =  m.Norm²();
+  G_ =  Sqrt(G²);
+  ψ_t_multiplier_ = G_ / I₃;
+
   switch (formula_) {
     case Formula::i: {
       CHECK_LE(Square<AngularMomentum>(), B₂₃²);
@@ -175,7 +176,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       B₂₁_ = Sqrt(B₂₁²);
       mc_ = std::min(Δ₂ * I₃₁ / (Δ₃ * I₂₁), 1.0);
       ν_ = EllipticF(ArcTan(m.y * B₃₁_, m.z * B₂₁_), mc_);
-      auto const λ₃ = -Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
+      auto const λ₃ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
+      λ_ = -λ₃;
 
       double sn;
       double cn;
@@ -200,7 +202,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       B₂₃_ = Sqrt(B₂₃²);
       mc_ = std::min(Δ₂ * I₃₁ / (Δ₁ * I₃₂), 1.0);
       ν_ = EllipticF(ArcTan(m.y * B₁₃_, m.x * B₂₃_), mc_);
-      auto const λ₁ = -Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
+      auto const λ₁ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
+      λ_ = -λ₁;
 
       double sn;
       double cn;
@@ -274,6 +277,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
       double dn;
       JacobiSNCNDN(λ_ * Δt - ν_, mc_, sn, cn, dn);
       m = PreferredAngularMomentumBivector({B₁₃_ * dn, -B₂₁_ * sn, B₃₁_ * cn});
+      break;
     }
     case Formula::ii: {
       double sn;
@@ -281,18 +285,21 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
       double dn;
       JacobiSNCNDN(λ_ * Δt - ν_, mc_, sn, cn, dn);
       m = PreferredAngularMomentumBivector({B₁₃_ * cn, -B₂₃_ * sn, B₃₁_ * dn});
+      break;
     }
     case Formula::iii: {
       Angle const angle = λ_ * Δt - ν_;
       double const sech = 1.0 / Cosh(angle);
       m = PreferredAngularMomentumBivector(
           {σʹB₁₃_ * sech, G_ * Tanh(angle), σʺB₃₁_ * sech});
+      break;
     }
     case Formula::Sphere : {
       // NOTE(phl): It's unclear how the formulæ degenerate in this case, but
       // surely λ₃_ becomes 0, so the dependency in time disappears, so this is
       // my best guess.
       m = initial_angular_momentum_;
+      break;
     }
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);

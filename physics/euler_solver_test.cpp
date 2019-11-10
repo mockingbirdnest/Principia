@@ -172,7 +172,7 @@ TEST_F(EulerSolverTest, InitialStateRandom) {
         solver.AngularMomentumAt(Instant());
 
     EXPECT_THAT(computed_initial_angular_momentum,
-                AlmostEquals(initial_angular_momentum, 0, 209))
+                AlmostEquals(initial_angular_momentum, 0, 2136))
         << moments_of_inertia << " " << initial_angular_momentum;
   }
 }
