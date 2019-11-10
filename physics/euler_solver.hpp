@@ -82,6 +82,7 @@ class EulerSolver {
   enum class Region {
     e₁,
     e₃,
+    Sphere,
   };
 
   Rotation<PreferredPrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(

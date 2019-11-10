@@ -383,7 +383,7 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 32),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 4),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 2)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/13);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/6);
 }
 
 TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
@@ -536,9 +536,9 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       angular_momenta,
       attitudes,
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 10),
-                    AlmostEquals(reference_momentum.coordinates().y, 0, 13),
+                    AlmostEquals(reference_momentum.coordinates().y, 0, 14),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 965)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/33);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/43);
 }
 
 // A general body that doesn't rotate.

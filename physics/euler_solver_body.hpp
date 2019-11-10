@@ -90,6 +90,9 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   B₁₃_ = Sqrt(B₁₃²);
   B₃₁_ = Sqrt(B₃₁²);
 
+  auto const G² =  m.Norm²();
+  G_ =  Sqrt(G²);
+
   // Determine the formula and region to use.
   if (Δ₂ < Square<AngularMomentum>()) {
     formula_ = Formula::i;
@@ -102,11 +105,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     if (G_ == AngularMomentum()) {
       // No rotation.  Might as well handle it as a sphere.
       formula_ = Formula::Sphere;
+      region_ = Region::Sphere;
     } else if (I₃₁ == MomentOfInertia()) {
       // The degenerate case of a sphere.  It would create NaNs.
       CHECK_EQ(MomentOfInertia(), I₂₁);
       CHECK_EQ(MomentOfInertia(), I₃₂);
       formula_ = Formula::Sphere;
+      region_ = Region::Sphere;
     } else {
       formula_ = Formula::iii;
       //COmment
@@ -142,6 +147,11 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       }
       break;
     }
+    case Region::Sphere: {
+      𝒮_ = Rotation<PrincipalAxesFrame,
+                    PreferredPrincipalAxesFrame>::Identity();
+      break;
+    }
     default:
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
   }
@@ -164,10 +174,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     // 2.3 of [CFSZ07].
     return initial_attitude * ℛ;
   }();
-
-  auto const G² =  m.Norm²();
-  G_ =  Sqrt(G²);
-  ψ_t_multiplier_ = G_ / I₃;
 
   switch (formula_) {
     case Formula::i: {
@@ -256,10 +262,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       break;
     }
     case Formula::Sphere: {
-      if (G_ == AngularMomentum()) {
-        // No rotation.  Might as well handle it as a sphere.
-        ψ_t_multiplier_ = AngularFrequency();
-      } ////WTF?
+      ψ_t_multiplier_ = G_ / I₂;
+      break;
     }
   }
 }
@@ -385,6 +389,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₃, DefinesFrame<ℬₜ>{});
       return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_;
     }
+    case Region::Sphere: {
+      ///Right?
+      Bivector<double, ℬʹ> const e(
+          Normalize(initial_angular_momentum_.coordinates()));
+      Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e, DefinesFrame<ℬₜ>{});
+      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_;
+    }
     default:
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
   }
@@ -419,9 +430,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
                         0});
       break;
     }
-    //case Formula::Sphere: {
-    //  pₜ = Quaternion(1);
-    //}
+    case Region::Sphere: {
+      pₜ = Quaternion(1);
+      break;
+    }
     default:
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
   }
