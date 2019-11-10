@@ -181,7 +181,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       CHECK_LE(Square<AngularMomentum>(), B₂₃²);
       CHECK_LE(Square<AngularMomentum>(), B₂₁²);
       B₂₁_ = Sqrt(B₂₁²);
-      mc_ = std::min(Δ₂ * I₃₁ / (Δ₃ * I₂₁), 1.0);
+      mc_ = Δ₂ * I₃₁ / (Δ₃ * I₂₁);
       ν_ = EllipticF(ArcTan(m.y * B₃₁_, m.z * B₂₁_), mc_);
       auto const λ₃ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
       λ_ = -λ₃;
@@ -207,7 +207,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       CHECK_LE(Square<AngularMomentum>(), B₂₃²);
       CHECK_LE(Square<AngularMomentum>(), B₂₁²);
       B₂₃_ = Sqrt(B₂₃²);
-      mc_ = std::min(Δ₂ * I₃₁ / (Δ₁ * I₃₂), 1.0);
+      mc_ = Δ₂ * I₃₁ / (Δ₁ * I₃₂), 1.0;
       ν_ = EllipticF(ArcTan(m.y * B₁₃_, m.x * B₂₃_), mc_);
       auto const λ₁ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
       λ_ = -λ₁;
