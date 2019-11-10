@@ -62,6 +62,10 @@ class EulerSolver {
  private:
   struct ℬₜ;
   struct ℬʹ;
+  struct PreferredPrincipalAxesFrame;////Comment
+
+  using PreferredAngularMomentumBivector =
+      Bivector<AngularMomentum, PreferredPrincipalAxesFrame>;
 
   // The formula to use, following [CFSZ07], Section 2.2.  They don't have a
   // formula for the spherical case.
@@ -69,20 +73,32 @@ class EulerSolver {
     i,
     ii,
     iii,
-    Sphere
+    Sphere,
   };
 
-  Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
-      AngularMomentumBivector const& angular_momentum) const;
+  // For case (iii) we use project either on e₁ (as we do in case (i)) or on
+  // e₃ (as we do in case (ii)) depending on which of the x and z coordinates of
+  // m is larger (in absolute value).
+  enum class Region {
+    e₁,
+    e₃,
+  };
+
+  Rotation<PreferredPrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
+      PreferredAngularMomentumBivector const& angular_momentum) const;
 
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;
-  AngularMomentumBivector const initial_angular_momentum_;
   Instant const initial_time_;
-  Rotation<ℬʹ, InertialFrame> const ℛ_;
+  PreferredAngularMomentumBivector initial_angular_momentum_;
+  Rotation<ℬʹ, InertialFrame> ℛ_;
 
-  // Amusingly, the formula to use is a constant of motion.
+  // Amusingly, the formula and the region to use are constants of motion.
   Formula formula_;
+  Region region_;
+
+  ///Comment
+  Rotation<PrincipalAxesFrame, PreferredPrincipalAxesFrame> 𝒮_;
 
   // Only the parameters needed for the selected formula are non-NaN after
   // construction.
@@ -95,8 +111,6 @@ class EulerSolver {
   AngularMomentum B₃₁_ = NaN<AngularMomentum>();
   AngularMomentum B₂₁_ = NaN<AngularMomentum>();
 
-  AngularMomentum σB₁₃_ = NaN<AngularMomentum>();
-  AngularMomentum σB₃₁_ = NaN<AngularMomentum>();
   AngularMomentum σʹB₁₃_ = NaN<AngularMomentum>();
   AngularMomentum σʺB₃₁_ = NaN<AngularMomentum>();
 
