@@ -105,13 +105,14 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     if (G_ == AngularMomentum()) {
       // No rotation.  Might as well handle it as a sphere.
       formula_ = Formula::Sphere;
-      region_ = Region::Sphere;
+      region_ = Region::Motionless;
     } else if (I₃₁ == MomentOfInertia()) {
-      // The degenerate case of a sphere.  It would create NaNs.
+      // The degenerate case of a sphere.  It would create NaNs.  Pick a region
+      // arbitrarily
       CHECK_EQ(MomentOfInertia(), I₂₁);
       CHECK_EQ(MomentOfInertia(), I₃₂);
       formula_ = Formula::Sphere;
-      region_ = Region::Sphere;
+      region_ = Region::e₁;
     } else {
       formula_ = Formula::iii;
       //COmment
@@ -147,7 +148,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       }
       break;
     }
-    case Region::Sphere: {
+    case Region::Motionless: {
       𝒮_ = Rotation<PrincipalAxesFrame,
                     PreferredPrincipalAxesFrame>::Identity();
       break;
@@ -389,11 +390,9 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₃, DefinesFrame<ℬₜ>{});
       return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_;
     }
-    case Region::Sphere: {
-      ///Right?
-      Bivector<double, ℬʹ> const e(
-          Normalize(initial_angular_momentum_.coordinates()));
-      Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e, DefinesFrame<ℬₜ>{});
+    case Region::Motionless: {
+      Bivector<double, ℬʹ> const unused({0, 1, 0});
+      Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, unused, DefinesFrame<ℬₜ>{});
       return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_;
     }
     default:
@@ -430,7 +429,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
                         0});
       break;
     }
-    case Region::Sphere: {
+    case Region::Motionless: {
       pₜ = Quaternion(1);
       break;
     }
