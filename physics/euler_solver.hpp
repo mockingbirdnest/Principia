@@ -73,6 +73,7 @@ class EulerSolver {
     i,
     ii,
     iii,
+    iii_Singular,
     Sphere,
   };
 
@@ -120,6 +121,7 @@ class EulerSolver {
   Angle ν_ = NaN<Angle>();
   Angle ψ_offset_ = NaN<Angle>();
   double ψ_arctan_multiplier_ = NaN<double>();
+  double ψ_tanh_multiplier_ = NaN<double>();
   MomentOfInertia ψ_cn_multiplier_ = NaN<MomentOfInertia>();
   MomentOfInertia ψ_sn_multiplier_ = NaN<MomentOfInertia>();
   AngularMomentum ψ_cosh_multiplier_ = NaN<AngularMomentum>();
