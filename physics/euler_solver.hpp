@@ -119,9 +119,6 @@ class EulerSolver {
   AngularMomentum B₃₁_ = NaN<AngularMomentum>();
   AngularMomentum B₂₁_ = NaN<AngularMomentum>();
 
-  AngularMomentum σʹB₁₃_ = NaN<AngularMomentum>();
-  AngularMomentum σʺB₃₁_ = NaN<AngularMomentum>();
-
   double n_ = NaN<double>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();

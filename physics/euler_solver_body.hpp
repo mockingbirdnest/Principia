@@ -130,57 +130,60 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     }
   }
 
+  // Compute the rotation 𝒮_ that adjusts the signs of the coordinates of m in a
+  // way that ensures that the quaternions are well-conditioned and that the σ's
+  // disappear.
   Bivector<double, PreferredPrincipalAxesFrame> e₁({1, 0, 0});
   Bivector<double, PreferredPrincipalAxesFrame> e₂({0, 1, 0});
   Bivector<double, PreferredPrincipalAxesFrame> e₃({0, 0, 1});
-  switch (region_) {
-    case Region::e₁: {
-      if (m.x >= AngularMomentum()) {
-        if (formula_ == Formula::iii && m.z < AngularMomentum()) {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>(e₁, -e₂, -e₃);
-        } else {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>::Identity();
-        }
-      } else {
-        if (formula_ == Formula::iii && m.z < AngularMomentum()) {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
-        } else {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>(-e₁, -e₂, e₃);
-        }
-      }
-      break;
-    }
-    case Region::e₃: {
+  if (formula_ == Formula::iii) {
+    if (m.x >= AngularMomentum()) {
       if (m.z >= AngularMomentum()) {
-        if (formula_ == Formula::iii && m.x < AngularMomentum()) {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>(-e₁, -e₂, e₃);
-        } else {
+        𝒮_ = Rotation<PrincipalAxesFrame,
+                      PreferredPrincipalAxesFrame>::Identity();
+      } else {
+        𝒮_ = Rotation<PrincipalAxesFrame,
+                      PreferredPrincipalAxesFrame>(e₁, -e₂, -e₃);
+      }
+    } else {
+      if (m.z >= AngularMomentum()) {
+        𝒮_ = Rotation<PrincipalAxesFrame,
+                      PreferredPrincipalAxesFrame>(-e₁, -e₂, e₃);
+      } else {
+        𝒮_ = Rotation<PrincipalAxesFrame,
+                      PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
+      }
+    }
+  } else {
+    switch (region_) {
+      case Region::e₁: {
+        if (m.x >= AngularMomentum()) {
           𝒮_ = Rotation<PrincipalAxesFrame,
                         PreferredPrincipalAxesFrame>::Identity();
-        }
-      } else {
-        if (formula_ == Formula::iii && m.x < AngularMomentum()) {
+        } else {
           𝒮_ = Rotation<PrincipalAxesFrame,
                         PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
-        } else{
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>(e₁, -e₂, -e₃);
         }
+        break;
       }
-      break;
+      case Region::e₃: {
+        if (m.z >= AngularMomentum()) {
+          𝒮_ = Rotation<PrincipalAxesFrame,
+                        PreferredPrincipalAxesFrame>::Identity();
+        } else {
+          𝒮_ = Rotation<PrincipalAxesFrame,
+                        PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
+        }
+        break;
+      }
+      case Region::Motionless: {
+        𝒮_ = Rotation<PrincipalAxesFrame,
+                      PreferredPrincipalAxesFrame>::Identity();
+        break;
+      }
+      default:
+        LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
     }
-    case Region::Motionless: {
-      𝒮_ = Rotation<PrincipalAxesFrame,
-                    PreferredPrincipalAxesFrame>::Identity();
-      break;
-    }
-    default:
-      LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
   }
 
   // Now that 𝒮_ has been computed we can use it to adjust m and to compute ℛ_.
@@ -257,20 +260,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       ν_ = -ArcTanh(m.y / G_);
       auto const λ₂ = Sqrt(-Δ₁ * Δ₃ / (I₁ * I₃)) / G_;
       λ_ = λ₂;
-      CHECK_GE(m.x, AngularMomentum());
-      CHECK_GE(m.z, AngularMomentum());
-      if (m.x < AngularMomentum()) {
-        σʹB₁₃_ = -B₁₃_;
-        λ_ = -λ_;
-      } else {
-        σʹB₁₃_ = B₁₃_;
-      }
-      if (m.z < AngularMomentum()) {
-        σʺB₃₁_ = -B₃₁_;
-        λ_ = -λ_;
-      } else {
-        σʺB₃₁_ = B₃₁_;
-      }
 
       switch (region_) {
         case Region::e₁: {
@@ -345,7 +334,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
       Angle const angle = λ_ * Δt - ν_;
       double const sech = 1.0 / Cosh(angle);
       m = PreferredAngularMomentumBivector(
-          {σʹB₁₃_ * sech, G_ * Tanh(angle), σʺB₃₁_ * sech});
+          {B₁₃_ * sech, G_ * Tanh(angle), B₃₁_ * sech});
       break;
     }
     case Formula::Sphere : {
