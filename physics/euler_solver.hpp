@@ -101,7 +101,7 @@ class EulerSolver {
   Rotation<ℬʹ, InertialFrame> ℛ_;
 
   // A rotation that describes which axes are flipped to adjust the signs of the
-  // coordinates of m.
+  // coordinates of m.  It incorporates σ, σʹ and σʺ from [CFSZ07].
   Rotation<PrincipalAxesFrame, PreferredPrincipalAxesFrame> 𝒮_;
 
   // Importantly, the formula and the region to use are constants of motion.

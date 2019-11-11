@@ -109,12 +109,16 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       formula_ = Formula::Sphere;
       region_ = Region::Motionless;
     } else if (I₃₁ == MomentOfInertia()) {
-      // The degenerate case of a sphere.  It would create NaNs.  Pick a region
-      // arbitrarily
+      // The degenerate case of a sphere.  It would create NaNs.  Pick the
+      // region that corresponds to the largest coordinate.
       CHECK_EQ(MomentOfInertia(), I₂₁);
       CHECK_EQ(MomentOfInertia(), I₃₂);
       formula_ = Formula::Sphere;
-      region_ = Region::e₁;
+      if (Abs(m.x) > Abs(m.z)) {
+        region_ = Region::e₁;
+      } else {
+        region_ = Region::e₃;
+      }
     } else {
       formula_ = Formula::iii;
       // Project along the largest coordinate of x and z in absolute value.
@@ -132,21 +136,41 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   switch (region_) {
     case Region::e₁: {
       if (m.x >= AngularMomentum()) {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>::Identity();
+        if (formula_ == Formula::iii && m.z < AngularMomentum()) {
+          𝒮_ = Rotation<PrincipalAxesFrame,
+                        PreferredPrincipalAxesFrame>(e₁, -e₂, -e₃);
+        } else {
+          𝒮_ = Rotation<PrincipalAxesFrame,
+                        PreferredPrincipalAxesFrame>::Identity();
+        }
       } else {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
+        if (formula_ == Formula::iii && m.z < AngularMomentum()) {
+          𝒮_ = Rotation<PrincipalAxesFrame,
+                        PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
+        } else {
+          𝒮_ = Rotation<PrincipalAxesFrame,
+                        PreferredPrincipalAxesFrame>(-e₁, -e₂, e₃);
+        }
       }
       break;
     }
     case Region::e₃: {
       if (m.z >= AngularMomentum()) {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>::Identity();
+        if (formula_ == Formula::iii && m.x < AngularMomentum()) {
+          𝒮_ = Rotation<PrincipalAxesFrame,
+                        PreferredPrincipalAxesFrame>(-e₁, -e₂, e₃);
+        } else {
+          𝒮_ = Rotation<PrincipalAxesFrame,
+                        PreferredPrincipalAxesFrame>::Identity();
+        }
       } else {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
+        if (formula_ == Formula::iii && m.x < AngularMomentum()) {
+          𝒮_ = Rotation<PrincipalAxesFrame,
+                        PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
+        } else{
+          𝒮_ = Rotation<PrincipalAxesFrame,
+                        PreferredPrincipalAxesFrame>(e₁, -e₂, -e₃);
+        }
       }
       break;
     }
@@ -233,6 +257,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       ν_ = -ArcTanh(m.y / G_);
       auto const λ₂ = Sqrt(-Δ₁ * Δ₃ / (I₁ * I₃)) / G_;
       λ_ = λ₂;
+      CHECK_GE(m.x, AngularMomentum());
+      CHECK_GE(m.z, AngularMomentum());
       if (m.x < AngularMomentum()) {
         σʹB₁₃_ = -B₁₃_;
         λ_ = -λ_;
