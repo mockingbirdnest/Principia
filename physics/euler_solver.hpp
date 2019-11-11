@@ -62,13 +62,18 @@ class EulerSolver {
  private:
   struct ℬₜ;
   struct ℬʹ;
-  struct PreferredPrincipalAxesFrame;////Comment
+
+  // A frame which is rotated from PrincipalAxesFrame such that the coordinates
+  // of m along which we project is positive.  Used for all internal
+  // computations.
+  struct PreferredPrincipalAxesFrame;
 
   using PreferredAngularMomentumBivector =
       Bivector<AngularMomentum, PreferredPrincipalAxesFrame>;
 
   // The formula to use, following [CFSZ07], Section 2.2.  They don't have a
-  // formula for the spherical case.
+  // formula for the spherical case.  Also note our singular case for case (iii)
+  // which arises when the coordinate along which we don't project is 0.
   enum class Formula {
     i,
     ii,
@@ -95,12 +100,13 @@ class EulerSolver {
   PreferredAngularMomentumBivector initial_angular_momentum_;
   Rotation<ℬʹ, InertialFrame> ℛ_;
 
-  // Amusingly, the formula and the region to use are constants of motion.
+  // A rotation that describes which axes are flipped to adjust the signs of the
+  // coordinates of m.
+  Rotation<PrincipalAxesFrame, PreferredPrincipalAxesFrame> 𝒮_;
+
+  // Importantly, the formula and the region to use are constants of motion.
   Formula formula_;
   Region region_;
-
-  ///Comment
-  Rotation<PrincipalAxesFrame, PreferredPrincipalAxesFrame> 𝒮_;
 
   // Only the parameters needed for the selected formula are non-NaN after
   // construction.

@@ -62,6 +62,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   CHECK_LE(I₁, I₂);
   CHECK_LE(I₂, I₃);
 
+  // The usages of this variable prior to the computation of 𝒮_ must not depend
+  // on the signs of its coordinates since we may flip it.
   auto m = initial_angular_momentum.coordinates();
 
   // These computations are such that if, say I₁ == I₂, I₂₁ is +0.0 and I₁₂ is
@@ -75,7 +77,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
 
   // The formulæ for the Δs in [CFSZ07] cannot be used directly because of
   // cancellations.
-  ///Comment no sign
   auto const Δ₁ = m.y * m.y * I₂₁ / I₂ + m.z * m.z * I₃₁ / I₃;
   auto const Δ₂ = m.z * m.z * I₃₂ / I₃ + m.x * m.x * I₁₂ / I₁;
   auto const Δ₃ = m.x * m.x * I₁₃ / I₁ + m.y * m.y * I₂₃ / I₂;
@@ -116,7 +117,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       region_ = Region::e₁;
     } else {
       formula_ = Formula::iii;
-      //COmment
+      // Project along the largest coordinate of x and z in absolute value.
       if (B₁₃_ > B₃₁_) {
         region_ = Region::e₁;
       } else {
