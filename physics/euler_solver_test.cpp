@@ -801,11 +801,11 @@ TEST_F(EulerSolverTest, GeneralBodyRotationVeryCloseToThirdAxis) {
       Componentwise(AlmostEquals(expected_attitude(e2_).coordinates().x, 0, 2),
                     AlmostEquals(expected_attitude(e2_).coordinates().y, 0, 8),
                     VanishesBefore(1, 0)));
-  EXPECT_THAT(
-      actual_attitude(e3_),
-      Componentwise(Le(std::numeric_limits<double>::min()),
-                    Le(std::numeric_limits<double>::min()),
-                    VanishesBefore(1, 0)));
+  EXPECT_THAT(actual_attitude(e3_),
+              Componentwise(
+                  VanishesBefore(1, 0),
+                  VanishesBefore(1, 0),
+                  AlmostEquals(expected_attitude(e3_).coordinates().z, 0, 0)));
 }
 
 // A sphere that rotates around an axis with a random orientation.  Also, a

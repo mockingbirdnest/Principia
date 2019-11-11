@@ -247,15 +247,15 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       if (B₁₃_ > B₃₁_) {
         ψ_cosh_multiplier_ = B₃₁_;
         ψ_sinh_multiplier_ = B₁₃_ - G_;
-        ψ_integral_multiplier_ = 2 * B₁₃_ / B₃₁_;
-        ψ_t_multiplier_ = G_ / I₁;
+        ψ_arctan_multiplier_ = 2 * B₁₃_ / B₃₁_;
       } else {
         ψ_cosh_multiplier_ = B₁₃_;
         ψ_sinh_multiplier_ = B₃₁_ - G_;
-        ψ_integral_multiplier_ = 2 * B₃₁_ / B₁₃_;
-        ψ_t_multiplier_ = G_ / I₃;
+        ψ_arctan_multiplier_ = 2 * B₃₁_ / B₁₃_;
       }
-      ψ_offset_ = ArcTan(ψ_sinh_multiplier_ * Tanh(-ν_ / 2),
+      auto const two_T = m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃;
+      ψ_t_multiplier_ = two_T / G_;
+      ψ_offset_ = ArcTan(ψ_sinh_multiplier_ * Tanh(-0.5 * ν_),
                          ψ_cosh_multiplier_);
 
       break;
@@ -364,8 +364,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       break;
     }
     case Formula::iii: {
-      ψ += ψ_integral_multiplier_ *
-           (ArcTan(ψ_sinh_multiplier_ * Tanh(λ_ * Δt - ν_),
+      ψ += ψ_arctan_multiplier_ *
+           (ArcTan(ψ_sinh_multiplier_ * Tanh(0.5 * (λ_ * Δt - ν_)),
                    ψ_cosh_multiplier_) -
             ψ_offset_);
       break;
