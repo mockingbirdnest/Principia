@@ -110,19 +110,19 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       region_ = Region::Motionless;
     } else if (I₃₁ == MomentOfInertia()) {
       // The degenerate case of a sphere.  It would create NaNs.  Pick the
-      // region that corresponds to the largest coordinate.
+      // region that corresponds to the smallest coordinate.
       CHECK_EQ(MomentOfInertia(), I₂₁);
       CHECK_EQ(MomentOfInertia(), I₃₂);
       formula_ = Formula::Sphere;
-      if (Abs(m.x) > Abs(m.z)) {
+      if (Abs(m.x) < Abs(m.z)) {
         region_ = Region::e₁;
       } else {
         region_ = Region::e₃;
       }
     } else {
       formula_ = Formula::iii;
-      // Project along the largest coordinate of x and z in absolute value.
-      if (B₁₃_ > B₃₁_) {
+      // Project along the smallest coordinate of x and z in absolute value.
+      if (B₁₃_ < B₃₁_) {
         region_ = Region::e₁;
       } else {
         region_ = Region::e₃;
@@ -264,36 +264,22 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       switch (region_) {
         case Region::e₁: {
           ψ_arctan_multiplier_ = 2 * B₁₃_ / B₃₁_;
-          if (IsFinite(ψ_arctan_multiplier_)) {
-            ψ_cosh_multiplier_ = B₃₁_;
-            ψ_sinh_multiplier_ = B₁₃_ - G_;
-            ψ_offset_ = ArcTan(ψ_sinh_multiplier_ * Tanh(-0.5 * ν_),
-                               ψ_cosh_multiplier_);
-          } else {
-            formula_ = Formula::iii_Singular;
-            ψ_tanh_multiplier_ = -2 * B₁₃_ / (B₁₃_ + G_);
-            ψ_offset_ = Tanh(-0.5 * ν_) * Radian;
-          }
+          ψ_cosh_multiplier_ = B₃₁_;
+          ψ_sinh_multiplier_ = B₁₃_ - G_;
           break;
         }
         case Region::e₃: {
           ψ_arctan_multiplier_ = 2 * B₃₁_ / B₁₃_;
-          if (IsFinite(ψ_arctan_multiplier_)) {
-            ψ_cosh_multiplier_ = B₁₃_;
-            ψ_sinh_multiplier_ = B₃₁_ - G_;
-            ψ_offset_ = ArcTan(ψ_sinh_multiplier_ * Tanh(-0.5 * ν_),
-                               ψ_cosh_multiplier_);
-          } else {
-            formula_ = Formula::iii_Singular;
-            ψ_tanh_multiplier_ = -2 * B₃₁_ / (B₃₁_ + G_);
-            ψ_offset_ = Tanh(-0.5 * ν_) * Radian;
-          }
+          ψ_cosh_multiplier_ = B₁₃_;
+          ψ_sinh_multiplier_ = B₃₁_ - G_;
           break;
         }
         case Region::Motionless:
         default:
           LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
       }
+      ψ_offset_ = ArcTan(ψ_sinh_multiplier_ * Tanh(-0.5 * ν_),
+                         ψ_cosh_multiplier_);
       auto const two_T = m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃;
       ψ_t_multiplier_ = two_T / G_;
 
@@ -329,8 +315,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
       m = PreferredAngularMomentumBivector({B₁₃_ * cn, -B₂₃_ * sn, B₃₁_ * dn});
       break;
     }
-    case Formula::iii:
-    case Formula::iii_Singular: {
+    case Formula::iii: {
       Angle const angle = λ_ * Δt - ν_;
       double const sech = 1.0 / Cosh(angle);
       m = PreferredAngularMomentumBivector(
@@ -408,11 +393,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
            (ArcTan(ψ_sinh_multiplier_ * Tanh(0.5 * (λ_ * Δt - ν_)),
                    ψ_cosh_multiplier_) -
             ψ_offset_);
-      break;
-    }
-    case Formula::iii_Singular: {
-      ψ += ψ_tanh_multiplier_ *
-           (Tanh(0.5 * (λ_ * Δt - ν_)) * Radian - ψ_offset_);
       break;
     }
     case Formula::Sphere: {

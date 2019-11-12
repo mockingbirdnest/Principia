@@ -646,7 +646,7 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongSecondAxis) {
   EXPECT_THAT(
       actual_attitude(e1_),
       Componentwise(AlmostEquals(expected_attitude(e1_).coordinates().x, 0),
-                    VanishesBefore(1, 1),
+                    VanishesBefore(1, 0),
                     AlmostEquals(expected_attitude(e1_).coordinates().z, 1)));
   EXPECT_THAT(
       actual_attitude(e2_),
@@ -656,7 +656,7 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongSecondAxis) {
   EXPECT_THAT(
       actual_attitude(e3_),
       Componentwise(AlmostEquals(expected_attitude(e3_).coordinates().x, 1),
-                    VanishesBefore(1, 0),
+                    VanishesBefore(1, 2),
                     AlmostEquals(expected_attitude(e3_).coordinates().z, 0)));
 }
 
@@ -852,8 +852,8 @@ TEST_F(EulerSolverTest, SphereRotationAlongRandomAxis) {
   EXPECT_THAT(actual_angular_velocity,
               AlmostEquals(expected_angular_velocity, 0));
   EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 8));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 10));
-  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 16));
+  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 12));
+  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 12));
 }
 
 // Rotation on the separatrix with a constant momentum.
@@ -892,9 +892,9 @@ TEST_F(EulerSolverTest, SeparatrixConstantMomentum) {
               AlmostEquals(initial_angular_momentum, 1));
   EXPECT_THAT(actual_angular_velocity,
               AlmostEquals(expected_angular_velocity, 2));
-  EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 4));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 16));
-  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 6));
+  EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 8));
+  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 4));
+  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 7));
 }
 
 // The data in this test are from Takahashi, Busch and Scheeres, Spin state and
