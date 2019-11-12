@@ -739,11 +739,11 @@ TEST_F(EulerSolverTest, GeneralBodyRotationCloseToThirdAxis) {
   EXPECT_THAT(
       actual_attitude(e1_),
       Componentwise(AlmostEquals(expected_attitude(e1_).coordinates().x, 8),
-                    AlmostEquals(expected_attitude(e1_).coordinates().y, 2),
+                    AlmostEquals(expected_attitude(e1_).coordinates().y, 0, 2),
                     VanishesBefore(std::numeric_limits<double>::epsilon(), 4)));
   EXPECT_THAT(
       actual_attitude(e2_),
-      Componentwise(AlmostEquals(expected_attitude(e2_).coordinates().x, 2),
+      Componentwise(AlmostEquals(expected_attitude(e2_).coordinates().x, 0, 2),
                     AlmostEquals(expected_attitude(e2_).coordinates().y, 8),
                     VanishesBefore(1, 2)));
   EXPECT_THAT(
