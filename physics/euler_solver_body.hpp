@@ -53,6 +53,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     Instant const& initial_time)
     : moments_of_inertia_(moments_of_inertia),
       initial_time_(initial_time),
+      G_(initial_angular_momentum.Norm()),
       ℛ_(Rotation<ℬʹ, InertialFrame>::Identity()),
       𝒮_(Rotation<PrincipalAxesFrame,
                   PreferredPrincipalAxesFrame>::Identity()) {
@@ -91,9 +92,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   auto const B₁₃² = I₁ * Δ₃ / I₁₃;
   B₁₃_ = Sqrt(B₁₃²);
   B₃₁_ = Sqrt(B₃₁²);
-
-  auto const G² =  m.Norm²();
-  G_ =  Sqrt(G²);
 
   // Determine the formula and region to use.
   if (Δ₂ < Square<AngularMomentum>()) {

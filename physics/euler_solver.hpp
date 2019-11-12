@@ -96,6 +96,7 @@ class EulerSolver {
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;
   Instant const initial_time_;
+  AngularMomentum const G_;
   PreferredAngularMomentumBivector initial_angular_momentum_;
   Rotation<ℬʹ, InertialFrame> ℛ_;
 
@@ -112,7 +113,6 @@ class EulerSolver {
 
   AngularFrequency λ_ = NaN<AngularFrequency>();
 
-  AngularMomentum G_ = NaN<AngularMomentum>();
   AngularMomentum B₂₃_ = NaN<AngularMomentum>();
   AngularMomentum B₁₃_ = NaN<AngularMomentum>();
   AngularMomentum B₃₁_ = NaN<AngularMomentum>();
