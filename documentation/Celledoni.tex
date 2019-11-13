@@ -98,7 +98,7 @@ the Джанибеков effect.
 with precession.  The green curve is the (unstable) case (iii) and any perturbation demonstrates the Джанибеков effect.\label{figm}}
 \end{figure}
 
-The solutions may also be visualized by intersecting the sphere $\norm\vm = 1$ with ellipsoids defined by the value of the kinetic energy $T$,
+The solutions may also be visualized by intersecting the sphere $\norm\vm = G$ with ellipsoids defined by the value of the kinetic energy $T$,
 which is also a constant of motion.  Since $T = \frac{G^2 - \gD_2}{2 I_2}$, different values of $T$ determine the same modes as above.
 \begin{figure}[htb!]
 \centering
@@ -108,7 +108,25 @@ The ellipsoids are surfaces of equal kinetic energy and intersect the sphere on 
 value of $T$ .\label{figGT}}
 \end{figure}
 
-In the rest of this section, we derive (corrected) formul{\ae} for the three cases described above.
+In the rest of this section, we describe our notation and derive (corrected) formul{\ae} for the three cases described above.
+\subsection*{Notation}
+\cite{Celledoni2007} uses a dimensionless formulation where $\norm\vm = 1$, and absolute values for $I_{jh}$ and $\gD_j$.  
+We prefer to use a dimensionful formulation where $\norm\vm = G$, and to avoid absolute values.  Thus we define:
+\begin{align*}
+I_{jh} &\DefineAs I_j - I_h &\gD_j &\DefineAs G^2 - 2 T I_j &B_{jh} &\DefineAs \sqrt{±\frac{I_j \gD_h}{I_{jh}}} \\
+k &\DefineAs \sqrt{-\frac{\gD_1 I_{32}}{\gD_3 I_{21}}} &\gl_1 &\DefineAs \sqrt{\frac{\gD_1 I_{32}}{I_1 I_2 I_3}} &\gl_3 &\DefineAs \sqrt{\frac{\gD_3 I_{12}}{I_1 I_2 I_3}}
+\end{align*}
+With these definitions, $I_{jh} ≥ 0$ if and only if $j ≥ h$, and we will prove later that $\gD_1 ≥ 0$, $\gD_3 ≤ 0$, and that $\gD_2$ can have either sign.
+The sign under the radical in the definition of $B_{jh}$ is $+$ if $h = 1$ and $j ≥ h$, or $h = 3$ and $j < h$; it is $-$ otherwise (note that we never use
+$B_{j2}$ in the analysis below).  At this point it is also useful
+to observe that:
+\[
+B_{31}^2 + B_{13}^2 = \frac{\gD_1 I_3 - \gD_3 I_1}{I_{31}} = G^2
+\]
+
+Physically, $I_{jh}$ has the dimension of an inertial momentum $L^2 M$.  $G$ has the dimension of an angular momentum $L^2 M T^{-1} A$.  $\gD_j$ has 
+the same dimension as $G^2$.  $B_{jh}$ has the same dimension as $\sqrt{\gD_h}$, i.e., the same dimension as $G$.  $\gl_1$ and $\gl_3$ have the
+same dimension as the quotient $\frac{G}{I_j}$, i.e., $T^{-1} A$ which is appropriate for their usage.
 \subsection*{Case (i)}
 Case (i) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2007} is:
 \[
@@ -180,47 +198,48 @@ planes, see Figure~\ref{figm}).  Instead, we introduce an extra parameter $\gs''
 {\vm}_t =
 \begin{pmatrix}
 \gs' B_{13} \HyperbolicSecant\of{\gl t - \gn} \\
-\HyperbolicTangent\of{\gl t - \gn} \\
+G \HyperbolicTangent\of{\gl t - \gn} \\
 \gs'' B_{31} \HyperbolicSecant\of{\gl t - \gn}
 \end{pmatrix}
 \]
 Deriving this expression and injecting it into (\ref{eqneuler}) yields:
 \begin{equation}
 \begin{dcases}
--\gs' \gl B_{13} &= \gs'' B_{31} \pa{1/I_3 - 1/I_2} \\
-\gl &= \gs' \gs'' B_{13} B_{31} \pa{1/I_1 - 1/I_3} \\
--\gs'' \gl B_{31} &= \gs' B_{13} \pa{1/I_2 - 1/I_1}
+-\gs' \gl B_{13} &= \gs'' G B_{31} \pa{1/I_3 - 1/I_2} \\
+\gl G &= \gs' \gs'' B_{13} B_{31} \pa{1/I_1 - 1/I_3} \\
+-\gs'' \gl B_{31} &= \gs' G B_{13} \pa{1/I_2 - 1/I_1}
 \end{dcases}
 \label{solneuleriii}
 \end{equation}
 The second equation of (\ref{solneuleriii}) gives the following value for $\gl$:
 \[
-\gl = \gs' \gs'' B_{13} B_{31} \frac{I_3 - I_1}{I_1 I_3}
-= \gs' \gs'' \sqrt{\frac{I_1 \gD_3}{I_{13}} \frac{I_3 \gD_1}{I_{31}}} \frac{I_3 - I_1}{I_1 I_3}
-= \gs' \gs'' \sqrt{\frac{\gD_1 \gD_3}{I_1 I_3}}
+\gl = \gs' \gs'' \frac{B_{13} B_{31}}{G} \frac{I_3 - I_1}{I_1 I_3}
+= \gs' \gs'' \frac{1}{G} \sqrt{\frac{I_1 \gD_3}{I_{13}} \frac{I_3 \gD_1}{I_{31}}} \frac{I_3 - I_1}{I_1 I_3}
+= \gs' \gs'' \frac{1}{G} \sqrt{-\frac{\gD_1 \gD_3}{I_1 I_3}}
 \]
 In this case it is a bit less obvious that the other equations yield the same value of $\gl$.  We detail the derivation for the first equation,
 using the fact that ${\gs'}^2 = 1$:
 \begin{align*}
-\gl &= -\gs' \gs'' \frac{B_{31}}{B_{13}} \frac{I_2 - I_3}{I_2 I_3}
-= -\gs' \gs'' \sqrt{\frac{I_3 \gD_1}{I_{31}} \frac{I_{13}}{I_1 \gD_3}} \frac{I_2 - I_3}{I_2 I_3} \\
-&= -\gs' \gs'' \sqrt{\frac{\gD_1}{I_1 I_3 \gD_3}} \frac{I_2 - I_3}{I_2}
-= \gs' \gs'' \sqrt{\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{I_3}{I_2} - 1}
+\gl &= -\gs' \gs'' G \frac{B_{31}}{B_{13}} \frac{I_2 - I_3}{I_2 I_3}
+= -\gs' \gs'' G \sqrt{\frac{I_3 \gD_1}{I_{31}} \frac{I_{13}}{I_1 \gD_3}} \frac{I_2 - I_3}{I_2 I_3} \\
+&= -\gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \frac{I_2 - I_3}{I_2}
+= \gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{I_3}{I_2} - 1}
 \end{align*}
-Now note that in case (iii) we have $2 T I_2 = 1$ thus $1/I_2 = 2 T$.  $\gl$ can be rewritten as:
+Now note that in case (iii) we have $2 T I_2 = G^2$ thus $1/I_2 = \frac{2 T}{G^2}$.  $\gl$ can be rewritten as:
 \[
-\gl = \gs' \gs'' \sqrt{\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{2 T I_3 - 1} = \gs' \gs'' \sqrt{\frac{\gD_1 \gD_3}{I_1 I_3}}
+\gl = \gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{2 T I_3}{G^2} - 1} = \gs' \gs'' \frac{1}{G} \sqrt{-\frac{\gD_1 \gD_3}{I_1 I_3}}
 \]
-where we have used the fact that $2 T I_3 - 1 = 2 T \pa{I_3 - I_2} > 0$.
+where we have used the fact that $2 T I_3 - G^2 = -\gD_3 = 2 T \pa{I_3 - I_2} > 0$.
 
 We then define:
 \[
-\gl_2 = \sqrt{\frac{\gD_1 \gD_3}{I_1 I_3}}
+\gl_2 \DefineAs \frac{1}{G} \sqrt{-\frac{\gD_1 \gD_3}{I_1 I_3}}
 \]
 It is easy to see that $\gl_2$ is the common value of $\gl_1$ and $\gl_3$ in case (iii), that $\gs'$ and $\gs''$ are free parameters and that:
 \[
 \gl = \gs' \gs'' \gl_2
 \]
+Note that $\gl_2$ has the same dimension as the quotient $\frac{\gD_j}{G I_j}$, which has the same dimension as $\frac{G}{I_j}$, namely, $T^{-1} A$.
 
 \subsection*{Phase and initial value}
 The phase $\gn$ and the free parameters $\gs$, $\gs'$ and $\gs''$ are determined from the initial value ${\vm}_0$ by setting $t = 0$.
@@ -272,25 +291,18 @@ The initial value ${\vm}_0$  is:
 {\vm}_0 =
 \begin{pmatrix}
 \gs' B_{13} \HyperbolicSecant\of{-\gn} \\
-\HyperbolicTangent\of{-\gn} \\
+G \HyperbolicTangent\of{-\gn} \\
 \gs'' B_{31} \HyperbolicSecant\of{-\gn}
 \end{pmatrix}
 \]
 $\gs'$ and $\gs''$ are set to be the signs of $m_{01}$ and $m_{03}$, respectively.  The second coordinate immediately gives:
 \[
-\gn = -\InverseHyperbolicTangent\of{m_{02}}
+\gn = -\InverseHyperbolicTangent\of{\frac{m_{02}}{G}}
 \]
 
 \subsection*{Implementation considerations}
 Some of the formul{\ae} given by \cite{Celledoni2007} do not lend themselves to an easy implementation or lead to numerical inaccuracies.  We
-describe in this section the modifications we make to these formul{\ae} in our implementation.  We also restore dimensionful formul{\ae} as needed.
-
-\subsubsection*{The quantity $I_{jh}$}
-It is simpler and more efficient to avoid absolute values, so we define:
-\[
-I_{jh} \DefineAs I_j - I_h
-\]
-This is the same quantity as in \cite{Celledoni2007} when $j \geq h$ but it has the opposite sign (it is negative) when $j < h$
+describe in this section the modifications we make to these formul{\ae} in our implementation.
 
 \subsubsection*{The quantity $\gD_j$}
 We notice that the computation of $\gD_j$ may entail cancellations, so we go back to the definition of $\norm{\vm}$ and of the kinetic energy:
@@ -299,10 +311,6 @@ We notice that the computation of $\gD_j$ may entail cancellations, so we go bac
 G^2 &= m_1^2 + m_2^2 + m_3^2 \\
 2 T &= \frac{m_1^2}{I_1} + \frac{m_2^2}{I_2} + \frac{m_3^2}{I_3}
 \end{dcases}
-\]
-and we define a dimensionful $\gD_j$ without absolute values:
-\[
-\gD_j \DefineAs G^2 - 2 T I_j
 \]
 When, for instance, $j = 2$, this yields:
 \begin{align*}
@@ -340,24 +348,7 @@ m_c = 1 - k^{-2} = 1 + \frac{\gD_3 I_{21}}{\gD_1 I_{32}}
 =\frac{\gD_1 I_{32} + \gD_3 I_{21}}{\gD_1 I_{32}}
 =\frac{\gD_2 I_{31}}{\gD_1 I_{32}}
 \]
-Note that in both cases we have $m_c \geq 0$.
+In both cases we have $m_c \geq 0$.
 
-\subsubsection*{The dimensionful equations}
-$I_{jh}$ has the physical dimension of an inertial momentum $L^2 M$.  $G$ has the dimension of an angular momentum $L^2 M T^{-1} A$.  $\gD_j$ has 
-the same dimension as $G^2$.  $B_{jh}$ has the same dimension as $\sqrt{\gD_h}$, i.e., the same dimension as $G$.  $\gl_1$ and $\gl_3$ have the
-same dimension as the quotient $\frac{G}{I_j}$, i.e., $T^{-1} A$ which is appropriate for their usage.
-
-This analysis shows that most of the formul{\ae} in \cite{Celledoni2007} have proper physical dimensions, expect for the $1$ in the definition of
-$\gD_j$ (which should be $G^2$) and for the second coordinate of $\vm$ in case (iii) which should be:
-\[
-m_{2t} = G \HyperbolicTangent\of{-\gn}
-\]
-With this adjustment we obtain the dimensionful formul{\ae}:
-\begin{align*}
-\gn &= -\InverseHyperbolicTangent\of{\frac{m_{02}}{G}} \\
-\gl_2 &= \frac{1}{G} \sqrt{\frac{\gD_1 \gD_3}{I_1 I_3}}
-\end{align*}
-It is easy to verify that the argument of the $\InverseHyperbolicTangent$ is dimensionless and that $\gl_2$ has the same dimension as the quotient 
-$\frac{\gD_j}{G I_j}$, which has the same dimension as $\frac{G}{I_j}$, namely, $T^{-1} A$.
 \printbibliography
 \end{document}
