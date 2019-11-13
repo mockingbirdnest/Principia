@@ -3,6 +3,7 @@
 
 #include "geometry/sign.hpp"
 
+#include <cmath>
 #include <string>
 
 #include "base/macros.hpp"
@@ -11,22 +12,38 @@ namespace principia {
 namespace geometry {
 namespace internal_sign {
 
-template<typename Scalar>
-Sign::Sign(Scalar const& scalar) : negative_(scalar < Scalar{}) {}
+using quantities::SIUnit;
 
-inline bool Sign::Negative() const {
+// TODO(egg): Consider intrinsics.
+inline Sign::Sign(double x) : negative_(std::signbit(x)) {}
+
+template<typename Dimensions>
+Sign::Sign(Quantity<Dimensions> const& x)
+    : Sign(x / SIUnit<Quantity<Dimensions>>()) {}
+
+template<typename T, typename>
+constexpr Sign Sign::OfNonZero(T x) {
+  if (x == 0) {
+    LOG(FATAL) << "Sign::OfNonZero(" << x << ")";
+  }
+  return Sign(/*negative=*/x < 0);
+}
+
+constexpr bool Sign::Negative() const {
   return negative_;
 }
 
-inline bool Sign::Positive() const {
+constexpr bool Sign::Positive() const {
   return !negative_;
 }
 
-inline bool Sign::operator==(Sign const& other) const {
+constexpr Sign::Sign(bool negative) : negative_(negative) {}
+
+constexpr bool Sign::operator==(Sign const& other) const {
   return negative_ == other.negative_;
 }
 
-inline bool Sign::operator!=(Sign const& other) const {
+constexpr bool Sign::operator!=(Sign const& other) const {
   return negative_ != other.negative_;
 }
 
@@ -36,11 +53,11 @@ inline void Sign::WriteToMessage(
 }
 
 inline Sign Sign::ReadFromMessage(serialization::Sign const& message) {
-  return Sign(message.negative() ? -1 : 1);
+  return Sign(/*negative=*/message.negative());
 }
 
 inline Sign operator*(Sign const& left, Sign const& right) {
-  return Sign(left.negative_ == right.negative_ ? 1 : -1);
+  return Sign(/*negative=*/left.negative_ != right.negative_);
 }
 
 template<typename T>
