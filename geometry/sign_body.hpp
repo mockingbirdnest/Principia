@@ -29,11 +29,11 @@ constexpr Sign Sign::OfNonZero(T x) {
   return Sign(/*negative=*/x < 0);
 }
 
-constexpr bool Sign::Negative() const {
+constexpr bool Sign::is_negative() const {
   return negative_;
 }
 
-constexpr bool Sign::Positive() const {
+constexpr bool Sign::is_positive() const {
   return !negative_;
 }
 
@@ -66,7 +66,7 @@ FORCE_INLINE(inline) T operator*(Sign const& left, T const& right) {
 }
 
 inline std::string DebugString(Sign const& sign) {
-  return sign.Negative() ? "-" : "+";
+  return sign.is_negative() ? "-" : "+";
 }
 
 inline std::ostream& operator<<(std::ostream& out, Sign const& sign) {

@@ -98,9 +98,9 @@ TEST_F(OrthogonalMapTest, AppliedToTrivector) {
 }
 
 TEST_F(OrthogonalMapTest, Determinant) {
-  EXPECT_TRUE(orthogonal_a_.Determinant().Negative());
-  EXPECT_TRUE(orthogonal_b_.Determinant().Positive());
-  EXPECT_TRUE(orthogonal_c_.Determinant().Negative());
+  EXPECT_TRUE(orthogonal_a_.Determinant().is_negative());
+  EXPECT_TRUE(orthogonal_b_.Determinant().is_positive());
+  EXPECT_TRUE(orthogonal_c_.Determinant().is_negative());
 }
 
 TEST_F(OrthogonalMapTest, Inverse) {
@@ -123,9 +123,9 @@ TEST_F(OrthogonalMapTest, Composition) {
                   R3Element<quantities::Length>(2.0 * Metre,
                                                 1.0 * Metre,
                                                 -3.0 * Metre)), 4, 6));
-  EXPECT_TRUE((orthogonal_a_ * orthogonal_b_).Determinant().Negative());
-  EXPECT_TRUE((orthogonal_a_ * orthogonal_c_).Determinant().Positive());
-  EXPECT_TRUE((orthogonal_b_ * orthogonal_c_).Determinant().Negative());
+  EXPECT_TRUE((orthogonal_a_ * orthogonal_b_).Determinant().is_negative());
+  EXPECT_TRUE((orthogonal_a_ * orthogonal_c_).Determinant().is_positive());
+  EXPECT_TRUE((orthogonal_b_ * orthogonal_c_).Determinant().is_negative());
 }
 
 TEST_F(OrthogonalMapDeathTest, SerializationError) {
