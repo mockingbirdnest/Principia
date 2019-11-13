@@ -435,7 +435,7 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       Componentwise(AlmostEquals(reference_momentum.coordinates().x, 0, 3),
                     VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 24),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 6)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/3);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/2);
 }
 
 // This test demonstrates the Джанибеков effect, also known as tennis racket
@@ -538,7 +538,7 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 10),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 16),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 965)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/45);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/43);
 }
 
 // A general body that doesn't rotate.
@@ -898,14 +898,14 @@ TEST_F(EulerSolverTest, SeparatrixConstantMomentum) {
 }
 
 // The data in this test are from Takahashi, Busch and Scheeres, Spin state and
-// moment of inertia characterization of 4179 Toutatis, 2013.
+// moment of inertia characterization of 4179 Toutatis, 2013 [TBS13].
 TEST_F(EulerSolverTest, Toutatis) {
   Instant const epoch = "1992-11-09T17:49:47"_UTC;
 
-  // Takahashi et al. adopt a bizarre convention where their x axis is our I₂,
-  // their y axis is our I₃ and their z axis is our I₁, see Table 2.  This
-  // appears to contradict Figure 1, but it is consistent with ω₁, ω₂, ω₃ being
-  // along their x, y, z axes respectively.
+  // [TBS13] adopt a bizarre convention where their x axis is our I₂, their y
+  // axis is our I₃ and their z axis is our I₁, see Table 2.  This appears to
+  // contradict Figure 1, but it is consistent with ω₁, ω₂, ω₃ being along their
+  // x, y, z axes respectively.
   struct TakahashiPrincipalAxes;
   using TakahashiAttitudeRotation = Rotation<TakahashiPrincipalAxes, ICRS>;
   using TakahashiPermutation = Permutation<TakahashiPrincipalAxes,
@@ -939,7 +939,7 @@ TEST_F(EulerSolverTest, Toutatis) {
                takahashi_moments_of_inertia.z});
 
   // From Zhao et al., Orientation and rotational parameters of asteroid 4179
-  // Toutatis: new insights from Change'e-2's close flyby.
+  // Toutatis: new insights from Change'e-2's close flyby [Zha+15].
   auto const angular_momentum_orientation_in_inertial = Bivector<double, ICRS>(
       RadiusLatitudeLongitude(1.0, -54.75 * Degree, 180.2 * Degree)
           .ToCartesian());
@@ -1002,12 +1002,12 @@ TEST_F(EulerSolverTest, Toutatis) {
     ApproximateQuantity<Angle> e3_direction_error;
   };
 
-  // The errors for 1992 seem consistent with the residuals from Takahashi (3 σ
+  // The errors for 1992 seem consistent with the residuals from [TBS13] (3 σ
   // for the attitude on 1992-12-04, 1.5 σ on 1992-12-07, for instance, figures
   // 7 and 8) and they are generally smaller for the angular velocity than for
   // the attitude, in agreement with that paper.
   // The errors for 2008 are caused by the fact that we ignore the torque
-  // exerted by the Earth and the Sun.  As shown in figure 6 of Takahashi, this
+  // exerted by the Earth and the Sun.  As shown in figure 6 of [TBS13], this
   // results in a completely different orientation, estimated in the text to be
   // around 100°, which is again generally consistent with our results.
   std::vector<Observation> const observations = {
