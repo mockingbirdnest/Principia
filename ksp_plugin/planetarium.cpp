@@ -153,7 +153,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto const last_time = std::min(last->time, plotting_frame_->t_max());
   auto const final_time = reverse ? begin_time : last_time;
   auto previous_time = reverse ? last_time : begin_time;
-  Sign const direction = reverse ? Sign(-1) : Sign(1);
+  Sign const direction = reverse ? Sign::Negative() : Sign::Positive();
   if (direction * (final_time - previous_time) <= Time{}) {
     return lines;
   }

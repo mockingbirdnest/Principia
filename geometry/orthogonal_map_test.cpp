@@ -36,13 +36,13 @@ class OrthogonalMapTest : public testing::Test {
             R3Element<quantities::Length>(
                 1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
         trivector_(Trivector<quantities::Length, World>(4.0 * Metre)),
-        orthogonal_a_(Orth(Sign(-1),
+        orthogonal_a_(Orth(Sign::Negative(),
                            Rot(120 * Degree,
                                Bivector<double, World>({1, 1, 1})))),
-        orthogonal_b_(Orth(Sign(1),
+        orthogonal_b_(Orth(Sign::Positive(),
                            Rot(90 * Degree,
                                Bivector<double, World>({1, 0, 0})))),
-        orthogonal_c_(Orth(Sign(-1),
+        orthogonal_c_(Orth(Sign::Negative(),
                            Rot(90 * Degree,
                                Bivector<double, World>({1, 0, 0})))) {}
 

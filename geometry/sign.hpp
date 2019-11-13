@@ -27,11 +27,20 @@ class Sign final {
   template<typename T>
   explicit Sign(T x) = delete;
 
+  static constexpr Sign Positive();
+  static constexpr Sign Negative();
+
   template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
   static constexpr Sign OfNonZero(T x);
 
-  constexpr bool is_negative() const;
   constexpr bool is_positive() const;
+  constexpr bool is_negative() const;
+
+  constexpr Sign operator+() const;
+  constexpr Sign operator-() const;
+
+  // Returns ±1.
+  constexpr operator int() const;
 
   constexpr bool operator==(Sign const& other) const;
   constexpr bool operator!=(Sign const& other) const;

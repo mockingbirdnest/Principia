@@ -22,7 +22,7 @@ Permutation<FromFrame, ToFrame>::Permutation(
 
 template<typename FromFrame, typename ToFrame>
 inline Sign Permutation<FromFrame, ToFrame>::Determinant() const {
-  return Sign(coordinate_permutation_);
+  return Sign::OfNonZero(coordinate_permutation_);
 }
 
 template<typename FromFrame, typename ToFrame>

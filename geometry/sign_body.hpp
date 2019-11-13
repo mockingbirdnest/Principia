@@ -29,15 +29,33 @@ constexpr Sign Sign::OfNonZero(T x) {
   return Sign(/*negative=*/x < 0);
 }
 
-constexpr bool Sign::is_negative() const {
-  return negative_;
+constexpr Sign Sign::Positive() {
+  return Sign(/*negative=*/false);
+}
+
+constexpr Sign Sign::Negative() {
+  return Sign(/*negative=*/true);
 }
 
 constexpr bool Sign::is_positive() const {
   return !negative_;
 }
 
-constexpr Sign::Sign(bool negative) : negative_(negative) {}
+constexpr bool Sign::is_negative() const {
+  return negative_;
+}
+
+inline constexpr Sign Sign::operator+() const {
+  return *this;
+}
+
+inline constexpr Sign Sign::operator-() const {
+  return Sign(!negative_);
+}
+
+inline constexpr Sign::operator int() const {
+  return *this * 1;
+}
 
 constexpr bool Sign::operator==(Sign const& other) const {
   return negative_ == other.negative_;
@@ -55,6 +73,8 @@ inline void Sign::WriteToMessage(
 inline Sign Sign::ReadFromMessage(serialization::Sign const& message) {
   return Sign(/*negative=*/message.negative());
 }
+
+constexpr Sign::Sign(bool negative) : negative_(negative) {}
 
 inline Sign operator*(Sign const& left, Sign const& right) {
   return Sign(/*negative=*/left.negative_ != right.negative_);

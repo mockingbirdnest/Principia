@@ -22,13 +22,13 @@ inline OrbitRecurrence::OrbitRecurrence(int const νₒ,
                                         int const Cᴛₒ)
     : νₒ_(νₒ), Dᴛₒ_(Dᴛₒ), Cᴛₒ_(Cᴛₒ) {
   CHECK_NE(Cᴛₒ, 0) << *this;
+  Sign const sign_Cᴛₒ = Sign::OfNonZero(Cᴛₒ);
   if (νₒ != 0) {
-    CHECK_EQ(Sign(νₒ), Sign(Cᴛₒ)) << *this;
+    CHECK_EQ(Sign::OfNonZero(νₒ), sign_Cᴛₒ) << *this;
   }
   CHECK_LE(Abs(2 * Dᴛₒ), Abs(Cᴛₒ)) << *this;
   CHECK_EQ(std::gcd(Dᴛₒ, Cᴛₒ), 1) << *this;
 
-  int const sign_Cᴛₒ = Sign(Cᴛₒ) * 1;
   int& Eᴛₒ = subcycle_;
   if (Dᴛₒ == 0) {
     Eᴛₒ = 0;

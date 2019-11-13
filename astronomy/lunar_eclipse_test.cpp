@@ -54,8 +54,8 @@ namespace {
 
 Time const bisection_interval = 10 * Minute;
 
-Sign const U14 = Sign(1);
-Sign const U23 = Sign(-1);
+Sign const U14 = Sign::Positive();
+Sign const U23 = Sign::Negative();
 
 char const arrow[] = "-------------------> ";
 

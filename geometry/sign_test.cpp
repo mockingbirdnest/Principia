@@ -9,8 +9,8 @@ namespace geometry {
 
 class SignTest : public testing::Test {
  protected:
-  Sign const positive_ = Sign(1);
-  Sign const negative_ = Sign(-1);
+  Sign const positive_ = Sign::Positive();
+  Sign const negative_ = Sign::Negative();
 };
 
 TEST_F(SignTest, Integer) {
@@ -36,7 +36,7 @@ TEST_F(SignTest, ScalarMultiplication) {
 
 TEST_F(SignTest, Serialization) {
   serialization::Sign message;
-  Sign s(1);
+  Sign s = Sign::Positive();
 
   positive_.WriteToMessage(&message);
   EXPECT_FALSE(message.negative());
