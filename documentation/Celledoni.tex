@@ -23,7 +23,7 @@ On an Article by Celledoni et al.%
 \noindent
 This document provides clarifications, corrections, and accuracy improvements to the formul{\ae} presented in \cite{Celledoni2007}.  It follows the notation
 and conventions of that paper.  Note that the preprint \cite{Celledoni2007} differs in some of the formul{\ae} from the final publication \cite{Celledoni2008},
-and that we follow the former because the latter introduced errors.
+but we generally follow the former.
 \end{sloppypar}
 
 \section*{Preamble}
@@ -124,9 +124,11 @@ to observe that:
 B_{31}^2 + B_{13}^2 = \frac{\gD_1 I_3 - \gD_3 I_1}{I_{31}} = G^2
 \]
 
-Physically, $I_{jh}$ has the dimension of an inertial momentum $L^2 M$.  $G$ has the dimension of an angular momentum $L^2 M T^{-1} A$.  $\gD_j$ has 
-the same dimension as $G^2$.  $B_{jh}$ has the same dimension as $\sqrt{\gD_h}$, i.e., the same dimension as $G$.  $\gl_1$ and $\gl_3$ have the
-same dimension as the quotient $\frac{G}{I_j}$, i.e., $T^{-1} A$ which is appropriate for their usage.
+Physically, $I_{jh}$ has the dimension of an inertial momentum $\squareBrackets{L^2 M}$.  $G$ has the dimension of an angular
+momentum $\squareBrackets{L^2 M T^{-1} A}$.  $T$ has the dimension of an energy $\squareBrackets{L^2 M T^{-2}}$.
+$\gD_j$ has the same dimension as $G^2$.  $B_{jh}$ has the same dimension as 
+$\sqrt{\gD_h}$, i.e., the same dimension as $G$.  $\gl_1$ and $\gl_3$ have the
+same dimension as the quotient $\frac{G}{I_j}$, i.e., $\squareBrackets{T^{-1} A}$ which is appropriate for their usage.
 \subsection*{Case (i)}
 Case (i) of the solution of Euler's equation in section 2.2 of \cite{Celledoni2007} is:
 \[
@@ -349,6 +351,47 @@ m_c = 1 - k^{-2} = 1 + \frac{\gD_3 I_{21}}{\gD_1 I_{32}}
 =\frac{\gD_2 I_{31}}{\gD_1 I_{32}}
 \]
 In both cases we have $m_c \geq 0$.
+
+\section*{Integration of the rotation matrix}
+<<TODO: the rotations>>
+
+\cite{Celledoni2007} derive the following expression for $\TimeDerivative{\gy}$ (which they write slightly differently):
+\begin{align*}
+\TimeDerivative{\gy} &= \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 + \frac{I_{12}I_{23}G^2}{I_2^2 \gD_1 \gD_3}m_2^2}}\\
+&= \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{21}^2 B_{23}^2}m_2^2}}
+\end{align*}
+
+\subsection*{Case (i)}
+In case (i) we have $m_2 = -B_{21} \JacobiSN\of{\gl t - \gn, k}$ and the above expression becomes:
+\[
+\TimeDerivative{\gy} = \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{23}^2}\JacobiSN^2\of{\gl t - \gn, k}}}
+\]
+This expression can be integrated using formula 110.04 of \cite{ByrdFriedman1954} with $\ga = G/B_{23}$ to yield:
+\[
+\gy = \frac{2 T}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k}, \frac{G^2}{B_{23}^2}, k}
+\]
+Note that this differs from the formula given by \cite{Celledoni2007} in the value of $n$.
+
+\subsection*{Case (ii)}
+In case (ii) we have $m_2 = -B_{23} \JacobiSN\of{\gl t - \gn, k^{-1}}$ and a computation similar to the one above gives:
+\[
+\TimeDerivative{\gy} = \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{21}^2}\JacobiSN^2\of{\gl t - \gn, k^{-1}}}}
+\]
+and:
+\[
+\TimeDerivative{\gy} = \frac{2 T}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k^{-1}}, \frac{G^2}{B_{21}^2}, k^{-1}}
+\]
+
+\subsection*{Case (iii)}
+In case (ii) we have $m_2 = G \HyperbolicTangent\of{\gl t - \gn}$ and:
+\[
+\gy = \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^4}{B_{21}^2 B_{23}^2} \HyperbolicTangent^2\of{\gl t - \gn}}}
+\]
+which can be integrated using:
+\[
+\int{}\frac{1}{1 - n \HyperbolicTangent^2\of{\gl t - \gn}}\diffd{t} = 
+\frac{t}{1 - n} + \frac{\sqrt{n}}{\pa{1 - n}\gl} \InverseHyperbolicTangent\of{\sqrt{n} \HyperbolicTangent\of{\gl t - \gn}}
+\]
 
 \printbibliography
 \end{document}
