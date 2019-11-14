@@ -52,16 +52,17 @@ class Sign final {
   constexpr explicit Sign(bool negative);
 
   bool negative_;
-  friend Sign operator*(Sign const& left, Sign const& right);
+
+  friend constexpr Sign operator*(Sign const& left, Sign const& right);
   template<typename T>
-  friend T operator*(Sign const& left, T const& right);
+  friend constexpr T operator*(Sign const& left, T const& right);
 };
 
-Sign operator*(Sign const& left, Sign const& right);
+constexpr Sign operator*(Sign const& left, Sign const& right);
 
 // This operator is applicable to any type that has a unary minus operator.
 template<typename T>
-T operator*(Sign const& left, T const& right);
+constexpr T operator*(Sign const& left, T const& right);
 
 std::string DebugString(Sign const& sign);
 

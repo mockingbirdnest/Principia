@@ -23,9 +23,7 @@ Sign::Sign(Quantity<Dimensions> const& x)
 
 template<typename T, typename>
 constexpr Sign Sign::OfNonZero(T x) {
-  if (x == 0) {
-    LOG(FATAL) << "Sign::OfNonZero(" << x << ")";
-  }
+  CONSTEXPR_CHECK(x != 0) << x;
   return Sign(/*negative=*/x < 0);
 }
 
@@ -76,12 +74,12 @@ inline Sign Sign::ReadFromMessage(serialization::Sign const& message) {
 
 constexpr Sign::Sign(bool negative) : negative_(negative) {}
 
-inline Sign operator*(Sign const& left, Sign const& right) {
+constexpr Sign operator*(Sign const& left, Sign const& right) {
   return Sign(/*negative=*/left.negative_ != right.negative_);
 }
 
 template<typename T>
-FORCE_INLINE(inline) T operator*(Sign const& left, T const& right) {
+constexpr T operator*(Sign const& left, T const& right) {
   return left.negative_ ? -right : right;
 }
 
