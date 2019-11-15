@@ -19,8 +19,10 @@ using quantities::Quantity;
 class Sign final {
  public:
   explicit Sign(double x);
+
   template<typename Dimensions>
   explicit Sign(Quantity<Dimensions> const& x);
+
   // The deleted constructor forbids construction from an integer via
   // integer-to-double conversion.  Integers have no signed 0, so this could
   // lead to confusing behaviour.
@@ -30,7 +32,7 @@ class Sign final {
   static constexpr Sign Positive();
   static constexpr Sign Negative();
 
-  template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+  template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
   static constexpr Sign OfNonZero(T x);
 
   constexpr bool is_positive() const;
@@ -42,31 +44,31 @@ class Sign final {
   // Returns ±1.
   constexpr operator int() const;
 
-  constexpr bool operator==(Sign const& other) const;
-  constexpr bool operator!=(Sign const& other) const;
+  constexpr bool operator==(Sign other) const;
+  constexpr bool operator!=(Sign other) const;
 
   void WriteToMessage(not_null<serialization::Sign*> message) const;
-  static Sign ReadFromMessage(serialization::Sign const& message);
+  static Sign ReadFromMessage(serialization::Sign message);
 
  private:
   constexpr explicit Sign(bool negative);
 
   bool negative_;
 
-  friend constexpr Sign operator*(Sign const& left, Sign const& right);
+  friend constexpr Sign operator*(Sign left, Sign right);
   template<typename T>
-  friend constexpr T operator*(Sign const& left, T const& right);
+  friend constexpr T operator*(Sign left, T const& right);
 };
 
-constexpr Sign operator*(Sign const& left, Sign const& right);
+constexpr Sign operator*(Sign left, Sign right);
 
 // This operator is applicable to any type that has a unary minus operator.
 template<typename T>
-constexpr T operator*(Sign const& left, T const& right);
+constexpr T operator*(Sign left, T const& right);
 
-std::string DebugString(Sign const& sign);
+std::string DebugString(Sign sign);
 
-std::ostream& operator<<(std::ostream& out, Sign const& sign);
+std::ostream& operator<<(std::ostream& out, Sign sign);
 
 }  // namespace internal_sign
 

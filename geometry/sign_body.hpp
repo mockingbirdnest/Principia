@@ -15,7 +15,7 @@ namespace internal_sign {
 using quantities::SIUnit;
 
 // TODO(egg): Consider intrinsics.
-inline Sign::Sign(double x) : negative_(std::signbit(x)) {}
+inline Sign::Sign(double const x) : negative_(std::signbit(x)) {}
 
 template<typename Dimensions>
 Sign::Sign(Quantity<Dimensions> const& x)
@@ -55,11 +55,11 @@ inline constexpr Sign::operator int() const {
   return *this * 1;
 }
 
-constexpr bool Sign::operator==(Sign const& other) const {
+constexpr bool Sign::operator==(Sign const other) const {
   return negative_ == other.negative_;
 }
 
-constexpr bool Sign::operator!=(Sign const& other) const {
+constexpr bool Sign::operator!=(Sign const other) const {
   return negative_ != other.negative_;
 }
 
@@ -68,26 +68,26 @@ inline void Sign::WriteToMessage(
   message->set_negative(negative_);
 }
 
-inline Sign Sign::ReadFromMessage(serialization::Sign const& message) {
+inline Sign Sign::ReadFromMessage(serialization::Sign const message) {
   return Sign(/*negative=*/message.negative());
 }
 
-constexpr Sign::Sign(bool negative) : negative_(negative) {}
+constexpr Sign::Sign(bool const negative) : negative_(negative) {}
 
-constexpr Sign operator*(Sign const& left, Sign const& right) {
+constexpr Sign operator*(Sign const left, Sign const right) {
   return Sign(/*negative=*/left.negative_ != right.negative_);
 }
 
 template<typename T>
-constexpr T operator*(Sign const& left, T const& right) {
+constexpr T operator*(Sign const left, T const& right) {
   return left.negative_ ? -right : right;
 }
 
-inline std::string DebugString(Sign const& sign) {
+inline std::string DebugString(Sign const sign) {
   return sign.is_negative() ? "-" : "+";
 }
 
-inline std::ostream& operator<<(std::ostream& out, Sign const& sign) {
+inline std::ostream& operator<<(std::ostream& out, Sign const sign) {
   out << DebugString(sign);
   return out;
 }
