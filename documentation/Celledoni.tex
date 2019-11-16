@@ -428,11 +428,28 @@ still incorrect and should read:
 f\of{s} \DefineAs -B_{31} \frac{B_{13}}{B_{21}} \InverseTrigonometricTangent\of{\frac{B_{21}}{B_{13}} \JacobiSD\of{\gl s - \gn, k}}
 \]
 
+\subsection*{An alternative quaternionic solution}
 \cite{Celledoni2007} do not explain how they handle cases (ii) and (iii).  It is intriguing to note, though, that the formul{\ae} above work well
 for case (ii) where $m_3 = \gs B_{31} \JacobiDN\of{\gl t - \gn, k^{-1}}$.  The reason is that, without loss of generality, we can apply to the principal
 axes of the body a rotation $\mathscr S$ that maps $m_3$ onto $-m_3$ (there are many possible choices for $\mathscr S$, but for simplicity we pick one that flips the sign of
 either $m_1$ or $m_2$).  With this rotation, the multiplier $\gs$ disappears from $m_3$ and we have $m_3 \geq 0$ for all times, which ensures that
-the denominator of the quaternionic coordinates $G + m_3$ can be safely computed.
+the denominator of the quaternionic coordinates $G + m_3$ can be safely computed.  The key insight here is that the coordinate where the Jacobi funtion
+$\JacobiDN$ appears does not change sign, and is therefore a better choice for rotating $\vm$ to $\VectorSymbol{e_i}$.
+
+Observing that, in case (i), $m_1 = \gs B_{13} \JacobiDN\of{\gl t - \gn, k}$, we will construct a rotation $\mathscr S$ to make $m_1$ positive and then
+a rotation $\mathscr P$ that maps $\vm$ onto $\VectorSymbol{e_1}$.  Similarly, in case (iii) the function $\HyperbolicSecant$ appears in the
+expressions of $m_1$ and $m_3$ and is always positive, so we will construct $\mathscr S$ to make both $m_1$ and $m_3$ positive and choose $\mathscr P$
+to map $\vm$ onto $\VectorSymbol{e_1}$ or $\VectorSymbol{e_3}$.  In the rest of this section we detail the calculations used to compute $\mathscr S$,
+$\mathscr P$ and $\gy$.
+
+\subsection*{Integrals}
+We start with computing two integrals that are useful in the computation of $\gy$.  As far as we can tell the following integral is missing from
+\cite{ByrdFriedman1954}:
+\[
+\int{}\frac{1}{1 - a \JacobiDN\of{u, k}}\diffd{u} = \\
+\frac{1}{1 - a^2}\pa{\EllipticPi\of{\JacobiAmplitude\of{u, k}, \frac{a^2 m}{a^2 - 1}, k} - 
+\sqrt\frac{a \pa{1 - a^2}}{a^2\pa{m - 1} + 1} \InverseTrigonometricTangent\of{\sqrt\frac{a^2 \pa{m - 1} + 1}{1 - a^2} \JacobiSC\of{u, k}}}
+\]
 
 \printbibliography
 \end{document}
