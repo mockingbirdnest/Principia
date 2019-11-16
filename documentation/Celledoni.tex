@@ -411,7 +411,7 @@ In conclusion, we tried to use this approach but had to abandon it because of th
 \[
 \begin{dcases}
 p_1 &= \frac{p_3 m_1 + p_0 m_2}{G + m_3} \\
-p_2 &= \frac{p_3 m_2 + p_0 m_1}{G + m_3} \\
+p_2 &= \frac{p_3 m_2 - p_0 m_1}{G + m_3} \\
 p_0^2 + p_3^2 &= \frac{G + m_3}{2 G}
 \end{dcases}
 \]
@@ -458,6 +458,33 @@ Also, the following integral is useful for case (iii):
 \]
 
 \subsection*{Case (i)}
+In case (i), we define $\mathscr P$ to map $\vm$ onto $\VectorSymbol{e_1}$.  A computation similar to that in \cite{Celledoni2007} yields that rotation
+in quaternionic form:
+\[
+\begin{dcases}
+p_2 &= \frac{p_1 m_2 + p_0 m_3}{G + m_1} \\
+p_3 &= \frac{p_1 m_3 - p_0 m_2}{G + m_1} \\
+p_0^2 + p_1^2 &= \frac{G + m_1}{2 G}
+\end{dcases}
+\]
+and, for the angle $\gy$ of the rotation around $\VectorSymbol{e_1}$:
+\[
+\TimeDerivative{\gy} = \frac{2 T + G m_1 / I_1}{G + m_1} + 4 G \frac{p_1 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_1}}{G + m_1}
+\]
+We then write $p_0 = c_0 \sqrt{1 + m_1/G}$ and $p_1= c_1 \sqrt{1 + m_1/G}$ and pick $c_0 = 1/\sqrt{2}$ and $c_1 = 0$.  The quaternion simplifies to:
+\[
+\begin{dcases}
+p_0 &= \sqrt\frac{1 + m_1/G}{2} \\
+p_1 &= 0 \\
+p_2 &= \frac{m_3}{\sqrt{2 G\pa{G + m_1}}} \\
+p_3 &= \frac{-m_2}{\sqrt{2 G\pa{G + m_1}}}
+\end{dcases}
+\]
+and the angle to:
+\[
+\TimeDerivative{\gy} = \frac{2 T + G m_1 / I_1}{G + m_1} = \frac{G^2 - \gD_1 + G m_1}{I_1\pa{G + m_1}} = \frac{G}{I_1} - \frac{\gD_1/I_1}{G + m_1} =
+\frac{G}{I_1} - \frac{\gD_1}{G I_1}\frac{1}{1 + m_1/G}
+\]
 \subsection*{Case (ii)}
 \subsection*{Case (iii)}
 
