@@ -172,7 +172,7 @@ TEST_F(EulerSolverTest, InitialStateRandom) {
         solver.AngularMomentumAt(Instant());
 
     EXPECT_THAT(computed_initial_angular_momentum,
-                AlmostEquals(initial_angular_momentum, 0, 209))
+                AlmostEquals(initial_angular_momentum, 0, 2136))
         << moments_of_inertia << " " << initial_angular_momentum;
   }
 }
@@ -383,7 +383,7 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 32),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 4),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 2)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/13);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/8);
 }
 
 TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
@@ -435,7 +435,7 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       Componentwise(AlmostEquals(reference_momentum.coordinates().x, 0, 3),
                     VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 24),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 6)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/4);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/3);
 }
 
 // This test demonstrates the Джанибеков effect, also known as tennis racket
@@ -536,9 +536,9 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       angular_momenta,
       attitudes,
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 10),
-                    AlmostEquals(reference_momentum.coordinates().y, 0, 13),
+                    AlmostEquals(reference_momentum.coordinates().y, 0, 16),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 965)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/33);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/45);
 }
 
 // A general body that doesn't rotate.
@@ -604,8 +604,8 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongFirstAxis) {
       actual_angular_velocity,
       AlmostEquals(solver.AngularVelocityFor(initial_angular_momentum), 0));
   EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 0));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 1));
-  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 1));
+  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 17));
+  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 17));
 }
 
 // A general body that rotates along the second principal axis.
@@ -646,7 +646,7 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongSecondAxis) {
   EXPECT_THAT(
       actual_attitude(e1_),
       Componentwise(AlmostEquals(expected_attitude(e1_).coordinates().x, 0),
-                    VanishesBefore(1, 1),
+                    VanishesBefore(1, 0),
                     AlmostEquals(expected_attitude(e1_).coordinates().z, 1)));
   EXPECT_THAT(
       actual_attitude(e2_),
@@ -656,7 +656,7 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongSecondAxis) {
   EXPECT_THAT(
       actual_attitude(e3_),
       Componentwise(AlmostEquals(expected_attitude(e3_).coordinates().x, 1),
-                    VanishesBefore(1, 0),
+                    VanishesBefore(1, 2),
                     AlmostEquals(expected_attitude(e3_).coordinates().z, 0)));
 }
 
@@ -695,8 +695,8 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongThirdAxis) {
   EXPECT_THAT(
       actual_angular_velocity,
       AlmostEquals(solver.AngularVelocityFor(initial_angular_momentum), 0));
-  EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 52));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 52));
+  EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 136));
+  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 136));
   EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 0));
 }
 
@@ -738,13 +738,13 @@ TEST_F(EulerSolverTest, GeneralBodyRotationCloseToThirdAxis) {
 
   EXPECT_THAT(
       actual_attitude(e1_),
-      Componentwise(AlmostEquals(expected_attitude(e1_).coordinates().x, 12),
-                    AlmostEquals(expected_attitude(e1_).coordinates().y, 1),
-                    VanishesBefore(std::numeric_limits<double>::epsilon(), 8)));
+      Componentwise(AlmostEquals(expected_attitude(e1_).coordinates().x, 8),
+                    AlmostEquals(expected_attitude(e1_).coordinates().y, 0, 2),
+                    VanishesBefore(std::numeric_limits<double>::epsilon(), 4)));
   EXPECT_THAT(
       actual_attitude(e2_),
-      Componentwise(AlmostEquals(expected_attitude(e2_).coordinates().x, 1),
-                    AlmostEquals(expected_attitude(e2_).coordinates().y, 12),
+      Componentwise(AlmostEquals(expected_attitude(e2_).coordinates().x, 0, 2),
+                    AlmostEquals(expected_attitude(e2_).coordinates().y, 8),
                     VanishesBefore(1, 2)));
   EXPECT_THAT(
       actual_attitude(e3_),
@@ -779,11 +779,8 @@ TEST_F(EulerSolverTest, GeneralBodyRotationVeryCloseToThirdAxis) {
   auto const actual_angular_momentum = solver.AngularMomentumAt(t);
   auto const actual_angular_velocity =
       solver.AngularVelocityFor(actual_angular_momentum);
-  EXPECT_DEATH({
-    auto const actual_attitude = solver.AttitudeAt(actual_angular_momentum, t);
-  }, ".*_is_zero_ == .*_is_zero");
+  auto const actual_attitude = solver.AttitudeAt(actual_angular_momentum, t);
 
-#if 0
   // The expected attitude ignores any precession and is just a rotation
   // around z.
   auto const expected_angular_frequency = actual_angular_velocity.Norm();
@@ -797,19 +794,18 @@ TEST_F(EulerSolverTest, GeneralBodyRotationVeryCloseToThirdAxis) {
   EXPECT_THAT(
       actual_attitude(e1_),
       Componentwise(AlmostEquals(expected_attitude(e1_).coordinates().x, 0, 8),
-                    AlmostEquals(expected_attitude(e1_).coordinates().y, 0, 1),
-                    Le(std::numeric_limits<double>::min())));
+                    AlmostEquals(expected_attitude(e1_).coordinates().y, 0, 2),
+                    VanishesBefore(1, 0)));
   EXPECT_THAT(
       actual_attitude(e2_),
-      Componentwise(AlmostEquals(expected_attitude(e2_).coordinates().x, 0, 1),
+      Componentwise(AlmostEquals(expected_attitude(e2_).coordinates().x, 0, 2),
                     AlmostEquals(expected_attitude(e2_).coordinates().y, 0, 8),
-                    Le(std::numeric_limits<double>::min())));
-  EXPECT_THAT(
-      actual_attitude(e3_),
-      Componentwise(Le(std::numeric_limits<double>::min()),
-                    Le(std::numeric_limits<double>::min()),
-                    AlmostEquals(expected_attitude(e3_).coordinates().z, 0)));
-#endif
+                    VanishesBefore(1, 0)));
+  EXPECT_THAT(actual_attitude(e3_),
+              Componentwise(
+                  VanishesBefore(1, 0),
+                  VanishesBefore(1, 0),
+                  AlmostEquals(expected_attitude(e3_).coordinates().z, 0, 0)));
 }
 
 // A sphere that rotates around an axis with a random orientation.  Also, a
@@ -855,9 +851,9 @@ TEST_F(EulerSolverTest, SphereRotationAlongRandomAxis) {
               AlmostEquals(initial_angular_momentum, 0));
   EXPECT_THAT(actual_angular_velocity,
               AlmostEquals(expected_angular_velocity, 0));
-  EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 29));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 68));
-  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 6));
+  EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 8));
+  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 12));
+  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 12));
 }
 
 // Rotation on the separatrix with a constant momentum.
@@ -880,11 +876,8 @@ TEST_F(EulerSolverTest, SeparatrixConstantMomentum) {
   auto const actual_angular_momentum = solver.AngularMomentumAt(t);
   auto const actual_angular_velocity =
       solver.AngularVelocityFor(actual_angular_momentum);
-  EXPECT_DEATH({
-    auto const actual_attitude = solver.AttitudeAt(actual_angular_momentum, t);
-  }, ".*_is_zero_ == .*_is_zero");
+  auto const actual_attitude = solver.AttitudeAt(actual_angular_momentum, t);
 
-#if 0
   auto const expected_angular_velocity =
       AngularVelocity<PrincipalAxes>({0.0 * Radian / Second,
                                       4.0 / 3.0 * Radian / Second,
@@ -896,13 +889,12 @@ TEST_F(EulerSolverTest, SeparatrixConstantMomentum) {
           expected_angular_frequency * 10 * Second, initial_angular_momentum);
 
   EXPECT_THAT(actual_angular_momentum,
-              AlmostEquals(initial_angular_momentum, 0));
+              AlmostEquals(initial_angular_momentum, 1));
   EXPECT_THAT(actual_angular_velocity,
-              AlmostEquals(expected_angular_velocity, 0));
-  EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 0));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 0));
-  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 0));
-#endif
+              AlmostEquals(expected_angular_velocity, 2));
+  EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 8));
+  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 4));
+  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 7));
 }
 
 // The data in this test are from Takahashi, Busch and Scheeres, Spin state and
