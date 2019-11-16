@@ -395,12 +395,13 @@ which can be integrated using:
 
 \subsection*{Implementation considerations}
 The approach in this section relies on the intermediate basis $\set{\vm, \TimeDerivative{\vm}, \commutator{\vm}{\TimeDerivative{\vm}}}$.  
-Unfortunately, it is not suitable for a practical implementation because it has an essential singularity when $\TimeDerivative{\vm} = \v0$:
-while the condition $\TimeDerivative{\vm} = \v0$ is physically a constant of motion, $\TimeDerivative{\vm}$ itself is not.  This means that
-any inaccuracies in numerical computations of $\TimeDerivative{\vm}$ (cancellations, underflow) may cause it to switch from $\v0$ to non-$\v0$ and back.
+Unfortunately, it is not suitable for a practical implementation because it has an essential singularity when $\TimeDerivative{\vm} = \VectorSymbol{0}$:
+while the condition $\TimeDerivative{\vm} = \VectorSymbol{0}$ is physically a constant of motion, $\TimeDerivative{\vm}$ itself is not.  This means that
+any inaccuracies in numerical computations of $\TimeDerivative{\vm}$ (cancellations, underflow) may cause it to switch from $\VectorSymbol{0}$ to
+non-$\VectorSymbol{0}$ and back.
 
-When $\TimeDerivative{\vm} = \v0$ at $t = 0$, the motion may be computed at all times assuming a constant $\vm$, so the singularity may be
-eliminated.  But when $\TimeDerivative{\vm} \neq \v0$ at $t = 0$ and it later becomes $\v0$, there is no way to find a basis at $t$ that 
+When $\TimeDerivative{\vm} = \VectorSymbol{0}$ at $t = 0$, the motion may be computed at all times assuming a constant $\vm$, so the singularity may be
+eliminated.  But when $\TimeDerivative{\vm} \neq \VectorSymbol{0}$ at $t = 0$ and it later becomes $\VectorSymbol{0}$, there is no way to find a basis at $t$ that 
 continuously corresponds to the one at $t = 0$.
 
 In conclusion, we tried to use this approach but had to abandon it because of the impossibility of handling the singularity.
@@ -443,13 +444,22 @@ to map $\vm$ onto $\VectorSymbol{e_1}$ or $\VectorSymbol{e_3}$.  In the rest of 
 $\mathscr P$ and $\gy$.
 
 \subsection*{Integrals}
-We start with computing two integrals that are useful in the computation of $\gy$.  As far as we can tell the following integral is missing from
-\cite{ByrdFriedman1954}:
+We start by computing two integrals that are useful to obtain $\gy$.  As far as we can tell the following integral, which is useful for cases (i) and (ii),
+is missing from \cite{ByrdFriedman1954}:
+\begin{multline*}
+\int{}\frac{1}{1 + a \JacobiDN\of{u, k}}\diffd{u} = \\
+\frac{1}{1 - a^2}\pa{\EllipticPi\of{\JacobiAmplitude\of{u, k}, \frac{a^2 k^2}{a^2 - 1}, k} - 
+a\sqrt\frac{1 - a^2}{a^2\pa{k^2 - 1} + 1} \InverseTrigonometricTangent\of{\sqrt\frac{a^2 \pa{k^2 - 1} + 1}{1 - a^2} \JacobiSC\of{u, k}}}
+\end{multline*}
+Also, the following integral is useful for case (iii):
 \[
-\int{}\frac{1}{1 - a \JacobiDN\of{u, k}}\diffd{u} = \\
-\frac{1}{1 - a^2}\pa{\EllipticPi\of{\JacobiAmplitude\of{u, k}, \frac{a^2 m}{a^2 - 1}, k} - 
-\sqrt\frac{a \pa{1 - a^2}}{a^2\pa{m - 1} + 1} \InverseTrigonometricTangent\of{\sqrt\frac{a^2 \pa{m - 1} + 1}{1 - a^2} \JacobiSC\of{u, k}}}
+\int{}\frac{1}{1 + a \HyperbolicSecant\of{u}}\diffd{u} = u + \frac{2 a}{\sqrt{1 - a^2}} 
+\InverseTrigonometricTangent\of{\frac{a - 1}{\sqrt{1 - a^2}} \HyperbolicTangent\of{\frac{u}{2}}}
 \]
+
+\subsection*{Case (i)}
+\subsection*{Case (ii)}
+\subsection*{Case (iii)}
 
 \printbibliography
 \end{document}
