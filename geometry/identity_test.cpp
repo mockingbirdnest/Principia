@@ -52,7 +52,7 @@ class IdentityTest : public testing::Test {
 using IdentityDeathTest = IdentityTest;
 
 TEST_F(IdentityTest, Determinant) {
-  EXPECT_TRUE(Id().Determinant().Positive());
+  EXPECT_TRUE(Id().Determinant().is_positive());
 }
 
 TEST_F(IdentityTest, AppliedToVector) {

@@ -66,7 +66,8 @@ OrthogonalMap<FromFrame, ToFrame>::operator()(T const& t) const {
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::Identity() {
-  return OrthogonalMap(Sign(1), Rotation<FromFrame, ToFrame>::Identity());
+  return OrthogonalMap(Sign::Positive(),
+                       Rotation<FromFrame, ToFrame>::Identity());
 }
 
 template<typename FromFrame, typename ToFrame>

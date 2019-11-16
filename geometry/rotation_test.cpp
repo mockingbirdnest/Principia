@@ -146,9 +146,9 @@ TEST_F(RotationTest, AppliedToSymmetricBilinearForm) {
 }
 
 TEST_F(RotationTest, Determinant) {
-  EXPECT_TRUE(rotation_a_.Determinant().Positive());
-  EXPECT_TRUE(rotation_b_.Determinant().Positive());
-  EXPECT_TRUE(rotation_c_.Determinant().Positive());
+  EXPECT_TRUE(rotation_a_.Determinant().is_positive());
+  EXPECT_TRUE(rotation_b_.Determinant().is_positive());
+  EXPECT_TRUE(rotation_c_.Determinant().is_positive());
 }
 
 TEST_F(RotationTest, Inverse) {

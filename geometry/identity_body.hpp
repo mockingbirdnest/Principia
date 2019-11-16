@@ -16,7 +16,7 @@ Identity<FromFrame, ToFrame>::Identity() {}
 
 template<typename FromFrame, typename ToFrame>
 Sign Identity<FromFrame, ToFrame>::Determinant() const {
-  return Sign(1);
+  return Sign::Positive();
 }
 
 template<typename FromFrame, typename ToFrame>
