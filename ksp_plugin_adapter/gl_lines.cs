@@ -110,6 +110,8 @@ internal static class GLLines {
           if (previous_rp2_point.HasValue) {
             if (style == Style.Faded) {
               var faded_colour = colour;
+              // Fade from the opacity of |colour| (when index = 0) down to 1/4
+              // of that opacity.
               faded_colour.a *= 1 - (float)(4 * index) / (float)(5 * size);
               UnityEngine.GL.Color(faded_colour);
             }
