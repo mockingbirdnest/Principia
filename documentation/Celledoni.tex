@@ -379,19 +379,60 @@ In case (ii) we have $m_2 = -B_{23} \JacobiSN\of{\gl t - \gn, k^{-1}}$ and a com
 \]
 and:
 \[
-\TimeDerivative{\gy} = \frac{2 T}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k^{-1}}, \frac{G^2}{B_{21}^2}, k^{-1}}
+\gy = \frac{2 T}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k^{-1}}, \frac{G^2}{B_{21}^2}, k^{-1}}
 \]
 
 \subsection*{Case (iii)}
 In case (ii) we have $m_2 = G \HyperbolicTangent\of{\gl t - \gn}$ and:
 \[
-\gy = \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^4}{B_{21}^2 B_{23}^2} \HyperbolicTangent^2\of{\gl t - \gn}}}
+\TimeDerivative{\gy} = \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^4}{B_{21}^2 B_{23}^2} \HyperbolicTangent^2\of{\gl t - \gn}}}
 \]
 which can be integrated using:
 \[
 \int{}\frac{1}{1 - n \HyperbolicTangent^2\of{\gl t - \gn}}\diffd{t} = 
 \frac{t}{1 - n} + \frac{\sqrt{n}}{\pa{1 - n}\gl} \InverseHyperbolicTangent\of{\sqrt{n} \HyperbolicTangent\of{\gl t - \gn}}
 \]
+
+\subsection*{Implementation considerations}
+The approach in this section relies on the intermediate basis $\set{\vm, \TimeDerivative{\vm}, \commutator{\vm}{\TimeDerivative{\vm}}}$.  
+Unfortunately, it is not suitable for a practical implementation because it has an essential singularity when $\TimeDerivative{\vm} = \v0$:
+while the condition $\TimeDerivative{\vm} = \v0$ is physically a constant of motion, $\TimeDerivative{\vm}$ itself is not.  This means that
+any inaccuracies in numerical computations of $\TimeDerivative{\vm}$ (cancellations, underflow) may cause it to switch from $\v0$ to non-$\v0$ and back.
+
+When $\TimeDerivative{\vm} = \v0$ at $t = 0$, the motion may be computed at all times assuming a constant $\vm$, so the singularity may be
+eliminated.  But when $\TimeDerivative{\vm} \neq \v0$ at $t = 0$ and it later becomes $\v0$, there is no way to find a basis at $t$ that 
+continuously corresponds to the one at $t = 0$.
+
+In conclusion, we tried to use this approach but had to abandon it because of the impossibility of handling the singularity.
+
+\section*{Integration of the quaternion}
+\cite{Celledoni2007} use a rotation to map $\vm$ onto $\VectorSymbol{e_3}$ and obtain the following quaternionic representation for that rotation:
+\[
+\begin{dcases}
+p_1 &= \frac{p_3 m_1 + p_0 m_2}{G + m_3} \\
+p_2 &= \frac{p_3 m_2 + p_0 m_1}{G + m_3} \\
+p_0^2 + p_3^2 &= \frac{G + m_3}{2 G}
+\end{dcases}
+\]
+and the angle $\gy$ for the rotation around $\VectorSymbol{e_3}$:
+\[
+\TimeDerivative{\gy} = \frac{2 T + G m_3 / I_3}{G + m_3} + 4 G \frac{p_3 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_3}}{G + m_3}
+\]
+They note that these formul{\ae} are only applicable if $m_3 \neq 0$ but go on applying them to case (i) where $m_3 = B_{31} \JacobiCN\of{\gl t - \gn, k}$
+can be $0$.
+
+One should note at this point that \cite{Celledoni2007} make an error when copying the definition of $f_1\of{u}$ from formula 361.54 of 
+\cite{ByrdFriedman1954}.  This error is corrected in \cite{Celledoni2008}, but the sign of $f\of{s}$ in the definition of $\gy\of{t}$ is
+still incorrect and should read:
+\[
+f\of{s} \DefineAs -B_{31} \frac{B_{13}}{B_{21}} \InverseTrigonometricTangent\of{\frac{B_{21}}{B_{13}} \JacobiSD\of{\gl s - \gn, k}}
+\]
+
+\cite{Celledoni2007} do not explain how they handle cases (ii) and (iii).  It is intriguing to note, though, that the formul{\ae} above work well
+for case (ii) where $m_3 = \gs B_{31} \JacobiDN\of{\gl t - \gn, k^{-1}}$.  The reason is that, without loss of generality, we can apply to the principal
+axes of the body a rotation $\mathscr S$ that maps $m_3$ onto $-m_3$ (there are many possible choices for $\mathscr S$, but for simplicity we pick one that flips the sign of
+either $m_1$ or $m_2$).  With this rotation, the multiplier $\gs$ disappears from $m_3$ and we have $m_3 \geq 0$ for all times, which ensures that
+the denominator of the quaternionic coordinates $G + m_3$ can be safely computed.
 
 \printbibliography
 \end{document}
