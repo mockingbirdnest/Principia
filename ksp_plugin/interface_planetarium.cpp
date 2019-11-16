@@ -1,6 +1,8 @@
 
 #include "ksp_plugin/interface.hpp"
 
+#include <algorithm>
+
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -225,7 +227,11 @@ Iterator* principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
     char const* const vessel_guid,
     double const max_history_length) {
   journal::Method<journal::PlanetariumPlotCelestialTrajectoryForPsychohistory>
-      m({planetarium, plugin, celestial_index, vessel_guid, max_history_length});
+      m({planetarium,
+         plugin,
+         celestial_index,
+         vessel_guid,
+         max_history_length});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
 
@@ -253,7 +259,8 @@ Iterator* principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
 // Returns an iterator for the rendered future trajectory of the celestial with
 // the given index; the trajectory goes as far as the furthest of the final time
 // of the prediction or that of the flight plan.
-Iterator* principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
+Iterator*
+principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const celestial_index,
