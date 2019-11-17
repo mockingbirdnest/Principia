@@ -234,7 +234,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   std::vector<double> pol_bop_separations_in_m;
 
   for (not_null<MassiveBody const*> const moon : joolian_moons_) {
-    last_separation_changes.emplace(moon, Sign(+1));
+    last_separation_changes.emplace(moon, Sign::Positive());
   }
   for (int n = 0;
        t < a_century_hence;

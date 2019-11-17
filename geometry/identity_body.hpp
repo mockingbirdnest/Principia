@@ -16,7 +16,7 @@ Identity<FromFrame, ToFrame>::Identity() {}
 
 template<typename FromFrame, typename ToFrame>
 Sign Identity<FromFrame, ToFrame>::Determinant() const {
-  return Sign(1);
+  return Sign::Positive();
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -43,6 +43,13 @@ template<typename Scalar>
 Trivector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return Trivector<Scalar, ToFrame>(trivector.coordinates());
+}
+
+template<typename FromFrame, typename ToFrame>
+template<typename Scalar>
+SymmetricBilinearForm<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
+    SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
+  return SymmetricBilinearForm<Scalar, ToFrame>(form.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>

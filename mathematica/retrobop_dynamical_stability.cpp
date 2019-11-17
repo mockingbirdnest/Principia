@@ -277,7 +277,7 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
   std::map<Celestial, Length> record_separation;
 
   for (Celestial const moon : jool_moons) {
-    last_separation_changes.emplace(moon, Sign(+1));
+    last_separation_changes.emplace(moon, Sign::Positive());
   }
   for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch + n * Hour) {
     auto const jool_position = EvaluatePosition(ephemeris, Jool, t);

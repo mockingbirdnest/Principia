@@ -191,7 +191,7 @@ class KSPResonanceTest : public ::testing::Test {
       };
 
       Instant t1 = t;
-      Sign s0(0);
+      Sign s0 = Sign::Positive();
       if (t1 <= ephemeris.t_max()) {
         s0 = Sign(moon_y(t1));
       }

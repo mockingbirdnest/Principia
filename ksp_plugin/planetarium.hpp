@@ -83,12 +83,16 @@ class Planetarium {
       Instant const& now,
       bool reverse) const;
 
+  // A method that plots the cubic Hermite spline interpolating the trajectory,
+  // using an adaptive step size to keep the error between the straight segments
+  // and the actual spline below and close to the angular resolution.
   RP2Lines<Length, Camera> PlotMethod2(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now,
       bool reverse) const;
 
+  // The same method, operating on the |Trajectory| interface.
   RP2Lines<Length, Camera> PlotMethod2(
       Trajectory<Barycentric> const& trajectory,
       Instant const& first_time,

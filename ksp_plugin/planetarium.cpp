@@ -154,7 +154,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     Instant const& first_time,
     Instant const& last_time,
     Instant const& now,
-    bool reverse) const {
+    bool const reverse) const {
   RP2Lines<Length, Camera> lines;
   auto const plottable_spheres = ComputePlottableSpheres(now);
   double const tan²_angular_resolution =
@@ -162,7 +162,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto const final_time = reverse ? first_time : last_time;
   auto previous_time = reverse ? last_time : first_time;
 
-  Sign const direction = reverse ? Sign(-1) : Sign(1);
+  Sign const direction = reverse ? Sign::Negative() : Sign::Positive();
   if (direction * (final_time - previous_time) <= Time{}) {
     return lines;
   }

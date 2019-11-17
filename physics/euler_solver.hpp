@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <optional>
+
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -61,55 +63,71 @@ class EulerSolver {
   struct ℬₜ;
   struct ℬʹ;
 
+  // A frame which is rotated from PrincipalAxesFrame such that the coordinates
+  // of m along which we project is positive.  Used for all internal
+  // computations.
+  struct PreferredPrincipalAxesFrame;
+
+  using PreferredAngularMomentumBivector =
+      Bivector<AngularMomentum, PreferredPrincipalAxesFrame>;
+
   // The formula to use, following [CFSZ07], Section 2.2.  They don't have a
-  // formula for the spherical case.
+  // formula for the spherical case.  Also note our singular case for case (iii)
+  // which arises when the coordinate along which we don't project is 0.
   enum class Formula {
     i,
     ii,
     iii,
-    Sphere
+    Sphere,
   };
 
-  Rotation<PrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
-      AngularMomentumBivector const& angular_momentum,
-      bool& ṁ_is_zero) const;
+  // For case (iii) we use project either on e₁ (as we do in case (i)) or on
+  // e₃ (as we do in case (ii)) depending on which of the x and z coordinates of
+  // m is larger (in absolute value).
+  enum class Region {
+    e₁,
+    e₃,
+    Motionless,
+  };
 
-  // If m is constant in the principal axes frames, we cannot construct ℬₜ using
-  // ṁ as specified after the demonstration of proposition 2.2 in [CFSZ07].
-  // Instead, we use a constant v orthogonal to m.  This member is set when
-  // initializating ℛ_.
-  bool ṁ_is_zero_ = false;
+  Rotation<PreferredPrincipalAxesFrame, ℬₜ> Compute𝒫ₜ(
+      PreferredAngularMomentumBivector const& angular_momentum) const;
 
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;
-  AngularMomentumBivector const initial_angular_momentum_;
   Instant const initial_time_;
-  Rotation<ℬʹ, InertialFrame> const ℛ_;
+  AngularMomentum const G_;
+  PreferredAngularMomentumBivector initial_angular_momentum_;
+  Rotation<ℬʹ, InertialFrame> ℛ_;
 
-  // Amusingly, the formula to use is a constant of motion.
+  // A rotation that describes which axes are flipped to adjust the signs of the
+  // coordinates of m.  It incorporates σ, σʹ and σʺ from [CFSZ07].
+  Rotation<PrincipalAxesFrame, PreferredPrincipalAxesFrame> 𝒮_;
+
+  // Importantly, the formula and the region to use are constants of motion.
   Formula formula_;
+  Region region_;
 
   // Only the parameters needed for the selected formula are non-NaN after
   // construction.
 
   AngularFrequency λ_ = NaN<AngularFrequency>();
 
-  AngularMomentum G_ = NaN<AngularMomentum>();
   AngularMomentum B₂₃_ = NaN<AngularMomentum>();
   AngularMomentum B₁₃_ = NaN<AngularMomentum>();
   AngularMomentum B₃₁_ = NaN<AngularMomentum>();
   AngularMomentum B₂₁_ = NaN<AngularMomentum>();
 
-  AngularMomentum σB₁₃_ = NaN<AngularMomentum>();
-  AngularMomentum σB₃₁_ = NaN<AngularMomentum>();
-  AngularMomentum σʹB₁₃_ = NaN<AngularMomentum>();
-  AngularMomentum σʺB₃₁_ = NaN<AngularMomentum>();
-
   double n_ = NaN<double>();
   double mc_ = NaN<double>();
   Angle ν_ = NaN<Angle>();
-  Angle ψ_Π_offset_ = NaN<Angle>();
-  double ψ_Π_multiplier_ = NaN<double>();
+  Angle ψ_offset_ = NaN<Angle>();
+  double ψ_arctan_multiplier_ = NaN<double>();
+  MomentOfInertia ψ_cn_multiplier_ = NaN<MomentOfInertia>();
+  MomentOfInertia ψ_sn_multiplier_ = NaN<MomentOfInertia>();
+  AngularMomentum ψ_cosh_multiplier_ = NaN<AngularMomentum>();
+  AngularMomentum ψ_sinh_multiplier_ = NaN<AngularMomentum>();
+  double ψ_integral_multiplier_ = NaN<double>();
   AngularFrequency ψ_t_multiplier_ = NaN<AngularFrequency>();
 };
 

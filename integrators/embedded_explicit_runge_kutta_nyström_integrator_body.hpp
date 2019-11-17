@@ -70,7 +70,7 @@ Instance::Solve(Instant const& t_final) {
   // Argument checks.
   int const dimension = current_state.positions.size();
   Sign const integration_direction = Sign(parameters.first_time_step);
-  if (integration_direction.Positive()) {
+  if (integration_direction.is_positive()) {
     // Integrating forward.
     CHECK_LT(current_state.time.value, t_final);
   } else {

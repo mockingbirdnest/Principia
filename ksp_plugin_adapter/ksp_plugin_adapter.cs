@@ -1798,49 +1798,8 @@ public partial class PrincipiaPluginAdapter
       using (DisposablePlanetarium planetarium =
                 GLLines.NewPlanetarium(plugin_, sun_world_position)) {
         GLLines.Draw(() => {
-          // Celestial trajectories.
-          foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-            if (plotting_frame_selector_.FixedBodies().Contains(celestial)) {
-              continue;
-            }
-            var colour = celestial.MapObject?.uiNode?.VisualIconData.color ??
-                XKCDColors.SunshineYellow;
-            if (colour.a != 1) {
-              // When zoomed into a planetary system, the trajectory of the
-              // planet is hidden in stock (because KSP then draws most things
-              // in the reference frame centred on that planet).
-              // Here we still want to display the trajectory of the primary,
-              // e.g., if we are drawing the trajectories of the Jovian system
-              // in the heliocentric frame.
-              foreach (CelestialBody child in celestial.orbitingBodies) {
-                colour.a = Math.Max(
-                    child.MapObject?.uiNode?.VisualIconData.color.a ?? 1,
-                    colour.a);
-              }
-            }
-            if (colour.a == 0) {
-              continue;
-            }
-            using (DisposableIterator rp2_lines_iterator =
-                      planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
-                          plugin_,
-                          celestial.flightGlobalsIndex,
-                          main_vessel_guid,
-                          main_window_.history_length)) {
-              GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                   colour,
-                                   GLLines.Style.Faded);
-            }
-            if (main_vessel_guid != null) {
-              using (DisposableIterator rp2_lines_iterator =
-                        planetarium.PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
-                            plugin_, celestial.flightGlobalsIndex, main_vessel_guid)) {
-                GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                     colour,
-                                     GLLines.Style.Solid);
-              }
-            }
-          }
+          PlotCelestialTrajectories(planetarium, main_vessel_guid);
+
           // Vessel trajectories.
           if (main_vessel_guid == null) {
             return;
@@ -1951,6 +1910,52 @@ public partial class PrincipiaPluginAdapter
             }
           }
         });
+      }
+    }
+  }
+
+  private void PlotCelestialTrajectories(DisposablePlanetarium planetarium,
+                                         string main_vessel_guid) {
+    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+      if (plotting_frame_selector_.FixedBodies().Contains(celestial)) {
+        continue;
+      }
+      var colour = celestial.MapObject?.uiNode?.VisualIconData.color ??
+          XKCDColors.SunshineYellow;
+      if (colour.a != 1) {
+        // When zoomed into a planetary system, the trajectory of the
+        // planet is hidden in stock (because KSP then draws most things
+        // in the reference frame centred on that planet).
+        // Here we still want to display the trajectory of the primary,
+        // e.g., if we are drawing the trajectories of the Jovian system
+        // in the heliocentric frame.
+        foreach (CelestialBody child in celestial.orbitingBodies) {
+          colour.a = Math.Max(
+              child.MapObject?.uiNode?.VisualIconData.color.a ?? 1,
+              colour.a);
+        }
+      }
+      if (colour.a == 0) {
+        continue;
+      }
+      using (DisposableIterator rp2_lines_iterator =
+                planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
+                    plugin_,
+                    celestial.flightGlobalsIndex,
+                    main_vessel_guid,
+                    main_window_.history_length)) {
+        GLLines.PlotRP2Lines(rp2_lines_iterator,
+                              colour,
+                              GLLines.Style.Faded);
+      }
+      if (main_vessel_guid != null) {
+        using (DisposableIterator rp2_lines_iterator =
+                  planetarium.PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
+                      plugin_, celestial.flightGlobalsIndex, main_vessel_guid)) {
+          GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                colour,
+                                GLLines.Style.Solid);
+        }
       }
     }
   }

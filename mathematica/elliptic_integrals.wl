@@ -90,11 +90,11 @@
 
 
 (* ::Input:: *)
-(*redm={1/10,1/2,9/10}*)
+(*redm=Sort[Join[{1/10,1/2,9/10},Table[-i/10,{i,1,5}],Table[i/10,{i,11,15}]]]*)
 
 
 (* ::Input:: *)
-(*red\[CurlyPhi]=Table[i/2,{i,-20,20}]*)
+(*red\[CurlyPhi]=Sort[Join[Table[i/2,{i,-20,20}],Table[i/10,{i,-4,4}]]]*)
 
 
 (* ::Input:: *)
@@ -103,7 +103,7 @@
 
 (* ::Input:: *)
 (*redvals2=Map[*)
-(*N[{*)
+(*Re[N[{*)
 (*If[#[[2]]==0,*)
 (*Limit[fukushimaB[#[[1]],m],m->0],*)
 (*fukushimaB[#[[1]],#[[2]]]],*)
@@ -112,21 +112,25 @@
 (*fukushimaD[#[[1]],#[[2]]]],*)
 (*EllipticE[#[[1]],#[[2]]],*)
 (*EllipticF[#[[1]],#[[2]]]*)
-(*},20]&,*)
+(*},20]]&,*)
 (*redargs2];*)
 
 
 (* ::Input:: *)
 (*redstrs2=Map[*)
 (*"entry { argument: "<>decimalFloatLiteral[#[[1]],2]<>*)
-(*" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
-(*" value: "<>decimalFloatLiteral[#[[3]],2]<>*)
-(*" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
-(*" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
-(*" value: "<>decimalFloatLiteral[#[[6]],2]<>*)
-(*"}"*)
+(*	" argument: "<>decimalFloatLiteral[#[[2]],2]<>*)
+(*	" value: "<>decimalFloatLiteral[#[[3]],2]<>*)
+(*	" value: "<>decimalFloatLiteral[#[[4]],2]<>*)
+(*	" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
+(*	" value: "<>decimalFloatLiteral[#[[6]],2]<>*)
+(*	"}"*)
 (*&,*)
-(*Join[N[redargs2,20],redvals2,2]];*)
+(*Select[*)
+(*Join[N[redargs2,20],redvals2,2],*)
+(*((Abs[#[[1]]]>\[Pi]/2 &&#[[2]]<1)||*)
+(*	(0<=#[[1]]&&#[[1]]<= \[Pi]/2 &&(#[[2]]<0||Sin[#[[1]]]^2<1/#[[2]])))&]*)
+(*];*)
 
 
 (* ::Input:: *)
@@ -186,7 +190,7 @@
 (*Join[randomargs3,randomvals3,2]];*)
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*A case that used to have a bug*)
 
 
@@ -237,15 +241,15 @@
 
 
 (* ::Input:: *)
-(*redm={1/10,1/2,9/10}*)
+(*redm=Sort[Join[{1/10,1/2,9/10},Table[-i/10,{i,1,5}],Table[i/10,{i,11,15}]]]*)
 
 
 (* ::Input:: *)
-(*red\[CurlyPhi]=Table[i/2,{i,-20,20}]*)
+(*red\[CurlyPhi]=Sort[Join[Table[i/2,{i,-20,20}],Table[i/10,{i,-4,4}]]]*)
 
 
 (* ::Input:: *)
-(*redn={1/10,1/2,9/10}*)
+(*redn=Sort[Join[{1/10,1/2,9/10},Table[-i/10,{i,1,5}],Table[i/10,{i,11,15}]]]*)
 
 
 (* ::Input:: *)
@@ -254,12 +258,12 @@
 
 (* ::Input:: *)
 (*redvals3=Map[*)
-(*N[{*)
+(*Re[N[{*)
 (*If[#[[2]]==0,*)
 (*Limit[fukushimaJ[#[[1]],n,#[[3]]],n->0],*)
 (*fukushimaJ[#[[1]],#[[2]],#[[3]]]],*)
 (*EllipticPi[#[[2]],#[[1]],#[[3]]]*)
-(*},20]&,*)
+(*},20]]&,*)
 (*redargs3];*)
 
 
@@ -272,7 +276,11 @@
 (*" value: "<>decimalFloatLiteral[#[[5]],2]<>*)
 (*"}"*)
 (*&,*)
-(*Join[N[redargs3,20],redvals3,2]];*)
+(*Select[*)
+(*Join[N[redargs3,20],redvals3,2],*)
+(*((#[[2]]>=0&&#[[2]]<= 1)||(#[[1]]>=-\[Pi]/2&&#[[1]]<=\[Pi]/2 ))(*This condition avoids what I believe to be a bug in Mathematica 11.0 where EllipticPi is confused for an amplitude that is a multiple of \[Pi]*)&&((Abs[#[[1]]]>\[Pi]/2 &&#[[3]]<1)||*)
+(*	(0<=#[[1]]&&#[[1]]<= \[Pi]/2 &&(#[[3]]<0||Sin[#[[1]]]^2<1/#[[3]])))&]*)
+(*];*)
 
 
 (* ::Input:: *)
@@ -286,7 +294,7 @@
 (*"text"]*)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*xeldbj near \[CurlyPhi]=\[Pi]/2*)
 
 
