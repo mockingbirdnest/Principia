@@ -77,10 +77,6 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private string serialization_encoding_ = "hexadecimal";
 
-  // For compatibility only.  Do not use in real code.
-  [KSPField(isPersistant = true)]
-  private const int history_length_index_ = 10;
-
   // Whether the plotting frame must be set to something convenient at the next
   // opportunity.
   private bool must_set_plotting_frame_ = false;
@@ -611,7 +607,6 @@ public partial class PrincipiaPluginAdapter
     if (is_bad_installation_) {
       return;
     }
-    main_window_.LoadCompatibilityDataIfNeeded(history_length_index_);
     if (node.HasValue(principia_serialized_plugin_)) {
       Cleanup();
       RemoveBuggyTidalLocking();
