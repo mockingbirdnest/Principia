@@ -498,6 +498,27 @@ Using equation \ref{integraldn} with $a = B_{13}/G$ and simplifying the various 
 \]
 
 \subsection*{Case (ii)}
+In case (ii) $\mathscr P$ maps $\vm$ onto $\VectorSymbol{e_3}$ and we follow the computation given in \cite{Celledoni2007}.  We repeat their results
+here in dimensionful form.  The quaternion is:
+\[
+\begin{dcases}
+p_0 &= \sqrt\frac{1 + m_3/G}{2} \\
+p_1 &= \frac{m_2}{\sqrt{2 G\pa{G + m_3}}} \\
+p_2 &= \frac{-m_1}{\sqrt{2 G\pa{G + m_3}}} \\
+p_3 &= 0
+\end{dcases}
+\]
+and the angle:
+\[
+\TimeDerivative{\gy}\of{t} = \frac{G}{I_3} - \frac{\gD_3}{G I_3}\frac{1}{1 + m_3/G}
+\]
+Using equation \ref{integraldn} with $a = B_{31}/G$ and simplifying the various coefficients we obtain:
+\[
+\gy\of{t} = \frac{G}{I_3}t + \frac{G I_{31}}{\gl I_1 I_3}
+\pa{\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_3 I_{21}}{I_1 I_{23}}, k} -
+\frac{B_{31}}{G}\sqrt\frac{I_1 I_{32}}{I_2 I_{31}} \InverseTrigonometricTangent\of{\sqrt\frac{I_2 I_{31}}{I_1 I_{32}} \JacobiSC\of{\gl t - \gn, k}}}
+\]
+
 \subsection*{Case (iii)}
 
 \printbibliography
