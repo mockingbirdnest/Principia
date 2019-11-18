@@ -435,7 +435,7 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       Componentwise(AlmostEquals(reference_momentum.coordinates().x, 0, 3),
                     VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 24),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 6)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/3);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/2);
 }
 
 // This test demonstrates the Джанибеков effect, also known as tennis racket
@@ -538,7 +538,7 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 10),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 16),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 965)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/45);
+  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/43);
 }
 
 // A general body that doesn't rotate.

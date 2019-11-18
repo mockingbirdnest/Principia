@@ -219,12 +219,12 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       n_ = I₁ * I₃₂ / (I₃ * I₁₂);
       ψ_cn_multiplier_ = Sqrt(I₃ * I₂₁);
       ψ_sn_multiplier_ = Sqrt(I₂ * I₃₁);
-      ψ_arctan_multiplier_ = -B₁₃_ * ψ_cn_multiplier_ /
-                             (ψ_sn_multiplier_ * G_);
-      ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
-                  ψ_arctan_multiplier_ * ArcTan(ψ_sn_multiplier_ * sn,
-                                                ψ_cn_multiplier_ * cn);
-      ψ_integral_multiplier_ = G_ * I₁₃ / (λ_ * I₁ * I₃);
+      ψ_arctan_multiplier_ = -1;
+      ψ_elliptic_pi_multiplier_ = G_ * I₁₃ / (λ_ * I₁ * I₃);
+      ψ_offset_ = ψ_elliptic_pi_multiplier_ *
+                      EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
+                  ψ_arctan_multiplier_ *
+                      ArcTan(ψ_sn_multiplier_ * sn, ψ_cn_multiplier_ * cn);
       ψ_t_multiplier_ = G_ / I₁;
 
       break;
@@ -244,12 +244,12 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       n_ = I₃ * I₂₁ / (I₁ * I₂₃);
       ψ_cn_multiplier_ = Sqrt(I₁ * I₃₂);
       ψ_sn_multiplier_ = Sqrt(I₂ * I₃₁);
-      ψ_arctan_multiplier_ = -B₃₁_ * ψ_cn_multiplier_ /
-                             (ψ_sn_multiplier_ * G_);
-      ψ_offset_ = EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
-                  ψ_arctan_multiplier_ * ArcTan(ψ_sn_multiplier_ * sn,
-                                                ψ_cn_multiplier_ * cn);
-      ψ_integral_multiplier_ = G_ * I₃₁ / (λ_ * I₁ * I₃);
+      ψ_arctan_multiplier_ = 1;
+      ψ_elliptic_pi_multiplier_ = G_ * I₃₁ / (λ_ * I₁ * I₃);
+      ψ_offset_ = ψ_elliptic_pi_multiplier_ *
+                      EllipticΠ(JacobiAmplitude(-ν_, mc_), n_, mc_) +
+                  ψ_arctan_multiplier_ *
+                      ArcTan(ψ_sn_multiplier_ * sn, ψ_cn_multiplier_ * cn);
       ψ_t_multiplier_ = G_ / I₃;
 
       break;
@@ -365,11 +365,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       double dn;
       JacobiSNCNDN(λ_ * Δt - ν_, mc_, sn, cn, dn);
       Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
-      ψ += ψ_integral_multiplier_ *
-           (EllipticΠ(φ, n_, mc_) +
-            ψ_arctan_multiplier_ * ArcTan(ψ_sn_multiplier_ * sn,
-                                          ψ_cn_multiplier_ * cn) -
-            ψ_offset_);
+      ψ += ψ_elliptic_pi_multiplier_ * EllipticΠ(φ, n_, mc_) +
+           ψ_arctan_multiplier_ *
+               ArcTan(ψ_sn_multiplier_ * sn, ψ_cn_multiplier_ * cn) -
+           ψ_offset_;
       break;
     }
     case Formula::ii: {
@@ -378,11 +377,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
       double dn;
       JacobiSNCNDN(λ_ * Δt - ν_, mc_, sn, cn, dn);
       Angle const φ = JacobiAmplitude(λ_ * Δt - ν_, mc_);
-      ψ += ψ_integral_multiplier_ *
-           (EllipticΠ(φ, n_, mc_) +
-            ψ_arctan_multiplier_ * ArcTan(ψ_sn_multiplier_ * sn,
-                                          ψ_cn_multiplier_ * cn) -
-            ψ_offset_);
+      ψ += ψ_elliptic_pi_multiplier_ * EllipticΠ(φ, n_, mc_) +
+           ψ_arctan_multiplier_ *
+               ArcTan(ψ_sn_multiplier_ * sn, ψ_cn_multiplier_ * cn) -
+           ψ_offset_;
       break;
     }
     case Formula::iii: {
