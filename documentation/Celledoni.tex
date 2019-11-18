@@ -520,6 +520,24 @@ Using equation \ref{integraldn} with $a = B_{31}/G$ and simplifying the various 
 \]
 
 \subsection*{Case (iii)}
+In case (iii) we start by defining $\mathscr S$ so as to make both $m_1$ and $m_3$ positive.  This is always possible, perhaps by flipping $m_2$.  We then
+choose $\mathscr P$ to map $\vm$ onto $\VectorSymbol{e_1}$ or $\VectorSymbol{e_3}$.  Which one we pick is explained below.
+
+Assume that we map $\vm$ onto $\VectorSymbol{e_1}$.  Then using equation \ref{integralsech} with $a = B_{13}/G$ and simplifying the coefficients we obtain:
+\[
+\begin{dcases}
+\gy\of{t} &= \pa{\frac{G}{I_1} - \frac{\gD_1}{G I_1}}t - \frac{2 B_{13} \gD_1}{\gl G B_{31} I_1} 
+\InverseTrigonometricTangent\of{\frac{B_{13} - G}{B_{31}} \HyperbolicTangent\of{\frac{\gl t - \gn}{2}}} \\
+&= \frac{G}{I_2}t - 2 \InverseTrigonometricTangent\of{\frac{B_{13} - G}{B_{31}} \HyperbolicTangent\of{\frac{\gl t - \gn}{2}}}
+\end{dcases}
+\]
+We see that this formula is only applicable when $B_{31} \neq 0$.  For safety, we rotate onto $\VectorSymbol{e_1}$ if and only if $B_{13} < B_{31}$.
+
+Conversely when we map $\vm$ onto $\VectorSymbol{e_3}$, we have $a = B_{31}/G$ and:
+\[
+\gy\of{t} = \frac{G}{I_2}t + 2 \InverseTrigonometricTangent\of{\frac{B_{31} - G}{B_{13}} \HyperbolicTangent\of{\frac{\gl t - \gn}{2}}}
+\]
+We use this formula when $B_{13} \geq B_{31}$ so we are sure that $B_{13}$ is non-$0$.
 
 \printbibliography
 \end{document}

@@ -261,13 +261,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
 
       switch (region_) {
         case Region::e₁: {
-          ψ_arctan_multiplier_ = 2 * B₁₃_ / B₃₁_;
+          ψ_arctan_multiplier_ = -2;
           ψ_cosh_multiplier_ = B₃₁_;
           ψ_sinh_multiplier_ = B₁₃_ - G_;
           break;
         }
         case Region::e₃: {
-          ψ_arctan_multiplier_ = 2 * B₃₁_ / B₁₃_;
+          ψ_arctan_multiplier_ = 2;
           ψ_cosh_multiplier_ = B₁₃_;
           ψ_sinh_multiplier_ = B₃₁_ - G_;
           break;
@@ -278,8 +278,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       }
       ψ_offset_ = ArcTan(ψ_sinh_multiplier_ * Tanh(-0.5 * ν_),
                          ψ_cosh_multiplier_);
-      auto const two_T = m.x * m.x / I₁ + m.y * m.y / I₂ + m.z * m.z / I₃;
-      ψ_t_multiplier_ = two_T / G_;
+      ψ_t_multiplier_ = G_ / I₂;
 
       break;
     }
