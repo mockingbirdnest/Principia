@@ -493,8 +493,8 @@ and the angle to:
 Using equation \ref{integraldn} with $a = B_{13}/G$ and simplifying the various coefficients we obtain:
 \[
 \gy\of{t} = \frac{G}{I_1}t + \frac{G I_{13}}{\gl I_1 I_3}
-\pa{\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_1 I_{32}}{I_3 I_{12}}, k} -
-\frac{B_{13}}{G}\sqrt\frac{I_3 I_{21}}{I_2 I_{31}} \InverseTrigonometricTangent\of{\sqrt\frac{I_2 I_{31}}{I_3 I_{21}} \JacobiSC\of{\gl t - \gn, k}}}
+\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_1 I_{32}}{I_3 I_{12}}, k} -
+\InverseTrigonometricTangent\of{\sqrt\frac{I_2 I_{31}}{I_3 I_{21}} \JacobiSC\of{\gl t - \gn, k}}
 \]
 
 \subsection*{Case (ii)}
@@ -515,8 +515,8 @@ and the angle:
 Using equation \ref{integraldn} with $a = B_{31}/G$ and simplifying the various coefficients we obtain:
 \[
 \gy\of{t} = \frac{G}{I_3}t + \frac{G I_{31}}{\gl I_1 I_3}
-\pa{\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_3 I_{21}}{I_1 I_{23}}, k} -
-\frac{B_{31}}{G}\sqrt\frac{I_1 I_{32}}{I_2 I_{31}} \InverseTrigonometricTangent\of{\sqrt\frac{I_2 I_{31}}{I_1 I_{32}} \JacobiSC\of{\gl t - \gn, k}}}
+\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_3 I_{21}}{I_1 I_{23}}, k} +
+\InverseTrigonometricTangent\of{\sqrt\frac{I_2 I_{31}}{I_1 I_{32}} \JacobiSC\of{\gl t - \gn, k}}
 \]
 
 \subsection*{Case (iii)}
@@ -531,7 +531,8 @@ Assume that we map $\vm$ onto $\VectorSymbol{e_1}$.  Then using equation \ref{in
 &= \frac{G}{I_2}t - 2 \InverseTrigonometricTangent\of{\frac{B_{13} - G}{B_{31}} \HyperbolicTangent\of{\frac{\gl t - \gn}{2}}}
 \end{dcases}
 \]
-We see that this formula is only applicable when $B_{31} \neq 0$.  For safety, we rotate onto $\VectorSymbol{e_1}$ if and only if $B_{13} < B_{31}$.
+Because $B_{13} = G$ when $B_{31} = 0$, this formula is only usable if $B_{31} \neq 0$.  For safety, we rotate onto $\VectorSymbol{e_1}$ 
+if and only if $B_{13} < B_{31}$.
 
 Conversely when we map $\vm$ onto $\VectorSymbol{e_3}$, we have $a = B_{31}/G$ and:
 \[
