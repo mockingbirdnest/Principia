@@ -2,6 +2,8 @@
 
 \usepackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true]{biblatex}
 \bibliography{bibliography}
+\usepackage{tikz}
+\usetikzlibrary{cd}
 
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
@@ -353,7 +355,28 @@ m_c = 1 - k^{-2} = 1 + \frac{\gD_3 I_{21}}{\gD_1 I_{32}}
 In both cases we have $m_c \geq 0$.
 
 \section*{Integration of the rotation matrix}
-<<TODO: the rotations>>
+\cite{Celledoni2007} decompose the attitude rotation $\mathscr Q_t$ of the body as follows:
+\[
+\begin{tikzcd}
+{\mathscr Q_t: \mathscr B^b} \arrow{r}{\mathscr P_t} & {\mathscr B_t} \arrow{r}{\mathscr Y_t} & {\mathscr B'} \arrow{r}{\mathscr R} & {\mathscr B^s}
+\end{tikzcd}
+\]
+where $\mathscr P_t$ maps $\vm$ onto $\VectorSymbol{e_3^b}$, $\mathscr Y_t$ is a rotation of angle $\gy$ around $\vm$, and ${\mathscr R}$
+maps $\VectorSymbol{e_3^s}$ onto $\vm$.  They then assume that $\mathscr Q_{t_0} = \Identity$.  This yields the following decomposition for
+$\mathscr R$:
+\[
+\begin{tikzcd}
+{\mathscr R: \mathscr B'} \arrow{r}{\mathscr Y_{t_0}^{-1} = \Identity} & {\mathscr B_t} \arrow{r}{\mathscr P_{t_0}^{-1}} & {\mathscr B^b}
+\end{tikzcd}
+\]
+This is not sufficient for our purpose, however, because in practical situations $\mathscr Q_{t_0}$ cannot be chosen.  Therefore we
+decompose $\mathscr R$ as follows:
+\[
+\begin{tikzcd}
+{\mathscr R: \mathscr B'} \arrow{r}{\mathscr Y_{t_0}^{-1} = \Identity} & {\mathscr B_t} \arrow{r}{\mathscr P_{t_0}^{-1}} & {\mathscr B^b}
+\arrow{r}{\mathscr Q_{t_0}} & {\mathscr B^s}
+\end{tikzcd}
+\]
 
 \cite{Celledoni2007} derive the following expression for $\TimeDerivative{\gy}\of{t}$ (which they write slightly differently):
 \begin{align*}
@@ -438,10 +461,25 @@ the denominator of the quaternionic coordinates $G + m_3$ can be safely computed
 $\JacobiDN$ appears does not change sign, and is therefore a better choice for rotating $\vm$ to $\VectorSymbol{e_i}$.
 
 Observing that, in case (i), $m_1 = \gs B_{13} \JacobiDN\of{\gl t - \gn, k}$, we will construct a rotation $\mathscr S$ to make $m_1$ positive and then
-a rotation $\mathscr P$ that maps $\vm$ onto $\VectorSymbol{e_1}$.  Similarly, in case (iii) the function $\HyperbolicSecant$ appears in the
-expressions of $m_1$ and $m_3$ and is always positive, so we will construct $\mathscr S$ to make both $m_1$ and $m_3$ positive and choose $\mathscr P$
+a rotation $\mathscr P_t$ that maps $\vm$ onto $\VectorSymbol{e_1}$.  Similarly, in case (iii) the function $\HyperbolicSecant$ appears in the
+expressions of $m_1$ and $m_3$ and is always positive, so we will construct $\mathscr S$ to make both $m_1$ and $m_3$ positive and choose $\mathscr P_t$
 to map $\vm$ onto $\VectorSymbol{e_1}$ or $\VectorSymbol{e_3}$.  In the rest of this section we detail the calculations used to compute $\mathscr S$,
-$\mathscr P$ and $\gy\of{t}$.
+$\mathscr P_t$ and $\gy\of{t}$.
+
+With the introduction of $\mathscr S$, we are effectively introducing a new base $\mathscr B^p$ for the ``preferred'' principal axes of the body, and
+the rotation diagrams above are modified as follows for $\mathscr Q_t$:
+\[
+\begin{tikzcd}
+{\mathscr Q_t: \mathscr B^b} \arrow{r}{\mathscr S} & {\mathscr B^p}\arrow{r}{\mathscr P_t} & {\mathscr B_t} \arrow{r}{\mathscr Y_t} & {\mathscr B'} \arrow{r}{\mathscr R} & {\mathscr B^s}
+\end{tikzcd}
+\]
+And for $\mathscr R$:
+\[
+\begin{tikzcd}
+{\mathscr R: \mathscr B'} \arrow{r}{\mathscr Y_{t_0}^{-1} = \Identity} & {\mathscr B_t} \arrow{r}{\mathscr P_{t_0}^{-1}} & {\mathscr B^p} 
+\arrow{r}{\mathscr S^{-1}} & {\mathscr B^b} \arrow{r}{\mathscr Q_{t_0}} & {\mathscr B^s}
+\end{tikzcd}
+\] 
 
 \subsection*{Integrals}
 We start by computing two integrals that are useful to obtain $\gy\of{t}$.  As far as we can tell the following integral, which is useful for cases (i) and (ii),
@@ -463,7 +501,7 @@ Also, the following integral is useful for case (iii):
 \end{equation}
 
 \subsection*{Case (i)}
-In case (i), we define $\mathscr P$ to map $\vm$ onto $\VectorSymbol{e_1}$.  A computation similar to that in \cite{Celledoni2007} yields that rotation
+In case (i), we define $\mathscr P_t$ to map $\vm$ onto $\VectorSymbol{e_1}$.  A computation similar to that in \cite{Celledoni2007} yields that rotation
 in quaternionic form:
 \[
 \begin{dcases}
@@ -498,7 +536,7 @@ Using equation \ref{integraldn} with $a = B_{13}/G$ and simplifying the various 
 \]
 
 \subsection*{Case (ii)}
-In case (ii) $\mathscr P$ maps $\vm$ onto $\VectorSymbol{e_3}$ and we follow the computation given in \cite{Celledoni2007}.  We repeat their results
+In case (ii) $\mathscr P_t$ maps $\vm$ onto $\VectorSymbol{e_3}$ and we follow the computation given in \cite{Celledoni2007}.  We repeat their results
 here in dimensionful form.  The quaternion is:
 \[
 \begin{dcases}
@@ -521,7 +559,7 @@ Using equation \ref{integraldn} with $a = B_{31}/G$ and simplifying the various 
 
 \subsection*{Case (iii)}
 In case (iii) we start by defining $\mathscr S$ so as to make both $m_1$ and $m_3$ positive.  This is always possible, perhaps by flipping $m_2$.  We then
-choose $\mathscr P$ to map $\vm$ onto $\VectorSymbol{e_1}$ or $\VectorSymbol{e_3}$.  Which one we pick is explained below.
+choose $\mathscr P_t$ to map $\vm$ onto $\VectorSymbol{e_1}$ or $\VectorSymbol{e_3}$.  Which one we pick is explained below.
 
 Assume that we map $\vm$ onto $\VectorSymbol{e_1}$.  Then using equation \ref{integralsech} with $a = B_{13}/G$ and simplifying the coefficients we obtain:
 \[
