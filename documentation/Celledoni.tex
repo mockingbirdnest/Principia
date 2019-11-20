@@ -243,7 +243,7 @@ It is easy to see that $\gl_2$ is the common value of $\gl_1$ and $\gl_3$ in cas
 \[
 \gl = \gs' \gs'' \gl_2
 \]
-Note that $\gl_2$ has the same dimension as the quotient $\frac{\gD_j}{G I_j}$, which has the same dimension as $\frac{G}{I_j}$, namely, $T^{-1} A$.
+Note that $\gl_2$ has the same dimension as the quotient $\frac{\gD_j}{G I_j}$, which has the same dimension as $\frac{G}{I_j}$, namely, $\squareBrackets{T^{-1} A}$.
 
 \subsection*{Phase and initial value}
 The phase $\gn$ and the free parameters $\gs$, $\gs'$ and $\gs''$ are determined from the initial value ${\vm}_0$ by setting $t = 0$.
@@ -361,7 +361,7 @@ In both cases we have $m_c \geq 0$.
 {\mathscr Q_t: \mathscr B^b} \arrow{r}{\mathscr P_t} & {\mathscr B_t} \arrow{r}{\mathscr Y_t} & {\mathscr B'} \arrow{r}{\mathscr R} & {\mathscr B^s}
 \end{tikzcd}
 \]
-where $\mathscr P_t$ maps $\vm$ onto $\VectorSymbol{e_3^b}$, $\mathscr Y_t$ is a rotation of angle $\gy$ around $\vm$, and ${\mathscr R}$
+where $\mathscr P_t$ maps $\vm$ onto $\VectorSymbol{e_3^b}$, $\mathscr Y_t$ is a rotation of angle $\gy\of{t}$ around $\vm$, and ${\mathscr R}$
 maps $\VectorSymbol{e_3^s}$ onto $\vm$.  They then assume that $\mathscr Q_{t_0} = \Identity$.  This yields the following decomposition for
 $\mathscr R$:
 \[
@@ -430,7 +430,7 @@ continuously corresponds to the one at $t = 0$.
 In conclusion, we tried to use this approach but had to abandon it because of the impossibility of handling the singularity.
 
 \section*{Integration of the quaternion}
-\cite{Celledoni2007} use a rotation to map $\vm$ onto $\VectorSymbol{e_3}$ and obtain the following quaternionic representation for that rotation:
+\cite{Celledoni2007} use a rotation $\mathscr P_t$ to map $\vm$ onto $\VectorSymbol{e_3}$ and obtain the following quaternionic representation for that rotation:
 \[
 \begin{dcases}
 p_1 &= \frac{p_3 m_1 + p_0 m_2}{G + m_3} \\
@@ -438,7 +438,7 @@ p_2 &= \frac{p_3 m_2 - p_0 m_1}{G + m_3} \\
 p_0^2 + p_3^2 &= \frac{G + m_3}{2 G}
 \end{dcases}
 \]
-and the angle $\gy\of{t}$ for the rotation around $\VectorSymbol{e_3}$:
+and the angle $\gy\of{t}$ for the rotation $\mathscr Y_t$ around $\VectorSymbol{e_3}$:
 \[
 \TimeDerivative{\gy}\of{t} = \frac{2 T + G m_3 / I_3}{G + m_3} + 4 G \frac{p_3 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_3}}{G + m_3}
 \]
@@ -482,14 +482,15 @@ And for $\mathscr R$:
 \] 
 
 \subsection*{Integrals}
-We start by computing two integrals that are useful to obtain $\gy\of{t}$.  As far as we can tell the following integral, which is useful for cases (i) and (ii),
+We start by computing two integrals that are useful to obtain $\gy\of{t}$.  They are valid for $0 \le a < 1$.  As far as we can tell the following integral,
+which is useful for cases (i) and (ii),
 is missing from \cite{ByrdFriedman1954}:
 \begin{align}
 \int{}\frac{1}{1 + a \JacobiDN\of{u, k}}\diffd{u} &= \nonumber\\
 \frac{1}{1 - a^2}&
 \begin{aligned}[t]
-\;\Bigl[&\EllipticPi\of{\JacobiAmplitude\of{u, k}, \frac{a^2 k^2}{a^2 - 1}, k} - \\
-&a\sqrt\frac{1 - a^2}{a^2\pa{k^2 - 1} + 1} \InverseTrigonometricTangent\of{\sqrt\frac{a^2 \pa{k^2 - 1} + 1}{1 - a^2} \JacobiSC\of{u, k}}\Bigr]
+\;\Biggl[&\EllipticPi\of{\JacobiAmplitude\of{u, k}, \frac{a^2 k^2}{a^2 - 1}, k} - \\
+&a\sqrt\frac{1 - a^2}{a^2\pa{k^2 - 1} + 1} \InverseTrigonometricTangent\of{\sqrt\frac{a^2 \pa{k^2 - 1} + 1}{1 - a^2} \JacobiSC\of{u, k}}\Biggr]
 \end{aligned}
 \label{integraldn}
 \end{align}
@@ -510,7 +511,7 @@ p_3 &= \frac{p_1 m_3 - p_0 m_2}{G + m_1} \\
 p_0^2 + p_1^2 &= \frac{G + m_1}{2 G}
 \end{dcases}
 \]
-and, for the angle $\gy\of{t}$ of the rotation around $\VectorSymbol{e_1}$:
+and, for the angle $\gy\of{t}$ of the rotation $\mathscr Y_t$ around $\VectorSymbol{e_1}$:
 \[
 \TimeDerivative{\gy}\of{t} = \frac{2 T + G m_1 / I_1}{G + m_1} + 4 G \frac{p_1 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_1}}{G + m_1}
 \]
@@ -528,7 +529,7 @@ and the angle to:
 \TimeDerivative{\gy}\of{t} = \frac{2 T + G m_1 / I_1}{G + m_1} = \frac{G^2 - \gD_1 + G m_1}{I_1\pa{G + m_1}} = \frac{G}{I_1} - \frac{\gD_1/I_1}{G + m_1} =
 \frac{G}{I_1} - \frac{\gD_1}{G I_1}\frac{1}{1 + m_1/G}
 \]
-Using equation \ref{integraldn} with $a = B_{13}/G$ and simplifying the various coefficients we obtain:
+Using equation (\ref{integraldn}) with $a = B_{13}/G$ and simplifying the various coefficients we obtain:
 \[
 \gy\of{t} = \frac{G}{I_1}t + \frac{G I_{13}}{\gl I_1 I_3}
 \EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_1 I_{32}}{I_3 I_{12}}, k} -
@@ -550,7 +551,7 @@ and the angle:
 \[
 \TimeDerivative{\gy}\of{t} = \frac{G}{I_3} - \frac{\gD_3}{G I_3}\frac{1}{1 + m_3/G}
 \]
-Using equation \ref{integraldn} with $a = B_{31}/G$ and simplifying the various coefficients we obtain:
+Using equation (\ref{integraldn}) with $a = B_{31}/G$ and simplifying the various coefficients we obtain:
 \[
 \gy\of{t} = \frac{G}{I_3}t + \frac{G I_{31}}{\gl I_1 I_3}
 \EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_3 I_{21}}{I_1 I_{23}}, k} +
@@ -561,7 +562,7 @@ Using equation \ref{integraldn} with $a = B_{31}/G$ and simplifying the various 
 In case (iii) we start by defining $\mathscr S$ so as to make both $m_1$ and $m_3$ positive.  This is always possible, perhaps by flipping $m_2$.  We then
 choose $\mathscr P_t$ to map $\vm$ onto $\VectorSymbol{e_1}$ or $\VectorSymbol{e_3}$.  Which one we pick is explained below.
 
-Assume that we map $\vm$ onto $\VectorSymbol{e_1}$.  Then using equation \ref{integralsech} with $a = B_{13}/G$ and simplifying the coefficients we obtain:
+Assume that we map $\vm$ onto $\VectorSymbol{e_1}$.  Then using equation (\ref{integralsech}) with $a = B_{13}/G$ and simplifying the coefficients we obtain:
 \[
 \begin{dcases}
 \gy\of{t} &= \pa{\frac{G}{I_1} - \frac{\gD_1}{G I_1}}t - \frac{2 B_{13} \gD_1}{\gl G B_{31} I_1} 
