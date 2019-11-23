@@ -5,10 +5,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : SupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name_ = "פרנקל";
-  private const int next_release_lunation_number_ = 246;
+  private const string next_release_name_ = "Fréchet";
+  private const int next_release_lunation_number_ = 247;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2019, 11, 26, 15, 06, 00, TimeSpan.Zero);
+      new DateTimeOffset(2019, 12, 26, 05, 14, 00, TimeSpan.Zero);
 
   public delegate Vessel PredictedVessel();
 
