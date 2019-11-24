@@ -33,6 +33,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/hierarchical_system.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rotating_body.hpp"
@@ -71,6 +72,7 @@ using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
 using physics::HierarchicalSystem;
+using physics::InertiaTensor;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
@@ -201,7 +203,7 @@ class Plugin {
   virtual void InsertOrKeepLoadedPart(
       PartId part_id,
       std::string const& name,
-      Mass const& mass,
+      InertiaTensor<World> const& inertia_tensor,
       GUID const& vessel_guid,
       Index main_body_index,
       DegreesOfFreedom<World> const& main_body_degrees_of_freedom,

@@ -417,12 +417,13 @@ void Plugin::InsertUnloadedPart(
 void Plugin::InsertOrKeepLoadedPart(
     PartId const part_id,
     std::string const& name,
-    Mass const& mass,
+    InertiaTensor<World> const& inertia_tensor,
     GUID const& vessel_guid,
     Index const main_body_index,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
     DegreesOfFreedom<World> const& part_degrees_of_freedom,
     Time const& Δt) {
+  auto const& mass = inertia_tensor.mass();
   not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
   CHECK(is_loaded(vessel));
 

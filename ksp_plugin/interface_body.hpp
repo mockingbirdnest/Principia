@@ -12,7 +12,7 @@ namespace interface {
 
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Ephemeris;
-using quantities::MomentOfInertia;
+using quantities::Pow;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
@@ -76,6 +76,16 @@ struct XYZConverter<Position<Frame>> {
   }
 };
 
+template<typename Frame>
+struct XYZConverter<Velocity<Frame>> {
+  static Velocity<Frame> FromXYZ(XYZ const& xyz) {
+    return Velocity<Frame>(interface::FromXYZ(xyz) * (Metre / Second));
+  }
+  static XYZ ToXYZ(Velocity<Frame> const& velocity) {
+    return interface::ToXYZ(velocity.coordinates() / (Metre / Second));
+  }
+};
+
 template<>
 struct XYZConverter<R3Element<MomentOfInertia>> {
   static R3Element<MomentOfInertia> FromXYZ(XYZ const& xyz) {
@@ -90,16 +100,6 @@ struct XYZConverter<R3Element<MomentOfInertia>> {
 
  private:
   static constexpr MomentOfInertia unit_ = Tonne * Pow<2>(Metre);
-};
-
-template<typename Frame>
-struct XYZConverter<Velocity<Frame>> {
-  static Velocity<Frame> FromXYZ(XYZ const& xyz) {
-    return Velocity<Frame>(interface::FromXYZ(xyz) * (Metre / Second));
-  }
-  static XYZ ToXYZ(Velocity<Frame> const& velocity) {
-    return interface::ToXYZ(velocity.coordinates() / (Metre / Second));
-  }
 };
 
 inline bool NaNIndependentEq(double const left, double const right) {
@@ -336,6 +336,10 @@ inline RelativeDegreesOfFreedom<World> FromQP(QP const& qp) {
   return QPConverter<RelativeDegreesOfFreedom<World>>::FromQP(qp);
 }
 
+inline Quaternion FromWXYZ(WXYZ const& wxyz) {
+  return Quaternion{wxyz.w, {wxyz.x, wxyz.y, wxyz.z}};
+}
+
 inline R3Element<double> FromXYZ(XYZ const& xyz) {
   return {xyz.x, xyz.y, xyz.z};
 }
@@ -349,6 +353,12 @@ template<>
 Velocity<Frenet<NavigationFrame>>
 inline FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz) {
   return XYZConverter<Velocity<Frenet<NavigationFrame>>>::FromXYZ(xyz);
+}
+
+template<>
+R3Element<MomentOfInertia>
+inline FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz) {
+  return XYZConverter<R3Element<MomentOfInertia>>::FromXYZ(xyz);
 }
 
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
