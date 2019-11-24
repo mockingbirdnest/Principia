@@ -33,6 +33,7 @@
 #include "base/serialization.hpp"
 #include "base/version.hpp"
 #include "gipfeli/gipfeli.h"
+#include "geometry/quaternion.hpp"
 #include "google/protobuf/arena.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
@@ -65,6 +66,7 @@ using base::PushDeserializer;
 using base::SerializeAsBytes;
 using base::UniqueArray;
 using geometry::Displacement;
+using geometry::Quaternion;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
 using geometry::Velocity;
@@ -89,6 +91,7 @@ using physics::SolarSystem;
 using quantities::Acceleration;
 using quantities::DebugString;
 using quantities::Force;
+using quantities::MomentOfInertia;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Speed;
@@ -804,7 +807,9 @@ void principia__InsertOrKeepLoadedPart(
     int const main_body_index,
     QP const main_body_world_degrees_of_freedom,
     QP const part_world_degrees_of_freedom,
-    double const delta_t) {
+    double const delta_t,
+    XYZ const moments_of_inertia,
+    WXYZ const principal_axes_rotation) {
   journal::Method<journal::InsertOrKeepLoadedPart> m(
       {plugin,
        part_id,
@@ -814,8 +819,12 @@ void principia__InsertOrKeepLoadedPart(
        main_body_index,
        main_body_world_degrees_of_freedom,
        part_world_degrees_of_freedom,
-       delta_t});
+       delta_t,
+       moments_of_inertia,
+       principal_axes_rotation});
   CHECK_NOTNULL(plugin);
+  R3Element<MomentOfInertia> const coordinates = FromXYZ(moments_of_inertia);
+  Quaternion rotation = FromWXYZ(principal_axes_rotation);
   plugin->InsertOrKeepLoadedPart(
       part_id,
       name,

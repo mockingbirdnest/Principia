@@ -1221,6 +1221,8 @@ message InsertOrKeepLoadedPart {
     required QP main_body_world_degrees_of_freedom = 6;
     required QP part_world_degrees_of_freedom = 7;
     required double delta_t = 9;
+    required XYZ moments_of_inertia = 10;
+    required WXYZ principal_axes_rotation = 11;
   }
   optional In in = 1;
 }

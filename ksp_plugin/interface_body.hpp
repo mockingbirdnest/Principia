@@ -12,10 +12,12 @@ namespace interface {
 
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Ephemeris;
+using quantities::MomentOfInertia;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using quantities::si::Tonne;
 
 // No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.
@@ -72,6 +74,22 @@ struct XYZConverter<Position<Frame>> {
   static XYZ ToXYZ(Position<Frame> const& position) {
     return XYZConverter<Displacement<Frame>>::ToXYZ(position - Frame::origin);
   }
+};
+
+template<>
+struct XYZConverter<R3Element<MomentOfInertia>> {
+  static R3Element<MomentOfInertia> FromXYZ(XYZ const& xyz) {
+    return R3Element<MomentOfInertia>(
+        xyz.x * unit_, xyz.y * unit_, xyz.z * unit_);
+  }
+  static XYZ ToXYZ(R3Element<MomentOfInertia> const& moments_of_inertia) {
+    return {moments_of_inertia.x / unit_,
+            moments_of_inertia.y / unit_,
+            moments_of_inertia.z / unit_};
+  }
+
+ private:
+  static constexpr MomentOfInertia unit_ = Tonne * Pow<2>(Metre);
 };
 
 template<typename Frame>
