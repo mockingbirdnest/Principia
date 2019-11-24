@@ -5,10 +5,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : SupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name_ = "פרנקל";
-  private const int next_release_lunation_number_ = 246;
+  private const string next_release_name_ = "Fréchet";
+  private const int next_release_lunation_number_ = 247;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2019, 11, 26, 15, 06, 00, TimeSpan.Zero);
+      new DateTimeOffset(2019, 12, 26, 05, 14, 00, TimeSpan.Zero);
 
   public delegate Vessel PredictedVessel();
 
@@ -50,13 +50,7 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   public bool display_patched_conics { get; private set; } = false;
 
-  public double history_length => history_lengths_[history_length_index_];
-
-  public void LoadCompatibilityDataIfNeeded(int history_length_index) {
-    if (should_load_compatibility_data_) {
-      history_length_index_ = history_length_index;
-    }
-  }
+  public double history_length => history_length_.value;
 
   public override void Load(ConfigNode node) {
     base.Load(node);
@@ -78,11 +72,10 @@ internal class MainWindow : SupervisedWindowRenderer {
           Convert.ToBoolean(show_prediction_settings_value);
     }
 
-    string history_length_index_value =
-        node.GetAtMostOneValue("history_length_index");
-    if (history_length_index_value != null) {
-      should_load_compatibility_data_ = false;
-      history_length_index_ = Convert.ToInt32(history_length_index_value);
+    string history_length_value =
+        node.GetAtMostOneValue("history_length");
+    if (history_length_value != null) {
+      history_length_.value = Convert.ToDouble(history_length_value);
     }
 
     string buffered_logging_value =
@@ -134,10 +127,9 @@ internal class MainWindow : SupervisedWindowRenderer {
                   show_prediction_settings_,
                   createIfNotFound : true);
 
-    node.SetValue("history_length_index",
-                  history_length_index_,
+    node.SetValue("history_length",
+                  history_length,
                   createIfNotFound : true);
-
     node.SetValue("buffered_logging",
                   buffered_logging_,
                   createIfNotFound : true);
@@ -189,11 +181,7 @@ internal class MainWindow : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           version,
           style : Style.Info(UnityEngine.GUI.skin.label));
-      RenderSelector(history_lengths_,
-                     ref history_length_index_,
-                     "Max history length",
-                     "{0:0.00e00} s",
-                     enabled: true);
+      history_length_.Render(enabled : true);
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
         show_selection_ui_ = true;
@@ -493,10 +481,20 @@ internal class MainWindow : SupervisedWindowRenderer {
       prediction_length_tolerances_[prediction_length_tolerance_index_];
   private long prediction_steps => prediction_steps_[prediction_steps_index_];
 
-  private static readonly double[] history_lengths_ =
-      {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
-       1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
-       1 << 26, 1 << 27, 1 << 28, 1 << 29, double.PositiveInfinity};
+  private DifferentialSlider history_length_ = new DifferentialSlider(
+      label            : "Max history length",
+      unit             : null,
+      log10_lower_rate : 0,
+      log10_upper_rate : 7,
+      min_value        : 10,
+      max_value        : double.PositiveInfinity,
+      formatter        : Formatters.FormatMissionDuration,
+      parser           : Formatters.TryParseMissionDuration,
+      label_width      : 5,
+      field_width      : 5) {
+      value = 7 * 24 * 60 * 60
+  };
+
   private static readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
   private static readonly long[] prediction_steps_ =
@@ -520,11 +518,9 @@ internal class MainWindow : SupervisedWindowRenderer {
 
   private bool show_selection_ui_ = false;
 
-  private bool should_load_compatibility_data_ = true;
   private int prediction_length_tolerance_index_ =
       default_prediction_length_tolerance_index_;
   private int prediction_steps_index_ = default_prediction_steps_index_;
-  private int history_length_index_ = 10;
 
   private int buffered_logging_ = 0;
   private int stderr_logging_ = 2;

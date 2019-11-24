@@ -178,7 +178,7 @@ Rotation<FromFrame, ToFrame>::Rotation(
 
 template<typename FromFrame, typename ToFrame>
 Sign Rotation<FromFrame, ToFrame>::Determinant() const {
-  return Sign(1);
+  return Sign::Positive();
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -265,7 +265,7 @@ Rotation<FromFrame, ToFrame>::operator()(T const& t) const {
 
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
-  return OrthogonalMap<FromFrame, ToFrame>(Sign(1), *this);
+  return OrthogonalMap<FromFrame, ToFrame>(Sign::Positive(), *this);
 }
 
 template<typename FromFrame, typename ToFrame>

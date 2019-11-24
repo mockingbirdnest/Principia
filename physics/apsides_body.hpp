@@ -105,7 +105,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       // we shouldn't be far from the truth.
       DegreesOfFreedom<Frame> const apsis_degrees_of_freedom =
           begin.trajectory()->EvaluateDegreesOfFreedom(apsis_time);
-      if (Sign(squared_distance_derivative).Negative()) {
+      if (Sign(squared_distance_derivative).is_negative()) {
         apoapsides.Append(apsis_time, apsis_degrees_of_freedom);
       } else {
         periapsides.Append(apsis_time, apsis_degrees_of_freedom);

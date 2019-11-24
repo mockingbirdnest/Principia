@@ -77,10 +77,6 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private string serialization_encoding_ = "hexadecimal";
 
-  // For compatibility only.  Do not use in real code.
-  [KSPField(isPersistant = true)]
-  private const int history_length_index_ = 10;
-
   // Whether the plotting frame must be set to something convenient at the next
   // opportunity.
   private bool must_set_plotting_frame_ = false;
@@ -611,7 +607,6 @@ public partial class PrincipiaPluginAdapter
     if (is_bad_installation_) {
       return;
     }
-    main_window_.LoadCompatibilityDataIfNeeded(history_length_index_);
     if (node.HasValue(principia_serialized_plugin_)) {
       Cleanup();
       RemoveBuggyTidalLocking();
@@ -862,8 +857,6 @@ public partial class PrincipiaPluginAdapter
           (FlightGlobals.currentMainBody
                ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
-      plugin_.ForgetAllHistoriesBefore(plugin_.CurrentTime() -
-                                       main_window_.history_length);
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
 
@@ -1677,6 +1670,16 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void RemoveStockTrajectoriesIfNeeded(CelestialBody celestial) {
+    if (celestial.orbitDriver == null) {
+      return;
+    }
+    celestial.orbitDriver.Renderer.drawMode =
+        main_window_.display_patched_conics
+            ? OrbitRenderer.DrawMode.REDRAW_AND_RECALCULATE
+            : OrbitRenderer.DrawMode.OFF;
+  }
+
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
     if (vessel.patchedConicRenderer != null) {
       vessel.patchedConicRenderer.relativityMode =
@@ -1776,6 +1779,7 @@ public partial class PrincipiaPluginAdapter
                                   c => c.MapObject?.uiNode != null)) {
       celestial.MapObject.uiNode.OnClick -= OnCelestialNodeClick;
       celestial.MapObject.uiNode.OnClick += OnCelestialNodeClick;
+      RemoveStockTrajectoriesIfNeeded(celestial);
     }
     foreach (var vessel in FlightGlobals.Vessels.Where(
                                v => v.mapObject?.uiNode != null)) {
@@ -1785,24 +1789,28 @@ public partial class PrincipiaPluginAdapter
       vessel.mapObject.uiNode.OnClick += OnVesselNodeClick;
       RemoveStockTrajectoriesIfNeeded(vessel);
     }
-    Vessel main_vessel = PredictedVessel();
-    if (main_vessel == null) {
-      return;
+    string main_vessel_guid = PredictedVessel()?.id.ToString();
+    if (main_vessel_guid != null && !plugin_.HasVessel(main_vessel_guid)) {
+      main_vessel_guid = null;
     }
-    string main_vessel_guid = main_vessel.id.ToString();
-    bool ready_to_draw_active_vessel_trajectory =
-        MapView.MapIsEnabled &&
-        plugin_.HasVessel(main_vessel_guid);
-    if (ready_to_draw_active_vessel_trajectory) {
+    if (MapView.MapIsEnabled) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =
                 GLLines.NewPlanetarium(plugin_, sun_world_position)) {
         GLLines.Draw(() => {
+          PlotCelestialTrajectories(planetarium, main_vessel_guid);
+
+          // Vessel trajectories.
+          if (main_vessel_guid == null) {
+            return;
+          }
+          // Main vessel psychohistory and prediction.
           using (DisposableIterator rp2_lines_iterator =
                     planetarium.PlanetariumPlotPsychohistory(
                         plugin_,
                         чебышёв_plotting_method_,
-                        main_vessel_guid)) {
+                        main_vessel_guid,
+                        main_window_.history_length)) {
             GLLines.PlotRP2Lines(rp2_lines_iterator,
                                  XKCDColors.Lime,
                                  GLLines.Style.Faded);
@@ -1816,6 +1824,7 @@ public partial class PrincipiaPluginAdapter
                                  XKCDColors.Fuchsia,
                                  GLLines.Style.Solid);
           }
+          // Target psychohistory and prediction.
           string target_id =
               FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
           if (FlightGlobals.ActiveVessel != null &&
@@ -1825,7 +1834,8 @@ public partial class PrincipiaPluginAdapter
                       planetarium.PlanetariumPlotPsychohistory(
                           plugin_,
                           чебышёв_plotting_method_,
-                          target_id)) {
+                          target_id,
+                          main_window_.history_length)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
                                    XKCDColors.Goldenrod,
                                    GLLines.Style.Faded);
@@ -1840,6 +1850,7 @@ public partial class PrincipiaPluginAdapter
                                    GLLines.Style.Solid);
             }
           }
+          // Main vessel flight plan.
           if (plugin_.FlightPlanExists(main_vessel_guid)) {
             int number_of_anomalous_manœuvres =
                 plugin_.FlightPlanNumberOfAnomalousManoeuvres(main_vessel_guid);
@@ -1899,6 +1910,52 @@ public partial class PrincipiaPluginAdapter
             }
           }
         });
+      }
+    }
+  }
+
+  private void PlotCelestialTrajectories(DisposablePlanetarium planetarium,
+                                         string main_vessel_guid) {
+    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+      if (plotting_frame_selector_.FixedBodies().Contains(celestial)) {
+        continue;
+      }
+      var colour = celestial.MapObject?.uiNode?.VisualIconData.color ??
+          XKCDColors.SunshineYellow;
+      if (colour.a != 1) {
+        // When zoomed into a planetary system, the trajectory of the
+        // planet is hidden in stock (because KSP then draws most things
+        // in the reference frame centred on that planet).
+        // Here we still want to display the trajectory of the primary,
+        // e.g., if we are drawing the trajectories of the Jovian system
+        // in the heliocentric frame.
+        foreach (CelestialBody child in celestial.orbitingBodies) {
+          colour.a = Math.Max(
+              child.MapObject?.uiNode?.VisualIconData.color.a ?? 1,
+              colour.a);
+        }
+      }
+      if (colour.a == 0) {
+        continue;
+      }
+      using (DisposableIterator rp2_lines_iterator =
+                planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
+                    plugin_,
+                    celestial.flightGlobalsIndex,
+                    main_vessel_guid,
+                    main_window_.history_length)) {
+        GLLines.PlotRP2Lines(rp2_lines_iterator,
+                              colour,
+                              GLLines.Style.Faded);
+      }
+      if (main_vessel_guid != null) {
+        using (DisposableIterator rp2_lines_iterator =
+                  planetarium.PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
+                      plugin_, celestial.flightGlobalsIndex, main_vessel_guid)) {
+          GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                colour,
+                                GLLines.Style.Solid);
+        }
       }
     }
   }

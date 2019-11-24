@@ -1029,8 +1029,8 @@ class TrappistDynamicsTest : public ::testing::Test {
       Sign const xy_displacement_derivative_sign(xy_displacement_derivative(t));
       if (relative_dof.displacement().coordinates().z > 0.0 * Metre &&
           last_t &&
-          xy_displacement_derivative_sign == Sign(1) &&
-          last_xy_displacement_derivative_sign == Sign(-1)) {
+          xy_displacement_derivative_sign.is_positive() &&
+          last_xy_displacement_derivative_sign == Sign::Negative()) {
         Instant const transit = Bisect(xy_displacement_derivative, *last_t, t);
         transits.push_back(transit);
       }

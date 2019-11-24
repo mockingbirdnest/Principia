@@ -36,13 +36,13 @@ class OrthogonalMapTest : public testing::Test {
             R3Element<quantities::Length>(
                 1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
         trivector_(Trivector<quantities::Length, World>(4.0 * Metre)),
-        orthogonal_a_(Orth(Sign(-1),
+        orthogonal_a_(Orth(Sign::Negative(),
                            Rot(120 * Degree,
                                Bivector<double, World>({1, 1, 1})))),
-        orthogonal_b_(Orth(Sign(1),
+        orthogonal_b_(Orth(Sign::Positive(),
                            Rot(90 * Degree,
                                Bivector<double, World>({1, 0, 0})))),
-        orthogonal_c_(Orth(Sign(-1),
+        orthogonal_c_(Orth(Sign::Negative(),
                            Rot(90 * Degree,
                                Bivector<double, World>({1, 0, 0})))) {}
 
@@ -98,9 +98,9 @@ TEST_F(OrthogonalMapTest, AppliedToTrivector) {
 }
 
 TEST_F(OrthogonalMapTest, Determinant) {
-  EXPECT_TRUE(orthogonal_a_.Determinant().Negative());
-  EXPECT_TRUE(orthogonal_b_.Determinant().Positive());
-  EXPECT_TRUE(orthogonal_c_.Determinant().Negative());
+  EXPECT_TRUE(orthogonal_a_.Determinant().is_negative());
+  EXPECT_TRUE(orthogonal_b_.Determinant().is_positive());
+  EXPECT_TRUE(orthogonal_c_.Determinant().is_negative());
 }
 
 TEST_F(OrthogonalMapTest, Inverse) {
@@ -123,9 +123,9 @@ TEST_F(OrthogonalMapTest, Composition) {
                   R3Element<quantities::Length>(2.0 * Metre,
                                                 1.0 * Metre,
                                                 -3.0 * Metre)), 4, 6));
-  EXPECT_TRUE((orthogonal_a_ * orthogonal_b_).Determinant().Negative());
-  EXPECT_TRUE((orthogonal_a_ * orthogonal_c_).Determinant().Positive());
-  EXPECT_TRUE((orthogonal_b_ * orthogonal_c_).Determinant().Negative());
+  EXPECT_TRUE((orthogonal_a_ * orthogonal_b_).Determinant().is_negative());
+  EXPECT_TRUE((orthogonal_a_ * orthogonal_c_).Determinant().is_positive());
+  EXPECT_TRUE((orthogonal_b_ * orthogonal_c_).Determinant().is_negative());
 }
 
 TEST_F(OrthogonalMapDeathTest, SerializationError) {

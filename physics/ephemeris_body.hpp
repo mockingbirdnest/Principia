@@ -678,7 +678,7 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
           body1_trajectory->EvaluateDegreesOfFreedom(apsis_time);
       DegreesOfFreedom<Frame> const apsis2_degrees_of_freedom =
           body2_trajectory->EvaluateDegreesOfFreedom(apsis_time);
-      if (Sign(squared_distance_derivative).Negative()) {
+      if (Sign(squared_distance_derivative).is_negative()) {
         apoapsides1.Append(apsis_time, apsis1_degrees_of_freedom);
         apoapsides2.Append(apsis_time, apsis2_degrees_of_freedom);
       } else {

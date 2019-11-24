@@ -90,12 +90,12 @@ TEST_F(PermutationTest, Determinant) {
   Perm xzy(Perm::XZY);
   Perm zyx(Perm::ZYX);
   Perm yxz(Perm::YXZ);
-  EXPECT_TRUE(xyz.Determinant().Positive());
-  EXPECT_TRUE(yzx.Determinant().Positive());
-  EXPECT_TRUE(zxy.Determinant().Positive());
-  EXPECT_TRUE(xzy.Determinant().Negative());
-  EXPECT_TRUE(zyx.Determinant().Negative());
-  EXPECT_TRUE(yxz.Determinant().Negative());
+  EXPECT_TRUE(xyz.Determinant().is_positive());
+  EXPECT_TRUE(yzx.Determinant().is_positive());
+  EXPECT_TRUE(zxy.Determinant().is_positive());
+  EXPECT_TRUE(xzy.Determinant().is_negative());
+  EXPECT_TRUE(zyx.Determinant().is_negative());
+  EXPECT_TRUE(yxz.Determinant().is_negative());
 }
 
 TEST_F(PermutationTest, AppliedToVector) {
