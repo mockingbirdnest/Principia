@@ -864,6 +864,9 @@ void principia__InsertOrKeepLoadedPart(
   InertiaTensor<World> const inertia_tensor_in_world =
       inertia_tensor_in_princial_axes.Transform(part_principal_axes_to_world);
 
+  VLOG(1) << "InsertOrKeepLoadedPart: " << name << " " << part_id << " "
+          << moments_of_inertia << " " << FromWXYZ(principal_axes_rotation);
+
   plugin->InsertOrKeepLoadedPart(
       part_id,
       name,

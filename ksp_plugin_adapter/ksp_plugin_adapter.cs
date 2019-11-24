@@ -966,6 +966,9 @@ public partial class PrincipiaPluginAdapter
               part.flightID,
               part.name,
               part.physicsMass == 0 ? part.rb.mass : part.physicsMass,
+              (XYZ)(Vector3d)part.rb.inertiaTensor,
+              (WXYZ)(UnityEngine.QuaternionD)
+                  (part.rb.rotation * part.rb.inertiaTensorRotation),
               vessel.id.ToString(),
               vessel.mainBody.flightGlobalsIndex,
               main_body_degrees_of_freedom,
