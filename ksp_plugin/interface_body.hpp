@@ -86,6 +86,16 @@ struct XYZConverter<Velocity<Frame>> {
   }
 };
 
+template<typename Frame>
+struct XYZConverter<AngularVelocity<Frame>> {
+  static AngularVelocity<Frame> FromXYZ(XYZ const& xyz) {
+    return AngularVelocity<Frame>(interface::FromXYZ(xyz) * (Radian / Second));
+  }
+  static XYZ ToXYZ(AngularVelocity<Frame> const& velocity) {
+    return interface::ToXYZ(velocity.coordinates() / (Radian / Second));
+  }
+};
+
 template<>
 struct XYZConverter<R3Element<MomentOfInertia>> {
   static R3Element<MomentOfInertia> FromXYZ(XYZ const& xyz) {
@@ -353,6 +363,12 @@ template<>
 Velocity<Frenet<NavigationFrame>>
 inline FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz) {
   return XYZConverter<Velocity<Frenet<NavigationFrame>>>::FromXYZ(xyz);
+}
+
+template<>
+AngularVelocity<World>
+inline FromXYZ<AngularVelocity<World>>(XYZ const& xyz) {
+  return XYZConverter<AngularVelocity<World>>::FromXYZ(xyz);
 }
 
 template<>

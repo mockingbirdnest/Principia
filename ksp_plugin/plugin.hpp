@@ -208,6 +208,7 @@ class Plugin {
       Index main_body_index,
       DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
       DegreesOfFreedom<World> const& part_degrees_of_freedom,
+      AngularVelocity<World> const& part_angular_velocity,
       Time const& Δt);
 
   // Calls |increment_intrinsic_force| on the relevant part, which must be in a

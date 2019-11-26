@@ -821,6 +821,7 @@ void principia__InsertOrKeepLoadedPart(
     int const main_body_index,
     QP const main_body_world_degrees_of_freedom,
     QP const part_world_degrees_of_freedom,
+    XYZ const part_angular_velocity,
     double const delta_t) {
   journal::Method<journal::InsertOrKeepLoadedPart> m(
       {plugin,
@@ -833,6 +834,7 @@ void principia__InsertOrKeepLoadedPart(
        main_body_index,
        main_body_world_degrees_of_freedom,
        part_world_degrees_of_freedom,
+       part_angular_velocity,
        delta_t});
   CHECK_NOTNULL(plugin);
 
@@ -875,6 +877,7 @@ void principia__InsertOrKeepLoadedPart(
       main_body_index,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
       part_degrees_of_freedom,
+      FromXYZ<AngularVelocity<World>>(part_angular_velocity),
       delta_t * Second);
   return m.Return();
 }
