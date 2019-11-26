@@ -80,6 +80,10 @@ using WorldSun = Frame<serialization::Frame::PluginTag,
 using Camera = Frame<serialization::Frame::PluginTag,
                      serialization::Frame::CAMERA, false>;
 
+// The frame that defines the orientation of a part.
+using RigidPart = Frame<serialization::Frame::PluginTag,
+                        serialization::Frame::RIGID_PART, false>;
+
 // Convenient instances of types from |physics| for the above frames.
 using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
@@ -106,6 +110,7 @@ using internal_frames::Navball;
 using internal_frames::Navigation;
 using internal_frames::NavigationFrame;
 using internal_frames::NavigationManœuvre;
+using internal_frames::RigidPart;
 using internal_frames::World;
 using internal_frames::WorldSun;
 using internal_frames::sun_looking_glass;

@@ -42,6 +42,7 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
@@ -88,6 +89,7 @@ using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
 using ksp_plugin::PartId;
+using ksp_plugin::RigidPart;
 using ksp_plugin::TypedIterator;
 using ksp_plugin::VesselSet;
 using ksp_plugin::World;
@@ -821,6 +823,7 @@ void principia__InsertOrKeepLoadedPart(
     int const main_body_index,
     QP const main_body_world_degrees_of_freedom,
     QP const part_world_degrees_of_freedom,
+    WXYZ const part_rotation,
     double const delta_t) {
   journal::Method<journal::InsertOrKeepLoadedPart> m(
       {plugin,
@@ -833,6 +836,7 @@ void principia__InsertOrKeepLoadedPart(
        main_body_index,
        main_body_world_degrees_of_freedom,
        part_world_degrees_of_freedom,
+       part_rotation,
        delta_t});
   CHECK_NOTNULL(plugin);
 
@@ -854,8 +858,11 @@ void principia__InsertOrKeepLoadedPart(
 
   DegreesOfFreedom<World> const part_degrees_of_freedom =
       FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom);
-  Rotation<PartPrincipalAxes, World> const rotation(
+  Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
       FromWXYZ(principal_axes_rotation));
+  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
+  Rotation<PartPrincipalAxes, World> const rotation =
+      part_to_world * principal_axes_to_part;
   RigidTransformation<PartPrincipalAxes, World> const
       part_principal_axes_to_world(PartPrincipalAxes::origin,
                                    part_degrees_of_freedom.position(),
@@ -875,6 +882,7 @@ void principia__InsertOrKeepLoadedPart(
       main_body_index,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
       part_degrees_of_freedom,
+      part_to_world,
       delta_t * Second);
   return m.Return();
 }

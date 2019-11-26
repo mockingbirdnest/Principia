@@ -150,6 +150,7 @@ message Frame {
     NAVBALL = 10;
     NAVIGATION = 4;
     // PRE_BOREL_BARYCENTRIC = 3;
+    RIGID_PART = 16;
     RIGID_PILE_UP = 11;
     WORLD = 5;
     WORLD_SUN = 6;
