@@ -42,6 +42,7 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
@@ -88,6 +89,7 @@ using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
 using ksp_plugin::PartId;
+using ksp_plugin::RigidPart;
 using ksp_plugin::TypedIterator;
 using ksp_plugin::VesselSet;
 using ksp_plugin::World;
@@ -107,6 +109,7 @@ using quantities::MomentOfInertia;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Speed;
+using quantities::SIUnit;
 using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;
@@ -821,6 +824,7 @@ void principia__InsertOrKeepLoadedPart(
     int const main_body_index,
     QP const main_body_world_degrees_of_freedom,
     QP const part_world_degrees_of_freedom,
+    WXYZ const part_rotation,
     XYZ const part_angular_velocity,
     double const delta_t) {
   journal::Method<journal::InsertOrKeepLoadedPart> m(
@@ -834,6 +838,7 @@ void principia__InsertOrKeepLoadedPart(
        main_body_index,
        main_body_world_degrees_of_freedom,
        part_world_degrees_of_freedom,
+       part_rotation,
        part_angular_velocity,
        delta_t});
   CHECK_NOTNULL(plugin);
@@ -843,10 +848,14 @@ void principia__InsertOrKeepLoadedPart(
   using PartPrincipalAxes = Frame<serialization::Frame::PhysicsTag,
                                   serialization::Frame::PRINCIPAL_AXES, false>;
 
-  auto const moments_of_inertia =
-      FromXYZ<R3Element<MomentOfInertia>>(moments_of_inertia_in_tonnes);
   static constexpr MomentOfInertia zero;
+  static constexpr double to_si_unit =
+      Tonne * Pow<2>(Metre) / SIUnit<MomentOfInertia>();
 
+  auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
+      {moments_of_inertia_in_tonnes.x * to_si_unit,
+       moments_of_inertia_in_tonnes.y * to_si_unit,
+       moments_of_inertia_in_tonnes.z * to_si_unit});
   InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_princial_axes(
       mass_in_tonnes * Tonne,
       R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
@@ -856,8 +865,11 @@ void principia__InsertOrKeepLoadedPart(
 
   DegreesOfFreedom<World> const part_degrees_of_freedom =
       FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom);
-  Rotation<PartPrincipalAxes, World> const rotation(
+  Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
       FromWXYZ(principal_axes_rotation));
+  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
+  Rotation<PartPrincipalAxes, World> const rotation =
+      part_to_world * principal_axes_to_part;
   RigidTransformation<PartPrincipalAxes, World> const
       part_principal_axes_to_world(PartPrincipalAxes::origin,
                                    part_degrees_of_freedom.position(),
@@ -877,6 +889,7 @@ void principia__InsertOrKeepLoadedPart(
       main_body_index,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
       part_degrees_of_freedom,
+      part_to_world,
       FromXYZ<AngularVelocity<World>>(part_angular_velocity),
       delta_t * Second);
   return m.Return();

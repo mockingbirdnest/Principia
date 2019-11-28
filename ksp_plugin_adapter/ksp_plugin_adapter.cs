@@ -967,12 +967,12 @@ public partial class PrincipiaPluginAdapter
               part.name,
               part.physicsMass == 0 ? part.rb.mass : part.physicsMass,
               (XYZ)(Vector3d)part.rb.inertiaTensor,
-              (WXYZ)(UnityEngine.QuaternionD)
-                  (part.rb.rotation * part.rb.inertiaTensorRotation),
+              (WXYZ)(UnityEngine.QuaternionD)part.rb.inertiaTensorRotation,
               vessel.id.ToString(),
               vessel.mainBody.flightGlobalsIndex,
               main_body_degrees_of_freedom,
               degrees_of_freedom,
+              (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
               (XYZ)(Vector3d)(part.rb.rotation * part.rb.angularVelocity),
               Δt);
           if (part_id_to_intrinsic_force_.ContainsKey(part.flightID)) {
