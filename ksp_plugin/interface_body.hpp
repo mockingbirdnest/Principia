@@ -13,11 +13,11 @@ namespace interface {
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Ephemeris;
 using quantities::Pow;
+using quantities::SIUnit;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
-using quantities::si::Tonne;
 
 // No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.
@@ -89,17 +89,15 @@ struct XYZConverter<Velocity<Frame>> {
 template<>
 struct XYZConverter<R3Element<MomentOfInertia>> {
   static R3Element<MomentOfInertia> FromXYZ(XYZ const& xyz) {
-    return R3Element<MomentOfInertia>(
-        xyz.x * unit_, xyz.y * unit_, xyz.z * unit_);
+    return R3Element<MomentOfInertia>(xyz.x * SIUnit<MomentOfInertia>(),
+                                      xyz.y * SIUnit<MomentOfInertia>(),
+                                      xyz.z * SIUnit<MomentOfInertia>());
   }
   static XYZ ToXYZ(R3Element<MomentOfInertia> const& moments_of_inertia) {
-    return {moments_of_inertia.x / unit_,
-            moments_of_inertia.y / unit_,
-            moments_of_inertia.z / unit_};
+    return {moments_of_inertia.x / SIUnit<MomentOfInertia>(),
+            moments_of_inertia.y / SIUnit<MomentOfInertia>(),
+            moments_of_inertia.z / SIUnit<MomentOfInertia>()};
   }
-
- private:
-  static constexpr MomentOfInertia unit_ = Tonne * Pow<2>(Metre);
 };
 
 inline bool NaNIndependentEq(double const left, double const right) {

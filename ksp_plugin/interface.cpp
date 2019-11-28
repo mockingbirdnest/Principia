@@ -109,6 +109,7 @@ using quantities::MomentOfInertia;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Speed;
+using quantities::SIUnit;
 using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;
@@ -845,10 +846,14 @@ void principia__InsertOrKeepLoadedPart(
   using PartPrincipalAxes = Frame<serialization::Frame::PhysicsTag,
                                   serialization::Frame::PRINCIPAL_AXES, false>;
 
-  auto const moments_of_inertia =
-      FromXYZ<R3Element<MomentOfInertia>>(moments_of_inertia_in_tonnes);
   static constexpr MomentOfInertia zero;
+  static constexpr double to_si_unit =
+      Tonne * Pow<2>(Metre) / SIUnit<MomentOfInertia>();
 
+  auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
+      {moments_of_inertia_in_tonnes.x * to_si_unit,
+       moments_of_inertia_in_tonnes.y * to_si_unit,
+       moments_of_inertia_in_tonnes.z * to_si_unit});
   InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_princial_axes(
       mass_in_tonnes * Tonne,
       R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
