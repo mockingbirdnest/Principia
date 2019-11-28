@@ -6,6 +6,7 @@
 #include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 #include "geometry/rotation.hpp"
+#include "inertia_tensor.hpp"
 
 namespace principia {
 namespace physics {
@@ -26,6 +27,11 @@ InertiaTensor<Frame>::InertiaTensor(
     : InertiaTensor(mass,
                     MakeSymmetricBilinearForm(coordinates),
                     centre_of_mass) {}
+
+template<typename Frame>
+Mass const& InertiaTensor<Frame>::mass() const {
+  return mass_;
+}
 
 template<typename Frame>
 Position<Frame> const& InertiaTensor<Frame>::centre_of_mass() const {

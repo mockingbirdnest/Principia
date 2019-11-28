@@ -39,6 +39,7 @@ using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
 using geometry::R3Element;
+using geometry::Quaternion;
 using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
@@ -56,6 +57,7 @@ using physics::DegreesOfFreedom;
 using physics::Frenet;
 using physics::RelativeDegreesOfFreedom;
 using quantities::Length;
+using quantities::MomentOfInertia;
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of
@@ -120,6 +122,8 @@ template<>
 RelativeDegreesOfFreedom<World>
 FromQP<RelativeDegreesOfFreedom<World>>(QP const& qp);
 
+Quaternion FromWXYZ(WXYZ const& wxyz);
+
 R3Element<double> FromXYZ(XYZ const& xyz);
 template<typename T>
 T FromXYZ(XYZ const& xyz);
@@ -128,6 +132,9 @@ Position<World> FromXYZ<Position<World>>(XYZ const& xyz);
 template<>
 Velocity<Frenet<NavigationFrame>>
 FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz);
+template<>
+R3Element<MomentOfInertia>
+FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz);
 
 AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
