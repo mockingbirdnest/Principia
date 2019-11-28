@@ -56,7 +56,7 @@ InertiaTensor<ToFrame> InertiaTensor<Frame>::Transform(
 
 template<typename Frame>
 template<typename PrincipalAxesFrame>
-typename InertiaTensor<Frame>::PrincipalAxes<PrincipalAxesFrame>
+typename InertiaTensor<Frame>::template PrincipalAxes<PrincipalAxesFrame>
 InertiaTensor<Frame>::Diagonalize() const {
   struct IntermediateFrame {};
 
