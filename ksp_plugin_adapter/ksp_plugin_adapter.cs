@@ -973,6 +973,7 @@ public partial class PrincipiaPluginAdapter
               main_body_degrees_of_freedom,
               degrees_of_freedom,
               (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
+              (XYZ)(Vector3d)(part.rb.rotation * part.rb.angularVelocity),
               Δt);
           if (part_id_to_intrinsic_force_.ContainsKey(part.flightID)) {
             // When a Kerbal is doing an EVA and holding on to a ladder, the

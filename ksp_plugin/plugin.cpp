@@ -423,6 +423,7 @@ void Plugin::InsertOrKeepLoadedPart(
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
     DegreesOfFreedom<World> const& part_degrees_of_freedom,
     Rotation<RigidPart, World> const& part_to_world,
+    AngularVelocity<World> const& part_angular_velocity,
     Time const& Δt) {
   auto const& mass = inertia_tensor.mass();
   not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
