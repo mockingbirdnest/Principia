@@ -359,8 +359,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
     }
     LabeledField(
         "Subcycle",
-        $@"{recurrence?.subcycle.ToString("N0", Culture.culture) ??
-            em_dash} days");
+        $@"{recurrence?.subcycle.FormatN(0) ?? em_dash} days");
     LabeledField(
         "Equatorial shift",
         recurrence?.equatorial_shift.FormatEquatorialAngle(primary));
