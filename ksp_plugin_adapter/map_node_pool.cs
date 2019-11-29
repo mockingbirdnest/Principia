@@ -225,10 +225,8 @@ internal class MapNodePool {
               double speed = properties.velocity.magnitude;
               caption.Header =
                   $@"{source} {celestial.name} {apsis_name} :\n{
-                     celestial.GetAltitude(position):N0} m".ToString(
-                      Culture.culture);
-              caption.captionLine2 =
-                  $"{speed:N0} m/s".ToString(Culture.culture);
+                     celestial.GetAltitude(position).FormatN(0)} m";
+              caption.captionLine2 = $"{speed.FormatN(0)} m/s";
               break;
             }
             case MapObject.ObjectType.AscendingNode:
@@ -240,8 +238,7 @@ internal class MapNodePool {
               string plane =
                   properties.reference_frame.ReferencePlaneDescription();
               caption.Header = $"{source} {node_name} :\n{plane}";
-              caption.captionLine2 =
-                  $"{properties.velocity.z:N0} m/s".ToString(Culture.culture);
+              caption.captionLine2 = $"{properties.velocity.z.FormatN(0)} m/s";
               break;
             }
             case MapObject.ObjectType.ApproachIntersect: {
@@ -250,10 +247,8 @@ internal class MapNodePool {
                                    properties.world_position).magnitude;
               double speed = properties.velocity.magnitude;
               caption.Header =
-                  $@"{source} Target Approach : {separation:N0} m".ToString(
-                      Culture.culture);
-              caption.captionLine2 =
-                  $"{speed:N0} m/s".ToString(Culture.culture);
+                  $@"{source} Target Approach : {separation.FormatN(0)} m";
+              caption.captionLine2 = $"{speed.FormatN(0)} m/s";
               break;
             }
             case MapObject.ObjectType.PatchTransition: {
