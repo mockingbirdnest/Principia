@@ -460,8 +460,8 @@ void Plugin::InsertOrKeepLoadedPart(
         world_to_main_body_centred;
 
     DegreesOfFreedom<World> const part_degrees_of_freedom(
-        part_rigid_motion.rigid_transformation()(RigidPart::origin),
-        part_rigid_motion.Inverse().velocity_of_to_frame_origin());
+        part_rigid_motion(DegreesOfFreedom<RigidPart>(RigidPart::origin,
+                                                      Velocity<RigidPart>())));
     AddPart(vessel,
             part_id,
             name,
