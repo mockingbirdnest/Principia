@@ -66,9 +66,10 @@ internal static class Formatters {
   public static string FormatEquatorialAngle(this double angle,
                                              CelestialBody primary) {
     const double degree = Math.PI / 180;
-    double degrees = angle / degree;
-    double kilometres = angle * primary.Radius / 1000;
-    return $"{degrees:N1}° ({kilometres:N1} km)".ToString(Culture.culture);
+    string degrees = (angle / degree).ToString("N1", Culture.culture);
+    string kilometres =
+        (angle * primary.Radius / 1000).ToString("N1", Culture.culture);
+    return $"{degrees}° ({kilometres} km)";
   }
 
   // Similar to |FormatAngleInterval|, but annotated with the equivalent
@@ -81,8 +82,8 @@ internal static class Formatters {
     }
     double half_width_distance = half_width_angle * primary.Radius;
     string formatted_distance = half_width_distance > 1000
-        ? $"{half_width_distance / 1000:N1} km"
-        : $"{half_width_distance:N0} m";
+        ? $"{(half_width_distance / 1000).ToString("N1", Culture.culture)} km"
+        : $"{(half_width_distance).ToString("N0", Culture.culture)} m";
     return $"{interval.FormatAngleInterval()} ({formatted_distance})";
   }
 
