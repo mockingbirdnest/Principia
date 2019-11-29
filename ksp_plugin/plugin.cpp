@@ -421,9 +421,7 @@ void Plugin::InsertOrKeepLoadedPart(
     GUID const& vessel_guid,
     Index const main_body_index,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
-    DegreesOfFreedom<World> const& part_degrees_of_freedom,
-    Rotation<RigidPart, World> const& part_to_world,
-    AngularVelocity<World> const& part_angular_velocity,
+    RigidMotion<RigidPart, World> const& part_rigid_motion,
     Time const& Δt) {
   auto const& mass = inertia_tensor.mass();
   not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
@@ -461,6 +459,9 @@ void Plugin::InsertOrKeepLoadedPart(
         main_body_frame.FromThisFrameAtTime(previous_time) *
         world_to_main_body_centred;
 
+    DegreesOfFreedom<World> const part_degrees_of_freedom(
+        part_rigid_motion(DegreesOfFreedom<RigidPart>(RigidPart::origin,
+                                                      Velocity<RigidPart>())));
     AddPart(vessel,
             part_id,
             name,

@@ -60,7 +60,7 @@ typename InertiaTensor<Frame>::template PrincipalAxes<PrincipalAxesFrame>
 InertiaTensor<Frame>::Diagonalize() const {
   struct IntermediateFrame {};
 
-  auto const eigensystem = form_.Diagonalize<IntermediateFrame>();
+  auto const eigensystem = form_.template Diagonalize<IntermediateFrame>();
 
   // The eigenvalues are {Σx², Σy², Σz²} in increasing order.
   R3x3Matrix<MomentOfInertia> const eigensystem_form_coordinates =

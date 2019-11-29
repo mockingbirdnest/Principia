@@ -48,6 +48,7 @@
 #include "ksp_plugin/part.hpp"
 #include "physics/inertia_tensor.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/parser.hpp"
@@ -99,6 +100,7 @@ using physics::InertiaTensor;
 using physics::MassiveBody;
 using physics::OblateBody;
 using physics::RelativeDegreesOfFreedom;
+using physics::RigidMotion;
 using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::Acceleration;
@@ -878,6 +880,15 @@ void principia__InsertOrKeepLoadedPart(
   InertiaTensor<World> const inertia_tensor_in_world =
       inertia_tensor_in_princial_axes.Transform(part_principal_axes_to_world);
 
+  RigidTransformation<RigidPart, World> const part_rigid_transformation(
+      RigidPart::origin,
+      part_degrees_of_freedom.position(),
+      part_to_world.Forget());
+  RigidMotion<World, RigidPart> part_rigid_motion_inverse(
+      part_rigid_transformation.Inverse(),
+      FromXYZ<AngularVelocity<World>>(part_angular_velocity),
+      part_degrees_of_freedom.velocity());
+
   VLOG(1) << "InsertOrKeepLoadedPart: " << name << " " << part_id << " "
           << moments_of_inertia << " " << FromWXYZ(principal_axes_rotation);
 
@@ -888,9 +899,7 @@ void principia__InsertOrKeepLoadedPart(
       vessel_guid,
       main_body_index,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
-      part_degrees_of_freedom,
-      part_to_world,
-      FromXYZ<AngularVelocity<World>>(part_angular_velocity),
+      part_rigid_motion_inverse.Inverse(),
       delta_t * Second);
   return m.Return();
 }
