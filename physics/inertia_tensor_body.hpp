@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿#include "inertia_tensor.hpp"
+#include "inertia_tensor.hpp"
+#pragma once
 
 #include "physics/inertia_tensor.hpp"
 
@@ -82,6 +84,24 @@ InertiaTensor<Frame>::Diagonalize() const {
       z, y, Commutator(z, y));
 
   return {moments_of_inertia, swap_x_and_z * eigensystem.rotation};
+}
+
+template<typename Frame>
+void InertiaTensor<Frame>::WriteToMessage(
+    not_null<serialization::InertiaTensor*> const message) const {
+  mass_.WriteToMessage(message->mutable_mass());
+  form_.WriteToMessage(message->mutable_form());
+  centre_of_mass_.WriteToMessage(message->mutable_centre_of_mass());
+}
+
+template<typename Frame>
+InertiaTensor<Frame> InertiaTensor<Frame>::ReadFromMessage(
+    serialization::InertiaTensor const& message) {
+  return InertiaTensor(
+      Mass::ReadFromMessage(message.mass()),
+      SymmetricBilinearForm<MomentOfInertia, Frame>::ReadFromMessage(
+          message.form()),
+      Position<Frame>::ReadFromMessage(message.centre_of_mass()));
 }
 
 template<typename Frame>

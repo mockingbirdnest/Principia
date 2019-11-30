@@ -164,7 +164,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
                               serialization_index_for_pile_up) const {
   message->set_part_id(part_id_);
   message->set_name(name_);
-  inertia_tensor_.WriteToMessage(message->mutable_mass());
+  inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   if (containing_pile_up_) {
     message->set_containing_pile_up(
@@ -203,7 +203,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
-        Mass::ReadFromMessage(message.inertia_tensor()),
+        InertiaTensor<Barycentric>::ReadFromMessage(message.inertia_tensor()),
         DegreesOfFreedom<Barycentric>::ReadFromMessage(
             message.degrees_of_freedom()),
         std::move(deletion_callback));

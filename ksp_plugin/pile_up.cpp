@@ -52,7 +52,7 @@ PileUp::PileUp(
   Vector<Force, Barycentric> total_intrinsic_force;
   for (not_null<Part*> const part : parts_) {
     total_intrinsic_force += part->intrinsic_force();
-    calculator.Add(part->degrees_of_freedom(), part->mass());
+    calculator.Add(part->degrees_of_freedom(), part->inertia_tensor().mass());
   }
   mass_ = calculator.weight();
   intrinsic_force_ = total_intrinsic_force;
@@ -286,7 +286,8 @@ void PileUp::DeformPileUpIfNeeded() {
   for (auto const& pair : apparent_part_degrees_of_freedom_) {
     auto const part = pair.first;
     auto const& apparent_part_degrees_of_freedom = pair.second;
-    calculator.Add(apparent_part_degrees_of_freedom, part->mass());
+    calculator.Add(apparent_part_degrees_of_freedom,
+                   part->inertia_tensor().mass());
   }
   auto const apparent_centre_of_mass = calculator.Get();
 

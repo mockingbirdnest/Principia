@@ -51,7 +51,8 @@ message Manoeuvre {
 message Part {
   required fixed32 part_id = 4;
   required string name = 9;
-  required Quantity mass = 2;
+  optional Quantity mass = 2;  // Pre-Fréchet.
+  optional InertiaTensor inertia_tensor = 10;  // Added in Fréchet.
   required Multivector intrinsic_force = 5;
   optional int32 containing_pile_up = 6;
   optional Pair degrees_of_freedom = 1;
@@ -134,7 +135,7 @@ message Vessel {
   required string guid = 13;
   required string name = 19;
   required MasslessBody body = 1;
-  required Ephemeris.AdaptiveStepParameters 
+  required Ephemeris.AdaptiveStepParameters
       prediction_adaptive_step_parameters = 10;
   repeated Part parts = 14;
   repeated fixed32 kept_parts = 15;

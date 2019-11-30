@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
@@ -8,11 +9,13 @@
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
 namespace internal_inertia_tensor {
 
+using base::not_null;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::R3Element;
@@ -59,7 +62,7 @@ class InertiaTensor {
   PrincipalAxes<PrincipalAxesFrame> Diagonalize() const;
 
   void WriteToMessage(not_null<serialization::InertiaTensor*> message) const;
-  static Multivector ReadFromMessage(
+  static InertiaTensor ReadFromMessage(
       serialization::InertiaTensor const& message);
 
  private:
