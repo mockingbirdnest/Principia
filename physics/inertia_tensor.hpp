@@ -93,11 +93,18 @@ class InertiaTensor {
   friend class InertiaTensor;
 
   template<typename F>
+  friend bool operator==(InertiaTensor<F> const& left,
+                         InertiaTensor<F> const& right);
+  template<typename F>
   friend InertiaTensor<F> operator+(InertiaTensor<F> const& left,
                                     InertiaTensor<F> const& right);
 
   friend class InertiaTensorTest;
 };
+
+template<typename Frame>
+bool operator==(InertiaTensor<Frame> const& left,
+                InertiaTensor<Frame> const& right);
 
 template<typename Frame>
 InertiaTensor<Frame> operator+(InertiaTensor<Frame> const& left,
@@ -106,6 +113,7 @@ InertiaTensor<Frame> operator+(InertiaTensor<Frame> const& left,
 }  // namespace internal_inertia_tensor
 
 using internal_inertia_tensor::InertiaTensor;
+using internal_inertia_tensor::operator==;
 using internal_inertia_tensor::operator+;
 
 }  // namespace physics

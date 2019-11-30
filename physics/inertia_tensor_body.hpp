@@ -133,6 +133,14 @@ InertiaTensor<Frame>::MakeSymmetricBilinearForm(
 }
 
 template<typename Frame>
+bool operator==(InertiaTensor<Frame> const& left,
+                InertiaTensor<Frame> const& right) {
+  return left.mass_ == right.mass_ &&
+         left.form_ == right.form_ &&
+         left.centre_of_mass_ == right.centre_of_mass_;
+}
+
+template<typename Frame>
 InertiaTensor<Frame> operator+(InertiaTensor<Frame> const& left,
                                InertiaTensor<Frame> const& right) {
   return InertiaTensor<Frame>(left.mass_ + right.mass_,

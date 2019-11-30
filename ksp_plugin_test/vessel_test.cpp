@@ -7,13 +7,17 @@
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/mock_ephemeris.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -27,10 +31,14 @@ using base::make_not_null_unique;
 using base::Status;
 using geometry::Displacement;
 using geometry::Position;
+using geometry::R3x3Matrix;
 using geometry::Velocity;
+using physics::InertiaTensor;
 using physics::MassiveBody;
 using physics::MockEphemeris;
 using physics::RotatingBody;
+using quantities::MomentOfInertia;
+using quantities::SIUnit;
 using quantities::si::Degree;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -46,6 +54,9 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::_;
 
+constexpr MomentOfInertia zero;
+constexpr MomentOfInertia one = SIUnit<MomentOfInertia>();
+
 class VesselTest : public testing::Test {
  protected:
   VesselTest()
@@ -58,6 +69,16 @@ class VesselTest : public testing::Test {
                   /*right_ascension_of_pole=*/0 * Degree,
                   /*declination_of_pole=*/90 * Degree)),
         celestial_(&body_),
+        inertia_tensor1_(mass1_,
+                         R3x3Matrix<MomentOfInertia>({one, zero, zero},
+                                                     {zero, one, zero},
+                                                     {zero, zero, one}),
+                         Barycentric::origin),
+        inertia_tensor2_(mass2_,
+                         R3x3Matrix<MomentOfInertia>({one, zero, zero},
+                                                     {zero, one, zero},
+                                                     {zero, zero, one}),
+                         Barycentric::origin),
         vessel_("123",
                 "vessel",
                 &celestial_,
@@ -65,12 +86,12 @@ class VesselTest : public testing::Test {
                 DefaultPredictionParameters()) {
     auto p1 = make_not_null_unique<Part>(part_id1_,
                                          "p1",
-                                         mass1_,
+                                         inertia_tensor1_,
                                          p1_dof_,
                                          /*deletion_callback=*/nullptr);
     auto p2 = make_not_null_unique<Part>(part_id2_,
                                          "p2",
-                                         mass2_,
+                                         inertia_tensor2_,
                                          p2_dof_,
                                          /*deletion_callback=*/nullptr);
     p1_ = p1.get();
@@ -86,6 +107,8 @@ class VesselTest : public testing::Test {
   PartId const part_id2_ = 222;
   Mass const mass1_ = 1 * Kilogram;
   Mass const mass2_ = 2 * Kilogram;
+  InertiaTensor<Barycentric> inertia_tensor1_;
+  InertiaTensor<Barycentric> inertia_tensor2_;
 
   // Centre of mass of |p1_| and |p2_| in |Barycentric|, in SI units:
   //   {13 / 3, 4, 11 / 3} {130 / 3, 40, 110 / 3}

@@ -4,6 +4,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {
@@ -11,7 +12,11 @@ namespace ksp_plugin {
 namespace internal_part {
 
 using geometry::Displacement;
+using geometry::R3x3Matrix;
+using physics::InertiaTensor;
 using quantities::Force;
+using quantities::MomentOfInertia;
+using quantities::SIUnit;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Newton;
@@ -20,12 +25,20 @@ using testing_utilities::EqualsProto;
 using ::testing::MockFunction;
 using ::testing::_;
 
+constexpr MomentOfInertia zero;
+constexpr MomentOfInertia one = SIUnit<MomentOfInertia>();
+
 class PartTest : public testing::Test {
  protected:
   PartTest()
-      : part_(part_id_,
+      : inertia_tensor_(mass_,
+                        R3x3Matrix<MomentOfInertia>({one, zero, zero},
+                                                    {zero, one, zero},
+                                                    {zero, zero, one}),
+                        Barycentric::origin),
+        part_(part_id_,
               "part",
-              mass_,
+              inertia_tensor_,
               degrees_of_freedom_,
               /*deletion_callback=*/nullptr) {
     part_.increment_intrinsic_force(intrinsic_force_);
@@ -46,6 +59,7 @@ class PartTest : public testing::Test {
   Mass const mass_ = 7 * Kilogram;
   Vector<Force, Barycentric> const intrinsic_force_ =
       Vector<Force, Barycentric>({8 * Newton, 9 * Newton, 10 * Newton});
+  InertiaTensor<Barycentric> inertia_tensor_;
   Part part_;
 };
 
@@ -91,7 +105,7 @@ TEST_F(PartTest, Serialization) {
             message.prehistory().children(0).trajectories(0).timeline_size());
 
   auto const p = Part::ReadFromMessage(message, /*deletion_callback=*/nullptr);
-  EXPECT_EQ(part_.mass(), p->mass());
+  EXPECT_EQ(part_.inertia_tensor(), p->inertia_tensor());
   EXPECT_EQ(part_.intrinsic_force(), p->intrinsic_force());
   EXPECT_EQ(part_.degrees_of_freedom(), p->degrees_of_freedom());
 

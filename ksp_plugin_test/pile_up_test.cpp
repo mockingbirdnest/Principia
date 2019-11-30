@@ -9,6 +9,7 @@
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -16,7 +17,10 @@
 #include "integrators/methods.hpp"
 #include "integrators/mock_integrators.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/mock_ephemeris.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -32,6 +36,7 @@ using base::Status;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::R3Element;
+using geometry::R3x3Matrix;
 using geometry::Vector;
 using geometry::Velocity;
 using integrators::MockFixedStepSizeIntegrator;
@@ -40,12 +45,15 @@ using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::BlanesMoan2002SRKN6B;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using physics::DegreesOfFreedom;
+using physics::InertiaTensor;
 using physics::MassiveBody;
 using physics::MockEphemeris;
 using quantities::Acceleration;
 using quantities::Length;
+using quantities::MomentOfInertia;
 using quantities::Pow;
 using quantities::Speed;
+using quantities::SIUnit;
 using quantities::Time;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -64,6 +72,9 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
+
+constexpr MomentOfInertia zero;
+constexpr MomentOfInertia one = SIUnit<MomentOfInertia>();
 
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
@@ -103,8 +114,26 @@ class PileUpTest : public testing::Test {
   using RigidPileUp = TestablePileUp::RigidPileUp;
 
   PileUpTest()
-      : p1_(part_id1_, "p1", mass1_, p1_dof_, /*deletion_callback=*/nullptr),
-        p2_(part_id2_, "p2", mass2_, p2_dof_, /*deletion_callback=*/nullptr) {}
+      : inertia_tensor1_(mass1_,
+                         R3x3Matrix<MomentOfInertia>({one, zero, zero},
+                                                     {zero, one, zero},
+                                                     {zero, zero, one}),
+                         Barycentric::origin),
+        inertia_tensor2_(mass2_,
+                         R3x3Matrix<MomentOfInertia>({one, zero, zero},
+                                                     {zero, one, zero},
+                                                     {zero, zero, one}),
+                         Barycentric::origin),
+        p1_(part_id1_,
+            "p1",
+            inertia_tensor1_,
+            p1_dof_,
+            /*deletion_callback=*/nullptr),
+        p2_(part_id2_,
+            "p2",
+            inertia_tensor2_,
+            p2_dof_,
+            /*deletion_callback=*/nullptr) {}
 
   void CheckPreDeformPileUpInvariants(TestablePileUp& pile_up) {
     EXPECT_EQ(3 * Kilogram, pile_up.mass());
@@ -223,6 +252,8 @@ class PileUpTest : public testing::Test {
   PartId const part_id2_ = 222;
   Mass const mass1_ = 1 * Kilogram;
   Mass const mass2_ = 2 * Kilogram;
+  InertiaTensor<Barycentric> inertia_tensor1_;
+  InertiaTensor<Barycentric> inertia_tensor2_;
 
   // Centre of mass of |p1_| and |p2_| in |Barycentric|, in SI units:
   //   {13 / 3, 4, 11 / 3} {130 / 3, 40, 110 / 3}
@@ -580,7 +611,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   Vector<Acceleration, Barycentric> const a{{1729 * Metre / Pow<2>(Second),
                                              -168 * Metre / Pow<2>(Second),
                                              504 * Metre / Pow<2>(Second)}};
-  pile_up.set_intrinsic_force(p1_.mass() * a);
+  pile_up.set_intrinsic_force(p1_.inertia_tensor().mass() * a);
   pile_up.AdvanceTime(astronomy::J2000 + 2 * fixed_step);
   pile_up.NudgeParts();
   EXPECT_THAT(p1_.degrees_of_freedom().velocity(),
