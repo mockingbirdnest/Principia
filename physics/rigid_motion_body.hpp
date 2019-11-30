@@ -26,12 +26,11 @@ RigidMotion<FromFrame, ToFrame>::RigidMotion(
     RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
     AngularVelocity<ToFrame> const& angular_velocity_of_from_frame,
     Velocity<ToFrame> const& velocity_of_from_frame_origin)
-    : rigid_transformation_(rigid_transformation),
-      angular_velocity_of_to_frame_(
-          rigid_transformation_.linear_map().Inverse()(
-              -angular_velocity_of_from_frame)),
-      velocity_of_to_frame_origin_(rigid_transformation_.linear_map().Inverse()(
-          -velocity_of_from_frame_origin)) {}
+    : RigidMotion(
+          RigidMotion<ToFrame, FromFrame>(rigid_transformation.Inverse(),
+                                          angular_velocity_of_from_frame,
+                                          velocity_of_from_frame_origin)
+              .Inverse()) {}
 
 template<typename FromFrame, typename ToFrame>
 RigidTransformation<FromFrame, ToFrame> const&

@@ -189,29 +189,32 @@ TEST_F(RigidMotionTest, GroupoidInverse) {
 }
 
 TEST_F(RigidMotionTest, SecondConstructor) {
-  DegreesOfFreedom<Selenocentric> const earth_dof_in_selenocentric =
-      geocentric_to_selenocentric_({Geocentric::origin,
-                                    Velocity<Geocentric>{}});
-  AngularVelocity<Selenocentric> const earth_rotation_in_selenocentric;
+  auto const terrestrial_to_selenocentric1 =
+      geocentric_to_selenocentric_ * geocentric_to_terrestrial_.Inverse();
+  DegreesOfFreedom<Selenocentric> const terrestrial_dof_in_selenocentric =
+      terrestrial_to_selenocentric1({Terrestrial::origin,
+                                     Velocity<Terrestrial>{}});
+  AngularVelocity<Selenocentric> const terrestrial_rotation_in_selenocentric =
+      terrestrial_to_selenocentric1.Inverse().angular_velocity_of_to_frame();
 
-  RigidMotion<Geocentric, Selenocentric> const geocentric_to_selenocentric(
-      geocentric_to_selenocentric_.rigid_transformation(),
-      earth_rotation_in_selenocentric,
-      earth_dof_in_selenocentric.velocity());
+  RigidMotion<Terrestrial, Selenocentric> const terrestrial_to_selenocentric2(
+      terrestrial_to_selenocentric1.rigid_transformation(),
+      terrestrial_rotation_in_selenocentric,
+      terrestrial_dof_in_selenocentric.velocity());
 
-  DegreesOfFreedom<Geocentric> const degrees_of_freedom = {
-      Geocentric::origin +
-          Displacement<Geocentric>({earth_moon_distance_ / 3,
-                                    -earth_moon_distance_ / 5,
-                                    3 * earth_moon_distance_ / 7}),
+  DegreesOfFreedom<Terrestrial> const degrees_of_freedom = {
+      Terrestrial::origin +
+          Displacement<Terrestrial>({earth_moon_distance_ / 3,
+                                     -earth_moon_distance_ / 5,
+                                     3 * earth_moon_distance_ / 7}),
       earth_rotation_speed_ * earth_moon_distance_ / Radian *
-          Vector<double, Geocentric>({-0.5, 0.42, 2.1})};
+          Vector<double, Terrestrial>({-0.5, 0.42, 2.1})};
 
-  auto const d1 = geocentric_to_selenocentric(degrees_of_freedom);
-  auto const d2 = geocentric_to_selenocentric_(degrees_of_freedom);
+  auto const d1 = terrestrial_to_selenocentric1(degrees_of_freedom);
+  auto const d2 = terrestrial_to_selenocentric2(degrees_of_freedom);
   EXPECT_THAT(d1.position() - Selenocentric::origin,
               AlmostEquals(d2.position() - Selenocentric::origin, 0));
-  EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 0));
+  EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 3));
 }
 
 }  // namespace internal_rigid_motion
