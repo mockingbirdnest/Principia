@@ -189,14 +189,15 @@ TEST_F(RigidMotionTest, GroupoidInverse) {
 }
 
 TEST_F(RigidMotionTest, SecondConstructor) {
-  DegreesOfFreedom<Terrestrial> const earth_dof_in_terrestrial =
-      geocentric_to_terrestrial_({Geocentric::origin, Velocity<Geocentric>{}});
-  AngularVelocity<Terrestrial> const earth_rotation_in_terrestrial =
-      geocentric_to_terrestrial_.orthogonal_map()(earth_rotation_);
-  RigidMotion<Geocentric, Terrestrial> const geocentric_to_terrestrial(
-      geocentric_to_terrestrial_.rigid_transformation(),
-      earth_rotation_in_terrestrial,
-      earth_dof_in_terrestrial.velocity());
+  DegreesOfFreedom<Selenocentric> const earth_dof_in_selenocentric =
+      geocentric_to_selenocentric_({Geocentric::origin,
+                                    Velocity<Geocentric>{}});
+  AngularVelocity<Selenocentric> const earth_rotation_in_selenocentric;
+
+  RigidMotion<Geocentric, Selenocentric> const geocentric_to_selenocentric(
+      geocentric_to_selenocentric_.rigid_transformation(),
+      earth_rotation_in_selenocentric,
+      earth_dof_in_selenocentric.velocity());
 
   DegreesOfFreedom<Geocentric> const degrees_of_freedom = {
       Geocentric::origin +
@@ -206,10 +207,10 @@ TEST_F(RigidMotionTest, SecondConstructor) {
       earth_rotation_speed_ * earth_moon_distance_ / Radian *
           Vector<double, Geocentric>({-0.5, 0.42, 2.1})};
 
-  auto const d1 = geocentric_to_terrestrial(degrees_of_freedom);
-  auto const d2 = geocentric_to_terrestrial_(degrees_of_freedom);
-  EXPECT_THAT(d1.position() - Terrestrial::origin,
-              AlmostEquals(d2.position() - Terrestrial::origin, 0));
+  auto const d1 = geocentric_to_selenocentric(degrees_of_freedom);
+  auto const d2 = geocentric_to_selenocentric_(degrees_of_freedom);
+  EXPECT_THAT(d1.position() - Selenocentric::origin,
+              AlmostEquals(d2.position() - Selenocentric::origin, 0));
   EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 0));
 }
 
