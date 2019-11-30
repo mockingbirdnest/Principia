@@ -32,7 +32,7 @@ using quantities::si::Newton;
 using quantities::si::Tonne;
 
 XYZ __cdecl principia__VesselBinormal(Plugin const* const plugin,
-                              char const* const vessel_guid) {
+                                      char const* const vessel_guid) {
   journal::Method<journal::VesselBinormal> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToXYZ(plugin->VesselBinormal(vessel_guid)));
@@ -41,8 +41,8 @@ XYZ __cdecl principia__VesselBinormal(Plugin const* const plugin,
 // Calls |plugin->VesselFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 QP __cdecl principia__VesselFromParent(Plugin const* const plugin,
-                               int const parent_index,
-                               char const* const vessel_guid) {
+                                       int const parent_index,
+                                       char const* const vessel_guid) {
   journal::Method<journal::VesselFromParent> m(
       {plugin, parent_index, vessel_guid});
   CHECK_NOTNULL(plugin);
@@ -60,7 +60,7 @@ AdaptiveStepParameters __cdecl principia__VesselGetPredictionAdaptiveStepParamet
 }
 
 XYZ __cdecl principia__VesselNormal(Plugin const* const plugin,
-                            char const* const vessel_guid) {
+                                    char const* const vessel_guid) {
   journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid)));
@@ -180,14 +180,14 @@ void __cdecl principia__VesselSetPredictionAdaptiveStepParameters(
 }
 
 XYZ __cdecl principia__VesselTangent(Plugin const* const plugin,
-                             char const* const vessel_guid) {
+                                     char const* const vessel_guid) {
   journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToXYZ(plugin->VesselTangent(vessel_guid)));
 }
 
 XYZ __cdecl principia__VesselVelocity(Plugin const* const plugin,
-                              char const* const vessel_guid) {
+                                      char const* const vessel_guid) {
   journal::Method<journal::VesselVelocity> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToXYZ(plugin->VesselVelocity(vessel_guid)));

@@ -170,8 +170,8 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
 }  // namespace
 
 Status __cdecl principia__FlightPlanAppend(Plugin const* const plugin,
-                                   char const* const vessel_guid,
-                                   Burn const burn) {
+                                           char const* const vessel_guid,
+                                           Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
   CHECK_NOTNULL(plugin);
   return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).
@@ -179,9 +179,9 @@ Status __cdecl principia__FlightPlanAppend(Plugin const* const plugin,
 }
 
 void __cdecl principia__FlightPlanCreate(Plugin const* const plugin,
-                                 char const* const vessel_guid,
-                                 double const final_time,
-                                 double const mass_in_tonnes) {
+                                         char const* const vessel_guid,
+                                         double const final_time,
+                                         double const mass_in_tonnes) {
   journal::Method<journal::FlightPlanCreate> m({plugin,
                                                 vessel_guid,
                                                 final_time,
@@ -194,7 +194,7 @@ void __cdecl principia__FlightPlanCreate(Plugin const* const plugin,
 }
 
 void __cdecl principia__FlightPlanDelete(Plugin const* const plugin,
-                                 char const* const vessel_guid) {
+                                         char const* const vessel_guid) {
   journal::Method<journal::FlightPlanDelete> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   plugin->GetVessel(vessel_guid)->DeleteFlightPlan();
@@ -222,8 +222,9 @@ principia__FlightPlanGetAdaptiveStepParameters(
                       flight_plan.generalized_adaptive_step_parameters()));
 }
 
-double __cdecl principia__FlightPlanGetActualFinalTime(Plugin const* const plugin,
-                                               char const* const vessel_guid) {
+double __cdecl principia__FlightPlanGetActualFinalTime(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetActualFinalTime> m(
       {plugin, vessel_guid});
   return m.Return(
@@ -231,8 +232,9 @@ double __cdecl principia__FlightPlanGetActualFinalTime(Plugin const* const plugi
                  GetFlightPlan(*plugin, vessel_guid).actual_final_time()));
 }
 
-double __cdecl principia__FlightPlanGetDesiredFinalTime(Plugin const* const plugin,
-                                                char const* const vessel_guid) {
+double __cdecl principia__FlightPlanGetDesiredFinalTime(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetDesiredFinalTime> m(
       {plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
@@ -242,8 +244,8 @@ double __cdecl principia__FlightPlanGetDesiredFinalTime(Plugin const* const plug
 }
 
 XYZ __cdecl principia__FlightPlanGetGuidance(Plugin const* const plugin,
-                                     char const* const vessel_guid,
-                                     int const index) {
+                                             char const* const vessel_guid,
+                                             int const index) {
   journal::Method<journal::FlightPlanGetGuidance> m(
       {plugin, vessel_guid, index});
   CHECK_NOTNULL(plugin);
@@ -261,8 +263,9 @@ XYZ __cdecl principia__FlightPlanGetGuidance(Plugin const* const plugin,
   return m.Return(ToXYZ(result));
 }
 
-double __cdecl principia__FlightPlanGetInitialTime(Plugin const* const plugin,
-                                           char const* const vessel_guid) {
+double __cdecl principia__FlightPlanGetInitialTime(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetInitialTime> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(
@@ -319,35 +322,38 @@ int __cdecl principia__FlightPlanNumberOfAnomalousManoeuvres(
                       number_of_anomalous_manœuvres());
 }
 
-int __cdecl principia__FlightPlanNumberOfManoeuvres(Plugin const* const plugin,
-                                            char const* const vessel_guid) {
+int __cdecl principia__FlightPlanNumberOfManoeuvres(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfManoeuvres> m({plugin,
                                                             vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_manœuvres());
 }
 
-int __cdecl principia__FlightPlanNumberOfSegments(Plugin const* const plugin,
-                                          char const* const vessel_guid) {
+int __cdecl principia__FlightPlanNumberOfSegments(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfSegments> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_segments());
 }
 
 Status __cdecl principia__FlightPlanRemoveLast(Plugin const* const plugin,
-                                       char const* const vessel_guid) {
+                                               char const* const vessel_guid) {
   journal::Method<journal::FlightPlanRemoveLast> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).RemoveLast()));
 }
 
-void __cdecl principia__FlightPlanRenderedApsides(Plugin const* const plugin,
-                                          char const* const vessel_guid,
-                                          int const celestial_index,
-                                          XYZ const sun_world_position,
-                                          int const max_points,
-                                          Iterator** const apoapsides,
-                                          Iterator** const periapsides) {
+void __cdecl principia__FlightPlanRenderedApsides(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const celestial_index,
+    XYZ const sun_world_position,
+    int const max_points,
+    Iterator** const apoapsides,
+    Iterator** const periapsides) {
   journal::Method<journal::FlightPlanRenderedApsides> m(
       {plugin, vessel_guid, celestial_index, sun_world_position, max_points},
       {apoapsides, periapsides});
@@ -399,11 +405,11 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
 }
 
 void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
-                                        char const* const vessel_guid,
-                                        XYZ const sun_world_position,
-                                        int const max_points,
-                                        Iterator** const ascending,
-                                        Iterator** const descending) {
+                                                char const* const vessel_guid,
+                                                XYZ const sun_world_position,
+                                                int const max_points,
+                                                Iterator** const ascending,
+                                                Iterator** const descending) {
   journal::Method<journal::FlightPlanRenderedNodes> m(
       {plugin, vessel_guid, sun_world_position, max_points},
       {ascending, descending});
@@ -461,9 +467,9 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
 }
 
 Status __cdecl principia__FlightPlanReplace(Plugin const* const plugin,
-                                    char const* const vessel_guid,
-                                    Burn const burn,
-                                    int const index) {
+                                            char const* const vessel_guid,
+                                            Burn const burn,
+                                            int const index) {
   journal::Method<journal::FlightPlanReplace> m({plugin,
                                                  vessel_guid,
                                                  burn,
@@ -490,9 +496,10 @@ Status __cdecl principia__FlightPlanSetAdaptiveStepParameters(
           SetAdaptiveStepParameters(parameters.first, parameters.second)));
 }
 
-Status __cdecl principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
-                                                char const* const vessel_guid,
-                                                double const final_time) {
+Status __cdecl principia__FlightPlanSetDesiredFinalTime(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    double const final_time) {
   journal::Method<journal::FlightPlanSetDesiredFinalTime> m({plugin,
                                                              vessel_guid,
                                                              final_time});
