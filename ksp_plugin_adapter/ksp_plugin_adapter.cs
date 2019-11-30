@@ -689,6 +689,17 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void TiltTheCamera() {
+    PlanetariumCamera.fetch.GetPivot().rotation =
+     (UnityEngine.QuaternionD)plugin_.CelestialRotation(
+                plotting_frame_selector_.selected_celestial.flightGlobalsIndex) *
+     (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation;
+    ScaledCamera.Instance.galaxyCamera.transform.rotation =
+     (UnityEngine.QuaternionD)plugin_.CelestialRotation(
+                plotting_frame_selector_.selected_celestial.flightGlobalsIndex) *
+     (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.rotation;
+  }
+
   private void LateUpdate() {
     if (map_renderer_ == null) {
       map_renderer_ =
@@ -1406,6 +1417,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void BetterLateThanNeverLateUpdate() {
+    TiltTheCamera();
     // While we draw the trajectories directly (and thus do so after everything
     // else has been rendered), we rely on the game to render its map nodes.
     // Since the screen position is determined in |MapNode.NodeUpdate|, it must
@@ -1429,6 +1441,10 @@ public partial class PrincipiaPluginAdapter
         RenderFlightPlanMarkers(main_vessel_guid, sun_world_position);
       }
     }
+    foreach (var node in KSP.UI.Screens.Mapview.MapNode.AllMapNodes) {
+      node.NodeUpdate();
+    }
+    // TODO(egg): redundant NodeUpdate calls.
     map_node_pool_.Update();
   }
 
@@ -1668,6 +1684,8 @@ public partial class PrincipiaPluginAdapter
           (UnityEngine.QuaternionD)
               GalaxyCubeControl.Instance.transform.rotation;
       GalaxyCubeControl.Instance.transform.rotation =
+          /*(UnityEngine.QuaternionD.Inverse(plugin_.CelestialRotation(
+              plotting_frame_selector_.selected_celestial.flightGlobalsIndex))) **/
           (UnityEngine.QuaternionD)plugin_.CelestialSphereRotation() *
           initial_rotation;
     }
