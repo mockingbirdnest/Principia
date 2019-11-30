@@ -28,18 +28,18 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using quantities::Length;
 
-bool principia__IteratorAtEnd(Iterator const* const iterator) {
+bool __cdecl principia__IteratorAtEnd(Iterator const* const iterator) {
   journal::Method<journal::IteratorAtEnd> m({iterator});
   return m.Return(CHECK_NOTNULL(iterator)->AtEnd());
 }
 
-void principia__IteratorDelete(Iterator** const iterator) {
+void __cdecl principia__IteratorDelete(Iterator** const iterator) {
   journal::Method<journal::IteratorDelete> m({iterator}, {iterator});
   TakeOwnership(iterator);
   return m.Return();
 }
 
-QP principia__IteratorGetDiscreteTrajectoryQP(Iterator const* const iterator) {
+QP __cdecl principia__IteratorGetDiscreteTrajectoryQP(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetDiscreteTrajectoryQP> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
@@ -50,7 +50,7 @@ QP principia__IteratorGetDiscreteTrajectoryQP(Iterator const* const iterator) {
       }));
 }
 
-double principia__IteratorGetDiscreteTrajectoryTime(
+double __cdecl principia__IteratorGetDiscreteTrajectoryTime(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetDiscreteTrajectoryTime> m({iterator});
   CHECK_NOTNULL(iterator);
@@ -63,7 +63,7 @@ double principia__IteratorGetDiscreteTrajectoryTime(
       }));
 }
 
-XYZ principia__IteratorGetDiscreteTrajectoryXYZ(
+XYZ __cdecl principia__IteratorGetDiscreteTrajectoryXYZ(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetDiscreteTrajectoryXYZ> m({iterator});
   CHECK_NOTNULL(iterator);
@@ -75,7 +75,7 @@ XYZ principia__IteratorGetDiscreteTrajectoryXYZ(
       }));
 }
 
-Iterator* principia__IteratorGetRP2LinesIterator(
+Iterator* __cdecl principia__IteratorGetRP2LinesIterator(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetRP2LinesIterator> m({iterator});
   CHECK_NOTNULL(iterator);
@@ -87,7 +87,7 @@ Iterator* principia__IteratorGetRP2LinesIterator(
       }));
 }
 
-XY principia__IteratorGetRP2LineXY(Iterator const* const iterator) {
+XY __cdecl principia__IteratorGetRP2LineXY(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetRP2LineXY> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
@@ -98,7 +98,7 @@ XY principia__IteratorGetRP2LineXY(Iterator const* const iterator) {
       }));
 }
 
-char const* principia__IteratorGetVesselGuid(Iterator const* const iterator) {
+char const* __cdecl principia__IteratorGetVesselGuid(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetVesselGuid> m({iterator});
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<VesselSet> const*>(iterator));
@@ -108,19 +108,19 @@ char const* principia__IteratorGetVesselGuid(Iterator const* const iterator) {
       }));
 }
 
-void principia__IteratorIncrement(Iterator* const iterator) {
+void __cdecl principia__IteratorIncrement(Iterator* const iterator) {
   journal::Method<journal::IteratorIncrement> m({iterator});
   CHECK_NOTNULL(iterator)->Increment();
   return m.Return();
 }
 
-void principia__IteratorReset(Iterator* const iterator) {
+void __cdecl principia__IteratorReset(Iterator* const iterator) {
   journal::Method<journal::IteratorReset> m({iterator});
   CHECK_NOTNULL(iterator)->Reset();
   return m.Return();
 }
 
-int principia__IteratorSize(Iterator const* const iterator) {
+int __cdecl principia__IteratorSize(Iterator const* const iterator) {
   journal::Method<journal::IteratorSize> m({iterator});
   return m.Return(CHECK_NOTNULL(iterator)->Size());
 }

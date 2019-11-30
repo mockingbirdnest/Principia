@@ -83,7 +83,7 @@ char const* const Architecture = "x86-64";
 #    error "Get a real compiler!"
 #  endif
 #elif ARCH_CPU_X86_64
-#  define CDECL
+#  define CDECL __cdecl
 #else
 #  error "Have you tried a Cray-1?"
 #endif
