@@ -332,16 +332,17 @@ void __cdecl principia__ActivateRecorder(bool const activate) {
 }
 
 void __cdecl principia__AdvanceTime(Plugin* const plugin,
-                            double const t,
-                            double const planetarium_rotation) {
+                                    double const t,
+                                    double const planetarium_rotation) {
   journal::Method<journal::AdvanceTime> m({plugin, t, planetarium_rotation});
   CHECK_NOTNULL(plugin);
   plugin->AdvanceTime(FromGameTime(*plugin, t), planetarium_rotation * Degree);
   return m.Return();
 }
 
-void __cdecl principia__CatchUpLaggingVessels(Plugin* const plugin,
-                                      Iterator** const collided_vessels) {
+void __cdecl principia__CatchUpLaggingVessels(
+    Plugin* const plugin,
+    Iterator** const collided_vessels) {
   journal::Method<journal::CatchUpLaggingVessels> m({plugin},
                                                     {collided_vessels});
   CHECK_NOTNULL(plugin);
@@ -554,8 +555,8 @@ int __cdecl principia__GetBufferedLogging() {
 }
 
 QP __cdecl principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
-                                            PartId const part_id,
-                                            Origin const origin) {
+                                                    PartId const part_id,
+                                                    Origin const origin) {
   journal::Method<journal::GetPartActualDegreesOfFreedom> m(
       {plugin, part_id, origin});
   CHECK_NOTNULL(plugin);
