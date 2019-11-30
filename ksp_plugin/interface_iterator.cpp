@@ -39,7 +39,8 @@ void __cdecl principia__IteratorDelete(Iterator** const iterator) {
   return m.Return();
 }
 
-QP __cdecl principia__IteratorGetDiscreteTrajectoryQP(Iterator const* const iterator) {
+QP __cdecl principia__IteratorGetDiscreteTrajectoryQP(
+    Iterator const* const iterator) {
   journal::Method<journal::IteratorGetDiscreteTrajectoryQP> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
@@ -98,7 +99,8 @@ XY __cdecl principia__IteratorGetRP2LineXY(Iterator const* const iterator) {
       }));
 }
 
-char const* __cdecl principia__IteratorGetVesselGuid(Iterator const* const iterator) {
+char const* __cdecl principia__IteratorGetVesselGuid(
+    Iterator const* const iterator) {
   journal::Method<journal::IteratorGetVesselGuid> m({iterator});
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<VesselSet> const*>(iterator));

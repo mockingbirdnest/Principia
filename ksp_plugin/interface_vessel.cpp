@@ -49,7 +49,8 @@ QP __cdecl principia__VesselFromParent(Plugin const* const plugin,
   return m.Return(ToQP(plugin->VesselFromParent(parent_index, vessel_guid)));
 }
 
-AdaptiveStepParameters __cdecl principia__VesselGetPredictionAdaptiveStepParameters(
+AdaptiveStepParameters __cdecl
+principia__VesselGetPredictionAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::VesselGetPredictionAdaptiveStepParameters> m(
