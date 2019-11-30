@@ -35,6 +35,9 @@ class InertiaTensor {
                 R3x3Matrix<MomentOfInertia> const& coordinates,
                 Position<Frame> const& centre_of_mass);
 
+  // The mass passed at construction.
+  Mass const& mass() const;
+
   // Obtains the centre of mass of the object in Frame.
   Position<Frame> const& centre_of_mass() const;
 

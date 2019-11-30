@@ -12,6 +12,8 @@ namespace interface {
 
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Ephemeris;
+using quantities::Pow;
+using quantities::SIUnit;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
@@ -81,6 +83,20 @@ struct XYZConverter<Velocity<Frame>> {
   }
   static XYZ ToXYZ(Velocity<Frame> const& velocity) {
     return interface::ToXYZ(velocity.coordinates() / (Metre / Second));
+  }
+};
+
+template<>
+struct XYZConverter<R3Element<MomentOfInertia>> {
+  static R3Element<MomentOfInertia> FromXYZ(XYZ const& xyz) {
+    return R3Element<MomentOfInertia>(xyz.x * SIUnit<MomentOfInertia>(),
+                                      xyz.y * SIUnit<MomentOfInertia>(),
+                                      xyz.z * SIUnit<MomentOfInertia>());
+  }
+  static XYZ ToXYZ(R3Element<MomentOfInertia> const& moments_of_inertia) {
+    return {moments_of_inertia.x / SIUnit<MomentOfInertia>(),
+            moments_of_inertia.y / SIUnit<MomentOfInertia>(),
+            moments_of_inertia.z / SIUnit<MomentOfInertia>()};
   }
 };
 
@@ -318,6 +334,10 @@ inline RelativeDegreesOfFreedom<World> FromQP(QP const& qp) {
   return QPConverter<RelativeDegreesOfFreedom<World>>::FromQP(qp);
 }
 
+inline Quaternion FromWXYZ(WXYZ const& wxyz) {
+  return Quaternion{wxyz.w, {wxyz.x, wxyz.y, wxyz.z}};
+}
+
 inline R3Element<double> FromXYZ(XYZ const& xyz) {
   return {xyz.x, xyz.y, xyz.z};
 }
@@ -331,6 +351,12 @@ template<>
 Velocity<Frenet<NavigationFrame>>
 inline FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz) {
   return XYZConverter<Velocity<Frenet<NavigationFrame>>>::FromXYZ(xyz);
+}
+
+template<>
+R3Element<MomentOfInertia>
+inline FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz) {
+  return XYZConverter<R3Element<MomentOfInertia>>::FromXYZ(xyz);
 }
 
 inline AdaptiveStepParameters ToAdaptiveStepParameters(

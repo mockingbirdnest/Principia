@@ -127,7 +127,7 @@ class EulerSolver {
   MomentOfInertia ψ_sn_multiplier_ = NaN<MomentOfInertia>();
   AngularMomentum ψ_cosh_multiplier_ = NaN<AngularMomentum>();
   AngularMomentum ψ_sinh_multiplier_ = NaN<AngularMomentum>();
-  double ψ_integral_multiplier_ = NaN<double>();
+  double ψ_elliptic_pi_multiplier_ = NaN<double>();
   AngularFrequency ψ_t_multiplier_ = NaN<AngularFrequency>();
 };
 
