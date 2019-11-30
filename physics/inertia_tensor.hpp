@@ -58,6 +58,10 @@ class InertiaTensor {
   template<typename PrincipalAxesFrame>
   PrincipalAxes<PrincipalAxesFrame> Diagonalize() const;
 
+  void WriteToMessage(not_null<serialization::InertiaTensor*> message) const;
+  static Multivector ReadFromMessage(
+      serialization::InertiaTensor const& message);
+
  private:
   // Important: the form used internally to represent the inertia tensor does
   // *not* follow the convention customary in physics.  The usual convention is
@@ -78,9 +82,9 @@ class InertiaTensor {
   static SymmetricBilinearForm<MomentOfInertia, Frame>
   MakeSymmetricBilinearForm(R3x3Matrix<MomentOfInertia> const& tensor);
 
-  Mass const mass_;
-  SymmetricBilinearForm<MomentOfInertia, Frame> const form_;
-  Position<Frame> const centre_of_mass_;
+  Mass mass_;
+  SymmetricBilinearForm<MomentOfInertia, Frame> form_;
+  Position<Frame> centre_of_mass_;
 
   template<typename F>
   friend class InertiaTensor;

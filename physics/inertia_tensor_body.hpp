@@ -91,7 +91,9 @@ InertiaTensor<Frame>::InertiaTensor(
     Position<Frame> const& centre_of_mass)
     : mass_(mass),
       form_(form),
-      centre_of_mass_(centre_of_mass) {}
+      centre_of_mass_(centre_of_mass) {
+  CHECK_GT(mass, Mass{});
+}
 
 template<typename Frame>
 SymmetricBilinearForm<MomentOfInertia, Frame>

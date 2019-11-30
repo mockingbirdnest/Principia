@@ -7,6 +7,9 @@
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/not_null.hpp"
+#include "geometry/r3x3_matrix.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -16,21 +19,23 @@ using base::Array;
 using base::HexadecimalEncoder;
 using base::make_not_null_unique;
 using base::UniqueArray;
+using geometry::R3x3Matrix;
+using quantities::MomentOfInertia;
+using quantities::SIUnit;
 
 Part::Part(
     PartId const part_id,
     std::string const& name,
-    Mass const& mass,
+    InertiaTensor<Barycentric> const& inertia_tensor,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
     std::function<void()> deletion_callback)
     : part_id_(part_id),
       name_(name),
-      mass_(mass),
+      inertia_tensor_(inertia_tensor),
       degrees_of_freedom_(degrees_of_freedom),
       prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
       deletion_callback_(std::move(deletion_callback)) {
-  CHECK_GT(mass_, Mass{}) << ShortDebugString();
   prehistory_->Append(astronomy::InfinitePast,
                       {Barycentric::origin, Velocity<Barycentric>()});
   history_ = prehistory_->NewForkAtLast();
@@ -47,13 +52,13 @@ PartId Part::part_id() const {
   return part_id_;
 }
 
-void Part::set_mass(Mass const& mass) {
-  CHECK_GT(mass, Mass{}) << ShortDebugString();
-  mass_ = mass;
+void Part::set_inertia_tensor(
+    InertiaTensor<Barycentric> const& inertia_tensor) {
+  inertia_tensor_ = inertia_tensor;
 }
 
-Mass const& Part::mass() const {
-  return mass_;
+InertiaTensor<Barycentric> const& Part::inertia_tensor() const {
+  return inertia_tensor_;
 }
 
 void Part::clear_intrinsic_force() {
@@ -159,7 +164,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
                               serialization_index_for_pile_up) const {
   message->set_part_id(part_id_);
   message->set_name(name_);
-  mass_.WriteToMessage(message->mutable_mass());
+  inertia_tensor_.WriteToMessage(message->mutable_mass());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   if (containing_pile_up_) {
     message->set_containing_pile_up(
@@ -174,13 +179,36 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     serialization::Part const& message,
     std::function<void()> deletion_callback) {
   bool const is_pre_cesàro = message.has_tail_is_authoritative();
-  not_null<std::unique_ptr<Part>> part =
-      make_not_null_unique<Part>(message.part_id(),
-                                 message.name(),
-                                 Mass::ReadFromMessage(message.mass()),
-                                 DegreesOfFreedom<Barycentric>::ReadFromMessage(
-                                     message.degrees_of_freedom()),
-                                 std::move(deletion_callback));
+  bool const is_pre_fréchet = message.has_mass();
+
+  std::unique_ptr<Part> part;
+  if (is_pre_fréchet) {
+    static constexpr MomentOfInertia zero;
+    static constexpr MomentOfInertia one = SIUnit<MomentOfInertia>();
+    InertiaTensor<Barycentric> inertia_tensor(
+        Mass::ReadFromMessage(message.mass()),
+        R3x3Matrix<MomentOfInertia>({one, zero, zero},
+                                    {zero, one, zero},
+                                    {zero, zero, one}),
+        Barycentric::origin);
+
+    part = make_not_null_unique<Part>(
+        message.part_id(),
+        message.name(),
+        inertia_tensor,
+        DegreesOfFreedom<Barycentric>::ReadFromMessage(
+            message.degrees_of_freedom()),
+        std::move(deletion_callback));
+  } else {
+    part = make_not_null_unique<Part>(
+        message.part_id(),
+        message.name(),
+        Mass::ReadFromMessage(message.inertia_tensor()),
+        DegreesOfFreedom<Barycentric>::ReadFromMessage(
+            message.degrees_of_freedom()),
+        std::move(deletion_callback));
+  }
+
   part->increment_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
   if (is_pre_cesàro) {
@@ -204,7 +232,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
         message.prehistory(),
         /*forks=*/{&part->history_, &part->psychohistory_});
   }
-  return part;
+  return std::move(part);
 }
 
 void Part::FillContainingPileUpFromMessage(
@@ -228,7 +256,7 @@ std::string Part::ShortDebugString() const {
 std::ostream& operator<<(std::ostream& out, Part const& part) {
   return out << "{"
              << part.part_id() << ", "
-             << part.mass() << "}";
+             << part.inertia_tensor().mass() << "}";
 }
 
 }  // namespace internal_part

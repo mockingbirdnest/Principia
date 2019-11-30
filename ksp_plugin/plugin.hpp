@@ -465,7 +465,7 @@ class Plugin {
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
                std::string const& name,
-               Mass mass,
+               InertiaTensor<Barycentric> const& inertia_tensor,
                DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // Whether |loaded_vessels_| contains |vessel|.
