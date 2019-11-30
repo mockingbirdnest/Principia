@@ -173,19 +173,12 @@ TEST_F(RigidMotionTest, GroupoidInverse) {
   auto const terrestrial_to_lunar = selenocentric_to_lunar_ *
                               geocentric_to_selenocentric_ *
                               geocentric_to_terrestrial_.Inverse();
-  DegreesOfFreedom<Terrestrial> const d1 =
-      (terrestrial_to_lunar.Inverse() *
-       terrestrial_to_lunar)(degrees_of_freedom_);
-  DegreesOfFreedom<Terrestrial> const d2 =
+  DegreesOfFreedom<Terrestrial> const d =
       terrestrial_to_lunar.Inverse()(terrestrial_to_lunar(degrees_of_freedom_));
   EXPECT_THAT(
-      d1.position() - Terrestrial::origin,
-      AlmostEquals(degrees_of_freedom_.position() - Terrestrial::origin, 0));
-  EXPECT_THAT(d1.velocity(), AlmostEquals(degrees_of_freedom_.velocity(), 4));
-  EXPECT_THAT(
-      d2.position() - Terrestrial::origin,
+      d.position() - Terrestrial::origin,
       AlmostEquals(degrees_of_freedom_.position() - Terrestrial::origin, 4));
-  EXPECT_THAT(d2.velocity(), AlmostEquals(degrees_of_freedom_.velocity(), 6));
+  EXPECT_THAT(d.velocity(), AlmostEquals(degrees_of_freedom_.velocity(), 6));
 }
 
 }  // namespace internal_rigid_motion

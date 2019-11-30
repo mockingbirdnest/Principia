@@ -884,8 +884,8 @@ void principia__InsertOrKeepLoadedPart(
       RigidPart::origin,
       part_degrees_of_freedom.position(),
       part_to_world.Forget());
-  RigidMotion<World, RigidPart> part_rigid_motion_inverse(
-      part_rigid_transformation.Inverse(),
+  RigidMotion<RigidPart, World> part_rigid_motion_inverse(
+      part_rigid_transformation,
       FromXYZ<AngularVelocity<World>>(part_angular_velocity),
       part_degrees_of_freedom.velocity());
 
@@ -899,7 +899,7 @@ void principia__InsertOrKeepLoadedPart(
       vessel_guid,
       main_body_index,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
-      part_rigid_motion_inverse.Inverse(),
+      part_rigid_motion_inverse,
       delta_t * Second);
   return m.Return();
 }

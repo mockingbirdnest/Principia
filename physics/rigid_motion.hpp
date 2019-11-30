@@ -35,10 +35,17 @@ using quantities::si::Radian;
 template<typename FromFrame, typename ToFrame>
 class RigidMotion final {
  public:
+  static_assert(!std::is_same_v<FromFrame, ToFrame>,
+                "FromFrame and ToFrame must be different");
+
   RigidMotion(
       RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
       AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
       Velocity<FromFrame> const& velocity_of_to_frame_origin);
+  RigidMotion(
+      RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
+      AngularVelocity<ToFrame> const& angular_velocity_of_from_frame,
+      Velocity<ToFrame> const& velocity_of_from_frame_origin);
 
   RigidTransformation<FromFrame, ToFrame> const& rigid_transformation() const;
   // Returns |rigid_transformation().linear_map()|.
