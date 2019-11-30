@@ -2,6 +2,7 @@
 #pragma once
 
 #include <functional>
+#include <type_traits>
 
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
@@ -40,6 +41,12 @@ class RigidMotion final {
       AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
       Velocity<FromFrame> const& velocity_of_to_frame_origin);
 
+  template<typename = std::enable_if_t<!std::is_same_v<FromFrame, ToFrame>>>
+  RigidMotion(
+      RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
+      AngularVelocity<ToFrame> const& angular_velocity_of_from_frame,
+      Velocity<ToFrame> const& velocity_of_from_frame_origin);
+
   RigidTransformation<FromFrame, ToFrame> const& rigid_transformation() const;
   // Returns |rigid_transformation().linear_map()|.
   OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map() const;
@@ -50,6 +57,9 @@ class RigidMotion final {
       DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const;
 
   RigidMotion<ToFrame, FromFrame> Inverse() const;
+
+  template<typename = std::enable_if_t<std::is_same_v<FromFrame, ToFrame>>>
+  static RigidMotion Identity();
 
  private:
   RigidTransformation<FromFrame, ToFrame> rigid_transformation_;
