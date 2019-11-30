@@ -2,6 +2,7 @@
 #pragma once
 
 #include <functional>
+#include <type_traits>
 
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
