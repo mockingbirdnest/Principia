@@ -34,6 +34,7 @@ namespace principia {
 using base::dynamic_cast_not_null;
 using base::OFStream;
 using geometry::AngleBetween;
+using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::Commutator;
@@ -216,8 +217,8 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     }
     RigidMotion<ICRS, ParentEquator> const to_parent_equator(
         {ICRS::origin, ParentEquator::origin, rotation->Forget()},
-        /*angular_velocity_of_to_frame=*/{},
-        /*velocity_of_to_frame_origin=*/{});
+        AngularVelocity<ICRS>{},
+        Velocity<ICRS>{});
 
     KeplerOrbit<ParentEquator> actual_osculating_orbit(
         /*primary=*/*parent,
