@@ -71,7 +71,7 @@ class RigidMotion final {
   // A factory that construct a non-rotating motion using the given degrees of
   // freedom.  Useful e.g. for save compatibility.
   static RigidMotion MakeNonRotatingMotion(
-      DegreesOfFreedom<ToFrame> const& degrees_of_freedom);
+      DegreesOfFreedom<ToFrame> const& degrees_of_freedom_of_from_frame_origin);
 
   void WriteToMessage(not_null<serialization::RigidMotion*> message) const;
   static RigidMotion ReadFromMessage(serialization::RigidMotion const& message);
