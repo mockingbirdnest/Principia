@@ -1240,7 +1240,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
 
   cxx_interface_method_declaration_[descriptor] =
       "extern \"C\" PRINCIPIA_DLL\n" +
-  cxx_interface_return_type + " CDECL principia__" + name + "(";
+  cxx_interface_return_type + " __cdecl principia__" + name + "(";
   if (!cxx_interface_parameters.empty()) {
     cxx_interface_method_declaration_[descriptor] +=
         "\n    " + Join(cxx_interface_parameters, /*joiner=*/",\n    ");  // NOLINT

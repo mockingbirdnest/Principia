@@ -304,7 +304,7 @@ NewEncoder(std::string_view const encoder) {
 
 }  // namespace
 
-void principia__ActivatePlayer() {
+void __cdecl principia__ActivatePlayer() {
   Vessel::MakeSynchronous();
 }
 
@@ -313,7 +313,7 @@ void principia__ActivatePlayer() {
 // deactivate it.  Does nothing if there is already a journal in the desired
 // state.  |verbose| causes methods to be output in the INFO log before being
 // executed.
-void principia__ActivateRecorder(bool const activate) {
+void __cdecl principia__ActivateRecorder(bool const activate) {
   // NOTE: Do not journal!  You'd end up with half a message in the journal and
   // that would cause trouble.
   if (activate && !journal::Recorder::IsActivated()) {
@@ -333,17 +333,18 @@ void principia__ActivateRecorder(bool const activate) {
   }
 }
 
-void principia__AdvanceTime(Plugin* const plugin,
-                            double const t,
-                            double const planetarium_rotation) {
+void __cdecl principia__AdvanceTime(Plugin* const plugin,
+                                    double const t,
+                                    double const planetarium_rotation) {
   journal::Method<journal::AdvanceTime> m({plugin, t, planetarium_rotation});
   CHECK_NOTNULL(plugin);
   plugin->AdvanceTime(FromGameTime(*plugin, t), planetarium_rotation * Degree);
   return m.Return();
 }
 
-void principia__CatchUpLaggingVessels(Plugin* const plugin,
-                                      Iterator** const collided_vessels) {
+void __cdecl principia__CatchUpLaggingVessels(
+    Plugin* const plugin,
+    Iterator** const collided_vessels) {
   journal::Method<journal::CatchUpLaggingVessels> m({plugin},
                                                     {collided_vessels});
   CHECK_NOTNULL(plugin);
@@ -356,28 +357,30 @@ void principia__CatchUpLaggingVessels(Plugin* const plugin,
 
 // Calls |plugin->CelestialFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
-QP principia__CelestialFromParent(Plugin const* const plugin,
-                                  int const celestial_index) {
+QP __cdecl principia__CelestialFromParent(Plugin const* const plugin,
+                                          int const celestial_index) {
   journal::Method<journal::CelestialFromParent> m({plugin, celestial_index});
   CHECK_NOTNULL(plugin);
   return m.Return(ToQP(plugin->CelestialFromParent(celestial_index)));
 }
 
-double principia__CelestialInitialRotationInDegrees(Plugin const* const plugin,
-                                                    int const celestial_index) {
+double __cdecl principia__CelestialInitialRotationInDegrees(
+    Plugin const* const plugin,
+    int const celestial_index) {
   journal::Method<journal::CelestialInitialRotationInDegrees> m(
       {plugin, celestial_index});
   CHECK_NOTNULL(plugin);
   return m.Return(plugin->CelestialInitialRotation(celestial_index) / Degree);
 }
 
-WXYZ principia__CelestialRotation(Plugin const* const plugin, int const index) {
+WXYZ __cdecl principia__CelestialRotation(Plugin const* const plugin,
+                                          int const index) {
   journal::Method<journal::CelestialRotation> m({plugin, index});
   CHECK_NOTNULL(plugin);
   return m.Return(ToWXYZ(plugin->CelestialRotation(index).quaternion()));
 }
 
-double principia__CelestialRotationPeriod(
+double __cdecl principia__CelestialRotationPeriod(
     Plugin const* const plugin,
     int const celestial_index) {
   journal::Method<journal::CelestialRotationPeriod> m(
@@ -386,16 +389,16 @@ double principia__CelestialRotationPeriod(
   return m.Return(plugin->CelestialRotationPeriod(celestial_index) / Second);
 }
 
-WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
+WXYZ __cdecl principia__CelestialSphereRotation(Plugin const* const plugin) {
   journal::Method<journal::CelestialSphereRotation> m({plugin});
   CHECK_NOTNULL(plugin);
   return m.Return(ToWXYZ(plugin->CelestialSphereRotation().quaternion()));
 }
 
-QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
-                                             int const index,
-                                             Origin const origin,
-                                             double const time) {
+QP __cdecl principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
+                                                     int const index,
+                                                     Origin const origin,
+                                                     double const time) {
   journal::Method<journal::CelestialWorldDegreesOfFreedom> m(
       {plugin, index, origin, time});
   CHECK_NOTNULL(plugin);
@@ -413,14 +416,15 @@ QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
           FromGameTime(*plugin, time))));
 }
 
-void principia__ClearWorldRotationalReferenceFrame(Plugin* const plugin) {
+void __cdecl principia__ClearWorldRotationalReferenceFrame(
+    Plugin* const plugin) {
   journal::Method<journal::ClearWorldRotationalReferenceFrame> m({plugin});
   CHECK_NOTNULL(plugin);
   plugin->ClearWorldRotationalReferenceFrame();
   return m.Return();
 }
 
-double principia__CurrentTime(Plugin const* const plugin) {
+double __cdecl principia__CurrentTime(Plugin const* const plugin) {
   journal::Method<journal::CurrentTime> m({plugin});
   CHECK_NOTNULL(plugin);
   return m.Return(ToGameTime(*plugin, plugin->CurrentTime()));
@@ -429,7 +433,7 @@ double principia__CurrentTime(Plugin const* const plugin) {
 // Deletes and nulls |*plugin|.
 // |plugin| must not be null.  No transfer of ownership of |*plugin|, takes
 // ownership of |**plugin|.
-void principia__DeletePlugin(Plugin const** const plugin) {
+void __cdecl principia__DeletePlugin(Plugin const** const plugin) {
   CHECK_NOTNULL(plugin);
   journal::Method<journal::DeletePlugin> m({plugin}, {plugin});
   LOG(INFO) << "Destroying Principia plugin";
@@ -445,14 +449,14 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 // Deletes and nulls |*native_string|.  |native_string| must not be null.  No
 // transfer of ownership of |*native_string|, takes ownership of
 // |**native_string|.
-void principia__DeleteString(char const** const native_string) {
+void __cdecl principia__DeleteString(char const** const native_string) {
   journal::Method<journal::DeleteString> m({native_string}, {native_string});
   TakeOwnershipArray(native_string);
   return m.Return();
 }
 
 // Same as above, but for char16_t.
-void principia__DeleteU16String(char16_t const** const native_string) {
+void __cdecl principia__DeleteU16String(char16_t const** const native_string) {
   journal::Method<journal::DeleteU16String> m({native_string},
                                               {native_string});
   TakeOwnershipArray(native_string);
@@ -465,7 +469,7 @@ void principia__DeleteU16String(char16_t const** const native_string) {
 // successive calls.  The caller must perform an extra call with
 // |serialization_size| set to 0 to indicate the end of the input stream.  When
 // this last call returns, |*plugin| is not null and may be used by the caller.
-void principia__DeserializePlugin(
+void __cdecl principia__DeserializePlugin(
     char const* const serialization,
     int const serialization_size,
     PushDeserializer** const deserializer,
@@ -517,23 +521,24 @@ void principia__DeserializePlugin(
 
 // Calls |plugin->EndInitialization|.
 // |plugin| must not be null.  No transfer of ownership.
-void principia__EndInitialization(Plugin* const plugin) {
+void __cdecl principia__EndInitialization(Plugin* const plugin) {
   journal::Method<journal::EndInitialization> m({plugin});
   CHECK_NOTNULL(plugin);
   plugin->EndInitialization();
   return m.Return();
 }
 
-void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
-                                         double const t) {
+void __cdecl principia__ForgetAllHistoriesBefore(Plugin* const plugin,
+                                                 double const t) {
   journal::Method<journal::ForgetAllHistoriesBefore> m({plugin, t});
   CHECK_NOTNULL(plugin);
   plugin->ForgetAllHistoriesBefore(FromGameTime(*plugin, t));
   return m.Return();
 }
 
-void principia__FreeVesselsAndPartsAndCollectPileUps(Plugin* const plugin,
-                                                     double const delta_t) {
+void __cdecl principia__FreeVesselsAndPartsAndCollectPileUps(
+    Plugin* const plugin,
+    double const delta_t) {
   journal::Method<journal::FreeVesselsAndPartsAndCollectPileUps> m(
       {plugin, delta_t});
   CHECK_NOTNULL(plugin);
@@ -541,19 +546,19 @@ void principia__FreeVesselsAndPartsAndCollectPileUps(Plugin* const plugin,
   return m.Return();
 }
 
-int principia__GetBufferDuration() {
+int __cdecl principia__GetBufferDuration() {
   journal::Method<journal::GetBufferDuration> m;
   return m.Return(FLAGS_logbufsecs);
 }
 
-int principia__GetBufferedLogging() {
+int __cdecl principia__GetBufferedLogging() {
   journal::Method<journal::GetBufferedLogging> m;
   return m.Return(FLAGS_logbuflevel);
 }
 
-QP principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
-                                            PartId const part_id,
-                                            Origin const origin) {
+QP __cdecl principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
+                                                    PartId const part_id,
+                                                    Origin const origin) {
   journal::Method<journal::GetPartActualDegreesOfFreedom> m(
       {plugin, part_id, origin});
   CHECK_NOTNULL(plugin);
@@ -570,22 +575,22 @@ QP principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
                             origin.main_body_centre_in_world))))));
 }
 
-int principia__GetStderrLogging() {
+int __cdecl principia__GetStderrLogging() {
   journal::Method<journal::GetStderrLogging> m;
   return m.Return(FLAGS_stderrthreshold);
 }
 
-int principia__GetSuppressedLogging() {
+int __cdecl principia__GetSuppressedLogging() {
   journal::Method<journal::GetSuppressedLogging> m;
   return m.Return(FLAGS_minloglevel);
 }
 
-int principia__GetVerboseLogging() {
+int __cdecl principia__GetVerboseLogging() {
   journal::Method<journal::GetVerboseLogging> m;
   return m.Return(FLAGS_v);
 }
 
-void principia__GetVersion(
+void __cdecl principia__GetVersion(
     char const** const build_date,
     char const** const version) {
   journal::Method<journal::GetVersion> m({build_date, version});
@@ -594,7 +599,7 @@ void principia__GetVersion(
   return m.Return();
 }
 
-bool principia__HasEncounteredApocalypse(
+bool __cdecl principia__HasEncounteredApocalypse(
     Plugin* const plugin,
     char const** const details) {
   journal::Method<journal::HasEncounteredApocalypse> m({plugin}, {details});
@@ -610,17 +615,18 @@ bool principia__HasEncounteredApocalypse(
   return m.Return(has_encountered_apocalypse);
 }
 
-bool principia__HasVessel(Plugin* const plugin,
-                          char const* const vessel_guid) {
+bool __cdecl principia__HasVessel(Plugin* const plugin,
+                                  char const* const vessel_guid) {
   journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(vessel_guid);
   return m.Return(plugin->HasVessel(vessel_guid));
 }
 
-void principia__IncrementPartIntrinsicForce(Plugin* const plugin,
-                                            PartId const part_id,
-                                            XYZ const force_in_kilonewtons) {
+void __cdecl principia__IncrementPartIntrinsicForce(
+    Plugin* const plugin,
+    PartId const part_id,
+    XYZ const force_in_kilonewtons) {
   journal::Method<journal::IncrementPartIntrinsicForce> m(
       {plugin, part_id, force_in_kilonewtons});
   CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForce(
@@ -636,7 +642,7 @@ void principia__IncrementPartIntrinsicForce(Plugin* const plugin,
 // This archive is written to
 // "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
 // where date and time are in ISO 8601 basic format.
-void principia__InitGoogleLogging() {
+void __cdecl principia__InitGoogleLogging() {
   if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
@@ -681,7 +687,7 @@ void principia__InitGoogleLogging() {
   }
 }
 
-void principia__InitializeEphemerisParameters(
+void __cdecl principia__InitializeEphemerisParameters(
     Plugin* const plugin,
     ConfigurationAccuracyParameters const accuracy_parameters,
     ConfigurationFixedStepParameters const fixed_step_parameters) {
@@ -694,7 +700,7 @@ void principia__InitializeEphemerisParameters(
   return m.Return();
 }
 
-void principia__InitializeHistoryParameters(
+void __cdecl principia__InitializeHistoryParameters(
     Plugin* const plugin,
     ConfigurationFixedStepParameters const parameters) {
   journal::Method<journal::InitializeHistoryParameters> m(
@@ -704,7 +710,7 @@ void principia__InitializeHistoryParameters(
   return m.Return();
 }
 
-void principia__InitializePsychohistoryParameters(
+void __cdecl principia__InitializePsychohistoryParameters(
     Plugin* const plugin,
     ConfigurationAdaptiveStepParameters const parameters) {
   journal::Method<journal::InitializePsychohistoryParameters> m(
@@ -715,7 +721,7 @@ void principia__InitializePsychohistoryParameters(
   return m.Return();
 }
 
-void principia__InsertCelestialAbsoluteCartesian(
+void __cdecl principia__InsertCelestialAbsoluteCartesian(
     Plugin* const plugin,
     int const celestial_index,
     int const* const parent_index,
@@ -751,7 +757,7 @@ void principia__InsertCelestialAbsoluteCartesian(
   return m.Return();
 }
 
-void principia__InsertCelestialJacobiKeplerian(
+void __cdecl principia__InsertCelestialJacobiKeplerian(
     Plugin* const plugin,
     int const celestial_index,
     int const* const parent_index,
@@ -798,12 +804,12 @@ void principia__InsertCelestialJacobiKeplerian(
 
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
-void principia__InsertOrKeepVessel(Plugin* const plugin,
-                                   char const* const vessel_guid,
-                                   char const* const vessel_name,
-                                   int const parent_index,
-                                   bool const loaded,
-                                   bool* inserted) {
+void __cdecl principia__InsertOrKeepVessel(Plugin* const plugin,
+                                           char const* const vessel_guid,
+                                           char const* const vessel_name,
+                                           int const parent_index,
+                                           bool const loaded,
+                                           bool* inserted) {
   journal::Method<journal::InsertOrKeepVessel> m(
       {plugin, vessel_guid, vessel_name, parent_index, loaded}, {inserted});
   CHECK_NOTNULL(plugin);
@@ -815,7 +821,7 @@ void principia__InsertOrKeepVessel(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__InsertOrKeepLoadedPart(
+void __cdecl principia__InsertOrKeepLoadedPart(
     Plugin* const plugin,
     PartId const part_id,
     char const* const name,
@@ -906,11 +912,11 @@ void principia__InsertOrKeepLoadedPart(
 
 // Calls |plugin->SetVesselStateOffset| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
-void principia__InsertUnloadedPart(Plugin* const plugin,
-                                   PartId const part_id,
-                                   char const* const name,
-                                   char const* const vessel_guid,
-                                   QP const from_parent) {
+void __cdecl principia__InsertUnloadedPart(Plugin* const plugin,
+                                           PartId const part_id,
+                                           char const* const name,
+                                           char const* const vessel_guid,
+                                           QP const from_parent) {
   journal::Method<journal::InsertUnloadedPart> m(
       {plugin, part_id, name, vessel_guid, from_parent});
   CHECK_NOTNULL(plugin);
@@ -925,39 +931,39 @@ void principia__InsertUnloadedPart(Plugin* const plugin,
 // Exports |LOG(SEVERITY) << text| for fast logging from the C# adapter.
 // This will always evaluate its argument even if the corresponding log severity
 // is disabled, so it is less efficient than LOG(SEVERITY).
-void principia__LogError(char const* const file,
-                         int const line,
-                         char const* const text) {
+void __cdecl principia__LogError(char const* const file,
+                                 int const line,
+                                 char const* const text) {
   journal::Method<journal::LogError> m({file, line, text});
   google::LogMessage(file, line, google::ERROR).stream() << text;
   return m.Return();
 }
 
-void principia__LogFatal(char const* const file,
-                         int const line,
-                         char const* const text) {
+void __cdecl principia__LogFatal(char const* const file,
+                                 int const line,
+                                 char const* const text) {
   journal::Method<journal::LogFatal> m({file, line, text});
   google::LogMessageFatal(file, line).stream() << text;
   return m.Return();
 }
 
-void principia__LogInfo(char const* const file,
-                        int const line,
-                        char const* const text) {
+void __cdecl principia__LogInfo(char const* const file,
+                                int const line,
+                                char const* const text) {
   journal::Method<journal::LogInfo> m({file, line, text});
   google::LogMessage(file, line).stream() << text;
   return m.Return();
 }
 
-void principia__LogWarning(char const* const file,
-                           int const line,
-                           char const* const text) {
+void __cdecl principia__LogWarning(char const* const file,
+                                   int const line,
+                                   char const* const text) {
   journal::Method<journal::LogWarning> m({file, line, text});
   google::LogMessage(file, line, google::WARNING).stream() << text;
   return m.Return();
 }
 
-WXYZ principia__NavballOrientation(
+WXYZ __cdecl principia__NavballOrientation(
     Plugin const* const plugin,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
@@ -974,9 +980,10 @@ WXYZ principia__NavballOrientation(
 
 // Returns a pointer to a plugin constructed with the arguments given.
 // The caller takes ownership of the result.
-Plugin* principia__NewPlugin(char const* const game_epoch,
-                             char const* const solar_system_epoch,
-                             double const planetarium_rotation_in_degrees) {
+Plugin* __cdecl principia__NewPlugin(
+    char const* const game_epoch,
+    char const* const solar_system_epoch,
+    double const planetarium_rotation_in_degrees) {
   journal::Method<journal::NewPlugin> m({game_epoch,
                                          solar_system_epoch,
                                          planetarium_rotation_in_degrees});
@@ -989,29 +996,29 @@ Plugin* principia__NewPlugin(char const* const game_epoch,
   return m.Return(result.release());
 }
 
-void principia__PrepareToReportCollisions(Plugin* const plugin) {
+void __cdecl principia__PrepareToReportCollisions(Plugin* const plugin) {
   journal::Method<journal::PrepareToReportCollisions> m({plugin});
   CHECK_NOTNULL(plugin)->PrepareToReportCollisions();
   return m.Return();
 }
 
-void principia__ReportGroundCollision(Plugin const* const plugin,
-                                      uint32_t const part_id) {
+void __cdecl principia__ReportGroundCollision(Plugin const* const plugin,
+                                              uint32_t const part_id) {
   journal::Method<journal::ReportGroundCollision> m({plugin, part_id});
   CHECK_NOTNULL(plugin)->ReportGroundCollision(part_id);
   return m.Return();
 }
 
-void principia__ReportPartCollision(Plugin const* const plugin,
-                                    PartId const part1_id,
-                                    PartId const part2_id) {
+void __cdecl principia__ReportPartCollision(Plugin const* const plugin,
+                                            PartId const part1_id,
+                                            PartId const part2_id) {
   journal::Method<journal::ReportPartCollision> m({plugin, part1_id, part2_id});
   CHECK_NOTNULL(plugin)->ReportPartCollision(part1_id, part2_id);
   return m.Return();
 }
 
 // Says hello, convenient for checking that calls to the DLL work.
-char const* principia__SayHello() {
+char const* __cdecl principia__SayHello() {
   journal::Method<journal::SayHello> m;
   return m.Return("Hello from native C++!");
 }
@@ -1020,7 +1027,7 @@ char const* principia__SayHello() {
 // when it is null (at the end of the stream).  No transfer of ownership of
 // |*plugin|.  |*serializer| must be null on the first call and must be passed
 // unchanged to the successive calls; its ownership is not transferred.
-char const* principia__SerializePlugin(
+char const* __cdecl principia__SerializePlugin(
     Plugin const* const plugin,
     PullSerializer** const serializer,
     char const* const compressor,
@@ -1064,7 +1071,7 @@ char const* principia__SerializePlugin(
 }
 
 // Sets the maximum number of seconds which logs may be buffered for.
-void principia__SetBufferDuration(int const seconds) {
+void __cdecl principia__SetBufferDuration(int const seconds) {
   journal::Method<journal::SetBufferDuration> m({seconds});
   FLAGS_logbufsecs = seconds;
   return m.Return();
@@ -1072,20 +1079,20 @@ void principia__SetBufferDuration(int const seconds) {
 
 // Log messages at a level |<= max_severity| are buffered.
 // Log messages at a higher level are flushed immediately.
-void principia__SetBufferedLogging(int const max_severity) {
+void __cdecl principia__SetBufferedLogging(int const max_severity) {
   journal::Method<journal::SetBufferedLogging> m({max_severity});
   FLAGS_logbuflevel = max_severity;
   return m.Return();
 }
 
-void principia__SetMainBody(Plugin* const plugin, int const index) {
+void __cdecl principia__SetMainBody(Plugin* const plugin, int const index) {
   journal::Method<journal::SetMainBody> m({plugin, index});
   CHECK_NOTNULL(plugin);
   plugin->SetMainBody(index);
   return m.Return();
 }
 
-void principia__SetPartApparentDegreesOfFreedom(
+void __cdecl principia__SetPartApparentDegreesOfFreedom(
     Plugin* const plugin,
     PartId const part_id,
     QP const degrees_of_freedom,
@@ -1102,7 +1109,7 @@ void principia__SetPartApparentDegreesOfFreedom(
 
 // Make it so that all log messages of at least |min_severity| are logged to
 // stderr (in addition to logging to the usual log file(s)).
-void principia__SetStderrLogging(int const min_severity) {
+void __cdecl principia__SetStderrLogging(int const min_severity) {
   journal::Method<journal::SetStderrLogging> m({min_severity});
   // NOTE(egg): We could use |FLAGS_stderrthreshold| instead, the difference
   // seems to be a mutex.
@@ -1112,30 +1119,30 @@ void principia__SetStderrLogging(int const min_severity) {
 
 // Log suppression level: messages logged at a lower level than this are
 // suppressed.
-void principia__SetSuppressedLogging(int const min_severity) {
+void __cdecl principia__SetSuppressedLogging(int const min_severity) {
   journal::Method<journal::SetSuppressedLogging> m({min_severity});
   FLAGS_minloglevel = min_severity;
   return m.Return();
 }
 
 // Show all VLOG(m) messages for |m <= level|.
-void principia__SetVerboseLogging(int const level) {
+void __cdecl principia__SetVerboseLogging(int const level) {
   journal::Method<journal::SetVerboseLogging> m({level});
   FLAGS_v = level;
   return m.Return();
 }
 
-void principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
-                                                 int const index) {
+void __cdecl principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
+                                                         int const index) {
   journal::Method<journal::SetWorldRotationalReferenceFrame> m({plugin, index});
   CHECK_NOTNULL(plugin);
   plugin->SetWorldRotationalReferenceFrame(index);
   return m.Return();
 }
 
-XYZ principia__UnmanageableVesselVelocity(Plugin const* const plugin,
-                                         QP const degrees_of_freedom,
-                                         int const parent_index) {
+XYZ __cdecl principia__UnmanageableVesselVelocity(Plugin const* const plugin,
+                                                  QP const degrees_of_freedom,
+                                                  int const parent_index) {
   return ToXYZ(CHECK_NOTNULL(plugin)->UnmanageableVesselVelocity(
       FromQP<RelativeDegreesOfFreedom<AliceSun>>(degrees_of_freedom),
       parent_index));
@@ -1143,9 +1150,9 @@ XYZ principia__UnmanageableVesselVelocity(Plugin const* const plugin,
 
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
-void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
-                                         int const celestial_index,
-                                         int const parent_index) {
+void __cdecl principia__UpdateCelestialHierarchy(Plugin const* const plugin,
+                                                 int const celestial_index,
+                                                 int const parent_index) {
   journal::Method<journal::UpdateCelestialHierarchy> m({plugin,
                                                         celestial_index,
                                                         parent_index});
@@ -1154,8 +1161,8 @@ void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
   return m.Return();
 }
 
-void principia__UpdatePrediction(Plugin const* const plugin,
-                                 char const* const vessel_guid) {
+void __cdecl principia__UpdatePrediction(Plugin const* const plugin,
+                                         char const* const vessel_guid) {
   journal::Method<journal::UpdatePrediction> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   plugin->UpdatePrediction(vessel_guid);

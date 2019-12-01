@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "benchmark/benchmark.h"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -29,9 +30,6 @@
 #include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
 #include "serialization/geometry.pb.h"
-
-// This must come last because apparently it redefines CDECL.
-#include "benchmark/benchmark.h"
 
 namespace principia {
 
