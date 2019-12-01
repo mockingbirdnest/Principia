@@ -29,7 +29,7 @@ class PartTest : public testing::Test {
  protected:
   PartTest()
       : inertia_tensor_(
-            InertiaTensor<Barycentric>::MakeWaterSphereInertiaTensor(mass_)),
+            InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(mass_)),
         part_(part_id_,
               "part",
               inertia_tensor_,
@@ -53,7 +53,7 @@ class PartTest : public testing::Test {
   Mass const mass_ = 7 * Kilogram;
   Vector<Force, Barycentric> const intrinsic_force_ =
       Vector<Force, Barycentric>({8 * Newton, 9 * Newton, 10 * Newton});
-  InertiaTensor<Barycentric> inertia_tensor_;
+  InertiaTensor<RigidPart> inertia_tensor_;
   Part part_;
 };
 

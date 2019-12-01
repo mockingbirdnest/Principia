@@ -70,9 +70,9 @@ class VesselTest : public testing::Test {
                   /*declination_of_pole=*/90 * Degree)),
         celestial_(&body_),
         inertia_tensor1_(
-            InertiaTensor<Barycentric>::MakeWaterSphereInertiaTensor(mass1_)),
+            InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(mass1_)),
         inertia_tensor2_(
-            InertiaTensor<Barycentric>::MakeWaterSphereInertiaTensor(mass2_)),
+            InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(mass2_)),
         vessel_("123",
                 "vessel",
                 &celestial_,
@@ -101,8 +101,8 @@ class VesselTest : public testing::Test {
   PartId const part_id2_ = 222;
   Mass const mass1_ = 1 * Kilogram;
   Mass const mass2_ = 2 * Kilogram;
-  InertiaTensor<Barycentric> inertia_tensor1_;
-  InertiaTensor<Barycentric> inertia_tensor2_;
+  InertiaTensor<RigidPart> inertia_tensor1_;
+  InertiaTensor<RigidPart> inertia_tensor2_;
 
   // Centre of mass of |p1_| and |p2_| in |Barycentric|, in SI units:
   //   {13 / 3, 4, 11 / 3} {130 / 3, 40, 110 / 3}

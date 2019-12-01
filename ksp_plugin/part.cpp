@@ -26,7 +26,7 @@ using quantities::SIUnit;
 Part::Part(
     PartId const part_id,
     std::string const& name,
-    InertiaTensor<Barycentric> const& inertia_tensor,
+    InertiaTensor<RigidPart> const& inertia_tensor,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
     std::function<void()> deletion_callback)
     : part_id_(part_id),
@@ -52,12 +52,11 @@ PartId Part::part_id() const {
   return part_id_;
 }
 
-void Part::set_inertia_tensor(
-    InertiaTensor<Barycentric> const& inertia_tensor) {
+void Part::set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor) {
   inertia_tensor_ = inertia_tensor;
 }
 
-InertiaTensor<Barycentric> const& Part::inertia_tensor() const {
+InertiaTensor<RigidPart> const& Part::inertia_tensor() const {
   return inertia_tensor_;
 }
 
@@ -186,7 +185,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
-        InertiaTensor<Barycentric>::MakeWaterSphereInertiaTensor(
+        InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(
             Mass::ReadFromMessage(message.mass())),
         DegreesOfFreedom<Barycentric>::ReadFromMessage(
             message.degrees_of_freedom()),
@@ -195,7 +194,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
-        InertiaTensor<Barycentric>::ReadFromMessage(message.inertia_tensor()),
+        InertiaTensor<RigidPart>::ReadFromMessage(message.inertia_tensor()),
         DegreesOfFreedom<Barycentric>::ReadFromMessage(
             message.degrees_of_freedom()),
         std::move(deletion_callback));

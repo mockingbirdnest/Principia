@@ -412,7 +412,7 @@ void Plugin::InsertUnloadedPart(
       vessel,
       part_id,
       name,
-      InertiaTensor<Barycentric>::MakeWaterSphereInertiaTensor(1 * Kilogram),
+      InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(1 * Kilogram),
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
   // NOTE(egg): we do not keep the part; it may disappear just as we load, if
   // it happens to be a part with no physical significance (rb == null).
@@ -421,7 +421,7 @@ void Plugin::InsertUnloadedPart(
 void Plugin::InsertOrKeepLoadedPart(
     PartId const part_id,
     std::string const& name,
-    InertiaTensor<World> const& inertia_tensor,
+    InertiaTensor<RigidPart> const& inertia_tensor,
     GUID const& vessel_guid,
     Index const main_body_index,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
@@ -468,14 +468,12 @@ void Plugin::InsertOrKeepLoadedPart(
     AddPart(vessel,
             part_id,
             name,
-            inertia_tensor.Transform<Barycentric>(
-                world_to_barycentric_motion.rigid_transformation()),
+            inertia_tensor,
             world_to_barycentric_motion(part_degrees_of_freedom));
   }
   vessel->KeepPart(part_id);
   not_null<Part*> part = vessel->part(part_id);
-  part->set_inertia_tensor(inertia_tensor.Transform(
-      world_to_barycentric_motion.rigid_transformation()));
+  part->set_inertia_tensor(inertia_tensor);
 }
 
 void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
@@ -1512,7 +1510,7 @@ void Plugin::ReadCelestialsFromMessages(
 void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
                      std::string const& name,
-                     InertiaTensor<Barycentric> const& inertia_tensor,
+                     InertiaTensor<RigidPart> const& inertia_tensor,
                      DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   auto const [it, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
   CHECK(inserted) << NAMED(part_id);

@@ -41,7 +41,7 @@ class Part final {
  public:
   Part(PartId part_id,
        std::string const& name,
-       InertiaTensor<Barycentric> const& inertia_tensor,
+       InertiaTensor<RigidPart> const& inertia_tensor,
        DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
        std::function<void()> deletion_callback);
 
@@ -54,8 +54,8 @@ class Part final {
   // Sets or returns the inertia tensor.  Event though a part is massless in the
   // sense that it doesn't exert gravity, it has inertia used to determine its
   // intrinsic acceleration and rotational properties.
-  void set_inertia_tensor(InertiaTensor<Barycentric> const& inertia_tensor);
-  InertiaTensor<Barycentric> const& inertia_tensor() const;
+  void set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor);
+  InertiaTensor<RigidPart> const& inertia_tensor() const;
 
   // Clears, increments or returns the intrinsic force exerted on the part by
   // its engines (or a tractor beam).
@@ -125,7 +125,7 @@ class Part final {
  private:
   PartId const part_id_;
   std::string const name_;
-  InertiaTensor<Barycentric> inertia_tensor_;
+  InertiaTensor<RigidPart> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
 
   std::shared_ptr<PileUp> containing_pile_up_;
