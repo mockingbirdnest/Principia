@@ -75,60 +75,64 @@ TEST_F(PartTest, Serialization) {
   EXPECT_EQ(8, message.intrinsic_force().vector().x().quantity().magnitude());
   EXPECT_EQ(9, message.intrinsic_force().vector().y().quantity().magnitude());
   EXPECT_EQ(10, message.intrinsic_force().vector().z().quantity().magnitude());
-  EXPECT_TRUE(message.has_degrees_of_freedom());
-  EXPECT_TRUE(message.degrees_of_freedom().t1().has_point());
-  EXPECT_TRUE(message.degrees_of_freedom().t1().point().has_multivector());
-  EXPECT_TRUE(
-      message.degrees_of_freedom().t1().point().multivector().has_vector());
+  EXPECT_TRUE(message.has_rigid_motion());
+  EXPECT_TRUE(message.rigid_motion().has_rigid_transformation());
+  EXPECT_TRUE(message.rigid_motion().rigid_transformation().has_to_origin());
+  EXPECT_TRUE(message.rigid_motion()
+                  .rigid_transformation()
+                  .to_origin()
+                  .has_multivector());
+  EXPECT_TRUE(message.rigid_motion()
+                  .rigid_transformation()
+                  .to_origin()
+                  .multivector()
+                  .has_vector());
   EXPECT_EQ(1,
-            message.degrees_of_freedom()
-                .t1()
-                .point()
+            message.rigid_motion()
+                .rigid_transformation()
+                .to_origin()
                 .multivector()
                 .vector()
                 .x()
                 .quantity()
                 .magnitude());
   EXPECT_EQ(2,
-            message.degrees_of_freedom()
-                .t1()
-                .point()
+            message.rigid_motion()
+                .rigid_transformation()
+                .to_origin()
                 .multivector()
                 .vector()
                 .y()
                 .quantity()
                 .magnitude());
   EXPECT_EQ(3,
-            message.degrees_of_freedom()
-                .t1()
-                .point()
+            message.rigid_motion()
+                .rigid_transformation()
+                .to_origin()
                 .multivector()
                 .vector()
                 .z()
                 .quantity()
                 .magnitude());
-  EXPECT_TRUE(message.degrees_of_freedom().t2().has_multivector());
-  EXPECT_TRUE(message.degrees_of_freedom().t2().multivector().has_vector());
-  EXPECT_EQ(4,
-            message.degrees_of_freedom()
-                .t2()
-                .multivector()
+  EXPECT_TRUE(
+      message.rigid_motion().velocity_of_to_frame_origin().has_vector());
+  EXPECT_EQ(-4,
+            message.rigid_motion()
+                .velocity_of_to_frame_origin()
                 .vector()
                 .x()
                 .quantity()
                 .magnitude());
-  EXPECT_EQ(5,
-            message.degrees_of_freedom()
-                .t2()
-                .multivector()
+  EXPECT_EQ(-5,
+            message.rigid_motion()
+                .velocity_of_to_frame_origin()
                 .vector()
                 .y()
                 .quantity()
                 .magnitude());
-  EXPECT_EQ(6,
-            message.degrees_of_freedom()
-                .t2()
-                .multivector()
+  EXPECT_EQ(-6,
+            message.rigid_motion()
+                .velocity_of_to_frame_origin()
                 .vector()
                 .z()
                 .quantity()

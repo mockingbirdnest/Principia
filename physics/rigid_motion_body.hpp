@@ -81,13 +81,13 @@ RigidMotion<FromFrame, ToFrame>::Inverse() const {
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>
 RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
-    DegreesOfFreedom<ToFrame> const& degrees_of_freedom) {
+    DegreesOfFreedom<ToFrame> const& degrees_of_freedom_of_from_frame_origin) {
   return RigidMotion(RigidTransformation<FromFrame, ToFrame>(
                          FromFrame::origin,
-                         degrees_of_freedom.position(),
+                         degrees_of_freedom_of_from_frame_origin.position(),
                          geometry::Identity<FromFrame, ToFrame>().Forget()),
                      AngularVelocity<ToFrame>{},
-                     degrees_of_freedom.velocity());
+                     degrees_of_freedom_of_from_frame_origin.velocity());
 }
 
 template<typename FromFrame, typename ToFrame>
