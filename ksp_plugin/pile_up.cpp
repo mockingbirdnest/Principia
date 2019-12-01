@@ -81,8 +81,9 @@ PileUp::~PileUp() {
   }
 }
 
-void PileUp::set_mass(Mass const& mass) {
-  mass_ = mass;
+void PileUp::set_inertia_tensor(
+    InertiaTensor<RigidPileUp> const& inertia_tensor) {
+  inertia_tensor_ = inertia_tensor;
 }
 
 void PileUp::set_intrinsic_force(
@@ -140,7 +141,7 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   for (not_null<Part*> const part : parts_) {
     message->add_part_id(part->part_id());
   }
-  mass_.WriteToMessage(message->mutable_mass());
+  inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   history_->WriteToMessage(message->mutable_history(),
                            /*forks=*/{psychohistory_});
@@ -362,7 +363,7 @@ Status PileUp::AdvanceTime(Instant const& t) {
     }
     history_->DeleteFork(psychohistory_);
 
-    auto const a = intrinsic_force_ / mass_;
+    auto const a = intrinsic_force_ / inertia_tensor_.mass();
     // NOTE(phl): |a| used to be captured by copy below, which is the logical
     // thing to do.  However, since it contains an |R3Element|, it must be
     // aligned on a 16-byte boundary.  Unfortunately, VS2015 gets confused and

@@ -69,7 +69,8 @@ message Part {
 
 message PileUp {
   repeated fixed32 part_id = 1;
-  required Quantity mass = 2;
+  optional Quantity mass = 2;  // Pre-Fréchet.
+  optional InertiaTensor inertia_tensor = 9;  // Added in Fréchet.
   required Multivector intrinsic_force = 3;
   required DiscreteTrajectory history = 4;
   map<fixed32, Pair> actual_part_degrees_of_freedom = 5;

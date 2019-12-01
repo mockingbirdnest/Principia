@@ -13,6 +13,7 @@
 #include "integrators/integrators.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/massless_body.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -34,6 +35,7 @@ using integrators::Integrator;
 using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
+using physics::InertiaTensor;
 using physics::MasslessBody;
 using physics::RelativeDegreesOfFreedom;
 using quantities::Force;
@@ -59,7 +61,7 @@ class PileUp {
   PileUp(PileUp&& pile_up) = default;
   PileUp& operator=(PileUp&& pile_up) = default;
 
-  void set_mass(Mass const& mass);
+  void set_inertia_tensor(InertiaTensor<RigidPileUp> const& inertia_tensor);
   void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
 
   std::list<not_null<Part*>> const& parts() const;
@@ -144,9 +146,9 @@ class PileUp {
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters_;
 
-  // An optimization: the sum of the masses and intrinsic forces of the
-  // |parts_|, computed by the union-find.
-  Mass mass_;
+  // An optimization: the total inertia and intrinsic forces of the |parts_|,
+  // computed by the union-find.
+  InertiaTensor<RigidPileUp> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally
@@ -172,17 +174,6 @@ class PileUp {
   std::unique_ptr<typename Integrator<
       Ephemeris<Barycentric>::NewtonianMotionEquation>::Instance>
       fixed_instance_;
-
-  // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
-  // of freedom of the parts in the frame of that body can be set, however their
-  // motion is not integrated; this is simply applied as an offset from the
-  // rigid body motion of the |PileUp|.
-  // The origin of |RigidPileUp| is the centre of mass of the pile up.
-  // Its axes are those of Barycentric for now; eventually we will probably want
-  // to use the inertia ellipsoid.
-  using RigidPileUp = Frame<serialization::Frame::PluginTag,
-                            serialization::Frame::RIGID_PILE_UP,
-                            /*frame_is_inertial=*/false>;
 
   PartTo<DegreesOfFreedom<RigidPileUp>> actual_part_degrees_of_freedom_;
   PartTo<DegreesOfFreedom<ApparentBubble>> apparent_part_degrees_of_freedom_;
