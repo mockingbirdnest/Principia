@@ -43,7 +43,7 @@ Status OK() {
 
 }  // namespace
 
-Status principia__ExternalFlowFreefall(
+Status __cdecl principia__ExternalFlowFreefall(
     Plugin const* const plugin,
     int const central_body_index,
     QP const world_body_centred_initial_degrees_of_freedom,
@@ -65,7 +65,7 @@ Status principia__ExternalFlowFreefall(
                              "|ExternalFlowFreefall| is not yet implemented"));
 }
 
-Status principia__ExternalGeopotentialGetCoefficient(
+Status __cdecl principia__ExternalGeopotentialGetCoefficient(
     Plugin const* const plugin,
     int const body_index,
     int const degree,
@@ -111,7 +111,7 @@ Status principia__ExternalGeopotentialGetCoefficient(
   return m.Return(OK());
 }
 
-Status principia__ExternalGeopotentialGetReferenceRadius(
+Status __cdecl principia__ExternalGeopotentialGetReferenceRadius(
     Plugin const* const plugin,
     int const body_index,
     double* const reference_radius) {
@@ -138,7 +138,7 @@ Status principia__ExternalGeopotentialGetReferenceRadius(
   return m.Return(OK());
 }
 
-Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
+Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
     Plugin const* const plugin,
     int const central_body_index,
     char const* const vessel_guid,

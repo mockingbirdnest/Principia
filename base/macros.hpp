@@ -70,24 +70,6 @@ char const* const Architecture = "x86-64";
 #error "Have you tried a Cray-1?"
 #endif
 
-// Architecture macros from http://goo.gl/ZypnO8.
-// We use cdecl on x86, the calling convention is unambiguous on x86-64.
-#if ARCH_CPU_X86
-#  if PRINCIPIA_COMPILER_CLANG ||  \
-      PRINCIPIA_COMPILER_MSVC ||   \
-      PRINCIPIA_COMPILER_CLANG_CL
-#    define CDECL __cdecl
-#  elif PRINCIPIA_COMPILER_ICC || PRINCIPIA_COMPILER_GCC
-#    define CDECL __attribute__((cdecl))
-#  else
-#    error "Get a real compiler!"
-#  endif
-#elif ARCH_CPU_X86_64
-#  define CDECL
-#else
-#  error "Have you tried a Cray-1?"
-#endif
-
 // DLL-exported functions for interfacing with Platform Invocation Services.
 #if defined(PRINCIPIA_DLL)
 #  error "PRINCIPIA_DLL already defined"

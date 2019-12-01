@@ -70,13 +70,13 @@ std::unique_ptr<T[]> TakeOwnershipArray(T** pointer);
 #include "ksp_plugin/interface.generated.h"
 
 extern "C" PRINCIPIA_DLL
-void CDECL principia__ActivatePlayer();
+void __cdecl principia__ActivatePlayer();
 
 extern "C" PRINCIPIA_DLL
-void CDECL principia__ActivateRecorder(bool activate);
+void __cdecl principia__ActivateRecorder(bool activate);
 
 extern "C" PRINCIPIA_DLL
-void CDECL principia__InitGoogleLogging();
+void __cdecl principia__InitGoogleLogging();
 
 bool operator==(AdaptiveStepParameters const& left,
                 AdaptiveStepParameters const& right);

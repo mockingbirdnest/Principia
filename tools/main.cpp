@@ -10,7 +10,7 @@
 #include "tools/generate_kopernicus.hpp"
 #include "tools/generate_profiles.hpp"
 
-int main(int argc, char const* argv[]) {
+int __cdecl main(int argc, char const* argv[]) {
   google::SetLogFilenameExtension(".log");
   google::InitGoogleLogging(argv[0]);
   google::LogToStderr();
