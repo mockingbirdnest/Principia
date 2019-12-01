@@ -203,7 +203,7 @@ class Plugin {
   virtual void InsertOrKeepLoadedPart(
       PartId part_id,
       std::string const& name,
-      InertiaTensor<World> const& inertia_tensor,
+      InertiaTensor<RigidPart> const& inertia_tensor,
       GUID const& vessel_guid,
       Index main_body_index,
       DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
@@ -465,7 +465,7 @@ class Plugin {
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
                std::string const& name,
-               Mass mass,
+               InertiaTensor<RigidPart> const& inertia_tensor,
                DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // Whether |loaded_vessels_| contains |vessel|.

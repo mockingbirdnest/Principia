@@ -876,15 +876,14 @@ void __cdecl principia__InsertOrKeepLoadedPart(
   Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
       FromWXYZ(principal_axes_rotation));
   Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
-  Rotation<PartPrincipalAxes, World> const rotation =
-      part_to_world * principal_axes_to_part;
-  RigidTransformation<PartPrincipalAxes, World> const
-      part_principal_axes_to_world(PartPrincipalAxes::origin,
-                                   part_degrees_of_freedom.position(),
-                                   rotation.Forget());
+  RigidTransformation<PartPrincipalAxes, RigidPart> const
+      part_principal_axes_to_rigid_part(PartPrincipalAxes::origin,
+                                        RigidPart::origin,
+                                        principal_axes_to_part.Forget());
 
-  InertiaTensor<World> const inertia_tensor_in_world =
-      inertia_tensor_in_princial_axes.Transform(part_principal_axes_to_world);
+  InertiaTensor<RigidPart> const inertia_tensor_in_rigid_part =
+      inertia_tensor_in_princial_axes.Transform(
+          part_principal_axes_to_rigid_part);
 
   RigidTransformation<RigidPart, World> const part_rigid_transformation(
       RigidPart::origin,
@@ -901,7 +900,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
   plugin->InsertOrKeepLoadedPart(
       part_id,
       name,
-      inertia_tensor_in_world,
+      inertia_tensor_in_rigid_part,
       vessel_guid,
       main_body_index,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),

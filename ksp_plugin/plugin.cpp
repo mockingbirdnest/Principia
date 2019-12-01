@@ -33,6 +33,7 @@
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"
@@ -80,6 +81,7 @@ using geometry::Identity;
 using geometry::Normalize;
 using geometry::Permutation;
 using geometry::RigidTransformation;
+using geometry::R3x3Matrix;
 using geometry::Sign;
 using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
@@ -98,6 +100,8 @@ using physics::SolarSystem;
 using quantities::Force;
 using quantities::Infinity;
 using quantities::Length;
+using quantities::MomentOfInertia;
+using quantities::SIUnit;
 using quantities::si::Kilogram;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -404,12 +408,12 @@ void Plugin::InsertUnloadedPart(
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
   ephemeris_->Prolong(current_time_);
-  AddPart(vessel,
-          part_id,
-          name,
-          1 * Kilogram,
-          vessel->parent()->current_degrees_of_freedom(current_time_) +
-              relative);
+  AddPart(
+      vessel,
+      part_id,
+      name,
+      InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(1 * Kilogram),
+      vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
   // NOTE(egg): we do not keep the part; it may disappear just as we load, if
   // it happens to be a part with no physical significance (rb == null).
 }
@@ -417,15 +421,35 @@ void Plugin::InsertUnloadedPart(
 void Plugin::InsertOrKeepLoadedPart(
     PartId const part_id,
     std::string const& name,
-    InertiaTensor<World> const& inertia_tensor,
+    InertiaTensor<RigidPart> const& inertia_tensor,
     GUID const& vessel_guid,
     Index const main_body_index,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
     RigidMotion<RigidPart, World> const& part_rigid_motion,
     Time const& Δt) {
-  auto const& mass = inertia_tensor.mass();
   not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
   CHECK(is_loaded(vessel));
+
+  Instant const previous_time = current_time_ - Δt;
+  OrthogonalMap<Barycentric, Barycentric> const Δplanetarium_rotation =
+      Exp(Δt * angular_velocity_of_world_).Forget();
+  // TODO(egg): Can we use |BarycentricToWorld| here?
+  BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
+      main_body_frame{ephemeris_.get(),
+                      FindOrDie(celestials_, main_body_index)->body()};
+  RigidMotion<World, MainBodyCentred> const world_to_main_body_centred{
+      RigidTransformation<World, MainBodyCentred>{
+          main_body_degrees_of_freedom.position(),
+          MainBodyCentred::origin,
+          main_body_frame.ToThisFrameAtTime(previous_time).orthogonal_map() *
+              Δplanetarium_rotation.Inverse() *
+              renderer_->WorldToBarycentric(PlanetariumRotation())},
+          (renderer_->BarycentricToWorld(PlanetariumRotation()) *
+                Δplanetarium_rotation)(-angular_velocity_of_world_),
+      main_body_degrees_of_freedom.velocity()};
+  auto const world_to_barycentric_motion =
+      main_body_frame.FromThisFrameAtTime(previous_time) *
+      world_to_main_body_centred;
 
   auto it = part_id_to_vessel_.find(part_id);
   bool const part_found = it != part_id_to_vessel_.end();
@@ -438,39 +462,18 @@ void Plugin::InsertOrKeepLoadedPart(
       vessel->AddPart(current_vessel->ExtractPart(part_id));
     }
   } else {
-    Instant const previous_time = current_time_ - Δt;
-    OrthogonalMap<Barycentric, Barycentric> const Δplanetarium_rotation =
-        Exp(Δt * angular_velocity_of_world_).Forget();
-    // TODO(egg): Can we use |BarycentricToWorld| here?
-    BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
-        main_body_frame{ephemeris_.get(),
-                        FindOrDie(celestials_, main_body_index)->body()};
-    RigidMotion<World, MainBodyCentred> const world_to_main_body_centred{
-        RigidTransformation<World, MainBodyCentred>{
-            main_body_degrees_of_freedom.position(),
-            MainBodyCentred::origin,
-            main_body_frame.ToThisFrameAtTime(previous_time).orthogonal_map() *
-                Δplanetarium_rotation.Inverse() *
-                renderer_->WorldToBarycentric(PlanetariumRotation())},
-            (renderer_->BarycentricToWorld(PlanetariumRotation()) *
-                 Δplanetarium_rotation)(-angular_velocity_of_world_),
-        main_body_degrees_of_freedom.velocity()};
-    auto const world_to_barycentric_motion =
-        main_body_frame.FromThisFrameAtTime(previous_time) *
-        world_to_main_body_centred;
-
     DegreesOfFreedom<World> const part_degrees_of_freedom(
         part_rigid_motion(DegreesOfFreedom<RigidPart>(RigidPart::origin,
                                                       Velocity<RigidPart>())));
     AddPart(vessel,
             part_id,
             name,
-            mass,
+            inertia_tensor,
             world_to_barycentric_motion(part_degrees_of_freedom));
   }
   vessel->KeepPart(part_id);
   not_null<Part*> part = vessel->part(part_id);
-  part->set_mass(mass);
+  part->set_inertia_tensor(inertia_tensor);
 }
 
 void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
@@ -1507,7 +1510,7 @@ void Plugin::ReadCelestialsFromMessages(
 void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
                      std::string const& name,
-                     Mass const mass,
+                     InertiaTensor<RigidPart> const& inertia_tensor,
                      DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   auto const [it, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
   CHECK(inserted) << NAMED(part_id);
@@ -1516,7 +1519,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
   };
   auto part = make_not_null_unique<Part>(part_id,
                                          name,
-                                         mass,
+                                         inertia_tensor,
                                          degrees_of_freedom,
                                          std::move(deletion_callback));
   vessel->AddPart(std::move(part));
