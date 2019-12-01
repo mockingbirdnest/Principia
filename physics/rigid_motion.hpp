@@ -64,6 +64,11 @@ class RigidMotion final {
   template<typename = std::enable_if_t<std::is_same_v<FromFrame, ToFrame>>>
   static RigidMotion Identity();
 
+  // A factory that construct a non-rotating motion using the given degrees of
+  // freedom.  Useful e.g. for save compatibility.
+  static RigidMotion MakeNonRotatingMotion(
+      DegreesOfFreedom<ToFrame> const& degrees_of_freedom);
+
   void WriteToMessage(not_null<serialization::RigidMotion*> message) const;
   static RigidMotion ReadFromMessage(serialization::RigidMotion const& message);
 

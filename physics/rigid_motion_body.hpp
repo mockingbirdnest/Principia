@@ -3,6 +3,7 @@
 
 #include "physics/rigid_motion.hpp"
 
+#include "geometry/identity.hpp"
 #include "geometry/linear_map.hpp"
 
 namespace principia {
@@ -75,6 +76,18 @@ RigidMotion<FromFrame, ToFrame>::Inverse() const {
       rigid_transformation_.Inverse(),
       -orthogonal_map()(angular_velocity_of_to_frame_),
       (*this)({FromFrame::origin, Velocity<FromFrame>()}).velocity());
+}
+
+template<typename FromFrame, typename ToFrame>
+RigidMotion<FromFrame, ToFrame>
+RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
+    DegreesOfFreedom<ToFrame> const& degrees_of_freedom) {
+  return RigidMotion(RigidTransformation<FromFrame, ToFrame>(
+                         FromFrame::origin,
+                         degrees_of_freedom.position(),
+                         geometry::Identity<FromFrame, ToFrame>().Forget()),
+                     AngularVelocity<ToFrame>{},
+                     degrees_of_freedom.velocity());
 }
 
 template<typename FromFrame, typename ToFrame>

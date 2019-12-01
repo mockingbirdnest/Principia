@@ -466,7 +466,7 @@ class Plugin {
                PartId part_id,
                std::string const& name,
                InertiaTensor<RigidPart> const& inertia_tensor,
-               DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+               RigidMotion<RigidPart, Barycentric> const& rigid_motion);
 
   // Whether |loaded_vessels_| contains |vessel|.
   bool is_loaded(not_null<Vessel*> vessel) const;

@@ -8,6 +8,7 @@
 #include "base/hexadecimal.hpp"
 #include "base/not_null.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -20,6 +21,7 @@ using base::HexadecimalEncoder;
 using base::make_not_null_unique;
 using base::UniqueArray;
 using geometry::R3x3Matrix;
+using physics::RigidTransformation;
 using quantities::MomentOfInertia;
 using quantities::SIUnit;
 
@@ -80,6 +82,10 @@ void Part::set_rigid_motion(
 
 RigidMotion<RigidPart, Barycentric> const& Part::rigid_motion() const {
   return rigid_motion_;
+}
+
+DegreesOfFreedom<Barycentric> Part::degrees_of_freedom() const {
+  return rigid_motion_({RigidPart::origin, Velocity<RigidPart>{}});
 }
 
 DiscreteTrajectory<Barycentric>::Iterator Part::history_begin() {
@@ -177,26 +183,29 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     serialization::Part const& message,
     std::function<void()> deletion_callback) {
   bool const is_pre_cesàro = message.has_tail_is_authoritative();
-  bool const is_pre_fréchet = message.has_mass() ||
+  bool const is_pre_fréchet = message.has_mass() &&
                               message.has_degrees_of_freedom();
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {
+    auto const degrees_of_freedom =
+        DegreesOfFreedom<Barycentric>::ReadFromMessage(
+            message.degrees_of_freedom());
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
         InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(
             Mass::ReadFromMessage(message.mass())),
-        DegreesOfFreedom<Barycentric>::ReadFromMessage(
-            message.degrees_of_freedom()),
+        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+            degrees_of_freedom),
         std::move(deletion_callback));
   } else {
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
         InertiaTensor<RigidPart>::ReadFromMessage(message.inertia_tensor()),
-        DegreesOfFreedom<Barycentric>::ReadFromMessage(
-            message.degrees_of_freedom()),
+        RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
+            message.rigid_motion()),
         std::move(deletion_callback));
   }
 

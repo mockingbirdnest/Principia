@@ -33,7 +33,8 @@ class PartTest : public testing::Test {
         part_(part_id_,
               "part",
               inertia_tensor_,
-              degrees_of_freedom_,
+              RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+                  degrees_of_freedom_),
               /*deletion_callback=*/nullptr) {
     part_.increment_intrinsic_force(intrinsic_force_);
     part_.AppendToHistory(

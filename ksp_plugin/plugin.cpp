@@ -407,13 +407,16 @@ void Plugin::InsertUnloadedPart(
   not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
+  DegreesOfFreedom<Barycentric> const degrees_of_freedom =
+      vessel->parent()->current_degrees_of_freedom(current_time_) + relative;
+
   ephemeris_->Prolong(current_time_);
-  AddPart(
-      vessel,
-      part_id,
-      name,
-      InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(1 * Kilogram),
-      vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
+  AddPart(vessel,
+          part_id,
+          name,
+          InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(1 * Kilogram),
+          RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+              degrees_of_freedom));
   // NOTE(egg): we do not keep the part; it may disappear just as we load, if
   // it happens to be a part with no physical significance (rb == null).
 }
@@ -447,7 +450,7 @@ void Plugin::InsertOrKeepLoadedPart(
           (renderer_->BarycentricToWorld(PlanetariumRotation()) *
                 Δplanetarium_rotation)(-angular_velocity_of_world_),
       main_body_degrees_of_freedom.velocity()};
-  auto const world_to_barycentric_motion =
+  RigidMotion<World, Barycentric> const world_to_barycentric_motion =
       main_body_frame.FromThisFrameAtTime(previous_time) *
       world_to_main_body_centred;
 
@@ -462,14 +465,11 @@ void Plugin::InsertOrKeepLoadedPart(
       vessel->AddPart(current_vessel->ExtractPart(part_id));
     }
   } else {
-    DegreesOfFreedom<World> const part_degrees_of_freedom(
-        part_rigid_motion(DegreesOfFreedom<RigidPart>(RigidPart::origin,
-                                                      Velocity<RigidPart>())));
     AddPart(vessel,
             part_id,
             name,
             inertia_tensor,
-            world_to_barycentric_motion(part_degrees_of_freedom));
+            world_to_barycentric_motion * part_rigid_motion);
   }
   vessel->KeepPart(part_id);
   not_null<Part*> part = vessel->part(part_id);
@@ -1511,7 +1511,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
                      std::string const& name,
                      InertiaTensor<RigidPart> const& inertia_tensor,
-                     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+                     RigidMotion<RigidPart, Barycentric> const& rigid_motion) {
   auto const [it, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
   CHECK(inserted) << NAMED(part_id);
   auto deletion_callback = [it = it, &map = part_id_to_vessel_] {
@@ -1520,7 +1520,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
   auto part = make_not_null_unique<Part>(part_id,
                                          name,
                                          inertia_tensor,
-                                         degrees_of_freedom,
+                                         rigid_motion,
                                          std::move(deletion_callback));
   vessel->AddPart(std::move(part));
 }

@@ -72,6 +72,10 @@ class Part final {
       RigidMotion<RigidPart, Barycentric> const& rigid_motion);
   RigidMotion<RigidPart, Barycentric> const& rigid_motion() const;
 
+  // A convenience selector.
+  // TODO(phl): Should probably be eliminated at some point.
+  DegreesOfFreedom<Barycentric> degrees_of_freedom() const;
+
   // Return iterators to the beginning and end of the history and psychohistory
   // of the part, respectively.  Either trajectory may be empty, but they are
   // not both empty.
@@ -148,9 +152,6 @@ class Part final {
   // as needed by |AppendToPsychohistory| or by |tail|.  That's because
   // |NewForkAtLast| is relatively expensive so we only call it when necessary.
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
-
-  // TODO(egg): we may want to keep track of the moment of inertia, angular
-  // momentum, etc.
 
   // We will use union-find algorithms on |Part|s.
   not_null<std::unique_ptr<Subset<Part>::Node>> const subset_node_;

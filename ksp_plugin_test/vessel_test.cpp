@@ -14,6 +14,7 @@
 #include "ksp_plugin/integrators.hpp"
 #include "physics/inertia_tensor.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
@@ -36,6 +37,7 @@ using geometry::Velocity;
 using physics::InertiaTensor;
 using physics::MassiveBody;
 using physics::MockEphemeris;
+using physics::RigidMotion;
 using physics::RotatingBody;
 using quantities::MomentOfInertia;
 using quantities::SIUnit;
@@ -78,16 +80,18 @@ class VesselTest : public testing::Test {
                 &celestial_,
                 &ephemeris_,
                 DefaultPredictionParameters()) {
-    auto p1 = make_not_null_unique<Part>(part_id1_,
-                                         "p1",
-                                         inertia_tensor1_,
-                                         p1_dof_,
-                                         /*deletion_callback=*/nullptr);
-    auto p2 = make_not_null_unique<Part>(part_id2_,
-                                         "p2",
-                                         inertia_tensor2_,
-                                         p2_dof_,
-                                         /*deletion_callback=*/nullptr);
+    auto p1 = make_not_null_unique<Part>(
+        part_id1_,
+        "p1",
+        inertia_tensor1_,
+        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p1_dof_),
+        /*deletion_callback=*/nullptr);
+    auto p2 = make_not_null_unique<Part>(
+        part_id2_,
+        "p2",
+        inertia_tensor2_,
+        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p2_dof_),
+        /*deletion_callback=*/nullptr);
     p1_ = p1.get();
     p2_ = p2.get();
     vessel_.AddPart(std::move(p1));
