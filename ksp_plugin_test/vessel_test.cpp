@@ -70,9 +70,9 @@ class VesselTest : public testing::Test {
                   /*declination_of_pole=*/90 * Degree)),
         celestial_(&body_),
         inertia_tensor1_(
-            InertiaTensor<Barycentric>::MakeSphericalInertiaTensor(mass1_)),
+            InertiaTensor<Barycentric>::MakeWaterSphereInertiaTensor(mass1_)),
         inertia_tensor2_(
-            InertiaTensor<Barycentric>::MakeSphericalInertiaTensor(mass2_)),
+            InertiaTensor<Barycentric>::MakeWaterSphereInertiaTensor(mass2_)),
         vessel_("123",
                 "vessel",
                 &celestial_,

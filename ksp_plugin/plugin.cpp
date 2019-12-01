@@ -412,7 +412,7 @@ void Plugin::InsertUnloadedPart(
       vessel,
       part_id,
       name,
-      InertiaTensor<Barycentric>::MakeSphericalInertiaTensor(1 * Kilogram),
+      InertiaTensor<Barycentric>::MakeWaterSphereInertiaTensor(1 * Kilogram),
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
   // NOTE(egg): we do not keep the part; it may disappear just as we load, if
   // it happens to be a part with no physical significance (rb == null).

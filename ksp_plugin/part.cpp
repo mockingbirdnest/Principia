@@ -186,7 +186,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
-        InertiaTensor<Barycentric>::MakeSphericalInertiaTensor(
+        InertiaTensor<Barycentric>::MakeWaterSphereInertiaTensor(
             Mass::ReadFromMessage(message.mass())),
         DegreesOfFreedom<Barycentric>::ReadFromMessage(
             message.degrees_of_freedom()),

@@ -29,7 +29,7 @@ class PartTest : public testing::Test {
  protected:
   PartTest()
       : inertia_tensor_(
-            InertiaTensor<Barycentric>::MakeSphericalInertiaTensor(mass_)),
+            InertiaTensor<Barycentric>::MakeWaterSphereInertiaTensor(mass_)),
         part_(part_id_,
               "part",
               inertia_tensor_,

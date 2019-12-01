@@ -91,7 +91,7 @@ InertiaTensor<Frame>::Diagonalize() const {
 }
 
 template<typename Frame>
-InertiaTensor<Frame> InertiaTensor<Frame>::MakeSphericalInertiaTensor(
+InertiaTensor<Frame> InertiaTensor<Frame>::MakeWaterSphereInertiaTensor(
     Mass const& mass) {
   static constexpr Density ρ_of_water = 1000 * Kilogram / Pow<3>(Metre);
   static constexpr MomentOfInertia zero;
