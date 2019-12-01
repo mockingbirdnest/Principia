@@ -405,12 +405,13 @@ void Plugin::InsertUnloadedPart(
     GUID const& vessel_guid,
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
   not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
+  ephemeris_->Prolong(current_time_);
+
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
   DegreesOfFreedom<Barycentric> const degrees_of_freedom =
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative;
 
-  ephemeris_->Prolong(current_time_);
   AddPart(vessel,
           part_id,
           name,
