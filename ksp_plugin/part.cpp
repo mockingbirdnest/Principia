@@ -183,19 +183,11 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {
-    static constexpr MomentOfInertia zero;
-    static constexpr MomentOfInertia one = SIUnit<MomentOfInertia>();
-    InertiaTensor<Barycentric> inertia_tensor(
-        Mass::ReadFromMessage(message.mass()),
-        R3x3Matrix<MomentOfInertia>({one, zero, zero},
-                                    {zero, one, zero},
-                                    {zero, zero, one}),
-        Barycentric::origin);
-
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
-        inertia_tensor,
+        InertiaTensor<Barycentric>::MakeSphericalInertiaTensor(
+            Mass::ReadFromMessage(message.mass())),
         DegreesOfFreedom<Barycentric>::ReadFromMessage(
             message.degrees_of_freedom()),
         std::move(deletion_callback));

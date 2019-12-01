@@ -56,6 +56,10 @@ class InertiaTensor {
     Rotation<Frame, PrincipalAxesFrame> rotation;
   };
 
+  // A factory that creates an inertia tensor for a solid sphere of water having
+  // the given mass.  Useful e.g. for save compatibility.
+  static InertiaTensor<Frame> MakeSphericalInertiaTensor(Mass const& mass);
+
   // Diagonalization is possible in any frame, but it's mostly used in a frame
   // centred at the centre of mass.
   template<typename PrincipalAxesFrame>

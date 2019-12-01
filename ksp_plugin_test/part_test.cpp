@@ -21,21 +21,15 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Second;
-using testing_utilities::EqualsProto;
-using ::testing::MockFunction;
 using ::testing::_;
-
-constexpr MomentOfInertia zero;
-constexpr MomentOfInertia one = SIUnit<MomentOfInertia>();
+using ::testing::MockFunction;
+using testing_utilities::EqualsProto;
 
 class PartTest : public testing::Test {
  protected:
   PartTest()
-      : inertia_tensor_(mass_,
-                        R3x3Matrix<MomentOfInertia>({one, zero, zero},
-                                                    {zero, one, zero},
-                                                    {zero, zero, one}),
-                        Barycentric::origin),
+      : inertia_tensor_(
+            InertiaTensor<Barycentric>::MakeSphericalInertiaTensor(mass_)),
         part_(part_id_,
               "part",
               inertia_tensor_,
@@ -83,22 +77,61 @@ TEST_F(PartTest, Serialization) {
   EXPECT_TRUE(message.has_degrees_of_freedom());
   EXPECT_TRUE(message.degrees_of_freedom().t1().has_point());
   EXPECT_TRUE(message.degrees_of_freedom().t1().point().has_multivector());
-  EXPECT_TRUE(message.degrees_of_freedom().t1().
-                  point().multivector().has_vector());
-  EXPECT_EQ(1, message.degrees_of_freedom().t1().
-                   point().multivector().vector().x().quantity().magnitude());
-  EXPECT_EQ(2, message.degrees_of_freedom().t1().
-                   point().multivector().vector().y().quantity().magnitude());
-  EXPECT_EQ(3, message.degrees_of_freedom().t1().
-                   point().multivector().vector().z().quantity().magnitude());
+  EXPECT_TRUE(
+      message.degrees_of_freedom().t1().point().multivector().has_vector());
+  EXPECT_EQ(1,
+            message.degrees_of_freedom()
+                .t1()
+                .point()
+                .multivector()
+                .vector()
+                .x()
+                .quantity()
+                .magnitude());
+  EXPECT_EQ(2,
+            message.degrees_of_freedom()
+                .t1()
+                .point()
+                .multivector()
+                .vector()
+                .y()
+                .quantity()
+                .magnitude());
+  EXPECT_EQ(3,
+            message.degrees_of_freedom()
+                .t1()
+                .point()
+                .multivector()
+                .vector()
+                .z()
+                .quantity()
+                .magnitude());
   EXPECT_TRUE(message.degrees_of_freedom().t2().has_multivector());
   EXPECT_TRUE(message.degrees_of_freedom().t2().multivector().has_vector());
-  EXPECT_EQ(4, message.degrees_of_freedom().t2().
-                   multivector().vector().x().quantity().magnitude());
-  EXPECT_EQ(5, message.degrees_of_freedom().t2().
-                   multivector().vector().y().quantity().magnitude());
-  EXPECT_EQ(6, message.degrees_of_freedom().t2().
-                   multivector().vector().z().quantity().magnitude());
+  EXPECT_EQ(4,
+            message.degrees_of_freedom()
+                .t2()
+                .multivector()
+                .vector()
+                .x()
+                .quantity()
+                .magnitude());
+  EXPECT_EQ(5,
+            message.degrees_of_freedom()
+                .t2()
+                .multivector()
+                .vector()
+                .y()
+                .quantity()
+                .magnitude());
+  EXPECT_EQ(6,
+            message.degrees_of_freedom()
+                .t2()
+                .multivector()
+                .vector()
+                .z()
+                .quantity()
+                .magnitude());
   EXPECT_EQ(1, message.prehistory().timeline_size());
   EXPECT_EQ(1, message.prehistory().children_size());
   EXPECT_EQ(1, message.prehistory().children(0).trajectories_size());

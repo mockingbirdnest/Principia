@@ -73,9 +73,6 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
 
-constexpr MomentOfInertia zero;
-constexpr MomentOfInertia one = SIUnit<MomentOfInertia>();
-
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
  public:
@@ -114,16 +111,10 @@ class PileUpTest : public testing::Test {
   using RigidPileUp = TestablePileUp::RigidPileUp;
 
   PileUpTest()
-      : inertia_tensor1_(mass1_,
-                         R3x3Matrix<MomentOfInertia>({one, zero, zero},
-                                                     {zero, one, zero},
-                                                     {zero, zero, one}),
-                         Barycentric::origin),
-        inertia_tensor2_(mass2_,
-                         R3x3Matrix<MomentOfInertia>({one, zero, zero},
-                                                     {zero, one, zero},
-                                                     {zero, zero, one}),
-                         Barycentric::origin),
+      : inertia_tensor1_(
+            InertiaTensor<Barycentric>::MakeSphericalInertiaTensor(mass1_)),
+        inertia_tensor2_(
+            InertiaTensor<Barycentric>::MakeSphericalInertiaTensor(mass2_)),
         p1_(part_id1_,
             "p1",
             inertia_tensor1_,

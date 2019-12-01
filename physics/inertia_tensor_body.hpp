@@ -6,6 +6,8 @@
 #include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 #include "geometry/rotation.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -17,6 +19,11 @@ using geometry::Commutator;
 using geometry::Identity;
 using geometry::Rotation;
 using geometry::SymmetricProduct;
+using quantities::Cbrt;
+using quantities::Density;
+using quantities::Pow;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
 
 template<typename Frame>
 InertiaTensor<Frame>::InertiaTensor(
@@ -81,6 +88,20 @@ InertiaTensor<Frame>::Diagonalize() const {
       z, y, Commutator(z, y));
 
   return {moments_of_inertia, swap_x_and_z * eigensystem.rotation};
+}
+
+template<typename Frame>
+InertiaTensor<Frame> InertiaTensor<Frame>::MakeSphericalInertiaTensor(
+    Mass const& mass) {
+  static constexpr Density ρ_of_water = 1000 * Kilogram / Pow<3>(Metre);
+  static constexpr MomentOfInertia zero;
+  MomentOfInertia const I =
+      Cbrt(9 * Pow<5>(mass) / (250 * Pow<2>(π * ρ_of_water)));
+  return InertiaTensor<Frame>(mass,
+                              R3x3Matrix<MomentOfInertia>({I, zero, zero},
+                                                          {zero, I, zero},
+                                                          {zero, zero, I}),
+                              Frame::origin);
 }
 
 template<typename Frame>

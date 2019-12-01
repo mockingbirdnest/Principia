@@ -408,22 +408,12 @@ void Plugin::InsertUnloadedPart(
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
   ephemeris_->Prolong(current_time_);
-
-  static constexpr MomentOfInertia zero;
-  static constexpr MomentOfInertia one = SIUnit<MomentOfInertia>();
-  InertiaTensor<Barycentric> inertia_tensor(
-      /*mass=*/1 * Kilogram,
-      R3x3Matrix<MomentOfInertia>({one, zero, zero},
-                                  {zero, one, zero},
-                                  {zero, zero, one}),
-      Barycentric::origin);
-
-  AddPart(vessel,
-          part_id,
-          name,
-          inertia_tensor,
-          vessel->parent()->current_degrees_of_freedom(current_time_) +
-              relative);
+  AddPart(
+      vessel,
+      part_id,
+      name,
+      InertiaTensor<Barycentric>::MakeSphericalInertiaTensor(1 * Kilogram),
+      vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
   // NOTE(egg): we do not keep the part; it may disappear just as we load, if
   // it happens to be a part with no physical significance (rb == null).
 }
