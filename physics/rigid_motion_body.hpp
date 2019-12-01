@@ -3,6 +3,7 @@
 
 #include "physics/rigid_motion.hpp"
 
+#include "geometry/identity.hpp"
 #include "geometry/linear_map.hpp"
 
 namespace principia {
@@ -75,6 +76,40 @@ RigidMotion<FromFrame, ToFrame>::Inverse() const {
       rigid_transformation_.Inverse(),
       -orthogonal_map()(angular_velocity_of_to_frame_),
       (*this)({FromFrame::origin, Velocity<FromFrame>()}).velocity());
+}
+
+template<typename FromFrame, typename ToFrame>
+RigidMotion<FromFrame, ToFrame>
+RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
+    DegreesOfFreedom<ToFrame> const& degrees_of_freedom_of_from_frame_origin) {
+  return RigidMotion(RigidTransformation<FromFrame, ToFrame>(
+                         FromFrame::origin,
+                         degrees_of_freedom_of_from_frame_origin.position(),
+                         geometry::Identity<FromFrame, ToFrame>().Forget()),
+                     AngularVelocity<ToFrame>{},
+                     degrees_of_freedom_of_from_frame_origin.velocity());
+}
+
+template<typename FromFrame, typename ToFrame>
+void RigidMotion<FromFrame, ToFrame>::WriteToMessage(
+    not_null<serialization::RigidMotion*> const message) const {
+  rigid_transformation_.WriteToMessage(message->mutable_rigid_transformation());
+  angular_velocity_of_to_frame_.WriteToMessage(
+      message->mutable_angular_velocity_of_to_frame());
+  velocity_of_to_frame_origin_.WriteToMessage(
+      message->mutable_velocity_of_to_frame_origin());
+}
+
+template<typename FromFrame, typename ToFrame>
+RigidMotion<FromFrame, ToFrame>
+RigidMotion<FromFrame, ToFrame>::ReadFromMessage(
+    serialization::RigidMotion const& message) {
+  return RigidMotion(RigidTransformation<FromFrame, ToFrame>::ReadFromMessage(
+                         message.rigid_transformation()),
+                     AngularVelocity<FromFrame>::ReadFromMessage(
+                         message.angular_velocity_of_to_frame()),
+                     Velocity<FromFrame>::ReadFromMessage(
+                         message.velocity_of_to_frame_origin()));
 }
 
 template<typename FromFrame, typename ToFrame>

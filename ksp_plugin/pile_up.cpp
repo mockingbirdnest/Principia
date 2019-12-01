@@ -116,8 +116,12 @@ void PileUp::NudgeParts() const {
       actual_centre_of_mass.velocity()};
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
-    part->set_degrees_of_freedom(pile_up_to_barycentric(
-        FindOrDie(actual_part_degrees_of_freedom_, part)));
+    DegreesOfFreedom<Barycentric> const actual_part_degrees_of_freedom =
+        pile_up_to_barycentric(
+            FindOrDie(actual_part_degrees_of_freedom_, part));
+    part->set_rigid_motion(
+        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+            actual_part_degrees_of_freedom));
   }
 }
 

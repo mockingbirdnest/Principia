@@ -4,17 +4,20 @@
 #include <functional>
 #include <type_traits>
 
+#include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
 namespace internal_rigid_motion {
 
+using base::not_null;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::Bivector;
@@ -64,6 +67,14 @@ class RigidMotion final {
            typename T = ToFrame,
            typename = std::enable_if_t<std::is_same_v<F, T>>>
   static RigidMotion Identity();
+
+  // A factory that construct a non-rotating motion using the given degrees of
+  // freedom.  Useful e.g. for save compatibility.
+  static RigidMotion MakeNonRotatingMotion(
+      DegreesOfFreedom<ToFrame> const& degrees_of_freedom_of_from_frame_origin);
+
+  void WriteToMessage(not_null<serialization::RigidMotion*> message) const;
+  static RigidMotion ReadFromMessage(serialization::RigidMotion const& message);
 
  private:
   RigidTransformation<FromFrame, ToFrame> rigid_transformation_;

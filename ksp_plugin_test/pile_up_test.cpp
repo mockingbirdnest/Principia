@@ -19,6 +19,7 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/inertia_tensor.hpp"
 #include "physics/mock_ephemeris.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -48,6 +49,7 @@ using physics::DegreesOfFreedom;
 using physics::InertiaTensor;
 using physics::MassiveBody;
 using physics::MockEphemeris;
+using physics::RigidMotion;
 using quantities::Acceleration;
 using quantities::Length;
 using quantities::MomentOfInertia;
@@ -118,12 +120,12 @@ class PileUpTest : public testing::Test {
         p1_(part_id1_,
             "p1",
             inertia_tensor1_,
-            p1_dof_,
+            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p1_dof_),
             /*deletion_callback=*/nullptr),
         p2_(part_id2_,
             "p2",
             inertia_tensor2_,
-            p2_dof_,
+            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p2_dof_),
             /*deletion_callback=*/nullptr) {}
 
   void CheckPreDeformPileUpInvariants(TestablePileUp& pile_up) {
