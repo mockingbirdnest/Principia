@@ -15,7 +15,7 @@ namespace interface {
 using ksp_plugin::TypedIterator;
 using ksp_plugin::VesselSet;
 
-PileUpFuture* principia__FutureCatchUpVessel(
+PileUpFuture* __cdecl principia__FutureCatchUpVessel(
     Plugin* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::FutureCatchUpVessel> m({plugin, vessel_guid});
@@ -25,7 +25,7 @@ PileUpFuture* principia__FutureCatchUpVessel(
   return m.Return(future.release());
 }
 
-void principia__FutureWaitForVesselToCatchUp(
+void __cdecl principia__FutureWaitForVesselToCatchUp(
     Plugin* const plugin,
     PileUpFuture** const future,
     Iterator** const collided_vessels) {
