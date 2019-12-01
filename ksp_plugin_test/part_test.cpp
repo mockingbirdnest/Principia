@@ -72,8 +72,9 @@ TEST_F(PartTest, Serialization) {
   part_.WriteToMessage(&message,
                        serialization_index_for_pile_up.AsStdFunction());
   EXPECT_EQ(part_id_, message.part_id());
-  EXPECT_TRUE(message.has_mass());
-  EXPECT_EQ(7, message.mass().magnitude());
+  EXPECT_TRUE(message.has_inertia_tensor());
+  EXPECT_TRUE(message.inertia_tensor().has_mass());
+  EXPECT_EQ(7, message.inertia_tensor().mass().magnitude());
   EXPECT_TRUE(message.has_intrinsic_force());
   EXPECT_TRUE(message.intrinsic_force().has_vector());
   EXPECT_EQ(8, message.intrinsic_force().vector().x().quantity().magnitude());
