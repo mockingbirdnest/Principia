@@ -27,12 +27,12 @@ Part::Part(
     PartId const part_id,
     std::string const& name,
     InertiaTensor<RigidPart> const& inertia_tensor,
-    DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+    RigidMotion<RigidPart, Barycentric> const& rigid_motion,
     std::function<void()> deletion_callback)
     : part_id_(part_id),
       name_(name),
       inertia_tensor_(inertia_tensor),
-      degrees_of_freedom_(degrees_of_freedom),
+      rigid_motion_(rigid_motion),
       prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
       deletion_callback_(std::move(deletion_callback)) {
@@ -73,14 +73,13 @@ Vector<Force, Barycentric> const& Part::intrinsic_force() const {
   return intrinsic_force_;
 }
 
-void Part::set_degrees_of_freedom(
-    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  degrees_of_freedom_ = degrees_of_freedom;
+void Part::set_rigid_motion(
+    RigidMotion<RigidPart, Barycentric> const& rigid_motion) {
+  rigid_motion_ = rigid_motion;
 }
 
-DegreesOfFreedom<Barycentric> const&
-Part::degrees_of_freedom() const {
-  return degrees_of_freedom_;
+RigidMotion<RigidPart, Barycentric> const& Part::rigid_motion() const {
+  return rigid_motion_;
 }
 
 DiscreteTrajectory<Barycentric>::Iterator Part::history_begin() {
@@ -169,7 +168,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
     message->set_containing_pile_up(
         serialization_index_for_pile_up(containing_pile_up_.get()));
   }
-  degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
+  rigid_motion_.WriteToMessage(message->mutable_rigid_motion());
   prehistory_->WriteToMessage(message->mutable_prehistory(),
                               /*forks=*/{history_, psychohistory_});
 }
@@ -178,7 +177,8 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     serialization::Part const& message,
     std::function<void()> deletion_callback) {
   bool const is_pre_cesàro = message.has_tail_is_authoritative();
-  bool const is_pre_fréchet = message.has_mass();
+  bool const is_pre_fréchet = message.has_mass() ||
+                              message.has_degrees_of_freedom();
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {

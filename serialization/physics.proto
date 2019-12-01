@@ -220,6 +220,12 @@ message OblateBody {
   }
 }
 
+message RigidMotion {
+  required AffineMap rigid_transformation = 1;
+  required Multivector angular_velocity_of_to_frame = 2;
+  required Multivector velocity_of_to_frame_origin = 3;
+}
+
 message RotatingBody {
   extend MassiveBody {
     optional RotatingBody extension = 2002;

@@ -4,17 +4,20 @@
 #include <functional>
 #include <type_traits>
 
+#include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
 namespace internal_rigid_motion {
 
+using base::not_null;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::Bivector;
@@ -60,6 +63,9 @@ class RigidMotion final {
 
   template<typename = std::enable_if_t<std::is_same_v<FromFrame, ToFrame>>>
   static RigidMotion Identity();
+
+  void WriteToMessage(not_null<serialization::RigidMotion*> message) const;
+  static RigidMotion ReadFromMessage(serialization::RigidMotion const& message);
 
  private:
   RigidTransformation<FromFrame, ToFrame> rigid_transformation_;

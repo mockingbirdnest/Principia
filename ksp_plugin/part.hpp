@@ -16,6 +16,7 @@
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/inertia_tensor.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
@@ -33,6 +34,7 @@ using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::InertiaTensor;
+using physics::RigidMotion;
 using quantities::Force;
 using quantities::Mass;
 
@@ -42,7 +44,7 @@ class Part final {
   Part(PartId part_id,
        std::string const& name,
        InertiaTensor<RigidPart> const& inertia_tensor,
-       DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+       RigidMotion<RigidPart, Barycentric> const& rigid_motion,
        std::function<void()> deletion_callback);
 
   // Calls the deletion callback passed at construction, if any.  This part must
@@ -65,10 +67,10 @@ class Part final {
       Vector<Force, Barycentric> const& intrinsic_force);
   Vector<Force, Barycentric> const& intrinsic_force() const;
 
-  // Sets or returns the degrees of freedom of the part.
-  void set_degrees_of_freedom(
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
-  DegreesOfFreedom<Barycentric> const& degrees_of_freedom() const;
+  // Sets or returns the rigid motion of the part.
+  void set_rigid_motion(
+      RigidMotion<RigidPart, Barycentric> const& rigid_motion);
+  RigidMotion<RigidPart, Barycentric> const& rigid_motion() const;
 
   // Return iterators to the beginning and end of the history and psychohistory
   // of the part, respectively.  Either trajectory may be empty, but they are
@@ -130,7 +132,7 @@ class Part final {
 
   std::shared_ptr<PileUp> containing_pile_up_;
 
-  DegreesOfFreedom<Barycentric> degrees_of_freedom_;
+  RigidMotion<RigidPart, Barycentric> rigid_motion_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
 

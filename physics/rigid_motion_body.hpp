@@ -78,6 +78,28 @@ RigidMotion<FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+void RigidMotion<FromFrame, ToFrame>::WriteToMessage(
+    not_null<serialization::RigidMotion*> const message) const {
+  rigid_transformation_.WriteToMessage(message->mutable_rigid_transformation());
+  angular_velocity_of_to_frame_.WriteToMessage(
+      message->mutable_angular_velocity_of_to_frame());
+  velocity_of_to_frame_origin_.WriteToMessage(
+      message->mutable_velocity_of_to_frame_origin());
+}
+
+template<typename FromFrame, typename ToFrame>
+RigidMotion<FromFrame, ToFrame>
+RigidMotion<FromFrame, ToFrame>::ReadFromMessage(
+    serialization::RigidMotion const& message) {
+  return RigidMotion(RigidTransformation<FromFrame, ToFrame>::ReadFromMessage(
+                         message.rigid_transformation()),
+                     AngularVelocity<FromFrame>::ReadFromMessage(
+                         message.angular_velocity_of_to_frame()),
+                     Velocity<FromFrame>::ReadFromMessage(
+                         message.velocity_of_to_frame_origin()));
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename>
 RigidMotion<FromFrame, ToFrame> RigidMotion<FromFrame, ToFrame>::Identity() {
   return RigidMotion(RigidTransformation<FromFrame, ToFrame>::Identity(),
