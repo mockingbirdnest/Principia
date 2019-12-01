@@ -41,7 +41,9 @@ class RigidMotion final {
       AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
       Velocity<FromFrame> const& velocity_of_to_frame_origin);
 
-  template<typename = std::enable_if_t<!std::is_same_v<FromFrame, ToFrame>>>
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<!std::is_same_v<F, T>>>
   RigidMotion(
       RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
       AngularVelocity<ToFrame> const& angular_velocity_of_from_frame,
@@ -58,7 +60,9 @@ class RigidMotion final {
 
   RigidMotion<ToFrame, FromFrame> Inverse() const;
 
-  template<typename = std::enable_if_t<std::is_same_v<FromFrame, ToFrame>>>
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<std::is_same_v<F, T>>>
   static RigidMotion Identity();
 
  private:
