@@ -1,6 +1,4 @@
-﻿#include "inertia_tensor.hpp"
-#include "inertia_tensor.hpp"
-#pragma once
+﻿#pragma once
 
 #include "physics/inertia_tensor.hpp"
 
@@ -8,7 +6,6 @@
 #include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 #include "geometry/rotation.hpp"
-#include "inertia_tensor.hpp"
 
 namespace principia {
 namespace physics {
