@@ -104,28 +104,6 @@ void PileUp::SetPartApparentDegreesOfFreedom(
                   << degrees_of_freedom;
 }
 
-void PileUp::NudgeParts() const {
-  auto const actual_centre_of_mass =
-      psychohistory_->back().degrees_of_freedom;
-
-  RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
-      RigidTransformation<Barycentric, RigidPileUp>{
-          actual_centre_of_mass.position(),
-          RigidPileUp::origin,
-          Identity<Barycentric, RigidPileUp>().Forget()},
-      AngularVelocity<Barycentric>(),
-      actual_centre_of_mass.velocity()};
-  auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
-  for (not_null<Part*> const part : parts_) {
-    DegreesOfFreedom<Barycentric> const actual_part_degrees_of_freedom =
-        pile_up_to_barycentric(
-            FindOrDie(actual_part_degrees_of_freedom_, part));
-    part->set_rigid_motion(
-        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
-            actual_part_degrees_of_freedom));
-  }
-}
-
 Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   absl::MutexLock l(lock_.get());
   Status status;
@@ -398,6 +376,28 @@ Status PileUp::AdvanceTime(Instant const& t) {
   return status;
 }
 
+void PileUp::NudgeParts() const {
+  auto const actual_centre_of_mass =
+      psychohistory_->back().degrees_of_freedom;
+
+  RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
+      RigidTransformation<Barycentric, RigidPileUp>{
+          actual_centre_of_mass.position(),
+          RigidPileUp::origin,
+          Identity<Barycentric, RigidPileUp>().Forget()},
+      AngularVelocity<Barycentric>(),
+      actual_centre_of_mass.velocity()};
+  auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
+  for (not_null<Part*> const part : parts_) {
+    DegreesOfFreedom<Barycentric> const actual_part_degrees_of_freedom =
+        pile_up_to_barycentric(
+            FindOrDie(actual_part_degrees_of_freedom_, part));
+    part->set_rigid_motion(
+        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+            actual_part_degrees_of_freedom));
+  }
+}
+
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>
 void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   auto const& pile_up_dof = it->degrees_of_freedom;
@@ -414,6 +414,30 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
         it->time,
         pile_up_to_barycentric(
             FindOrDie(actual_part_degrees_of_freedom_, part)));
+  }
+}
+
+void PileUp::RecomputeFromParts(std::list<not_null<Part*>> const& parts) {
+  Mass total_mass;
+  Vector<Force, Barycentric> total_intrinsic_force;
+  BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
+  for (not_null<Part*> const part : parts) {
+    total_intrinsic_force += part->intrinsic_force();
+    calculator.Add(part->degrees_of_freedom(), part->inertia_tensor().mass());
+  }
+  total_mass = calculator.weight();
+  DegreesOfFreedom<Barycentric> const pile_up_barycentre = calculator.Get();
+
+  InertiaTensor<RigidPileUp> inertia_tensor;
+  RigidTransformation<RigidPileUp, Barycentric> const pile_up_to_barycentric(
+      RigidPileUp::origin,
+      pile_up_barycentre.position(),
+      Identity<RigidPileUp, Barycentric>().Forget());
+  for (not_null<Part*> const part : parts) {
+    RigidTransformation<RigidPart, Barycentric> const& part_to_barycentric =
+        part->rigid_motion().rigid_transformation();
+    inertia_tensor += part->inertia_tensor().Transform(
+        pile_up_to_barycentric.Inverse() * part_to_barycentric);
   }
 }
 
