@@ -196,7 +196,7 @@ SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
     Vector<RScalar, Frame> const& right);
 
 // Symmetric bilinear forms act on bivectors through this function.
-// |Anticommutator(F, B)| is (tr(F)𝟙 - F)B in ℝ³ representation .  In matrix
+// |Anticommutator(F, B)| is (tr(F)𝟙 - F)B in ℝ³ representation.  In matrix
 // representation it is FB + BF = {F, B}.
 template<typename LScalar, typename RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(

@@ -6,11 +6,13 @@
 #include <map>
 
 #include "base/map_util.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -21,13 +23,16 @@ using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
+using geometry::Bivector;
 using geometry::Identity;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::RigidTransformation;
 using geometry::Velocity;
+using physics::Anticommutator;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
+using quantities::AngularMomentum;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -418,26 +423,45 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
 }
 
 void PileUp::RecomputeFromParts(std::list<not_null<Part*>> const& parts) {
-  Mass total_mass;
-  Vector<Force, Barycentric> total_intrinsic_force;
+  // First compute the overall mass and centre of mass of the pile-up.  Also
+  // compute the overall force applied to it.
+  // TODO(phl): We assume that forces are applied at the centre of mass of the
+  // pile-up, but they are really applied at the centre of mass of the parts, so
+  // this introduces a torque.
+  Mass pile_up_mass;
+  Vector<Force, Barycentric> pile_up_intrinsic_force;
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   for (not_null<Part*> const part : parts) {
-    total_intrinsic_force += part->intrinsic_force();
+    pile_up_intrinsic_force += part->intrinsic_force();
     calculator.Add(part->degrees_of_freedom(), part->inertia_tensor().mass());
   }
-  total_mass = calculator.weight();
+  pile_up_mass = calculator.weight();
   DegreesOfFreedom<Barycentric> const pile_up_barycentre = calculator.Get();
 
-  InertiaTensor<RigidPileUp> inertia_tensor;
+  // Then compute the inertia tensor and the angular momentum of the pile-up.
+  InertiaTensor<RigidPileUp> pile_up_inertia_tensor;
+  Bivector<AngularMomentum, RigidPileUp> pile_up_angular_momentum;
   RigidTransformation<RigidPileUp, Barycentric> const pile_up_to_barycentric(
       RigidPileUp::origin,
       pile_up_barycentre.position(),
       Identity<RigidPileUp, Barycentric>().Forget());
   for (not_null<Part*> const part : parts) {
+    RigidMotion<RigidPart, Barycentric> const& part_rigid_motion =
+        part->rigid_motion();
     RigidTransformation<RigidPart, Barycentric> const& part_to_barycentric =
-        part->rigid_motion().rigid_transformation();
-    inertia_tensor += part->inertia_tensor().Transform(
-        pile_up_to_barycentric.Inverse() * part_to_barycentric);
+        part_rigid_motion.rigid_transformation();
+    RigidTransformation<RigidPart, RigidPileUp> const part_to_pile_up =
+        pile_up_to_barycentric.Inverse() * part_to_barycentric;
+
+    InertiaTensor<RigidPart> const& part_inertia_tensor =
+        part->inertia_tensor();
+    pile_up_inertia_tensor += part->inertia_tensor().Transform(part_to_pile_up);
+
+    Bivector<AngularMomentum, RigidPart> const part_angular_momentum =
+        Anticommutator(part_inertia_tensor,
+                       part_rigid_motion.angular_velocity_of_to_frame());
+    pile_up_angular_momentum +=
+        part_to_pile_up.linear_map()(part_angular_momentum);
   }
 }
 

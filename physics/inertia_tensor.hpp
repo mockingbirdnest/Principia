@@ -105,7 +105,7 @@ class InertiaTensor {
   friend class InertiaTensor;
 
   template<typename R, typename F>
-  friend Bivector<Product<MomentOfInertia, R>, Frame> Anticommutator(
+  friend Bivector<Product<MomentOfInertia, R>, F> Anticommutator(
       InertiaTensor<F> const& tensor,
       Bivector<R, F> const& bivector);
 
