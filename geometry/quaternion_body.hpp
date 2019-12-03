@@ -4,10 +4,13 @@
 #include "geometry/quaternion.hpp"
 
 #include "geometry/r3_element.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_quaternion {
+
+using quantities::DebugString;
 
 inline Quaternion::Quaternion() : real_part_(0) {}
 
@@ -141,10 +144,10 @@ inline Quaternion operator/(Quaternion const& left, double const right) {
 
 inline std::ostream& operator<<(std::ostream& out,
                                 Quaternion const& quaternion) {
-  return out << quaternion.real_part() << " + "
-             << quaternion.imaginary_part().x << " i + "
-             << quaternion.imaginary_part().y << " j + "
-             << quaternion.imaginary_part().z << " k";
+  return out << DebugString(quaternion.real_part()) << " + "
+             << DebugString(quaternion.imaginary_part().x) << " i + "
+             << DebugString(quaternion.imaginary_part().y) << " j + "
+             << DebugString(quaternion.imaginary_part().z) << " k";
 }
 
 }  // namespace internal_quaternion

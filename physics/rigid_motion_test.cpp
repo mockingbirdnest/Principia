@@ -3,6 +3,9 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/permutation.hpp"
+#include "geometry/quaternion.hpp"
+#include "geometry/rotation.hpp"
+#include "geometry/sign.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -22,6 +25,10 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::InnerProduct;
 using geometry::Permutation;
+using geometry::Point;
+using geometry::Rotation;
+using geometry::Quaternion;
+using geometry::Sign;
 using geometry::Wedge;
 using quantities::AngularFrequency;
 using quantities::Speed;
@@ -225,6 +232,67 @@ TEST_F(RigidMotionTest, Serialization) {
   EXPECT_THAT(d1.position() - Selenocentric::origin,
               AlmostEquals(d2.position() - Selenocentric::origin, 0));
   EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 0));
+}
+
+TEST_F(RigidMotionTest, Wtf) {
+  using Barycentric = Frame<serialization::Frame::TestTag,
+                            serialization::Frame::TEST1, false>;
+  using RigidPart = Frame<serialization::Frame::TestTag,
+                          serialization::Frame::TEST2, false>;
+  using World = Frame<serialization::Frame::TestTag,
+                          serialization::Frame::TEST3, false>;
+
+  AngularVelocity<RigidPart> a1({-4.31524874936563274e-04 * Radian / Second,
+                                 +3.58760764995860824e-03 * Radian / Second,
+                                 -5.60639012817497860e-04 * Radian / Second});
+  Velocity<RigidPart> v1({+9.45391439618678553e-06 * Metre / Second,
+                          -3.92345736956409459e-03 * Metre / Second,
+                          -2.74220213842711266e-06 * Metre / Second});
+  Position<RigidPart> f1 = RigidPart::origin;
+  Position<World> t1 =
+      World::origin + Displacement<World>({+3.37126515805721283e-02 * Metre,
+                                           +1.21778284665197134e-03 * Metre,
+                                           -2.06734146922826767e-02 * Metre});
+  Rotation<RigidPart, World> r1(Quaternion(-3.23732018470764160e-01,
+                                           {3.28581303358078003e-01,
+                                            -6.28009378910064697e-01,
+                                            -6.26766622066497803e-01}));
+
+  RigidMotion<RigidPart, World> rm1(
+      RigidTransformation<RigidPart, World>(f1, t1, r1.Forget()), a1, v1);
+
+  AngularVelocity<World> a2({-1.09321577613522688e-36 * Radian / Second,
+                             +2.91570900559802080e-04 * Radian / Second,
+                             +5.42101086242752217e-20 * Radian / Second});
+  Velocity<World> v2({+3.10203149761506589e+06 * Metre / Second,
+                      +2.41841229267265589e-02 * Metre / Second,
+                      +2.45903920001263265e+06 * Metre / Second});
+  Position<World> f2 =
+      World::origin + Displacement<World>({+4.91525322355270386e+05 * Metre,
+                                           +1.01811877291461769e+03 * Metre,
+                                           -3.44263258773803711e+05 * Metre});
+  Position<Barycentric> t2 =
+      Barycentric::origin +
+      Displacement<Barycentric>({-1.36081879406308479e+10 * Metre,
+                                 +7.17490648244777508e+06 * Metre,
+                                 -4.33826960235058723e+04 * Metre});
+  Rotation<World, Barycentric> r2(Quaternion(6.36714825392272976e-01,
+                                             {-6.36714825392272976e-01,
+                                              -3.07561751727498445e-01,
+                                              +3.07561751727498445e-01}));
+  OrthogonalMap<World, Barycentric> o2(Sign::Negative(), r2);
+
+  RigidMotion<World, Barycentric> rm2(
+      RigidTransformation<World, Barycentric>(f2, t2, o2), a2, v2);
+
+  DegreesOfFreedom<World> d1 = rm1({RigidPart::origin, Velocity<RigidPart>{}});
+  DegreesOfFreedom<World> d2 =
+      rm2.Inverse()((rm2 * rm1)({RigidPart::origin, Velocity<RigidPart>{}}));
+
+  LOG(ERROR) << d1;
+  LOG(ERROR) << d2;
+  LOG(ERROR) << rm2.Inverse()(
+      rm2(rm1({RigidPart::origin, Velocity<RigidPart>{}})));
 }
 
 }  // namespace internal_rigid_motion
