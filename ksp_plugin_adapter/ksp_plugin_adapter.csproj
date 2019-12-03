@@ -9,7 +9,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>principia.ksp_plugin_adapter</RootNamespace>
     <AssemblyName>principia.ksp_plugin_adapter</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -23,6 +22,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -34,7 +34,35 @@
     <DebugSymbols>true</DebugSymbols>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release KSP 1.7.3|AnyCPU'">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\Release\1.7.3 compatibility\GameData\Principia\</OutputPath>
+    <DefineConstants>TRACE;KSP_VERSION_1_7_3</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DebugSymbols>true</DebugSymbols>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Release KSP 1.7.3'">
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\KSP Assemblies\1.7.3\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\KSP Assemblies\1.7.3\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\..\KSP Assemblies\1.7.3\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release' Or '$(Configuration)' == 'Debug'">
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\KSP Assemblies\1.8.1\Assembly-CSharp.dll</HintPath>
