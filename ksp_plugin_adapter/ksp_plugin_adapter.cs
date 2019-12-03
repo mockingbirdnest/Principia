@@ -1059,7 +1059,7 @@ public partial class PrincipiaPluginAdapter
           }
 #if KSP_VERSION_1_8_1
           foreach (var collider in part1.currentCollisions.Keys) {
-#else
+#elif KSP_VERSON_1_7_3
           foreach (var collider in part1.currentCollisions) {
 #endif
             if (collider == null) {
