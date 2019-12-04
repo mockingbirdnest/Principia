@@ -14,6 +14,8 @@
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -38,7 +40,10 @@ using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::IsNear;
+using testing_utilities::RelativeErrorFrom;
 using testing_utilities::VanishesBefore;
+using testing_utilities::operator""_⑴;
 
 class RigidMotionTest : public testing::Test {
  protected:
@@ -234,65 +239,90 @@ TEST_F(RigidMotionTest, Serialization) {
   EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 0));
 }
 
-TEST_F(RigidMotionTest, Wtf) {
-  using Barycentric = Frame<serialization::Frame::TestTag,
-                            serialization::Frame::TEST1, false>;
-  using RigidPart = Frame<serialization::Frame::TestTag,
-                          serialization::Frame::TEST2, false>;
-  using World = Frame<serialization::Frame::TestTag,
-                          serialization::Frame::TEST3, false>;
+TEST_F(RigidMotionTest, Composition) {
+  using Barycentric =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, false>;
+  using RigidPart =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST2, false>;
+  using World =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST3, false>;
 
-  AngularVelocity<RigidPart> a1({-4.31524874936563274e-04 * Radian / Second,
-                                 +3.58760764995860824e-03 * Radian / Second,
-                                 -5.60639012817497860e-04 * Radian / Second});
-  Velocity<RigidPart> v1({+9.45391439618678553e-06 * Metre / Second,
-                          -3.92345736956409459e-03 * Metre / Second,
-                          -2.74220213842711266e-06 * Metre / Second});
-  Position<RigidPart> f1 = RigidPart::origin;
-  Position<World> t1 =
+  AngularVelocity<RigidPart> const ω1(
+      {-4.31524874936563274e-04 * Radian / Second,
+       +3.58760764995860824e-03 * Radian / Second,
+       -5.60639012817497860e-04 * Radian / Second});
+  Velocity<RigidPart> const v1({+9.45391439618678553e-06 * Metre / Second,
+                                -3.92345736956409459e-03 * Metre / Second,
+                                -2.74220213842711266e-06 * Metre / Second});
+  Position<RigidPart> const from1 = RigidPart::origin;
+  Position<World> const to1 =
       World::origin + Displacement<World>({+3.37126515805721283e-02 * Metre,
                                            +1.21778284665197134e-03 * Metre,
                                            -2.06734146922826767e-02 * Metre});
-  Rotation<RigidPart, World> r1(Quaternion(-3.23732018470764160e-01,
-                                           {3.28581303358078003e-01,
-                                            -6.28009378910064697e-01,
-                                            -6.26766622066497803e-01}));
+  Rotation<RigidPart, World> const rotation1(
+      Quaternion(-3.23732018470764160e-01,
+                 {3.28581303358078003e-01,
+                  -6.28009378910064697e-01,
+                  -6.26766622066497803e-01}));
 
-  RigidMotion<RigidPart, World> rm1(
-      RigidTransformation<RigidPart, World>(f1, t1, r1.Forget()), a1, v1);
+  RigidMotion<RigidPart, World> const rigid_motion1(
+      RigidTransformation<RigidPart, World>(from1, to1, rotation1.Forget()),
+      ω1,
+      v1);
 
-  AngularVelocity<World> a2({-1.09321577613522688e-36 * Radian / Second,
-                             +2.91570900559802080e-04 * Radian / Second,
-                             +5.42101086242752217e-20 * Radian / Second});
-  Velocity<World> v2({+3.10203149761506589e+06 * Metre / Second,
-                      +2.41841229267265589e-02 * Metre / Second,
-                      +2.45903920001263265e+06 * Metre / Second});
-  Position<World> f2 =
+  AngularVelocity<World> const ω2({-1.09321577613522688e-36 * Radian / Second,
+                                   +2.91570900559802080e-04 * Radian / Second,
+                                   +5.42101086242752217e-20 * Radian / Second});
+  Velocity<World> const v2({+3.10203149761506589e+06 * Metre / Second,
+                            +2.41841229267265589e-02 * Metre / Second,
+                            +2.45903920001263265e+06 * Metre / Second});
+  Position<World> const from2 =
       World::origin + Displacement<World>({+4.91525322355270386e+05 * Metre,
                                            +1.01811877291461769e+03 * Metre,
                                            -3.44263258773803711e+05 * Metre});
-  Position<Barycentric> t2 =
+  Position<Barycentric> const to2 =
       Barycentric::origin +
       Displacement<Barycentric>({-1.36081879406308479e+10 * Metre,
                                  +7.17490648244777508e+06 * Metre,
                                  -4.33826960235058723e+04 * Metre});
-  Rotation<World, Barycentric> r2(Quaternion(6.36714825392272976e-01,
-                                             {-6.36714825392272976e-01,
-                                              -3.07561751727498445e-01,
-                                              +3.07561751727498445e-01}));
-  OrthogonalMap<World, Barycentric> o2(Sign::Negative(), r2);
+  Rotation<World, Barycentric> const rotation2(
+      Quaternion(6.36714825392272976e-01,
+                 {-6.36714825392272976e-01,
+                  -3.07561751727498445e-01,
+                  +3.07561751727498445e-01}));
+  OrthogonalMap<World, Barycentric> const orthogonal2(Sign::Negative(),
+                                                      rotation2);
 
-  RigidMotion<World, Barycentric> rm2(
-      RigidTransformation<World, Barycentric>(f2, t2, o2), a2, v2);
+  RigidMotion<World, Barycentric> const rigid_motion2(
+      RigidTransformation<World, Barycentric>(from2, to2, orthogonal2), ω2, v2);
 
-  DegreesOfFreedom<World> d1 = rm1({RigidPart::origin, Velocity<RigidPart>{}});
-  DegreesOfFreedom<World> d2 =
-      rm2.Inverse()((rm2 * rm1)({RigidPart::origin, Velocity<RigidPart>{}}));
+  DegreesOfFreedom<World> const d1 =
+      rigid_motion1({RigidPart::origin, Velocity<RigidPart>{}});
+  DegreesOfFreedom<Barycentric> const d2 =
+      (rigid_motion2 * rigid_motion1)(
+          {RigidPart::origin, Velocity<RigidPart>{}});
+  DegreesOfFreedom<Barycentric> const d3 =
+      rigid_motion2(rigid_motion1({RigidPart::origin, Velocity<RigidPart>{}}));
+  DegreesOfFreedom<World> const d4 =
+      rigid_motion2.Inverse()((rigid_motion2 * rigid_motion1)(
+          {RigidPart::origin, Velocity<RigidPart>{}}));
+  DegreesOfFreedom<World> const d5 = rigid_motion2.Inverse()(
+      rigid_motion2(rigid_motion1({RigidPart::origin, Velocity<RigidPart>{}})));
 
-  LOG(ERROR) << d1;
-  LOG(ERROR) << d2;
-  LOG(ERROR) << rm2.Inverse()(
-      rm2(rm1({RigidPart::origin, Velocity<RigidPart>{}})));
+  EXPECT_THAT(d2.position() - Barycentric::origin,
+              AlmostEquals(d3.position() - Barycentric::origin, 0));
+  EXPECT_THAT(d2.velocity(),
+              RelativeErrorFrom(d3.velocity(), IsNear(0.00000001_⑴)));
+  EXPECT_THAT(d4.position() - World::origin,
+              RelativeErrorFrom(d1.position() - World::origin,
+                                IsNear(5.8e-6_⑴)));
+  EXPECT_THAT(d4.velocity(),
+              RelativeErrorFrom(d1.velocity(), IsNear(0.00000001_⑴)));
+  EXPECT_THAT(d5.position() - World::origin,
+              RelativeErrorFrom(d1.position() - World::origin,
+                                IsNear(5.8e-6_⑴)));
+  EXPECT_THAT(d5.velocity(),
+              RelativeErrorFrom(d1.velocity(), IsNear(6.2e-8_⑴)));
 }
 
 }  // namespace internal_rigid_motion
