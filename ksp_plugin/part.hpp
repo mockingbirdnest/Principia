@@ -15,6 +15,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
@@ -31,6 +32,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using physics::InertiaTensor;
 using quantities::Force;
 using quantities::Mass;
 
@@ -39,7 +41,7 @@ class Part final {
  public:
   Part(PartId part_id,
        std::string const& name,
-       Mass const& mass,
+       InertiaTensor<RigidPart> const& inertia_tensor,
        DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
        std::function<void()> deletion_callback);
 
@@ -49,11 +51,11 @@ class Part final {
 
   PartId part_id() const;
 
-  // Sets or returns the mass.  Event though a part is massless in the sense
-  // that it doesn't exert gravity, it has a mass used to determine its
-  // intrinsic acceleration.
-  void set_mass(Mass const& mass);
-  Mass const& mass() const;
+  // Sets or returns the inertia tensor.  Event though a part is massless in the
+  // sense that it doesn't exert gravity, it has inertia used to determine its
+  // intrinsic acceleration and rotational properties.
+  void set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor);
+  InertiaTensor<RigidPart> const& inertia_tensor() const;
 
   // Clears, increments or returns the intrinsic force exerted on the part by
   // its engines (or a tractor beam).
@@ -123,7 +125,7 @@ class Part final {
  private:
   PartId const part_id_;
   std::string const name_;
-  Mass mass_;
+  InertiaTensor<RigidPart> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
 
   std::shared_ptr<PileUp> containing_pile_up_;

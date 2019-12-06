@@ -11,15 +11,23 @@ namespace ksp_plugin_adapter {
 // Miscellaneous formatting utilities; these are extension methods to make null
 // handling easier, thanks to null-coalescing operators.
 internal static class Formatters {
+  // Formats |value| in "N<fractional_digits>" using the Principia culture.
+  public static string FormatN(this double value, int fractional_digits) {
+    return value.ToString($"N{fractional_digits}", Culture.culture);
+  }
+
+  public static string FormatN(this int value, int fractional_digits) {
+    return value.ToString($"N{fractional_digits}", Culture.culture);
+  }
+
   // Displays an interval as midpoint±half-width.
   public static string FormatInterval(this Interval interval) {
     double half_width = (interval.max - interval.min) / 2;
     double midpoint = interval.min + half_width;
     int fractional_digits =
         Math.Max(0, 1 - (int)Math.Floor(Math.Log10(half_width)));
-    string format = $"N{fractional_digits}";
-    string formatted_midpoint = midpoint.ToString(format, Culture.culture);
-    string formatted_half_width = half_width.ToString(format, Culture.culture);
+    string formatted_midpoint = midpoint.FormatN(fractional_digits);
+    string formatted_half_width = half_width.FormatN(fractional_digits);
     return $"{formatted_midpoint}±{formatted_half_width}";
   }
   
@@ -36,9 +44,8 @@ internal static class Formatters {
     }
     int fractional_digits =
         Math.Max(0, 1 - (int)Math.Floor(Math.Log10(half_width)));
-    string format = $"N{fractional_digits}";
-    string formatted_midpoint = midpoint.ToString(format, Culture.culture);
-    string formatted_half_width = half_width.ToString(format, Culture.culture);
+    string formatted_midpoint = midpoint.FormatN(fractional_digits);
+    string formatted_half_width = half_width.FormatN(fractional_digits);
     return $"{formatted_midpoint}±{formatted_half_width} {unit}";
   }
 
@@ -53,11 +60,9 @@ internal static class Formatters {
     const double degree = Math.PI / 180;
     int fractional_digits =
         Math.Max(0, 1 - (int)Math.Floor(Math.Log10(half_width / degree)));
-    string format = $"N{fractional_digits}";
-    string formatted_midpoint =
-        (midpoint / degree).ToString(format, Culture.culture);
+    string formatted_midpoint = (midpoint / degree).FormatN(fractional_digits);
     string formatted_half_width =
-        (half_width / degree).ToString(format, Culture.culture);
+        (half_width / degree).FormatN(fractional_digits);
     return $"{formatted_midpoint}°±{formatted_half_width}°";
   }
 
@@ -66,9 +71,9 @@ internal static class Formatters {
   public static string FormatEquatorialAngle(this double angle,
                                              CelestialBody primary) {
     const double degree = Math.PI / 180;
-    double degrees = angle / degree;
-    double kilometres = angle * primary.Radius / 1000;
-    return $"{degrees:N1}° ({kilometres:N1} km)".ToString(Culture.culture);
+    string degrees = (angle / degree).FormatN(1);
+    string kilometres = (angle * primary.Radius / 1000).FormatN(1);
+    return $"{degrees}° ({kilometres} km)";
   }
 
   // Similar to |FormatAngleInterval|, but annotated with the equivalent
@@ -81,8 +86,8 @@ internal static class Formatters {
     }
     double half_width_distance = half_width_angle * primary.Radius;
     string formatted_distance = half_width_distance > 1000
-        ? $"{half_width_distance / 1000:N1} km"
-        : $"{half_width_distance:N0} m";
+        ? $"{(half_width_distance / 1000).FormatN(1)} km"
+        : $"{(half_width_distance).FormatN(0)} m";
     return $"{interval.FormatAngleInterval()} ({formatted_distance})";
   }
 
@@ -124,7 +129,7 @@ internal static class Formatters {
     double day = GameSettings.KERBIN_TIME ? 6 * 60 * 60 : 24 * 60 * 60;
     string day_unit = GameSettings.KERBIN_TIME ? "d6" : "d";
     double degrees_per_day = radians_per_second / (degree / day);
-    return $"{degrees_per_day:N2}°/{day_unit}";
+    return $"{degrees_per_day.FormatN(2)}°/{day_unit}";
   }
 
   // Never omit leading 0s (to make keyboard editing easier) but do not show
@@ -250,14 +255,13 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
             ? nodal_revolutions / analysis.recurrence.number_of_revolutions
             : 0;
         string duration_in_ground_track_cycles = ground_track_cycles > 0
-            ? $" ({ground_track_cycles:N0} ground track cycles)"
+            ? $" ({ground_track_cycles.FormatN(0)} ground track cycles)"
             : "";
         duration_in_revolutions = $@"{
-            sidereal_revolutions:N0} sidereal revolutions{"\n"}{
-            nodal_revolutions:N0} nodal revolutions{
+            sidereal_revolutions.FormatN(0)} sidereal revolutions{"\n"}{
+            nodal_revolutions.FormatN(0)} nodal revolutions{
             duration_in_ground_track_cycles}{"\n"}{
-            anomalistic_revolutions:N0} anomalistic revolutions".ToString(
-                Culture.culture);
+            anomalistic_revolutions.FormatN(0)} anomalistic revolutions";
       } else {
         duration_in_revolutions =
             "could not determine elements; mission duration may be shorter " +
@@ -355,8 +359,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
     }
     LabeledField(
         "Subcycle",
-        $@"{recurrence?.subcycle.ToString("N0", Culture.culture) ??
-            em_dash} days");
+        $@"{recurrence?.subcycle.FormatN(0) ?? em_dash} days");
     LabeledField(
         "Equatorial shift",
         recurrence?.equatorial_shift.FormatEquatorialAngle(primary));

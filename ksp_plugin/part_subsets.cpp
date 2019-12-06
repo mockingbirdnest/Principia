@@ -21,7 +21,7 @@ using physics::Ephemeris;
 namespace base {
 
 Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part)
-    : total_mass_(part->mass()),
+    : total_mass_(part->inertia_tensor().mass()),
       total_intrinsic_force_(part->intrinsic_force()) {
   if (part->is_piled_up()) {
     missing_ = part->containing_pile_up()->parts().size() - 1;

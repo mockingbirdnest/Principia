@@ -6,7 +6,8 @@
 #include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 #include "geometry/rotation.hpp"
-#include "inertia_tensor.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -18,6 +19,11 @@ using geometry::Commutator;
 using geometry::Identity;
 using geometry::Rotation;
 using geometry::SymmetricProduct;
+using quantities::Cbrt;
+using quantities::Density;
+using quantities::Pow;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
 
 template<typename Frame>
 InertiaTensor<Frame>::InertiaTensor(
@@ -56,11 +62,11 @@ InertiaTensor<ToFrame> InertiaTensor<Frame>::Transform(
 
 template<typename Frame>
 template<typename PrincipalAxesFrame>
-typename InertiaTensor<Frame>::PrincipalAxes<PrincipalAxesFrame>
+typename InertiaTensor<Frame>::template PrincipalAxes<PrincipalAxesFrame>
 InertiaTensor<Frame>::Diagonalize() const {
   struct IntermediateFrame {};
 
-  auto const eigensystem = form_.Diagonalize<IntermediateFrame>();
+  auto const eigensystem = form_.template Diagonalize<IntermediateFrame>();
 
   // The eigenvalues are {Σx², Σy², Σz²} in increasing order.
   R3x3Matrix<MomentOfInertia> const eigensystem_form_coordinates =
@@ -85,13 +91,47 @@ InertiaTensor<Frame>::Diagonalize() const {
 }
 
 template<typename Frame>
+InertiaTensor<Frame> InertiaTensor<Frame>::MakeWaterSphereInertiaTensor(
+    Mass const& mass) {
+  static constexpr Density ρ_of_water = 1000 * Kilogram / Pow<3>(Metre);
+  static constexpr MomentOfInertia zero;
+  MomentOfInertia const I =
+      Cbrt(9 * Pow<5>(mass) / (250 * Pow<2>(π * ρ_of_water)));
+  return InertiaTensor<Frame>(mass,
+                              R3x3Matrix<MomentOfInertia>({I, zero, zero},
+                                                          {zero, I, zero},
+                                                          {zero, zero, I}),
+                              Frame::origin);
+}
+
+template<typename Frame>
+void InertiaTensor<Frame>::WriteToMessage(
+    not_null<serialization::InertiaTensor*> const message) const {
+  mass_.WriteToMessage(message->mutable_mass());
+  form_.WriteToMessage(message->mutable_form());
+  centre_of_mass_.WriteToMessage(message->mutable_centre_of_mass());
+}
+
+template<typename Frame>
+InertiaTensor<Frame> InertiaTensor<Frame>::ReadFromMessage(
+    serialization::InertiaTensor const& message) {
+  return InertiaTensor(
+      Mass::ReadFromMessage(message.mass()),
+      SymmetricBilinearForm<MomentOfInertia, Frame>::ReadFromMessage(
+          message.form()),
+      Position<Frame>::ReadFromMessage(message.centre_of_mass()));
+}
+
+template<typename Frame>
 InertiaTensor<Frame>::InertiaTensor(
     Mass const& mass,
     SymmetricBilinearForm<MomentOfInertia, Frame> const& form,
     Position<Frame> const& centre_of_mass)
     : mass_(mass),
       form_(form),
-      centre_of_mass_(centre_of_mass) {}
+      centre_of_mass_(centre_of_mass) {
+  CHECK_GT(mass, Mass{});
+}
 
 template<typename Frame>
 SymmetricBilinearForm<MomentOfInertia, Frame>
@@ -108,6 +148,14 @@ InertiaTensor<Frame>::MakeSymmetricBilinearForm(
           {-tensor(2, 0),
            -tensor(2, 1),
            0.5 * (tensor(0, 0) + tensor(1, 1) - tensor(2, 2))}));
+}
+
+template<typename Frame>
+bool operator==(InertiaTensor<Frame> const& left,
+                InertiaTensor<Frame> const& right) {
+  return left.mass_ == right.mass_ &&
+         left.form_ == right.form_ &&
+         left.centre_of_mass_ == right.centre_of_mass_;
 }
 
 template<typename Frame>

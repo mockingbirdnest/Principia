@@ -35,6 +35,7 @@ namespace interface {
 using base::not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
+using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
@@ -133,8 +134,9 @@ template<>
 Velocity<Frenet<NavigationFrame>>
 FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz);
 template<>
-R3Element<MomentOfInertia>
-FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz);
+AngularVelocity<World> FromXYZ(XYZ const& xyz);
+template<>
+R3Element<MomentOfInertia> FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz);
 
 AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&

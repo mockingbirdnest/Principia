@@ -26,6 +26,7 @@ internal class DifferentialSlider : ScalingRenderer {
     field_width_ = field_width;
     unit_ = unit;
     if (formatter == null) {
+      // TODO(egg): Is this just "N3"?
       formatter_ = v => v.ToString("#,0.000", Culture.culture);
     } else {
       formatter_ = formatter;

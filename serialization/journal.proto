@@ -1223,6 +1223,7 @@ message InsertOrKeepLoadedPart {
     required QP main_body_world_degrees_of_freedom = 6;
     required QP part_world_degrees_of_freedom = 7;
     required WXYZ part_rotation = 12;
+    required XYZ part_angular_velocity = 13;
     required double delta_t = 9;
   }
   optional In in = 1;
