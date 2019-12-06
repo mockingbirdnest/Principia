@@ -20,23 +20,29 @@
 
 namespace principia {
 namespace physics {
-namespace internal_rigid_motion {
 
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::InnerProduct;
+using geometry::Normalize;
+using geometry::OrthogonalMap;
 using geometry::Permutation;
 using geometry::Point;
+using geometry::Position;
 using geometry::Rotation;
 using geometry::Quaternion;
 using geometry::Sign;
+using geometry::Vector;
+using geometry::Velocity;
 using geometry::Wedge;
 using quantities::AngularFrequency;
+using quantities::Length;
 using quantities::Speed;
 using quantities::si::Day;
 using quantities::si::Kilo;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
@@ -47,6 +53,13 @@ using testing_utilities::operator""_⑴;
 
 class RigidMotionTest : public testing::Test {
  protected:
+  template<typename FromFrame, typename ToFrame>
+  OrthogonalMap<FromFrame, ToFrame> MakeOrthogonalMap(
+      Sign const& determinant,
+      Rotation<FromFrame, ToFrame> const& rotation) {
+    return OrthogonalMap(determinant, rotation);
+  }
+
   // Our Earth and Moon both run a bit slow.
   AngularFrequency const earth_rotation_speed_ = 2 * π * Radian / Day;
   AngularFrequency const moon_rotation_speed_ = 2 * π * Radian / (30 * Day);
@@ -239,7 +252,7 @@ TEST_F(RigidMotionTest, Serialization) {
   EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 0));
 }
 
-TEST_F(RigidMotionTest, Composition) {
+TEST_F(RigidMotionTest, QuaternionNormalization) {
   using Barycentric =
       Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, false>;
   using RigidPart =
@@ -259,11 +272,15 @@ TEST_F(RigidMotionTest, Composition) {
       World::origin + Displacement<World>({+3.37126515805721283e-02 * Metre,
                                            +1.21778284665197134e-03 * Metre,
                                            -2.06734146922826767e-02 * Metre});
+
+  // Unity gives us quaternions that are normalized in single precision.  If we
+  // don't normalize them in double precision, the tests below fail with huge
+  // errors (orders of magnitude).
   Rotation<RigidPart, World> const rotation1(
-      Quaternion(-3.23732018470764160e-01,
-                 {3.28581303358078003e-01,
-                  -6.28009378910064697e-01,
-                  -6.26766622066497803e-01}));
+      Normalize(Quaternion(-3.23732018470764160e-01,
+                           {3.28581303358078003e-01,
+                            -6.28009378910064697e-01,
+                            -6.26766622066497803e-01})));
 
   RigidMotion<RigidPart, World> const rigid_motion1(
       RigidTransformation<RigidPart, World>(from1, to1, rotation1.Forget()),
@@ -290,8 +307,8 @@ TEST_F(RigidMotionTest, Composition) {
                  {-6.36714825392272976e-01,
                   -3.07561751727498445e-01,
                   +3.07561751727498445e-01}));
-  OrthogonalMap<World, Barycentric> const orthogonal2(Sign::Negative(),
-                                                      rotation2);
+  OrthogonalMap<World, Barycentric> const orthogonal2 =
+      MakeOrthogonalMap(Sign::Negative(), rotation2);
 
   RigidMotion<World, Barycentric> const rigid_motion2(
       RigidTransformation<World, Barycentric>(from2, to2, orthogonal2), ω2, v2);
@@ -312,19 +329,18 @@ TEST_F(RigidMotionTest, Composition) {
   EXPECT_THAT(d2.position() - Barycentric::origin,
               AlmostEquals(d3.position() - Barycentric::origin, 0));
   EXPECT_THAT(d2.velocity(),
-              RelativeErrorFrom(d3.velocity(), IsNear(0.00000001_⑴)));
+              RelativeErrorFrom(d3.velocity(), IsNear(1.1e-12_⑴)));
   EXPECT_THAT(d4.position() - World::origin,
               RelativeErrorFrom(d1.position() - World::origin,
                                 IsNear(5.8e-6_⑴)));
   EXPECT_THAT(d4.velocity(),
-              RelativeErrorFrom(d1.velocity(), IsNear(0.00000001_⑴)));
+              RelativeErrorFrom(d1.velocity(), IsNear(2.7e-6_⑴)));
   EXPECT_THAT(d5.position() - World::origin,
               RelativeErrorFrom(d1.position() - World::origin,
                                 IsNear(5.8e-6_⑴)));
   EXPECT_THAT(d5.velocity(),
-              RelativeErrorFrom(d1.velocity(), IsNear(6.2e-8_⑴)));
+              RelativeErrorFrom(d1.velocity(), IsNear(5.7e-8_⑴)));
 }
 
-}  // namespace internal_rigid_motion
 }  // namespace physics
 }  // namespace principia
