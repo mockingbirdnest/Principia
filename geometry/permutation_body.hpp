@@ -201,13 +201,13 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Permutation<FromFrame, ToFrame> const& permutation) {
   using PFT = Permutation<FromFrame, ToFrame>;
-  static std::map<PFT::CoordinatePermutation, std::string> const debug_string =
-      {{PFT::XYZ, "XYZ"},
-       {PFT::YZX, "YZX"},
-       {PFT::ZXY, "ZXY"},
-       {PFT::XZY, "XZY"},
-       {PFT::ZYX, "ZYX"},
-       {PFT::YXZ, "YXZ"}};
+  static std::map<typename PFT::CoordinatePermutation, std::string> const
+      debug_string = {{PFT::XYZ, "XYZ"},
+                      {PFT::YZX, "YZX"},
+                      {PFT::ZXY, "ZXY"},
+                      {PFT::XZY, "XZY"},
+                      {PFT::ZYX, "ZYX"},
+                      {PFT::YXZ, "YXZ"}};
   return out << debug_string.at(permutation.coordinate_permutation_);
 }
 
