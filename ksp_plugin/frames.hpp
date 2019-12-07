@@ -66,8 +66,9 @@ using Navigation = Frame<serialization::Frame::PluginTag,
 // The plotting frame, but with the y and z axes swapped compared to
 // |Navigation| (the basis is left-handed).  This frame defines the camera
 // horizontal, and its rotation defines the rotation of the camera.
-using CameraReference =  // TODO(egg): a new tag.
-    Frame<serialization::Frame::PluginTag, serialization::Frame::CAMERA, false>;
+using CameraReference = Frame<serialization::Frame::PluginTag,
+                              serialization::Frame::CAMERA_REFERENCE,
+                              false>;
 
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences
