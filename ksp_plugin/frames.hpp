@@ -65,7 +65,10 @@ using Navigation = Frame<serialization::Frame::PluginTag,
 
 // The plotting frame, but with the y and z axes swapped compared to
 // |Navigation| (the basis is left-handed).  This frame defines the camera
-// horizontal, and its rotation defines the rotation of the camera.
+// horizontal, and its angular velocity defines the angular velocity of the
+// camera (note that the linear motion of the camera is defined in-game by
+// following a specific target, which may be in motion with respect to
+// |CameraReference|, so the camera is not necessarily at rest in that frame).
 using CameraReference = Frame<serialization::Frame::PluginTag,
                               serialization::Frame::CAMERA_REFERENCE,
                               false>;
