@@ -729,9 +729,13 @@ public partial class PrincipiaPluginAdapter
     PlanetariumCamera.fetch.GetPivot().rotation =
         reference_rotation *
         (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation;
-    ScaledCamera.Instance.galaxyCamera.transform.rotation =
-        reference_rotation *
-        (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.rotation;
+    // The galaxy camera also renders the galaxy cube outside map view; it
+    // should not be rotated there.
+    if (MapView.MapIsEnabled) {
+      ScaledCamera.Instance.galaxyCamera.transform.rotation =
+          reference_rotation *
+          (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.rotation;
+    }
   }
 
   private void LateUpdate() {
