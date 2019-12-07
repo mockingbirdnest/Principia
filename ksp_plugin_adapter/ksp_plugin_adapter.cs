@@ -690,15 +690,48 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  bool should_transfer_camera_coordinates_ = false;
+  UnityEngine.QuaternionD previous_reference_rotation_;
+
   private void TiltTheCamera() {
+    var reference_rotation =
+        (UnityEngine.QuaternionD)plugin_.CameraReferenceRotation();
+    if (should_transfer_camera_coordinates_) {
+      UnityEngine.QuaternionD previous_referenced_pivot =
+          previous_reference_rotation_ *
+          (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation;
+      // Note that we use a single-precision quaternion here because the
+      // double-precision one that comes with KSP does not implement Euler
+      // angles.
+      UnityEngine.Quaternion new_dereferenced_pivot =
+          UnityEngine.QuaternionD.Inverse(reference_rotation) *
+          previous_referenced_pivot;
+      const double degree = Math.PI / 180;
+      double new_heading =
+          (new_dereferenced_pivot.eulerAngles.y -
+           Planetarium.InverseRotAngle) * degree;
+      double new_pitch = new_dereferenced_pivot.eulerAngles.x * degree;
+      UnityEngine.Debug.LogError(
+        $"FROM: {PlanetariumCamera.fetch.camHdg}, {PlanetariumCamera.fetch.camPitch}\n"+
+        $"=== {PlanetariumCamera.fetch.GetPivot().rotation.eulerAngles}\n"+
+        $"TO: {new_heading}, {new_pitch}\n"+
+        $"=== {new_dereferenced_pivot.eulerAngles}\n");
+      PlanetariumCamera.fetch.camHdg = (float)new_heading;
+      PlanetariumCamera.fetch.camPitch = (float)new_pitch;
+      var new_reference_rotation = reference_rotation;
+      // Use the old reference rotation for this frame: since the change to
+      // camera heading and pitch has yet to take effect, the new one would
+      // result in a weird orientation for one frame.
+      reference_rotation = previous_reference_rotation_;
+      should_transfer_camera_coordinates_ = false;
+    }
+    previous_reference_rotation_ = reference_rotation;
     PlanetariumCamera.fetch.GetPivot().rotation =
-     (UnityEngine.QuaternionD)plugin_.CelestialRotation(
-                plotting_frame_selector_.selected_celestial.flightGlobalsIndex) *
-     (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation;
+        reference_rotation *
+        (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation;
     ScaledCamera.Instance.galaxyCamera.transform.rotation =
-     (UnityEngine.QuaternionD)plugin_.CelestialRotation(
-                plotting_frame_selector_.selected_celestial.flightGlobalsIndex) *
-     (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.rotation;
+        reference_rotation *
+        (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.rotation;
   }
 
   private void LateUpdate() {
@@ -2145,6 +2178,7 @@ public partial class PrincipiaPluginAdapter
     }
     navball_changed_ = true;
     reset_rsas_target_ = true;
+    should_transfer_camera_coordinates_ = true;
   }
 
   private static void InitializeIntegrators(
