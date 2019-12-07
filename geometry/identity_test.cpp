@@ -143,5 +143,11 @@ TEST_F(IdentityTest, SerializationSuccess) {
   EXPECT_THAT(id12a(vector_), id12b(vector_));
 }
 
+TEST_F(IdentityTest, Output) {
+  using Id12 = Identity<World1, World2>;
+  Id12 id12;
+  std::cout << id12 << "\n";
+}
+
 }  // namespace geometry
 }  // namespace principia

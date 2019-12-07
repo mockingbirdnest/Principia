@@ -246,14 +246,19 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   friend Rotation<From, To> operator*(Rotation<Through, To> const& left,
                                       Rotation<From, Through> const& right);
 
-  friend std::ostream& operator<<<>(std::ostream& out,
-                                    Rotation const& rotation);
+  template<typename From, typename To>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  Rotation<From, To> const& rotation);
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right);
+
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         Rotation<FromFrame, ToFrame> const& rotation);
 
 }  // namespace internal_rotation
 

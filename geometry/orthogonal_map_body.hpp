@@ -120,6 +120,14 @@ OrthogonalMap<FromFrame, ToFrame> operator*(
              left.rotation_ * right.rotation_);
 }
 
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(
+    std::ostream& out,
+    OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map) {
+  return out << "{determinant: " << orthogonal_map.Determinant()
+             << ", rotation: " << orthogonal_map.rotation() << "}";
+}
+
 }  // namespace internal_orthogonal_map
 }  // namespace geometry
 }  // namespace principia

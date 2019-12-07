@@ -4,6 +4,7 @@
 #include "geometry/quaternion.hpp"
 
 #include "geometry/r3_element.hpp"
+#include "geometry/sign.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
@@ -11,6 +12,7 @@ namespace principia {
 namespace geometry {
 namespace internal_quaternion {
 
+using quantities::Abs;
 using quantities::DebugString;
 using quantities::Sqrt;
 
@@ -158,10 +160,21 @@ inline Quaternion Normalize(Quaternion const& quaternion) {
 
 inline std::ostream& operator<<(std::ostream& out,
                                 Quaternion const& quaternion) {
-  return out << DebugString(quaternion.real_part()) << " + "
-             << DebugString(quaternion.imaginary_part().x) << " i + "
-             << DebugString(quaternion.imaginary_part().y) << " j + "
-             << DebugString(quaternion.imaginary_part().z) << " k";
+  double const w = quaternion.real_part();
+  double const x = quaternion.imaginary_part().x;
+  double const y = quaternion.imaginary_part().y;
+  double const z = quaternion.imaginary_part().z;
+
+  auto const unsigned_debug_string = [](double const d) {
+    std::string const s = DebugString(Abs(d));
+    CHECK_EQ('+', s[0]);
+    return s.substr(1);
+  };
+
+  return out << w << " "
+             << Sign(x) << " " << unsigned_debug_string(x) << " i "
+             << Sign(y) << " " << unsigned_debug_string(y) << " j "
+             << Sign(z) << " " << unsigned_debug_string(z) << " k";
 }
 
 }  // namespace internal_quaternion
