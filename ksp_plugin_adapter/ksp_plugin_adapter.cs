@@ -711,11 +711,11 @@ public partial class PrincipiaPluginAdapter
           (new_dereferenced_pivot.eulerAngles.y -
            Planetarium.InverseRotAngle) * degree;
       double new_pitch = new_dereferenced_pivot.eulerAngles.x * degree;
-      UnityEngine.Debug.LogError(
-        $"FROM: {PlanetariumCamera.fetch.camHdg}, {PlanetariumCamera.fetch.camPitch}\n"+
-        $"=== {PlanetariumCamera.fetch.GetPivot().rotation.eulerAngles}\n"+
-        $"TO: {new_heading}, {new_pitch}\n"+
-        $"=== {new_dereferenced_pivot.eulerAngles}\n");
+      // TODO(egg): we are completely discarding camera roll (z) here.
+      // The camera cannot be given nonzero roll by camera controls, but it may
+      // be a good idea to smoothly bring it to 0 over the course of a few
+      // frames to make the change in orientation more obvious (especially if it
+      // is a large change, e.g. Earth equator to Uranus equator).
       PlanetariumCamera.fetch.camHdg = (float)new_heading;
       PlanetariumCamera.fetch.camPitch = (float)new_pitch;
       var new_reference_rotation = reference_rotation;
