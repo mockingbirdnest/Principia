@@ -99,6 +99,12 @@ Identity<FromFrame, ToFrame> operator*(
   return Identity<FromFrame, ToFrame>();
 }
 
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         Identity<FromFrame, ToFrame> const& identity) {
+  return out << u8"𝟙";
+}
+
 }  // namespace internal_identity
 }  // namespace geometry
 }  // namespace principia

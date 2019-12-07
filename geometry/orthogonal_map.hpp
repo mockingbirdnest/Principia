@@ -106,6 +106,11 @@ OrthogonalMap<FromFrame, ToFrame> operator*(
     OrthogonalMap<ThroughFrame, ToFrame> const& left,
     OrthogonalMap<FromFrame, ThroughFrame> const& right);
 
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(
+    std::ostream& out,
+    OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map);
+
 }  // namespace internal_orthogonal_map
 
 using internal_orthogonal_map::OrthogonalMap;

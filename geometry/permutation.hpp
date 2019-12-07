@@ -91,12 +91,20 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   friend Permutation<From, To> operator*(
       Permutation<Through, To> const& left,
       Permutation<From, Through> const& right);
+
+  template<typename From, typename To>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  Permutation<From, To> const& permutation);
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame> operator*(
     Permutation<ThroughFrame, ToFrame> const& left,
     Permutation<FromFrame, ThroughFrame> const& right);
+
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         Permutation<FromFrame, ToFrame> const& permutation);
 
 }  // namespace internal_permutation
 
