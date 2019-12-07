@@ -345,7 +345,12 @@ inline RelativeDegreesOfFreedom<World> FromQP(QP const& qp) {
 }
 
 inline Quaternion FromWXYZ(WXYZ const& wxyz) {
-  return Quaternion{wxyz.w, {wxyz.x, wxyz.y, wxyz.z}};
+  // It is critical to normalize the quaternion that we receive from Unity: it
+  // is normalized in *single* precision, which is fine for KSP where the moving
+  // origin of World ensures that coordinates are never very large.  But in the
+  // C++ code we do some computations in Barycentric, which typically results in
+  // large coordinates for which we need normalization in *double* precision.
+  return Normalize(Quaternion{wxyz.w, {wxyz.x, wxyz.y, wxyz.z}});
 }
 
 inline R3Element<double> FromXYZ(XYZ const& xyz) {

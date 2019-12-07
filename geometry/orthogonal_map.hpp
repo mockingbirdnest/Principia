@@ -10,6 +10,11 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
+
+namespace physics {
+class RigidMotionTest;
+}  // namespace physics
+
 namespace geometry {
 
 FORWARD_DECLARE_FROM(identity,
@@ -91,6 +96,9 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
       OrthogonalMap<From, Through> const& right);
 
   friend class OrthogonalMapTest;
+
+  // TODO(phl): This friendship could be avoided if we had symmetries.
+  friend class physics::RigidMotionTest;
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

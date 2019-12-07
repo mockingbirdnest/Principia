@@ -56,6 +56,7 @@ message Part {
   required Multivector intrinsic_force = 5;
   optional int32 containing_pile_up = 6;
   optional Pair degrees_of_freedom = 1;
+  optional RigidMotion rigid_motion = 11;  // Added in Fréchet.
   required DiscreteTrajectory prehistory = 7;
   optional bool tail_is_authoritative = 8;  // Pre-Cesàro.
 
