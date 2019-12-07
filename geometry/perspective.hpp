@@ -83,7 +83,16 @@ class Perspective final {
   RigidTransformation<FromFrame, ToFrame> const to_camera_;
   Position<FromFrame> const camera_;
   Length const focal_;
+
+  template<typename From, typename To>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  Perspective<From, To> const& perspective);
 };
+
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(
+    std::ostream& out,
+    Perspective<FromFrame, ToFrame> const& perspective);
 
 }  // namespace internal_perspective
 

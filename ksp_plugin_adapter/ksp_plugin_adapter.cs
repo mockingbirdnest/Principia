@@ -216,13 +216,16 @@ public partial class PrincipiaPluginAdapter
           "The Principia DLL failed to load.\n" + load_error;
       bad_installation_dialog_.Show();
     }
-#if KSP_VERSION_1_7_3
+#if KSP_VERSION_1_8_1
+    if (!(Versioning.version_major == 1 &&
+          (Versioning.version_minor == 8 && Versioning.Revision == 1))) {
+      string expected_version = "1.8.1";
+#elif KSP_VERSION_1_7_3
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 6 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 7 && Versioning.Revision <= 3))) {
-      string expected_version =
-          "1.7.3, 1.7.2, 1.7.1, 1.7.0, 1.6.1, and 1.5.1";
+      string expected_version = "1.7.3, 1.7.2, 1.7.1, 1.7.0, 1.6.1, and 1.5.1";
 #endif
       string message = $@"Unexpected KSP version {Versioning.version_major}.{
           Versioning.version_minor}.{Versioning.Revision}; this build targets {
@@ -467,10 +470,8 @@ public partial class PrincipiaPluginAdapter
         path;
     if (File.Exists(full_path)) {
       var texture2d = new UnityEngine.Texture2D(2, 2);
-#if KSP_VERSION_1_7_3
       bool success = UnityEngine.ImageConversion.LoadImage(
           texture2d, File.ReadAllBytes(full_path));
-#endif
       if (!success) {
         Log.Fatal("Failed to load texture " + full_path);
       }
@@ -1056,7 +1057,11 @@ public partial class PrincipiaPluginAdapter
             plugin_.ReportGroundCollision(
                 closest_physical_parent(part1).flightID);
           }
+#if KSP_VERSION_1_8_1
+          foreach (var collider in part1.currentCollisions.Keys) {
+#elif KSP_VERSION_1_7_3
           foreach (var collider in part1.currentCollisions) {
+#endif
             if (collider == null) {
               // This happens, albeit quite rarely, see #1447.  When it happens,
               // the null collider remains in |currentCollisions| until the next

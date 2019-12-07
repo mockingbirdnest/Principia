@@ -185,6 +185,13 @@ TEST_F(PerspectiveTest, SphereSin²HalfAngle) {
               AlmostEquals(0.0001, 0));
 }
 
+TEST_F(PerspectiveTest, Output) {
+  Perspective<World, Camera> perspective(
+      RigidTransformation<World, Camera>::Identity(),
+      /*focal=*/1 * Metre);
+  std::cout << perspective << "\n";
+}
+
 class VisibleSegmentsTest : public PerspectiveTest {
  protected:
   VisibleSegmentsTest()
@@ -606,6 +613,7 @@ TEST_F(VisibleSegmentsTest, MultipleSpheres) {
   EXPECT_THAT(perspective_.VisibleSegments(segment, {sphere_, sphere2}),
               SizeIs(3));
 }
+
 }  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia

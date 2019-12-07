@@ -165,6 +165,10 @@ TEST_F(OrthogonalMapTest, SerializationSuccess) {
   EXPECT_EQ(orthogonal_a_(vector_), o(vector_));
 }
 
+TEST_F(OrthogonalMapTest, Output) {
+  std::cout << orthogonal_a_ << "\n";
+}
+
 }  // namespace internal_orthogonal_map
 }  // namespace geometry
 }  // namespace principia

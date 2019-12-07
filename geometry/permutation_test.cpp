@@ -219,5 +219,16 @@ TEST_F(PermutationTest, SerializationSuccess) {
   }
 }
 
+TEST_F(PermutationTest, Output) {
+  std::vector<Perm::CoordinatePermutation> const all12 =
+      {Perm::XYZ, Perm::YZX, Perm::ZXY,
+       Perm::XZY, Perm::ZYX, Perm::YXZ};
+  serialization::LinearMap message;
+  for (Perm::CoordinatePermutation const cp : all12) {
+    Perm const perm(cp);
+    std::cout << perm << "\n";
+  }
+}
+
 }  // namespace geometry
 }  // namespace principia

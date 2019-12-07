@@ -69,6 +69,10 @@ Identity<FromFrame, ToFrame> operator*(
     Identity<ThroughFrame, ToFrame> const& left,
     Identity<FromFrame, ThroughFrame> const& right);
 
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         Identity<FromFrame, ToFrame> const& identity);
+
 }  // namespace internal_identity
 
 using internal_identity::Identity;

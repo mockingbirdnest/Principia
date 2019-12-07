@@ -138,5 +138,15 @@ TEST_F(AffineMapTest, Serialization) {
             map2(front_left_top_) - origin_);
 }
 
+TEST_F(AffineMapTest, Output) {
+  Rot const rotate_left(π / 2 * Radian,
+                        Bivector<Length, World>(upward_.coordinates()));
+  RigidTransformation const affine_map =
+      RigidTransformation(back_right_bottom_,
+                          front_right_bottom_,
+                          rotate_left);
+  std::cout << affine_map << "\n";
+}
+
 }  // namespace geometry
 }  // namespace principia
