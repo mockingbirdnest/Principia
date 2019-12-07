@@ -3,6 +3,8 @@
 
 #include "geometry/quaternion.hpp"
 
+#include <string>
+
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
 #include "quantities/elementary_functions.hpp"

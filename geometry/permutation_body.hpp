@@ -2,6 +2,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 #include <utility>
 
 #include "geometry/grassmann.hpp"
