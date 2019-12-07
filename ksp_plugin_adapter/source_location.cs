@@ -4,10 +4,14 @@
 
 namespace System.Runtime.CompilerServices {
 
+#if KSP_VERSION_1_7_3
+
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
 public sealed class CallerFilePathAttribute : Attribute {}
 
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
 public sealed class CallerLineNumberAttribute : Attribute {}
+
+#endif
 
 }  // namespace System.Runtime.CompilerServices
