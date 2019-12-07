@@ -4,10 +4,15 @@
 #include "geometry/quaternion.hpp"
 
 #include "geometry/r3_element.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_quaternion {
+
+using quantities::DebugString;
+using quantities::Sqrt;
 
 inline Quaternion::Quaternion() : real_part_(0) {}
 
@@ -26,6 +31,14 @@ inline double Quaternion::real_part() const {
 inline R3Element<double> const&
 Quaternion::imaginary_part() const {
   return imaginary_part_;
+}
+
+inline double Quaternion::Norm() const {
+  return Sqrt(Norm²());
+}
+
+inline double Quaternion::Norm²() const {
+  return real_part_ * real_part_ + imaginary_part_.Norm²();
 }
 
 inline Quaternion Quaternion::Conjugate() const {
@@ -139,12 +152,16 @@ inline Quaternion operator/(Quaternion const& left, double const right) {
                     left.imaginary_part() / right);
 }
 
+inline Quaternion Normalize(Quaternion const& quaternion) {
+  return quaternion / quaternion.Norm();
+}
+
 inline std::ostream& operator<<(std::ostream& out,
                                 Quaternion const& quaternion) {
-  return out << quaternion.real_part() << " + "
-             << quaternion.imaginary_part().x << " i + "
-             << quaternion.imaginary_part().y << " j + "
-             << quaternion.imaginary_part().z << " k";
+  return out << DebugString(quaternion.real_part()) << " + "
+             << DebugString(quaternion.imaginary_part().x) << " i + "
+             << DebugString(quaternion.imaginary_part().y) << " j + "
+             << DebugString(quaternion.imaginary_part().z) << " k";
 }
 
 }  // namespace internal_quaternion
