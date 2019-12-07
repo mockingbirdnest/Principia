@@ -692,25 +692,41 @@ public partial class PrincipiaPluginAdapter
 
   bool should_transfer_camera_coordinates_ = false;
   UnityEngine.QuaternionD previous_reference_rotation_;
+  double camera_roll_ = 0;
 
   private void TiltTheCamera() {
+    const double degree = Math.PI / 180;
     var reference_rotation =
         (UnityEngine.QuaternionD)plugin_.CameraReferenceRotation();
+    var camera_roll = UnityEngine.QuaternionD.AngleAxis(camera_roll_ / degree,
+                                                        Vector3d.forward);
     if (should_transfer_camera_coordinates_) {
       UnityEngine.QuaternionD previous_referenced_pivot =
           previous_reference_rotation_ *
-          (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation;
+          (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation *
+          camera_roll;
       // Note that we use a single-precision quaternion here because the
       // double-precision one that comes with KSP does not implement Euler
       // angles.
       UnityEngine.Quaternion new_dereferenced_pivot =
           UnityEngine.QuaternionD.Inverse(reference_rotation) *
           previous_referenced_pivot;
-      const double degree = Math.PI / 180;
       double new_heading =
           (new_dereferenced_pivot.eulerAngles.y -
            Planetarium.InverseRotAngle) * degree;
       double new_pitch = new_dereferenced_pivot.eulerAngles.x * degree;
+      camera_roll_ =
+          ((new_dereferenced_pivot.eulerAngles.z + 180) % 360 - 180) * degree;
+      // Unity has a very mad Euler angle convention that has pitch in
+      // [0, π/2] ∪ [3π/2, 2π].
+      if (new_pitch > Math.PI) {
+        new_pitch -= 2 * Math.PI;
+      }
+       UnityEngine.Debug.LogError(
+        $"FROM: {PlanetariumCamera.fetch.camHdg/degree}, {PlanetariumCamera.fetch.camPitch/degree}\n"+
+        $"=== {PlanetariumCamera.fetch.GetPivot().rotation.eulerAngles}\n"+
+        $"TO: {new_heading/degree}, {new_pitch/degree}, {camera_roll_/degree}\n"+
+        $"=== {new_dereferenced_pivot.eulerAngles}\n");
       // TODO(egg): we are completely discarding camera roll (z) here.
       // The camera cannot be given nonzero roll by camera controls, but it may
       // be a good idea to smoothly bring it to 0 over the course of a few
@@ -718,23 +734,35 @@ public partial class PrincipiaPluginAdapter
       // is a large change, e.g. Earth equator to Uranus equator).
       PlanetariumCamera.fetch.camHdg = (float)new_heading;
       PlanetariumCamera.fetch.camPitch = (float)new_pitch;
-      var new_reference_rotation = reference_rotation;
       // Use the old reference rotation for this frame: since the change to
       // camera heading and pitch has yet to take effect, the new one would
-      // result in a weird orientation for one frame.
+      // result in a weird orientation for one frame.  Similarly, we keep the
+      // existing |camera_roll|.
       reference_rotation = previous_reference_rotation_;
       should_transfer_camera_coordinates_ = false;
     }
     previous_reference_rotation_ = reference_rotation;
     PlanetariumCamera.fetch.GetPivot().rotation =
         reference_rotation *
-        (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation;
+        (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation *
+        camera_roll;
     // The galaxy camera also renders the galaxy cube outside map view; it
     // should not be rotated there.
     if (MapView.MapIsEnabled) {
       ScaledCamera.Instance.galaxyCamera.transform.rotation =
           reference_rotation *
-          (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.rotation;
+          (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.rotation *
+          camera_roll;
+    }
+    if (camera_roll_ != 0) {
+      // TODO(egg): Should we be doing this in LateUpdate?
+      const double roll_change_per_frame = 0.1;
+      if (Math.Abs(camera_roll_) < roll_change_per_frame) {
+        camera_roll_ = 0;
+      } else {
+        camera_roll_ += camera_roll_ > 0 ? -roll_change_per_frame
+                                         : roll_change_per_frame;
+      }
     }
   }
 
