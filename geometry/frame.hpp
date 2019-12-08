@@ -26,6 +26,11 @@ enum class Handedness {
   Right,
 };
 
+// The frame is serializable if and only if FrameTag is a protocol buffer enum.
+// To declare a local frame that does not need serialization, use the following
+// pattern:
+//   using MyFrame = Frame<enum class MyFrame>;
+// By default, the frame is non-inertial and right-handed.
 template<typename FrameTag,
          FrameTag tag_ = FrameTag{},
          Inertia inertia_ = NonInertial,

@@ -21,14 +21,14 @@ class FrameTest : public testing::Test {
                        Handedness::Right>;
   using World3 = Frame<serialization::Frame::TestTag,
                        serialization::Frame::TEST1,
-                       Inertial,
+                       NonInertial,
                        Handedness::Right>;
   using World4 = Frame<serialization::Frame::SolarSystemTag,
                        serialization::Frame::ICRS,
                        Inertial,
                        Handedness::Right>;
-  using F1 = Frame<enum class f1>;
-  using F2 = Frame<enum class f2>;
+  using F1 = Frame<enum class F1>;
+  using F2 = Frame<enum class F2>;
   static_assert(!std::is_same_v<F1, F2>);
 };
 
