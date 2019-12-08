@@ -78,8 +78,6 @@ using ::testing::_;
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
  public:
-  using RigidPileUp = PileUp::RigidPileUp;
-
   using PileUp::PileUp;
   using PileUp::DeformPileUpIfNeeded;
   using PileUp::AdvanceTime;
@@ -110,8 +108,6 @@ class TestablePileUp : public PileUp {
 
 class PileUpTest : public testing::Test {
  protected:
-  using RigidPileUp = TestablePileUp::RigidPileUp;
-
   PileUpTest()
       : inertia_tensor1_(
             InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(mass1_)),
