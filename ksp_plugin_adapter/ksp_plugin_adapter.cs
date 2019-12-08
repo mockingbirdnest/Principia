@@ -719,9 +719,8 @@ public partial class PrincipiaPluginAdapter
       UnityEngine.Quaternion new_dereferenced_pivot =
           UnityEngine.QuaternionD.Inverse(reference_rotation) *
           previous_referenced_pivot;
-      double new_heading =
-          (new_dereferenced_pivot.eulerAngles.y -
-           Planetarium.InverseRotAngle) * degree;
+      double new_heading = (new_dereferenced_pivot.eulerAngles.y -
+                            Planetarium.InverseRotAngle) * degree;
       double new_pitch = new_dereferenced_pivot.eulerAngles.x * degree;
       // The camera cannot be given nonzero roll by camera controls, but we
       // smoothly bring its roll to 0 over the course of a few frames to make
@@ -759,7 +758,7 @@ public partial class PrincipiaPluginAdapter
     }
     if (camera_roll_ != 0) {
       // TODO(egg): Should we be doing this in LateUpdate?
-      const double roll_change_per_frame = 0.1;
+      const double roll_change_per_frame = 0.1 /*radians*/;
       if (Math.Abs(camera_roll_) < roll_change_per_frame) {
         camera_roll_ = 0;
       } else {
@@ -1760,8 +1759,6 @@ public partial class PrincipiaPluginAdapter
           (UnityEngine.QuaternionD)
               GalaxyCubeControl.Instance.transform.rotation;
       GalaxyCubeControl.Instance.transform.rotation =
-          /*(UnityEngine.QuaternionD.Inverse(plugin_.CelestialRotation(
-              plotting_frame_selector_.selected_celestial.flightGlobalsIndex))) **/
           (UnityEngine.QuaternionD)plugin_.CelestialSphereRotation() *
           initial_rotation;
     }

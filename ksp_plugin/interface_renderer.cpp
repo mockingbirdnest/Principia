@@ -137,8 +137,7 @@ void __cdecl principia__SetTargetVessel(Plugin* const plugin,
   return m.Return();
 }
 
-WXYZ __cdecl principia__CameraReferenceRotation(
-    Plugin* const plugin) {
+WXYZ __cdecl principia__CameraReferenceRotation(Plugin* const plugin) {
   journal::Method<journal::CameraReferenceRotation> m({plugin});
   CHECK_NOTNULL(plugin);
   return m.Return(
