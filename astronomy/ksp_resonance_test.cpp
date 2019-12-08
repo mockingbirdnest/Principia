@@ -30,6 +30,7 @@ using base::OFStream;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
@@ -73,7 +74,7 @@ class KSPResonanceTest : public ::testing::Test {
  protected:
   using KSP = Frame<serialization::Frame::TestTag,
                     serialization::Frame::TEST,
-                    /*frame_is_inertial=*/true>;
+                    Inertial>;
 
   using Periods = std::map<not_null<MassiveBody const*>, Time>;
 

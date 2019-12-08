@@ -49,8 +49,7 @@ using ::testing::Eq;
 
 class ApsidesTest : public ::testing::Test {
  protected:
-  using World =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, true>;
+  using World = Frame<enum class WorldTag>;
 };
 
 #if !defined(_DEBUG)

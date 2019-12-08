@@ -17,6 +17,7 @@ using astronomy::InfinitePast;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::InnerProduct;
 using geometry::OrthogonalMap;
 using geometry::Position;
@@ -31,10 +32,11 @@ using testing_utilities::Componentwise;
 
 namespace {
 
-using Circular =
-    Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
-using Helical =
-    Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, true>;
+enum class CircularTag;
+using Circular = Frame<CircularTag, CircularTag{}, Inertial>;
+
+enum class HelicalTag;
+using Helical = Frame<HelicalTag, HelicalTag{}, Inertial>;
 
 Vector<Acceleration, Circular> Gravity(Instant const& t,
                                        Position<Circular> const& q) {

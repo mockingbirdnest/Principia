@@ -180,9 +180,7 @@ class PileUp {
   // The origin of |RigidPileUp| is the centre of mass of the pile up.
   // Its axes are those of Barycentric for now; eventually we will probably want
   // to use the inertia ellipsoid.
-  using RigidPileUp = Frame<serialization::Frame::PluginTag,
-                            serialization::Frame::RIGID_PILE_UP,
-                            /*frame_is_inertial=*/false>;
+  using RigidPileUp = Frame<enum class RigidPileUpTag>;
 
   PartTo<DegreesOfFreedom<RigidPileUp>> actual_part_degrees_of_freedom_;
   PartTo<DegreesOfFreedom<ApparentBubble>> apparent_part_degrees_of_freedom_;

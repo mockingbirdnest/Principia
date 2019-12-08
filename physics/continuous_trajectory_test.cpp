@@ -32,6 +32,7 @@ namespace internal_continuous_trajectory {
 
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Velocity;
 using numerics::Polynomial;
 using numerics::PolynomialInMonomialBasis;
@@ -151,8 +152,8 @@ void TestableContinuousTrajectory<Frame>::ResetBestNewhallApproximation() {
 
 class ContinuousTrajectoryTest : public testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, true>;
+  enum class WorldTag;
+  using World = Frame<WorldTag, WorldTag{}, Inertial>;
 
   void FillTrajectory(
       int const number_of_steps,

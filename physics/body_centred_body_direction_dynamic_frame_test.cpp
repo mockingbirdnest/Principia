@@ -69,10 +69,8 @@ char constexpr small[] = "Small";
 class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the big body and directed to the small one.
-  using BigSmallFrame = Frame<serialization::Frame::TestTag,
-                              serialization::Frame::TEST, /*inertial=*/false>;
-  using MockFrame = Frame<serialization::Frame::TestTag,
-                          serialization::Frame::TEST1, /*inertial=*/false>;
+  using BigSmallFrame = Frame<enum class BigSmallFrameTag>;
+  using MockFrame = Frame<enum class MockFrameTag>;
 
   BodyCentredBodyDirectionDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),

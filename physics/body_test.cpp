@@ -34,6 +34,7 @@ using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::Normalize;
 using geometry::OrientedAngleBetween;
@@ -67,8 +68,8 @@ using ::testing::NotNull;
 
 class BodyTest : public testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+  enum class WorldTag;
+  using World = Frame<WorldTag, WorldTag{}, Inertial>;
 
   // We need that so the comma doesn't get caught in macros.
   using Direction = Vector<double, World>;

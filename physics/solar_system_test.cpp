@@ -18,6 +18,7 @@ namespace internal_solar_system {
 
 using astronomy::ICRS;
 using base::Fingerprint2011;
+using geometry::Inertial;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::si::Day;
@@ -101,9 +102,8 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
 }
 
 TEST_F(SolarSystemTest, KSPSystem) {
-  using KSP = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST,
-                    /*frame_is_inertial=*/true>;
+  enum class KSPTag;
+  using KSP = Frame<KSPTag, KSPTag{}, Inertial>;
 
   SolarSystem<KSP> solar_system(
       SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",

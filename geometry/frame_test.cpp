@@ -27,9 +27,14 @@ class FrameTest : public testing::Test {
                        serialization::Frame::ICRS,
                        Inertial,
                        Handedness::Right>;
-  using F1 = Frame<enum class F1>;
-  using F2 = Frame<enum class F2>;
+
+  using F1 = Frame<enum class F1Tag>;
+  using F2 = Frame<enum class F2Tag>;
+  enum class F3Tag;
+  using F3 = Frame<F3Tag, F3Tag{}, Inertial>;
   static_assert(!std::is_same_v<F1, F2>);
+  static_assert(!std::is_same_v<F1, F3>);
+  static_assert(!std::is_same_v<F2, F3>);
 };
 
 using FrameDeathTest = FrameTest;

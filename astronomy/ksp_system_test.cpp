@@ -28,6 +28,7 @@ using base::not_null;
 using base::OFStream;
 using geometry::BarycentreCalculator;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
@@ -66,7 +67,7 @@ namespace astronomy {
 
 using KSP = Frame<serialization::Frame::TestTag,
                   serialization::Frame::TEST,
-                  /*frame_is_inertial=*/true>;
+                  Inertial>;
 
 class KSPSystem {
  protected:

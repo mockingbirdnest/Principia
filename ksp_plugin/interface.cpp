@@ -853,8 +853,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
 
   // We build the inertia tensor in the principal axes and then transform it to
   // World.
-  using PartPrincipalAxes = Frame<serialization::Frame::PhysicsTag,
-                                  serialization::Frame::PRINCIPAL_AXES, false>;
+  using PartPrincipalAxes = Frame<enum class PartPrincipalAxesTag>;
 
   static constexpr MomentOfInertia zero;
   static constexpr double to_si_unit =

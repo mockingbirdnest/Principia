@@ -24,6 +24,7 @@ namespace physics {
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::InnerProduct;
 using geometry::Normalize;
 using geometry::OrthogonalMap;
@@ -67,24 +68,22 @@ class RigidMotionTest : public testing::Test {
   // Nonrotating frame fixing the centre of the Earth.  The North pole is the
   // positive z axis, the x axis points towards the Moon,
   // the reference frame is right-handed.
-  using Geocentric = Frame<serialization::Frame::TestTag,
-                           serialization::Frame::TEST, true>;
+  enum class GeocentricTag;
+  using Geocentric = Frame<GeocentricTag, GeocentricTag{}, Inertial>;
   // Nonrotating frame fixing the centre of the Moon.  The North pole is the
   // positive z axis, the y axis points away from the Earth,
   // the reference frame is left-handed.
-  using Selenocentric = Frame<serialization::Frame::TestTag,
-                              serialization::Frame::TEST1, true>;
+  enum class SelenocentricTag;
+  using Selenocentric = Frame<SelenocentricTag, SelenocentricTag{}, Inertial>;
   // Rotating frame fixing the Earth's surface.  The North pole is the
   // positive z axis, the x axis points towards the Moon,
   // the reference frame is right-handed.
-  using Terrestrial = Frame<serialization::Frame::TestTag,
-                            serialization::Frame::TEST2, true>;
+  using Terrestrial = Frame<enum class TerrestrialTag>;
   // Rotating frame fixing the Moon's surface.
   // Nonrotating frame fixing the centre of the Moon.  The North pole is the
   // positive z axis, the y axis points away from the Earth,
   // the reference frame is left-handed.
-  using Lunar = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST3, true>;
+  using Lunar = Frame<enum class LunarTag>;
 
   AngularVelocity<Geocentric> const earth_rotation_ =
       AngularVelocity<Geocentric>(
@@ -253,12 +252,9 @@ TEST_F(RigidMotionTest, Serialization) {
 }
 
 TEST_F(RigidMotionTest, QuaternionNormalization) {
-  using Barycentric =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, false>;
-  using RigidPart =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST2, false>;
-  using World =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST3, false>;
+  using Barycentric = Frame<enum class BarycentricTag>;
+  using RigidPart = Frame<enum class RigidPartTag>;
+  using World = Frame<enum class WorldTag>;
 
   AngularVelocity<RigidPart> const ω1(
       {-4.31524874936563274e-04 * Radian / Second,

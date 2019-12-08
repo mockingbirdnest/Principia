@@ -27,6 +27,7 @@ namespace principia {
 
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
@@ -57,8 +58,8 @@ namespace integrators {
 
 namespace {
 
-using World = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST, true>;
+enum class WorldTag;
+using World = Frame<WorldTag, WorldTag{}, Inertial>;
 
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio1D(

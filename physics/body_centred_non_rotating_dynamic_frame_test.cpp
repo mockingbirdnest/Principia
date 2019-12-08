@@ -68,10 +68,8 @@ constexpr char small[] = "Small";
 class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
  protected:
   // The non-rotating frame centred on the big body.
-  using Big = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST, /*inertial=*/false>;
-  using Small = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, /*inertial=*/false>;
+  using Big = Frame<enum class BigTag>;
+  using Small = Frame<enum class SmallTag>;
 
   BodyCentredNonRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),

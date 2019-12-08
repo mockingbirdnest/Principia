@@ -14,6 +14,9 @@ namespace ksp_plugin {
 namespace internal_frames {
 
 using geometry::Frame;
+using geometry::Handedness;
+using geometry::Inertial;
+using geometry::NonInertial;
 using geometry::Permutation;
 using physics::DynamicFrame;
 
@@ -23,43 +26,55 @@ using physics::DynamicFrame;
 // The basis is that of Unity's "world space" (this is a left-handed basis).
 // The origin is the ineffable origin of Unity's "world space".
 using World = Frame<serialization::Frame::PluginTag,
-                    serialization::Frame::WORLD, false>;
+                    serialization::Frame::WORLD,
+                    NonInertial,
+                    Handedness::Left>;
 
 // Same as |World| but with the y and z axes switched through the looking-glass:
 // it is a right-handed basis. "We're all mad here. I'm mad. You're mad."
 using AliceWorld = Frame<serialization::Frame::PluginTag,
-                         serialization::Frame::ALICE_WORLD, false>;
+                         serialization::Frame::ALICE_WORLD,
+                         NonInertial>;
 
 // The barycentric reference frame of the solar system.
 using Barycentric = Frame<serialization::Frame::PluginTag,
-                          serialization::Frame::BARYCENTRIC, true>;
+                          serialization::Frame::BARYCENTRIC,
+                          Inertial>;
 
 // The axes are those of |Barycentric|.  The origin is that of |World|.  This
 // frame is used for degrees of freedom obtained after the physics simulation of
 // the game has run, and before we perform our correction: the origin has no
 // physical significance.
 using ApparentBubble = Frame<serialization::Frame::PluginTag,
-                             serialization::Frame::APPARENT_BUBBLE, false>;
+                             serialization::Frame::APPARENT_BUBBLE,
+                             NonInertial>;
 
 // |Barycentric|, with its y and z axes swapped; the basis is left-handed.
 using CelestialSphere = Frame<serialization::Frame::PluginTag,
-                              serialization::Frame::CELESTIAL_SPHERE, true>;
+                              serialization::Frame::CELESTIAL_SPHERE,
+                              Inertial,
+                              Handedness::Left>;
 
 // The surface frame of a celestial, with the x axis pointing to the origin of
 // latitude and longitude, the y axis pointing to the pole with positive
 // latitude, and the z axis oriented to form a left-handed basis.
 using BodyWorld = Frame<serialization::Frame::PluginTag,
-                        serialization::Frame::BODY_WORLD, false>;
+                        serialization::Frame::BODY_WORLD,
+                        NonInertial,
+                        Handedness::Left>;
 
 // The frame used for the navball.  Its definition depends on the choice of a
 // subclass of FrameField.  This frame is left-handed.
 using Navball = Frame<serialization::Frame::PluginTag,
-                      serialization::Frame::NAVBALL, false>;
+                      serialization::Frame::NAVBALL,
+                      NonInertial,
+                      Handedness::Left>;
 
 // The frame used for trajectory plotting and manœuvre planning.  Its definition
 // depends on the choice of a subclass of DynamicFrame.
 using Navigation = Frame<serialization::Frame::PluginTag,
-                         serialization::Frame::NAVIGATION, false>;
+                         serialization::Frame::NAVIGATION,
+                         NonInertial>;
 
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences
@@ -69,28 +84,35 @@ using Navigation = Frame<serialization::Frame::PluginTag,
 // only be performed between simultaneous quantities, then converted to a
 // consistent (frame, basis) pair before use.
 using AliceSun = Frame<serialization::Frame::PluginTag,
-                       serialization::Frame::ALICE_SUN, false>;
+                       serialization::Frame::ALICE_SUN,
+                       NonInertial>;
 
 // Same as above, but with same axes as |World| instead of those of
 // |AliceWorld|. The caveats are the same as for |AliceSun|.
 using WorldSun = Frame<serialization::Frame::PluginTag,
-                       serialization::Frame::WORLD_SUN, false>;
+                       serialization::Frame::WORLD_SUN,
+                       NonInertial,
+                       Handedness::Left>;
 
 // Used to identify coordinates in the projective plane.
 using Camera = Frame<serialization::Frame::PluginTag,
-                     serialization::Frame::CAMERA, false>;
+                     serialization::Frame::CAMERA,
+                     NonInertial>;
 
 // The frame that defines the orientation of a part.
 using RigidPart = Frame<serialization::Frame::PluginTag,
-                        serialization::Frame::RIGID_PART, false>;
+                        serialization::Frame::RIGID_PART,
+                        NonInertial,
+                        Handedness::Left>;
+
+// The body-centred non-rotating frame for the current main body.
+using MainBodyCentred = Frame<serialization::Frame::PluginTag,
+                              serialization::Frame::MAIN_BODY_CENTRED,
+                              NonInertial>;
 
 // Convenient instances of types from |physics| for the above frames.
 using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
-
-// The body-centred non-rotating frame for the current main body.
-using MainBodyCentred = Frame<serialization::Frame::PluginTag,
-                              serialization::Frame::MAIN_BODY_CENTRED, false>;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
