@@ -159,6 +159,10 @@ class Renderer {
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
+  virtual Rotation<CameraReference, World> CameraReferenceRotation(
+      Instant const& time,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
   virtual void WriteToMessage(not_null<serialization::Renderer*> message) const;
 
   static not_null<std::unique_ptr<Renderer>> ReadFromMessage(

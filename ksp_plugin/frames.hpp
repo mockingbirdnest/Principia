@@ -43,7 +43,8 @@ using ApparentBubble = Frame<serialization::Frame::PluginTag,
 
 // |Barycentric|, with its y and z axes swapped; the basis is left-handed.
 using CelestialSphere = Frame<serialization::Frame::PluginTag,
-                              serialization::Frame::CELESTIAL_SPHERE, true>;
+                              serialization::Frame::CELESTIAL_SPHERE,
+                              true>;
 
 // The surface frame of a celestial, with the x axis pointing to the origin of
 // latitude and longitude, the y axis pointing to the pole with positive
@@ -59,7 +60,18 @@ using Navball = Frame<serialization::Frame::PluginTag,
 // The frame used for trajectory plotting and manœuvre planning.  Its definition
 // depends on the choice of a subclass of DynamicFrame.
 using Navigation = Frame<serialization::Frame::PluginTag,
-                         serialization::Frame::NAVIGATION, false>;
+                         serialization::Frame::NAVIGATION,
+                         false>;
+
+// The plotting frame, but with the y and z axes swapped compared to
+// |Navigation| (the basis is left-handed).  This frame defines the camera
+// horizontal, and its angular velocity defines the angular velocity of the
+// camera (note that the linear motion of the camera is defined in-game by
+// following a specific target, which may be in motion with respect to
+// |CameraReference|, so the camera is not necessarily at rest in that frame).
+using CameraReference = Frame<serialization::Frame::PluginTag,
+                              serialization::Frame::CAMERA_REFERENCE,
+                              false>;
 
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences
@@ -104,6 +116,7 @@ using internal_frames::ApparentBubble;
 using internal_frames::Barycentric;
 using internal_frames::BodyWorld;
 using internal_frames::Camera;
+using internal_frames::CameraReference;
 using internal_frames::CelestialSphere;
 using internal_frames::MainBodyCentred;
 using internal_frames::Navball;
