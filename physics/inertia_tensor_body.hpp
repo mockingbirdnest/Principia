@@ -143,7 +143,7 @@ InertiaTensor<Frame>::InertiaTensor(
     : mass_(mass),
       form_(form),
       centre_of_mass_(centre_of_mass) {
-  CHECK_GT(mass, Mass{});
+  CHECK_GE(mass, Mass{});
 }
 
 template<typename Frame>

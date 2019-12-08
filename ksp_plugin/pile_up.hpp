@@ -28,6 +28,7 @@ namespace internal_pile_up {
 
 using base::not_null;
 using base::Status;
+using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Vector;
@@ -38,6 +39,7 @@ using physics::Ephemeris;
 using physics::InertiaTensor;
 using physics::MasslessBody;
 using physics::RelativeDegreesOfFreedom;
+using quantities::AngularMomentum;
 using quantities::Force;
 using quantities::Mass;
 
@@ -61,9 +63,6 @@ class PileUp {
   PileUp(PileUp&& pile_up) = default;
   PileUp& operator=(PileUp&& pile_up) = default;
 
-  void set_inertia_tensor(InertiaTensor<RigidPileUp> const& inertia_tensor);
-  void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
-
   std::list<not_null<Part*>> const& parts() const;
 
   // Set the |degrees_of_freedom| for the given |part|.  These degrees of
@@ -78,6 +77,9 @@ class PileUp {
   // executions of this method may happen concurrently on multiple threads, but
   // not concurrently with any other method of this class.
   Status DeformAndAdvanceTime(Instant const& t);
+
+  // Recomputes the state of motion of the pile-up based on that of its parts.
+  void RecomputeFromParts();
 
   // We'd like to return |not_null<std::shared_ptr<PileUp> const&|, but the
   // compiler gets confused when defining the corresponding lambda, and thinks
@@ -138,7 +140,10 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
-  static void RecomputeFromParts(std::list<not_null<Part*>> const& parts);
+  // Computes the angular momentum, inertia tensor and intrinsic force from the
+  // list of parts.  Returns the barycentre of the parts.
+  DegreesOfFreedom<Barycentric> RecomputeFromParts(
+      std::list<not_null<Part*>> const& parts);
 
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
@@ -148,8 +153,8 @@ class PileUp {
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters_;
 
-  // An optimization: the total inertia and intrinsic forces of the |parts_|,
-  // computed by the union-find.
+  // Recomputed by the parts subset on every change.  Not serialized.
+  Bivector<AngularMomentum, RigidPileUp> angular_momentum_;
   InertiaTensor<RigidPileUp> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
 

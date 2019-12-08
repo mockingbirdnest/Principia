@@ -53,15 +53,7 @@ PileUp::PileUp(
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       deletion_callback_(std::move(deletion_callback)) {
   LOG(INFO) << "Constructing pile up at " << this;
-  BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
-  Vector<Force, Barycentric> total_intrinsic_force;
-  for (not_null<Part*> const part : parts_) {
-    total_intrinsic_force += part->intrinsic_force();
-    calculator.Add(part->degrees_of_freedom(), part->inertia_tensor().mass());
-  }
-  mass_ = calculator.weight();
-  intrinsic_force_ = total_intrinsic_force;
-  DegreesOfFreedom<Barycentric> const barycentre = calculator.Get();
+  DegreesOfFreedom<Barycentric> const barycentre = RecomputeFromParts(parts_);
   history_->Append(t, barycentre);
 
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
@@ -84,16 +76,6 @@ PileUp::~PileUp() {
   if (deletion_callback_ != nullptr) {
     deletion_callback_();
   }
-}
-
-void PileUp::set_inertia_tensor(
-    InertiaTensor<RigidPileUp> const& inertia_tensor) {
-  inertia_tensor_ = inertia_tensor;
-}
-
-void PileUp::set_intrinsic_force(
-    Vector<Force, Barycentric> const& intrinsic_force) {
-  intrinsic_force_ = intrinsic_force;
 }
 
 std::list<not_null<Part*>> const& PileUp::parts() const {
@@ -120,12 +102,14 @@ Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   return status;
 }
 
+void PileUp::RecomputeFromParts() {
+  RecomputeFromParts(parts_);
+}
+
 void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   for (not_null<Part*> const part : parts_) {
     message->add_part_id(part->part_id());
   }
-  inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
-  intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   history_->WriteToMessage(message->mutable_history(),
                            /*forks=*/{psychohistory_});
   for (auto const& pair : actual_part_degrees_of_freedom_) {
@@ -217,9 +201,6 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
             std::move(deletion_callback)));
   }
 
-  pile_up->mass_ = Mass::ReadFromMessage(message.mass());
-  pile_up->intrinsic_force_ =
-      Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force());
   for (auto const& pair : message.actual_part_degrees_of_freedom()) {
     std::uint32_t const part_id = pair.first;
     serialization::Pair const& degrees_of_freedom = pair.second;
@@ -234,6 +215,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
         part_id_to_part(part_id),
         DegreesOfFreedom<ApparentBubble>::ReadFromMessage(degrees_of_freedom));
   }
+  pile_up->RecomputeFromParts();
   return check_not_null(std::move(pile_up));
 }
 
@@ -422,7 +404,8 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   }
 }
 
-void PileUp::RecomputeFromParts(std::list<not_null<Part*>> const& parts) {
+DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
+    std::list<not_null<Part*>> const& parts) {
   // First compute the overall mass and centre of mass of the pile-up.  Also
   // compute the overall force applied to it.
   // TODO(phl): We assume that forces are applied at the centre of mass of the
@@ -463,6 +446,11 @@ void PileUp::RecomputeFromParts(std::list<not_null<Part*>> const& parts) {
     pile_up_angular_momentum +=
         part_to_pile_up.linear_map()(part_angular_momentum);
   }
+
+  angular_momentum_ = pile_up_angular_momentum;
+  inertia_tensor_ = pile_up_inertia_tensor;
+  intrinsic_force_ = pile_up_intrinsic_force;
+  return pile_up_barycentre;
 }
 
 PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,

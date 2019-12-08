@@ -20,9 +20,7 @@ using physics::Ephemeris;
 
 namespace base {
 
-Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part)
-    : total_mass_(part->inertia_tensor().mass()),
-      total_intrinsic_force_(part->intrinsic_force()) {
+Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part) {
   if (part->is_piled_up()) {
     missing_ = part->containing_pile_up()->parts().size() - 1;
   }
@@ -45,8 +43,6 @@ void Subset<Part>::Properties::MergeWith(Properties& other) {
     }
   }
   parts_.splice(parts_.end(), other.parts_);
-  total_mass_ += other.total_mass_;
-  total_intrinsic_force_ += other.total_intrinsic_force_;
   grounded_ |= other.grounded_;
 }
 
@@ -71,8 +67,7 @@ void Subset<Part>::Properties::Collect(
   collected_ = true;
   if (EqualsExistingPileUp()) {
     PileUp& pile_up = *parts_.front()->containing_pile_up();
-    pile_up.set_mass(total_mass_);
-    pile_up.set_intrinsic_force(total_intrinsic_force_);
+    pile_up.RecomputeFromParts();
   } else {
     if (StrictSubsetOfExistingPileUp()) {
       for (auto const part : parts_) {
