@@ -11,14 +11,15 @@ namespace geometry {
 
 class FrameTest : public testing::Test {
  protected:
-  using World1 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST1, true>;
-  using World2 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST2, true>;
-  using World3 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST1, false>;
-  using World4 = Frame<serialization::Frame::SolarSystemTag,
-                       serialization::Frame::ICRS, true>;
+  using World1 = Frame<true, serialization::Frame::TestTag,
+                       serialization::Frame::TEST1>;
+  using World2 = Frame<true, serialization::Frame::TestTag,
+                       serialization::Frame::TEST2>;
+  using World3 = Frame<true, serialization::Frame::TestTag,
+                       serialization::Frame::TEST1>;
+  using World4 = Frame<true, serialization::Frame::SolarSystemTag,
+                       serialization::Frame::ICRS>;
+  using W = Frame<false>;
 };
 
 using FrameDeathTest = FrameTest;

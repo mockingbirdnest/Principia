@@ -16,16 +16,42 @@ namespace internal_frame {
 using base::not_constructible;
 using base::not_null;
 
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-struct Frame : not_constructible {
-  using Tag = FrameTag;
-  static Position<Frame> const origin;
-  static Tag const tag = frame_tag;
-  static bool const is_inertial = frame_is_inertial;
+enum NonSerializableTag {
+  NonSerializable
+};
 
+enum Inertia {
+  Inertial,
+  NonInertial,
+};
+
+enum class Handedness {
+  Left,
+  Right,
+};
+
+template<Inertia inertia_ = NonInertial,
+         Handedness handedness_ = Handedness::Right,
+         typename FrameTag = NonSerializableTag,
+         FrameTag tag_ = NonSerializable>
+struct Frame : not_constructible {
+  static constexpr bool is_inertial = inertia_ == Inertial;
+  static constexpr Inertia inertia = inertia_;
+  static constexpr Handedness handedness = handedness_;
+
+  static constexpr Position<Frame> const origin;
+  static constexpr Velocity<Frame> const unmoving;
+
+  using Tag = FrameTag;
+  static constexpr Tag tag = tag_;
+
+  template<typename = std::enable_if<!std::is_same_v<FrameTag,
+                                                     NonSerializableTag>>>
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
   // Checks that the |message| matches the current type.
+  template<typename = std::enable_if<!std::is_same_v<FrameTag,
+                                                     NonSerializableTag>>>
   static void ReadFromMessage(serialization::Frame const& message);
 };
 
