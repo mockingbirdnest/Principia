@@ -20,10 +20,9 @@ inline uint32_t Fingerprint(std::string const& s) {
   return Fingerprint2011(s.c_str(), s.size()) & 0xFFFFFFFF;
 }
 
-template<Inertia inertia_, Handedness handedness_,
-         typename FrameTag, FrameTag tag_>
-template<typename>
-void Frame<inertia_, handedness_, FrameTag, tag_>::WriteToMessage(
+template<typename FrameTag, FrameTag tag_,
+         Inertia inertia_, Handedness handedness_>
+void Frame<FrameTag, tag_, inertia_, handedness_>::WriteToMessage(
     not_null<serialization::Frame*> const message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
@@ -33,10 +32,9 @@ void Frame<inertia_, handedness_, FrameTag, tag_>::WriteToMessage(
   message->set_is_inertial(is_inertial);
 }
 
-template<Inertia inertia_, Handedness handedness_,
-         typename FrameTag, FrameTag tag_>
-template<typename>
-void Frame<inertia_, handedness_, FrameTag, tag_>::ReadFromMessage(
+template<typename FrameTag, FrameTag tag_,
+         Inertia inertia_, Handedness handedness_>
+void Frame<FrameTag, tag_, inertia_, handedness_>::ReadFromMessage(
     serialization::Frame const& message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
