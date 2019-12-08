@@ -68,15 +68,15 @@ using ::testing::NotNull;
 
 class BodyTest : public testing::Test {
  protected:
-  enum class WorldTag;
-  using World = Frame<WorldTag, WorldTag{}, Inertial>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST1, Inertial>;
 
   // We need that so the comma doesn't get caught in macros.
   using Direction = Vector<double, World>;
 
   template<typename Tag, Tag tag>
   void TestRotatingBody() {
-    using F = Frame<Tag, tag, true>;
+    using F = Frame<Tag, tag, Inertial>;
 
     auto const rotating_body =
         RotatingBody<F>(17 * SIUnit<GravitationalParameter>(),

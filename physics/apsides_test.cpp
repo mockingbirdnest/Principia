@@ -23,6 +23,7 @@ namespace internal_apsides {
 using base::not_null;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -49,7 +50,8 @@ using ::testing::Eq;
 
 class ApsidesTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  enum class WorldTag;
+  using World = Frame<WorldTag, WorldTag{}, Inertial>;
 };
 
 #if !defined(_DEBUG)
