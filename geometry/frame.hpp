@@ -27,7 +27,7 @@ enum class Handedness {
 };
 
 template<typename FrameTag,
-         FrameTag tag_,
+         FrameTag tag_ = FrameTag{},
          Inertia inertia_ = NonInertial,
          Handedness handedness_ = Handedness::Right>
 struct Frame : not_constructible {
@@ -41,37 +41,14 @@ struct Frame : not_constructible {
   using Tag = FrameTag;
   static constexpr Tag tag = tag_;
 
+  template<typename = std::enable_if<
+               google::protobuf::is_proto_enum<FrameTag>::value>>
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
   // Checks that the |message| matches the current type.
+  template<typename = std::enable_if<
+               google::protobuf::is_proto_enum<FrameTag>::value>>
   static void ReadFromMessage(serialization::Frame const& message);
-};
-
-// The specializations below are for non-serializable frames.  They should be
-// used as follows:
-//   static int my_tag;
-//   using MyFrame = Frame<void*, &my_tag>;
-
-template<void* tag_,
-         Inertia inertia_,
-         Handedness handedness_>
-struct Frame<void*, tag_, inertia_, handedness_> : not_constructible {
-  static constexpr bool is_inertial = inertia_ == Inertial;
-  static constexpr Inertia inertia = inertia_;
-  static constexpr Handedness handedness = handedness_;
-
-  static constexpr Position<Frame> const origin{};
-  static constexpr Velocity<Frame> const unmoving{};
-};
-
-template<void* tag_>
-struct Frame<void*, tag_, NonInertial, Handedness::Right> : not_constructible {
-  static constexpr bool is_inertial = false;
-  static constexpr Inertia inertia = NonInertial;
-  static constexpr Handedness handedness = Handedness::Right;
-
-  static constexpr Position<Frame> const origin{};
-  static constexpr Velocity<Frame> const unmoving{};
 };
 
 // Extracts enough information from the |message| to contruct a |Frame| type.

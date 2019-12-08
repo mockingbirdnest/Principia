@@ -27,10 +27,8 @@ class FrameTest : public testing::Test {
                        serialization::Frame::ICRS,
                        Inertial,
                        Handedness::Right>;
-  static int f1;
-  static int f2;
-  using F1 = Frame<void*, &f1>;
-  using F2 = Frame<void*, &f2>;
+  using F1 = Frame<enum class f1>;
+  using F2 = Frame<enum class f2>;
   static_assert(!std::is_same_v<F1, F2>);
 };
 
