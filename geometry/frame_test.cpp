@@ -11,15 +11,25 @@ namespace geometry {
 
 class FrameTest : public testing::Test {
  protected:
-  using World1 = Frame<true, serialization::Frame::TestTag,
+  using World1 = Frame<Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TestTag,
                        serialization::Frame::TEST1>;
-  using World2 = Frame<true, serialization::Frame::TestTag,
+  using World2 = Frame<Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TestTag,
                        serialization::Frame::TEST2>;
-  using World3 = Frame<true, serialization::Frame::TestTag,
+  using World3 = Frame<Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TestTag,
                        serialization::Frame::TEST1>;
-  using World4 = Frame<true, serialization::Frame::SolarSystemTag,
+  using World4 = Frame<Inertial,
+                       Handedness::Right,
+                       serialization::Frame::SolarSystemTag,
                        serialization::Frame::ICRS>;
-  using W = Frame<false>;
+  using F1 = Frame<>;
+  using F2 = Frame<>;
+  static_assert(!std::is_same_v<F1, F2>);
 };
 
 using FrameDeathTest = FrameTest;

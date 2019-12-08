@@ -20,8 +20,10 @@ inline uint32_t Fingerprint(std::string const& s) {
   return Fingerprint2011(s.c_str(), s.size()) & 0xFFFFFFFF;
 }
 
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-void Frame<FrameTag, frame_tag, frame_is_inertial>::WriteToMessage(
+template<Inertia inertia_, Handedness handedness_,
+         typename FrameTag, FrameTag tag_>
+template<typename>
+void Frame<inertia_, handedness_, FrameTag, tag_>::WriteToMessage(
     not_null<serialization::Frame*> const message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
@@ -31,8 +33,10 @@ void Frame<FrameTag, frame_tag, frame_is_inertial>::WriteToMessage(
   message->set_is_inertial(is_inertial);
 }
 
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-void Frame<FrameTag, frame_tag, frame_is_inertial>::ReadFromMessage(
+template<Inertia inertia_, Handedness handedness_,
+         typename FrameTag, FrameTag tag_>
+template<typename>
+void Frame<inertia_, handedness_, FrameTag, tag_>::ReadFromMessage(
     serialization::Frame const& message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
@@ -42,15 +46,6 @@ void Frame<FrameTag, frame_tag, frame_is_inertial>::ReadFromMessage(
   CHECK_EQ(tag, message.tag());
   CHECK_EQ(is_inertial, message.is_inertial());
 }
-
-// Default-initialized to {0, 0, 0}.
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-Position<Frame<FrameTag, frame_tag, frame_is_inertial>> const
-Frame<FrameTag, frame_tag, frame_is_inertial>::origin;
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-FrameTag const Frame<FrameTag, frame_tag, frame_is_inertial>::tag;
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-bool const Frame<FrameTag, frame_tag, frame_is_inertial>::is_inertial;
 
 inline void ReadFrameFromMessage(
     serialization::Frame const& message,

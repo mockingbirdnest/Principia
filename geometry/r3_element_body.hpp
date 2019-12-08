@@ -31,7 +31,7 @@ using quantities::ToM128D;
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
-R3Element<Scalar>::R3Element() : x(), y(), z() {
+constexpr R3Element<Scalar>::R3Element() : x(), y(), z() {
   static_assert(std::is_standard_layout<R3Element>::value,
                 "R3Element has a nonstandard layout");
 }

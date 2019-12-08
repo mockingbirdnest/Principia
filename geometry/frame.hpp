@@ -39,8 +39,8 @@ struct Frame : not_constructible {
   static constexpr Inertia inertia = inertia_;
   static constexpr Handedness handedness = handedness_;
 
-  static constexpr Position<Frame> const origin;
-  static constexpr Velocity<Frame> const unmoving;
+  static constexpr Position<Frame> const origin{};
+  static constexpr Velocity<Frame> const unmoving{};
 
   using Tag = FrameTag;
   static constexpr Tag tag = tag_;
@@ -64,6 +64,9 @@ void ReadFrameFromMessage(
 }  // namespace internal_frame
 
 using internal_frame::Frame;
+using internal_frame::Handedness;
+using internal_frame::Inertial;
+using internal_frame::NonInertial;
 using internal_frame::ReadFrameFromMessage;
 
 }  // namespace geometry

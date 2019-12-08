@@ -32,7 +32,7 @@ struct SphericalCoordinates;
 template<typename Scalar>
 struct alignas(16) R3Element final {
  public:
-  R3Element();
+  constexpr R3Element();
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
   R3Element(__m128d xy, __m128d zt);
 

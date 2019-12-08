@@ -39,7 +39,7 @@ class Multivector;
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 1> final {
  public:
-  Multivector();
+  constexpr Multivector();
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
   R3Element<Scalar> const& coordinates() const;
@@ -77,7 +77,7 @@ class Multivector<Scalar, Frame, 1> final {
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 2> final {
  public:
-  Multivector();
+  constexpr Multivector();
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
   R3Element<Scalar> const& coordinates() const;
@@ -111,7 +111,7 @@ class Multivector<Scalar, Frame, 2> final {
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 3> final {
  public:
-  Multivector();
+  constexpr Multivector();
   explicit Multivector(Scalar const& coordinates);
 
   Scalar const& coordinates() const;
