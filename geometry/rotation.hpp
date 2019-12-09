@@ -226,10 +226,17 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   Quaternion const& quaternion() const;
 
+  constexpr bool is_serializable = base::is_serializable_v<FromFrame> &&
+                                   base::is_serializable_v<ToFrame>;
+
+  template<typename = std::enable_if_t<is_serializable>>
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
+  template<typename = std::enable_if_t<is_serializable>>
   static Rotation ReadFromMessage(serialization::LinearMap const& message);
 
+  template<typename = std::enable_if_t<is_serializable>>
   void WriteToMessage(not_null<serialization::Rotation*> message) const;
+  template<typename = std::enable_if_t<is_serializable>>
   static Rotation ReadFromMessage(serialization::Rotation const& message);
 
  private:

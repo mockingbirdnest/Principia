@@ -105,12 +105,14 @@ constexpr bool Point<Vector>::operator!=(Point<Vector> const& right) const {
 }
 
 template<typename Vector>
+template<typename>
 void Point<Vector>::WriteToMessage(
     not_null<serialization::Point*> const message) const {
   PointSerializer<Vector>::WriteToMessage(coordinates_, message);
 }
 
 template<typename Vector>
+template<typename>
 Point<Vector> Point<Vector>::ReadFromMessage(
     serialization::Point const& message) {
   Point result;

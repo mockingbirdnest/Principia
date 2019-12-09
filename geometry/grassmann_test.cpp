@@ -255,6 +255,17 @@ TEST_F(GrassmannTest, Normalize) {
   EXPECT_THAT(Normalize(u), Eq(Trivector<double, World>(-1)));
 }
 
+// Uncomment to check that non-serializable frames are detected at compile-time.
+#if 1
+template Frame<enum class FrameTag>;
+TEST_F(GrassmannTest, SerializationCompilationError) {
+  using F = Frame<enum class FrameTag>;
+  Vector<Length, F> v;
+  serialization::Multivector message;
+  v.WriteToMessage(&message);
+}
+#endif
+
 TEST_F(GrassmannDeathTest, SerializationError) {
   using V = Vector<Length, World>;
   using B = Bivector<Length, World>;

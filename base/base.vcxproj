@@ -56,6 +56,7 @@
     <ClInclude Include="tags.hpp" />
     <ClInclude Include="thread_pool.hpp" />
     <ClInclude Include="thread_pool_body.hpp" />
+    <ClInclude Include="traits.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
     <ClInclude Include="version.generated.h" />

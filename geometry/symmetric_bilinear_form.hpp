@@ -57,8 +57,10 @@ class SymmetricBilinearForm {
   template<typename Eigenframe>
   Eigensystem<Eigenframe> Diagonalize() const;
 
+  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
+  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
   static SymmetricBilinearForm ReadFromMessage(
       serialization::SymmetricBilinearForm const& message);
 

@@ -97,7 +97,12 @@ class Pair {
   bool operator==(Pair const& right) const;
   bool operator!=(Pair const& right) const;
 
+  constexpr bool is_serializable = base::is_serializable_v<T1> &&
+                                   base::is_serializable_v<T2>;
+
+  template<typename = std::enable_if_t<is_serializable>>
   void WriteToMessage(not_null<serialization::Pair*> message) const;
+  template<typename = std::enable_if_t<is_serializable>>
   static Pair ReadFromMessage(serialization::Pair const& message);
 
  protected:

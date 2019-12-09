@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "base/traits.hpp"
 #include "geometry/point.hpp"
 #include "geometry/grassmann.hpp"
 #include "serialization/geometry.pb.h"
@@ -29,7 +30,12 @@ class AffineMap final {
 
   LinearMap<FromFrame, ToFrame> const& linear_map() const;
 
+  constexpr bool is_serializable = base::is_serializable_v<FromFrame> &&
+                                   base::is_serializable_v<ToFrame>;
+
+  template<typename = std::enable_if_t<is_serializable>>
   void WriteToMessage(not_null<serialization::AffineMap*> message) const;
+  template<typename = std::enable_if_t<is_serializable>>
   static AffineMap ReadFromMessage(serialization::AffineMap const& message);
 
  private:

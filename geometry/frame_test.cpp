@@ -1,6 +1,7 @@
 ﻿
 #include "geometry/frame.hpp"
 
+#include "base/traits.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/descriptor.h"
 #include "gtest/gtest.h"
@@ -35,13 +36,16 @@ class FrameTest : public testing::Test {
   static_assert(!std::is_same_v<F1, F2>);
   static_assert(!std::is_same_v<F1, F3>);
   static_assert(!std::is_same_v<F2, F3>);
+
+  static_assert(base::is_serializable_v<World1>);
+  static_assert(!base::is_serializable_v<F1>);
 };
 
 using FrameDeathTest = FrameTest;
 
 // Uncomment to check that non-serializable frames are detected at compile-time.
 #if 1
-TEST_F(FrameDeathTest, SerializationCompilationError) {
+TEST_F(FrameTest, SerializationCompilationError) {
   serialization::Frame message;
   F1::WriteToMessage(&message);
   F2::WriteToMessage(&message);

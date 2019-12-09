@@ -30,9 +30,17 @@ enum class Handedness {
 // To declare a local frame that does not need serialization, use the following
 // pattern:
 //   using MyFrame = Frame<enum class MyFrameTag>;
+//
 // or:
 //   enum class MyFrameTag;
 //   using MyFrame = Frame<MyFrameTag, MyFrameTag{}, Inertial>;
+//
+// In rare cases it may be necessary to write an explicit instantiation to break
+// circularities:
+//   template Frame<enum class MyFrameTag>;
+//   using MyFrame = Frame<enum class MyFrameTag>;
+//   Vector<Length, MyFrame> v;
+//
 // By default, the frame is non-inertial and right-handed.
 template<typename FrameTag,
          FrameTag tag_ = FrameTag{},
