@@ -49,13 +49,14 @@ struct Frame : not_constructible {
   using Tag = FrameTag;
   static constexpr Tag tag = tag_;
 
-  template<typename = std::enable_if<
-               google::protobuf::is_proto_enum<FrameTag>::value>>
+  static constexpr bool is_serializable =
+      google::protobuf::is_proto_enum<FrameTag>::value;
+
+  template<typename = std::enable_if_t<is_serializable>>
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
   // Checks that the |message| matches the current type.
-  template<typename = std::enable_if<
-               google::protobuf::is_proto_enum<FrameTag>::value>>
+  template<typename = std::enable_if_t<is_serializable>>
   static void ReadFromMessage(serialization::Frame const& message);
 };
 
