@@ -121,10 +121,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     // the progress bar being stuck at 100% while the elements and nodes are
     // being computed.
 
-    enum class PrimaryCentredTag { tag };
-    using PrimaryCentred = Frame<PrimaryCentredTag,
-                                 PrimaryCentredTag::tag,
-                                 /*frame_is_inertial=*/false>;
+    using PrimaryCentred = Frame<enum class PrimaryCentredTag>;
     BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
         primary_centred(ephemeris_, parameters->primary);
     DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
