@@ -12,8 +12,7 @@ struct is_serializable : std::false_type {};
 
 template<typename T>
 struct is_serializable<
-    T,
-    std::void_t<decltype(std::declval<T>().WriteToMessage(nullptr))>>
+    T, std::void_t<decltype(std::declval<T>().WriteToMessage(nullptr))>>
     : std::true_type {};
 
 template<typename T>

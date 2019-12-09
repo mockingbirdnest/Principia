@@ -47,6 +47,16 @@ void Frame<FrameTag, tag_, inertia_, handedness_>::ReadFromMessage(
   CHECK_EQ(is_inertial, message.is_inertial());
 }
 
+// Default-initialized to {0, 0, 0}.
+template<typename FrameTag, FrameTag tag_,
+         Inertia inertia_, Handedness handedness_>
+Position<Frame<FrameTag, tag_, inertia_, handedness_>> const
+Frame<FrameTag, tag_, inertia_, handedness_>::origin;
+template<typename FrameTag, FrameTag tag_,
+         Inertia inertia_, Handedness handedness_>
+Velocity<Frame<FrameTag, tag_, inertia_, handedness_>> const
+Frame<FrameTag, tag_, inertia_, handedness_>::unmoving;
+
 inline void ReadFrameFromMessage(
     serialization::Frame const& message,
     google::protobuf::EnumValueDescriptor const*& enum_value_descriptor,

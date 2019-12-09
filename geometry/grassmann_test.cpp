@@ -256,8 +256,7 @@ TEST_F(GrassmannTest, Normalize) {
 }
 
 // Uncomment to check that non-serializable frames are detected at compile-time.
-#if 1
-template Frame<enum class FrameTag>;
+#if 0
 TEST_F(GrassmannTest, SerializationCompilationError) {
   using F = Frame<enum class FrameTag>;
   Vector<Length, F> v;

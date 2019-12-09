@@ -44,7 +44,7 @@ class FrameTest : public testing::Test {
 using FrameDeathTest = FrameTest;
 
 // Uncomment to check that non-serializable frames are detected at compile-time.
-#if 1
+#if 0
 TEST_F(FrameTest, SerializationCompilationError) {
   serialization::Frame message;
   F1::WriteToMessage(&message);
@@ -58,7 +58,7 @@ TEST_F(FrameDeathTest, SerializationError) {
     serialization::Frame message;
     World1::WriteToMessage(&message);
     World2::ReadFromMessage(message);
-  }, "tag ==");
+  }, "\\(tag\\) ==");
   EXPECT_DEATH({
     serialization::Frame message;
     World1::WriteToMessage(&message);

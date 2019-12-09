@@ -130,6 +130,7 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
 }
 
 template<typename Scalar, typename Frame>
+template<typename>
 void SymmetricBilinearForm<Scalar, Frame>::WriteToMessage(
     not_null<serialization::SymmetricBilinearForm*> message) const {
   Frame::WriteToMessage(message->mutable_frame());
@@ -137,6 +138,7 @@ void SymmetricBilinearForm<Scalar, Frame>::WriteToMessage(
 }
 
 template<typename Scalar, typename Frame>
+template<typename>
 SymmetricBilinearForm<Scalar, Frame>
 SymmetricBilinearForm<Scalar, Frame>::ReadFromMessage(
     serialization::SymmetricBilinearForm const& message) {

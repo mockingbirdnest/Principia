@@ -67,8 +67,8 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
 
   static OrthogonalMap Identity();
 
-  constexpr bool is_serializable = base::is_serializable_v<FromFrame> &&
-                                   base::is_serializable_v<ToFrame>;
+  static constexpr bool is_serializable = base::is_serializable_v<FromFrame> &&
+                                          base::is_serializable_v<ToFrame>;
 
   template<typename = std::enable_if_t<is_serializable>>
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;

@@ -35,12 +35,6 @@ enum class Handedness {
 //   enum class MyFrameTag;
 //   using MyFrame = Frame<MyFrameTag, MyFrameTag{}, Inertial>;
 //
-// In rare cases it may be necessary to write an explicit instantiation to break
-// circularities:
-//   template Frame<enum class MyFrameTag>;
-//   using MyFrame = Frame<enum class MyFrameTag>;
-//   Vector<Length, MyFrame> v;
-//
 // By default, the frame is non-inertial and right-handed.
 template<typename FrameTag,
          FrameTag tag_ = FrameTag{},
@@ -51,8 +45,8 @@ struct Frame : not_constructible {
   static constexpr Inertia inertia = inertia_;
   static constexpr Handedness handedness = handedness_;
 
-  static constexpr Position<Frame> const origin{};
-  static constexpr Velocity<Frame> const unmoving{};
+  static const Position<Frame> origin;
+  static const Velocity<Frame> unmoving;
 
   using Tag = FrameTag;
   static constexpr Tag tag = tag_;
