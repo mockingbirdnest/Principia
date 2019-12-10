@@ -766,6 +766,11 @@ public partial class PrincipiaPluginAdapter
                                          : roll_change_per_frame;
       }
     }
+    // We cannot run between the |PlanetariumCamera| and |ScaledSpace|
+    // |LateUpdate|s, but we need the ScaledSpace one to run after us to put the
+    // scaled origin where the scaled camera is.  Manually running another
+    // |LateUpdate| on ScaledSpace works, albeit ugly.
+    ScaledSpace.Instance.SendMessage("LateUpdate");
   }
 
   private void LateUpdate() {
