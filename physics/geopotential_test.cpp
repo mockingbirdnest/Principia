@@ -65,8 +65,8 @@ using ::testing::Property;
 
 class GeopotentialTest : public ::testing::Test {
  protected:
-  enum class WorldTag;
-  using World = Frame<WorldTag, WorldTag{}, Inertial>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST, Inertial>;
 
   GeopotentialTest()
       : massive_body_parameters_(17 * SIUnit<GravitationalParameter>()),

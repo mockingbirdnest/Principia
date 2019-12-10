@@ -68,22 +68,24 @@ class RigidMotionTest : public testing::Test {
   // Nonrotating frame fixing the centre of the Earth.  The North pole is the
   // positive z axis, the x axis points towards the Moon,
   // the reference frame is right-handed.
-  enum class GeocentricTag;
-  using Geocentric = Frame<GeocentricTag, GeocentricTag{}, Inertial>;
+  using Geocentric = Frame<serialization::Frame::TestTag,
+                           serialization::Frame::TEST, Inertial>;
   // Nonrotating frame fixing the centre of the Moon.  The North pole is the
   // positive z axis, the y axis points away from the Earth,
   // the reference frame is left-handed.
-  enum class SelenocentricTag;
-  using Selenocentric = Frame<SelenocentricTag, SelenocentricTag{}, Inertial>;
+  using Selenocentric = Frame<serialization::Frame::TestTag,
+                              serialization::Frame::TEST1, Inertial>;
   // Rotating frame fixing the Earth's surface.  The North pole is the
   // positive z axis, the x axis points towards the Moon,
   // the reference frame is right-handed.
-  using Terrestrial = Frame<enum class TerrestrialTag>;
+  using Terrestrial = Frame<serialization::Frame::TestTag,
+                            serialization::Frame::TEST2>;
   // Rotating frame fixing the Moon's surface.
   // Nonrotating frame fixing the centre of the Moon.  The North pole is the
   // positive z axis, the y axis points away from the Earth,
   // the reference frame is left-handed.
-  using Lunar = Frame<enum class LunarTag>;
+  using Lunar = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST3>;
 
   AngularVelocity<Geocentric> const earth_rotation_ =
       AngularVelocity<Geocentric>(

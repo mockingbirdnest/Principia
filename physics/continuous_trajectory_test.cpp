@@ -152,8 +152,8 @@ void TestableContinuousTrajectory<Frame>::ResetBestNewhallApproximation() {
 
 class ContinuousTrajectoryTest : public testing::Test {
  protected:
-  enum class WorldTag;
-  using World = Frame<WorldTag, WorldTag{}, Inertial>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST, Inertial>;
 
   void FillTrajectory(
       int const number_of_steps,

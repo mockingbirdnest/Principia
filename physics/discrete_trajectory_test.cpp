@@ -65,8 +65,8 @@ using ::testing::Ref;
 
 class DiscreteTrajectoryTest : public testing::Test {
  protected:
-  enum class WorldTag;
-  using World = Frame<WorldTag, WorldTag{}, Inertial>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST, Inertial>;
 
   DiscreteTrajectoryTest()
       : q1_(World::origin +
