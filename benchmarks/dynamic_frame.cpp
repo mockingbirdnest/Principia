@@ -65,7 +65,7 @@ const Length tolerance = 0.01 * Metre;
 }  // namespace
 
 using Rendering = Frame<serialization::Frame::TestTag,
-                        serialization::Frame::TEST, false>;
+                        serialization::Frame::TEST>;
 
 template<typename F, template<typename> class T>
 void FillLinearTrajectory(Position<F> const& initial,
