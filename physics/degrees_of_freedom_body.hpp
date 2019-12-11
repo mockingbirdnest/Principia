@@ -23,6 +23,7 @@ DegreesOfFreedom<Frame>::DegreesOfFreedom(
     : Pair<Position<Frame>, Velocity<Frame>>(base) {}
 
 template<typename Frame>
+template<typename>
 DegreesOfFreedom<Frame> DegreesOfFreedom<Frame>::ReadFromMessage(
     serialization::Pair const& message) {
   return Pair<Position<Frame>, Velocity<Frame>>::ReadFromMessage(message);

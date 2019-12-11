@@ -203,6 +203,7 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
+template<typename>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
   absl::ReaderMutexLock l(&lock_);
@@ -227,6 +228,7 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
+template<typename>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
       serialization::ContinuousTrajectory const& message) {
@@ -293,6 +295,7 @@ ContinuousTrajectory<Frame>::checkpointer() {
 }
 
 template<typename Frame>
+template<typename>
 void ContinuousTrajectory<Frame>::WriteToCheckpoint(
     not_null<serialization::ContinuousTrajectory*> const message) {
   adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
@@ -310,6 +313,7 @@ void ContinuousTrajectory<Frame>::WriteToCheckpoint(
 }
 
 template<typename Frame>
+template<typename>
 bool ContinuousTrajectory<Frame>::ReadFromCheckpoint(
     serialization::ContinuousTrajectory const& message) {
   bool const has_checkpoint = message.has_adjusted_tolerance() &&

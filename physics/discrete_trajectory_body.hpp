@@ -316,6 +316,7 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
+template<typename>
 void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*> const& forks)
@@ -332,6 +333,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
+template<typename>
 not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
