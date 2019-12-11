@@ -1,6 +1,7 @@
 ﻿
 #include "geometry/frame.hpp"
 
+#include "base/traits.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/descriptor.h"
 #include "gtest/gtest.h"
@@ -12,23 +13,52 @@ namespace geometry {
 class FrameTest : public testing::Test {
  protected:
   using World1 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST1, true>;
+                       serialization::Frame::TEST1,
+                       Inertial,
+                       Handedness::Right>;
   using World2 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST2, true>;
+                       serialization::Frame::TEST2,
+                       Inertial,
+                       Handedness::Right>;
   using World3 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST1, false>;
+                       serialization::Frame::TEST1,
+                       NonInertial,
+                       Handedness::Right>;
   using World4 = Frame<serialization::Frame::SolarSystemTag,
-                       serialization::Frame::ICRS, true>;
+                       serialization::Frame::ICRS,
+                       Inertial,
+                       Handedness::Right>;
+
+  using F1 = Frame<enum class F1Tag>;
+  using F2 = Frame<enum class F2Tag>;
+  enum class F3Tag;
+  using F3 = Frame<F3Tag, F3Tag{}, Inertial>;
+  static_assert(!std::is_same_v<F1, F2>);
+  static_assert(!std::is_same_v<F1, F3>);
+  static_assert(!std::is_same_v<F2, F3>);
+
+  static_assert(base::is_serializable_v<World1>);
+  static_assert(!base::is_serializable_v<F1>);
 };
 
 using FrameDeathTest = FrameTest;
+
+// Uncomment to check that non-serializable frames are detected at compile-time.
+#if 0
+TEST_F(FrameTest, SerializationCompilationError) {
+  serialization::Frame message;
+  F1::WriteToMessage(&message);
+  F2::WriteToMessage(&message);
+  F3::WriteToMessage(&message);
+}
+#endif
 
 TEST_F(FrameDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::Frame message;
     World1::WriteToMessage(&message);
     World2::ReadFromMessage(message);
-  }, "tag ==");
+  }, "\\(tag\\) ==");
   EXPECT_DEATH({
     serialization::Frame message;
     World1::WriteToMessage(&message);

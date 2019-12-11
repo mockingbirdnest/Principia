@@ -23,7 +23,7 @@ using testing_utilities::AlmostEquals;
 class RP2PointTest : public ::testing::Test {
  protected:
   using Projective =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST, false>;
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST>;
 };
 
 TEST_F(RP2PointTest, Basic) {

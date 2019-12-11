@@ -73,7 +73,7 @@ struct TransparentWedge final {
 class GrassmannTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+                      serialization::Frame::TEST, Inertial>;
 
   R3Element<Length> const null_displacement_ = {0 * Metre,
                                                 0 * Metre,
@@ -254,6 +254,16 @@ TEST_F(GrassmannTest, Normalize) {
   Trivector<Length, World> const u(-4 * Furlong);
   EXPECT_THAT(Normalize(u), Eq(Trivector<double, World>(-1)));
 }
+
+// Uncomment to check that non-serializable frames are detected at compile-time.
+#if 0
+TEST_F(GrassmannTest, SerializationCompilationError) {
+  using F = Frame<enum class FrameTag>;
+  Vector<Length, F> v;
+  serialization::Multivector message;
+  v.WriteToMessage(&message);
+}
+#endif
 
 TEST_F(GrassmannDeathTest, SerializationError) {
   using V = Vector<Length, World>;

@@ -41,6 +41,7 @@ using geometry::Commutator;
 using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Rotation;
@@ -171,8 +172,8 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     // of the Sun's axis.
     // TODO(egg): perhaps rotating bodies should export a rotation to their
     // celestial reference frame, we'll use that in the plugin too.
-    enum LocalFrameTag { tag };
-    using ParentEquator = Frame<LocalFrameTag, tag, /*frame_is_inertial=*/true>;
+    enum class LocalFrameTag;
+    using ParentEquator = Frame<LocalFrameTag, LocalFrameTag{}, Inertial>;
     auto const z = Bivector<double, ICRS>({0, 0, 1});
     std::optional<Rotation<ICRS, ParentEquator>> rotation;
 

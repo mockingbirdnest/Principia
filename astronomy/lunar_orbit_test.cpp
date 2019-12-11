@@ -45,6 +45,7 @@ using base::OFStream;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
@@ -178,7 +179,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
   // Earth, see figure 1. of Russell and Lara (2006).
   using LunarSurface = Frame<LunarTag,
                              LunarTag::surface,
-                             /*frame_is_inertial=*/false>;
+                             Inertial>;
 
   // This reference frame is non-rotating, with its origin at the selenocentre.
   // The axes are those of LunarSurface at J2000.
@@ -187,7 +188,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
   // |KeplerOrbit| should check that; this is good enough for a test.
   using Selenocentric = Frame<LunarTag,
                               LunarTag::selenocentric,
-                              /*frame_is_inertial=*/true>;
+                              Inertial>;
 
   // We do not use a |BodyCentredNonRotatingDynamicFrame| since that would use
   // ICRS axes.

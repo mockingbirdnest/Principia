@@ -5,6 +5,7 @@
 
 #include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -17,6 +18,7 @@ namespace geometry {
 
 using astronomy::J2000;
 using astronomy::operator""_TT;
+using quantities::Length;
 using quantities::Time;
 using quantities::Volume;
 using quantities::si::Day;
@@ -29,7 +31,7 @@ using testing_utilities::AlmostEquals;
 class PointTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+                      serialization::Frame::TEST, Inertial>;
 
   Instant const mjd0 = "MJD0"_TT;
 };
@@ -80,6 +82,16 @@ TEST_F(PointTest, Ordering) {
   EXPECT_TRUE(t1 >= t2);
   EXPECT_TRUE(t1 >= t1);
 }
+
+// Uncomment to check that non-serializable frames are detected at compile-time.
+#if 0
+TEST_F(PointTest, SerializationCompilationError) {
+  using F = Frame<enum class FrameTag>;
+  Point<Vector<Length, F>> p;
+  serialization::Point message;
+  p.WriteToMessage(&message);
+}
+#endif
 
 TEST_F(PointDeathTest, SerializationError) {
   EXPECT_DEATH({

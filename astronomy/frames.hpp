@@ -13,7 +13,9 @@ namespace astronomy {
 namespace internal_frames {
 
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
+using geometry::NonInertial;
 using geometry::Position;
 using quantities::si::ArcMinute;
 using quantities::si::ArcSecond;
@@ -46,7 +48,7 @@ using quantities::si::Degree;
 //   identified with TCB), we call this ICRS.
 using ICRS = Frame<serialization::Frame::SolarSystemTag,
                    serialization::Frame::ICRS,
-                   /*frame_is_inertial=*/true>;
+                   Inertial>;
 
 // The Geocentric Celestial Reference System.
 // The origin is the centre of mass of the whole Earth system, including oceans
@@ -65,7 +67,7 @@ using ICRS = Frame<serialization::Frame::SolarSystemTag,
 //   Principia's |Instant| is TT.
 using GCRS = Frame<serialization::Frame::SolarSystemTag,
                    serialization::Frame::GCRS,
-                   /*frame_is_inertial=*/false>;
+                   NonInertial>;
 
 // The International Terrestrial Reference System.
 // The origin is the centre of mass of the whole Earth system, including oceans
@@ -98,7 +100,7 @@ using GCRS = Frame<serialization::Frame::SolarSystemTag,
 //   http://etrs89.ensg.ign.fr/pub/EUREF-TN-1.pdf
 using ITRS = Frame<serialization::Frame::SolarSystemTag,
                    serialization::Frame::ITRS,
-                   /*frame_is_inertial=*/false>;
+                   NonInertial>;
 
 // The following two reference systems are both geocentric, and they share the
 // same z axis, the Celestial Intermediate Pole.  Their common xy plane is the
@@ -141,9 +143,9 @@ using CelestialIntermediateReferenceSystem = GCRS;
 // The xy plane is the plane of the sky.  The origin is at the barycentre of the
 // extrasolar system.  The z axis goes from the extrasolar system to the Earth.
 // The xz plane is (approximately) the plane of the extrasolar system.
-using Sky =
-    Frame<serialization::Frame::SolarSystemTag,
-          serialization::Frame::SKY, true>;
+using Sky = Frame<serialization::Frame::SolarSystemTag,
+                  serialization::Frame::SKY,
+                  Inertial>;
 
 }  // namespace internal_frames
 

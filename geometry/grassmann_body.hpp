@@ -17,21 +17,21 @@ using base::not_constructible;
 using quantities::ArcTan;
 
 template<typename Scalar, typename Frame>
-Multivector<Scalar, Frame, 1>::Multivector() {}
+constexpr Multivector<Scalar, Frame, 1>::Multivector() {}
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector(R3Element<Scalar> const& coordinates)
     : coordinates_(coordinates) {}
 
 template<typename Scalar, typename Frame>
-Multivector<Scalar, Frame, 2>::Multivector() {}
+constexpr Multivector<Scalar, Frame, 2>::Multivector() {}
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 2>::Multivector(R3Element<Scalar> const& coordinates)
     : coordinates_(coordinates) {}
 
 template<typename Scalar, typename Frame>
-Multivector<Scalar, Frame, 3>::Multivector() {}
+constexpr Multivector<Scalar, Frame, 3>::Multivector() {}
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 3>::Multivector(Scalar const& coordinates)
@@ -102,6 +102,7 @@ Multivector<Scalar, Frame, 2>
 }
 
 template<typename Scalar, typename Frame>
+template<typename>
 void Multivector<Scalar, Frame, 1>::WriteToMessage(
       not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
@@ -109,6 +110,7 @@ void Multivector<Scalar, Frame, 1>::WriteToMessage(
 }
 
 template<typename Scalar, typename Frame>
+template<typename>
 void Multivector<Scalar, Frame, 2>::WriteToMessage(
       not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
@@ -116,6 +118,7 @@ void Multivector<Scalar, Frame, 2>::WriteToMessage(
 }
 
 template<typename Scalar, typename Frame>
+template<typename>
 void Multivector<Scalar, Frame, 3>::WriteToMessage(
       not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
@@ -123,6 +126,7 @@ void Multivector<Scalar, Frame, 3>::WriteToMessage(
 }
 
 template<typename Scalar, typename Frame>
+template<typename>
 Multivector<Scalar, Frame, 1> Multivector<Scalar, Frame, 1>::ReadFromMessage(
     serialization::Multivector const& message) {
   Frame::ReadFromMessage(message.frame());
@@ -131,6 +135,7 @@ Multivector<Scalar, Frame, 1> Multivector<Scalar, Frame, 1>::ReadFromMessage(
 }
 
 template<typename Scalar, typename Frame>
+template<typename>
 Multivector<Scalar, Frame, 2> Multivector<Scalar, Frame, 2>::ReadFromMessage(
     serialization::Multivector const& message) {
   Frame::ReadFromMessage(message.frame());
@@ -139,6 +144,7 @@ Multivector<Scalar, Frame, 2> Multivector<Scalar, Frame, 2>::ReadFromMessage(
 }
 
 template<typename Scalar, typename Frame>
+template<typename>
 Multivector<Scalar, Frame, 3> Multivector<Scalar, Frame, 3>::ReadFromMessage(
     serialization::Multivector const& message) {
   Frame::ReadFromMessage(message.frame());
