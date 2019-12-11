@@ -29,6 +29,7 @@ using base::not_null;
 using base::Status;
 using geometry::Frame;
 using geometry::Instant;
+using geometry::NonInertial;
 using geometry::Vector;
 using integrators::Integrator;
 using physics::DiscreteTrajectory;
@@ -182,7 +183,7 @@ class PileUp {
   // to use the inertia ellipsoid.
   using RigidPileUp = Frame<serialization::Frame::PluginTag,
                             serialization::Frame::RIGID_PILE_UP,
-                            /*frame_is_inertial=*/false>;
+                            NonInertial>;
 
   PartTo<DegreesOfFreedom<RigidPileUp>> actual_part_degrees_of_freedom_;
   PartTo<DegreesOfFreedom<ApparentBubble>> apparent_part_degrees_of_freedom_;
