@@ -47,6 +47,7 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::Instant;
+using geometry::NonInertial;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Vector;
@@ -179,7 +180,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
   // Earth, see figure 1. of Russell and Lara (2006).
   using LunarSurface = Frame<LunarTag,
                              LunarTag::surface,
-                             Inertial>;
+                             NonInertial>;
 
   // This reference frame is non-rotating, with its origin at the selenocentre.
   // The axes are those of LunarSurface at J2000.

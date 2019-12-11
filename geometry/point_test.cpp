@@ -5,7 +5,6 @@
 
 #include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -18,7 +17,6 @@ namespace geometry {
 
 using astronomy::J2000;
 using astronomy::operator""_TT;
-using quantities::Length;
 using quantities::Time;
 using quantities::Volume;
 using quantities::si::Day;
