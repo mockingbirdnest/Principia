@@ -744,17 +744,22 @@ public partial class PrincipiaPluginAdapter
       should_transfer_camera_coordinates_ = false;
     }
     previous_camera_reference_rotation_ = reference_rotation;
-    PlanetariumCamera.fetch.GetPivot().rotation =
-        reference_rotation *
-        (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation *
-        camera_roll;
-    // The galaxy camera also renders the galaxy cube outside map view; it
-    // should not be rotated there.
+    // Both the scaled space and galaxy cameras are used in the flight scene as
+    // well as map view; they should not be reoriented there.
     if (MapView.MapIsEnabled) {
+      PlanetariumCamera.fetch.GetPivot().rotation =
+          reference_rotation *
+          (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation *
+          camera_roll;
       ScaledCamera.Instance.galaxyCamera.transform.rotation =
           reference_rotation *
           (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.rotation *
           camera_roll;
+      // We cannot run between the |PlanetariumCamera| and |ScaledSpace|
+      // |LateUpdate|s, but we need the ScaledSpace one to run after us to put the
+      // scaled origin where the scaled camera is.  Manually running another
+      // |LateUpdate| on ScaledSpace works, albeit ugly.
+      ScaledSpace.Instance.SendMessage("LateUpdate");
     }
     if (camera_roll_ != 0) {
       // TODO(egg): Should we be doing this in LateUpdate?
@@ -766,11 +771,6 @@ public partial class PrincipiaPluginAdapter
                                          : roll_change_per_frame;
       }
     }
-    // We cannot run between the |PlanetariumCamera| and |ScaledSpace|
-    // |LateUpdate|s, but we need the ScaledSpace one to run after us to put the
-    // scaled origin where the scaled camera is.  Manually running another
-    // |LateUpdate| on ScaledSpace works, albeit ugly.
-    ScaledSpace.Instance.SendMessage("LateUpdate");
   }
 
   private void LateUpdate() {
