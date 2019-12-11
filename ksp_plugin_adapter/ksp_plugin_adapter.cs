@@ -1664,12 +1664,14 @@ public partial class PrincipiaPluginAdapter
                                   .selected_celestial.flightGlobalsIndex);
       if (plotting_frame_selector_.target_override != target_vessel) {
         navball_changed_ = true;
+        should_transfer_camera_coordinates_ = true;
         plotting_frame_selector_.target_override = target_vessel;
       }
     } else {
       plugin_.ClearTargetVessel();
       if (plotting_frame_selector_.target_override != null) {
         navball_changed_ = true;
+        should_transfer_camera_coordinates_ = true;
         plotting_frame_selector_.target_override = null;
       }
     }
