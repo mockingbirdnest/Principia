@@ -22,6 +22,7 @@ namespace internal_apsides {
 
 using base::not_null;
 using geometry::Displacement;
+using geometry::Inertial;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::Velocity;
@@ -50,8 +51,9 @@ using ::testing::Eq;
 
 class ApsidesTest : public ::testing::Test {
  protected:
-  enum class WorldTag;
-  using World = Frame<WorldTag, WorldTag{}, Inertial>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST1,
+                      Inertial>;
 };
 
 #if !defined(_DEBUG)

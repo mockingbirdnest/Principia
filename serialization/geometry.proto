@@ -145,6 +145,7 @@ message Frame {
     BODY_WORLD = 9;
     // BUBBLE = 13;
     CAMERA = 14;
+    CAMERA_REFERENCE = 17;
     CELESTIAL_SPHERE = 8;
     MAIN_BODY_CENTRED = 15;
     NAVBALL = 10;

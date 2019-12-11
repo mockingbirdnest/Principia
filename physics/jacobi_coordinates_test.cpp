@@ -26,8 +26,9 @@ using ::testing::ElementsAre;
 
 class JacobiCoordinatesTest : public ::testing::Test {
  protected:
-  enum class WorldTag;
-  using World = Frame<WorldTag, WorldTag{}, Inertial>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST,
+                      Inertial>;
 
   MassiveBody m1_ = MassiveBody(1 * Kilogram);
   MassiveBody m2_ = MassiveBody(2 * Kilogram);

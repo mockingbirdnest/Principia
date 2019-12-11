@@ -52,7 +52,8 @@ constexpr double ε² = ε * ε;
 constexpr double ε³ = ε² * ε;
 constexpr double ε⁴ = ε³ * ε;
 
-using World = Frame<enum class WorldTag>;
+using World = Frame<serialization::Frame::TestTag,
+                    serialization::Frame::TEST>;
 
 class DoublePrecisionTest : public ::testing::Test {};
 

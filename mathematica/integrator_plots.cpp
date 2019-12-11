@@ -369,8 +369,9 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   MassiveBody b1(μ);
   MasslessBody b2;
 
-  enum class WorldTag;
-  using World = geometry::Frame<WorldTag, WorldTag{}, Inertial>;
+  using World = geometry::Frame<serialization::Frame::TestTag,
+                                serialization::Frame::TEST,
+                                Inertial>;
   KeplerianElements<World> elements;
   elements.semimajor_axis = 1 * Metre;
   elements.eccentricity = eccentricity;

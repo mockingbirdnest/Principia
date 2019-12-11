@@ -77,7 +77,8 @@ using ::testing::Matcher;
 
 class EulerSolverTest : public ::testing::Test {
  protected:
-  using PrincipalAxes = Frame<enum class PrincipalAxesTag>;
+  using PrincipalAxes = Frame<serialization::Frame::PhysicsTag,
+                              serialization::Frame::PRINCIPAL_AXES>;
 
   using Solver = EulerSolver<ICRS, PrincipalAxes>;
 

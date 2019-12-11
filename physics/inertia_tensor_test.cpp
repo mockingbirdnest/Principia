@@ -57,14 +57,18 @@ using ::testing::Matcher;
 // See https://en.wikipedia.org/wiki/List_of_moments_of_inertia.
 class InertiaTensorTest : public ::testing::Test {
  protected:
-  enum class Frame0Tag;
-  using Frame0 = Frame<Frame0Tag, Frame0Tag{}, Inertial>;
-  enum class Frame1Tag;
-  using Frame1 = Frame<Frame1Tag, Frame1Tag{}, Inertial>;
-  enum class Frame2Tag;
-  using Frame2 = Frame<Frame2Tag, Frame2Tag{}, Inertial>;
-  enum class Frame3Tag;
-  using Frame3 = Frame<Frame3Tag, Frame3Tag{}, Inertial>;
+  using Frame0 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST,
+                       Inertial>;
+  using Frame1 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST1,
+                       Inertial>;
+  using Frame2 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST2,
+                       Inertial>;
+  using Frame3 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST3,
+                       Inertial>;
 
   template<typename Frame>
   void CheckMomentsOfInertia(

@@ -102,8 +102,9 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
 }
 
 TEST_F(SolarSystemTest, KSPSystem) {
-  enum class KSPTag;
-  using KSP = Frame<KSPTag, KSPTag{}, Inertial>;
+  using KSP = Frame<serialization::Frame::TestTag,
+                    serialization::Frame::TEST,
+                    Inertial>;
 
   SolarSystem<KSP> solar_system(
       SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",

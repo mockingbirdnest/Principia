@@ -76,6 +76,17 @@ using Navigation = Frame<serialization::Frame::PluginTag,
                          serialization::Frame::NAVIGATION,
                          NonInertial>;
 
+// The plotting frame, but with the y and z axes swapped compared to
+// |Navigation| (the basis is left-handed).  This frame defines the camera
+// horizontal, and its angular velocity defines the angular velocity of the
+// camera (note that the linear motion of the camera is defined in-game by
+// following a specific target, which may be in motion with respect to
+// |CameraReference|, so the camera is not necessarily at rest in that frame).
+using CameraReference = Frame<serialization::Frame::PluginTag,
+                              serialization::Frame::CAMERA_REFERENCE,
+                              NonInertial,
+                              Handedness::Left>;
+
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences
 // between velocities are consistent with those in an inertial reference frame.
@@ -126,6 +137,7 @@ using internal_frames::ApparentBubble;
 using internal_frames::Barycentric;
 using internal_frames::BodyWorld;
 using internal_frames::Camera;
+using internal_frames::CameraReference;
 using internal_frames::CelestialSphere;
 using internal_frames::MainBodyCentred;
 using internal_frames::Navball;

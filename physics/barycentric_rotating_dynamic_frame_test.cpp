@@ -66,8 +66,10 @@ char constexpr small[] = "Small";
 class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the barycentre of the two bodies.
-  using BigSmallFrame = Frame<enum class BigSmallFrameTag>;
-  using MockFrame = Frame<enum class MockFrameTag>;
+  using BigSmallFrame = Frame<serialization::Frame::TestTag,
+                              serialization::Frame::TEST>;
+  using MockFrame = Frame<serialization::Frame::TestTag,
+                          serialization::Frame::TEST1>;
 
   BarycentricRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
