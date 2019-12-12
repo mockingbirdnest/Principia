@@ -274,7 +274,7 @@ Rotation<CameraReference, World> Renderer::CameraReferenceRotation(
   auto const result =
       OrthogonalMap<WorldSun, World>::Identity() *
       sun_looking_glass.Inverse().Forget() * planetarium_rotation.Forget() *
-      plotting_frame_->FromThisFrameAtTime(time).orthogonal_map() *
+      GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map() *
       celestial_mirror.Forget();
   CHECK(result.Determinant().is_positive());
   return result.rotation();
