@@ -88,6 +88,12 @@ class SymplecticRungeKuttaNyströmIntegrator
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
+    static not_null<std::unique_ptr<Instance>> ReadFromMessage(
+        serialization::SymplecticRungeKuttaNystromIntegratorInstance const&
+            extension,
+        IntegrationProblem<ODE> const& problem,
+        AppendState const& append_state,
+        Time const& step);
 
    private:
     Instance(IntegrationProblem<ODE> const& problem,
@@ -110,12 +116,6 @@ class SymplecticRungeKuttaNyströmIntegrator
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
 
  private:
-  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
-      serialization::FixedStepSizeIntegratorInstance const& message,
-      IntegrationProblem<ODE> const& problem,
-      AppendState const& append_state,
-      Time const& step) const override;
-
   static constexpr auto BA = serialization::FixedStepSizeIntegrator::BA;
   static constexpr auto ABA = serialization::FixedStepSizeIntegrator::ABA;
   static constexpr auto BAB = serialization::FixedStepSizeIntegrator::BAB;
