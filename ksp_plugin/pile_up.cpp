@@ -29,10 +29,12 @@ using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::RigidTransformation;
 using geometry::Velocity;
+using geometry::Wedge;
 using physics::Anticommutator;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::AngularMomentum;
+using quantities::si::Radian;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -424,27 +426,40 @@ DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
   // Then compute the inertia tensor and the angular momentum of the pile-up.
   InertiaTensor<RigidPileUp> pile_up_inertia_tensor;
   Bivector<AngularMomentum, RigidPileUp> pile_up_angular_momentum;
-  RigidTransformation<RigidPileUp, Barycentric> const pile_up_to_barycentric(
-      RigidPileUp::origin,
-      pile_up_barycentre.position(),
-      Identity<RigidPileUp, Barycentric>().Forget());
+  RigidMotion<RigidPileUp, Barycentric> const pile_up_to_barycentric(
+      RigidTransformation<RigidPileUp, Barycentric>(
+          RigidPileUp::origin,
+          pile_up_barycentre.position(),
+          Identity<RigidPileUp, Barycentric>().Forget()),
+      AngularVelocity<Barycentric>{},
+      pile_up_barycentre.velocity());
+  RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up =
+      pile_up_to_barycentric.Inverse();
   for (not_null<Part*> const part : parts) {
-    RigidMotion<RigidPart, Barycentric> const& part_rigid_motion =
+    RigidMotion<RigidPart, Barycentric> const& part_to_barycentric =
         part->rigid_motion();
-    RigidTransformation<RigidPart, Barycentric> const& part_to_barycentric =
-        part_rigid_motion.rigid_transformation();
-    RigidTransformation<RigidPart, RigidPileUp> const part_to_pile_up =
-        pile_up_to_barycentric.Inverse() * part_to_barycentric;
+    RigidMotion<RigidPart, RigidPileUp> const part_to_pile_up =
+        barycentric_to_pile_up * part_to_barycentric;
 
     InertiaTensor<RigidPart> const& part_inertia_tensor =
         part->inertia_tensor();
-    pile_up_inertia_tensor += part->inertia_tensor().Transform(part_to_pile_up);
+    // NOTE(phl): The following call reads like the tensor "transforms" the
+    // rigid motion.  Improve this API.
+    pile_up_inertia_tensor += part->inertia_tensor().Transform(
+        part_to_pile_up.rigid_transformation());
 
     Bivector<AngularMomentum, RigidPart> const part_angular_momentum =
         Anticommutator(part_inertia_tensor,
-                       part_rigid_motion.angular_velocity_of_to_frame());
+                       part_to_barycentric.angular_velocity_of_to_frame());
+    DegreesOfFreedom<RigidPileUp> const part_degrees_of_freedom =
+        part_to_pile_up({RigidPart::origin, Velocity<RigidPart>{}});
     pile_up_angular_momentum +=
-        part_to_pile_up.linear_map()(part_angular_momentum);
+        part_to_pile_up.rigid_transformation().linear_map()(
+            part_angular_momentum) +
+        Wedge(part_degrees_of_freedom.position() - RigidPileUp::origin,
+              part->inertia_tensor().mass() *
+                  part_degrees_of_freedom.velocity()) *
+            Radian;
   }
 
   angular_momentum_ = pile_up_angular_momentum;
