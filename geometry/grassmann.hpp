@@ -51,7 +51,6 @@ class Multivector<Scalar, Frame, 1> final {
   Multivector OrthogonalizationAgainst(
       Multivector<S, Frame, 1> const& multivector) const;
 
-  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
   void WriteToMessage(
       not_null<serialization::Multivector*> message) const;
   template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
@@ -91,7 +90,6 @@ class Multivector<Scalar, Frame, 2> final {
   Multivector OrthogonalizationAgainst(
       Multivector<S, Frame, 2> const& multivector) const;
 
-  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
   template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
@@ -123,7 +121,6 @@ class Multivector<Scalar, Frame, 3> final {
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
-  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
   template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);

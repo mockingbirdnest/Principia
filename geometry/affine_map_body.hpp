@@ -62,7 +62,6 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::linear_map() const {
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
-template<typename>
 void AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::WriteToMessage(
     not_null<serialization::AffineMap*> const message) const {
   FromFrame::WriteToMessage(message->mutable_from_frame());

@@ -53,7 +53,6 @@ struct Frame : not_constructible {
   static constexpr bool is_serializable =
       google::protobuf::is_proto_enum<FrameTag>::value;
 
-  template<typename = std::enable_if_t<is_serializable>>
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
   // Checks that the |message| matches the current type.

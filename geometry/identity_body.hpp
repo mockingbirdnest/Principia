@@ -67,7 +67,6 @@ OrthogonalMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
 void Identity<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
   LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
@@ -85,7 +84,6 @@ Identity<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::ReadFromMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
 void Identity<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::Identity*> const message) const {}
 

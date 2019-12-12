@@ -48,7 +48,6 @@ class Point final {
   constexpr bool operator==(Point const& right) const;
   constexpr bool operator!=(Point const& right) const;
 
-  template<typename = std::enable_if_t<base::is_serializable_v<Vector>>>
   void WriteToMessage(not_null<serialization::Point*> message) const;
   template<typename = std::enable_if_t<base::is_serializable_v<Vector>>>
   static Point ReadFromMessage(serialization::Point const& message);

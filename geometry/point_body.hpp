@@ -105,7 +105,6 @@ constexpr bool Point<Vector>::operator!=(Point<Vector> const& right) const {
 }
 
 template<typename Vector>
-template<typename>
 void Point<Vector>::WriteToMessage(
     not_null<serialization::Point*> const message) const {
   PointSerializer<Vector>::WriteToMessage(coordinates_, message);

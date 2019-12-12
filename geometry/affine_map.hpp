@@ -33,7 +33,6 @@ class AffineMap final {
   static constexpr bool is_serializable = base::is_serializable_v<FromFrame> &&
                                           base::is_serializable_v<ToFrame>;
 
-  template<typename = std::enable_if_t<is_serializable>>
   void WriteToMessage(not_null<serialization::AffineMap*> message) const;
   template<typename = std::enable_if_t<is_serializable>>
   static AffineMap ReadFromMessage(serialization::AffineMap const& message);

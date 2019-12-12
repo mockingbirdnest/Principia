@@ -102,7 +102,6 @@ Multivector<Scalar, Frame, 2>
 }
 
 template<typename Scalar, typename Frame>
-template<typename>
 void Multivector<Scalar, Frame, 1>::WriteToMessage(
       not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
@@ -110,7 +109,6 @@ void Multivector<Scalar, Frame, 1>::WriteToMessage(
 }
 
 template<typename Scalar, typename Frame>
-template<typename>
 void Multivector<Scalar, Frame, 2>::WriteToMessage(
       not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
@@ -118,7 +116,6 @@ void Multivector<Scalar, Frame, 2>::WriteToMessage(
 }
 
 template<typename Scalar, typename Frame>
-template<typename>
 void Multivector<Scalar, Frame, 3>::WriteToMessage(
       not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());

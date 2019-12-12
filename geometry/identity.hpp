@@ -56,12 +56,10 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
   static constexpr bool is_serializable = base::is_serializable_v<FromFrame> &&
                                           base::is_serializable_v<ToFrame>;
 
-  template<typename = std::enable_if_t<is_serializable>>
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename = std::enable_if_t<is_serializable>>
   static Identity ReadFromMessage(serialization::LinearMap const& message);
 
-  template<typename = std::enable_if_t<is_serializable>>
   void WriteToMessage(not_null<serialization::Identity*> message) const;
   template<typename = std::enable_if_t<is_serializable>>
   static Identity ReadFromMessage(serialization::Identity const& message);

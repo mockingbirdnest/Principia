@@ -55,7 +55,6 @@ bool Pair<T1, T2>::operator!=(Pair const& right) const {
 }
 
 template<typename T1, typename T2>
-template<typename>
 void Pair<T1, T2>::WriteToMessage(
     not_null<serialization::Pair*> const message) const {
   PointOrMultivectorSerializer<T1, serialization::Pair::Element>::

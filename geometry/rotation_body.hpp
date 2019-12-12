@@ -279,7 +279,6 @@ Quaternion const& Rotation<FromFrame, ToFrame>::quaternion() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
 void Rotation<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
   LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
@@ -297,7 +296,6 @@ Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
 void Rotation<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::Rotation*> const message) const {
   quaternion_.WriteToMessage(message->mutable_quaternion());

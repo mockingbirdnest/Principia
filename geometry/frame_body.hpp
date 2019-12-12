@@ -22,7 +22,6 @@ inline uint32_t Fingerprint(std::string const& s) {
 
 template<typename FrameTag, FrameTag tag_,
          FrameMotion motion_, Handedness handedness_>
-template<typename>
 void Frame<FrameTag, tag_, motion_, handedness_>::WriteToMessage(
   not_null<serialization::Frame*> const message) {
   std::string const& tag_type_full_name =
