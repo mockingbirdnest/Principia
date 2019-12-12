@@ -30,8 +30,7 @@ class FrameTest : public testing::Test {
 
   using F1 = Frame<enum class F1Tag>;
   using F2 = Frame<enum class F2Tag>;
-  enum class F3Tag;
-  using F3 = Frame<F3Tag, F3Tag{}, Inertial>;
+  using F3 = Frame<enum class F3Tag, F3Tag{}, Inertial>;
   static_assert(!std::is_same_v<F1, F2>);
   static_assert(!std::is_same_v<F1, F3>);
   static_assert(!std::is_same_v<F2, F3>);
@@ -44,7 +43,7 @@ TEST_F(FrameDeathTest, SerializationError) {
     serialization::Frame message;
     World1::WriteToMessage(&message);
     World2::ReadFromMessage(message);
-  }, "\\(tag\\) ==");
+  }, R"(\(tag\) ==)");
   EXPECT_DEATH({
     serialization::Frame message;
     World1::WriteToMessage(&message);

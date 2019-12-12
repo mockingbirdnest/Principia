@@ -172,8 +172,8 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     // of the Sun's axis.
     // TODO(egg): perhaps rotating bodies should export a rotation to their
     // celestial reference frame, we'll use that in the plugin too.
-    enum class LocalFrameTag;
-    using ParentEquator = Frame<LocalFrameTag, LocalFrameTag{}, Inertial>;
+    using ParentEquator =
+        Frame<enum class LocalFrameTag, LocalFrameTag{}, Inertial>;
     auto const z = Bivector<double, ICRS>({0, 0, 1});
     std::optional<Rotation<ICRS, ParentEquator>> rotation;
 

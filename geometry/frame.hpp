@@ -16,7 +16,7 @@ namespace internal_frame {
 using base::not_constructible;
 using base::not_null;
 
-enum Inertia {
+enum FrameMotion {
   Inertial,
   NonInertial,
 };
@@ -32,18 +32,17 @@ enum class Handedness {
 //   using MyFrame = Frame<enum class MyFrameTag>;
 //
 // or:
-//   enum class MyFrameTag;
-//   using MyFrame = Frame<MyFrameTag, MyFrameTag{}, Inertial>;
+//   using MyFrame = Frame<enum class MyFrameTag, MyFrameTag{}, Inertial>;
 //
 // By default, the frame is non-inertial and right-handed.
 // TODO(phl): Make the serialization check compile-time.
 template<typename FrameTag,
          FrameTag tag_ = FrameTag{},
-         Inertia inertia_ = NonInertial,
+         FrameMotion motion_ = NonInertial,
          Handedness handedness_ = Handedness::Right>
 struct Frame : not_constructible {
-  static constexpr bool is_inertial = inertia_ == Inertial;
-  static constexpr Inertia inertia = inertia_;
+  static constexpr bool is_inertial = motion_ == Inertial;
+  static constexpr FrameMotion motion = motion_;
   static constexpr Handedness handedness = handedness_;
 
   static const Position<Frame> origin;
