@@ -705,7 +705,6 @@ not_null<MassiveBody const*> Ephemeris<Frame>::body_for_serialization_index(
 }
 
 template<typename Frame>
-template<typename>
 void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
   LOG(INFO) << __FUNCTION__;

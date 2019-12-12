@@ -89,7 +89,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // End of the implementation of the interface.
 
-  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
   template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
@@ -100,7 +99,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Ephemeris to create synchronized checkpoints of its state and that of its
   // trajectories.
   Checkpointer<serialization::ContinuousTrajectory>& checkpointer();
-  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
   void WriteToCheckpoint(
       not_null<serialization::ContinuousTrajectory*> message);
   template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>

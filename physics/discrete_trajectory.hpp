@@ -162,7 +162,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // This trajectory must be a root.  Only the given |forks| are serialized.
   // They must be descended from this trajectory.  The pointers in |forks| may
   // be null at entry.
-  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
       std::vector<DiscreteTrajectory<Frame>*> const& forks) const;

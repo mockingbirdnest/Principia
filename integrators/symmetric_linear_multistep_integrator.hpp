@@ -61,6 +61,7 @@ class SymmetricLinearMultistepIntegrator
       void WriteToMessage(
           not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                        Step*> const message) const;
+      template<typename = std::enable_if_t<base::is_serializable_v<Position>>>
       static Step ReadFromMessage(
           serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
               message);

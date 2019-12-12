@@ -199,6 +199,7 @@ void SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Step::
 }
 
 template<typename Method, typename Position>
+template<typename>
 typename SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Step
 SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Step::
     ReadFromMessage(
