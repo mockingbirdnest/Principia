@@ -21,9 +21,9 @@ inline uint32_t Fingerprint(std::string const& s) {
 }
 
 template<typename FrameTag, FrameTag tag_,
-         Inertia inertia_, Handedness handedness_>
+         FrameMotion motion_, Handedness handedness_>
 template<typename>
-void Frame<FrameTag, tag_, inertia_, handedness_>::WriteToMessage(
+void Frame<FrameTag, tag_, motion_, handedness_>::WriteToMessage(
   not_null<serialization::Frame*> const message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
@@ -34,9 +34,9 @@ void Frame<FrameTag, tag_, inertia_, handedness_>::WriteToMessage(
 }
 
 template<typename FrameTag, FrameTag tag_,
-         Inertia inertia_, Handedness handedness_>
+         FrameMotion motion_, Handedness handedness_>
 template<typename>
-void Frame<FrameTag, tag_, inertia_, handedness_>::ReadFromMessage(
+void Frame<FrameTag, tag_, motion_, handedness_>::ReadFromMessage(
   serialization::Frame const& message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
@@ -49,13 +49,13 @@ void Frame<FrameTag, tag_, inertia_, handedness_>::ReadFromMessage(
 
 // Default-initialized to {0, 0, 0}.
 template<typename FrameTag, FrameTag tag_,
-         Inertia inertia_, Handedness handedness_>
-Position<Frame<FrameTag, tag_, inertia_, handedness_>> const
-Frame<FrameTag, tag_, inertia_, handedness_>::origin;
+         FrameMotion motion_, Handedness handedness_>
+Position<Frame<FrameTag, tag_, motion_, handedness_>> const
+Frame<FrameTag, tag_, motion_, handedness_>::origin;
 template<typename FrameTag, FrameTag tag_,
-         Inertia inertia_, Handedness handedness_>
-Velocity<Frame<FrameTag, tag_, inertia_, handedness_>> const
-Frame<FrameTag, tag_, inertia_, handedness_>::unmoving;
+         FrameMotion motion_, Handedness handedness_>
+Velocity<Frame<FrameTag, tag_, motion_, handedness_>> const
+Frame<FrameTag, tag_, motion_, handedness_>::unmoving;
 
 inline void ReadFrameFromMessage(
     serialization::Frame const& message,
