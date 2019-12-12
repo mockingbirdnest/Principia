@@ -14,6 +14,7 @@ namespace principia {
 namespace physics {
 namespace internal_jacobi_coordinates {
 
+using geometry::Inertial;
 using quantities::Length;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -26,7 +27,7 @@ class JacobiCoordinatesTest : public ::testing::Test {
  protected:
   using Frame = geometry::Frame<serialization::Frame::TestTag,
                                 serialization::Frame::TEST,
-                                /*frame_is_inertial=*/true>;
+                                Inertial>;
 
   MassiveBody m1_ = MassiveBody(1 * Kilogram);
   MassiveBody m2_ = MassiveBody(2 * Kilogram);

@@ -34,7 +34,7 @@ using testing_utilities::RelativeError;
 class AffineMapTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+                      serialization::Frame::TEST, Inertial>;
 
   using Orth = OrthogonalMap<World, World>;
   using Perm = Permutation<World, World>;

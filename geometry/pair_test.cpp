@@ -32,7 +32,7 @@ namespace geometry {
 class PairTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+                      serialization::Frame::TEST, Inertial>;
 
   struct Universe;
 

@@ -26,6 +26,7 @@ namespace principia {
 
 using geometry::Frame;
 using geometry::Displacement;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::Vector;
 using geometry::Velocity;
@@ -55,7 +56,7 @@ namespace numerics {
 class PolynomialTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, true>;
+                      serialization::Frame::TEST1, Inertial>;
 
   using P2V = PolynomialInMonomialBasis<Displacement<World>, Time, 2,
                                         HornerEvaluator>;

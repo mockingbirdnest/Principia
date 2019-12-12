@@ -64,7 +64,7 @@ class ManœuvreTest : public ::testing::Test {
  protected:
   using World = Barycentric;
   using Rendering = Frame<serialization::Frame::TestTag,
-                          serialization::Frame::TEST2, false>;
+                          serialization::Frame::TEST2>;
 
   not_null<std::unique_ptr<StrictMock<MockDynamicFrame<World, Rendering>>>>
   MakeMockDynamicFrame() {

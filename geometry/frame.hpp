@@ -16,12 +16,40 @@ namespace internal_frame {
 using base::not_constructible;
 using base::not_null;
 
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
+enum FrameMotion {
+  Inertial,
+  NonInertial,
+};
+
+enum class Handedness {
+  Left,
+  Right,
+};
+
+// The frame is serializable if and only if FrameTag is a protocol buffer enum.
+// To declare a local frame that does not need serialization, use the following
+// pattern:
+//   using MyFrame = Frame<enum class MyFrameTag>;
+//
+// or:
+//   using MyFrame = Frame<enum class MyFrameTag, MyFrameTag{}, Inertial>;
+//
+// By default, the frame is non-inertial and right-handed.
+// TODO(phl): Make the serialization check compile-time.
+template<typename FrameTag,
+         FrameTag tag_ = FrameTag{},
+         FrameMotion motion_ = NonInertial,
+         Handedness handedness_ = Handedness::Right>
 struct Frame : not_constructible {
+  static constexpr bool is_inertial = motion_ == Inertial;
+  static constexpr FrameMotion motion = motion_;
+  static constexpr Handedness handedness = handedness_;
+
+  static const Position<Frame> origin;
+  static const Velocity<Frame> unmoving;
+
   using Tag = FrameTag;
-  static Position<Frame> const origin;
-  static Tag const tag = frame_tag;
-  static bool const is_inertial = frame_is_inertial;
+  static constexpr Tag tag = tag_;
 
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
@@ -38,6 +66,9 @@ void ReadFrameFromMessage(
 }  // namespace internal_frame
 
 using internal_frame::Frame;
+using internal_frame::Handedness;
+using internal_frame::Inertial;
+using internal_frame::NonInertial;
 using internal_frame::ReadFrameFromMessage;
 
 }  // namespace geometry

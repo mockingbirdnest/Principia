@@ -17,6 +17,7 @@
 namespace principia {
 
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::Displacement;
 using geometry::Position;
@@ -41,7 +42,7 @@ namespace numerics {
 class Hermite3Test : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, true>;
+                      serialization::Frame::TEST1, Inertial>;
 
   Instant const t0_;
 };

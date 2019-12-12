@@ -75,6 +75,7 @@ using base::SerializeAsBytes;
 using base::UniqueArray;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::NonInertial;
 using geometry::Quaternion;
 using geometry::R3x3Matrix;
 using geometry::RadiusLatitudeLongitude;
@@ -854,7 +855,8 @@ void __cdecl principia__InsertOrKeepLoadedPart(
   // We build the inertia tensor in the principal axes and then transform it to
   // World.
   using PartPrincipalAxes = Frame<serialization::Frame::PhysicsTag,
-                                  serialization::Frame::PRINCIPAL_AXES, false>;
+                                  serialization::Frame::PRINCIPAL_AXES,
+                                  NonInertial>;
 
   static constexpr MomentOfInertia zero;
   static constexpr double to_si_unit =
