@@ -48,6 +48,12 @@ class SymmetricLinearMultistepIntegrator
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
+    static not_null<std::unique_ptr<Instance>> ReadFromMessage(
+        serialization::SymmetricLinearMultistepIntegratorInstance const&
+            extension,
+        IntegrationProblem<ODE> const& problem,
+        AppendState const& append_state,
+        Time const& step);
 
    private:
     // The data for a previous step of the integration.  The |Displacement|s
@@ -112,12 +118,6 @@ class SymmetricLinearMultistepIntegrator
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
 
  private:
-  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
-      serialization::FixedStepSizeIntegratorInstance const& message,
-      IntegrationProblem<ODE> const& problem,
-      AppendState const& append_state,
-      Time const& step) const override;
-
   static constexpr auto half_order_ = Method::Half(order);
   static constexpr auto ɑ_ = Method::ɑ;
   static constexpr auto β_numerator_ = Method::β_numerator;

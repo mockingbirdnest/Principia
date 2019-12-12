@@ -220,6 +220,20 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   FixedStepSizeIntegrator const& integrator =
       FixedStepSizeIntegrator::ReadFromMessage(extension.integrator());
 
+  if (extension.HasExtension(
+      serialization::SymmetricLinearMultistepIntegratorInstance::extension) {
+    return SymplecticRungeKuttaNyströmIntegrator::Instance::ReadFromMessage(
+        extension.GetExtension(
+            serialization::SymmetricLinearMultistepIntegratorInstance::
+                extension),
+        problem,
+        append_state,
+        step);
+  }
+  if (extension.HasExtension(
+      serialization::SymplecticRungeKuttaNystromIntegratorInstance)) {
+  }
+
   return integrator.ReadFromMessage(extension, problem, append_state, step);
 }
 

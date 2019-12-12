@@ -117,12 +117,12 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
   // For convenience, deserialization is an instance member of the |Integrator|,
   // not a static member of the |Instance|.  Which makes sense if you see
   // |Integrator| as a factory for |Instance|.
-  virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
-  ReadFromMessage(
-      serialization::FixedStepSizeIntegratorInstance const& message,
-      IntegrationProblem<ODE> const& problem,
-      AppendState const& append_state,
-      Time const& step) const = 0;
+  //virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+  //ReadFromMessage(
+  //    serialization::FixedStepSizeIntegratorInstance const& message,
+  //    IntegrationProblem<ODE> const& problem,
+  //    AppendState const& append_state,
+  //    Time const& step) const = 0;
 
   FixedStepSizeIntegrator() = default;
 };
