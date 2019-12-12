@@ -51,9 +51,8 @@ using ::testing::Eq;
 
 class ApsidesTest : public ::testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1,
-                      Inertial>;
+  enum class WorldTag;
+  using World = Frame<WorldTag, WorldTag{}, Inertial>;
 };
 
 #if !defined(_DEBUG)

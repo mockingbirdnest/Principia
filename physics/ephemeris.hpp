@@ -275,7 +275,8 @@ class Ephemeris {
   virtual not_null<MassiveBody const*> body_for_serialization_index(
       int serialization_index) const;
 
-  virtual void WriteToMessage(
+  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
+  void WriteToMessage(
       not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       serialization::Ephemeris const& message) EXCLUDES(lock_);
