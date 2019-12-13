@@ -441,21 +441,21 @@ DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
     RigidMotion<RigidPart, RigidPileUp> const part_to_pile_up =
         barycentric_to_pile_up * part_to_barycentric;
 
-    InertiaTensor<RigidPart> const& part_inertia_tensor =
-        part->inertia_tensor();
     // NOTE(phl): The following call reads like the tensor "transforms" the
     // rigid motion.  Improve this API.
-    pile_up_inertia_tensor += part->inertia_tensor().Transform(
-        part_to_pile_up.rigid_transformation());
+    InertiaTensor<RigidPileUp> const& part_inertia_tensor =
+        part->inertia_tensor().Transform(
+            part_to_pile_up.rigid_transformation());
+    pile_up_inertia_tensor += part_inertia_tensor;
 
-    Bivector<AngularMomentum, RigidPart> const part_angular_momentum =
-        Anticommutator(part_inertia_tensor,
-                       part_to_pile_up.angular_velocity_of_to_frame());
+    Bivector<AngularMomentum, RigidPileUp> const part_angular_momentum =
+        Anticommutator(
+            part_inertia_tensor,
+            part_to_pile_up.Inverse().angular_velocity_of_to_frame());
     DegreesOfFreedom<RigidPileUp> const part_degrees_of_freedom =
         part_to_pile_up({RigidPart::origin, Velocity<RigidPart>{}});
     pile_up_angular_momentum +=
-        part_to_pile_up.rigid_transformation().linear_map()(
-            part_angular_momentum) +
+        part_angular_momentum +
         Wedge(part_degrees_of_freedom.position() - RigidPileUp::origin,
               part->inertia_tensor().mass() *
                   part_degrees_of_freedom.velocity()) *
