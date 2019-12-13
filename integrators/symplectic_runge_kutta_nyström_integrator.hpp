@@ -93,7 +93,8 @@ class SymplecticRungeKuttaNyströmIntegrator
             extension,
         IntegrationProblem<ODE> const& problem,
         AppendState const& append_state,
-        Time const& step);
+        Time const& step,
+        SymplecticRungeKuttaNyströmIntegrator const& integrator);
 
    private:
     Instance(IntegrationProblem<ODE> const& problem,

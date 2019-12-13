@@ -53,7 +53,8 @@ class SymmetricLinearMultistepIntegrator
             extension,
         IntegrationProblem<ODE> const& problem,
         AppendState const& append_state,
-        Time const& step);
+        Time const& step,
+        SymmetricLinearMultistepIntegrator const& integrator);
 
    private:
     // The data for a previous step of the integration.  The |Displacement|s
