@@ -181,7 +181,7 @@ Instance::WriteToMessage(
 
 template<typename Method, typename Position>
 not_null<std::unique_ptr<
-    SymmetricLinearMultistepIntegrator<Method, Position>::Instance>>
+    typename SymmetricLinearMultistepIntegrator<Method, Position>::Instance>>
 SymmetricLinearMultistepIntegrator<Method, Position>::Instance::ReadFromMessage(
     serialization::SymmetricLinearMultistepIntegratorInstance const& extension,
     IntegrationProblem<ODE> const& problem,
@@ -192,11 +192,11 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::ReadFromMessage(
     previous_steps.push_back(Step::ReadFromMessage(previous_step));
   }
   return base::make_not_null_unique<Instance>(problem,
-                  append_state,
-                  step,
-                  extension.startup_step_index(),
-                  previous_steps,
-                  *this));
+                                              append_state,
+                                              step,
+                                              extension.startup_step_index(),
+                                              previous_steps,
+                                              *this);
 }
 
 template<typename Method, typename Position>
