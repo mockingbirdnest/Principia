@@ -186,17 +186,18 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::ReadFromMessage(
     serialization::SymmetricLinearMultistepIntegratorInstance const& extension,
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
-    Time const& step) {
+    Time const& step,
+    SymmetricLinearMultistepIntegrator const& integrator) {
   std::list<typename Step> previous_steps;
   for (auto const& previous_step : extension.previous_steps()) {
     previous_steps.push_back(Step::ReadFromMessage(previous_step));
   }
-  return base::make_not_null_unique<Instance>(problem,
-                                              append_state,
-                                              step,
-                                              extension.startup_step_index(),
-                                              previous_steps,
-                                              *this);
+  return std::unique_ptr<Instance>(new Instance(problem,
+                                                append_state,
+                                                step,
+                                                extension.startup_step_index(),
+                                                previous_steps,
+                                                integrator));
 }
 
 template<typename Method, typename Position>

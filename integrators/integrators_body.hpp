@@ -309,6 +309,12 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
 }
 
 #define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SMLS(method)           \
+  using Integrator = internal_symmetric_linear_multistep_integrator::        \
+      SymmetricLinearMultistepIntegrator<methods::method,                    \
+                                         typename ODE::Position>;            \
+  auto const integrator =                                                    \
+      SymmetricLinearMultistepIntegrator<methods::method,                    \
+                                         typename ODE::Position>();          \
   CHECK(extension.HasExtension(                                              \
       serialization::SymmetricLinearMultistepIntegratorInstance::extension)) \
       << extension.DebugString();                                            \
@@ -320,29 +326,32 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
           typename ODE::Position>::Instance::ReadFromMessage(subextension,   \
                                                              problem,        \
                                                              append_state,   \
-                                                             step)
+                                                             step,           \
+                                                             integrator)
 
 // We do not deserialize an SPRK per se, but only when it is converted to an
 // SRKN.  The reason is that an SPRK is for a different kind of equation than
 // an SRKN, so the two would return different types.  If we ever need to do
 // this we will need to specialize ReadFromMessage somehow.
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK(method)
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK(method) \
+  LOG(FATAL) << "NYI"
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SRKN(method)         \
-  CHECK(extension.HasExtension(                                            \
-      serialization::SymplecticRungeKuttaNystromIntegratorInstance::       \
-          extension))                                                      \
-      << extension.DebugString();                                          \
-  auto const& subextension = extension.GetExtension(                       \
-      serialization::SymplecticRungeKuttaNystromIntegratorInstance::       \
-          extension);                                                      \
-  return internal_symplectic_runge_kutta_nyström_integrator::              \
-      SymplecticRungeKuttaNyströmIntegrator<                               \
-          methods::method,                                                 \
-          typename ODE::Position>::Instance::ReadFromMessage(subextension, \
-                                                             problem,      \
-                                                             append_state, \
-                                                             step)
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SRKN(method)        \
+  using Integrator = internal_symplectic_runge_kutta_nyström_integrator:: \
+      SymplecticRungeKuttaNyströmIntegrator<methods::method,              \
+                                            typename ODE::Position>;      \
+  auto const integrator =                                                 \
+      SymplecticRungeKuttaNyströmIntegrator<methods::method,              \
+                                            typename ODE::Position>();    \
+  CHECK(extension.HasExtension(                                           \
+      serialization::SymplecticRungeKuttaNystromIntegratorInstance::      \
+          extension))                                                     \
+      << extension.DebugString();                                         \
+  auto const& subextension = extension.GetExtension(                      \
+      serialization::SymplecticRungeKuttaNystromIntegratorInstance::      \
+          extension);                                                     \
+  return Integrator::Instance::ReadFromMessage(                           \
+      subextension, problem, append_state, step, integrator)
 
 template<typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>

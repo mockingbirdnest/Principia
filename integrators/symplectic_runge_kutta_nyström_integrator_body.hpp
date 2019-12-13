@@ -174,9 +174,10 @@ ReadFromMessage(
         extension,
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
-    Time const& step) {
-  return base::make_not_null_unique<Instance>(
-      problem, append_state, step, *this);
+    Time const& step,
+    SymplecticRungeKuttaNyströmIntegrator const& integrator) {
+  return std::unique_ptr<Instance>(
+      new Instance(problem, append_state, step, integrator));
 }
 
 template<typename Method, typename Position>
