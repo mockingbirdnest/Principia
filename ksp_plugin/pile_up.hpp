@@ -31,6 +31,7 @@ using base::Status;
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
+using geometry::NonInertial;
 using geometry::Vector;
 using integrators::Integrator;
 using physics::DiscreteTrajectory;

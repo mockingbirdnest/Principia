@@ -19,6 +19,7 @@ namespace astronomy {
 using base::Fingerprint2011;
 using base::SerializeAsBytes;
 using geometry::Frame;
+using geometry::Inertial;
 using physics::SolarSystem;
 using ::testing::Eq;
 
@@ -26,7 +27,7 @@ class KSPFingerprintTest : public ::testing::Test {
  protected:
   using Barycentric = Frame<serialization::Frame::PluginTag,
                             serialization::Frame::BARYCENTRIC,
-                            true>;
+                            Inertial>;
 
   KSPFingerprintTest()
       : solar_system_(

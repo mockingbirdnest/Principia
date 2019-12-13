@@ -20,37 +20,40 @@ inline uint32_t Fingerprint(std::string const& s) {
   return Fingerprint2011(s.c_str(), s.size()) & 0xFFFFFFFF;
 }
 
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-void Frame<FrameTag, frame_tag, frame_is_inertial>::WriteToMessage(
-    not_null<serialization::Frame*> const message) {
+template<typename FrameTag, FrameTag tag_,
+         FrameMotion motion_, Handedness handedness_>
+void Frame<FrameTag, tag_, motion_, handedness_>::WriteToMessage(
+  not_null<serialization::Frame*> const message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
 
   message->set_tag_type_fingerprint(Fingerprint(tag_type_full_name));
-  message->set_tag(tag);
+  message->set_tag(static_cast<int>(tag));
   message->set_is_inertial(is_inertial);
 }
 
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-void Frame<FrameTag, frame_tag, frame_is_inertial>::ReadFromMessage(
-    serialization::Frame const& message) {
+template<typename FrameTag, FrameTag tag_,
+         FrameMotion motion_, Handedness handedness_>
+void Frame<FrameTag, tag_, motion_, handedness_>::ReadFromMessage(
+  serialization::Frame const& message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
 
   CHECK_EQ(Fingerprint(tag_type_full_name), message.tag_type_fingerprint())
       << tag_type_full_name;
-  CHECK_EQ(tag, message.tag());
+  CHECK_EQ(static_cast<int>(tag), message.tag());
   CHECK_EQ(is_inertial, message.is_inertial());
 }
 
 // Default-initialized to {0, 0, 0}.
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-Position<Frame<FrameTag, frame_tag, frame_is_inertial>> const
-Frame<FrameTag, frame_tag, frame_is_inertial>::origin;
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-FrameTag const Frame<FrameTag, frame_tag, frame_is_inertial>::tag;
-template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-bool const Frame<FrameTag, frame_tag, frame_is_inertial>::is_inertial;
+template<typename FrameTag, FrameTag tag_,
+         FrameMotion motion_, Handedness handedness_>
+Position<Frame<FrameTag, tag_, motion_, handedness_>> const
+Frame<FrameTag, tag_, motion_, handedness_>::origin;
+template<typename FrameTag, FrameTag tag_,
+         FrameMotion motion_, Handedness handedness_>
+Velocity<Frame<FrameTag, tag_, motion_, handedness_>> const
+Frame<FrameTag, tag_, motion_, handedness_>::unmoving;
 
 inline void ReadFrameFromMessage(
     serialization::Frame const& message,

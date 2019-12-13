@@ -37,10 +37,12 @@ using ::testing::Lt;
 
 class RotationTest : public testing::Test {
  protected:
-  using World =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
-  using World1 =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, true>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST,
+                      Inertial>;
+  using World1 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST1,
+                       Inertial>;
   using Orth = OrthogonalMap<World, World>;
   using Rot = Rotation<World, World>;
 

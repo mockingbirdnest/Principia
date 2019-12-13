@@ -16,6 +16,7 @@ namespace internal_renderer {
 
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
+using geometry::Permutation;
 using geometry::RigidTransformation;
 using geometry::Vector;
 using geometry::Velocity;
@@ -263,6 +264,20 @@ RigidTransformation<World, Navigation> Renderer::WorldToPlotting(
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   return BarycentricToPlotting(time).rigid_transformation() *
          WorldToBarycentric(time, sun_world_position, planetarium_rotation);
+}
+
+Rotation<CameraReference, World> Renderer::CameraReferenceRotation(
+    Instant const& time,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  Permutation<CameraReference, Navigation> const celestial_mirror(
+      Permutation<CameraReference, Navigation>::XZY);
+  auto const result =
+      OrthogonalMap<WorldSun, World>::Identity() *
+      sun_looking_glass.Inverse().Forget() * planetarium_rotation.Forget() *
+      GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map() *
+      celestial_mirror.Forget();
+  CHECK(result.Determinant().is_positive());
+  return result.rotation();
 }
 
 void Renderer::WriteToMessage(

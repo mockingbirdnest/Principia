@@ -31,10 +31,11 @@ using ::testing::Eq;
 
 class SymmetricBilinearFormTest : public ::testing::Test {
  protected:
-  using World =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
-  using Eigenworld =
-    Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, false>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST,
+                      Inertial>;
+  using Eigenworld = Frame<serialization::Frame::TestTag,
+                           serialization::Frame::TEST1>;
 
   SymmetricBilinearFormTest() {}
 

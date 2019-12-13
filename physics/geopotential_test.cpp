@@ -30,6 +30,7 @@ using astronomy::ICRS;
 using astronomy::ITRS;
 using base::make_not_null_unique;
 using geometry::Frame;
+using geometry::Inertial;
 using numerics::LegendreNormalizationFactor;
 using physics::SolarSystem;
 using quantities::Angle;
@@ -65,7 +66,7 @@ using ::testing::Property;
 class GeopotentialTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+                      serialization::Frame::TEST, Inertial>;
 
   GeopotentialTest()
       : massive_body_parameters_(17 * SIUnit<GravitationalParameter>()),

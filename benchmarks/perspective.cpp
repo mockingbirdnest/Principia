@@ -26,9 +26,9 @@ using quantities::si::Radian;
 
 namespace {
 using World = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST1, false>;
+                    serialization::Frame::TEST1>;
 using Camera = Frame<serialization::Frame::TestTag,
-                     serialization::Frame::TEST2, false>;
+                     serialization::Frame::TEST2>;
 }  // namespace
 
 void RandomSegmentsBenchmark(

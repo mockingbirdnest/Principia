@@ -16,6 +16,7 @@ namespace physics {
 namespace internal_hierarchical_system {
 
 using base::make_not_null_unique;
+using geometry::Inertial;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
@@ -34,7 +35,7 @@ class HierarchicalSystemTest : public ::testing::Test {
  protected:
   using Frame = geometry::Frame<serialization::Frame::TestTag,
                                 serialization::Frame::TEST,
-                                /*frame_is_inertial=*/true>;
+                                Inertial>;
 };
 
 TEST_F(HierarchicalSystemTest, HierarchicalSystem) {

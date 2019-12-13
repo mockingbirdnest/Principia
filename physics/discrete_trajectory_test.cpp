@@ -28,6 +28,7 @@ namespace internal_discrete_trajectory {
 
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::Point;
 using geometry::Position;
@@ -65,7 +66,7 @@ using ::testing::Ref;
 class DiscreteTrajectoryTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, true>;
+                      serialization::Frame::TEST, Inertial>;
 
   DiscreteTrajectoryTest()
       : q1_(World::origin +
