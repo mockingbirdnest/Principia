@@ -84,14 +84,11 @@ using Camera = Frame<serialization::Frame::PluginTag,
 using RigidPart = Frame<serialization::Frame::PluginTag,
                         serialization::Frame::RIGID_PART, false>;
 
-// The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees of
-// freedom of the parts in the frame of that body can be set, however their
-// motion is not integrated; this is simply applied as an offset from the rigid
-// body motion of the |PileUp|.
-// The origin of |RigidPileUp| is the centre of mass of the pile up.  Its axes
-// are those of Barycentric for now; eventually we will probably want to use the
-// inertia ellipsoid.
-// TODO(phl): Clean this comment once we support rotations.
+// The |PileUp| is seen as a rigid body; the degrees of freedom of the parts in
+// the frame of that body can be set, however their motion is not integrated;
+// this is simply applied as an offset from the rigid body motion of the
+// |PileUp|.  The origin of |RigidPileUp| is the centre of mass of the pile up.
+// Its axes are those of Barycentric.
 using RigidPileUp = Frame<serialization::Frame::PluginTag,
                           serialization::Frame::RIGID_PILE_UP,
                           /*frame_is_inertial=*/false>;

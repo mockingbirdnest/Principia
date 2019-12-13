@@ -411,7 +411,7 @@ DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
   // First compute the overall mass and centre of mass of the pile-up.  Also
   // compute the overall force applied to it.
   // TODO(phl): We assume that forces are applied at the centre of mass of the
-  // pile-up, but they are really applied at the centre of mass of the parts, so
+  // pile-up, but they are really applied at some unknown point of the parts, so
   // this introduces a torque.
   Mass pile_up_mass;
   Vector<Force, Barycentric> pile_up_intrinsic_force;
@@ -450,7 +450,7 @@ DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
 
     Bivector<AngularMomentum, RigidPart> const part_angular_momentum =
         Anticommutator(part_inertia_tensor,
-                       part_to_barycentric.angular_velocity_of_to_frame());
+                       part_to_pile_up.angular_velocity_of_to_frame());
     DegreesOfFreedom<RigidPileUp> const part_degrees_of_freedom =
         part_to_pile_up({RigidPart::origin, Velocity<RigidPart>{}});
     pile_up_angular_momentum +=
