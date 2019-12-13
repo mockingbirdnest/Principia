@@ -175,7 +175,8 @@ ReadFromMessage(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step) {
-  return Instance(problem, append_state, step, *this);
+  return base::make_not_null_unique<Instance>(
+      problem, append_state, step, *this);
 }
 
 template<typename Method, typename Position>
