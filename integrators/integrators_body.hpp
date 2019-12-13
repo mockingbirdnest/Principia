@@ -14,21 +14,24 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
-#define PRINCIPIA_CASE_SLMS(kind, method, action)    \
-  case serialization::FixedStepSizeIntegrator::kind: \
-    action(method)
+#define PRINCIPIA_CASE_SLMS(kind, method, action)      \
+  case serialization::FixedStepSizeIntegrator::kind: { \
+    action(method);                                    \
+  }
 
 // We do not deserialize an SPRK per se, but only when it is converted to an
 // SRKN.  The reason is that an SPRK is for a different kind of equation than
 // an SRKN, so the two would return different types.  If we ever need to do
 // this we will need to specialize ReadFromMessage somehow.
-#define PRINCIPIA_CASE_SPRK(kind, method, action)    \
-  case serialization::FixedStepSizeIntegrator::kind: \
-    action(method)
+#define PRINCIPIA_CASE_SPRK(kind, method, action)      \
+  case serialization::FixedStepSizeIntegrator::kind: { \
+    action(method);                                    \
+  }
 
-#define PRINCIPIA_CASE_SRKN(kind, method, action)    \
-  case serialization::FixedStepSizeIntegrator::kind: \
-    action(method)
+#define PRINCIPIA_CASE_SRKN(kind, method, action)      \
+  case serialization::FixedStepSizeIntegrator::kind: { \
+    action(method);                                    \
+  }
 
 #define PRINCIPIA_CASES(slms_action, sprk_action, srkn_action)                 \
   PRINCIPIA_CASE_SPRK(BLANES_MOAN_2002_S6,                                     \
@@ -141,7 +144,7 @@
                       sprk_action);                                            \
   PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8E,                                   \
                       吉田1990Order8E,                                          \
-                      sprk_action);
+                      sprk_action)
 
 namespace principia {
 namespace integrators {
@@ -305,6 +308,42 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   integrator().WriteToMessage(extension->mutable_integrator());
 }
 
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SMLS(method)           \
+  CHECK(extension.HasExtension(                                              \
+      serialization::SymmetricLinearMultistepIntegratorInstance::extension)) \
+      << extension.DebugString();                                            \
+  auto const& subextension = extension.GetExtension(                         \
+      serialization::SymmetricLinearMultistepIntegratorInstance::extension); \
+  return internal_symmetric_linear_multistep_integrator::                    \
+      SymmetricLinearMultistepIntegrator<                                    \
+          methods::method,                                                   \
+          typename ODE::Position>::Instance::ReadFromMessage(subextension,   \
+                                                             problem,        \
+                                                             append_state,   \
+                                                             step)
+
+// We do not deserialize an SPRK per se, but only when it is converted to an
+// SRKN.  The reason is that an SPRK is for a different kind of equation than
+// an SRKN, so the two would return different types.  If we ever need to do
+// this we will need to specialize ReadFromMessage somehow.
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK(method)
+
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SRKN(method)         \
+  CHECK(extension.HasExtension(                                            \
+      serialization::SymplecticRungeKuttaNystromIntegratorInstance::       \
+          extension))                                                      \
+      << extension.DebugString();                                          \
+  auto const& subextension = extension.GetExtension(                       \
+      serialization::SymplecticRungeKuttaNystromIntegratorInstance::       \
+          extension);                                                      \
+  return internal_symplectic_runge_kutta_nyström_integrator::              \
+      SymplecticRungeKuttaNyströmIntegrator<                               \
+          methods::method,                                                 \
+          typename ODE::Position>::Instance::ReadFromMessage(subextension, \
+                                                             problem,      \
+                                                             append_state, \
+                                                             step)
+
 template<typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
@@ -322,27 +361,20 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   auto const& extension = message.GetExtension(
       serialization::FixedStepSizeIntegratorInstance::extension);
   Time const step = Time::ReadFromMessage(extension.step());
-  FixedStepSizeIntegrator const& integrator =
-      FixedStepSizeIntegrator::ReadFromMessage(extension.integrator());
 
-  if (extension.HasExtension(
-          serialization::SymmetricLinearMultistepIntegratorInstance::
-              extension)) {
-    return SymplecticRungeKuttaNyströmIntegrator::Instance::ReadFromMessage(
-        extension.GetExtension(
-            serialization::SymmetricLinearMultistepIntegratorInstance::
-                extension),
-        problem,
-        append_state,
-        step);
+  switch (extension.integrator().kind()) {
+    PRINCIPIA_CASES(PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SMLS,
+                    PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK,
+                    PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SRKN);
+    default:
+      LOG(FATAL) << message.DebugString();
+      base::noreturn();
   }
-  if (extension.HasExtension(
-          serialization::SymplecticRungeKuttaNystromIntegratorInstance::
-              extension)) {
-  }
-
-  return integrator.ReadFromMessage(extension, problem, append_state, step);
 }
+
+#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SMLS
+#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK
+#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK
 
 template<typename ODE_>
 FixedStepSizeIntegrator<ODE_>::Instance::Instance(
@@ -354,7 +386,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
   CHECK_NE(Time(), step_);
 }
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SMLS(type)      \
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SMLS(method)    \
   return SymmetricLinearMultistepIntegrator<methods::method, \
                                             typename ODE::Position>()
 
@@ -362,16 +394,14 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
 // SRKN.  The reason is that an SPRK is for a different kind of equation than
 // an SRKN, so the two would return different types.  If we ever need to do
 // this we will need to specialize ReadFromMessage somehow.
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK(type)                 \
-  do {                                                                  \
-    CHECK(message.has_composition_method());                            \
-    return SprkAsSrknDeserializer<                                      \
-        ODE,                                                            \
-        methods::method,                                                \
-        methods::method::first_same_as_last>::ReadFromMessage(message); \
-  } while (false)
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK(method) \
+  CHECK(message.has_composition_method());                \
+  return SprkAsSrknDeserializer<                          \
+      ODE,                                                \
+      methods::method,                                    \
+      methods::method::first_same_as_last>::ReadFromMessage(message)
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SRKN(type)         \
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SRKN(method)       \
   return SymplecticRungeKuttaNyströmIntegrator<methods::method, \
                                                typename ODE::Position>()
 
