@@ -167,7 +167,7 @@ Instance::WriteToMessage(
 
 template<typename Method, typename Position>
 not_null<std::unique_ptr<
-    SymplecticRungeKuttaNyströmIntegrator<Method, Position>::Instance>>
+    typename SymplecticRungeKuttaNyströmIntegrator<Method, Position>::Instance>>
 SymplecticRungeKuttaNyströmIntegrator<Method, Position>::Instance::
 ReadFromMessage(
     serialization::SymplecticRungeKuttaNystromIntegratorInstance const&

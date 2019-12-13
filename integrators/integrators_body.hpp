@@ -14,29 +14,21 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
-#define PRINCIPIA_CASE_SLMS(kind, method, action)              \
-  case serialization::FixedStepSizeIntegrator::kind:           \
-    action(SymmetricLinearMultistepIntegrator<methods::method, \
-                                              typename ODE::Position>)
+#define PRINCIPIA_CASE_SLMS(kind, method, action)    \
+  case serialization::FixedStepSizeIntegrator::kind: \
+    action(method)
 
 // We do not deserialize an SPRK per se, but only when it is converted to an
 // SRKN.  The reason is that an SPRK is for a different kind of equation than
 // an SRKN, so the two would return different types.  If we ever need to do
 // this we will need to specialize ReadFromMessage somehow.
-#define PRINCIPIA_CASE_SPRK(kind, method, action)                             \
-  case serialization::FixedStepSizeIntegrator::kind:                          \
-    do {                                                                      \
-      CHECK(message.has_composition_method());                                \
-      action(SprkAsSrknDeserializer<                                          \
-             ODE,                                                             \
-             methods::method,                                                 \
-             methods::method::first_same_as_last>::ReadFromMessage(message)); \
-    } while (false)
+#define PRINCIPIA_CASE_SPRK(kind, method, action)    \
+  case serialization::FixedStepSizeIntegrator::kind: \
+    action(method)
 
-#define PRINCIPIA_CASE_SRKN(kind, method)                         \
-  case serialization::FixedStepSizeIntegrator::kind:              \
-    action(SymplecticRungeKuttaNyströmIntegrator<methods::method, \
-                                                 typename ODE::Position>())
+#define PRINCIPIA_CASE_SRKN(kind, method, action)    \
+  case serialization::FixedStepSizeIntegrator::kind: \
+    action(method)
 
 #define PRINCIPIA_CASES(slms_action, sprk_action, srkn_action)                 \
   PRINCIPIA_CASE_SPRK(BLANES_MOAN_2002_S6,                                     \
@@ -80,7 +72,7 @@
                       sprk_action);                                            \
   PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_SS15,                                     \
                       McLachlan1995SS15,                                       \
-                      sprk_action;                                             \
+                      sprk_action);                                            \
   PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_SS17,                                     \
                       McLachlan1995SS17,                                       \
                       sprk_action);                                            \
@@ -334,7 +326,8 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
       FixedStepSizeIntegrator::ReadFromMessage(extension.integrator());
 
   if (extension.HasExtension(
-      serialization::SymmetricLinearMultistepIntegratorInstance::extension) {
+          serialization::SymmetricLinearMultistepIntegratorInstance::
+              extension)) {
     return SymplecticRungeKuttaNyströmIntegrator::Instance::ReadFromMessage(
         extension.GetExtension(
             serialization::SymmetricLinearMultistepIntegratorInstance::
@@ -344,7 +337,8 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
         step);
   }
   if (extension.HasExtension(
-      serialization::SymplecticRungeKuttaNystromIntegratorInstance)) {
+          serialization::SymplecticRungeKuttaNystromIntegratorInstance::
+              extension)) {
   }
 
   return integrator.ReadFromMessage(extension, problem, append_state, step);
@@ -360,90 +354,44 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
   CHECK_NE(Time(), step_);
 }
 
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SMLS(type)      \
+  return SymmetricLinearMultistepIntegrator<methods::method, \
+                                            typename ODE::Position>()
+
+// We do not deserialize an SPRK per se, but only when it is converted to an
+// SRKN.  The reason is that an SPRK is for a different kind of equation than
+// an SRKN, so the two would return different types.  If we ever need to do
+// this we will need to specialize ReadFromMessage somehow.
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK(type)                 \
+  do {                                                                  \
+    CHECK(message.has_composition_method());                            \
+    return SprkAsSrknDeserializer<                                      \
+        ODE,                                                            \
+        methods::method,                                                \
+        methods::method::first_same_as_last>::ReadFromMessage(message); \
+  } while (false)
+
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SRKN(type)         \
+  return SymplecticRungeKuttaNyströmIntegrator<methods::method, \
+                                               typename ODE::Position>()
+
 template<typename ODE_>
 FixedStepSizeIntegrator<ODE_> const&
 FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message) {
   switch (message.kind()) {
-    PRINCIPIA_CASE_SPRK(BLANES_MOAN_2002_S6,
-                        BlanesMoan2002S6);
-    PRINCIPIA_CASE_SPRK(BLANES_MOAN_2002_S10,
-                        BlanesMoan2002S10);
-    PRINCIPIA_CASE_SRKN(BLANES_MOAN_2002_SRKN_6B,
-                        BlanesMoan2002SRKN6B);
-    PRINCIPIA_CASE_SRKN(BLANES_MOAN_2002_SRKN_11B,
-                        BlanesMoan2002SRKN11B);
-    PRINCIPIA_CASE_SRKN(BLANES_MOAN_2002_SRKN_14A,
-                        BlanesMoan2002SRKN14A);
-    PRINCIPIA_CASE_SPRK(CANDY_ROZMUS_1991_FOREST_RUTH_1990,
-                        CandyRozmus1991ForestRuth1990);
-    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_S2,
-                        McLachlan1995S2);
-    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_S4,
-                        McLachlan1995S4);
-    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_S5,
-                        McLachlan1995S5);
-    PRINCIPIA_CASE_SRKN(MCLACHLAN_1995_SB3A_4,
-                        McLachlan1995SB3A4);
-    PRINCIPIA_CASE_SRKN(MCLACHLAN_1995_SB3A_5,
-                        McLachlan1995SB3A5);
-    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_SS5,
-                        McLachlan1995SS5);
-    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_SS9,
-                        McLachlan1995SS9);
-    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_SS15,
-                        McLachlan1995SS15);
-    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_SS17,
-                        McLachlan1995SS17);
-    PRINCIPIA_CASE_SPRK(MCLACHLAN_ATELA_1992_ORDER_2_OPTIMAL,
-                        McLachlanAtela1992Order2Optimal);
-    PRINCIPIA_CASE_SPRK(MCLACHLAN_ATELA_1992_ORDER_3_OPTIMAL,
-                        McLachlanAtela1992Order3Optimal);
-    PRINCIPIA_CASE_SRKN(MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL,
-                        McLachlanAtela1992Order4Optimal);
-    PRINCIPIA_CASE_SRKN(MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL,
-                        McLachlanAtela1992Order5Optimal);
-    PRINCIPIA_CASE_SPRK(NEWTON_DELAMBRE_STORMER_VERLET_LEAPFROG,
-                        NewtonDelambreStørmerVerletLeapfrog);
-    PRINCIPIA_CASE_SRKN(OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13,
-                        OkunborSkeel1994Order6Method13);
-    PRINCIPIA_CASE_SLMS(QUINLAN_1999_ORDER_8A,
-                        Quinlan1999Order8A);
-    PRINCIPIA_CASE_SLMS(QUINLAN_1999_ORDER_8B,
-                        Quinlan1999Order8B);
-    PRINCIPIA_CASE_SLMS(QUINLAN_TREMAINE_1990_ORDER_8,
-                        QuinlanTremaine1990Order8);
-    PRINCIPIA_CASE_SLMS(QUINLAN_TREMAINE_1990_ORDER_10,
-                        QuinlanTremaine1990Order10);
-    PRINCIPIA_CASE_SLMS(QUINLAN_TREMAINE_1990_ORDER_12,
-                        QuinlanTremaine1990Order12);
-    PRINCIPIA_CASE_SLMS(QUINLAN_TREMAINE_1990_ORDER_14,
-                        QuinlanTremaine1990Order14);
-    PRINCIPIA_CASE_SPRK(RUTH_1983,
-                        Ruth1983);
-    PRINCIPIA_CASE_SPRK(SUZUKI_1990,
-                        鈴木1990);
-    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_6A,
-                        吉田1990Order6A);
-    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_6B,
-                        吉田1990Order6B);
-    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_6C,
-                        吉田1990Order6C);
-    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8A,
-                        吉田1990Order8A);
-    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8B,
-                        吉田1990Order8B);
-    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8C,
-                        吉田1990Order8C);
-    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8D,
-                        吉田1990Order8D);
-    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8E,
-                        吉田1990Order8E);
+    PRINCIPIA_CASES(PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SMLS,
+                    PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK,
+                    PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SRKN);
     default:
       LOG(FATAL) << message.kind();
       base::noreturn();
   }
 }
+
+#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SMLS
+#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK
+#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK
 
 template<typename Equation>
 FixedStepSizeIntegrator<Equation> const&
@@ -598,3 +546,4 @@ AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
 #undef PRINCIPIA_CASE_SLMS
 #undef PRINCIPIA_CASE_SPRK
 #undef PRINCIPIA_CASE_SRKN
+#undef PRINCIPIA_CASES
