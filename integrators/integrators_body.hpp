@@ -190,9 +190,9 @@ ReadSrknInstanceFromMessage(
 template<typename Integrator, typename Result>
 struct SprkAsSrknConstructor;
 
-template<typename Integrator>
-struct SprkAsSrknConstructor<Integrator, Integrator const&> {
-  static Integrator const& Make(
+template<typename Integrator, typename ODE>
+struct SprkAsSrknConstructor<Integrator, FixedStepSizeIntegrator<ODE> const&> {
+  static FixedStepSizeIntegrator<ODE> const& Make(
       serialization::FixedStepSizeIntegratorInstance const& message,
       Integrator const& integrator) {
     return integrator;
@@ -440,11 +440,13 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
   return SymmetricLinearMultistepIntegrator<methods::method, \
                                             typename ODE::Position>()
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK(method)  \
-  return ReadSprkFromMessage<FixedStepSizeIntegrator<ODE>, \
-                             typename ODE::Position,       \
-                             methods::method,              \
-                             methods::method::first_same_as_last>(message)
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK(method)         \
+  serialization::FixedStepSizeIntegratorInstance instance;        \
+  *instance.mutable_integrator() = message;                       \
+  return ReadSprkFromMessage<FixedStepSizeIntegrator<ODE> const&, \
+                             typename ODE::Position,              \
+                             methods::method,                     \
+                             methods::method::first_same_as_last>(instance)
 
 #define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SRKN(method)       \
   return SymplecticRungeKuttaNyströmIntegrator<methods::method, \
