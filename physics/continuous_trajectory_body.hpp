@@ -236,7 +236,7 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-template<typename>
+template<typename, typename>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
       serialization::ContinuousTrajectory const& message) {
@@ -320,7 +320,7 @@ void ContinuousTrajectory<Frame>::WriteToCheckpoint(
 }
 
 template<typename Frame>
-template<typename>
+template<typename, typename>
 bool ContinuousTrajectory<Frame>::ReadFromCheckpoint(
     serialization::ContinuousTrajectory const& message) {
   bool const has_checkpoint = message.has_adjusted_tolerance() &&

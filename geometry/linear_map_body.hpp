@@ -8,7 +8,6 @@ namespace geometry {
 namespace internal_linear_map {
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
 void LinearMap<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) {
   FromFrame::WriteToMessage(message->mutable_from_frame());
@@ -16,7 +15,7 @@ void LinearMap<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
+template<typename, typename, typename>
 void LinearMap<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
   FromFrame::ReadFromMessage(message.from_frame());

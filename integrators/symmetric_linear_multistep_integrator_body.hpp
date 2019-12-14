@@ -180,7 +180,7 @@ Instance::WriteToMessage(
 }
 
 template<typename Method, typename Position>
-template<typename>
+template<typename, typename>
 not_null<std::unique_ptr<
     typename SymmetricLinearMultistepIntegrator<Method, Position>::Instance>>
 SymmetricLinearMultistepIntegrator<Method, Position>::Instance::ReadFromMessage(
@@ -203,9 +203,9 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::ReadFromMessage(
 
 template<typename Method, typename Position>
 void SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Step::
-    WriteToMessage(
-        not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
-                     Step*> const message) const {
+WriteToMessage(
+    not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
+                  Step*> const message) const {
   using AccelerationSerializer = QuantityOrMultivectorSerializer<
       typename ODE::Acceleration,
       serialization::SymmetricLinearMultistepIntegratorInstance::Step::
@@ -221,12 +221,12 @@ void SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Step::
 }
 
 template<typename Method, typename Position>
-template<typename>
+template<typename, typename>
 typename SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Step
 SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Step::
-    ReadFromMessage(
-        serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
-            message) {
+ReadFromMessage(
+    serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
+        message) {
   using AccelerationSerializer = QuantityOrMultivectorSerializer<
       typename ODE::Acceleration,
       serialization::SymmetricLinearMultistepIntegratorInstance::Step::

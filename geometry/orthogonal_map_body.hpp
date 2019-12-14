@@ -79,7 +79,7 @@ void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
+template<typename, typename, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
@@ -97,7 +97,7 @@ void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
+template<typename, typename, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
     serialization::OrthogonalMap const& message) {

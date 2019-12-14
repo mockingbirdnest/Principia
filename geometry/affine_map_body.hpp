@@ -73,7 +73,7 @@ void AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::WriteToMessage(
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
-template<typename>
+template<typename, typename, typename>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::ReadFromMessage(
     serialization::AffineMap const& message) {

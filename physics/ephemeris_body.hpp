@@ -732,7 +732,7 @@ void Ephemeris<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-template<typename>
+template<typename, typename>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
@@ -863,7 +863,7 @@ Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
 }
 
 template<typename Frame>
-template<typename>
+template<typename, typename>
 bool Ephemeris<Frame>::ReadFromCheckpoint(
     serialization::Ephemeris const& message) {
   bool const has_checkpoint = message.has_instance();

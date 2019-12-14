@@ -93,7 +93,6 @@ Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
 void Permutation<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::LinearMap*> const message) const {
   LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
@@ -102,7 +101,7 @@ void Permutation<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
+template<typename, typename, typename>
 Permutation<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
@@ -113,14 +112,13 @@ Permutation<FromFrame, ToFrame>::ReadFromMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
 void Permutation<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::Permutation*> const message) const {
   message->set_coordinate_permutation(coordinate_permutation_);
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename>
+template<typename, typename, typename>
 Permutation<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::Permutation const& message) {

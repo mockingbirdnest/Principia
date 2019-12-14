@@ -70,18 +70,18 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
 
   static Permutation Identity();
 
-  static constexpr bool is_serializable = base::is_serializable_v<FromFrame> &&
-                                          base::is_serializable_v<ToFrame>;
-
-  template<typename = std::enable_if_t<is_serializable>>
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
-  template<typename = std::enable_if_t<is_serializable>>
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<base::is_serializable_v<F> &&
+                                       base::is_serializable_v<T>>>
   static Permutation ReadFromMessage(serialization::LinearMap const& message);
 
-  template<typename = std::enable_if_t<is_serializable>>
-  void WriteToMessage(
-      not_null<serialization::Permutation*> message) const;
-  template<typename = std::enable_if_t<is_serializable>>
+  void WriteToMessage(not_null<serialization::Permutation*> message) const;
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<base::is_serializable_v<F> &&
+                                       base::is_serializable_v<T>>>
   static Permutation ReadFromMessage(serialization::Permutation const& message);
 
  public:

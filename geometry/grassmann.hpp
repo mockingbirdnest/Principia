@@ -53,7 +53,8 @@ class Multivector<Scalar, Frame, 1> final {
 
   void WriteToMessage(
       not_null<serialization::Multivector*> message) const;
-  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -91,7 +92,8 @@ class Multivector<Scalar, Frame, 2> final {
       Multivector<S, Frame, 2> const& multivector) const;
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
-  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -122,7 +124,8 @@ class Multivector<Scalar, Frame, 3> final {
   Square<Scalar> Norm²() const;
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
-  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:

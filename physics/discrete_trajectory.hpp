@@ -170,7 +170,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // and the orders of the |forks| must be consistent during serialization and
   // deserialization.  All pointers designated by the pointers in |forks| must
   // be null at entry; they may be null at exit.
-  template<typename = std::enable_if_t<base::is_serializable_v<Frame>>>
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);

@@ -46,9 +46,9 @@ using FrameDeathTest = FrameTest;
 #if 0
 TEST_F(FrameTest, SerializationCompilationError) {
   serialization::Frame message;
-  F1::WriteToMessage(&message);
-  F2::WriteToMessage(&message);
-  F3::WriteToMessage(&message);
+  F1::ReadFromMessage(&message);
+  F2::ReadFromMessage(&message);
+  F3::ReadFromMessage(&message);
 }
 #endif
 

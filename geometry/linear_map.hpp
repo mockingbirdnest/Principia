@@ -48,12 +48,11 @@ class LinearMap {
  protected:
   // Serialization of the frames.  These are just helper functions for
   // implementing the subclasses, they don't dispatch to the subclasses.
-  static constexpr bool is_serializable = base::is_serializable_v<FromFrame> &&
-                                          base::is_serializable_v<ToFrame>;
-
-  template<typename = std::enable_if_t<is_serializable>>
   static void WriteToMessage(not_null<serialization::LinearMap*> message);
-  template<typename = std::enable_if_t<is_serializable>>
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<base::is_serializable_v<F> &&
+                                       base::is_serializable_v<T>>>
   static void ReadFromMessage(serialization::LinearMap const& message);
 
 //   template<typename Scalar>
