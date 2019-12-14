@@ -69,8 +69,6 @@ message Part {
 
 message PileUp {
   repeated fixed32 part_id = 1;
-  required Quantity mass = 2;
-  required Multivector intrinsic_force = 3;
   required DiscreteTrajectory history = 4;
   map<fixed32, Pair> actual_part_degrees_of_freedom = 5;
   map<fixed32, Pair> apparent_part_degrees_of_freedom = 6;
@@ -80,6 +78,12 @@ message PileUp {
 
   // Pre-Cesàro.
   reserved "psychohistory";
+
+  // Pre-Fréchet.
+  reserved 2;
+  reserved 3;
+  reserved "mass";
+  reserved "intrinsic_force";
 }
 
 message Plugin {

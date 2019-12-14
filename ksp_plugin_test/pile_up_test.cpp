@@ -78,15 +78,13 @@ using ::testing::_;
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
  public:
-  using RigidPileUp = PileUp::RigidPileUp;
-
   using PileUp::PileUp;
   using PileUp::DeformPileUpIfNeeded;
   using PileUp::AdvanceTime;
   using PileUp::NudgeParts;
 
   Mass const& mass() const {
-    return mass_;
+    return inertia_tensor_.mass();
   }
 
   Vector<Force, Barycentric> const& intrinsic_force() const {
@@ -110,8 +108,6 @@ class TestablePileUp : public PileUp {
 
 class PileUpTest : public testing::Test {
  protected:
-  using RigidPileUp = TestablePileUp::RigidPileUp;
-
   PileUpTest()
       : inertia_tensor1_(
             InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(mass1_)),
@@ -604,7 +600,8 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   Vector<Acceleration, Barycentric> const a{{1729 * Metre / Pow<2>(Second),
                                              -168 * Metre / Pow<2>(Second),
                                              504 * Metre / Pow<2>(Second)}};
-  pile_up.set_intrinsic_force(p1_.inertia_tensor().mass() * a);
+  p1_.increment_intrinsic_force(p1_.inertia_tensor().mass() * a);
+  pile_up.RecomputeFromParts();
   pile_up.AdvanceTime(astronomy::J2000 + 2 * fixed_step);
   pile_up.NudgeParts();
   EXPECT_THAT(p1_.degrees_of_freedom().velocity(),

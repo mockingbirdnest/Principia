@@ -121,6 +121,15 @@ using MainBodyCentred = Frame<serialization::Frame::PluginTag,
                               serialization::Frame::MAIN_BODY_CENTRED,
                               NonInertial>;
 
+// The |PileUp| is seen as a rigid body; the degrees of freedom of the parts in
+// the frame of that body can be set, however their motion is not integrated;
+// this is simply applied as an offset from the rigid body motion of the
+// |PileUp|.  The origin of |RigidPileUp| is the centre of mass of the pile up.
+// Its axes are those of Barycentric.
+using RigidPileUp = Frame<serialization::Frame::PluginTag,
+                          serialization::Frame::RIGID_PILE_UP,
+                          NonInertial>;
+
 // Convenient instances of types from |physics| for the above frames.
 using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
@@ -145,6 +154,7 @@ using internal_frames::Navigation;
 using internal_frames::NavigationFrame;
 using internal_frames::NavigationManœuvre;
 using internal_frames::RigidPart;
+using internal_frames::RigidPileUp;
 using internal_frames::World;
 using internal_frames::WorldSun;
 using internal_frames::sun_looking_glass;

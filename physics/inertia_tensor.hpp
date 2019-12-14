@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "base/not_null.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
@@ -9,6 +10,7 @@
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/physics.pb.h"
 
 namespace principia {
@@ -16,6 +18,7 @@ namespace physics {
 namespace internal_inertia_tensor {
 
 using base::not_null;
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::R3Element;
@@ -24,11 +27,16 @@ using geometry::Rotation;
 using geometry::SymmetricBilinearForm;
 using quantities::Mass;
 using quantities::MomentOfInertia;
+using quantities::Product;
 
 // The inertia tensor of a solid at the origin and in the axis of Frame.
 template<typename Frame>
 class InertiaTensor {
  public:
+  // The inertia tensor of a massless point at the origin of frame.  Convenient
+  // for accumulating inertia tensors.
+  InertiaTensor();
+
   // Constructs an inertia tensor with the specified coordinates for an object
   // of the given mass.  The centre of mass of the object must be specified.
   // Typically, this constructor is used to implement formulæ like those in
@@ -96,6 +104,11 @@ class InertiaTensor {
   template<typename F>
   friend class InertiaTensor;
 
+  template<typename R, typename F>
+  friend Bivector<Product<MomentOfInertia, R>, F> Anticommutator(
+      InertiaTensor<F> const& tensor,
+      Bivector<R, F> const& bivector);
+
   template<typename F>
   friend bool operator==(InertiaTensor<F> const& left,
                          InertiaTensor<F> const& right);
@@ -106,6 +119,11 @@ class InertiaTensor {
   friend class InertiaTensorTest;
 };
 
+template<typename RScalar, typename Frame>
+Bivector<Product<MomentOfInertia, RScalar>, Frame> Anticommutator(
+    InertiaTensor<Frame> const& tensor,
+    Bivector<RScalar, Frame> const& bivector);
+
 template<typename Frame>
 bool operator==(InertiaTensor<Frame> const& left,
                 InertiaTensor<Frame> const& right);
@@ -114,11 +132,17 @@ template<typename Frame>
 InertiaTensor<Frame> operator+(InertiaTensor<Frame> const& left,
                                InertiaTensor<Frame> const& right);
 
+template<typename Frame>
+InertiaTensor<Frame>& operator+=(InertiaTensor<Frame>& left,
+                                 InertiaTensor<Frame> const& right);
+
 }  // namespace internal_inertia_tensor
 
+using internal_inertia_tensor::Anticommutator;
 using internal_inertia_tensor::InertiaTensor;
 using internal_inertia_tensor::operator==;
 using internal_inertia_tensor::operator+;
+using internal_inertia_tensor::operator+=;
 
 }  // namespace physics
 }  // namespace principia

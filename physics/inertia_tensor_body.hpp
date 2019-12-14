@@ -6,6 +6,7 @@
 #include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -13,6 +14,7 @@ namespace principia {
 namespace physics {
 namespace internal_inertia_tensor {
 
+using geometry::Anticommutator;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Commutator;
@@ -24,6 +26,18 @@ using quantities::Density;
 using quantities::Pow;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
+
+namespace {
+constexpr MomentOfInertia zero;
+}  // namespace
+
+template<typename Frame>
+InertiaTensor<Frame>::InertiaTensor()
+    : InertiaTensor(Mass{},
+                    R3x3Matrix<MomentOfInertia>{{zero, zero, zero},
+                                                {zero, zero, zero},
+                                                {zero, zero, zero}},
+                    Frame::origin) {}
 
 template<typename Frame>
 InertiaTensor<Frame>::InertiaTensor(
@@ -94,7 +108,6 @@ template<typename Frame>
 InertiaTensor<Frame> InertiaTensor<Frame>::MakeWaterSphereInertiaTensor(
     Mass const& mass) {
   static constexpr Density ρ_of_water = 1000 * Kilogram / Pow<3>(Metre);
-  static constexpr MomentOfInertia zero;
   MomentOfInertia const I =
       Cbrt(9 * Pow<5>(mass) / (250 * Pow<2>(π * ρ_of_water)));
   return InertiaTensor<Frame>(mass,
@@ -130,7 +143,7 @@ InertiaTensor<Frame>::InertiaTensor(
     : mass_(mass),
       form_(form),
       centre_of_mass_(centre_of_mass) {
-  CHECK_GT(mass, Mass{});
+  CHECK_GE(mass, Mass{});
 }
 
 template<typename Frame>
@@ -150,6 +163,13 @@ InertiaTensor<Frame>::MakeSymmetricBilinearForm(
            0.5 * (tensor(0, 0) + tensor(1, 1) - tensor(2, 2))}));
 }
 
+template<typename RScalar, typename Frame>
+Bivector<Product<MomentOfInertia, RScalar>, Frame> Anticommutator(
+    InertiaTensor<Frame> const& tensor,
+    Bivector<RScalar, Frame> const& bivector) {
+  return Anticommutator(tensor.form_, bivector);
+}
+
 template<typename Frame>
 bool operator==(InertiaTensor<Frame> const& left,
                 InertiaTensor<Frame> const& right) {
@@ -166,6 +186,13 @@ InertiaTensor<Frame> operator+(InertiaTensor<Frame> const& left,
                               Barycentre<Position<Frame>, Mass>(
                                   {left.centre_of_mass_, right.centre_of_mass_},
                                   {left.mass_, right.mass_}));
+}
+
+template<typename Frame>
+InertiaTensor<Frame>& operator+=(InertiaTensor<Frame>& left,
+                                 InertiaTensor<Frame> const& right) {
+  left = left + right;
+  return left;
 }
 
 }  // namespace internal_inertia_tensor
