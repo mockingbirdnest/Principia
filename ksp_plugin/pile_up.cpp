@@ -6,11 +6,13 @@
 #include <map>
 
 #include "base/map_util.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -21,13 +23,18 @@ using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
+using geometry::Bivector;
 using geometry::Identity;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::RigidTransformation;
 using geometry::Velocity;
+using geometry::Wedge;
+using physics::Anticommutator;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
+using quantities::AngularMomentum;
+using quantities::si::Radian;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -48,15 +55,7 @@ PileUp::PileUp(
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       deletion_callback_(std::move(deletion_callback)) {
   LOG(INFO) << "Constructing pile up at " << this;
-  BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
-  Vector<Force, Barycentric> total_intrinsic_force;
-  for (not_null<Part*> const part : parts_) {
-    total_intrinsic_force += part->intrinsic_force();
-    calculator.Add(part->degrees_of_freedom(), part->inertia_tensor().mass());
-  }
-  mass_ = calculator.weight();
-  intrinsic_force_ = total_intrinsic_force;
-  DegreesOfFreedom<Barycentric> const barycentre = calculator.Get();
+  DegreesOfFreedom<Barycentric> const barycentre = RecomputeFromParts(parts_);
   history_->Append(t, barycentre);
 
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
@@ -81,15 +80,6 @@ PileUp::~PileUp() {
   }
 }
 
-void PileUp::set_mass(Mass const& mass) {
-  mass_ = mass;
-}
-
-void PileUp::set_intrinsic_force(
-    Vector<Force, Barycentric> const& intrinsic_force) {
-  intrinsic_force_ = intrinsic_force;
-}
-
 std::list<not_null<Part*>> const& PileUp::parts() const {
   return parts_;
 }
@@ -103,28 +93,6 @@ void PileUp::SetPartApparentDegreesOfFreedom(
                   << degrees_of_freedom;
 }
 
-void PileUp::NudgeParts() const {
-  auto const actual_centre_of_mass =
-      psychohistory_->back().degrees_of_freedom;
-
-  RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
-      RigidTransformation<Barycentric, RigidPileUp>{
-          actual_centre_of_mass.position(),
-          RigidPileUp::origin,
-          Identity<Barycentric, RigidPileUp>().Forget()},
-      AngularVelocity<Barycentric>(),
-      actual_centre_of_mass.velocity()};
-  auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
-  for (not_null<Part*> const part : parts_) {
-    DegreesOfFreedom<Barycentric> const actual_part_degrees_of_freedom =
-        pile_up_to_barycentric(
-            FindOrDie(actual_part_degrees_of_freedom_, part));
-    part->set_rigid_motion(
-        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
-            actual_part_degrees_of_freedom));
-  }
-}
-
 Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   absl::MutexLock l(lock_.get());
   Status status;
@@ -136,12 +104,14 @@ Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   return status;
 }
 
+void PileUp::RecomputeFromParts() {
+  RecomputeFromParts(parts_);
+}
+
 void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   for (not_null<Part*> const part : parts_) {
     message->add_part_id(part->part_id());
   }
-  mass_.WriteToMessage(message->mutable_mass());
-  intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   history_->WriteToMessage(message->mutable_history(),
                            /*forks=*/{psychohistory_});
   for (auto const& pair : actual_part_degrees_of_freedom_) {
@@ -233,9 +203,6 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
             std::move(deletion_callback)));
   }
 
-  pile_up->mass_ = Mass::ReadFromMessage(message.mass());
-  pile_up->intrinsic_force_ =
-      Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force());
   for (auto const& pair : message.actual_part_degrees_of_freedom()) {
     std::uint32_t const part_id = pair.first;
     serialization::Pair const& degrees_of_freedom = pair.second;
@@ -250,6 +217,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
         part_id_to_part(part_id),
         DegreesOfFreedom<ApparentBubble>::ReadFromMessage(degrees_of_freedom));
   }
+  pile_up->RecomputeFromParts();
   return check_not_null(std::move(pile_up));
 }
 
@@ -362,7 +330,7 @@ Status PileUp::AdvanceTime(Instant const& t) {
     }
     history_->DeleteFork(psychohistory_);
 
-    auto const a = intrinsic_force_ / mass_;
+    auto const a = intrinsic_force_ / inertia_tensor_.mass();
     // NOTE(phl): |a| used to be captured by copy below, which is the logical
     // thing to do.  However, since it contains an |R3Element|, it must be
     // aligned on a 16-byte boundary.  Unfortunately, VS2015 gets confused and
@@ -397,6 +365,28 @@ Status PileUp::AdvanceTime(Instant const& t) {
   return status;
 }
 
+void PileUp::NudgeParts() const {
+  auto const actual_centre_of_mass =
+      psychohistory_->back().degrees_of_freedom;
+
+  RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
+      RigidTransformation<Barycentric, RigidPileUp>{
+          actual_centre_of_mass.position(),
+          RigidPileUp::origin,
+          Identity<Barycentric, RigidPileUp>().Forget()},
+      AngularVelocity<Barycentric>(),
+      actual_centre_of_mass.velocity()};
+  auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
+  for (not_null<Part*> const part : parts_) {
+    DegreesOfFreedom<Barycentric> const actual_part_degrees_of_freedom =
+        pile_up_to_barycentric(
+            FindOrDie(actual_part_degrees_of_freedom_, part));
+    part->set_rigid_motion(
+        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+            actual_part_degrees_of_freedom));
+  }
+}
+
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>
 void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   auto const& pile_up_dof = it->degrees_of_freedom;
@@ -414,6 +404,68 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
         pile_up_to_barycentric(
             FindOrDie(actual_part_degrees_of_freedom_, part)));
   }
+}
+
+DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
+    std::list<not_null<Part*>> const& parts) {
+  // First compute the overall mass and centre of mass of the pile-up.  Also
+  // compute the overall force applied to it.
+  // TODO(phl): We assume that forces are applied at the centre of mass of the
+  // pile-up, but they are really applied at some unknown point of the parts, so
+  // this introduces a torque.
+  Mass pile_up_mass;
+  Vector<Force, Barycentric> pile_up_intrinsic_force;
+  BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
+  for (not_null<Part*> const part : parts) {
+    pile_up_intrinsic_force += part->intrinsic_force();
+    calculator.Add(part->degrees_of_freedom(), part->inertia_tensor().mass());
+  }
+  pile_up_mass = calculator.weight();
+  DegreesOfFreedom<Barycentric> const pile_up_barycentre = calculator.Get();
+
+  // Then compute the inertia tensor and the angular momentum of the pile-up.
+  InertiaTensor<RigidPileUp> pile_up_inertia_tensor;
+  Bivector<AngularMomentum, RigidPileUp> pile_up_angular_momentum;
+  RigidMotion<RigidPileUp, Barycentric> const pile_up_to_barycentric(
+      RigidTransformation<RigidPileUp, Barycentric>(
+          RigidPileUp::origin,
+          pile_up_barycentre.position(),
+          Identity<RigidPileUp, Barycentric>().Forget()),
+      AngularVelocity<Barycentric>{},
+      pile_up_barycentre.velocity());
+  RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up =
+      pile_up_to_barycentric.Inverse();
+  for (not_null<Part*> const part : parts) {
+    RigidMotion<RigidPart, Barycentric> const& part_to_barycentric =
+        part->rigid_motion();
+    RigidMotion<RigidPart, RigidPileUp> const part_to_pile_up =
+        barycentric_to_pile_up * part_to_barycentric;
+
+    // NOTE(phl): The following call reads like the tensor "transforms" the
+    // rigid motion.  Improve this API.
+    InertiaTensor<RigidPileUp> const& part_inertia_tensor =
+        part->inertia_tensor().Transform(
+            part_to_pile_up.rigid_transformation());
+    pile_up_inertia_tensor += part_inertia_tensor;
+
+    Bivector<AngularMomentum, RigidPileUp> const part_angular_momentum =
+        Anticommutator(
+            part_inertia_tensor,
+            part_to_pile_up.Inverse().angular_velocity_of_to_frame());
+    DegreesOfFreedom<RigidPileUp> const part_degrees_of_freedom =
+        part_to_pile_up({RigidPart::origin, Velocity<RigidPart>{}});
+    pile_up_angular_momentum +=
+        part_angular_momentum +
+        Wedge(part_degrees_of_freedom.position() - RigidPileUp::origin,
+              part->inertia_tensor().mass() *
+                  part_degrees_of_freedom.velocity()) *
+            Radian;
+  }
+
+  angular_momentum_ = pile_up_angular_momentum;
+  inertia_tensor_ = pile_up_inertia_tensor;
+  intrinsic_force_ = pile_up_intrinsic_force;
+  return pile_up_barycentre;
 }
 
 PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,

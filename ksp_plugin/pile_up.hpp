@@ -13,6 +13,7 @@
 #include "integrators/integrators.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/massless_body.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -27,6 +28,7 @@ namespace internal_pile_up {
 
 using base::not_null;
 using base::Status;
+using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::NonInertial;
@@ -35,8 +37,10 @@ using integrators::Integrator;
 using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
+using physics::InertiaTensor;
 using physics::MasslessBody;
 using physics::RelativeDegreesOfFreedom;
+using quantities::AngularMomentum;
 using quantities::Force;
 using quantities::Mass;
 
@@ -60,9 +64,6 @@ class PileUp {
   PileUp(PileUp&& pile_up) = default;
   PileUp& operator=(PileUp&& pile_up) = default;
 
-  void set_mass(Mass const& mass);
-  void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
-
   std::list<not_null<Part*>> const& parts() const;
 
   // Set the |degrees_of_freedom| for the given |part|.  These degrees of
@@ -77,6 +78,9 @@ class PileUp {
   // executions of this method may happen concurrently on multiple threads, but
   // not concurrently with any other method of this class.
   Status DeformAndAdvanceTime(Instant const& t);
+
+  // Recomputes the state of motion of the pile-up based on that of its parts.
+  void RecomputeFromParts();
 
   // We'd like to return |not_null<std::shared_ptr<PileUp> const&|, but the
   // compiler gets confused when defining the corresponding lambda, and thinks
@@ -137,6 +141,11 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
+  // Computes the angular momentum, inertia tensor and intrinsic force from the
+  // list of parts.  Returns the barycentre of the parts.
+  DegreesOfFreedom<Barycentric> RecomputeFromParts(
+      std::list<not_null<Part*>> const& parts);
+
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
 
@@ -145,9 +154,9 @@ class PileUp {
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters_;
 
-  // An optimization: the sum of the masses and intrinsic forces of the
-  // |parts_|, computed by the union-find.
-  Mass mass_;
+  // Recomputed by the parts subset on every change.  Not serialized.
+  Bivector<AngularMomentum, RigidPileUp> angular_momentum_;
+  InertiaTensor<RigidPileUp> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally
@@ -173,17 +182,6 @@ class PileUp {
   std::unique_ptr<typename Integrator<
       Ephemeris<Barycentric>::NewtonianMotionEquation>::Instance>
       fixed_instance_;
-
-  // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
-  // of freedom of the parts in the frame of that body can be set, however their
-  // motion is not integrated; this is simply applied as an offset from the
-  // rigid body motion of the |PileUp|.
-  // The origin of |RigidPileUp| is the centre of mass of the pile up.
-  // Its axes are those of Barycentric for now; eventually we will probably want
-  // to use the inertia ellipsoid.
-  using RigidPileUp = Frame<serialization::Frame::PluginTag,
-                            serialization::Frame::RIGID_PILE_UP,
-                            NonInertial>;
 
   PartTo<DegreesOfFreedom<RigidPileUp>> actual_part_degrees_of_freedom_;
   PartTo<DegreesOfFreedom<ApparentBubble>> apparent_part_degrees_of_freedom_;
