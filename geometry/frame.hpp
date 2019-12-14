@@ -35,6 +35,13 @@ enum class Handedness {
 //   using MyFrame = Frame<enum class MyFrameTag, MyFrameTag{}, Inertial>;
 //
 // By default, the frame is non-inertial and right-handed.
+//
+// A non-serializable frame misses the ReadFromMessage method but has a
+// WriteToMessage method which fails at execution.  The reason is that
+// WriteToMessage needs to be virtual for some classes, and that doesn't
+// interact well with SFINAE.  Since it's uncommon to write without reading,
+// that should be sufficient to detect at compile-time attempts at serializing a
+// non-serializable frame.
 template<typename FrameTag,
          FrameTag tag_ = FrameTag{},
          FrameMotion motion_ = NonInertial,

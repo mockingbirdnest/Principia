@@ -312,6 +312,8 @@ class Ephemeris {
   bool ReadFromCheckpoint(serialization::Ephemeris const& message);
   void CreateCheckpointIfNeeded(Instant const& time) const
       SHARED_LOCKS_REQUIRED(lock_);
+  Checkpointer<serialization::Ephemeris>::Reader
+  static MakeCheckpointerReader(Ephemeris* const ephemeris);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(

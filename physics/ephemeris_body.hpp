@@ -77,18 +77,6 @@ inline Status const CollisionDetected() {
 }
 
 template<typename Frame>
-Checkpointer<serialization::Ephemeris>::Reader
-MakeCheckpointerReader(Ephemeris<Frame>* const ephemeris) {
-  if constexpr (base::is_serializable_v<Frame>) {
-    return [ephemeris](serialization::ContinuousTrajectory const& message) {
-      return ephemeris->ReadFromCheckpoint(message);
-    };
-  } else {
-    return nullptr;
-  }
-}
-
-template<typename Frame>
 template<typename ODE>
 Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
     AdaptiveStepSizeIntegrator<ODE> const& integrator,
@@ -860,6 +848,18 @@ template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpoint(
     not_null<serialization::Ephemeris*> message) {
   instance_->WriteToMessage(message->mutable_instance());
+}
+
+template<typename Frame>
+Checkpointer<serialization::Ephemeris>::Reader
+Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
+  if constexpr (base::is_serializable_v<Frame>) {
+    return [ephemeris](serialization::Ephemeris const& message) {
+      return ephemeris->ReadFromCheckpoint(message);
+    };
+  } else {
+    return nullptr;
+  }
 }
 
 template<typename Frame>
