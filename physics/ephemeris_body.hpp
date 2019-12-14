@@ -890,10 +890,12 @@ bool Ephemeris<Frame>::ReadFromCheckpoint(
 
 template<typename Frame>
 void Ephemeris<Frame>::CreateCheckpointIfNeeded(Instant const& time) const {
-  lock_.AssertReaderHeld();
-  if (checkpointer_->CreateIfNeeded(time, max_time_between_checkpoints)) {
-    for (auto const& trajectory : trajectories_) {
-      trajectory->checkpointer().CreateUnconditionally(time);
+  if constexpr (base::is_serializable_v<Frame>) {
+    lock_.AssertReaderHeld();
+    if (checkpointer_->CreateIfNeeded(time, max_time_between_checkpoints)) {
+      for (auto const& trajectory : trajectories_) {
+        trajectory->checkpointer().CreateUnconditionally(time);
+      }
     }
   }
 }
