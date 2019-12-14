@@ -40,15 +40,24 @@ int const max_degree_age = 100;
 int const divisions = 8;
 
 template<typename Frame>
+Checkpointer<serialization::ContinuousTrajectory>::Reader
+MakeCheckpointerReader(ContinuousTrajectory<Frame>* const trajectory) {
+  if constexpr (base::is_serializable_v<Frame>) {
+    return [trajectory](serialization::ContinuousTrajectory const& message) {
+      return trajectory->ReadFromCheckpoint(message);
+    };
+  } else {
+    return nullptr;
+  }
+}
+
+template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
                                                   Length const& tolerance)
     : step_(step),
       tolerance_(tolerance),
       checkpointer_(
-          /*reader=*/
-          [this](serialization::ContinuousTrajectory const& message) {
-            return ReadFromCheckpoint(message);
-          },
+          /*reader=*/MakeCheckpointerReader(this),
           /*writer=*/
           [this](not_null<serialization::ContinuousTrajectory*> const message) {
             WriteToCheckpoint(message);
