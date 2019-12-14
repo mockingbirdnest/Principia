@@ -267,6 +267,46 @@ ReadFromMessage(serialization::AdaptiveStepSizeIntegrator const& message) {
   }
 }
 
+template<typename Integrator>
+not_null<std::unique_ptr<typename Integrator::Instance>>
+ReadSmlsInstanceFromMessage(
+    serialization::FixedStepSizeIntegratorInstance const& message,
+    IntegrationProblem<typename Integrator::ODE> const& problem,
+    typename Integrator::AppendState const& append_state,
+    Time const& step,
+    Integrator const& integrator) {
+  CHECK(message.HasExtension(
+      serialization::SymmetricLinearMultistepIntegratorInstance::extension))
+      << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::SymmetricLinearMultistepIntegratorInstance::extension);
+  return typename Integrator::Instance::ReadFromMessage(extension,
+                                                        problem,
+                                                        append_state,
+                                                        step,
+                                                        integrator);
+}
+
+template<typename Integrator>
+not_null<std::unique_ptr<typename Integrator::Instance>>
+ReadSrknInstanceFromMessage(
+    serialization::FixedStepSizeIntegratorInstance const& message,
+    IntegrationProblem<typename Integrator::ODE> const& problem,
+    typename Integrator::AppendState const& append_state,
+    Time const& step,
+    Integrator const& integrator) {
+  CHECK(message.HasExtension(
+      serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension))
+      << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension);
+  return typename Integrator::Instance::ReadFromMessage(extension,
+                                                        problem,
+                                                        append_state,
+                                                        step,
+                                                        integrator);
+}
+
 template<typename ODE_>
 Integrator<ODE_>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
@@ -308,26 +348,12 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   integrator().WriteToMessage(extension->mutable_integrator());
 }
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SMLS(method)           \
-  using Integrator = internal_symmetric_linear_multistep_integrator::        \
-      SymmetricLinearMultistepIntegrator<methods::method,                    \
-                                         typename ODE::Position>;            \
-  auto const integrator =                                                    \
-      SymmetricLinearMultistepIntegrator<methods::method,                    \
-                                         typename ODE::Position>();          \
-  CHECK(extension.HasExtension(                                              \
-      serialization::SymmetricLinearMultistepIntegratorInstance::extension)) \
-      << extension.DebugString();                                            \
-  auto const& subextension = extension.GetExtension(                         \
-      serialization::SymmetricLinearMultistepIntegratorInstance::extension); \
-  return internal_symmetric_linear_multistep_integrator::                    \
-      SymmetricLinearMultistepIntegrator<                                    \
-          methods::method,                                                   \
-          typename ODE::Position>::Instance::ReadFromMessage(subextension,   \
-                                                             problem,        \
-                                                             append_state,   \
-                                                             step,           \
-                                                             integrator)
+#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SMLS(method)    \
+  auto const& integrator =                                             \
+      SymmetricLinearMultistepIntegrator<methods::method,             \
+                                         typename ODE::Position>();   \
+  return ReadSmlsInstanceFromMessage(                                 \
+      extension, problem, append_state, step, integrator)
 
 // We do not deserialize an SPRK per se, but only when it is converted to an
 // SRKN.  The reason is that an SPRK is for a different kind of equation than
@@ -337,21 +363,11 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   LOG(FATAL) << "NYI"
 
 #define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SRKN(method)        \
-  using Integrator = internal_symplectic_runge_kutta_nyström_integrator:: \
-      SymplecticRungeKuttaNyströmIntegrator<methods::method,              \
-                                            typename ODE::Position>;      \
-  auto const integrator =                                                 \
+  auto const& integrator =                                                 \
       SymplecticRungeKuttaNyströmIntegrator<methods::method,              \
                                             typename ODE::Position>();    \
-  CHECK(extension.HasExtension(                                           \
-      serialization::SymplecticRungeKuttaNystromIntegratorInstance::      \
-          extension))                                                     \
-      << extension.DebugString();                                         \
-  auto const& subextension = extension.GetExtension(                      \
-      serialization::SymplecticRungeKuttaNystromIntegratorInstance::      \
-          extension);                                                     \
-  return Integrator::Instance::ReadFromMessage(                           \
-      subextension, problem, append_state, step, integrator)
+  return ReadSrknInstanceFromMessage(                                     \
+      extension, problem, append_state, step, integrator)
 
 template<typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
