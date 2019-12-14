@@ -180,6 +180,7 @@ Instance::WriteToMessage(
 }
 
 template<typename Method, typename Position>
+template<typename>
 not_null<std::unique_ptr<
     typename SymmetricLinearMultistepIntegrator<Method, Position>::Instance>>
 SymmetricLinearMultistepIntegrator<Method, Position>::Instance::ReadFromMessage(

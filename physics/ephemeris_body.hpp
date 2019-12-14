@@ -77,6 +77,18 @@ inline Status const CollisionDetected() {
 }
 
 template<typename Frame>
+Checkpointer<serialization::Ephemeris>::Reader
+MakeCheckpointerReader(Ephemeris<Frame>* const ephemeris) {
+  if constexpr (base::is_serializable_v<Frame>) {
+    return [ephemeris](serialization::ContinuousTrajectory const& message) {
+      return ephemeris->ReadFromCheckpoint(message);
+    };
+  } else {
+    return nullptr;
+  }
+}
+
+template<typename Frame>
 template<typename ODE>
 Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
     AdaptiveStepSizeIntegrator<ODE> const& integrator,
@@ -234,10 +246,7 @@ Ephemeris<Frame>::Ephemeris(
       fixed_step_parameters_(fixed_step_parameters),
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
-              /*reader=*/
-              [this](serialization::Ephemeris const& message) {
-                return ReadFromCheckpoint(message);
-              },
+              /*reader=*/MakeCheckpointerReader(this),
               /*writer=*/
               [this](not_null<serialization::Ephemeris*> const message) {
                 WriteToCheckpoint(message);
@@ -735,6 +744,7 @@ void Ephemeris<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
+template<typename>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
@@ -853,6 +863,7 @@ void Ephemeris<Frame>::WriteToCheckpoint(
 }
 
 template<typename Frame>
+template<typename>
 bool Ephemeris<Frame>::ReadFromCheckpoint(
     serialization::Ephemeris const& message) {
   bool const has_checkpoint = message.has_instance();
