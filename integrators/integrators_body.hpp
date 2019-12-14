@@ -216,7 +216,7 @@ struct SprkAsSrknConstructor<Integrator, not_null<std::unique_ptr<Instance>>> {
 };
 
 template<typename Result,
-         typename ODE,
+         typename Position,
          typename Method,
          bool first_same_as_last,
          typename... Args>
@@ -230,9 +230,9 @@ Result ReadSprkFromMessage(
         auto const& integrator = SymplecticRungeKuttaNyströmIntegrator<
             Method,
             serialization::FixedStepSizeIntegrator::ABA,
-            typename ODE::Position>();
+            Position>();
         using Integrator =
-            std::remove_reference_t<std::remove_cv_t<decltype(integrator)>>;
+            std::remove_reference_t<std::remove_const_t<decltype(integrator)>>;
         return SprkAsSrknConstructor<Integrator, Result>::Make(
             message, args..., integrator);
       }
@@ -240,9 +240,9 @@ Result ReadSprkFromMessage(
         auto const& integrator = SymplecticRungeKuttaNyströmIntegrator<
             Method,
             serialization::FixedStepSizeIntegrator::BAB,
-            typename ODE::Position>();
+            Position>();
         using Integrator =
-            std::remove_reference_t<std::remove_cv_t<decltype(integrator)>>;
+            std::remove_reference_t<std::remove_const_t<decltype(integrator)>>;
         return SprkAsSrknConstructor<Integrator, Result>::Make(
             message, args..., integrator);
       }
@@ -257,9 +257,9 @@ Result ReadSprkFromMessage(
     auto const& integrator = SymplecticRungeKuttaNyströmIntegrator<
         Method,
         serialization::FixedStepSizeIntegrator::BA,
-        typename ODE::Position>();
+        Position>();
     using Integrator =
-        std::remove_reference_t<std::remove_cv_t<decltype(integrator)>>;
+        std::remove_reference_t<std::remove_const_t<decltype(integrator)>>;
     return SprkAsSrknConstructor<Integrator, Result>::Make(
         message, args..., integrator);
   }
@@ -384,7 +384,7 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
 #define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK(method)   \
   return ReadSprkFromMessage<                                        \
       not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>, \
-      ODE,                                                           \
+      typename ODE::Position,                                        \
       methods::method,                                               \
       methods::method::first_same_as_last>(                          \
       extension, problem, append_state, step)
@@ -444,7 +444,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
 
 #define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK(method)  \
   return ReadSprkFromMessage<FixedStepSizeIntegrator<ODE>, \
-                             ODE,                          \
+                             typename ODE::Position,       \
                              methods::method,              \
                              methods::method::first_same_as_last>(message)
 
