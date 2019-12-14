@@ -150,56 +150,123 @@ namespace principia {
 namespace integrators {
 namespace internal_integrators {
 
-// We do not deserialize an SPRK per se, but only when it is converted to an
-// SRKN.  The reason is that an SPRK is for a different kind of equation than
-// an SRKN, so the two would return different types.  If we ever need to do
-// this we will need to specialize ReadFromMessage somehow.
-template<typename ODE, typename Method, bool first_same_as_last>
-struct SprkAsSrknDeserializer;
-
-template<typename ODE, typename Method>
-struct SprkAsSrknDeserializer<ODE, Method, false> {
-  static FixedStepSizeIntegrator<ODE> const& ReadFromMessage(
-      serialization::FixedStepSizeIntegrator const& message);
-};
-
-template<typename ODE, typename Method>
-struct SprkAsSrknDeserializer<ODE, Method, true> {
-  static FixedStepSizeIntegrator<ODE> const& ReadFromMessage(
-      serialization::FixedStepSizeIntegrator const& message);
-};
-
-template<typename ODE, typename Method>
-FixedStepSizeIntegrator<ODE> const&
-SprkAsSrknDeserializer<ODE, Method, false>::ReadFromMessage(
-    serialization::FixedStepSizeIntegrator const& message) {
-  CHECK_EQ(serialization::FixedStepSizeIntegrator::BA,
-           message.composition_method());
-  return SymplecticRungeKuttaNyströmIntegrator<
-      Method,
-      serialization::FixedStepSizeIntegrator::BA,
-      typename ODE::Position>();
+template<typename Integrator>
+not_null<std::unique_ptr<typename Integrator::Instance>>
+ReadSmlsInstanceFromMessage(
+    serialization::FixedStepSizeIntegratorInstance const& message,
+    IntegrationProblem<typename Integrator::ODE> const& problem,
+    typename Integrator::AppendState const& append_state,
+    Time const& step,
+    Integrator const& integrator) {
+  CHECK(message.HasExtension(
+      serialization::SymmetricLinearMultistepIntegratorInstance::extension))
+      << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::SymmetricLinearMultistepIntegratorInstance::extension);
+  return typename Integrator::Instance::ReadFromMessage(extension,
+                                                        problem,
+                                                        append_state,
+                                                        step,
+                                                        integrator);
 }
 
-template<typename ODE, typename Method>
-FixedStepSizeIntegrator<ODE> const&
-SprkAsSrknDeserializer<ODE, Method, true>::ReadFromMessage(
-    serialization::FixedStepSizeIntegrator const& message) {
-  switch (message.composition_method()) {
-    case serialization::FixedStepSizeIntegrator::ABA:
-      return SymplecticRungeKuttaNyströmIntegrator<
-          Method,
-          serialization::FixedStepSizeIntegrator::ABA,
-          typename ODE::Position>();
-    case serialization::FixedStepSizeIntegrator::BAB:
-      return SymplecticRungeKuttaNyströmIntegrator<
-          Method,
-          serialization::FixedStepSizeIntegrator::BAB,
-          typename ODE::Position>();
-    case serialization::FixedStepSizeIntegrator::BA:
-    default:
-      LOG(FATAL) << message.DebugString();
-      base::noreturn();
+template<typename Integrator>
+not_null<std::unique_ptr<typename Integrator::Instance>>
+ReadSrknInstanceFromMessage(
+    serialization::FixedStepSizeIntegratorInstance const& message,
+    IntegrationProblem<typename Integrator::ODE> const& problem,
+    typename Integrator::AppendState const& append_state,
+    Time const& step,
+    Integrator const& integrator) {
+  CHECK(message.HasExtension(
+      serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension))
+      << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension);
+  return typename Integrator::Instance::ReadFromMessage(extension,
+                                                        problem,
+                                                        append_state,
+                                                        step,
+                                                        integrator);
+}
+
+// We do not deserialize an SPRK per se, but only when it is converted to an
+// SRKN.  The reason is that an SPRK is for a different kind of equation than
+// an SRKN, so the two would return different types.  Unfortunately, we have to
+// write nearly the same code twice.
+template<typename ODE, typename Method, bool first_same_as_last>
+FixedStepSizeIntegrator<ODE> ReadSprkFromMessage(
+    serialization::FixedStepSizeIntegratorInstance const& message) {
+  CHECK(message.has_composition_method());
+  if constexpr (first_same_as_last) {
+    switch (message.integrator().composition_method()) {
+      case serialization::FixedStepSizeIntegrator::ABA: {
+        return SymplecticRungeKuttaNyströmIntegrator<
+            Method,
+            serialization::FixedStepSizeIntegrator::ABA,
+            typename ODE::Position>();
+      }
+      case serialization::FixedStepSizeIntegrator::BAB: {
+        return SymplecticRungeKuttaNyströmIntegrator<
+            Method,
+            serialization::FixedStepSizeIntegrator::BAB,
+            typename ODE::Position>();
+      }
+      case serialization::FixedStepSizeIntegrator::BA:
+      default:
+        LOG(FATAL) << message.DebugString();
+        base::noreturn();
+    }
+  } else {
+    CHECK_EQ(serialization::FixedStepSizeIntegrator::BA,
+             message.integrator().composition_method());
+    return SymplecticRungeKuttaNyströmIntegrator<
+        Method,
+        serialization::FixedStepSizeIntegrator::BA,
+        typename ODE::Position>();
+  }
+}
+
+template<typename ODE, typename Method, bool first_same_as_last>
+not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+ReadSprkInstanceFromMessage(
+    serialization::FixedStepSizeIntegratorInstance const& message,
+    IntegrationProblem<ODE> const& problem,
+    typename Integrator<ODE>::AppendState const& append_state,
+    Time const& step) {
+  CHECK(message.has_composition_method());
+  if constexpr (first_same_as_last) {
+    switch (message.integrator().composition_method()) {
+      case serialization::FixedStepSizeIntegrator::ABA: {
+        auto const& integrator = SymplecticRungeKuttaNyströmIntegrator<
+            Method,
+            serialization::FixedStepSizeIntegrator::ABA,
+            typename ODE::Position>();
+        return ReadSrknInstanceFromMessage(
+            message, problem, append_state, step, integrator);
+      }
+      case serialization::FixedStepSizeIntegrator::BAB: {
+        auto const& integrator = SymplecticRungeKuttaNyströmIntegrator<
+            Method,
+            serialization::FixedStepSizeIntegrator::BAB,
+            typename ODE::Position>();
+        return ReadSrknInstanceFromMessage(
+            message, problem, append_state, step, integrator);
+      }
+      case serialization::FixedStepSizeIntegrator::BA:
+      default:
+        LOG(FATAL) << message.DebugString();
+        base::noreturn();
+    }
+  } else {
+    CHECK_EQ(serialization::FixedStepSizeIntegrator::BA,
+             message.integrator().composition_method());
+    auto const& integrator = SymplecticRungeKuttaNyströmIntegrator<
+        Method,
+        serialization::FixedStepSizeIntegrator::BA,
+        typename ODE::Position>();
+    return ReadSrknInstanceFromMessage(
+        message, problem, append_state, step, integrator);
   }
 }
 
@@ -269,88 +336,6 @@ ReadFromMessage(serialization::AdaptiveStepSizeIntegrator const& message) {
       LOG(FATAL) << message.kind();
       base::noreturn();
   }
-}
-
-template<typename Integrator>
-not_null<std::unique_ptr<typename Integrator::Instance>>
-ReadSmlsInstanceFromMessage(
-    serialization::FixedStepSizeIntegratorInstance const& message,
-    IntegrationProblem<typename Integrator::ODE> const& problem,
-    typename Integrator::AppendState const& append_state,
-    Time const& step,
-    Integrator const& integrator) {
-  CHECK(message.HasExtension(
-      serialization::SymmetricLinearMultistepIntegratorInstance::extension))
-      << message.DebugString();
-  auto const& extension = message.GetExtension(
-      serialization::SymmetricLinearMultistepIntegratorInstance::extension);
-  return typename Integrator::Instance::ReadFromMessage(extension,
-                                                        problem,
-                                                        append_state,
-                                                        step,
-                                                        integrator);
-}
-
-template<typename ODE, typename Method, bool first_same_as_last>
-not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
-ReadSprkInstanceFromMessage(
-    serialization::FixedStepSizeIntegratorInstance const& message,
-    IntegrationProblem<ODE> const& problem,
-    typename Integrator<ODE>::AppendState const& append_state,
-    Time const& step) {
-  if constexpr (first_same_as_last) {
-    switch (message.integrator().composition_method()) {
-      case serialization::FixedStepSizeIntegrator::ABA: {
-        auto const& integrator = SymplecticRungeKuttaNyströmIntegrator<
-            Method,
-            serialization::FixedStepSizeIntegrator::ABA,
-            typename ODE::Position>();
-        return ReadSrknInstanceFromMessage(
-            message, problem, append_state, step, integrator);
-      }
-      case serialization::FixedStepSizeIntegrator::BAB: {
-        auto const& integrator = SymplecticRungeKuttaNyströmIntegrator<
-            Method,
-            serialization::FixedStepSizeIntegrator::BAB,
-            typename ODE::Position>();
-        return ReadSrknInstanceFromMessage(
-            message, problem, append_state, step, integrator);
-      }
-      case serialization::FixedStepSizeIntegrator::BA:
-      default:
-        LOG(FATAL) << message.DebugString();
-        base::noreturn();
-    }
-  } else {
-    CHECK_EQ(serialization::FixedStepSizeIntegrator::BA,
-             message.integrator().composition_method());
-    auto const& integrator = SymplecticRungeKuttaNyströmIntegrator<
-        Method,
-        serialization::FixedStepSizeIntegrator::BA,
-        typename ODE::Position>();
-    return ReadSrknInstanceFromMessage(
-        message, problem, append_state, step, integrator);
-  }
-}
-
-template<typename Integrator>
-not_null<std::unique_ptr<typename Integrator::Instance>>
-ReadSrknInstanceFromMessage(
-    serialization::FixedStepSizeIntegratorInstance const& message,
-    IntegrationProblem<typename Integrator::ODE> const& problem,
-    typename Integrator::AppendState const& append_state,
-    Time const& step,
-    Integrator const& integrator) {
-  CHECK(message.HasExtension(
-      serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension))
-      << message.DebugString();
-  auto const& extension = message.GetExtension(
-      serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension);
-  return typename Integrator::Instance::ReadFromMessage(extension,
-                                                        problem,
-                                                        append_state,
-                                                        step,
-                                                        integrator);
 }
 
 template<typename ODE_>
@@ -460,16 +445,10 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
   return SymmetricLinearMultistepIntegrator<methods::method, \
                                             typename ODE::Position>()
 
-// We do not deserialize an SPRK per se, but only when it is converted to an
-// SRKN.  The reason is that an SPRK is for a different kind of equation than
-// an SRKN, so the two would return different types.  If we ever need to do
-// this we will need to specialize ReadFromMessage somehow.
 #define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK(method) \
-  CHECK(message.has_composition_method());                \
-  return SprkAsSrknDeserializer<                          \
-      ODE,                                                \
-      methods::method,                                    \
-      methods::method::first_same_as_last>::ReadFromMessage(message)
+  return ReadSprkFromMessage<ODE,                         \
+                             methods::method,             \
+                             methods::method::first_same_as_last>(message)
 
 #define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SRKN(method)       \
   return SymplecticRungeKuttaNyströmIntegrator<methods::method, \
