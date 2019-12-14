@@ -156,11 +156,11 @@ ReadSlmsInstanceFromMessage(
       << message.DebugString();
   auto const& extension = message.GetExtension(
       serialization::SymmetricLinearMultistepIntegratorInstance::extension);
-  return typename Integrator::Instance::ReadFromMessage(extension,
-                                                        problem,
-                                                        append_state,
-                                                        step,
-                                                        integrator);
+  return Integrator::Instance::ReadFromMessage(extension,
+                                               problem,
+                                               append_state,
+                                               step,
+                                               integrator);
 }
 
 template<typename Integrator>
@@ -176,11 +176,11 @@ ReadSrknInstanceFromMessage(
       << message.DebugString();
   auto const& extension = message.GetExtension(
       serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension);
-  return typename Integrator::Instance::ReadFromMessage(extension,
-                                                        problem,
-                                                        append_state,
-                                                        step,
-                                                        integrator);
+  return Integrator::Instance::ReadFromMessage(extension,
+                                               problem,
+                                               append_state,
+                                               step,
+                                               integrator);
 }
 
 // We do not deserialize an SPRK per se, but only when it is converted to an
