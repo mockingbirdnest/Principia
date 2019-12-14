@@ -150,6 +150,10 @@ namespace principia {
 namespace integrators {
 namespace internal_integrators {
 
+// We do not deserialize an SPRK per se, but only when it is converted to an
+// SRKN.  The reason is that an SPRK is for a different kind of equation than
+// an SRKN, so the two would return different types.  If we ever need to do
+// this we will need to specialize ReadFromMessage somehow.
 template<typename ODE, typename Method, bool first_same_as_last>
 struct SprkAsSrknDeserializer;
 
@@ -287,7 +291,6 @@ ReadSmlsInstanceFromMessage(
                                                         integrator);
 }
 
-//TODO(phl):comment
 template<typename ODE, typename Method, bool first_same_as_last>
 not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
 ReadSprkInstanceFromMessage(
@@ -398,10 +401,6 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   return ReadSmlsInstanceFromMessage(                                 \
       extension, problem, append_state, step, integrator)
 
-// We do not deserialize an SPRK per se, but only when it is converted to an
-// SRKN.  The reason is that an SPRK is for a different kind of equation than
-// an SRKN, so the two would return different types.  If we ever need to do
-// this we will need to specialize ReadFromMessage somehow.
 #define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK(method)         \
   return ReadSprkInstanceFromMessage<ODE,                                  \
                                      methods::method,                      \
