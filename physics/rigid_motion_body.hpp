@@ -90,6 +90,8 @@ RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
                        AngularVelocity<ToFrame>{},
                        degrees_of_freedom_of_from_frame_origin.velocity());
   } else {
+    // TODO(phl): This is extremely dubious.  We apply the sun_looking_glass
+    // permutation because we "know" that we have World and RigidPart here.
     return RigidMotion(
         RigidTransformation<FromFrame, ToFrame>(
             FromFrame::origin,
