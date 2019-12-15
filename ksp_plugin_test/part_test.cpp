@@ -124,21 +124,21 @@ TEST_F(PartTest, Serialization) {
                   .x()
                   .quantity()
                   .magnitude(),
-              AlmostEquals(-4, 0));
+              AlmostEquals(-4, 2));
   EXPECT_THAT(message.rigid_motion()
                   .velocity_of_to_frame_origin()
                   .vector()
                   .y()
                   .quantity()
                   .magnitude(),
-              AlmostEquals(-6, 0));
+              AlmostEquals(-6, 2));
   EXPECT_THAT(message.rigid_motion()
                   .velocity_of_to_frame_origin()
                   .vector()
                   .z()
                   .quantity()
                   .magnitude(),
-              AlmostEquals(-5, 0));
+              AlmostEquals(-5, 2));
   EXPECT_EQ(1, message.prehistory().timeline_size());
   EXPECT_EQ(1, message.prehistory().children_size());
   EXPECT_EQ(1, message.prehistory().children(0).trajectories_size());
