@@ -189,7 +189,7 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::ReadFromMessage(
     AppendState const& append_state,
     Time const& step,
     SymmetricLinearMultistepIntegrator const& integrator) {
-  std::list<typename Step> previous_steps;
+  std::list<Step> previous_steps;
   for (auto const& previous_step : extension.previous_steps()) {
     previous_steps.push_back(Step::ReadFromMessage(previous_step));
   }
