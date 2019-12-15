@@ -23,69 +23,73 @@ using physics::DynamicFrame;
 // Thanks to KSP's madness, the reference frame of the celestial body orbited by
 // the active vessel, occasionally rotating with its surface, occasionally
 // nonrotating.
-// The basis is that of Unity's "world space" (this is a left-handed basis).
-// The origin is the ineffable origin of Unity's "world space".
+// The basis is that of Unity's "world space".  The origin is the ineffable
+// origin of Unity's "world space".
 using World = Frame<serialization::Frame::PluginTag,
-                    serialization::Frame::WORLD,
                     NonInertial,
-                    Handedness::Left>;
+                    Handedness::Left,
+                    serialization::Frame::WORLD>;
 
 // Same as |World| but with the y and z axes switched through the looking-glass:
 // it is a right-handed basis. "We're all mad here. I'm mad. You're mad."
 using AliceWorld = Frame<serialization::Frame::PluginTag,
-                         serialization::Frame::ALICE_WORLD,
-                         NonInertial>;
+                         NonInertial,
+                         Handedness::Right,
+                         serialization::Frame::ALICE_WORLD>;
 
 // The barycentric reference frame of the solar system.
 using Barycentric = Frame<serialization::Frame::PluginTag,
-                          serialization::Frame::BARYCENTRIC,
-                          Inertial>;
+                          Inertial,
+                          Handedness::Right,
+                          serialization::Frame::BARYCENTRIC>;
 
 // The axes are those of |Barycentric|.  The origin is that of |World|.  This
 // frame is used for degrees of freedom obtained after the physics simulation of
 // the game has run, and before we perform our correction: the origin has no
 // physical significance.
 using ApparentBubble = Frame<serialization::Frame::PluginTag,
-                             serialization::Frame::APPARENT_BUBBLE,
-                             NonInertial>;
+                             NonInertial,
+                             Handedness::Right,
+                             serialization::Frame::APPARENT_BUBBLE>;
 
-// |Barycentric|, with its y and z axes swapped; the basis is left-handed.
+// |Barycentric|, with its y and z axes swapped.
 using CelestialSphere = Frame<serialization::Frame::PluginTag,
-                              serialization::Frame::CELESTIAL_SPHERE,
                               Inertial,
-                              Handedness::Left>;
+                              Handedness::Left,
+                              serialization::Frame::CELESTIAL_SPHERE>;
 
 // The surface frame of a celestial, with the x axis pointing to the origin of
 // latitude and longitude, the y axis pointing to the pole with positive
 // latitude, and the z axis oriented to form a left-handed basis.
 using BodyWorld = Frame<serialization::Frame::PluginTag,
-                        serialization::Frame::BODY_WORLD,
                         NonInertial,
-                        Handedness::Left>;
+                        Handedness::Left,
+                        serialization::Frame::BODY_WORLD>;
 
 // The frame used for the navball.  Its definition depends on the choice of a
-// subclass of FrameField.  This frame is left-handed.
+// subclass of FrameField.
 using Navball = Frame<serialization::Frame::PluginTag,
-                      serialization::Frame::NAVBALL,
                       NonInertial,
-                      Handedness::Left>;
+                      Handedness::Left,
+                      serialization::Frame::NAVBALL>;
 
 // The frame used for trajectory plotting and manœuvre planning.  Its definition
 // depends on the choice of a subclass of DynamicFrame.
 using Navigation = Frame<serialization::Frame::PluginTag,
-                         serialization::Frame::NAVIGATION,
-                         NonInertial>;
+                         NonInertial,
+                         Handedness::Right,
+                         serialization::Frame::NAVIGATION>;
 
 // The plotting frame, but with the y and z axes swapped compared to
-// |Navigation| (the basis is left-handed).  This frame defines the camera
-// horizontal, and its angular velocity defines the angular velocity of the
-// camera (note that the linear motion of the camera is defined in-game by
-// following a specific target, which may be in motion with respect to
-// |CameraReference|, so the camera is not necessarily at rest in that frame).
+// |Navigation|.  This frame defines the camera horizontal, and its angular
+// velocity defines the angular velocity of the camera (note that the linear
+// motion of the camera is defined in-game by following a specific target, which
+// may be in motion with respect to |CameraReference|, so the camera is not
+// necessarily at rest in that frame).
 using CameraReference = Frame<serialization::Frame::PluginTag,
-                              serialization::Frame::CAMERA_REFERENCE,
                               NonInertial,
-                              Handedness::Left>;
+                              Handedness::Left,
+                              serialization::Frame::CAMERA_REFERENCE>;
 
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences
@@ -95,31 +99,34 @@ using CameraReference = Frame<serialization::Frame::PluginTag,
 // only be performed between simultaneous quantities, then converted to a
 // consistent (frame, basis) pair before use.
 using AliceSun = Frame<serialization::Frame::PluginTag,
-                       serialization::Frame::ALICE_SUN,
-                       NonInertial>;
+                       NonInertial,
+                       Handedness::Right,
+                       serialization::Frame::ALICE_SUN>;
 
 // Same as above, but with same axes as |World| instead of those of
 // |AliceWorld|. The caveats are the same as for |AliceSun|.
 using WorldSun = Frame<serialization::Frame::PluginTag,
-                       serialization::Frame::WORLD_SUN,
                        NonInertial,
-                       Handedness::Left>;
+                       Handedness::Left,
+                       serialization::Frame::WORLD_SUN>;
 
 // Used to identify coordinates in the projective plane.
 using Camera = Frame<serialization::Frame::PluginTag,
-                     serialization::Frame::CAMERA,
-                     NonInertial>;
+                     NonInertial,
+                     Handedness::Right,
+                     serialization::Frame::CAMERA>;
 
 // The frame that defines the orientation of a part.
 using RigidPart = Frame<serialization::Frame::PluginTag,
-                        serialization::Frame::RIGID_PART,
                         NonInertial,
-                        Handedness::Left>;
+                        Handedness::Left,
+                        serialization::Frame::RIGID_PART>;
 
 // The body-centred non-rotating frame for the current main body.
 using MainBodyCentred = Frame<serialization::Frame::PluginTag,
-                              serialization::Frame::MAIN_BODY_CENTRED,
-                              NonInertial>;
+                              NonInertial,
+                              Handedness::Right,
+                              serialization::Frame::MAIN_BODY_CENTRED>;
 
 // The |PileUp| is seen as a rigid body; the degrees of freedom of the parts in
 // the frame of that body can be set, however their motion is not integrated;
@@ -127,8 +134,9 @@ using MainBodyCentred = Frame<serialization::Frame::PluginTag,
 // |PileUp|.  The origin of |RigidPileUp| is the centre of mass of the pile up.
 // Its axes are those of Barycentric.
 using RigidPileUp = Frame<serialization::Frame::PluginTag,
-                          serialization::Frame::RIGID_PILE_UP,
-                          NonInertial>;
+                          NonInertial,
+                          Handedness::Right,
+                          serialization::Frame::RIGID_PILE_UP>;
 
 // Convenient instances of types from |physics| for the above frames.
 using NavigationFrame = DynamicFrame<Barycentric, Navigation>;

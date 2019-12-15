@@ -34,7 +34,7 @@ using ::testing::ElementsAre;
 
 class HierarchicalSystemTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag, WorldTag{}, Inertial>;
+  using World = Frame<enum class WorldTag, Inertial>;
 };
 
 TEST_F(HierarchicalSystemTest, HierarchicalSystem) {

@@ -24,7 +24,9 @@ using testing_utilities::AlmostEquals;
 class OrthogonalMapTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, Inertial>;
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
   using Orth = OrthogonalMap<World, World>;
   using Rot = Rotation<World, World>;
 

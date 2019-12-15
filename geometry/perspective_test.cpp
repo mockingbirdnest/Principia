@@ -39,8 +39,12 @@ using ::testing::_;
 class PerspectiveTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
+                      Inertial,
+                      Handedness::Right,
                       serialization::Frame::TEST1>;
   using Camera = Frame<serialization::Frame::TestTag,
+                       Inertial,
+                       Handedness::Right,
                        serialization::Frame::TEST2>;
 };
 

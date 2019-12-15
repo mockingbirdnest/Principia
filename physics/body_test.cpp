@@ -35,6 +35,7 @@ using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Instant;
 using geometry::Normalize;
@@ -70,14 +71,16 @@ using ::testing::NotNull;
 class BodyTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, Inertial>;
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST1>;
 
   // We need that so the comma doesn't get caught in macros.
   using Direction = Vector<double, World>;
 
   template<typename Tag, Tag tag>
   void TestRotatingBody() {
-    using F = Frame<Tag, tag, Inertial>;
+    using F = Frame<Tag, Inertial, Handedness::Right, tag>;
 
     auto const rotating_body =
         RotatingBody<F>(17 * SIUnit<GravitationalParameter>(),

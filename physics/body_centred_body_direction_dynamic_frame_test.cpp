@@ -34,7 +34,9 @@ using base::check_not_null;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
+using geometry::NonInertial;
 using geometry::Rotation;
 using geometry::Vector;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
@@ -70,8 +72,12 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the big body and directed to the small one.
   using BigSmallFrame = Frame<serialization::Frame::TestTag,
+                              NonInertial,
+                              Handedness::Right,
                               serialization::Frame::TEST>;
   using MockFrame = Frame<serialization::Frame::TestTag,
+                          NonInertial,
+                          Handedness::Right,
                           serialization::Frame::TEST1>;
 
   BodyCentredBodyDirectionDynamicFrameTest()

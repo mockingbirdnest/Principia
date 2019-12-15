@@ -25,9 +25,13 @@ namespace geometry {
 class IdentityTest : public testing::Test {
  protected:
   using World1 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST1, Inertial>;
+                       Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TEST1>;
   using World2 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST2, Inertial>;
+                       Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TEST2>;
   using Orth = OrthogonalMap<World1, World2>;
   using Id = Identity<World1, World2>;
   using R3 = R3Element<Length>;

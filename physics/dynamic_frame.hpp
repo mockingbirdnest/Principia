@@ -15,6 +15,7 @@ namespace internal_dynamic_frame {
 
 using base::not_null;
 using geometry::Instant;
+using geometry::Handedness;
 using geometry::NonInertial;
 using geometry::Position;
 using geometry::Rotation;
@@ -25,8 +26,9 @@ using quantities::Acceleration;
 // TODO(egg): this should actually depend on its template parameter somehow.
 template<typename Frame>
 using Frenet = geometry::Frame<serialization::Frame::PhysicsTag,
-                               serialization::Frame::FRENET,
-                               NonInertial>;
+                               NonInertial,
+                               Handedness::Right,
+                               serialization::Frame::FRENET>;
 
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
 // respect to the inertial reference frame |InertialFrame|.

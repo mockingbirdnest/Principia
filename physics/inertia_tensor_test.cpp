@@ -32,6 +32,7 @@ using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Position;
 using geometry::R3Element;
@@ -58,17 +59,21 @@ using ::testing::Matcher;
 class InertiaTensorTest : public ::testing::Test {
  protected:
   using Frame0 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST,
-                       Inertial>;
+                       Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TEST>;
   using Frame1 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST1,
-                       Inertial>;
+                       Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TEST1>;
   using Frame2 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST2,
-                       Inertial>;
+                       Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TEST2>;
   using Frame3 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST3,
-                       Inertial>;
+                       Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TEST3>;
 
   template<typename Frame>
   void CheckMomentsOfInertia(

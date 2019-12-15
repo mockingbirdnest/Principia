@@ -36,7 +36,9 @@ using base::dynamic_cast_not_null;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
+using geometry::NonInertial;
 using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Vector;
@@ -75,8 +77,12 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the big body and directed to the small one.
   using BigSmallFrame = Frame<serialization::Frame::TestTag,
+                              NonInertial,
+                              Handedness::Right,
                               serialization::Frame::TEST>;
   using MockFrame = Frame<serialization::Frame::TestTag,
+                          NonInertial,
+                          Handedness::Right,
                           serialization::Frame::TEST1>;
 
   BodySurfaceDynamicFrameTest()

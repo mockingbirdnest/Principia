@@ -28,6 +28,8 @@ using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
+using geometry::NonInertial;
 using geometry::RigidTransformation;
 using geometry::Velocity;
 using physics::ContinuousTrajectory;
@@ -64,6 +66,8 @@ class ManœuvreTest : public ::testing::Test {
  protected:
   using World = Barycentric;
   using Rendering = Frame<serialization::Frame::TestTag,
+                          NonInertial,
+                          Handedness::Right,
                           serialization::Frame::TEST>;
 
   not_null<std::unique_ptr<StrictMock<MockDynamicFrame<World, Rendering>>>>

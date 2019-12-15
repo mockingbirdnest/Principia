@@ -13,6 +13,7 @@ namespace astronomy {
 namespace internal_frames {
 
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Instant;
 using geometry::NonInertial;
@@ -47,8 +48,9 @@ using quantities::si::Degree;
 //   does not support general relativity, and uses only one time scale (TT
 //   identified with TCB), we call this ICRS.
 using ICRS = Frame<serialization::Frame::SolarSystemTag,
-                   serialization::Frame::ICRS,
-                   Inertial>;
+                   Inertial,
+                   Handedness::Right,
+                   serialization::Frame::ICRS>;
 
 // The Geocentric Celestial Reference System.
 // The origin is the centre of mass of the whole Earth system, including oceans
@@ -66,8 +68,9 @@ using ICRS = Frame<serialization::Frame::SolarSystemTag,
 //   for practical purposes TT and TDB are within 2 ms of each other;
 //   Principia's |Instant| is TT.
 using GCRS = Frame<serialization::Frame::SolarSystemTag,
-                   serialization::Frame::GCRS,
-                   NonInertial>;
+                   NonInertial,
+                   Handedness::Right,
+                   serialization::Frame::GCRS>;
 
 // The International Terrestrial Reference System.
 // The origin is the centre of mass of the whole Earth system, including oceans
@@ -99,8 +102,9 @@ using GCRS = Frame<serialization::Frame::SolarSystemTag,
 //   the tables in EUREF Technical Note 1,
 //   http://etrs89.ensg.ign.fr/pub/EUREF-TN-1.pdf
 using ITRS = Frame<serialization::Frame::SolarSystemTag,
-                   serialization::Frame::ITRS,
-                   NonInertial>;
+                   NonInertial,
+                   Handedness::Right,
+                   serialization::Frame::ITRS>;
 
 // The following two reference systems are both geocentric, and they share the
 // same z axis, the Celestial Intermediate Pole.  Their common xy plane is the
@@ -144,8 +148,9 @@ using CelestialIntermediateReferenceSystem = GCRS;
 // extrasolar system.  The z axis goes from the extrasolar system to the Earth.
 // The xz plane is (approximately) the plane of the extrasolar system.
 using Sky = Frame<serialization::Frame::SolarSystemTag,
-                  serialization::Frame::SKY,
-                  Inertial>;
+                  Inertial,
+                  Handedness::Right,
+                  serialization::Frame::SKY>;
 
 }  // namespace internal_frames
 

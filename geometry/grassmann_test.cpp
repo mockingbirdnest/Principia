@@ -73,7 +73,9 @@ struct TransparentWedge final {
 class GrassmannTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, Inertial>;
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
 
   R3Element<Length> const null_displacement_ = {0 * Metre,
                                                 0 * Metre,
