@@ -48,6 +48,8 @@ class SymmetricLinearMultistepIntegrator
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
+    template<typename P = Position,
+             typename = std::enable_if_t<base::is_serializable_v<P>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::SymmetricLinearMultistepIntegratorInstance const&
             extension,
@@ -68,6 +70,8 @@ class SymmetricLinearMultistepIntegrator
       void WriteToMessage(
           not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                        Step*> const message) const;
+      template<typename P = Position,
+               typename = std::enable_if_t<base::is_serializable_v<P>>>
       static Step ReadFromMessage(
           serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
               message);

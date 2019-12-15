@@ -24,6 +24,7 @@ using base::not_null;
 using geometry::Displacement;
 using geometry::Inertial;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -50,9 +51,7 @@ using ::testing::Eq;
 
 class ApsidesTest : public ::testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1,
-                      Inertial>;
+  using World = Frame<enum class WorldTag, WorldTag{}, Inertial>;
 };
 
 #if !defined(_DEBUG)

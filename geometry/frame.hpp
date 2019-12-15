@@ -35,7 +35,13 @@ enum class Handedness {
 //   using MyFrame = Frame<enum class MyFrameTag, MyFrameTag{}, Inertial>;
 //
 // By default, the frame is non-inertial and right-handed.
-// TODO(phl): Make the serialization check compile-time.
+//
+// A non-serializable frame misses the ReadFromMessage method but has a
+// WriteToMessage method which fails at execution.  The reason is that
+// WriteToMessage needs to be virtual for some classes, and that doesn't
+// interact well with SFINAE.  Since it's uncommon to write without reading,
+// that should be sufficient to detect at compile-time attempts at serializing a
+// non-serializable frame.
 template<typename FrameTag,
          FrameTag tag_ = FrameTag{},
          FrameMotion motion_ = NonInertial,
@@ -51,9 +57,13 @@ struct Frame : not_constructible {
   using Tag = FrameTag;
   static constexpr Tag tag = tag_;
 
+  static constexpr bool is_serializable =
+      google::protobuf::is_proto_enum<FrameTag>::value;
+
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
   // Checks that the |message| matches the current type.
+  template<typename = std::enable_if_t<is_serializable>>
   static void ReadFromMessage(serialization::Frame const& message);
 };
 

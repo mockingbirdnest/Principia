@@ -111,6 +111,7 @@ void Point<Vector>::WriteToMessage(
 }
 
 template<typename Vector>
+template<typename, typename>
 Point<Vector> Point<Vector>::ReadFromMessage(
     serialization::Point const& message) {
   Point result;

@@ -394,6 +394,7 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
       extension, problem, append_state, step, integrator)
 
 template<typename ODE_>
+template<typename, typename>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     serialization::IntegratorInstance const& message,
@@ -453,6 +454,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
                                                typename ODE::Position>()
 
 template<typename ODE_>
+template<typename, typename>
 FixedStepSizeIntegrator<ODE_> const&
 FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message) {

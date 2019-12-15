@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
@@ -48,6 +49,8 @@ class Point final {
   constexpr bool operator!=(Point const& right) const;
 
   void WriteToMessage(not_null<serialization::Point*> message) const;
+  template<typename V = Vector,
+           typename = std::enable_if_t<base::is_serializable_v<V>>>
   static Point ReadFromMessage(serialization::Point const& message);
 
  private:

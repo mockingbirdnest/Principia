@@ -14,6 +14,7 @@ namespace principia {
 namespace physics {
 namespace internal_jacobi_coordinates {
 
+using geometry::Frame;
 using geometry::Inertial;
 using quantities::Length;
 using quantities::si::Kilogram;
@@ -25,34 +26,34 @@ using ::testing::ElementsAre;
 
 class JacobiCoordinatesTest : public ::testing::Test {
  protected:
-  using Frame = geometry::Frame<serialization::Frame::TestTag,
-                                serialization::Frame::TEST,
-                                Inertial>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST,
+                      Inertial>;
 
   MassiveBody m1_ = MassiveBody(1 * Kilogram);
   MassiveBody m2_ = MassiveBody(2 * Kilogram);
 };
 
 TEST_F(JacobiCoordinatesTest, Jacobi) {
-  auto const x_positions = [](JacobiCoordinates<Frame> const& system) {
+  auto const x_positions = [](JacobiCoordinates<World> const& system) {
     std::vector<Length> result;
     auto const barycentric_dof = system.BarycentricDegreesOfFreedom();
     std::transform(barycentric_dof.begin(),
                    barycentric_dof.end(),
                    std::back_inserter(result),
-                   [](RelativeDegreesOfFreedom<Frame> const& dof) {
+                   [](RelativeDegreesOfFreedom<World> const& dof) {
                      return dof.displacement().coordinates().x;
                    });
     return result;
   };
 
   // i, and Ω are 0 by default.
-  KeplerianElements<Frame> elements;
+  KeplerianElements<World> elements;
   elements.eccentricity = 0;
   elements.argument_of_periapsis = 0 * Radian;
   elements.mean_anomaly = 0 * Radian;
 
-  JacobiCoordinates<Frame> system(m2_);
+  JacobiCoordinates<World> system(m2_);
   EXPECT_EQ(2 * Kilogram, system.System().mass());
   EXPECT_THAT(x_positions(system), ElementsAre(0 * Metre));
 

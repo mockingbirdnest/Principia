@@ -59,6 +59,8 @@ class SymmetricBilinearForm {
 
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static SymmetricBilinearForm ReadFromMessage(
       serialization::SymmetricBilinearForm const& message);
 

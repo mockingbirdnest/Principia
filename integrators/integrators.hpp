@@ -88,6 +88,8 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
+    template<typename S = typename ODE::SystemState,
+             typename = std::enable_if_t<base::is_serializable_v<S>>>
     static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
     ReadFromMessage(serialization::IntegratorInstance const& message,
                     ODE const& equation,
@@ -110,6 +112,8 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
 
   virtual void WriteToMessage(
       not_null<serialization::FixedStepSizeIntegrator*> message) const = 0;
+  template<typename S = typename ODE::SystemState,
+           typename = std::enable_if_t<base::is_serializable_v<S>>>
   static FixedStepSizeIntegrator const& ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message);
 

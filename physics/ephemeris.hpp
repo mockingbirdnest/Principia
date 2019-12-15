@@ -277,6 +277,8 @@ class Ephemeris {
 
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       serialization::Ephemeris const& message) EXCLUDES(lock_);
 
@@ -307,9 +309,13 @@ class Ephemeris {
  private:
   // Checkpointing support.
   void WriteToCheckpoint(not_null<serialization::Ephemeris*> message);
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   bool ReadFromCheckpoint(serialization::Ephemeris const& message);
   void CreateCheckpointIfNeeded(Instant const& time) const
       SHARED_LOCKS_REQUIRED(lock_);
+  Checkpointer<serialization::Ephemeris>::Reader
+  static MakeCheckpointerReader(Ephemeris* const ephemeris);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(

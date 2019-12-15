@@ -137,6 +137,7 @@ void SymmetricBilinearForm<Scalar, Frame>::WriteToMessage(
 }
 
 template<typename Scalar, typename Frame>
+template<typename, typename>
 SymmetricBilinearForm<Scalar, Frame>
 SymmetricBilinearForm<Scalar, Frame>::ReadFromMessage(
     serialization::SymmetricBilinearForm const& message) {

@@ -123,6 +123,7 @@ void Multivector<Scalar, Frame, 3>::WriteToMessage(
 }
 
 template<typename Scalar, typename Frame>
+template<typename, typename>
 Multivector<Scalar, Frame, 1> Multivector<Scalar, Frame, 1>::ReadFromMessage(
     serialization::Multivector const& message) {
   Frame::ReadFromMessage(message.frame());
@@ -131,6 +132,7 @@ Multivector<Scalar, Frame, 1> Multivector<Scalar, Frame, 1>::ReadFromMessage(
 }
 
 template<typename Scalar, typename Frame>
+template<typename, typename>
 Multivector<Scalar, Frame, 2> Multivector<Scalar, Frame, 2>::ReadFromMessage(
     serialization::Multivector const& message) {
   Frame::ReadFromMessage(message.frame());
@@ -139,6 +141,7 @@ Multivector<Scalar, Frame, 2> Multivector<Scalar, Frame, 2>::ReadFromMessage(
 }
 
 template<typename Scalar, typename Frame>
+template<typename, typename>
 Multivector<Scalar, Frame, 3> Multivector<Scalar, Frame, 3>::ReadFromMessage(
     serialization::Multivector const& message) {
   Frame::ReadFromMessage(message.frame());

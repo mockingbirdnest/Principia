@@ -40,15 +40,24 @@ int const max_degree_age = 100;
 int const divisions = 8;
 
 template<typename Frame>
+Checkpointer<serialization::ContinuousTrajectory>::Reader
+MakeCheckpointerReader(ContinuousTrajectory<Frame>* const trajectory) {
+  if constexpr (base::is_serializable_v<Frame>) {
+    return [trajectory](serialization::ContinuousTrajectory const& message) {
+      return trajectory->ReadFromCheckpoint(message);
+    };
+  } else {
+    return nullptr;
+  }
+}
+
+template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
                                                   Length const& tolerance)
     : step_(step),
       tolerance_(tolerance),
       checkpointer_(
-          /*reader=*/
-          [this](serialization::ContinuousTrajectory const& message) {
-            return ReadFromCheckpoint(message);
-          },
+          /*reader=*/MakeCheckpointerReader(this),
           /*writer=*/
           [this](not_null<serialization::ContinuousTrajectory*> const message) {
             WriteToCheckpoint(message);
@@ -227,6 +236,7 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
+template<typename, typename>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
       serialization::ContinuousTrajectory const& message) {
@@ -310,6 +320,7 @@ void ContinuousTrajectory<Frame>::WriteToCheckpoint(
 }
 
 template<typename Frame>
+template<typename, typename>
 bool ContinuousTrajectory<Frame>::ReadFromCheckpoint(
     serialization::ContinuousTrajectory const& message) {
   bool const has_checkpoint = message.has_adjusted_tolerance() &&

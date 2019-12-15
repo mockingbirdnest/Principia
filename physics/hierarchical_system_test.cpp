@@ -16,6 +16,7 @@ namespace physics {
 namespace internal_hierarchical_system {
 
 using base::make_not_null_unique;
+using geometry::Frame;
 using geometry::Inertial;
 using quantities::GravitationalParameter;
 using quantities::Length;
@@ -33,14 +34,14 @@ using ::testing::ElementsAre;
 
 class HierarchicalSystemTest : public ::testing::Test {
  protected:
-  using Frame = geometry::Frame<serialization::Frame::TestTag,
-                                serialization::Frame::TEST,
-                                Inertial>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST,
+                      Inertial>;
 };
 
 TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   // i, and Ω are 0 by default.
-  KeplerianElements<Frame> elements;
+  KeplerianElements<World> elements;
   elements.eccentricity = 0;
   elements.argument_of_periapsis = 0 * Radian;
   elements.mean_anomaly = 0 * Radian;
@@ -63,7 +64,7 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   //   |<   7/3 m   >|
 
   bodies.reserve(4);  // We'll call new_body 4 times.
-  HierarchicalSystem<Frame> system(new_body(2 * Kilogram));
+  HierarchicalSystem<World> system(new_body(2 * Kilogram));
   elements.semimajor_axis = 7.0 / 3.0 * Metre;
   system.Add(new_body(2 * Kilogram), /*parent=*/bodies[0], elements);
   elements.semimajor_axis = 1 * Metre;
@@ -83,8 +84,8 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   std::transform(barycentric_system.degrees_of_freedom.begin(),
                  barycentric_system.degrees_of_freedom.end(),
                  std::back_inserter(x_positions),
-                 [](DegreesOfFreedom<Frame> const& dof) {
-                   return (dof.position() - Frame::origin).coordinates().x;
+                 [](DegreesOfFreedom<World> const& dof) {
+                   return (dof.position() - World::origin).coordinates().x;
                  });
   EXPECT_THAT(x_positions,
               ElementsAre(AlmostEquals(-1.5 * Metre, 0),
@@ -95,7 +96,7 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
 
 TEST_F(HierarchicalSystemTest, FromMeanMotions) {
   // i, and Ω are 0 by default.
-  KeplerianElements<Frame> elements;
+  KeplerianElements<World> elements;
   elements.eccentricity = 0;
   elements.argument_of_periapsis = 0 * Radian;
   elements.mean_anomaly = 0 * Radian;
@@ -120,7 +121,7 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
   //    |<1.5 m >|
 
   bodies.reserve(3);  // We'll call new_body 3 times.
-  HierarchicalSystem<Frame> system(new_body());
+  HierarchicalSystem<World> system(new_body());
   elements.mean_motion = Sqrt(3 / Pow<3>(1.5)) * Radian / Second;
   system.Add(new_body(), /*parent=*/bodies[0], elements);
   elements.mean_motion = Sqrt(2) * Radian / Second;
@@ -137,8 +138,8 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
   std::transform(barycentric_system.degrees_of_freedom.begin(),
                  barycentric_system.degrees_of_freedom.end(),
                  std::back_inserter(x_positions),
-                 [](DegreesOfFreedom<Frame> const& dof) {
-                   return (dof.position() - Frame::origin).coordinates().x;
+                 [](DegreesOfFreedom<World> const& dof) {
+                   return (dof.position() - World::origin).coordinates().x;
                  });
   EXPECT_THAT(x_positions,
               ElementsAre(AlmostEquals(-1 * Metre, 0, 1),

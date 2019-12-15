@@ -54,9 +54,17 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<base::is_serializable_v<F> &&
+                                       base::is_serializable_v<T>>>
   static Identity ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::Identity*> message) const;
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<base::is_serializable_v<F> &&
+                                       base::is_serializable_v<T>>>
   static Identity ReadFromMessage(serialization::Identity const& message);
 
  private:
