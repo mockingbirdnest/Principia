@@ -25,10 +25,8 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 
 namespace {
-using World = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST1>;
-using Camera = Frame<serialization::Frame::TestTag,
-                     serialization::Frame::TEST2>;
+using World = Frame<enum class WorldTag>;
+using Camera = Frame<enum class CameraTag>;
 }  // namespace
 
 void RandomSegmentsBenchmark(

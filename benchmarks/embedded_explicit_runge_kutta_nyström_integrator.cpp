@@ -58,8 +58,7 @@ namespace integrators {
 
 namespace {
 
-using World = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST, Inertial>;
+using World = Frame<enum class WorldTag, WorldTag{}, Inertial>;
 
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio1D(

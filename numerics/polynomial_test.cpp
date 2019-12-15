@@ -56,7 +56,7 @@ namespace numerics {
 class PolynomialTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, Inertial>;
+                      serialization::Frame::TEST, Inertial>;
 
   using P2V = PolynomialInMonomialBasis<Displacement<World>, Time, 2,
                                         HornerEvaluator>;

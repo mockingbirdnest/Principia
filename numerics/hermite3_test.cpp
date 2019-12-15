@@ -41,8 +41,7 @@ namespace numerics {
 
 class Hermite3Test : public ::testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, Inertial>;
+  using World = Frame<enum class WorldTag, WorldTag{}, Inertial>;
 
   Instant const t0_;
 };

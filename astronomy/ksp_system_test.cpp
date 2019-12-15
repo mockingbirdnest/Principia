@@ -65,9 +65,7 @@ using ::testing::Lt;
 
 namespace astronomy {
 
-using KSP = Frame<serialization::Frame::TestTag,
-                  serialization::Frame::TEST,
-                  Inertial>;
+using KSP = Frame<enum class KSPTag, KSPTag{}, Inertial>;
 
 class KSPSystem {
  protected:
