@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/polynomial.hpp"
@@ -16,6 +17,7 @@ namespace internal_geopotential {
 
 using base::not_null;
 using geometry::Displacement;
+using geometry::Frame;
 using geometry::Instant;
 using geometry::Vector;
 using numerics::PolynomialInMonomialBasis;
@@ -99,7 +101,7 @@ class Geopotential {
 
  private:
   // The frame of the surface of the celestial.
-  struct SurfaceFrame;
+  using SurfaceFrame = geometry::Frame<enum class SurfaceFrameTag>;
   static const Vector<double, SurfaceFrame> x_;
   static const Vector<double, SurfaceFrame> y_;
 

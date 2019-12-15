@@ -13,6 +13,7 @@
 #include "base/not_null.hpp"
 #include "base/thread_pool.hpp"
 #include "benchmark/benchmark.h"
+#include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/rotation.hpp"
@@ -43,6 +44,7 @@ using base::ThreadPool;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::Displacement;
+using geometry::Frame;
 using geometry::Identity;
 using geometry::Instant;
 using geometry::Position;
@@ -435,7 +437,7 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
     // plane is the ecliptic realized by the obliquity given by the IAU in 1976
     // (16th general assembly, resolution 10, commission 4, recommendation 1),
     // identifying the ICRS xy plane with the mean equator of J2000.0.
-    struct Ecliptic;
+    using Ecliptic = Frame<enum class EclipticTag>;
 
     Rotation<ICRS, Ecliptic> const equatorial_to_ecliptic(
         23 * Degree + 26 * ArcMinute + 21.448 * ArcSecond,

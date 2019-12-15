@@ -3,6 +3,7 @@
 #include "physics/inertia_tensor.hpp"
 
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 #include "geometry/rotation.hpp"
@@ -18,6 +19,7 @@ using geometry::Anticommutator;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Commutator;
+using geometry::Frame;
 using geometry::Identity;
 using geometry::Rotation;
 using geometry::SymmetricProduct;
@@ -78,7 +80,7 @@ template<typename Frame>
 template<typename PrincipalAxesFrame>
 typename InertiaTensor<Frame>::template PrincipalAxes<PrincipalAxesFrame>
 InertiaTensor<Frame>::Diagonalize() const {
-  struct IntermediateFrame {};
+  using IntermediateFrame = geometry::Frame<enum class IntermediateFrameTag>;
 
   auto const eigensystem = form_.template Diagonalize<IntermediateFrame>();
 

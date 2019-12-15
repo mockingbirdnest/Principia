@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/optional_serialization.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/rotation.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -260,7 +261,7 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   }
   CompleteAnomalies(elements);
   Angle const& ν = *elements.true_anomaly;
-  struct OrbitPlane;
+  using OrbitPlane = geometry::Frame<enum class OrbitPlaneTag>;
   Rotation<OrbitPlane, Frame> const from_orbit_plane(
       Ω, i, ω,
       EulerAngles::ZXZ,

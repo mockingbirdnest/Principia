@@ -156,7 +156,7 @@ TEST_F(PermutationTest, Forget) {
 }
 
 TEST_F(PermutationTest, Compose) {
-  struct World3;
+  using World3 = Frame<enum class World3Tag>;
   using Orth12 = OrthogonalMap<World1, World2>;
   using Orth13 = OrthogonalMap<World1, World3>;
   using Orth23 = OrthogonalMap<World2, World3>;

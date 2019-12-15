@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -18,6 +19,7 @@ namespace internal_degrees_of_freedom {
 using geometry::Barycentre;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;
+using geometry::Frame;
 using geometry::Position;
 using geometry::Velocity;
 using quantities::Entropy;
@@ -29,7 +31,7 @@ using ::testing::Eq;
 
 class DegreesOfFreedomTest : public testing::Test {
  protected:
-  struct World;
+  using World = Frame<enum class WorldTag>;
 
   DegreesOfFreedomTest()
       : d1_(origin_ + Displacement<World>({1 * SIUnit<Length>(),

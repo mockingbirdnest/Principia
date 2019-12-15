@@ -4,6 +4,7 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
@@ -354,7 +355,7 @@ TEST_F(BodyTest, AllFrames) {
 
 // Check that the rotation of the Earth gives the right solar noon.
 TEST_F(BodyTest, SolarNoon) {
-  struct SurfaceFrame;
+  using SurfaceFrame = Frame<enum class SurfaceFrameTag>;
   SolarSystem<ICRS> solar_system_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /

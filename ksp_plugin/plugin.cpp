@@ -312,7 +312,7 @@ Rotation<BodyWorld, World> Plugin::CelestialRotation(
     Index const index) const {
   // |BodyWorld| with its y and z axes swapped (so that z is the polar axis).
   // The basis is right-handed.
-  struct BodyFixed;
+  using BodyFixed = Frame<enum class BodyFixedTag>;
   Permutation<BodyWorld, BodyFixed> const body_mirror(
       Permutation<BodyWorld, BodyFixed>::XZY);
 
@@ -1448,7 +1448,7 @@ void Plugin::UpdatePlanetariumRotation() {
   // axis of |Barycentric| if they coincide).
   // This can be expressed using Euler angles, see figures 1 and 2 of
   // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
-  struct PlanetariumFrame;
+  using PlanetariumFrame = Frame<enum class PlanetariumFrameTag>;
 
   CHECK_NOTNULL(main_body_);
   Rotation<Barycentric, PlanetariumFrame> const to_planetarium(
