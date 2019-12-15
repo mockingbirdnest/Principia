@@ -30,6 +30,7 @@
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
@@ -77,6 +78,7 @@ using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::EulerAngles;
+using geometry::Frame;
 using geometry::Identity;
 using geometry::Normalize;
 using geometry::Permutation;
@@ -310,7 +312,7 @@ Rotation<BodyWorld, World> Plugin::CelestialRotation(
     Index const index) const {
   // |BodyWorld| with its y and z axes swapped (so that z is the polar axis).
   // The basis is right-handed.
-  struct BodyFixed;
+  using BodyFixed = Frame<enum class BodyFixedTag>;
   Permutation<BodyWorld, BodyFixed> const body_mirror(
       Permutation<BodyWorld, BodyFixed>::XZY);
 
@@ -1070,7 +1072,7 @@ void Plugin::SetTargetVessel(GUID const& vessel_guid,
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
     Position<World> const& sun_world_position) const {
 
-  struct RightHandedNavball;
+  using RightHandedNavball = Frame<enum class RightHandedNavballTag>;
 
   // TODO(phl): Clean up this mess!
   class NavballFrameField : public FrameField<World, Navball> {
@@ -1446,7 +1448,7 @@ void Plugin::UpdatePlanetariumRotation() {
   // axis of |Barycentric| if they coincide).
   // This can be expressed using Euler angles, see figures 1 and 2 of
   // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
-  struct PlanetariumFrame;
+  using PlanetariumFrame = Frame<enum class PlanetariumFrameTag>;
 
   CHECK_NOTNULL(main_body_);
   Rotation<Barycentric, PlanetariumFrame> const to_planetarium(

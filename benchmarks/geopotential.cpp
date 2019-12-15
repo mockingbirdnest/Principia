@@ -10,6 +10,7 @@
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -28,6 +29,7 @@ using astronomy::ICRS;
 using astronomy::ITRS;
 using base::not_null;
 using geometry::Displacement;
+using geometry::Frame;
 using geometry::Instant;
 using geometry::R3Element;
 using geometry::Vector;
@@ -75,7 +77,7 @@ GeneralSphericalHarmonicsAccelerationF90(
     FixedMatrix<double, degree + 1, order + 1> const& snm,
     Instant const& t,
     Displacement<Frame> const& r) {
-  struct SurfaceFrame;
+  using SurfaceFrame = geometry::Frame<enum class SurfaceFrameTag>;
   auto const from_surface_frame =
       body->template FromSurfaceFrame<SurfaceFrame>(t);
   auto const to_surface_frame = from_surface_frame.Inverse();

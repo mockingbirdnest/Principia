@@ -4,6 +4,7 @@
 #include <cmath>
 #include <limits>
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
@@ -18,6 +19,7 @@ namespace principia {
 namespace testing_utilities {
 
 using geometry::Bivector;
+using geometry::Frame;
 using geometry::Point;
 using geometry::R3Element;
 using geometry::Trivector;
@@ -29,13 +31,9 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Ne;
 
-namespace {
-struct World;
-}  // namespace
-
 class NumericsTest : public testing::Test {
  protected:
-  struct World;
+  using World = Frame<enum class WorldTag>;
 
   R3Element<double> const i_ = {1, 0, 0};
   R3Element<double> const j_ = {0, 1, 0};

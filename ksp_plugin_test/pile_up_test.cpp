@@ -137,7 +137,7 @@ class PileUpTest : public testing::Test {
                       AlmostEquals(Velocity<Barycentric>(
                                        {130.0 / 3.0 * Metre / Second,
                                         40.0 * Metre / Second,
-                                        110.0 / 3.0 * Metre / Second}), 0)));
+                                        110.0 / 3.0 * Metre / Second}), 4)));
 
     EXPECT_THAT(
         pile_up.actual_part_degrees_of_freedom().at(&p1_),
@@ -149,7 +149,7 @@ class PileUpTest : public testing::Test {
                       AlmostEquals(Velocity<RigidPileUp>(
                                        {-100.0 / 3.0 * Metre / Second,
                                         -20.0 * Metre / Second,
-                                        -20.0 / 3.0 * Metre / Second}), 3)));
+                                        -20.0 / 3.0 * Metre / Second}), 5)));
     EXPECT_THAT(
         pile_up.actual_part_degrees_of_freedom().at(&p2_),
         Componentwise(AlmostEquals(RigidPileUp::origin +
@@ -350,7 +350,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
                     AlmostEquals(Velocity<Barycentric>(
                                      {-250.0 / 9.0 * Metre / Second,
                                       400.0 / 3.0 * Metre / Second,
-                                      1010.0 / 9.0 * Metre / Second}), 1)));
+                                      1010.0 / 9.0 * Metre / Second}), 4)));
   EXPECT_THAT(
       p2_.degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
@@ -361,7 +361,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
                     AlmostEquals(Velocity<Barycentric>(
                                      {260.0 / 9.0 * Metre / Second,
                                       430.0 / 3.0 * Metre / Second,
-                                      890.0 / 9.0 * Metre / Second}), 0)));
+                                      890.0 / 9.0 * Metre / Second}), 6)));
 }
 
 // Same as above, but without an intrinsic force.
@@ -533,7 +533,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                     AlmostEquals(Velocity<Barycentric>(
                                      {-250.0 / 9.0 * Metre / Second,
                                       400.0 / 3.0 * Metre / Second,
-                                      1010.0 / 9.0 * Metre / Second}), 1)));
+                                      1010.0 / 9.0 * Metre / Second}), 4)));
   EXPECT_THAT(
       p2_.degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
@@ -544,7 +544,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                     AlmostEquals(Velocity<Barycentric>(
                                      {260.0 / 9.0 * Metre / Second,
                                       430.0 / 3.0 * Metre / Second,
-                                      890.0 / 9.0 * Metre / Second}), 0)));
+                                      890.0 / 9.0 * Metre / Second}), 6)));
 }
 
 TEST_F(PileUpTest, MidStepIntrinsicForce) {
@@ -595,7 +595,8 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
 
   pile_up.AdvanceTime(astronomy::J2000 + 1.5 * fixed_step);
   pile_up.NudgeParts();
-  EXPECT_THAT(p1_.degrees_of_freedom().velocity(), Eq(old_velocity));
+  EXPECT_THAT(p1_.degrees_of_freedom().velocity(),
+              AlmostEquals(old_velocity, 4));
 
   Vector<Acceleration, Barycentric> const a{{1729 * Metre / Pow<2>(Second),
                                              -168 * Metre / Pow<2>(Second),

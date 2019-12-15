@@ -25,6 +25,9 @@ using base::not_null;
 // The identity map.
 template<typename FromFrame, typename ToFrame>
 class Identity : public LinearMap<FromFrame, ToFrame> {
+  static_assert(FromFrame::handedness == ToFrame::handedness,
+                "Cannot identity frames with different handedness");
+
  public:
   Identity();
 

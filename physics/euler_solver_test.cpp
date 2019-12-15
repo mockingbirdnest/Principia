@@ -905,7 +905,7 @@ TEST_F(EulerSolverTest, Toutatis) {
   // axis is our I₃ and their z axis is our I₁, see Table 2.  This appears to
   // contradict Figure 1, but it is consistent with ω₁, ω₂, ω₃ being along their
   // x, y, z axes respectively.
-  struct TakahashiPrincipalAxes;
+  using TakahashiPrincipalAxes = Frame<enum class TakahashiPrincipalAxesTag>;
   using TakahashiAttitudeRotation = Rotation<TakahashiPrincipalAxes, ICRS>;
   using TakahashiPermutation = Permutation<TakahashiPrincipalAxes,
                                            PrincipalAxes>;

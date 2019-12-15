@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -11,6 +12,7 @@
 
 namespace principia {
 
+using geometry::Frame;
 using quantities::Entropy;
 using quantities::KinematicViscosity;
 using quantities::SIUnit;
@@ -20,7 +22,7 @@ namespace geometry {
 
 class BarycentreCalculatorTest : public testing::Test {
  protected:
-  struct World;
+  using World = Frame<enum class WorldTag>;
 
   BarycentreCalculatorTest()
       : b1_({1 * SIUnit<Entropy>(),

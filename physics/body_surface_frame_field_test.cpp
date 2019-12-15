@@ -36,8 +36,7 @@ using ::testing::_;
 
 class BodySurfaceFrameFieldTest : public ::testing::Test {
  protected:
-  using TestFrame = Frame<serialization::Frame::TestTag,
-                              serialization::Frame::TEST>;
+  using TestFrame = Frame<enum class TestFrameTag>;
 
   BodySurfaceFrameFieldTest()
       : body_(MassiveBody::Parameters(1 * Kilogram),

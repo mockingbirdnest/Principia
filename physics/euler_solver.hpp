@@ -3,6 +3,7 @@
 
 #include <optional>
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -16,6 +17,7 @@ namespace internal_euler_solver {
 
 using geometry::AngularVelocity;
 using geometry::Bivector;
+using geometry::Frame;
 using geometry::Instant;
 using geometry::R3Element;
 using geometry::Rotation;
@@ -60,13 +62,14 @@ class EulerSolver {
                               Instant const& time) const;
 
  private:
-  struct ℬₜ;
-  struct ℬʹ;
+  using ℬₜ = Frame<enum class ℬₜTag>;
+  using ℬʹ = Frame<enum class ℬʹTag>;
 
   // A frame which is rotated from PrincipalAxesFrame such that the coordinates
   // of m along which we project is positive.  Used for all internal
   // computations.
-  struct PreferredPrincipalAxesFrame;
+  using PreferredPrincipalAxesFrame =
+      Frame<enum class PreferredPrincipalAxesFrameTag>;
 
   using PreferredAngularMomentumBivector =
       Bivector<AngularMomentum, PreferredPrincipalAxesFrame>;

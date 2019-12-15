@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
 #include "physics/inertia_tensor.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {
@@ -23,6 +24,7 @@ using quantities::si::Newton;
 using quantities::si::Second;
 using ::testing::_;
 using ::testing::MockFunction;
+using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 
 class PartTest : public testing::Test {
@@ -116,27 +118,27 @@ TEST_F(PartTest, Serialization) {
                 .magnitude());
   EXPECT_TRUE(
       message.rigid_motion().velocity_of_to_frame_origin().has_vector());
-  EXPECT_EQ(-4,
-            message.rigid_motion()
-                .velocity_of_to_frame_origin()
-                .vector()
-                .x()
-                .quantity()
-                .magnitude());
-  EXPECT_EQ(-5,
-            message.rigid_motion()
-                .velocity_of_to_frame_origin()
-                .vector()
-                .y()
-                .quantity()
-                .magnitude());
-  EXPECT_EQ(-6,
-            message.rigid_motion()
-                .velocity_of_to_frame_origin()
-                .vector()
-                .z()
-                .quantity()
-                .magnitude());
+  EXPECT_THAT(message.rigid_motion()
+                  .velocity_of_to_frame_origin()
+                  .vector()
+                  .x()
+                  .quantity()
+                  .magnitude(),
+              AlmostEquals(-4, 2));
+  EXPECT_THAT(message.rigid_motion()
+                  .velocity_of_to_frame_origin()
+                  .vector()
+                  .y()
+                  .quantity()
+                  .magnitude(),
+              AlmostEquals(-6, 2));
+  EXPECT_THAT(message.rigid_motion()
+                  .velocity_of_to_frame_origin()
+                  .vector()
+                  .z()
+                  .quantity()
+                  .magnitude(),
+              AlmostEquals(-5, 2));
   EXPECT_EQ(1, message.prehistory().timeline_size());
   EXPECT_EQ(1, message.prehistory().children_size());
   EXPECT_EQ(1, message.prehistory().children(0).trajectories_size());

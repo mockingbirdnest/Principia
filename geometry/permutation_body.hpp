@@ -88,6 +88,7 @@ Permutation<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
 Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
   return Permutation(XYZ);
 }

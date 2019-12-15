@@ -5,6 +5,7 @@
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -39,6 +40,7 @@ using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Identity;
 using geometry::OrthogonalMap;
+using geometry::Permutation;
 using geometry::RigidTransformation;
 using geometry::Rotation;
 using geometry::Velocity;
@@ -317,7 +319,10 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillOnce(ReturnRef(navigation_manœuvre));
 
   EXPECT_CALL(renderer, BarycentricToWorldSun(_))
-      .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
+      .WillOnce(Return(
+          Permutation<Barycentric, WorldSun>(
+              Permutation<Barycentric, WorldSun>::CoordinatePermutation::YXZ)
+              .Forget()));
   EXPECT_CALL(navigation_manœuvre, FrenetFrame())
       .WillOnce(
           Return(OrthogonalMap<Frenet<Navigation>, Barycentric>::Identity()));

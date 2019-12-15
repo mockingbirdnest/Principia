@@ -222,6 +222,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<F::handedness == T::handedness>>
   static Rotation Identity();
 
   Quaternion const& quaternion() const;

@@ -32,10 +32,8 @@ using testing_utilities::Componentwise;
 
 namespace {
 
-using Circular =
-    Frame<serialization::Frame::TestTag, serialization::Frame::TEST, Inertial>;
-using Helical =
-    Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, Inertial>;
+using Circular = Frame<enum class CircularTag, CircularTag{}, Inertial>;
+using Helical = Frame<enum class HelicalTag, HelicalTag{}, Inertial>;
 
 Vector<Acceleration, Circular> Gravity(Instant const& t,
                                        Position<Circular> const& q) {

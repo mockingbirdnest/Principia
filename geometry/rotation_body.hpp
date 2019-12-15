@@ -269,6 +269,7 @@ OrthogonalMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
   return Rotation(Quaternion(1));
 }

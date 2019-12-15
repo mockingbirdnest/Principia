@@ -119,6 +119,11 @@ Renderer::RenderPlottingTrajectoryInWorld(
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
+
+  //   Dinanzi a me non fuor cose create
+  //   se non etterne, e io etterno duro.
+  //   Lasciate ogne speranza, voi ch’intrate.
+  //
   // This function does unnatural things.
   // - It identifies positions in the plotting frame with those of world using
   // the rigid transformation at the current time, instead of transforming each
@@ -133,7 +138,8 @@ Renderer::RenderPlottingTrajectoryInWorld(
   // velocity).
   // The resulting |DegreesOfFreedom| should be seen as no more than a
   // convenient hack to send a plottable position together with a velocity in
-  // the coordinates we want.
+  // the coordinates we want.  In fact, it needs an articial permutation to
+  // avoid a violation of handedness.
   // TODO(phl): This will no longer be needed once we have support for
   // projections; instead of these convenient lies we can simply say that the
   // camera is fixed in the plotting frame and project there; additional data
@@ -149,7 +155,9 @@ Renderer::RenderPlottingTrajectoryInWorld(
     DegreesOfFreedom<World> const world_degrees_of_freedom = {
         from_plotting_frame_to_world_at_current_time(
             navigation_degrees_of_freedom.position()),
-        geometry::Identity<Navigation, World>{}(
+        geometry::Permutation<Navigation, World>(
+            geometry::Permutation<Navigation,
+                                  World>::CoordinatePermutation::YXZ)(
             navigation_degrees_of_freedom.velocity())};
     trajectory->Append(time, world_degrees_of_freedom);
   }

@@ -44,6 +44,7 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::operator()(
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
+template<typename F, typename T, typename>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::Identity() {
   return AffineMap(Point<FromVector>(),

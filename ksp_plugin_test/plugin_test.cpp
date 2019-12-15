@@ -1011,7 +1011,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   EXPECT_THAT(
       plugin_->VesselFromParent(SolarSystemFactory::Earth, guid),
       Componentwise(AlmostEquals(satellite_initial_displacement_, 13556),
-                    AlmostEquals(satellite_initial_velocity_, 6)));
+                    AlmostEquals(satellite_initial_velocity_, 36)));
 }
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
@@ -1186,12 +1186,12 @@ TEST_F(PluginTest, Frenet) {
   not_null<std::unique_ptr<NavigationFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth);
-  EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 5, 17));
-  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 3, 11));
+  EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 5, 61));
+  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 3, 25));
   EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 0, 15));
   EXPECT_THAT(
       plugin.VesselVelocity(satellite),
-      AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 7, 19));
+      AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 7, 83));
 }
 
 }  // namespace internal_plugin

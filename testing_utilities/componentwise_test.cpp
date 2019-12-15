@@ -3,6 +3,7 @@
 
 #include <limits>
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/pair.hpp"
 #include "geometry/r3_element.hpp"
@@ -21,6 +22,7 @@
 namespace principia {
 
 using geometry::Bivector;
+using geometry::Frame;
 using geometry::Pair;
 using geometry::R3Element;
 using geometry::RP2Point;
@@ -42,7 +44,7 @@ using ::testing::_;
 
 namespace testing_utilities {
 
-struct World;
+using World = Frame<enum class WorldTag>;
 
 class ComponentwiseTest : public testing::Test {};
 
