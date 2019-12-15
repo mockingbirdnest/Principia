@@ -24,7 +24,7 @@ template<typename FrameTag,
          FrameMotion motion_, Handedness handedness_, FrameTag tag_>
 void Frame<FrameTag, motion_, handedness_, tag_>::WriteToMessage(
   not_null<serialization::Frame*> const message) {
-  if constexpr (is_serializable) {
+  if constexpr (google::protobuf::is_proto_enum<FrameTag>::value) {
     std::string const& tag_type_full_name =
         google::protobuf::GetEnumDescriptor<Tag>()->full_name();
 
@@ -40,7 +40,7 @@ void Frame<FrameTag, motion_, handedness_, tag_>::WriteToMessage(
 
 template<typename FrameTag,
          FrameMotion motion_, Handedness handedness_, FrameTag tag_>
-template<typename>
+template<typename T, typename>
 void Frame<FrameTag, motion_, handedness_, tag_>::ReadFromMessage(
   serialization::Frame const& message) {
   std::string const& tag_type_full_name =
