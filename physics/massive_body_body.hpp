@@ -19,6 +19,7 @@ namespace internal_massive_body {
 
 using quantities::constants::GravitationalConstant;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Inertial;
 using geometry::ReadFrameFromMessage;
 
@@ -107,10 +108,13 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 }
 
 // This macro is a bit ugly, but trust me, it's better than the alternatives.
-#define ROTATING_BODY_TAG_VALUE_CASE(value)                                  \
-  case serialization::Frame::value:                                          \
-    CHECK_NOTNULL(rotating_body_extension);                                  \
-    return RotatingBody<Frame<Tag, serialization::Frame::value, Inertial>>:: \
+#define ROTATING_BODY_TAG_VALUE_CASE(value)                   \
+  case serialization::Frame::value:                           \
+    CHECK_NOTNULL(rotating_body_extension);                   \
+    return RotatingBody<Frame<Tag,                            \
+                              Inertial,                       \
+                              Handedness::Right,              \
+                              serialization::Frame::value>>:: \
         ReadFromMessage(*rotating_body_extension, parameters)
 
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(

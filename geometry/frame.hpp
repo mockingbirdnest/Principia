@@ -32,7 +32,7 @@ enum class Handedness {
 //   using MyFrame = Frame<enum class MyFrameTag>;
 //
 // or:
-//   using MyFrame = Frame<enum class MyFrameTag, MyFrameTag{}, Inertial>;
+//   using MyFrame = Frame<enum class MyFrameTag, Inertial>;
 //
 // By default, the frame is non-inertial and right-handed.
 //
@@ -43,9 +43,9 @@ enum class Handedness {
 // that should be sufficient to detect at compile-time attempts at serializing a
 // non-serializable frame.
 template<typename FrameTag,
-         FrameTag tag_ = FrameTag{},
          FrameMotion motion_ = NonInertial,
-         Handedness handedness_ = Handedness::Right>
+         Handedness handedness_ = Handedness::Right,
+         FrameTag tag_ = FrameTag{}>
 struct Frame : not_constructible {
   static constexpr bool is_inertial = motion_ == Inertial;
   static constexpr FrameMotion motion = motion_;

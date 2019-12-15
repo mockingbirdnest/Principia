@@ -34,7 +34,9 @@ using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
+using geometry::NonInertial;
 using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
@@ -69,8 +71,12 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
  protected:
   // The non-rotating frame centred on the big body.
   using Big = Frame<serialization::Frame::TestTag,
+                    NonInertial,
+                    Handedness::Right,
                     serialization::Frame::TEST>;
   using Small = Frame<serialization::Frame::TestTag,
+                      NonInertial,
+                      Handedness::Right,
                       serialization::Frame::TEST1>;
 
   BodyCentredNonRotatingDynamicFrameTest()

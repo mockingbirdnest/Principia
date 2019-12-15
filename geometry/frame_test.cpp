@@ -13,25 +13,25 @@ namespace geometry {
 class FrameTest : public testing::Test {
  protected:
   using World1 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST1,
                        Inertial,
-                       Handedness::Right>;
+                       Handedness::Right,
+                       serialization::Frame::TEST1>;
   using World2 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST2,
                        Inertial,
-                       Handedness::Right>;
+                       Handedness::Right,
+                       serialization::Frame::TEST2>;
   using World3 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST1,
                        NonInertial,
-                       Handedness::Right>;
+                       Handedness::Right,
+                       serialization::Frame::TEST1>;
   using World4 = Frame<serialization::Frame::SolarSystemTag,
-                       serialization::Frame::ICRS,
                        Inertial,
-                       Handedness::Right>;
+                       Handedness::Right,
+                       serialization::Frame::ICRS>;
 
   using F1 = Frame<enum class F1Tag>;
   using F2 = Frame<enum class F2Tag>;
-  using F3 = Frame<enum class F3Tag, F3Tag{}, Inertial>;
+  using F3 = Frame<enum class F3Tag, Inertial>;
   static_assert(!std::is_same_v<F1, F2>);
   static_assert(!std::is_same_v<F1, F3>);
   static_assert(!std::is_same_v<F2, F3>);

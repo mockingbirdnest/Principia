@@ -34,7 +34,9 @@ using base::check_not_null;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
+using geometry::NonInertial;
 using geometry::Rotation;
 using geometry::Vector;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
@@ -67,8 +69,12 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the barycentre of the two bodies.
   using BigSmallFrame = Frame<serialization::Frame::TestTag,
+                              NonInertial,
+                              Handedness::Right,
                               serialization::Frame::TEST>;
   using MockFrame = Frame<serialization::Frame::TestTag,
+                          NonInertial,
+                          Handedness::Right,
                           serialization::Frame::TEST1>;
 
   BarycentricRotatingDynamicFrameTest()

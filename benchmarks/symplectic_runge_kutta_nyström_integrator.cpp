@@ -58,7 +58,7 @@ namespace integrators {
 
 namespace {
 
-using World = Frame<enum class WorldTag, WorldTag{}, Inertial>;
+using World = Frame<enum class WorldTag, Inertial>;
 
 }  // namespace
 

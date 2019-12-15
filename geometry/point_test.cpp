@@ -31,7 +31,9 @@ using testing_utilities::AlmostEquals;
 class PointTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, Inertial>;
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
 
   Instant const mjd0 = "MJD0"_TT;
 };

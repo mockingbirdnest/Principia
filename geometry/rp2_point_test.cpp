@@ -22,8 +22,10 @@ using testing_utilities::AlmostEquals;
 
 class RP2PointTest : public ::testing::Test {
  protected:
-  using Projective =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST>;
+  using Projective = Frame<serialization::Frame::TestTag,
+                           Inertial,
+                           Handedness::Right,
+                           serialization::Frame::TEST>;
 };
 
 TEST_F(RP2PointTest, Basic) {

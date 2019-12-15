@@ -20,9 +20,9 @@ inline uint32_t Fingerprint(std::string const& s) {
   return Fingerprint2011(s.c_str(), s.size()) & 0xFFFFFFFF;
 }
 
-template<typename FrameTag, FrameTag tag_,
-         FrameMotion motion_, Handedness handedness_>
-void Frame<FrameTag, tag_, motion_, handedness_>::WriteToMessage(
+template<typename FrameTag,
+         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+void Frame<FrameTag, motion_, handedness_, tag_>::WriteToMessage(
   not_null<serialization::Frame*> const message) {
   if constexpr (is_serializable) {
     std::string const& tag_type_full_name =
@@ -38,10 +38,10 @@ void Frame<FrameTag, tag_, motion_, handedness_>::WriteToMessage(
   }
 }
 
-template<typename FrameTag, FrameTag tag_,
-         FrameMotion motion_, Handedness handedness_>
+template<typename FrameTag,
+         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
 template<typename>
-void Frame<FrameTag, tag_, motion_, handedness_>::ReadFromMessage(
+void Frame<FrameTag, motion_, handedness_, tag_>::ReadFromMessage(
   serialization::Frame const& message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
@@ -53,14 +53,14 @@ void Frame<FrameTag, tag_, motion_, handedness_>::ReadFromMessage(
 }
 
 // Default-initialized to {0, 0, 0}.
-template<typename FrameTag, FrameTag tag_,
-         FrameMotion motion_, Handedness handedness_>
-Position<Frame<FrameTag, tag_, motion_, handedness_>> const
-Frame<FrameTag, tag_, motion_, handedness_>::origin;
-template<typename FrameTag, FrameTag tag_,
-         FrameMotion motion_, Handedness handedness_>
-Velocity<Frame<FrameTag, tag_, motion_, handedness_>> const
-Frame<FrameTag, tag_, motion_, handedness_>::unmoving;
+template<typename FrameTag,
+         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+Position<Frame<FrameTag, motion_, handedness_, tag_>> const
+Frame<FrameTag, motion_, handedness_, tag_>::origin;
+template<typename FrameTag,
+         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+Velocity<Frame<FrameTag, motion_, handedness_, tag_>> const
+Frame<FrameTag, motion_, handedness_, tag_>::unmoving;
 
 inline void ReadFrameFromMessage(
     serialization::Frame const& message,

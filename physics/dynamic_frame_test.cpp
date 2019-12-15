@@ -32,8 +32,8 @@ using testing_utilities::Componentwise;
 
 namespace {
 
-using Circular = Frame<enum class CircularTag, CircularTag{}, Inertial>;
-using Helical = Frame<enum class HelicalTag, HelicalTag{}, Inertial>;
+using Circular = Frame<enum class CircularTag, Inertial>;
+using Helical = Frame<enum class HelicalTag, Inertial>;
 
 Vector<Acceleration, Circular> Gravity(Instant const& t,
                                        Position<Circular> const& q) {

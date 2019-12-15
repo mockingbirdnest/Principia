@@ -51,7 +51,7 @@ using ::testing::Eq;
 
 class ApsidesTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag, WorldTag{}, Inertial>;
+  using World = Frame<enum class WorldTag, Inertial>;
 };
 
 #if !defined(_DEBUG)
