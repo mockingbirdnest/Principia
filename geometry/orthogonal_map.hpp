@@ -65,6 +65,9 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   template<typename T>
   typename base::Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
 
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<F::handedness == T::handedness>>
   static OrthogonalMap Identity();
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;

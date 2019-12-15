@@ -30,6 +30,7 @@
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
@@ -77,6 +78,7 @@ using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::EulerAngles;
+using geometry::Frame;
 using geometry::Identity;
 using geometry::Normalize;
 using geometry::Permutation;
@@ -1070,7 +1072,7 @@ void Plugin::SetTargetVessel(GUID const& vessel_guid,
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
     Position<World> const& sun_world_position) const {
 
-  struct RightHandedNavball;
+  using RightHandedNavball = Frame<enum class RightHandedNavballTag>;
 
   // TODO(phl): Clean up this mess!
   class NavballFrameField : public FrameField<World, Navball> {

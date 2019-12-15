@@ -68,6 +68,9 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<F::handedness == T::handedness>>
   static Permutation Identity();
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;

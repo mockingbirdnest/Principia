@@ -82,12 +82,25 @@ template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>
 RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
     DegreesOfFreedom<ToFrame> const& degrees_of_freedom_of_from_frame_origin) {
-  return RigidMotion(RigidTransformation<FromFrame, ToFrame>(
-                         FromFrame::origin,
-                         degrees_of_freedom_of_from_frame_origin.position(),
-                         geometry::Identity<FromFrame, ToFrame>().Forget()),
-                     AngularVelocity<ToFrame>{},
-                     degrees_of_freedom_of_from_frame_origin.velocity());
+  if constexpr (FromFrame::handedness == ToFrame::handedness) {
+    return RigidMotion(RigidTransformation<FromFrame, ToFrame>(
+                           FromFrame::origin,
+                           degrees_of_freedom_of_from_frame_origin.position(),
+                           geometry::Identity<FromFrame, ToFrame>().Forget()),
+                       AngularVelocity<ToFrame>{},
+                       degrees_of_freedom_of_from_frame_origin.velocity());
+  } else {
+    return RigidMotion(
+        RigidTransformation<FromFrame, ToFrame>(
+            FromFrame::origin,
+            degrees_of_freedom_of_from_frame_origin.position(),
+            geometry::Permutation<FromFrame, ToFrame>(
+                geometry::Permutation<FromFrame,
+                                      ToFrame>::CoordinatePermutation::XZY)
+                .Forget()),
+        AngularVelocity<ToFrame>{},
+        degrees_of_freedom_of_from_frame_origin.velocity());
+  }
 }
 
 template<typename FromFrame, typename ToFrame>

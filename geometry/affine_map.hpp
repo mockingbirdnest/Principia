@@ -26,6 +26,9 @@ class AffineMap final {
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> Inverse() const;
   Point<ToVector> operator()(Point<FromVector> const& point) const;
 
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<F::handedness == T::handedness>>
   static AffineMap Identity();
 
   LinearMap<FromFrame, ToFrame> const& linear_map() const;

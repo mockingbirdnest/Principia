@@ -34,7 +34,7 @@ class PairTest : public testing::Test {
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST, Inertial>;
 
-  struct Universe;
+  using Universe = Frame<enum class UniverseTag>;
 
   PairTest()
       : p1_(P1() + V1({4 * SIUnit<Action>(),

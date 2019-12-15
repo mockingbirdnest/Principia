@@ -63,7 +63,10 @@ OrthogonalMap<FromFrame, ToFrame>::operator()(T const& t) const {
   return base::Mappable<OrthogonalMap, T>::Do(*this, t);
 }
 
+// NOTE(phl): VS2019 wants us to name the types F and T below, even though it is
+// happy with ReadFromMessage below.  You can't explain that.
 template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::Identity() {
   return OrthogonalMap(Sign::Positive(),
