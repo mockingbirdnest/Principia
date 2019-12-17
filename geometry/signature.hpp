@@ -7,14 +7,15 @@ namespace principia {
 namespace geometry {
 namespace internal_signature {
 
+struct deduce_sign_t {};
+constexpr deduce_sign_t deduce_sign_from_handedness{};
+
 template<typename FromFrame, typename ToFrame>
 class Signature {
  public:
   static constexpr Sign determinant =
       FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
                                                    : Sign::Negative();
-  struct deduce_sign_t {};
-  static constexpr deduce_sign_t deduce_sign_from_handedness{};
 
   constexpr Signature(Sign x, Sign y, deduce_sign_t z);
   constexpr Signature(Sign x, deduce_sign_t y, Sign z);
@@ -56,6 +57,13 @@ class Signature {
   Sign x_;
   Sign y_;
   Sign z_;
+
+  template<typename From, typename To>
+  friend class Signature;
+
+  template<typename From, typename Through, typename To>
+  friend Signature<From, To> operator*(Signature<Through, To> const& left,
+                                       Signature<From, Through> const& right);
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
@@ -69,6 +77,7 @@ std::ostream& operator<<(std::ostream& out,
 
 }  // namespace internal_signature
 
+using internal_signature::deduce_sign_from_handedness;
 using internal_signature::Signature;
 
 }  // namespace geometry

@@ -7,24 +7,21 @@ namespace geometry {
 namespace internal_signature {
 
 template<typename FromFrame, typename ToFrame>
-constexpr Signature<FromFrame, ToFrame>::Signature(
-    Sign const x,
-    Sign const y,
-    Signature::deduce_sign_t const z)
+constexpr Signature<FromFrame, ToFrame>::Signature(Sign const x,
+                                                   Sign const y,
+                                                   deduce_sign_t const z)
     : x_(x), y_(y), z_(x * y * determinant) {}
 
 template<typename FromFrame, typename ToFrame>
-constexpr Signature<FromFrame, ToFrame>::Signature(
-    Sign const x,
-    Signature::deduce_sign_t const y,
-    Sign const z)
+constexpr Signature<FromFrame, ToFrame>::Signature(Sign const x,
+                                                   deduce_sign_t const y,
+                                                   Sign const z)
     : x_(x), y_(x * determinant * z), z_(z) {}
 
 template<typename FromFrame, typename ToFrame>
-constexpr Signature<FromFrame, ToFrame>::Signature(
-    Signature::deduce_sign_t const x,
-    Sign const y,
-    Sign const z)
+constexpr Signature<FromFrame, ToFrame>::Signature(deduce_sign_t const x,
+                                                   Sign const y,
+                                                   Sign const z)
     : x_(determinant * y * z), y_(y), z_(z) {}
 
 template<typename FromFrame, typename ToFrame>
@@ -91,7 +88,7 @@ Signature<FromFrame, ToFrame> operator*(
     Signature<ThroughFrame, ToFrame> const& left,
     Signature<FromFrame, ThroughFrame> const& right) {
   return Signature<FromFrame, ToFrame>(
-      left.x_ * right.x_, left.y_ * right.y_, deduce_sign_from_handedness);
+      left.x_ * right.x_, left.y_ * right.y_, left.z_ * right.z_);
 }
 
 template<typename FromFrame, typename ToFrame>
