@@ -7,8 +7,13 @@ namespace principia {
 namespace geometry {
 namespace internal_signature {
 
-struct deduce_sign_t {};
-constexpr deduce_sign_t deduce_sign_from_handedness{};
+using base::not_constructible;
+
+struct deduce_sign_direct_t final {};
+struct deduce_sign_indirect_t final {};
+
+constexpr deduce_sign_direct_t deduce_sign_for_direct_isometry{};
+constexpr deduce_sign_indirect_t deduce_sign_for_indirect_isometry{};
 
 template<typename FromFrame, typename ToFrame>
 class Signature {
@@ -16,6 +21,9 @@ class Signature {
   static constexpr Sign determinant =
       FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
                                                    : Sign::Negative();
+  using deduce_sign_t = std::conditional_t<determinant.Positive(),
+                                           deduce_sign_direct_t,
+                                           deduce_sign_indirect_t>;
 
   constexpr Signature(Sign x, Sign y, deduce_sign_t z);
   constexpr Signature(Sign x, deduce_sign_t y, Sign z);
@@ -29,7 +37,7 @@ class Signature {
   template<typename F = FromFrame,
            typename T = ToFrame,
            typename = std::enable_if_t<F::handedness != T::handedness>>
-  static constexpr Signature CentralReflection();
+  static constexpr Signature CentralInversion();
 
   constexpr Signature<ToFrame, FromFrame> Inverse() const;
 

@@ -59,12 +59,12 @@ TEST_F(SignatureTest, Identity) {
               Eq(trivector_.coordinates()));
 }
 
-TEST_F(SignatureTest, CentralReflection) {
-  EXPECT_THAT(NegativeSignature::CentralReflection()(vector_).coordinates(),
+TEST_F(SignatureTest, CentralInversion) {
+  EXPECT_THAT(NegativeSignature::CentralInversion()(vector_).coordinates(),
               Eq(-vector_.coordinates()));
-  EXPECT_THAT(NegativeSignature::CentralReflection()(bivector_).coordinates(),
+  EXPECT_THAT(NegativeSignature::CentralInversion()(bivector_).coordinates(),
               Eq(bivector_.coordinates()));
-  EXPECT_THAT(NegativeSignature::CentralReflection()(trivector_).coordinates(),
+  EXPECT_THAT(NegativeSignature::CentralInversion()(trivector_).coordinates(),
               Eq(-trivector_.coordinates()));
 }
 

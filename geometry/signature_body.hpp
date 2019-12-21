@@ -40,7 +40,7 @@ Signature<FromFrame, ToFrame>::Identity() {
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
 constexpr Signature<FromFrame, ToFrame>
-Signature<FromFrame, ToFrame>::CentralReflection() {
+Signature<FromFrame, ToFrame>::CentralInversion() {
   return Signature(Sign::Negative(), Sign::Negative(), Sign::Negative());
 }
 
