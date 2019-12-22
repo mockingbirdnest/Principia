@@ -1,6 +1,7 @@
 #pragma once
 
 #include "geometry/frame.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/sign.hpp"
 
 namespace principia {
@@ -9,11 +10,8 @@ namespace internal_signature {
 
 using base::not_constructible;
 
-struct deduce_sign_direct_t final {};
-struct deduce_sign_indirect_t final {};
-
-constexpr deduce_sign_direct_t deduce_sign_for_direct_isometry{};
-constexpr deduce_sign_indirect_t deduce_sign_for_indirect_isometry{};
+struct DeduceSignPreservingOrientation final {};
+struct DeduceSignReversingOrientation final {};
 
 template<typename FromFrame, typename ToFrame>
 class Signature {
@@ -21,13 +19,13 @@ class Signature {
   static constexpr Sign determinant =
       FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
                                                    : Sign::Negative();
-  using deduce_sign_t = std::conditional_t<determinant.Positive(),
-                                           deduce_sign_direct_t,
-                                           deduce_sign_indirect_t>;
+  using DeduceSign = std::conditional_t<determinant.is_positive(),
+                                        DeduceSignPreservingOrientation,
+                                        DeduceSignReversingOrientation>;
 
-  constexpr Signature(Sign x, Sign y, deduce_sign_t z);
-  constexpr Signature(Sign x, deduce_sign_t y, Sign z);
-  constexpr Signature(deduce_sign_t x, Sign y, Sign z);
+  constexpr Signature(Sign x, Sign y, DeduceSign z);
+  constexpr Signature(Sign x, DeduceSign y, Sign z);
+  constexpr Signature(DeduceSign x, Sign y, Sign z);
 
   template<typename F = FromFrame,
            typename T = ToFrame,
@@ -57,6 +55,8 @@ class Signature {
   SymmetricBilinearForm<Scalar, ToFrame> operator()(
       SymmetricBilinearForm<Scalar, FromFrame> const& form) const;
 
+  OrthogonalMap<FromFrame, ToFrame> Forget() const;
+
   // TODO(egg): Serialization.
 
  private:
@@ -72,6 +72,10 @@ class Signature {
   template<typename From, typename Through, typename To>
   friend Signature<From, To> operator*(Signature<Through, To> const& left,
                                        Signature<From, Through> const& right);
+
+  template<typename From, typename To>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  Signature<From, To> const& signature);
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
@@ -85,7 +89,8 @@ std::ostream& operator<<(std::ostream& out,
 
 }  // namespace internal_signature
 
-using internal_signature::deduce_sign_from_handedness;
+using internal_signature::DeduceSignPreservingOrientation;
+using internal_signature::DeduceSignReversingOrientation;
 using internal_signature::Signature;
 
 }  // namespace geometry

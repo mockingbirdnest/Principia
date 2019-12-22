@@ -9,17 +9,17 @@ namespace internal_signature {
 template<typename FromFrame, typename ToFrame>
 constexpr Signature<FromFrame, ToFrame>::Signature(Sign const x,
                                                    Sign const y,
-                                                   deduce_sign_t const z)
+                                                   DeduceSign const z)
     : x_(x), y_(y), z_(x * y * determinant) {}
 
 template<typename FromFrame, typename ToFrame>
 constexpr Signature<FromFrame, ToFrame>::Signature(Sign const x,
-                                                   deduce_sign_t const y,
+                                                   DeduceSign const y,
                                                    Sign const z)
     : x_(x), y_(x * determinant * z), z_(z) {}
 
 template<typename FromFrame, typename ToFrame>
-constexpr Signature<FromFrame, ToFrame>::Signature(deduce_sign_t const x,
+constexpr Signature<FromFrame, ToFrame>::Signature(DeduceSign const x,
                                                    Sign const y,
                                                    Sign const z)
     : x_(determinant * y * z), y_(y), z_(z) {}
@@ -34,14 +34,16 @@ template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
 constexpr Signature<FromFrame, ToFrame>
 Signature<FromFrame, ToFrame>::Identity() {
-  return Signature(Sign::Positive(), Sign::Positive(), Sign::Positive());
+  return Signature(
+      Sign::Positive(), Sign::Positive(), DeduceSignPreservingOrientation{});
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
 constexpr Signature<FromFrame, ToFrame>
 Signature<FromFrame, ToFrame>::CentralInversion() {
-  return Signature(Sign::Negative(), Sign::Negative(), Sign::Negative());
+  return Signature(
+      Sign::Negative(), Sign::Negative(), DeduceSignReversingOrientation{});
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -72,9 +74,31 @@ Trivector<Scalar, ToFrame> Signature<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
-SymmetricBilinearForm<Scalar, ToFrame> Signature<FromFrame, ToFrame>::
-operator()(SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
+SymmetricBilinearForm<Scalar, ToFrame>
+Signature<FromFrame, ToFrame>::operator()(
+    SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
   return SymmetricBilinearForm<Scalar, ToFrame>();
+}
+
+template<typename FromFrame, typename ToFrame>
+OrthogonalMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget()
+    const {
+  if (x_ == y_ && y_ == z_) {
+    // TODO(phl): unsound rotation; this should use |Identity| once we go
+    // through an intermediate frame.
+    return OrthogonalMap<FromFrame, ToFrame>(
+        determinant, Rotation<FromFrame, ToFrame>(Quaternion(1)));
+  }
+  // The signature is neither +++ nor ---, so dividing it by its determinant
+  // yields a 180° rotation around one of the axes (+--, -+-, or --+).
+  R3Element<double> const axis = (determinant * x_).is_positive()
+                                     ? R3Element<double>{1, 0, 0}
+                                     : (determinant * y_).is_positive()
+                                           ? R3Element<double>{0, 1, 0}
+                                           : R3Element<double>{0, 0, 1};
+  // TODO(phl): unsound rotation.
+  return OrthogonalMap<FromFrame, ToFrame>(
+      determinant, Rotation<FromFrame, ToFrame>(Quaternion(0, axis)));
 }
 
 template<typename FromFrame, typename ToFrame>

@@ -18,16 +18,16 @@ namespace principia {
 
 using quantities::Length;
 using quantities::si::Metre;
-using testing_utilities::Componentwise;
 using ::testing::Eq;
+using testing_utilities::Componentwise;
 
 namespace geometry {
 
 class SignatureTest : public testing::Test {
  protected:
   using R1 = Frame<serialization::Frame::TestTag,
-                  Inertial,
-                  Handedness::Right,
+                   Inertial,
+                   Handedness::Right,
                    serialization::Frame::TEST1>;
   using R2 = Frame<serialization::Frame::TestTag,
                    Inertial,
@@ -50,6 +50,43 @@ class SignatureTest : public testing::Test {
 
 using SignatureDeathTest = SignatureTest;
 
+TEST_F(SignatureTest, Forget) {
+  std::array<PositiveSignature, 4> all_positive_signatures{
+      {PositiveSignature::Identity(),
+       PositiveSignature(Sign::Positive(),
+                         Sign::Negative(),
+                         DeduceSignPreservingOrientation{}),
+       PositiveSignature(Sign::Negative(),
+                         Sign::Positive(),
+                         DeduceSignPreservingOrientation{}),
+       PositiveSignature(Sign::Negative(),
+                         Sign::Negative(),
+                         DeduceSignPreservingOrientation{})}};
+  std::array<NegativeSignature, 4> all_negative_signatures{
+      {NegativeSignature::CentralInversion(),
+       NegativeSignature(Sign::Negative(),
+                         Sign::Positive(),
+                         DeduceSignReversingOrientation{}),
+       NegativeSignature(Sign::Positive(),
+                         Sign::Negative(),
+                         DeduceSignReversingOrientation{}),
+       NegativeSignature(Sign::Positive(),
+                         Sign::Positive(),
+                         DeduceSignReversingOrientation{})}};
+  auto const test_forget_for = [this](auto const& signatures) {
+    for (auto const& signature : signatures) {
+      EXPECT_THAT(signature.Forget()(vector_), Eq(signature(vector_)))
+          << signature;
+      EXPECT_THAT(signature.Forget()(bivector_), Eq(signature(bivector_)))
+          << signature;
+      EXPECT_THAT(signature.Forget()(trivector_), Eq(signature(trivector_)))
+          << signature;
+    }
+  };
+  test_forget_for(all_positive_signatures);
+  test_forget_for(all_negative_signatures);
+}
+
 TEST_F(SignatureTest, Identity) {
   EXPECT_THAT(PositiveSignature::Identity()(vector_).coordinates(),
               Eq(vector_.coordinates()));
@@ -70,7 +107,7 @@ TEST_F(SignatureTest, CentralInversion) {
 
 TEST_F(SignatureTest, XYPlaneReflection) {
   NegativeSignature const reflection(
-      Sign::Positive(), Sign::Positive(), deduce_sign_from_handedness);
+      Sign::Positive(), Sign::Positive(), DeduceSignReversingOrientation{});
   EXPECT_THAT(reflection(vector_).coordinates(),
               Componentwise(1 * Metre, 2 * Metre, -3 * Metre));
   EXPECT_THAT(reflection(bivector_).coordinates(),
@@ -81,7 +118,7 @@ TEST_F(SignatureTest, XYPlaneReflection) {
 
 TEST_F(SignatureTest, YZPlaneReflection) {
   NegativeSignature const reflection(
-      deduce_sign_from_handedness, Sign::Positive(), Sign::Positive());
+      DeduceSignReversingOrientation{}, Sign::Positive(), Sign::Positive());
   EXPECT_THAT(reflection(vector_).coordinates(),
               Componentwise(-1 * Metre, 2 * Metre, 3 * Metre));
   EXPECT_THAT(reflection(bivector_).coordinates(),
@@ -92,7 +129,7 @@ TEST_F(SignatureTest, YZPlaneReflection) {
 
 TEST_F(SignatureTest, XZPlaneReflection) {
   NegativeSignature rotation(
-      Sign::Positive(), deduce_sign_from_handedness, Sign::Positive());
+      Sign::Positive(), DeduceSignReversingOrientation{}, Sign::Positive());
   EXPECT_THAT(rotation(vector_).coordinates(),
               Componentwise(1 * Metre, -2 * Metre, 3 * Metre));
   EXPECT_THAT(rotation(bivector_).coordinates(),
@@ -103,7 +140,7 @@ TEST_F(SignatureTest, XZPlaneReflection) {
 
 TEST_F(SignatureTest, XAxisRotation) {
   PositiveSignature const rotation(
-      Sign::Positive(), Sign::Negative(), deduce_sign_from_handedness);
+      Sign::Positive(), Sign::Negative(), DeduceSignPreservingOrientation{});
   EXPECT_THAT(rotation(vector_).coordinates(),
               Componentwise(1 * Metre, -2 * Metre, -3 * Metre));
   EXPECT_THAT(rotation(bivector_).coordinates(),
@@ -113,7 +150,7 @@ TEST_F(SignatureTest, XAxisRotation) {
 
 TEST_F(SignatureTest, YAxisRotation) {
   PositiveSignature const rotation(
-      Sign::Negative(), Sign::Positive(), deduce_sign_from_handedness);
+      Sign::Negative(), Sign::Positive(), DeduceSignPreservingOrientation{});
   EXPECT_THAT(rotation(vector_).coordinates(),
               Componentwise(-1 * Metre, 2 * Metre, -3 * Metre));
   EXPECT_THAT(rotation(bivector_).coordinates(),
@@ -123,7 +160,7 @@ TEST_F(SignatureTest, YAxisRotation) {
 
 TEST_F(SignatureTest, ZAxisRotation) {
   PositiveSignature const rotation(
-      Sign::Negative(), Sign::Negative(), deduce_sign_from_handedness);
+      Sign::Negative(), Sign::Negative(), DeduceSignPreservingOrientation{});
   EXPECT_THAT(rotation(vector_).coordinates(),
               Componentwise(-1 * Metre, -2 * Metre, 3 * Metre));
   EXPECT_THAT(rotation(bivector_).coordinates(),
@@ -133,9 +170,9 @@ TEST_F(SignatureTest, ZAxisRotation) {
 
 TEST_F(SignatureTest, Inversion) {
   NegativeSignature const reflection(
-      Sign::Negative(), Sign::Positive(), deduce_sign_from_handedness);
+      Sign::Negative(), Sign::Positive(), DeduceSignReversingOrientation{});
   PositiveSignature const rotation(
-      Sign::Negative(), Sign::Positive(), deduce_sign_from_handedness);
+      Sign::Negative(), Sign::Positive(), DeduceSignPreservingOrientation{});
   EXPECT_THAT(rotation.Inverse()(rotation(vector_)), Eq(vector_));
   EXPECT_THAT(reflection.Inverse()(reflection(vector_)), Eq(vector_));
   EXPECT_THAT(rotation.Inverse()(rotation(bivector_)), Eq(bivector_));
@@ -146,9 +183,9 @@ TEST_F(SignatureTest, Inversion) {
 
 TEST_F(SignatureTest, Composition) {
   Signature<R2, L> reflection(
-      Sign::Negative(), Sign::Positive(), deduce_sign_from_handedness);
+      Sign::Negative(), Sign::Positive(), DeduceSignReversingOrientation{});
   Signature<R1, R2> rotation(
-      Sign::Negative(), Sign::Positive(), deduce_sign_from_handedness);
+      Sign::Negative(), Sign::Positive(), DeduceSignPreservingOrientation{});
 
   EXPECT_THAT((reflection * rotation)(vector_),
               Eq(reflection(rotation(vector_))));
