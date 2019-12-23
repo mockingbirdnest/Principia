@@ -195,5 +195,14 @@ TEST_F(SignatureTest, Composition) {
               Eq(reflection(rotation(trivector_))));
 }
 
+TEST_F(SignatureTest, Output) {
+  EXPECT_THAT((std::stringstream{}
+               << PositiveSignature(Sign::Positive(),
+                                    Sign::Negative(),
+                                    DeduceSignPreservingOrientation{}))
+                  .str(),
+              Eq("{+, -, -}"));
+}
+
 }  // namespace geometry
 }  // namespace principia
