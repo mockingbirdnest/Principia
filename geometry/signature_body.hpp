@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "geometry/signature.hpp"
 
@@ -95,7 +95,7 @@ OrthogonalMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget()
         determinant, Rotation<FromFrame, ToFrame>(Quaternion(1)));
   }
   // The signature is neither +++ nor ---, so dividing it by its determinant
-  // yields a 180� rotation around one of the axes (+--, -+-, or --+).
+  // yields a 180° rotation around one of the axes (+--, -+-, or --+).
   R3Element<double> const axis = (determinant * x_).is_positive()
                                      ? R3Element<double>{1, 0, 0}
                                      : (determinant * y_).is_positive()

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "geometry/frame.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -13,6 +13,10 @@ using base::not_null;
 struct DeduceSignPreservingOrientation final {};
 struct DeduceSignReversingOrientation final {};
 
+// A coordinate change whose matrix is a signature matrix, i.e., a diagonal
+// matrix with ±1 on the diagonal.  There are 8 possible signatures: the
+// identity 𝟙, the central inversion -𝟙, the 180° rotations around all three
+// axes, and the reflections across the planes orthogonal to all three axes.
 template<typename FromFrame, typename ToFrame>
 class Signature : public LinearMap<FromFrame, ToFrame> {
  public:
