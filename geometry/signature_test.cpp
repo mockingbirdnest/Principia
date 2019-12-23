@@ -195,6 +195,16 @@ TEST_F(SignatureTest, Composition) {
               Eq(reflection(rotation(trivector_))));
 }
 
+TEST_F(SignatureTest, Serialization) {
+  serialization::Signature message;
+
+  PositiveSignature signature(
+      Sign::Positive(), Sign::Negative(), DeduceSignPreservingOrientation{});
+  signature.WriteToMessage(&message);
+  EXPECT_THAT(PositiveSignature::ReadFromMessage(message)(vector_),
+              Eq(signature(vector_)));
+}
+
 TEST_F(SignatureTest, Output) {
   EXPECT_THAT((std::stringstream{}
                << PositiveSignature(Sign::Positive(),

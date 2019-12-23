@@ -25,6 +25,11 @@ constexpr Signature<FromFrame, ToFrame>::Signature(DeduceSign const x,
     : x_(determinant * y * z), y_(y), z_(z) {}
 
 template<typename FromFrame, typename ToFrame>
+constexpr Sign Signature<FromFrame, ToFrame>::Determinant() const {
+  return determinant;
+}
+
+template<typename FromFrame, typename ToFrame>
 constexpr Signature<ToFrame, FromFrame> Signature<FromFrame, ToFrame>::Inverse()
     const {
   return Signature<ToFrame, FromFrame>(x_, y_, z_);
@@ -99,6 +104,43 @@ OrthogonalMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget()
   // TODO(phl): unsound rotation.
   return OrthogonalMap<FromFrame, ToFrame>(
       determinant, Rotation<FromFrame, ToFrame>(Quaternion(0, axis)));
+}
+
+template<typename FromFrame, typename ToFrame>
+void Signature<FromFrame, ToFrame>::WriteToMessage(
+    not_null<serialization::LinearMap*> const message) const {
+  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  WriteToMessage(
+      message->MutableExtension(serialization::Signature::extension));
+}
+
+template<typename FromFrame, typename ToFrame>
+template<typename, typename, typename>
+Signature<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::ReadFromMessage(
+    serialization::LinearMap const& message) {
+  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  CHECK(message.HasExtension(serialization::Signature::extension));
+  return ReadFromMessage(
+      message.GetExtension(serialization::Signature::extension));
+}
+
+template<typename FromFrame, typename ToFrame>
+void Signature<FromFrame, ToFrame>::WriteToMessage(
+    not_null<serialization::Signature*> const message) const {
+  x_.WriteToMessage(message->mutable_x());
+  y_.WriteToMessage(message->mutable_y());
+  z_.WriteToMessage(message->mutable_z());
+}
+
+template<typename FromFrame, typename ToFrame>
+template<typename, typename, typename>
+Signature<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::ReadFromMessage(
+    serialization::Signature const& message) {
+  auto const x = Sign::ReadFromMessage(message.x());
+  auto const y = Sign::ReadFromMessage(message.y());
+  auto const z = Sign::ReadFromMessage(message.z());
+  CHECK_EQ(x * y * z, determinant) << message.DebugString();
+  return Signature(x, y, z);
 }
 
 template<typename FromFrame, typename ToFrame>

@@ -78,7 +78,7 @@ message SymmetricBilinearForm {
 message LinearMap {
   required Frame from_frame = 1;
   required Frame to_frame = 2;
-  extensions 1000 to 1999;  // Last used: 1003.
+  extensions 1000 to 1999;  // Last used: 1004.
 }
 
 message Identity {
@@ -130,6 +130,15 @@ message Rotation {
     optional Rotation extension = 1003;
   }
   required Quaternion quaternion = 1;
+}
+
+message Signature {
+  extend LinearMap {
+    optional Signature extension = 1004;
+  }
+  required Sign x = 1;
+  required Sign y = 2;
+  required Sign z = 3;
 }
 
 // Frames follow.  Note that the names of the enum types are part of the

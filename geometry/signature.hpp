@@ -8,13 +8,13 @@ namespace principia {
 namespace geometry {
 namespace internal_signature {
 
-using base::not_constructible;
+using base::not_null;
 
 struct DeduceSignPreservingOrientation final {};
 struct DeduceSignReversingOrientation final {};
 
 template<typename FromFrame, typename ToFrame>
-class Signature {
+class Signature : public LinearMap<FromFrame, ToFrame> {
  public:
   static constexpr Sign determinant =
       FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
@@ -26,6 +26,8 @@ class Signature {
   constexpr Signature(Sign x, Sign y, DeduceSign z);
   constexpr Signature(Sign x, DeduceSign y, Sign z);
   constexpr Signature(DeduceSign x, Sign y, Sign z);
+
+  constexpr Sign Determinant() const override;
 
   template<typename F = FromFrame,
            typename T = ToFrame,
@@ -57,7 +59,19 @@ class Signature {
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
-  // TODO(egg): Serialization.
+  void WriteToMessage(not_null<serialization::LinearMap*> message) const;
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<base::is_serializable_v<F> &&
+                                       base::is_serializable_v<T>>>
+  static Signature ReadFromMessage(serialization::LinearMap const& message);
+
+  void WriteToMessage(not_null<serialization::Signature*> message) const;
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<base::is_serializable_v<F> &&
+                                       base::is_serializable_v<T>>>
+  static Signature ReadFromMessage(serialization::Signature const& message);
 
  private:
   constexpr Signature(Sign x, Sign y, Sign z);
