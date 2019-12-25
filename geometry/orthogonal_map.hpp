@@ -26,6 +26,9 @@ FORWARD_DECLARE_FROM(permutation,
 FORWARD_DECLARE_FROM(rotation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Rotation);
+FORWARD_DECLARE_FROM(signature,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Signature);
 FORWARD_DECLARE_FROM(symmetric_bilinear_form,
                      TEMPLATE(typename Scalar, typename Frame) class,
                      SymmetricBilinearForm);
@@ -100,6 +103,8 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   friend class internal_permutation::Permutation;
   template<typename From, typename To>
   friend class internal_rotation::Rotation;
+  template<typename From, typename To>
+  friend class internal_signature::Signature;
 
   template<typename From, typename Through, typename To>
   friend OrthogonalMap<From, To> operator*(

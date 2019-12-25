@@ -46,6 +46,8 @@
     <ClInclude Include="rp2_point_body.hpp" />
     <ClInclude Include="serialization.hpp" />
     <ClInclude Include="serialization_body.hpp" />
+    <ClInclude Include="signature.hpp" />
+    <ClInclude Include="signature_body.hpp" />
     <ClInclude Include="sign_body.hpp" />
     <ClInclude Include="sign.hpp" />
     <ClInclude Include="sphere.hpp" />
@@ -69,6 +71,7 @@
     <ClCompile Include="r3_element_test.cpp" />
     <ClCompile Include="rotation_test.cpp" />
     <ClCompile Include="rp2_point_test.cpp" />
+    <ClCompile Include="signature_test.cpp" />
     <ClCompile Include="sign_test.cpp" />
     <ClCompile Include="symmetric_bilinear_form_test.cpp" />
   </ItemGroup>

@@ -46,7 +46,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Trivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
-  return determinant_ * trivector;
+  return Trivector<Scalar, ToFrame>(determinant_ * trivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
