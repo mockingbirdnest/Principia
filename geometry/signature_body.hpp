@@ -10,23 +10,23 @@ template<typename FromFrame, typename ToFrame>
 constexpr Signature<FromFrame, ToFrame>::Signature(Sign const x,
                                                    Sign const y,
                                                    DeduceSign const z)
-    : x_(x), y_(y), z_(x * y * determinant) {}
+    : x_(x), y_(y), z_(x * y * determinant_) {}
 
 template<typename FromFrame, typename ToFrame>
 constexpr Signature<FromFrame, ToFrame>::Signature(Sign const x,
                                                    DeduceSign const y,
                                                    Sign const z)
-    : x_(x), y_(x * determinant * z), z_(z) {}
+    : x_(x), y_(x * determinant_ * z), z_(z) {}
 
 template<typename FromFrame, typename ToFrame>
 constexpr Signature<FromFrame, ToFrame>::Signature(DeduceSign const x,
                                                    Sign const y,
                                                    Sign const z)
-    : x_(determinant * y * z), y_(y), z_(z) {}
+    : x_(determinant_ * y * z), y_(y), z_(z) {}
 
 template<typename FromFrame, typename ToFrame>
 constexpr Sign Signature<FromFrame, ToFrame>::Determinant() const {
-  return determinant;
+  return determinant_;
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -65,16 +65,16 @@ template<typename Scalar>
 Bivector<Scalar, ToFrame> Signature<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
   return Bivector<Scalar, ToFrame>(
-      {determinant * x_ * bivector.coordinates().x,
-       determinant * y_ * bivector.coordinates().y,
-       determinant * z_ * bivector.coordinates().z});
+      {determinant_ * x_ * bivector.coordinates().x,
+       determinant_ * y_ * bivector.coordinates().y,
+       determinant_ * z_ * bivector.coordinates().z});
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Trivector<Scalar, ToFrame> Signature<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
-  return Trivector<Scalar, ToFrame>(determinant * trivector.coordinates());
+  return Trivector<Scalar, ToFrame>(determinant_ * trivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -92,18 +92,18 @@ OrthogonalMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget()
     // TODO(phl): unsound rotation; this should use |Identity| once we go
     // through an intermediate frame.
     return OrthogonalMap<FromFrame, ToFrame>(
-        determinant, Rotation<FromFrame, ToFrame>(Quaternion(1)));
+        determinant_, Rotation<FromFrame, ToFrame>(Quaternion(1)));
   }
   // The signature is neither +++ nor ---, so dividing it by its determinant
   // yields a 180° rotation around one of the axes (+--, -+-, or --+).
-  R3Element<double> const axis = (determinant * x_).is_positive()
+  R3Element<double> const axis = (determinant_ * x_).is_positive()
                                      ? R3Element<double>{1, 0, 0}
-                                     : (determinant * y_).is_positive()
+                                     : (determinant_ * y_).is_positive()
                                            ? R3Element<double>{0, 1, 0}
                                            : R3Element<double>{0, 0, 1};
   // TODO(phl): unsound rotation.
   return OrthogonalMap<FromFrame, ToFrame>(
-      determinant, Rotation<FromFrame, ToFrame>(Quaternion(0, axis)));
+      determinant_, Rotation<FromFrame, ToFrame>(Quaternion(0, axis)));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -139,7 +139,7 @@ Signature<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::ReadFromMessage(
   auto const x = Sign::ReadFromMessage(message.x());
   auto const y = Sign::ReadFromMessage(message.y());
   auto const z = Sign::ReadFromMessage(message.z());
-  CHECK_EQ(x * y * z, determinant) << message.DebugString();
+  CHECK_EQ(x * y * z, determinant_) << message.DebugString();
   return Signature(x, y, z);
 }
 

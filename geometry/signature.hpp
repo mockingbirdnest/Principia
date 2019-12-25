@@ -20,12 +20,10 @@ struct DeduceSignReversingOrientation final {};
 template<typename FromFrame, typename ToFrame>
 class Signature : public LinearMap<FromFrame, ToFrame> {
  public:
-  static constexpr Sign determinant =
-      FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
-                                                   : Sign::Negative();
-  using DeduceSign = std::conditional_t<determinant.is_positive(),
-                                        DeduceSignPreservingOrientation,
-                                        DeduceSignReversingOrientation>;
+  using DeduceSign =
+      std::conditional_t<FromFrame::handedness == ToFrame::handedness,
+                         DeduceSignPreservingOrientation,
+                         DeduceSignReversingOrientation>;
 
   constexpr Signature(Sign x, Sign y, DeduceSign z);
   constexpr Signature(Sign x, DeduceSign y, Sign z);
@@ -83,6 +81,10 @@ class Signature : public LinearMap<FromFrame, ToFrame> {
   Sign x_;
   Sign y_;
   Sign z_;
+
+  static constexpr Sign determinant_ =
+      FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
+                                                   : Sign::Negative();
 
   template<typename From, typename To>
   friend class Signature;
