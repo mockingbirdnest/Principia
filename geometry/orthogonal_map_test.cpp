@@ -142,9 +142,9 @@ TEST_F(OrthogonalMapTest, Composition) {
   DirectOrth const orthogonal_ac = orthogonal_a_ * orthogonal_c_.Inverse();
   EXPECT_THAT(orthogonal_ac(direct_vector_),
               AlmostEquals(Vector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(2.0 * Metre,
+                  R3Element<quantities::Length>(-2.0 * Metre,
                                                 1.0 * Metre,
-                                                -3.0 * Metre)), 4, 6));
+                                                3.0 * Metre)), 1, 6));
   EXPECT_TRUE((orthogonal_b_ * orthogonal_a_).Determinant().is_negative());
   EXPECT_TRUE((orthogonal_a_ * orthogonal_c_.Inverse()).
               Determinant().is_positive());
@@ -167,7 +167,7 @@ TEST_F(OrthogonalMapTest, SerializationSuccess) {
   EXPECT_TRUE(message.has_to_frame());
   EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
             message.to_frame().tag_type_fingerprint());
-  EXPECT_EQ(message.from_frame().tag(),
+  EXPECT_NE(message.from_frame().tag(),
             message.to_frame().tag());
   EXPECT_EQ(message.from_frame().is_inertial(),
             message.to_frame().is_inertial());
