@@ -43,9 +43,9 @@ class SignatureTest : public testing::Test {
         bivector_({1 * Metre, 2 * Metre, 3 * Metre}),
         trivector_(4 * Metre) {}
 
-  Vector<Length, R1> vector_;
-  Bivector<Length, R1> bivector_;
-  Trivector<Length, R1> trivector_;
+  Vector<Length, R1> const vector_;
+  Bivector<Length, R1> const bivector_;
+  Trivector<Length, R1> const trivector_;
 };
 
 using SignatureDeathTest = SignatureTest;

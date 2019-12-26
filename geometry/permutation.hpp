@@ -19,31 +19,39 @@ namespace internal_permutation {
 
 using base::not_null;
 
+// Declare shorter names for the protocol buffer enums.
+static constexpr int EVEN = serialization::Permutation::EVEN;
+static constexpr int ODD = serialization::Permutation::ODD;
+static constexpr int X = serialization::Permutation::X;
+static constexpr int Y = serialization::Permutation::Y;
+static constexpr int Z = serialization::Permutation::Z;
+static constexpr int INDEX = serialization::Permutation::INDEX;
+
+// Danger, Will Robinson!  These enums are stored in the serialized
+// representation.  Any change to the formulae below is likely to make it
+// impossible to read existing files.
+enum class EvenPermutation {
+  XYZ = EVEN + (X << X * 2) + (Y << Y * 2) + (Z << Z * 2) + (0 << INDEX),
+  YZX = EVEN + (Y << X * 2) + (Z << Y * 2) + (X << Z * 2) + (1 << INDEX),
+  ZXY = EVEN + (Z << X * 2) + (X << Y * 2) + (Y << Z * 2) + (2 << INDEX),
+};
+
+enum class OddPermutation {
+  XZY = ODD + (X << X * 2) + (Z << Y * 2) + (Y << Z * 2) + (3 << INDEX),
+  ZYX = ODD + (Z << X * 2) + (Y << Y * 2) + (X << Z * 2) + (4 << INDEX),
+  YXZ = ODD + (Y << X * 2) + (X << Y * 2) + (Z << Z * 2) + (5 << INDEX),
+};
+
 // A permutation of the coordinates. Obviously not coordinate-free, but
 // practical.  There are no precision losses when composing or applying
 // permutations.
 template<typename FromFrame, typename ToFrame>
 class Permutation : public LinearMap<FromFrame, ToFrame> {
-  // Declare shorter names for the protocol buffer enums.
-  static int const EVEN = serialization::Permutation::EVEN;
-  static int const ODD = serialization::Permutation::ODD;
-  static int const X = serialization::Permutation::X;
-  static int const Y = serialization::Permutation::Y;
-  static int const Z = serialization::Permutation::Z;
-  static int const INDEX = serialization::Permutation::INDEX;
-
  public:
-  // Danger, Will Robinson!  This enum is stored in the serialized
-  // representation.  Any change to the formulae below is likely to make it
-  // impossible to read existing files.
-  enum CoordinatePermutation {
-    XYZ = EVEN + (X << X * 2) + (Y << Y * 2) + (Z << Z * 2) + (0 << INDEX),
-    YZX = EVEN + (Y << X * 2) + (Z << Y * 2) + (X << Z * 2) + (1 << INDEX),
-    ZXY = EVEN + (Z << X * 2) + (X << Y * 2) + (Y << Z * 2) + (2 << INDEX),
-    XZY = ODD  + (X << X * 2) + (Z << Y * 2) + (Y << Z * 2) + (3 << INDEX),
-    ZYX = ODD  + (Z << X * 2) + (Y << Y * 2) + (X << Z * 2) + (4 << INDEX),
-    YXZ = ODD  + (Y << X * 2) + (X << Y * 2) + (Z << Z * 2) + (5 << INDEX)
-  };
+  using CoordinatePermutation =
+      std::conditional_t<FromFrame::handedness == ToFrame::handedness,
+                         EvenPermutation,
+                         OddPermutation>;
 
   explicit Permutation(CoordinatePermutation coordinate_permutation);
 
@@ -118,6 +126,8 @@ std::ostream& operator<<(std::ostream& out,
 
 }  // namespace internal_permutation
 
+using internal_permutation::EvenPermutation;
+using internal_permutation::OddPermutation;
 using internal_permutation::Permutation;
 
 }  // namespace geometry
