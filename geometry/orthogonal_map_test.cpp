@@ -127,7 +127,7 @@ TEST_F(OrthogonalMapTest, Determinant) {
 
 TEST_F(OrthogonalMapTest, Inverse) {
   EXPECT_THAT(orthogonal_a_.Inverse()(direct_vector_),
-              AlmostEquals(Vector<quantities::Length, DirectWorld>(
+              AlmostEquals(Vector<quantities::Length, MirrorWorld>(
                   R3Element<quantities::Length>(-2.0 * Metre,
                                                 -3.0 * Metre,
                                                 -1.0 * Metre)), 2));
@@ -175,15 +175,10 @@ TEST_F(OrthogonalMapTest, SerializationSuccess) {
       serialization::OrthogonalMap::extension));
   serialization::OrthogonalMap const& extension =
       message.GetExtension(serialization::OrthogonalMap::extension);
-  EXPECT_TRUE(extension.determinant().negative());
-  EXPECT_THAT(extension.rotation().quaternion().real_part(),
-              AlmostEquals(0.5, 1));
-  EXPECT_EQ(0.5,
-            extension.rotation().quaternion().imaginary_part().x().double_());
-  EXPECT_EQ(0.5,
-            extension.rotation().quaternion().imaginary_part().y().double_());
-  EXPECT_EQ(0.5,
-            extension.rotation().quaternion().imaginary_part().z().double_());
+  EXPECT_THAT(extension.quaternion().real_part(), AlmostEquals(0.5, 1));
+  EXPECT_EQ(0.5, extension.quaternion().imaginary_part().x().double_());
+  EXPECT_EQ(0.5, extension.quaternion().imaginary_part().y().double_());
+  EXPECT_EQ(0.5, extension.quaternion().imaginary_part().z().double_());
   MirrorOrth const o = MirrorOrth::ReadFromMessage(message);
   EXPECT_EQ(orthogonal_a_(mirror_vector_), o(mirror_vector_));
 }

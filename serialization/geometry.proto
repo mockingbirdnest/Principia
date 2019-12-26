@@ -91,8 +91,12 @@ message OrthogonalMap {
   extend LinearMap {
     optional OrthogonalMap extension = 1001;
   }
-  required Sign determinant = 1;
-  required Rotation rotation = 2;
+  optional Rotation rotation = 2;
+  optional Quaternion quaternion = 3;  // Added in Frege.
+
+  // Pre-Frege.
+  reserved 1;
+  reserved "determinant";
 }
 
 message Permutation {

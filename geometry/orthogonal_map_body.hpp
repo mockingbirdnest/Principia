@@ -100,8 +100,7 @@ OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
 template<typename FromFrame, typename ToFrame>
 void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::OrthogonalMap*> const message) const {
-  determinant_.WriteToMessage(message->mutable_determinant());
-  rotation_.WriteToMessage(message->mutable_rotation());
+  quaternion_.WriteToMessage(message->mutable_quaternion());
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -109,9 +108,11 @@ template<typename, typename, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
     serialization::OrthogonalMap const& message) {
-  return OrthogonalMap(Sign::ReadFromMessage(message.determinant()),
-                       Rotation<FromFrame, ToFrame>::ReadFromMessage(
-                           message.rotation()));
+  bool const is_pre_frege = message.has_rotation();
+  return OrthogonalMap(
+      is_pre_frege
+          ? Quaternion::ReadFromMessage(message.rotation().quaternion())
+          : Quaternion::ReadFromMessage(message.quaternion()));
 }
 
 template<typename FromFrame, typename ToFrame>
