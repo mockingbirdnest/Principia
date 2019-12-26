@@ -3,6 +3,7 @@
 
 #include "geometry/orthogonal_map.hpp"
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -22,7 +23,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename, typename, typename>
 Rotation<FromFrame, ToFrame> const&
 OrthogonalMap<FromFrame, ToFrame>::AsRotation() const {
-  return Rotation<FromFrame, ToFrame>(quaternion_);
+  return MakeRotation<FromFrame, ToFrame>();
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -36,30 +37,28 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
-  return Vector<Scalar, ToFrame>(
-      determinant_ * quaternion_.Rotate(vector.coordinates()));
+  return rotation_(MakeSignature()(vector));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Bivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
-  return Bivector<Scalar, ToFrame>(
-      quaternion_.Rotate(bivector.coordinates()));
+  return rotation_(MakeSignature()(bivector));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Trivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
-  return Trivector<Scalar, ToFrame>(determinant_ * trivector.coordinates());
+  return rotation_(MakeSignature()(trivector));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 SymmetricBilinearForm<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::
 operator()(SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
-  return rotation_(form);
+  return rotation_(MakeSignature()(form));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -119,6 +118,18 @@ template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap(
   Quaternion const& quaternion)
   : quaternion_(quaternion) {}
+
+template<typename FromFrame, typename ToFrame>
+constexpr Signature<
+    FromFrame,
+    typename OrthogonalMap<FromFrame, ToFrame>::IntermediateFrame>
+OrthogonalMap<FromFrame, ToFrame>::MakeSignature() {
+  if constexpr (FromFrame::handedness == ToFrame::handedness) {
+    return Signature<FromFrame, IntermediateFrame>::Identity();
+  } else {
+    return Signature<FromFrame, IntermediateFrame>::CentralInversion();
+  }
+}
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> operator*(

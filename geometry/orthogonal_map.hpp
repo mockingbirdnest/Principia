@@ -2,12 +2,14 @@
 #pragma once
 
 #include "base/mappable.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/signature.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -95,7 +97,15 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  private:
   explicit OrthogonalMap(Quaternion const& quaternion);
 
+  using IntermediateFrame = Frame<enum class IntermediateFrameTag,
+                                  ToFrame::motion,
+                                  ToFrame::handedness>;
+
+  static constexpr Signature<FromFrame, IntermediateFrame> MakeSignature();
+
   Quaternion quaternion_;
+
+  Rotation<IntermediateFrame, ToFrame> const rotation_{quaternion_};
 
   static constexpr Sign determinant_ =
     FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
