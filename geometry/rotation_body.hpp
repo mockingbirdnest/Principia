@@ -191,16 +191,14 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
-  return Vector<Scalar, ToFrame>(
-      quaternion_.Transmogrify(vector.coordinates()));
+  return Vector<Scalar, ToFrame>(quaternion_.Rotate(vector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Bivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
-  return Bivector<Scalar, ToFrame>(
-      quaternion_.Transmogrify(bivector.coordinates()));
+  return Bivector<Scalar, ToFrame>(quaternion_.Rotate(bivector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>

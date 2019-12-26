@@ -37,7 +37,7 @@ template<typename Scalar>
 Vector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
   return Vector<Scalar, ToFrame>(
-      determinant_ * quaternion_.Transmogrify(vector.coordinates()));
+      determinant_ * quaternion_.Rotate(vector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -45,7 +45,7 @@ template<typename Scalar>
 Bivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
   return Bivector<Scalar, ToFrame>(
-      quaternion_.Transmogrify(bivector.coordinates()));
+      quaternion_.Rotate(bivector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>

@@ -89,7 +89,7 @@ inline Quaternion& Quaternion::operator/=(double const right) {
 }
 
 template<typename Scalar>
-R3Element<Scalar> Quaternion::Transmogrify(
+R3Element<Scalar> Quaternion::Rotate(
     R3Element<Scalar> const& r3_element) const {
   return r3_element + 2 * Cross(imaginary_part_,
                                 Cross(imaginary_part_, r3_element) +
