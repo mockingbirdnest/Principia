@@ -857,7 +857,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
   // World.
   using PartPrincipalAxes = Frame<serialization::Frame::PhysicsTag,
                                   NonInertial,
-                                  Handedness::Right,
+                                  Handedness::Left,
                                   serialization::Frame::PRINCIPAL_AXES>;
 
   static constexpr MomentOfInertia zero;

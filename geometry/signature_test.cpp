@@ -7,9 +7,11 @@
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/componentwise.hpp"
@@ -17,9 +19,10 @@
 namespace principia {
 
 using quantities::Length;
+using quantities::Pow;
 using quantities::si::Metre;
-using ::testing::Eq;
 using testing_utilities::Componentwise;
+using ::testing::Eq;
 
 namespace geometry {
 
@@ -41,11 +44,16 @@ class SignatureTest : public testing::Test {
   SignatureTest()
       : vector_({1 * Metre, 2 * Metre, 3 * Metre}),
         bivector_({1 * Metre, 2 * Metre, 3 * Metre}),
-        trivector_(4 * Metre) {}
+        trivector_(4 * Metre),
+        form_(SymmetricBilinearForm<Length, R1>(
+            R3x3Matrix<Length>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre},
+                               {2.0 * Metre, -5.0 * Metre, 6.0 * Metre},
+                               {3.0 * Metre, 6.0 * Metre, 4.0 * Metre}))) {}
 
   Vector<Length, R1> vector_;
   Bivector<Length, R1> bivector_;
   Trivector<Length, R1> trivector_;
+  SymmetricBilinearForm<Length, R1> const form_;
 };
 
 using SignatureDeathTest = SignatureTest;
@@ -193,6 +201,15 @@ TEST_F(SignatureTest, Composition) {
               Eq(reflection(rotation(bivector_))));
   EXPECT_THAT((reflection * rotation)(trivector_),
               Eq(reflection(rotation(trivector_))));
+}
+
+TEST_F(SignatureTest, AppliedToSymmetricBilinearForm) {
+  Signature<R1, L> reflection(
+      Sign::Negative(), Sign::Positive(), DeduceSignReversingOrientation{});
+  Vector<Length, L> vector({ 1 * Metre, 2 * Metre, 3 * Metre });
+
+  EXPECT_THAT(form_(vector_, vector_), 115 * Pow<3>(Metre));
+  EXPECT_THAT(reflection(form_)(vector, vector), 63 * Pow<3>(Metre));
 }
 
 TEST_F(SignatureTest, Serialization) {

@@ -82,7 +82,21 @@ template<typename Scalar>
 SymmetricBilinearForm<Scalar, ToFrame>
 Signature<FromFrame, ToFrame>::operator()(
     SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
-  return SymmetricBilinearForm<Scalar, ToFrame>();
+  // TODO(egg): This should be writeable as "*= x_ * y_".
+  auto coordinates = form.coordinates();
+  if (x_ != y_) {
+    coordinates(0, 1) *= -1;
+    coordinates(1, 0) *= -1;
+  }
+  if (y_ != z_) {
+    coordinates(1, 2) *= -1;
+    coordinates(2, 1) *= -1;
+  }
+  if (z_ != x_) {
+    coordinates(2, 0) *= -1;
+    coordinates(0, 2) *= -1;
+  }
+  return SymmetricBilinearForm<Scalar, ToFrame>(coordinates);
 }
 
 template<typename FromFrame, typename ToFrame>

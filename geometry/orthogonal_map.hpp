@@ -104,8 +104,7 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   static constexpr Signature<FromFrame, IntermediateFrame> MakeSignature();
 
   Quaternion quaternion_;
-
-  Rotation<IntermediateFrame, ToFrame> const rotation_{quaternion_};
+  Rotation<IntermediateFrame, ToFrame> rotation_{quaternion_};
 
   static constexpr Sign determinant_ =
     FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
