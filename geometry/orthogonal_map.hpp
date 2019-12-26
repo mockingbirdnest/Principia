@@ -4,6 +4,7 @@
 #include "base/mappable.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
+#include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
@@ -45,7 +46,10 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  public:
   Sign Determinant() const override;
 
-  Rotation<FromFrame, ToFrame> const& rotation() const;
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<F::handedness == T::handedness>>
+  Rotation<FromFrame, ToFrame> const& AsRotation() const;
 
   OrthogonalMap<ToFrame, FromFrame> Inverse() const;
 
@@ -89,11 +93,13 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
       serialization::OrthogonalMap const& message);
 
  private:
-  OrthogonalMap(Sign const& determinant,
-                Rotation<FromFrame, ToFrame> const& rotation);
+  explicit OrthogonalMap(Quaternion const& quaternion);
 
-  Sign determinant_;
-  Rotation<FromFrame, ToFrame> rotation_;
+  Quaternion quaternion_;
+
+  static constexpr Sign determinant_ =
+    FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
+    : Sign::Negative();
 
   template<typename From, typename To>
   friend class internal_identity::Identity;
@@ -110,6 +116,11 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   friend OrthogonalMap<From, To> operator*(
       OrthogonalMap<Through, To> const& left,
       OrthogonalMap<From, Through> const& right);
+
+  template<typename From, typename To>
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      OrthogonalMap<From, To> const& orthogonal_map);
 
   friend class OrthogonalMapTest;
 

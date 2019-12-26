@@ -73,7 +73,10 @@ struct DefinesFrame final {};
 // algebra.
 template<typename FromFrame, typename ToFrame>
 class Rotation : public LinearMap<FromFrame, ToFrame> {
- public:
+  static_assert(FromFrame::handedness == ToFrame::handedness,
+    "Cannot rotate between frames of different handedness");
+
+public:
   explicit Rotation(Quaternion const& quaternion);
 
   // A rotation of |angle| around |axis|; no coordinate change is involved, this
@@ -244,9 +247,6 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   static Rotation ReadFromMessage(serialization::Rotation const& message);
 
  private:
-  template<typename Scalar>
-  R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
-
   Quaternion quaternion_;
 
   // For constructing a rotation using a quaternion.

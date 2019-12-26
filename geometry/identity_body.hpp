@@ -61,9 +61,7 @@ Identity<FromFrame, ToFrame>::operator()(T const& t) const {
 
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
-  return OrthogonalMap<FromFrame, ToFrame>(
-      Determinant(),
-      Rotation<FromFrame, ToFrame>::Identity());
+  return OrthogonalMap<FromFrame, ToFrame>::Identity();
 }
 
 template<typename FromFrame, typename ToFrame>

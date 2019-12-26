@@ -191,14 +191,16 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
-  return Vector<Scalar, ToFrame>((*this)(vector.coordinates()));
+  return Vector<Scalar, ToFrame>(
+      quaternion_.Transmogrify(vector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Bivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
-  return Bivector<Scalar, ToFrame>((*this)(bivector.coordinates()));
+  return Bivector<Scalar, ToFrame>(
+      quaternion_.Transmogrify(bivector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -265,7 +267,7 @@ Rotation<FromFrame, ToFrame>::operator()(T const& t) const {
 
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
-  return OrthogonalMap<FromFrame, ToFrame>(Sign::Positive(), *this);
+  return OrthogonalMap<FromFrame, ToFrame>(quaternion_);
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -307,17 +309,6 @@ template<typename, typename, typename>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::Rotation const& message) {
   return Rotation(Quaternion::ReadFromMessage(message.quaternion()));
-}
-
-template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
-R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
-    R3Element<Scalar> const& r3_element) const {
-  double const real_part = quaternion_.real_part();
-  R3Element<double> const& imaginary_part = quaternion_.imaginary_part();
-  return r3_element + 2 * Cross(imaginary_part,
-                                Cross(imaginary_part, r3_element) +
-                                      real_part * r3_element);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

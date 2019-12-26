@@ -88,6 +88,14 @@ inline Quaternion& Quaternion::operator/=(double const right) {
   return *this;
 }
 
+template<typename Scalar>
+R3Element<Scalar> Quaternion::Transmogrify(
+    R3Element<Scalar> const& r3_element) const {
+  return r3_element + 2 * Cross(imaginary_part_,
+                                Cross(imaginary_part_, r3_element) +
+                                    real_part_ * r3_element);
+}
+
 inline void Quaternion::WriteToMessage(
     not_null<serialization::Quaternion*> const message) const {
   message->set_real_part(real_part_);
