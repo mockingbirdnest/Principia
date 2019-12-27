@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <map>
+#include <array>
 #include <string>
 #include <utility>
 
@@ -31,15 +31,16 @@ Permutation<ToFrame, FromFrame>
 Permutation<FromFrame, ToFrame>::Inverse() const {
   using PFT = Permutation<FromFrame, ToFrame>;
   using PTF = Permutation<ToFrame, FromFrame>;
-  static std::map<PFT::CoordinatePermutation,
-                  typename PTF::CoordinatePermutation> const inverse = {
-      {PFT::XYZ, PTF::XYZ},
-      {PFT::YZX, PTF::ZXY},
-      {PFT::ZXY, PTF::YZX},
-      {PFT::XZY, PTF::XZY},
-      {PFT::ZYX, PTF::ZYX},
-      {PFT::YXZ, PTF::YXZ}};
-  return PTF(inverse.at(coordinate_permutation_));
+  if constexpr (std::is_same_v<CoordinatePermutation, EvenPermutation>) {
+    static constexpr std::array<EvenPermutation, 3> inverse{
+        {EvenPermutation::XYZ, EvenPermutation::ZXY, EvenPermutation::YZX}};
+    return PTF(inverse[INDEX_MASK &
+                       (static_cast<int>(coordinate_permutation_) >> INDEX)]);
+  } else {
+    // An odd permutation on three elements is a transposition, and thus is an
+    // involution.
+    return PTF(coordinate_permutation_);
+  }
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -75,21 +76,22 @@ template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::Forget() const {
   static double const sqrt_half = quantities::Sqrt(0.5);
-  static std::map<CoordinatePermutation, Quaternion> const quaternion = {
-      {XYZ, Quaternion(1, {0, 0, 0})},
-      {YZX, Quaternion(0.5, {-0.5, -0.5, -0.5})},
-      {ZXY, Quaternion(0.5, {0.5, 0.5, 0.5})},
-      {XZY, Quaternion(0, {0, -sqrt_half, sqrt_half})},
-      {ZYX, Quaternion(0, {-sqrt_half, 0, sqrt_half})},
-      {YXZ, Quaternion(0, {-sqrt_half, sqrt_half, 0})}};
+  static std::array<Quaternion, 6> const quaternion = {
+      /*XYZ*/ Quaternion(1),
+      /*YZX*/ Quaternion(0.5, {-0.5, -0.5, -0.5}),
+      /*ZXY*/ Quaternion(0.5, {0.5, 0.5, 0.5}),
+      /*XZY*/ Quaternion(0, {0, -sqrt_half, sqrt_half}),
+      /*ZYX*/ Quaternion(0, {-sqrt_half, 0, sqrt_half}),
+      /*YXZ*/ Quaternion(0, {-sqrt_half, sqrt_half, 0})};
   return OrthogonalMap<FromFrame, ToFrame>(
-      quaternion.at(coordinate_permutation_));
+             quaternion[INDEX_MASK &
+                        (static_cast<int>(coordinate_permutation_) >> INDEX)]);
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
 Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
-  return Permutation(XYZ);
+  return Permutation(EvenPermutation::XYZ);
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -114,7 +116,8 @@ Permutation<FromFrame, ToFrame>::ReadFromMessage(
 template<typename FromFrame, typename ToFrame>
 void Permutation<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::Permutation*> const message) const {
-  message->set_coordinate_permutation(coordinate_permutation_);
+  message->set_coordinate_permutation(
+      static_cast<int>(coordinate_permutation_));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -132,9 +135,10 @@ R3Element<Scalar> Permutation<FromFrame, ToFrame>::operator()(
     R3Element<Scalar> const& r3_element) const {
   R3Element<Scalar> result;
   for (int coordinate = X; coordinate <= Z; ++coordinate) {
-    result[coordinate] = r3_element[
-        0x3 &
-        (static_cast<int>(coordinate_permutation_) >> (coordinate * 2))];
+    result[coordinate] =
+        r3_element[COORDINATE_MASK &
+                   (static_cast<int>(coordinate_permutation_) >>
+                    (coordinate * 2))];
   }
   return result;
 }
@@ -143,74 +147,43 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame> operator*(
     Permutation<ThroughFrame, ToFrame> const& left,
     Permutation<FromFrame, ThroughFrame> const& right) {
-  using Left = Permutation<ThroughFrame, ToFrame>;
-  using Right = Permutation<FromFrame, ThroughFrame>;
   using Result = Permutation<FromFrame, ToFrame>;
+  struct AnyPermutation {
+    constexpr AnyPermutation(EvenPermutation value)  // NOLINT(runtime/explicit)
+        : value(static_cast<int>(value)) {}
+    constexpr AnyPermutation(OddPermutation value)  // NOLINT(runtime/explicit)
+        : value(static_cast<int>(value)) {}
+    int value;
+  };
+  using E = EvenPermutation;
+  using O = OddPermutation;
+  static constexpr std::array<std::array<AnyPermutation, 6>, 6> multiplication{{
+      /*          XYZ,    YZX,    ZXY,    XZY,    ZYX,    YXZ*/
+      /*XYZ*/ {E::XYZ, E::YZX, E::ZXY, O::XZY, O::ZYX, O::YXZ},
+      /*YZX*/ {E::YZX, E::ZXY, E::XYZ, O::ZYX, O::YXZ, O::XZY},
+      /*ZXY*/ {E::ZXY, E::XYZ, E::YZX, O::YXZ, O::XZY, O::ZYX},
+      /*XZY*/ {O::XZY, O::YXZ, O::ZYX, E::XYZ, E::ZXY, E::YZX},
+      /*ZYX*/ {O::ZYX, O::XZY, O::YXZ, E::YZX, E::XYZ, E::ZXY},
+      /*YXZ*/ {O::YXZ, O::ZYX, O::XZY, E::ZXY, E::YZX, E::XYZ},
+  }};
 
-  // The pair<> is in diagrammatic order: right is applied first and is the
-  // first element of the pair, left is applied second and is the second
-  // element.
-  static std::map<
-      std::pair<typename Right::CoordinatePermutation,
-                typename Left::CoordinatePermutation>,
-      typename Result::CoordinatePermutation> const multiplication = {
-      {{Right::XYZ, Left::XYZ}, Result::XYZ},
-      {{Right::XYZ, Left::YZX}, Result::YZX},
-      {{Right::XYZ, Left::ZXY}, Result::ZXY},
-      {{Right::XYZ, Left::XZY}, Result::XZY},
-      {{Right::XYZ, Left::ZYX}, Result::ZYX},
-      {{Right::XYZ, Left::YXZ}, Result::YXZ},
-
-      {{Right::YZX, Left::XYZ}, Result::YZX},
-      {{Right::YZX, Left::YZX}, Result::ZXY},
-      {{Right::YZX, Left::ZXY}, Result::XYZ},
-      {{Right::YZX, Left::XZY}, Result::YXZ},
-      {{Right::YZX, Left::ZYX}, Result::XZY},
-      {{Right::YZX, Left::YXZ}, Result::ZYX},
-
-      {{Right::ZXY, Left::XYZ}, Result::ZXY},
-      {{Right::ZXY, Left::YZX}, Result::XYZ},
-      {{Right::ZXY, Left::ZXY}, Result::YZX},
-      {{Right::ZXY, Left::XZY}, Result::ZYX},
-      {{Right::ZXY, Left::ZYX}, Result::YXZ},
-      {{Right::ZXY, Left::YXZ}, Result::XZY},
-
-      {{Right::XZY, Left::XYZ}, Result::XZY},
-      {{Right::XZY, Left::YZX}, Result::ZYX},
-      {{Right::XZY, Left::ZXY}, Result::YXZ},
-      {{Right::XZY, Left::XZY}, Result::XYZ},
-      {{Right::XZY, Left::ZYX}, Result::YZX},
-      {{Right::XZY, Left::YXZ}, Result::ZXY},
-
-      {{Right::ZYX, Left::XYZ}, Result::ZYX},
-      {{Right::ZYX, Left::YZX}, Result::YXZ},
-      {{Right::ZYX, Left::ZXY}, Result::XZY},
-      {{Right::ZYX, Left::XZY}, Result::ZXY},
-      {{Right::ZYX, Left::ZYX}, Result::XYZ},
-      {{Right::ZYX, Left::YXZ}, Result::YZX},
-
-      {{Right::YXZ, Left::XYZ}, Result::YXZ},
-      {{Right::YXZ, Left::YZX}, Result::XZY},
-      {{Right::YXZ, Left::ZXY}, Result::ZYX},
-      {{Right::YXZ, Left::XZY}, Result::YZX},
-      {{Right::YXZ, Left::ZYX}, Result::ZXY},
-      {{Right::YXZ, Left::YXZ}, Result::XYZ}};
-  return Result(multiplication.at({right.coordinate_permutation_,
-                                   left.coordinate_permutation_}));
+  return Result(static_cast<Result::CoordinatePermutation>(
+      multiplication[INDEX_MASK &
+                     (static_cast<int>(left.coordinate_permutation_) >> INDEX)]
+                    [INDEX_MASK &
+                     (static_cast<int>(right.coordinate_permutation_) >> INDEX)]
+                        .value));
 }
 
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Permutation<FromFrame, ToFrame> const& permutation) {
-  using PFT = Permutation<FromFrame, ToFrame>;
-  static std::map<typename PFT::CoordinatePermutation, std::string> const
-      debug_string = {{PFT::XYZ, "XYZ"},
-                      {PFT::YZX, "YZX"},
-                      {PFT::ZXY, "ZXY"},
-                      {PFT::XZY, "XZY"},
-                      {PFT::ZYX, "ZYX"},
-                      {PFT::YXZ, "YXZ"}};
-  return out << debug_string.at(permutation.coordinate_permutation_);
+  static constexpr std::array<std::string_view, 6> debug_string{
+      {"XYZ", "YZX", "ZXY", "XZY", "ZYX", "YXZ"}};
+  return out << debug_string
+             [INDEX_MASK &
+              (static_cast<int>(permutation.coordinate_permutation_) >>
+                                  INDEX)];
 }
 
 }  // namespace internal_permutation

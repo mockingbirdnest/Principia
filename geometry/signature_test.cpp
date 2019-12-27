@@ -50,9 +50,9 @@ class SignatureTest : public testing::Test {
                                {2.0 * Metre, -5.0 * Metre, 6.0 * Metre},
                                {3.0 * Metre, 6.0 * Metre, 4.0 * Metre}))) {}
 
-  Vector<Length, R1> vector_;
-  Bivector<Length, R1> bivector_;
-  Trivector<Length, R1> trivector_;
+  Vector<Length, R1> const vector_;
+  Bivector<Length, R1> const bivector_;
+  Trivector<Length, R1> const trivector_;
   SymmetricBilinearForm<Length, R1> const form_;
 };
 

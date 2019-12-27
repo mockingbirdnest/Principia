@@ -13,87 +13,89 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
 
 namespace principia {
 
 using quantities::Length;
 using quantities::si::Metre;
-using testing_utilities::AlmostEquals;
 using ::testing::Eq;
+using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
 
 namespace geometry {
 
 class PermutationTest : public testing::Test {
  protected:
-  using World1 = Frame<serialization::Frame::TestTag,
-                       Inertial,
-                       Handedness::Right,
-                       serialization::Frame::TEST1>;
-  using World2 = Frame<serialization::Frame::TestTag,
-                       Inertial,
-                       Handedness::Right,
-                       serialization::Frame::TEST2>;
-  using Orth = OrthogonalMap<World1, World2>;
-  using Perm = Permutation<World1, World2>;
-  using R3 = R3Element<quantities::Length>;
+  using R1 = Frame<serialization::Frame::TestTag,
+                   Inertial,
+                   Handedness::Right,
+                   serialization::Frame::TEST1>;
+  using R2 = Frame<serialization::Frame::TestTag,
+                   Inertial,
+                   Handedness::Right,
+                   serialization::Frame::TEST2>;
+  using L = Frame<serialization::Frame::TestTag,
+                  Inertial,
+                  Handedness::Left,
+                  serialization::Frame::TEST3>;
+  using PermutationR1R2 = Permutation<R1, R2>;
+  using PermutationR1L = Permutation<R1, L>;
 
-  PermutationTest() {
-    vector_ = Vector<quantities::Length, World1>(
-        R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-    bivector_ = Bivector<quantities::Length, World1>(
-        R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-    trivector_ = Trivector<quantities::Length, World1>(4.0 * Metre);
-  }
+  PermutationTest()
+      : vector_({1 * Metre, 2 * Metre, 3 * Metre}),
+        bivector_({1 * Metre, 2 * Metre, 3 * Metre}),
+        trivector_(4 * Metre) {}
 
-  Vector<quantities::Length, World1> vector_;
-  Bivector<quantities::Length, World1> bivector_;
-  Trivector<quantities::Length, World1> trivector_;
+  Vector<Length, R1> const vector_;
+  Bivector<Length, R1> const bivector_;
+  Trivector<Length, R1> const trivector_;
 };
 
 using PermutationDeathTest = PermutationTest;
 
 TEST_F(PermutationTest, Identity) {
-  EXPECT_THAT(Perm::Identity()(vector_).coordinates(),
-              Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
+  EXPECT_THAT(PermutationR1R2::Identity()(vector_),
+              Componentwise(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
 }
 
 TEST_F(PermutationTest, XYZ) {
-  EXPECT_THAT(Perm(Perm::XYZ)(vector_).coordinates(),
-              Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
+  EXPECT_THAT(PermutationR1R2(EvenPermutation::XYZ)(vector_),
+              Componentwise(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
 }
 
 TEST_F(PermutationTest, YZX) {
-  EXPECT_THAT(Perm(Perm::YZX)(vector_).coordinates(),
-              Eq<R3>({2.0 * Metre, 3.0 * Metre, 1.0 * Metre}));
+  EXPECT_THAT(PermutationR1R2(EvenPermutation::YZX)(vector_),
+              Componentwise(2.0 * Metre, 3.0 * Metre, 1.0 * Metre));
 }
 
 TEST_F(PermutationTest, ZXY) {
-  EXPECT_THAT(Perm(Perm::ZXY)(vector_).coordinates(),
-              Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
+  EXPECT_THAT(PermutationR1R2(EvenPermutation::ZXY)(vector_),
+              Componentwise(3.0 * Metre, 1.0 * Metre, 2.0 * Metre));
 }
 
 TEST_F(PermutationTest, XZY) {
-  EXPECT_THAT(Perm(Perm::XZY)(vector_).coordinates(),
-              Eq<R3>({1.0 * Metre, 3.0 * Metre, 2.0 * Metre}));
+  EXPECT_THAT(PermutationR1L(OddPermutation::XZY)(vector_),
+              Componentwise(1.0 * Metre, 3.0 * Metre, 2.0 * Metre));
 }
 
 TEST_F(PermutationTest, ZYX) {
-  EXPECT_THAT(Perm(Perm::ZYX)(vector_).coordinates(),
-              Eq<R3>({3.0 * Metre, 2.0 * Metre, 1.0 * Metre}));
+  EXPECT_THAT(PermutationR1L(OddPermutation::ZYX)(vector_),
+              Componentwise(3.0 * Metre, 2.0 * Metre, 1.0 * Metre));
 }
 
 TEST_F(PermutationTest, YXZ) {
-  EXPECT_THAT(Perm(Perm::YXZ)(vector_).coordinates(),
-              Eq<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}));
+  EXPECT_THAT(PermutationR1L(OddPermutation::YXZ)(vector_),
+              Componentwise(2.0 * Metre, 1.0 * Metre, 3.0 * Metre));
 }
 
 TEST_F(PermutationTest, Determinant) {
-  Perm xyz(Perm::XYZ);
-  Perm yzx(Perm::YZX);
-  Perm zxy(Perm::ZXY);
-  Perm xzy(Perm::XZY);
-  Perm zyx(Perm::ZYX);
-  Perm yxz(Perm::YXZ);
+  PermutationR1R2 xyz(EvenPermutation::XYZ);
+  PermutationR1R2 yzx(EvenPermutation::YZX);
+  PermutationR1R2 zxy(EvenPermutation::ZXY);
+  PermutationR1L xzy(OddPermutation::XZY);
+  PermutationR1L zyx(OddPermutation::ZYX);
+  PermutationR1L yxz(OddPermutation::YXZ);
   EXPECT_TRUE(xyz.Determinant().is_positive());
   EXPECT_TRUE(yzx.Determinant().is_positive());
   EXPECT_TRUE(zxy.Determinant().is_positive());
@@ -103,135 +105,183 @@ TEST_F(PermutationTest, Determinant) {
 }
 
 TEST_F(PermutationTest, AppliedToVector) {
-  EXPECT_THAT(Perm(Perm::YZX)(vector_).coordinates(),
-              Eq<R3>({2.0 * Metre, 3.0 * Metre, 1.0 * Metre}));
-  EXPECT_THAT(Perm(Perm::YXZ)(vector_).coordinates(),
-              Eq<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}));
+  EXPECT_THAT(PermutationR1R2(EvenPermutation::YZX)(vector_),
+              Componentwise(2.0 * Metre, 3.0 * Metre, 1.0 * Metre));
+  EXPECT_THAT(PermutationR1L(OddPermutation::YXZ)(vector_),
+              Componentwise(2.0 * Metre, 1.0 * Metre, 3.0 * Metre));
 }
 
 TEST_F(PermutationTest, AppliedToBivector) {
-  EXPECT_THAT(Perm(Perm::ZXY)(bivector_).coordinates(),
-              Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
-  EXPECT_THAT(Perm(Perm::ZYX)(bivector_).coordinates(),
-              Eq<R3>({-3.0 * Metre, -2.0 * Metre, -1.0 * Metre}));
+  EXPECT_THAT(PermutationR1R2(EvenPermutation::ZXY)(bivector_),
+              Componentwise(3.0 * Metre, 1.0 * Metre, 2.0 * Metre));
+  EXPECT_THAT(PermutationR1L(OddPermutation::ZYX)(bivector_),
+              Componentwise(-3.0 * Metre, -2.0 * Metre, -1.0 * Metre));
 }
 
 TEST_F(PermutationTest, AppliedToTrivector) {
-  EXPECT_THAT(Perm(Perm::XYZ)(trivector_).coordinates(),
+  EXPECT_THAT(PermutationR1R2(EvenPermutation::XYZ)(trivector_).coordinates(),
               Eq(4.0 * Metre));
-  EXPECT_THAT(Perm(Perm::XZY)(trivector_).coordinates(),
+  EXPECT_THAT(PermutationR1L(OddPermutation::XZY)(trivector_).coordinates(),
               Eq(-4.0 * Metre));
 }
 
 TEST_F(PermutationTest, Inverse) {
-  Vector<quantities::Length, World1> const vector1 = vector_;
-  Vector<quantities::Length, World2> const vector2 =
-      Vector<quantities::Length, World2>(
-          R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-  EXPECT_THAT(Perm(Perm::YZX).Inverse()(vector2).coordinates(),
-              Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
-  EXPECT_THAT(Perm(Perm::YXZ).Inverse()(vector2).coordinates(),
-              Eq<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}));
+  EXPECT_THAT(PermutationR1R2(EvenPermutation::YZX)
+                  .Inverse()(Vector<Length, R2>(vector_.coordinates())),
+              Componentwise(3.0 * Metre, 1.0 * Metre, 2.0 * Metre));
+  EXPECT_THAT(PermutationR1L(OddPermutation::YXZ)
+                  .Inverse()(Vector<Length, L>(vector_.coordinates())),
+              Componentwise(2.0 * Metre, 1.0 * Metre, 3.0 * Metre));
 
-  std::vector<Perm> const all =
-      {Perm(Perm::XYZ), Perm(Perm::YZX), Perm(Perm::ZXY),
-       Perm(Perm::XZY), Perm(Perm::ZYX), Perm(Perm::YXZ)};
-  for (Perm const& p : all) {
-    Permutation<World1, World1> const identity1 = p.Inverse() * p;
-    EXPECT_THAT(identity1(vector1), Eq(vector1));
-    Permutation<World2, World2> const identity2 = p * p.Inverse();
-    EXPECT_THAT(identity2(vector2), Eq(vector2));
-  }
+  std::array<PermutationR1R2, 3> const all_even_permutations = {
+      PermutationR1R2(EvenPermutation::XYZ),
+      PermutationR1R2(EvenPermutation::YZX),
+      PermutationR1R2(EvenPermutation::ZXY)};
+  std::array<PermutationR1L, 3> const all_odd_permutations = {
+      PermutationR1L(OddPermutation::XZY),
+      PermutationR1L(OddPermutation::ZYX),
+      PermutationR1L(OddPermutation::YXZ)};
+  auto const test_inverse_for = [&](auto const& permutations) {
+    for (auto const& p : permutations) {
+      auto const identity1 = p.Inverse() * p;
+      EXPECT_THAT(identity1(vector_), Eq(vector_));
+      auto const identity2 = p * p.Inverse();
+      auto const vector_to = decltype(p(vector_))(vector_.coordinates());
+      EXPECT_THAT(identity2(vector_to), Eq(vector_to));
+    }
+  };
+  test_inverse_for(all_even_permutations);
+  test_inverse_for(all_odd_permutations);
 }
 
 TEST_F(PermutationTest, Forget) {
-  EXPECT_THAT(Perm(Perm::XYZ).Forget()(vector_).coordinates(),
-              Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
-  EXPECT_THAT(Perm(Perm::YZX).Forget()(vector_).coordinates(),
-              Eq<R3>({2.0 * Metre, 3.0 * Metre, 1.0 * Metre}));
-  EXPECT_THAT(Perm(Perm::ZXY).Forget()(vector_).coordinates(),
-              Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
-  EXPECT_THAT(Perm(Perm::XZY).Forget()(vector_).coordinates(),
-              AlmostEquals<R3>({1.0 * Metre, 3.0 * Metre, 2.0 * Metre}, 2));
-  EXPECT_THAT(Perm(Perm::ZYX).Forget()(vector_).coordinates(),
-              AlmostEquals<R3>({3.0 * Metre, 2.0 * Metre, 1.0 * Metre}, 4));
-  EXPECT_THAT(Perm(Perm::YXZ).Forget()(vector_).coordinates(),
-              AlmostEquals<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}, 2));
+  EXPECT_THAT(PermutationR1R2(EvenPermutation::XYZ).Forget()(vector_),
+              Componentwise(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
+  EXPECT_THAT(PermutationR1R2(EvenPermutation::YZX).Forget()(vector_),
+              Componentwise(2.0 * Metre, 3.0 * Metre, 1.0 * Metre));
+  EXPECT_THAT(PermutationR1R2(EvenPermutation::ZXY).Forget()(vector_),
+              Componentwise(3.0 * Metre, 1.0 * Metre, 2.0 * Metre));
+  EXPECT_THAT(PermutationR1L(OddPermutation::XZY).Forget()(vector_),
+              Componentwise(AlmostEquals(1.0 * Metre, 2),
+                            AlmostEquals(3.0 * Metre, 2),
+                            AlmostEquals(2.0 * Metre, 2)));
+  EXPECT_THAT(PermutationR1L(OddPermutation::ZYX).Forget()(vector_),
+              Componentwise(AlmostEquals(3.0 * Metre, 2),
+                            AlmostEquals(2.0 * Metre, 2),
+                            AlmostEquals(1.0 * Metre, 4)));
+  EXPECT_THAT(PermutationR1L(OddPermutation::YXZ).Forget()(vector_),
+              Componentwise(AlmostEquals(2.0 * Metre, 1),
+                            AlmostEquals(1.0 * Metre, 2),
+                            AlmostEquals(3.0 * Metre, 2)));
 }
 
 TEST_F(PermutationTest, Compose) {
-  using World3 = Frame<enum class World3Tag>;
-  using Orth12 = OrthogonalMap<World1, World2>;
-  using Orth13 = OrthogonalMap<World1, World3>;
-  using Orth23 = OrthogonalMap<World2, World3>;
-  using Perm12 = Permutation<World1, World2>;
-  using Perm13 = Permutation<World1, World3>;
-  using Perm23 = Permutation<World2, World3>;
-  std::vector<Perm12> const all12 =
-      {Perm12(Perm12::XYZ), Perm12(Perm12::YZX), Perm12(Perm12::ZXY),
-       Perm12(Perm12::XZY), Perm12(Perm12::ZYX), Perm12(Perm12::YXZ)};
-  std::vector<Perm23> const all23 =
-      {Perm23(Perm23::XYZ), Perm23(Perm23::YZX), Perm23(Perm23::ZXY),
-       Perm23(Perm23::XZY), Perm23(Perm23::ZYX), Perm23(Perm23::YXZ)};
-  for (Perm12 const& p12 : all12) {
-    Orth12 const o12 = p12.Forget();
-    for (Perm23 const& p23 : all23) {
-      Orth23 const o23 = p23.Forget();
-      Perm13 const p13 = p23 * p12;
-      Orth13 const o13 = o23 * o12;
-      for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
-        Vector<quantities::Length, World1> modified_vector(
-            {l, vector_.coordinates().y, vector_.coordinates().z});
-        EXPECT_THAT(p13(modified_vector),
-                    AlmostEquals(o13(modified_vector), 0, 12));
+  using Orth12 = OrthogonalMap<R1, R2>;
+  using Orth1L = OrthogonalMap<R1, L>;
+  using Orth2L = OrthogonalMap<R2, L>;
+  using Perm12 = Permutation<R1, R2>;
+  using PermL2 = Permutation<L, R2>;
+  using Perm1L = Permutation<R1, L>;
+  using Perm2L = Permutation<R2, L>;
+  using Perm21 = Permutation<R2, R1>;
+  std::array<Perm12, 3> const all_12 = {Perm12(EvenPermutation::XYZ),
+                                        Perm12(EvenPermutation::YZX),
+                                        Perm12(EvenPermutation::ZXY)};
+  std::array<PermL2, 3> const all_l2 = {PermL2(OddPermutation::XZY),
+                                        PermL2(OddPermutation::ZYX),
+                                        PermL2(OddPermutation::YXZ)};
+  std::array<Perm21, 3> const all_21 = {Perm21(EvenPermutation::XYZ),
+                                        Perm21(EvenPermutation::YZX),
+                                        Perm21(EvenPermutation::ZXY)};
+  std::array<Perm2L, 3> const all_2l = {Perm2L(OddPermutation::XZY),
+                                        Perm2L(OddPermutation::ZYX),
+                                        Perm2L(OddPermutation::YXZ)};
+  auto const test_composition_for = [&](auto const& lhs,
+                                        auto const& rhs,
+                                        auto const from_vector) {
+    for (auto const& left : lhs) {
+      for (auto const& right : rhs) {
+        auto const composition = left * right;
+        auto const composition_as_orthogonal_maps =
+            left.Forget() * right.Forget();
+        for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
+          // TODO(egg): In C++20 we could have template parameters on the lambda
+          // which would allow us to deduce this type, instead of having to pass
+          // an otherwise unused value which we feed to the decltype.
+          decltype(from_vector) const modified_vector(
+              {l, vector_.coordinates().y, vector_.coordinates().z});
+          EXPECT_THAT(
+              composition(modified_vector),
+              AlmostEquals(
+                  composition_as_orthogonal_maps(modified_vector), 0, 12));
+        }
       }
     }
-  }
+  };
+  test_composition_for(all_21, all_12, Vector<Length, R1>{});
+  test_composition_for(all_2l, all_12, Vector<Length, R1>{});
+  test_composition_for(all_21, all_l2, Vector<Length, L>{});
+  test_composition_for(all_2l, all_l2, Vector<Length, L>{});
 }
 
 TEST_F(PermutationDeathTest, SerializationError) {
-  Identity<World1, World2> id;
+  Identity<R1, R2> id;
   EXPECT_DEATH({
     serialization::LinearMap message;
     id.WriteToMessage(&message);
-    Perm const p = Perm::ReadFromMessage(message);
+    PermutationR1R2 const p = PermutationR1R2::ReadFromMessage(message);
   }, "HasExtension.*Permutation");
 }
 
 TEST_F(PermutationTest, SerializationSuccess) {
-  std::vector<Perm::CoordinatePermutation> const all12 =
-      {Perm::XYZ, Perm::YZX, Perm::ZXY,
-       Perm::XZY, Perm::ZYX, Perm::YXZ};
-  serialization::LinearMap message;
-  for (Perm::CoordinatePermutation const cp : all12) {
-    Perm const perm_a(cp);
-    perm_a.WriteToMessage(&message);
-    EXPECT_TRUE(message.has_from_frame());
-    EXPECT_TRUE(message.has_to_frame());
-    EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
-              message.to_frame().tag_type_fingerprint());
-    EXPECT_NE(message.from_frame().tag(),
-              message.to_frame().tag());
-    EXPECT_EQ(message.from_frame().is_inertial(),
-              message.to_frame().is_inertial());
-    EXPECT_TRUE(message.HasExtension(serialization::Permutation::extension));
-    serialization::Permutation const& extension =
-        message.GetExtension(serialization::Permutation::extension);
-    EXPECT_EQ(cp, extension.coordinate_permutation());
-    Perm const perm_b = Perm::ReadFromMessage(message);
-    EXPECT_EQ(perm_a(vector_), perm_b(vector_));
-  }
+  std::array<EvenPermutation, 3> const all_even_permutations = {
+      EvenPermutation::XYZ, EvenPermutation::YZX, EvenPermutation::ZXY};
+  std::array<OddPermutation, 3> const all_odd_permutations = {
+      OddPermutation::XZY, OddPermutation::ZYX, OddPermutation::YXZ};
+  auto const test_serialization_for = [&](auto const& permutations) {
+    serialization::LinearMap message;
+    for (auto const cp : permutations) {
+      using Perm = std::conditional_t<
+          std::is_same_v<decltype(cp), EvenPermutation const>,
+                             PermutationR1R2,
+                             PermutationR1L>;
+      Perm const perm_a(cp);
+      perm_a.WriteToMessage(&message);
+      EXPECT_TRUE(message.has_from_frame());
+      EXPECT_TRUE(message.has_to_frame());
+      EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
+                message.to_frame().tag_type_fingerprint());
+      EXPECT_NE(message.from_frame().tag(), message.to_frame().tag());
+      EXPECT_EQ(message.from_frame().is_inertial(),
+                message.to_frame().is_inertial());
+      EXPECT_TRUE(message.HasExtension(serialization::Permutation::extension));
+      serialization::Permutation const& extension =
+          message.GetExtension(serialization::Permutation::extension);
+      EXPECT_EQ(static_cast<int>(cp), extension.coordinate_permutation());
+      Perm const perm_b = Perm::ReadFromMessage(message);
+      EXPECT_EQ(perm_a(vector_), perm_b(vector_));
+    }
+  };
+  test_serialization_for(all_even_permutations);
+  test_serialization_for(all_odd_permutations);
 }
 
 TEST_F(PermutationTest, Output) {
-  std::vector<Perm::CoordinatePermutation> const all12 =
-      {Perm::XYZ, Perm::YZX, Perm::ZXY,
-       Perm::XZY, Perm::ZYX, Perm::YXZ};
-  serialization::LinearMap message;
-  for (Perm::CoordinatePermutation const cp : all12) {
-    Perm const perm(cp);
-    std::cout << perm << "\n";
-  }
+  std::array<PermutationR1R2, 3> const all_even_permutations = {
+      PermutationR1R2(EvenPermutation::XYZ),
+      PermutationR1R2(EvenPermutation::YZX),
+      PermutationR1R2(EvenPermutation::ZXY)};
+  std::array<PermutationR1L, 3> const all_odd_permutations = {
+      PermutationR1L(OddPermutation::XZY),
+      PermutationR1L(OddPermutation::ZYX),
+      PermutationR1L(OddPermutation::YXZ)};
+  auto const test_output_for = [&](auto const& permutations) {
+    for (auto const& p : permutations) {
+      std::cout << p;
+    }
+  };
+  test_output_for(all_even_permutations);
+  test_output_for(all_odd_permutations);
 }
 
 }  // namespace geometry
