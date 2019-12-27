@@ -2,11 +2,14 @@
 #pragma once
 
 #include "base/mappable.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
+#include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/signature.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -45,7 +48,10 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  public:
   Sign Determinant() const override;
 
-  Rotation<FromFrame, ToFrame> const& rotation() const;
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<F::handedness == T::handedness>>
+  Rotation<FromFrame, ToFrame> AsRotation() const;
 
   OrthogonalMap<ToFrame, FromFrame> Inverse() const;
 
@@ -89,11 +95,20 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
       serialization::OrthogonalMap const& message);
 
  private:
-  OrthogonalMap(Sign const& determinant,
-                Rotation<FromFrame, ToFrame> const& rotation);
+  explicit OrthogonalMap(Quaternion const& quaternion);
 
-  Sign determinant_;
-  Rotation<FromFrame, ToFrame> rotation_;
+  using IntermediateFrame = Frame<enum class IntermediateFrameTag,
+                                  ToFrame::motion,
+                                  ToFrame::handedness>;
+
+  static constexpr Signature<FromFrame, IntermediateFrame> MakeSignature();
+  Rotation<IntermediateFrame, ToFrame> MakeRotation() const;
+
+  Quaternion quaternion_;
+
+  static constexpr Sign determinant_ =
+      FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
+                                                   : Sign::Negative();
 
   template<typename From, typename To>
   friend class internal_identity::Identity;
@@ -111,10 +126,12 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
       OrthogonalMap<Through, To> const& left,
       OrthogonalMap<From, Through> const& right);
 
-  friend class OrthogonalMapTest;
+  template<typename From, typename To>
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      OrthogonalMap<From, To> const& orthogonal_map);
 
-  // TODO(phl): This friendship could be avoided if we had symmetries.
-  friend class physics::RigidMotionTest;
+  friend class OrthogonalMapTest;
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

@@ -84,10 +84,8 @@ Permutation<FromFrame, ToFrame>::Forget() const {
       /*ZYX*/ Quaternion(0, {-sqrt_half, 0, sqrt_half}),
       /*YXZ*/ Quaternion(0, {-sqrt_half, sqrt_half, 0})};
   return OrthogonalMap<FromFrame, ToFrame>(
-      Determinant(),
-      Rotation<FromFrame, ToFrame>(
-          quaternion[INDEX_MASK &
-                     (static_cast<int>(coordinate_permutation_) >> INDEX)]));
+             quaternion[INDEX_MASK &
+                        (static_cast<int>(coordinate_permutation_) >> INDEX)]);
 }
 
 template<typename FromFrame, typename ToFrame>
