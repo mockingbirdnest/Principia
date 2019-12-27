@@ -246,7 +246,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
  private:
   template<typename Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
-   
+
   Quaternion quaternion_;
 
   // For constructing a rotation using a quaternion.
