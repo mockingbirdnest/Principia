@@ -82,8 +82,7 @@ std::string const vessel_name = "NCC-1701-D";
 class PluginIntegrationTest : public testing::Test {
  protected:
   PluginIntegrationTest()
-      : looking_glass_(OddPermutation::XZY),
-        solar_system_(
+      : solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
         initial_time_("JD2451545.0625"),
@@ -128,7 +127,6 @@ class PluginIntegrationTest : public testing::Test {
     }
   }
 
-  Permutation<ICRS, AliceSun> looking_glass_;
   not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system_;
   std::string initial_time_;
   Angle planetarium_rotation_;

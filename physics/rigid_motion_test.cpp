@@ -80,7 +80,7 @@ class RigidMotionTest : public testing::Test {
   // the reference frame is left-handed.
   using Selenocentric = Frame<serialization::Frame::TestTag,
                               Inertial,
-                              Handedness::Right,
+                              Handedness::Left,
                               serialization::Frame::TEST1>;
   // Rotating frame fixing the Earth's surface.  The North pole is the
   // positive z axis, the x axis points towards the Moon,
@@ -95,7 +95,7 @@ class RigidMotionTest : public testing::Test {
   // the reference frame is left-handed.
   using Lunar = Frame<serialization::Frame::TestTag,
                       NonInertial,
-                      Handedness::Right,
+                      Handedness::Left,
                       serialization::Frame::TEST3>;
 
   AngularVelocity<Geocentric> const earth_rotation_ =
