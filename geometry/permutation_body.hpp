@@ -34,8 +34,8 @@ Permutation<FromFrame, ToFrame>::Inverse() const {
   if constexpr (std::is_same_v<CoordinatePermutation, EvenPermutation>) {
     static constexpr std::array<EvenPermutation, 3> inverse{
         {EvenPermutation::XYZ, EvenPermutation::ZXY, EvenPermutation::YZX}};
-    return inverse[INDEX_MASK &
-                   (static_cast<int>(coordinate_permutation_) >> INDEX)];
+    return PTF(inverse[INDEX_MASK &
+                       (static_cast<int>(coordinate_permutation_) >> INDEX)]);
   } else {
     // An odd permutation on three elements is a transposition, and thus is an
     // involution.
