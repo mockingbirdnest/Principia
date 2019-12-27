@@ -20,10 +20,10 @@ Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
-Rotation<FromFrame, ToFrame> const&
+template<typename F, typename T, typename>
+Rotation<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::AsRotation() const {
-  return MakeRotation<FromFrame, ToFrame>();
+  return Rotation<FromFrame, ToFrame>(quaternion_);
 }
 
 template<typename FromFrame, typename ToFrame>

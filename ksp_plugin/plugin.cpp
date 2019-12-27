@@ -324,8 +324,7 @@ Rotation<BodyWorld, World> Plugin::CelestialRotation(
       (PlanetariumRotation() *
        body.FromSurfaceFrame<BodyFixed>(current_time_)).Forget() *
       body_mirror.Forget();
-  CHECK(result.Determinant().is_positive());
-  return result.rotation();
+  return result.AsRotation();
 }
 
 Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
@@ -336,8 +335,7 @@ Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
                       sun_looking_glass.Inverse().Forget() *
                       PlanetariumRotation().Forget() *
                       celestial_mirror.Forget();
-  CHECK(result.Determinant().is_positive());
-  return result.rotation();
+  return result.AsRotation();
 }
 
 Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
@@ -1131,8 +1129,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
           Rotation<Navball, World>(π / 2 * Radian,
                                    Bivector<double, World>({0, 1, 0}),
                                    DefinesFrame<Navball>()).Forget();
-      CHECK(orthogonal_map.Determinant().is_positive());
-      return orthogonal_map.rotation();
+      return orthogonal_map.AsRotation();
     }
 
    private:

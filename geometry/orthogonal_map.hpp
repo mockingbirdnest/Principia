@@ -51,7 +51,7 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   template<typename F = FromFrame,
            typename T = ToFrame,
            typename = std::enable_if_t<F::handedness == T::handedness>>
-  Rotation<FromFrame, ToFrame> const& AsRotation() const;
+  Rotation<FromFrame, ToFrame> AsRotation() const;
 
   OrthogonalMap<ToFrame, FromFrame> Inverse() const;
 
@@ -132,9 +132,6 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
       OrthogonalMap<From, To> const& orthogonal_map);
 
   friend class OrthogonalMapTest;
-
-  // TODO(phl): This friendship could be avoided if we had symmetries.
-  friend class physics::RigidMotionTest;
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
