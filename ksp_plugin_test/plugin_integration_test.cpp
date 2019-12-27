@@ -32,6 +32,7 @@ using base::make_not_null_unique;
 using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Identity;
+using geometry::OddPermutation;
 using geometry::Permutation;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
@@ -81,7 +82,7 @@ std::string const vessel_name = "NCC-1701-D";
 class PluginIntegrationTest : public testing::Test {
  protected:
   PluginIntegrationTest()
-      : looking_glass_(Permutation<ICRS, AliceSun>::XZY),
+      : looking_glass_(OddPermutation::XZY),
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
@@ -203,7 +204,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
   Length apogee = -std::numeric_limits<double>::infinity() * Metre;
   Permutation<AliceSun, World> const alice_sun_to_world =
-      Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
+      Permutation<AliceSun, World>(OddPermutation::XZY);
   Time const δt_long = 10 * Minute;
 #if defined(_DEBUG)
   Time const δt_short = 1 * Minute;
@@ -299,7 +300,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
       plugin_->NewBarycentricRotatingNavigationFrame(SolarSystemFactory::Earth,
                                                      SolarSystemFactory::Moon));
   Permutation<AliceSun, World> const alice_sun_to_world =
-      Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
+      Permutation<AliceSun, World>(OddPermutation::XZY);
   Time const δt_long = 1 * Hour;
 #if defined(_DEBUG)
   Time const duration = 12 * Hour;

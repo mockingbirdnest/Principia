@@ -23,13 +23,13 @@ namespace physics {
 
 using geometry::AngularVelocity;
 using geometry::Displacement;
-using geometry::EvenPermutation;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
 using geometry::InnerProduct;
 using geometry::NonInertial;
 using geometry::Normalize;
+using geometry::OddPermutation;
 using geometry::OrthogonalMap;
 using geometry::Permutation;
 using geometry::Point;
@@ -121,7 +121,7 @@ class RigidMotionTest : public testing::Test {
           RigidTransformation<Geocentric, Selenocentric>(
               Geocentric::origin + earth_to_moon_,
               Selenocentric::origin,
-              Permutation<Geocentric, Selenocentric>(EvenPermutation::YXZ)
+              Permutation<Geocentric, Selenocentric>(OddPermutation::YXZ)
                   .Forget()),
           AngularVelocity<Geocentric>(),
           moon_orbit_* earth_to_moon_ / Radian);
