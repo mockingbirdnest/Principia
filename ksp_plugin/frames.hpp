@@ -110,10 +110,11 @@ using WorldSun = Frame<serialization::Frame::PluginTag,
                        Handedness::Left,
                        serialization::Frame::WORLD_SUN>;
 
-// Used to identify coordinates in the projective plane.
+// Used to identify coordinates in the projective plane.  This is *not* the
+// OpenGL camera (which is right-handed) but the Unity camera.
 using Camera = Frame<serialization::Frame::PluginTag,
                      NonInertial,
-                     Handedness::Right,
+                     Handedness::Left,
                      serialization::Frame::CAMERA>;
 
 // The frame that defines the orientation of a part.

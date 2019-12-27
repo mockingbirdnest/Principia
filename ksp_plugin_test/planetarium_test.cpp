@@ -36,11 +36,17 @@ using base::make_not_null_unique;
 using base::ParseFromBytes;
 using geometry::AngularVelocity;
 using geometry::Bivector;
+using geometry::DeduceSignReversingOrientation;
 using geometry::Displacement;
+using geometry::Frame;
+using geometry::Handedness;
 using geometry::LinearMap;
+using geometry::NonInertial;
 using geometry::Perspective;
 using geometry::RigidTransformation;
 using geometry::Rotation;
+using geometry::Sign;
+using geometry::Signature;
 using geometry::Vector;
 using geometry::Velocity;
 using physics::MassiveBody;
@@ -71,6 +77,8 @@ using ::testing::ReturnRef;
 using ::testing::SizeIs;
 
 class PlanetariumTest : public ::testing::Test {
+  using LeftNavigation =
+    Frame<enum class LeftNavigationTag, NonInertial, Handedness::Left>;
  protected:
   PlanetariumTest()
       :  // The camera is located as {0, 20, 0} and is looking along -y.
@@ -79,12 +87,15 @@ class PlanetariumTest : public ::testing::Test {
                 Navigation::origin + Displacement<Navigation>(
                                          {0 * Metre, 20 * Metre, 0 * Metre}),
                 Camera::origin,
-                Rotation<Navigation, Camera>(
-                    Vector<double, Navigation>({1, 0, 0}),
-                    Vector<double, Navigation>({0, 0, 1}),
-                    Bivector<double, Navigation>({0, -1, 0}))
-                    .Forget()),
-            /*focal=*/5 * Metre),
+                Rotation<LeftNavigation, Camera>(
+                    Vector<double, LeftNavigation>({ 1, 0, 0 }),
+                    Vector<double, LeftNavigation>({ 0, 0, 1 }),
+                    Bivector<double, LeftNavigation>({ 0, -1, 0 })).Forget() *
+                Signature<Navigation, LeftNavigation>(
+                    Sign::Positive(),
+                    Sign::Positive(),
+                    DeduceSignReversingOrientation{}).Forget()),
+          /*focal=*/5 * Metre),
         // A body of radius 1 m located at the origin.
         body_(MassiveBody::Parameters(1 * Kilogram),
               RotatingBody<Barycentric>::Parameters(
