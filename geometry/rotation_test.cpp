@@ -320,30 +320,38 @@ TEST_F(RotationTest, Enums) {
   // Checks that using the convention |axes| for Euler angles, conjugated by the
   // given |permutation|, and with appropriate sign changes, is equivalent to
   // the ZXZ convention.
-  auto const check_euler_angles = [&α, &β, &γ, &zxz_euler, this](
-      EulerAngles axes,
-      Permutation<World, World>::CoordinatePermutation permutation) {
-    Permutation<World, World> const σ(permutation);
-    Permutation<World1, World1> const τ =
-        (Permutation<World, World1>::Identity() * σ *
+  auto const check_euler_angles = [this, &α, &β, &γ, &zxz_euler](
+      EulerAngles axes, auto permutation) {
+    constexpr Handedness permuted_handedness =
+        std::is_same_v<decltype(permutation), EvenPermutation>
+            ? Handedness::Right
+            : Handedness::Left;
+    using Permuted =
+        Frame<enum class PermutedTag, Inertial, permuted_handedness>;
+    using PermutedRotated =
+        Frame<enum class PermutedRotatedTag, Inertial, permuted_handedness>;
+    Permutation<World, Permuted> const σ(permutation);
+    Permutation<PermutedRotated, World1> const τ =
+        (Permutation<Permuted, PermutedRotated>::Identity() * σ *
          Permutation<World1, World>::Identity()).Inverse();
-    Rotation<World, World1> const euler(σ.Determinant() * α,
-                                        σ.Determinant() * β,
-                                        σ.Determinant() * γ,
-                                        axes,
-                                        DefinesFrame<World1>{});
+    Rotation<Permuted, PermutedRotated> const euler(
+        σ.Determinant() * α,
+        σ.Determinant() * β,
+        σ.Determinant() * γ,
+        axes,
+        DefinesFrame<PermutedRotated>{});
     EXPECT_THAT(τ(euler(σ(e1_))), Eq(zxz_euler(e1_)));
     EXPECT_THAT(τ(euler(σ(e2_))), Eq(zxz_euler(e2_)));
     EXPECT_THAT(τ(euler(σ(e3_))), Eq(zxz_euler(e3_)));
   };
 
-  check_euler_angles(EulerAngles::ZXZ, Permutation<World, World>::XYZ);
-  check_euler_angles(EulerAngles::XYX, Permutation<World, World>::ZXY);
-  check_euler_angles(EulerAngles::YZY, Permutation<World, World>::YZX);
+  check_euler_angles(EulerAngles::ZXZ, EvenPermutation::XYZ);
+  check_euler_angles(EulerAngles::XYX, EvenPermutation::ZXY);
+  check_euler_angles(EulerAngles::YZY, EvenPermutation::YZX);
 
-  check_euler_angles(EulerAngles::ZYZ, Permutation<World, World>::YXZ);
-  check_euler_angles(EulerAngles::XZX, Permutation<World, World>::ZYX);
-  check_euler_angles(EulerAngles::YXY, Permutation<World, World>::XZY);
+  check_euler_angles(EulerAngles::ZYZ, OddPermutation::YXZ);
+  check_euler_angles(EulerAngles::XZX, OddPermutation::ZYX);
+  check_euler_angles(EulerAngles::YXY, OddPermutation::XZY);
 
   Rotation<World, World1> const xyz_cardano(α, β, γ,
                                             CardanoAngles::XYZ,
@@ -352,30 +360,38 @@ TEST_F(RotationTest, Enums) {
   // Checks that using the convention |axes| for Cardano angles, conjugated by
   // the given |permutation|, and with appropriate sign changes, is equivalent
   // to the XYZ convention.
-  auto const check_cardano_angles = [&α, &β, &γ, &xyz_cardano, this](
-      CardanoAngles axes,
-      Permutation<World, World>::CoordinatePermutation permutation) {
-    Permutation<World, World> const σ(permutation);
-    Permutation<World1, World1> const τ =
-        (Permutation<World, World1>::Identity() * σ *
+  auto const check_cardano_angles = [this, &α, &β, &γ, &xyz_cardano](
+                                        CardanoAngles axes, auto permutation) {
+    constexpr Handedness permuted_handedness =
+        std::is_same_v<decltype(permutation), EvenPermutation>
+            ? Handedness::Right
+            : Handedness::Left;
+    using Permuted =
+        Frame<enum class PermutedTag, Inertial, permuted_handedness>;
+    using PermutedRotated =
+        Frame<enum class PermutedRotatedTag, Inertial, permuted_handedness>;
+    Permutation<World, Permuted> const σ(permutation);
+    Permutation<PermutedRotated, World1> const τ =
+        (Permutation<Permuted, PermutedRotated>::Identity() * σ *
          Permutation<World1, World>::Identity()).Inverse();
-    Rotation<World, World1> const cardano(σ.Determinant() * α,
-                                          σ.Determinant() * β,
-                                          σ.Determinant() * γ,
-                                          axes,
-                                          DefinesFrame<World1>{});
+    Rotation<Permuted, PermutedRotated> const cardano(
+        σ.Determinant() * α,
+        σ.Determinant() * β,
+        σ.Determinant() * γ,
+        axes,
+        DefinesFrame<PermutedRotated>{});
     EXPECT_THAT(τ(cardano(σ(e1_))), Eq(xyz_cardano(e1_)));
     EXPECT_THAT(τ(cardano(σ(e2_))), Eq(xyz_cardano(e2_)));
     EXPECT_THAT(τ(cardano(σ(e3_))), Eq(xyz_cardano(e3_)));
   };
 
-  check_cardano_angles(CardanoAngles::XYZ, Permutation<World, World>::XYZ);
-  check_cardano_angles(CardanoAngles::YZX, Permutation<World, World>::ZXY);
-  check_cardano_angles(CardanoAngles::ZXY, Permutation<World, World>::YZX);
+  check_cardano_angles(CardanoAngles::XYZ, EvenPermutation::XYZ);
+  check_cardano_angles(CardanoAngles::YZX, EvenPermutation::ZXY);
+  check_cardano_angles(CardanoAngles::ZXY, EvenPermutation::YZX);
 
-  check_cardano_angles(CardanoAngles::XZY, Permutation<World, World>::XZY);
-  check_cardano_angles(CardanoAngles::ZYX, Permutation<World, World>::ZYX);
-  check_cardano_angles(CardanoAngles::YXZ, Permutation<World, World>::YXZ);
+  check_cardano_angles(CardanoAngles::XZY, OddPermutation::XZY);
+  check_cardano_angles(CardanoAngles::ZYX, OddPermutation::ZYX);
+  check_cardano_angles(CardanoAngles::YXZ, OddPermutation::YXZ);
 }
 
 TEST_F(RotationTest, EulerAngles) {

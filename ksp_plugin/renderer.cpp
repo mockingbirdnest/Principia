@@ -16,6 +16,7 @@ namespace internal_renderer {
 
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
+using geometry::OddPermutation;
 using geometry::Permutation;
 using geometry::RigidTransformation;
 using geometry::Vector;
@@ -278,7 +279,7 @@ Rotation<CameraReference, World> Renderer::CameraReferenceRotation(
     Instant const& time,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   Permutation<CameraReference, Navigation> const celestial_mirror(
-      Permutation<CameraReference, Navigation>::XZY);
+      OddPermutation::XZY);
   auto const result =
       OrthogonalMap<WorldSun, World>::Identity() *
       sun_looking_glass.Inverse().Forget() * planetarium_rotation.Forget() *

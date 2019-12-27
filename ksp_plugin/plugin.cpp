@@ -81,6 +81,7 @@ using geometry::EulerAngles;
 using geometry::Frame;
 using geometry::Identity;
 using geometry::Normalize;
+using geometry::OddPermutation;
 using geometry::Permutation;
 using geometry::RigidTransformation;
 using geometry::R3x3Matrix;
@@ -311,10 +312,8 @@ void Plugin::SetMainBody(Index const index) {
 Rotation<BodyWorld, World> Plugin::CelestialRotation(
     Index const index) const {
   // |BodyWorld| with its y and z axes swapped (so that z is the polar axis).
-  // The basis is right-handed.
   using BodyFixed = Frame<enum class BodyFixedTag>;
-  Permutation<BodyWorld, BodyFixed> const body_mirror(
-      Permutation<BodyWorld, BodyFixed>::XZY);
+  Permutation<BodyWorld, BodyFixed> const body_mirror(OddPermutation::XZY);
 
   auto const& body = *FindOrDie(celestials_, index)->body();
 
@@ -331,7 +330,7 @@ Rotation<BodyWorld, World> Plugin::CelestialRotation(
 Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
     const {
   Permutation<CelestialSphere, Barycentric> const celestial_mirror(
-      Permutation<CelestialSphere, Barycentric>::XZY);
+      OddPermutation::XZY);
   auto const result = OrthogonalMap<WorldSun, World>::Identity() *
                       sun_looking_glass.Inverse().Forget() *
                       PlanetariumRotation().Forget() *
@@ -1126,8 +1125,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
       OrthogonalMap<Navball, World> const orthogonal_map =
           renderer.BarycentricToWorld(planetarium_rotation) *
           right_handed_navball_to_barycentric *
-          Permutation<World, RightHandedNavball>(
-              Permutation<World, RightHandedNavball>::XZY).Forget() *
+          Permutation<World, RightHandedNavball>(OddPermutation::XZY).Forget() *
           Rotation<Navball, World>(π / 2 * Radian,
                                    Bivector<double, World>({0, 1, 0}),
                                    DefinesFrame<Navball>()).Forget();

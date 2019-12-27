@@ -59,6 +59,7 @@ using base::Status;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Identity;
+using geometry::OddPermutation;
 using geometry::Permutation;
 using geometry::RigidTransformation;
 using geometry::Trivector;
@@ -1160,7 +1161,7 @@ TEST_F(PluginTest, Frenet) {
           SolarSystemFactory::name(SolarSystemFactory::Earth)));
   plugin.EndInitialization();
   Permutation<AliceSun, World> const alice_sun_to_world =
-      Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
+      Permutation<AliceSun, World>(OddPermutation::XZY);
   GUID const satellite = "satellite";
   PartId const part_id = 42;
   bool inserted;

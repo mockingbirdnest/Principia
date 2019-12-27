@@ -29,6 +29,7 @@ using geometry::Inertial;
 using geometry::InnerProduct;
 using geometry::NonInertial;
 using geometry::Normalize;
+using geometry::OddPermutation;
 using geometry::OrthogonalMap;
 using geometry::Permutation;
 using geometry::Point;
@@ -79,7 +80,7 @@ class RigidMotionTest : public testing::Test {
   // the reference frame is left-handed.
   using Selenocentric = Frame<serialization::Frame::TestTag,
                               Inertial,
-                              Handedness::Right,
+                              Handedness::Left,
                               serialization::Frame::TEST1>;
   // Rotating frame fixing the Earth's surface.  The North pole is the
   // positive z axis, the x axis points towards the Moon,
@@ -94,7 +95,7 @@ class RigidMotionTest : public testing::Test {
   // the reference frame is left-handed.
   using Lunar = Frame<serialization::Frame::TestTag,
                       NonInertial,
-                      Handedness::Right,
+                      Handedness::Left,
                       serialization::Frame::TEST3>;
 
   AngularVelocity<Geocentric> const earth_rotation_ =
@@ -120,8 +121,8 @@ class RigidMotionTest : public testing::Test {
           RigidTransformation<Geocentric, Selenocentric>(
               Geocentric::origin + earth_to_moon_,
               Selenocentric::origin,
-              Permutation<Geocentric, Selenocentric>(
-                  Permutation<Geocentric, Selenocentric>::YXZ).Forget()),
+              Permutation<Geocentric, Selenocentric>(OddPermutation::YXZ)
+                  .Forget()),
           AngularVelocity<Geocentric>(),
           moon_orbit_* earth_to_moon_ / Radian);
 
