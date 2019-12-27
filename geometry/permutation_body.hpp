@@ -32,17 +32,10 @@ Permutation<FromFrame, ToFrame>::Inverse() const {
   using PFT = Permutation<FromFrame, ToFrame>;
   using PTF = Permutation<ToFrame, FromFrame>;
   if constexpr (std::is_same_v<CoordinatePermutation, EvenPermutation>) {
-    switch (coordinate_permutation_) {
-      case EvenPermutation::XYZ:
-        return PTF(EvenPermutation::XYZ);
-      case EvenPermutation::YZX:
-        return PTF(EvenPermutation::ZXY);
-      case EvenPermutation::ZXY:
-        return PTF(EvenPermutation::YZX);
-      default:
-        LOG(FATAL) << "Unexpected permutation " << std::hex
-                   << static_cast<int>(coordinate_permutation_);
-    }
+    static constexpr std::array<EvenPermutation, 3> inverse{
+        {EvenPermutation::XYZ, EvenPermutation::ZXY, EvenPermutation::YZX}};
+    return inverse[INDEX_MASK &
+                   (static_cast<int>(coordinate_permutation_) >> INDEX)];
   } else {
     // An odd permutation on three elements is a transposition, and thus is an
     // involution.
@@ -92,7 +85,8 @@ Permutation<FromFrame, ToFrame>::Forget() const {
       /*YXZ*/ Quaternion(0, {-sqrt_half, sqrt_half, 0})};
   return OrthogonalMap<FromFrame, ToFrame>(
       Determinant(),
-      Rotation<FromFrame, ToFrame>(quaternion[0b111 &
+      Rotation<FromFrame, ToFrame>(
+          quaternion[INDEX_MASK &
                      (static_cast<int>(coordinate_permutation_) >> INDEX)]));
 }
 
@@ -144,8 +138,9 @@ R3Element<Scalar> Permutation<FromFrame, ToFrame>::operator()(
   R3Element<Scalar> result;
   for (int coordinate = X; coordinate <= Z; ++coordinate) {
     result[coordinate] =
-        r3_element[0b11 & (static_cast<int>(coordinate_permutation_) >>
-                           (coordinate * 2))];
+        r3_element[COORDINATE_MASK &
+                   (static_cast<int>(coordinate_permutation_) >>
+                    (coordinate * 2))];
   }
   return result;
 }
@@ -175,10 +170,11 @@ Permutation<FromFrame, ToFrame> operator*(
   }};
 
   return Result(static_cast<Result::CoordinatePermutation>(
-      multiplication
-          [0b111 & (static_cast<int>(left.coordinate_permutation_) >> INDEX)]
-          [0b111 & (static_cast<int>(right.coordinate_permutation_) >> INDEX)]
-              .value));
+      multiplication[INDEX_MASK &
+                     (static_cast<int>(left.coordinate_permutation_) >> INDEX)]
+                    [INDEX_MASK &
+                     (static_cast<int>(right.coordinate_permutation_) >> INDEX)]
+                        .value));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -186,9 +182,9 @@ std::ostream& operator<<(std::ostream& out,
                          Permutation<FromFrame, ToFrame> const& permutation) {
   static constexpr std::array<std::string_view, 6> debug_string{
       {"XYZ", "YZX", "ZXY", "XZY", "ZYX", "YXZ"}};
-  return out
-         << debug_string[0b111 & (static_cast<int>(
-                                      permutation.coordinate_permutation_) >>
+  return out << debug_string
+             [INDEX_MASK &
+              (static_cast<int>(permutation.coordinate_permutation_) >>
                                   INDEX)];
 }
 

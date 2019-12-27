@@ -312,7 +312,6 @@ void Plugin::SetMainBody(Index const index) {
 Rotation<BodyWorld, World> Plugin::CelestialRotation(
     Index const index) const {
   // |BodyWorld| with its y and z axes swapped (so that z is the polar axis).
-  // The basis is right-handed.
   using BodyFixed = Frame<enum class BodyFixedTag>;
   Permutation<BodyWorld, BodyFixed> const body_mirror(OddPermutation::XZY);
 

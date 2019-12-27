@@ -320,9 +320,9 @@ TEST_F(RotationTest, Enums) {
   // Checks that using the convention |axes| for Euler angles, conjugated by the
   // given |permutation|, and with appropriate sign changes, is equivalent to
   // the ZXZ convention.
-  auto const check_euler_angles = [&α, &β, &γ, &zxz_euler, this](
+  auto const check_euler_angles = [this, &α, &β, &γ, &zxz_euler](
       EulerAngles axes, auto permutation) {
-    auto const permuted_handedness =
+    constexpr Handedness permuted_handedness =
         std::is_same_v<decltype(permutation), EvenPermutation>
             ? Handedness::Right
             : Handedness::Left;
@@ -360,9 +360,9 @@ TEST_F(RotationTest, Enums) {
   // Checks that using the convention |axes| for Cardano angles, conjugated by
   // the given |permutation|, and with appropriate sign changes, is equivalent
   // to the XYZ convention.
-  auto const check_cardano_angles = [&α, &β, &γ, &xyz_cardano, this](
+  auto const check_cardano_angles = [this, &α, &β, &γ, &xyz_cardano](
                                         CardanoAngles axes, auto permutation) {
-    auto const permuted_handedness =
+    constexpr Handedness permuted_handedness =
         std::is_same_v<decltype(permutation), EvenPermutation>
             ? Handedness::Right
             : Handedness::Left;
@@ -373,8 +373,7 @@ TEST_F(RotationTest, Enums) {
     Permutation<World, Permuted> const σ(permutation);
     Permutation<PermutedRotated, World1> const τ =
         (Permutation<Permuted, PermutedRotated>::Identity() * σ *
-         Permutation<World1, World>::Identity())
-            .Inverse();
+         Permutation<World1, World>::Identity()).Inverse();
     Rotation<Permuted, PermutedRotated> const cardano(
         σ.Determinant() * α,
         σ.Determinant() * β,

@@ -27,6 +27,14 @@ static constexpr int Y = serialization::Permutation::Y;
 static constexpr int Z = serialization::Permutation::Z;
 static constexpr int INDEX = serialization::Permutation::INDEX;
 
+static constexpr std::uint8_t COORDINATE_MASK = (1 << 2) - 1;
+static constexpr std::uint8_t INDEX_MASK = (1 << 3) - 1;
+
+static_assert((X & COORDINATE_MASK) == X);
+static_assert((Y & COORDINATE_MASK) == Y);
+static_assert((Z & COORDINATE_MASK) == Z);
+static_assert(INDEX == 3 * 2);
+
 // Danger, Will Robinson!  These enums are stored in the serialized
 // representation.  Any change to the formulae below is likely to make it
 // impossible to read existing files.

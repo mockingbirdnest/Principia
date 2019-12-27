@@ -205,9 +205,9 @@ TEST_F(PermutationTest, Compose) {
         auto const composition_as_orthogonal_maps =
             left.Forget() * right.Forget();
         for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
-          // In C++20 we could have template parameters on the lambda which
-          // would allow us to deduce this type, instead of having to pass an
-          // otherwise unused value which we feed to the decltype.
+          // TODO(egg): In C++20 we could have template parameters on the lambda
+          // which would allow us to deduce this type, instead of having to pass
+          // an otherwise unused value which we feed to the decltype.
           decltype(from_vector) const modified_vector(
               {l, vector_.coordinates().y, vector_.coordinates().z});
           EXPECT_THAT(
@@ -226,13 +226,11 @@ TEST_F(PermutationTest, Compose) {
 
 TEST_F(PermutationDeathTest, SerializationError) {
   Identity<R1, R2> id;
-  EXPECT_DEATH(
-      {
-        serialization::LinearMap message;
-        id.WriteToMessage(&message);
-        PermutationR1R2 const p = PermutationR1R2::ReadFromMessage(message);
-      },
-      "HasExtension.*Permutation");
+  EXPECT_DEATH({
+    serialization::LinearMap message;
+    id.WriteToMessage(&message);
+    PermutationR1R2 const p = PermutationR1R2::ReadFromMessage(message);
+  }, "HasExtension.*Permutation");
 }
 
 TEST_F(PermutationTest, SerializationSuccess) {
