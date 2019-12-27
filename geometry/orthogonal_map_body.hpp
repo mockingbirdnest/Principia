@@ -37,28 +37,28 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
-  return rotation_(MakeSignature()(vector));
+  return MakeRotation()(MakeSignature()(vector));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Bivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
-  return rotation_(MakeSignature()(bivector));
+  return MakeRotation()(MakeSignature()(bivector));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Trivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
-  return rotation_(MakeSignature()(trivector));
+  return MakeRotation()(MakeSignature()(trivector));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 SymmetricBilinearForm<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::
 operator()(SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
-  return rotation_(MakeSignature()(form));
+  return MakeRotation()(MakeSignature()(form));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -115,9 +115,8 @@ OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap(
-  Quaternion const& quaternion)
-  : quaternion_(quaternion) {}
+OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap(Quaternion const& quaternion)
+    : quaternion_(quaternion) {}
 
 template<typename FromFrame, typename ToFrame>
 constexpr Signature<
@@ -129,6 +128,13 @@ OrthogonalMap<FromFrame, ToFrame>::MakeSignature() {
   } else {
     return Signature<FromFrame, IntermediateFrame>::CentralInversion();
   }
+}
+
+template<typename FromFrame, typename ToFrame>
+Rotation<typename OrthogonalMap<FromFrame, ToFrame>::IntermediateFrame,
+         ToFrame>
+OrthogonalMap<FromFrame, ToFrame>::MakeRotation() const {
+  return Rotation<IntermediateFrame, ToFrame>(quaternion_);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

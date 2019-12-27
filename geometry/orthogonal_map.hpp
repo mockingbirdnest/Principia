@@ -102,13 +102,13 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
                                   ToFrame::handedness>;
 
   static constexpr Signature<FromFrame, IntermediateFrame> MakeSignature();
+  Rotation<IntermediateFrame, ToFrame> MakeRotation() const;
 
   Quaternion quaternion_;
-  Rotation<IntermediateFrame, ToFrame> rotation_{quaternion_};
 
   static constexpr Sign determinant_ =
-    FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
-    : Sign::Negative();
+      FromFrame::handedness == ToFrame::handedness ? Sign::Positive()
+                                                   : Sign::Negative();
 
   template<typename From, typename To>
   friend class internal_identity::Identity;

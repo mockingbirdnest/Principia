@@ -35,9 +35,6 @@ class Quaternion final {
   Quaternion& operator*=(double right);
   Quaternion& operator/=(double right);
 
-  template<typename Scalar>
-  R3Element<Scalar> Rotate(R3Element<Scalar> const& r3_element) const;
-
   void WriteToMessage(not_null<serialization::Quaternion*> message) const;
   static Quaternion ReadFromMessage(serialization::Quaternion const& message);
 
