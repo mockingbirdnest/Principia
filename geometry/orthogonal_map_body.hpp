@@ -6,7 +6,6 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
-#include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
 

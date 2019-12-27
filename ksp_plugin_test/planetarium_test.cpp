@@ -183,7 +183,7 @@ TEST_F(PlanetariumTest, PlotMethod0) {
       EXPECT_THAT(rp2_point.x(),
                   AllOf(Ge(-5.0 / Sqrt(3.0) * Metre),
                         Le(5.0 / Sqrt(3.0) * Metre)));
-      EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 5, 13));
+      EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 0, 13));
     }
   }
 }

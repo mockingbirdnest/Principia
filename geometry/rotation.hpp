@@ -76,7 +76,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   static_assert(FromFrame::handedness == ToFrame::handedness,
                 "Cannot rotate between frames of different handedness");
 
-public:
+ public:
   explicit Rotation(Quaternion const& quaternion);
 
   // A rotation of |angle| around |axis|; no coordinate change is involved, this
