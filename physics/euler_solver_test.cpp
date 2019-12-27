@@ -40,6 +40,7 @@ using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::EulerAngles;
+using geometry::EvenPermutation;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -908,7 +909,7 @@ TEST_F(EulerSolverTest, Toutatis) {
   using TakahashiAttitudeRotation = Rotation<TakahashiPrincipalAxes, ICRS>;
   using TakahashiPermutation = Permutation<TakahashiPrincipalAxes,
                                            PrincipalAxes>;
-  TakahashiPermutation const takahashi_to_vanilla(TakahashiPermutation::ZXY);
+  TakahashiPermutation const takahashi_to_vanilla(EvenPermutation::ZXY);
 
   R3Element<MomentOfInertia> const takahashi_moments_of_inertia{
       3.0836 * SIUnit<MomentOfInertia>(),
