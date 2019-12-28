@@ -167,7 +167,7 @@ Permutation<FromFrame, ToFrame> operator*(
       /*YXZ*/ {O::YXZ, O::ZYX, O::XZY, E::ZXY, E::YZX, E::XYZ},
   }};
 
-  return Result(static_cast<Result::CoordinatePermutation>(
+  return Result(static_cast<typename Result::CoordinatePermutation>(
       multiplication[INDEX_MASK &
                      (static_cast<int>(left.coordinate_permutation_) >> INDEX)]
                     [INDEX_MASK &
