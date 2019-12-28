@@ -8,6 +8,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/signature.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -21,6 +22,7 @@ using geometry::Frame;
 using geometry::Instant;
 using geometry::R3Element;
 using geometry::Rotation;
+using geometry::Signature;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
@@ -103,9 +105,9 @@ class EulerSolver {
   PreferredAngularMomentumBivector initial_angular_momentum_;
   Rotation<ℬʹ, InertialFrame> ℛ_;
 
-  // A rotation that describes which axes are flipped to adjust the signs of the
-  // coordinates of m.  It incorporates σ, σʹ and σʺ from [CFSZ07].
-  Rotation<PrincipalAxesFrame, PreferredPrincipalAxesFrame> 𝒮_;
+  // A signature that describes which axes are flipped to adjust the signs of
+  // the coordinates of m.  It incorporates σ, σʹ and σʺ from [CFSZ07].
+  Signature<PrincipalAxesFrame, PreferredPrincipalAxesFrame> 𝒮_;
 
   // Importantly, the formula and the region to use are constants of motion.
   Formula formula_;

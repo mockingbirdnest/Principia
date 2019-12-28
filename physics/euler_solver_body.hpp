@@ -17,9 +17,11 @@ namespace physics {
 namespace internal_euler_solver {
 
 using geometry::Commutator;
+using geometry::DeduceSignPreservingOrientation;
 using geometry::DefinesFrame;
 using geometry::Normalize;
 using geometry::Quaternion;
+using geometry::Sign;
 using geometry::Vector;
 using numerics::EllipticF;
 using numerics::EllipticΠ;
@@ -55,8 +57,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       initial_time_(initial_time),
       G_(initial_angular_momentum.Norm()),
       ℛ_(Rotation<ℬʹ, InertialFrame>::Identity()),
-      𝒮_(Rotation<PrincipalAxesFrame,
-                  PreferredPrincipalAxesFrame>::Identity()) {
+      𝒮_(Signature<PrincipalAxesFrame,
+                   PreferredPrincipalAxesFrame>::Identity()) {
   auto const& I₁ = moments_of_inertia_.x;
   auto const& I₂ = moments_of_inertia_.y;
   auto const& I₃ = moments_of_inertia_.z;
@@ -135,48 +137,23 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   Bivector<double, PreferredPrincipalAxesFrame> e₂({0, 1, 0});
   Bivector<double, PreferredPrincipalAxesFrame> e₃({0, 0, 1});
   if (formula_ == Formula::iii) {
-    if (m.x >= AngularMomentum()) {
-      if (m.z >= AngularMomentum()) {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>::Identity();
-      } else {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>(e₁, -e₂, -e₃);
-      }
-    } else {
-      if (m.z >= AngularMomentum()) {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>(-e₁, -e₂, e₃);
-      } else {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
-      }
-    }
+    𝒮_ = Signature<PrincipalAxesFrame, PreferredPrincipalAxesFrame>(
+        Sign(m.x), DeduceSignPreservingOrientation{}, Sign(m.z));
   } else {
     switch (region_) {
       case Region::e₁: {
-        if (m.x >= AngularMomentum()) {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>::Identity();
-        } else {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
-        }
+        𝒮_ = Signature<PrincipalAxesFrame, PreferredPrincipalAxesFrame>(
+            Sign(m.x), Sign::Positive(), DeduceSignPreservingOrientation{});
         break;
       }
       case Region::e₃: {
-        if (m.z >= AngularMomentum()) {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>::Identity();
-        } else {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
-        }
+        𝒮_ = Signature<PrincipalAxesFrame, PreferredPrincipalAxesFrame>(
+            DeduceSignPreservingOrientation{}, Sign::Positive(), Sign(m.z));
         break;
       }
       case Region::Motionless: {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>::Identity();
+        𝒮_ = Signature<PrincipalAxesFrame,
+                       PreferredPrincipalAxesFrame>::Identity();
         break;
       }
       default:
@@ -190,7 +167,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   ℛ_ = [this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
     auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
     auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_).Inverse();
-    auto const 𝒮⁻¹ = 𝒮_.Inverse();
+    auto const 𝒮⁻¹ = 𝒮_.Inverse().Forget().AsRotation();
 
     // This ℛ follows the assumptions in the third paragraph of section 2.3
     // of [CFSZ07], that is, the inertial frame is identified with the
@@ -401,17 +378,17 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     case Region::e₁: {
       Bivector<double, ℬʹ> const e₁({1, 0, 0});
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₁, DefinesFrame<ℬₜ>{});
-      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_;
+      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.Forget().AsRotation();
     }
     case Region::e₃: {
       Bivector<double, ℬʹ> const e₃({0, 0, 1});
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₃, DefinesFrame<ℬₜ>{});
-      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_;
+      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.Forget().AsRotation();
     }
     case Region::Motionless: {
       Bivector<double, ℬʹ> const unused({0, 1, 0});
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, unused, DefinesFrame<ℬₜ>{});
-      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_;
+      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.Forget().AsRotation();
     }
     default:
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
