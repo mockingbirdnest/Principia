@@ -50,7 +50,7 @@ class EulerSolver {
       AttitudeRotation const& initial_attitude,
       Instant const& initial_time);
 
-  // Computes the angular momentum at the given time in the principal axes. 
+  // Computes the angular momentum at the given time in the principal axes.
   // This is mostly useful as input to the following two functions.
   Bivector<AngularMomentum, PrincipalAxesFrame> AngularMomentumAt(
       Instant const& time) const;
