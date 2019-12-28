@@ -40,28 +40,32 @@ class EulerSolver {
   static_assert(InertialFrame::is_inertial);
 
  public:
-  using AngularMomentumBivector = Bivector<AngularMomentum, PrincipalAxesFrame>;
   using AttitudeRotation = Rotation<PrincipalAxesFrame, InertialFrame>;
 
   // Constructs a solver for a body with the given moments_of_inertia in its
   // principal axes frame.  The moments must be in increasing order.  At
   // initial_time the angular momentum is initial_angular_momentum and the
   // attitude initial_attitude.
-  EulerSolver(R3Element<MomentOfInertia> const& moments_of_inertia,
-              AngularMomentumBivector const& initial_angular_momentum,
-              AttitudeRotation const& initial_attitude,
-              Instant const& initial_time);
+  EulerSolver(
+      R3Element<MomentOfInertia> const& moments_of_inertia,
+      Bivector<AngularMomentum, InertialFrame> const& initial_angular_momentum,
+      AttitudeRotation const& initial_attitude,
+      Instant const& initial_time);
 
-  // Computes the angular momentum at the given time.
-  AngularMomentumBivector AngularMomentumAt(Instant const& time) const;
+  // Computes the angular momentum at the given time in the principal axes.
+  // This is mostly useful as input to the following two functions.
+  Bivector<AngularMomentum, PrincipalAxesFrame> AngularMomentumAt(
+      Instant const& time) const;
 
   AngularVelocity<PrincipalAxesFrame> AngularVelocityFor(
-      AngularMomentumBivector const& angular_momentum) const;
+      Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum)
+      const;
 
   // Computes the attitude at the given time, using the angular momentum
   // computed by the previous function.
-  AttitudeRotation AttitudeAt(AngularMomentumBivector const& angular_momentum,
-                              Instant const& time) const;
+  AttitudeRotation AttitudeAt(
+      Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum,
+      Instant const& time) const;
 
  private:
   using ℬₜ = Frame<enum class ℬₜTag>;
