@@ -6,6 +6,7 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/signature.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -29,6 +30,7 @@ using geometry::Inertial;
 using geometry::InnerProduct;
 using geometry::NonInertial;
 using geometry::Normalize;
+using geometry::OddPermutation;
 using geometry::OrthogonalMap;
 using geometry::Permutation;
 using geometry::Point;
@@ -36,6 +38,7 @@ using geometry::Position;
 using geometry::Rotation;
 using geometry::Quaternion;
 using geometry::Sign;
+using geometry::Signature;
 using geometry::Vector;
 using geometry::Velocity;
 using geometry::Wedge;
@@ -56,13 +59,6 @@ using testing_utilities::operator""_⑴;
 
 class RigidMotionTest : public testing::Test {
  protected:
-  template<typename FromFrame, typename ToFrame>
-  OrthogonalMap<FromFrame, ToFrame> MakeOrthogonalMap(
-      Sign const& determinant,
-      Rotation<FromFrame, ToFrame> const& rotation) {
-    return OrthogonalMap(determinant, rotation);
-  }
-
   // Our Earth and Moon both run a bit slow.
   AngularFrequency const earth_rotation_speed_ = 2 * π * Radian / Day;
   AngularFrequency const moon_rotation_speed_ = 2 * π * Radian / (30 * Day);
@@ -79,7 +75,7 @@ class RigidMotionTest : public testing::Test {
   // the reference frame is left-handed.
   using Selenocentric = Frame<serialization::Frame::TestTag,
                               Inertial,
-                              Handedness::Right,
+                              Handedness::Left,
                               serialization::Frame::TEST1>;
   // Rotating frame fixing the Earth's surface.  The North pole is the
   // positive z axis, the x axis points towards the Moon,
@@ -94,7 +90,7 @@ class RigidMotionTest : public testing::Test {
   // the reference frame is left-handed.
   using Lunar = Frame<serialization::Frame::TestTag,
                       NonInertial,
-                      Handedness::Right,
+                      Handedness::Left,
                       serialization::Frame::TEST3>;
 
   AngularVelocity<Geocentric> const earth_rotation_ =
@@ -120,8 +116,8 @@ class RigidMotionTest : public testing::Test {
           RigidTransformation<Geocentric, Selenocentric>(
               Geocentric::origin + earth_to_moon_,
               Selenocentric::origin,
-              Permutation<Geocentric, Selenocentric>(
-                  Permutation<Geocentric, Selenocentric>::YXZ).Forget()),
+              Permutation<Geocentric, Selenocentric>(OddPermutation::YXZ)
+                  .Forget()),
           AngularVelocity<Geocentric>(),
           moon_orbit_* earth_to_moon_ / Radian);
 
@@ -264,9 +260,12 @@ TEST_F(RigidMotionTest, Serialization) {
 }
 
 TEST_F(RigidMotionTest, QuaternionNormalization) {
-  using Barycentric = Frame<enum class BarycentricTag>;
-  using RigidPart = Frame<enum class RigidPartTag>;
-  using World = Frame<enum class WorldTag>;
+  using Barycentric =
+      Frame<enum class BarycentricTag, Inertial, Handedness::Right>;
+  using RigidPart =
+      Frame<enum class RigidPartTag, NonInertial, Handedness::Left>;
+  using AliceWorld = Frame<enum class WorldTag, Inertial, Handedness::Right>;
+  using World = Frame<enum class WorldTag, Inertial, Handedness::Left>;
 
   AngularVelocity<RigidPart> const ω1(
       {-4.31524874936563274e-04 * Radian / Second,
@@ -310,13 +309,14 @@ TEST_F(RigidMotionTest, QuaternionNormalization) {
       Displacement<Barycentric>({-1.36081879406308479e+10 * Metre,
                                  +7.17490648244777508e+06 * Metre,
                                  -4.33826960235058723e+04 * Metre});
-  Rotation<World, Barycentric> const rotation2(
+  Rotation<AliceWorld, Barycentric> const rotation2(
       Quaternion(6.36714825392272976e-01,
                  {-6.36714825392272976e-01,
                   -3.07561751727498445e-01,
                   +3.07561751727498445e-01}));
   OrthogonalMap<World, Barycentric> const orthogonal2 =
-      MakeOrthogonalMap(Sign::Negative(), rotation2);
+      rotation2.Forget() *
+      Signature<World, AliceWorld>::CentralInversion().Forget();
 
   RigidMotion<World, Barycentric> const rigid_motion2(
       RigidTransformation<World, Barycentric>(from2, to2, orthogonal2), ω2, v2);

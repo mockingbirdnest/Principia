@@ -42,6 +42,7 @@ class R3x3Matrix final {
   R3Element<Scalar> const& row_z() const;
 
   Scalar operator()(int r, int c) const;
+  Scalar& operator()(int r, int c);
 
   R3x3Matrix& operator+=(R3x3Matrix const& right);
   R3x3Matrix& operator-=(R3x3Matrix const& right);

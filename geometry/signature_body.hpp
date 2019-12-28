@@ -82,17 +82,28 @@ template<typename Scalar>
 SymmetricBilinearForm<Scalar, ToFrame>
 Signature<FromFrame, ToFrame>::operator()(
     SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
-  return SymmetricBilinearForm<Scalar, ToFrame>();
+  // TODO(egg): This should be writeable as "*= x_ * y_".
+  auto coordinates = form.coordinates();
+  if (x_ != y_) {
+    coordinates(0, 1) *= -1;
+    coordinates(1, 0) *= -1;
+  }
+  if (y_ != z_) {
+    coordinates(1, 2) *= -1;
+    coordinates(2, 1) *= -1;
+  }
+  if (z_ != x_) {
+    coordinates(2, 0) *= -1;
+    coordinates(0, 2) *= -1;
+  }
+  return SymmetricBilinearForm<Scalar, ToFrame>(coordinates);
 }
 
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget()
     const {
   if (x_ == y_ && y_ == z_) {
-    // TODO(phl): unsound rotation; this should use |Identity| once we go
-    // through an intermediate frame.
-    return OrthogonalMap<FromFrame, ToFrame>(
-        determinant_, Rotation<FromFrame, ToFrame>(Quaternion(1)));
+    return OrthogonalMap<FromFrame, ToFrame>(Quaternion(1));
   }
   // The signature is neither +++ nor ---, so dividing it by its determinant
   // yields a 180° rotation around one of the axes (+--, -+-, or --+).
@@ -101,9 +112,7 @@ OrthogonalMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget()
                                      : (determinant_ * y_).is_positive()
                                            ? R3Element<double>{0, 1, 0}
                                            : R3Element<double>{0, 0, 1};
-  // TODO(phl): unsound rotation.
-  return OrthogonalMap<FromFrame, ToFrame>(
-      determinant_, Rotation<FromFrame, ToFrame>(Quaternion(0, axis)));
+  return OrthogonalMap<FromFrame, ToFrame>(Quaternion(0, axis));
 }
 
 template<typename FromFrame, typename ToFrame>

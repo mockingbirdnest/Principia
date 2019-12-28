@@ -73,6 +73,9 @@ struct DefinesFrame final {};
 // algebra.
 template<typename FromFrame, typename ToFrame>
 class Rotation : public LinearMap<FromFrame, ToFrame> {
+  static_assert(FromFrame::handedness == ToFrame::handedness,
+                "Cannot rotate between frames of different handedness");
+
  public:
   explicit Rotation(Quaternion const& quaternion);
 
@@ -222,9 +225,6 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<F::handedness == T::handedness>>
   static Rotation Identity();
 
   Quaternion const& quaternion() const;

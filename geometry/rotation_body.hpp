@@ -205,7 +205,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Trivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
-  return trivector;
+  return Trivector<Scalar, ToFrame>(trivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -265,11 +265,10 @@ Rotation<FromFrame, ToFrame>::operator()(T const& t) const {
 
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
-  return OrthogonalMap<FromFrame, ToFrame>(Sign::Positive(), *this);
+  return OrthogonalMap<FromFrame, ToFrame>(quaternion_);
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
   return Rotation(Quaternion(1));
 }

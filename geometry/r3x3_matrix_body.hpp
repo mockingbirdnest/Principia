@@ -78,6 +78,22 @@ FORCE_INLINE(inline) Scalar R3x3Matrix<Scalar>::operator()(
 }
 
 template<typename Scalar>
+Scalar& R3x3Matrix<Scalar>::operator()(int r, int c) {
+  switch (r) {
+    case 0:
+      return row_x_[c];
+    case 1:
+      return row_y_[c];
+    case 2:
+      return row_z_[c];
+    default:
+      DLOG(FATAL) << FUNCTION_SIGNATURE
+                  << " indices = {" << r << ", " << c << "}";
+      base::noreturn();
+  }
+}
+
+template<typename Scalar>
 R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator+=(
     R3x3Matrix const& right) {
   return *this = *this + right;
