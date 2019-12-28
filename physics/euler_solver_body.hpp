@@ -48,7 +48,7 @@ using quantities::si::Radian;
 template<typename InertialFrame, typename PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     R3Element<MomentOfInertia> const& moments_of_inertia,
-    AngularMomentumBivector const& initial_angular_momentum,
+    Bivector<AngularMomentum, InertialFrame> const& initial_angular_momentum,
     AttitudeRotation const& initial_attitude,
     Instant const& initial_time)
     : moments_of_inertia_(moments_of_inertia),
@@ -57,6 +57,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       ℛ_(Rotation<ℬʹ, InertialFrame>::Identity()),
       𝒮_(Rotation<PrincipalAxesFrame,
                   PreferredPrincipalAxesFrame>::Identity()) {
+  // Do not use initial_angular_momentum after this point.
+  auto const initial_angular_momentum_in_principal_axes =
+      initial_attitude.Inverse()(initial_angular_momentum);
+
   auto const& I₁ = moments_of_inertia_.x;
   auto const& I₂ = moments_of_inertia_.y;
   auto const& I₃ = moments_of_inertia_.z;
@@ -65,7 +69,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
 
   // The usages of this variable prior to the computation of 𝒮_ must not depend
   // on the signs of its coordinates since we may flip it.
-  auto m = initial_angular_momentum.coordinates();
+  auto m = initial_angular_momentum_in_principal_axes.coordinates();
 
   // These computations are such that if, say I₁ == I₂, I₂₁ is +0.0 and I₁₂ is
   // -0.0.
@@ -185,7 +189,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   }
 
   // Now that 𝒮_ has been computed we can use it to adjust m and to compute ℛ_.
-  initial_angular_momentum_ = 𝒮_(initial_angular_momentum);
+  initial_angular_momentum_ = 𝒮_(initial_angular_momentum_in_principal_axes);
   m = initial_angular_momentum_.coordinates();
   ℛ_ = [this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
     auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
@@ -290,7 +294,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
 }
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
-typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumBivector
+Bivector<AngularMomentum, PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
     Instant const& time) const {
   Time const Δt = time - initial_time_;
@@ -320,9 +324,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
       break;
     }
     case Formula::Sphere : {
-      // NOTE(phl): It's unclear how the formulæ degenerate in this case, but
-      // surely λ₃_ becomes 0, so the dependency in time disappears, so this is
-      // my best guess.
       m = initial_angular_momentum_;
       break;
     }
@@ -335,7 +336,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
 template<typename InertialFrame, typename PrincipalAxesFrame>
 AngularVelocity<PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularVelocityFor(
-    AngularMomentumBivector const& angular_momentum) const {
+    Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum)
+    const {
   auto const& m = angular_momentum;
   auto const& m_coordinates = m.coordinates();
 
@@ -351,7 +353,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularVelocityFor(
 template<typename InertialFrame, typename PrincipalAxesFrame>
 typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
-    AngularMomentumBivector const& angular_momentum,
+    Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum,
     Instant const& time) const {
   Rotation<PreferredPrincipalAxesFrame, ℬₜ> const 𝒫ₜ =
       Compute𝒫ₜ(𝒮_(angular_momentum));
