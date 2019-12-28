@@ -57,8 +57,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       initial_time_(initial_time),
       G_(initial_angular_momentum.Norm()),
       ℛ_(Rotation<ℬʹ, InertialFrame>::Identity()),
-      𝒮_(Rotation<PrincipalAxesFrame,
-                  PreferredPrincipalAxesFrame>::Identity()) {
+      𝒮_(Signature<PrincipalAxesFrame,
+                   PreferredPrincipalAxesFrame>::Identity()) {
   auto const& I₁ = moments_of_inertia_.x;
   auto const& I₂ = moments_of_inertia_.y;
   auto const& I₃ = moments_of_inertia_.z;
