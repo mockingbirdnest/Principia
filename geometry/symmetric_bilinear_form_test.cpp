@@ -264,15 +264,15 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     Vector<double, World> const w₀({ 0, 1, 0});
     Vector<double, World> const w₁({-1, 0, 0});
     Vector<double, World> const w₂({ 0, 0, 1});
-    EXPECT_THAT(f_eigensystem.rotation(w₀),
+    EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₀),
                 Componentwise(AlmostEquals(1, 0),
                               VanishesBefore(1, 1),
                               VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.rotation(w₁),
+    EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₁),
                 Componentwise(VanishesBefore(1, 2),
                               AlmostEquals(1, 0),
                               VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.rotation(w₂),
+    EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₂),
                 Componentwise(VanishesBefore(1, 0),
                               VanishesBefore(1, 0),
                               AlmostEquals(1, 0)));
@@ -305,15 +305,15 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     Vector<double, World> const w₂({0.50207513078793658603,
                                     0.52940122795673242036,
                                     0.68385298338325629274});
-    EXPECT_THAT(f_eigensystem.rotation(w₀),
+    EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₀),
                 Componentwise(AlmostEquals(1, 0),
                               VanishesBefore(1, 0),
                               VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.rotation(w₁),
+    EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₁),
                 Componentwise(VanishesBefore(1, 0),
                               AlmostEquals(1, 0),
                               VanishesBefore(1, 0)));
-    EXPECT_THAT(f_eigensystem.rotation(w₂),
+    EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₂),
                 Componentwise(VanishesBefore(1, 1),
                               VanishesBefore(1, 2),
                               AlmostEquals(1, 0)));

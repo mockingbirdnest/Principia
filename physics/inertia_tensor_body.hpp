@@ -100,10 +100,10 @@ InertiaTensor<Frame>::Diagonalize() const {
 
   auto const y = Bivector<double, IntermediateFrame>({0, 1, 0});
   auto const z = Bivector<double, IntermediateFrame>({0, 0, 1});
-  Rotation<IntermediateFrame, PrincipalAxesFrame> const swap_x_and_z(
+  Rotation<PrincipalAxesFrame, IntermediateFrame> const swap_x_and_z(
       z, y, Commutator(z, y));
 
-  return {moments_of_inertia, swap_x_and_z * eigensystem.rotation};
+  return {moments_of_inertia, eigensystem.rotation * swap_x_and_z};
 }
 
 template<typename Frame>
