@@ -125,7 +125,7 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   auto const v₀ = Vector<double, Frame>(PickEigenvector(m₀));
   auto const v₁ = Vector<double, Frame>(PickEigenvector(m₁));
 
-  Rotation<Frame, Eigenframe> const rotation{v₀, v₁, Wedge(v₀, v₁)};
+  Rotation<Eigenframe, Frame> const rotation{v₀, v₁, Wedge(v₀, v₁)};
   return {form, rotation};
 }
 

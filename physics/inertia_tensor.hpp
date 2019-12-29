@@ -58,15 +58,15 @@ class InertiaTensor {
   InertiaTensor<ToFrame> Transform(
       RigidTransformation<Frame, ToFrame> const& transformation) const;
 
-  template<typename PrincipalAxesFrame>
-  struct PrincipalAxes {
-    R3Element<MomentOfInertia> moments_of_inertia;
-    Rotation<Frame, PrincipalAxesFrame> rotation;
-  };
-
   // A factory that creates an inertia tensor for a solid sphere of water having
   // the given mass.  Useful e.g. for save compatibility.
   static InertiaTensor<Frame> MakeWaterSphereInertiaTensor(Mass const& mass);
+
+  template<typename PrincipalAxesFrame>
+  struct PrincipalAxes {
+    R3Element<MomentOfInertia> moments_of_inertia;
+    Rotation<PrincipalAxesFrame, Frame> rotation;
+  };
 
   // Diagonalization is possible in any frame, but it's mostly used in a frame
   // centred at the centre of mass.
