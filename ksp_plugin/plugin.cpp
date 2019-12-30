@@ -599,9 +599,9 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   }
 }
 
-void Plugin::SetPartApparentDegreesOfFreedom(
+void Plugin::SetPartApparentRigidMotion(
     PartId const part_id,
-    DegreesOfFreedom<World> const& degrees_of_freedom,
+    RigidMotion<RigidPart, World> const& rigid_motion,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom) {
   // Define |ApparentBubble| as the reference frame with the axes of
   // |Barycentric| centred on the current main body.
@@ -619,8 +619,8 @@ void Plugin::SetPartApparentDegreesOfFreedom(
   CHECK(is_loaded(vessel));
   not_null<Part*> const part = vessel->part(part_id);
   CHECK(part->is_piled_up());
-  part->containing_pile_up()->SetPartApparentDegreesOfFreedom(
-      part, world_to_apparent_bubble(degrees_of_freedom));
+  part->containing_pile_up()->SetPartApparentRigidMotion(
+      part, world_to_apparent_bubble * rigid_motion);
 }
 
 DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
