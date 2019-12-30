@@ -70,8 +70,12 @@ message Part {
 message PileUp {
   repeated fixed32 part_id = 1;
   required DiscreteTrajectory history = 4;
+  // Pre-Frege.
   map<fixed32, Pair> actual_part_degrees_of_freedom = 5;
   map<fixed32, Pair> apparent_part_degrees_of_freedom = 6;
+  // Added in Frege.
+  map<fixed32, RigidMotion> actual_part_rigid_motion = 9;
+  map<fixed32, RigidMotion> apparent_part_rigid_motion = 10;
   // Added in Cartan.
   optional Ephemeris.AdaptiveStepParameters adaptive_step_parameters = 7;
   optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;

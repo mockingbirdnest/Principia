@@ -148,6 +148,28 @@ RigidMotion<FromFrame, ToFrame> operator*(
 }
 
 template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         RigidMotion<FromFrame, ToFrame> const& rigid_motion) {
+  return out << "{transformation: " << rigid_motion.rigid_transformation()
+             << ", angular velocity: "
+             << rigid_motion.angular_velocity_of_to_frame()
+             << ", velocity: " << rigid_motion.velocity_of_to_frame_origin()
+             << "}";
+}
+
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         AcceleratedRigidMotion<FromFrame, ToFrame> const&
+                             accelerated_rigid_motion) {
+  return out << "{motion: " << accelerated_rigid_motion.rigid_motion()
+             << ", angular acceleration: "
+             << accelerated_rigid_motion.angular_acceleration_of_to_frame()
+             << ", acceleration: "
+             << accelerated_rigid_motion.acceleration_of_to_frame_origin()
+             << "}";
+}
+
+template<typename FromFrame, typename ToFrame>
 AcceleratedRigidMotion<FromFrame, ToFrame>::AcceleratedRigidMotion(
     RigidMotion<FromFrame, ToFrame> const& rigid_motion,
     Variation<AngularVelocity<FromFrame>> const&

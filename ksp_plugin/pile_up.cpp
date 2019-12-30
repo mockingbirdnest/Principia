@@ -66,9 +66,9 @@ PileUp::PileUp(
       AngularVelocity<Barycentric>{},
       barycentre.velocity()};
   for (not_null<Part*> const part : parts_) {
-    actual_part_degrees_of_freedom_.emplace(
+    actual_part_rigid_motion_.emplace(
         part,
-        barycentric_to_pile_up(part->degrees_of_freedom()));
+        barycentric_to_pile_up * part->rigid_motion());
   }
   psychohistory_ = history_->NewForkAtLast();
 }
@@ -88,12 +88,10 @@ void PileUp::SetPartApparentRigidMotion(
     not_null<Part*> const part,
     RigidMotion<RigidPart, ApparentBubble> const& rigid_motion) {
   // TODO(phl): Propagate the rigid motion to the internal data structures.
-  auto const degrees_of_freedom = rigid_motion({RigidPart::origin,
-                                                RigidPart::unmoving});
-  bool const inserted = apparent_part_degrees_of_freedom_.emplace(
-      part, degrees_of_freedom).second;
+  auto const [_, inserted] =
+      apparent_part_rigid_motion_.emplace(part, rigid_motion);
   CHECK(inserted) << "Duplicate part " << part->ShortDebugString() << " at "
-                  << degrees_of_freedom;
+                  << rigid_motion;
 }
 
 Status PileUp::DeformAndAdvanceTime(Instant const& t) {
@@ -117,18 +115,18 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   }
   history_->WriteToMessage(message->mutable_history(),
                            /*forks=*/{psychohistory_});
-  for (auto const& pair : actual_part_degrees_of_freedom_) {
+  for (auto const& pair : actual_part_rigid_motion_) {
     auto const part = pair.first;
     auto const& degrees_of_freedom = pair.second;
     degrees_of_freedom.WriteToMessage(&(
-        (*message->mutable_actual_part_degrees_of_freedom())[part->part_id()]));
+        (*message->mutable_actual_part_rigid_motion())[part->part_id()]));
   }
-  for (auto const& pair : apparent_part_degrees_of_freedom_) {
+  for (auto const& pair : apparent_part_rigid_motion_) {
     auto const part = pair.first;
     auto const& degrees_of_freedom = pair.second;
     degrees_of_freedom.WriteToMessage(&(
         (*message
-              ->mutable_apparent_part_degrees_of_freedom())[part->part_id()]));
+              ->mutable_apparent_part_rigid_motion())[part->part_id()]));
   }
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
@@ -149,6 +147,8 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   bool const is_pre_cartan = !message.has_adaptive_step_parameters() ||
                              !message.has_fixed_step_parameters();
   bool const is_pre_cesàro = message.history().children().empty();
+  bool const is_pre_frege = message.actual_part_degrees_of_freedom_size() > 0 &&
+                            message.apparent_part_degrees_of_freedom_size() > 0;
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
     if (is_pre_cartan) {
@@ -206,19 +206,40 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
             std::move(deletion_callback)));
   }
 
-  for (auto const& pair : message.actual_part_degrees_of_freedom()) {
-    std::uint32_t const part_id = pair.first;
-    serialization::Pair const& degrees_of_freedom = pair.second;
-    pile_up->actual_part_degrees_of_freedom_.emplace(
+  if (is_pre_frege) {
+    for (auto const& pair : message.actual_part_degrees_of_freedom()) {
+      std::uint32_t const part_id = pair.first;
+      serialization::Pair const& degrees_of_freedom = pair.second;
+      pile_up->actual_part_rigid_motion_.emplace(
+          part_id_to_part(part_id),
+          RigidMotion<RigidPart, RigidPileUp>::MakeNonRotatingMotion(
+              DegreesOfFreedom<RigidPileUp>::ReadFromMessage(
+                  degrees_of_freedom)));
+    }
+    for (auto const& pair : message.apparent_part_degrees_of_freedom()) {
+      std::uint32_t const part_id = pair.first;
+      serialization::Pair const& degrees_of_freedom = pair.second;
+      pile_up->apparent_part_rigid_motion_.emplace(
+          part_id_to_part(part_id),
+          RigidMotion<RigidPart, ApparentBubble>::MakeNonRotatingMotion(
+              DegreesOfFreedom<ApparentBubble>::ReadFromMessage(
+                  degrees_of_freedom)));
+    }
+  } else {
+    for (auto const& pair : message.actual_part_rigid_motion()) {
+      std::uint32_t const part_id = pair.first;
+      serialization::RigidMotion const& rigid_motion = pair.second;
+      pile_up->actual_part_rigid_motion_.emplace(
         part_id_to_part(part_id),
-        DegreesOfFreedom<RigidPileUp>::ReadFromMessage(degrees_of_freedom));
-  }
-  for (auto const& pair : message.apparent_part_degrees_of_freedom()) {
-    std::uint32_t const part_id = pair.first;
-    serialization::Pair const& degrees_of_freedom = pair.second;
-    pile_up->apparent_part_degrees_of_freedom_.emplace(
+        RigidMotion<RigidPart, RigidPileUp>::ReadFromMessage(rigid_motion));
+    }
+    for (auto const& pair : message.apparent_part_rigid_motion()) {
+      std::uint32_t const part_id = pair.first;
+      serialization::RigidMotion const& rigid_motion = pair.second;
+      pile_up->apparent_part_rigid_motion_.emplace(
         part_id_to_part(part_id),
-        DegreesOfFreedom<ApparentBubble>::ReadFromMessage(degrees_of_freedom));
+        RigidMotion<RigidPart, ApparentBubble>::ReadFromMessage(rigid_motion));
+    }
   }
   pile_up->RecomputeFromParts();
   return check_not_null(std::move(pile_up));
@@ -243,7 +264,7 @@ PileUp::PileUp(
       deletion_callback_(std::move(deletion_callback)) {}
 
 void PileUp::DeformPileUpIfNeeded() {
-  if (apparent_part_degrees_of_freedom_.empty()) {
+  if (apparent_part_rigid_motion_.empty()) {
     return;
   }
   // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
@@ -251,16 +272,18 @@ void PileUp::DeformPileUpIfNeeded() {
   // TODO(egg): I'd like to log some useful information on check failure, but I
   // need a clean way of getting the debug strings of all parts (rather than
   // giant self-evaluating lambdas).
-  CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size());
+  CHECK_EQ(parts_.size(), apparent_part_rigid_motion_.size());
   for (not_null<Part*> const part : parts_) {
-    CHECK(Contains(apparent_part_degrees_of_freedom_, part));
+    CHECK(Contains(apparent_part_rigid_motion_, part));
   }
 
   // Compute the apparent centre of mass of the parts.
   BarycentreCalculator<DegreesOfFreedom<ApparentBubble>, Mass> calculator;
-  for (auto const& pair : apparent_part_degrees_of_freedom_) {
+  for (auto const& pair : apparent_part_rigid_motion_) {
     auto const part = pair.first;
-    auto const& apparent_part_degrees_of_freedom = pair.second;
+    auto const& apparent_part_rigid_motion = pair.second;
+    DegreesOfFreedom<ApparentBubble> const apparent_part_degrees_of_freedom =
+        apparent_part_rigid_motion({RigidPart::origin, RigidPart::unmoving});
     calculator.Add(apparent_part_degrees_of_freedom,
                    part->inertia_tensor().mass());
   }
@@ -280,15 +303,15 @@ void PileUp::DeformPileUpIfNeeded() {
           apparent_centre_of_mass.velocity());
 
   // Now update the positions of the parts in the pile-up frame.
-  actual_part_degrees_of_freedom_.clear();
-  for (auto const& pair : apparent_part_degrees_of_freedom_) {
+  actual_part_rigid_motion_.clear();
+  for (auto const& pair : apparent_part_rigid_motion_) {
     auto const part = pair.first;
-    auto const& apparent_part_degrees_of_freedom = pair.second;
-    actual_part_degrees_of_freedom_.emplace(
+    auto const& apparent_part_rigid_motion = pair.second;
+    actual_part_rigid_motion_.emplace(
         part,
-        apparent_bubble_to_pile_up_motion(apparent_part_degrees_of_freedom));
+        apparent_bubble_to_pile_up_motion * apparent_part_rigid_motion);
   }
-  apparent_part_degrees_of_freedom_.clear();
+  apparent_part_rigid_motion_.clear();
 }
 
 Status PileUp::AdvanceTime(Instant const& t) {
@@ -381,12 +404,9 @@ void PileUp::NudgeParts() const {
       actual_centre_of_mass.velocity()};
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
-    DegreesOfFreedom<Barycentric> const actual_part_degrees_of_freedom =
-        pile_up_to_barycentric(
-            FindOrDie(actual_part_degrees_of_freedom_, part));
-    part->set_rigid_motion(
-        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
-            actual_part_degrees_of_freedom));
+    RigidMotion<RigidPart, Barycentric> const actual_part_rigid_motion =
+        pile_up_to_barycentric * FindOrDie(actual_part_rigid_motion_, part);
+    part->set_rigid_motion(actual_part_rigid_motion);
   }
 }
 
@@ -402,10 +422,12 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
       pile_up_dof.velocity());
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
+    DegreesOfFreedom<RigidPileUp> const actual_part_degrees_of_freedom =
+        FindOrDie(actual_part_rigid_motion_, part)({RigidPart::origin,
+                                                    RigidPart::unmoving});
     (static_cast<Part*>(part)->*append_to_part_trajectory)(
         it->time,
-        pile_up_to_barycentric(
-            FindOrDie(actual_part_degrees_of_freedom_, part)));
+        pile_up_to_barycentric(actual_part_degrees_of_freedom));
   }
 }
 

@@ -185,8 +185,8 @@ class PileUp {
       Ephemeris<Barycentric>::NewtonianMotionEquation>::Instance>
       fixed_instance_;
 
-  PartTo<DegreesOfFreedom<RigidPileUp>> actual_part_degrees_of_freedom_;
-  PartTo<DegreesOfFreedom<ApparentBubble>> apparent_part_degrees_of_freedom_;
+  PartTo<RigidMotion<RigidPart, RigidPileUp>> actual_part_rigid_motion_;
+  PartTo<RigidMotion<RigidPart, ApparentBubble>> apparent_part_rigid_motion_;
 
   // Called in the destructor.
   std::function<void()> deletion_callback_;
