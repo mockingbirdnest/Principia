@@ -1095,13 +1095,20 @@ void __cdecl principia__SetMainBody(Plugin* const plugin, int const index) {
   return m.Return();
 }
 
-void __cdecl principia__SetPartApparentDegreesOfFreedom(
+void __cdecl principia__SetPartApparentRigidMotion(
     Plugin* const plugin,
-    PartId const part_id,
+    uint32_t const part_id,
     QP const degrees_of_freedom,
+    WXYZ const rotation,
+    XYZ const angular_velocity,
     QP const main_body_degrees_of_freedom) {
-  journal::Method<journal::SetPartApparentDegreesOfFreedom> m(
-      {plugin, part_id, degrees_of_freedom, main_body_degrees_of_freedom});
+  journal::Method<journal::SetPartApparentRigidMotion> m(
+      {plugin,
+       part_id,
+       degrees_of_freedom,
+       rotation,
+       angular_velocity,
+       main_body_degrees_of_freedom});
   CHECK_NOTNULL(plugin);
   plugin->SetPartApparentDegreesOfFreedom(
       part_id,
