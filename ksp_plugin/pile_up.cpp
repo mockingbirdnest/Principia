@@ -84,9 +84,12 @@ std::list<not_null<Part*>> const& PileUp::parts() const {
   return parts_;
 }
 
-void PileUp::SetPartApparentDegreesOfFreedom(
+void PileUp::SetPartApparentRigidMotion(
     not_null<Part*> const part,
-    DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom) {
+    RigidMotion<RigidPart, ApparentBubble> const& rigid_motion) {
+  // TODO(phl): Propagate the rigid motion to the internal data structures.
+  auto const degrees_of_freedom = rigid_motion({RigidPart::origin,
+                                                RigidPart::unmoving});
   bool const inserted = apparent_part_degrees_of_freedom_.emplace(
       part, degrees_of_freedom).second;
   CHECK(inserted) << "Duplicate part " << part->ShortDebugString() << " at "

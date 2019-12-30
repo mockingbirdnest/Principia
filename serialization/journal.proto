@@ -1856,14 +1856,16 @@ message SetMainBody {
   optional In in = 1;
 }
 
-message SetPartApparentDegreesOfFreedom {
+message SetPartApparentRigidMotion {
   extend Method {
-    optional SetPartApparentDegreesOfFreedom extension = 5115;
+    optional SetPartApparentRigidMotion extension = 5115;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required fixed32 part_id = 2;
     required QP degrees_of_freedom = 3;
+	required WXYZ rotation = 5;
+    required XYZ angular_velocity = 6;
     required QP main_body_degrees_of_freedom = 4;
   }
   optional In in = 1;

@@ -1119,11 +1119,13 @@ public partial class PrincipiaPluginAdapter
         if (part.rb == null) {
           continue;
         }
-        plugin_.SetPartApparentDegreesOfFreedom(
+        plugin_.SetPartApparentRigidMotion(
             part.flightID,
             // TODO(egg): use the centre of mass.
             new QP{q = (XYZ)(Vector3d)part.rb.position,
                    p = (XYZ)(Vector3d)part.rb.velocity},
+            (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
+            (XYZ)(Vector3d)(part.rb.rotation * part.rb.angularVelocity),
             main_body_degrees_of_freedom);
       }
     }

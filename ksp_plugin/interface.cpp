@@ -278,6 +278,24 @@ serialization::GravityModel::Body MakeGravityModel(
   return gravity_model;
 }
 
+RigidMotion<RigidPart, World> MakePartRigidMotion(
+    QP const& part_world_degrees_of_freedom,
+    WXYZ const& part_rotation,
+    XYZ const& part_angular_velocity) {
+  DegreesOfFreedom<World> const part_degrees_of_freedom =
+      FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom);
+  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
+  RigidTransformation<RigidPart, World> const part_rigid_transformation(
+      RigidPart::origin,
+      part_degrees_of_freedom.position(),
+      part_to_world.Forget());
+  RigidMotion<RigidPart, World> part_rigid_motion(
+      part_rigid_transformation,
+      FromXYZ<AngularVelocity<World>>(part_angular_velocity),
+      part_degrees_of_freedom.velocity());
+  return part_rigid_motion;
+}
+
 std::unique_ptr<google::compression::Compressor> NewCompressor(
     std::string_view const compressor) {
   if (compressor.empty()) {
@@ -875,28 +893,15 @@ void __cdecl principia__InsertOrKeepLoadedPart(
                                   {zero, zero, moments_of_inertia.z}),
       PartPrincipalAxes::origin);
 
-  DegreesOfFreedom<World> const part_degrees_of_freedom =
-      FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom);
   Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
       FromWXYZ(principal_axes_rotation));
-  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
   RigidTransformation<PartPrincipalAxes, RigidPart> const
       part_principal_axes_to_rigid_part(PartPrincipalAxes::origin,
                                         RigidPart::origin,
                                         principal_axes_to_part.Forget());
-
   InertiaTensor<RigidPart> const inertia_tensor_in_rigid_part =
       inertia_tensor_in_princial_axes.Transform(
           part_principal_axes_to_rigid_part);
-
-  RigidTransformation<RigidPart, World> const part_rigid_transformation(
-      RigidPart::origin,
-      part_degrees_of_freedom.position(),
-      part_to_world.Forget());
-  RigidMotion<RigidPart, World> part_rigid_motion(
-      part_rigid_transformation,
-      FromXYZ<AngularVelocity<World>>(part_angular_velocity),
-      part_degrees_of_freedom.velocity());
 
   VLOG(1) << "InsertOrKeepLoadedPart: " << name << " " << part_id << " "
           << moments_of_inertia << " " << FromWXYZ(principal_axes_rotation);
@@ -908,7 +913,9 @@ void __cdecl principia__InsertOrKeepLoadedPart(
       vessel_guid,
       main_body_index,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
-      part_rigid_motion,
+      MakePartRigidMotion(part_world_degrees_of_freedom,
+                          part_rotation,
+                          part_angular_velocity),
       delta_t * Second);
   return m.Return();
 }
@@ -1095,17 +1102,24 @@ void __cdecl principia__SetMainBody(Plugin* const plugin, int const index) {
   return m.Return();
 }
 
-void __cdecl principia__SetPartApparentDegreesOfFreedom(
+void __cdecl principia__SetPartApparentRigidMotion(
     Plugin* const plugin,
     PartId const part_id,
     QP const degrees_of_freedom,
+    WXYZ const rotation,
+    XYZ const angular_velocity,
     QP const main_body_degrees_of_freedom) {
-  journal::Method<journal::SetPartApparentDegreesOfFreedom> m(
-      {plugin, part_id, degrees_of_freedom, main_body_degrees_of_freedom});
+  journal::Method<journal::SetPartApparentRigidMotion> m(
+      {plugin,
+       part_id,
+       degrees_of_freedom,
+       rotation,
+       angular_velocity,
+       main_body_degrees_of_freedom});
   CHECK_NOTNULL(plugin);
-  plugin->SetPartApparentDegreesOfFreedom(
+  plugin->SetPartApparentRigidMotion(
       part_id,
-      FromQP<DegreesOfFreedom<World>>(degrees_of_freedom),
+      MakePartRigidMotion(degrees_of_freedom, rotation, angular_velocity),
       FromQP<DegreesOfFreedom<World>>(main_body_degrees_of_freedom));
   return m.Return();
 }

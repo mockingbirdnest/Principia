@@ -235,11 +235,11 @@ class Plugin {
   // the list of |pile_ups_| according to the reported collisions.
   virtual void FreeVesselsAndPartsAndCollectPileUps(Time const& Δt);
 
-  // Calls |SetPartApparentDegreesOfFreedom| on the pile-up containing the
-  // relevant part.  This part must be in a loaded vessel.
-  virtual void SetPartApparentDegreesOfFreedom(
+  // Calls |SetPartApparentRigidMotion| on the pile-up containing the relevant
+  // part.  This part must be in a loaded vessel.
+  virtual void SetPartApparentRigidMotion(
       PartId part_id,
-      DegreesOfFreedom<World> const& degrees_of_freedom,
+      RigidMotion<RigidPart, World> const& rigid_motion,
       DegreesOfFreedom<World> const& main_body_degrees_of_freedom);
 
   // Returns the degrees of freedom of the given part in |World|, assuming that

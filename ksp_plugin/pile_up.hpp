@@ -15,6 +15,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/inertia_tensor.hpp"
 #include "physics/massless_body.hpp"
+#include "physics/rigid_motion.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "serialization/ksp_plugin.pb.h"
@@ -40,6 +41,7 @@ using physics::Ephemeris;
 using physics::InertiaTensor;
 using physics::MasslessBody;
 using physics::RelativeDegreesOfFreedom;
+using physics::RigidMotion;
 using quantities::AngularMomentum;
 using quantities::Force;
 using quantities::Mass;
@@ -66,12 +68,12 @@ class PileUp {
 
   std::list<not_null<Part*>> const& parts() const;
 
-  // Set the |degrees_of_freedom| for the given |part|.  These degrees of
-  // freedom are *apparent* in the sense that they were reported by the game but
-  // we know better since we are doing science.
-  void SetPartApparentDegreesOfFreedom(
+  // Set the rigid motion for the given |part|.  This rigid motion is *apparent*
+  // in the sense that it was reported by the game but we know better since we
+  // are doing science.
+  void SetPartApparentRigidMotion(
       not_null<Part*> part,
-      DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom);
+      RigidMotion<RigidPart, ApparentBubble> const& rigid_motion);
 
   // Deforms the pile-up, advances the time, and nudges the parts, in sequence.
   // Does nothing if the psychohistory is already advanced beyond |t|.  Several
