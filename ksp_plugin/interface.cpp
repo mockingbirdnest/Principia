@@ -1104,7 +1104,7 @@ void __cdecl principia__SetMainBody(Plugin* const plugin, int const index) {
 
 void __cdecl principia__SetPartApparentRigidMotion(
     Plugin* const plugin,
-    uint32_t const part_id,
+    PartId const part_id,
     QP const degrees_of_freedom,
     WXYZ const rotation,
     XYZ const angular_velocity,
