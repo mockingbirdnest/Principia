@@ -122,6 +122,15 @@ class AcceleratedRigidMotion final {
   Vector<Acceleration, FromFrame> const acceleration_of_to_frame_origin_;
 };
 
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         RigidMotion<FromFrame, ToFrame> const& rigid_motion);
+
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(
+    std::ostream& out,
+    AcceleratedRigidMotion<FromFrame, ToFrame> const& accelerated_rigid_motion);
+
 }  // namespace internal_rigid_motion
 
 using internal_rigid_motion::AcceleratedRigidMotion;
