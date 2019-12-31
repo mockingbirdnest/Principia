@@ -87,7 +87,6 @@ std::list<not_null<Part*>> const& PileUp::parts() const {
 void PileUp::SetPartApparentRigidMotion(
     not_null<Part*> const part,
     RigidMotion<RigidPart, ApparentBubble> const& rigid_motion) {
-  // TODO(phl): Propagate the rigid motion to the internal data structures.
   auto const [_, inserted] =
       apparent_part_rigid_motion_.emplace(part, rigid_motion);
   CHECK(inserted) << "Duplicate part " << part->ShortDebugString() << " at "
@@ -117,16 +116,15 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
                            /*forks=*/{psychohistory_});
   for (auto const& pair : actual_part_rigid_motion_) {
     auto const part = pair.first;
-    auto const& degrees_of_freedom = pair.second;
-    degrees_of_freedom.WriteToMessage(&(
+    auto const& rigid_motion = pair.second;
+    rigid_motion.WriteToMessage(&(
         (*message->mutable_actual_part_rigid_motion())[part->part_id()]));
   }
   for (auto const& pair : apparent_part_rigid_motion_) {
     auto const part = pair.first;
-    auto const& degrees_of_freedom = pair.second;
-    degrees_of_freedom.WriteToMessage(&(
-        (*message
-              ->mutable_apparent_part_rigid_motion())[part->part_id()]));
+    auto const& rigid_motion = pair.second;
+    rigid_motion.WriteToMessage(&(
+        (*message->mutable_apparent_part_rigid_motion())[part->part_id()]));
   }
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
