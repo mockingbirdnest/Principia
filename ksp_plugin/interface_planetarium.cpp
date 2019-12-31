@@ -217,9 +217,9 @@ Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
 }
 
 // Returns an iterator for the rendered past trajectory of the celestial with
-// the given index; the trajectory goes back as far as the history of the vessel
-// with the given GUID, or, if no vessel is provided, up to |max_history_length|
-// seconds before the present time.
+// the given index; the trajectory goes back |max_history_length| seconds before
+// the present time (or to the earliest time available if the relevant |t_min|
+// is more recent).
 Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
@@ -243,9 +243,7 @@ Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
         plugin->GetCelestial(celestial_index).trajectory();
     Instant const first_time = std::max(
         plugin->CurrentTime() - max_history_length * Second,
-        vessel_guid == nullptr
-            ? celestial_trajectory.t_min()
-            : plugin->GetVessel(vessel_guid)->psychohistory().t_min());
+            celestial_trajectory.t_min());
     auto const rp2_lines =
         planetarium->PlotMethod2(celestial_trajectory,
                                  first_time,
