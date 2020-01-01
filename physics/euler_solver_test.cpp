@@ -947,7 +947,7 @@ TEST_F(EulerSolverTest, Toutatis) {
 
   Solver::AttitudeRotation const initial_attitude =
       takahashi_initial_attitude *
-      takahashi_to_vanilla.Inverse().Forget<OrthogonalMap>().AsRotation();
+      takahashi_to_vanilla.Inverse().Forget<Rotation>();
   Bivector<AngularMomentum, PrincipalAxes> const initial_angular_momentum =
       takahashi_to_vanilla(takahashi_initial_angular_momentum);
 
@@ -1135,7 +1135,7 @@ TEST_F(EulerSolverTest, Toutatis) {
 
     Solver::AttitudeRotation const expected_attitude =
         takahashi_expected_attitude *
-        takahashi_to_vanilla.Inverse().Forget<OrthogonalMap>().AsRotation();
+        takahashi_to_vanilla.Inverse().Forget<Rotation>();
     AngularVelocity<PrincipalAxes> const expected_angular_velocity =
         takahashi_to_vanilla(takahashi_expected_angular_velocity);
 

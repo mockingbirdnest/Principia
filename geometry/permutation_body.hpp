@@ -88,6 +88,17 @@ LinearMap<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Forget() const {
     return OrthogonalMap<FromFrame, ToFrame>(
         quaternion[INDEX_MASK &
                    (static_cast<int>(coordinate_permutation_) >> INDEX)]);
+  } else if constexpr (FromFrame::handedness == ToFrame::handedness &&
+                       std::is_same_v<LinearMap<FromFrame, ToFrame>,
+                                      Rotation<FromFrame, ToFrame>>) {
+    static double const sqrt_half = quantities::Sqrt(0.5);
+    static std::array<Quaternion, 6> const quaternion = {
+        /*XYZ*/ Quaternion(1),
+        /*YZX*/ Quaternion(0.5, {-0.5, -0.5, -0.5}),
+        /*ZXY*/ Quaternion(0.5, {0.5, 0.5, 0.5})};
+    return Rotation<FromFrame, ToFrame>(
+        quaternion[INDEX_MASK &
+                   (static_cast<int>(coordinate_permutation_) >> INDEX)]);
   } else {
     static_assert(false, "Unable to forget permutation");
   }
