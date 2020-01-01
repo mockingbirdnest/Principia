@@ -60,8 +60,9 @@ Identity<FromFrame, ToFrame>::operator()(T const& t) const {
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
-  return OrthogonalMap<FromFrame, ToFrame>::Identity();
+template<template<typename, typename> typename LinearMap>
+LinearMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
+  return LinearMap<FromFrame, ToFrame>::Identity();
 }
 
 template<typename FromFrame, typename ToFrame>

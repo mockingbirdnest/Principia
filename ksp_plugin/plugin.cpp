@@ -319,10 +319,10 @@ Rotation<BodyWorld, World> Plugin::CelestialRotation(
 
   OrthogonalMap<BodyWorld, World> const result =
       OrthogonalMap<WorldSun, World>::Identity() *
-      sun_looking_glass.Inverse().Forget() *
-      (PlanetariumRotation() *
-       body.FromSurfaceFrame<BodyFixed>(current_time_)).Forget() *
-      body_mirror.Forget();
+      sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
+      (PlanetariumRotation() * body.FromSurfaceFrame<BodyFixed>(current_time_))
+          .Forget<OrthogonalMap>() *
+      body_mirror.Forget<OrthogonalMap>();
   return result.AsRotation();
 }
 
@@ -331,9 +331,9 @@ Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
   Permutation<CelestialSphere, Barycentric> const celestial_mirror(
       OddPermutation::XZY);
   auto const result = OrthogonalMap<WorldSun, World>::Identity() *
-                      sun_looking_glass.Inverse().Forget() *
-                      PlanetariumRotation().Forget() *
-                      celestial_mirror.Forget();
+                      sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
+                      PlanetariumRotation().Forget<OrthogonalMap>() *
+                      celestial_mirror.Forget<OrthogonalMap>();
   return result.AsRotation();
 }
 
@@ -435,7 +435,7 @@ void Plugin::InsertOrKeepLoadedPart(
 
   Instant const previous_time = current_time_ - Δt;
   OrthogonalMap<Barycentric, Barycentric> const Δplanetarium_rotation =
-      Exp(Δt * angular_velocity_of_world_).Forget();
+      Exp(Δt * angular_velocity_of_world_).Forget<OrthogonalMap>();
   // TODO(egg): Can we use |BarycentricToWorld| here?
   BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
       main_body_frame{ephemeris_.get(),
@@ -1111,22 +1111,24 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
               barycentric_right_handed_field_ == nullptr
                   ? renderer.PlottingToBarycentric(current_time) *
                         navigation_right_handed_field_->
-                            FromThisFrame(q_in_plotting).Forget()
+                            FromThisFrame(q_in_plotting).Forget<OrthogonalMap>()
                   : barycentric_right_handed_field_->FromThisFrame(
                         renderer.WorldToBarycentric(
                             current_time,
                             sun_world_position_,
-                            planetarium_rotation)(q)).Forget();
+                            planetarium_rotation)(q)).Forget<OrthogonalMap>();
 
       // KSP's navball has x west, y up, z south.
       // We want x north, y east, z down.
       OrthogonalMap<Navball, World> const orthogonal_map =
           renderer.BarycentricToWorld(planetarium_rotation) *
           right_handed_navball_to_barycentric *
-          Permutation<World, RightHandedNavball>(OddPermutation::XZY).Forget() *
+          Permutation<World, RightHandedNavball>(OddPermutation::XZY)
+              .Forget<OrthogonalMap>() *
           Rotation<Navball, World>(π / 2 * Radian,
                                    Bivector<double, World>({0, 1, 0}),
-                                   DefinesFrame<Navball>()).Forget();
+                                   DefinesFrame<Navball>())
+                                   .Forget<OrthogonalMap>();
       return orthogonal_map.AsRotation();
     }
 

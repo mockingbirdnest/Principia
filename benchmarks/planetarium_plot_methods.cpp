@@ -78,11 +78,12 @@ Perspective<Navigation, Camera> PolarPerspective(
           Rotation<LeftNavigation, Camera>(
               Vector<double, LeftNavigation>({1, 0, 0}),
               Vector<double, LeftNavigation>({0, -1, 0}),
-              Bivector<double, LeftNavigation>({0, 0, -1})).Forget() *
+              Bivector<double, LeftNavigation>({0, 0, -1}))
+              .Forget<OrthogonalMap>() *
           Signature<Navigation, LeftNavigation>(
               Sign::Positive(),
               Sign::Positive(),
-              DeduceSignReversingOrientation{}).Forget()),
+              DeduceSignReversingOrientation{}).Forget<OrthogonalMap>()),
       focal};
 }
 
@@ -98,11 +99,12 @@ Perspective<Navigation, Camera> EquatorialPerspective(
           Rotation<LeftNavigation, Camera>(
               Vector<double, LeftNavigation>({1, 0, 0}),
               Vector<double, LeftNavigation>({0, 0, 1}),
-              Bivector<double, LeftNavigation>({0, -1, 0})).Forget() *
+              Bivector<double, LeftNavigation>({0, -1, 0}))
+              .Forget<OrthogonalMap>() *
           Signature<Navigation, LeftNavigation>(
               Sign::Positive(),
               Sign::Positive(),
-              DeduceSignReversingOrientation{}).Forget()),
+              DeduceSignReversingOrientation{}).Forget<OrthogonalMap>()),
       focal};
 }
 

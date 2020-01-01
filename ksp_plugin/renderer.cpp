@@ -188,7 +188,8 @@ OrthogonalMap<Barycentric, World> Renderer::BarycentricToWorld(
 
 OrthogonalMap<Barycentric, WorldSun> Renderer::BarycentricToWorldSun(
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return sun_looking_glass.Inverse().Forget() * planetarium_rotation.Forget();
+  return sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
+         planetarium_rotation.Forget<OrthogonalMap>();
 }
 
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
@@ -216,7 +217,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
               plotting_frame_degrees_of_freedom);
 
   return PlottingToWorld(back.time, planetarium_rotation) *
-         frenet_frame_to_plotting_frame.Forget();
+         frenet_frame_to_plotting_frame.Forget<OrthogonalMap>();
 }
 
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
@@ -229,7 +230,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
   auto const frenet_frame =
       navigation_frame.FrenetFrame(
           back.time,
-          to_navigation(back.degrees_of_freedom)).Forget();
+          to_navigation(back.degrees_of_freedom)).Forget<OrthogonalMap>();
   return BarycentricToWorld(planetarium_rotation) * from_navigation *
          frenet_frame;
 }
@@ -282,9 +283,10 @@ Rotation<CameraReference, World> Renderer::CameraReferenceRotation(
       OddPermutation::XZY);
   auto const result =
       OrthogonalMap<WorldSun, World>::Identity() *
-      sun_looking_glass.Inverse().Forget() * planetarium_rotation.Forget() *
+      sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
+      planetarium_rotation.Forget<OrthogonalMap>() *
       GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map() *
-      celestial_mirror.Forget();
+      celestial_mirror.Forget<OrthogonalMap>();
   return result.AsRotation();
 }
 

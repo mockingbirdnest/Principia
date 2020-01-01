@@ -171,7 +171,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   ℛ_ = [this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
     auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
     auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_).Inverse();
-    auto const 𝒮⁻¹ = 𝒮_.Inverse().Forget().AsRotation();
+    auto const 𝒮⁻¹ = 𝒮_.Inverse().Forget<Rotation>();
 
     // This ℛ follows the assumptions in the third paragraph of section 2.3
     // of [CFSZ07], that is, the inertial frame is identified with the
@@ -380,17 +380,17 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     case Region::e₁: {
       Bivector<double, ℬʹ> const e₁({1, 0, 0});
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₁, DefinesFrame<ℬₜ>{});
-      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.Forget().AsRotation();
+      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.Forget<Rotation>();
     }
     case Region::e₃: {
       Bivector<double, ℬʹ> const e₃({0, 0, 1});
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₃, DefinesFrame<ℬₜ>{});
-      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.Forget().AsRotation();
+      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.Forget<Rotation>();
     }
     case Region::Motionless: {
       Bivector<double, ℬʹ> const unused({0, 1, 0});
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, unused, DefinesFrame<ℬₜ>{});
-      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.Forget().AsRotation();
+      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.Forget<Rotation>();
     }
     default:
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);

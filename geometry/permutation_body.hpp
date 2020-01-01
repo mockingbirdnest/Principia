@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
@@ -15,6 +16,8 @@
 namespace principia {
 namespace geometry {
 namespace internal_permutation {
+
+using base::is_same_template_v;
 
 template<typename FromFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame>::Permutation(
@@ -73,19 +76,24 @@ Permutation<FromFrame, ToFrame>::operator()(T const& t) const {
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame>
-Permutation<FromFrame, ToFrame>::Forget() const {
+template<template<typename, typename> typename LinearMap>
+LinearMap<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Forget() const {
+  static_assert(is_same_template_v<LinearMap, OrthogonalMap> ||
+                is_same_template_v<LinearMap, Rotation>,
+                "Unable to forget permutation");
+  Quaternion quaternion;
   static double const sqrt_half = quantities::Sqrt(0.5);
-  static std::array<Quaternion, 6> const quaternion = {
+  static std::array<Quaternion, 6> const quaternions = {
       /*XYZ*/ Quaternion(1),
       /*YZX*/ Quaternion(0.5, {-0.5, -0.5, -0.5}),
       /*ZXY*/ Quaternion(0.5, {0.5, 0.5, 0.5}),
       /*XZY*/ Quaternion(0, {0, -sqrt_half, sqrt_half}),
       /*ZYX*/ Quaternion(0, {-sqrt_half, 0, sqrt_half}),
       /*YXZ*/ Quaternion(0, {-sqrt_half, sqrt_half, 0})};
-  return OrthogonalMap<FromFrame, ToFrame>(
-             quaternion[INDEX_MASK &
-                        (static_cast<int>(coordinate_permutation_) >> INDEX)]);
+  quaternion =
+      quaternions[INDEX_MASK &
+                  (static_cast<int>(coordinate_permutation_) >> INDEX)];
+  return LinearMap<FromFrame, ToFrame>(quaternion);
 }
 
 template<typename FromFrame, typename ToFrame>

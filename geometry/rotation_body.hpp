@@ -5,6 +5,7 @@
 
 #include <algorithm>
 
+#include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
@@ -16,6 +17,7 @@ namespace principia {
 namespace geometry {
 namespace internal_rotation {
 
+using base::is_same_template_v;
 using base::not_null;
 using quantities::Cos;
 using quantities::Sin;
@@ -264,7 +266,10 @@ Rotation<FromFrame, ToFrame>::operator()(T const& t) const {
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
+template<template<typename, typename> typename LinearMap>
+LinearMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
+  static_assert(is_same_template_v<LinearMap, OrthogonalMap>,
+                "Unable to forget rotation");
   return OrthogonalMap<FromFrame, ToFrame>(quaternion_);
 }
 

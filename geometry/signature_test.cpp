@@ -83,12 +83,12 @@ TEST_F(SignatureTest, Forget) {
                          DeduceSignReversingOrientation{})}};
   auto const test_forget_for = [this](auto const& signatures) {
     for (auto const& signature : signatures) {
-      EXPECT_THAT(signature.Forget()(vector_), Eq(signature(vector_)))
-          << signature;
-      EXPECT_THAT(signature.Forget()(bivector_), Eq(signature(bivector_)))
-          << signature;
-      EXPECT_THAT(signature.Forget()(trivector_), Eq(signature(trivector_)))
-          << signature;
+      EXPECT_THAT(signature.Forget<OrthogonalMap>()(vector_),
+                  Eq(signature(vector_))) << signature;
+      EXPECT_THAT(signature.Forget<OrthogonalMap>()(bivector_),
+                  Eq(signature(bivector_))) << signature;
+      EXPECT_THAT(signature.Forget<OrthogonalMap>()(trivector_),
+                  Eq(signature(trivector_))) << signature;
     }
   };
   test_forget_for(all_positive_signatures);

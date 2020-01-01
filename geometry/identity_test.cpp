@@ -97,7 +97,7 @@ TEST_F(IdentityTest, Inverse) {
 }
 
 TEST_F(IdentityTest, Forget) {
-  EXPECT_THAT(Id().Forget()(vector_).coordinates(),
+  EXPECT_THAT(Id().Forget<OrthogonalMap>()(vector_).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
 }
 
@@ -110,9 +110,9 @@ TEST_F(IdentityTest, Compose) {
   using Id13 = Identity<World1, World3>;
   using Id23 = Identity<World2, World3>;
   Id12 id12;
-  Orth12 const o12 = id12.Forget();
+  Orth12 const o12 = id12.Forget<OrthogonalMap>();
   Id23 id23;
-  Orth23 const o23 = id23.Forget();
+  Orth23 const o23 = id23.Forget<OrthogonalMap>();
   Id13 const id13 = id23 * id12;
   Orth13 const o13 = o23 * o12;
   for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {

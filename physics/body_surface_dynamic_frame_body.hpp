@@ -13,6 +13,7 @@ namespace internal_body_surface_dynamic_frame {
 using base::check_not_null;
 using base::dynamic_cast_not_null;
 using geometry::AngularVelocity;
+using geometry::OrthogonalMap;
 using geometry::Rotation;
 using quantities::Variation;
 
@@ -56,7 +57,7 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(centre_degrees_of_freedom.position(),
                            ThisFrame::origin,
-                           rotation.Forget());
+                           rotation.Forget<OrthogonalMap>());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              angular_velocity,

@@ -223,7 +223,8 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   template<typename T>
   typename base::Mappable<Rotation, T>::type operator()(T const& t) const;
 
-  OrthogonalMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename> typename LinearMap>
+  LinearMap<FromFrame, ToFrame> Forget() const;
 
   static Rotation Identity();
 

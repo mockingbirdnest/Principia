@@ -101,10 +101,10 @@ Planetarium* __cdecl principia__PlanetariumCreate(
   Position<World> const camera_position_in_world =
       FromXYZ<Position<World>>(xyz_camera_position_in_world);
 
-  RigidTransformation<Camera, World> const
-      camera_to_world_affine_map(Camera::origin,
-                                 camera_position_in_world,
-                                 camera_to_world_rotation.Forget());
+  RigidTransformation<Camera, World> const camera_to_world_affine_map(
+      Camera::origin,
+      camera_position_in_world,
+      camera_to_world_rotation.Forget<OrthogonalMap>());
   RigidTransformation<World, Navigation> const
       world_to_plotting_affine_map =
           renderer.WorldToPlotting(plugin->CurrentTime(),

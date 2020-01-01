@@ -62,7 +62,7 @@ TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
           Navigation::origin,
           Permutation<World, Navigation>(
               Permutation<World, Navigation>::CoordinatePermutation::YXZ)
-              .Forget())));
+              .Forget<OrthogonalMap>())));
   EXPECT_CALL(*plugin_, FillPlanetarium(_, _, _))
       .WillOnce(FillUniquePtr<2>(new MockPlanetarium));
 

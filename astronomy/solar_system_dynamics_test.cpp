@@ -43,6 +43,7 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::Instant;
+using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Rotation;
 using geometry::Velocity;
@@ -216,7 +217,9 @@ class SolarSystemDynamicsTest : public ::testing::Test {
           parent_axis_declination, normal, DefinesFrame<ParentEquator>{});
     }
     RigidMotion<ICRS, ParentEquator> const to_parent_equator(
-        {ICRS::origin, ParentEquator::origin, rotation->Forget()},
+        {ICRS::origin,
+         ParentEquator::origin,
+         rotation->Forget<OrthogonalMap>()},
         /*angular_velocity_of_to_frame=*/ICRS::nonrotating,
         /*velocity_of_to_frame_origin=*/ICRS::unmoving);
 

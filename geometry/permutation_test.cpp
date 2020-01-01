@@ -155,24 +155,30 @@ TEST_F(PermutationTest, Inverse) {
 }
 
 TEST_F(PermutationTest, Forget) {
-  EXPECT_THAT(PermutationR1R2(EvenPermutation::XYZ).Forget()(vector_),
-              Componentwise(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-  EXPECT_THAT(PermutationR1R2(EvenPermutation::YZX).Forget()(vector_),
-              Componentwise(2.0 * Metre, 3.0 * Metre, 1.0 * Metre));
-  EXPECT_THAT(PermutationR1R2(EvenPermutation::ZXY).Forget()(vector_),
-              Componentwise(3.0 * Metre, 1.0 * Metre, 2.0 * Metre));
-  EXPECT_THAT(PermutationR1L(OddPermutation::XZY).Forget()(vector_),
-              Componentwise(AlmostEquals(1.0 * Metre, 2),
-                            AlmostEquals(3.0 * Metre, 2),
-                            AlmostEquals(2.0 * Metre, 2)));
-  EXPECT_THAT(PermutationR1L(OddPermutation::ZYX).Forget()(vector_),
-              Componentwise(AlmostEquals(3.0 * Metre, 2),
-                            AlmostEquals(2.0 * Metre, 2),
-                            AlmostEquals(1.0 * Metre, 4)));
-  EXPECT_THAT(PermutationR1L(OddPermutation::YXZ).Forget()(vector_),
-              Componentwise(AlmostEquals(2.0 * Metre, 1),
-                            AlmostEquals(1.0 * Metre, 2),
-                            AlmostEquals(3.0 * Metre, 2)));
+  EXPECT_THAT(
+      PermutationR1R2(EvenPermutation::XYZ).Forget<OrthogonalMap>()(vector_),
+      Componentwise(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
+  EXPECT_THAT(
+      PermutationR1R2(EvenPermutation::YZX).Forget<OrthogonalMap>()(vector_),
+      Componentwise(2.0 * Metre, 3.0 * Metre, 1.0 * Metre));
+  EXPECT_THAT(
+      PermutationR1R2(EvenPermutation::ZXY).Forget<OrthogonalMap>()(vector_),
+      Componentwise(3.0 * Metre, 1.0 * Metre, 2.0 * Metre));
+  EXPECT_THAT(
+      PermutationR1L(OddPermutation::XZY).Forget<OrthogonalMap>()(vector_),
+      Componentwise(AlmostEquals(1.0 * Metre, 2),
+                    AlmostEquals(3.0 * Metre, 2),
+                    AlmostEquals(2.0 * Metre, 2)));
+  EXPECT_THAT(
+      PermutationR1L(OddPermutation::ZYX).Forget<OrthogonalMap>()(vector_),
+      Componentwise(AlmostEquals(3.0 * Metre, 2),
+                    AlmostEquals(2.0 * Metre, 2),
+                    AlmostEquals(1.0 * Metre, 4)));
+  EXPECT_THAT(
+      PermutationR1L(OddPermutation::YXZ).Forget<OrthogonalMap>()(vector_),
+      Componentwise(AlmostEquals(2.0 * Metre, 1),
+                    AlmostEquals(1.0 * Metre, 2),
+                    AlmostEquals(3.0 * Metre, 2)));
 }
 
 TEST_F(PermutationTest, Compose) {
@@ -203,7 +209,7 @@ TEST_F(PermutationTest, Compose) {
       for (auto const& right : rhs) {
         auto const composition = left * right;
         auto const composition_as_orthogonal_maps =
-            left.Forget() * right.Forget();
+            left.Forget<OrthogonalMap>() * right.Forget<OrthogonalMap>();
         for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
           // TODO(egg): In C++20 we could have template parameters on the lambda
           // which would allow us to deduce this type, instead of having to pass

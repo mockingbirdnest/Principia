@@ -478,8 +478,9 @@ TEST_F(PluginTest, Initialization) {
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
-    auto const to_icrs = id_icrs_barycentric_.orthogonal_map().Inverse() *
-                         plugin_->InversePlanetariumRotation().Forget();
+    auto const to_icrs =
+        id_icrs_barycentric_.orthogonal_map().Inverse() *
+        plugin_->InversePlanetariumRotation().Forget<OrthogonalMap>();
     Index const parent_index = SolarSystemFactory::parent(index);
     RelativeDegreesOfFreedom<ICRS> const from_parent =
         solar_system_->degrees_of_freedom(SolarSystemFactory::name(index)) -
@@ -1027,8 +1028,9 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
-    auto const to_icrs = id_icrs_barycentric_.orthogonal_map().Inverse() *
-                         plugin_->InversePlanetariumRotation().Forget();
+    auto const to_icrs =
+        id_icrs_barycentric_.orthogonal_map().Inverse() *
+        plugin_->InversePlanetariumRotation().Forget<OrthogonalMap>();
     RelativeDegreesOfFreedom<ICRS> const initial_from_parent =
         solar_system_->degrees_of_freedom(SolarSystemFactory::name(index)) -
         solar_system_->degrees_of_freedom(

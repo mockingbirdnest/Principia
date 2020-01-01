@@ -26,7 +26,8 @@ class MockPlanetarium : public Planetarium {
                 RigidTransformation<Navigation, Camera>(
                     Navigation::origin,
                     Camera::origin,
-                    Signature<Navigation, Camera>::CentralInversion().Forget()),
+                    Signature<Navigation, Camera>::CentralInversion()
+                    .Forget<OrthogonalMap>()),
                 1 * Metre),
             make_not_null<Ephemeris<Barycentric> const*>(),
             make_not_null<NavigationFrame const*>()) {}
