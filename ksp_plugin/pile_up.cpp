@@ -228,8 +228,9 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
       std::uint32_t const part_id = pair.first;
       serialization::RigidMotion const& rigid_motion = pair.second;
       pile_up->actual_part_rigid_motion_.emplace(
-        part_id_to_part(part_id),
-        RigidMotion<RigidPart, NonRotatingPileUp>::ReadFromMessage(rigid_motion));
+          part_id_to_part(part_id),
+          RigidMotion<RigidPart, NonRotatingPileUp>::ReadFromMessage(
+              rigid_motion));
     }
     for (auto const& pair : message.apparent_part_rigid_motion()) {
       std::uint32_t const part_id = pair.first;
