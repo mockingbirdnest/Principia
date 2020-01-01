@@ -163,9 +163,9 @@ message Frame {
     MAIN_BODY_CENTRED = 15;
     NAVBALL = 10;
     NAVIGATION = 4;
+    NON_ROTATING_PILE_UP = 11;
     // PRE_BOREL_BARYCENTRIC = 3;
     RIGID_PART = 16;
-    NON_ROTATING_PILE_UP = 11;
     WORLD = 5;
     WORLD_SUN = 6;
   }
