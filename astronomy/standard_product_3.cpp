@@ -374,7 +374,7 @@ StandardProduct3::StandardProduct3(
       }
 
       // Bad or absent positional and velocity values are to be set to 0.000000.
-      if (position == ITRS::origin || velocity == Velocity<ITRS>()) {
+      if (position == ITRS::origin || velocity == ITRS::unmoving) {
         if (!arc.Empty()) {
           orbit.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
         }

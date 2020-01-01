@@ -15,7 +15,7 @@ using geometry::Velocity;
 template<typename Frame>
 JacobiCoordinates<Frame>::JacobiCoordinates(MassiveBody const& primary) {
   static DegreesOfFreedom<PrimocentricFrame> const motionless_origin = {
-      PrimocentricFrame::origin, Velocity<PrimocentricFrame>()};
+      PrimocentricFrame::origin, PrimocentricFrame::unmoving};
   primocentric_dof_.emplace_back(motionless_origin);
   system_barycentre_.Add(primocentric_dof_.back(),
                          primary.gravitational_parameter());

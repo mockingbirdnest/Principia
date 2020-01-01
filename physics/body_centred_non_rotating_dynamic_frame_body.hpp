@@ -75,7 +75,7 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
                            orthogonal_map_);
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
-             AngularVelocity<InertialFrame>(),
+             InertialFrame::nonrotating,
              centre_degrees_of_freedom.velocity());
 }
 

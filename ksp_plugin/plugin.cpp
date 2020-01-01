@@ -350,7 +350,7 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
 }
 
 void Plugin::ClearWorldRotationalReferenceFrame() {
-  angular_velocity_of_world_ = AngularVelocity<Barycentric>();
+  angular_velocity_of_world_ = Barycentric::nonrotating;
 }
 
 void Plugin::SetWorldRotationalReferenceFrame(Index const celestial_index) {
@@ -685,7 +685,7 @@ RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
           main_body_to_world_rigid_transformation.Inverse(),
           -(main_body_to_world_rigid_transformation.linear_map() *
                 barycentric_to_main_body_rotation)(angular_velocity_of_world_),
-      /*velocity_of_to_frame_origin=*/Velocity<World>()}.Inverse();
+          /*velocity_of_to_frame_origin=*/World::unmoving}.Inverse();
     }
   }();
   return main_body_to_world * barycentric_to_main_body_motion;

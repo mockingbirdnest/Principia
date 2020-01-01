@@ -169,7 +169,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
         moon_(dynamic_cast_not_null<OblateBody<ICRS> const*>(
             solar_system_2000_.massive_body(*ephemeris_, "Moon"))),
         lunar_frame_(ephemeris_.get(), moon_),
-        selenocentre_(Selenocentric::origin, Velocity<Selenocentric>{}) {
+        selenocentre_(Selenocentric::origin, Selenocentric::unmoving) {
     google::LogToStderr();
   }
 
@@ -194,7 +194,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
             Selenocentric::origin,
             OrthogonalMap<LunarSurface, Selenocentric>::Identity() *
                 lunar_frame_.ToThisFrameAtTime(J2000).orthogonal_map()),
-        /*angular_velocity_of_to_frame=*/AngularVelocity<ICRS>{},
+        /*angular_velocity_of_to_frame=*/ICRS::nonrotating,
         /*velocity_of_to_frame_origin=*/
         ephemeris_->trajectory(moon_)->EvaluateVelocity(t));
   }

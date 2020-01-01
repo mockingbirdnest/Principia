@@ -239,8 +239,7 @@ class KSPResonanceTest : public ::testing::Test {
   std::vector<not_null<MassiveBody const*>> joolian_moons_;
   Time longest_joolian_period_;
   Periods expected_periods_;
-  // TODO(egg): Frame::unmoving_origin, I have to do this in several places.
-  DegreesOfFreedom<KSP> const origin_ = {KSP::origin, Velocity<KSP>()};
+  DegreesOfFreedom<KSP> const origin_ = {KSP::origin, KSP::unmoving};
 
   Instant short_term_;
   Instant mid_term_;

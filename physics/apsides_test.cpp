@@ -64,7 +64,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b));
-  initial_state.emplace_back(World::origin, Velocity<World>());
+  initial_state.emplace_back(World::origin, World::unmoving);
 
   Ephemeris<World> ephemeris(
       std::move(bodies),
@@ -158,7 +158,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b));
-  initial_state.emplace_back(World::origin, Velocity<World>());
+  initial_state.emplace_back(World::origin, World::unmoving);
 
   Ephemeris<World> ephemeris(
       std::move(bodies),

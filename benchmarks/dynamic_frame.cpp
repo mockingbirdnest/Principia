@@ -151,8 +151,8 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
                                       0 * AstronomicalUnit});
   Velocity<Barycentric> probe_velocity =
       Velocity<Barycentric>({0 * SIUnit<Speed>(),
-                                  100 * Kilo(Metre) / Second,
-                                  0 * SIUnit<Speed>()});
+                             100 * Kilo(Metre) / Second,
+                             0 * SIUnit<Speed>()});
   DiscreteTrajectory<Barycentric> probe_trajectory;
   FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
                                                         probe_velocity,

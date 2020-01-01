@@ -53,6 +53,7 @@ struct Frame : not_constructible {
 
   static const Position<Frame> origin;
   static const Velocity<Frame> unmoving;
+  static const AngularVelocity<Frame> nonrotating;
 
   using Tag = FrameTag;
   static constexpr Tag tag = tag_;

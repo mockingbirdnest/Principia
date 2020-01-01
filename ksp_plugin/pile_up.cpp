@@ -63,7 +63,7 @@ PileUp::PileUp(
           barycentre.position(),
           RigidPileUp::origin,
           Identity<Barycentric, RigidPileUp>().Forget()},
-      AngularVelocity<Barycentric>{},
+      Barycentric::nonrotating,
       barycentre.velocity()};
   for (not_null<Part*> const part : parts_) {
     actual_part_rigid_motion_.emplace(
@@ -297,7 +297,7 @@ void PileUp::DeformPileUpIfNeeded() {
   RigidMotion<ApparentBubble, RigidPileUp> const
       apparent_bubble_to_pile_up_motion(
           apparent_bubble_to_pile_up_transformation,
-          AngularVelocity<ApparentBubble>(),
+          ApparentBubble::nonrotating,
           apparent_centre_of_mass.velocity());
 
   // Now update the positions of the parts in the pile-up frame.
@@ -398,7 +398,7 @@ void PileUp::NudgeParts() const {
           actual_centre_of_mass.position(),
           RigidPileUp::origin,
           Identity<Barycentric, RigidPileUp>().Forget()},
-      AngularVelocity<Barycentric>(),
+      Barycentric::nonrotating,
       actual_centre_of_mass.velocity()};
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
@@ -416,7 +416,7 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
           pile_up_dof.position(),
           RigidPileUp::origin,
           Identity<Barycentric, RigidPileUp>().Forget()),
-      AngularVelocity<Barycentric>{},
+      Barycentric::nonrotating,
       pile_up_dof.velocity());
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
@@ -454,7 +454,7 @@ DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
           RigidPileUp::origin,
           pile_up_barycentre.position(),
           Identity<RigidPileUp, Barycentric>().Forget()),
-      AngularVelocity<Barycentric>{},
+      Barycentric::nonrotating,
       pile_up_barycentre.velocity());
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up =
       pile_up_to_barycentric.Inverse();
@@ -476,7 +476,7 @@ DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
             part_inertia_tensor,
             part_to_pile_up.Inverse().angular_velocity_of_to_frame());
     DegreesOfFreedom<RigidPileUp> const part_degrees_of_freedom =
-        part_to_pile_up({RigidPart::origin, Velocity<RigidPart>{}});
+        part_to_pile_up({RigidPart::origin, RigidPart::unmoving});
     pile_up_angular_momentum +=
         part_angular_momentum +
         Wedge(part_degrees_of_freedom.position() - RigidPileUp::origin,

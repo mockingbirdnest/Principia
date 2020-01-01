@@ -61,6 +61,10 @@ template<typename FrameTag,
          FrameMotion motion_, Handedness handedness_, FrameTag tag_>
 Velocity<Frame<FrameTag, motion_, handedness_, tag_>> const
 Frame<FrameTag, motion_, handedness_, tag_>::unmoving;
+template<typename FrameTag,
+         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+AngularVelocity<Frame<FrameTag, motion_, handedness_, tag_>> const
+Frame<FrameTag, motion_, handedness_, tag_>::nonrotating;
 
 inline void ReadFrameFromMessage(
     serialization::Frame const& message,

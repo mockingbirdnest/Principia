@@ -73,7 +73,7 @@ TEST_F(Hermite3Test, Typed) {
   // Just here to check that the types work in the presence of affine spaces.
   Hermite3<Instant, Position<World>> h({t0_ + 1 * Second, t0_ + 2 * Second},
                                        {World::origin, World::origin},
-                                       {Velocity<World>(), Velocity<World>()});
+                                       {World::unmoving, World::unmoving});
 
   EXPECT_EQ(World::origin, h.Evaluate(t0_ + 1.3 * Second));
   EXPECT_EQ(Velocity<World>(), h.EvaluateDerivative(t0_ + 1.7 * Second));

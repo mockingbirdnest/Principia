@@ -292,8 +292,8 @@ RigidMotion<ICRS, Barycentric> const PluginTest::id_icrs_barycentric_(
         ICRS::origin,
         Barycentric::origin,
         OrthogonalMap<ICRS, Barycentric>::Identity()),
-    AngularVelocity<ICRS>(),
-    Velocity<ICRS>());
+    ICRS::nonrotating,
+    ICRS::unmoving);
 
 using PluginDeathTest = PluginTest;
 
@@ -741,7 +741,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   GUID const guid = "Test Satellite";
   PartId const part_id = 666;
   auto const dof = DegreesOfFreedom<Barycentric>(Barycentric::origin,
-                                                 Velocity<Barycentric>());
+                                                 Barycentric::unmoving);
   Instant const initial_time = ParseTT(initial_time_);
   Instant const time = initial_time + 1 * Second;
   Instant t_max = time;
@@ -782,8 +782,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillRepeatedly(Return(
           RigidMotion<Barycentric, Navigation>(
               RigidTransformation<Barycentric, Navigation>::Identity(),
-              AngularVelocity<Barycentric>(),
-              Velocity<Barycentric>())));
+              Barycentric::nonrotating,
+              Barycentric::unmoving)));
   EXPECT_CALL(*mock_dynamic_frame, FrenetFrame(_, _))
       .WillRepeatedly(Return(
           MockDynamicFrame<Barycentric, Navigation>::Rot::Identity()));
@@ -860,7 +860,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   GUID const guid = "Test Satellite";
   PartId const part_id = 666;
   auto const dof = DegreesOfFreedom<Barycentric>(Barycentric::origin,
-                                                 Velocity<Barycentric>());
+                                                 Barycentric::unmoving);
 
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();

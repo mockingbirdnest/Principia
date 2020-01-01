@@ -190,8 +190,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
                               step,
                               tolerance);
   trajectory->Append(Instant(),
-                     DegreesOfFreedom<World>(Position<World>(),
-                                             Velocity<World>()));
+                     DegreesOfFreedom<World>(World::origin, World::unmoving));
 
   // A case where the errors smoothly decrease.
   {

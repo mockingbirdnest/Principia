@@ -39,7 +39,7 @@ Part::Part(
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
       deletion_callback_(std::move(deletion_callback)) {
   prehistory_->Append(astronomy::InfinitePast,
-                      {Barycentric::origin, Velocity<Barycentric>()});
+                      {Barycentric::origin, Barycentric::unmoving});
   history_ = prehistory_->NewForkAtLast();
 }
 
@@ -85,7 +85,7 @@ RigidMotion<RigidPart, Barycentric> const& Part::rigid_motion() const {
 }
 
 DegreesOfFreedom<Barycentric> Part::degrees_of_freedom() const {
-  return rigid_motion_({RigidPart::origin, Velocity<RigidPart>{}});
+  return rigid_motion_({RigidPart::origin, RigidPart::unmoving});
 }
 
 DiscreteTrajectory<Barycentric>::Iterator Part::history_begin() {

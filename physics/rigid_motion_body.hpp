@@ -75,7 +75,7 @@ RigidMotion<FromFrame, ToFrame>::Inverse() const {
   return RigidMotion<ToFrame, FromFrame>(
       rigid_transformation_.Inverse(),
       -orthogonal_map()(angular_velocity_of_to_frame_),
-      (*this)({FromFrame::origin, Velocity<FromFrame>()}).velocity());
+      (*this)({FromFrame::origin, FromFrame::unmoving}).velocity());
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -87,7 +87,7 @@ RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
                            FromFrame::origin,
                            degrees_of_freedom_of_from_frame_origin.position(),
                            geometry::Identity<FromFrame, ToFrame>().Forget()),
-                       AngularVelocity<ToFrame>{},
+                       ToFrame::nonrotating,
                        degrees_of_freedom_of_from_frame_origin.velocity());
   } else {
     // TODO(phl): This is extremely dubious.  We apply the sun_looking_glass
@@ -100,7 +100,7 @@ RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
                 geometry::Permutation<FromFrame,
                                       ToFrame>::CoordinatePermutation::XZY)
                 .Forget()),
-        AngularVelocity<ToFrame>{},
+        ToFrame::nonrotating,
         degrees_of_freedom_of_from_frame_origin.velocity());
   }
 }
@@ -131,8 +131,8 @@ template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
 RigidMotion<FromFrame, ToFrame> RigidMotion<FromFrame, ToFrame>::Identity() {
   return RigidMotion(RigidTransformation<FromFrame, ToFrame>::Identity(),
-                     AngularVelocity<FromFrame>{},
-                     Velocity<FromFrame>{});
+                     FromFrame::nonrotating,
+                     FromFrame::unmoving);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
@@ -144,7 +144,7 @@ RigidMotion<FromFrame, ToFrame> operator*(
       right.angular_velocity_of_to_frame_ +
           right.orthogonal_map().Inverse()(left.angular_velocity_of_to_frame_),
       right.Inverse()(left.Inverse()(
-          {ToFrame::origin, Velocity<ToFrame>()})).velocity());
+          {ToFrame::origin, ToFrame::unmoving})).velocity());
 }
 
 template<typename FromFrame, typename ToFrame>

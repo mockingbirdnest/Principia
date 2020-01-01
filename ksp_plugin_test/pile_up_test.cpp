@@ -567,7 +567,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
           Barycentric::origin +
               Displacement<Barycentric>(
                   {std::pow(2, 100) * Metre, 0 * Metre, 0 * Metre}),
-          Velocity<Barycentric>{}}};
+          Barycentric::unmoving}};
   Ephemeris<Barycentric> ephemeris{
       std::move(bodies),
       initial_state,

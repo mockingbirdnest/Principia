@@ -327,7 +327,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 }
 
 FlightPlan::FlightPlan()
-    : initial_degrees_of_freedom_(Barycentric::origin, Velocity<Barycentric>()),
+    : initial_degrees_of_freedom_(Barycentric::origin, Barycentric::unmoving),
       root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       adaptive_step_parameters_(

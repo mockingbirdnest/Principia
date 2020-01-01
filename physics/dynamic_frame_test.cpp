@@ -107,7 +107,7 @@ InertialFrame<OtherFrame, ThisFrame>::ToThisFrameAtTime(
                          origin_degrees_of_freedom_at_epoch_.velocity(),
                  ThisFrame::origin,
                  orthogonal_map_),
-             AngularVelocity<OtherFrame>(),
+             OtherFrame::nonrotating,
              origin_degrees_of_freedom_at_epoch_.velocity());
 }
 
