@@ -9,7 +9,7 @@ namespace internal_traits {
 template<template<typename...> typename T, typename U>
 struct is_instance_of : std::false_type {};
 
-template<template<typename...> class T, typename... Args>
+template<template<typename...> typename T, typename... Args>
 struct is_instance_of<T, T<Args...>> : std::true_type {};
 
 

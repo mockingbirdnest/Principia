@@ -106,31 +106,23 @@ Signature<FromFrame, ToFrame>::operator()(
 template<typename FromFrame, typename ToFrame>
 template<template<typename, typename> typename LinearMap>
 LinearMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget() const {
-  if constexpr (is_same_template_v<LinearMap, OrthogonalMap>) {
-    if (x_ == y_ && y_ == z_) {
-      return OrthogonalMap<FromFrame, ToFrame>(Quaternion(1));
-    }
+  static_assert(is_same_template_v<LinearMap, OrthogonalMap> ||
+                is_same_template_v<LinearMap, Rotation>,
+                "Unable to forget signature");
+  Quaternion quaternion;
+  if (x_ == y_ && y_ == z_) {
+    quaternion = Quaternion(1);
+  } else {
     // The signature is neither +++ nor ---, so dividing it by its determinant
     // yields a 180° rotation around one of the axes (+--, -+-, or --+).
     R3Element<double> const axis = (determinant_ * x_).is_positive()
-                                       ? R3Element<double>{1, 0, 0}
-                                       : (determinant_ * y_).is_positive()
-                                             ? R3Element<double>{0, 1, 0}
-                                             : R3Element<double>{0, 0, 1};
-    return OrthogonalMap<FromFrame, ToFrame>(Quaternion(0, axis));
-  } else if constexpr (is_same_template_v<LinearMap, Rotation>) {
-    if (x_ == y_ && y_ == z_) {
-      return Rotation<FromFrame, ToFrame>::Identity();
-    }
-    R3Element<double> const axis = (determinant_ * x_).is_positive()
-                                       ? R3Element<double>{1, 0, 0}
-                                       : (determinant_ * y_).is_positive()
-                                             ? R3Element<double>{0, 1, 0}
-                                             : R3Element<double>{0, 0, 1};
-    return Rotation<FromFrame, ToFrame>(Quaternion(0, axis));
-  } else {
-    static_assert(false, "Unable to forget signature");
+                                        ? R3Element<double>{1, 0, 0}
+                                        : (determinant_ * y_).is_positive()
+                                              ? R3Element<double>{0, 1, 0}
+                                              : R3Element<double>{0, 0, 1};
+    quaternion = Quaternion(0, axis);
   }
+  return LinearMap<FromFrame, ToFrame>(quaternion);
 }
 
 template<typename FromFrame, typename ToFrame>

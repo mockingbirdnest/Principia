@@ -6,6 +6,7 @@
 
 #include "base/macros.hpp"
 #include "base/not_constructible.hpp"
+#include "base/traits.hpp"
 #include "glog/logging.h"
 
 // This file defines a pointer wrapper |not_null| that statically ensures
@@ -80,13 +81,6 @@ class not_null;
 
 // Type traits.
 
-// |is_instance<T, U>::value| is true if and only if |U| is an instance of the
-// template |T|.  It is false otherwise.
-template<template<typename...> class T, typename U>
-struct is_instance_of : std::false_type, not_constructible {};
-template<template<typename...> class T, typename U>
-struct is_instance_of<T, T<U>> : std::true_type, not_constructible {};
-
 // |remove_not_null<not_null<T>>::type| is |remove_not_null<T>::type|.
 // The recurrence ends when |T| is not an instance of |not_null|, in which case
 // |remove_not_null<T>::type| is |T|.
@@ -105,13 +99,13 @@ struct remove_not_null<not_null<Pointer>> {
 // reference to its template argument.
 template<typename Pointer>
 using _checked_not_null = typename std::enable_if<
-    !is_instance_of<not_null,
-                    typename std::remove_reference<Pointer>::type>::value,
+    !is_instance_of_v<not_null, typename std::remove_reference<Pointer>::type>,
     not_null<typename std::remove_reference<Pointer>::type>>::type;
 
 // We cannot refer to the template |not_null| inside of |not_null|.
 template<typename Pointer>
-using is_instance_of_not_null = is_instance_of<not_null, Pointer>;
+inline constexpr bool is_instance_of_not_null_v =
+    is_instance_of_v<not_null, Pointer>;
 
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not
@@ -144,7 +138,7 @@ class not_null final {
   template<typename OtherPointer,
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value &&
-               !is_instance_of_not_null<pointer>::value>::type>
+               !is_instance_of_not_null_v<pointer>>::type>
   not_null(OtherPointer other);  // NOLINT(runtime/explicit)
   // Explicit copy constructor for static_cast'ing.
   template<typename OtherPointer,
@@ -205,7 +199,7 @@ class not_null final {
            typename = std::enable_if_t<
                std::is_convertible<pointer, OtherPointer>::value &&
                !std::is_same<pointer, OtherPointer>::value &&
-               !is_instance_of_not_null<OtherPointer>::value>>
+               !is_instance_of_not_null_v<OtherPointer>>>
   operator OtherPointer() const&;
 
   // Used to convert a |not_null<unique_ptr<>>| to |unique_ptr<>|.
@@ -214,7 +208,7 @@ class not_null final {
   template<typename OtherPointer,
            typename = std::enable_if_t<
                std::is_convertible<pointer, OtherPointer>::value &&
-               !is_instance_of_not_null<OtherPointer>::value>>
+               !is_instance_of_not_null_v<OtherPointer>>>
   operator OtherPointer() &&;  // NOLINT(whitespace/operators)
 
   // Returns |*pointer_|.

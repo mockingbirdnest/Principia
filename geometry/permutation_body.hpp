@@ -78,30 +78,22 @@ Permutation<FromFrame, ToFrame>::operator()(T const& t) const {
 template<typename FromFrame, typename ToFrame>
 template<template<typename, typename> typename LinearMap>
 LinearMap<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Forget() const {
-  if constexpr (is_same_template_v<LinearMap, OrthogonalMap>) {
-    static double const sqrt_half = quantities::Sqrt(0.5);
-    static std::array<Quaternion, 6> const quaternion = {
-        /*XYZ*/ Quaternion(1),
-        /*YZX*/ Quaternion(0.5, {-0.5, -0.5, -0.5}),
-        /*ZXY*/ Quaternion(0.5, {0.5, 0.5, 0.5}),
-        /*XZY*/ Quaternion(0, {0, -sqrt_half, sqrt_half}),
-        /*ZYX*/ Quaternion(0, {-sqrt_half, 0, sqrt_half}),
-        /*YXZ*/ Quaternion(0, {-sqrt_half, sqrt_half, 0})};
-    return OrthogonalMap<FromFrame, ToFrame>(
-        quaternion[INDEX_MASK &
-                   (static_cast<int>(coordinate_permutation_) >> INDEX)]);
-  } else if constexpr (is_same_template_v<LinearMap, Rotation>) {
-    static double const sqrt_half = quantities::Sqrt(0.5);
-    static std::array<Quaternion, 6> const quaternion = {
-        /*XYZ*/ Quaternion(1),
-        /*YZX*/ Quaternion(0.5, {-0.5, -0.5, -0.5}),
-        /*ZXY*/ Quaternion(0.5, {0.5, 0.5, 0.5})};
-    return Rotation<FromFrame, ToFrame>(
-        quaternion[INDEX_MASK &
-                   (static_cast<int>(coordinate_permutation_) >> INDEX)]);
-  } else {
-    static_assert(false, "Unable to forget permutation");
-  }
+  static_assert(is_same_template_v<LinearMap, OrthogonalMap> ||
+                is_same_template_v<LinearMap, Rotation>,
+                "Unable to forget permutation");
+  Quaternion quaternion;
+  static double const sqrt_half = quantities::Sqrt(0.5);
+  static std::array<Quaternion, 6> const quaternions = {
+      /*XYZ*/ Quaternion(1),
+      /*YZX*/ Quaternion(0.5, {-0.5, -0.5, -0.5}),
+      /*ZXY*/ Quaternion(0.5, {0.5, 0.5, 0.5}),
+      /*XZY*/ Quaternion(0, {0, -sqrt_half, sqrt_half}),
+      /*ZYX*/ Quaternion(0, {-sqrt_half, 0, sqrt_half}),
+      /*YXZ*/ Quaternion(0, {-sqrt_half, sqrt_half, 0})};
+  quaternion =
+      quaternions[INDEX_MASK &
+                  (static_cast<int>(coordinate_permutation_) >> INDEX)];
+  return LinearMap<FromFrame, ToFrame>(quaternion);
 }
 
 template<typename FromFrame, typename ToFrame>
