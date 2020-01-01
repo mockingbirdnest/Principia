@@ -58,7 +58,7 @@ using quantities::Mass;
 using NonRotatingPileUp = Frame<serialization::Frame::PluginTag,
                                 NonInertial,
                                 Handedness::Right,
-                                serialization::Frame::RIGID_PILE_UP>;
+                                serialization::Frame::NON_ROTATING_PILE_UP>;
 
 // A |PileUp| handles a connected component of the graph of |Parts| under
 // physical contact.  It advances the history and psychohistory of its component

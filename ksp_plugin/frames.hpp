@@ -153,7 +153,6 @@ using internal_frames::Navigation;
 using internal_frames::NavigationFrame;
 using internal_frames::NavigationManœuvre;
 using internal_frames::RigidPart;
-using internal_frames::RigidPileUp;
 using internal_frames::World;
 using internal_frames::WorldSun;
 using internal_frames::sun_looking_glass;
