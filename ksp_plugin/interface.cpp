@@ -77,6 +77,7 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::NonInertial;
+using geometry::OrthogonalMap;
 using geometry::Quaternion;
 using geometry::R3x3Matrix;
 using geometry::RadiusLatitudeLongitude;
@@ -288,7 +289,7 @@ RigidMotion<RigidPart, World> MakePartRigidMotion(
   RigidTransformation<RigidPart, World> const part_rigid_transformation(
       RigidPart::origin,
       part_degrees_of_freedom.position(),
-      part_to_world.Forget());
+      part_to_world.Forget<OrthogonalMap>());
   RigidMotion<RigidPart, World> part_rigid_motion(
       part_rigid_transformation,
       FromXYZ<AngularVelocity<World>>(part_angular_velocity),
@@ -896,9 +897,10 @@ void __cdecl principia__InsertOrKeepLoadedPart(
   Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
       FromWXYZ(principal_axes_rotation));
   RigidTransformation<PartPrincipalAxes, RigidPart> const
-      part_principal_axes_to_rigid_part(PartPrincipalAxes::origin,
-                                        RigidPart::origin,
-                                        principal_axes_to_part.Forget());
+      part_principal_axes_to_rigid_part(
+          PartPrincipalAxes::origin,
+          RigidPart::origin,
+          principal_axes_to_part.Forget<OrthogonalMap>());
   InertiaTensor<RigidPart> const inertia_tensor_in_rigid_part =
       inertia_tensor_in_princial_axes.Transform(
           part_principal_axes_to_rigid_part);

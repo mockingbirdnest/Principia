@@ -62,7 +62,7 @@ PileUp::PileUp(
       RigidTransformation<Barycentric, RigidPileUp>{
           barycentre.position(),
           RigidPileUp::origin,
-          Identity<Barycentric, RigidPileUp>().Forget()},
+          OrthogonalMap<Barycentric, RigidPileUp>::Identity()},
       Barycentric::nonrotating,
       barycentre.velocity()};
   for (not_null<Part*> const part : parts_) {
@@ -293,7 +293,7 @@ void PileUp::DeformPileUpIfNeeded() {
       apparent_bubble_to_pile_up_transformation(
           apparent_centre_of_mass.position(),
           RigidPileUp::origin,
-          Identity<ApparentBubble, RigidPileUp>().Forget());
+          OrthogonalMap<ApparentBubble, RigidPileUp>::Identity());
   RigidMotion<ApparentBubble, RigidPileUp> const
       apparent_bubble_to_pile_up_motion(
           apparent_bubble_to_pile_up_transformation,
@@ -397,7 +397,7 @@ void PileUp::NudgeParts() const {
       RigidTransformation<Barycentric, RigidPileUp>{
           actual_centre_of_mass.position(),
           RigidPileUp::origin,
-          Identity<Barycentric, RigidPileUp>().Forget()},
+          OrthogonalMap<Barycentric, RigidPileUp>::Identity()},
       Barycentric::nonrotating,
       actual_centre_of_mass.velocity()};
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
@@ -415,7 +415,7 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
       RigidTransformation<Barycentric, RigidPileUp>(
           pile_up_dof.position(),
           RigidPileUp::origin,
-          Identity<Barycentric, RigidPileUp>().Forget()),
+          OrthogonalMap<Barycentric, RigidPileUp>::Identity()),
       Barycentric::nonrotating,
       pile_up_dof.velocity());
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
@@ -453,7 +453,7 @@ DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
       RigidTransformation<RigidPileUp, Barycentric>(
           RigidPileUp::origin,
           pile_up_barycentre.position(),
-          Identity<RigidPileUp, Barycentric>().Forget()),
+          OrthogonalMap<RigidPileUp, Barycentric>::Identity()),
       Barycentric::nonrotating,
       pile_up_barycentre.velocity());
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up =

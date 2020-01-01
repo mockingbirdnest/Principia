@@ -322,7 +322,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillOnce(Return(
           Permutation<Barycentric, WorldSun>(
               Permutation<Barycentric, WorldSun>::CoordinatePermutation::YXZ)
-              .Forget()));
+              .Forget<OrthogonalMap>()));
   EXPECT_CALL(navigation_manœuvre, FrenetFrame())
       .WillOnce(
           Return(OrthogonalMap<Frenet<Navigation>, Barycentric>::Identity()));

@@ -99,7 +99,7 @@ RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
             geometry::Permutation<FromFrame, ToFrame>(
                 geometry::Permutation<FromFrame,
                                       ToFrame>::CoordinatePermutation::XZY)
-                .Forget()),
+                .Forget<OrthogonalMap>()),
         ToFrame::nonrotating,
         degrees_of_freedom_of_from_frame_origin.velocity());
   }
