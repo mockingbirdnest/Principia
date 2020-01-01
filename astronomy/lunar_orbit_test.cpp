@@ -194,7 +194,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
             Selenocentric::origin,
             OrthogonalMap<LunarSurface, Selenocentric>::Identity() *
                 lunar_frame_.ToThisFrameAtTime(J2000).orthogonal_map()),
-        /*angular_velocity_of_to_frame=*/AngularVelocity<ICRS>{},
+        /*angular_velocity_of_to_frame=*/ICRS::nonrotating,
         /*velocity_of_to_frame_origin=*/
         ephemeris_->trajectory(moon_)->EvaluateVelocity(t));
   }

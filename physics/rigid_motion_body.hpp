@@ -87,7 +87,7 @@ RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
                            FromFrame::origin,
                            degrees_of_freedom_of_from_frame_origin.position(),
                            geometry::Identity<FromFrame, ToFrame>().Forget()),
-                       AngularVelocity<ToFrame>{},
+                       ToFrame::nonrotating,
                        degrees_of_freedom_of_from_frame_origin.velocity());
   } else {
     // TODO(phl): This is extremely dubious.  We apply the sun_looking_glass
@@ -100,7 +100,7 @@ RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
                 geometry::Permutation<FromFrame,
                                       ToFrame>::CoordinatePermutation::XZY)
                 .Forget()),
-        AngularVelocity<ToFrame>{},
+        ToFrame::nonrotating,
         degrees_of_freedom_of_from_frame_origin.velocity());
   }
 }
@@ -131,7 +131,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
 RigidMotion<FromFrame, ToFrame> RigidMotion<FromFrame, ToFrame>::Identity() {
   return RigidMotion(RigidTransformation<FromFrame, ToFrame>::Identity(),
-                     AngularVelocity<FromFrame>{},
+                     FromFrame::nonrotating,
                      FromFrame::unmoving);
 }
 

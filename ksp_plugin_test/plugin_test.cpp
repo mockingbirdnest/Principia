@@ -292,7 +292,7 @@ RigidMotion<ICRS, Barycentric> const PluginTest::id_icrs_barycentric_(
         ICRS::origin,
         Barycentric::origin,
         OrthogonalMap<ICRS, Barycentric>::Identity()),
-    AngularVelocity<ICRS>(),
+    ICRS::nonrotating,
     ICRS::unmoving);
 
 using PluginDeathTest = PluginTest;
@@ -782,7 +782,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillRepeatedly(Return(
           RigidMotion<Barycentric, Navigation>(
               RigidTransformation<Barycentric, Navigation>::Identity(),
-              AngularVelocity<Barycentric>(),
+              Barycentric::nonrotating,
               Barycentric::unmoving)));
   EXPECT_CALL(*mock_dynamic_frame, FrenetFrame(_, _))
       .WillRepeatedly(Return(

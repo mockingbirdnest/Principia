@@ -291,7 +291,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
           Barycentric::origin,
           Navigation::origin,
           OrthogonalMap<Barycentric, Navigation>::Identity()),
-      AngularVelocity<Barycentric>(),
+      Barycentric::nonrotating,
       Barycentric::unmoving);
   MockRenderer renderer;
   auto const identity = Rotation<Barycentric, AliceSun>::Identity();

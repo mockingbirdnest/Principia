@@ -220,7 +220,7 @@ Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
           plugin->renderer().BarycentricToWorld(plugin->PlanetariumRotation()) *
               body_centred_inertial->FromThisFrameAtTime(
                   current_time).orthogonal_map()),
-      AngularVelocity<Navigation>{},
+      Navigation::nonrotating,
       Navigation::unmoving);
   auto const from_world_body_centred_inertial =
       to_world_body_centred_inertial.Inverse();

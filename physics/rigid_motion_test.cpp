@@ -118,7 +118,7 @@ class RigidMotionTest : public testing::Test {
               Selenocentric::origin,
               Permutation<Geocentric, Selenocentric>(OddPermutation::YXZ)
                   .Forget()),
-          AngularVelocity<Geocentric>(),
+          Geocentric::nonrotating,
           moon_orbit_* earth_to_moon_ / Radian);
 
   AngularVelocity<Selenocentric> const moon_rotation_ =

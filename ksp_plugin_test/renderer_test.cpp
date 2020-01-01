@@ -135,7 +135,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
 
   RigidMotion<Barycentric, Navigation> rigid_motion(
       RigidTransformation<Barycentric, Navigation>::Identity(),
-      AngularVelocity<Barycentric>(),
+      Barycentric::nonrotating,
       Barycentric::unmoving);
   for (Instant t = t0_; t < t0_ + 10 * Second; t += 1 * Second) {
     EXPECT_CALL(*dynamic_frame_, ToThisFrameAtTime(t))
@@ -273,7 +273,7 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
       DefinesFrame<AliceSun>{});
   RigidMotion<Navigation, Barycentric> rigid_motion(
       RigidTransformation<Navigation, Barycentric>::Identity(),
-      AngularVelocity<Navigation>(),
+      Navigation::nonrotating,
       Navigation::unmoving);
   EXPECT_CALL(*dynamic_frame_, FromThisFrameAtTime(rendering_time))
       .WillOnce(Return(rigid_motion));

@@ -350,7 +350,7 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
 }
 
 void Plugin::ClearWorldRotationalReferenceFrame() {
-  angular_velocity_of_world_ = AngularVelocity<Barycentric>();
+  angular_velocity_of_world_ = Barycentric::nonrotating;
 }
 
 void Plugin::SetWorldRotationalReferenceFrame(Index const celestial_index) {

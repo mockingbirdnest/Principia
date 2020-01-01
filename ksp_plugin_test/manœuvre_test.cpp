@@ -96,7 +96,7 @@ class ManœuvreTest : public ::testing::Test {
               World::origin,
               Rendering::origin,
               OrthogonalMap<World, Rendering>::Identity()),
-          AngularVelocity<World>(), World::unmoving);
+          World::nonrotating, World::unmoving);
 };
 
 TEST_F(ManœuvreTest, TimedBurn) {
