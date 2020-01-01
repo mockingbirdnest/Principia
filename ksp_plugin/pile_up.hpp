@@ -31,6 +31,7 @@ using base::not_null;
 using base::Status;
 using geometry::Bivector;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
 using geometry::NonInertial;
 using geometry::Vector;
@@ -45,6 +46,19 @@ using physics::RigidMotion;
 using quantities::AngularMomentum;
 using quantities::Force;
 using quantities::Mass;
+
+// The origin of |NonRotatingPileUp| is the centre of mass of the pile up.
+// Its axes are those of |Barycentric|. It is used to describe the rotational
+// motion of the pile up (being a nonrotating frame) without running into
+// numerical issues from having a faraway origin like that of |Barycentric|.
+// This also makes the quantities more conceptually convenient: the angular
+// momentum and inertia tensor with respect to the centre of mass are easier to
+// reason with than the same quantities with respect to the barycentre of the
+// solar system.
+using NonRotatingPileUp = Frame<serialization::Frame::PluginTag,
+                                NonInertial,
+                                Handedness::Right,
+                                serialization::Frame::NON_ROTATING_PILE_UP>;
 
 // A |PileUp| handles a connected component of the graph of |Parts| under
 // physical contact.  It advances the history and psychohistory of its component
@@ -117,7 +131,7 @@ class PileUp {
          not_null<Ephemeris<Barycentric>*> ephemeris,
          std::function<void()> deletion_callback);
 
-  // Update the degrees of freedom (in |RigidPileUp|) of all the parts by
+  // Update the degrees of freedom (in |NonRotatingPileUp|) of all the parts by
   // translating the *apparent* degrees of freedom so that their centre of mass
   // matches that computed by integration.
   // |SetPartApparentDegreesOfFreedom| must have been called for each part in
@@ -136,7 +150,7 @@ class PileUp {
 
   // Adjusts the degrees of freedom of all parts in this pile up based on the
   // degrees of freedom of the pile-up computed by |AdvanceTime| and on the
-  // |RigidPileUp| degrees of freedom of the parts, as set by
+  // |NonRotatingPileUp| degrees of freedom of the parts, as set by
   // |DeformPileUpIfNeeded|.
   void NudgeParts() const;
 
@@ -157,8 +171,8 @@ class PileUp {
   Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters_;
 
   // Recomputed by the parts subset on every change.  Not serialized.
-  Bivector<AngularMomentum, RigidPileUp> angular_momentum_;
-  InertiaTensor<RigidPileUp> inertia_tensor_;
+  Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_;
+  InertiaTensor<NonRotatingPileUp> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally
@@ -185,7 +199,9 @@ class PileUp {
       Ephemeris<Barycentric>::NewtonianMotionEquation>::Instance>
       fixed_instance_;
 
-  PartTo<RigidMotion<RigidPart, RigidPileUp>> actual_part_rigid_motion_;
+  // TODO(phl): Use |RigidPileUp|, a reference frame whose axes are the
+  // principal axes of the pile up.
+  PartTo<RigidMotion<RigidPart, NonRotatingPileUp>> actual_part_rigid_motion_;
   PartTo<RigidMotion<RigidPart, ApparentBubble>> apparent_part_rigid_motion_;
 
   // Called in the destructor.

@@ -95,7 +95,7 @@ class TestablePileUp : public PileUp {
     return psychohistory_;
   }
 
-  PartTo<RigidMotion<RigidPart, RigidPileUp>> const&
+  PartTo<RigidMotion<RigidPart, NonRotatingPileUp>> const&
   actual_part_rigid_motion() const {
     return actual_part_rigid_motion_;
   }
@@ -142,24 +142,24 @@ class PileUpTest : public testing::Test {
     EXPECT_THAT(
         pile_up.actual_part_rigid_motion().at(&p1_)({RigidPart::origin,
                                                      RigidPart::unmoving}),
-        Componentwise(AlmostEquals(RigidPileUp::origin +
-                                       Displacement<RigidPileUp>(
+        Componentwise(AlmostEquals(NonRotatingPileUp::origin +
+                                       Displacement<NonRotatingPileUp>(
                                            {-10.0 / 3.0 * Metre,
                                             -2.0 * Metre,
                                             -2.0 / 3.0 * Metre}), 1),
-                      AlmostEquals(Velocity<RigidPileUp>(
+                      AlmostEquals(Velocity<NonRotatingPileUp>(
                                        {-100.0 / 3.0 * Metre / Second,
                                         -20.0 * Metre / Second,
                                         -20.0 / 3.0 * Metre / Second}), 7)));
     EXPECT_THAT(
         pile_up.actual_part_rigid_motion().at(&p2_)({RigidPart::origin,
                                                      RigidPart::unmoving}),
-        Componentwise(AlmostEquals(RigidPileUp::origin +
-                                       Displacement<RigidPileUp>(
+        Componentwise(AlmostEquals(NonRotatingPileUp::origin +
+                                       Displacement<NonRotatingPileUp>(
                                            {5.0 / 3.0 * Metre,
                                             1.0 * Metre,
                                             1.0 / 3.0 * Metre}), 3),
-                      AlmostEquals(Velocity<RigidPileUp>(
+                      AlmostEquals(Velocity<NonRotatingPileUp>(
                                        {50.0 / 3.0 * Metre / Second,
                                         10.0 * Metre / Second,
                                         10.0 / 3.0 * Metre / Second}), 17)));
@@ -219,24 +219,24 @@ class PileUpTest : public testing::Test {
     EXPECT_THAT(
         pile_up.actual_part_rigid_motion().at(&p1_)({RigidPart::origin,
                                                      RigidPart::unmoving}),
-        Componentwise(AlmostEquals(RigidPileUp::origin +
-                                       Displacement<RigidPileUp>(
+        Componentwise(AlmostEquals(NonRotatingPileUp::origin +
+                                       Displacement<NonRotatingPileUp>(
                                            {-34.0 / 9.0 * Metre,
                                             -2.0 / 3.0 * Metre,
                                             8.0 / 9.0 * Metre}), 1),
-                      AlmostEquals(Velocity<RigidPileUp>(
+                      AlmostEquals(Velocity<NonRotatingPileUp>(
                                        {-340.0 / 9.0 * Metre / Second,
                                         -20.0 / 3.0 * Metre / Second,
                                         80.0 / 9.0 * Metre / Second}), 8)));
     EXPECT_THAT(
         pile_up.actual_part_rigid_motion().at(&p2_)({RigidPart::origin,
                                                      RigidPart::unmoving}),
-        Componentwise(AlmostEquals(RigidPileUp::origin +
-                                       Displacement<RigidPileUp>(
+        Componentwise(AlmostEquals(NonRotatingPileUp::origin +
+                                       Displacement<NonRotatingPileUp>(
                                            {17.0 / 9.0 * Metre,
                                             1.0 / 3.0 * Metre,
                                             -4.0 / 9.0 * Metre}), 0),
-                      AlmostEquals(Velocity<RigidPileUp>(
+                      AlmostEquals(Velocity<NonRotatingPileUp>(
                                        {170.0 / 9.0 * Metre / Second,
                                         10.0 / 3.0 * Metre / Second,
                                         -40.0 / 9.0 * Metre / Second}), 8)));
