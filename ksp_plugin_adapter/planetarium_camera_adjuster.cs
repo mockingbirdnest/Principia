@@ -16,7 +16,7 @@ namespace ksp_plugin_adapter {
 [UnityEngine.DefaultExecutionOrder(301)]
 public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
   private void LateUpdate() {
-    if (!adapter.PluginRunning()) {
+    if (!adapter.PluginRunning() || FlightDriver.Pause) {
       return;
     }
     const double degree = Math.PI / 180;
@@ -73,6 +73,9 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
           camera_roll;
     }
     if (camera_roll_ != 0) {
+      // Progressively bring camera roll down to 0.  Since we do not reorient
+      // the camera when paused, keep camera roll in that case, so that there is
+      // no sudden change when unpausing.
       // TODO(egg): Should we be doing this in LateUpdate?
       const double roll_change_per_frame = 0.1 /*radians*/;
       if (Math.Abs(camera_roll_) < roll_change_per_frame) {
