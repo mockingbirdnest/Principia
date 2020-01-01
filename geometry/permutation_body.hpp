@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
@@ -15,6 +16,8 @@
 namespace principia {
 namespace geometry {
 namespace internal_permutation {
+
+using base::is_same_template_v;
 
 template<typename FromFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame>::Permutation(
@@ -75,8 +78,7 @@ Permutation<FromFrame, ToFrame>::operator()(T const& t) const {
 template<typename FromFrame, typename ToFrame>
 template<template<typename, typename> typename LinearMap>
 LinearMap<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Forget() const {
-  if constexpr (std::is_same_v<LinearMap<FromFrame, ToFrame>,
-                               OrthogonalMap<FromFrame, ToFrame>>) {
+  if constexpr (is_same_template_v<LinearMap, OrthogonalMap>) {
     static double const sqrt_half = quantities::Sqrt(0.5);
     static std::array<Quaternion, 6> const quaternion = {
         /*XYZ*/ Quaternion(1),
@@ -88,9 +90,7 @@ LinearMap<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Forget() const {
     return OrthogonalMap<FromFrame, ToFrame>(
         quaternion[INDEX_MASK &
                    (static_cast<int>(coordinate_permutation_) >> INDEX)]);
-  } else if constexpr (FromFrame::handedness == ToFrame::handedness &&
-                       std::is_same_v<LinearMap<FromFrame, ToFrame>,
-                                      Rotation<FromFrame, ToFrame>>) {
+  } else if constexpr (is_same_template_v<LinearMap, Rotation>) {
     static double const sqrt_half = quantities::Sqrt(0.5);
     static std::array<Quaternion, 6> const quaternion = {
         /*XYZ*/ Quaternion(1),

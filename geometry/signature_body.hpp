@@ -2,9 +2,13 @@
 
 #include "geometry/signature.hpp"
 
+#include "base/traits.hpp"
+
 namespace principia {
 namespace geometry {
 namespace internal_signature {
+
+using base::is_same_template_v;
 
 template<typename FromFrame, typename ToFrame>
 constexpr Signature<FromFrame, ToFrame>::Signature(Sign const x,
@@ -102,8 +106,7 @@ Signature<FromFrame, ToFrame>::operator()(
 template<typename FromFrame, typename ToFrame>
 template<template<typename, typename> typename LinearMap>
 LinearMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget() const {
-  if constexpr (std::is_same_v<LinearMap<FromFrame, ToFrame>,
-                               OrthogonalMap<FromFrame, ToFrame>>) {
+  if constexpr (is_same_template_v<LinearMap, OrthogonalMap>) {
     if (x_ == y_ && y_ == z_) {
       return OrthogonalMap<FromFrame, ToFrame>(Quaternion(1));
     }
@@ -115,9 +118,7 @@ LinearMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget() const {
                                              ? R3Element<double>{0, 1, 0}
                                              : R3Element<double>{0, 0, 1};
     return OrthogonalMap<FromFrame, ToFrame>(Quaternion(0, axis));
-  } else if constexpr (FromFrame::handedness == ToFrame::handedness &&
-                       std::is_same_v<LinearMap<FromFrame, ToFrame>,
-                                      Rotation<FromFrame, ToFrame>>) {
+  } else if constexpr (is_same_template_v<LinearMap, Rotation>) {
     if (x_ == y_ && y_ == z_) {
       return Rotation<FromFrame, ToFrame>::Identity();
     }
