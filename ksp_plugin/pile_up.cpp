@@ -145,7 +145,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   bool const is_pre_cartan = !message.has_adaptive_step_parameters() ||
                              !message.has_fixed_step_parameters();
   bool const is_pre_cesàro = message.history().children().empty();
-  bool const is_pre_frege = message.actual_part_degrees_of_freedom_size() > 0 &&
+  bool const is_pre_frege = message.actual_part_degrees_of_freedom_size() > 0 ||
                             message.apparent_part_degrees_of_freedom_size() > 0;
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
