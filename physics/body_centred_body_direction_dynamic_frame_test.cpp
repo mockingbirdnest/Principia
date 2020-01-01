@@ -162,7 +162,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ToBigSmallFrameAtTime) {
                               BigSmallFrame::origin),
                 Lt(1.0e-6 * Metre));
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
-                              Velocity<BigSmallFrame>()),
+                              BigSmallFrame::unmoving),
                 Lt(1.0e-4 * Metre / Second));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
@@ -171,7 +171,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ToBigSmallFrameAtTime) {
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
                 Lt(1.0e-5 * Metre));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
-                              Velocity<BigSmallFrame>()),
+                              BigSmallFrame::unmoving),
                 Lt(1.0e-4 * Metre / Second));
   }
 }
@@ -208,9 +208,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
                             20 * Metre / Second,
                             30 * Metre / Second})};
   DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) +
-           ICRS::origin,
-       Velocity<ICRS>()};
+      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
+       ICRS::unmoving};
   DegreesOfFreedom<ICRS> const small_dof = {
       Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
       Velocity<ICRS>(
@@ -488,10 +487,10 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
   for (Time t = period_ / 32; t <= period_ / 2; t += period_ / 32) {
     auto const dof_from_discrete =
         barycentric_from_discrete.ToThisFrameAtTime(t0_ + t)(
-            {ICRS::origin, Velocity<ICRS>{}});
+            {ICRS::origin, ICRS::unmoving});
     auto const dof_from_both_bodies =
         barycentric_from_both_bodies.ToThisFrameAtTime(t0_ + t)(
-            {ICRS::origin, Velocity<ICRS>{}});
+            {ICRS::origin, ICRS::unmoving});
     EXPECT_THAT(
         (dof_from_discrete.position() - dof_from_both_bodies.position()).Norm(),
         VanishesBefore(1 * Kilo(Metre), 0, 15));

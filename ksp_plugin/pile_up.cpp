@@ -476,7 +476,7 @@ DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
             part_inertia_tensor,
             part_to_pile_up.Inverse().angular_velocity_of_to_frame());
     DegreesOfFreedom<RigidPileUp> const part_degrees_of_freedom =
-        part_to_pile_up({RigidPart::origin, Velocity<RigidPart>{}});
+        part_to_pile_up({RigidPart::origin, RigidPart::unmoving});
     pile_up_angular_momentum +=
         part_angular_momentum +
         Wedge(part_degrees_of_freedom.position() - RigidPileUp::origin,

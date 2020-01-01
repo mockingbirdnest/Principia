@@ -169,7 +169,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
         moon_(dynamic_cast_not_null<OblateBody<ICRS> const*>(
             solar_system_2000_.massive_body(*ephemeris_, "Moon"))),
         lunar_frame_(ephemeris_.get(), moon_),
-        selenocentre_(Selenocentric::origin, Velocity<Selenocentric>{}) {
+        selenocentre_(Selenocentric::origin, Selenocentric::unmoving) {
     google::LogToStderr();
   }
 

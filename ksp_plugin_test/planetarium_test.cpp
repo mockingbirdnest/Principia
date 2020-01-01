@@ -112,7 +112,7 @@ class PlanetariumTest : public ::testing::Test {
         .WillRepeatedly(Return(RigidMotion<Barycentric, Navigation>(
             RigidTransformation<Barycentric, Navigation>::Identity(),
             AngularVelocity<Barycentric>(),
-            Velocity<Barycentric>())));
+            Barycentric::unmoving)));
     EXPECT_CALL(ephemeris_, bodies()).WillRepeatedly(ReturnRef(bodies_));
     EXPECT_CALL(ephemeris_, trajectory(_))
         .WillRepeatedly(Return(&continuous_trajectory_));

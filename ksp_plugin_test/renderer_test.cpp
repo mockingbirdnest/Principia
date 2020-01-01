@@ -95,7 +95,7 @@ TEST_F(RendererTest, TargetVessel) {
       /*position_function=*/
           [](Instant const& t) { return Barycentric::origin; },
       /*velocity_function=*/
-          [](Instant const& t) { return Velocity<Barycentric>(); },
+          [](Instant const& t) { return Barycentric::unmoving; },
       vessel_trajectory);
   EXPECT_CALL(vessel, prediction())
       .WillRepeatedly(ReturnRef(vessel_trajectory));
@@ -136,7 +136,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
   RigidMotion<Barycentric, Navigation> rigid_motion(
       RigidTransformation<Barycentric, Navigation>::Identity(),
       AngularVelocity<Barycentric>(),
-      Velocity<Barycentric>());
+      Barycentric::unmoving);
   for (Instant t = t0_; t < t0_ + 10 * Second; t += 1 * Second) {
     EXPECT_CALL(*dynamic_frame_, ToThisFrameAtTime(t))
         .WillOnce(Return(rigid_motion));
@@ -220,7 +220,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
         .WillOnce(Return(DegreesOfFreedom<Barycentric>(
             Barycentric::origin + Displacement<Barycentric>(
                                       {300 * Metre, 200 * Metre, 100 * Metre}),
-            Velocity<Barycentric>())));
+            Barycentric::unmoving)));
   }
 
   renderer_.SetTargetVessel(&vessel, &celestial_, &ephemeris);
@@ -274,7 +274,7 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
   RigidMotion<Navigation, Barycentric> rigid_motion(
       RigidTransformation<Navigation, Barycentric>::Identity(),
       AngularVelocity<Navigation>(),
-      Velocity<Navigation>());
+      Navigation::unmoving);
   EXPECT_CALL(*dynamic_frame_, FromThisFrameAtTime(rendering_time))
       .WillOnce(Return(rigid_motion));
   EXPECT_CALL(celestial_, current_position(rendering_time))

@@ -118,7 +118,7 @@ OrbitalElements::OsculatingEquinoctialElements(
     MassiveBody const& primary,
     Body const& secondary) {
   DegreesOfFreedom<PrimaryCentred> const primary_dof{
-      PrimaryCentred::origin, Velocity<PrimaryCentred>{}};
+      PrimaryCentred::origin, PrimaryCentred::unmoving};
   std::vector<EquinoctialElements> result;
   for (auto const& [time, degrees_of_freedom] : trajectory) {
     auto const osculating_elements =

@@ -103,7 +103,7 @@ class RigidMotionTest : public testing::Test {
               Terrestrial::origin,
               OrthogonalMap<Geocentric, Terrestrial>::Identity()),
           earth_rotation_,
-          Velocity<Geocentric>());
+          Geocentric::unmoving);
 
   // Our Moon is in an equatorial orbit for simplicity.
   AngularVelocity<Geocentric> const moon_orbit_ = AngularVelocity<Geocentric>(
@@ -131,7 +131,7 @@ class RigidMotionTest : public testing::Test {
               Lunar::origin,
               OrthogonalMap<Selenocentric, Lunar>::Identity()),
           moon_rotation_,
-          Velocity<Selenocentric>());
+          Selenocentric::unmoving);
 
   // General degrees of freedom.
   DegreesOfFreedom<Terrestrial> const degrees_of_freedom_ = {
@@ -147,7 +147,7 @@ TEST_F(RigidMotionTest, TidalLocking) {
   RigidMotion<Geocentric, Lunar> const geocentric_to_lunar =
       selenocentric_to_lunar_ * geocentric_to_selenocentric_;
   DegreesOfFreedom<Lunar> const earth_degrees_of_freedom =
-      geocentric_to_lunar({Geocentric::origin, Velocity<Geocentric>()});
+      geocentric_to_lunar({Geocentric::origin, Geocentric::unmoving});
   EXPECT_EQ(Displacement<Lunar>({0 * Metre, -earth_moon_distance_, 0 * Metre}),
             earth_degrees_of_freedom.position() - Lunar::origin);
   Speed const moon_speed = (moon_orbit_ * earth_to_moon_ / Radian).Norm();
@@ -162,7 +162,7 @@ TEST_F(RigidMotionTest, ApparentMoon) {
       geocentric_to_terrestrial_ * geocentric_to_selenocentric_.Inverse();
   DegreesOfFreedom<Terrestrial> const moon_degrees_of_freedom =
       selenocentric_to_terrestrial(
-          {Selenocentric::origin, Velocity<Selenocentric>()});
+          {Selenocentric::origin, Selenocentric::unmoving});
   Displacement<Terrestrial> const earth_to_moon =
       moon_degrees_of_freedom.position() - Terrestrial::origin;
   EXPECT_EQ(
@@ -226,7 +226,7 @@ TEST_F(RigidMotionTest, SecondConstructor) {
       geocentric_to_selenocentric_ * geocentric_to_terrestrial_.Inverse();
   DegreesOfFreedom<Selenocentric> const terrestrial_dof_in_selenocentric =
       terrestrial_to_selenocentric1({Terrestrial::origin,
-                                     Velocity<Terrestrial>{}});
+                                     Terrestrial::unmoving});
   AngularVelocity<Selenocentric> const terrestrial_rotation_in_selenocentric =
       terrestrial_to_selenocentric1.Inverse().angular_velocity_of_to_frame();
 
@@ -322,17 +322,16 @@ TEST_F(RigidMotionTest, QuaternionNormalization) {
       RigidTransformation<World, Barycentric>(from2, to2, orthogonal2), ω2, v2);
 
   DegreesOfFreedom<World> const d1 =
-      rigid_motion1({RigidPart::origin, Velocity<RigidPart>{}});
+      rigid_motion1({RigidPart::origin, RigidPart::unmoving});
   DegreesOfFreedom<Barycentric> const d2 =
-      (rigid_motion2 * rigid_motion1)(
-          {RigidPart::origin, Velocity<RigidPart>{}});
+      (rigid_motion2 * rigid_motion1)({RigidPart::origin, RigidPart::unmoving});
   DegreesOfFreedom<Barycentric> const d3 =
-      rigid_motion2(rigid_motion1({RigidPart::origin, Velocity<RigidPart>{}}));
+      rigid_motion2(rigid_motion1({RigidPart::origin, RigidPart::unmoving}));
   DegreesOfFreedom<World> const d4 =
       rigid_motion2.Inverse()((rigid_motion2 * rigid_motion1)(
-          {RigidPart::origin, Velocity<RigidPart>{}}));
+          {RigidPart::origin, RigidPart::unmoving}));
   DegreesOfFreedom<World> const d5 = rigid_motion2.Inverse()(
-      rigid_motion2(rigid_motion1({RigidPart::origin, Velocity<RigidPart>{}})));
+      rigid_motion2(rigid_motion1({RigidPart::origin, RigidPart::unmoving})));
 
   EXPECT_THAT(d2.position() - Barycentric::origin,
               AlmostEquals(d3.position() - Barycentric::origin, 0));

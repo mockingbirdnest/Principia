@@ -221,7 +221,7 @@ Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
               body_centred_inertial->FromThisFrameAtTime(
                   current_time).orthogonal_map()),
       AngularVelocity<Navigation>{},
-      Velocity<Navigation>{});
+      Navigation::unmoving);
   auto const from_world_body_centred_inertial =
       to_world_body_centred_inertial.Inverse();
   Position<Navigation> reference_position =
@@ -229,10 +229,10 @@ Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
           FromXYZ<Position<World>>(world_body_centred_reference_position));
   DiscreteTrajectory<Navigation> immobile_reference;
   immobile_reference.Append(coast.front().time,
-                            {reference_position, Velocity<Navigation>{}});
+                            {reference_position, Navigation::unmoving});
   if (coast.Size() > 1) {
     immobile_reference.Append(coast.back().time,
-                              {reference_position, Velocity<Navigation>{}});
+                              {reference_position, Navigation::unmoving});
   }
   DiscreteTrajectory<Navigation> apoapsides;
   DiscreteTrajectory<Navigation> periapsides;

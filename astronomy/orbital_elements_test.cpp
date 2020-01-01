@@ -96,7 +96,7 @@ class OrbitalElementsTest : public ::testing::Test {
     icrs_trajectory.Append(
         initial_time,
         gcrs.FromThisFrameAtTime(initial_time)(
-            DegreesOfFreedom<GCRS>{GCRS::origin, Velocity<GCRS>{}} +
+            DegreesOfFreedom<GCRS>{GCRS::origin, GCRS::unmoving} +
             initial_osculating_orbit.StateVectors(initial_time)));
     ephemeris.FlowWithAdaptiveStep(
         &icrs_trajectory,

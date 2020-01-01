@@ -218,7 +218,7 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     RigidMotion<ICRS, ParentEquator> const to_parent_equator(
         {ICRS::origin, ParentEquator::origin, rotation->Forget()},
         /*angular_velocity_of_to_frame=*/AngularVelocity<ICRS>{},
-        /*velocity_of_to_frame_origin=*/Velocity<ICRS>{});
+        /*velocity_of_to_frame_origin=*/ICRS::unmoving);
 
     KeplerOrbit<ParentEquator> actual_osculating_orbit(
         /*primary=*/*parent,

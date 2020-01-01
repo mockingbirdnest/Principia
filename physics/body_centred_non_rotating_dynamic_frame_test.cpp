@@ -203,7 +203,7 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, GeometricAcceleration) {
     EXPECT_THAT(AbsoluteError(
                     big_frame_->GeometricAcceleration(
                         t0_,
-                        DegreesOfFreedom<Big>(position, Velocity<Big>())),
+                        DegreesOfFreedom<Big>(position, Big::unmoving)),
                     expected_acceleration),
                 Lt(1e-10 * SIUnit<Acceleration>()));
   }

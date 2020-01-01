@@ -49,7 +49,7 @@ HierarchicalSystem<Frame>::ConsumeBarycentricSystem() {
   auto barycentric_result = ToBarycentric(system_);
   result.bodies = std::move(barycentric_result.bodies);
   static DegreesOfFreedom<Frame> const system_barycentre = {Frame::origin,
-                                                            Velocity<Frame>()};
+                                                            Frame::unmoving};
   for (auto const& barycentric_dof :
        barycentric_result.barycentric_degrees_of_freedom) {
     result.degrees_of_freedom.emplace_back(system_barycentre + barycentric_dof);
@@ -104,11 +104,9 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
 
   // A reference frame wherein the barycentre of |system| is motionless at the
   // origin.
-  // TODO(egg): declaring these frame tags to make sure that local frames
-  // don't go out of scope is a bit cumbersome.
   using SystemBarycentre = geometry::Frame<enum class SystemBarycentreTag>;
   static DegreesOfFreedom<SystemBarycentre> const system_barycentre = {
-      SystemBarycentre::origin, Velocity<SystemBarycentre>()};
+      SystemBarycentre::origin, SystemBarycentre::unmoving};
   static Identity<SystemBarycentre, Frame> const id_bf;
   static Identity<Frame, SystemBarycentre> const id_fb;
 
