@@ -16,7 +16,7 @@ namespace ksp_plugin_adapter {
 [UnityEngine.DefaultExecutionOrder(301)]
 public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
   private void LateUpdate() {
-    if (!adapter.PluginRunning()) {
+    if (!adapter.PluginRunning() || FlightDriver.Pause) {
       return;
     }
     const double degree = Math.PI / 180;
