@@ -16,6 +16,7 @@ namespace internal_body_centred_body_direction_dynamic_frame {
 
 using geometry::Bivector;
 using geometry::Displacement;
+using geometry::OrthogonalMap;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
 using geometry::Wedge;
@@ -111,7 +112,7 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(primary_degrees_of_freedom.position(),
                            ThisFrame::origin,
-                           rotation.Forget());
+                           rotation.Forget<OrthogonalMap>());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              angular_velocity,

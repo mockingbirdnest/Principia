@@ -117,7 +117,7 @@ class RigidMotionTest : public testing::Test {
               Geocentric::origin + earth_to_moon_,
               Selenocentric::origin,
               Permutation<Geocentric, Selenocentric>(OddPermutation::YXZ)
-                  .Forget()),
+                  .Forget<OrthogonalMap>()),
           Geocentric::nonrotating,
           moon_orbit_* earth_to_moon_ / Radian);
 
@@ -290,7 +290,8 @@ TEST_F(RigidMotionTest, QuaternionNormalization) {
                             -6.26766622066497803e-01})));
 
   RigidMotion<RigidPart, World> const rigid_motion1(
-      RigidTransformation<RigidPart, World>(from1, to1, rotation1.Forget()),
+      RigidTransformation<RigidPart, World>(
+          from1, to1, rotation1.Forget<OrthogonalMap>()),
       ω1,
       v1);
 
@@ -315,8 +316,8 @@ TEST_F(RigidMotionTest, QuaternionNormalization) {
                   -3.07561751727498445e-01,
                   +3.07561751727498445e-01}));
   OrthogonalMap<World, Barycentric> const orthogonal2 =
-      rotation2.Forget() *
-      Signature<World, AliceWorld>::CentralInversion().Forget();
+      rotation2.Forget<OrthogonalMap>() *
+      Signature<World, AliceWorld>::CentralInversion().Forget<OrthogonalMap>();
 
   RigidMotion<World, Barycentric> const rigid_motion2(
       RigidTransformation<World, Barycentric>(from2, to2, orthogonal2), ω2, v2);

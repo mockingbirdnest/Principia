@@ -34,6 +34,7 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
+using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::R3x3Matrix;
@@ -125,7 +126,7 @@ TEST_F(InertiaTensorTest, PointMass) {
   RigidTransformation<CentreOfMass, GeneralPoint> const translation(
       CentreOfMass::origin + displacement,
       GeneralPoint::origin,
-      Identity<CentreOfMass, GeneralPoint>().Forget());
+      Identity<CentreOfMass, GeneralPoint>().Forget<OrthogonalMap>());
   InertiaTensor<GeneralPoint> const inertia_tensor_general_point =
       inertia_tensor_centre_of_mass.Transform(translation);
 
@@ -161,7 +162,7 @@ TEST_F(InertiaTensorTest, Rod) {
   RigidTransformation<CentreOfMass, Extremity> const translation(
       CentreOfMass::origin + displacement,
       Extremity::origin,
-      Identity<CentreOfMass, Extremity>().Forget());
+      Identity<CentreOfMass, Extremity>().Forget<OrthogonalMap>());
   InertiaTensor<Extremity> const inertia_tensor_extremity =
       inertia_tensor_centre_of_mass.Transform(translation);
 
@@ -231,7 +232,7 @@ TEST_F(InertiaTensorTest, Abdulghany) {
                           90 * Degree,
                           Bivector<double, CuboidCentreOfMassZ>({1, 0, 0}),
                           DefinesFrame<CuboidCentreOfMassY>{})
-                          .Forget());
+                          .Forget<OrthogonalMap>());
   InertiaTensor<CuboidCentreOfMassY> const cuboid_inertia_centre_of_mass_y =
       cuboid_inertia_centre_of_mass_z.Transform(cuboid_rotation);
 
@@ -261,14 +262,16 @@ TEST_F(InertiaTensorTest, Abdulghany) {
           RigidTransformation<CuboidCentreOfMassY, OverallCentreOfMass>(
               overall_centre_of_mass_cuboid,
               OverallCentreOfMass::origin,
-              Identity<CuboidCentreOfMassY, OverallCentreOfMass>().Forget()));
+              Identity<CuboidCentreOfMassY, OverallCentreOfMass>()
+              .Forget<OrthogonalMap>()));
   InertiaTensor<OverallCentreOfMass> const
   cylinder_inertia_overall_centre_of_mass =
       cylinder_inertia_centre_of_mass.Transform(
           RigidTransformation<CylinderCentreOfMass, OverallCentreOfMass>(
               overall_centre_of_mass_cylinder,
               OverallCentreOfMass::origin,
-              Identity<CylinderCentreOfMass, OverallCentreOfMass>().Forget()));
+              Identity<CylinderCentreOfMass, OverallCentreOfMass>()
+              .Forget<OrthogonalMap>()));
 
   // Finally, the overall inertia at the overall centre of mass.
   InertiaTensor<OverallCentreOfMass> const

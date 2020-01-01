@@ -18,6 +18,7 @@ namespace internal_barycentric_rotating_dynamic_frame {
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Displacement;
+using geometry::OrthogonalMap;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
 using geometry::Wedge;
@@ -91,7 +92,7 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(barycentre_degrees_of_freedom.position(),
                            ThisFrame::origin,
-                           rotation.Forget());
+                           rotation.Forget<OrthogonalMap>());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              angular_velocity,
