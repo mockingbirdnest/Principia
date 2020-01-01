@@ -60,8 +60,17 @@ Identity<FromFrame, ToFrame>::operator()(T const& t) const {
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
-  return OrthogonalMap<FromFrame, ToFrame>::Identity();
+template<template<typename, typename> typename LinearMap>
+LinearMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
+  if constexpr (std::is_same_v<LinearMap<FromFrame, ToFrame>,
+                               OrthogonalMap<FromFrame, ToFrame>>) {
+    return OrthogonalMap<FromFrame, ToFrame>::Identity();
+  } else if constexpr (std::is_same_v<LinearMap<FromFrame, ToFrame>,
+                                    Rotation<FromFrame, ToFrame>>) {
+    return Rotation<FromFrame, ToFrame>::Identity();
+  } else {
+    static_assert(false, "Unable to forget identity");
+  }
 }
 
 template<typename FromFrame, typename ToFrame>

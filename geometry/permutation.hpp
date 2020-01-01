@@ -82,7 +82,8 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   template<typename T>
   typename base::Mappable<Permutation, T>::type operator()(T const& t) const;
 
-  OrthogonalMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename> typename LinearMap>
+  LinearMap<FromFrame, ToFrame> Forget() const;
 
   template<typename F = FromFrame,
            typename T = ToFrame,

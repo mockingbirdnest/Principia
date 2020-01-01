@@ -59,7 +59,8 @@ class Signature : public LinearMap<FromFrame, ToFrame> {
   SymmetricBilinearForm<Scalar, ToFrame> operator()(
       SymmetricBilinearForm<Scalar, FromFrame> const& form) const;
 
-  OrthogonalMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename> typename LinearMap>
+  LinearMap<FromFrame, ToFrame> Forget() const;
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,

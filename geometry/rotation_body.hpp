@@ -264,8 +264,14 @@ Rotation<FromFrame, ToFrame>::operator()(T const& t) const {
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
-  return OrthogonalMap<FromFrame, ToFrame>(quaternion_);
+template<template<typename, typename> typename LinearMap>
+LinearMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
+  if constexpr (std::is_same_v<LinearMap<FromFrame, ToFrame>,
+                               OrthogonalMap<FromFrame, ToFrame>>) {
+    return OrthogonalMap<FromFrame, ToFrame>(quaternion_);
+  } else {
+    static_assert(false, "Unable to forget rotation");
+  }
 }
 
 template<typename FromFrame, typename ToFrame>

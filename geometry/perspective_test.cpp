@@ -60,7 +60,7 @@ TEST_F(PerspectiveTest, Basic) {
   RigidTransformation<World, Camera> const world_to_camera_transformation(
       camera_origin,
       Camera::origin,
-      world_to_camera_rotation.Forget());
+      world_to_camera_rotation.Forget<OrthogonalMap>());
   Perspective<World, Camera> perspective(world_to_camera_transformation,
                                          /*focal=*/10 * Metre);
 

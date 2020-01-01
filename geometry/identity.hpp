@@ -54,7 +54,8 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
   template<typename T>
   typename base::Mappable<Identity, T>::type operator()(T const& t) const;
 
-  OrthogonalMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename> typename LinearMap>
+  LinearMap<FromFrame, ToFrame> Forget() const;
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
