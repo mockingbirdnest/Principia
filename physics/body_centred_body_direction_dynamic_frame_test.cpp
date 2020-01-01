@@ -202,14 +202,11 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
   Instant const t = t0_ + 0 * Second;
   // The velocity is opposed to the motion and away from the centre.
   DegreesOfFreedom<MockFrame> const point_dof =
-      {Displacement<MockFrame>({0 * Metre, 0 * Metre, 0 * Metre}) +
-           MockFrame::origin,
+      {MockFrame::origin,
        Velocity<MockFrame>({10 * Metre / Second,
                             20 * Metre / Second,
                             30 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-       ICRS::unmoving};
+  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
   DegreesOfFreedom<ICRS> const small_dof = {
       Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
       Velocity<ICRS>(
@@ -256,13 +253,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CentrifugalAcceleration) {
   DegreesOfFreedom<MockFrame> const point_dof =
       {Displacement<MockFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
            MockFrame::origin,
-       Velocity<MockFrame>({0 * Metre / Second,
-                            0 * Metre / Second,
-                            0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-       Velocity<ICRS>(
-           {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+       MockFrame::unmoving};
+  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
   DegreesOfFreedom<ICRS> const small_dof =
       {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
        Velocity<ICRS>(
@@ -313,10 +305,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, EulerAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-       Velocity<ICRS>(
-           {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
   DegreesOfFreedom<ICRS> const small_dof =
       {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
        Velocity<ICRS>(
@@ -367,10 +356,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-       Velocity<ICRS>(
-           {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
   DegreesOfFreedom<ICRS> const small_dof =
       {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
        Velocity<ICRS>(
