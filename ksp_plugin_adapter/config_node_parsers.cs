@@ -7,6 +7,8 @@ internal static class ConfigNodeParsers {
 
   public static BodyParameters NewCartesianBodyParameters(CelestialBody body,
                                                           ConfigNode node) {
+    var j2 = node?.GetAtMostOneValue("j2");
+    var geopotential = node?.GetBodyGeopotentialElements()?.ToArray();
     return new BodyParameters{
         name                    = body.name,
         gravitational_parameter =
@@ -22,9 +24,11 @@ internal static class ConfigNodeParsers {
         axis_declination        = node.GetAtMostOneValue("axis_declination"),
         reference_angle         = node.GetAtMostOneValue("reference_angle"),
         angular_frequency       = node.GetAtMostOneValue("angular_frequency"),
-        reference_radius        = node.GetAtMostOneValue("reference_radius"),
-        j2                      = node.GetAtMostOneValue("j2"),
-        geopotential            = node.GetBodyGeopotentialElements().ToArray()
+        reference_radius =
+            node?.GetAtMostOneValue("reference_radius") ??
+            (j2 != null || geopotential != null ? body.Radius + " m" : null),
+        j2                      = j2,
+        geopotential            = geopotential
     };
   }
 
@@ -57,6 +61,8 @@ internal static class ConfigNodeParsers {
 
   public static BodyParameters NewKeplerianBodyParameters(CelestialBody body,
                                                           ConfigNode node) {
+    var j2 = node?.GetAtMostOneValue("j2");
+    var geopotential = node?.GetBodyGeopotentialElements()?.ToArray();
     return new BodyParameters{
         name                    = body.name,
         gravitational_parameter =
@@ -81,9 +87,11 @@ internal static class ConfigNodeParsers {
         angular_frequency       =
             node?.GetAtMostOneValue("angular_frequency") ??
             (body.angularV + " rad/s"),
-        reference_radius        = node?.GetAtMostOneValue("reference_radius"),
-        j2                      = node?.GetAtMostOneValue("j2"),
-        geopotential = node?.GetBodyGeopotentialElements()?.ToArray()
+        reference_radius        =
+            node?.GetAtMostOneValue("reference_radius") ??
+            (j2 != null || geopotential != null ? body.Radius + " m" : null),
+        j2                      = j2,
+        geopotential            = geopotential
     };
   }
 
