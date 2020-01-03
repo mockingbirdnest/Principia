@@ -112,7 +112,7 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(primary_degrees_of_freedom.position(),
                            ThisFrame::origin,
-                           rotation.Forget<OrthogonalMap>());
+                           rotation.template Forget<OrthogonalMap>());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              angular_velocity,
