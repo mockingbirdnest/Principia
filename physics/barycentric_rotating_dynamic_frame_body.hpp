@@ -92,7 +92,7 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(barycentre_degrees_of_freedom.position(),
                            ThisFrame::origin,
-                           rotation.Forget<OrthogonalMap>());
+                           rotation.template Forget<OrthogonalMap>());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              angular_velocity,

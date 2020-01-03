@@ -253,8 +253,8 @@ Manœuvre<InertialFrame, Frame>::ComputeFrenetFrame(
   RigidMotion<Frame, InertialFrame> const from_frame_at_t =
       to_frame_at_t.Inverse();
   return from_frame_at_t.orthogonal_map() *
-         frame()->FrenetFrame(t, to_frame_at_t(degrees_of_freedom)).
-             Forget<OrthogonalMap>();
+         frame()->FrenetFrame(t, to_frame_at_t(degrees_of_freedom))
+             .template Forget<OrthogonalMap>();
 }
 
 template<typename InertialFrame, typename Frame>
