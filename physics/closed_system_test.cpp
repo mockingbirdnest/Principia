@@ -7,19 +7,23 @@
 
 namespace principia {
 
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::OrthogonalMap;
 using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
+using geometry::Vector;
 using geometry::Velocity;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 using quantities::AngularMomentum;
+using quantities::Energy;
 using quantities::Length;
 using quantities::Mass;
 using quantities::MomentOfInertia;
+using quantities::Momentum;
 using quantities::Pow;
 using quantities::Speed;
 using quantities::si::Kilogram;
@@ -88,6 +92,23 @@ TEST_F(ClosedSystemTest, TwoPointMasses) {
       Componentwise(AngularMomentum{}, AngularMomentum{}, r * μ * v * Radian));
   EXPECT_THAT(system_.inertia_tensor().coordinates(),
               Eq(R3x3Matrix<MomentOfInertia>({μ * Pow<2>(r), {}, {}}, {}, {})));
+
+  Mass const m = system_.mass();
+  Vector<Momentum, InertialFrame> const p =
+      m * system_.linear_motion()({SystemFrame::origin, SystemFrame::unmoving})
+              .velocity();
+  Bivector<AngularMomentum, SystemFrame> const L = system_.angular_momentum();
+  Bivector<double, SystemFrame> const axis = Normalize(L);
+  SymmetricBilinearForm<MomentOfInertia, SystemFrame> I =
+      system_.inertia_tensor();
+  // Compute the kinetic energy of the system in |InertialFrame| as the energy
+  // of its linear motion plus that of its rotational motion, and compare that
+  // with sum of the kinetic energies of the point masses.  Note that m1 is
+  // stationary in |InertialFrame|.
+  EXPECT_THAT(p.Norm²() / (2 * m) +
+                  (L / Radian).Norm²() /
+                      (2 * InnerProduct(axis, Anticommutator(I, axis))),
+              Eq(0.5 * m2 * Pow<2>(v)));
 }
 
 }  // namespace physics
