@@ -26,6 +26,7 @@ using quantities::Quotient;
 template<typename Scalar, typename Frame>
 class SymmetricBilinearForm {
  public:
+  SymmetricBilinearForm() = default;
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
 

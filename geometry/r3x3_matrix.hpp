@@ -29,6 +29,7 @@ using quantities::Quotient;
 template<typename Scalar>
 class R3x3Matrix final {
  public:
+  R3x3Matrix() = default;
   R3x3Matrix(R3Element<Scalar> const& row_x,
              R3Element<Scalar> const& row_y,
              R3Element<Scalar> const& row_z);
