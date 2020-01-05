@@ -70,6 +70,17 @@ TEST_F(ClosedSystemTest, TwoPointMasses) {
 
   constexpr Mass μ = m1 * m2 / (m1 + m2);
 
+  EXPECT_THAT(system_.mass(), Eq(m1 + m2));
+  // TODO(egg): this would be useful in general.
+  DegreesOfFreedom<InertialFrame> const unmoving_origin = {
+      InertialFrame::origin, InertialFrame::unmoving};
+  EXPECT_THAT(
+      system_.linear_motion()({SystemFrame::origin, SystemFrame::unmoving}) -
+          unmoving_origin,
+      Componentwise(Componentwise(5.0 / 7 * Metre, 0 * Metre, 0 * Metre),
+                    Componentwise(0 * Metre / Second,
+                                  15.0 / 7 * Metre / Second,
+                                  0 * Metre / Second)));
   EXPECT_THAT(
       system_.angular_momentum(),
       Componentwise(AngularMomentum{}, AngularMomentum{}, r * μ * v * Radian));
