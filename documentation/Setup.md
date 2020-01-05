@@ -24,11 +24,8 @@ This directory should not contain any of the following subfolders:
 
 This project depends upon:
 - the KSP assembly `Assembly-CSharp.dll`, found in `<KSP directory>\KSP_x64_Data\Managed`;
-- the Unity assemblies `UnityEngine.dll` and `UnityEngine.UI.dll`, found in
-  `<KSP directory>\KSP_Data\Managed` (on Mac you'll need `UnityEngine.CoreModule.dll`,
-  `UnityEngine.PhysicsModule.dll`, `UnityEngine.ImageConversionModule.dll`,
-  `UnityEngine.IMGUIMode.dll` and `UnityEngine.TextRenderingModule`; on Windows and Linux
-  it's safe to ignore any warnings related to these five DLLs);
+- the Unity assemblies `UnityEngine.CoreModule.dll`, `UnityEngine.dll`, `UnityEngine.ImageConversionModule.dll`, `UnityEngine.IMGUIMode.dll`, `UnityEngine.InputLegacyModule.dll`, `UnityEngine.PhysicsModule.dll`, `UnityEngine.TextRenderingModule.dll` and `UnityEngine.UI.dll`, found in
+  `<KSP directory>\KSP_x64_Data\Managed`;
 - our [fork](https://github.com/mockingbirdnest/glog) of the Google glog
   library;
 - our [fork](https://github.com/mockingbirdnest/googletest) of the Google googletest
