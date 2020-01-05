@@ -40,10 +40,10 @@ class ClosedSystem {
   // The total mass.
   Mass mass() const;
   // The total angular momentum of the system, with respect to the origin of
-  // |SystemFrame|, i.e., the origin of the system.
+  // |SystemFrame|, i.e., the centre of mass of the system.
   Bivector<AngularMomentum, SystemFrame> angular_momentum() const;
   // The moments of inertia of the system, with respect to the origin of
-  // |SystemFrame|, i.e., the origin of the system.
+  // |SystemFrame|, i.e., the centre of mass of the system.
   SymmetricBilinearForm<MomentOfInertia, SystemFrame> inertia_tensor() const;
 
  private:
