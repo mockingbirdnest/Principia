@@ -63,7 +63,8 @@ TEST_F(NotNullTest, Move) {
       _MSC_FULL_VER == 192'227'706 || \
       _MSC_FULL_VER == 192'227'724 || \
       _MSC_FULL_VER == 192'227'905 || \
-      _MSC_FULL_VER == 192'328'106)
+      _MSC_FULL_VER == 192'328'106 || \
+      _MSC_FULL_VER == 192'428'314)
   EXPECT_THAT(*(std::unique_ptr<int> const&)int_ptr1, Eq(3));
 #endif
   not_null<std::unique_ptr<int>> int_ptr2 = std::move(int_ptr1);
