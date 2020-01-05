@@ -283,5 +283,8 @@
     <ClCompile Include="inertia_tensor_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="closed_system_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
