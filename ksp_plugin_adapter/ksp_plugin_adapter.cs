@@ -246,12 +246,6 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
-    // If this is the main menu, stop here: we checked that Principia can be
-    // loaded and that's enough.
-    if (in_main_menu_) {
-      return;
-    }
-
     map_node_pool_ = new MapNodePool();
     flight_planner_ = new FlightPlanner(this);
     orbit_analyser_ = new OrbitAnalyser(this);
@@ -2188,11 +2182,6 @@ public partial class PrincipiaPluginAdapter
 
   private void ResetPlugin() {
   try {
-    // If this is the main menu, don't create a plugin yet.
-    if (in_main_menu_) {
-      return;
-    }
-
     Cleanup();
     RemoveBuggyTidalLocking();
     Dictionary<string, ConfigNode> name_to_gravity_model = null;
