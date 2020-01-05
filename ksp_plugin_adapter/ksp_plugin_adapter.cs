@@ -7,8 +7,9 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 [KSPScenario(createOptions: ScenarioCreationOptions.AddToAllGames,
-             tgtScenes: new GameScenes[]{GameScenes.SPACECENTER,
-                                         GameScenes.FLIGHT,
+             tgtScenes: new GameScenes[]{GameScenes.FLIGHT,
+                                         GameScenes.MAINMENU,
+                                         GameScenes.SPACECENTER,
                                          GameScenes.TRACKSTATION})]
 public partial class PrincipiaPluginAdapter
     : ScenarioModule,
@@ -63,6 +64,9 @@ public partial class PrincipiaPluginAdapter
   private bool hide_all_gui_ = false;
   // Whether we are in a scene/building where we wish to show our UI.
   private bool in_principia_scene_ = true;
+  // Whether we are in the main menu.
+  private readonly bool in_main_menu_ =
+      HighLogic.LoadedScene == GameScenes.MAINMENU;
 
   private const int чебышёв_plotting_method_ = 2;
 
@@ -167,8 +171,8 @@ public partial class PrincipiaPluginAdapter
   // because we can test whether we have the part or not. Set in
   // FashionablyLate, before the FlightIntegrator clears the forces.  Used in
   // WaitForFixedUpdate.
-  private readonly Dictionary<uint, Part.ForceHolder[]> part_id_to_intrinsic_forces_ =
-      new Dictionary<uint, Part.ForceHolder[]>();
+  private readonly Dictionary<uint, Part.ForceHolder[]>
+      part_id_to_intrinsic_forces_ = new Dictionary<uint, Part.ForceHolder[]>();
   private readonly Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
       new Dictionary<uint, Vector3d>();
 
@@ -215,7 +219,9 @@ public partial class PrincipiaPluginAdapter
     } else {
       is_bad_installation_ = true;
       bad_installation_dialog_.message =
-          "The Principia DLL failed to load.\n" + load_error;
+          "The Principia DLL failed to load.\n" + load_error +
+          "\n\nWarning: don't load a Principia save before you have fixed this " +
+          "error; it might get damaged.";
       bad_installation_dialog_.Show();
     }
 #if KSP_VERSION_1_8_1
@@ -239,6 +245,13 @@ public partial class PrincipiaPluginAdapter
         Log.Error(message);
       }
     }
+
+    // If this is the main menu, stop here: we checked that Principia can be
+    // loaded and that's enough.
+    if (in_main_menu_) {
+      return;
+    }
+
     map_node_pool_ = new MapNodePool();
     flight_planner_ = new FlightPlanner(this);
     orbit_analyser_ = new OrbitAnalyser(this);
@@ -501,7 +514,7 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnAwake() {
     base.OnAwake();
-    if (is_bad_installation_) {
+    if (is_bad_installation_ || in_main_menu_) {
       return;
     }
     // While we're here, we might as well log.
@@ -611,7 +624,7 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
-    if (is_bad_installation_) {
+    if (is_bad_installation_ || in_main_menu_) {
       return;
     }
     if (node.HasValue(principia_serialized_plugin_)) {
@@ -657,7 +670,7 @@ public partial class PrincipiaPluginAdapter
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
 
   private void OnGUI() {
-    if (is_bad_installation_) {
+    if (is_bad_installation_ || in_main_menu_) {
       bad_installation_dialog_.RenderWindow();
       return;
     }
@@ -846,7 +859,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void FixedUpdate() {
-    if (is_bad_installation_) {
+    if (is_bad_installation_ || in_main_menu_) {
       return;
     }
     if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
@@ -876,7 +889,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void OnDisable() {
-    if (is_bad_installation_) {
+    if (is_bad_installation_ || in_main_menu_) {
       return;
     }
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnDisable()");
@@ -2175,6 +2188,11 @@ public partial class PrincipiaPluginAdapter
 
   private void ResetPlugin() {
   try {
+    // If this is the main menu, don't create a plugin yet.
+    if (in_main_menu_) {
+      return;
+    }
+
     Cleanup();
     RemoveBuggyTidalLocking();
     Dictionary<string, ConfigNode> name_to_gravity_model = null;
