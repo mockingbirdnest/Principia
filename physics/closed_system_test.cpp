@@ -7,9 +7,12 @@
 
 namespace principia {
 
+using geometry::AngularVelocity;
+using geometry::Anticommutator;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Identity;
 using geometry::Inertial;
 using geometry::OrthogonalMap;
 using geometry::R3x3Matrix;
@@ -30,6 +33,7 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using quantities::si::Tonne;
 using testing_utilities::Componentwise;
 using ::testing::Eq;
 
@@ -43,7 +47,8 @@ class ClosedSystemTest : public testing::Test{
   ClosedSystem<InertialFrame, SystemFrame> system_;
 };
 
-TEST_F(ClosedSystemTest, TwoPointMasses) {
+TEST_F(ClosedSystemTest, RigidTwoPointMasses) {
+  // A rigid system of two point masses.
   constexpr Mass m1 = 1 * Kilogram;
   constexpr Mass m2 = 7 * Kilogram;
   constexpr Length r = 5 * Metre;
@@ -91,7 +96,7 @@ TEST_F(ClosedSystemTest, TwoPointMasses) {
       system_.angular_momentum(),
       Componentwise(AngularMomentum{}, AngularMomentum{}, r * μ * v * Radian));
   EXPECT_THAT(system_.inertia_tensor().coordinates(),
-              Eq(R3x3Matrix<MomentOfInertia>({μ * Pow<2>(r), {}, {}}, {}, {})));
+      Eq(R3x3Matrix<MomentOfInertia>::Diagonal({μ * Pow<2>(r), {}, {}})));
 
   Mass const m = system_.mass();
   Vector<Momentum, InertialFrame> const p =
@@ -109,6 +114,104 @@ TEST_F(ClosedSystemTest, TwoPointMasses) {
                   (L / Radian).Norm²() /
                       (2 * InnerProduct(axis, Anticommutator(I, axis))),
               Eq(0.5 * m2 * Pow<2>(v)));
+}
+
+TEST_F(ClosedSystemTest, RigidTwoCubes) {
+  // A rigid system of two lead cubes with three-metre-long sides, joined in a
+  // cuboid 3 m × 3 m × 6 m.
+  constexpr Mass cube_mass = 10 * Tonne;
+  constexpr Length cube_side = 3 * Metre;
+  using Cube = Frame<enum class CubeTag>;
+  SymmetricBilinearForm<MomentOfInertia, Cube> const cube_inertia(
+      R3x3Matrix<MomentOfInertia>::Diagonal(
+          {Pow<2>(cube_side) * cube_mass / 12,
+           Pow<2>(cube_side) * cube_mass / 12,
+           Pow<2>(cube_side) * cube_mass / 12}));
+  AngularVelocity<InertialFrame> ω(
+      {0 * Radian / Second, 0 * Radian / Second, 1 * Radian / Second});
+
+  system_.AddRigidBody(RigidMotion<Cube, InertialFrame>(
+                           RigidTransformation<Cube, InertialFrame>(
+                               Cube::origin,
+                               InertialFrame::origin +
+                                   Displacement<InertialFrame>(
+                                       {-cube_side / 2, 0 * Metre, 0 * Metre}),
+                               OrthogonalMap<Cube, InertialFrame>::Identity()),
+                           ω,
+                           Velocity<InertialFrame>({0 * Metre / Second,
+                                                    -cube_side / 2 / Second,
+                                                    0 * Metre / Second})),
+                       cube_mass,
+                       cube_inertia);
+  system_.AddRigidBody(RigidMotion<Cube, InertialFrame>(
+                           RigidTransformation<Cube, InertialFrame>(
+                               Cube::origin,
+                               InertialFrame::origin +
+                                   Displacement<InertialFrame>(
+                                       {cube_side / 2, 0 * Metre, 0 * Metre}),
+                               OrthogonalMap<Cube, InertialFrame>::Identity()),
+                           ω,
+                           Velocity<InertialFrame>({0 * Metre / Second,
+                                                    cube_side / 2 / Second,
+                                                    0 * Metre / Second})),
+                       cube_mass,
+                       cube_inertia);
+
+  EXPECT_THAT(system_.mass(), Eq(2 * cube_mass));
+  EXPECT_THAT(system_.inertia_tensor().coordinates(),
+              Eq(R3x3Matrix<MomentOfInertia>::Diagonal(
+                  {Pow<2>(2 * cube_side) * 2 * cube_mass / 12,
+                   Pow<2>(cube_side) * 2 * cube_mass / 12,
+                   Pow<2>(cube_side) * 2 * cube_mass / 12})));
+  EXPECT_THAT(system_.angular_momentum(),
+              Eq(Anticommutator(system_.inertia_tensor(),
+                                Identity<InertialFrame, SystemFrame>()(ω))));
+}
+
+TEST_F(ClosedSystemTest, NonRigidTwoCubes) {
+  // A system of two counter-rotating lead cubes.
+  constexpr Mass cube_mass = 10 * Tonne;
+  constexpr Length cube_side = 3 * Metre;
+  using Cube = Frame<enum class CubeTag>;
+  SymmetricBilinearForm<MomentOfInertia, Cube> const cube_inertia(
+      R3x3Matrix<MomentOfInertia>::Diagonal(
+          {Pow<2>(cube_side) * cube_mass / 12,
+           Pow<2>(cube_side) * cube_mass / 12,
+           Pow<2>(cube_side) * cube_mass / 12}));
+  AngularVelocity<InertialFrame> ω(
+      {1 * Radian / Second, 0 * Radian / Second, 0 * Radian / Second});
+
+  system_.AddRigidBody(RigidMotion<Cube, InertialFrame>(
+                           RigidTransformation<Cube, InertialFrame>(
+                               Cube::origin,
+                               InertialFrame::origin +
+                                   Displacement<InertialFrame>(
+                                       {-cube_side / 2, 0 * Metre, 0 * Metre}),
+                               OrthogonalMap<Cube, InertialFrame>::Identity()),
+                           ω,
+                           InertialFrame::unmoving),
+                       cube_mass,
+                       cube_inertia);
+  system_.AddRigidBody(RigidMotion<Cube, InertialFrame>(
+                           RigidTransformation<Cube, InertialFrame>(
+                               Cube::origin,
+                               InertialFrame::origin +
+                                   Displacement<InertialFrame>(
+                                       {cube_side / 2, 0 * Metre, 0 * Metre}),
+                               OrthogonalMap<Cube, InertialFrame>::Identity()),
+                           -ω,
+                           InertialFrame::unmoving),
+                       cube_mass,
+                       cube_inertia);
+
+  EXPECT_THAT(system_.mass(), Eq(2 * cube_mass));
+  EXPECT_THAT(system_.inertia_tensor().coordinates(),
+              Eq(R3x3Matrix<MomentOfInertia>::Diagonal(
+                  {Pow<2>(2 * cube_side) * 2 * cube_mass / 12,
+                   Pow<2>(cube_side) * 2 * cube_mass / 12,
+                   Pow<2>(cube_side) * 2 * cube_mass / 12})));
+  EXPECT_THAT(system_.angular_momentum(),
+              Eq(Bivector<AngularMomentum, SystemFrame>{}));
 }
 
 }  // namespace physics

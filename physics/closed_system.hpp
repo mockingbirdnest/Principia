@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <optional>
 #include <vector>
@@ -23,6 +23,20 @@ using quantities::MomentOfInertia;
 // Effectively an extension of
 // |BarycentreCalculator<DegreesOfFreedom<InertialFrame>, Mass>| that also
 // handles rotational motion.
+// Note: As a consequence of our separate handling of vectors and bivectors, the
+// inertia tensor used here does *not* follow the convention customary in
+// physics.  The usual convention is
+//  ⎛ ∑(y² + z²)   -∑xy      -∑xy    ⎞
+//  ⎜    -∑yx   ∑(x² + z²)   -∑yz    ⎟
+//  ⎝    -∑zx      -∑zy   ∑(x² + y²) ⎠
+// but our convention is:
+//  ⎛ ∑x²   ∑xy   ∑xy ⎞
+//  ⎜ ∑yx   ∑y²   ∑yz ⎟
+//  ⎝ ∑zx   ∑zy   ∑z² ⎠
+// This leads to simpler transformation formulæ.  Where the physics usage would
+// be to multiply the inertia tensor with a pseudovector, we must instead take
+// the anticommutator with the bivector: L = Iω becomes L = {I, ω}, and the
+// moment of inertia αIα along an axis α becomes ⟨α, {I, α}⟩.
 template<typename InertialFrame, typename SystemFrame>
 class ClosedSystem {
  public:
