@@ -101,12 +101,28 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
+    template<typename P = Position,
+             typename = std::enable_if_t<base::is_serializable_v<P>>>
+    static not_null<std::unique_ptr<Instance>> ReadFromMessage(
+        serialization::
+        EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance const&
+                extension,
+        IntegrationProblem<ODE> const& problem,
+        AppendState const& append_state,
+        ToleranceToErrorRatio const& tolerance_to_error_ratio,
+        Parameters const& parameters,
+        Time const& time_step,
+        bool first_use,
+        EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const&
+            integrator);
 
    private:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
              ToleranceToErrorRatio const& tolerance_to_error_ratio,
-             Parameters const& adaptive_step_size,
+             Parameters const& parameters,
+             Time const& time_step,
+             bool first_use,
              EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const&
                  integrator);
 

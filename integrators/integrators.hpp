@@ -195,12 +195,14 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
              ToleranceToErrorRatio const& tolerance_to_error_ratio,
-             Parameters const& parameters);
+             Parameters const& parameters,
+             Time const& time_step,
+             bool first_use);
 
     ToleranceToErrorRatio const tolerance_to_error_ratio_;
     Parameters const parameters_;
     Time time_step_;
-    bool first_use_ = true;
+    bool first_use_;
   };
 
   // The factory function for |Instance|, above.  It ensures that the instance
