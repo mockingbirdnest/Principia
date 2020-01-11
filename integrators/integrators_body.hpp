@@ -541,6 +541,7 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
 }
 
 template<typename ODE_>
+template<typename, typename>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     serialization::IntegratorInstance const& message,
@@ -597,6 +598,7 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
 }
 
 template<typename ODE_>
+template<typename, typename>
 AdaptiveStepSizeIntegrator<ODE_> const&
 AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegrator const& message) {
