@@ -681,14 +681,22 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
   CHECK_LT(parameters.safety_factor, 1);
 }
 
-#define PRINCIPIA_READ_ASS_INTEGRATOR_EEGRKN(method)    \
-  return EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator< \
-      methods::method,                                           \
-      typename ODE::Position>()
+#define PRINCIPIA_READ_ASS_INTEGRATOR_EEGRKN(method)                 \
+  if constexpr (base::is_instance_of_v<                              \
+                    ExplicitSecondOrderOrdinaryDifferentialEquation, \
+                    ODE>) {                                          \
+    return EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<   \
+        methods::method,                                             \
+        typename ODE::Position>();                                   \
+  }
 
-#define PRINCIPIA_READ_ASS_INTEGRATOR_EERKN(method)          \
-  return EmbeddedExplicitRungeKuttaNyströmIntegrator<methods::method, \
-                                                     typename ODE::Position>()
+#define PRINCIPIA_READ_ASS_INTEGRATOR_EERKN(method)                            \
+  if constexpr (base::is_instance_of_v<SpecialSecondOrderDifferentialEquation, \
+                                       ODE>) {                                 \
+    return EmbeddedExplicitRungeKuttaNyströmIntegrator<                        \
+        methods::method,                                                       \
+        typename ODE::Position>();                                             \
+  }
 
 template<typename ODE_>
 template<typename, typename>
@@ -702,9 +710,8 @@ AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
       LOG(FATAL) << message.kind();
       base::noreturn();
   }
-  return AdaptiveStepSizeIntegratorDeserializer<
-      typename ODE_::RightHandSideComputation>::
-      template ReadFromMessage<AdaptiveStepSizeIntegrator<ODE_>>(message);
+  LOG(FATAL) << message.kind();
+  base::noreturn();
 }
 
 #undef PRINCIPIA_READ_ASS_INTEGRATOR_EEGRKN
