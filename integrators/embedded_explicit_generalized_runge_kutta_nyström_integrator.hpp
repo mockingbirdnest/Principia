@@ -125,14 +125,6 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
       const override;
 
  private:
-  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
-  ReadFromMessage(
-      serialization::AdaptiveStepSizeIntegratorInstance const& message,
-      IntegrationProblem<ODE> const& problem,
-      AppendState const& append_state,
-      ToleranceToErrorRatio const& tolerance_to_error_ratio,
-      Parameters const& parameters) const override;
-
   static constexpr auto stages_ = Method::stages;
   static constexpr auto c_ = Method::c;
   static constexpr auto a_ = Method::a;
