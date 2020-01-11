@@ -341,13 +341,14 @@ NewInstance(IntegrationProblem<ODE> const& problem,
             Parameters const& parameters) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<Instance>(new Instance(problem,
-                                                append_state,
-                                                tolerance_to_error_ratio,
-                                                parameters,
-                                                /*time_step=*/Time(),
-                                                /*first_use=*/true,
-                                                *this));
+  return std::unique_ptr<Instance>(
+      new Instance(problem,
+                   append_state,
+                   tolerance_to_error_ratio,
+                   parameters,
+                   /*time_step=*/parameters.first_time_step,
+                   /*first_use=*/true,
+                   *this));
 }
 
 template<typename Method, typename Position>
