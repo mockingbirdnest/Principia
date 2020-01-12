@@ -132,7 +132,7 @@ InertiaTensor<Frame> InertiaTensor<Frame>::ReadFromMessage(
     serialization::InertiaTensor const& message) {
   return InertiaTensor(
       Mass::ReadFromMessage(message.mass()),
-      SymmetricBilinearForm<MomentOfInertia, Frame>::ReadFromMessage(
+      SymmetricBilinearForm<MomentOfInertia, Frame, Vector>::ReadFromMessage(
           message.form()),
       Position<Frame>::ReadFromMessage(message.centre_of_mass()));
 }
