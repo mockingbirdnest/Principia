@@ -66,9 +66,9 @@ InertiaTensor<ToFrame> InertiaTensor<Frame>::Transform(
     RigidTransformation<Frame, ToFrame> const& transformation) const {
   Displacement<ToFrame> const displacement =
       ToFrame::origin - transformation(Frame::origin);
-  SymmetricBilinearForm<MomentOfInertia, ToFrame, Vector> const transformed_form =
-      transformation.linear_map()(form_) +
-      mass_ * SymmetricProduct(displacement, displacement);
+  SymmetricBilinearForm<MomentOfInertia, ToFrame, Vector> const
+      transformed_form = transformation.linear_map()(form_) +
+                         mass_ * SymmetricProduct(displacement, displacement);
   Position<ToFrame> const transformed_centre_of_mass =
       transformation(centre_of_mass_);
   return InertiaTensor<ToFrame>(mass_,

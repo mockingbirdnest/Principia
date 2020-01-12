@@ -177,7 +177,7 @@ class SymmetricBilinearForm {
                          SymmetricBilinearForm<S, F, M> const& right);
 
   template<typename S, typename F, template<typename, typename> typename M>
-  friend std::string DebugString(SymmetricBilinearForm<S, F,M> const& form);
+  friend std::string DebugString(SymmetricBilinearForm<S, F, M> const& form);
 
   template<typename S, typename F, template<typename, typename> typename M>
   friend std::ostream& operator<<(std::ostream& out,
