@@ -209,7 +209,8 @@ TEST_F(PermutationTest, Compose) {
       for (auto const& right : rhs) {
         auto const composition = left * right;
         auto const composition_as_orthogonal_maps =
-            left.Forget<OrthogonalMap>() * right.Forget<OrthogonalMap>();
+            left.template Forget<OrthogonalMap>() *
+            right.template Forget<OrthogonalMap>();
         for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
           // TODO(egg): In C++20 we could have template parameters on the lambda
           // which would allow us to deduce this type, instead of having to pass
