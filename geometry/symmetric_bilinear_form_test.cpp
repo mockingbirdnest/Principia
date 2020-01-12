@@ -200,13 +200,16 @@ TEST_F(SymmetricBilinearFormTest, Anticommutator) {
   });
   Vector<Length, World> const v({2 * Metre, 5 * Metre, 1 * Metre});
   Vector<Length, World> const w({4 * Metre, 2 * Metre, 1 * Metre});
+  Bivector<Length, World> const a({3 * Metre, 8 * Metre, 0 * Metre});
   Bivector<Length, World> const b({1 * Metre, 3 * Metre, -5 * Metre});
   EXPECT_THAT(
       Anticommutator(f, b),
       Eq(Bivector<Square<Length>, World>(
           {11 * Pow<2>(Metre), 26 * Pow<2>(Metre), -9 * Pow<2>(Metre)})));
+
   EXPECT_THAT(f.Anticommutator() * b, Eq(Anticommutator(f, b)));
-  EXPECT_THAT(f.Anticommutator() * b, Eq(Anticommutator(f, b)));
+  EXPECT_THAT(f.Anticommutator()(a, b),
+              Eq(InnerProduct(a, Anticommutator(f, b))));
   EXPECT_THAT(Anticommutator(f, Wedge(v, w)),
               Eq(Wedge(f * v, w) + Wedge(v, f * w)));
 }
