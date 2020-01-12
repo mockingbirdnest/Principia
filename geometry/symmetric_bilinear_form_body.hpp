@@ -23,8 +23,11 @@ using quantities::Cos;
 using quantities::Sqrt;
 using quantities::si::Radian;
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector>::SymmetricBilinearForm(
     R3x3Matrix<Scalar> const& matrix)
     : matrix_(matrix) {
   DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
@@ -32,8 +35,11 @@ SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
   DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector>::SymmetricBilinearForm(
     R3x3Matrix<Scalar>&& matrix)
     : matrix_(std::move(matrix)) {
   DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
@@ -41,49 +47,59 @@ SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
   DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>& SymmetricBilinearForm<Scalar, Frame>::
-operator+=(SymmetricBilinearForm const& right) {
+template<typename Scalar, typename Frame, template<typename S, typename F> typename Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector>&
+SymmetricBilinearForm<Scalar, Frame, Multivector>::operator+=(
+    SymmetricBilinearForm const& right) {
   return *this = *this + right;
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>& SymmetricBilinearForm<Scalar, Frame>::
+template<typename Scalar, typename Frame, template<typename S, typename F> typename Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector>& SymmetricBilinearForm<Scalar, Frame, Multivector>::
 operator-=(SymmetricBilinearForm const& right) {
   return *this = *this - right;
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>& SymmetricBilinearForm<Scalar, Frame>::
-operator*=(double const right) {
+template<typename Scalar, typename Frame, template<typename S, typename F> typename Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector>&
+SymmetricBilinearForm<Scalar, Frame, Multivector>::operator*=(
+    double const right) {
   return *this = *this * right;
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>& SymmetricBilinearForm<Scalar, Frame>::
-operator/=(double const right) {
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector>&
+SymmetricBilinearForm<Scalar, Frame, Multivector>::operator/=(
+    double const right) {
   return *this = *this / right;
 }
 
-template<typename Scalar, typename Frame>
-R3x3Matrix<Scalar> const& SymmetricBilinearForm<Scalar, Frame>::coordinates()
+template<typename Scalar, typename Frame, template<typename S, typename F> typename Multivector>
+R3x3Matrix<Scalar> const& SymmetricBilinearForm<Scalar, Frame, Multivector>::coordinates()
     const {
   return matrix_;
 }
 
-template<typename Scalar, typename Frame>
+template<typename Scalar, typename Frame, template<typename S, typename F> typename Multivector>
 template<typename LScalar, typename RScalar>
 Product<Scalar, Product<LScalar, RScalar>>
-SymmetricBilinearForm<Scalar, Frame>::operator()(
-    Vector<LScalar, Frame> const& left,
-    Vector<RScalar, Frame> const& right) const {
+SymmetricBilinearForm<Scalar, Frame, Multivector>::operator()(
+    Multivector<LScalar, Frame> const& left,
+    Multivector<RScalar, Frame> const& right) const {
   return InnerProduct(left, *this * right);
 }
 
-template<typename Scalar, typename Frame>
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
 template<typename Eigenframe>
-typename SymmetricBilinearForm<Scalar, Frame>::template Eigensystem<Eigenframe>
-SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
+typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
+    template Eigensystem<Eigenframe>
+    SymmetricBilinearForm<Scalar, Frame, Multivector>::Diagonalize() const {
   R3x3Matrix<Scalar> const& A = matrix_;
   auto const I = R3x3Matrix<double>::Identity();
 
@@ -107,10 +123,8 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
 
   // The form in its diagonal basis.
   Scalar const zero;
-  SymmetricBilinearForm<Scalar, Eigenframe> form(
-      R3x3Matrix<Scalar>({  α₀, zero, zero},
-                         {zero,   α₁, zero},
-                         {zero, zero,   α₂}));
+  SymmetricBilinearForm<Scalar, Eigenframe, Multivector> form(
+      R3x3Matrix<Scalar>({α₀, zero, zero}, {zero, α₁, zero}, {zero, zero, α₂}));
 
   // Use the Cayley-Hamilton theorem to efficiently find the eigenvectors.  The
   // m matrices contain, in columns, eigenvectors for the corresponding α.
@@ -129,26 +143,36 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   return {form, rotation};
 }
 
-template<typename Scalar, typename Frame>
-void SymmetricBilinearForm<Scalar, Frame>::WriteToMessage(
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+void SymmetricBilinearForm<Scalar, Frame, Multivector>::WriteToMessage(
     not_null<serialization::SymmetricBilinearForm*> message) const {
   Frame::WriteToMessage(message->mutable_frame());
   matrix_.WriteToMessage(message->mutable_matrix());
 }
 
-template<typename Scalar, typename Frame>
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
 template<typename, typename>
-SymmetricBilinearForm<Scalar, Frame>
-SymmetricBilinearForm<Scalar, Frame>::ReadFromMessage(
+SymmetricBilinearForm<Scalar, Frame, Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector>::ReadFromMessage(
     serialization::SymmetricBilinearForm const& message) {
   Frame::ReadFromMessage(message.frame());
   return SymmetricBilinearForm(
       R3x3Matrix<Scalar>::ReadFromMessage(message.matrix()));
 }
 
-template<typename Scalar, typename Frame>
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
 template<typename S>
-R3Element<double> SymmetricBilinearForm<Scalar, Frame>::PickEigenvector(
+R3Element<double>
+SymmetricBilinearForm<Scalar, Frame, Multivector>::PickEigenvector(
     R3x3Matrix<S> const& matrix) {
   static R3Element<double> const e₀{1, 0, 0};
   static R3Element<double> const e₁{0, 1, 0};
@@ -162,117 +186,172 @@ R3Element<double> SymmetricBilinearForm<Scalar, Frame>::PickEigenvector(
   return NormalizeOrZero(vs.back());
 }
 
-template<typename Frame>
-SymmetricBilinearForm<double, Frame> const& InnerProductForm() {
+template<typename Frame, template<typename S, typename F> typename Multivector>
+SymmetricBilinearForm<double, Frame, Multivector> const& InnerProductForm() {
   static auto const identity =
-      SymmetricBilinearForm<double, Frame>(R3x3Matrix<double>::Identity());
+      SymmetricBilinearForm<double, Frame, Multivector>(
+          R3x3Matrix<double>::Identity());
   return identity;
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator+(
-    SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm<Scalar, Frame>(right.matrix_);
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector> operator+(
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right) {
+  return SymmetricBilinearForm<Scalar, Frame, Multivector>(right.matrix_);
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator-(
-    SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm<Scalar, Frame>(-right.matrix_);
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right) {
+  return SymmetricBilinearForm<Scalar, Frame, Multivector>(-right.matrix_);
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator+(
-    SymmetricBilinearForm<Scalar, Frame> const& left,
-    SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ + right.matrix_);
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector> operator+(
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right) {
+  return SymmetricBilinearForm<Scalar, Frame, Multivector>(left.matrix_ +
+                                                           right.matrix_);
 }
 
-template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame> operator-(
-    SymmetricBilinearForm<Scalar, Frame> const& left,
-    SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ - right.matrix_);
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right) {
+  return SymmetricBilinearForm<Scalar, Frame, Multivector>(left.matrix_ -
+                                                           right.matrix_);
 }
 
-template<typename LScalar, typename RScalar, typename Frame>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> operator*(
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector> operator*(
     LScalar const left,
-    SymmetricBilinearForm<RScalar, Frame> const& right) {
-  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>(left *
-                                                                 right.matrix_);
+    SymmetricBilinearForm<RScalar, Frame, Multivector> const& right) {
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector>(
+      left * right.matrix_);
 }
 
-template<typename LScalar, typename RScalar, typename Frame>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> operator*(
-    SymmetricBilinearForm<LScalar, Frame> const& left,
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector> operator*(
+    SymmetricBilinearForm<LScalar, Frame, Multivector> const& left,
     RScalar const right) {
-  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>(left.matrix_ *
-                                                                 right);
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector>(
+      left.matrix_ * right);
 }
 
-template<typename LScalar, typename RScalar, typename Frame>
-SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame> operator/(
-    SymmetricBilinearForm<LScalar, Frame> const& left,
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame, Multivector> operator/(
+    SymmetricBilinearForm<LScalar, Frame, Multivector> const& left,
     RScalar const right) {
-  return SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame>(left.matrix_ /
-                                                                  right);
+  return SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame, Multivector>(
+      left.matrix_ / right);
+}
+
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         int rank,
+         template<typename, typename>
+         typename M,
+         typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
+    SymmetricBilinearForm<LScalar, Frame, M> const& left,
+    Multivector<RScalar, Frame, rank> const& right) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      left.matrix_ * right.coordinates());
+}
+
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         int rank,
+         template<typename, typename>
+         typename M,
+         typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
+    Multivector<LScalar, Frame, rank> const& left,
+    SymmetricBilinearForm<RScalar, Frame, M> const& right) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      left.coordinates() * right.matrix_);
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
-Vector<Product<LScalar, RScalar>, Frame> operator*(
-    SymmetricBilinearForm<LScalar, Frame> const& left,
-    Vector<RScalar, Frame> const& right) {
-  return Vector<Product<LScalar, RScalar>, Frame>(left.matrix_ *
-                                                  right.coordinates());
-}
-
-template<typename LScalar, typename RScalar, typename Frame>
-Vector<Product<LScalar, RScalar>, Frame> operator*(
-    Vector<LScalar, Frame> const& left,
-    SymmetricBilinearForm<RScalar, Frame> const& right) {
-  return Vector<Product<LScalar, RScalar>, Frame>(left.coordinates() *
-                                                  right.matrix_);
-}
-
-template<typename LScalar, typename RScalar, typename Frame>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
-    Vector<LScalar, Frame> const& left,
-    Vector<RScalar, Frame> const& right) {
-  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>(
+SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Vector>
+SymmetricProduct(Vector<LScalar, Frame> const& left,
+                 Vector<RScalar, Frame> const& right) {
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Vector>(
       0.5 * (KroneckerProduct(left.coordinates(), right.coordinates()) +
              KroneckerProduct(right.coordinates(), left.coordinates())));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
-    SymmetricBilinearForm<LScalar, Frame> const& form,
+    SymmetricBilinearForm<LScalar, Frame, Vector> const& form,
     Bivector<RScalar, Frame> const& bivector) {
   return Bivector<Product<LScalar, RScalar>, Frame>(
       form.matrix_.Trace() * bivector.coordinates() -
       form.matrix_ * bivector.coordinates());
 }
 
-template<typename Scalar, typename Frame>
-bool operator==(SymmetricBilinearForm<Scalar, Frame> const& left,
-                SymmetricBilinearForm<Scalar, Frame> const& right) {
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+bool operator==(
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right) {
   return left.matrix_ == right.matrix_;
 }
 
-template<typename Scalar, typename Frame>
-bool operator!=(SymmetricBilinearForm<Scalar, Frame> const& left,
-                SymmetricBilinearForm<Scalar, Frame> const& right) {
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+bool operator!=(
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right) {
   return left.matrix_ != right.matrix_;
 }
 
-template<typename Scalar, typename Frame>
-std::string DebugString(SymmetricBilinearForm<Scalar, Frame> const& form) {
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+std::string DebugString(
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& form) {
   return DebugString(form.matrix_);
 }
 
-template<typename Scalar, typename Frame>
-std::ostream& operator<<(std::ostream& out,
-                         SymmetricBilinearForm<Scalar, Frame> const& form) {
+template<typename Scalar,
+         typename Frame,
+         template<typename S, typename F>
+         typename Multivector>
+std::ostream& operator<<(
+    std::ostream& out,
+    SymmetricBilinearForm<Scalar, Frame, Multivector> const& form) {
   out << form.matrix_;
   return out;
 }

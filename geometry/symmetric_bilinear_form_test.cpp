@@ -43,7 +43,7 @@ class SymmetricBilinearFormTest : public ::testing::Test {
   SymmetricBilinearFormTest() {}
 
   template<typename Frame>
-  SymmetricBilinearForm<Length, Frame> MakeSymmetricBilinearForm(
+  SymmetricBilinearForm<Length, Frame, Vector> MakeSymmetricBilinearForm(
       R3x3Matrix<double> const& untyped_matrix) {
     R3x3Matrix<Length> const typed_matrix(
         R3Element<double>(
@@ -55,7 +55,7 @@ class SymmetricBilinearFormTest : public ::testing::Test {
         R3Element<double>(
             untyped_matrix(2, 0), untyped_matrix(2, 1), untyped_matrix(2, 2)) *
             Metre);
-    return SymmetricBilinearForm<Length, Frame>(typed_matrix);
+    return SymmetricBilinearForm<Length, Frame, Vector>(typed_matrix);
   }
 };
 
@@ -208,8 +208,8 @@ TEST_F(SymmetricBilinearFormTest, Anticommutator) {
 TEST_F(SymmetricBilinearFormTest, InnerProductForm) {
   Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   Vector<double, World> v2({2.0, 6.0, -5.0});
-  auto const a = InnerProductForm<World>()(v1, v2);
-  EXPECT_THAT(InnerProductForm<World>()(v1, v2), Eq(25 * Metre));
+  auto const a = InnerProductForm<World, Vector>()(v1, v2);
+  EXPECT_THAT((InnerProductForm<World, Vector>()(v1, v2)), Eq(25 * Metre));
 }
 
 TEST_F(SymmetricBilinearFormTest, Apply) {
@@ -232,7 +232,7 @@ TEST_F(SymmetricBilinearFormTest, Serialization) {
   EXPECT_TRUE(message1.has_frame());
   EXPECT_TRUE(message1.has_matrix());
   auto const g =
-      SymmetricBilinearForm<Length, World>::ReadFromMessage(message1);
+      SymmetricBilinearForm<Length, World, Vector>::ReadFromMessage(message1);
   EXPECT_EQ(f, g);
   serialization::SymmetricBilinearForm message2;
   g.WriteToMessage(&message2);

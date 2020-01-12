@@ -56,7 +56,7 @@ class RotationTest : public testing::Test {
             R3Element<Length>(
                 1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
         trivector_(Trivector<Length, World>(4.0 * Metre)),
-        form_(SymmetricBilinearForm<Length, World>(
+        form_(SymmetricBilinearForm<Length, World, Vector>(
             R3x3Matrix<Length>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre},
                                {2.0 * Metre, -5.0 * Metre, 6.0 * Metre},
                                {3.0 * Metre, 6.0 * Metre, 4.0 * Metre}))),
@@ -73,7 +73,7 @@ class RotationTest : public testing::Test {
   Vector<Length, World> const vector_;
   Bivector<Length, World> const bivector_;
   Trivector<Length, World> const trivector_;
-  SymmetricBilinearForm<Length, World> const form_;
+  SymmetricBilinearForm<Length, World, Vector> const form_;
   Vector<double, World> e1_;
   Vector<double, World> e2_;
   Vector<double, World> e3_;

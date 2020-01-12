@@ -45,7 +45,7 @@ class SignatureTest : public testing::Test {
       : vector_({1 * Metre, 2 * Metre, 3 * Metre}),
         bivector_({1 * Metre, 2 * Metre, 3 * Metre}),
         trivector_(4 * Metre),
-        form_(SymmetricBilinearForm<Length, R1>(
+        form_(SymmetricBilinearForm<Length, R1, Vector>(
             R3x3Matrix<Length>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre},
                                {2.0 * Metre, -5.0 * Metre, 6.0 * Metre},
                                {3.0 * Metre, 6.0 * Metre, 4.0 * Metre}))) {}
@@ -53,7 +53,7 @@ class SignatureTest : public testing::Test {
   Vector<Length, R1> const vector_;
   Bivector<Length, R1> const bivector_;
   Trivector<Length, R1> const trivector_;
-  SymmetricBilinearForm<Length, R1> const form_;
+  SymmetricBilinearForm<Length, R1, Vector> const form_;
 };
 
 using SignatureDeathTest = SignatureTest;
