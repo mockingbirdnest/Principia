@@ -46,6 +46,18 @@ class SymmetricBilinearForm {
       Multivector<LScalar, Frame> const& left,
       Multivector<RScalar, Frame> const& right) const;
 
+  // For a form on vectors, |Anticommutator| returns the form on bivectors
+  // resulting from the commutator, i.e., up to roundoff,
+  //   I.Anticommutator() * α = Anticommutator(I, α),
+  //   I.Anticommutator()(α, β) = InnerProduct(α, Anticommutator(I, β)).
+  // Further, note that
+  //   I.Anticommutator() * Wedge(v, w) = Wedge(I * v, w) + Wedge(v, I * w),
+  // which is the generalization to nonsymmetric I.
+  // This operation is linear in |*this|.
+  template<template<typename, typename> typename M = Multivector,
+           typename = std::enable_if_t<base::is_same_template_v<M, Vector>>>
+  SymmetricBilinearForm<Scalar, Frame, Bivector> Anticommutator() const;
+
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
   // which gives the eigenvalues; and (2) a rotation from the current basis to
   // the eigenbasis, which gives the eigenvectors.

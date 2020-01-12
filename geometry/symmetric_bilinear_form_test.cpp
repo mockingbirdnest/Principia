@@ -193,16 +193,58 @@ TEST_F(SymmetricBilinearFormTest, SymmetricProduct) {
 }
 
 TEST_F(SymmetricBilinearFormTest, Anticommutator) {
-  auto const f = MakeSymmetricBilinearForm<World>(
-                     R3x3Matrix<double>({1,  2,  4},
-                                        {2, -3,  5},
-                                        {4,  5,  0}));
-  Bivector<Length, World> const b({1.0 * Metre, 3.0 * Metre, -5.0 * Metre});
+  auto const f = MakeSymmetricBilinearForm<World>({
+      {1, 2, 4},
+      {2, -3, 5},
+      {4, 5, 0},
+  });
+  Vector<Length, World> const v({2 * Metre, 5 * Metre, 1 * Metre});
+  Vector<Length, World> const w({4 * Metre, 2 * Metre, 1 * Metre});
+  Bivector<Length, World> const b({1 * Metre, 3 * Metre, -5 * Metre});
   EXPECT_THAT(
       Anticommutator(f, b),
-      Eq(Bivector<Square<Length>, World>({11 * Pow<2>(Metre),
-                                          26 * Pow<2>(Metre),
-                                          -9 * Pow<2>(Metre)})));
+      Eq(Bivector<Square<Length>, World>(
+          {11 * Pow<2>(Metre), 26 * Pow<2>(Metre), -9 * Pow<2>(Metre)})));
+  EXPECT_THAT(f.Anticommutator() * b, Eq(Anticommutator(f, b)));
+  EXPECT_THAT(f.Anticommutator() * b, Eq(Anticommutator(f, b)));
+  EXPECT_THAT(Anticommutator(f, Wedge(v, w)),
+              Eq(Wedge(f * v, w) + Wedge(v, f * w)));
+}
+
+TEST_F(SymmetricBilinearFormTest, AnticommutatorDiagonalization) {
+  auto const f = MakeSymmetricBilinearForm<World>({
+      {1, 0, 0},
+      {0, 9, 0},
+      {0, 0, 2},
+  });
+  using VectorEigenframe = Frame<enum class VectorTag>;
+  using BivectorEigenframe = Frame<enum class BivectorTag>;
+  auto const eigenvector = [](int i) {
+    R3Element<double> result;
+    result[i] = 1;
+    return Vector<double, VectorEigenframe>(result);
+  };
+  auto const bieigenvector = [](int i) {
+    R3Element<double> result;
+    result[i] = 1;
+    return Bivector<double, BivectorEigenframe>(result);
+  };
+  auto const vector_eigensystem = f.Diagonalize<VectorEigenframe>();
+  auto const bivector_eigensystem =
+      f.Anticommutator().Diagonalize<BivectorEigenframe>();
+  EXPECT_THAT(vector_eigensystem.rotation(eigenvector(0)),
+              Componentwise(1, 0, 0));
+  EXPECT_THAT(vector_eigensystem.rotation(eigenvector(1)),
+              Componentwise(0, VanishesBefore(1, 1), -1));
+  EXPECT_THAT(vector_eigensystem.rotation(eigenvector(2)),
+              Componentwise(0, 1, VanishesBefore(1, 1)));
+
+  EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(0)),
+              Componentwise(0, 1, 0));
+  EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(1)),
+              Componentwise(0, 0, -1));
+  EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(2)),
+              Componentwise(-1, 0, 0));
 }
 
 TEST_F(SymmetricBilinearFormTest, InnerProductForm) {

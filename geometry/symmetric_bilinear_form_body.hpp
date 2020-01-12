@@ -94,6 +94,17 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::operator()(
 
 template<typename Scalar,
          typename Frame,
+         template<typename, typename>
+         typename Multivector>
+template<template<typename, typename> typename, typename>
+SymmetricBilinearForm<Scalar, Frame, Bivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector>::Anticommutator() const {
+  return SymmetricBilinearForm<Scalar, Frame, Bivector>(
+      matrix_.Trace() * R3x3Matrix<double>::Identity() - matrix_);
+}
+
+template<typename Scalar,
+         typename Frame,
          template<typename S, typename F>
          typename Multivector>
 template<typename Eigenframe>
