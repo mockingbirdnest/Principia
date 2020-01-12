@@ -66,7 +66,7 @@ InertiaTensor<ToFrame> InertiaTensor<Frame>::Transform(
     RigidTransformation<Frame, ToFrame> const& transformation) const {
   Displacement<ToFrame> const displacement =
       ToFrame::origin - transformation(Frame::origin);
-  SymmetricBilinearForm<MomentOfInertia, ToFrame> const transformed_form =
+  SymmetricBilinearForm<MomentOfInertia, ToFrame, Vector> const transformed_form =
       transformation.linear_map()(form_) +
       mass_ * SymmetricProduct(displacement, displacement);
   Position<ToFrame> const transformed_centre_of_mass =
@@ -140,7 +140,7 @@ InertiaTensor<Frame> InertiaTensor<Frame>::ReadFromMessage(
 template<typename Frame>
 InertiaTensor<Frame>::InertiaTensor(
     Mass const& mass,
-    SymmetricBilinearForm<MomentOfInertia, Frame> const& form,
+    SymmetricBilinearForm<MomentOfInertia, Frame, Vector> const& form,
     Position<Frame> const& centre_of_mass)
     : mass_(mass),
       form_(form),
@@ -149,10 +149,10 @@ InertiaTensor<Frame>::InertiaTensor(
 }
 
 template<typename Frame>
-SymmetricBilinearForm<MomentOfInertia, Frame>
+SymmetricBilinearForm<MomentOfInertia, Frame, Vector>
 InertiaTensor<Frame>::MakeSymmetricBilinearForm(
     R3x3Matrix<MomentOfInertia> const& tensor) {
-  return SymmetricBilinearForm<MomentOfInertia, Frame>(
+  return SymmetricBilinearForm<MomentOfInertia, Frame, Vector>(
       R3x3Matrix<MomentOfInertia>(
           {0.5 * (tensor(1, 1) + tensor(2, 2) - tensor(0, 0)),
            -tensor(0, 1),

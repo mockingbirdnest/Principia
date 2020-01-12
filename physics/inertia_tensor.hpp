@@ -25,6 +25,7 @@ using geometry::R3Element;
 using geometry::R3x3Matrix;
 using geometry::Rotation;
 using geometry::SymmetricBilinearForm;
+using geometry::Vector;
 using quantities::Mass;
 using quantities::MomentOfInertia;
 using quantities::Product;
@@ -89,16 +90,17 @@ class InertiaTensor {
   //  ⎝ ∑zx   ∑zy   ∑z² ⎠
   // This leads to simpler transformation formulæ at the expense of some care
   // when actually computing moments of inertia.
-  InertiaTensor(Mass const& mass,
-                SymmetricBilinearForm<MomentOfInertia, Frame> const& form,
-                Position<Frame> const& centre_of_mass);
+  InertiaTensor(
+      Mass const& mass,
+      SymmetricBilinearForm<MomentOfInertia, Frame, Vector> const& form,
+      Position<Frame> const& centre_of_mass);
 
   // Computes our representation from the conventional representation.
-  static SymmetricBilinearForm<MomentOfInertia, Frame>
+  static SymmetricBilinearForm<MomentOfInertia, Frame, Vector>
   MakeSymmetricBilinearForm(R3x3Matrix<MomentOfInertia> const& tensor);
 
   Mass mass_;
-  SymmetricBilinearForm<MomentOfInertia, Frame> form_;
+  SymmetricBilinearForm<MomentOfInertia, Frame, Vector> form_;
   Position<Frame> centre_of_mass_;
 
   template<typename F>
