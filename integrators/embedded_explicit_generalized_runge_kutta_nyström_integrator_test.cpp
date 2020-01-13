@@ -25,7 +25,6 @@ namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator
 using numerics::EstrinEvaluator;
 using numerics::LegendrePolynomial;
 using quantities::Abs;
-using quantities::Length;
 using quantities::Time;
 using quantities::Variation;
 using quantities::si::Centi;

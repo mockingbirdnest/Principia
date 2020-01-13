@@ -27,7 +27,7 @@
 // All the case branches in a switch on the serialized adaptive-step size
 // integrator kind.  Depending on the nature of the integrator, each case branch
 // calls one of the given actions, which must be 1-argument macros.
-// It has not escape our notice that the acronym is a fair characterization of
+// It has not escaped our notice that the acronym is a fair characterization of
 // these macros.
 #define PRINCIPIA_ASS_INTEGRATOR_CASES(eegrkn_action, eerkn_action)  \
   PRINCIPIA_INTEGRATOR_CASE(AdaptiveStepSizeIntegrator,              \
@@ -497,7 +497,6 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
                                                typename ODE::Position>()
 
 template<typename ODE_>
-template<typename, typename>
 FixedStepSizeIntegrator<ODE_> const&
 FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message) {
@@ -699,7 +698,6 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
   }
 
 template<typename ODE_>
-template<typename, typename>
 AdaptiveStepSizeIntegrator<ODE_> const&
 AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegrator const& message) {
