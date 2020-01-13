@@ -151,7 +151,6 @@ void JacobiSNCNDNWithK(Angle const& u,
   // Jacobian elliptic function and incomplete elliptic integrals for constant
   // values of elliptic parameter and elliptic characteristic, sections 2.4 and
   // 3.5.2.
-  double const m = 1.0 - mc;
   double const kʹ = Sqrt(mc);
   Angle abs_u = Abs(u);
   if (abs_u < k_over_2_lower_bound) {

@@ -182,12 +182,8 @@ TEST_F(PermutationTest, Forget) {
 }
 
 TEST_F(PermutationTest, Compose) {
-  using Orth12 = OrthogonalMap<R1, R2>;
-  using Orth1L = OrthogonalMap<R1, L>;
-  using Orth2L = OrthogonalMap<R2, L>;
   using Perm12 = Permutation<R1, R2>;
   using PermL2 = Permutation<L, R2>;
-  using Perm1L = Permutation<R1, L>;
   using Perm2L = Permutation<R2, L>;
   using Perm21 = Permutation<R2, R1>;
   std::array<Perm12, 3> const all_12 = {Perm12(EvenPermutation::XYZ),
