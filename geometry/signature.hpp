@@ -56,8 +56,7 @@ class Signature : public LinearMap<FromFrame, ToFrame> {
       Trivector<Scalar, FromFrame> const& trivector) const;
 
   template<typename Scalar,
-           template<typename S, typename F>
-           typename Multivector>
+           template<typename S, typename F> typename Multivector>
   SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
 

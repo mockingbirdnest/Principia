@@ -193,11 +193,9 @@ TEST_F(SymmetricBilinearFormTest, SymmetricProduct) {
 }
 
 TEST_F(SymmetricBilinearFormTest, Anticommutator) {
-  auto const f = MakeSymmetricBilinearForm<World>({
-      {1, 2, 4},
-      {2, -3, 5},
-      {4, 5, 0},
-  });
+  auto const f = MakeSymmetricBilinearForm<World>({{1,  2, 4},
+                                                   {2, -3, 5},
+                                                   {4,  5, 0}});
   Vector<Length, World> const v({2 * Metre, 5 * Metre, 1 * Metre});
   Vector<Length, World> const w({4 * Metre, 2 * Metre, 1 * Metre});
   Bivector<Length, World> const a({3 * Metre, 8 * Metre, 0 * Metre});
@@ -215,11 +213,9 @@ TEST_F(SymmetricBilinearFormTest, Anticommutator) {
 }
 
 TEST_F(SymmetricBilinearFormTest, AnticommutatorDiagonalization) {
-  auto const f = MakeSymmetricBilinearForm<World>({
-      {1, 0, 0},
-      {0, 9, 0},
-      {0, 0, 2},
-  });
+  auto const f = MakeSymmetricBilinearForm<World>({{1, 0, 0},
+                                                   {0, 9, 0},
+                                                   {0, 0, 2}});
   using VectorEigenframe = Frame<enum class VectorTag>;
   using BivectorEigenframe = Frame<enum class BivectorTag>;
   auto const eigenvector = [](int i) {
