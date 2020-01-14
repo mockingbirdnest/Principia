@@ -252,7 +252,6 @@ OrbitalElements::MeanEquinoctialElements(
     // |element| should be a pointer to a member of |EquinoctialElements|;
     // Integrates that element on [tⱼ₋₁, tᵢ + period].
     auto ʃ = [j, &period, &tᵢ, &tⱼ, &tⱼ₋₁, &osculating](auto element) {
-      auto const& next_osculating = osculating[j];
       Time const Δt = tⱼ - tⱼ₋₁;
       Time const dt = tᵢ + period - tⱼ₋₁;
       auto const element_at_end =

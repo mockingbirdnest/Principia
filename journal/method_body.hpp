@@ -15,7 +15,7 @@ template<typename Profile>
 Method<Profile>::Method() {
   if (Recorder::active_recorder_ != nullptr) {
     serialization::Method method;
-    auto* const message_in =
+    [[maybe_unused]] auto* const message_in =
         method.MutableExtension(Profile::Message::extension);
     Recorder::active_recorder_->WriteAtConstruction(method);
   }
@@ -38,10 +38,10 @@ template<typename P, typename>
 Method<Profile>::Method(typename P::Out const& out) {
   if (Recorder::active_recorder_ != nullptr) {
     serialization::Method method;
-    auto* const message_in =
+    [[maybe_unused]] auto* const message_in =
         method.MutableExtension(Profile::Message::extension);
     Recorder::active_recorder_->WriteAtConstruction(method);
-    out_filler_ = [this, out](
+    out_filler_ = [out](
         not_null<typename Profile::Message*> const message) {
       Profile::Fill(out, message);
     };
@@ -57,7 +57,7 @@ Method<Profile>::Method(typename P::In const& in, typename P::Out const& out) {
         method.MutableExtension(Profile::Message::extension);
     Profile::Fill(in, message_in);
     Recorder::active_recorder_->WriteAtConstruction(method);
-    out_filler_ = [this, out](
+    out_filler_ = [out](
         not_null<typename Profile::Message*> const message) {
       Profile::Fill(out, message);
     };

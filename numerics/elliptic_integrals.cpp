@@ -1334,7 +1334,6 @@ void FukushimaEllipticBDJ(double const nc,
   if (mc > 1) {  // m < 0
     // See [Fuk11b] B.1.
     double const m = 1 - mc;
-    double const mN = -m / mc;
     double const mcN = 1 / mc;
 
     Angle B_mN{uninitialized};
@@ -1692,7 +1691,6 @@ Angle FukushimaT(double const t, double const h) {
     return t * FukushimaTMaclaurin9::polynomial.Evaluate(z) * Radian;
   } else if (z < 0.0) {
     double const r = Sqrt(h);
-    double const ri = 1.0 / r;
     return ArcTan(r * t) / r;
   } else if (abs_z < 4.7138547e-02) {
     return t * FukushimaTMaclaurin10::polynomial.Evaluate(z) * Radian;

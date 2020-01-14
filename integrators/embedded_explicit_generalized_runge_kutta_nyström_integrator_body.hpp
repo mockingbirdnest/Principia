@@ -283,7 +283,7 @@ Instance::WriteToMessage(
   AdaptiveStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
   auto const& rkng_extension = serialization::
       EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance::extension;
-  auto* const extension =
+  [[maybe_unused]] auto* const extension =
       message
           ->MutableExtension(
               serialization::AdaptiveStepSizeIntegratorInstance::extension)

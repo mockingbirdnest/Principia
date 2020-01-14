@@ -205,8 +205,6 @@ void GenerateKopernicusForSlippist1(
 
   kopernicus_cfg << "@principia_gravity_model:FOR[Principia] {\n";
   for (std::string const& name : solar_system.names()) {
-    serialization::GravityModel::Body const& body =
-        solar_system.gravity_model_message(name);
     serialization::InitialState::Keplerian::Body::Elements const& elements =
         solar_system.keplerian_initial_state_message(name).elements();
     bool const is_star =
