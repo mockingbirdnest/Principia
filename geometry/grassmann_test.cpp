@@ -276,19 +276,19 @@ TEST_F(GrassmannDeathTest, SerializationError) {
     serialization::Multivector message;
     V const v({-1 * Metre, 2 * Metre, 3 * Metre});
     v.WriteToMessage(&message);
-    B const b = B::ReadFromMessage(message);
+    [[maybe_unused]] B const b = B::ReadFromMessage(message);
   }, "has_bivector");
   EXPECT_DEATH({
     serialization::Multivector message;
     B const b({-1 * Metre, 2 * Metre, 3 * Metre});
     b.WriteToMessage(&message);
-    T const t = T::ReadFromMessage(message);
+    [[maybe_unused]] T const t = T::ReadFromMessage(message);
   }, "has_trivector");
   EXPECT_DEATH({
     serialization::Multivector message;
     T const t(1 * Metre);
     t.WriteToMessage(&message);
-    V const v = V::ReadFromMessage(message);
+    [[maybe_unused]] V const v = V::ReadFromMessage(message);
   }, "has_vector");
 }
 

@@ -338,9 +338,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
           Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
-  Speed const v_amplitude = 1 * Metre / Second;
   Time const period = 2 * π * Second;
-  AngularFrequency const ω = 1 * Radian / Second;
   Instant const t_initial;
   Time const duration = 10 * period;
   Length const length_tolerance = 1 * Milli(Metre);

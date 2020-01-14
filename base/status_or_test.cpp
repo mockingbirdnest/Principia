@@ -47,21 +47,21 @@ class Base1 {
  public:
   virtual ~Base1() = default;
  private:
-  int pad;
+  [[maybe_unused]] int pad;
 };
 
 class Base2 {
  public:
   virtual ~Base2() = default;
  private:
-  int yetotherpad;
+  [[maybe_unused]] int yetotherpad;
 };
 
 class Derived : public Base1, public Base2 {
  public:
   ~Derived() override = default;
  private:
-  int evenmorepad;
+  [[maybe_unused]] int evenmorepad;
 };
 
 TEST(StatusOr, TestDefaultCtor) {

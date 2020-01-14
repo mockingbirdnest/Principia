@@ -121,7 +121,6 @@ SymmetricBilinearForm<Scalar, Frame>::Diagonalize() const {
   R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
   auto const m₀ = A_minus_α₁I * A_minus_α₂I;
   auto const m₁ = A_minus_α₂I * A_minus_α₀I;
-  auto const m₂ = A_minus_α₀I * A_minus_α₁I;
   auto const v₀ = Vector<double, Frame>(PickEigenvector(m₀));
   auto const v₁ = Vector<double, Frame>(PickEigenvector(m₁));
 

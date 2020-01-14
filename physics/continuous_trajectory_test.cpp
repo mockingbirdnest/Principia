@@ -588,7 +588,7 @@ TEST_F(ContinuousTrajectoryTest, Continuity) {
 
   Position<World> const p1 =
       trajectory->EvaluatePosition(continuity_time);
-  Position<World> const p2 =
+  [[maybe_unused]] Position<World> const p2 =
       trajectory->EvaluatePosition(continuity_time + step);
   Position<World> const p3 =
       trajectory->EvaluatePosition(continuity_time);

@@ -266,12 +266,12 @@ Population::Population(Genome const& luca,
                        ComputeFitness compute_fitness,
                        std::mt19937_64& engine,
                        OFStream& file)
-    : current_(size, luca),
-      next_(size, luca),
-      compute_fitness_(std::move(compute_fitness)),
+    : compute_fitness_(std::move(compute_fitness)),
       elitism_(elitism),
       engine_(engine),
-      file_(file) {
+      file_(file),
+      current_(size, luca),
+      next_(size, luca) {
   for (int i = 0; i < current_.size(); ++i) {
     current_[i].Mutate(engine_, /*generation=*/-1);
   }
