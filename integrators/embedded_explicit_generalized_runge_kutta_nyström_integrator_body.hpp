@@ -291,15 +291,50 @@ Instance::WriteToMessage(
 }
 
 template<typename Method, typename Position>
+template<typename, typename>
+not_null<std::unique_ptr<
+    typename EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+        Method, Position>::Instance>>
+EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
+Instance::ReadFromMessage(
+    serialization::
+        EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance const&
+            extension,
+    IntegrationProblem<ODE> const& problem,
+    AppendState const& append_state,
+    ToleranceToErrorRatio const& tolerance_to_error_ratio,
+    Parameters const& parameters,
+    Time const& time_step,
+    bool const first_use,
+    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const&
+        integrator) {
+  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // private.
+  return std::unique_ptr<Instance>(new Instance(problem,
+                                                append_state,
+                                                tolerance_to_error_ratio,
+                                                parameters,
+                                                time_step,
+                                                first_use,
+                                                integrator));
+}
+
+template<typename Method, typename Position>
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
     ToleranceToErrorRatio const& tolerance_to_error_ratio,
     Parameters const& parameters,
+    Time const& time_step,
+    bool const first_use,
     EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const& integrator)
-    : AdaptiveStepSizeIntegrator<ODE>::Instance(
-          problem, append_state, tolerance_to_error_ratio, parameters),
+    : AdaptiveStepSizeIntegrator<ODE>::Instance(problem,
+                                                append_state,
+                                                tolerance_to_error_ratio,
+                                                parameters,
+                                                time_step,
+                                                first_use),
       integrator_(integrator) {}
 
 template<typename Method, typename Position>
@@ -312,11 +347,14 @@ NewInstance(IntegrationProblem<ODE> const& problem,
             Parameters const& parameters) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<Instance>(new Instance(problem,
-                                                append_state,
-                                                tolerance_to_error_ratio,
-                                                parameters,
-                                                *this));
+  return std::unique_ptr<Instance>(
+      new Instance(problem,
+                   append_state,
+                   tolerance_to_error_ratio,
+                   parameters,
+                   /*time_step=*/parameters.first_time_step,
+                   /*first_use=*/true,
+                   *this));
 }
 
 template<typename Method, typename Position>
@@ -324,32 +362,6 @@ void EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
 WriteToMessage(not_null<serialization::AdaptiveStepSizeIntegrator*> message)
     const {
   message->set_kind(Method::kind);
-}
-
-template<typename Method, typename Position>
-not_null<std::unique_ptr<typename Integrator<
-    ExplicitSecondOrderOrdinaryDifferentialEquation<Position>>::Instance>>
-EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
-ReadFromMessage(
-    serialization::AdaptiveStepSizeIntegratorInstance const& message,
-    IntegrationProblem<ODE> const& problem,
-    AppendState const& append_state,
-    ToleranceToErrorRatio const& tolerance_to_error_ratio,
-    Parameters const& parameters) const {
-  CHECK(message.HasExtension(
-      serialization::
-          EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance::
-              extension))
-      << message.DebugString();
-
-  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
-  // private.
-  return std::unique_ptr<typename AdaptiveStepSizeIntegrator<ODE>::Instance>(
-      new Instance(problem,
-                   append_state,
-                   tolerance_to_error_ratio,
-                   parameters,
-                   *this));
 }
 
 }  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT
