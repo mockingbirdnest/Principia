@@ -17,7 +17,7 @@ using physics::DiscreteTrajectory;
 
 namespace {
 
-[[maybe_unused]] Renderer& GetRenderer(Plugin* const plugin) {
+Renderer& GetRenderer(Plugin* const plugin) {
   return CHECK_NOTNULL(plugin)->renderer();
 }
 
