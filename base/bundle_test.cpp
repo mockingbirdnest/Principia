@@ -60,7 +60,7 @@ TEST_F(BundleTest, MatrixVectorProduct) {
   }
   for (int i = 0; i < short_dimension; ++i) {
     bundle_.Add(
-        [&matrix, &vector, &product, i]() {
+        [&matrix, &vector, &product, i, short_dimension, long_dimension]() {
           product[i] = 0;
           for (int j = 0; j < long_dimension; ++j) {
             product[i] += matrix[i + short_dimension * j] * vector[j];
