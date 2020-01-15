@@ -99,7 +99,6 @@ class LunarEclipseTest : public ::testing::Test {
     auto const umbral_half_aperture = [earth, moon, sun](
         Instant const& t) {
       auto const q_sun = ephemeris_->trajectory(sun)->EvaluatePosition(t);
-      auto const q_moon = ephemeris_->trajectory(moon)->EvaluatePosition(t);
       auto const q_earth = ephemeris_->trajectory(earth)->EvaluatePosition(t);
       return ArcSin((r_sun_ - (r_earth_ + atmospheric_depth_)) /
                     (q_sun - q_earth).Norm());
@@ -161,7 +160,6 @@ class LunarEclipseTest : public ::testing::Test {
     auto const penumbral_half_aperture = [earth, moon, sun](
         Instant const& t) {
       auto const q_sun = ephemeris_->trajectory(sun)->EvaluatePosition(t);
-      auto const q_moon = ephemeris_->trajectory(moon)->EvaluatePosition(t);
       auto const q_earth = ephemeris_->trajectory(earth)->EvaluatePosition(t);
       return ArcSin((r_sun_ + r_earth_ + atmospheric_depth_) /
                     (q_sun - q_earth).Norm());

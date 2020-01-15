@@ -173,7 +173,7 @@ TEST_F(NotNullTest, DynamicCast) {
   class Derived : public Base {};
   {
     not_null<Base*> b = new Derived;
-    not_null<Derived*> d = dynamic_cast_not_null<Derived*>(b);
+    [[maybe_unused]] not_null<Derived*> d = dynamic_cast_not_null<Derived*>(b);
     delete b;
   }
   {
@@ -228,7 +228,7 @@ TEST_F(NotNullTest, RValue) {
   owner_int = make_not_null_unique<int>(1729);
 
   not_null<int*> not_null_access_int = owner_int.get();
-  int const* access_const_int = not_null_access_int;
+  [[maybe_unused]] int const* access_const_int = not_null_access_int;
 
   not_null<std::shared_ptr<int>> not_null_shared_int = std::make_shared<int>(3);
   // This exercises |operator OtherPointer() const&|.  The conversion from

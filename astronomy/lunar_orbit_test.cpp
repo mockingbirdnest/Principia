@@ -148,7 +148,7 @@ std::ostream& operator<<(std::ostream& o, GeopotentialTruncation truncation) {
 class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
  protected:
   LunarOrbitTest()
-      : solar_system_2000_([this]() {
+      : solar_system_2000_([]() {
           SolarSystem<ICRS> result(
               SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
               SOLUTION_DIR / "astronomy" /

@@ -208,7 +208,6 @@ TEST_F(SymmetricBilinearFormTest, Anticommutator) {
 TEST_F(SymmetricBilinearFormTest, InnerProductForm) {
   Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   Vector<double, World> v2({2.0, 6.0, -5.0});
-  auto const a = InnerProductForm<World>()(v1, v2);
   EXPECT_THAT(InnerProductForm<World>()(v1, v2), Eq(25 * Metre));
 }
 

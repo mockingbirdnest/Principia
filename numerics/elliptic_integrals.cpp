@@ -1333,7 +1333,6 @@ void FukushimaEllipticBDJ(double const nc,
   CHECK_LE(0, mc);
   if (mc > 1) {  // m < 0
     // See [Fuk11b] B.1.
-    double const m = 1 - mc;
     double const mcN = 1 / mc;
 
     Angle B_mN{uninitialized};

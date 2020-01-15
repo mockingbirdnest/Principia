@@ -406,8 +406,6 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Serialization) {
 
   Mass const m = 1 * Kilogram;
   Stiffness const k = SIUnit<Stiffness>();
-  Energy const initial_energy =
-      0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
 
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
