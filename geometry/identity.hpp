@@ -17,8 +17,8 @@ FORWARD_DECLARE_FROM(orthogonal_map,
 FORWARD_DECLARE_FROM(
     symmetric_bilinear_form,
     TEMPLATE(typename Scalar,
-            typename Frame,
-            template<typename S, typename F> typename Multivector) class,
+             typename Frame,
+             template<typename S, typename F> typename Multivector) class,
     SymmetricBilinearForm);
 
 namespace internal_identity {
