@@ -248,7 +248,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, MaxSteps) {
     AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
         /*first_time_step=*/t_final - t_initial,
         /*safety_factor=*/0.9,
-        /*max_steps=*/steps_forward,
+        /*max_steps=*/max_steps,
         /*last_step_is_exact=*/true);
     auto const instance = integrator.NewInstance(problem,
                                                  append_state,
