@@ -264,7 +264,8 @@ TEST_F(RigidMotionTest, QuaternionNormalization) {
       Frame<enum class BarycentricTag, Inertial, Handedness::Right>;
   using RigidPart =
       Frame<enum class RigidPartTag, NonInertial, Handedness::Left>;
-  using AliceWorld = Frame<enum class WorldTag, Inertial, Handedness::Right>;
+  using AliceWorld =
+      Frame<enum class AliceWorldTag, Inertial, Handedness::Right>;
   using World = Frame<enum class WorldTag, Inertial, Handedness::Left>;
 
   AngularVelocity<RigidPart> const ω1(

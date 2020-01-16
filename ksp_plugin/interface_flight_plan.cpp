@@ -475,7 +475,6 @@ Status __cdecl principia__FlightPlanReplace(Plugin const* const plugin,
                                                  burn,
                                                  index});
   CHECK_NOTNULL(plugin);
-  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
   return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).
                                Replace(FromInterfaceBurn(*plugin, burn),
                                        index)));

@@ -751,8 +751,6 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           2.6e-15 * Metre / Second),
       Ephemeris<ICRS>::unlimited_max_ephemeris_steps);
 
-  Speed const v_elephant_y =
-      trajectory.back().degrees_of_freedom.velocity().coordinates().y;
   std::vector<Displacement<ICRS>> elephant_positions;
   std::vector<Vector<Acceleration, ICRS>> elephant_accelerations;
   for (auto const& [time, degrees_of_freedom] : trajectory) {

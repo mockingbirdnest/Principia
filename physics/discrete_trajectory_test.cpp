@@ -695,8 +695,6 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   not_null<DiscreteTrajectory<World>*> const fork3 =
       massive_trajectory_->NewForkWithCopy(t3_);
   fork3->Append(t4_, d4_);
-  not_null<DiscreteTrajectory<World>*> const fork4 =
-      fork0->NewForkWithCopy(t4_);
   serialization::DiscreteTrajectory message;
   serialization::DiscreteTrajectory reference_message;
 

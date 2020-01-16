@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.hpp"
+#include "base/traits.hpp"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -15,133 +16,243 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
 // A case branch in a switch on the serialized integrator |kind|.  It determines
-// the |method| type from the |kind| and calls |action| on it.  |action| must be
-// a 1-argument macro.
-#define PRINCIPIA_INTEGRATOR_CASE(kind, method, action) \
-  case serialization::FixedStepSizeIntegrator::kind: {  \
-    action(method);                                     \
-    break;                                              \
+// the |method| type from the |kind| defined in scope |message| and calls
+// |action| on it.  |action| must be a 1-argument macro.
+#define PRINCIPIA_INTEGRATOR_CASE(message, kind, method, action) \
+  case serialization::message::kind: {                           \
+    action(method);                                              \
+    break;                                                       \
   }
 
-// All the case branches in a switch on the serialized integrator kind.
-// Depending on the nature of the integrator, each case branch calls one of the
-// given actions, which must be 1-argument macros.
-#define PRINCIPIA_INTEGRATOR_CASES(slms_action, sprk_action, srkn_action) \
-  PRINCIPIA_INTEGRATOR_CASE(BLANES_MOAN_2002_S6,                          \
-                            BlanesMoan2002S6,                             \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(BLANES_MOAN_2002_S10,                         \
-                            BlanesMoan2002S10,                            \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(BLANES_MOAN_2002_SRKN_6B,                     \
-                            BlanesMoan2002SRKN6B,                         \
-                            srkn_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(BLANES_MOAN_2002_SRKN_11B,                    \
-                            BlanesMoan2002SRKN11B,                        \
-                            srkn_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(BLANES_MOAN_2002_SRKN_14A,                    \
-                            BlanesMoan2002SRKN14A,                        \
-                            srkn_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(CANDY_ROZMUS_1991_FOREST_RUTH_1990,           \
-                            CandyRozmus1991ForestRuth1990,                \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_1995_S2,                            \
-                            McLachlan1995S2,                              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_1995_S4,                            \
-                            McLachlan1995S4,                              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_1995_S5,                            \
-                            McLachlan1995S5,                              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_1995_SB3A_4,                        \
-                            McLachlan1995SB3A4,                           \
-                            srkn_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_1995_SB3A_5,                        \
-                            McLachlan1995SB3A5,                           \
-                            srkn_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_1995_SS5,                           \
-                            McLachlan1995SS5,                             \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_1995_SS9,                           \
-                            McLachlan1995SS9,                             \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_1995_SS15,                          \
-                            McLachlan1995SS15,                            \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_1995_SS17,                          \
-                            McLachlan1995SS17,                            \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_ATELA_1992_ORDER_2_OPTIMAL,         \
-                            McLachlanAtela1992Order2Optimal,              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_ATELA_1992_ORDER_3_OPTIMAL,         \
-                            McLachlanAtela1992Order3Optimal,              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL,         \
-                            McLachlanAtela1992Order4Optimal,              \
-                            srkn_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL,         \
-                            McLachlanAtela1992Order5Optimal,              \
-                            srkn_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(NEWTON_DELAMBRE_STORMER_VERLET_LEAPFROG,      \
-                            NewtonDelambreStørmerVerletLeapfrog,          \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13,         \
-                            OkunborSkeel1994Order6Method13,               \
-                            srkn_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(QUINLAN_1999_ORDER_8A,                        \
-                            Quinlan1999Order8A,                           \
-                            slms_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(QUINLAN_1999_ORDER_8B,                        \
-                            Quinlan1999Order8B,                           \
-                            slms_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(QUINLAN_TREMAINE_1990_ORDER_8,                \
-                            QuinlanTremaine1990Order8,                    \
-                            slms_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(QUINLAN_TREMAINE_1990_ORDER_10,               \
-                            QuinlanTremaine1990Order10,                   \
-                            slms_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(QUINLAN_TREMAINE_1990_ORDER_12,               \
-                            QuinlanTremaine1990Order12,                   \
-                            slms_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(QUINLAN_TREMAINE_1990_ORDER_14,               \
-                            QuinlanTremaine1990Order14,                   \
-                            slms_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(RUTH_1983,                                    \
-                            Ruth1983,                                     \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(SUZUKI_1990,                                  \
-                            鈴木1990,                                     \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(YOSHIDA_1990_ORDER_6A,                        \
-                            吉田1990Order6A,                              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(YOSHIDA_1990_ORDER_6B,                        \
-                            吉田1990Order6B,                              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(YOSHIDA_1990_ORDER_6C,                        \
-                            吉田1990Order6C,                              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(YOSHIDA_1990_ORDER_8A,                        \
-                            吉田1990Order8A,                              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(YOSHIDA_1990_ORDER_8B,                        \
-                            吉田1990Order8B,                              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(YOSHIDA_1990_ORDER_8C,                        \
-                            吉田1990Order8C,                              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(YOSHIDA_1990_ORDER_8D,                        \
-                            吉田1990Order8D,                              \
-                            sprk_action)                                  \
-  PRINCIPIA_INTEGRATOR_CASE(YOSHIDA_1990_ORDER_8E,                        \
-                            吉田1990Order8E,                              \
+// All the case branches in a switch on the serialized adaptive-step size
+// integrator kind.  Depending on the nature of the integrator, each case branch
+// calls one of the given actions, which must be 1-argument macros.
+// It has not escaped our notice that the acronym is a fair characterization of
+// these macros.
+#define PRINCIPIA_ASS_INTEGRATOR_CASES(eegrkn_action, eerkn_action)  \
+  PRINCIPIA_INTEGRATOR_CASE(AdaptiveStepSizeIntegrator,              \
+                            DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM, \
+                            DormandالمكاوىPrince1986RKN434FM,        \
+                            eerkn_action)                            \
+  PRINCIPIA_INTEGRATOR_CASE(AdaptiveStepSizeIntegrator,              \
+                            FINE_1987_RKNG_34,                       \
+                            Fine1987RKNG34,                          \
+                            eegrkn_action)
+
+// All the case branches in a switch on the serialized fixed-step size
+// integrator kind.  Depending on the nature of the integrator, each case branch
+// calls one of the given actions, which must be 1-argument macros.
+#define PRINCIPIA_FSS_INTEGRATOR_CASES(slms_action, sprk_action, srkn_action) \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            BLANES_MOAN_2002_S6,                              \
+                            BlanesMoan2002S6,                                 \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            BLANES_MOAN_2002_S10,                             \
+                            BlanesMoan2002S10,                                \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            BLANES_MOAN_2002_SRKN_6B,                         \
+                            BlanesMoan2002SRKN6B,                             \
+                            srkn_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            BLANES_MOAN_2002_SRKN_11B,                        \
+                            BlanesMoan2002SRKN11B,                            \
+                            srkn_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            BLANES_MOAN_2002_SRKN_14A,                        \
+                            BlanesMoan2002SRKN14A,                            \
+                            srkn_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            CANDY_ROZMUS_1991_FOREST_RUTH_1990,               \
+                            CandyRozmus1991ForestRuth1990,                    \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_1995_S2,                                \
+                            McLachlan1995S2,                                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_1995_S4,                                \
+                            McLachlan1995S4,                                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_1995_S5,                                \
+                            McLachlan1995S5,                                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_1995_SB3A_4,                            \
+                            McLachlan1995SB3A4,                               \
+                            srkn_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_1995_SB3A_5,                            \
+                            McLachlan1995SB3A5,                               \
+                            srkn_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_1995_SS5,                               \
+                            McLachlan1995SS5,                                 \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_1995_SS9,                               \
+                            McLachlan1995SS9,                                 \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_1995_SS15,                              \
+                            McLachlan1995SS15,                                \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_1995_SS17,                              \
+                            McLachlan1995SS17,                                \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_ATELA_1992_ORDER_2_OPTIMAL,             \
+                            McLachlanAtela1992Order2Optimal,                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_ATELA_1992_ORDER_3_OPTIMAL,             \
+                            McLachlanAtela1992Order3Optimal,                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL,             \
+                            McLachlanAtela1992Order4Optimal,                  \
+                            srkn_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL,             \
+                            McLachlanAtela1992Order5Optimal,                  \
+                            srkn_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            NEWTON_DELAMBRE_STORMER_VERLET_LEAPFROG,          \
+                            NewtonDelambreStørmerVerletLeapfrog,              \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13,             \
+                            OkunborSkeel1994Order6Method13,                   \
+                            srkn_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            QUINLAN_1999_ORDER_8A,                            \
+                            Quinlan1999Order8A,                               \
+                            slms_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            QUINLAN_1999_ORDER_8B,                            \
+                            Quinlan1999Order8B,                               \
+                            slms_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            QUINLAN_TREMAINE_1990_ORDER_8,                    \
+                            QuinlanTremaine1990Order8,                        \
+                            slms_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            QUINLAN_TREMAINE_1990_ORDER_10,                   \
+                            QuinlanTremaine1990Order10,                       \
+                            slms_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            QUINLAN_TREMAINE_1990_ORDER_12,                   \
+                            QuinlanTremaine1990Order12,                       \
+                            slms_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            QUINLAN_TREMAINE_1990_ORDER_14,                   \
+                            QuinlanTremaine1990Order14,                       \
+                            slms_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            RUTH_1983,                                        \
+                            Ruth1983,                                         \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            SUZUKI_1990,                                      \
+                            鈴木1990,                                         \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            YOSHIDA_1990_ORDER_6A,                            \
+                            吉田1990Order6A,                                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            YOSHIDA_1990_ORDER_6B,                            \
+                            吉田1990Order6B,                                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            YOSHIDA_1990_ORDER_6C,                            \
+                            吉田1990Order6C,                                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            YOSHIDA_1990_ORDER_8A,                            \
+                            吉田1990Order8A,                                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            YOSHIDA_1990_ORDER_8B,                            \
+                            吉田1990Order8B,                                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            YOSHIDA_1990_ORDER_8C,                            \
+                            吉田1990Order8C,                                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            YOSHIDA_1990_ORDER_8D,                            \
+                            吉田1990Order8D,                                  \
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            YOSHIDA_1990_ORDER_8E,                            \
+                            吉田1990Order8E,                                  \
                             sprk_action)
 
 namespace principia {
 namespace integrators {
 namespace internal_integrators {
+
+template<typename Integrator>
+not_null<std::unique_ptr<typename Integrator::Instance>>
+ReadEegrknInstanceFromMessage(
+    serialization::AdaptiveStepSizeIntegratorInstance const& message,
+    IntegrationProblem<typename Integrator::ODE> const& problem,
+    typename Integrator::AppendState const& append_state,
+    typename Integrator::ToleranceToErrorRatio const& tolerance_to_error_ratio,
+    typename Integrator::Parameters const& parameters,
+    Time const& time_step,
+    bool const first_use,
+    Integrator const& integrator) {
+  CHECK(message.HasExtension(
+      serialization::
+          EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance::
+              extension))
+      << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::
+          EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance::
+              extension);
+  return Integrator::Instance::ReadFromMessage(extension,
+                                               problem,
+                                               append_state,
+                                               tolerance_to_error_ratio,
+                                               parameters,
+                                               time_step,
+                                               first_use,
+                                               integrator);
+}
+
+template<typename Integrator>
+not_null<std::unique_ptr<typename Integrator::Instance>>
+ReadEerknInstanceFromMessage(
+    serialization::AdaptiveStepSizeIntegratorInstance const& message,
+    IntegrationProblem<typename Integrator::ODE> const& problem,
+    typename Integrator::AppendState const& append_state,
+    typename Integrator::ToleranceToErrorRatio const& tolerance_to_error_ratio,
+    typename Integrator::Parameters const& parameters,
+    Time const& time_step,
+    bool const first_use,
+    Integrator const& integrator) {
+  CHECK(message.HasExtension(
+      serialization::EmbeddedExplicitRungeKuttaNystromIntegratorInstance::
+          extension))
+      << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::EmbeddedExplicitRungeKuttaNystromIntegratorInstance::
+          extension);
+  return Integrator::Instance::ReadFromMessage(extension,
+                                               problem,
+                                               append_state,
+                                               tolerance_to_error_ratio,
+                                               parameters,
+                                               time_step,
+                                               first_use,
+                                               integrator);
+}
 
 template<typename Integrator>
 not_null<std::unique_ptr<typename Integrator::Instance>>
@@ -262,74 +373,6 @@ Result ReadSprkFromMessage(
   }
 }
 
-// The parameters of the |RightHandSideComputation| determines the type of the
-// integrator when the method may be used for several kinds of integrators
-// (this may not hold in general as we add more integrators).
-template<typename RightHandSideComputation>
-struct AdaptiveStepSizeIntegratorDeserializer;
-
-template<typename Position, typename Acceleration>
-struct AdaptiveStepSizeIntegratorDeserializer<
-    std::function<Status(Instant const& t,
-                         std::vector<Position> const& positions,
-                         std::vector<Acceleration>& accelerations)>> {
-  template<typename Integrator>
-  static Integrator const& ReadFromMessage(
-      serialization::AdaptiveStepSizeIntegrator const& message);
-};
-
-template<typename Position, typename Velocity, typename Acceleration>
-struct AdaptiveStepSizeIntegratorDeserializer<
-    std::function<Status(Instant const& t,
-                         std::vector<Position> const& positions,
-                         std::vector<Velocity> const& velocities,
-                         std::vector<Acceleration>& accelerations)>> {
-  template<typename Integrator>
-  static Integrator const& ReadFromMessage(
-      serialization::AdaptiveStepSizeIntegrator const& message);
-};
-
-template<typename Position, typename Acceleration>
-template<typename Integrator>
-Integrator const& AdaptiveStepSizeIntegratorDeserializer<
-    std::function<Status(Instant const& t,
-                         std::vector<Position> const& positions,
-                         std::vector<Acceleration>& accelerations)>>::
-ReadFromMessage(serialization::AdaptiveStepSizeIntegrator const& message) {
-  using ASSI = serialization::AdaptiveStepSizeIntegrator;
-  switch (message.kind()) {
-    case ASSI::DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM:
-      return EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          methods::DormandالمكاوىPrince1986RKN434FM, Position>();
-    case ASSI::FINE_1987_RKNG_34:
-      return EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          methods::Fine1987RKNG34, Position>();
-    default:
-      LOG(FATAL) << message.kind();
-      base::noreturn();
-  }
-}
-
-template<typename Position, typename Velocity, typename Acceleration>
-template<typename Integrator>
-Integrator const& AdaptiveStepSizeIntegratorDeserializer<
-    std::function<Status(Instant const& t,
-                         std::vector<Position> const& positions,
-                         std::vector<Velocity> const& velocities,
-                         std::vector<Acceleration>& accelerations)>>::
-ReadFromMessage(serialization::AdaptiveStepSizeIntegrator const& message) {
-  using ASSI = serialization::AdaptiveStepSizeIntegrator;
-  switch (message.kind()) {
-    case ASSI::FINE_1987_RKNG_34:
-      return EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          methods::Fine1987RKNG34, Position>();
-    case ASSI::DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM:
-    default:
-      LOG(FATAL) << message.kind();
-      base::noreturn();
-  }
-}
-
 template<typename ODE_>
 Integrator<ODE_>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
@@ -371,14 +414,14 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   integrator().WriteToMessage(extension->mutable_integrator());
 }
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SLMS(method)    \
-  auto const& integrator =                                            \
-      SymmetricLinearMultistepIntegrator<methods::method,             \
-                                         typename ODE::Position>();   \
-  return ReadSlmsInstanceFromMessage(                                 \
+#define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS(method)         \
+  auto const& integrator =                                          \
+      SymmetricLinearMultistepIntegrator<methods::method,           \
+                                         typename ODE::Position>(); \
+  return ReadSlmsInstanceFromMessage(                               \
       extension, problem, append_state, step, integrator)
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK(method)   \
+#define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK(method)          \
   return ReadSprkFromMessage<                                        \
       not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>, \
       typename ODE::Position,                                        \
@@ -386,7 +429,7 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
       methods::method::first_same_as_last>(                          \
       extension, problem, append_state, step)
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SRKN(method)     \
+#define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SRKN(method)            \
   auto const& integrator =                                             \
       SymplecticRungeKuttaNyströmIntegrator<methods::method,           \
                                             typename ODE::Position>(); \
@@ -413,19 +456,19 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   Time const step = Time::ReadFromMessage(extension.step());
 
   switch (extension.integrator().kind()) {
-    PRINCIPIA_INTEGRATOR_CASES(
-        PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SLMS,
-        PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK,
-        PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SRKN)
+    PRINCIPIA_FSS_INTEGRATOR_CASES(
+        PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS,
+        PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK,
+        PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SRKN)
     default:
       LOG(FATAL) << message.DebugString();
       base::noreturn();
   }
 }
 
-#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SLMS
-#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK
-#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_INSTANCE_SPRK
+#undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS
+#undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK
+#undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK
 
 template<typename ODE_>
 FixedStepSizeIntegrator<ODE_>::Instance::Instance(
@@ -437,11 +480,11 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
   CHECK_NE(Time(), step_);
 }
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SLMS(method)    \
+#define PRINCIPIA_READ_FSS_INTEGRATOR_SLMS(method)           \
   return SymmetricLinearMultistepIntegrator<methods::method, \
                                             typename ODE::Position>()
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK(method)         \
+#define PRINCIPIA_READ_FSS_INTEGRATOR_SPRK(method)                \
   serialization::FixedStepSizeIntegratorInstance instance;        \
   *instance.mutable_integrator() = message;                       \
   return ReadSprkFromMessage<FixedStepSizeIntegrator<ODE> const&, \
@@ -449,28 +492,27 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
                              methods::method,                     \
                              methods::method::first_same_as_last>(instance)
 
-#define PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SRKN(method)       \
+#define PRINCIPIA_READ_FSS_INTEGRATOR_SRKN(method)              \
   return SymplecticRungeKuttaNyströmIntegrator<methods::method, \
                                                typename ODE::Position>()
 
 template<typename ODE_>
-template<typename, typename>
 FixedStepSizeIntegrator<ODE_> const&
 FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message) {
   switch (message.kind()) {
-    PRINCIPIA_INTEGRATOR_CASES(PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SLMS,
-                               PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK,
-                               PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SRKN)
+    PRINCIPIA_FSS_INTEGRATOR_CASES(PRINCIPIA_READ_FSS_INTEGRATOR_SLMS,
+                                   PRINCIPIA_READ_FSS_INTEGRATOR_SPRK,
+                                   PRINCIPIA_READ_FSS_INTEGRATOR_SRKN)
     default:
       LOG(FATAL) << message.kind();
       base::noreturn();
   }
 }
 
-#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SLMS
-#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK
-#undef PRINCIPIA_READ_FIXED_STEP_INTEGRATOR_SPRK
+#undef PRINCIPIA_READ_FSS_INTEGRATOR_SLMS
+#undef PRINCIPIA_READ_FSS_INTEGRATOR_SPRK
+#undef PRINCIPIA_READ_FSS_INTEGRATOR_SRKN
 
 template<typename Equation>
 FixedStepSizeIntegrator<Equation> const&
@@ -540,7 +582,41 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   integrator().WriteToMessage(extension->mutable_integrator());
 }
 
+#define PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EEGRKN(method)        \
+  auto const& integrator =                                           \
+      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<        \
+          methods::method,                                           \
+          typename ODE::Position>();                                 \
+  if constexpr (base::is_instance_of_v<                              \
+                    ExplicitSecondOrderOrdinaryDifferentialEquation, \
+                    ODE>) {                                          \
+    return ReadEegrknInstanceFromMessage(extension,                  \
+                                         problem,                    \
+                                         append_state,               \
+                                         tolerance_to_error_ratio,   \
+                                         parameters,                 \
+                                         time_step,                  \
+                                         first_use,                  \
+                                         integrator);                \
+  }
+#define PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERKN(method)                   \
+  auto const& integrator =                                                     \
+      EmbeddedExplicitRungeKuttaNyströmIntegrator<methods::method,             \
+                                                  typename ODE::Position>();   \
+  if constexpr (base::is_instance_of_v<SpecialSecondOrderDifferentialEquation, \
+                                       ODE>) {                                 \
+    return ReadEerknInstanceFromMessage(extension,                             \
+                                        problem,                               \
+                                        append_state,                          \
+                                        tolerance_to_error_ratio,              \
+                                        parameters,                            \
+                                        time_step,                             \
+                                        first_use,                             \
+                                        integrator);                           \
+  }
+
 template<typename ODE_>
+template<typename, typename>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     serialization::IntegratorInstance const& message,
@@ -557,53 +633,87 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
       << "Not an adaptive-step integrator instance " << message.DebugString();
   auto const& extension = message.GetExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
-  auto parameters =
-      Parameters::ReadFromMessage(extension.parameters());
-  AdaptiveStepSizeIntegrator const& integrator =
-      AdaptiveStepSizeIntegrator::ReadFromMessage(extension.integrator());
-
-  // TODO(phl): We would really like this function to return a pointer to an
-  // instance from this class, not an instance from |Integrator|.  Unfortunately
-  // this confuses Visual Studio 2015...
-  auto instance = integrator.ReadFromMessage(
-      extension, problem, append_state, tolerance_to_error_ratio, parameters);
-
-  Instance* const down_cast_instance = dynamic_cast<Instance*>(&*instance);
   bool const is_pre_cartan = !extension.has_time_step();
+
+  auto const parameters =
+      Parameters::ReadFromMessage(extension.parameters());
+  Time time_step;
+  bool first_use;
   if (is_pre_cartan) {
-    down_cast_instance->time_step_ = parameters.first_time_step;
+    time_step = parameters.first_time_step;
+    first_use = true;
   } else {
-    down_cast_instance->time_step_ =
-        Time::ReadFromMessage(extension.time_step());
-    down_cast_instance->first_use_ = extension.first_use();
+    time_step = Time::ReadFromMessage(extension.time_step());
+    first_use = extension.first_use();
   }
 
-  return instance;
+  switch (extension.integrator().kind()) {
+    PRINCIPIA_ASS_INTEGRATOR_CASES(
+        PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EEGRKN,
+        PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERKN)
+    default:
+      LOG(FATAL) << message.DebugString();
+      base::noreturn();
+  }
+  LOG(FATAL) << message.DebugString();
+  base::noreturn();
 }
+
+#undef PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EEGRKN
+#undef PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERKN
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
     ToleranceToErrorRatio const& tolerance_to_error_ratio,
-    Parameters const& parameters)
+    Parameters const& parameters,
+    Time const& time_step,
+    bool const first_use)
     : Integrator<ODE>::Instance(problem, append_state),
       tolerance_to_error_ratio_(tolerance_to_error_ratio),
       parameters_(parameters),
-      time_step_(parameters.first_time_step) {
-  CHECK_NE(Time(), parameters.first_time_step);
+      time_step_(time_step),
+      first_use_(first_use) {
+  CHECK_NE(Time(), time_step_);
   CHECK_GT(parameters.safety_factor, 0);
   CHECK_LT(parameters.safety_factor, 1);
 }
+
+#define PRINCIPIA_READ_ASS_INTEGRATOR_EEGRKN(method)                 \
+  if constexpr (base::is_instance_of_v<                              \
+                    ExplicitSecondOrderOrdinaryDifferentialEquation, \
+                    ODE>) {                                          \
+    return EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<   \
+        methods::method,                                             \
+        typename ODE::Position>();                                   \
+  }
+
+#define PRINCIPIA_READ_ASS_INTEGRATOR_EERKN(method)                            \
+  if constexpr (base::is_instance_of_v<SpecialSecondOrderDifferentialEquation, \
+                                       ODE>) {                                 \
+    return EmbeddedExplicitRungeKuttaNyströmIntegrator<                        \
+        methods::method,                                                       \
+        typename ODE::Position>();                                             \
+  }
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_> const&
 AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegrator const& message) {
-  return AdaptiveStepSizeIntegratorDeserializer<
-      typename ODE_::RightHandSideComputation>::
-      template ReadFromMessage<AdaptiveStepSizeIntegrator<ODE_>>(message);
+  switch (message.kind()) {
+    PRINCIPIA_ASS_INTEGRATOR_CASES(PRINCIPIA_READ_ASS_INTEGRATOR_EEGRKN,
+                                   PRINCIPIA_READ_ASS_INTEGRATOR_EERKN)
+    default:
+      LOG(FATAL) << message.kind();
+      base::noreturn();
+  }
+  LOG(FATAL) << message.kind();
+  base::noreturn();
 }
+
+#undef PRINCIPIA_READ_ASS_INTEGRATOR_EEGRKN
+#undef PRINCIPIA_READ_ASS_INTEGRATOR_EERKN
 
 template<typename Equation>
 AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(

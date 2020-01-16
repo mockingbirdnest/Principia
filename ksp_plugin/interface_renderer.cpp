@@ -21,7 +21,7 @@ Renderer& GetRenderer(Plugin* const plugin) {
   return CHECK_NOTNULL(plugin)->renderer();
 }
 
-Renderer const& GetRenderer(Plugin const* const plugin) {
+[[maybe_unused]] Renderer const& GetRenderer(Plugin const* const plugin) {
   return CHECK_NOTNULL(plugin)->renderer();
 }
 

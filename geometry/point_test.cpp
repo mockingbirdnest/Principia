@@ -101,7 +101,8 @@ TEST_F(PointDeathTest, SerializationError) {
     Instant const t0;
     Instant const t1 = t0 + 10 * Second;
     t1.WriteToMessage(&message);
-    Position<World> const d2 = Position<World>::ReadFromMessage(message);
+    [[maybe_unused]] Position<World> const d2 =
+        Position<World>::ReadFromMessage(message);
   }, "has_multivector");
   EXPECT_DEATH({
     serialization::Point message;
@@ -109,7 +110,8 @@ TEST_F(PointDeathTest, SerializationError) {
     Position<World> const d1 = origin +
         Displacement<World>({-1 * Metre, 2 * Metre, 3 * Metre});
     d1.WriteToMessage(&message);
-    Instant const t2 = Instant::ReadFromMessage(message);
+    [[maybe_unused]] Instant const t2 =
+        Instant::ReadFromMessage(message);
   }, "has_scalar");
 }
 

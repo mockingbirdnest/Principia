@@ -32,7 +32,6 @@ inline Sign Permutation<FromFrame, ToFrame>::Determinant() const {
 template<typename FromFrame, typename ToFrame>
 Permutation<ToFrame, FromFrame>
 Permutation<FromFrame, ToFrame>::Inverse() const {
-  using PFT = Permutation<FromFrame, ToFrame>;
   using PTF = Permutation<ToFrame, FromFrame>;
   if constexpr (std::is_same_v<CoordinatePermutation, EvenPermutation>) {
     static constexpr std::array<EvenPermutation, 3> inverse{

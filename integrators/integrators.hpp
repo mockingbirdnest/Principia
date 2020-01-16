@@ -112,8 +112,6 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
 
   virtual void WriteToMessage(
       not_null<serialization::FixedStepSizeIntegrator*> message) const = 0;
-  template<typename S = typename ODE::SystemState,
-           typename = std::enable_if_t<base::is_serializable_v<S>>>
   static FixedStepSizeIntegrator const& ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message);
 
@@ -183,6 +181,8 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
+    template<typename S = typename ODE::SystemState,
+             typename = std::enable_if_t<base::is_serializable_v<S>>>
     static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
     ReadFromMessage(serialization::IntegratorInstance const& message,
                     ODE const& equation,
@@ -193,12 +193,14 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
              ToleranceToErrorRatio const& tolerance_to_error_ratio,
-             Parameters const& parameters);
+             Parameters const& parameters,
+             Time const& time_step,
+             bool first_use);
 
     ToleranceToErrorRatio const tolerance_to_error_ratio_;
     Parameters const parameters_;
     Time time_step_;
-    bool first_use_ = true;
+    bool first_use_;
   };
 
   // The factory function for |Instance|, above.  It ensures that the instance
@@ -215,17 +217,6 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
       serialization::AdaptiveStepSizeIntegrator const& message);
 
  protected:
-  // For convenience, deserialization is an instance member of the |Integrator|,
-  // not a static member of the |Instance|.  Which makes sense if you see
-  // |Integrator| as a factory for |Instance|.
-  virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
-  ReadFromMessage(
-      serialization::AdaptiveStepSizeIntegratorInstance const& message,
-      IntegrationProblem<ODE> const& problem,
-      AppendState const& append_state,
-      ToleranceToErrorRatio const& tolerance_to_error_ratio,
-      Parameters const& parameters) const = 0;
-
   AdaptiveStepSizeIntegrator() = default;
 };
 

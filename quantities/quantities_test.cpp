@@ -113,7 +113,8 @@ TEST_F(QuantitiesDeathTest, SerializationError) {
     serialization::Quantity message;
     message.set_dimensions(0x7C00);
     message.set_magnitude(1.0);
-    Speed const speed_of_light = Speed::ReadFromMessage(message);
+    [[maybe_unused]] Speed const speed_of_light =
+        Speed::ReadFromMessage(message);
   }, "representation.*dimensions");
 }
 

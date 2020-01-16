@@ -499,9 +499,6 @@ TEST_F(PluginTest, Initialization) {
 }
 
 TEST_F(PluginTest, HierarchicalInitialization) {
-  // e, i, Ω, ω, and mean anomaly are 0.
-  KeplerianElements<Barycentric> elements;
-
   // We construct a system as follows, inserting the bodies in the order
   // S0, P1, P2, M3.
   // |<1 m>|     |<1 m>|

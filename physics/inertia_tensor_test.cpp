@@ -82,7 +82,8 @@ class InertiaTensorTest : public ::testing::Test {
       Matcher<R3Element<MomentOfInertia>> const& matcher) {
     using PrincipalAxesFrame =
         geometry::Frame<enum class PrincipalAxesFrameTag>;
-    auto const principal_axes = tensor.Diagonalize<PrincipalAxesFrame>();
+    auto const principal_axes =
+        tensor.template Diagonalize<PrincipalAxesFrame>();
     EXPECT_THAT(principal_axes.moments_of_inertia, matcher);
   }
 
