@@ -311,7 +311,8 @@ TEST_F(InertiaTensorTest, Abdulghany) {
       overall_inertia_overall_centre_of_mass,
       1,
       2,
-      AlmostEquals(-116640.0 * π / (4.0 + π) * SIUnit<MomentOfInertia>(), 0));
+      AlmostEquals(-116640.0 * π / (4.0 + π) * SIUnit<MomentOfInertia>(),
+                   0, 1));
   CheckInertiaTensorCoordinate(overall_inertia_overall_centre_of_mass,
                                2,
                                0,
@@ -320,7 +321,8 @@ TEST_F(InertiaTensorTest, Abdulghany) {
       overall_inertia_overall_centre_of_mass,
       2,
       1,
-      AlmostEquals(-116640.0 * π / (4.0 + π) * SIUnit<MomentOfInertia>(), 0));
+      AlmostEquals(-116640.0 * π / (4.0 + π) * SIUnit<MomentOfInertia>(),
+                   0, 1));
   CheckInertiaTensorCoordinate(
       overall_inertia_overall_centre_of_mass,
       2,

@@ -884,8 +884,8 @@ TEST_F(EulerSolverTest, SeparatrixConstantMomentum) {
   EXPECT_THAT(actual_angular_velocity,
               AlmostEquals(expected_angular_velocity, 2));
   EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 8));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 4));
-  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 7));
+  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 6, 7));
+  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 6, 7));
 }
 
 // The data in this test are from Takahashi, Busch and Scheeres, Spin state and
