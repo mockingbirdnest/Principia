@@ -211,9 +211,12 @@ Trivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
-SymmetricBilinearForm<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
-    SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
+template<typename Scalar,
+         template<typename Scalar, typename Frame>
+         typename Multivector>
+SymmetricBilinearForm<Scalar, ToFrame, Multivector>
+Rotation<FromFrame, ToFrame>::operator()(
+    SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {
   // If R is the rotation and F the form, we compute R * F * R⁻¹.  Note however
   // that we only have mechanisms for applying rotations to column vectors.  If
   // r is a row of F, we first compute the corresponding row of the intermediate
@@ -254,7 +257,7 @@ SymmetricBilinearForm<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
   // The averaging below ensures that the result is symmetric.
   // TODO(phl): Investigate if using a Cholesky or LDL decomposition would help
   // preserve symmetry and/or definiteness.
-  return SymmetricBilinearForm<Scalar, ToFrame>(
+  return SymmetricBilinearForm<Scalar, ToFrame, Multivector>(
           0.5 * (result_matrix + result_matrix.Transpose()));
 }
 
