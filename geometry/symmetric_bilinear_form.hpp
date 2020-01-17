@@ -57,7 +57,7 @@ class SymmetricBilinearForm {
            typename = std::enable_if_t<base::is_same_template_v<M, Vector>>>
   SymmetricBilinearForm<Scalar, Frame, Bivector> Anticommutator() const;
 
-  // Considering Λ²V as a subspace of V⊗V, and using the inner product to see a
+  // Considering ⋀²V as a subspace of V⊗V, and using the inner product to see a
   // symmetric bilinear form on bivectors as an endomorphism of bivectors,
   // |*this| is an element of V⊗V⊗V*⊗V*, i.e., a twice contravariant, twice
   // covariant tensor Sᵏˡₘₙ. |Contraction()| performs the contraction Sᵏʲⱼₙ, or
