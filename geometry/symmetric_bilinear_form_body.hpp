@@ -103,8 +103,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::operator()(
 
 template<typename Scalar,
          typename Frame,
-         template<typename, typename>
-         typename Multivector>
+         template<typename, typename> typename Multivector>
 template<template<typename, typename> typename, typename>
 SymmetricBilinearForm<Scalar, Frame, Bivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::Anticommutator() const {
@@ -114,8 +113,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::Anticommutator() const {
 
 template<typename Scalar,
          typename Frame,
-         template<typename, typename>
-         typename Multivector>
+         template<typename, typename> typename Multivector>
 template<template<typename, typename> typename, typename>
 SymmetricBilinearForm<Scalar, Frame, Vector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::Contraction() const {
