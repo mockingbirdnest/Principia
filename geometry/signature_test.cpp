@@ -45,7 +45,7 @@ class SignatureTest : public testing::Test {
       : vector_({1 * Metre, 2 * Metre, 3 * Metre}),
         bivector_({1 * Metre, 2 * Metre, 3 * Metre}),
         trivector_(4 * Metre),
-        form_(SymmetricBilinearForm<Length, R1>(
+        form_(SymmetricBilinearForm<Length, R1, Vector>(
             R3x3Matrix<Length>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre},
                                {2.0 * Metre, -5.0 * Metre, 6.0 * Metre},
                                {3.0 * Metre, 6.0 * Metre, 4.0 * Metre}))) {}
@@ -53,7 +53,7 @@ class SignatureTest : public testing::Test {
   Vector<Length, R1> const vector_;
   Bivector<Length, R1> const bivector_;
   Trivector<Length, R1> const trivector_;
-  SymmetricBilinearForm<Length, R1> const form_;
+  SymmetricBilinearForm<Length, R1, Vector> const form_;
 };
 
 using SignatureDeathTest = SignatureTest;
@@ -83,11 +83,11 @@ TEST_F(SignatureTest, Forget) {
                          DeduceSignReversingOrientation{})}};
   auto const test_forget_for = [this](auto const& signatures) {
     for (auto const& signature : signatures) {
-      EXPECT_THAT(signature.Forget<OrthogonalMap>()(vector_),
+      EXPECT_THAT(signature.template Forget<OrthogonalMap>()(vector_),
                   Eq(signature(vector_))) << signature;
-      EXPECT_THAT(signature.Forget<OrthogonalMap>()(bivector_),
+      EXPECT_THAT(signature.template Forget<OrthogonalMap>()(bivector_),
                   Eq(signature(bivector_))) << signature;
-      EXPECT_THAT(signature.Forget<OrthogonalMap>()(trivector_),
+      EXPECT_THAT(signature.template Forget<OrthogonalMap>()(trivector_),
                   Eq(signature(trivector_))) << signature;
     }
   };

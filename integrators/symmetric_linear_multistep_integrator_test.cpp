@@ -335,8 +335,6 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Termination) {
   EXPECT_EQ(steps, solution.size());
   EXPECT_THAT(solution.back().time.value,
               AllOf(Gt(t_final - step), Le(t_final)));
-  Length q_error;
-  Speed v_error;
   for (int i = 0; i < steps; ++i) {
     Time const t = solution[i].time.value - t_initial;
     EXPECT_THAT(t, AlmostEquals((i + 1) * step, 0));
@@ -403,11 +401,6 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Serialization) {
   Speed const v_initial = 0 * Metre / Second;
   Instant const t_initial;
   Time const step = 0.2 * Second;
-
-  Mass const m = 1 * Kilogram;
-  Stiffness const k = SIUnit<Stiffness>();
-  Energy const initial_energy =
-      0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
 
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;

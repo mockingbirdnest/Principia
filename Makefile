@@ -76,16 +76,16 @@ TEST_INCLUDES := \
 INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src \
 	-I$(DEP_DIR)gipfeli/include -I$(DEP_DIR)abseil-cpp
 SHARED_ARGS   := \
-	-std=c++1z -stdlib=libc++ -O3 -g                           \
-	-fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer \
-	-Wall -Wpedantic                                           \
-	-Wno-char-subscripts                                       \
-	-Wno-gnu-anonymous-struct                                  \
-	-Wno-nested-anon-types                                     \
-	-Wno-unknown-pragmas                                       \
-	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'    \
-	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'  \
-	-DTEMP_DIR='std::filesystem::path("/tmp")'                 \
+	-std=c++1z -stdlib=libc++ -O3 -g                              \
+	-fPIC -fexceptions -ferror-limit=1000 -fno-omit-frame-pointer \
+	-Wall -Wpedantic                                              \
+	-Wno-char-subscripts                                          \
+	-Wno-gnu-anonymous-struct                                     \
+	-Wno-nested-anon-types                                        \
+	-Wno-unknown-pragmas                                          \
+	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
+	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
+	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
 	-DNDEBUG
 
 ifeq ($(UNAME_S),Linux)
@@ -255,15 +255,15 @@ PACKAGE_TEST_TARGETS := $(patsubst $(BIN_DIRECTORY)%, %, $(PACKAGE_TEST_BINS))
 
 # make base/not_null_test compiles bin/base/not_null_test and runs it.
 $(TEST_TARGETS) : % : $(BIN_DIRECTORY)%
-	-$^
+	$^
 
 # make base/test compiles bin/base/test and runs it.
 $(PACKAGE_TEST_TARGETS) : % : $(BIN_DIRECTORY)%
-	-$^
+	$^
 
 test: $(PRINCIPIA_TEST_BIN)
 	@echo "Cake, and grief counseling, will be available at the conclusion of the test."
-	-$^
+	$^
 
 ########## Benchmarks
 

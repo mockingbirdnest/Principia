@@ -55,9 +55,10 @@ class Signature : public LinearMap<FromFrame, ToFrame> {
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<typename Scalar>
-  SymmetricBilinearForm<Scalar, ToFrame> operator()(
-      SymmetricBilinearForm<Scalar, FromFrame> const& form) const;
+  template<typename Scalar,
+           template<typename, typename> typename Multivector>
+  SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
+      SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
 
   template<template<typename, typename> typename LinearMap>
   LinearMap<FromFrame, ToFrame> Forget() const;

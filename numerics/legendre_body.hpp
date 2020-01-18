@@ -39,9 +39,6 @@ template<int degree_, template<typename, typename, int> class Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<double, double, degree_, Evaluator>
 LegendrePolynomial() {
-  auto c = LegendreCoefficientsGenerator<
-          degree_,
-          std::make_index_sequence<degree_ + 1>>::coefficients;
   return PolynomialInMonomialBasis<double, double, degree_, Evaluator>(
       LegendreCoefficientsGenerator<
           degree_,

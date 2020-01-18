@@ -56,9 +56,6 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::_;
 
-constexpr MomentOfInertia zero;
-constexpr MomentOfInertia one = SIUnit<MomentOfInertia>();
-
 class VesselTest : public testing::Test {
  protected:
   VesselTest()

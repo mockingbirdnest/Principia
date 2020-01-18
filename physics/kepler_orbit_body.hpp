@@ -436,19 +436,10 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     KeplerianElements<Frame>& elements,
     GravitationalParameter const& μ) {
   auto& eccentricity = elements.eccentricity;
-  auto& asymptotic_true_anomaly = elements.asymptotic_true_anomaly;
-  auto& turning_angle = elements.turning_angle;
   auto& semimajor_axis = elements.semimajor_axis;
-  auto& specific_energy = elements.specific_energy;
-  auto& characteristic_energy = elements.characteristic_energy;
-  auto& mean_motion = elements.mean_motion;
-  auto& period = elements.period;
-  auto& hyperbolic_mean_motion = elements.hyperbolic_mean_motion;
-  auto& hyperbolic_excess_velocity = elements.hyperbolic_excess_velocity;
   auto& semiminor_axis = elements.semiminor_axis;
   auto& impact_parameter = elements.impact_parameter;
   auto& semilatus_rectum = elements.semilatus_rectum;
-  auto& specific_angular_momentum = elements.specific_angular_momentum;
   auto& periapsis_distance = elements.periapsis_distance;
   auto& apoapsis_distance = elements.apoapsis_distance;
 

@@ -54,9 +54,10 @@ Trivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
-SymmetricBilinearForm<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::
-operator()(SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
+template<typename Scalar, template<typename, typename> typename Multivector>
+SymmetricBilinearForm<Scalar, ToFrame, Multivector>
+OrthogonalMap<FromFrame, ToFrame>::operator()(
+    SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {
   return MakeRotation()(MakeSignature()(form));
 }
 

@@ -584,8 +584,6 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongFirstAxis) {
                       identity_attitude_(initial_angular_momentum),
                       identity_attitude_,
                       Instant());
-  AngularVelocity<PrincipalAxes> const initial_angular_velocity =
-      solver.AngularVelocityFor(initial_angular_momentum);
 
   auto const t = Instant() + 10 * Second;
   auto const actual_angular_momentum = solver.AngularMomentumAt(t);
@@ -624,8 +622,6 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongSecondAxis) {
                       identity_attitude_(initial_angular_momentum),
                       identity_attitude_,
                       Instant());
-  AngularVelocity<PrincipalAxes> const initial_angular_velocity =
-      solver.AngularVelocityFor(initial_angular_momentum);
 
   auto const t = Instant() + 10 * Second;
   auto const actual_angular_momentum = solver.AngularMomentumAt(t);
@@ -676,8 +672,6 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongThirdAxis) {
                       identity_attitude_(initial_angular_momentum),
                       identity_attitude_,
                       Instant());
-  AngularVelocity<PrincipalAxes> const initial_angular_velocity =
-      solver.AngularVelocityFor(initial_angular_momentum);
 
   auto const t = Instant() + 10 * Second;
   auto const actual_angular_momentum = solver.AngularMomentumAt(t);
@@ -717,8 +711,6 @@ TEST_F(EulerSolverTest, GeneralBodyRotationCloseToThirdAxis) {
                       identity_attitude_(initial_angular_momentum),
                       identity_attitude_,
                       Instant());
-  AngularVelocity<PrincipalAxes> const initial_angular_velocity =
-      solver.AngularVelocityFor(initial_angular_momentum);
 
   auto const t = Instant() + 10 * Second;
   auto const actual_angular_momentum = solver.AngularMomentumAt(t);
@@ -773,8 +765,6 @@ TEST_F(EulerSolverTest, GeneralBodyRotationVeryCloseToThirdAxis) {
                       identity_attitude_(initial_angular_momentum),
                       identity_attitude_,
                       Instant());
-  AngularVelocity<PrincipalAxes> const initial_angular_velocity =
-      solver.AngularVelocityFor(initial_angular_momentum);
 
   auto const t = Instant() + 10 * Second;
   auto const actual_angular_momentum = solver.AngularMomentumAt(t);
@@ -894,8 +884,8 @@ TEST_F(EulerSolverTest, SeparatrixConstantMomentum) {
   EXPECT_THAT(actual_angular_velocity,
               AlmostEquals(expected_angular_velocity, 2));
   EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 8));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 4));
-  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 7));
+  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 4, 6));
+  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 6, 7));
 }
 
 // The data in this test are from Takahashi, Busch and Scheeres, Spin state and

@@ -85,9 +85,6 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   Instant const t_final = t_initial + 0.99 * Second;
   double const tolerance = 1e-6;
   Variation<double> const derivative_tolerance = 1e-6 / Second;
-  int const steps_forward = 132;
-  // We integrate backward with double the tolerance.
-  int const steps_backward = 112;
 
   int evaluations = 0;
   int initial_rejections = 0;

@@ -82,10 +82,10 @@ Trivector<Scalar, ToFrame> Signature<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
-SymmetricBilinearForm<Scalar, ToFrame>
+template<typename Scalar, template<typename, typename> typename Multivector>
+SymmetricBilinearForm<Scalar, ToFrame, Multivector>
 Signature<FromFrame, ToFrame>::operator()(
-    SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
+    SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {
   // TODO(egg): This should be writeable as "*= x_ * y_".
   auto coordinates = form.coordinates();
   if (x_ != y_) {
@@ -100,7 +100,7 @@ Signature<FromFrame, ToFrame>::operator()(
     coordinates(2, 0) *= -1;
     coordinates(0, 2) *= -1;
   }
-  return SymmetricBilinearForm<Scalar, ToFrame>(coordinates);
+  return SymmetricBilinearForm<Scalar, ToFrame, Multivector>(coordinates);
 }
 
 template<typename FromFrame, typename ToFrame>

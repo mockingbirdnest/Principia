@@ -156,7 +156,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
-  auto* const extension =
+  [[maybe_unused]] auto* const extension =
       message
           ->MutableExtension(
               serialization::FixedStepSizeIntegratorInstance::extension)

@@ -175,7 +175,7 @@ TEST_F(PlanetariumTest, PlotMethod0) {
   EXPECT_THAT(rp2_lines[0].front().x() - rp2_lines[1].back().x(),
               VanishesBefore(1 * Metre, 6));
   EXPECT_THAT(rp2_lines[0].back().x() - rp2_lines[1].front().x(),
-              AlmostEquals(10.0 / Sqrt(399.0) * Metre, 48, 94));
+              AlmostEquals(10.0 / Sqrt(399.0) * Metre, 47, 94));
 
   for (auto const& rp2_line : rp2_lines) {
     for (auto const& rp2_point : rp2_line) {

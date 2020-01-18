@@ -94,10 +94,6 @@ TEST_F(FastSinCos2πTest, Random1000) {
   std::mt19937_64 random(42);
   std::uniform_int_distribution<> integer_distribution(-1e6, 1e6);
   std::uniform_real_distribution<> fractional_distribution(0.0, 1.0);
-  double max_sin_error = 0.0;
-  double max_cos_error = 0.0;
-  double max_sin_error_x = 0.0;
-  double max_cos_error_x = 0.0;
   for (int i = 0; i < iterations_; ++i) {
     double const integer = integer_distribution(random);
     double const fractional = fractional_distribution(random);

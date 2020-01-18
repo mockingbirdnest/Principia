@@ -794,7 +794,7 @@ void JournalProtoProcessor::ProcessInOut(
   cs_interface_parameters_[descriptor].clear();
   cxx_interface_parameters_[descriptor].clear();
   cxx_run_body_prolog_[descriptor] =
-      "  auto const& " + ToLower(name) + " = message." +
+      "  [[maybe_unused]] auto const& " + ToLower(name) + " = message." +
       ToLower(name) + "();\n";
   cxx_run_arguments_[descriptor].clear();
   cxx_run_body_epilog_[descriptor].clear();

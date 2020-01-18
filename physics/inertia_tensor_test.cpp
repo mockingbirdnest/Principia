@@ -82,7 +82,8 @@ class InertiaTensorTest : public ::testing::Test {
       Matcher<R3Element<MomentOfInertia>> const& matcher) {
     using PrincipalAxesFrame =
         geometry::Frame<enum class PrincipalAxesFrameTag>;
-    auto const principal_axes = tensor.Diagonalize<PrincipalAxesFrame>();
+    auto const principal_axes =
+        tensor.template Diagonalize<PrincipalAxesFrame>();
     EXPECT_THAT(principal_axes.moments_of_inertia, matcher);
   }
 
@@ -310,7 +311,8 @@ TEST_F(InertiaTensorTest, Abdulghany) {
       overall_inertia_overall_centre_of_mass,
       1,
       2,
-      AlmostEquals(-116640.0 * π / (4.0 + π) * SIUnit<MomentOfInertia>(), 0));
+      AlmostEquals(-116640.0 * π / (4.0 + π) * SIUnit<MomentOfInertia>(),
+                   0, 1));
   CheckInertiaTensorCoordinate(overall_inertia_overall_centre_of_mass,
                                2,
                                0,
@@ -319,7 +321,8 @@ TEST_F(InertiaTensorTest, Abdulghany) {
       overall_inertia_overall_centre_of_mass,
       2,
       1,
-      AlmostEquals(-116640.0 * π / (4.0 + π) * SIUnit<MomentOfInertia>(), 0));
+      AlmostEquals(-116640.0 * π / (4.0 + π) * SIUnit<MomentOfInertia>(),
+                   0, 1));
   CheckInertiaTensorCoordinate(
       overall_inertia_overall_centre_of_mass,
       2,

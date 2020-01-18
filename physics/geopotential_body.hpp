@@ -68,7 +68,6 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
       Inverse<Square<Length>> const& ℜʹ,
       Inverse<Square<Length>>& σℜ_over_r,
       Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const {
-  Length const& s1 = outer_threshold_;
   Length const& s0 = inner_threshold_;
   if (r_norm <= s0) {
     // Below the inner threshold, σ = 1.
