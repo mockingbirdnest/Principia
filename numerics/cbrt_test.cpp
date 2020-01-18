@@ -20,13 +20,16 @@ using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Truly;
 
-#define EXPECT_SIGNALS(expression, exceptions)                            \
-  do {                                                                    \
-    std::feclearexcept(FE_ALL_EXCEPT);                                    \
-    [[maybe_unused]] auto const volatile evaluated_signaling_expression = \
-        (expression);                                                     \
-    EXPECT_THAT(std::fetestexcept(FE_ALL_EXCEPT), Eq((exceptions)))       \
-        << "while evaluating " #expression;                               \
+#define EXPECT_SIGNALS(expression, exceptions)                             \
+  do {                                                                     \
+    std::feclearexcept(FE_ALL_EXCEPT);                                     \
+    [[maybe_unused]] auto const volatile evaluated_signaling_expression =  \
+        (expression);                                                      \
+    /* Ignore implementation-defined exceptions. */                        \
+    EXPECT_THAT(std::fetestexcept(FE_DIVBYZERO | FE_INEXACT | FE_INVALID | \
+                                  FE_OVERFLOW | FE_UNDERFLOW),             \
+                Eq((exceptions)))                                          \
+        << "while evaluating " #expression;                                \
   } while (false)
 
 class CubeRootTest : public ::testing::Test {

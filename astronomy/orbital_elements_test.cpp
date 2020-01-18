@@ -176,7 +176,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
       AbsoluteErrorFrom(*initial_osculating.period, Lt(510 * Micro(Second))));
   EXPECT_THAT(
       elements.nodal_period(),
-      AbsoluteErrorFrom(*initial_osculating.period, Lt(3.9 * Milli(Second))));
+      AbsoluteErrorFrom(*initial_osculating.period, Lt(4.1 * Milli(Second))));
   EXPECT_THAT(
       elements.sidereal_period(),
       AbsoluteErrorFrom(*initial_osculating.period, Lt(1.9 * Micro(Second))));
@@ -195,7 +195,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
                                 Lt(0.64 * Micro(ArcSecond))));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.longitude_of_ascending_node,
-                                Lt(62 * ArcSecond)));
+                                Lt(64 * ArcSecond)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.argument_of_periapsis,
                                 Lt(62 * ArcSecond)));
@@ -208,7 +208,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
               Lt(1.4 * Micro(ArcSecond)));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().measure(),
-              Lt(2.2 * ArcMinute));
+              Lt(2.3 * ArcMinute));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
               Lt(2.2 * ArcMinute));
 

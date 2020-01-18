@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/file.hpp"
+#include "base/macros.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
@@ -120,7 +121,35 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
   // The |beginning_of_convergence| below were carefully chosen using
   // Mathematica to only select the domain where |p| and |step| are properly
   // correlated.
-  return {INSTANCE(Quinlan1999Order8A,
+  return {
+#if OS_MACOSX
+          INSTANCE(Quinlan1999Order8A,
+                   0.07 * Second,
+                   1.00044972306534419e-13 * Metre,
+                   1.00586206031039183e-13 * Metre / Second,
+                   3.93946996135596805e-08 * Joule),
+          INSTANCE(Quinlan1999Order8B,
+                   0.055 * Second,
+                   9.97882332320898513e-14 * Metre,
+                   1.00960906301850173e-13 * Metre / Second,
+                   2.19802622769549316e-08 * Joule),
+          INSTANCE(QuinlanTremaine1990Order8,
+                   0.3 * Second,
+                   9.98298665955132947e-14 * Metre,
+                   1.00759678378636863e-13 * Metre / Second,
+                   6.42628611435824837e-08 * Joule),
+          INSTANCE(QuinlanTremaine1990Order10,
+                   0.3 * Second,
+                   9.96980276113390573e-14 * Metre,
+                   1.02445829597286320e-13 * Metre / Second,
+                   1.03418451580239434e-09 * Joule),
+          INSTANCE(QuinlanTremaine1990Order12,
+                   0.21 * Second,
+                   9.90457715843717779e-14 * Metre,
+                   1.05138120432002324e-13 * Metre / Second,
+                   4.14703826834283973e-11 * Joule)};
+#else
+          INSTANCE(Quinlan1999Order8A,
                    0.07 * Second,
                    1.00044972306534419e-13 * Metre,
                    1.00587940754515159e-13 * Metre / Second,
@@ -145,6 +174,7 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    9.90457715843717779e-14 * Metre,
                    1.05165876007617953e-13 * Metre / Second,
                    4.14703826834283973e-11 * Joule)};
+#endif
 }
 
 }  // namespace
