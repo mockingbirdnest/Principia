@@ -210,7 +210,7 @@ TEST_F(SymmetricBilinearFormTest, Anticommutator) {
               Eq(InnerProduct(a, Anticommutator(f, b))));
   EXPECT_THAT(Anticommutator(f, Wedge(v, w)),
               Eq(Wedge(f * v, w) + Wedge(v, f * w)));
-  EXPECT_THAT(f.Anticommutator().Contraction() / 2, Eq(f));
+  EXPECT_THAT(f.Anticommutator().AnticommutatorInverse(), Eq(f));
 }
 
 TEST_F(SymmetricBilinearFormTest, AnticommutatorDiagonalization) {
