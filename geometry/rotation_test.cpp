@@ -144,7 +144,7 @@ TEST_F(RotationTest, AppliedToSymmetricBilinearForm) {
   EXPECT_THAT(rotation_a_(form_)(rotation_a_(vector_), rotation_a_(vector_)),
               AlmostEquals(115.0 * Pow<3>(Metre), 0, 1));
   EXPECT_THAT(rotation_b_(form_)(rotation_b_(vector_), rotation_b_(vector_)),
-              AlmostEquals(115.0 * Pow<3>(Metre), 5));
+              AlmostEquals(115.0 * Pow<3>(Metre), 1, 5));
   EXPECT_THAT(rotation_c_(form_)(rotation_c_(vector_), rotation_c_(vector_)),
               AlmostEquals(115.0 * Pow<3>(Metre), 0));
 }

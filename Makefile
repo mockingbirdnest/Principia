@@ -255,15 +255,15 @@ PACKAGE_TEST_TARGETS := $(patsubst $(BIN_DIRECTORY)%, %, $(PACKAGE_TEST_BINS))
 
 # make base/not_null_test compiles bin/base/not_null_test and runs it.
 $(TEST_TARGETS) : % : $(BIN_DIRECTORY)%
-	-$^
+	$^
 
 # make base/test compiles bin/base/test and runs it.
 $(PACKAGE_TEST_TARGETS) : % : $(BIN_DIRECTORY)%
-	-$^
+	$^
 
 test: $(PRINCIPIA_TEST_BIN)
 	@echo "Cake, and grief counseling, will be available at the conclusion of the test."
-	-$^
+	$^
 
 ########## Benchmarks
 
