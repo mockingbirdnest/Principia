@@ -138,7 +138,7 @@ TEST_F(InertiaTensorTest, PointMass) {
   MomentOfInertia const moment_of_inertia = mass * displacement.Norm²();
   CheckMomentsOfInertia(
       inertia_tensor_general_point,
-      Componentwise(VanishesBefore(moment_of_inertia, 2),
+      Componentwise(VanishesBefore(moment_of_inertia, 1, 2),
                     RelativeErrorFrom(moment_of_inertia, IsNear(2.9e-9_⑴)),
                     RelativeErrorFrom(moment_of_inertia, IsNear(2.9e-9_⑴))));
 }

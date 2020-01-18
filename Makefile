@@ -81,6 +81,7 @@ SHARED_ARGS   := \
 	-Wall -Wpedantic                                              \
 	-Wno-char-subscripts                                          \
 	-Wno-gnu-anonymous-struct                                     \
+	-Wno-gnu-zero-variadic-macro-arguments                        \
 	-Wno-nested-anon-types                                        \
 	-Wno-unknown-pragmas                                          \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
