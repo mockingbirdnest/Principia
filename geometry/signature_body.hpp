@@ -82,7 +82,7 @@ Trivector<Scalar, ToFrame> Signature<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar, template<typename S, typename F> typename Multivector>
+template<typename Scalar, template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, ToFrame, Multivector>
 Signature<FromFrame, ToFrame>::operator()(
     SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {

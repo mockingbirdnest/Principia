@@ -36,7 +36,7 @@ FORWARD_DECLARE_FROM(
     symmetric_bilinear_form,
     TEMPLATE(typename Scalar,
              typename Frame,
-             template<typename S, typename F> typename Multivector) class,
+             template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm);
 
 namespace internal_orthogonal_map {
@@ -71,7 +71,7 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
       Trivector<Scalar, FromFrame> const& trivector) const;
 
   template<typename Scalar,
-           template<typename S, typename F> typename Multivector>
+           template<typename, typename> typename Multivector>
   SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
 

@@ -27,7 +27,7 @@ using quantities::Quotient;
 // |Multivector|, expressed in the coordinates of |Frame|.
 template<typename Scalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 class SymmetricBilinearForm {
  public:
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
@@ -56,6 +56,12 @@ class SymmetricBilinearForm {
   template<template<typename, typename> typename M = Multivector,
            typename = std::enable_if_t<base::is_same_template_v<M, Vector>>>
   SymmetricBilinearForm<Scalar, Frame, Bivector> Anticommutator() const;
+
+  // This function is the inverse of |Anticommutator()|.  It is well-defined
+  // only in dimension 3, where dim ⋀²V = dim V.
+  template<template<typename, typename> typename M = Multivector,
+           typename = std::enable_if_t<base::is_same_template_v<M, Bivector>>>
+  SymmetricBilinearForm<Scalar, Frame, Vector> AnticommutatorInverse() const;
 
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
   // which gives the eigenvalues; and (2) a rotation from the current basis to
@@ -187,24 +193,24 @@ SymmetricBilinearForm<double, Frame, Multivector> const& InnerProductForm();
 
 template<typename Scalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector> operator+(
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
 template<typename Scalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
 
 template<typename Scalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector> operator+(
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
 template<typename Scalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
@@ -212,21 +218,21 @@ SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
 template<typename LScalar,
          typename RScalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector> operator*(
     LScalar left,
     SymmetricBilinearForm<RScalar, Frame, Multivector> const& right);
 template<typename LScalar,
          typename RScalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector> operator*(
     SymmetricBilinearForm<LScalar, Frame, Multivector> const& left,
     RScalar right);
 template<typename LScalar,
          typename RScalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame, Multivector> operator/(
     SymmetricBilinearForm<LScalar, Frame, Multivector> const& left,
     RScalar right);
@@ -277,24 +283,24 @@ Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
 
 template<typename Scalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 bool operator==(SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
                 SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
 template<typename Scalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 bool operator!=(SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
                 SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
 
 template<typename Scalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 std::string DebugString(
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& form);
 
 template<typename Scalar,
          typename Frame,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 std::ostream& operator<<(
     std::ostream& out,
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& form);

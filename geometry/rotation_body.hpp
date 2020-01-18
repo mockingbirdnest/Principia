@@ -212,7 +212,7 @@ Trivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar,
-         template<typename S, typename F> typename Multivector>
+         template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, ToFrame, Multivector>
 Rotation<FromFrame, ToFrame>::operator()(
     SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {
