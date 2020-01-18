@@ -19,12 +19,13 @@ using quantities::si::Radian;
 template<typename InertialFrame, typename SystemFrame>
 template<typename BodyFrame>
 void ClosedSystem<InertialFrame, SystemFrame>::AddRigidBody(
-    RigidMotion<BodyFrame, InertialFrame> motion,
-    Mass mass,
-    SymmetricBilinearForm<MomentOfInertia, BodyFrame> inertia_tensor) {
-  DegreesOfFreedom<InertialFrame> degrees_of_freedom =
+    RigidMotion<BodyFrame, InertialFrame> const& motion,
+    Mass const& mass,
+    SymmetricBilinearForm<MomentOfInertia, BodyFrame, Vector> const&
+        inertia_tensor) {
+  DegreesOfFreedom<InertialFrame> const degrees_of_freedom =
       motion({BodyFrame::origin, BodyFrame::unmoving});
-  SymmetricBilinearForm<MomentOfInertia, InertialFrame>
+  SymmetricBilinearForm<MomentOfInertia, InertialFrame, Vector> const
       inertia_tensor_in_inertial_axes = motion.orthogonal_map()(inertia_tensor);
   centre_of_mass_.Add(degrees_of_freedom, mass);
   body_linear_motions_.emplace_back(degrees_of_freedom, mass);
@@ -36,8 +37,8 @@ void ClosedSystem<InertialFrame, SystemFrame>::AddRigidBody(
 
 template<typename InertialFrame, typename SystemFrame>
 RigidMotion<SystemFrame, InertialFrame>
-ClosedSystem<InertialFrame, SystemFrame>::linear_motion() const {
-  DegreesOfFreedom<InertialFrame> centre_of_mass = centre_of_mass_.Get();
+ClosedSystem<InertialFrame, SystemFrame>::LinearMotion() const {
+  DegreesOfFreedom<InertialFrame> const centre_of_mass = centre_of_mass_.Get();
   return RigidMotion<SystemFrame, InertialFrame>(
       RigidTransformation<SystemFrame, InertialFrame>(
           SystemFrame::origin,
@@ -48,16 +49,16 @@ ClosedSystem<InertialFrame, SystemFrame>::linear_motion() const {
 }
 
 template<typename InertialFrame, typename SystemFrame>
-Mass ClosedSystem<InertialFrame, SystemFrame>::mass() const {
+Mass const& ClosedSystem<InertialFrame, SystemFrame>::mass() const {
   return centre_of_mass_.weight();
 }
 
 template<typename InertialFrame, typename SystemFrame>
 Bivector<AngularMomentum, SystemFrame>
-ClosedSystem<InertialFrame, SystemFrame>::angular_momentum() const {
-  RigidMotion<InertialFrame, SystemFrame> to_system_frame =
-      linear_motion().Inverse();
-  Bivector<AngularMomentum, SystemFrame> result =
+ClosedSystem<InertialFrame, SystemFrame>::AngularMomentum() const {
+  RigidMotion<InertialFrame, SystemFrame> const to_system_frame =
+      LinearMotion().Inverse();
+  Bivector<quantities::AngularMomentum, SystemFrame> result =
       to_system_frame.orthogonal_map()(sum_of_intrinsic_angular_momenta_);
   for (auto const& [degrees_of_freedom, m] : body_linear_motions_) {
     DegreesOfFreedom<SystemFrame> const degrees_of_freedom_in_system_frame =
@@ -73,11 +74,11 @@ ClosedSystem<InertialFrame, SystemFrame>::angular_momentum() const {
 }
 
 template<typename InertialFrame, typename SystemFrame>
-SymmetricBilinearForm<MomentOfInertia, SystemFrame>
-ClosedSystem<InertialFrame, SystemFrame>::inertia_tensor() const {
-  RigidMotion<InertialFrame, SystemFrame> to_system_frame =
-      linear_motion().Inverse();
-  SymmetricBilinearForm<MomentOfInertia, SystemFrame> result =
+SymmetricBilinearForm<MomentOfInertia, SystemFrame, Vector>
+ClosedSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
+  RigidMotion<InertialFrame, SystemFrame> const to_system_frame =
+      LinearMotion().Inverse();
+  SymmetricBilinearForm<MomentOfInertia, SystemFrame, Vector> result =
       to_system_frame.orthogonal_map()(sum_of_inertia_tensors_);
   for (auto const& [degrees_of_freedom, m] : body_linear_motions_) {
     DegreesOfFreedom<SystemFrame> const degrees_of_freedom_in_system_frame =
