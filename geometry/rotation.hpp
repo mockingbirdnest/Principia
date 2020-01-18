@@ -17,12 +17,12 @@ namespace geometry {
 FORWARD_DECLARE_FROM(orthogonal_map,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      OrthogonalMap);
-FORWARD_DECLARE_FROM(symmetric_bilinear_form,
-                     TEMPLATE(typename Scalar,
-                              typename Frame,
-                              template<typename S, typename F>
-                              typename Multivector) class,
-                     SymmetricBilinearForm);
+FORWARD_DECLARE_FROM(
+    symmetric_bilinear_form,
+    TEMPLATE(typename Scalar,
+            typename Frame,
+            template<typename S, typename F> typename Multivector) class,
+    SymmetricBilinearForm);
 
 namespace internal_rotation {
 
@@ -220,8 +220,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
       Trivector<Scalar, FromFrame> const& trivector) const;
 
   template<typename Scalar,
-           template<typename S, typename F>
-           typename Multivector>
+           template<typename S, typename F> typename Multivector>
   SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
 
