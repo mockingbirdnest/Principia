@@ -47,8 +47,9 @@ using quantities::MomentOfInertia;
 // |Anticommutator()| should be used.
 template<typename InertialFrame, typename SystemFrame>
 class ClosedSystem {
-  static_assert(InertialFrame::is_inertial);
  public:
+  static_assert(InertialFrame::is_inertial);
+
   ClosedSystem() = default;
 
   template<typename BodyFrame>
@@ -85,7 +86,8 @@ class ClosedSystem {
   // individual centres of mass.  This is not the inertia tensor of the system
   // unless all bodies are at the same location, as their point masses also
   // contribute to the overall inertia.
-  SymmetricBilinearForm<MomentOfInertia, InertialFrame, Vector> sum_of_inertia_tensors_;
+  SymmetricBilinearForm<MomentOfInertia, InertialFrame, Vector>
+      sum_of_inertia_tensors_;
 };
 
 }  // namespace internal_closed_system
