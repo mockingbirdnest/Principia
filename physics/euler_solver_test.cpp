@@ -111,7 +111,8 @@ class EulerSolverTest : public ::testing::Test {
       std::vector<Bivector<AngularMomentum, PrincipalAxes>> const&
           angular_momenta,
       std::vector<Solver::AttitudeRotation> const& attitudes,
-      int const ulps) {
+      int const min_ulps,
+      int const max_ulps) {
     CHECK_EQ(angular_momenta.size(), attitudes.size());
     Energy maximum_kinetic_energy;
     Energy minimum_kinetic_energy = quantities::Infinity<Energy>();
@@ -132,7 +133,7 @@ class EulerSolverTest : public ::testing::Test {
       minimum_kinetic_energy = std::min(minimum_kinetic_energy, kinetic_energy);
     }
     EXPECT_THAT(minimum_kinetic_energy,
-                AlmostEquals(maximum_kinetic_energy, ulps));
+                AlmostEquals(maximum_kinetic_energy, min_ulps, max_ulps));
   }
 
   Solver::AttitudeRotation identity_attitude_;
@@ -384,7 +385,11 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 32),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 4),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 2)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/8);
+  CheckPoinsotConstruction(solver,
+                           angular_momenta,
+                           attitudes,
+                           /*min_ulps=*/8,
+                           /*max_ulps=*/8);
 }
 
 TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
@@ -436,7 +441,11 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       Componentwise(AlmostEquals(reference_momentum.coordinates().x, 0, 3),
                     VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 24),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 6)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/2);
+  CheckPoinsotConstruction(solver,
+                           angular_momenta,
+                           attitudes,
+                           /*min_ulps=*/2,
+                           /*max_ulps=*/2);
 }
 
 // This test demonstrates the Джанибеков effect, also known as tennis racket
@@ -539,7 +548,11 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       Componentwise(VanishesBefore(1 * SIUnit<AngularMomentum>(), 0, 10),
                     AlmostEquals(reference_momentum.coordinates().y, 0, 16),
                     AlmostEquals(reference_momentum.coordinates().z, 0, 965)));
-  CheckPoinsotConstruction(solver, angular_momenta, attitudes, /*ulps=*/43);
+  CheckPoinsotConstruction(solver,
+                           angular_momenta,
+                           attitudes,
+                           /*min_ulps=*/39,
+                           /*max_ulps=*/43);
 }
 
 // A general body that doesn't rotate.
@@ -731,13 +744,14 @@ TEST_F(EulerSolverTest, GeneralBodyRotationCloseToThirdAxis) {
 
   EXPECT_THAT(
       actual_attitude(e1_),
-      Componentwise(AlmostEquals(expected_attitude(e1_).coordinates().x, 8),
-                    AlmostEquals(expected_attitude(e1_).coordinates().y, 0, 2),
-                    VanishesBefore(std::numeric_limits<double>::epsilon(), 4)));
+      Componentwise(
+          AlmostEquals(expected_attitude(e1_).coordinates().x, 8, 12),
+          AlmostEquals(expected_attitude(e1_).coordinates().y, 0, 2),
+          VanishesBefore(std::numeric_limits<double>::epsilon(), 4, 8)));
   EXPECT_THAT(
       actual_attitude(e2_),
       Componentwise(AlmostEquals(expected_attitude(e2_).coordinates().x, 0, 2),
-                    AlmostEquals(expected_attitude(e2_).coordinates().y, 8),
+                    AlmostEquals(expected_attitude(e2_).coordinates().y, 8, 12),
                     VanishesBefore(1, 2)));
   EXPECT_THAT(
       actual_attitude(e3_),
@@ -784,13 +798,13 @@ TEST_F(EulerSolverTest, GeneralBodyRotationVeryCloseToThirdAxis) {
                                     1.0 * SIUnit<AngularMomentum>()}));
   EXPECT_THAT(
       actual_attitude(e1_),
-      Componentwise(AlmostEquals(expected_attitude(e1_).coordinates().x, 0, 8),
+      Componentwise(AlmostEquals(expected_attitude(e1_).coordinates().x, 0, 12),
                     AlmostEquals(expected_attitude(e1_).coordinates().y, 0, 2),
                     VanishesBefore(1, 0)));
   EXPECT_THAT(
       actual_attitude(e2_),
       Componentwise(AlmostEquals(expected_attitude(e2_).coordinates().x, 0, 2),
-                    AlmostEquals(expected_attitude(e2_).coordinates().y, 0, 8),
+                    AlmostEquals(expected_attitude(e2_).coordinates().y, 0, 12),
                     VanishesBefore(1, 0)));
   EXPECT_THAT(actual_attitude(e3_),
               Componentwise(
@@ -839,12 +853,15 @@ TEST_F(EulerSolverTest, SphereRotationAlongRandomAxis) {
           expected_angular_frequency * 10 * Second, initial_angular_momentum);
 
   EXPECT_THAT(actual_angular_momentum,
-              AlmostEquals(initial_angular_momentum, 16));
+              AlmostEquals(initial_angular_momentum, 8, 16));
   EXPECT_THAT(actual_angular_velocity,
-              AlmostEquals(expected_angular_velocity, 10));
-  EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 60));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 114));
-  EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 20));
+              AlmostEquals(expected_angular_velocity, 5, 10));
+  EXPECT_THAT(actual_attitude(e1_),
+              AlmostEquals(expected_attitude(e1_), 31, 60));
+  EXPECT_THAT(actual_attitude(e2_),
+              AlmostEquals(expected_attitude(e2_), 44, 114));
+  EXPECT_THAT(actual_attitude(e3_),
+              AlmostEquals(expected_attitude(e3_), 9, 20));
 }
 
 // Rotation on the separatrix with a constant momentum.
