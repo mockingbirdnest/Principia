@@ -171,46 +171,46 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.ValueOrDie();
-  EXPECT_THAT(
-      elements.anomalistic_period(),
-      AbsoluteErrorFrom(*initial_osculating.period, Lt(510 * Micro(Second))));
-  EXPECT_THAT(
-      elements.nodal_period(),
-      AbsoluteErrorFrom(*initial_osculating.period, Lt(3.9 * Milli(Second))));
-  EXPECT_THAT(
-      elements.sidereal_period(),
-      AbsoluteErrorFrom(*initial_osculating.period, Lt(1.9 * Micro(Second))));
+  EXPECT_THAT(elements.anomalistic_period(),
+              AbsoluteErrorFrom(*initial_osculating.period,
+                                IsNear(0.24_⑴ * Milli(Second))));
+  EXPECT_THAT(elements.nodal_period(),
+              AbsoluteErrorFrom(*initial_osculating.period,
+                                IsNear(3.8_⑴ * Milli(Second))));
+  EXPECT_THAT(elements.sidereal_period(),
+              AbsoluteErrorFrom(*initial_osculating.period,
+                                IsNear(1.9_⑴ * Micro(Second))));
 
   EXPECT_THAT(elements.nodal_precession(), Lt(1.4 * Degree / JulianYear));
 
   // Mean element values.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
-                                Lt(410 * Micro(Metre))));
+                                IsNear(0.33_⑴ * Milli(Metre))));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.eccentricity,
-                                Lt(4.6e-11)));
+                                IsNear(4.6e-11_⑴)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.inclination,
-                                Lt(0.64 * Micro(ArcSecond))));
+                                IsNear(0.19_⑴ * Micro(ArcSecond))));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.longitude_of_ascending_node,
-                                Lt(62 * ArcSecond)));
+                                IsNear(57_⑴ * ArcSecond)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.argument_of_periapsis,
-                                Lt(62 * ArcSecond)));
+                                IsNear(48_⑴ * ArcSecond)));
 
   // Mean element stability.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              Lt(1.0 * Milli(Metre)));
+              IsNear(0.8_⑴ * Milli(Metre)));
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
-              Lt(1.1e-10));
+              IsNear(1.1e-10_⑴));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
-              Lt(1.4 * Micro(ArcSecond)));
+              IsNear(0.7_⑴ * Micro(ArcSecond)));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().measure(),
-              Lt(2.2 * ArcMinute));
+              IsNear(2.1_⑴ * ArcMinute));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
-              Lt(2.2 * ArcMinute));
+              IsNear(1.7_⑴ * ArcMinute));
 
   OFStream f(SOLUTION_DIR / "mathematica" /
              "unperturbed_elements.generated.wl");
