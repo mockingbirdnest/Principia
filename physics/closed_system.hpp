@@ -27,24 +27,7 @@ using quantities::MomentOfInertia;
 // handles rotational motion.
 // |InertialFrame| is an inertial frame in which the motion of the member bodies
 // is given; |SystemFrame| is a non-rotating frame with the same axes as
-// |InertialFrame| and whose origin is the centre of mass of |SystemFrame|.
-//
-// Note: It is more natural to manipulate the inertia tensor as a
-// |SymmetricBilinearForm<MomentOfInertia, Frame, Vector>| than a
-// |SymmetricBilinearForm<MomentOfInertia, Frame, Bivector>|.
-// The former has coordinates
-//   ⎛ ∑x²   ∑xy   ∑xy ⎞
-//   ⎜ ∑yx   ∑y²   ∑yz ⎟
-//   ⎝ ∑zx   ∑zy   ∑z² ⎠
-// whereas the latter (obtained from the former by |Anticommutator()| has the
-// coordinates
-//   ⎛ ∑(y² + z²)   -∑xy      -∑xy    ⎞
-//   ⎜    -∑yx   ∑(x² + z²)   -∑yz    ⎟
-//   ⎝    -∑zx      -∑zy   ∑(x² + y²) ⎠
-// It is however common practice in physics to use the bilinear form on
-// bivectors, and to call its eigenvalues the principal moments of inertia. When
-// interfacing with systems that use those, |AnticommutatorInverse()| and
-// |Anticommutator()| should be used.
+// |InertialFrame| and whose origin is the centre of mass of the system.
 template<typename InertialFrame, typename SystemFrame>
 class ClosedSystem {
  public:
@@ -56,7 +39,7 @@ class ClosedSystem {
   void AddRigidBody(
       RigidMotion<BodyFrame, InertialFrame> const& motion,
       Mass const& mass,
-      SymmetricBilinearForm<MomentOfInertia, BodyFrame, Vector> const&
+      SymmetricBilinearForm<MomentOfInertia, BodyFrame, Bivector> const&
           inertia_tensor);
 
   // The motion of a non-rotating frame whose origin is the centre of mass of
@@ -69,7 +52,7 @@ class ClosedSystem {
   Bivector<AngularMomentum, SystemFrame> AngularMomentum() const;
   // The moments of inertia of the system, with respect to the origin of
   // |SystemFrame|, i.e., the centre of mass of the system.
-  SymmetricBilinearForm<MomentOfInertia, SystemFrame, Vector> InertiaTensor()
+  SymmetricBilinearForm<MomentOfInertia, SystemFrame, Bivector> InertiaTensor()
       const;
 
  private:

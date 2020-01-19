@@ -21,12 +21,13 @@ template<typename BodyFrame>
 void ClosedSystem<InertialFrame, SystemFrame>::AddRigidBody(
     RigidMotion<BodyFrame, InertialFrame> const& motion,
     Mass const& mass,
-    SymmetricBilinearForm<MomentOfInertia, BodyFrame, Vector> const&
+    SymmetricBilinearForm<MomentOfInertia, BodyFrame, Bivector> const&
         inertia_tensor) {
   DegreesOfFreedom<InertialFrame> const degrees_of_freedom =
       motion({BodyFrame::origin, BodyFrame::unmoving});
   SymmetricBilinearForm<MomentOfInertia, InertialFrame, Vector> const
-      inertia_tensor_in_inertial_axes = motion.orthogonal_map()(inertia_tensor);
+      inertia_tensor_in_inertial_axes =
+          motion.orthogonal_map()(inertia_tensor.AnticommutatorInverse());
   centre_of_mass_.Add(degrees_of_freedom, mass);
   body_linear_motions_.emplace_back(degrees_of_freedom, mass);
   sum_of_inertia_tensors_ += inertia_tensor_in_inertial_axes;
@@ -74,7 +75,7 @@ ClosedSystem<InertialFrame, SystemFrame>::AngularMomentum() const {
 }
 
 template<typename InertialFrame, typename SystemFrame>
-SymmetricBilinearForm<MomentOfInertia, SystemFrame, Vector>
+SymmetricBilinearForm<MomentOfInertia, SystemFrame, Bivector>
 ClosedSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
   RigidMotion<InertialFrame, SystemFrame> const to_system_frame =
       LinearMotion().Inverse();
@@ -87,7 +88,7 @@ ClosedSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
         degrees_of_freedom_in_system_frame.position() - SystemFrame::origin;
     result += m * SymmetricProduct(r, r);
   }
-  return result;
+  return result.Anticommutator();
 }
 
 }  // namespace internal_closed_system
