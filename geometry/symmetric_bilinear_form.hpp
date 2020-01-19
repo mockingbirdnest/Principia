@@ -30,6 +30,7 @@ template<typename Scalar,
          template<typename, typename> typename Multivector>
 class SymmetricBilinearForm {
  public:
+  SymmetricBilinearForm() = default;
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
 

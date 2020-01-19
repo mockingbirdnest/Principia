@@ -191,6 +191,12 @@
     <ClInclude Include="inertia_tensor_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="closed_system.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="closed_system_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -275,6 +281,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="inertia_tensor_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="closed_system_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
