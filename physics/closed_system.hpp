@@ -69,6 +69,24 @@ class ClosedSystem {
   // individual centres of mass.  This is not the inertia tensor of the system
   // unless all bodies are at the same location, as their point masses also
   // contribute to the overall inertia.
+  //
+  // Note: It is more natural to manipulate the inertia tensor as a
+  // |SymmetricBilinearForm<MomentOfInertia, Frame, Vector>| than a
+  // |SymmetricBilinearForm<MomentOfInertia, Frame, Bivector>|.
+  // The former has coordinates
+  //   ⎛ ∑x²   ∑xy   ∑xy ⎞
+  //   ⎜ ∑yx   ∑y²   ∑yz ⎟
+  //   ⎝ ∑zx   ∑zy   ∑z² ⎠
+  // whereas the latter (obtained from the former by |Anticommutator()| has the
+  // coordinates
+  //   ⎛ ∑(y² + z²)   -∑xy      -∑xy    ⎞
+  //   ⎜    -∑yx   ∑(x² + z²)   -∑yz    ⎟
+  //   ⎝    -∑zx      -∑zy   ∑(x² + y²) ⎠
+  // It is however common practice in physics to use the bilinear form on
+  // bivectors, and to call its eigenvalues the principal moments of inertia.
+  // This class thus exposes the form on bivectors in its API, and uses
+  // |AnticommutatorInverse()| and |Anticommutator()| to convert between it and
+  // the form on vectors used internally.
   SymmetricBilinearForm<MomentOfInertia, InertialFrame, Vector>
       sum_of_inertia_tensors_;
 };
