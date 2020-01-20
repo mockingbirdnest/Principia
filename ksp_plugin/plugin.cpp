@@ -1284,6 +1284,12 @@ void Plugin::WriteToMessage(
     not_null<Vessel*> const vessel = pair.second;
     (*message->mutable_part_id_to_vessel())[part_id] = vessel_to_guid[vessel];
   }
+  for (auto const& [guid, parameters] :
+       zombie_prediction_adaptive_step_parameters_) {
+    auto* const zombie_message = message->add_zombie();
+    zombie_message->set_guid(guid);
+    parameters.WriteToMessage(zombie_message->mutable_prediction_parameters());
+  }
 
   ephemeris_->WriteToMessage(message->mutable_ephemeris());
 
