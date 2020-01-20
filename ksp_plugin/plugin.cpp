@@ -370,20 +370,28 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   CHECK(!initializing_);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
-  auto it = vessels_.find(vessel_guid);
-  if (it == vessels_.end()) {
-    std::tie(it, inserted) =
+  auto vit = vessels_.find(vessel_guid);
+  if (vit == vessels_.end()) {
+    // Restore the zombie parameters if we have some, otherwise use the default.
+    auto prediction_parameters = DefaultPredictionParameters();
+    auto const pit =
+        zombie_prediction_adaptive_step_parameters_.find(vessel_guid);
+    if (pit != zombie_prediction_adaptive_step_parameters_.end()) {
+      prediction_parameters = pit->second;
+      zombie_prediction_adaptive_step_parameters_.erase(pit);
+    }
+    std::tie(vit, inserted) =
         vessels_.emplace(
             vessel_guid,
             make_not_null_unique<Vessel>(vessel_guid,
                                          vessel_name,
                                          parent,
                                          ephemeris_.get(),
-                                         DefaultPredictionParameters()));
+                                         prediction_parameters));
   } else {
     inserted = false;
   }
-  not_null<Vessel*> const vessel = it->second.get();
+  not_null<Vessel*> const vessel = vit->second.get();
   if (vessel->name() != vessel_name) {
     vessel->set_name(vessel_name);
   }
@@ -538,6 +546,8 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
       loaded_vessels_.erase(vessel);
       LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
       renderer_->ClearTargetVesselIf(vessel);
+      zombie_prediction_adaptive_step_parameters_.insert_or_assign(
+          vessel->guid(), vessel->prediction_adaptive_step_parameters());
       it = vessels_.erase(it);
     }
   }
@@ -579,6 +589,8 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
       loaded_vessels_.erase(vessel);
       LOG(INFO) << "Removing grounded vessel " << vessel->ShortDebugString();
       renderer_->ClearTargetVesselIf(vessel);
+      zombie_prediction_adaptive_step_parameters_.insert_or_assign(
+          vessel->guid(), vessel->prediction_adaptive_step_parameters());
       CHECK_EQ(vessels_.erase(vessel->guid()), 1);
     }
   }

@@ -527,6 +527,13 @@ class Plugin {
   VesselSet loaded_vessels_;
   // The vessels that will be kept during the next call to |AdvanceTime|.
   VesselConstSet kept_vessels_;
+  // Contains the adaptive step parameters for the vessel that existed in the
+  // past but are no longer known to the plugin.  Useful to avoid losing the
+  // parameters, e.g., when a vessel hits the ground.
+  // NOTE(phl): This is a leaky map, in the sense that we don't remove deleted
+  // vessels from it.  Hopefully it's small enough that we don't case.
+  std::map<GUID, Ephemeris<Barycentric>::AdaptiveStepParameters>
+  zombie_prediction_adaptive_step_parameters_;
 
   friend class NavballFrameField;
   friend class TestablePlugin;
