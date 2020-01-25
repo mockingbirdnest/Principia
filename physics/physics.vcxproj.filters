@@ -185,12 +185,6 @@
     <ClInclude Include="euler_solver_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="inertia_tensor.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inertia_tensor_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="mechanical_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -279,9 +273,6 @@
     </ClCompile>
     <ClCompile Include="..\numerics\elliptic_integrals.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="inertia_tensor_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="mechanical_system_test.cpp">
       <Filter>Test Files</Filter>
