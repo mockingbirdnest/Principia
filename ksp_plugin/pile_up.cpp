@@ -6,13 +6,9 @@
 #include <map>
 
 #include "base/map_util.hpp"
-#include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
-#include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
-#include "physics/rigid_motion.hpp"
-#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -30,7 +26,6 @@ using geometry::Position;
 using geometry::RigidTransformation;
 using geometry::Velocity;
 using geometry::Wedge;
-using physics::Anticommutator;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::AngularMomentum;
@@ -284,7 +279,7 @@ void PileUp::DeformPileUpIfNeeded() {
     DegreesOfFreedom<ApparentBubble> const apparent_part_degrees_of_freedom =
         apparent_part_rigid_motion({RigidPart::origin, RigidPart::unmoving});
     calculator.Add(apparent_part_degrees_of_freedom,
-                   part->inertia_tensor().mass());
+                   part->mass());
   }
   auto const apparent_centre_of_mass = calculator.Get();
 
@@ -355,7 +350,7 @@ Status PileUp::AdvanceTime(Instant const& t) {
     }
     history_->DeleteFork(psychohistory_);
 
-    auto const a = intrinsic_force_ / inertia_tensor_.mass();
+    auto const a = intrinsic_force_ / mass_;
     // NOTE(phl): |a| used to be captured by copy below, which is the logical
     // thing to do.  However, since it contains an |R3Element|, it must be
     // aligned on a 16-byte boundary.  Unfortunately, VS2015 gets confused and
@@ -442,7 +437,7 @@ DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   for (not_null<Part*> const part : parts) {
     pile_up_intrinsic_force += part->intrinsic_force();
-    calculator.Add(part->degrees_of_freedom(), part->inertia_tensor().mass());
+    calculator.Add(part->degrees_of_freedom(), part->mass());
   }
   pile_up_mass = calculator.weight();
   DegreesOfFreedom<Barycentric> const pile_up_barycentre = calculator.Get();
@@ -481,8 +476,7 @@ DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
     pile_up_angular_momentum +=
         part_angular_momentum +
         Wedge(part_degrees_of_freedom.position() - NonRotatingPileUp::origin,
-              part->inertia_tensor().mass() *
-                  part_degrees_of_freedom.velocity()) *
+              part->mass() * part_degrees_of_freedom.velocity()) *
             Radian;
   }
 

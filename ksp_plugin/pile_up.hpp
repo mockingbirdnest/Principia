@@ -9,13 +9,15 @@
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/inertia_tensor.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/named_quantities.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "serialization/ksp_plugin.pb.h"
@@ -32,6 +34,7 @@ using base::Status;
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Handedness;
+using geometry::InertiaTensor;
 using geometry::Instant;
 using geometry::NonInertial;
 using geometry::Vector;
@@ -39,7 +42,6 @@ using integrators::Integrator;
 using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
-using physics::InertiaTensor;
 using physics::MasslessBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
@@ -157,8 +159,8 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
-  // Computes the angular momentum, inertia tensor and intrinsic force from the
-  // list of parts.  Returns the barycentre of the parts.
+  // Computes the angular momentum, mass, inertia tensor and intrinsic force
+  // from the list of parts.  Returns the barycentre of the parts.
   DegreesOfFreedom<Barycentric> RecomputeFromParts(
       std::list<not_null<Part*>> const& parts);
 
@@ -172,6 +174,7 @@ class PileUp {
 
   // Recomputed by the parts subset on every change.  Not serialized.
   Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_;
+  Mass mass_;
   InertiaTensor<NonRotatingPileUp> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
 
