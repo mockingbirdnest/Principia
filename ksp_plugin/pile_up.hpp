@@ -5,6 +5,7 @@
 #include <future>
 #include <list>
 #include <map>
+#include <memory>
 
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
@@ -16,6 +17,7 @@
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
+#include "physics/mechanical_system.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -43,6 +45,7 @@ using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::MasslessBody;
+using physics::MechanicalSystem;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::AngularMomentum;
@@ -173,9 +176,7 @@ class PileUp {
   Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters_;
 
   // Recomputed by the parts subset on every change.  Not serialized.
-  Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_;
-  Mass mass_;
-  InertiaTensor<NonRotatingPileUp> inertia_tensor_;
+  std::unique_ptr<MechanicalSystem<Barycentric, PileUp>> mechanical_system_;
   Vector<Force, Barycentric> intrinsic_force_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally
