@@ -5,17 +5,21 @@
 #include <future>
 #include <list>
 #include <map>
+#include <memory>
 
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/inertia_tensor.hpp"
 #include "physics/massless_body.hpp"
+#include "physics/mechanical_system.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/named_quantities.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "serialization/ksp_plugin.pb.h"
@@ -32,6 +36,7 @@ using base::Status;
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Handedness;
+using geometry::InertiaTensor;
 using geometry::Instant;
 using geometry::NonInertial;
 using geometry::Vector;
@@ -39,8 +44,8 @@ using integrators::Integrator;
 using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
-using physics::InertiaTensor;
 using physics::MasslessBody;
+using physics::MechanicalSystem;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::AngularMomentum;
@@ -157,10 +162,8 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
-  // Computes the angular momentum, inertia tensor and intrinsic force from the
-  // list of parts.  Returns the barycentre of the parts.
-  DegreesOfFreedom<Barycentric> RecomputeFromParts(
-      std::list<not_null<Part*>> const& parts);
+  // Updates the mechanical system and intrinsic force from the list of parts.
+  void RecomputeFromParts(std::list<not_null<Part*>> const& parts);
 
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
@@ -171,8 +174,8 @@ class PileUp {
   Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters_;
 
   // Recomputed by the parts subset on every change.  Not serialized.
-  Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_;
-  InertiaTensor<NonRotatingPileUp> inertia_tensor_;
+  std::unique_ptr<MechanicalSystem<Barycentric, NonRotatingPileUp>>
+      mechanical_system_;
   Vector<Force, Barycentric> intrinsic_force_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally

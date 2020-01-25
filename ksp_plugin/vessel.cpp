@@ -167,7 +167,7 @@ void Vessel::PrepareHistory(Instant const& t) {
               << " at " << t;
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     ForAllParts([&calculator](Part& part) {
-      calculator.Add(part.degrees_of_freedom(), part.inertia_tensor().mass());
+      calculator.Add(part.degrees_of_freedom(), part.mass());
     });
     CHECK(psychohistory_ == nullptr);
     history_->SetDownsampling(max_dense_intervals, downsampling_tolerance);
@@ -600,7 +600,7 @@ void Vessel::AppendToVesselTrajectory(
       auto& it = its[i];
       CHECK_EQ(at_end_of_part_trajectory, it == ends[i]);
       if (!at_end_of_part_trajectory) {
-        calculator.Add(it->degrees_of_freedom, part->inertia_tensor().mass());
+        calculator.Add(it->degrees_of_freedom, part->mass());
         CHECK_EQ(first_time, it->time);
         ++it;
       }

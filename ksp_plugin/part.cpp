@@ -9,6 +9,7 @@
 #include "base/not_null.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -22,17 +23,24 @@ using base::make_not_null_unique;
 using base::UniqueArray;
 using geometry::R3x3Matrix;
 using physics::RigidTransformation;
+using quantities::Cbrt;
+using quantities::Density;
 using quantities::MomentOfInertia;
+using quantities::Pow;
 using quantities::SIUnit;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
 
 Part::Part(
     PartId const part_id,
     std::string const& name,
+    Mass const& mass,
     InertiaTensor<RigidPart> const& inertia_tensor,
     RigidMotion<RigidPart, Barycentric> const& rigid_motion,
     std::function<void()> deletion_callback)
     : part_id_(part_id),
       name_(name),
+      mass_(mass),
       inertia_tensor_(inertia_tensor),
       rigid_motion_(rigid_motion),
       prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
@@ -52,6 +60,14 @@ Part::~Part() {
 
 PartId Part::part_id() const {
   return part_id_;
+}
+
+void Part::set_mass(Mass const& mass) {
+  mass_ = mass;
+}
+
+Mass const& Part::mass() const {
+  return mass_;
 }
 
 void Part::set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor) {
@@ -168,6 +184,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
                               serialization_index_for_pile_up) const {
   message->set_part_id(part_id_);
   message->set_name(name_);
+  mass_.WriteToMessage(message->mutable_mass());
   inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   if (containing_pile_up_) {
@@ -185,6 +202,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   bool const is_pre_cesàro = message.has_tail_is_authoritative();
   bool const is_pre_fréchet = message.has_mass() &&
                               message.has_degrees_of_freedom();
+  bool const is_pre_frenet = message.has_pre_frenet_inertia_tensor();
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {
@@ -194,15 +212,27 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
-        InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(
+        Mass::ReadFromMessage(message.mass()),
+        MakeWaterSphereInertiaTensor<RigidPart>(
             Mass::ReadFromMessage(message.mass())),
         RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
             degrees_of_freedom),
+        std::move(deletion_callback));
+  } else if (is_pre_frenet) {
+    part = make_not_null_unique<Part>(
+        message.part_id(),
+        message.name(),
+        Mass::ReadFromMessage(message.pre_frenet_inertia_tensor().mass()),
+        InertiaTensor<RigidPart>::ReadFromMessage(
+            message.pre_frenet_inertia_tensor().form()),
+        RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
+            message.rigid_motion()),
         std::move(deletion_callback));
   } else {
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
+        Mass::ReadFromMessage(message.mass()),
         InertiaTensor<RigidPart>::ReadFromMessage(message.inertia_tensor()),
         RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
             message.rigid_motion()),
@@ -253,10 +283,19 @@ std::string Part::ShortDebugString() const {
   return name_ + " (" + hex_id.data.get() + ")";
 }
 
+template<typename Frame>
+InertiaTensor<Frame> MakeWaterSphereInertiaTensor(Mass const& mass) {
+  static constexpr MomentOfInertia zero;
+  static constexpr Density ρ_of_water = 1000 * Kilogram / Pow<3>(Metre);
+  MomentOfInertia const I =
+      Cbrt(9 * Pow<5>(mass) / (250 * Pow<2>(π * ρ_of_water)));
+  return InertiaTensor<Frame>(R3x3Matrix<MomentOfInertia>({I, zero, zero},
+                                                          {zero, I, zero},
+                                                          {zero, zero, I}));
+}
+
 std::ostream& operator<<(std::ostream& out, Part const& part) {
-  return out << "{"
-             << part.part_id() << ", "
-             << part.inertia_tensor().mass() << "}";
+  return out << "{" << part.part_id() << ", " << part.mass() << "}";
 }
 
 }  // namespace internal_part

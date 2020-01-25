@@ -4,7 +4,13 @@
 #include <utility>
 #include <vector>
 
-#include "physics/inertia_tensor.hpp"
+#include "geometry/barycentre_calculator.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/named_quantities.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
+#include "quantities/quantities.hpp"
 #include "physics/rigid_motion.hpp"
 
 namespace principia {
@@ -13,6 +19,7 @@ namespace internal_mechanical_system {
 
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
+using geometry::InertiaTensor;
 using geometry::Frame;
 using geometry::OrthogonalMap;
 using geometry::SymmetricBilinearForm;
@@ -36,24 +43,23 @@ class MechanicalSystem {
   MechanicalSystem() = default;
 
   template<typename BodyFrame>
-  void AddRigidBody(
-      RigidMotion<BodyFrame, InertialFrame> const& motion,
-      Mass const& mass,
-      SymmetricBilinearForm<MomentOfInertia, BodyFrame, Bivector> const&
-          inertia_tensor);
+  void AddRigidBody(RigidMotion<BodyFrame, InertialFrame> const& motion,
+                    Mass const& mass,
+                    InertiaTensor<BodyFrame> const& inertia_tensor);
 
   // The motion of a non-rotating frame whose origin is the centre of mass of
   // the system, and whose axes are those of |InertialFrame|.
   RigidMotion<SystemFrame, InertialFrame> LinearMotion() const;
   // The total mass.
   Mass const& mass() const;
+  // The centre of mass.
+  DegreesOfFreedom<InertialFrame> centre_of_mass() const;
   // The total angular momentum of the system, with respect to the origin of
   // |SystemFrame|, i.e., the centre of mass of the system.
   Bivector<AngularMomentum, SystemFrame> AngularMomentum() const;
   // The moments of inertia of the system, with respect to the origin of
   // |SystemFrame|, i.e., the centre of mass of the system.
-  SymmetricBilinearForm<MomentOfInertia, SystemFrame, Bivector> InertiaTensor()
-      const;
+  InertiaTensor<SystemFrame> InertiaTensor() const;
 
  private:
   BarycentreCalculator<DegreesOfFreedom<InertialFrame>, Mass> centre_of_mass_;

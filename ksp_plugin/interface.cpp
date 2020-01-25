@@ -34,6 +34,7 @@
 #include "base/version.hpp"
 #include "gipfeli/gipfeli.h"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3x3_matrix.hpp"
@@ -46,7 +47,6 @@
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
-#include "physics/inertia_tensor.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"
@@ -76,6 +76,7 @@ using base::UniqueArray;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
+using geometry::InertiaTensor;
 using geometry::NonInertial;
 using geometry::OrthogonalMap;
 using geometry::Quaternion;
@@ -99,7 +100,6 @@ using ksp_plugin::VesselSet;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::FrameField;
-using physics::InertiaTensor;
 using physics::MassiveBody;
 using physics::OblateBody;
 using physics::RelativeDegreesOfFreedom;
@@ -873,7 +873,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
   CHECK_NOTNULL(plugin);
 
   // We build the inertia tensor in the principal axes and then transform it to
-  // World.
+  // RigidPart.
   using PartPrincipalAxes = Frame<serialization::Frame::PhysicsTag,
                                   NonInertial,
                                   Handedness::Left,
@@ -888,22 +888,14 @@ void __cdecl principia__InsertOrKeepLoadedPart(
        moments_of_inertia_in_tonnes.y * to_si_unit,
        moments_of_inertia_in_tonnes.z * to_si_unit});
   InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_princial_axes(
-      mass_in_tonnes * Tonne,
       R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
                                   {zero, moments_of_inertia.y, zero},
-                                  {zero, zero, moments_of_inertia.z}),
-      PartPrincipalAxes::origin);
+                                  {zero, zero, moments_of_inertia.z}));
 
-  Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
+  Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_rigid_part(
       FromWXYZ(principal_axes_rotation));
-  RigidTransformation<PartPrincipalAxes, RigidPart> const
-      part_principal_axes_to_rigid_part(
-          PartPrincipalAxes::origin,
-          RigidPart::origin,
-          principal_axes_to_part.Forget<OrthogonalMap>());
   InertiaTensor<RigidPart> const inertia_tensor_in_rigid_part =
-      inertia_tensor_in_princial_axes.Transform(
-          part_principal_axes_to_rigid_part);
+      principal_axes_to_rigid_part(inertia_tensor_in_princial_axes);
 
   VLOG(1) << "InsertOrKeepLoadedPart: " << name << " " << part_id << " "
           << moments_of_inertia << " " << FromWXYZ(principal_axes_rotation);
@@ -911,13 +903,13 @@ void __cdecl principia__InsertOrKeepLoadedPart(
   plugin->InsertOrKeepLoadedPart(
       part_id,
       name,
+      mass_in_tonnes * Tonne,
       inertia_tensor_in_rigid_part,
       vessel_guid,
       main_body_index,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
-      MakePartRigidMotion(part_world_degrees_of_freedom,
-                          part_rotation,
-                          part_angular_velocity),
+      MakePartRigidMotion(
+          part_world_degrees_of_freedom, part_rotation, part_angular_velocity),
       delta_t * Second);
   return m.Return();
 }

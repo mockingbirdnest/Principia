@@ -145,12 +145,6 @@ message HierarchicalSystem {
   required Subsystem system = 1;
 }
 
-message InertiaTensor {
-  required Quantity mass = 1;
-  required SymmetricBilinearForm form = 2;
-  required Point centre_of_mass = 3;
-}
-
 message KeplerianElements {
   required Frame frame = 1;
   optional double eccentricity = 2;

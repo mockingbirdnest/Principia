@@ -16,6 +16,7 @@
 #include "base/status.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/affine_map.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/point.hpp"
@@ -33,7 +34,6 @@
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/hierarchical_system.hpp"
-#include "physics/inertia_tensor.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rotating_body.hpp"
@@ -54,6 +54,7 @@ using base::ThreadPool;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::Displacement;
+using geometry::InertiaTensor;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Point;
@@ -72,7 +73,6 @@ using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
 using physics::HierarchicalSystem;
-using physics::InertiaTensor;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
@@ -203,6 +203,7 @@ class Plugin {
   virtual void InsertOrKeepLoadedPart(
       PartId part_id,
       std::string const& name,
+      Mass const& mass,
       InertiaTensor<RigidPart> const& inertia_tensor,
       GUID const& vessel_guid,
       Index main_body_index,
@@ -465,6 +466,7 @@ class Plugin {
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
                std::string const& name,
+               Mass const& mass,
                InertiaTensor<RigidPart> const& inertia_tensor,
                RigidMotion<RigidPart, Barycentric> const& rigid_motion);
 

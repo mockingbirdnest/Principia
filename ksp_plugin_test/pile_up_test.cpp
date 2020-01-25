@@ -17,7 +17,6 @@
 #include "integrators/methods.hpp"
 #include "integrators/mock_integrators.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "physics/inertia_tensor.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
@@ -46,7 +45,6 @@ using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::BlanesMoan2002SRKN6B;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using physics::DegreesOfFreedom;
-using physics::InertiaTensor;
 using physics::MassiveBody;
 using physics::MockEphemeris;
 using physics::RigidMotion;
@@ -84,7 +82,7 @@ class TestablePileUp : public PileUp {
   using PileUp::NudgeParts;
 
   Mass const& mass() const {
-    return inertia_tensor_.mass();
+    return mechanical_system_->mass();
   }
 
   Vector<Force, Barycentric> const& intrinsic_force() const {
@@ -109,17 +107,17 @@ class TestablePileUp : public PileUp {
 class PileUpTest : public testing::Test {
  protected:
   PileUpTest()
-      : inertia_tensor1_(
-            InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(mass1_)),
-        inertia_tensor2_(
-            InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(mass2_)),
+      : inertia_tensor1_(MakeWaterSphereInertiaTensor<RigidPart>(mass1_)),
+        inertia_tensor2_(MakeWaterSphereInertiaTensor<RigidPart>(mass2_)),
         p1_(part_id1_,
             "p1",
+            mass1_,
             inertia_tensor1_,
             RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p1_dof_),
             /*deletion_callback=*/nullptr),
         p2_(part_id2_,
             "p2",
+            mass2_,
             inertia_tensor2_,
             RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p2_dof_),
             /*deletion_callback=*/nullptr) {}
@@ -609,7 +607,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   Vector<Acceleration, Barycentric> const a{{1729 * Metre / Pow<2>(Second),
                                              -168 * Metre / Pow<2>(Second),
                                              504 * Metre / Pow<2>(Second)}};
-  p1_.increment_intrinsic_force(p1_.inertia_tensor().mass() * a);
+  p1_.increment_intrinsic_force(p1_.mass() * a);
   pile_up.RecomputeFromParts();
   pile_up.AdvanceTime(astronomy::J2000 + 2 * fixed_step);
   pile_up.NudgeParts();
