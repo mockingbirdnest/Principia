@@ -165,11 +165,17 @@ class Part final {
   std::function<void()> deletion_callback_;
 };
 
+// A factory that creates an inertia tensor for a solid sphere of water having
+// the given mass.  Useful, e.g., for save compatibility.
+template<typename Frame>
+InertiaTensor<Frame> MakeWaterSphereInertiaTensor(Mass const& mass);
+
 std::ostream& operator<<(std::ostream& out, Part const& part);
 
 }  // namespace internal_part
 
 using internal_part::Part;
+using internal_part::MakeWaterSphereInertiaTensor;
 
 }  // namespace ksp_plugin
 

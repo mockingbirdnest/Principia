@@ -4,7 +4,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
-#include "physics/inertia_tensor.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
 
@@ -14,7 +13,6 @@ namespace internal_part {
 
 using geometry::Displacement;
 using geometry::R3x3Matrix;
-using physics::InertiaTensor;
 using quantities::Force;
 using quantities::MomentOfInertia;
 using quantities::SIUnit;
@@ -30,10 +28,10 @@ using testing_utilities::EqualsProto;
 class PartTest : public testing::Test {
  protected:
   PartTest()
-      : inertia_tensor_(
-            InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(mass_)),
+      : inertia_tensor_(MakeWaterSphereInertiaTensor<RigidPart>(mass_)),
         part_(part_id_,
               "part",
+              mass_,
               inertia_tensor_,
               RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
                   degrees_of_freedom_),
@@ -70,8 +68,8 @@ TEST_F(PartTest, Serialization) {
                        serialization_index_for_pile_up.AsStdFunction());
   EXPECT_EQ(part_id_, message.part_id());
   EXPECT_TRUE(message.has_inertia_tensor());
-  EXPECT_TRUE(message.inertia_tensor().has_mass());
-  EXPECT_EQ(7, message.inertia_tensor().mass().magnitude());
+  EXPECT_TRUE(message.has_mass());
+  EXPECT_EQ(7, message.mass().magnitude());
   EXPECT_TRUE(message.has_intrinsic_force());
   EXPECT_TRUE(message.intrinsic_force().has_vector());
   EXPECT_EQ(8, message.intrinsic_force().vector().x().quantity().magnitude());

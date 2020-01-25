@@ -9,6 +9,7 @@
 #include "base/not_null.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -22,8 +23,13 @@ using base::make_not_null_unique;
 using base::UniqueArray;
 using geometry::R3x3Matrix;
 using physics::RigidTransformation;
+using quantities::Cbrt;
+using quantities::Density;
 using quantities::MomentOfInertia;
+using quantities::Pow;
 using quantities::SIUnit;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
 
 Part::Part(
     PartId const part_id,
@@ -206,7 +212,8 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
-        InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(
+        Mass::ReadFromMessage(message.mass()),
+        MakeWaterSphereInertiaTensor<RigidPart>(
             Mass::ReadFromMessage(message.mass())),
         RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
             degrees_of_freedom),
@@ -274,6 +281,17 @@ std::string Part::ShortDebugString() const {
   HexadecimalEncoder</*null_terminated=*/true> encoder;
   auto const hex_id = encoder.Encode(id_bytes);
   return name_ + " (" + hex_id.data.get() + ")";
+}
+
+template<typename Frame>
+InertiaTensor<Frame> MakeWaterSphereInertiaTensor(Mass const& mass) {
+  static constexpr MomentOfInertia zero;
+  static constexpr Density ρ_of_water = 1000 * Kilogram / Pow<3>(Metre);
+  MomentOfInertia const I =
+      Cbrt(9 * Pow<5>(mass) / (250 * Pow<2>(π * ρ_of_water)));
+  return InertiaTensor<Frame>(R3x3Matrix<MomentOfInertia>({I, zero, zero},
+                                                          {zero, I, zero},
+                                                          {zero, zero, I}));
 }
 
 std::ostream& operator<<(std::ostream& out, Part const& part) {

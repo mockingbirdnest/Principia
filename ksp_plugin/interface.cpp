@@ -47,7 +47,6 @@
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
-#include "physics/inertia_tensor.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"

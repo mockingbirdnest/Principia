@@ -39,6 +39,7 @@
 #include "glog/stl_logging.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "ksp_plugin/part.hpp"
 #include "ksp_plugin/part_subsets.hpp"
 #include "physics/apsides.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
@@ -419,10 +420,12 @@ void Plugin::InsertUnloadedPart(
   DegreesOfFreedom<Barycentric> const degrees_of_freedom =
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative;
 
+  Mass const mass = 1 * Kilogram;
   AddPart(vessel,
           part_id,
           name,
-          InertiaTensor<RigidPart>::MakeWaterSphereInertiaTensor(1 * Kilogram),
+          mass,
+          MakeWaterSphereInertiaTensor<RigidPart>(mass),
           RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
               degrees_of_freedom));
   // NOTE(egg): we do not keep the part; it may disappear just as we load, if

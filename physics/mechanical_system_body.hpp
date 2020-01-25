@@ -12,7 +12,6 @@ using geometry::SymmetricProduct;
 using geometry::Vector;
 using geometry::Velocity;
 using geometry::Wedge;
-using physics::Anticommutator;
 using quantities::Momentum;
 using quantities::si::Radian;
 
@@ -21,8 +20,7 @@ template<typename BodyFrame>
 void MechanicalSystem<InertialFrame, SystemFrame>::AddRigidBody(
     RigidMotion<BodyFrame, InertialFrame> const& motion,
     Mass const& mass,
-    SymmetricBilinearForm<MomentOfInertia, BodyFrame, Bivector> const&
-        inertia_tensor) {
+    geometry::InertiaTensor<BodyFrame> const& inertia_tensor) {
   DegreesOfFreedom<InertialFrame> const degrees_of_freedom =
       motion({BodyFrame::origin, BodyFrame::unmoving});
   SymmetricBilinearForm<MomentOfInertia, InertialFrame, Vector> const
@@ -81,7 +79,7 @@ MechanicalSystem<InertialFrame, SystemFrame>::AngularMomentum() const {
 }
 
 template<typename InertialFrame, typename SystemFrame>
-SymmetricBilinearForm<MomentOfInertia, SystemFrame, Bivector>
+InertiaTensor<SystemFrame>
 MechanicalSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
   RigidMotion<InertialFrame, SystemFrame> const to_system_frame =
       LinearMotion().Inverse();
