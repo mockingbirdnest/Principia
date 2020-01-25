@@ -1,10 +1,10 @@
 #pragma once
 
-#include "physics/closed_system.hpp"
+#include "physics/mechanical_system.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_closed_system {
+namespace internal_mechanical_system {
 
 using geometry::Displacement;
 using geometry::OrthogonalMap;
@@ -18,7 +18,7 @@ using quantities::si::Radian;
 
 template<typename InertialFrame, typename SystemFrame>
 template<typename BodyFrame>
-void ClosedSystem<InertialFrame, SystemFrame>::AddRigidBody(
+void MechanicalSystem<InertialFrame, SystemFrame>::AddRigidBody(
     RigidMotion<BodyFrame, InertialFrame> const& motion,
     Mass const& mass,
     SymmetricBilinearForm<MomentOfInertia, BodyFrame, Bivector> const&
@@ -38,7 +38,7 @@ void ClosedSystem<InertialFrame, SystemFrame>::AddRigidBody(
 
 template<typename InertialFrame, typename SystemFrame>
 RigidMotion<SystemFrame, InertialFrame>
-ClosedSystem<InertialFrame, SystemFrame>::LinearMotion() const {
+MechanicalSystem<InertialFrame, SystemFrame>::LinearMotion() const {
   DegreesOfFreedom<InertialFrame> const centre_of_mass = centre_of_mass_.Get();
   return RigidMotion<SystemFrame, InertialFrame>(
       RigidTransformation<SystemFrame, InertialFrame>(
@@ -50,13 +50,13 @@ ClosedSystem<InertialFrame, SystemFrame>::LinearMotion() const {
 }
 
 template<typename InertialFrame, typename SystemFrame>
-Mass const& ClosedSystem<InertialFrame, SystemFrame>::mass() const {
+Mass const& MechanicalSystem<InertialFrame, SystemFrame>::mass() const {
   return centre_of_mass_.weight();
 }
 
 template<typename InertialFrame, typename SystemFrame>
 Bivector<AngularMomentum, SystemFrame>
-ClosedSystem<InertialFrame, SystemFrame>::AngularMomentum() const {
+MechanicalSystem<InertialFrame, SystemFrame>::AngularMomentum() const {
   RigidMotion<InertialFrame, SystemFrame> const to_system_frame =
       LinearMotion().Inverse();
   Bivector<quantities::AngularMomentum, SystemFrame> result =
@@ -76,7 +76,7 @@ ClosedSystem<InertialFrame, SystemFrame>::AngularMomentum() const {
 
 template<typename InertialFrame, typename SystemFrame>
 SymmetricBilinearForm<MomentOfInertia, SystemFrame, Bivector>
-ClosedSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
+MechanicalSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
   RigidMotion<InertialFrame, SystemFrame> const to_system_frame =
       LinearMotion().Inverse();
   SymmetricBilinearForm<MomentOfInertia, SystemFrame, Vector> result =
@@ -91,6 +91,6 @@ ClosedSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
   return result.Anticommutator();
 }
 
-}  // namespace internal_closed_system
+}  // namespace internal_mechanical_system
 }  // namespace physics
 }  // namespace principia
