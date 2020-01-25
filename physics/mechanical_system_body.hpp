@@ -55,6 +55,12 @@ Mass const& MechanicalSystem<InertialFrame, SystemFrame>::mass() const {
 }
 
 template<typename InertialFrame, typename SystemFrame>
+DegreesOfFreedom<InertialFrame>
+MechanicalSystem<InertialFrame, SystemFrame>::centre_of_mass() const {
+  return centre_of_mass_.Get();
+}
+
+template<typename InertialFrame, typename SystemFrame>
 Bivector<AngularMomentum, SystemFrame>
 MechanicalSystem<InertialFrame, SystemFrame>::AngularMomentum() const {
   RigidMotion<InertialFrame, SystemFrame> const to_system_frame =

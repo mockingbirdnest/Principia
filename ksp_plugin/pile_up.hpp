@@ -162,10 +162,8 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
-  // Computes the angular momentum, mass, inertia tensor and intrinsic force
-  // from the list of parts.  Returns the barycentre of the parts.
-  DegreesOfFreedom<Barycentric> RecomputeFromParts(
-      std::list<not_null<Part*>> const& parts);
+  // Updates the mechanical system and intrinsic force from the list of parts.
+  void RecomputeFromParts(std::list<not_null<Part*>> const& parts);
 
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
@@ -176,7 +174,8 @@ class PileUp {
   Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters_;
 
   // Recomputed by the parts subset on every change.  Not serialized.
-  std::unique_ptr<MechanicalSystem<Barycentric, PileUp>> mechanical_system_;
+  std::unique_ptr<MechanicalSystem<Barycentric, NonRotatingPileUp>>
+      mechanical_system_;
   Vector<Force, Barycentric> intrinsic_force_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally

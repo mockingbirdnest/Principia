@@ -47,6 +47,8 @@ class MechanicalSystem {
   RigidMotion<SystemFrame, InertialFrame> LinearMotion() const;
   // The total mass.
   Mass const& mass() const;
+  // The centre of mass.
+  DegreesOfFreedom<InertialFrame> centre_of_mass() const;
   // The total angular momentum of the system, with respect to the origin of
   // |SystemFrame|, i.e., the centre of mass of the system.
   Bivector<AngularMomentum, SystemFrame> AngularMomentum() const;

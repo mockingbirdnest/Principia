@@ -51,16 +51,12 @@ PileUp::PileUp(
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       deletion_callback_(std::move(deletion_callback)) {
   LOG(INFO) << "Constructing pile up at " << this;
-  DegreesOfFreedom<Barycentric> const barycentre = RecomputeFromParts(parts_);
+  RecomputeFromParts(parts_);
+  auto const barycentre = mechanical_system_->centre_of_mass();
   history_->Append(t, barycentre);
 
-  RigidMotion<Barycentric, NonRotatingPileUp> const barycentric_to_pile_up{
-      RigidTransformation<Barycentric, NonRotatingPileUp>{
-          barycentre.position(),
-          NonRotatingPileUp::origin,
-          OrthogonalMap<Barycentric, NonRotatingPileUp>::Identity()},
-      Barycentric::nonrotating,
-      barycentre.velocity()};
+  RigidMotion<Barycentric, NonRotatingPileUp> const barycentric_to_pile_up =
+      mechanical_system_->LinearMotion();
   for (not_null<Part*> const part : parts_) {
     actual_part_rigid_motion_.emplace(
         part,
@@ -351,7 +347,7 @@ Status PileUp::AdvanceTime(Instant const& t) {
     }
     history_->DeleteFork(psychohistory_);
 
-    auto const a = intrinsic_force_ / mass_;
+    auto const a = intrinsic_force_ / mechanical_system_->mass();
     // NOTE(phl): |a| used to be captured by copy below, which is the logical
     // thing to do.  However, since it contains an |R3Element|, it must be
     // aligned on a 16-byte boundary.  Unfortunately, VS2015 gets confused and
@@ -426,12 +422,15 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   }
 }
 
-DegreesOfFreedom<Barycentric> PileUp::RecomputeFromParts(
+void PileUp::RecomputeFromParts(
     std::list<not_null<Part*>> const& parts) {
-
   mechanical_system_ =
-      std::make_unique<MechanicalSystem<Barycentric, PileUp>>();
+      std::make_unique<MechanicalSystem<Barycentric, NonRotatingPileUp>>();
   intrinsic_force_ = Vector<Force, Barycentric>();
+
+  // TODO(phl): We assume that forces are applied at the centre of mass of the
+  // pile-up, but they are really applied at some unknown point of the parts, so
+  // this introduces a torque.
   for (not_null<Part*> const part : parts) {
     intrinsic_force_ += part->intrinsic_force();
     mechanical_system_->AddRigidBody(part->rigid_motion(),
