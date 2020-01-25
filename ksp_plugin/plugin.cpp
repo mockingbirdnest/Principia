@@ -432,6 +432,7 @@ void Plugin::InsertUnloadedPart(
 void Plugin::InsertOrKeepLoadedPart(
     PartId const part_id,
     std::string const& name,
+    Mass const& mass,
     InertiaTensor<RigidPart> const& inertia_tensor,
     GUID const& vessel_guid,
     Index const main_body_index,
