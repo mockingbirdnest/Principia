@@ -49,15 +49,15 @@ message Manoeuvre {
 }
 
 message Part {
-	message PreFrenetInertiaTensor {
-		required Quantity mass = 1;
-		required SymmetricBilinearForm form = 2;
-		required Point centre_of_mass = 3;
-	}
+  message PreFrenetInertiaTensor {
+    required Quantity mass = 1;
+    required SymmetricBilinearForm form = 2;
+    required Point centre_of_mass = 3;
+  }
   required fixed32 part_id = 4;
   required string name = 9;
   optional Quantity mass = 2;  // Pre-Fréchet, re-added in Frenet.
-	optional PreFrenetInertiaTensor
+  optional PreFrenetInertiaTensor
       pre_frenet_inertia_tensor = 10; // Added in Fréchet.
   optional SymmetricBilinearForm inertia_tensor = 12;  // Added in Frenet.
   required Multivector intrinsic_force = 5;
