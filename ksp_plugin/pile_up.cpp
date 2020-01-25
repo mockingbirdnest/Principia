@@ -56,7 +56,7 @@ PileUp::PileUp(
   history_->Append(t, barycentre);
 
   RigidMotion<Barycentric, NonRotatingPileUp> const barycentric_to_pile_up =
-      mechanical_system_->LinearMotion();
+      mechanical_system_->LinearMotion().Inverse();
   for (not_null<Part*> const part : parts_) {
     actual_part_rigid_motion_.emplace(
         part,

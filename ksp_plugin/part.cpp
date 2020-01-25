@@ -178,6 +178,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
                               serialization_index_for_pile_up) const {
   message->set_part_id(part_id_);
   message->set_name(name_);
+  mass_.WriteToMessage(message->mutable_mass());
   inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   if (containing_pile_up_) {
@@ -195,6 +196,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   bool const is_pre_cesàro = message.has_tail_is_authoritative();
   bool const is_pre_fréchet = message.has_mass() &&
                               message.has_degrees_of_freedom();
+  bool const is_pre_frenet = message.has_pre_frenet_inertia_tensor();
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {
@@ -209,10 +211,21 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
         RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
             degrees_of_freedom),
         std::move(deletion_callback));
+  } else if (is_pre_frenet) {
+    part = make_not_null_unique<Part>(
+        message.part_id(),
+        message.name(),
+        Mass::ReadFromMessage(message.pre_frenet_inertia_tensor().mass()),
+        InertiaTensor<RigidPart>::ReadFromMessage(
+            message.pre_frenet_inertia_tensor().form()),
+        RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
+            message.rigid_motion()),
+        std::move(deletion_callback));
   } else {
     part = make_not_null_unique<Part>(
         message.part_id(),
         message.name(),
+        Mass::ReadFromMessage(message.mass()),
         InertiaTensor<RigidPart>::ReadFromMessage(message.inertia_tensor()),
         RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
             message.rigid_motion()),
@@ -264,9 +277,7 @@ std::string Part::ShortDebugString() const {
 }
 
 std::ostream& operator<<(std::ostream& out, Part const& part) {
-  return out << "{"
-             << part.part_id() << ", "
-             << part.inertia_tensor().mass() << "}";
+  return out << "{" << part.part_id() << ", " << part.mass() << "}";
 }
 
 }  // namespace internal_part
