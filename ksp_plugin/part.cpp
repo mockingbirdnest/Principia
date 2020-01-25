@@ -28,11 +28,13 @@ using quantities::SIUnit;
 Part::Part(
     PartId const part_id,
     std::string const& name,
+    Mass const& mass,
     InertiaTensor<RigidPart> const& inertia_tensor,
     RigidMotion<RigidPart, Barycentric> const& rigid_motion,
     std::function<void()> deletion_callback)
     : part_id_(part_id),
       name_(name),
+      mass_(mass),
       inertia_tensor_(inertia_tensor),
       rigid_motion_(rigid_motion),
       prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
@@ -52,6 +54,14 @@ Part::~Part() {
 
 PartId Part::part_id() const {
   return part_id_;
+}
+
+void Part::set_mass(Mass const& mass) {
+  mass_ = mass;
+}
+
+Mass const& Part::mass() const {
+  return mass_;
 }
 
 void Part::set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor) {

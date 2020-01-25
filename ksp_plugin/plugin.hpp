@@ -16,6 +16,7 @@
 #include "base/status.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/affine_map.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/point.hpp"
@@ -465,6 +466,7 @@ class Plugin {
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
                std::string const& name,
+               Mass const& mass,
                InertiaTensor<RigidPart> const& inertia_tensor,
                RigidMotion<RigidPart, Barycentric> const& rigid_motion);
 

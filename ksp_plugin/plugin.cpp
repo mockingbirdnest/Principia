@@ -477,11 +477,13 @@ void Plugin::InsertOrKeepLoadedPart(
     AddPart(vessel,
             part_id,
             name,
+            mass,
             inertia_tensor,
             world_to_barycentric_motion * part_rigid_motion);
   }
   vessel->KeepPart(part_id);
   not_null<Part*> part = vessel->part(part_id);
+  part->set_mass(mass);
   part->set_inertia_tensor(inertia_tensor);
 }
 
@@ -1529,6 +1531,7 @@ void Plugin::ReadCelestialsFromMessages(
 void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
                      std::string const& name,
+                     Mass const& mass,
                      InertiaTensor<RigidPart> const& inertia_tensor,
                      RigidMotion<RigidPart, Barycentric> const& rigid_motion) {
   auto const [it, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
@@ -1538,6 +1541,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
   };
   auto part = make_not_null_unique<Part>(part_id,
                                          name,
+                                         mass,
                                          inertia_tensor,
                                          rigid_motion,
                                          std::move(deletion_callback));
