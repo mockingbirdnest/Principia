@@ -1,5 +1,5 @@
 ﻿
-#include "physics/closed_system.hpp"
+#include "physics/mechanical_system.hpp"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -39,15 +39,15 @@ using ::testing::Eq;
 
 namespace physics {
 
-class ClosedSystemTest : public testing::Test{
+class MechanicalSystemTest : public testing::Test{
  protected:
   using InertialFrame = Frame<enum class InertialTag, Inertial>;
   using SystemFrame = Frame<enum class SystemTag>;
 
-  ClosedSystem<InertialFrame, SystemFrame> system_;
+  MechanicalSystem<InertialFrame, SystemFrame> system_;
 };
 
-TEST_F(ClosedSystemTest, RigidTwoPointMasses) {
+TEST_F(MechanicalSystemTest, RigidTwoPointMasses) {
   // A rigid system of two point masses.
   constexpr Mass m1 = 1 * Kilogram;
   constexpr Mass m2 = 7 * Kilogram;
@@ -114,7 +114,7 @@ TEST_F(ClosedSystemTest, RigidTwoPointMasses) {
               Eq(0.5 * m2 * Pow<2>(v)));
 }
 
-TEST_F(ClosedSystemTest, RigidTwoCubes) {
+TEST_F(MechanicalSystemTest, RigidTwoCubes) {
   // A rigid system of two lead cubes with three-metre-long sides, joined in a
   // cuboid 3 m × 3 m × 6 m.
   constexpr Mass cube_mass = 10 * Tonne;
@@ -167,7 +167,7 @@ TEST_F(ClosedSystemTest, RigidTwoCubes) {
       Eq(system_.InertiaTensor() * Identity<InertialFrame, SystemFrame>()(ω)));
 }
 
-TEST_F(ClosedSystemTest, NonRigidTwoCubes) {
+TEST_F(MechanicalSystemTest, NonRigidTwoCubes) {
   // A system of two counter-rotating lead cubes.
   constexpr Mass cube_mass = 10 * Tonne;
   constexpr Length cube_side = 3 * Metre;

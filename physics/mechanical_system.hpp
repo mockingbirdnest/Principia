@@ -9,7 +9,7 @@
 
 namespace principia {
 namespace physics {
-namespace internal_closed_system {
+namespace internal_mechanical_system {
 
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
@@ -29,11 +29,11 @@ using quantities::MomentOfInertia;
 // is given; |SystemFrame| is a non-rotating frame with the same axes as
 // |InertialFrame| and whose origin is the centre of mass of the system.
 template<typename InertialFrame, typename SystemFrame>
-class ClosedSystem {
+class MechanicalSystem {
  public:
   static_assert(InertialFrame::is_inertial);
 
-  ClosedSystem() = default;
+  MechanicalSystem() = default;
 
   template<typename BodyFrame>
   void AddRigidBody(
@@ -91,11 +91,11 @@ class ClosedSystem {
       sum_of_inertia_tensors_;
 };
 
-}  // namespace internal_closed_system
+}  // namespace internal_mechanical_system
 
-using internal_closed_system::ClosedSystem;
+using internal_mechanical_system::MechanicalSystem;
 
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/closed_system_body.hpp"
+#include "physics/mechanical_system_body.hpp"
