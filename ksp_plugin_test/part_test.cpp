@@ -28,7 +28,7 @@ using testing_utilities::EqualsProto;
 class PartTest : public testing::Test {
  protected:
   PartTest()
-      : inertia_tensor_(MakeWaterSphereInertiaTensor<RigidPart>(mass_)),
+      : inertia_tensor_(MakeWaterSphereInertiaTensor(mass_)),
         part_(part_id_,
               "part",
               mass_,

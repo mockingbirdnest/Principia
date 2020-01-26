@@ -213,8 +213,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
         message.part_id(),
         message.name(),
         Mass::ReadFromMessage(message.mass()),
-        MakeWaterSphereInertiaTensor<RigidPart>(
-            Mass::ReadFromMessage(message.mass())),
+        MakeWaterSphereInertiaTensor(Mass::ReadFromMessage(message.mass())),
         RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
             degrees_of_freedom),
         std::move(deletion_callback));
@@ -283,15 +282,14 @@ std::string Part::ShortDebugString() const {
   return name_ + " (" + hex_id.data.get() + ")";
 }
 
-template<typename Frame>
-InertiaTensor<Frame> MakeWaterSphereInertiaTensor(Mass const& mass) {
+InertiaTensor<RigidPart> MakeWaterSphereInertiaTensor(Mass const& mass) {
   static constexpr MomentOfInertia zero;
   static constexpr Density ρ_of_water = 1000 * Kilogram / Pow<3>(Metre);
   MomentOfInertia const I =
       Cbrt(9 * Pow<5>(mass) / (250 * Pow<2>(π * ρ_of_water)));
-  return InertiaTensor<Frame>(R3x3Matrix<MomentOfInertia>({I, zero, zero},
-                                                          {zero, I, zero},
-                                                          {zero, zero, I}));
+  return InertiaTensor<RigidPart>(R3x3Matrix<MomentOfInertia>({I, zero, zero},
+                                                              {zero, I, zero},
+                                                              {zero, zero, I}));
 }
 
 std::ostream& operator<<(std::ostream& out, Part const& part) {

@@ -107,8 +107,8 @@ class TestablePileUp : public PileUp {
 class PileUpTest : public testing::Test {
  protected:
   PileUpTest()
-      : inertia_tensor1_(MakeWaterSphereInertiaTensor<RigidPart>(mass1_)),
-        inertia_tensor2_(MakeWaterSphereInertiaTensor<RigidPart>(mass2_)),
+      : inertia_tensor1_(MakeWaterSphereInertiaTensor(mass1_)),
+        inertia_tensor2_(MakeWaterSphereInertiaTensor(mass2_)),
         p1_(part_id1_,
             "p1",
             mass1_,

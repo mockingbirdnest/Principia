@@ -167,8 +167,7 @@ class Part final {
 
 // A factory that creates an inertia tensor for a solid sphere of water having
 // the given mass.  Useful, e.g., for save compatibility.
-template<typename Frame>
-InertiaTensor<Frame> MakeWaterSphereInertiaTensor(Mass const& mass);
+InertiaTensor<RigidPart> MakeWaterSphereInertiaTensor(Mass const& mass);
 
 std::ostream& operator<<(std::ostream& out, Part const& part);
 

@@ -425,7 +425,7 @@ void Plugin::InsertUnloadedPart(
           part_id,
           name,
           mass,
-          MakeWaterSphereInertiaTensor<RigidPart>(mass),
+          MakeWaterSphereInertiaTensor(mass),
           RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
               degrees_of_freedom));
   // NOTE(egg): we do not keep the part; it may disappear just as we load, if
