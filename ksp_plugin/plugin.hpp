@@ -53,6 +53,7 @@ using base::Subset;
 using base::ThreadPool;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::InertiaTensor;
 using geometry::Instant;
@@ -82,6 +83,7 @@ using quantities::Force;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Time;
+using quantities::Torque;
 using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;
@@ -211,10 +213,12 @@ class Plugin {
       RigidMotion<RigidPart, World> const& part_rigid_motion,
       Time const& Δt);
 
-  // Calls |increment_intrinsic_force| on the relevant part, which must be in a
-  // loaded vessel.
-  virtual void IncrementPartIntrinsicForce(PartId part_id,
-                                           Vector<Force, World> const& force);
+  // Calls |increment_intrinsic_force| and |increment_intrinsic_torque| on the
+  // relevant part, which must be in a loaded vessel.
+  virtual void IncrementPartIntrinsicForceAndTorque(
+      PartId part_id,
+      Vector<Force, World> const& force,
+      Bivector<Torque, World> const& torque);
 
   // Calls |MakeSingleton| for all parts in loaded vessels, enabling the use of
   // union-find for pile up construction.  This must be called after the calls

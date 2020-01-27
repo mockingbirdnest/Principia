@@ -1124,14 +1124,15 @@ message HasVessel {
   optional Return return = 3;
 }
 
-message IncrementPartIntrinsicForce {
+message IncrementPartIntrinsicForceAndTorque {
   extend Method {
-    optional IncrementPartIntrinsicForce extension = 5114;
+    optional IncrementPartIntrinsicForceAndTorque extension = 5114;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required fixed32 part_id = 2;
     required XYZ force_in_kilonewtons = 3;
+    required XYZ torque_in_kilonewton_metre = 4;
   }
   optional In in = 1;
 }

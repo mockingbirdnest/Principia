@@ -91,6 +91,19 @@ Vector<Force, Barycentric> const& Part::intrinsic_force() const {
   return intrinsic_force_;
 }
 
+void Part::clear_intrinsic_torque() {
+  intrinsic_torque_ = Bivector<Torque, Barycentric>{};
+}
+
+void Part::increment_intrinsic_torque(
+    Bivector<Torque, Barycentric> const& intrinsic_torque) {
+  intrinsic_torque_ += intrinsic_torque;
+}
+
+Bivector<Torque, Barycentric> const& Part::intrinsic_torque() const {
+  return intrinsic_torque_;
+}
+
 void Part::set_rigid_motion(
     RigidMotion<RigidPart, Barycentric> const& rigid_motion) {
   rigid_motion_ = rigid_motion;

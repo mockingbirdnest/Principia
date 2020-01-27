@@ -490,13 +490,18 @@ void Plugin::InsertOrKeepLoadedPart(
   part->set_inertia_tensor(inertia_tensor);
 }
 
-void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
-                                         Vector<Force, World> const& force) {
+void Plugin::IncrementPartIntrinsicForceAndTorque(
+    PartId const part_id,
+    Vector<Force, World> const& force,
+    Bivector<Torque, World> const& torque) {
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
+  not_null<Part*> const part = vessel->part(part_id);
   CHECK(is_loaded(vessel));
-  vessel->part(part_id)->increment_intrinsic_force(
-      renderer_->WorldToBarycentric(PlanetariumRotation())(force));
+  auto const world_to_barycentric = renderer_->WorldToBarycentric(
+      PlanetariumRotation());
+  part->increment_intrinsic_force(world_to_barycentric(force));
+  part->increment_intrinsic_torque(world_to_barycentric(torque));
 }
 
 void Plugin::PrepareToReportCollisions() {
@@ -714,7 +719,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK_GT(t, current_time_);
 
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
-    vessel->ClearAllIntrinsicForces();
+    vessel->ClearAllIntrinsicForcesAndTorques();
   }
 
   current_time_ = t;

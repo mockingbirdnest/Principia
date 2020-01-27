@@ -73,6 +73,7 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using base::SerializeAsBytes;
 using base::UniqueArray;
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
@@ -116,6 +117,7 @@ using quantities::Pow;
 using quantities::Speed;
 using quantities::SIUnit;
 using quantities::Time;
+using quantities::Torque;
 using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
@@ -644,15 +646,18 @@ bool __cdecl principia__HasVessel(Plugin* const plugin,
   return m.Return(plugin->HasVessel(vessel_guid));
 }
 
-void __cdecl principia__IncrementPartIntrinsicForce(
+void __cdecl principia__IncrementPartIntrinsicForceAndTorque(
     Plugin* const plugin,
     PartId const part_id,
-    XYZ const force_in_kilonewtons) {
-  journal::Method<journal::IncrementPartIntrinsicForce> m(
-      {plugin, part_id, force_in_kilonewtons});
-  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForce(
+    XYZ const force_in_kilonewtons,
+    XYZ const torque_in_kilonewton_metre) {
+  journal::Method<journal::IncrementPartIntrinsicForceAndTorque> m(
+      {plugin, part_id, force_in_kilonewtons, torque_in_kilonewton_metre});
+  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForceAndTorque(
       part_id,
-      Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)));
+      Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)),
+      Bivector<Torque, World>(FromXYZ(torque_in_kilonewton_metre) *
+                              Kilo(Newton) * Metre * Radian));
   return m.Return();
 }
 

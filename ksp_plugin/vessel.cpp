@@ -154,9 +154,10 @@ void Vessel::FreeParts() {
   kept_parts_.clear();
 }
 
-void Vessel::ClearAllIntrinsicForces() {
+void Vessel::ClearAllIntrinsicForcesAndTorques() {
   for (auto const& [_, part] : parts_) {
     part->clear_intrinsic_force();
+    part->clear_intrinsic_torque();
   }
 }
 
