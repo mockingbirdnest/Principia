@@ -1126,7 +1126,7 @@ public partial class PrincipiaPluginAdapter
         if (part.rb == null) {
           continue;
         }
-        plugin_.SetPartApparentRigidMotion(
+        plugin_.PartSetApparentRigidMotion(
             part.flightID,
             // TODO(egg): use the centre of mass.
             new QP{q = (XYZ)(Vector3d)part.rb.position,
@@ -1170,16 +1170,17 @@ public partial class PrincipiaPluginAdapter
             continue;
           }
           QP part_actual_degrees_of_freedom =
-              plugin_.GetPartActualDegreesOfFreedom(
+              plugin_.PartGetActualDegreesOfFreedom(
                   part.flightID,
-          new Origin{reference_part_is_at_origin  =
-                         FloatingOrigin.fetch.continuous,
-                     reference_part_is_unmoving =
-                         krakensbane_.FrameVel != Vector3d.zero,
-                     main_body_centre_in_world =
-                         (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
-                     reference_part_id =
-                         FlightGlobals.ActiveVessel.rootPart.flightID});
+                  new Origin{
+                      reference_part_is_at_origin  =
+                                 FloatingOrigin.fetch.continuous,
+                      reference_part_is_unmoving =
+                          krakensbane_.FrameVel != Vector3d.zero,
+                      main_body_centre_in_world =
+                          (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
+                      reference_part_id =
+                          FlightGlobals.ActiveVessel.rootPart.flightID});
           if (part == FlightGlobals.ActiveVessel.rootPart) {
             q_correction_at_root_part =
                 (Vector3d)part_actual_degrees_of_freedom.q - part.rb.position;

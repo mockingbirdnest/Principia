@@ -69,6 +69,7 @@
     <ClCompile Include="interface_future.cpp" />
     <ClCompile Include="interface_iterator.cpp" />
     <ClCompile Include="interface_monitor.cpp" />
+    <ClCompile Include="interface_part.cpp" />
     <ClCompile Include="interface_planetarium.cpp" />
     <ClCompile Include="interface_renderer.cpp" />
     <ClCompile Include="interface_vessel.cpp" />

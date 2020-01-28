@@ -7,11 +7,22 @@
 #include <limits>
 #include <utility>
 
+#include "geometry/named_quantities.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/rotation.hpp"
+#include "physics/ephemeris.hpp"
+#include "physics/rigid_motion.hpp"
+
 namespace principia {
 namespace interface {
 
+using geometry::OrthogonalMap;
+using geometry::RigidTransformation;
+using geometry::Rotation;
 using integrators::AdaptiveStepSizeIntegrator;
+using ksp_plugin::RigidPart;
 using physics::Ephemeris;
+using physics::RigidMotion;
 using quantities::Pow;
 using quantities::SIUnit;
 using quantities::si::Degree;
@@ -509,6 +520,24 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
       LOG(FATAL) << "Unexpected extension " << parameters.extension;
       base::noreturn();
   }
+}
+
+inline RigidMotion<RigidPart, World> MakePartRigidMotion(
+    QP const& part_world_degrees_of_freedom,
+    WXYZ const& part_rotation,
+    XYZ const& part_angular_velocity) {
+  DegreesOfFreedom<World> const part_degrees_of_freedom =
+      FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom);
+  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
+  RigidTransformation<RigidPart, World> const part_rigid_transformation(
+      RigidPart::origin,
+      part_degrees_of_freedom.position(),
+      part_to_world.Forget<OrthogonalMap>());
+  RigidMotion<RigidPart, World> part_rigid_motion(
+      part_rigid_transformation,
+      FromXYZ<AngularVelocity<World>>(part_angular_velocity),
+      part_degrees_of_freedom.velocity());
+  return part_rigid_motion;
 }
 
 }  // namespace interface
