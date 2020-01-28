@@ -70,9 +70,6 @@ class Part final {
   void clear_intrinsic_force();
   void increment_intrinsic_force(
       Vector<Force, Barycentric> const& intrinsic_force);
-  void increment_intrinsic_force(
-      Vector<Force, Barycentric> const& intrinsic_force,
-      Position<Barycentric> const& position);
   Vector<Force, Barycentric> const& intrinsic_force() const;
 
   void clear_intrinsic_torque();
