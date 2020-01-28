@@ -992,7 +992,7 @@ public partial class PrincipiaPluginAdapter
               (XYZ)(Vector3d)(part.rb.rotation * part.rb.angularVelocity),
               Δt);
           if (part_id_to_intrinsic_torque_.ContainsKey(part.flightID)) {
-            plugin_.IncrementPartIntrinsicForce(
+            plugin_.PartIncrementIntrinsicTorque(
                 part.flightID,
                 (XYZ)part_id_to_intrinsic_torque_[part.flightID]);
           }
@@ -1003,16 +1003,16 @@ public partial class PrincipiaPluginAdapter
             // effects where doing an EVA accelerates the vessel, see #1415.
             // Just say no to stupidity.
             if (!(vessel.isEVA && vessel.evaController.OnALadder)) {
-              plugin_.IncrementPartIntrinsicForce(
+              plugin_.PartIncrementIntrinsicForce(
                   part.flightID,
                   (XYZ)part_id_to_intrinsic_force_[part.flightID]);
             }
           }
           if (part_id_to_intrinsic_forces_.ContainsKey(part.flightID)) {
-            foreach (
-                var force in part_id_to_intrinsic_forces_[part.flightID]) {
-              plugin_.IncrementPartIntrinsicForce(part.flightID,
-                                                  (XYZ)force.force);
+            foreach (var force in part_id_to_intrinsic_forces_[part.flightID]) {
+              plugin_.PartIncrementIntrinsicForceWithPosition(part.flightID,
+                                                              (XYZ)force.force,
+                                                              (XYZ)force.pos);
             }
           }
         }
