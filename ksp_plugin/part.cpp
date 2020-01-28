@@ -87,6 +87,12 @@ void Part::increment_intrinsic_force(
   intrinsic_force_ += intrinsic_force;
 }
 
+void Part::increment_intrinsic_force(
+    Vector<Force, Barycentric> const& intrinsic_force,
+    Position<Barycentric> const& position) {
+  // TODO(phl): This creates a torque.
+}
+
 Vector<Force, Barycentric> const& Part::intrinsic_force() const {
   return intrinsic_force_;
 }

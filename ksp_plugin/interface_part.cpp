@@ -25,27 +25,42 @@ using quantities::si::Newton;
 using quantities::si::Metre;
 using quantities::si::Radian;
 
-void __cdecl principia__PartAddIntrinsicForceAndTorque(
+void __cdecl principia__PartIncrementIntrinsicForce(
     Plugin* const plugin,
     PartId const part_id,
-    XYZ const force_in_kilonewtons,
-    XYZ const torque_in_kilonewton_metre) {
-  journal::Method<journal::PartAddIntrinsicForceAndTorque> m(
-      {plugin, part_id, force_in_kilonewtons, torque_in_kilonewton_metre});
-  CHECK_NOTNULL(plugin)->AddPartIntrinsicForceAndTorque(
+    XYZ const force_in_kilonewtons) {
+  journal::Method<journal::PartIncrementIntrinsicForce> m(
+      {plugin, part_id, force_in_kilonewtons});
+  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForce(
       part_id,
-      Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)),
-      Bivector<Torque, World>(FromXYZ(torque_in_kilonewton_metre) *
-                              Kilo(Newton) * Metre * Radian));
+      Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)));
   return m.Return();
 }
 
-void __cdecl principia__PartClearIntrinsicForcesAndTorques(
+void __cdecl principia__PartIncrementIntrinsicForceWithPosition(
     Plugin* const plugin,
-    PartId const part_id) {
-  journal::Method<journal::PartClearIntrinsicForcesAndTorques> m({plugin,
-                                                                  part_id});
-  CHECK_NOTNULL(plugin)->ClearPartIntrinsicForcesAndTorques(part_id);
+    PartId const part_id,
+    XYZ const force_in_kilonewtons,
+    XYZ const position) {
+  journal::Method<journal::PartIncrementIntrinsicForceWithPosition> m(
+      {plugin, part_id, force_in_kilonewtons, position});
+  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForceWithPosition(
+      part_id,
+      Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)),
+      World::origin + Displacement<World>(FromXYZ(position) * Metre));
+  return m.Return();
+}
+
+void __cdecl principia__PartIncrementIntrinsicTorque(
+    Plugin* const plugin,
+    PartId const part_id,
+    XYZ const torque_in_kilonewton_metre) {
+  journal::Method<journal::PartIncrementIntrinsicTorque> m(
+      {plugin, part_id, torque_in_kilonewton_metre});
+  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicTorque(
+      part_id,
+      Bivector<Torque, World>(FromXYZ(torque_in_kilonewton_metre) *
+                              Kilo(Newton) * Metre * Radian));
   return m.Return();
 }
 

@@ -213,15 +213,18 @@ class Plugin {
       RigidMotion<RigidPart, World> const& part_rigid_motion,
       Time const& Δt);
 
-  // Adds the given force and torque to the relevant part, which must be in a
-  // loaded vessel.
-  virtual void AddPartIntrinsicForceAndTorque(
+  // Calls |increment_intrinsic_force| and |increment_intrinsic_torque| on the
+  // relevant part, which must be in a loaded vessel.
+  virtual void IncrementPartIntrinsicForce(
+      PartId part_id,
+      Vector<Force, World> const& force);
+  virtual void IncrementPartIntrinsicForceWithPosition(
       PartId part_id,
       Vector<Force, World> const& force,
+      Position<World> const& position);
+  virtual void IncrementPartIntrinsicTorque(
+      PartId part_id,
       Bivector<Torque, World> const& torque);
-
-  // Removes all the forces and torques from the give part.
-  virtual void ClearPartIntrinsicForcesAndTorques(PartId part_id);
 
   // Calls |MakeSingleton| for all parts in loaded vessels, enabling the use of
   // union-find for pile up construction.  This must be called after the calls

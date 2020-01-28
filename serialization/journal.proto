@@ -213,7 +213,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5164.
+  extensions 5000 to 5999;  // Last used: 5165.
 }
 
 message AdvanceTime {
@@ -1510,26 +1510,39 @@ message NewPlugin {
   optional Return return = 3;
 }
 
-message PartAddIntrinsicForceAndTorque {
+message PartIncrementIntrinsicForce {
 	extend Method {
-		optional PartAddIntrinsicForceAndTorque extension = 5114;
+		optional PartIncrementIntrinsicForce extension = 5114;
 	}
 	message In {
 		required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
 		required fixed32 part_id = 2;
 		required XYZ force_in_kilonewtons = 3;
-		required XYZ torque_in_kilonewton_metre = 4;
 	}
 	optional In in = 1;
 }
 
-message PartClearIntrinsicForcesAndTorques {
+message PartIncrementIntrinsicForceWithPosition {
 	extend Method {
-		optional PartClearIntrinsicForcesAndTorques extension = 5164;
+		optional PartIncrementIntrinsicForceWithPosition extension = 5164;
 	}
 	message In {
 		required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
 		required fixed32 part_id = 2;
+		required XYZ force_in_kilonewtons = 3;
+    required XYZ position = 4;
+	}
+	optional In in = 1;
+}
+
+message PartIncrementIntrinsicTorque {
+	extend Method {
+		optional PartIncrementIntrinsicTorque extension = 5165;
+	}
+	message In {
+		required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+		required fixed32 part_id = 2;
+		required XYZ torque_in_kilonewton_metre = 3;
 	}
 	optional In in = 1;
 }
