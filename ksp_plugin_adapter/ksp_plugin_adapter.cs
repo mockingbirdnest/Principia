@@ -171,14 +171,16 @@ public partial class PrincipiaPluginAdapter
   // because we can test whether we have the part or not. Set in
   // FashionablyLate, before the FlightIntegrator clears the forces.  Used in
   // WaitForFixedUpdate.
-  private readonly Dictionary<uint, Part.ForceHolder[]>
-      part_id_to_intrinsic_forces_ = new Dictionary<uint, Part.ForceHolder[]>();
+  private readonly Dictionary<uint, Vector3d> part_id_to_intrinsic_torque_ =
+      new Dictionary<uint, Vector3d>();
   private readonly Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
       new Dictionary<uint, Vector3d>();
+  private readonly Dictionary<uint, Part.ForceHolder[]>
+      part_id_to_intrinsic_forces_ = new Dictionary<uint, Part.ForceHolder[]>();
 
-  // The degrees of freedom at BetterLateThanNever.  Those are used to insert
-  // new parts with the correct initial state.
-  private readonly Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
+      // The degrees of freedom at BetterLateThanNever.  Those are used to insert
+      // new parts with the correct initial state.
+      private readonly Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
       new Dictionary<uint, QP>();
 
   private readonly MapNodePool map_node_pool_;
@@ -989,6 +991,11 @@ public partial class PrincipiaPluginAdapter
               (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
               (XYZ)(Vector3d)(part.rb.rotation * part.rb.angularVelocity),
               Δt);
+          if (part_id_to_intrinsic_torque_.ContainsKey(part.flightID)) {
+            plugin_.PartIncrementIntrinsicTorque(
+                part.flightID,
+                (XYZ)part_id_to_intrinsic_torque_[part.flightID]);
+          }
           if (part_id_to_intrinsic_force_.ContainsKey(part.flightID)) {
             // When a Kerbal is doing an EVA and holding on to a ladder, the
             // ladder imbues them with their weight at the location of the
@@ -996,16 +1003,16 @@ public partial class PrincipiaPluginAdapter
             // effects where doing an EVA accelerates the vessel, see #1415.
             // Just say no to stupidity.
             if (!(vessel.isEVA && vessel.evaController.OnALadder)) {
-              plugin_.IncrementPartIntrinsicForce(
+              plugin_.PartIncrementIntrinsicForce(
                   part.flightID,
                   (XYZ)part_id_to_intrinsic_force_[part.flightID]);
             }
           }
           if (part_id_to_intrinsic_forces_.ContainsKey(part.flightID)) {
-            foreach (
-                var force in part_id_to_intrinsic_forces_[part.flightID]) {
-              plugin_.IncrementPartIntrinsicForce(part.flightID,
-                                                  (XYZ)force.force);
+            foreach (var force in part_id_to_intrinsic_forces_[part.flightID]) {
+              plugin_.PartIncrementIntrinsicForceWithPosition(part.flightID,
+                                                              (XYZ)force.force,
+                                                              (XYZ)force.pos);
             }
           }
         }
@@ -1126,7 +1133,7 @@ public partial class PrincipiaPluginAdapter
         if (part.rb == null) {
           continue;
         }
-        plugin_.SetPartApparentRigidMotion(
+        plugin_.PartSetApparentRigidMotion(
             part.flightID,
             // TODO(egg): use the centre of mass.
             new QP{q = (XYZ)(Vector3d)part.rb.position,
@@ -1170,16 +1177,17 @@ public partial class PrincipiaPluginAdapter
             continue;
           }
           QP part_actual_degrees_of_freedom =
-              plugin_.GetPartActualDegreesOfFreedom(
+              plugin_.PartGetActualDegreesOfFreedom(
                   part.flightID,
-          new Origin{reference_part_is_at_origin  =
-                         FloatingOrigin.fetch.continuous,
-                     reference_part_is_unmoving =
-                         krakensbane_.FrameVel != Vector3d.zero,
-                     main_body_centre_in_world =
-                         (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
-                     reference_part_id =
-                         FlightGlobals.ActiveVessel.rootPart.flightID});
+                  new Origin{
+                      reference_part_is_at_origin  =
+                                 FloatingOrigin.fetch.continuous,
+                      reference_part_is_unmoving =
+                          krakensbane_.FrameVel != Vector3d.zero,
+                      main_body_centre_in_world =
+                          (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
+                      reference_part_id =
+                          FlightGlobals.ActiveVessel.rootPart.flightID});
           if (part == FlightGlobals.ActiveVessel.rootPart) {
             q_correction_at_root_part =
                 (Vector3d)part_actual_degrees_of_freedom.q - part.rb.position;
@@ -1333,12 +1341,16 @@ public partial class PrincipiaPluginAdapter
         Log.Info("Reinstating stock gravity");
         PhysicsGlobals.GraviticForceMultiplier = 1;
       }
+      part_id_to_intrinsic_torque_.Clear();
       part_id_to_intrinsic_force_.Clear();
       part_id_to_intrinsic_forces_.Clear();
       foreach (Vessel vessel in
                FlightGlobals.Vessels.Where(v => is_manageable(v) &&
                                                 !v.packed)) {
         foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+          if (part.torque != Vector3d.zero) {
+            part_id_to_intrinsic_torque_.Add(part.flightID, part.torque);
+          }
           if (part.force != Vector3d.zero) {
             part_id_to_intrinsic_force_.Add(part.flightID, part.force);
           }

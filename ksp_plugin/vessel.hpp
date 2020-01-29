@@ -95,7 +95,7 @@ class Vessel {
   // called.
   virtual void FreeParts();
 
-  virtual void ClearAllIntrinsicForces();
+  virtual void ClearAllIntrinsicForcesAndTorques();
 
   // If the history is empty, appends a single point to it, computed as the
   // barycentre of all parts.  |parts_| must not be empty.  After this call,

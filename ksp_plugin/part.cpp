@@ -91,6 +91,19 @@ Vector<Force, Barycentric> const& Part::intrinsic_force() const {
   return intrinsic_force_;
 }
 
+void Part::clear_intrinsic_torque() {
+  intrinsic_torque_ = Bivector<Torque, Barycentric>{};
+}
+
+void Part::increment_intrinsic_torque(
+    Bivector<Torque, Barycentric> const& intrinsic_torque) {
+  intrinsic_torque_ += intrinsic_torque;
+}
+
+Bivector<Torque, Barycentric> const& Part::intrinsic_torque() const {
+  return intrinsic_torque_;
+}
+
 void Part::set_rigid_motion(
     RigidMotion<RigidPart, Barycentric> const& rigid_motion) {
   rigid_motion_ = rigid_motion;
@@ -187,6 +200,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
   mass_.WriteToMessage(message->mutable_mass());
   inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
+  intrinsic_torque_.WriteToMessage(message->mutable_intrinsic_torque());
   if (containing_pile_up_) {
     message->set_containing_pile_up(
         serialization_index_for_pile_up(containing_pile_up_.get()));
@@ -202,7 +216,8 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   bool const is_pre_cesàro = message.has_tail_is_authoritative();
   bool const is_pre_fréchet = message.has_mass() &&
                               message.has_degrees_of_freedom();
-  bool const is_pre_frenet = message.has_pre_frenet_inertia_tensor();
+  bool const is_pre_frenet = message.has_pre_frenet_inertia_tensor() &&
+                             !message.has_intrinsic_torque();
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {
@@ -240,6 +255,12 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
 
   part->increment_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
+  if (!is_pre_frenet) {
+    part->increment_intrinsic_torque(
+        Bivector<Torque, Barycentric>::ReadFromMessage(
+            message.intrinsic_torque()));
+  }
+
   if (is_pre_cesàro) {
     auto tail = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.prehistory(),

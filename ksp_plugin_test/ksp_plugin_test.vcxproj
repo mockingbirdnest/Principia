@@ -22,6 +22,7 @@
     <ClCompile Include="..\ksp_plugin\interface_future.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_iterator.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_monitor.cpp" />
+    <ClCompile Include="..\ksp_plugin\interface_part.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_planetarium.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_renderer.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_vessel.cpp" />

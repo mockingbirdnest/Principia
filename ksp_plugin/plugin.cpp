@@ -499,6 +499,28 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
       renderer_->WorldToBarycentric(PlanetariumRotation())(force));
 }
 
+void Plugin::IncrementPartIntrinsicForceWithPosition(
+    PartId const part_id,
+    Vector<Force, World> const& force,
+    Position<World> const& position) {
+  CHECK(!initializing_);
+  not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
+  CHECK(is_loaded(vessel));
+  // TODO(egg): Do something with position.
+  vessel->part(part_id)->increment_intrinsic_force(
+      renderer_->WorldToBarycentric(PlanetariumRotation())(force));
+}
+
+void Plugin::IncrementPartIntrinsicTorque(
+    PartId const part_id,
+    Bivector<Torque, World> const& torque) {
+  CHECK(!initializing_);
+  not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
+  CHECK(is_loaded(vessel));
+  vessel->part(part_id)->increment_intrinsic_torque(
+      renderer_->WorldToBarycentric(PlanetariumRotation())(torque));
+}
+
 void Plugin::PrepareToReportCollisions() {
   for (auto const& [_, vessel] : vessels_) {
     // NOTE(egg): The lifetime requirement on the second argument of
@@ -714,7 +736,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK_GT(t, current_time_);
 
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
-    vessel->ClearAllIntrinsicForces();
+    vessel->ClearAllIntrinsicForcesAndTorques();
   }
 
   current_time_ = t;

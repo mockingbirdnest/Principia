@@ -61,6 +61,7 @@ message Part {
       pre_frenet_inertia_tensor = 10; // Added in Fréchet.
   optional SymmetricBilinearForm inertia_tensor = 12;  // Added in Frenet.
   required Multivector intrinsic_force = 5;
+  optional Multivector intrinsic_torque = 13;  // Added in Frenet.
   optional int32 containing_pile_up = 6;
   optional Pair degrees_of_freedom = 1;  // Pre-Fréchet.
   optional RigidMotion rigid_motion = 11;  // Added in Fréchet.

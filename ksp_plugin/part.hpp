@@ -26,6 +26,7 @@ namespace internal_part {
 
 using base::not_null;
 using base::Subset;
+using geometry::Bivector;
 using geometry::InertiaTensor;
 using geometry::Instant;
 using geometry::Position;
@@ -36,6 +37,7 @@ using physics::DiscreteTrajectory;
 using physics::RigidMotion;
 using quantities::Force;
 using quantities::Mass;
+using quantities::Torque;
 
 // Represents a KSP part.
 class Part final {
@@ -69,6 +71,11 @@ class Part final {
   void increment_intrinsic_force(
       Vector<Force, Barycentric> const& intrinsic_force);
   Vector<Force, Barycentric> const& intrinsic_force() const;
+
+  void clear_intrinsic_torque();
+  void increment_intrinsic_torque(
+      Bivector<Torque, Barycentric> const& intrinsic_torque);
+  Bivector<Torque, Barycentric> const& intrinsic_torque() const;
 
   // Sets or returns the rigid motion of the part.
   void set_rigid_motion(
@@ -137,6 +144,7 @@ class Part final {
   Mass mass_;
   InertiaTensor<RigidPart> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
+  Bivector<Torque, Barycentric> intrinsic_torque_;
 
   std::shared_ptr<PileUp> containing_pile_up_;
 

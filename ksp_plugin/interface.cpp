@@ -48,7 +48,6 @@
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/kepler_orbit.hpp"
-#include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/parser.hpp"
@@ -108,7 +107,6 @@ using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::Acceleration;
 using quantities::DebugString;
-using quantities::Force;
 using quantities::Mass;
 using quantities::MomentOfInertia;
 using quantities::ParseQuantity;
@@ -119,9 +117,7 @@ using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
-using quantities::si::Kilo;
 using quantities::si::Metre;
-using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
 using quantities::si::Tonne;
@@ -277,24 +273,6 @@ serialization::GravityModel::Body MakeGravityModel(
             << Fingerprint2011(SerializeAsBytes(gravity_model).get())
             << " for " << gravity_model.name();
   return gravity_model;
-}
-
-RigidMotion<RigidPart, World> MakePartRigidMotion(
-    QP const& part_world_degrees_of_freedom,
-    WXYZ const& part_rotation,
-    XYZ const& part_angular_velocity) {
-  DegreesOfFreedom<World> const part_degrees_of_freedom =
-      FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom);
-  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
-  RigidTransformation<RigidPart, World> const part_rigid_transformation(
-      RigidPart::origin,
-      part_degrees_of_freedom.position(),
-      part_to_world.Forget<OrthogonalMap>());
-  RigidMotion<RigidPart, World> part_rigid_motion(
-      part_rigid_transformation,
-      FromXYZ<AngularVelocity<World>>(part_angular_velocity),
-      part_degrees_of_freedom.velocity());
-  return part_rigid_motion;
 }
 
 std::unique_ptr<google::compression::Compressor> NewCompressor(
@@ -577,25 +555,6 @@ int __cdecl principia__GetBufferedLogging() {
   return m.Return(FLAGS_logbuflevel);
 }
 
-QP __cdecl principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
-                                                    PartId const part_id,
-                                                    Origin const origin) {
-  journal::Method<journal::GetPartActualDegreesOfFreedom> m(
-      {plugin, part_id, origin});
-  CHECK_NOTNULL(plugin);
-  return m.Return(ToQP(
-      plugin->GetPartActualDegreesOfFreedom(
-          part_id,
-          plugin->BarycentricToWorld(
-              origin.reference_part_is_unmoving,
-              origin.reference_part_id,
-              origin.reference_part_is_at_origin
-                  ? std::nullopt
-                  : std::make_optional(
-                        FromXYZ<Position<World>>(
-                            origin.main_body_centre_in_world))))));
-}
-
 int __cdecl principia__GetStderrLogging() {
   journal::Method<journal::GetStderrLogging> m;
   return m.Return(FLAGS_stderrthreshold);
@@ -642,18 +601,6 @@ bool __cdecl principia__HasVessel(Plugin* const plugin,
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(vessel_guid);
   return m.Return(plugin->HasVessel(vessel_guid));
-}
-
-void __cdecl principia__IncrementPartIntrinsicForce(
-    Plugin* const plugin,
-    PartId const part_id,
-    XYZ const force_in_kilonewtons) {
-  journal::Method<journal::IncrementPartIntrinsicForce> m(
-      {plugin, part_id, force_in_kilonewtons});
-  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForce(
-      part_id,
-      Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)));
-  return m.Return();
 }
 
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
@@ -1093,28 +1040,6 @@ void __cdecl principia__SetMainBody(Plugin* const plugin, int const index) {
   journal::Method<journal::SetMainBody> m({plugin, index});
   CHECK_NOTNULL(plugin);
   plugin->SetMainBody(index);
-  return m.Return();
-}
-
-void __cdecl principia__SetPartApparentRigidMotion(
-    Plugin* const plugin,
-    PartId const part_id,
-    QP const degrees_of_freedom,
-    WXYZ const rotation,
-    XYZ const angular_velocity,
-    QP const main_body_degrees_of_freedom) {
-  journal::Method<journal::SetPartApparentRigidMotion> m(
-      {plugin,
-       part_id,
-       degrees_of_freedom,
-       rotation,
-       angular_velocity,
-       main_body_degrees_of_freedom});
-  CHECK_NOTNULL(plugin);
-  plugin->SetPartApparentRigidMotion(
-      part_id,
-      MakePartRigidMotion(degrees_of_freedom, rotation, angular_velocity),
-      FromQP<DegreesOfFreedom<World>>(main_body_degrees_of_freedom));
   return m.Return();
 }
 
