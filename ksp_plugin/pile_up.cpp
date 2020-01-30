@@ -30,6 +30,7 @@ using geometry::Wedge;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::AngularMomentum;
+using quantities::Time;
 using quantities::si::Radian;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -51,18 +52,25 @@ PileUp::PileUp(
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       deletion_callback_(std::move(deletion_callback)) {
   LOG(INFO) << "Constructing pile up at " << this;
-  RecomputeFromParts(parts_);
-  auto const barycentre = mechanical_system_->centre_of_mass();
+  MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
+  for (not_null<Part*> const part : parts_) {
+    mechanical_system.AddRigidBody(
+        part->rigid_motion(), part->mass(), part->inertia_tensor());
+  }
+  auto const barycentre = mechanical_system.centre_of_mass();
   history_->Append(t, barycentre);
 
+  angular_momentum_ = mechanical_system.AngularMomentum();
+
   RigidMotion<Barycentric, NonRotatingPileUp> const barycentric_to_pile_up =
-      mechanical_system_->LinearMotion().Inverse();
+      mechanical_system.LinearMotion().Inverse();
   for (not_null<Part*> const part : parts_) {
     actual_part_rigid_motion_.emplace(
-        part,
-        barycentric_to_pile_up * part->rigid_motion());
+        part, barycentric_to_pile_up * part->rigid_motion());
   }
   psychohistory_ = history_->NewForkAtLast();
+
+  RecomputeFromParts();
 }
 
 PileUp::~PileUp() {
@@ -97,7 +105,23 @@ Status PileUp::DeformAndAdvanceTime(Instant const& t) {
 }
 
 void PileUp::RecomputeFromParts() {
-  RecomputeFromParts(parts_);
+  mass_ = Mass();
+  intrinsic_force_ = Vector<Force, Barycentric>();
+  intrinsic_torque_ = Bivector<Torque, NonRotatingPileUp>();
+
+  for (not_null<Part*> const part : parts_) {
+    mass_ += part->mass();
+    intrinsic_force_ += part->intrinsic_force();
+    intrinsic_torque_ +=
+        Wedge(actual_part_rigid_motion_[part].rigid_transformation()(
+                  RigidPart::origin) -
+                  NonRotatingPileUp::origin,
+              Identity<Barycentric, NonRotatingPileUp>()(
+                  part->intrinsic_force())) *
+            Radian +
+        Identity<Barycentric, NonRotatingPileUp>()(part->intrinsic_torque());
+    // TODO(egg): compute the change in angular momentum due to mass loss.
+  }
 }
 
 void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
@@ -109,14 +133,14 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   for (auto const& pair : actual_part_rigid_motion_) {
     auto const part = pair.first;
     auto const& rigid_motion = pair.second;
-    rigid_motion.WriteToMessage(&(
-        (*message->mutable_actual_part_rigid_motion())[part->part_id()]));
+    rigid_motion.WriteToMessage(
+        &((*message->mutable_actual_part_rigid_motion())[part->part_id()]));
   }
   for (auto const& pair : apparent_part_rigid_motion_) {
     auto const part = pair.first;
     auto const& rigid_motion = pair.second;
-    rigid_motion.WriteToMessage(&(
-        (*message->mutable_apparent_part_rigid_motion())[part->part_id()]));
+    rigid_motion.WriteToMessage(
+        &((*message->mutable_apparent_part_rigid_motion())[part->part_id()]));
   }
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
@@ -142,30 +166,27 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
     if (is_pre_cartan) {
-      pile_up = std::unique_ptr<PileUp>(
-          new PileUp(std::move(parts),
-                     DefaultPsychohistoryParameters(),
-                     DefaultHistoryParameters(),
-                     DiscreteTrajectory<Barycentric>::ReadFromMessage(
-                         message.history(),
-                         /*forks=*/{}),
-                     /*psychohistory=*/nullptr,
-                     ephemeris,
-                     std::move(deletion_callback)));
+      pile_up = std::unique_ptr<PileUp>(new PileUp(
+          std::move(parts),
+          DefaultPsychohistoryParameters(),
+          DefaultHistoryParameters(),
+          DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
+                                                           /*forks=*/{}),
+          /*psychohistory=*/nullptr,
+          ephemeris,
+          std::move(deletion_callback)));
     } else {
-      pile_up = std::unique_ptr<PileUp>(
-          new PileUp(
-              std::move(parts),
-              Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-                  message.adaptive_step_parameters()),
-              Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
-                  message.fixed_step_parameters()),
-              DiscreteTrajectory<Barycentric>::ReadFromMessage(
-                  message.history(),
-                  /*forks=*/{}),
-              /*psychohistory=*/nullptr,
-              ephemeris,
-              std::move(deletion_callback)));
+      pile_up = std::unique_ptr<PileUp>(new PileUp(
+          std::move(parts),
+          Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+              message.adaptive_step_parameters()),
+          Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+              message.fixed_step_parameters()),
+          DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
+                                                           /*forks=*/{}),
+          /*psychohistory=*/nullptr,
+          ephemeris,
+          std::move(deletion_callback)));
     }
     // Fork a psychohistory for compatibility if there is a non-authoritative
     // point.
@@ -183,17 +204,16 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history(),
             /*forks=*/{&psychohistory});
-    pile_up = std::unique_ptr<PileUp>(
-        new PileUp(
-            std::move(parts),
-            Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-                message.adaptive_step_parameters()),
-            Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
-                message.fixed_step_parameters()),
-            std::move(history),
-            psychohistory,
-            ephemeris,
-            std::move(deletion_callback)));
+    pile_up = std::unique_ptr<PileUp>(new PileUp(
+        std::move(parts),
+        Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+            message.adaptive_step_parameters()),
+        Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+            message.fixed_step_parameters()),
+        std::move(history),
+        psychohistory,
+        ephemeris,
+        std::move(deletion_callback)));
   }
 
   if (is_pre_frege) {
@@ -228,8 +248,9 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
       std::uint32_t const part_id = pair.first;
       serialization::RigidMotion const& rigid_motion = pair.second;
       pile_up->apparent_part_rigid_motion_.emplace(
-        part_id_to_part(part_id),
-        RigidMotion<RigidPart, ApparentBubble>::ReadFromMessage(rigid_motion));
+          part_id_to_part(part_id),
+          RigidMotion<RigidPart, ApparentBubble>::ReadFromMessage(
+              rigid_motion));
     }
   }
   pile_up->RecomputeFromParts();
@@ -275,8 +296,7 @@ void PileUp::DeformPileUpIfNeeded() {
     auto const& apparent_part_rigid_motion = pair.second;
     DegreesOfFreedom<ApparentBubble> const apparent_part_degrees_of_freedom =
         apparent_part_rigid_motion({RigidPart::origin, RigidPart::unmoving});
-    calculator.Add(apparent_part_degrees_of_freedom,
-                   part->mass());
+    calculator.Add(apparent_part_degrees_of_freedom, part->mass());
   }
   auto const apparent_centre_of_mass = calculator.Get();
 
@@ -299,8 +319,7 @@ void PileUp::DeformPileUpIfNeeded() {
     auto const part = pair.first;
     auto const& apparent_part_rigid_motion = pair.second;
     actual_part_rigid_motion_.emplace(
-        part,
-        apparent_bubble_to_pile_up_motion * apparent_part_rigid_motion);
+        part, apparent_bubble_to_pile_up_motion * apparent_part_rigid_motion);
   }
   apparent_part_rigid_motion_.clear();
 }
@@ -309,6 +328,11 @@ Status PileUp::AdvanceTime(Instant const& t) {
   CHECK_NOTNULL(psychohistory_);
 
   Status status;
+
+  Time const Δt = t - psychohistory_->back().time;
+  angular_momentum_ += intrinsic_torque_ * Δt;
+  // TODO(egg): add the mass loss contribution to angular_momentum_.
+
   auto const history_last = --history_->end();
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
@@ -325,13 +349,12 @@ Status PileUp::AdvanceTime(Instant const& t) {
     if (history_->back().time < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
       // fixed-step integration.
-      status.Update(
-          ephemeris_->FlowWithAdaptiveStep(
-              psychohistory_,
-              Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-              t,
-              adaptive_step_parameters_,
-              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps));
+      status.Update(ephemeris_->FlowWithAdaptiveStep(
+          psychohistory_,
+          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+          t,
+          adaptive_step_parameters_,
+          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps));
     }
   } else {
     // Destroy the fixed instance, it wouldn't be correct to use it the next
@@ -347,7 +370,7 @@ Status PileUp::AdvanceTime(Instant const& t) {
     }
     history_->DeleteFork(psychohistory_);
 
-    auto const a = intrinsic_force_ / mechanical_system_->mass();
+    auto const a = intrinsic_force_ / mass_;
     // NOTE(phl): |a| used to be captured by copy below, which is the logical
     // thing to do.  However, since it contains an |R3Element|, it must be
     // aligned on a 16-byte boundary.  Unfortunately, VS2015 gets confused and
@@ -355,11 +378,11 @@ Status PileUp::AdvanceTime(Instant const& t) {
     // addressing fault.  With a reference, VS2015 knows what to do.
     auto const intrinsic_acceleration = [&a](Instant const& t) { return a; };
     status = ephemeris_->FlowWithAdaptiveStep(
-                 history_.get(),
-                 intrinsic_acceleration,
-                 t,
-                 adaptive_step_parameters_,
-                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
+        history_.get(),
+        intrinsic_acceleration,
+        t,
+        adaptive_step_parameters_,
+        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
     psychohistory_ = history_->NewForkAtLast();
   }
 
@@ -383,8 +406,7 @@ Status PileUp::AdvanceTime(Instant const& t) {
 }
 
 void PileUp::NudgeParts() const {
-  auto const actual_centre_of_mass =
-      psychohistory_->back().degrees_of_freedom;
+  auto const actual_centre_of_mass = psychohistory_->back().degrees_of_freedom;
 
   RigidMotion<Barycentric, NonRotatingPileUp> const barycentric_to_pile_up{
       RigidTransformation<Barycentric, NonRotatingPileUp>{
@@ -414,35 +436,16 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
     DegreesOfFreedom<NonRotatingPileUp> const actual_part_degrees_of_freedom =
-        FindOrDie(actual_part_rigid_motion_, part)({RigidPart::origin,
-                                                    RigidPart::unmoving});
+        FindOrDie(actual_part_rigid_motion_,
+                  part)({RigidPart::origin, RigidPart::unmoving});
     (static_cast<Part*>(part)->*append_to_part_trajectory)(
-        it->time,
-        pile_up_to_barycentric(actual_part_degrees_of_freedom));
-  }
-}
-
-void PileUp::RecomputeFromParts(
-    std::list<not_null<Part*>> const& parts) {
-  mechanical_system_ =
-      std::make_unique<MechanicalSystem<Barycentric, NonRotatingPileUp>>();
-  intrinsic_force_ = Vector<Force, Barycentric>();
-
-  // TODO(phl): We assume that forces are applied at the centre of mass of the
-  // pile-up, but they are really applied at some unknown point of the parts, so
-  // this introduces a torque.
-  for (not_null<Part*> const part : parts) {
-    intrinsic_force_ += part->intrinsic_force();
-    mechanical_system_->AddRigidBody(part->rigid_motion(),
-                                     part->mass(),
-                                     part->inertia_tensor());
+        it->time, pile_up_to_barycentric(actual_part_degrees_of_freedom));
   }
 }
 
 PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
                            std::future<Status> future)
-    : pile_up(pile_up),
-      future(std::move(future)) {}
+    : pile_up(pile_up), future(std::move(future)) {}
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin
