@@ -1511,72 +1511,72 @@ message NewPlugin {
 }
 
 message PartIncrementIntrinsicForce {
-	extend Method {
-		optional PartIncrementIntrinsicForce extension = 5114;
-	}
-	message In {
-		required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-		required fixed32 part_id = 2;
-		required XYZ force_in_kilonewtons = 3;
-	}
-	optional In in = 1;
+  extend Method {
+    optional PartIncrementIntrinsicForce extension = 5114;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required XYZ force_in_kilonewtons = 3;
+  }
+  optional In in = 1;
 }
 
 message PartIncrementIntrinsicForceWithPosition {
-	extend Method {
-		optional PartIncrementIntrinsicForceWithPosition extension = 5164;
-	}
-	message In {
-		required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-		required fixed32 part_id = 2;
-		required XYZ force_in_kilonewtons = 3;
+  extend Method {
+    optional PartIncrementIntrinsicForceWithPosition extension = 5164;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required XYZ force_in_kilonewtons = 3;
     required XYZ position = 4;
-	}
-	optional In in = 1;
+  }
+  optional In in = 1;
 }
 
 message PartIncrementIntrinsicTorque {
-	extend Method {
-		optional PartIncrementIntrinsicTorque extension = 5165;
-	}
-	message In {
-		required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-		required fixed32 part_id = 2;
-		required XYZ torque_in_kilonewton_metre = 3;
-	}
-	optional In in = 1;
+  extend Method {
+    optional PartIncrementIntrinsicTorque extension = 5165;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required XYZ torque_in_kilonewton_metre = 3;
+  }
+  optional In in = 1;
 }
 
 message PartGetActualDegreesOfFreedom {
-	extend Method {
-		optional PartGetActualDegreesOfFreedom extension = 5116;
-	}
-	message In {
-		required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-		(is_subject) = true];
-		required fixed32 part_id = 2;
-		required Origin origin = 4;
-	}
-	message Return {
-		required QP result = 1;
-	}
-	optional In in = 1;
-	optional Return return = 3;
+  extend Method {
+    optional PartGetActualDegreesOfFreedom extension = 5116;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+    (is_subject) = true];
+    required fixed32 part_id = 2;
+    required Origin origin = 4;
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message PartSetApparentRigidMotion {
-	extend Method {
-		optional PartSetApparentRigidMotion extension = 5115;
-	}
-	message In {
-		required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-		required fixed32 part_id = 2;
-		required QP degrees_of_freedom = 3;
-		required WXYZ rotation = 5;
-		required XYZ angular_velocity = 6;
-		required QP main_body_degrees_of_freedom = 4;
-	}
-	optional In in = 1;
+  extend Method {
+    optional PartSetApparentRigidMotion extension = 5115;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required QP degrees_of_freedom = 3;
+    required WXYZ rotation = 5;
+    required XYZ angular_velocity = 6;
+    required QP main_body_degrees_of_freedom = 4;
+  }
+  optional In in = 1;
 }
 
 message PlanetariumCreate {
