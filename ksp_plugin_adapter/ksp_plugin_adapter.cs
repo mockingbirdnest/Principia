@@ -1014,7 +1014,7 @@ public partial class PrincipiaPluginAdapter
                   part.flightID,
                   (XYZ)force.force,
                   (XYZ)force.pos,
-                  part_id_to_degrees_of_freedom_[part.flightID].q);
+                  degrees_of_freedom.q);
             }
           }
         }
