@@ -216,8 +216,9 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   bool const is_pre_cesàro = message.has_tail_is_authoritative();
   bool const is_pre_fréchet = message.has_mass() &&
                               message.has_degrees_of_freedom();
-  bool const is_pre_frenet = message.has_pre_frenet_inertia_tensor() &&
-                             !message.has_intrinsic_torque();
+  bool const is_pre_frenet =
+      is_pre_fréchet || (message.has_pre_frenet_inertia_tensor() &&
+                         !message.has_intrinsic_torque());
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {
