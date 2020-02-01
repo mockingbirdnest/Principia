@@ -63,6 +63,7 @@ PartId Part::part_id() const {
 }
 
 void Part::set_mass(Mass const& mass) {
+  mass_change_ = mass - mass_;
   mass_ = mass;
 }
 
@@ -76,6 +77,10 @@ void Part::set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor) {
 
 InertiaTensor<RigidPart> const& Part::inertia_tensor() const {
   return inertia_tensor_;
+}
+
+Mass const& Part::mass_change() const {
+  return mass_change_;
 }
 
 void Part::clear_intrinsic_force() {

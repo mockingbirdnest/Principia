@@ -108,19 +108,35 @@ void PileUp::RecomputeFromParts() {
   mass_ = Mass();
   intrinsic_force_ = Vector<Force, Barycentric>();
   intrinsic_torque_ = Bivector<Torque, NonRotatingPileUp>();
+  angular_momentum_change_ = Bivector<AngularMomentum, NonRotatingPileUp>();
 
   for (not_null<Part*> const part : parts_) {
     mass_ += part->mass();
+
     intrinsic_force_ += part->intrinsic_force();
+
+    RigidMotion<RigidPart, NonRotatingPileUp> const part_motion =
+        actual_part_rigid_motion_[part];
+    DegreesOfFreedom<NonRotatingPileUp> const part_dof =
+        part_motion({RigidPart::origin, RigidPart::unmoving});
     intrinsic_torque_ +=
-        Wedge(actual_part_rigid_motion_[part].rigid_transformation()(
-                  RigidPart::origin) -
-                  NonRotatingPileUp::origin,
+        Wedge(part_dof.position() - NonRotatingPileUp::origin,
               Identity<Barycentric, NonRotatingPileUp>()(
                   part->intrinsic_force())) *
             Radian +
         Identity<Barycentric, NonRotatingPileUp>()(part->intrinsic_torque());
-    // TODO(egg): compute the change in angular momentum due to mass loss.
+
+    AngularVelocity<NonRotatingPileUp> const part_angular_velocity =
+        part_motion.Inverse().angular_velocity_of_to_frame();
+    InertiaTensor<NonRotatingPileUp> part_inertia_tensor =
+        part_motion.orthogonal_map()(part->inertia_tensor());
+    // KSP makes the inertia tensor vary proportionally to the mass; this
+    // corresponds to the body uniformly changing density.
+    angular_momentum_change_ +=
+        Wedge(part_dof.position() - NonRotatingPileUp::origin,
+              part->mass_change() * part_dof.velocity()) * Radian +
+        part->mass_change() / part->mass() *
+            (part_inertia_tensor * part_angular_velocity);
   }
 }
 
@@ -330,8 +346,8 @@ Status PileUp::AdvanceTime(Instant const& t) {
   Status status;
 
   Time const Δt = t - psychohistory_->back().time;
+  angular_momentum_ += angular_momentum_change_;
   angular_momentum_ += intrinsic_torque_ * Δt;
-  // TODO(egg): add the mass loss contribution to angular_momentum_.
 
   auto const history_last = --history_->end();
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {

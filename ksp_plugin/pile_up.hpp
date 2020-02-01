@@ -175,6 +175,11 @@ class PileUp {
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
   Bivector<Torque, NonRotatingPileUp> intrinsic_torque_;
+  // The angular momentum change arising from mass loss (or, more generally,
+  // mass changes); consistently with the native behaviour of the game, we
+  // assume that lost mass carries angular momentum in such a way that the
+  // angular velocity of a part remains constant.
+  Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_change_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally
   // integrated with a fixed step using |fixed_instance_|, except in the

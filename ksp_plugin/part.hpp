@@ -64,6 +64,9 @@ class Part final {
   void set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor);
   InertiaTensor<RigidPart> const& inertia_tensor() const;
 
+  // The difference between successive values passed to |set_mass()|.
+  Mass const& mass_change() const;
+
   // Clears, increments or returns the intrinsic force exerted on the part by
   // its engines (or a tractor beam).
   // TODO(phl): Keep track of the point where the force is applied.
@@ -142,6 +145,7 @@ class Part final {
   PartId const part_id_;
   std::string const name_;
   Mass mass_;
+  Mass mass_change_;
   InertiaTensor<RigidPart> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
   Bivector<Torque, Barycentric> intrinsic_torque_;
