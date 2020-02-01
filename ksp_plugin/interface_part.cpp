@@ -44,7 +44,7 @@ void __cdecl principia__PartIncrementIntrinsicForceWithPosition(
     XYZ const position,
     XYZ const part_position) {
   journal::Method<journal::PartIncrementIntrinsicForceWithPosition> m(
-      {plugin, part_id, force_in_kilonewtons, position});
+      {plugin, part_id, force_in_kilonewtons, position, part_position});
   CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForceWithPosition(
       part_id,
       Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)),

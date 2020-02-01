@@ -116,14 +116,13 @@ void PileUp::RecomputeFromParts() {
     intrinsic_force_ += part->intrinsic_force();
 
     RigidMotion<RigidPart, NonRotatingPileUp> const part_motion =
-        actual_part_rigid_motion_[part];
+        FindOrDie(actual_part_rigid_motion_, part);
     DegreesOfFreedom<NonRotatingPileUp> const part_dof =
         part_motion({RigidPart::origin, RigidPart::unmoving});
     intrinsic_torque_ +=
         Wedge(part_dof.position() - NonRotatingPileUp::origin,
               Identity<Barycentric, NonRotatingPileUp>()(
-                  part->intrinsic_force())) *
-            Radian +
+                  part->intrinsic_force())) * Radian +
         Identity<Barycentric, NonRotatingPileUp>()(part->intrinsic_torque());
 
     AngularVelocity<NonRotatingPileUp> const part_angular_velocity =
