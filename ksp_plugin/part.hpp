@@ -27,6 +27,7 @@ namespace internal_part {
 using base::not_null;
 using base::Subset;
 using geometry::Bivector;
+using geometry::Displacement;
 using geometry::InertiaTensor;
 using geometry::Instant;
 using geometry::Position;
@@ -64,18 +65,24 @@ class Part final {
   void set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor);
   InertiaTensor<RigidPart> const& inertia_tensor() const;
 
+  // The difference between successive values passed to |set_mass()|.
+  Mass const& mass_change() const;
+
   // Clears, increments or returns the intrinsic force exerted on the part by
   // its engines (or a tractor beam).
-  // TODO(phl): Keep track of the point where the force is applied.
   void clear_intrinsic_force();
-  void increment_intrinsic_force(
+  void apply_intrinsic_force(
       Vector<Force, Barycentric> const& intrinsic_force);
   Vector<Force, Barycentric> const& intrinsic_force() const;
 
   void clear_intrinsic_torque();
-  void increment_intrinsic_torque(
+  void apply_intrinsic_torque(
       Bivector<Torque, Barycentric> const& intrinsic_torque);
   Bivector<Torque, Barycentric> const& intrinsic_torque() const;
+
+  void ApplyIntrinsicForceWithLeverArm(
+      Vector<Force, Barycentric> const& intrinsic_force,
+      Displacement<Barycentric> const& lever_arm);
 
   // Sets or returns the rigid motion of the part.
   void set_rigid_motion(
@@ -142,6 +149,7 @@ class Part final {
   PartId const part_id_;
   std::string const name_;
   Mass mass_;
+  Mass mass_change_;
   InertiaTensor<RigidPart> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
   Bivector<Torque, Barycentric> intrinsic_torque_;

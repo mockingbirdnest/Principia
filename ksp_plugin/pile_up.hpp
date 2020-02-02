@@ -51,6 +51,7 @@ using physics::RigidMotion;
 using quantities::AngularMomentum;
 using quantities::Force;
 using quantities::Mass;
+using quantities::Torque;
 
 // The origin of |NonRotatingPileUp| is the centre of mass of the pile up.
 // Its axes are those of |Barycentric|. It is used to describe the rotational
@@ -162,9 +163,6 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
-  // Updates the mechanical system and intrinsic force from the list of parts.
-  void RecomputeFromParts(std::list<not_null<Part*>> const& parts);
-
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
 
@@ -174,9 +172,14 @@ class PileUp {
   Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters_;
 
   // Recomputed by the parts subset on every change.  Not serialized.
-  std::unique_ptr<MechanicalSystem<Barycentric, NonRotatingPileUp>>
-      mechanical_system_;
+  Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
+  Bivector<Torque, NonRotatingPileUp> intrinsic_torque_;
+  // The angular momentum change arising from mass loss (or, more generally,
+  // mass changes); consistently with the native behaviour of the game, we
+  // assume that lost mass carries angular momentum in such a way that the
+  // angular velocity of a part remains constant.
+  Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_change_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally
   // integrated with a fixed step using |fixed_instance_|, except in the
@@ -193,6 +196,10 @@ class PileUp {
   // the fact that we are trying to predict the future, but since we are not as
   // good as Hari Seldon we only do it over a short period of time.
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
+
+  // The angular momentum of the pile up with respect to its centre of mass.
+  // TODO(egg): This is not yet serialized.
+  Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_;
 
   // When present, this instance is used to integrate the trajectory of this
   // pile-up using a fixed-step integrator.  This instance is destroyed

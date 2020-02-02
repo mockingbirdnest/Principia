@@ -36,7 +36,7 @@ class PartTest : public testing::Test {
               RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
                   degrees_of_freedom_),
               /*deletion_callback=*/nullptr) {
-    part_.increment_intrinsic_force(intrinsic_force_);
+    part_.apply_intrinsic_force(intrinsic_force_);
     part_.AppendToHistory(
         astronomy::J2000,
         {Barycentric::origin +

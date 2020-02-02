@@ -82,7 +82,7 @@ class TestablePileUp : public PileUp {
   using PileUp::NudgeParts;
 
   Mass const& mass() const {
-    return mechanical_system_->mass();
+    return mass_;
   }
 
   Vector<Force, Barycentric> const& intrinsic_force() const {
@@ -271,9 +271,9 @@ class PileUpTest : public testing::Test {
 // force.
 TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
   MockEphemeris<Barycentric> ephemeris;
-  p1_.increment_intrinsic_force(
+  p1_.apply_intrinsic_force(
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
-  p2_.increment_intrinsic_force(
+  p2_.apply_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(1);
   TestablePileUp pile_up({&p1_, &p2_},
@@ -607,7 +607,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   Vector<Acceleration, Barycentric> const a{{1729 * Metre / Pow<2>(Second),
                                              -168 * Metre / Pow<2>(Second),
                                              504 * Metre / Pow<2>(Second)}};
-  p1_.increment_intrinsic_force(p1_.mass() * a);
+  p1_.apply_intrinsic_force(p1_.mass() * a);
   pile_up.RecomputeFromParts();
   pile_up.AdvanceTime(astronomy::J2000 + 2 * fixed_step);
   pile_up.NudgeParts();
@@ -617,9 +617,9 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
 
 TEST_F(PileUpTest, Serialization) {
   MockEphemeris<Barycentric> ephemeris;
-  p1_.increment_intrinsic_force(
+  p1_.apply_intrinsic_force(
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
-  p2_.increment_intrinsic_force(
+  p2_.apply_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_, &p2_},
@@ -661,9 +661,9 @@ TEST_F(PileUpTest, Serialization) {
 
 TEST_F(PileUpTest, SerializationCompatibility) {
   MockEphemeris<Barycentric> ephemeris;
-  p1_.increment_intrinsic_force(
+  p1_.apply_intrinsic_force(
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
-  p2_.increment_intrinsic_force(
+  p2_.apply_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_, &p2_},

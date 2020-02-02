@@ -25,39 +25,46 @@ using quantities::si::Newton;
 using quantities::si::Metre;
 using quantities::si::Radian;
 
-void __cdecl principia__PartIncrementIntrinsicForce(
+void __cdecl principia__PartApplyIntrinsicForce(
     Plugin* const plugin,
     PartId const part_id,
     XYZ const force_in_kilonewtons) {
-  journal::Method<journal::PartIncrementIntrinsicForce> m(
+  journal::Method<journal::PartApplyIntrinsicForce> m(
       {plugin, part_id, force_in_kilonewtons});
-  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForce(
+  CHECK_NOTNULL(plugin)->ApplyPartIntrinsicForce(
       part_id,
       Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)));
   return m.Return();
 }
 
-void __cdecl principia__PartIncrementIntrinsicForceWithPosition(
+void __cdecl principia__PartApplyIntrinsicForceAtPosition(
     Plugin* const plugin,
     PartId const part_id,
     XYZ const force_in_kilonewtons,
-    XYZ const position) {
-  journal::Method<journal::PartIncrementIntrinsicForceWithPosition> m(
-      {plugin, part_id, force_in_kilonewtons, position});
-  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForceWithPosition(
+    XYZ const point_of_force_application,
+    XYZ const part_position) {
+  journal::Method<journal::PartApplyIntrinsicForceAtPosition> m(
+      {plugin,
+       part_id,
+       force_in_kilonewtons,
+       point_of_force_application,
+       part_position});
+  CHECK_NOTNULL(plugin)->ApplyPartIntrinsicForceAtPosition(
       part_id,
       Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)),
-      World::origin + Displacement<World>(FromXYZ(position) * Metre));
+      World::origin +
+          Displacement<World>(FromXYZ(point_of_force_application) * Metre),
+      World::origin + Displacement<World>(FromXYZ(part_position) * Metre));
   return m.Return();
 }
 
-void __cdecl principia__PartIncrementIntrinsicTorque(
+void __cdecl principia__PartApplyIntrinsicTorque(
     Plugin* const plugin,
     PartId const part_id,
     XYZ const torque_in_kilonewton_metre) {
-  journal::Method<journal::PartIncrementIntrinsicTorque> m(
+  journal::Method<journal::PartApplyIntrinsicTorque> m(
       {plugin, part_id, torque_in_kilonewton_metre});
-  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicTorque(
+  CHECK_NOTNULL(plugin)->ApplyPartIntrinsicTorque(
       part_id,
       Bivector<Torque, World>(FromXYZ(torque_in_kilonewton_metre) *
                               Kilo(Newton) * Metre * Radian));

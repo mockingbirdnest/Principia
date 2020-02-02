@@ -30,6 +30,7 @@ using quantities::Pow;
 using quantities::SIUnit;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
+using quantities::si::Radian;
 
 Part::Part(
     PartId const part_id,
@@ -63,6 +64,7 @@ PartId Part::part_id() const {
 }
 
 void Part::set_mass(Mass const& mass) {
+  mass_change_ = mass - mass_;
   mass_ = mass;
 }
 
@@ -78,11 +80,15 @@ InertiaTensor<RigidPart> const& Part::inertia_tensor() const {
   return inertia_tensor_;
 }
 
+Mass const& Part::mass_change() const {
+  return mass_change_;
+}
+
 void Part::clear_intrinsic_force() {
   intrinsic_force_ = Vector<Force, Barycentric>{};
 }
 
-void Part::increment_intrinsic_force(
+void Part::apply_intrinsic_force(
     Vector<Force, Barycentric> const& intrinsic_force) {
   intrinsic_force_ += intrinsic_force;
 }
@@ -95,13 +101,20 @@ void Part::clear_intrinsic_torque() {
   intrinsic_torque_ = Bivector<Torque, Barycentric>{};
 }
 
-void Part::increment_intrinsic_torque(
+void Part::apply_intrinsic_torque(
     Bivector<Torque, Barycentric> const& intrinsic_torque) {
   intrinsic_torque_ += intrinsic_torque;
 }
 
 Bivector<Torque, Barycentric> const& Part::intrinsic_torque() const {
   return intrinsic_torque_;
+}
+
+void Part::ApplyIntrinsicForceWithLeverArm(
+    Vector<Force, Barycentric> const& intrinsic_force,
+    Displacement<Barycentric> const& lever_arm) {
+  apply_intrinsic_force(intrinsic_force);
+  apply_intrinsic_torque(Wedge(lever_arm, intrinsic_force) * Radian);
 }
 
 void Part::set_rigid_motion(
@@ -254,10 +267,10 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
         std::move(deletion_callback));
   }
 
-  part->increment_intrinsic_force(
+  part->apply_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
   if (!is_pre_frenet) {
-    part->increment_intrinsic_torque(
+    part->apply_intrinsic_torque(
         Bivector<Torque, Barycentric>::ReadFromMessage(
             message.intrinsic_torque()));
   }

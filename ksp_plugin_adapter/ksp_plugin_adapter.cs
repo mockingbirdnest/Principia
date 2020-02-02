@@ -178,9 +178,9 @@ public partial class PrincipiaPluginAdapter
   private readonly Dictionary<uint, Part.ForceHolder[]>
       part_id_to_intrinsic_forces_ = new Dictionary<uint, Part.ForceHolder[]>();
 
-      // The degrees of freedom at BetterLateThanNever.  Those are used to insert
-      // new parts with the correct initial state.
-      private readonly Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
+  // The degrees of freedom at BetterLateThanNever.  Those are used to insert
+  // new parts with the correct initial state.
+  private readonly Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
       new Dictionary<uint, QP>();
 
   private readonly MapNodePool map_node_pool_;
@@ -992,7 +992,7 @@ public partial class PrincipiaPluginAdapter
               (XYZ)(Vector3d)(part.rb.rotation * part.rb.angularVelocity),
               Δt);
           if (part_id_to_intrinsic_torque_.ContainsKey(part.flightID)) {
-            plugin_.PartIncrementIntrinsicTorque(
+            plugin_.PartApplyIntrinsicTorque(
                 part.flightID,
                 (XYZ)part_id_to_intrinsic_torque_[part.flightID]);
           }
@@ -1003,16 +1003,18 @@ public partial class PrincipiaPluginAdapter
             // effects where doing an EVA accelerates the vessel, see #1415.
             // Just say no to stupidity.
             if (!(vessel.isEVA && vessel.evaController.OnALadder)) {
-              plugin_.PartIncrementIntrinsicForce(
+              plugin_.PartApplyIntrinsicForce(
                   part.flightID,
                   (XYZ)part_id_to_intrinsic_force_[part.flightID]);
             }
           }
           if (part_id_to_intrinsic_forces_.ContainsKey(part.flightID)) {
             foreach (var force in part_id_to_intrinsic_forces_[part.flightID]) {
-              plugin_.PartIncrementIntrinsicForceWithPosition(part.flightID,
-                                                              (XYZ)force.force,
-                                                              (XYZ)force.pos);
+              plugin_.PartApplyIntrinsicForceAtPosition(
+                  part.flightID,
+                  (XYZ)force.force,
+                  (XYZ)force.pos,
+                  degrees_of_freedom.q);
             }
           }
         }

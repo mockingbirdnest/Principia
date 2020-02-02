@@ -213,22 +213,23 @@ class Plugin {
       RigidMotion<RigidPart, World> const& part_rigid_motion,
       Time const& Δt);
 
-  // Calls |increment_intrinsic_force| and |increment_intrinsic_torque| on the
+  // Calls |apply_intrinsic_force| and |apply_intrinsic_torque| on the
   // relevant part, which must be in a loaded vessel.
-  virtual void IncrementPartIntrinsicForce(
+  virtual void ApplyPartIntrinsicForce(
       PartId part_id,
       Vector<Force, World> const& force);
-  virtual void IncrementPartIntrinsicForceWithPosition(
+  virtual void ApplyPartIntrinsicForceAtPosition(
       PartId part_id,
       Vector<Force, World> const& force,
-      Position<World> const& position);
-  virtual void IncrementPartIntrinsicTorque(
+      Position<World> const& point_of_force_application,
+      Position<World> const& part_position);
+  virtual void ApplyPartIntrinsicTorque(
       PartId part_id,
       Bivector<Torque, World> const& torque);
 
   // Calls |MakeSingleton| for all parts in loaded vessels, enabling the use of
   // union-find for pile up construction.  This must be called after the calls
-  // to |IncrementPartIntrinsicForce|, and before the calls to
+  // to |ApplyPartIntrinsicForce|, and before the calls to
   // |ReportGroundCollision| or |ReportPartCollision|.
   virtual void PrepareToReportCollisions();
 
