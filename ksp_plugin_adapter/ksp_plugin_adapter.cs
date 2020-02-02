@@ -181,7 +181,7 @@ public partial class PrincipiaPluginAdapter
   // The degrees of freedom at BetterLateThanNever.  Those are used to insert
   // new parts with the correct initial state.
   private readonly Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
-  new Dictionary<uint, QP>();
+      new Dictionary<uint, QP>();
 
   private readonly MapNodePool map_node_pool_;
   private ManeuverNode guidance_node_;
