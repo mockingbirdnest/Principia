@@ -82,7 +82,7 @@ class TestablePileUp : public PileUp {
   using PileUp::NudgeParts;
 
   Mass const& mass() const {
-    return mechanical_system_->mass();
+    return mass_;
   }
 
   Vector<Force, Barycentric> const& intrinsic_force() const {
