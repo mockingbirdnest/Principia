@@ -30,7 +30,6 @@ using geometry::Wedge;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::AngularMomentum;
-using quantities::Time;
 using quantities::si::Radian;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -148,14 +147,14 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   for (auto const& pair : actual_part_rigid_motion_) {
     auto const part = pair.first;
     auto const& rigid_motion = pair.second;
-    rigid_motion.WriteToMessage(
-        &((*message->mutable_actual_part_rigid_motion())[part->part_id()]));
+    rigid_motion.WriteToMessage(&(
+        (*message->mutable_actual_part_rigid_motion())[part->part_id()]));
   }
   for (auto const& pair : apparent_part_rigid_motion_) {
     auto const part = pair.first;
     auto const& rigid_motion = pair.second;
-    rigid_motion.WriteToMessage(
-        &((*message->mutable_apparent_part_rigid_motion())[part->part_id()]));
+    rigid_motion.WriteToMessage(&(
+        (*message->mutable_apparent_part_rigid_motion())[part->part_id()]));
   }
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
@@ -181,27 +180,30 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
     if (is_pre_cartan) {
-      pile_up = std::unique_ptr<PileUp>(new PileUp(
-          std::move(parts),
-          DefaultPsychohistoryParameters(),
-          DefaultHistoryParameters(),
-          DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
-                                                           /*forks=*/{}),
-          /*psychohistory=*/nullptr,
-          ephemeris,
-          std::move(deletion_callback)));
+      pile_up = std::unique_ptr<PileUp>(
+          new PileUp(std::move(parts),
+                     DefaultPsychohistoryParameters(),
+                     DefaultHistoryParameters(),
+                     DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                         message.history(),
+                         /*forks=*/{}),
+                     /*psychohistory=*/nullptr,
+                     ephemeris,
+                     std::move(deletion_callback)));
     } else {
-      pile_up = std::unique_ptr<PileUp>(new PileUp(
-          std::move(parts),
-          Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-              message.adaptive_step_parameters()),
-          Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
-              message.fixed_step_parameters()),
-          DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
-                                                           /*forks=*/{}),
-          /*psychohistory=*/nullptr,
-          ephemeris,
-          std::move(deletion_callback)));
+      pile_up = std::unique_ptr<PileUp>(
+          new PileUp(
+              std::move(parts),
+              Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+                  message.adaptive_step_parameters()),
+              Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+                  message.fixed_step_parameters()),
+              DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                  message.history(),
+                  /*forks=*/{}),
+              /*psychohistory=*/nullptr,
+              ephemeris,
+              std::move(deletion_callback)));
     }
     // Fork a psychohistory for compatibility if there is a non-authoritative
     // point.
@@ -219,16 +221,17 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history(),
             /*forks=*/{&psychohistory});
-    pile_up = std::unique_ptr<PileUp>(new PileUp(
-        std::move(parts),
-        Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-            message.adaptive_step_parameters()),
-        Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
-            message.fixed_step_parameters()),
-        std::move(history),
-        psychohistory,
-        ephemeris,
-        std::move(deletion_callback)));
+    pile_up = std::unique_ptr<PileUp>(
+        new PileUp(
+            std::move(parts),
+            Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+                message.adaptive_step_parameters()),
+            Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+                message.fixed_step_parameters()),
+            std::move(history),
+            psychohistory,
+            ephemeris,
+            std::move(deletion_callback)));
   }
 
   if (is_pre_frege) {
@@ -343,11 +346,6 @@ Status PileUp::AdvanceTime(Instant const& t) {
   CHECK_NOTNULL(psychohistory_);
 
   Status status;
-
-  Time const Δt = t - psychohistory_->back().time;
-  angular_momentum_ += angular_momentum_change_;
-  angular_momentum_ += intrinsic_torque_ * Δt;
-
   auto const history_last = --history_->end();
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
@@ -364,12 +362,13 @@ Status PileUp::AdvanceTime(Instant const& t) {
     if (history_->back().time < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
       // fixed-step integration.
-      status.Update(ephemeris_->FlowWithAdaptiveStep(
-          psychohistory_,
-          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          t,
-          adaptive_step_parameters_,
-          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps));
+      status.Update(
+          ephemeris_->FlowWithAdaptiveStep(
+              psychohistory_,
+              Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+              t,
+              adaptive_step_parameters_,
+              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps));
     }
   } else {
     // Destroy the fixed instance, it wouldn't be correct to use it the next
@@ -393,11 +392,11 @@ Status PileUp::AdvanceTime(Instant const& t) {
     // addressing fault.  With a reference, VS2015 knows what to do.
     auto const intrinsic_acceleration = [&a](Instant const& t) { return a; };
     status = ephemeris_->FlowWithAdaptiveStep(
-        history_.get(),
-        intrinsic_acceleration,
-        t,
-        adaptive_step_parameters_,
-        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
+                 history_.get(),
+                 intrinsic_acceleration,
+                 t,
+                 adaptive_step_parameters_,
+                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
     psychohistory_ = history_->NewForkAtLast();
   }
 
@@ -451,16 +450,18 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
     DegreesOfFreedom<NonRotatingPileUp> const actual_part_degrees_of_freedom =
-        FindOrDie(actual_part_rigid_motion_,
-                  part)({RigidPart::origin, RigidPart::unmoving});
+        FindOrDie(actual_part_rigid_motion_, part)({RigidPart::origin,
+                                                    RigidPart::unmoving});
     (static_cast<Part*>(part)->*append_to_part_trajectory)(
-        it->time, pile_up_to_barycentric(actual_part_degrees_of_freedom));
+        it->time,
+        pile_up_to_barycentric(actual_part_degrees_of_freedom));
   }
 }
 
 PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
                            std::future<Status> future)
-    : pile_up(pile_up), future(std::move(future)) {}
+    : pile_up(pile_up),
+      future(std::move(future)) {}
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin
