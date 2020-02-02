@@ -491,7 +491,7 @@ void Plugin::InsertOrKeepLoadedPart(
 }
 
 void Plugin::ApplyPartIntrinsicForce(PartId const part_id,
-                                         Vector<Force, World> const& force) {
+                                     Vector<Force, World> const& force) {
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
