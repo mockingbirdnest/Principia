@@ -502,7 +502,7 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
 void Plugin::IncrementPartIntrinsicForceWithPosition(
     PartId const part_id,
     Vector<Force, World> const& force,
-    Position<World> const& position,
+    Position<World> const& point_of_force_application,
     Position<World> const& part_position) {
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
@@ -511,7 +511,7 @@ void Plugin::IncrementPartIntrinsicForceWithPosition(
       renderer_->WorldToBarycentric(PlanetariumRotation())(force));
   vessel->part(part_id)->increment_intrinsic_torque(
       renderer_->WorldToBarycentric(PlanetariumRotation())(
-          Wedge(position - part_position, force) * Radian));
+          Wedge(point_of_force_application - part_position, force) * Radian));
 }
 
 void Plugin::IncrementPartIntrinsicTorque(

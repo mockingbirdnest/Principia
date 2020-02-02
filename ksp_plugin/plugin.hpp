@@ -221,7 +221,7 @@ class Plugin {
   virtual void IncrementPartIntrinsicForceWithPosition(
       PartId part_id,
       Vector<Force, World> const& force,
-      Position<World> const& position,
+      Position<World> const& point_of_force_application,
       Position<World> const& part_position);
   virtual void IncrementPartIntrinsicTorque(
       PartId part_id,
