@@ -71,12 +71,12 @@ class Part final {
   // its engines (or a tractor beam).
   // TODO(phl): Keep track of the point where the force is applied.
   void clear_intrinsic_force();
-  void increment_intrinsic_force(
+  void apply_intrinsic_force(
       Vector<Force, Barycentric> const& intrinsic_force);
   Vector<Force, Barycentric> const& intrinsic_force() const;
 
   void clear_intrinsic_torque();
-  void increment_intrinsic_torque(
+  void apply_intrinsic_torque(
       Bivector<Torque, Barycentric> const& intrinsic_torque);
   Bivector<Torque, Barycentric> const& intrinsic_torque() const;
 

@@ -490,16 +490,16 @@ void Plugin::InsertOrKeepLoadedPart(
   part->set_inertia_tensor(inertia_tensor);
 }
 
-void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
+void Plugin::ApplyPartIntrinsicForce(PartId const part_id,
                                          Vector<Force, World> const& force) {
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
-  vessel->part(part_id)->increment_intrinsic_force(
+  vessel->part(part_id)->apply_intrinsic_force(
       renderer_->WorldToBarycentric(PlanetariumRotation())(force));
 }
 
-void Plugin::IncrementPartIntrinsicForceWithPosition(
+void Plugin::ApplyPartIntrinsicForceAtPosition(
     PartId const part_id,
     Vector<Force, World> const& force,
     Position<World> const& point_of_force_application,
@@ -507,20 +507,20 @@ void Plugin::IncrementPartIntrinsicForceWithPosition(
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
-  vessel->part(part_id)->increment_intrinsic_force(
+  vessel->part(part_id)->apply_intrinsic_force(
       renderer_->WorldToBarycentric(PlanetariumRotation())(force));
-  vessel->part(part_id)->increment_intrinsic_torque(
+  vessel->part(part_id)->apply_intrinsic_torque(
       renderer_->WorldToBarycentric(PlanetariumRotation())(
           Wedge(point_of_force_application - part_position, force) * Radian));
 }
 
-void Plugin::IncrementPartIntrinsicTorque(
+void Plugin::ApplyPartIntrinsicTorque(
     PartId const part_id,
     Bivector<Torque, World> const& torque) {
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
-  vessel->part(part_id)->increment_intrinsic_torque(
+  vessel->part(part_id)->apply_intrinsic_torque(
       renderer_->WorldToBarycentric(PlanetariumRotation())(torque));
 }
 

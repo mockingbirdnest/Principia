@@ -1510,9 +1510,9 @@ message NewPlugin {
   optional Return return = 3;
 }
 
-message PartIncrementIntrinsicForce {
+message PartApplyIntrinsicForce {
   extend Method {
-    optional PartIncrementIntrinsicForce extension = 5114;
+    optional PartApplyIntrinsicForce extension = 5114;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
@@ -1522,9 +1522,9 @@ message PartIncrementIntrinsicForce {
   optional In in = 1;
 }
 
-message PartIncrementIntrinsicForceWithPosition {
+message PartApplyIntrinsicForceAtPosition {
   extend Method {
-    optional PartIncrementIntrinsicForceWithPosition extension = 5164;
+    optional PartApplyIntrinsicForceAtPosition extension = 5164;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
@@ -1536,9 +1536,9 @@ message PartIncrementIntrinsicForceWithPosition {
   optional In in = 1;
 }
 
-message PartIncrementIntrinsicTorque {
+message PartApplyIntrinsicTorque {
   extend Method {
-    optional PartIncrementIntrinsicTorque extension = 5165;
+    optional PartApplyIntrinsicTorque extension = 5165;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];

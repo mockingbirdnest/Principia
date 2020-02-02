@@ -87,7 +87,7 @@ void Part::clear_intrinsic_force() {
   intrinsic_force_ = Vector<Force, Barycentric>{};
 }
 
-void Part::increment_intrinsic_force(
+void Part::apply_intrinsic_force(
     Vector<Force, Barycentric> const& intrinsic_force) {
   intrinsic_force_ += intrinsic_force;
 }
@@ -100,7 +100,7 @@ void Part::clear_intrinsic_torque() {
   intrinsic_torque_ = Bivector<Torque, Barycentric>{};
 }
 
-void Part::increment_intrinsic_torque(
+void Part::apply_intrinsic_torque(
     Bivector<Torque, Barycentric> const& intrinsic_torque) {
   intrinsic_torque_ += intrinsic_torque;
 }
@@ -258,10 +258,10 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
         std::move(deletion_callback));
   }
 
-  part->increment_intrinsic_force(
+  part->apply_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
   if (!is_pre_frenet) {
-    part->increment_intrinsic_torque(
+    part->apply_intrinsic_torque(
         Bivector<Torque, Barycentric>::ReadFromMessage(
             message.intrinsic_torque()));
   }
