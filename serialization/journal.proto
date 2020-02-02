@@ -1530,8 +1530,8 @@ message PartApplyIntrinsicForceAtPosition {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required fixed32 part_id = 2;
     required XYZ force_in_kilonewtons = 3;
-    required XYZ position = 4;
-    required XYZ point_of_force_application = 5;
+    required XYZ point_of_force_application = 4;
+    required XYZ part_position = 5;
   }
   optional In in = 1;
 }
