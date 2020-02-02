@@ -507,11 +507,11 @@ void Plugin::ApplyPartIntrinsicForceAtPosition(
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
-  vessel->part(part_id)->apply_intrinsic_force(
-      renderer_->WorldToBarycentric(PlanetariumRotation())(force));
-  vessel->part(part_id)->apply_intrinsic_torque(
-      renderer_->WorldToBarycentric(PlanetariumRotation())(
-          Wedge(point_of_force_application - part_position, force) * Radian));
+  OrthogonalMap<World, Barycentric> const world_to_barycentric =
+      renderer_->WorldToBarycentric(PlanetariumRotation());
+  vessel->part(part_id)->ApplyIntrinsicForceWithLeverArm(
+      world_to_barycentric(force),
+      world_to_barycentric(point_of_force_application - part_position));
 }
 
 void Plugin::ApplyPartIntrinsicTorque(

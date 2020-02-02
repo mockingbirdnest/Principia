@@ -30,6 +30,7 @@ using quantities::Pow;
 using quantities::SIUnit;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
+using quantities::si::Radian;
 
 Part::Part(
     PartId const part_id,
@@ -107,6 +108,13 @@ void Part::apply_intrinsic_torque(
 
 Bivector<Torque, Barycentric> const& Part::intrinsic_torque() const {
   return intrinsic_torque_;
+}
+
+void Part::ApplyIntrinsicForceWithLeverArm(
+    Vector<Force, Barycentric> const& intrinsic_force,
+    Displacement<Barycentric> const& lever_arm) {
+  apply_intrinsic_force(intrinsic_force);
+  apply_intrinsic_torque(Wedge(lever_arm, intrinsic_force) * Radian);
 }
 
 void Part::set_rigid_motion(

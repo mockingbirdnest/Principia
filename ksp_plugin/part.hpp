@@ -27,6 +27,7 @@ namespace internal_part {
 using base::not_null;
 using base::Subset;
 using geometry::Bivector;
+using geometry::Displacement;
 using geometry::InertiaTensor;
 using geometry::Instant;
 using geometry::Position;
@@ -69,7 +70,6 @@ class Part final {
 
   // Clears, increments or returns the intrinsic force exerted on the part by
   // its engines (or a tractor beam).
-  // TODO(phl): Keep track of the point where the force is applied.
   void clear_intrinsic_force();
   void apply_intrinsic_force(
       Vector<Force, Barycentric> const& intrinsic_force);
@@ -79,6 +79,10 @@ class Part final {
   void apply_intrinsic_torque(
       Bivector<Torque, Barycentric> const& intrinsic_torque);
   Bivector<Torque, Barycentric> const& intrinsic_torque() const;
+
+  void ApplyIntrinsicForceWithLeverArm(
+      Vector<Force, Barycentric> const& intrinsic_force,
+      Displacement<Barycentric> const& lever_arm);
 
   // Sets or returns the rigid motion of the part.
   void set_rigid_motion(
