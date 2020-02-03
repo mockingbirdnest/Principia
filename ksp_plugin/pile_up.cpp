@@ -307,16 +307,24 @@ void PileUp::DeformPileUpIfNeeded() {
     CHECK(Contains(apparent_part_rigid_motion_, part));
   }
 
+  using ApparentPileUp = geometry::Frame<enum class ApparentPileUpTag>;
+
   // Compute the apparent centre of mass of the parts.
-  BarycentreCalculator<DegreesOfFreedom<ApparentBubble>, Mass> calculator;
-  for (auto const& pair : apparent_part_rigid_motion_) {
-    auto const part = pair.first;
-    auto const& apparent_part_rigid_motion = pair.second;
-    DegreesOfFreedom<ApparentBubble> const apparent_part_degrees_of_freedom =
-        apparent_part_rigid_motion({RigidPart::origin, RigidPart::unmoving});
-    calculator.Add(apparent_part_degrees_of_freedom, part->mass());
+  MechanicalSystem<ApparentBubble, ApparentPileUp> apparent_system;
+  for (auto const& [part, apparent_part_rigid_motion] : apparent_part_rigid_motion_) {
+    apparent_system.AddRigidBody(
+        apparent_part_rigid_motion, part->mass(), part->inertia_tensor());
   }
-  auto const apparent_centre_of_mass = calculator.Get();
+  auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
+  auto const apparent_angular_momentum = apparent_system.AngularMomentum();
+  // Note that the inertia tensor is with respect to the centre of mass, so it
+  // is unaffected by the apparent-bubble-to-pile-up correction, which is rigid
+  // and involves no change in axes.
+  auto const inertia_tensor = apparent_system.InertiaTensor();
+  // The angular velocity of a rigid body with the inertia and angular momentum
+  // of the apparent parts.
+  auto const apparent_equivalent_angular_velocity = apparent_angular_momentum / inertia_tensor;
+
 
   // A motion that maps the apparent centre of mass of the parts to the actual
   // centre of mass of the pile-up.
@@ -331,7 +339,7 @@ void PileUp::DeformPileUpIfNeeded() {
           ApparentBubble::nonrotating,
           apparent_centre_of_mass.velocity());
 
-  // Now update the positions of the parts in the pile-up frame.
+  // Now update the motions of the parts in the pile-up frame.
   actual_part_rigid_motion_.clear();
   for (auto const& pair : apparent_part_rigid_motion_) {
     auto const part = pair.first;
