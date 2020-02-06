@@ -40,6 +40,9 @@ class R3x3Matrix final {
   Cube<Scalar> Determinant() const;
   R3x3Matrix Transpose() const;
 
+  template<typename RScalar>
+  R3Element<Quotient<RScalar, Scalar>> Solve(R3Element<RScalar> const& rhs);
+
   R3Element<Scalar> const& row_x() const;
   R3Element<Scalar> const& row_y() const;
   R3Element<Scalar> const& row_z() const;

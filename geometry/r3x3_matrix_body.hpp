@@ -132,6 +132,43 @@ R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator/=(double const right) {
 }
 
 template<typename Scalar>
+template<typename RScalar>
+R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
+    R3Element<RScalar> const& rhs) {
+  R3x3Matrix<double> l;
+  R3x3Matrix<Scalar> u;
+
+  // Doolittle's method.
+  for (int k = 0; k < 3; ++k) {
+    // Partial pivoting.
+    int r = -1;
+    Scalar max;
+    for (int i = k; i < 3; ++i) {
+      if (Abs((*this)(i, k)) > max) {
+        r = i;
+      }
+    }
+    //swap rows k and r.
+    swap(rhs[k], rhs[r]);
+
+    for (int j = k; j < 3; ++j) {
+      Scalar u_kj = (*this)(k, j);
+      for (int i = 0; i < k - 1; ++i) {
+        u_kj -= l(k, i) * u(i, j)
+      }
+      u(k, j) = u_kj;
+    }
+    for (int i = k + 1; i < 3; ++i) {
+      Scalar l_ik = (*this)(i, k);
+      for (int j = 0; j < k - 1; ++j) {
+        l_ik -= l(i, j) * u (j, k)
+      }
+      l(i, k) = l_ik / u(k, k)
+    }
+  }
+}
+
+template<typename Scalar>
 template<typename S, typename>
 R3x3Matrix<S> R3x3Matrix<Scalar>::Identity() {
   return R3x3Matrix<S>({1, 0, 0},
