@@ -1,8 +1,8 @@
 ﻿
 #pragma once
 
-// We use ostream for logging purposes.
-#include <iostream>  // NOLINT(readability/streams)
+#include <array>
+#include <iostream>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -41,7 +41,8 @@ class R3x3Matrix final {
   R3x3Matrix Transpose() const;
 
   template<typename RScalar>
-  R3Element<Quotient<RScalar, Scalar>> Solve(R3Element<RScalar> const& rhs);
+  R3Element<Quotient<RScalar, Scalar>> Solve(
+      R3Element<RScalar> const& rhs) const;
 
   R3Element<Scalar> const& row_x() const;
   R3Element<Scalar> const& row_y() const;
@@ -68,9 +69,8 @@ class R3x3Matrix final {
 
  private:
 #endif
-  R3Element<Scalar> row_x_;
-  R3Element<Scalar> row_y_;
-  R3Element<Scalar> row_z_;
+  enum Indices { X = 0, Y = 1, Z = 2 };
+  std::array<R3Element<Scalar>, 3> rows_;
 
 #if !OS_MACOSX
   template<typename S>

@@ -14,9 +14,9 @@ namespace internal_r3x3_matrix {
 
 using quantities::Length;
 using quantities::si::Metre;
-using testing::Eq;
+using ::testing::Eq;
 
-class R3x3MatrixTest : public testing::Test {
+class R3x3MatrixTest : public ::testing::Test {
  protected:
   using R3 = R3Element<double>;
 
