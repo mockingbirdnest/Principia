@@ -21,7 +21,7 @@ template<typename Scalar>
 R3x3Matrix<Scalar>::R3x3Matrix(R3Element<Scalar> const& row_x,
                                R3Element<Scalar> const& row_y,
                                R3Element<Scalar> const& row_z)
-    : row_x_(row_x), row_y_(row_y), row_z_(row_z) {}
+    : rows_({row_x, row_y, row_z}) {}
 
 template<typename Scalar>
 R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Diagonal(
@@ -35,39 +35,39 @@ R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Diagonal(
 
 template<typename Scalar>
 Scalar R3x3Matrix<Scalar>::Trace() const {
-  return row_x_.x + row_y_.y + row_z_.z;
+  return rows_[X].x + rows_[Y].y + rows_[Z].z;
 }
 
 template<typename Scalar>
 Cube<Scalar> R3x3Matrix<Scalar>::Determinant() const {
-  return row_x_.x * row_y_.y * row_z_.z +
-         row_x_.y * row_y_.z * row_z_.x +
-         row_x_.z * row_y_.x * row_z_.y -
-         row_x_.z * row_y_.y * row_z_.x -
-         row_x_.y * row_y_.x * row_z_.z -
-         row_x_.x * row_y_.z * row_z_.y;
+  return rows_[X].x * rows_[Y].y * rows_[Z].z +
+         rows_[X].y * rows_[Y].z * rows_[Z].x +
+         rows_[X].z * rows_[Y].x * rows_[Z].y -
+         rows_[X].z * rows_[Y].y * rows_[Z].x -
+         rows_[X].y * rows_[Y].x * rows_[Z].z -
+         rows_[X].x * rows_[Y].z * rows_[Z].y;
 }
 
 template<typename Scalar>
 R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Transpose() const {
-  return R3x3Matrix({row_x_.x, row_y_.x, row_z_.x},
-                    {row_x_.y, row_y_.y, row_z_.y},
-                    {row_x_.z, row_y_.z, row_z_.z});
+  return R3x3Matrix({rows_[X].x, rows_[Y].x, rows_[Z].x},
+                    {rows_[X].y, rows_[Y].y, rows_[Z].y},
+                    {rows_[X].z, rows_[Y].z, rows_[Z].z});
 }
 
 template<typename Scalar>
 R3Element<Scalar> const& R3x3Matrix<Scalar>::row_x() const {
-  return row_x_;
+  return rows_[X];
 }
 
 template<typename Scalar>
 R3Element<Scalar> const& R3x3Matrix<Scalar>::row_y() const {
-  return row_y_;
+  return rows_[Y];
 }
 
 template<typename Scalar>
 R3Element<Scalar> const& R3x3Matrix<Scalar>::row_z() const {
-  return row_z_;
+  return rows_[Z];
 }
 
 template<typename Scalar>
@@ -75,11 +75,9 @@ FORCE_INLINE(inline) Scalar R3x3Matrix<Scalar>::operator()(
     int const r, int const c) const {
   switch (r) {
     case 0:
-      return row_x_[c];
     case 1:
-      return row_y_[c];
     case 2:
-      return row_z_[c];
+      return rows_[r][c];
     default:
       DLOG(FATAL) << FUNCTION_SIGNATURE
                   << " indices = {" << r << ", " << c << "}";
@@ -91,11 +89,9 @@ template<typename Scalar>
 Scalar& R3x3Matrix<Scalar>::operator()(int r, int c) {
   switch (r) {
     case 0:
-      return row_x_[c];
     case 1:
-      return row_y_[c];
     case 2:
-      return row_z_[c];
+      return rows_[r][c];
     default:
       DLOG(FATAL) << FUNCTION_SIGNATURE
                   << " indices = {" << r << ", " << c << "}";
@@ -134,7 +130,7 @@ R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator/=(double const right) {
 template<typename Scalar>
 template<typename RScalar>
 R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
-    R3Element<RScalar> const& rhs) {
+    R3Element<RScalar> const& rhs) const {
   R3x3Matrix<double> l;
   R3x3Matrix<Scalar> u;
 
@@ -149,7 +145,7 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
       }
     }
     //swap rows k and r.
-    swap(rhs[k], rhs[r]);
+    //swap(rhs[k], rhs[r]);
 
     for (int j = k; j < 3; ++j) {
       Scalar u_kj = (*this)(k, j);
@@ -179,9 +175,9 @@ R3x3Matrix<S> R3x3Matrix<Scalar>::Identity() {
 template<typename Scalar>
 void R3x3Matrix<Scalar>::WriteToMessage(
     not_null<serialization::R3x3Matrix*> const message) const {
-  row_x_.WriteToMessage(message->mutable_row_x());
-  row_y_.WriteToMessage(message->mutable_row_y());
-  row_z_.WriteToMessage(message->mutable_row_z());
+  rows_[X].WriteToMessage(message->mutable_row_x());
+  rows_[Y].WriteToMessage(message->mutable_row_y());
+  rows_[Z].WriteToMessage(message->mutable_row_z());
 }
 
 template<typename Scalar>
@@ -194,54 +190,72 @@ R3x3Matrix<Scalar> R3x3Matrix<Scalar>::ReadFromMessage(
 
 template<typename Scalar>
 R3x3Matrix<Scalar> operator+(R3x3Matrix<Scalar> const& right) {
-  return R3x3Matrix<Scalar>(+right.row_x_, +right.row_y_, +right.row_z_);
+  constexpr auto X = R3x3Matrix<Scalar>::X;
+  constexpr auto Y = R3x3Matrix<Scalar>::Y;
+  constexpr auto Z = R3x3Matrix<Scalar>::Z;
+  return R3x3Matrix<Scalar>(+right.rows_[X], +right.rows_[Y], +right.rows_[Z]);
 }
 
 template<typename Scalar>
 R3x3Matrix<Scalar> operator-(R3x3Matrix<Scalar> const& right) {
-  return R3x3Matrix<Scalar>(-right.row_x_, -right.row_y_, -right.row_z_);
+  constexpr auto X = R3x3Matrix<Scalar>::X;
+  constexpr auto Y = R3x3Matrix<Scalar>::Y;
+  constexpr auto Z = R3x3Matrix<Scalar>::Z;
+  return R3x3Matrix<Scalar>(-right.rows_[X], -right.rows_[Y], -right.rows_[Z]);
 }
 
 template<typename Scalar>
 R3x3Matrix<Scalar> operator+(R3x3Matrix<Scalar> const& left,
                              R3x3Matrix<Scalar> const& right) {
-  return R3x3Matrix<Scalar>(left.row_x_ + right.row_x_,
-                            left.row_y_ + right.row_y_,
-                            left.row_z_ + right.row_z_);
+  constexpr auto X = R3x3Matrix<Scalar>::X;
+  constexpr auto Y = R3x3Matrix<Scalar>::Y;
+  constexpr auto Z = R3x3Matrix<Scalar>::Z;
+  return R3x3Matrix<Scalar>(left.rows_[X] + right.rows_[X],
+                            left.rows_[Y] + right.rows_[Y],
+                            left.rows_[Z] + right.rows_[Z]);
 }
 
 template<typename Scalar>
 R3x3Matrix<Scalar> operator-(R3x3Matrix<Scalar> const& left,
                              R3x3Matrix<Scalar> const& right) {
-  return R3x3Matrix<Scalar>(left.row_x_ - right.row_x_,
-                            left.row_y_ - right.row_y_,
-                            left.row_z_ - right.row_z_);
+  constexpr auto X = R3x3Matrix<Scalar>::X;
+  constexpr auto Y = R3x3Matrix<Scalar>::Y;
+  constexpr auto Z = R3x3Matrix<Scalar>::Z;
+  return R3x3Matrix<Scalar>(left.rows_[X] - right.rows_[X],
+                            left.rows_[Y] - right.rows_[Y],
+                            left.rows_[Z] - right.rows_[Z]);
 }
 
 template<typename LScalar, typename RScalar>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<LScalar> const& left,
     R3x3Matrix<RScalar> const& right) {
+  constexpr auto X = R3x3Matrix<LScalar>::X;
+  constexpr auto Y = R3x3Matrix<LScalar>::Y;
+  constexpr auto Z = R3x3Matrix<LScalar>::Z;
   R3x3Matrix<RScalar> const t_right = right.Transpose();
   return R3x3Matrix<Product<LScalar, RScalar>>(
-             {Dot(left.row_x_, t_right.row_x_),
-              Dot(left.row_x_, t_right.row_y_),
-              Dot(left.row_x_, t_right.row_z_)},
-             {Dot(left.row_y_, t_right.row_x_),
-              Dot(left.row_y_, t_right.row_y_),
-              Dot(left.row_y_, t_right.row_z_)},
-             {Dot(left.row_z_, t_right.row_x_),
-              Dot(left.row_z_, t_right.row_y_),
-              Dot(left.row_z_, t_right.row_z_)});
+             {Dot(left.rows_[X], t_right.rows_[X]),
+              Dot(left.rows_[X], t_right.rows_[Y]),
+              Dot(left.rows_[X], t_right.rows_[Z])},
+             {Dot(left.rows_[Y], t_right.rows_[X]),
+              Dot(left.rows_[Y], t_right.rows_[Y]),
+              Dot(left.rows_[Y], t_right.rows_[Z])},
+             {Dot(left.rows_[Z], t_right.rows_[X]),
+              Dot(left.rows_[Z], t_right.rows_[Y]),
+              Dot(left.rows_[Z], t_right.rows_[Z])});
 }
 
 template<typename LScalar, typename RScalar>
 R3Element<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<LScalar> const& left,
     R3Element<RScalar> const& right) {
-  return R3Element<Product<LScalar, RScalar>>({Dot(left.row_x_, right),
-                                               Dot(left.row_y_, right),
-                                               Dot(left.row_z_, right)});
+  constexpr auto X = R3x3Matrix<LScalar>::X;
+  constexpr auto Y = R3x3Matrix<LScalar>::Y;
+  constexpr auto Z = R3x3Matrix<LScalar>::Z;
+  return R3Element<Product<LScalar, RScalar>>({Dot(left.rows_[X], right),
+                                               Dot(left.rows_[Y], right),
+                                               Dot(left.rows_[Z], right)});
 }
 
 template<typename LScalar, typename RScalar>
@@ -249,9 +263,12 @@ R3Element<Product<LScalar, RScalar>> operator*(
     R3Element<LScalar> const& left,
     R3x3Matrix<RScalar> const& right) {
   R3x3Matrix<RScalar> const t_right = right.Transpose();
-  return R3Element<Product<LScalar, RScalar>>({Dot(left, t_right.row_x_),
-                                               Dot(left, t_right.row_y_),
-                                               Dot(left, t_right.row_z_)});
+  constexpr auto X = R3x3Matrix<LScalar>::X;
+  constexpr auto Y = R3x3Matrix<LScalar>::Y;
+  constexpr auto Z = R3x3Matrix<LScalar>::Z;
+  return R3Element<Product<LScalar, RScalar>>({Dot(left, t_right.rows_[X]),
+                                               Dot(left, t_right.rows_[Y]),
+                                               Dot(left, t_right.rows_[Z])});
 }
 
 
@@ -259,27 +276,36 @@ template<typename LScalar, typename RScalar, typename>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
     R3x3Matrix<RScalar> const& right) {
-  return R3x3Matrix<Product<LScalar, RScalar>>(left * right.row_x_,
-                                               left * right.row_y_,
-                                               left * right.row_z_);
+  constexpr auto X = R3x3Matrix<RScalar>::X;
+  constexpr auto Y = R3x3Matrix<RScalar>::Y;
+  constexpr auto Z = R3x3Matrix<RScalar>::Z;
+  return R3x3Matrix<Product<LScalar, RScalar>>(left * right.rows_[X],
+                                               left * right.rows_[Y],
+                                               left * right.rows_[Z]);
 }
 
 template<typename LScalar, typename RScalar, typename>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<LScalar> const& left,
     RScalar const& right) {
-  return R3x3Matrix<Product<LScalar, RScalar>>(left.row_x_ * right,
-                                               left.row_y_ * right,
-                                               left.row_z_ * right);
+  constexpr auto X = R3x3Matrix<LScalar>::X;
+  constexpr auto Y = R3x3Matrix<LScalar>::Y;
+  constexpr auto Z = R3x3Matrix<LScalar>::Z;
+  return R3x3Matrix<Product<LScalar, RScalar>>(left.rows_[X] * right,
+                                               left.rows_[Y] * right,
+                                               left.rows_[Z] * right);
 }
 
 template<typename LScalar, typename RScalar, typename>
 R3x3Matrix<Quotient<LScalar, RScalar>> operator/(
     R3x3Matrix<LScalar> const& left,
     RScalar const& right) {
-  return R3x3Matrix<Quotient<LScalar, RScalar>>(left.row_x_ / right,
-                                                left.row_y_ / right,
-                                                left.row_z_ / right);
+  constexpr auto X = R3x3Matrix<LScalar>::X;
+  constexpr auto Y = R3x3Matrix<LScalar>::Y;
+  constexpr auto Z = R3x3Matrix<LScalar>::Z;
+  return R3x3Matrix<Quotient<LScalar, RScalar>>(left.rows_[X] / right,
+                                                left.rows_[Y] / right,
+                                                left.rows_[Z] / right);
 }
 
 template<typename LScalar, typename RScalar>
@@ -294,27 +320,26 @@ R3x3Matrix<Product<LScalar, RScalar>> KroneckerProduct(
 template<typename Scalar>
 bool operator==(R3x3Matrix<Scalar> const& left,
                 R3x3Matrix<Scalar> const& right) {
-  return left.row_x_ == right.row_x_ &&
-         left.row_y_ == right.row_y_ &&
-         left.row_z_ == right.row_z_;
+  return left.rows_ == right.rows_;
 }
 
 template<typename Scalar>
 bool operator!=(R3x3Matrix<Scalar> const& left,
                 R3x3Matrix<Scalar> const& right) {
-  return left.row_x_ != right.row_x_ ||
-         left.row_y_ != right.row_y_ ||
-         left.row_z_ != right.row_z_;
+  return left.rows_ != right.rows_;
 }
 
 template<typename Scalar>
 std::string DebugString(R3x3Matrix<Scalar> const& r3x3_matrix) {
+  constexpr auto X = R3x3Matrix<Scalar>::X;
+  constexpr auto Y = R3x3Matrix<Scalar>::Y;
+  constexpr auto Z = R3x3Matrix<Scalar>::Z;
   std::string result = "{";
-  result += DebugString(r3x3_matrix.row_x_);
+  result += DebugString(r3x3_matrix.rows_[X]);
   result += ", ";
-  result += DebugString(r3x3_matrix.row_y_);
+  result += DebugString(r3x3_matrix.rows_[Y]);
   result += ", ";
-  result += DebugString(r3x3_matrix.row_z_);
+  result += DebugString(r3x3_matrix.rows_[Z]);
   result +="}";
   return result;
 }
