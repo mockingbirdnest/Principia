@@ -131,37 +131,65 @@ template<typename Scalar>
 template<typename RScalar>
 R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     R3Element<RScalar> const& rhs) const {
-  R3x3Matrix<double> l;
-  R3x3Matrix<Scalar> u;
+  auto A = (*this);
+  auto b = rhs;
+  R3x3Matrix<double> L;
+  R3x3Matrix<Scalar> U;
 
-  // Doolittle's method.
+  // Doolittle's method: write P * A = L * U where P is an implicit permutation
+  // that is also applied to b.
   for (int k = 0; k < 3; ++k) {
     // Partial pivoting.
     int r = -1;
     Scalar max;
     for (int i = k; i < 3; ++i) {
-      if (Abs((*this)(i, k)) > max) {
+      if (Abs(A(i, k)) > max) {
         r = i;
       }
     }
-    //swap rows k and r.
-    //swap(rhs[k], rhs[r]);
+    swap(A.rows_[k], A.rows_[r]);
+    swap(b[k], b[r]);
 
     for (int j = k; j < 3; ++j) {
-      Scalar u_kj = (*this)(k, j);
+      Scalar U_kj = A(k, j);
       for (int i = 0; i < k - 1; ++i) {
-        u_kj -= l(k, i) * u(i, j)
+        U_kj -= L(k, i) * U(i, j)
       }
-      u(k, j) = u_kj;
+      U(k, j) = U_kj;
     }
     for (int i = k + 1; i < 3; ++i) {
-      Scalar l_ik = (*this)(i, k);
+      Scalar L_ik = A(i, k);
       for (int j = 0; j < k - 1; ++j) {
-        l_ik -= l(i, j) * u (j, k)
+        L_ik -= L(i, j) * U (j, k)
       }
-      l(i, k) = l_ik / u(k, k)
+      L(i, k) = L_ik / U(k, k)
     }
+    L(k, k) = 1;
   }
+
+  // Find y such that L * y = P * b.
+  R3Element<Rscalar> y;
+  y[0] = b[0];
+  for (int i = 1; i < 3; ++i) {
+    auto s = b[i];
+    for (int j = 0; j < i; ++j) {
+      s -= L(i, j) * b[j];
+    }
+    y[i] = s;
+  }
+
+  // Find x such that U * x = y.
+  R3Element<Quotient<RScalar, Scalar>> x;
+  x[2] = y[2] / U(2, 2);
+  for (int i = 1; i >= 0; --i) {
+    auto s = y[i];
+    for (int j = i + 1; j < 3; ++j) {
+      s -= U(i, j) * x[j];
+    }
+    x[i] = s / U(i, i);
+  }
+
+  return x;
 }
 
 template<typename Scalar>
