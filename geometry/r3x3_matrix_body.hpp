@@ -135,6 +135,7 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     R3Element<RScalar> const& rhs) const {
   auto A = (*this);
   auto b = rhs;
+  //TODO(phl): uninit
   R3x3Matrix<double> L;
   R3x3Matrix<Scalar> U;
 
@@ -150,25 +151,32 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
         max = Abs(A(i, k));
       }
     }
+    CHECK_LE(0, r);
+    CHECK_GT(3, r);
     std::swap(A.rows_[k], A.rows_[r]);
     std::swap(b[k], b[r]);
+    CHECK_NE(0, A(k, k));
 
     for (int j = k; j < 3; ++j) {
       Scalar U_kj = A(k, j);
-      for (int i = 0; i < k - 1; ++i) {
+      for (int i = 0; i < k; ++i) {
         U_kj -= L(k, i) * U(i, j);
       }
       U(k, j) = U_kj;
     }
     for (int i = k + 1; i < 3; ++i) {
       Scalar L_ik = A(i, k);
-      for (int j = 0; j < k - 1; ++j) {
+      for (int j = 0; j < k; ++j) {
         L_ik -= L(i, j) * U (j, k);
       }
       L(i, k) = L_ik / U(k, k);
     }
     L(k, k) = 1;
   }
+
+  LOG(ERROR)<<L;
+  LOG(ERROR)<<U;
+  LOG(ERROR)<<b;
 
   // Find y such that L * y = P * b.
   R3Element<RScalar> y;
@@ -180,6 +188,7 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     }
     y[i] = s;
   }
+  LOG(ERROR)<<y;
 
   // Find x such that U * x = y.
   R3Element<Quotient<RScalar, Scalar>> x;
