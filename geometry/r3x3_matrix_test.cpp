@@ -44,6 +44,13 @@ TEST_F(R3x3MatrixTest, Transpose) {
               Eq(R3x3Matrix<double>({-9, 7, -1}, {6, -5, 2}, {6, -4, 1})));
 }
 
+TEST_F(R3x3MatrixTest, Solve) {
+  R3x3Matrix<double> a({2, -3, -4}, {0, 0, -1}, {1, -2, 1});
+  R3Element<Length> b(2 * Metre, 5 * Metre, 3 * Metre);
+  EXPECT_THAT(a.Solve(b),
+              Eq(R3Element<Length>(-60 * Metre, -34 * Metre, -5 * Metre)));
+}
+
 #ifdef _DEBUG
 TEST_F(R3x3MatrixDeathTest, IndexingError) {
   EXPECT_DEATH({

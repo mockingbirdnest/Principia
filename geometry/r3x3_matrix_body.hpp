@@ -3,6 +3,7 @@
 
 #include "geometry/r3x3_matrix.hpp"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -15,6 +16,7 @@ namespace principia {
 namespace geometry {
 namespace internal_r3x3_matrix {
 
+using quantities::Abs;
 using quantities::SIUnit;
 
 template<typename Scalar>
@@ -141,34 +143,35 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
   for (int k = 0; k < 3; ++k) {
     // Partial pivoting.
     int r = -1;
-    Scalar max;
+    Scalar max{};
     for (int i = k; i < 3; ++i) {
       if (Abs(A(i, k)) > max) {
         r = i;
+        max = Abs(A(i, k));
       }
     }
-    swap(A.rows_[k], A.rows_[r]);
-    swap(b[k], b[r]);
+    std::swap(A.rows_[k], A.rows_[r]);
+    std::swap(b[k], b[r]);
 
     for (int j = k; j < 3; ++j) {
       Scalar U_kj = A(k, j);
       for (int i = 0; i < k - 1; ++i) {
-        U_kj -= L(k, i) * U(i, j)
+        U_kj -= L(k, i) * U(i, j);
       }
       U(k, j) = U_kj;
     }
     for (int i = k + 1; i < 3; ++i) {
       Scalar L_ik = A(i, k);
       for (int j = 0; j < k - 1; ++j) {
-        L_ik -= L(i, j) * U (j, k)
+        L_ik -= L(i, j) * U (j, k);
       }
-      L(i, k) = L_ik / U(k, k)
+      L(i, k) = L_ik / U(k, k);
     }
     L(k, k) = 1;
   }
 
   // Find y such that L * y = P * b.
-  R3Element<Rscalar> y;
+  R3Element<RScalar> y;
   y[0] = b[0];
   for (int i = 1; i < 3; ++i) {
     auto s = b[i];
