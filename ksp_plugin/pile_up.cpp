@@ -309,9 +309,8 @@ void PileUp::DeformPileUpIfNeeded() {
     CHECK(Contains(apparent_part_rigid_motion_, part));
   }
 
-  using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
-
   // Compute the apparent centre of mass of the parts.
+  using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
   MechanicalSystem<ApparentBubble, ApparentPileUp> apparent_system;
   for (auto const& [part, apparent_part_rigid_motion] : apparent_part_rigid_motion_) {
     apparent_system.AddRigidBody(
@@ -327,20 +326,41 @@ void PileUp::DeformPileUpIfNeeded() {
   // of the apparent parts.
   auto const apparent_equivalent_angular_velocity =
       apparent_angular_momentum / inertia_tensor;
+  // The angular velocity of a rigid body with the inertia of the apparent
+  // parts, and the angular momentum of the pile up.
+  auto const actual_equivalent_angular_velocity =
+      angular_momentum_ /
+      Identity<ApparentPileUp, NonRotatingPileUp>()(inertia_tensor);
 
-
-  // A motion that maps the apparent centre of mass of the parts to the actual
-  // centre of mass of the pile-up.
-  RigidTransformation<ApparentBubble, NonRotatingPileUp> const
-      apparent_bubble_to_pile_up_transformation(
-          apparent_centre_of_mass.position(),
-          NonRotatingPileUp::origin,
-          OrthogonalMap<ApparentBubble, NonRotatingPileUp>::Identity());
+  // In the |EquivalentRigidPileUp| reference frame, a rigid body with the same
+  // inertia and angular momentum as the pile up would be immobile.  We use this
+  // intermediate frame to apply a rigid rotational correction to the motions of
+  // the part coming from the game (the apparent motions) so as to enforce the
+  // conservation of the angular momentum (|angular_momentum_| is
+  // authoritative).
+  using EquivalentRigidPileUp = Frame<enum class EquivalentRigidPileUpTag>;
+  RigidMotion<ApparentPileUp, EquivalentRigidPileUp> const
+      apparent_pile_up_equivalent_rotation(
+          RigidTransformation<ApparentPileUp, EquivalentRigidPileUp>(
+              ApparentPileUp::origin,
+              EquivalentRigidPileUp::origin,
+              OrthogonalMap<ApparentPileUp, EquivalentRigidPileUp>::Identity()),
+          apparent_equivalent_angular_velocity,
+          ApparentPileUp::unmoving);
+  RigidMotion<NonRotatingPileUp, EquivalentRigidPileUp> const
+      actual_pile_up_equivalent_rotation(
+          RigidTransformation<NonRotatingPileUp, EquivalentRigidPileUp>(
+              NonRotatingPileUp::origin,
+              EquivalentRigidPileUp::origin,
+              OrthogonalMap<NonRotatingPileUp,
+                            EquivalentRigidPileUp>::Identity()),
+          actual_equivalent_angular_velocity,
+          NonRotatingPileUp::unmoving);
   RigidMotion<ApparentBubble, NonRotatingPileUp> const
-      apparent_bubble_to_pile_up_motion(
-          apparent_bubble_to_pile_up_transformation,
-          ApparentBubble::nonrotating,
-          apparent_centre_of_mass.velocity());
+      apparent_bubble_to_pile_up_motion =
+          actual_pile_up_equivalent_rotation.Inverse() *
+          apparent_pile_up_equivalent_rotation *
+          apparent_system.LinearMotion().Inverse();
 
   // Now update the motions of the parts in the pile-up frame.
   actual_part_rigid_motion_.clear();
