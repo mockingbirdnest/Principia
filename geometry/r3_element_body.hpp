@@ -37,6 +37,12 @@ constexpr R3Element<Scalar>::R3Element() : x(), y(), z() {
 }
 
 template<typename Scalar>
+constexpr R3Element<Scalar>::R3Element(uninitialized_t) {
+  static_assert(std::is_standard_layout<R3Element>::value,
+                "R3Element has a nonstandard layout");
+}
+
+template<typename Scalar>
 R3Element<Scalar>::R3Element(Scalar const& x,
                              Scalar const& y,
                              Scalar const& z) : x(x), y(y), z(z) {
