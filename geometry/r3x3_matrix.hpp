@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.hpp"
+#include "base/tags.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -18,6 +19,7 @@ namespace geometry {
 namespace internal_r3x3_matrix {
 
 using base::not_null;
+using base::uninitialized_t;
 using quantities::Cube;
 using quantities::is_quantity;
 using quantities::Product;
@@ -30,6 +32,7 @@ template<typename Scalar>
 class R3x3Matrix final {
  public:
   R3x3Matrix() = default;
+  explicit R3x3Matrix(uninitialized_t);
   R3x3Matrix(R3Element<Scalar> const& row_x,
              R3Element<Scalar> const& row_y,
              R3Element<Scalar> const& row_z);

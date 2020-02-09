@@ -16,8 +16,12 @@ namespace principia {
 namespace geometry {
 namespace internal_r3x3_matrix {
 
+using base::uninitialized;
 using quantities::Abs;
 using quantities::SIUnit;
+
+template<typename Scalar>
+R3x3Matrix<Scalar>::R3x3Matrix(uninitialized_t) {}
 
 template<typename Scalar>
 R3x3Matrix<Scalar>::R3x3Matrix(R3Element<Scalar> const& row_x,
@@ -135,9 +139,8 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     R3Element<RScalar> const& rhs) const {
   auto A = (*this);
   auto b = rhs;
-  //TODO(phl): uninit
-  R3x3Matrix<double> L;
-  R3x3Matrix<Scalar> U;
+  R3x3Matrix<double> L{uninitialized};
+  R3x3Matrix<Scalar> U{uninitialized};
 
   // Doolittle's method: write P * A = L * U where P is an implicit permutation
   // that is also applied to b.
@@ -154,6 +157,7 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     CHECK_LE(0, r);
     CHECK_GT(3, r);
     std::swap(A.rows_[k], A.rows_[r]);
+    std::swap(L.rows_[k], L.rows_[r]);
     std::swap(b[k], b[r]);
     CHECK_NE(0, A(k, k));
 
@@ -174,21 +178,16 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     L(k, k) = 1;
   }
 
-  LOG(ERROR)<<L;
-  LOG(ERROR)<<U;
-  LOG(ERROR)<<b;
-
   // Find y such that L * y = P * b.
   R3Element<RScalar> y;
   y[0] = b[0];
   for (int i = 1; i < 3; ++i) {
     auto s = b[i];
     for (int j = 0; j < i; ++j) {
-      s -= L(i, j) * b[j];
+      s -= L(i, j) * y[j];
     }
     y[i] = s;
   }
-  LOG(ERROR)<<y;
 
   // Find x such that U * x = y.
   R3Element<Quotient<RScalar, Scalar>> x;
