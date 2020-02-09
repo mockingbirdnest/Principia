@@ -14,10 +14,10 @@ namespace ksp_plugin {
 namespace internal_frames {
 
 using geometry::Arbitrary;
-using geometry::NonRotating;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
+using geometry::NonRotating;
 using geometry::Permutation;
 using physics::DynamicFrame;
 

@@ -23,20 +23,20 @@ namespace principia {
 namespace physics {
 
 using geometry::AngularVelocity;
+using geometry::Arbitrary;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
 using geometry::InnerProduct;
-using geometry::Arbitrary;
 using geometry::Normalize;
 using geometry::OddPermutation;
 using geometry::OrthogonalMap;
 using geometry::Permutation;
 using geometry::Point;
 using geometry::Position;
-using geometry::Rotation;
 using geometry::Quaternion;
+using geometry::Rotation;
 using geometry::Sign;
 using geometry::Signature;
 using geometry::Vector;
