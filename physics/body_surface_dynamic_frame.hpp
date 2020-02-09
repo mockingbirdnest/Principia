@@ -38,8 +38,9 @@ using quantities::Acceleration;
 // of the IAU WGCCRE if |polar_axis| is the north pole, or figure 2 if
 // |polar_axis| is the positive pole.
 template<typename InertialFrame, typename ThisFrame>
-class BodySurfaceDynamicFrame
-    : public DynamicFrame<InertialFrame, ThisFrame> {
+class BodySurfaceDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
+  static_assert(ThisFrame::may_rotate);
+
  public:
   BodySurfaceDynamicFrame(not_null<Ephemeris<InertialFrame> const*> ephemeris,
                           not_null<RotatingBody<InertialFrame> const*> centre);

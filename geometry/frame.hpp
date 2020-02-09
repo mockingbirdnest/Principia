@@ -49,7 +49,7 @@ template<typename FrameTag,
          FrameTag tag_ = FrameTag{}>
 struct Frame : not_constructible {
   static constexpr bool is_inertial = motion_ == Inertial;
-  static constexpr bool is_rotating = motion_ == Arbitrary;
+  static constexpr bool may_rotate = motion_ == Arbitrary;
   static constexpr FrameMotion motion = motion_;
   static constexpr Handedness handedness = handedness_;
 

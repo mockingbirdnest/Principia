@@ -37,7 +37,7 @@ using quantities::Time;
 // for corrections and adaptations.
 template<typename InertialFrame, typename PrincipalAxesFrame>
 class EulerSolver {
-  static_assert(!InertialFrame::is_rotating);
+  static_assert(!InertialFrame::may_rotate);
 
  public:
   using AttitudeRotation = Rotation<PrincipalAxesFrame, InertialFrame>;
