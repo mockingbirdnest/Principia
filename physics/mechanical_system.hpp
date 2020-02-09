@@ -39,6 +39,7 @@ template<typename InertialFrame, typename SystemFrame>
 class MechanicalSystem {
  public:
   static_assert(!InertialFrame::may_rotate);
+  static_assert(!SystemFrame::may_rotate);
 
   MechanicalSystem() = default;
 

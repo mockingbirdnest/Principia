@@ -21,7 +21,9 @@ using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
+using geometry::Frame;
 using geometry::Identity;
+using geometry::NonRotating;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::RigidTransformation;
@@ -307,7 +309,7 @@ void PileUp::DeformPileUpIfNeeded() {
     CHECK(Contains(apparent_part_rigid_motion_, part));
   }
 
-  using ApparentPileUp = geometry::Frame<enum class ApparentPileUpTag>;
+  using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
 
   // Compute the apparent centre of mass of the parts.
   MechanicalSystem<ApparentBubble, ApparentPileUp> apparent_system;
@@ -323,7 +325,8 @@ void PileUp::DeformPileUpIfNeeded() {
   auto const inertia_tensor = apparent_system.InertiaTensor();
   // The angular velocity of a rigid body with the inertia and angular momentum
   // of the apparent parts.
-  auto const apparent_equivalent_angular_velocity = apparent_angular_momentum / inertia_tensor;
+  auto const apparent_equivalent_angular_velocity =
+      apparent_angular_momentum / inertia_tensor;
 
 
   // A motion that maps the apparent centre of mass of the parts to the actual

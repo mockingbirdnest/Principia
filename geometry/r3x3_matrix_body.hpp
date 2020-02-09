@@ -163,7 +163,7 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     std::swap(A.rows_[k], A.rows_[r]);
     std::swap(L.rows_[k], L.rows_[r]);
     std::swap(b[k], b[r]);
-    CHECK_NE(0, A(k, k));
+    CHECK_NE(Scalar{}, A(k, k));
 
     for (int j = k; j < 3; ++j) {
       Scalar U_kj = A(k, j);

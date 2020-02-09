@@ -316,6 +316,20 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
       left.coordinates() * right.matrix_);
 }
 
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         template<typename, typename>
+         typename M,
+         int rank,
+         typename>
+Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
+    Multivector<LScalar, Frame, rank> const& left,
+    SymmetricBilinearForm<RScalar, Frame, M> const& right) {
+  return Multivector<Quotient<LScalar, RScalar>, Frame, rank>(
+      right.matrix_.Solve(left.coordinates()));
+}
+
 template<typename LScalar, typename RScalar, typename Frame>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Vector>
 SymmetricProduct(Vector<LScalar, Frame> const& left,

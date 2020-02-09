@@ -39,6 +39,7 @@ using geometry::Frame;
 using geometry::Handedness;
 using geometry::InertiaTensor;
 using geometry::Instant;
+using geometry::NonRotating;
 using geometry::Vector;
 using integrators::Integrator;
 using physics::DiscreteTrajectory;
@@ -62,7 +63,7 @@ using quantities::Torque;
 // reason with than the same quantities with respect to the barycentre of the
 // solar system.
 using NonRotatingPileUp = Frame<serialization::Frame::PluginTag,
-                                Arbitrary,
+                                NonRotating,
                                 Handedness::Right,
                                 serialization::Frame::NON_ROTATING_PILE_UP>;
 

@@ -77,6 +77,9 @@ class R3x3Matrix final {
 
 #if !OS_MACOSX
   template<typename S>
+  friend class R3x3Matrix;
+
+  template<typename S>
   friend R3x3Matrix<S> operator+(R3x3Matrix<S> const& right);
   template<typename S>
   friend R3x3Matrix<S> operator-(R3x3Matrix<S> const& right);

@@ -49,7 +49,7 @@ using Barycentric = Frame<serialization::Frame::PluginTag,
 // the game has run, and before we perform our correction: the origin has no
 // physical significance.
 using ApparentBubble = Frame<serialization::Frame::PluginTag,
-                             Arbitrary,
+                             NonRotating,
                              Handedness::Right,
                              serialization::Frame::APPARENT_BUBBLE>;
 
