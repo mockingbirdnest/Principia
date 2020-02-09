@@ -38,7 +38,7 @@ using quantities::MomentOfInertia;
 template<typename InertialFrame, typename SystemFrame>
 class MechanicalSystem {
  public:
-  static_assert(InertialFrame::is_inertial);
+  static_assert(!InertialFrame::may_rotate);
 
   MechanicalSystem() = default;
 

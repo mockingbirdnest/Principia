@@ -23,20 +23,20 @@ namespace principia {
 namespace physics {
 
 using geometry::AngularVelocity;
+using geometry::Arbitrary;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
 using geometry::InnerProduct;
-using geometry::NonInertial;
 using geometry::Normalize;
 using geometry::OddPermutation;
 using geometry::OrthogonalMap;
 using geometry::Permutation;
 using geometry::Point;
 using geometry::Position;
-using geometry::Rotation;
 using geometry::Quaternion;
+using geometry::Rotation;
 using geometry::Sign;
 using geometry::Signature;
 using geometry::Vector;
@@ -81,7 +81,7 @@ class RigidMotionTest : public testing::Test {
   // positive z axis, the x axis points towards the Moon,
   // the reference frame is right-handed.
   using Terrestrial = Frame<serialization::Frame::TestTag,
-                            NonInertial,
+                            Arbitrary,
                             Handedness::Right,
                             serialization::Frame::TEST2>;
   // Rotating frame fixing the Moon's surface.
@@ -89,7 +89,7 @@ class RigidMotionTest : public testing::Test {
   // positive z axis, the y axis points away from the Earth,
   // the reference frame is left-handed.
   using Lunar = Frame<serialization::Frame::TestTag,
-                      NonInertial,
+                      Arbitrary,
                       Handedness::Left,
                       serialization::Frame::TEST3>;
 
@@ -263,7 +263,7 @@ TEST_F(RigidMotionTest, QuaternionNormalization) {
   using Barycentric =
       Frame<enum class BarycentricTag, Inertial, Handedness::Right>;
   using RigidPart =
-      Frame<enum class RigidPartTag, NonInertial, Handedness::Left>;
+      Frame<enum class RigidPartTag, Arbitrary, Handedness::Left>;
   using AliceWorld =
       Frame<enum class AliceWorldTag, Inertial, Handedness::Right>;
   using World = Frame<enum class WorldTag, Inertial, Handedness::Left>;

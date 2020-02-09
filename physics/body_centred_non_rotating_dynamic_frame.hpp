@@ -50,6 +50,8 @@ using quantities::Acceleration;
 template<typename InertialFrame, typename ThisFrame>
 class BodyCentredNonRotatingDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {
+  static_assert(!ThisFrame::is_inertial);
+
  public:
   BodyCentredNonRotatingDynamicFrame(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,

@@ -35,13 +35,13 @@ using astronomy::InfiniteFuture;
 using base::make_not_null_unique;
 using base::ParseFromBytes;
 using geometry::AngularVelocity;
+using geometry::Arbitrary;
 using geometry::Bivector;
 using geometry::DeduceSignReversingOrientation;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::LinearMap;
-using geometry::NonInertial;
 using geometry::Perspective;
 using geometry::RigidTransformation;
 using geometry::Rotation;
@@ -78,7 +78,7 @@ using ::testing::SizeIs;
 
 class PlanetariumTest : public ::testing::Test {
   using LeftNavigation =
-    Frame<enum class LeftNavigationTag, NonInertial, Handedness::Left>;
+    Frame<enum class LeftNavigationTag, Arbitrary, Handedness::Left>;
  protected:
   PlanetariumTest()
       :  // The camera is located as {0, 20, 0} and is looking along -y.

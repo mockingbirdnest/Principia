@@ -41,6 +41,8 @@ using quantities::Acceleration;
 template<typename InertialFrame, typename ThisFrame>
 class BodyCentredBodyDirectionDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {
+  static_assert(ThisFrame::may_rotate);
+
  public:
   BodyCentredBodyDirectionDynamicFrame(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,

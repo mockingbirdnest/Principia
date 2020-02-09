@@ -69,7 +69,7 @@ constexpr Length focal = 1 * Metre;
 Perspective<Navigation, Camera> PolarPerspective(
     Length const distance_from_earth) {
   using LeftNavigation =
-      Frame<enum class LeftNavigationTag, NonInertial, Handedness::Left>;
+      Frame<enum class LeftNavigationTag, Arbitrary, Handedness::Left>;
   return {
       RigidTransformation<Navigation, Camera>(
           Navigation::origin + Displacement<Navigation>(
@@ -90,7 +90,7 @@ Perspective<Navigation, Camera> PolarPerspective(
 Perspective<Navigation, Camera> EquatorialPerspective(
     Length const distance_from_earth) {
   using LeftNavigation =
-      Frame<enum class LeftNavigationTag, NonInertial, Handedness::Left>;
+      Frame<enum class LeftNavigationTag, Arbitrary, Handedness::Left>;
   return {
       RigidTransformation<Navigation, Camera>(
           Navigation::origin + Displacement<Navigation>(

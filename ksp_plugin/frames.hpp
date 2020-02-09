@@ -13,10 +13,11 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_frames {
 
+using geometry::Arbitrary;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
-using geometry::NonInertial;
+using geometry::NonRotating;
 using geometry::Permutation;
 using physics::DynamicFrame;
 
@@ -26,14 +27,14 @@ using physics::DynamicFrame;
 // The basis is that of Unity's "world space".  The origin is the ineffable
 // origin of Unity's "world space".
 using World = Frame<serialization::Frame::PluginTag,
-                    NonInertial,
+                    Arbitrary,
                     Handedness::Left,
                     serialization::Frame::WORLD>;
 
 // Same as |World| but with the y and z axes switched through the looking-glass:
 // it is a right-handed basis. "We're all mad here. I'm mad. You're mad."
 using AliceWorld = Frame<serialization::Frame::PluginTag,
-                         NonInertial,
+                         Arbitrary,
                          Handedness::Right,
                          serialization::Frame::ALICE_WORLD>;
 
@@ -48,7 +49,7 @@ using Barycentric = Frame<serialization::Frame::PluginTag,
 // the game has run, and before we perform our correction: the origin has no
 // physical significance.
 using ApparentBubble = Frame<serialization::Frame::PluginTag,
-                             NonInertial,
+                             Arbitrary,
                              Handedness::Right,
                              serialization::Frame::APPARENT_BUBBLE>;
 
@@ -62,21 +63,21 @@ using CelestialSphere = Frame<serialization::Frame::PluginTag,
 // latitude and longitude, the y axis pointing to the pole with positive
 // latitude, and the z axis oriented to form a left-handed basis.
 using BodyWorld = Frame<serialization::Frame::PluginTag,
-                        NonInertial,
+                        Arbitrary,
                         Handedness::Left,
                         serialization::Frame::BODY_WORLD>;
 
 // The frame used for the navball.  Its definition depends on the choice of a
 // subclass of FrameField.
 using Navball = Frame<serialization::Frame::PluginTag,
-                      NonInertial,
+                      Arbitrary,
                       Handedness::Left,
                       serialization::Frame::NAVBALL>;
 
 // The frame used for trajectory plotting and manœuvre planning.  Its definition
 // depends on the choice of a subclass of DynamicFrame.
 using Navigation = Frame<serialization::Frame::PluginTag,
-                         NonInertial,
+                         Arbitrary,
                          Handedness::Right,
                          serialization::Frame::NAVIGATION>;
 
@@ -87,7 +88,7 @@ using Navigation = Frame<serialization::Frame::PluginTag,
 // may be in motion with respect to |CameraReference|, so the camera is not
 // necessarily at rest in that frame).
 using CameraReference = Frame<serialization::Frame::PluginTag,
-                              NonInertial,
+                              Arbitrary,
                               Handedness::Left,
                               serialization::Frame::CAMERA_REFERENCE>;
 
@@ -99,33 +100,33 @@ using CameraReference = Frame<serialization::Frame::PluginTag,
 // only be performed between simultaneous quantities, then converted to a
 // consistent (frame, basis) pair before use.
 using AliceSun = Frame<serialization::Frame::PluginTag,
-                       NonInertial,
+                       Arbitrary,
                        Handedness::Right,
                        serialization::Frame::ALICE_SUN>;
 
 // Same as above, but with same axes as |World| instead of those of
 // |AliceWorld|. The caveats are the same as for |AliceSun|.
 using WorldSun = Frame<serialization::Frame::PluginTag,
-                       NonInertial,
+                       Arbitrary,
                        Handedness::Left,
                        serialization::Frame::WORLD_SUN>;
 
 // Used to identify coordinates in the projective plane.  This is *not* the
 // OpenGL camera (which is right-handed) but the Unity camera.
 using Camera = Frame<serialization::Frame::PluginTag,
-                     NonInertial,
+                     Arbitrary,
                      Handedness::Left,
                      serialization::Frame::CAMERA>;
 
 // The frame that defines the orientation of a part.
 using RigidPart = Frame<serialization::Frame::PluginTag,
-                        NonInertial,
+                        Arbitrary,
                         Handedness::Left,
                         serialization::Frame::RIGID_PART>;
 
 // The body-centred non-rotating frame for the current main body.
 using MainBodyCentred = Frame<serialization::Frame::PluginTag,
-                              NonInertial,
+                              NonRotating,
                               Handedness::Right,
                               serialization::Frame::MAIN_BODY_CENTRED>;
 

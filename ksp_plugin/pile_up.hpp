@@ -33,12 +33,12 @@ namespace internal_pile_up {
 
 using base::not_null;
 using base::Status;
+using geometry::Arbitrary;
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::InertiaTensor;
 using geometry::Instant;
-using geometry::NonInertial;
 using geometry::Vector;
 using integrators::Integrator;
 using physics::DiscreteTrajectory;
@@ -62,7 +62,7 @@ using quantities::Torque;
 // reason with than the same quantities with respect to the barycentre of the
 // solar system.
 using NonRotatingPileUp = Frame<serialization::Frame::PluginTag,
-                                NonInertial,
+                                Arbitrary,
                                 Handedness::Right,
                                 serialization::Frame::NON_ROTATING_PILE_UP>;
 

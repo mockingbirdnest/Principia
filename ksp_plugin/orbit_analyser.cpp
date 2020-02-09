@@ -12,9 +12,10 @@ namespace ksp_plugin {
 namespace internal_orbit_analyser {
 
 using geometry::Frame;
+using geometry::NonRotating;
+using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::MasslessBody;
-using physics::BodyCentredNonRotatingDynamicFrame;
 using quantities::IsFinite;
 
 OrbitAnalyser::OrbitAnalyser(not_null<Ephemeris<Barycentric>*> const ephemeris,
@@ -121,7 +122,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     // the progress bar being stuck at 100% while the elements and nodes are
     // being computed.
 
-    using PrimaryCentred = Frame<enum class PrimaryCentredTag>;
+    using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
     BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
         primary_centred(ephemeris_, parameters->primary);
     DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
