@@ -137,13 +137,17 @@ template<typename Scalar>
 template<typename RScalar>
 R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     R3Element<RScalar> const& rhs) const {
+  // This implementation follows [Hig02].
   auto A = (*this);
   auto b = rhs;
+
+  // The units make it inconvenient to overlay L and U onto A.  But then the
+  // matrices are small.
   R3x3Matrix<double> L{uninitialized};
   R3x3Matrix<Scalar> U{uninitialized};
 
   // Doolittle's method: write P * A = L * U where P is an implicit permutation
-  // that is also applied to b.
+  // that is also applied to b.  See [Hig02], Algorithm 9.2 p. 162.
   for (int k = 0; k < 3; ++k) {
     // Partial pivoting.
     int r = -1;
@@ -177,6 +181,8 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     }
     L(k, k) = 1;
   }
+
+  // For the resolution of triangular systems see [Hig02], Algorithm 8.1 p. 140.
 
   // Find y such that L * y = P * b.
   R3Element<RScalar> y;
