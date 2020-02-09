@@ -175,7 +175,7 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     for (int i = k + 1; i < 3; ++i) {
       Scalar L_ik = A(i, k);
       for (int j = 0; j < k; ++j) {
-        L_ik -= L(i, j) * U (j, k);
+        L_ik -= L(i, j) * U(j, k);
       }
       L(i, k) = L_ik / U(k, k);
     }
