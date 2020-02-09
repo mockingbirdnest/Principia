@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace geometry {
@@ -14,9 +15,10 @@ namespace internal_r3x3_matrix {
 
 using quantities::Length;
 using quantities::si::Metre;
-using testing::Eq;
+using testing_utilities::AlmostEquals;
+using ::testing::Eq;
 
-class R3x3MatrixTest : public testing::Test {
+class R3x3MatrixTest : public ::testing::Test {
  protected:
   using R3 = R3Element<double>;
 
@@ -42,6 +44,30 @@ TEST_F(R3x3MatrixTest, Determinant) {
 TEST_F(R3x3MatrixTest, Transpose) {
   EXPECT_THAT(m1_.Transpose(),
               Eq(R3x3Matrix<double>({-9, 7, -1}, {6, -5, 2}, {6, -4, 1})));
+}
+
+TEST_F(R3x3MatrixTest, Solve) {
+  {
+    R3x3Matrix<double> a({2, -3, -4}, {0, 0, -1}, {1, -2, 1});
+    R3Element<Length> b(2 * Metre, 5 * Metre, 3 * Metre);
+    EXPECT_THAT(a.Solve(b),
+                Eq(R3Element<Length>(-60 * Metre, -34 * Metre, -5 * Metre)));
+  }
+  {
+    R3x3Matrix<double> hilbert({1, 1.0 / 2.0, 1.0 / 3.0},
+                               {1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0},
+                               {1.0 / 3.0, 1.0 / 4.0, 1.0 / 5.0});
+    R3Element<double> b(6, -12, 5);
+    EXPECT_THAT(hilbert.Solve(b),
+                AlmostEquals(R3Element<double>(636, -3420, 3240), 48));
+  }
+  {
+    R3x3Matrix<double> vandermonde({1, 2, 4}, {1, -3, 9}, {1, 5, 25});
+    R3Element<double> b(7, -9, 11);
+    EXPECT_THAT(
+        vandermonde.Solve(b),
+        AlmostEquals(R3Element<double>(2, 89.0 / 30.0, -7.0 / 30.0), 1));
+  }
 }
 
 #ifdef _DEBUG

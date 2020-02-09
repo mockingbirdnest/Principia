@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/not_null.hpp"
+#include "base/tags.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
@@ -16,6 +17,7 @@ namespace geometry {
 namespace internal_r3_element {
 
 using base::not_null;
+using base::uninitialized_t;
 using quantities::Angle;
 using quantities::is_quantity;
 using quantities::Product;
@@ -33,6 +35,7 @@ template<typename Scalar>
 struct alignas(16) R3Element final {
  public:
   constexpr R3Element();
+  constexpr explicit R3Element(uninitialized_t);
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
   R3Element(__m128d xy, __m128d zt);
 
