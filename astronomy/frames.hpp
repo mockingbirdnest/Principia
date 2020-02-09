@@ -16,7 +16,7 @@ using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Instant;
-using geometry::NonInertial;
+using geometry::Arbitrary;
 using geometry::Position;
 using quantities::si::ArcMinute;
 using quantities::si::ArcSecond;
@@ -68,7 +68,7 @@ using ICRS = Frame<serialization::Frame::SolarSystemTag,
 //   for practical purposes TT and TDB are within 2 ms of each other;
 //   Principia's |Instant| is TT.
 using GCRS = Frame<serialization::Frame::SolarSystemTag,
-                   NonInertial,
+                   Arbitrary,
                    Handedness::Right,
                    serialization::Frame::GCRS>;
 
@@ -102,7 +102,7 @@ using GCRS = Frame<serialization::Frame::SolarSystemTag,
 //   the tables in EUREF Technical Note 1,
 //   http://etrs89.ensg.ign.fr/pub/EUREF-TN-1.pdf
 using ITRS = Frame<serialization::Frame::SolarSystemTag,
-                   NonInertial,
+                   Arbitrary,
                    Handedness::Right,
                    serialization::Frame::ITRS>;
 
