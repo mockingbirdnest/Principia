@@ -12,11 +12,12 @@ namespace principia {
 namespace astronomy {
 namespace internal_frames {
 
+using geometry::Arbitrary;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Instant;
-using geometry::Arbitrary;
+using geometry::NonRotating;
 using geometry::Position;
 using quantities::si::ArcMinute;
 using quantities::si::ArcSecond;
@@ -68,7 +69,7 @@ using ICRS = Frame<serialization::Frame::SolarSystemTag,
 //   for practical purposes TT and TDB are within 2 ms of each other;
 //   Principia's |Instant| is TT.
 using GCRS = Frame<serialization::Frame::SolarSystemTag,
-                   Arbitrary,
+                   NonRotating,
                    Handedness::Right,
                    serialization::Frame::GCRS>;
 
