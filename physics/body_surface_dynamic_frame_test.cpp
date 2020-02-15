@@ -33,15 +33,15 @@ namespace internal_body_surface_dynamic_frame {
 using astronomy::ICRS;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
+using geometry::Arbitrary;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Instant;
-using geometry::NonInertial;
 using geometry::Rotation;
-using geometry::Velocity;
 using geometry::Vector;
+using geometry::Velocity;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::GravitationalParameter;
@@ -77,11 +77,11 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the big body and directed to the small one.
   using BigSmallFrame = Frame<serialization::Frame::TestTag,
-                              NonInertial,
+                              Arbitrary,
                               Handedness::Right,
                               serialization::Frame::TEST>;
   using MockFrame = Frame<serialization::Frame::TestTag,
-                          NonInertial,
+                          Arbitrary,
                           Handedness::Right,
                           serialization::Frame::TEST1>;
 

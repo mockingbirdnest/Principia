@@ -14,9 +14,9 @@ namespace physics {
 namespace internal_dynamic_frame {
 
 using base::not_null;
-using geometry::Instant;
+using geometry::Arbitrary;
 using geometry::Handedness;
-using geometry::NonInertial;
+using geometry::Instant;
 using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
@@ -26,7 +26,7 @@ using quantities::Acceleration;
 // TODO(egg): this should actually depend on its template parameter somehow.
 template<typename Frame>
 using Frenet = geometry::Frame<serialization::Frame::PhysicsTag,
-                               NonInertial,
+                               Arbitrary,
                                Handedness::Right,
                                serialization::Frame::FRENET>;
 

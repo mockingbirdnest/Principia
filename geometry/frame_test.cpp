@@ -21,7 +21,7 @@ class FrameTest : public testing::Test {
                        Handedness::Right,
                        serialization::Frame::TEST2>;
   using World3 = Frame<serialization::Frame::TestTag,
-                       NonInertial,
+                       Arbitrary,
                        Handedness::Right,
                        serialization::Frame::TEST1>;
   using World4 = Frame<serialization::Frame::SolarSystemTag,

@@ -29,6 +29,7 @@ namespace physics {
 namespace internal_body_centred_non_rotating_dynamic_frame {
 
 using astronomy::ICRS;
+using geometry::Arbitrary;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::DefinesFrame;
@@ -36,7 +37,6 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Instant;
-using geometry::NonInertial;
 using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
@@ -71,11 +71,11 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
  protected:
   // The non-rotating frame centred on the big body.
   using Big = Frame<serialization::Frame::TestTag,
-                    NonInertial,
+                    Arbitrary,
                     Handedness::Right,
                     serialization::Frame::TEST>;
   using Small = Frame<serialization::Frame::TestTag,
-                      NonInertial,
+                      Arbitrary,
                       Handedness::Right,
                       serialization::Frame::TEST1>;
 

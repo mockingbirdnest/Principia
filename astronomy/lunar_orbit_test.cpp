@@ -43,11 +43,11 @@ using base::dynamic_cast_not_null;
 using base::not_null;
 using base::OFStream;
 using geometry::AngularVelocity;
+using geometry::Arbitrary;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::Instant;
-using geometry::NonInertial;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Vector;
@@ -176,7 +176,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
   // This Moon-centred, Moon-fixed reference frame has the x axis pointing
   // towards the Earth, and the y axis in the direction of the velocity of the
   // Earth, see figure 1. of Russell and Lara (2006).
-  using LunarSurface = Frame<enum class LunarSurfaceTag, NonInertial>;
+  using LunarSurface = Frame<enum class LunarSurfaceTag, Arbitrary>;
 
   // This reference frame is non-rotating, with its origin at the selenocentre.
   // The axes are those of LunarSurface at J2000.

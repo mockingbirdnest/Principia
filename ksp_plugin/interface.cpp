@@ -72,11 +72,11 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using base::SerializeAsBytes;
 using base::UniqueArray;
+using geometry::Arbitrary;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::InertiaTensor;
-using geometry::NonInertial;
 using geometry::OrthogonalMap;
 using geometry::Quaternion;
 using geometry::R3x3Matrix;
@@ -822,7 +822,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
   // We build the inertia tensor in the principal axes and then transform it to
   // RigidPart.
   using PartPrincipalAxes = Frame<serialization::Frame::PhysicsTag,
-                                  NonInertial,
+                                  Arbitrary,
                                   Handedness::Left,
                                   serialization::Frame::PRINCIPAL_AXES>;
 
