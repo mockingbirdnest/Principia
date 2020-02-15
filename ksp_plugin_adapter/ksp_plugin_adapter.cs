@@ -989,7 +989,7 @@ public partial class PrincipiaPluginAdapter
               main_body_degrees_of_freedom,
               degrees_of_freedom,
               (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
-              (XYZ)(Vector3d)(part.rb.rotation * part.rb.angularVelocity),
+              (XYZ)(Vector3d)part.rb.angularVelocity,
               Δt);
           if (part_id_to_intrinsic_torque_.ContainsKey(part.flightID)) {
             plugin_.PartApplyIntrinsicTorque(
@@ -1141,7 +1141,7 @@ public partial class PrincipiaPluginAdapter
             new QP{q = (XYZ)(Vector3d)part.rb.position,
                    p = (XYZ)(Vector3d)part.rb.velocity},
             (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
-            (XYZ)(Vector3d)(part.rb.rotation * part.rb.angularVelocity),
+            (XYZ)(Vector3d)part.rb.angularVelocity,
             main_body_degrees_of_freedom);
       }
     }
