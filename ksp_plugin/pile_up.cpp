@@ -37,6 +37,8 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
+bool PileUp::conserve_angular_momentum = false;
+
 PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
     Instant const& t,
@@ -346,7 +348,8 @@ void PileUp::DeformPileUpIfNeeded() {
               ApparentPileUp::origin,
               EquivalentRigidPileUp::origin,
               OrthogonalMap<ApparentPileUp, EquivalentRigidPileUp>::Identity()),
-          apparent_equivalent_angular_velocity,
+          conserve_angular_momentum ? apparent_equivalent_angular_velocity
+                                    : ApparentPileUp::nonrotating,
           ApparentPileUp::unmoving);
   RigidMotion<NonRotatingPileUp, EquivalentRigidPileUp> const
       actual_pile_up_equivalent_rotation(
@@ -355,7 +358,8 @@ void PileUp::DeformPileUpIfNeeded() {
               EquivalentRigidPileUp::origin,
               OrthogonalMap<NonRotatingPileUp,
                             EquivalentRigidPileUp>::Identity()),
-          actual_equivalent_angular_velocity,
+          conserve_angular_momentum ? actual_equivalent_angular_velocity
+                                    : NonRotatingPileUp::nonrotating,
           NonRotatingPileUp::unmoving);
   RigidMotion<ApparentBubble, NonRotatingPileUp> const
       apparent_bubble_to_pile_up_motion =
