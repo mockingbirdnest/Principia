@@ -1178,7 +1178,7 @@ public partial class PrincipiaPluginAdapter
           if (part.rb == null) {
             continue;
           }
-          QP part_actual_degrees_of_freedom =
+          QPRW part_actual_motion =
               plugin_.PartGetActualDegreesOfFreedom(
                   part.flightID,
                   new Origin{
@@ -1191,6 +1191,7 @@ public partial class PrincipiaPluginAdapter
                       reference_part_id =
                           FlightGlobals.ActiveVessel.rootPart.flightID});
           if (part == FlightGlobals.ActiveVessel.rootPart) {
+            QP part_actual_degrees_of_freedom = part_actual_motion.qp;
             q_correction_at_root_part =
                 (Vector3d)part_actual_degrees_of_freedom.q - part.rb.position;
             v_correction_at_root_part =
@@ -1199,15 +1200,24 @@ public partial class PrincipiaPluginAdapter
 
           // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
           // transform nonsense must probably be done.
-          part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q;
-          part.rb.transform.position =
-              (Vector3d)part_actual_degrees_of_freedom.q;
-          part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
+          // NOTE(egg): we must set the position and rotation of the |Transform|
+          // as well as that of the |RigidBody| because we are performing this
+          // correction after the physics step.
+          // See https://github.com/mockingbirdnest/Principia/pull/1427,
+          // https://github.com/mockingbirdnest/Principia/issues/1307#issuecomment-478337241.
+          part.rb.position = (Vector3d)part_actual_motion.qp.q;
+          part.rb.transform.position = (Vector3d)part_actual_motion.qp.q;
+          part.rb.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
+          part.rb.transform.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
+
+          part.rb.velocity = (Vector3d)part_actual_motion.qp.p;
+          part.rb.angularVelocity = (Vector3d)part_actual_motion.w;
         }
       }
       foreach (
           physicalObject physical_object in FlightGlobals.physicalObjects.Where(
               o => o != null && o.rb != null)) {
+        // TODO(egg): This is no longer sensible.
         physical_object.rb.position += q_correction_at_root_part;
         physical_object.rb.transform.position += q_correction_at_root_part;
         physical_object.rb.velocity += v_correction_at_root_part;

@@ -259,6 +259,10 @@ inline bool operator==(QP const& left, QP const& right) {
   return left.q == right.q && left.p == right.p;
 }
 
+inline bool operator==(QPRW const& left, QPRW const& right) {
+  return left.qp == right.qp && left.r == right.r && left.w == right.w;
+}
+
 inline bool operator==(Status const& left, Status const& right) {
   return left.error == right.error;
 }

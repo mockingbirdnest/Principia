@@ -98,6 +98,7 @@ bool operator==(OrbitGroundTrack const& left, OrbitGroundTrack const& right);
 bool operator==(OrbitRecurrence const& left, OrbitRecurrence const& right);
 bool operator==(OrbitalElements const& left, OrbitalElements const& right);
 bool operator==(QP const& left, QP const& right);
+bool operator==(QPRW const& left, QPRW const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XY const& left, XY const& right);
 bool operator==(XYZ const& left, XYZ const& right);

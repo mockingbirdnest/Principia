@@ -666,12 +666,11 @@ void Plugin::SetPartApparentRigidMotion(
       part, world_to_apparent_bubble * rigid_motion);
 }
 
-DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
+RigidMotion<RigidPart, World> Plugin::GetPartActualMotion(
     PartId const part_id,
     RigidMotion<Barycentric, World> const& barycentric_to_world) const {
-  return barycentric_to_world(
-             FindOrDie(part_id_to_vessel_,
-                       part_id)->part(part_id)->degrees_of_freedom());
+  return barycentric_to_world *
+         FindOrDie(part_id_to_vessel_, part_id)->part(part_id)->rigid_motion();
 }
 
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(

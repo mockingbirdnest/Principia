@@ -176,6 +176,12 @@ internal class MainWindow : SupervisedWindowRenderer {
               style: Style.Multiline(UnityEngine.GUI.skin.textArea));
         }
       }
+      string trace = "REMOVE BEFORE FLIGHT";
+      if (FlightGlobals.ActiveVessel && adapter_.PluginRunning() && plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
+        trace = plugin.VesselGetPileUpTrace(FlightGlobals.ActiveVessel.id.ToString());
+      }
+      UnityEngine.GUILayout.TextArea(trace,
+              style: Style.Multiline(UnityEngine.GUI.skin.textArea));
       Interface.GetVersion(build_date : out string _,
                            version    : out string version);
       UnityEngine.GUILayout.Label(

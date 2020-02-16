@@ -332,6 +332,7 @@ void PileUp::DeformPileUpIfNeeded() {
       angular_momentum_ /
       Identity<ApparentPileUp, NonRotatingPileUp>()(inertia_tensor);
 
+  std::stringstream trace;
   // In the |EquivalentRigidPileUp| reference frame, a rigid body with the same
   // inertia and angular momentum as the pile up would be immobile.  We use this
   // intermediate frame to apply a rigid rotational correction to the motions of
@@ -362,6 +363,17 @@ void PileUp::DeformPileUpIfNeeded() {
           apparent_pile_up_equivalent_rotation *
           apparent_system.LinearMotion().Inverse();
 
+  trace << apparent_system.centre_of_mass() << "\n "
+        << (actual_pile_up_equivalent_rotation.Inverse() *
+            apparent_pile_up_equivalent_rotation)
+               .angular_velocity_of_to_frame()<< "\n"
+        << apparent_equivalent_angular_velocity << "\n"
+        << actual_equivalent_angular_velocity << "\n"
+        << apparent_angular_momentum << "\n"
+        << angular_momentum_;
+
+  last_correction_trace_ = trace.str();
+
   // Now update the motions of the parts in the pile-up frame.
   actual_part_rigid_motion_.clear();
   for (auto const& pair : apparent_part_rigid_motion_) {
@@ -378,6 +390,8 @@ Status PileUp::AdvanceTime(Instant const& t) {
 
   Status status;
   auto const history_last = --history_->end();
+  angular_momentum_ +=
+      intrinsic_torque_ * (t - psychohistory_->back().time) + angular_momentum_change_;
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
     history_->DeleteFork(psychohistory_);
