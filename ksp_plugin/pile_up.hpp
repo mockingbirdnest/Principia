@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
@@ -39,6 +40,7 @@ using geometry::Frame;
 using geometry::Handedness;
 using geometry::InertiaTensor;
 using geometry::Instant;
+using geometry::NonRotating;
 using geometry::Vector;
 using integrators::Integrator;
 using physics::DiscreteTrajectory;
@@ -62,7 +64,7 @@ using quantities::Torque;
 // reason with than the same quantities with respect to the barycentre of the
 // solar system.
 using NonRotatingPileUp = Frame<serialization::Frame::PluginTag,
-                                Arbitrary,
+                                NonRotating,
                                 Handedness::Right,
                                 serialization::Frame::NON_ROTATING_PILE_UP>;
 
@@ -119,6 +121,12 @@ class PileUp {
       std::function<not_null<Part*>(PartId)> const& part_id_to_part,
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void()> deletion_callback);
+
+  std::string const& Trace() {
+    return last_correction_trace_;
+  }
+
+  static bool conserve_angular_momentum;
 
  private:
   // A pointer to a member function of |Part| used to append a point to either
@@ -180,6 +188,8 @@ class PileUp {
   // assume that lost mass carries angular momentum in such a way that the
   // angular velocity of a part remains constant.
   Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_change_;
+
+  std::string last_correction_trace_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally
   // integrated with a fixed step using |fixed_instance_|, except in the

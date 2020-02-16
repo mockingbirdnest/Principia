@@ -149,6 +149,12 @@ message WXYZ {
   required double z = 4;
 }
 
+message QPRW {
+  required QP qp = 1;
+  required WXYZ r = 2;
+  required XYZ w = 3;
+}
+
 message XY {
   option (is_public) = true;
   required double x = 1;
@@ -1559,7 +1565,7 @@ message PartGetActualDegreesOfFreedom {
     required Origin origin = 4;
   }
   message Return {
-    required QP result = 1;
+    required QPRW result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1866,6 +1872,16 @@ message SerializePlugin {
   optional Return return = 3;
 }
 
+message SetAngularMomentumConservation {
+  extend Method {
+    optional SetAngularMomentumConservation extension = 5998;
+  }
+  message In {
+    required bool conserve = 1;
+  }
+  optional In in = 1;
+}
+
 message SetBufferDuration {
   extend Method {
     optional SetBufferDuration extension = 5014;
@@ -2032,6 +2048,23 @@ message VesselFromParent {
   }
   message Return {
     required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselGetPileUpTrace {
+  extend Method {
+    optional VesselGetPileUpTrace extension = 5999;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required fixed64 result = 1 [(encoding) = UTF_8,
+                                 (is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;

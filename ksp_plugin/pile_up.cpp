@@ -21,7 +21,9 @@ using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
+using geometry::Frame;
 using geometry::Identity;
+using geometry::NonRotating;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::RigidTransformation;
@@ -307,31 +309,87 @@ void PileUp::DeformPileUpIfNeeded() {
     CHECK(Contains(apparent_part_rigid_motion_, part));
   }
 
-  // Compute the apparent centre of mass of the parts.
-  BarycentreCalculator<DegreesOfFreedom<ApparentBubble>, Mass> calculator;
-  for (auto const& pair : apparent_part_rigid_motion_) {
-    auto const part = pair.first;
-    auto const& apparent_part_rigid_motion = pair.second;
-    DegreesOfFreedom<ApparentBubble> const apparent_part_degrees_of_freedom =
-        apparent_part_rigid_motion({RigidPart::origin, RigidPart::unmoving});
-    calculator.Add(apparent_part_degrees_of_freedom, part->mass());
+  using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
+  MechanicalSystem<ApparentBubble, ApparentPileUp> apparent_system;
+  for (auto const& [part, apparent_part_rigid_motion] :
+       apparent_part_rigid_motion_) {
+    apparent_system.AddRigidBody(
+        apparent_part_rigid_motion, part->mass(), part->inertia_tensor());
   }
-  auto const apparent_centre_of_mass = calculator.Get();
+  auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
+  auto const apparent_angular_momentum = apparent_system.AngularMomentum();
+  // Note that the inertia tensor is with respect to the centre of mass, so it
+  // is unaffected by the apparent-bubble-to-pile-up correction, which is rigid
+  // and involves no change in axes.
+  auto const inertia_tensor = apparent_system.InertiaTensor();
+  // The angular velocity of a rigid body with the inertia and angular momentum
+  // of the apparent parts.
+  auto const apparent_equivalent_angular_velocity =
+      apparent_angular_momentum / inertia_tensor;
+  // The angular velocity of a rigid body with the inertia of the apparent
+  // parts, and the angular momentum of the pile up.
+  auto const actual_equivalent_angular_velocity =
+      angular_momentum_ /
+      Identity<ApparentPileUp, NonRotatingPileUp>()(inertia_tensor);
 
-  // A motion that maps the apparent centre of mass of the parts to the actual
-  // centre of mass of the pile-up.
-  RigidTransformation<ApparentBubble, NonRotatingPileUp> const
-      apparent_bubble_to_pile_up_transformation(
-          apparent_centre_of_mass.position(),
-          NonRotatingPileUp::origin,
-          OrthogonalMap<ApparentBubble, NonRotatingPileUp>::Identity());
+  std::stringstream trace;
+  // In the |EquivalentRigidPileUp| reference frame, a rigid body with the same
+  // inertia and angular momentum as the pile up would be immobile.  We use this
+  // intermediate frame to apply a rigid rotational correction to the motions of
+  // the part coming from the game (the apparent motions) so as to enforce the
+  // conservation of the angular momentum (|angular_momentum_| is
+  // authoritative).
+  using EquivalentRigidPileUp = Frame<enum class EquivalentRigidPileUpTag>;
+  RigidMotion<ApparentPileUp, EquivalentRigidPileUp> const
+      apparent_pile_up_equivalent_rotation(
+          RigidTransformation<ApparentPileUp, EquivalentRigidPileUp>(
+              ApparentPileUp::origin,
+              EquivalentRigidPileUp::origin,
+              OrthogonalMap<ApparentPileUp, EquivalentRigidPileUp>::Identity()),
+          conserve_angular_momentum ? apparent_equivalent_angular_velocity
+                                    : ApparentPileUp::nonrotating,
+          ApparentPileUp::unmoving);
+  RigidMotion<NonRotatingPileUp, EquivalentRigidPileUp> const
+      actual_pile_up_equivalent_rotation(
+          RigidTransformation<NonRotatingPileUp, EquivalentRigidPileUp>(
+              NonRotatingPileUp::origin,
+              EquivalentRigidPileUp::origin,
+              OrthogonalMap<NonRotatingPileUp,
+                            EquivalentRigidPileUp>::Identity()),
+          conserve_angular_momentum ? actual_equivalent_angular_velocity
+                                    : NonRotatingPileUp::nonrotating,
+          NonRotatingPileUp::unmoving);
   RigidMotion<ApparentBubble, NonRotatingPileUp> const
-      apparent_bubble_to_pile_up_motion(
-          apparent_bubble_to_pile_up_transformation,
-          ApparentBubble::nonrotating,
-          apparent_centre_of_mass.velocity());
+      apparent_bubble_to_pile_up_motion =
+          actual_pile_up_equivalent_rotation.Inverse() *
+          apparent_pile_up_equivalent_rotation *
+          apparent_system.LinearMotion().Inverse();
 
-  // Now update the positions of the parts in the pile-up frame.
+  using PileUpPrincipalAxes = Frame<enum class PileUpPrincipalAxesTag>;
+  trace << "rotational correction:\n"
+        << (actual_pile_up_equivalent_rotation.Inverse() *
+            apparent_pile_up_equivalent_rotation)
+               .angular_velocity_of_to_frame()
+               .Norm()
+        << "\nangular momentum error:\n"
+        << (Identity<ApparentPileUp, NonRotatingPileUp>()(
+                apparent_angular_momentum) -
+            angular_momentum_)
+               .Norm()
+        << "\ncorresponding rotational correction:\n"
+        << (Identity<ApparentPileUp, NonRotatingPileUp>()(
+                apparent_equivalent_angular_velocity) -
+            actual_equivalent_angular_velocity)
+               .Norm()
+        << u8"\nω apparent:\n"
+        << apparent_equivalent_angular_velocity.Norm()
+        << "\nL in principal axes:\n"
+        << inertia_tensor.Diagonalize<PileUpPrincipalAxes>().rotation.Inverse()(
+               apparent_angular_momentum);
+
+  last_correction_trace_ = trace.str();
+
+  // Now update the motions of the parts in the pile-up frame.
   actual_part_rigid_motion_.clear();
   for (auto const& pair : apparent_part_rigid_motion_) {
     auto const part = pair.first;
@@ -347,6 +405,8 @@ Status PileUp::AdvanceTime(Instant const& t) {
 
   Status status;
   auto const history_last = --history_->end();
+  angular_momentum_ += intrinsic_torque_ * (t - psychohistory_->back().time) +
+                       angular_momentum_change_;
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
     history_->DeleteFork(psychohistory_);
@@ -462,6 +522,8 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
                            std::future<Status> future)
     : pile_up(pile_up),
       future(std::move(future)) {}
+
+bool PileUp::conserve_angular_momentum = false;
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin

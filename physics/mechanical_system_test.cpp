@@ -14,6 +14,7 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Identity;
 using geometry::Inertial;
+using geometry::NonRotating;
 using geometry::OrthogonalMap;
 using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
@@ -42,7 +43,7 @@ namespace physics {
 class MechanicalSystemTest : public testing::Test{
  protected:
   using InertialFrame = Frame<enum class InertialTag, Inertial>;
-  using SystemFrame = Frame<enum class SystemTag>;
+  using SystemFrame = Frame<enum class SystemTag, NonRotating>;
 
   MechanicalSystem<InertialFrame, SystemFrame> system_;
 };

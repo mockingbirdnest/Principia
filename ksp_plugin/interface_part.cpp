@@ -71,23 +71,32 @@ void __cdecl principia__PartApplyIntrinsicTorque(
   return m.Return();
 }
 
-QP __cdecl principia__PartGetActualDegreesOfFreedom(Plugin const* const plugin,
-                                                    PartId const part_id,
-                                                    Origin const origin) {
+QPRW __cdecl principia__PartGetActualDegreesOfFreedom(
+    Plugin const* const plugin,
+    PartId const part_id,
+    Origin const origin) {
   journal::Method<journal::PartGetActualDegreesOfFreedom> m(
       {plugin, part_id, origin});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToQP(
-      plugin->GetPartActualDegreesOfFreedom(
-          part_id,
-          plugin->BarycentricToWorld(
-              origin.reference_part_is_unmoving,
-              origin.reference_part_id,
-              origin.reference_part_is_at_origin
-                  ? std::nullopt
-                  : std::make_optional(
-                        FromXYZ<Position<World>>(
-                            origin.main_body_centre_in_world))))));
+  RigidMotion<RigidPart, World> const part_motion = plugin->GetPartActualMotion(
+      part_id,
+      plugin->BarycentricToWorld(
+          origin.reference_part_is_unmoving,
+          origin.reference_part_id,
+          origin.reference_part_is_at_origin
+              ? std::nullopt
+              : std::make_optional(FromXYZ<Position<World>>(
+                    origin.main_body_centre_in_world))));
+  DegreesOfFreedom<World> const part_dof =
+      part_motion({RigidPart::origin, RigidPart::unmoving});
+  Rotation<RigidPart, World> const part_orientation =
+      part_motion.orthogonal_map().AsRotation();
+  AngularVelocity<World> const part_angular_velocity =
+      part_motion.Inverse().angular_velocity_of_to_frame();
+  return m.Return(
+      {ToQP(part_dof),
+       ToWXYZ(part_orientation.quaternion()),
+       ToXYZ(part_angular_velocity.coordinates() / (Radian / Second))});
 }
 
 void __cdecl principia__PartSetApparentRigidMotion(

@@ -160,6 +160,16 @@ class SymmetricBilinearForm {
       geometry::Multivector<L, F, rank> const& left,
       SymmetricBilinearForm<R, F, M> const& right);
 
+  template<typename L,
+           typename R,
+           typename F,
+           template<typename, typename> typename M,
+           int rank,
+           typename>
+  friend geometry::Multivector<Quotient<L, R>, F, rank> operator/(
+      geometry::Multivector<L, F, rank> const& left,
+      SymmetricBilinearForm<R, F, M> const& right);
+
   template<typename L, typename R, typename F>
   friend SymmetricBilinearForm<Product<L, R>, F, Vector>
   SymmetricProduct(Vector<L, F> const& left,
@@ -265,6 +275,20 @@ template<typename LScalar,
              std::is_same_v<M<double, Frame>,
                             Multivector<double, Frame, rank>>>>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
+    Multivector<LScalar, Frame, rank> const& left,
+    SymmetricBilinearForm<RScalar, Frame, M> const& right);
+
+// Solves the system |result * right == left|.  Note that by symmetry, this is
+// also the solution of |right * result == left|.
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         template<typename, typename> typename M,
+         int rank,
+         typename = std::enable_if_t<
+             std::is_same_v<M<double, Frame>,
+                            Multivector<double, Frame, rank>>>>
+Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
     Multivector<LScalar, Frame, rank> const& left,
     SymmetricBilinearForm<RScalar, Frame, M> const& right);
 

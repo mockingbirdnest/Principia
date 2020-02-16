@@ -254,10 +254,10 @@ class Plugin {
       RigidMotion<RigidPart, World> const& rigid_motion,
       DegreesOfFreedom<World> const& main_body_degrees_of_freedom);
 
-  // Returns the degrees of freedom of the given part in |World|, assuming that
+  // Returns the motion of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
   // |part_at_origin|.
-  virtual DegreesOfFreedom<World> GetPartActualDegreesOfFreedom(
+  virtual RigidMotion<RigidPart, World> GetPartActualMotion(
       PartId part_id,
       RigidMotion<Barycentric, World> const& barycentric_to_world) const;
 
