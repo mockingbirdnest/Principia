@@ -37,8 +37,6 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
-bool PileUp::conserve_angular_momentum = false;
-
 PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
     Instant const& t,
@@ -524,6 +522,8 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
                            std::future<Status> future)
     : pile_up(pile_up),
       future(std::move(future)) {}
+
+bool PileUp::conserve_angular_momentum = false;
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin

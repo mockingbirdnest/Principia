@@ -1,11 +1,13 @@
 ﻿
+#include "ksp_plugin/interface.hpp"
+
 #include <numeric>
+#include <string>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
-#include "ksp_plugin/interface.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -48,7 +50,23 @@ QP __cdecl principia__VesselFromParent(Plugin const* const plugin,
   return m.Return(ToQP(plugin->VesselFromParent(parent_index, vessel_guid)));
 }
 
-AdaptiveStepParameters __cdecl principia__VesselGetPredictionAdaptiveStepParameters(
+char const* __cdecl principia__VesselGetPileUpTrace(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::VesselGetPileUpTrace> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  base::UniqueArray<char> bytes;
+  plugin->GetVessel(vessel_guid)
+      ->ForSomePart([&bytes](ksp_plugin::Part const& part) {
+        std::string const& trace = part.containing_pile_up()->Trace();
+        bytes = base::UniqueArray<char>(trace.size() + 1);
+        std::memcpy(bytes.data.get(), trace.data(), bytes.size);
+      });
+  return m.Return(bytes.data.release());
+}
+
+AdaptiveStepParameters __cdecl
+principia__VesselGetPredictionAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::VesselGetPredictionAdaptiveStepParameters> m(
@@ -190,21 +208,6 @@ XYZ __cdecl principia__VesselVelocity(Plugin const* const plugin,
   journal::Method<journal::VesselVelocity> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToXYZ(plugin->VesselVelocity(vessel_guid)));
-}
-
-char const* __cdecl principia__VesselGetPileUpTrace(
-    Plugin const* const plugin,
-    char const* const vessel_guid) {
-  journal::Method<journal::VesselGetPileUpTrace> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
-  base::UniqueArray<char> bytes;
-  plugin->GetVessel(vessel_guid)
-      ->ForSomePart([&bytes](ksp_plugin::Part const& part) {
-        std::string const& trace = part.containing_pile_up()->Trace();
-        bytes = base::UniqueArray<char>(trace.size() + 1);
-        std::memcpy(bytes.data.get(), trace.data(), bytes.size);
-      });
-  return m.Return(bytes.data.release());
 }
 
 }  // namespace interface

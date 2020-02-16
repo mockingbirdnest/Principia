@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
