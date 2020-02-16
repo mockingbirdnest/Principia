@@ -367,6 +367,7 @@ void PileUp::DeformPileUpIfNeeded() {
           apparent_pile_up_equivalent_rotation *
           apparent_system.LinearMotion().Inverse();
 
+  using PileUpPrincipalAxes = Frame<enum class PileUpPrincipalAxesTag>;
   trace << "rotational correction:\n"
         << (actual_pile_up_equivalent_rotation.Inverse() *
             apparent_pile_up_equivalent_rotation)
@@ -381,7 +382,12 @@ void PileUp::DeformPileUpIfNeeded() {
         << (Identity<ApparentPileUp, NonRotatingPileUp>()(
                 apparent_equivalent_angular_velocity) -
             actual_equivalent_angular_velocity)
-               .Norm();
+               .Norm()
+        << u8"\nω apparent:\n"
+        << apparent_equivalent_angular_velocity.Norm()
+        << "\nL in principal axes:\n"
+        << inertia_tensor.Diagonalize<PileUpPrincipalAxes>().rotation.Inverse()(
+               apparent_angular_momentum);
 
   last_correction_trace_ = trace.str();
 
