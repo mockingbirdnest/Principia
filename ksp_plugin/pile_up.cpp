@@ -311,10 +311,10 @@ void PileUp::DeformPileUpIfNeeded() {
     CHECK(Contains(apparent_part_rigid_motion_, part));
   }
 
-  // Compute the apparent centre of mass of the parts.
   using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
   MechanicalSystem<ApparentBubble, ApparentPileUp> apparent_system;
-  for (auto const& [part, apparent_part_rigid_motion] : apparent_part_rigid_motion_) {
+  for (auto const& [part, apparent_part_rigid_motion] :
+       apparent_part_rigid_motion_) {
     apparent_system.AddRigidBody(
         apparent_part_rigid_motion, part->mass(), part->inertia_tensor());
   }
@@ -396,8 +396,8 @@ Status PileUp::AdvanceTime(Instant const& t) {
 
   Status status;
   auto const history_last = --history_->end();
-  angular_momentum_ +=
-      intrinsic_torque_ * (t - psychohistory_->back().time) + angular_momentum_change_;
+  angular_momentum_ += intrinsic_torque_ * (t - psychohistory_->back().time) +
+                       angular_momentum_change_;
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
     history_->DeleteFork(psychohistory_);

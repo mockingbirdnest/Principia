@@ -319,8 +319,7 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
 template<typename LScalar,
          typename RScalar,
          typename Frame,
-         template<typename, typename>
-         typename M,
+         template<typename, typename> typename M,
          int rank,
          typename>
 Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
