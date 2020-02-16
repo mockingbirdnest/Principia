@@ -367,14 +367,16 @@ void PileUp::DeformPileUpIfNeeded() {
           apparent_pile_up_equivalent_rotation *
           apparent_system.LinearMotion().Inverse();
 
-  trace << apparent_system.centre_of_mass() << "\n "
+  trace << "rotational correction:\n"
         << (actual_pile_up_equivalent_rotation.Inverse() *
             apparent_pile_up_equivalent_rotation)
-               .angular_velocity_of_to_frame()<< "\n"
-        << apparent_equivalent_angular_velocity << "\n"
-        << actual_equivalent_angular_velocity << "\n"
-        << apparent_angular_momentum << "\n"
-        << angular_momentum_;
+               .angular_velocity_of_to_frame()
+               .Norm()
+        << "\nangular momentum error:\n"
+        << (Identity<ApparentPileUp, NonRotatingPileUp>()(
+                apparent_angular_momentum) -
+            angular_momentum_)
+               .Norm();
 
   last_correction_trace_ = trace.str();
 

@@ -1872,6 +1872,16 @@ message SerializePlugin {
   optional Return return = 3;
 }
 
+message SetAngularMomentumConservation {
+  extend Method {
+    optional SetAngularMomentumConservation extension = 5998;
+  }
+  message In {
+    required bool conserve = 1;
+  }
+  optional In in = 1;
+}
+
 message SetBufferDuration {
   extend Method {
     optional SetBufferDuration extension = 5014;
@@ -2043,22 +2053,6 @@ message VesselFromParent {
   optional Return return = 3;
 }
 
-message VesselGetPredictionAdaptiveStepParameters {
-  extend Method {
-    optional VesselGetPredictionAdaptiveStepParameters extension = 5090;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  message Return {
-    required AdaptiveStepParameters adaptive_step_parameters = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message VesselGetPileUpTrace {
   extend Method {
     optional VesselGetPileUpTrace extension = 5999;
@@ -2071,6 +2065,22 @@ message VesselGetPileUpTrace {
   message Return {
     required fixed64 result = 1 [(encoding) = UTF_8,
                                  (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselGetPredictionAdaptiveStepParameters {
+  extend Method {
+    optional VesselGetPredictionAdaptiveStepParameters extension = 5090;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required AdaptiveStepParameters adaptive_step_parameters = 1;
   }
   optional In in = 1;
   optional Return return = 3;

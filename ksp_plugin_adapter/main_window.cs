@@ -176,12 +176,6 @@ internal class MainWindow : SupervisedWindowRenderer {
               style: Style.Multiline(UnityEngine.GUI.skin.textArea));
         }
       }
-      string trace = "REMOVE BEFORE FLIGHT";
-      if (FlightGlobals.ActiveVessel && adapter_.PluginRunning() && plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
-        trace = plugin.VesselGetPileUpTrace(FlightGlobals.ActiveVessel.id.ToString());
-      }
-      UnityEngine.GUILayout.TextArea(trace,
-              style: Style.Multiline(UnityEngine.GUI.skin.textArea));
       Interface.GetVersion(build_date : out string _,
                            version    : out string version);
       UnityEngine.GUILayout.Label(
@@ -278,6 +272,19 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderLoggingSettings() {
+    string trace = "";
+    if (FlightGlobals.ActiveVessel &&
+        adapter_.PluginRunning() &&
+        plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
+      trace = plugin.VesselGetPileUpTrace(FlightGlobals.ActiveVessel.id.ToString());
+    }
+    UnityEngine.GUILayout.TextArea(
+        trace,
+        style: Style.Multiline(UnityEngine.GUI.skin.textArea));
+    conserve_angular_momentum_ = UnityEngine.GUILayout.Toggle(
+        conserve_angular_momentum_,
+        "Conserve angular momentum");
+    Interface.SetAngularMomentumConservation(conserve_angular_momentum_);
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(text    : "←",
@@ -537,6 +544,8 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool must_record_journal_ = false;
   // Whether a journal is currently being recorded.
   private static bool journaling_ = false;
+
+  private static bool conserve_angular_momentum_ = false;
 
   private Vessel vessel_;
 }
