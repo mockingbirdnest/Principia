@@ -376,6 +376,11 @@ void PileUp::DeformPileUpIfNeeded() {
         << (Identity<ApparentPileUp, NonRotatingPileUp>()(
                 apparent_angular_momentum) -
             angular_momentum_)
+               .Norm()
+        << "\ncorresponding rotational correction:\n"
+        << (Identity<ApparentPileUp, NonRotatingPileUp>()(
+                apparent_equivalent_angular_velocity) -
+            actual_equivalent_angular_velocity)
                .Norm();
 
   last_correction_trace_ = trace.str();
