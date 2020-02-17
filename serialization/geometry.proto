@@ -164,6 +164,7 @@ message Frame {
     NAVBALL = 10;
     NAVIGATION = 4;
     NON_ROTATING_PILE_UP = 11;
+    PILE_UP_PRINCIPAL_AXES = 18;
     // PRE_BOREL_BARYCENTRIC = 3;
     RIGID_PART = 16;
     WORLD = 5;

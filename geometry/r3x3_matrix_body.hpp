@@ -30,7 +30,7 @@ R3x3Matrix<Scalar>::R3x3Matrix(R3Element<Scalar> const& row_x,
     : rows_({row_x, row_y, row_z}) {}
 
 template<typename Scalar>
-R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Diagonal(
+R3x3Matrix<Scalar> R3x3Matrix<Scalar>::DiagonalMatrix(
     R3Element<Scalar> const& diagonal) {
   return {
       {diagonal.x, {}, {}},
@@ -38,6 +38,12 @@ R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Diagonal(
       {{}, {}, diagonal.z},
   };
 }
+
+template<typename Scalar>
+R3Element<Scalar> R3x3Matrix<Scalar>::Diagonal() const {
+  return {rows_[X].x, rows_[Y].y, rows_[Z].z};
+}
+
 
 template<typename Scalar>
 Scalar R3x3Matrix<Scalar>::Trace() const {

@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "absl/synchronization/mutex.h"
@@ -17,6 +18,7 @@
 #include "integrators/integrators.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/euler_solver.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/mechanical_system.hpp"
 #include "physics/rigid_motion.hpp"
@@ -41,11 +43,13 @@ using geometry::Handedness;
 using geometry::InertiaTensor;
 using geometry::Instant;
 using geometry::NonRotating;
+using geometry::RigidTransformation;
 using geometry::Vector;
 using integrators::Integrator;
 using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
+using physics::EulerSolver;
 using physics::MasslessBody;
 using physics::MechanicalSystem;
 using physics::RelativeDegreesOfFreedom;
@@ -67,6 +71,13 @@ using NonRotatingPileUp = Frame<serialization::Frame::PluginTag,
                                 NonRotating,
                                 Handedness::Right,
                                 serialization::Frame::NON_ROTATING_PILE_UP>;
+
+// The origin of |PileUpPrincipalAxes| is the centre of mass of the pile up. Its
+// axes are instantaneous principal axes of the pile up.
+using PileUpPrincipalAxes = Frame<serialization::Frame::PluginTag,
+                                  Arbitrary,
+                                  Handedness::Right,
+                                  serialization::Frame::PILE_UP_PRINCIPAL_AXES>;
 
 // A |PileUp| handles a connected component of the graph of |Parts| under
 // physical contact.  It advances the history and psychohistory of its component
@@ -145,16 +156,16 @@ class PileUp {
          not_null<Ephemeris<Barycentric>*> ephemeris,
          std::function<void()> deletion_callback);
 
+  void MakeEulerSolver(InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
+                       Instant const& t);
+
   // Update the degrees of freedom (in |NonRotatingPileUp|) of all the parts by
   // translating the *apparent* degrees of freedom so that their centre of mass
   // matches that computed by integration.
   // |SetPartApparentDegreesOfFreedom| must have been called for each part in
   // the pile-up, or for none.
   // The degrees of freedom set by this method are used by |NudgeParts|.
-  // NOTE(egg): Eventually, this will also change their velocities and angular
-  // velocities so that the angular momentum matches that which has been
-  // computed for |this| |PileUp|.
-  void DeformPileUpIfNeeded();
+  void DeformPileUpIfNeeded(Instant const& t);
 
   // Flows the history authoritatively as far as possible up to |t|, advances
   // the histories of the parts and updates the degrees of freedom of the parts
@@ -219,10 +230,12 @@ class PileUp {
       Ephemeris<Barycentric>::NewtonianMotionEquation>::Instance>
       fixed_instance_;
 
-  // TODO(phl): Use |RigidPileUp|, a reference frame whose axes are the
-  // principal axes of the pile up.
   PartTo<RigidMotion<RigidPart, NonRotatingPileUp>> actual_part_rigid_motion_;
   PartTo<RigidMotion<RigidPart, ApparentBubble>> apparent_part_rigid_motion_;
+
+  PartTo<RigidTransformation<RigidPart, PileUpPrincipalAxes>> rigid_pile_up_;
+  std::optional<EulerSolver<NonRotatingPileUp, PileUpPrincipalAxes>>
+      euler_solver_;
 
   // Called in the destructor.
   std::function<void()> deletion_callback_;

@@ -37,7 +37,9 @@ class R3x3Matrix final {
              R3Element<Scalar> const& row_y,
              R3Element<Scalar> const& row_z);
 
-  static R3x3Matrix Diagonal(R3Element<Scalar> const& diagonal);
+  static R3x3Matrix DiagonalMatrix(R3Element<Scalar> const& diagonal);
+
+  R3Element<Scalar> Diagonal() const;
 
   Scalar Trace() const;
   Cube<Scalar> Determinant() const;

@@ -27,6 +27,7 @@ using geometry::NonRotating;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::RigidTransformation;
+using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Wedge;
 using physics::DegreesOfFreedom;
@@ -69,6 +70,8 @@ PileUp::PileUp(
     actual_part_rigid_motion_.emplace(
         part, barycentric_to_pile_up * part->rigid_motion());
   }
+  MakeEulerSolver(mechanical_system.InertiaTensor(), t);
+
   psychohistory_ = history_->NewForkAtLast();
 
   RecomputeFromParts();
@@ -98,7 +101,9 @@ Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   absl::MutexLock l(lock_.get());
   Status status;
   if (psychohistory_->back().time < t) {
-    DeformPileUpIfNeeded();
+    angular_momentum_ += intrinsic_torque_ * (t - psychohistory_->back().time) +
+                         angular_momentum_change_;
+    DeformPileUpIfNeeded(t);
     status = AdvanceTime(t);
     NudgeParts();
   }
@@ -123,7 +128,8 @@ void PileUp::RecomputeFromParts() {
     intrinsic_torque_ +=
         Wedge(part_dof.position() - NonRotatingPileUp::origin,
               Identity<Barycentric, NonRotatingPileUp>()(
-                  part->intrinsic_force())) * Radian +
+                  part->intrinsic_force())) *
+            Radian +
         Identity<Barycentric, NonRotatingPileUp>()(part->intrinsic_torque());
 
     AngularVelocity<NonRotatingPileUp> const part_angular_velocity =
@@ -134,7 +140,8 @@ void PileUp::RecomputeFromParts() {
     // corresponds to the body uniformly changing density.
     angular_momentum_change_ +=
         Wedge(part_dof.position() - NonRotatingPileUp::origin,
-              part->mass_change() * part_dof.velocity()) * Radian +
+              part->mass_change() * part_dof.velocity()) *
+            Radian +
         part->mass_change() / part->mass() *
             (part_inertia_tensor * part_angular_velocity);
   }
@@ -149,14 +156,14 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   for (auto const& pair : actual_part_rigid_motion_) {
     auto const part = pair.first;
     auto const& rigid_motion = pair.second;
-    rigid_motion.WriteToMessage(&(
-        (*message->mutable_actual_part_rigid_motion())[part->part_id()]));
+    rigid_motion.WriteToMessage(
+        &((*message->mutable_actual_part_rigid_motion())[part->part_id()]));
   }
   for (auto const& pair : apparent_part_rigid_motion_) {
     auto const part = pair.first;
     auto const& rigid_motion = pair.second;
-    rigid_motion.WriteToMessage(&(
-        (*message->mutable_apparent_part_rigid_motion())[part->part_id()]));
+    rigid_motion.WriteToMessage(
+        &((*message->mutable_apparent_part_rigid_motion())[part->part_id()]));
   }
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
@@ -182,30 +189,27 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
     if (is_pre_cartan) {
-      pile_up = std::unique_ptr<PileUp>(
-          new PileUp(std::move(parts),
-                     DefaultPsychohistoryParameters(),
-                     DefaultHistoryParameters(),
-                     DiscreteTrajectory<Barycentric>::ReadFromMessage(
-                         message.history(),
-                         /*forks=*/{}),
-                     /*psychohistory=*/nullptr,
-                     ephemeris,
-                     std::move(deletion_callback)));
+      pile_up = std::unique_ptr<PileUp>(new PileUp(
+          std::move(parts),
+          DefaultPsychohistoryParameters(),
+          DefaultHistoryParameters(),
+          DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
+                                                           /*forks=*/{}),
+          /*psychohistory=*/nullptr,
+          ephemeris,
+          std::move(deletion_callback)));
     } else {
-      pile_up = std::unique_ptr<PileUp>(
-          new PileUp(
-              std::move(parts),
-              Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-                  message.adaptive_step_parameters()),
-              Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
-                  message.fixed_step_parameters()),
-              DiscreteTrajectory<Barycentric>::ReadFromMessage(
-                  message.history(),
-                  /*forks=*/{}),
-              /*psychohistory=*/nullptr,
-              ephemeris,
-              std::move(deletion_callback)));
+      pile_up = std::unique_ptr<PileUp>(new PileUp(
+          std::move(parts),
+          Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+              message.adaptive_step_parameters()),
+          Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+              message.fixed_step_parameters()),
+          DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
+                                                           /*forks=*/{}),
+          /*psychohistory=*/nullptr,
+          ephemeris,
+          std::move(deletion_callback)));
     }
     // Fork a psychohistory for compatibility if there is a non-authoritative
     // point.
@@ -223,17 +227,16 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history(),
             /*forks=*/{&psychohistory});
-    pile_up = std::unique_ptr<PileUp>(
-        new PileUp(
-            std::move(parts),
-            Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-                message.adaptive_step_parameters()),
-            Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
-                message.fixed_step_parameters()),
-            std::move(history),
-            psychohistory,
-            ephemeris,
-            std::move(deletion_callback)));
+    pile_up = std::unique_ptr<PileUp>(new PileUp(
+        std::move(parts),
+        Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+            message.adaptive_step_parameters()),
+        Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+            message.fixed_step_parameters()),
+        std::move(history),
+        psychohistory,
+        ephemeris,
+        std::move(deletion_callback)));
   }
 
   if (is_pre_frege) {
@@ -295,8 +298,51 @@ PileUp::PileUp(
       psychohistory_(psychohistory),
       deletion_callback_(std::move(deletion_callback)) {}
 
-void PileUp::DeformPileUpIfNeeded() {
+void PileUp::MakeEulerSolver(
+    InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
+    Instant const& t) {
+  auto const eigensystem = inertia_tensor.Diagonalize<PileUpPrincipalAxes>();
+  euler_solver_.emplace(eigensystem.form.coordinates().Diagonal(),
+                        angular_momentum_,
+                        eigensystem.rotation,
+                        t);
+  RigidTransformation<NonRotatingPileUp, PileUpPrincipalAxes> const
+      to_pile_up_principal_axes(
+          NonRotatingPileUp::origin,
+          PileUpPrincipalAxes::origin,
+          eigensystem.rotation.Inverse().Forget<OrthogonalMap>());
+  rigid_pile_up_.clear();
+  for (auto const& [part, actual_rigid_motion] : actual_part_rigid_motion_) {
+    rigid_pile_up_.emplace(
+        part,
+        to_pile_up_principal_axes * actual_rigid_motion.rigid_transformation());
+  }
+}
+
+void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   if (apparent_part_rigid_motion_.empty()) {
+    Bivector<AngularMomentum, PileUpPrincipalAxes> angular_momentum =
+        euler_solver_->AngularMomentumAt(t);
+    Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const attitude =
+        euler_solver_->AttitudeAt(angular_momentum, t);
+    AngularVelocity<NonRotatingPileUp> angular_velocity_of_rigid_pile_up =
+        attitude(euler_solver_->AngularVelocityFor(angular_momentum));
+
+    RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp> const pile_up_motion(
+        RigidTransformation<PileUpPrincipalAxes, NonRotatingPileUp>(
+            PileUpPrincipalAxes::origin,
+            NonRotatingPileUp::origin,
+            attitude.Forget<OrthogonalMap>()),
+        angular_velocity_of_rigid_pile_up,
+        NonRotatingPileUp::unmoving);
+
+    for (auto& [part, actual_rigid_motion] : actual_part_rigid_motion_) {
+      actual_rigid_motion =
+          pile_up_motion * RigidMotion<RigidPart, PileUpPrincipalAxes>(
+                               rigid_pile_up_.at(part),
+                               PileUpPrincipalAxes::nonrotating,
+                               PileUpPrincipalAxes::unmoving);
+    }
     return;
   }
   // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
@@ -365,7 +411,6 @@ void PileUp::DeformPileUpIfNeeded() {
           apparent_pile_up_equivalent_rotation *
           apparent_system.LinearMotion().Inverse();
 
-  using PileUpPrincipalAxes = Frame<enum class PileUpPrincipalAxesTag>;
   trace << "rotational correction:\n"
         << (actual_pile_up_equivalent_rotation.Inverse() *
             apparent_pile_up_equivalent_rotation)
@@ -398,6 +443,9 @@ void PileUp::DeformPileUpIfNeeded() {
         part, apparent_bubble_to_pile_up_motion * apparent_part_rigid_motion);
   }
   apparent_part_rigid_motion_.clear();
+
+  MakeEulerSolver(Identity<ApparentPileUp, NonRotatingPileUp>()(inertia_tensor),
+                  t);
 }
 
 Status PileUp::AdvanceTime(Instant const& t) {
@@ -405,8 +453,6 @@ Status PileUp::AdvanceTime(Instant const& t) {
 
   Status status;
   auto const history_last = --history_->end();
-  angular_momentum_ += intrinsic_torque_ * (t - psychohistory_->back().time) +
-                       angular_momentum_change_;
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
     history_->DeleteFork(psychohistory_);
@@ -422,13 +468,12 @@ Status PileUp::AdvanceTime(Instant const& t) {
     if (history_->back().time < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
       // fixed-step integration.
-      status.Update(
-          ephemeris_->FlowWithAdaptiveStep(
-              psychohistory_,
-              Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-              t,
-              adaptive_step_parameters_,
-              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps));
+      status.Update(ephemeris_->FlowWithAdaptiveStep(
+          psychohistory_,
+          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+          t,
+          adaptive_step_parameters_,
+          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps));
     }
   } else {
     // Destroy the fixed instance, it wouldn't be correct to use it the next
@@ -452,11 +497,11 @@ Status PileUp::AdvanceTime(Instant const& t) {
     // addressing fault.  With a reference, VS2015 knows what to do.
     auto const intrinsic_acceleration = [&a](Instant const& t) { return a; };
     status = ephemeris_->FlowWithAdaptiveStep(
-                 history_.get(),
-                 intrinsic_acceleration,
-                 t,
-                 adaptive_step_parameters_,
-                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
+        history_.get(),
+        intrinsic_acceleration,
+        t,
+        adaptive_step_parameters_,
+        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
     psychohistory_ = history_->NewForkAtLast();
   }
 
@@ -510,18 +555,16 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
     DegreesOfFreedom<NonRotatingPileUp> const actual_part_degrees_of_freedom =
-        FindOrDie(actual_part_rigid_motion_, part)({RigidPart::origin,
-                                                    RigidPart::unmoving});
+        FindOrDie(actual_part_rigid_motion_,
+                  part)({RigidPart::origin, RigidPart::unmoving});
     (static_cast<Part*>(part)->*append_to_part_trajectory)(
-        it->time,
-        pile_up_to_barycentric(actual_part_degrees_of_freedom));
+        it->time, pile_up_to_barycentric(actual_part_degrees_of_freedom));
   }
 }
 
 PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
                            std::future<Status> future)
-    : pile_up(pile_up),
-      future(std::move(future)) {}
+    : pile_up(pile_up), future(std::move(future)) {}
 
 bool PileUp::conserve_angular_momentum = false;
 
