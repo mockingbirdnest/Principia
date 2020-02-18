@@ -130,6 +130,9 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
     template Eigensystem<Eigenframe>
     SymmetricBilinearForm<Scalar, Frame, Multivector>::Diagonalize() const {
   R3x3Matrix<Scalar> const& A = matrix_;
+
+  // TODO(phl): This produces NaNs when given a diagonal matrix.
+
   auto const I = R3x3Matrix<double>::Identity();
 
   // This algorithm follows

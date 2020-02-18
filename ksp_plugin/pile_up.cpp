@@ -277,6 +277,15 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     }
   }
   pile_up->RecomputeFromParts();
+  // TODO(phl): the Euler solver should be serialized; when we don't have one we
+  // should compute it from an actual inertia tensor.
+  pile_up->MakeEulerSolver(
+      InertiaTensor<NonRotatingPileUp>(
+          geometry::R3x3Matrix<quantities::MomentOfInertia>::DiagonalMatrix(
+              {1000 * quantities::SIUnit<quantities::MomentOfInertia>(),
+               1729 * quantities::SIUnit<quantities::MomentOfInertia>(),
+               355 * quantities::SIUnit<quantities::MomentOfInertia>()})),
+      pile_up->psychohistory_->back().time);
   return check_not_null(std::move(pile_up));
 }
 
@@ -301,7 +310,9 @@ PileUp::PileUp(
 void PileUp::MakeEulerSolver(
     InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
     Instant const& t) {
+  LOG(ERROR) << inertia_tensor;
   auto const eigensystem = inertia_tensor.Diagonalize<PileUpPrincipalAxes>();
+  LOG(ERROR) << eigensystem.form;
   euler_solver_.emplace(eigensystem.form.coordinates().Diagonal(),
                         angular_momentum_,
                         eigensystem.rotation,
