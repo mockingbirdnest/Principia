@@ -359,6 +359,28 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                               VanishesBefore(1, 2),
                               AlmostEquals(1, 0)));
   }
+
+  // A degenerate case.
+  {
+    auto const f = MakeSymmetricBilinearForm<World>(R3x3Matrix<double>(
+        {2, 0, 0},
+        {0, 2, 0},
+        {0, 0, 2}));
+    auto const f_eigensystem = f.Diagonalize<Eigenworld>();
+
+    Vector<double, Eigenworld> const e₀({1, 0, 0});
+    Vector<double, Eigenworld> const e₁({0, 1, 0});
+    Vector<double, Eigenworld> const e₂({0, 0, 1});
+    EXPECT_THAT(f_eigensystem.form(e₀, e₀), AlmostEquals(2 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₀, e₁), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₀, e₂), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₁, e₀), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₁, e₁), AlmostEquals(2 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₁, e₂), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₂, e₀), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₂, e₁), AlmostEquals(0 * Metre, 0));
+    EXPECT_THAT(f_eigensystem.form(e₂, e₂), AlmostEquals(2 * Metre, 0));
+  }
 }
 
 }  // namespace internal_symmetric_bilinear_form

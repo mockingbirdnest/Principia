@@ -129,6 +129,7 @@ template<typename Eigenframe>
 typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
     template Eigensystem<Eigenframe>
     SymmetricBilinearForm<Scalar, Frame, Multivector>::Diagonalize() const {
+  Scalar const zero;
   R3x3Matrix<Scalar> const& A = matrix_;
   auto const I = R3x3Matrix<double>::Identity();
 
@@ -138,20 +139,31 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
   Scalar const q = A.Trace() / 3;
   R3x3Matrix<Scalar> const A_minus_qI = A - q * I;
   Scalar const p = Sqrt((A_minus_qI * A_minus_qI).Trace() / 6);
+
+  if (p == zero) {
+    // A is very close to q * I.
+    SymmetricBilinearForm<Scalar, Eigenframe, Multivector> form(
+        R3x3Matrix<Scalar>({q, zero, zero},
+                           {zero, q, zero},
+                           {zero, zero, q}));
+    return {form, Rotation<Eigenframe, Frame>::Identity()};
+  }
+
   R3x3Matrix<double> const B = A_minus_qI / p;
   double const det_B = B.Determinant();
-  Angle const θ = ArcCos(det_B * 0.5);
+  Angle const θ = ArcCos(std::clamp(det_B, -2.0, 2.0) * 0.5);
   double const β₀ = 2 * Cos(θ / 3);
   double const β₁ = 2 * Cos((θ + 2 * π * Radian) / 3);
   double const β₂ = 2 * Cos((θ + 4 * π * Radian) / 3);
   std::array<Scalar, 3> αs = {p * β₀ + q, p * β₁ + q, p * β₂ + q};
+  // We expect αs[1] <= αs[2] <= αs[0] here, but sorting ensures that we are
+  // correct irrespective of numerical errors.
   std::sort(αs.begin(), αs.end());
   Scalar const& α₀ = αs[0];
   Scalar const& α₁ = αs[1];
   Scalar const& α₂ = αs[2];
 
   // The form in its diagonal basis.
-  Scalar const zero;
   SymmetricBilinearForm<Scalar, Eigenframe, Multivector> form(
       R3x3Matrix<Scalar>({α₀, zero, zero},
                          {zero, α₁, zero},
