@@ -66,7 +66,8 @@ class SymmetricBilinearForm {
 
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
   // which gives the eigenvalues; and (2) a rotation from the current basis to
-  // the eigenbasis, which gives the eigenvectors.
+  // the eigenbasis, which gives the eigenvectors.  The eigenvalues are in
+  // increasing order.
   template<typename Eigenframe>
   struct Eigensystem {
     SymmetricBilinearForm<Scalar, Eigenframe, Multivector> form;
