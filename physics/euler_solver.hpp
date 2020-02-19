@@ -115,8 +115,7 @@ class EulerSolver {
   AttitudeRotation const initial_attitude_;
   Instant const initial_time_;
   AngularMomentum const G_;
-  PreferredAngularMomentumBivector preferred_initial_angular_momentum_
-    ;
+  PreferredAngularMomentumBivector preferred_initial_angular_momentum_;
   Rotation<ℬʹ, InertialFrame> ℛ_;
 
   // A signature that describes which axes are flipped to adjust the signs of

@@ -1,13 +1,14 @@
 ﻿
 #pragma once
 
+#include "physics/euler_solver.hpp"
+
 #include <algorithm>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/quaternion.hpp"
 #include "numerics/elliptic_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
-#include "physics/euler_solver.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
@@ -36,10 +37,10 @@ using quantities::IsFinite;
 using quantities::Pow;
 using quantities::Quotient;
 using quantities::Sinh;
-using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
+using quantities::SIUnit;
 using quantities::Tanh;
 using quantities::Time;
 using quantities::Variation;
@@ -259,8 +260,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
         default:
           LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
       }
-      ψ_offset_ =
-          ArcTan(ψ_sinh_multiplier_ * Tanh(-0.5 * ν_), ψ_cosh_multiplier_);
+      ψ_offset_ = ArcTan(ψ_sinh_multiplier_ * Tanh(-0.5 * ν_),
+                         ψ_cosh_multiplier_);
       ψ_t_multiplier_ = G_ / I₂;
 
       break;
@@ -435,17 +436,19 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
     case Region::e₁: {
       double const real_part = Sqrt(0.5 * (1 + m_coordinates.x / G_));
       AngularMomentum const denominator = 2 * G_ * real_part;
-      pₜ = Quaternion(
-          real_part,
-          {0, m_coordinates.z / denominator, -m_coordinates.y / denominator});
+      pₜ = Quaternion(real_part,
+                      {0,
+                        m_coordinates.z / denominator,
+                        -m_coordinates.y / denominator});
       break;
     }
     case Region::e₃: {
       double const real_part = Sqrt(0.5 * (1 + m_coordinates.z / G_));
       AngularMomentum const denominator = 2 * G_ * real_part;
-      pₜ = Quaternion(
-          real_part,
-          {m_coordinates.y / denominator, -m_coordinates.x / denominator, 0});
+      pₜ = Quaternion(real_part,
+                      {m_coordinates.y / denominator,
+                        -m_coordinates.x / denominator,
+                        0});
       break;
     }
     case Region::Motionless: {
