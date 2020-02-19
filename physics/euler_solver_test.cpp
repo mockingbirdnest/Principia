@@ -27,6 +27,7 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -37,11 +38,13 @@ using astronomy::ICRS;
 using astronomy::operator""_UTC;
 using geometry::AngleBetween;
 using geometry::AngularVelocity;
+using geometry::Arbitrary;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::EulerAngles;
 using geometry::EvenPermutation;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Permutation;
@@ -67,6 +70,7 @@ using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ApproximateQuantity;
 using testing_utilities::Componentwise;
+using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::RelativeErrorFrom;
@@ -78,7 +82,10 @@ using ::testing::Matcher;
 
 class EulerSolverTest : public ::testing::Test {
  protected:
-  using PrincipalAxes = Frame<enum class PrincipalAxesTag>;
+  using PrincipalAxes = Frame<serialization::Frame::TestTag,
+                              Arbitrary,
+                              Handedness::Right,
+                              serialization::Frame::TEST>;
 
   using Solver = EulerSolver<ICRS, PrincipalAxes>;
 
@@ -123,8 +130,8 @@ class EulerSolverTest : public ::testing::Test {
           solver.AngularVelocityFor(angular_momentum);
       Bivector<AngularMomentum, ICRS> const angular_momentum_in_inertial =
           attitudes[i](angular_momentum);
-      AngularVelocity<ICRS> const
-          angular_velocity_in_inertial = attitudes[i](angular_velocity);
+      AngularVelocity<ICRS> const angular_velocity_in_inertial =
+          attitudes[i](angular_velocity);
       Energy const kinetic_energy = 0.5 *
                                     InnerProduct(angular_momentum_in_inertial,
                                                  angular_velocity_in_inertial) /
@@ -159,12 +166,10 @@ TEST_F(EulerSolverTest, InitialStateRandom) {
         randoms[1] * SIUnit<MomentOfInertia>(),
         randoms[2] * SIUnit<MomentOfInertia>()};
 
-    Bivector<AngularMomentum, PrincipalAxes>
-        initial_angular_momentum(
-            {angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
-             angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
-             angular_momentum_distribution(random) *
-                 SIUnit<AngularMomentum>()});
+    Bivector<AngularMomentum, PrincipalAxes> initial_angular_momentum(
+        {angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
+         angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
+         angular_momentum_distribution(random) * SIUnit<AngularMomentum>()});
 
     Solver const solver(moments_of_inertia,
                         identity_attitude_(initial_angular_momentum),
@@ -199,12 +204,10 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
       3 * SIUnit<MomentOfInertia>()};
 
   for (int i = 0; i < 100; ++i) {
-    Bivector<AngularMomentum, PrincipalAxes>
-        initial_angular_momentum(
-            {angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
-             angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
-             angular_momentum_distribution(random) *
-                 SIUnit<AngularMomentum>()});
+    Bivector<AngularMomentum, PrincipalAxes> initial_angular_momentum(
+        {angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
+         angular_momentum_distribution(random) * SIUnit<AngularMomentum>(),
+         angular_momentum_distribution(random) * SIUnit<AngularMomentum>()});
     {
       Solver const solver1(moments_of_inertia1,
                            identity_attitude_(initial_angular_momentum),
@@ -271,8 +274,8 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       if (i % 2 == 0) {
         mz = -mz;
       }
-      Bivector<AngularMomentum, PrincipalAxes>
-          initial_angular_momentum({mx, SIUnit<AngularMomentum>(), mz});
+      Bivector<AngularMomentum, PrincipalAxes> initial_angular_momentum(
+          {mx, SIUnit<AngularMomentum>(), mz});
       Solver const solver(moments_of_inertia,
                           identity_attitude_(initial_angular_momentum),
                           identity_attitude_,
@@ -293,8 +296,8 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       if (i % 2 == 0) {
         mz = -mz;
       }
-      Bivector<AngularMomentum, PrincipalAxes>
-          initial_angular_momentum({mx, SIUnit<AngularMomentum>(), mz});
+      Bivector<AngularMomentum, PrincipalAxes> initial_angular_momentum(
+          {mx, SIUnit<AngularMomentum>(), mz});
       Solver const solver(moments_of_inertia,
                           identity_attitude_(initial_angular_momentum),
                           identity_attitude_,
@@ -318,8 +321,8 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       if (i % 2 == 0) {
         mz = -mz;
       }
-      Bivector<AngularMomentum, PrincipalAxes>
-          initial_angular_momentum({mx, SIUnit<AngularMomentum>(), mz});
+      Bivector<AngularMomentum, PrincipalAxes> initial_angular_momentum(
+          {mx, SIUnit<AngularMomentum>(), mz});
       Solver const solver(moments_of_inertia,
                           identity_attitude_(initial_angular_momentum),
                           identity_attitude_,
@@ -342,10 +345,10 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
       3.0 * SIUnit<MomentOfInertia>(),
       9.0 * SIUnit<MomentOfInertia>()};
 
-  Bivector<AngularMomentum, PrincipalAxes> const
-      initial_angular_momentum({0.0 * SIUnit<AngularMomentum>(),
-                                5.0 * SIUnit<AngularMomentum>(),
-                                7.0 * SIUnit<AngularMomentum>()});
+  Bivector<AngularMomentum, PrincipalAxes> const initial_angular_momentum(
+      {0.0 * SIUnit<AngularMomentum>(),
+       5.0 * SIUnit<AngularMomentum>(),
+       7.0 * SIUnit<AngularMomentum>()});
   Solver::AttitudeRotation const initial_attitude = identity_attitude_;
 
   // Correspondence with the referential of lecture 19: x = e1, y = e2, z = e3.
@@ -362,19 +365,17 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
   std::vector<Solver::AttitudeRotation> attitudes;
   for (Time t = 0 * Second; t < 5.0 * Second; t += 0.1 * Second) {
     auto const angular_momentum_at_t = solver.AngularMomentumAt(Instant() + t);
-    EXPECT_THAT(
-        angular_momentum_at_t,
-        AlmostEquals(
-            Bivector<AngularMomentum, PrincipalAxes>(
-                {5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
-                 5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>(),
-                 7.0 * SIUnit<AngularMomentum>()}),
-            0,
-            102))
+    EXPECT_THAT(angular_momentum_at_t,
+                AlmostEquals(Bivector<AngularMomentum, PrincipalAxes>(
+                                 {5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
+                                  5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>(),
+                                  7.0 * SIUnit<AngularMomentum>()}),
+                             0,
+                             102))
         << t;
     angular_momenta.push_back(angular_momentum_at_t);
-    attitudes.push_back(solver.AttitudeAt(angular_momentum_at_t,
-                                          Instant() + t));
+    attitudes.push_back(
+        solver.AttitudeAt(angular_momentum_at_t, Instant() + t));
   }
 
   Bivector<AngularMomentum, ICRS> const reference_momentum =
@@ -398,10 +399,10 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
       9.0 * SIUnit<MomentOfInertia>(),
       9.0 * SIUnit<MomentOfInertia>()};
 
-  Bivector<AngularMomentum, PrincipalAxes> const
-      initial_angular_momentum({7.0 * SIUnit<AngularMomentum>(),
-                                0.0 * SIUnit<AngularMomentum>(),
-                                5.0 * SIUnit<AngularMomentum>()});
+  Bivector<AngularMomentum, PrincipalAxes> const initial_angular_momentum(
+      {7.0 * SIUnit<AngularMomentum>(),
+       0.0 * SIUnit<AngularMomentum>(),
+       5.0 * SIUnit<AngularMomentum>()});
   Solver::AttitudeRotation const initial_attitude = identity_attitude_;
 
   // Correspondence with the referential of lecture 19:  x = e3, y = e1, z = e2.
@@ -420,17 +421,16 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
     auto const angular_momentum_at_t = solver.AngularMomentumAt(Instant() + t);
     EXPECT_THAT(
         angular_momentum_at_t,
-        AlmostEquals(
-            Bivector<AngularMomentum, PrincipalAxes>(
-                {7.0 * SIUnit<AngularMomentum>(),
-                 5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
-                 5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>()}),
-            0,
-            34))
+        AlmostEquals(Bivector<AngularMomentum, PrincipalAxes>(
+                         {7.0 * SIUnit<AngularMomentum>(),
+                          5.0 * Sin(Ω * t) * SIUnit<AngularMomentum>(),
+                          5.0 * Cos(Ω * t) * SIUnit<AngularMomentum>()}),
+                     0,
+                     34))
         << t;
     angular_momenta.push_back(angular_momentum_at_t);
-    attitudes.push_back(solver.AttitudeAt(angular_momentum_at_t,
-                                          Instant() + t));
+    attitudes.push_back(
+        solver.AttitudeAt(angular_momentum_at_t, Instant() + t));
   }
 
   Bivector<AngularMomentum, ICRS> const reference_momentum =
@@ -459,10 +459,10 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       5.0 * SIUnit<MomentOfInertia>(),
       9.0 * SIUnit<MomentOfInertia>()};
 
-  Bivector<AngularMomentum, PrincipalAxes> const
-      initial_angular_momentum({0.0 * SIUnit<AngularMomentum>(),
-                                2.0 * SIUnit<AngularMomentum>(),
-                                0.01 * SIUnit<AngularMomentum>()});
+  Bivector<AngularMomentum, PrincipalAxes> const initial_angular_momentum(
+      {0.0 * SIUnit<AngularMomentum>(),
+       2.0 * SIUnit<AngularMomentum>(),
+       0.01 * SIUnit<AngularMomentum>()});
   Solver::AttitudeRotation const initial_attitude = identity_attitude_;
 
   Solver const solver(moments_of_inertia,
@@ -510,8 +510,7 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
     previous_my = my;
     previous_t = t;
     angular_momenta.push_back(angular_momentum_at_t);
-    attitudes.push_back(solver.AttitudeAt(angular_momentum_at_t,
-                                          t));
+    attitudes.push_back(solver.AttitudeAt(angular_momentum_at_t, t));
   }
 
   // Check that the maxima, minima and zeroes properly alternate and are
@@ -916,8 +915,8 @@ TEST_F(EulerSolverTest, Toutatis) {
   // x, y, z axes respectively.
   using TakahashiPrincipalAxes = Frame<enum class TakahashiPrincipalAxesTag>;
   using TakahashiAttitudeRotation = Rotation<TakahashiPrincipalAxes, ICRS>;
-  using TakahashiPermutation = Permutation<TakahashiPrincipalAxes,
-                                           PrincipalAxes>;
+  using TakahashiPermutation =
+      Permutation<TakahashiPrincipalAxes, PrincipalAxes>;
   TakahashiPermutation const takahashi_to_vanilla(EvenPermutation::ZXY);
 
   R3Element<MomentOfInertia> const takahashi_moments_of_inertia{
@@ -1018,115 +1017,240 @@ TEST_F(EulerSolverTest, Toutatis) {
   // exerted by the Earth and the Sun.  As shown in figure 6 of [TBS13], this
   // results in a completely different orientation, estimated in the text to be
   // around 100°, which is again generally consistent with our results.
-  std::vector<Observation> const observations = {
-      {"1992-12-02T21:40:00"_UTC,
-       122.2 * Degree, 86.5 * Degree, 107.0 * Degree,
-       -35.6 * Degree / Day, 7.2 * Degree / Day, -97.0 * Degree / Day,
+  std::vector<Observation> const observations = {{"1992-12-02T21:40:00"_UTC,
+                                                  122.2 * Degree,
+                                                  86.5 * Degree,
+                                                  107.0 * Degree,
+                                                  -35.6 * Degree / Day,
+                                                  7.2 * Degree / Day,
+                                                  -97.0 * Degree / Day,
 
-       0.011_⑴, 4.5_⑴ * Degree,
-       7.9_⑴ * Degree, 5.4_⑴ * Degree, 5.9_⑴ * Degree},
-      {"1992-12-03T19:30:00"_UTC,
-       86.3 * Degree, 81.8 * Degree, 24.5 * Degree,
-       -16.4 * Degree / Day, -29.1 * Degree / Day, -91.9 * Degree / Day,
+                                                  0.011_⑴,
+                                                  4.5_⑴ * Degree,
+                                                  7.9_⑴ * Degree,
+                                                  5.4_⑴ * Degree,
+                                                  5.9_⑴ * Degree},
+                                                 {"1992-12-03T19:30:00"_UTC,
+                                                  86.3 * Degree,
+                                                  81.8 * Degree,
+                                                  24.5 * Degree,
+                                                  -16.4 * Degree / Day,
+                                                  -29.1 * Degree / Day,
+                                                  -91.9 * Degree / Day,
 
-       0.076_⑴, 0.5_⑴ * Degree,
-       6.6_⑴ * Degree, 7.7_⑴ * Degree, 4.7_⑴ * Degree},
-      {"1992-12-04T18:10:00"_UTC,
-       47.8 * Degree, 60.7 * Degree, 284.0 * Degree,
-       29.1 * Degree / Day, -23.2 * Degree / Day, -97.8 * Degree / Day,
+                                                  0.076_⑴,
+                                                  0.5_⑴ * Degree,
+                                                  6.6_⑴ * Degree,
+                                                  7.7_⑴ * Degree,
+                                                  4.7_⑴ * Degree},
+                                                 {"1992-12-04T18:10:00"_UTC,
+                                                  47.8 * Degree,
+                                                  60.7 * Degree,
+                                                  284.0 * Degree,
+                                                  29.1 * Degree / Day,
+                                                  -23.2 * Degree / Day,
+                                                  -97.8 * Degree / Day,
 
-       0.005_⑴, 5.0_⑴ * Degree,
-       13_⑴ * Degree, 15_⑴ * Degree, 9.4_⑴ * Degree},
-      {"1992-12-05T18:50:00"_UTC,
-       14.6 * Degree, 39.4 * Degree, 207.1 * Degree,
-       33.3 * Degree / Day, 8.2 * Degree / Day, -92.2 * Degree / Day,
+                                                  0.005_⑴,
+                                                  5.0_⑴ * Degree,
+                                                  13_⑴ * Degree,
+                                                  15_⑴ * Degree,
+                                                  9.4_⑴ * Degree},
+                                                 {"1992-12-05T18:50:00"_UTC,
+                                                  14.6 * Degree,
+                                                  39.4 * Degree,
+                                                  207.1 * Degree,
+                                                  33.3 * Degree / Day,
+                                                  8.2 * Degree / Day,
+                                                  -92.2 * Degree / Day,
 
-       0.064_⑴, 1.1_⑴ * Degree,
-       9.4_⑴ * Degree, 4.3_⑴ * Degree, 8.4_⑴ * Degree},
-      {"1992-12-06T17:30:00"_UTC,
-       331.3 * Degree, 23.7 * Degree, 151.6 * Degree,
-       6.6 * Degree / Day, 34.5 * Degree / Day, -95.8 * Degree / Day,
+                                                  0.064_⑴,
+                                                  1.1_⑴ * Degree,
+                                                  9.4_⑴ * Degree,
+                                                  4.3_⑴ * Degree,
+                                                  8.4_⑴ * Degree},
+                                                 {"1992-12-06T17:30:00"_UTC,
+                                                  331.3 * Degree,
+                                                  23.7 * Degree,
+                                                  151.6 * Degree,
+                                                  6.6 * Degree / Day,
+                                                  34.5 * Degree / Day,
+                                                  -95.8 * Degree / Day,
 
-       0.032_⑴, 0.8_⑴ * Degree,
-       2.0_⑴ * Degree, 0.6_⑴ * Degree, 2.1_⑴ * Degree},
-      {"1992-12-07T17:20:00"_UTC,
-       222.5 * Degree, 25.4 * Degree, 143.9 * Degree,
-       12.8 * Degree / Day, 25.4 * Degree / Day, -104.1 * Degree / Day,
+                                                  0.032_⑴,
+                                                  0.8_⑴ * Degree,
+                                                  2.0_⑴ * Degree,
+                                                  0.6_⑴ * Degree,
+                                                  2.1_⑴ * Degree},
+                                                 {"1992-12-07T17:20:00"_UTC,
+                                                  222.5 * Degree,
+                                                  25.4 * Degree,
+                                                  143.9 * Degree,
+                                                  12.8 * Degree / Day,
+                                                  25.4 * Degree / Day,
+                                                  -104.1 * Degree / Day,
 
-       0.028_⑴, 24_⑴ * Degree,
-       5.7_⑴ * Degree, 15_⑴ * Degree, 15_⑴ * Degree},
-      {"1992-12-08T16:40:00"_UTC,
-       169.8 * Degree, 45.5 * Degree, 106.9 * Degree,
-       -31.1 * Degree / Day, -21.9 * Degree / Day, -97.7 * Degree / Day,
+                                                  0.028_⑴,
+                                                  24_⑴ * Degree,
+                                                  5.7_⑴ * Degree,
+                                                  15_⑴ * Degree,
+                                                  15_⑴ * Degree},
+                                                 {"1992-12-08T16:40:00"_UTC,
+                                                  169.8 * Degree,
+                                                  45.5 * Degree,
+                                                  106.9 * Degree,
+                                                  -31.1 * Degree / Day,
+                                                  -21.9 * Degree / Day,
+                                                  -97.7 * Degree / Day,
 
-       0.0001_⑴, 2.7_⑴ * Degree,
-       3.0_⑴ * Degree, 2.6_⑴ * Degree, 2.6_⑴ * Degree},
-      {"1992-12-09T17:50:00"_UTC,
-       137.3 * Degree, 71.3 * Degree, 22.3 * Degree,
-       11.8 * Degree / Day, -36.9 * Degree / Day, -94.9 * Degree / Day,
+                                                  0.0001_⑴,
+                                                  2.7_⑴ * Degree,
+                                                  3.0_⑴ * Degree,
+                                                  2.6_⑴ * Degree,
+                                                  2.6_⑴ * Degree},
+                                                 {"1992-12-09T17:50:00"_UTC,
+                                                  137.3 * Degree,
+                                                  71.3 * Degree,
+                                                  22.3 * Degree,
+                                                  11.8 * Degree / Day,
+                                                  -36.9 * Degree / Day,
+                                                  -94.9 * Degree / Day,
 
-       0.028_⑴, 3.4_⑴ * Degree,
-       3.4_⑴ * Degree, 3.4_⑴ * Degree, 1.1_⑴ * Degree},
-      {"1992-12-10T17:20:00"_UTC,
-       103.1 * Degree, 85.2 * Degree, 292.6 * Degree,
-       35.8 * Degree / Day, -8.9 * Degree / Day, -97.9 * Degree / Day,
+                                                  0.028_⑴,
+                                                  3.4_⑴ * Degree,
+                                                  3.4_⑴ * Degree,
+                                                  3.4_⑴ * Degree,
+                                                  1.1_⑴ * Degree},
+                                                 {"1992-12-10T17:20:00"_UTC,
+                                                  103.1 * Degree,
+                                                  85.2 * Degree,
+                                                  292.6 * Degree,
+                                                  35.8 * Degree / Day,
+                                                  -8.9 * Degree / Day,
+                                                  -97.9 * Degree / Day,
 
-       0.0009_⑴, 0.8_⑴ * Degree,
-       3.1_⑴ * Degree, 1.4_⑴ * Degree, 3.4_⑴ * Degree},
-      {"1992-12-11T09:40:00"_UTC,
-       77.0 * Degree, 85.7 * Degree, 225.5 * Degree,
-       31.0 * Degree / Day, 17.0 * Degree / Day, -96.3 * Degree / Day,
+                                                  0.0009_⑴,
+                                                  0.8_⑴ * Degree,
+                                                  3.1_⑴ * Degree,
+                                                  1.4_⑴ * Degree,
+                                                  3.4_⑴ * Degree},
+                                                 {"1992-12-11T09:40:00"_UTC,
+                                                  77.0 * Degree,
+                                                  85.7 * Degree,
+                                                  225.5 * Degree,
+                                                  31.0 * Degree / Day,
+                                                  17.0 * Degree / Day,
+                                                  -96.3 * Degree / Day,
 
-       0.022_⑴, 1.0_⑴ * Degree,
-       2.8_⑴ * Degree, 1.6_⑴ * Degree, 2.7_⑴ * Degree},
-      {"1992-12-12T09:20:00"_UTC,
-       42.8 * Degree, 70.2 * Degree, 133.2 * Degree,
-       -1.3 * Degree / Day, 37.0 * Degree / Day, -95.9 * Degree / Day,
+                                                  0.022_⑴,
+                                                  1.0_⑴ * Degree,
+                                                  2.8_⑴ * Degree,
+                                                  1.6_⑴ * Degree,
+                                                  2.7_⑴ * Degree},
+                                                 {"1992-12-12T09:20:00"_UTC,
+                                                  42.8 * Degree,
+                                                  70.2 * Degree,
+                                                  133.2 * Degree,
+                                                  -1.3 * Degree / Day,
+                                                  37.0 * Degree / Day,
+                                                  -95.9 * Degree / Day,
 
-       0.025_⑴, 2.2_⑴ * Degree,
-       2.0_⑴ * Degree, 3.2_⑴ * Degree, 2.6_⑴ * Degree},
-      {"1992-12-13T08:10:00"_UTC,
-       13.7 * Degree, 44.4 * Degree, 51.9 * Degree,
-       -38.3 * Degree / Day, 17.9 * Degree / Day, -97.3 * Degree / Day,
+                                                  0.025_⑴,
+                                                  2.2_⑴ * Degree,
+                                                  2.0_⑴ * Degree,
+                                                  3.2_⑴ * Degree,
+                                                  2.6_⑴ * Degree},
+                                                 {"1992-12-13T08:10:00"_UTC,
+                                                  13.7 * Degree,
+                                                  44.4 * Degree,
+                                                  51.9 * Degree,
+                                                  -38.3 * Degree / Day,
+                                                  17.9 * Degree / Day,
+                                                  -97.3 * Degree / Day,
 
-       0.013_⑴, 3.4_⑴ * Degree,
-       2.5_⑴ * Degree, 5.3_⑴ * Degree, 5.3_⑴ * Degree},
-      {"1992-12-14T07:50:00"_UTC,
-       323.7 * Degree, 14.0 * Degree, 0.0 * Degree,
-       -70.5 * Degree / Day, -30.6 * Degree / Day, -91.1 * Degree / Day,
+                                                  0.013_⑴,
+                                                  3.4_⑴ * Degree,
+                                                  2.5_⑴ * Degree,
+                                                  5.3_⑴ * Degree,
+                                                  5.3_⑴ * Degree},
+                                                 {"1992-12-14T07:50:00"_UTC,
+                                                  323.7 * Degree,
+                                                  14.0 * Degree,
+                                                  0.0 * Degree,
+                                                  -70.5 * Degree / Day,
+                                                  -30.6 * Degree / Day,
+                                                  -91.1 * Degree / Day,
 
-       0.119_⑴, 22_⑴ * Degree,
-       4.1_⑴ * Degree, 3.8_⑴ * Degree, 4.5_⑴ * Degree},
-      {"1992-12-15T07:50:00"_UTC,
-       193.2 * Degree, 24.4 * Degree, 21.4 * Degree,
-       22.1 * Degree / Day, -26.6 * Degree / Day, -96.6 * Degree / Day,
+                                                  0.119_⑴,
+                                                  22_⑴ * Degree,
+                                                  4.1_⑴ * Degree,
+                                                  3.8_⑴ * Degree,
+                                                  4.5_⑴ * Degree},
+                                                 {"1992-12-15T07:50:00"_UTC,
+                                                  193.2 * Degree,
+                                                  24.4 * Degree,
+                                                  21.4 * Degree,
+                                                  22.1 * Degree / Day,
+                                                  -26.6 * Degree / Day,
+                                                  -96.6 * Degree / Day,
 
-       0.026_⑴, 4.9_⑴ * Degree,
-       3.2_⑴ * Degree, 8.2_⑴ * Degree, 8.0_⑴ * Degree},
-      {"1992-12-16T07:10:00"_UTC,
-       165.1 * Degree, 46.4 * Degree, 310.6 * Degree,
-       33.4 * Degree / Day, -3.4 * Degree / Day, -93.7 * Degree / Day,
+                                                  0.026_⑴,
+                                                  4.9_⑴ * Degree,
+                                                  3.2_⑴ * Degree,
+                                                  8.2_⑴ * Degree,
+                                                  8.0_⑴ * Degree},
+                                                 {"1992-12-16T07:10:00"_UTC,
+                                                  165.1 * Degree,
+                                                  46.4 * Degree,
+                                                  310.6 * Degree,
+                                                  33.4 * Degree / Day,
+                                                  -3.4 * Degree / Day,
+                                                  -93.7 * Degree / Day,
 
-       0.052_⑴, 2.6_⑴ * Degree,
-       7.3_⑴ * Degree, 5.8_⑴ * Degree, 8.0_⑴ * Degree},
-      {"1992-12-17T06:49:00"_UTC,
-       130.6 * Degree, 76.1 * Degree, 234.9 * Degree,
-       12.6 * Degree / Day, 33.9 * Degree / Day, -94.0 * Degree / Day,
+                                                  0.052_⑴,
+                                                  2.6_⑴ * Degree,
+                                                  7.3_⑴ * Degree,
+                                                  5.8_⑴ * Degree,
+                                                  8.0_⑴ * Degree},
+                                                 {"1992-12-17T06:49:00"_UTC,
+                                                  130.6 * Degree,
+                                                  76.1 * Degree,
+                                                  234.9 * Degree,
+                                                  12.6 * Degree / Day,
+                                                  33.9 * Degree / Day,
+                                                  -94.0 * Degree / Day,
 
-       0.045_⑴, 2.1_⑴ * Degree,
-       0.8_⑴ * Degree, 1.1_⑴ * Degree, 1.2_⑴ * Degree},
-      {"1992-12-18T07:09:00"_UTC,
-       91.6 * Degree, 81.6 * Degree, 142.4 * Degree,
-       -24.3 * Degree / Day, 29.6 * Degree / Day, -102.0 * Degree / Day,
+                                                  0.045_⑴,
+                                                  2.1_⑴ * Degree,
+                                                  0.8_⑴ * Degree,
+                                                  1.1_⑴ * Degree,
+                                                  1.2_⑴ * Degree},
+                                                 {"1992-12-18T07:09:00"_UTC,
+                                                  91.6 * Degree,
+                                                  81.6 * Degree,
+                                                  142.4 * Degree,
+                                                  -24.3 * Degree / Day,
+                                                  29.6 * Degree / Day,
+                                                  -102.0 * Degree / Day,
 
-       0.036_⑴, 2.1_⑴ * Degree,
-       5.6_⑴ * Degree, 6.3_⑴ * Degree, 4.1_⑴ * Degree},
-      {"2008-11-23T10:45:00"_UTC,
-       86.2 * Degree, 85.0 * Degree, 0.3 * Degree,
-       -0.4 * Degree / Day, -36.2 * Degree / Day, -98.9 * Degree / Day,
+                                                  0.036_⑴,
+                                                  2.1_⑴ * Degree,
+                                                  5.6_⑴ * Degree,
+                                                  6.3_⑴ * Degree,
+                                                  4.1_⑴ * Degree},
+                                                 {"2008-11-23T10:45:00"_UTC,
+                                                  86.2 * Degree,
+                                                  85.0 * Degree,
+                                                  0.3 * Degree,
+                                                  -0.4 * Degree / Day,
+                                                  -36.2 * Degree / Day,
+                                                  -98.9 * Degree / Day,
 
-       0.0005_⑴, 40_⑴ * Degree,
-       29_⑴ * Degree, 122_⑴ * Degree, 131_⑴ * Degree}};
+                                                  0.0005_⑴,
+                                                  40_⑴ * Degree,
+                                                  29_⑴ * Degree,
+                                                  122_⑴ * Degree,
+                                                  131_⑴ * Degree}};
 
   for (auto const& observation : observations) {
     Instant const& t = observation.t;
@@ -1166,6 +1290,37 @@ TEST_F(EulerSolverTest, Toutatis) {
     EXPECT_THAT(AngleBetween(actual_attitude(e3_), expected_attitude(e3_)),
                 IsNear(observation.e3_direction_error));
   }
+}
+
+TEST_F(EulerSolverTest, Serialization) {
+  R3Element<MomentOfInertia> const moments_of_inertia{
+      3.0 * SIUnit<MomentOfInertia>(),
+      5.0 * SIUnit<MomentOfInertia>(),
+      9.0 * SIUnit<MomentOfInertia>()};
+
+  Bivector<AngularMomentum, PrincipalAxes> const initial_angular_momentum(
+      {0.0 * SIUnit<AngularMomentum>(),
+       2.0 * SIUnit<AngularMomentum>(),
+       0.01 * SIUnit<AngularMomentum>()});
+  Solver::AttitudeRotation const initial_attitude = identity_attitude_;
+
+  Solver const solver1(moments_of_inertia,
+                       initial_attitude(initial_angular_momentum),
+                       initial_attitude,
+                       Instant() + 3 * Second);
+
+  serialization::EulerSolver message1;
+  solver1.WriteToMessage(&message1);
+
+  auto const solver2 = Solver::ReadFromMessage(message1);
+
+  EXPECT_EQ(solver1.AngularMomentumAt(Instant() + 5 * Second),
+            solver2.AngularMomentumAt(Instant() + 5 * Second));
+
+  serialization::EulerSolver message2;
+  solver2.WriteToMessage(&message2);
+
+  EXPECT_THAT(message2, EqualsProto(message1));
 }
 
 }  // namespace physics

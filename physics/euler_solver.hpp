@@ -3,6 +3,7 @@
 
 #include <optional>
 
+#include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -11,11 +12,13 @@
 #include "geometry/signature.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
 namespace internal_euler_solver {
 
+using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Frame;
@@ -67,6 +70,10 @@ class EulerSolver {
       Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum,
       Instant const& time) const;
 
+  void WriteToMessage(
+      not_null<serialization::EulerSolver*> const message) const;
+  static EulerSolver ReadFromMessage(serialization::EulerSolver const& message);
+
  private:
   using ℬₜ = Frame<enum class ℬₜTag>;
   using ℬʹ = Frame<enum class ℬʹTag>;
@@ -104,9 +111,12 @@ class EulerSolver {
 
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;
+  Bivector<AngularMomentum, InertialFrame> const initial_angular_momentum_;
+  AttitudeRotation const initial_attitude_;
   Instant const initial_time_;
   AngularMomentum const G_;
-  PreferredAngularMomentumBivector initial_angular_momentum_;
+  PreferredAngularMomentumBivector preferred_initial_angular_momentum_
+    ;
   Rotation<ℬʹ, InertialFrame> ℛ_;
 
   // A signature that describes which axes are flipped to adjust the signs of

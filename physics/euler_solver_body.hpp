@@ -1,14 +1,13 @@
 ﻿
 #pragma once
 
-#include "physics/euler_solver.hpp"
-
 #include <algorithm>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/quaternion.hpp"
 #include "numerics/elliptic_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
+#include "physics/euler_solver.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
@@ -37,10 +36,10 @@ using quantities::IsFinite;
 using quantities::Pow;
 using quantities::Quotient;
 using quantities::Sinh;
+using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
-using quantities::SIUnit;
 using quantities::Tanh;
 using quantities::Time;
 using quantities::Variation;
@@ -54,14 +53,16 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     AttitudeRotation const& initial_attitude,
     Instant const& initial_time)
     : moments_of_inertia_(moments_of_inertia),
+      initial_angular_momentum_(initial_angular_momentum),
+      initial_attitude_(initial_attitude),
       initial_time_(initial_time),
-      G_(initial_angular_momentum.Norm()),
+      G_(initial_angular_momentum_.Norm()),
       ℛ_(Rotation<ℬʹ, InertialFrame>::Identity()),
       𝒮_(Signature<PrincipalAxesFrame,
                    PreferredPrincipalAxesFrame>::Identity()) {
-  // Do not use initial_angular_momentum after this point.
+  // Do not use initial_angular_momentum_ after this point.
   auto const initial_angular_momentum_in_principal_axes =
-      initial_attitude.Inverse()(initial_angular_momentum);
+      initial_attitude.Inverse()(initial_angular_momentum_);
 
   auto const& I₁ = moments_of_inertia_.x;
   auto const& I₂ = moments_of_inertia_.y;
@@ -166,11 +167,12 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   }
 
   // Now that 𝒮_ has been computed we can use it to adjust m and to compute ℛ_.
-  initial_angular_momentum_ = 𝒮_(initial_angular_momentum_in_principal_axes);
-  m = initial_angular_momentum_.coordinates();
+  preferred_initial_angular_momentum_ =
+      𝒮_(initial_angular_momentum_in_principal_axes);
+  m = preferred_initial_angular_momentum_.coordinates();
   ℛ_ = [this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
     auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
-    auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_).Inverse();
+    auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(preferred_initial_angular_momentum_).Inverse();
     auto const 𝒮⁻¹ = 𝒮_.Inverse().template Forget<Rotation>();
 
     // This ℛ follows the assumptions in the third paragraph of section 2.3
@@ -257,8 +259,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
         default:
           LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
       }
-      ψ_offset_ = ArcTan(ψ_sinh_multiplier_ * Tanh(-0.5 * ν_),
-                         ψ_cosh_multiplier_);
+      ψ_offset_ =
+          ArcTan(ψ_sinh_multiplier_ * Tanh(-0.5 * ν_), ψ_cosh_multiplier_);
       ψ_t_multiplier_ = G_ / I₂;
 
       break;
@@ -300,8 +302,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
           {B₁₃_ * sech, G_ * Tanh(angle), B₃₁_ * sech});
       break;
     }
-    case Formula::Sphere : {
-      m = initial_angular_momentum_;
+    case Formula::Sphere: {
+      m = preferred_initial_angular_momentum_;
       break;
     }
     default:
@@ -398,6 +400,28 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
 }
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
+void EulerSolver<InertialFrame, PrincipalAxesFrame>::WriteToMessage(
+    not_null<serialization::EulerSolver*> const message) const {
+  moments_of_inertia_.WriteToMessage(message->mutable_moments_of_inertia());
+  initial_angular_momentum_.WriteToMessage(
+      message->mutable_initial_angular_momentum());
+  initial_attitude_.WriteToMessage(message->mutable_initial_attitude());
+  initial_time_.WriteToMessage(message->mutable_initial_time());
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+EulerSolver<InertialFrame, PrincipalAxesFrame>
+EulerSolver<InertialFrame, PrincipalAxesFrame>::ReadFromMessage(
+    serialization::EulerSolver const& message) {
+  return EulerSolver(
+      R3Element<MomentOfInertia>::ReadFromMessage(message.moments_of_inertia()),
+      Bivector<AngularMomentum, InertialFrame>::ReadFromMessage(
+          message.initial_angular_momentum()),
+      AttitudeRotation::ReadFromMessage(message.initial_attitude()),
+      Instant::ReadFromMessage(message.initial_time()));
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
 Rotation<typename EulerSolver<InertialFrame,
                               PrincipalAxesFrame>::PreferredPrincipalAxesFrame,
          typename EulerSolver<InertialFrame, PrincipalAxesFrame>::ℬₜ>
@@ -411,19 +435,17 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
     case Region::e₁: {
       double const real_part = Sqrt(0.5 * (1 + m_coordinates.x / G_));
       AngularMomentum const denominator = 2 * G_ * real_part;
-      pₜ = Quaternion(real_part,
-                      {0,
-                        m_coordinates.z / denominator,
-                        -m_coordinates.y / denominator});
+      pₜ = Quaternion(
+          real_part,
+          {0, m_coordinates.z / denominator, -m_coordinates.y / denominator});
       break;
     }
     case Region::e₃: {
       double const real_part = Sqrt(0.5 * (1 + m_coordinates.z / G_));
       AngularMomentum const denominator = 2 * G_ * real_part;
-      pₜ = Quaternion(real_part,
-                      {m_coordinates.y / denominator,
-                        -m_coordinates.x / denominator,
-                        0});
+      pₜ = Quaternion(
+          real_part,
+          {m_coordinates.y / denominator, -m_coordinates.x / denominator, 0});
       break;
     }
     case Region::Motionless: {
