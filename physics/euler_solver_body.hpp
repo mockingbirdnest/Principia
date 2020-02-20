@@ -54,6 +54,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     AttitudeRotation const& initial_attitude,
     Instant const& initial_time)
     : moments_of_inertia_(moments_of_inertia),
+      serialized_initial_angular_momentum_(initial_angular_momentum),
+      initial_attitude_(initial_attitude),
       initial_time_(initial_time),
       G_(initial_angular_momentum.Norm()),
       ℛ_(Rotation<ℬʹ, InertialFrame>::Identity()),
@@ -300,7 +302,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
           {B₁₃_ * sech, G_ * Tanh(angle), B₃₁_ * sech});
       break;
     }
-    case Formula::Sphere : {
+    case Formula::Sphere: {
       m = initial_angular_momentum_;
       break;
     }
@@ -395,6 +397,28 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     default:
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
   }
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+void EulerSolver<InertialFrame, PrincipalAxesFrame>::WriteToMessage(
+    not_null<serialization::EulerSolver*> const message) const {
+  moments_of_inertia_.WriteToMessage(message->mutable_moments_of_inertia());
+  serialized_initial_angular_momentum_.WriteToMessage(
+      message->mutable_initial_angular_momentum());
+  initial_attitude_.WriteToMessage(message->mutable_initial_attitude());
+  initial_time_.WriteToMessage(message->mutable_initial_time());
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+EulerSolver<InertialFrame, PrincipalAxesFrame>
+EulerSolver<InertialFrame, PrincipalAxesFrame>::ReadFromMessage(
+    serialization::EulerSolver const& message) {
+  return EulerSolver(
+      R3Element<MomentOfInertia>::ReadFromMessage(message.moments_of_inertia()),
+      Bivector<AngularMomentum, InertialFrame>::ReadFromMessage(
+          message.initial_angular_momentum()),
+      AttitudeRotation::ReadFromMessage(message.initial_attitude()),
+      Instant::ReadFromMessage(message.initial_time()));
 }
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
