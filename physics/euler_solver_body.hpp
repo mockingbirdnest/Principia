@@ -54,16 +54,16 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     AttitudeRotation const& initial_attitude,
     Instant const& initial_time)
     : moments_of_inertia_(moments_of_inertia),
-      initial_angular_momentum_(initial_angular_momentum),
+      serialized_initial_angular_momentum_(initial_angular_momentum),
       initial_attitude_(initial_attitude),
       initial_time_(initial_time),
-      G_(initial_angular_momentum_.Norm()),
+      G_(initial_angular_momentum.Norm()),
       ℛ_(Rotation<ℬʹ, InertialFrame>::Identity()),
       𝒮_(Signature<PrincipalAxesFrame,
                    PreferredPrincipalAxesFrame>::Identity()) {
-  // Do not use initial_angular_momentum_ after this point.
+  // Do not use initial_angular_momentum after this point.
   auto const initial_angular_momentum_in_principal_axes =
-      initial_attitude.Inverse()(initial_angular_momentum_);
+      initial_attitude.Inverse()(initial_angular_momentum);
 
   auto const& I₁ = moments_of_inertia_.x;
   auto const& I₂ = moments_of_inertia_.y;
@@ -168,12 +168,11 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   }
 
   // Now that 𝒮_ has been computed we can use it to adjust m and to compute ℛ_.
-  preferred_initial_angular_momentum_ =
-      𝒮_(initial_angular_momentum_in_principal_axes);
-  m = preferred_initial_angular_momentum_.coordinates();
+  initial_angular_momentum_ = 𝒮_(initial_angular_momentum_in_principal_axes);
+  m = initial_angular_momentum_.coordinates();
   ℛ_ = [this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
     auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
-    auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(preferred_initial_angular_momentum_).Inverse();
+    auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_).Inverse();
     auto const 𝒮⁻¹ = 𝒮_.Inverse().template Forget<Rotation>();
 
     // This ℛ follows the assumptions in the third paragraph of section 2.3
@@ -304,7 +303,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
       break;
     }
     case Formula::Sphere: {
-      m = preferred_initial_angular_momentum_;
+      m = initial_angular_momentum_;
       break;
     }
     default:
@@ -404,7 +403,7 @@ template<typename InertialFrame, typename PrincipalAxesFrame>
 void EulerSolver<InertialFrame, PrincipalAxesFrame>::WriteToMessage(
     not_null<serialization::EulerSolver*> const message) const {
   moments_of_inertia_.WriteToMessage(message->mutable_moments_of_inertia());
-  initial_angular_momentum_.WriteToMessage(
+  serialized_initial_angular_momentum_.WriteToMessage(
       message->mutable_initial_angular_momentum());
   initial_attitude_.WriteToMessage(message->mutable_initial_attitude());
   initial_time_.WriteToMessage(message->mutable_initial_time());

@@ -111,11 +111,12 @@ class EulerSolver {
 
   // Construction parameters.
   R3Element<MomentOfInertia> const moments_of_inertia_;
-  Bivector<AngularMomentum, InertialFrame> const initial_angular_momentum_;
+  Bivector<AngularMomentum, InertialFrame> const
+      serialized_initial_angular_momentum_;
   AttitudeRotation const initial_attitude_;
   Instant const initial_time_;
   AngularMomentum const G_;
-  PreferredAngularMomentumBivector preferred_initial_angular_momentum_;
+  PreferredAngularMomentumBivector initial_angular_momentum_;
   Rotation<ℬʹ, InertialFrame> ℛ_;
 
   // A signature that describes which axes are flipped to adjust the signs of
