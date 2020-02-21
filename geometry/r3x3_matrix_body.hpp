@@ -44,7 +44,6 @@ R3Element<Scalar> R3x3Matrix<Scalar>::Diagonal() const {
   return {rows_[X].x, rows_[Y].y, rows_[Z].z};
 }
 
-
 template<typename Scalar>
 Scalar R3x3Matrix<Scalar>::Trace() const {
   return rows_[X].x + rows_[Y].y + rows_[Z].z;
