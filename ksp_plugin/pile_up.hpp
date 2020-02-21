@@ -156,6 +156,7 @@ class PileUp {
          not_null<Ephemeris<Barycentric>*> ephemeris,
          std::function<void()> deletion_callback);
 
+  // Sets |euler_solver_| and updates |rigid_pile_up_|.
   void MakeEulerSolver(InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
                        Instant const& t);
 
