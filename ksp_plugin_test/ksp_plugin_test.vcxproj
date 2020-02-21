@@ -35,6 +35,8 @@
     <ClCompile Include="..\ksp_plugin\renderer.cpp" />
     <ClCompile Include="..\ksp_plugin\vessel.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
+    <ClCompile Include="..\numerics\elliptic_functions.cpp" />
+    <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
     <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="celestial_test.cpp" />
