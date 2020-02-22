@@ -548,7 +548,9 @@ internal class MainWindow : SupervisedWindowRenderer {
   // Whether a journal is currently being recorded.
   private static bool journaling_ = false;
 
+#if FROBENIOID
   private static bool conserve_angular_momentum_ = false;
+#endif
 
   private Vessel vessel_;
 }
