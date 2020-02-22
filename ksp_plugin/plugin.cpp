@@ -691,7 +691,6 @@ RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
 
   auto const barycentric_to_main_body_motion =
       main_body_frame.ToThisFrameAtTime(current_time_);
-  // In coordinates, this rotation is the identity.
   auto const barycentric_to_main_body_rotation =
       barycentric_to_main_body_motion.rigid_transformation().linear_map();
   auto const reference_part_degrees_of_freedom =

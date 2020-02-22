@@ -27,6 +27,7 @@ using geometry::NonRotating;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::RigidTransformation;
+using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Wedge;
 using physics::DegreesOfFreedom;
@@ -69,6 +70,8 @@ PileUp::PileUp(
     actual_part_rigid_motion_.emplace(
         part, barycentric_to_pile_up * part->rigid_motion());
   }
+  MakeEulerSolver(mechanical_system.InertiaTensor(), t);
+
   psychohistory_ = history_->NewForkAtLast();
 
   RecomputeFromParts();
@@ -98,7 +101,9 @@ Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   absl::MutexLock l(lock_.get());
   Status status;
   if (psychohistory_->back().time < t) {
-    DeformPileUpIfNeeded();
+    angular_momentum_ += intrinsic_torque_ * (t - psychohistory_->back().time) +
+                         angular_momentum_change_;
+    DeformPileUpIfNeeded(t);
     status = AdvanceTime(t);
     NudgeParts();
   }
@@ -274,6 +279,15 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     }
   }
   pile_up->RecomputeFromParts();
+  // TODO(phl): the Euler solver should be serialized; when we don't have one we
+  // should compute it from an actual inertia tensor.
+  pile_up->MakeEulerSolver(
+      InertiaTensor<NonRotatingPileUp>(
+          geometry::R3x3Matrix<quantities::MomentOfInertia>::DiagonalMatrix(
+              {1000 * quantities::SIUnit<quantities::MomentOfInertia>(),
+               1729 * quantities::SIUnit<quantities::MomentOfInertia>(),
+               355 * quantities::SIUnit<quantities::MomentOfInertia>()})),
+      pile_up->psychohistory_->back().time);
   return check_not_null(std::move(pile_up));
 }
 
@@ -295,8 +309,51 @@ PileUp::PileUp(
       psychohistory_(psychohistory),
       deletion_callback_(std::move(deletion_callback)) {}
 
-void PileUp::DeformPileUpIfNeeded() {
+void PileUp::MakeEulerSolver(
+    InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
+    Instant const& t) {
+  auto const eigensystem = inertia_tensor.Diagonalize<PileUpPrincipalAxes>();
+  euler_solver_.emplace(eigensystem.form.coordinates().Diagonal(),
+                        angular_momentum_,
+                        eigensystem.rotation,
+                        t);
+  RigidTransformation<NonRotatingPileUp, PileUpPrincipalAxes> const
+      to_pile_up_principal_axes(
+          NonRotatingPileUp::origin,
+          PileUpPrincipalAxes::origin,
+          eigensystem.rotation.Inverse().Forget<OrthogonalMap>());
+  rigid_pile_up_.clear();
+  for (auto const& [part, actual_rigid_motion] : actual_part_rigid_motion_) {
+    rigid_pile_up_.emplace(
+        part,
+        to_pile_up_principal_axes * actual_rigid_motion.rigid_transformation());
+  }
+}
+
+void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   if (apparent_part_rigid_motion_.empty()) {
+    Bivector<AngularMomentum, PileUpPrincipalAxes> const angular_momentum =
+        euler_solver_->AngularMomentumAt(t);
+    Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const attitude =
+        euler_solver_->AttitudeAt(angular_momentum, t);
+    AngularVelocity<NonRotatingPileUp> const angular_velocity_of_rigid_pile_up =
+        attitude(euler_solver_->AngularVelocityFor(angular_momentum));
+
+    RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp> const pile_up_motion(
+        RigidTransformation<PileUpPrincipalAxes, NonRotatingPileUp>(
+            PileUpPrincipalAxes::origin,
+            NonRotatingPileUp::origin,
+            attitude.Forget<OrthogonalMap>()),
+        angular_velocity_of_rigid_pile_up,
+        NonRotatingPileUp::unmoving);
+
+    for (auto& [part, actual_rigid_motion] : actual_part_rigid_motion_) {
+      actual_rigid_motion =
+          pile_up_motion * RigidMotion<RigidPart, PileUpPrincipalAxes>(
+                               rigid_pile_up_.at(part),
+                               PileUpPrincipalAxes::nonrotating,
+                               PileUpPrincipalAxes::unmoving);
+    }
     return;
   }
   // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
@@ -365,7 +422,6 @@ void PileUp::DeformPileUpIfNeeded() {
           apparent_pile_up_equivalent_rotation *
           apparent_system.LinearMotion().Inverse();
 
-  using PileUpPrincipalAxes = Frame<enum class PileUpPrincipalAxesTag>;
   trace << "rotational correction:\n"
         << (actual_pile_up_equivalent_rotation.Inverse() *
             apparent_pile_up_equivalent_rotation)
@@ -398,6 +454,9 @@ void PileUp::DeformPileUpIfNeeded() {
         part, apparent_bubble_to_pile_up_motion * apparent_part_rigid_motion);
   }
   apparent_part_rigid_motion_.clear();
+
+  MakeEulerSolver(Identity<ApparentPileUp, NonRotatingPileUp>()(inertia_tensor),
+                  t);
 }
 
 Status PileUp::AdvanceTime(Instant const& t) {
@@ -405,8 +464,6 @@ Status PileUp::AdvanceTime(Instant const& t) {
 
   Status status;
   auto const history_last = --history_->end();
-  angular_momentum_ += intrinsic_torque_ * (t - psychohistory_->back().time) +
-                       angular_momentum_change_;
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
     history_->DeleteFork(psychohistory_);

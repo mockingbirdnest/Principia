@@ -57,6 +57,8 @@
     <ClCompile Include="..\journal\profiles.cpp" />
     <ClCompile Include="..\journal\recorder.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
+    <ClCompile Include="..\numerics\elliptic_functions.cpp" />
+    <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
     <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="celestial.cpp" />
     <ClCompile Include="equator_relevance_threshold.cpp" />
