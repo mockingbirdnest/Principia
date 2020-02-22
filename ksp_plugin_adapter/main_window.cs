@@ -5,10 +5,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : SupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name_ = "Frenet";
-  private const int next_release_lunation_number_ = 249;
+  private const string next_release_name_ = "Frobenius";
+  private const int next_release_lunation_number_ = 250;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2020, 02, 23, 15, 32, 00, TimeSpan.Zero);
+      new DateTimeOffset(2020, 03, 24, 09, 28, 00, TimeSpan.Zero);
 
   public delegate Vessel PredictedVessel();
 
@@ -272,11 +272,13 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderLoggingSettings() {
+#if FROBENIOID
     string trace = "";
     if (FlightGlobals.ActiveVessel &&
         adapter_.PluginRunning() &&
         plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
-      trace = plugin.VesselGetPileUpTrace(FlightGlobals.ActiveVessel.id.ToString());
+      trace =
+          plugin.VesselGetPileUpTrace(FlightGlobals.ActiveVessel.id.ToString());
     }
     UnityEngine.GUILayout.TextArea(
         trace,
@@ -285,6 +287,7 @@ internal class MainWindow : SupervisedWindowRenderer {
         conserve_angular_momentum_,
         "Conserve angular momentum");
     Interface.SetAngularMomentumConservation(conserve_angular_momentum_);
+#endif
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(text    : "←",
