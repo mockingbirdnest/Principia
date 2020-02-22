@@ -151,17 +151,20 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   }
   history_->WriteToMessage(message->mutable_history(),
                            /*forks=*/{psychohistory_});
-  for (auto const& pair : actual_part_rigid_motion_) {
-    auto const part = pair.first;
-    auto const& rigid_motion = pair.second;
+  for (auto const& [part, rigid_motion] : actual_part_rigid_motion_) {
     rigid_motion.WriteToMessage(&(
         (*message->mutable_actual_part_rigid_motion())[part->part_id()]));
   }
-  for (auto const& pair : apparent_part_rigid_motion_) {
-    auto const part = pair.first;
-    auto const& rigid_motion = pair.second;
+  for (auto const& [part, rigid_motion] : apparent_part_rigid_motion_) {
     rigid_motion.WriteToMessage(&(
         (*message->mutable_apparent_part_rigid_motion())[part->part_id()]));
+  }
+  for (auto const& [part, rigid_transformation] : rigid_pile_up_) {
+    rigid_transformation.WriteToMessage(&(
+        (*message->mutable_rigid_pile_up())[part->part_id()]));
+  }
+  if (euler_solver_.has_value()) {
+    euler_solver_->WriteToMessage(message->mutable_euler_solver());
   }
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
@@ -184,6 +187,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   bool const is_pre_cesàro = message.history().children().empty();
   bool const is_pre_frege = message.actual_part_degrees_of_freedom_size() > 0 ||
                             message.apparent_part_degrees_of_freedom_size() > 0;
+  bool const is_pre_frobenius = message.rigid_pile_up().empty();
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
     if (is_pre_cartan) {
@@ -242,18 +246,16 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   }
 
   if (is_pre_frege) {
-    for (auto const& pair : message.actual_part_degrees_of_freedom()) {
-      std::uint32_t const part_id = pair.first;
-      serialization::Pair const& degrees_of_freedom = pair.second;
+    for (auto const& [part_id, degrees_of_freedom] :
+         message.actual_part_degrees_of_freedom()) {
       pile_up->actual_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
           RigidMotion<RigidPart, NonRotatingPileUp>::MakeNonRotatingMotion(
               DegreesOfFreedom<NonRotatingPileUp>::ReadFromMessage(
                   degrees_of_freedom)));
     }
-    for (auto const& pair : message.apparent_part_degrees_of_freedom()) {
-      std::uint32_t const part_id = pair.first;
-      serialization::Pair const& degrees_of_freedom = pair.second;
+    for (auto const& [part_id, degrees_of_freedom] :
+         message.apparent_part_degrees_of_freedom()) {
       pile_up->apparent_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
           RigidMotion<RigidPart, ApparentBubble>::MakeNonRotatingMotion(
@@ -261,33 +263,46 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                   degrees_of_freedom)));
     }
   } else {
-    for (auto const& pair : message.actual_part_rigid_motion()) {
-      std::uint32_t const part_id = pair.first;
-      serialization::RigidMotion const& rigid_motion = pair.second;
+    for (auto const& [part_id, rigid_motion] :
+         message.actual_part_rigid_motion()) {
       pile_up->actual_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
           RigidMotion<RigidPart, NonRotatingPileUp>::ReadFromMessage(
               rigid_motion));
     }
-    for (auto const& pair : message.apparent_part_rigid_motion()) {
-      std::uint32_t const part_id = pair.first;
-      serialization::RigidMotion const& rigid_motion = pair.second;
+    for (auto const& [part_id, rigid_motion] :
+         message.apparent_part_rigid_motion()) {
       pile_up->apparent_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
           RigidMotion<RigidPart, ApparentBubble>::ReadFromMessage(
               rigid_motion));
     }
   }
+
+  if (is_pre_frobenius) {
+    MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
+    for (not_null<Part*> const part : pile_up->parts_) {
+      mechanical_system.AddRigidBody(
+          part->rigid_motion(), part->mass(), part->inertia_tensor());
+    }
+    pile_up->MakeEulerSolver(mechanical_system.InertiaTensor(),
+                             pile_up->psychohistory_->back().time);
+  } else {
+    for (auto const& [part_id, rigid_transformation] :
+         message.rigid_pile_up()) {
+      pile_up->rigid_pile_up_.emplace(
+          part_id_to_part(part_id),
+          RigidTransformation<RigidPart, PileUpPrincipalAxes>::ReadFromMessage(
+              rigid_transformation));
+    }
+    if (message.has_euler_solver()) {
+      pile_up->euler_solver_.emplace(
+          EulerSolver<NonRotatingPileUp, PileUpPrincipalAxes>::ReadFromMessage(
+              message.euler_solver()));
+    }
+  }
   pile_up->RecomputeFromParts();
-  // TODO(phl): the Euler solver should be serialized; when we don't have one we
-  // should compute it from an actual inertia tensor.
-  pile_up->MakeEulerSolver(
-      InertiaTensor<NonRotatingPileUp>(
-          geometry::R3x3Matrix<quantities::MomentOfInertia>::DiagonalMatrix(
-              {1000 * quantities::SIUnit<quantities::MomentOfInertia>(),
-               1729 * quantities::SIUnit<quantities::MomentOfInertia>(),
-               355 * quantities::SIUnit<quantities::MomentOfInertia>()})),
-      pile_up->psychohistory_->back().time);
+
   return check_not_null(std::move(pile_up));
 }
 
