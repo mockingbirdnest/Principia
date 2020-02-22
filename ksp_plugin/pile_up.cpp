@@ -146,15 +146,11 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   }
   history_->WriteToMessage(message->mutable_history(),
                            /*forks=*/{psychohistory_});
-  for (auto const& pair : actual_part_rigid_motion_) {
-    auto const part = pair.first;
-    auto const& rigid_motion = pair.second;
+  for (auto const& [part, rigid_motion] : actual_part_rigid_motion_) {
     rigid_motion.WriteToMessage(&(
         (*message->mutable_actual_part_rigid_motion())[part->part_id()]));
   }
-  for (auto const& pair : apparent_part_rigid_motion_) {
-    auto const part = pair.first;
-    auto const& rigid_motion = pair.second;
+  for (auto const& [part, rigid_motion] : apparent_part_rigid_motion_) {
     rigid_motion.WriteToMessage(&(
         (*message->mutable_apparent_part_rigid_motion())[part->part_id()]));
   }
@@ -237,18 +233,16 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   }
 
   if (is_pre_frege) {
-    for (auto const& pair : message.actual_part_degrees_of_freedom()) {
-      std::uint32_t const part_id = pair.first;
-      serialization::Pair const& degrees_of_freedom = pair.second;
+    for (auto const& [part_id, degrees_of_freedom] :
+         message.actual_part_degrees_of_freedom()) {
       pile_up->actual_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
           RigidMotion<RigidPart, NonRotatingPileUp>::MakeNonRotatingMotion(
               DegreesOfFreedom<NonRotatingPileUp>::ReadFromMessage(
                   degrees_of_freedom)));
     }
-    for (auto const& pair : message.apparent_part_degrees_of_freedom()) {
-      std::uint32_t const part_id = pair.first;
-      serialization::Pair const& degrees_of_freedom = pair.second;
+    for (auto const& [part_id, degrees_of_freedom] :
+         message.apparent_part_degrees_of_freedom()) {
       pile_up->apparent_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
           RigidMotion<RigidPart, ApparentBubble>::MakeNonRotatingMotion(
@@ -256,17 +250,15 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                   degrees_of_freedom)));
     }
   } else {
-    for (auto const& pair : message.actual_part_rigid_motion()) {
-      std::uint32_t const part_id = pair.first;
-      serialization::RigidMotion const& rigid_motion = pair.second;
+    for (auto const& [part_id, rigid_motion] :
+         message.actual_part_rigid_motion()) {
       pile_up->actual_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
           RigidMotion<RigidPart, NonRotatingPileUp>::ReadFromMessage(
               rigid_motion));
     }
-    for (auto const& pair : message.apparent_part_rigid_motion()) {
-      std::uint32_t const part_id = pair.first;
-      serialization::RigidMotion const& rigid_motion = pair.second;
+    for (auto const& [part_id, rigid_motion] :
+         message.apparent_part_rigid_motion()) {
       pile_up->apparent_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
           RigidMotion<RigidPart, ApparentBubble>::ReadFromMessage(
