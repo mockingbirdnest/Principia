@@ -27,6 +27,7 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -37,11 +38,13 @@ using astronomy::ICRS;
 using astronomy::operator""_UTC;
 using geometry::AngleBetween;
 using geometry::AngularVelocity;
+using geometry::Arbitrary;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::EulerAngles;
 using geometry::EvenPermutation;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Permutation;
@@ -67,6 +70,7 @@ using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ApproximateQuantity;
 using testing_utilities::Componentwise;
+using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::RelativeErrorFrom;
@@ -78,7 +82,10 @@ using ::testing::Matcher;
 
 class EulerSolverTest : public ::testing::Test {
  protected:
-  using PrincipalAxes = Frame<enum class PrincipalAxesTag>;
+  using PrincipalAxes = Frame<serialization::Frame::TestTag,
+                              Arbitrary,
+                              Handedness::Right,
+                              serialization::Frame::TEST>;
 
   using Solver = EulerSolver<ICRS, PrincipalAxes>;
 
@@ -1166,6 +1173,37 @@ TEST_F(EulerSolverTest, Toutatis) {
     EXPECT_THAT(AngleBetween(actual_attitude(e3_), expected_attitude(e3_)),
                 IsNear(observation.e3_direction_error));
   }
+}
+
+TEST_F(EulerSolverTest, Serialization) {
+  R3Element<MomentOfInertia> const moments_of_inertia{
+      3.0 * SIUnit<MomentOfInertia>(),
+      5.0 * SIUnit<MomentOfInertia>(),
+      9.0 * SIUnit<MomentOfInertia>()};
+
+  Bivector<AngularMomentum, PrincipalAxes> const initial_angular_momentum(
+      {0.0 * SIUnit<AngularMomentum>(),
+       2.0 * SIUnit<AngularMomentum>(),
+       0.01 * SIUnit<AngularMomentum>()});
+  Solver::AttitudeRotation const initial_attitude = identity_attitude_;
+
+  Solver const solver1(moments_of_inertia,
+                       initial_attitude(initial_angular_momentum),
+                       initial_attitude,
+                       Instant() + 3 * Second);
+
+  serialization::EulerSolver message1;
+  solver1.WriteToMessage(&message1);
+
+  auto const solver2 = Solver::ReadFromMessage(message1);
+
+  EXPECT_EQ(solver1.AngularMomentumAt(Instant() + 5 * Second),
+            solver2.AngularMomentumAt(Instant() + 5 * Second));
+
+  serialization::EulerSolver message2;
+  solver2.WriteToMessage(&message2);
+
+  EXPECT_THAT(message2, EqualsProto(message1));
 }
 
 }  // namespace physics
