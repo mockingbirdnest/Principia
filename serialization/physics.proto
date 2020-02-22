@@ -135,6 +135,13 @@ message Ephemeris {
   reserved "planetary_integrator", "step";
 }
 
+message EulerSolver {
+  required R3Element moments_of_inertia = 1;
+  required Multivector initial_angular_momentum = 2;
+  required Rotation initial_attitude = 3;
+  required Point initial_time = 4;
+}
+
 message HierarchicalSystem {
   message Subsystem {
     required MassiveBody primary = 1;
