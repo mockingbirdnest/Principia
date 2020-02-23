@@ -124,10 +124,8 @@ class EulerSolver {
   Signature<PrincipalAxesFrame, PreferredPrincipalAxesFrame> 𝒮_;
 
   // Importantly, the formula and the region to use are constants of motion.
-  public:
   Formula formula_;
   Region region_;
-  private:
 
   // Only the parameters needed for the selected formula are non-NaN after
   // construction.

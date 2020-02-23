@@ -490,11 +490,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
         << apparent_equivalent_angular_velocity.Norm()
         << "\nL in principal axes:\n"
         << inertia_tensor.Diagonalize<PileUpPrincipalAxes>().rotation.Inverse()(
-               apparent_angular_momentum)
-        << "\nFormula: "
-        << std::array{"i", "ii", "iii", "Sphere"}[(int)euler_solver_->formula_]
-        << "\nRegion: "
-        << std::array{"e₁", "e₃", "Motionless"}[(int)euler_solver_->region_];
+               apparent_angular_momentum);
 
   last_correction_trace_ = trace.str();
 }
