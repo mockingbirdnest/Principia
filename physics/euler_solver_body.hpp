@@ -193,7 +193,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       mc_ = std::min(Δ₂ * I₃₁ / (Δ₃ * I₂₁), 1.0);
       ν_ = EllipticF(ArcTan(m.y * B₃₁_, m.z * B₂₁_), mc_);
       auto const λ₃ = Sqrt(Δ₃ * I₁₂ / (I₁ * I₂ * I₃));
-      λ_ = -λ₃;
+      λ_ = λ₃;// REMOVE BEFORE FLIGHT!
 
       double sn;
       double cn;
@@ -218,7 +218,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       mc_ = std::min(Δ₂ * I₃₁ / (Δ₁ * I₃₂), 1.0);
       ν_ = EllipticF(ArcTan(m.y * B₁₃_, m.x * B₂₃_), mc_);
       auto const λ₁ = Sqrt(Δ₁ * I₃₂ / (I₁ * I₂ * I₃));
-      λ_ = -λ₁;
+      λ_ = λ₁;// REMOVE BEFORE FLIGHT!
 
       double sn;
       double cn;
