@@ -1872,16 +1872,6 @@ message SerializePlugin {
   optional Return return = 3;
 }
 
-message SetAngularMomentumConservation {
-  extend Method {
-    optional SetAngularMomentumConservation extension = 5998;
-  }
-  message In {
-    required bool conserve = 1;
-  }
-  optional In in = 1;
-}
-
 message SetBufferDuration {
   extend Method {
     optional SetBufferDuration extension = 5014;

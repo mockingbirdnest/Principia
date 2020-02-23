@@ -441,8 +441,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
               ApparentPileUp::origin,
               EquivalentRigidPileUp::origin,
               OrthogonalMap<ApparentPileUp, EquivalentRigidPileUp>::Identity()),
-          conserve_angular_momentum ? apparent_equivalent_angular_velocity
-                                    : ApparentPileUp::nonrotating,
+          apparent_equivalent_angular_velocity,
           ApparentPileUp::unmoving);
   RigidMotion<NonRotatingPileUp, EquivalentRigidPileUp> const
       actual_pile_up_equivalent_rotation(
@@ -451,8 +450,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
               EquivalentRigidPileUp::origin,
               OrthogonalMap<NonRotatingPileUp,
                             EquivalentRigidPileUp>::Identity()),
-          conserve_angular_momentum ? actual_equivalent_angular_velocity
-                                    : NonRotatingPileUp::nonrotating,
+          actual_equivalent_angular_velocity,
           NonRotatingPileUp::unmoving);
   RigidMotion<ApparentBubble, NonRotatingPileUp> const
       apparent_bubble_to_pile_up_motion =
@@ -621,8 +619,6 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
                            std::future<Status> future)
     : pile_up(pile_up),
       future(std::move(future)) {}
-
-bool PileUp::conserve_angular_momentum = false;
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin

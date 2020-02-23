@@ -281,10 +281,6 @@ internal class MainWindow : SupervisedWindowRenderer {
     UnityEngine.GUILayout.TextArea(
         trace,
         style: Style.Multiline(UnityEngine.GUI.skin.textArea));
-    conserve_angular_momentum_ = UnityEngine.GUILayout.Toggle(
-        conserve_angular_momentum_,
-        "Conserve angular momentum");
-    Interface.SetAngularMomentumConservation(conserve_angular_momentum_);
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(text    : "←",
@@ -544,8 +540,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool must_record_journal_ = false;
   // Whether a journal is currently being recorded.
   private static bool journaling_ = false;
-
-  private static bool conserve_angular_momentum_ = false;
 
   private Vessel vessel_;
 }

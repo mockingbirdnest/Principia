@@ -137,8 +137,6 @@ class PileUp {
     return last_correction_trace_;
   }
 
-  static bool conserve_angular_momentum;
-
  private:
   // A pointer to a member function of |Part| used to append a point to either
   // trajectory (history or psychohistory).
