@@ -153,6 +153,7 @@ class PileUp {
              fixed_step_parameters,
          not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
          DiscreteTrajectory<Barycentric>* psychohistory,
+         Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
          not_null<Ephemeris<Barycentric>*> ephemeris,
          std::function<void()> deletion_callback);
 
@@ -220,7 +221,6 @@ class PileUp {
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // The angular momentum of the pile up with respect to its centre of mass.
-  // TODO(egg): This is not yet serialized.
   Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_;
 
   // When present, this instance is used to integrate the trajectory of this

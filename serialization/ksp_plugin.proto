@@ -87,6 +87,7 @@ message PileUp {
   // Added in Frobenius.
   map<fixed32, AffineMap> rigid_pile_up = 11;
   optional EulerSolver euler_solver = 12;
+  optional Multivector angular_momentum = 13;  // Required.
   // Added in Cartan.
   optional Ephemeris.AdaptiveStepParameters adaptive_step_parameters = 7;
   optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;

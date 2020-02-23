@@ -166,6 +166,7 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   if (euler_solver_.has_value()) {
     euler_solver_->WriteToMessage(message->mutable_euler_solver());
   }
+  angular_momentum_.WriteToMessage(message->mutable_angular_momentum());
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
   fixed_step_parameters_.WriteToMessage(
@@ -199,6 +200,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                          message.history(),
                          /*forks=*/{}),
                      /*psychohistory=*/nullptr,
+                     /*angular_momentum=*/{},
                      ephemeris,
                      std::move(deletion_callback)));
     } else {
@@ -213,6 +215,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                   message.history(),
                   /*forks=*/{}),
               /*psychohistory=*/nullptr,
+              /*angular_momentum=*/{},
               ephemeris,
               std::move(deletion_callback)));
     }
@@ -232,6 +235,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history(),
             /*forks=*/{&psychohistory});
+    // The angular momentum will default to {} pre-Frobenius.
     pile_up = std::unique_ptr<PileUp>(
         new PileUp(
             std::move(parts),
@@ -241,6 +245,8 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                 message.fixed_step_parameters()),
             std::move(history),
             psychohistory,
+            Bivector<AngularMomentum, NonRotatingPileUp>::ReadFromMessage(
+                message.angular_momentum()),
             ephemeris,
             std::move(deletion_callback)));
   }
@@ -313,6 +319,7 @@ PileUp::PileUp(
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
     not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
     DiscreteTrajectory<Barycentric>* const psychohistory,
+    Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     std::function<void()> deletion_callback)
     : lock_(make_not_null_unique<absl::Mutex>()),
@@ -322,6 +329,7 @@ PileUp::PileUp(
       fixed_step_parameters_(fixed_step_parameters),
       history_(std::move(history)),
       psychohistory_(psychohistory),
+      angular_momentum_(angular_momentum),
       deletion_callback_(std::move(deletion_callback)) {}
 
 void PileUp::MakeEulerSolver(
