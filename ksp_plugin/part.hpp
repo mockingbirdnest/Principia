@@ -43,11 +43,18 @@ using quantities::Torque;
 // Represents a KSP part.
 class Part final {
  public:
+  // A loaded part.
   Part(PartId part_id,
        std::string const& name,
        Mass const& mass,
        InertiaTensor<RigidPart> const& inertia_tensor,
        RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+       std::function<void()> deletion_callback);
+
+  // An unloaded part.
+  Part(PartId part_id,
+       std::string const& name,
+       DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
        std::function<void()> deletion_callback);
 
   // Calls the deletion callback passed at construction, if any.  This part must

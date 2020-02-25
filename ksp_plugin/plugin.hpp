@@ -472,14 +472,13 @@ class Plugin {
       IndexToOwnedCelestial& celestials,
       std::map<std::string, Index>& name_to_index);
 
-  // Adds a part to a vessel, recording it in the appropriate map and setting up
-  // a deletion callback.
+  // Constructs a part using the constructor arguments, and add it to a vessel,
+  // recording it in the appropriate map and setting up a deletion callback.
+  template<typename... Args>
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
                std::string const& name,
-               Mass const& mass,
-               InertiaTensor<RigidPart> const& inertia_tensor,
-               RigidMotion<RigidPart, Barycentric> const& rigid_motion);
+               Args... args);
 
   // Whether |loaded_vessels_| contains |vessel|.
   bool is_loaded(not_null<Vessel*> vessel) const;

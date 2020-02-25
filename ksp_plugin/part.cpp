@@ -32,6 +32,8 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;
 
+constexpr Mass unloaded_part_mass = 1 * Kilogram;
+
 Part::Part(
     PartId const part_id,
     std::string const& name,
@@ -51,6 +53,18 @@ Part::Part(
                       {Barycentric::origin, Barycentric::unmoving});
   history_ = prehistory_->NewForkAtLast();
 }
+
+Part::Part(PartId part_id,
+           std::string const& name,
+           DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+           std::function<void()> deletion_callback)
+    : Part(part_id,
+           name,
+           unloaded_part_mass,
+           MakeWaterSphereInertiaTensor(unloaded_part_mass),
+           RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+               degrees_of_freedom),
+           deletion_callback_) {}
 
 Part::~Part() {
   LOG(INFO) << "Destroying part " << ShortDebugString();

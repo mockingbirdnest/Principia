@@ -106,7 +106,6 @@ using quantities::Infinity;
 using quantities::Length;
 using quantities::MomentOfInertia;
 using quantities::SIUnit;
-using quantities::si::Kilogram;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
@@ -418,14 +417,7 @@ void Plugin::InsertUnloadedPart(
   DegreesOfFreedom<Barycentric> const degrees_of_freedom =
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative;
 
-  Mass const mass = 1 * Kilogram;
-  AddPart(vessel,
-          part_id,
-          name,
-          mass,
-          MakeWaterSphereInertiaTensor(mass),
-          RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
-              degrees_of_freedom));
+  AddPart(vessel, part_id, name, degrees_of_freedom);
   // NOTE(egg): we do not keep the part; it may disappear just as we load, if
   // it happens to be a part with no physical significance (rb == null).
 }
@@ -1544,12 +1536,11 @@ void Plugin::ReadCelestialsFromMessages(
   }
 }
 
+template<typename... Args>
 void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
                      std::string const& name,
-                     Mass const& mass,
-                     InertiaTensor<RigidPart> const& inertia_tensor,
-                     RigidMotion<RigidPart, Barycentric> const& rigid_motion) {
+                     Args... args) {
   auto const [it, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
   CHECK(inserted) << NAMED(part_id);
   auto deletion_callback = [it = it, &map = part_id_to_vessel_] {
@@ -1557,9 +1548,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
   };
   auto part = make_not_null_unique<Part>(part_id,
                                          name,
-                                         mass,
-                                         inertia_tensor,
-                                         rigid_motion,
+                                         std::forward<Args>(args)...,
                                          std::move(deletion_callback));
   vessel->AddPart(std::move(part));
 }
