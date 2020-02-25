@@ -481,7 +481,7 @@ void Plugin::InsertOrKeepLoadedPart(
 }
 
 void Plugin::ApplyPartIntrinsicForce(PartId const part_id,
-                                     Vector<Force, World> const& force) {
+                                     Vector<Force, World> const& force) const {
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
@@ -493,7 +493,7 @@ void Plugin::ApplyPartIntrinsicForceAtPosition(
     PartId const part_id,
     Vector<Force, World> const& force,
     Position<World> const& point_of_force_application,
-    Position<World> const& part_position) {
+    Position<World> const& part_position) const {
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
@@ -506,12 +506,18 @@ void Plugin::ApplyPartIntrinsicForceAtPosition(
 
 void Plugin::ApplyPartIntrinsicTorque(
     PartId const part_id,
-    Bivector<Torque, World> const& torque) {
+    Bivector<Torque, World> const& torque) const {
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
   vessel->part(part_id)->apply_intrinsic_torque(
       renderer_->WorldToBarycentric(PlanetariumRotation())(torque));
+}
+
+bool Plugin::PartIsLoaded(PartId const part_id) const {
+  not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
+  CHECK(is_loaded(vessel));
+  return vessel->part(part_id)->loaded();
 }
 
 void Plugin::PrepareToReportCollisions() {

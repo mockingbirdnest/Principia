@@ -217,15 +217,17 @@ class Plugin {
   // relevant part, which must be in a loaded vessel.
   virtual void ApplyPartIntrinsicForce(
       PartId part_id,
-      Vector<Force, World> const& force);
+      Vector<Force, World> const& force) const;
   virtual void ApplyPartIntrinsicForceAtPosition(
       PartId part_id,
       Vector<Force, World> const& force,
       Position<World> const& point_of_force_application,
-      Position<World> const& part_position);
+      Position<World> const& part_position) const;
   virtual void ApplyPartIntrinsicTorque(
       PartId part_id,
-      Bivector<Torque, World> const& torque);
+      Bivector<Torque, World> const& torque) const;
+
+  virtual bool PartIsLoaded(PartId part_id) const;
 
   // Calls |MakeSingleton| for all parts in loaded vessels, enabling the use of
   // union-find for pile up construction.  This must be called after the calls

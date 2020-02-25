@@ -99,6 +99,15 @@ QPRW __cdecl principia__PartGetActualDegreesOfFreedom(
        ToXYZ(part_angular_velocity.coordinates() / (Radian / Second))});
 }
 
+bool __cdecl principia__PartIsLoaded(
+    Plugin const* const plugin,
+    uint32_t const part_id) {
+  journal::Method<journal::PartIsLoaded> m({plugin, part_id});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->PartIsLoaded(part_id));
+}
+
+
 void __cdecl principia__PartSetApparentRigidMotion(
     Plugin* const plugin,
     PartId const part_id,
