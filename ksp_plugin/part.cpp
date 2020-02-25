@@ -34,25 +34,19 @@ using quantities::si::Radian;
 
 constexpr Mass unloaded_part_mass = 1 * Kilogram;
 
-Part::Part(
-    PartId const part_id,
-    std::string const& name,
-    Mass const& mass,
-    InertiaTensor<RigidPart> const& inertia_tensor,
-    RigidMotion<RigidPart, Barycentric> const& rigid_motion,
-    std::function<void()> deletion_callback)
-    : part_id_(part_id),
-      name_(name),
-      mass_(mass),
-      inertia_tensor_(inertia_tensor),
-      rigid_motion_(rigid_motion),
-      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      subset_node_(make_not_null_unique<Subset<Part>::Node>()),
-      deletion_callback_(std::move(deletion_callback)) {
-  prehistory_->Append(astronomy::InfinitePast,
-                      {Barycentric::origin, Barycentric::unmoving});
-  history_ = prehistory_->NewForkAtLast();
-}
+Part::Part(PartId const part_id,
+           std::string const& name,
+           Mass const& mass,
+           InertiaTensor<RigidPart> const& inertia_tensor,
+           RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+           std::function<void()> deletion_callback)
+    : Part(part_id,
+           name,
+           /*loaded=*/true,
+           mass,
+           inertia_tensor,
+           rigid_motion,
+           deletion_callback) {}
 
 Part::Part(PartId part_id,
            std::string const& name,
@@ -60,6 +54,7 @@ Part::Part(PartId part_id,
            std::function<void()> deletion_callback)
     : Part(part_id,
            name,
+           /*loaded=*/false,
            unloaded_part_mass,
            MakeWaterSphereInertiaTensor(unloaded_part_mass),
            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
@@ -75,6 +70,10 @@ Part::~Part() {
 
 PartId Part::part_id() const {
   return part_id_;
+}
+
+bool Part::loaded() const {
+  return loaded_;
 }
 
 void Part::set_mass(Mass const& mass) {
@@ -329,6 +328,27 @@ std::string Part::ShortDebugString() const {
   HexadecimalEncoder</*null_terminated=*/true> encoder;
   auto const hex_id = encoder.Encode(id_bytes);
   return name_ + " (" + hex_id.data.get() + ")";
+}
+
+Part::Part(PartId const part_id,
+           std::string const& name,
+           bool const loaded,
+           Mass const& mass,
+           InertiaTensor<RigidPart> const& inertia_tensor,
+           RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+           std::function<void()> deletion_callback)
+    : part_id_(part_id),
+      name_(name),
+      loaded_(loaded),
+      mass_(mass),
+      inertia_tensor_(inertia_tensor),
+      rigid_motion_(rigid_motion),
+      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      subset_node_(make_not_null_unique<Subset<Part>::Node>()),
+      deletion_callback_(std::move(deletion_callback)) {
+  prehistory_->Append(astronomy::InfinitePast,
+                      {Barycentric::origin, Barycentric::unmoving});
+  history_ = prehistory_->NewForkAtLast();
 }
 
 InertiaTensor<RigidPart> MakeWaterSphereInertiaTensor(Mass const& mass) {

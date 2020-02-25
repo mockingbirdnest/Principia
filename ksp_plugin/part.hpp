@@ -63,6 +63,9 @@ class Part final {
 
   PartId part_id() const;
 
+  // Whether the part is loaded (depends on the constructor that was used).
+  bool loaded() const;
+
   // Sets or returns the mass and inertia tensor.  Even though a part is
   // massless in the sense that it doesn't exert gravity, it has a mass and an
   // inertia used to determine its intrinsic acceleration and rotational
@@ -153,8 +156,17 @@ class Part final {
   std::string ShortDebugString() const;
 
  private:
+  Part(PartId part_id,
+       std::string const& name,
+       bool loaded,
+       Mass const& mass,
+       InertiaTensor<RigidPart> const& inertia_tensor,
+       RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+       std::function<void()> deletion_callback);
+
   PartId const part_id_;
   std::string const name_;
+  bool const loaded_;
   Mass mass_;
   Mass mass_change_;
   InertiaTensor<RigidPart> inertia_tensor_;
