@@ -1285,8 +1285,8 @@ public partial class PrincipiaPluginAdapter
       foreach (CelestialBody celestial in FlightGlobals.Bodies) {
         celestial.position += offset;
       }
-      foreach (
-          Vessel vessel in FlightGlobals.Vessels.Where(is_manageable_on_rails)) {
+      foreach (Vessel vessel in FlightGlobals.Vessels.Where(
+          is_manageable_on_rails)) {
         vessel.SetPosition(vessel.transform.position + offset);
       }
       // NOTE(egg): this is almost certainly incorrect, since we give the
