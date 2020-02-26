@@ -515,9 +515,11 @@ void Plugin::ApplyPartIntrinsicTorque(
 }
 
 bool Plugin::PartIsLoaded(PartId const part_id) const {
-  not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
-  CHECK(is_loaded(vessel));
-  return vessel->part(part_id)->loaded();
+  auto const it = part_id_to_vessel_.find(part_id);
+  if (it == part_id_to_vessel_.end()) {
+    return false;
+  }
+  return it->second->part(part_id)->loaded();
 }
 
 void Plugin::PrepareToReportCollisions() {

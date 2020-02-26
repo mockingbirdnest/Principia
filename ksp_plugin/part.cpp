@@ -46,7 +46,7 @@ Part::Part(PartId const part_id,
            mass,
            inertia_tensor,
            rigid_motion,
-           deletion_callback) {}
+           std::move(deletion_callback)) {}
 
 Part::Part(PartId part_id,
            std::string const& name,
@@ -59,7 +59,7 @@ Part::Part(PartId part_id,
            MakeWaterSphereInertiaTensor(unloaded_part_mass),
            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
                degrees_of_freedom),
-           deletion_callback_) {}
+           std::move(deletion_callback)) {}
 
 Part::~Part() {
   LOG(INFO) << "Destroying part " << ShortDebugString();
