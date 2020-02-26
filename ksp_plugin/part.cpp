@@ -223,6 +223,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
                               serialization_index_for_pile_up) const {
   message->set_part_id(part_id_);
   message->set_name(name_);
+  message->set_loaded(loaded_);
   mass_.WriteToMessage(message->mutable_mass());
   inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
@@ -251,33 +252,36 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     auto const degrees_of_freedom =
         DegreesOfFreedom<Barycentric>::ReadFromMessage(
             message.degrees_of_freedom());
-    part = make_not_null_unique<Part>(
+    part = std::unique_ptr<Part>(new Part(
         message.part_id(),
         message.name(),
+        message.loaded(),
         Mass::ReadFromMessage(message.mass()),
         MakeWaterSphereInertiaTensor(Mass::ReadFromMessage(message.mass())),
         RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
             degrees_of_freedom),
-        std::move(deletion_callback));
+        std::move(deletion_callback)));
   } else if (is_pre_frenet) {
-    part = make_not_null_unique<Part>(
+    part = std::unique_ptr<Part>(new Part(
         message.part_id(),
         message.name(),
+        message.loaded(),
         Mass::ReadFromMessage(message.pre_frenet_inertia_tensor().mass()),
         InertiaTensor<RigidPart>::ReadFromMessage(
             message.pre_frenet_inertia_tensor().form()),
         RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
             message.rigid_motion()),
-        std::move(deletion_callback));
+        std::move(deletion_callback)));
   } else {
-    part = make_not_null_unique<Part>(
+    part = std::unique_ptr<Part>(new Part(
         message.part_id(),
         message.name(),
+        message.loaded(),
         Mass::ReadFromMessage(message.mass()),
         InertiaTensor<RigidPart>::ReadFromMessage(message.inertia_tensor()),
         RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
             message.rigid_motion()),
-        std::move(deletion_callback));
+        std::move(deletion_callback)));
   }
 
   part->apply_intrinsic_force(
