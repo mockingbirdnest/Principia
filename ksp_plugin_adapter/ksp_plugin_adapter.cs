@@ -379,7 +379,7 @@ public partial class PrincipiaPluginAdapter
                                           UT : universal_time);
       if (vessel.loaded) {
         foreach (Part part in vessel.parts.Where(part => part.rb != null &&
-                                                         plugin_.PartIsLoaded(
+                                                         plugin_.PartIsTruthful(
                                                              part.flightID))) {
           // TODO(egg): What if the plugin doesn't have the part? this seems
           // brittle.

@@ -32,7 +32,7 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;
 
-constexpr Mass unloaded_part_mass = 1 * Kilogram;
+constexpr Mass untruthful_part_mass = 1 * Kilogram;
 
 Part::Part(PartId const part_id,
            std::string const& name,
@@ -42,7 +42,7 @@ Part::Part(PartId const part_id,
            std::function<void()> deletion_callback)
     : Part(part_id,
            name,
-           /*loaded=*/true,
+           /*truthful=*/true,
            mass,
            inertia_tensor,
            rigid_motion,
@@ -54,9 +54,9 @@ Part::Part(PartId part_id,
            std::function<void()> deletion_callback)
     : Part(part_id,
            name,
-           /*loaded=*/false,
-           unloaded_part_mass,
-           MakeWaterSphereInertiaTensor(unloaded_part_mass),
+           /*truthful=*/false,
+           untruthful_part_mass,
+           MakeWaterSphereInertiaTensor(untruthful_part_mass),
            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
                degrees_of_freedom),
            std::move(deletion_callback)) {}
@@ -72,8 +72,12 @@ PartId Part::part_id() const {
   return part_id_;
 }
 
-bool Part::loaded() const {
-  return loaded_;
+bool Part::truthful() const {
+  return truthful_;
+}
+
+void Part::make_truthful() {
+  truthful_ = true;
 }
 
 void Part::set_mass(Mass const& mass) {
@@ -223,7 +227,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
                               serialization_index_for_pile_up) const {
   message->set_part_id(part_id_);
   message->set_name(name_);
-  message->set_loaded(loaded_);
+  message->set_truthful(truthful_);
   mass_.WriteToMessage(message->mutable_mass());
   inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
@@ -255,7 +259,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part = std::unique_ptr<Part>(new Part(
         message.part_id(),
         message.name(),
-        message.loaded(),
+        message.truthful(),
         Mass::ReadFromMessage(message.mass()),
         MakeWaterSphereInertiaTensor(Mass::ReadFromMessage(message.mass())),
         RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
@@ -265,7 +269,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part = std::unique_ptr<Part>(new Part(
         message.part_id(),
         message.name(),
-        message.loaded(),
+        message.truthful(),
         Mass::ReadFromMessage(message.pre_frenet_inertia_tensor().mass()),
         InertiaTensor<RigidPart>::ReadFromMessage(
             message.pre_frenet_inertia_tensor().form()),
@@ -276,7 +280,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part = std::unique_ptr<Part>(new Part(
         message.part_id(),
         message.name(),
-        message.loaded(),
+        message.truthful(),
         Mass::ReadFromMessage(message.mass()),
         InertiaTensor<RigidPart>::ReadFromMessage(message.inertia_tensor()),
         RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
@@ -336,14 +340,14 @@ std::string Part::ShortDebugString() const {
 
 Part::Part(PartId const part_id,
            std::string const& name,
-           bool const loaded,
+           bool const truthful,
            Mass const& mass,
            InertiaTensor<RigidPart> const& inertia_tensor,
            RigidMotion<RigidPart, Barycentric> const& rigid_motion,
            std::function<void()> deletion_callback)
     : part_id_(part_id),
       name_(name),
-      loaded_(loaded),
+      truthful_(truthful),
       mass_(mass),
       inertia_tensor_(inertia_tensor),
       rigid_motion_(rigid_motion),

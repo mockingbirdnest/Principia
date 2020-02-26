@@ -227,7 +227,7 @@ class Plugin {
       PartId part_id,
       Bivector<Torque, World> const& torque) const;
 
-  virtual bool PartIsLoaded(PartId part_id) const;
+  virtual bool PartIsTruthful(PartId part_id) const;
 
   // Calls |MakeSingleton| for all parts in loaded vessels, enabling the use of
   // union-find for pile up construction.  This must be called after the calls

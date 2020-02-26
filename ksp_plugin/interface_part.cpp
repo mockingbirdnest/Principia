@@ -99,12 +99,12 @@ QPRW __cdecl principia__PartGetActualDegreesOfFreedom(
        ToXYZ(part_angular_velocity.coordinates() / (Radian / Second))});
 }
 
-bool __cdecl principia__PartIsLoaded(
+bool __cdecl principia__PartIsTruthful(
     Plugin const* const plugin,
     uint32_t const part_id) {
-  journal::Method<journal::PartIsLoaded> m({plugin, part_id});
+  journal::Method<journal::PartIsTruthful> m({plugin, part_id});
   CHECK_NOTNULL(plugin);
-  return m.Return(plugin->PartIsLoaded(part_id));
+  return m.Return(plugin->PartIsTruthful(part_id));
 }
 
 

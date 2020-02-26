@@ -56,7 +56,7 @@ message Part {
   }
   required fixed32 part_id = 4;
   required string name = 9;
-  optional bool loaded = 14;  // Added in Frobenius.
+  optional bool truthful = 14;  // Added in Frobenius.
   optional Quantity mass = 2;  // Pre-Fréchet, re-added in Frenet.
   optional PreFrenetInertiaTensor
       pre_frenet_inertia_tensor = 10; // Added in Fréchet.

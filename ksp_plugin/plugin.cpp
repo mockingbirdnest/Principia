@@ -476,6 +476,7 @@ void Plugin::InsertOrKeepLoadedPart(
   }
   vessel->KeepPart(part_id);
   not_null<Part*> part = vessel->part(part_id);
+  part->make_truthful();
   part->set_mass(mass);
   part->set_inertia_tensor(inertia_tensor);
 }
@@ -514,12 +515,12 @@ void Plugin::ApplyPartIntrinsicTorque(
       renderer_->WorldToBarycentric(PlanetariumRotation())(torque));
 }
 
-bool Plugin::PartIsLoaded(PartId const part_id) const {
+bool Plugin::PartIsTruthful(PartId const part_id) const {
   auto const it = part_id_to_vessel_.find(part_id);
   if (it == part_id_to_vessel_.end()) {
     return false;
   }
-  return it->second->part(part_id)->loaded();
+  return it->second->part(part_id)->truthful();
 }
 
 void Plugin::PrepareToReportCollisions() {
