@@ -87,6 +87,11 @@ public partial class PrincipiaPluginAdapter
 
   private bool time_is_advancing_;
 
+  // Used to detect changes of SOI and skip two frames during which we use the
+  // EulerSolver.
+  CelestialBody last_main_body_;
+  private int main_body_change_countdown_ = 1;
+
   private PlanetariumCameraAdjuster planetarium_camera_adjuster_;
 
   private RenderingActions map_renderer_;
@@ -1169,14 +1174,17 @@ public partial class PrincipiaPluginAdapter
         if (part.rb == null) {
           continue;
         }
-        plugin_.PartSetApparentRigidMotion(
-            part.flightID,
-            // TODO(egg): use the centre of mass.
-            new QP{q = (XYZ)(Vector3d)part.rb.position,
-                   p = (XYZ)(Vector3d)part.rb.velocity},
-            (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
-            (XYZ)(Vector3d)part.rb.angularVelocity,
-            main_body_degrees_of_freedom);
+        if (main_body_change_countdown_ == 0 &&
+            last_main_body_ == FlightGlobals.ActiveVessel?.mainBody) {
+          plugin_.PartSetApparentRigidMotion(
+                part.flightID,
+                // TODO(egg): use the centre of mass.
+                new QP{q = (XYZ)(Vector3d)part.rb.position,
+                       p = (XYZ)(Vector3d)part.rb.velocity},
+                (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
+                (XYZ)(Vector3d)part.rb.angularVelocity,
+                main_body_degrees_of_freedom);
+        }
       }
     }
 
@@ -1285,6 +1293,13 @@ public partial class PrincipiaPluginAdapter
       // bodies their positions at the next instant, whereas KSP still expects
       // them at the previous instant, and will propagate them at the beginning
       // of the next frame...
+    }
+
+    if (last_main_body_ != FlightGlobals.ActiveVessel?.mainBody) {
+      main_body_change_countdown_ = 1;
+      last_main_body_ = FlightGlobals.ActiveVessel?.mainBody;
+    } else if (main_body_change_countdown_ > 0) {
+      --main_body_change_countdown_;
     }
   } catch (Exception e) { Log.Fatal(e.ToString()); }
   }
