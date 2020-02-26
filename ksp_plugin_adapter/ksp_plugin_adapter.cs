@@ -378,14 +378,18 @@ public partial class PrincipiaPluginAdapter
                                           refBody : vessel.orbit.referenceBody,
                                           UT : universal_time);
       if (vessel.loaded) {
-        foreach (Part part in vessel.parts.Where(part => part.rb != null)) {
-          // TODO(egg): What if the plugin doesn't have the part? this seems brittle.
+        foreach (Part part in vessel.parts.Where(part => part.rb != null &&
+                                                         plugin_.PartIsTruthful(
+                                                             part.flightID))) {
+          // TODO(egg): What if the plugin doesn't have the part? this seems
+          // brittle.
           // NOTE(egg): I am not sure what the origin is here, as we are
-          // running before the floating origin and krakensbane.
-          // Do everything with respect to the root part, since the overall linear motion
-          // of the vessel is handled with by the orbit anyway.
-          // TODO(egg): check that the vessel is moved *after* this.  Shouldn't we be calling
-          // vessel.orbitDriver.updateFromParameters() after setting the orbit anyway?
+          // running before the floating origin and krakensbane.  Do everything
+          // with respect to the root part, since the overall linear motion of
+          // the vessel is handled with by the orbit anyway.
+          // TODO(egg): check that the vessel is moved *after* this.  Shouldn't
+          // we be calling vessel.orbitDriver.updateFromParameters() after
+          // setting the orbit anyway?
           QPRW part_actual_motion = plugin_.PartGetActualDegreesOfFreedom(
               part.flightID,
               new Origin{
@@ -393,13 +397,17 @@ public partial class PrincipiaPluginAdapter
                   reference_part_is_unmoving = true,
                   main_body_centre_in_world =
                       (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
-                  reference_part_id =
-                      vessel.rootPart.flightID});
-          part.rb.position = vessel.rootPart.rb.position + (Vector3d)part_actual_motion.qp.q;
-          part.rb.transform.position = vessel.rootPart.rb.position + (Vector3d)part_actual_motion.qp.q;
+                  reference_part_id = vessel.rootPart.flightID
+              });
+          part.rb.position = vessel.rootPart.rb.position +
+                             (Vector3d)part_actual_motion.qp.q;
+          part.rb.transform.position = vessel.rootPart.rb.position +
+                                       (Vector3d)part_actual_motion.qp.q;
           part.rb.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
-          part.rb.transform.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
-          part.rb.velocity = vessel.rootPart.rb.velocity + (Vector3d)part_actual_motion.qp.p;
+          part.rb.transform.rotation =
+              (UnityEngine.QuaternionD)part_actual_motion.r;
+          part.rb.velocity = vessel.rootPart.rb.velocity +
+                             (Vector3d)part_actual_motion.qp.p;
           part.rb.angularVelocity = (Vector3d)part_actual_motion.w;
         }
       }
@@ -1242,7 +1250,8 @@ public partial class PrincipiaPluginAdapter
           part.rb.position = (Vector3d)part_actual_motion.qp.q;
           part.rb.transform.position = (Vector3d)part_actual_motion.qp.q;
           part.rb.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
-          part.rb.transform.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
+          part.rb.transform.rotation =
+              (UnityEngine.QuaternionD)part_actual_motion.r;
 
           part.rb.velocity = (Vector3d)part_actual_motion.qp.p;
           part.rb.angularVelocity = (Vector3d)part_actual_motion.w;
@@ -1276,8 +1285,8 @@ public partial class PrincipiaPluginAdapter
       foreach (CelestialBody celestial in FlightGlobals.Bodies) {
         celestial.position += offset;
       }
-      foreach (
-          Vessel vessel in FlightGlobals.Vessels.Where(is_manageable_on_rails)) {
+      foreach (Vessel vessel in FlightGlobals.Vessels.Where(
+          is_manageable_on_rails)) {
         vessel.SetPosition(vessel.transform.position + offset);
       }
       // NOTE(egg): this is almost certainly incorrect, since we give the
@@ -1540,7 +1549,8 @@ public partial class PrincipiaPluginAdapter
         body.BodyFrame = new Planetarium.CelestialFrame{
             X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
             Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
-            Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}};
+            Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}
+        };
       }
     }
   }
@@ -2041,11 +2051,12 @@ public partial class PrincipiaPluginAdapter
       }
       if (main_vessel_guid != null) {
         using (DisposableIterator rp2_lines_iterator =
-                  planetarium.PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
-                      plugin_, celestial.flightGlobalsIndex, main_vessel_guid)) {
-          GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                colour,
-                                GLLines.Style.Solid);
+            planetarium.
+                PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
+                    plugin_,
+                    celestial.flightGlobalsIndex,
+                    main_vessel_guid)) {
+          GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Solid);
         }
       }
     }

@@ -32,25 +32,34 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;
 
-Part::Part(
-    PartId const part_id,
-    std::string const& name,
-    Mass const& mass,
-    InertiaTensor<RigidPart> const& inertia_tensor,
-    RigidMotion<RigidPart, Barycentric> const& rigid_motion,
-    std::function<void()> deletion_callback)
-    : part_id_(part_id),
-      name_(name),
-      mass_(mass),
-      inertia_tensor_(inertia_tensor),
-      rigid_motion_(rigid_motion),
-      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      subset_node_(make_not_null_unique<Subset<Part>::Node>()),
-      deletion_callback_(std::move(deletion_callback)) {
-  prehistory_->Append(astronomy::InfinitePast,
-                      {Barycentric::origin, Barycentric::unmoving});
-  history_ = prehistory_->NewForkAtLast();
-}
+constexpr Mass untruthful_part_mass = 1 * Kilogram;
+
+Part::Part(PartId const part_id,
+           std::string const& name,
+           Mass const& mass,
+           InertiaTensor<RigidPart> const& inertia_tensor,
+           RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+           std::function<void()> deletion_callback)
+    : Part(part_id,
+           name,
+           /*truthful=*/true,
+           mass,
+           inertia_tensor,
+           rigid_motion,
+           std::move(deletion_callback)) {}
+
+Part::Part(PartId part_id,
+           std::string const& name,
+           DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+           std::function<void()> deletion_callback)
+    : Part(part_id,
+           name,
+           /*truthful=*/false,
+           untruthful_part_mass,
+           MakeWaterSphereInertiaTensor(untruthful_part_mass),
+           RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+               degrees_of_freedom),
+           std::move(deletion_callback)) {}
 
 Part::~Part() {
   LOG(INFO) << "Destroying part " << ShortDebugString();
@@ -61,6 +70,14 @@ Part::~Part() {
 
 PartId Part::part_id() const {
   return part_id_;
+}
+
+bool Part::truthful() const {
+  return truthful_;
+}
+
+void Part::make_truthful() {
+  truthful_ = true;
 }
 
 void Part::set_mass(Mass const& mass) {
@@ -210,6 +227,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
                               serialization_index_for_pile_up) const {
   message->set_part_id(part_id_);
   message->set_name(name_);
+  message->set_truthful(truthful_);
   mass_.WriteToMessage(message->mutable_mass());
   inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
@@ -238,33 +256,36 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     auto const degrees_of_freedom =
         DegreesOfFreedom<Barycentric>::ReadFromMessage(
             message.degrees_of_freedom());
-    part = make_not_null_unique<Part>(
+    part = std::unique_ptr<Part>(new Part(
         message.part_id(),
         message.name(),
+        message.truthful(),
         Mass::ReadFromMessage(message.mass()),
         MakeWaterSphereInertiaTensor(Mass::ReadFromMessage(message.mass())),
         RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
             degrees_of_freedom),
-        std::move(deletion_callback));
+        std::move(deletion_callback)));
   } else if (is_pre_frenet) {
-    part = make_not_null_unique<Part>(
+    part = std::unique_ptr<Part>(new Part(
         message.part_id(),
         message.name(),
+        message.truthful(),
         Mass::ReadFromMessage(message.pre_frenet_inertia_tensor().mass()),
         InertiaTensor<RigidPart>::ReadFromMessage(
             message.pre_frenet_inertia_tensor().form()),
         RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
             message.rigid_motion()),
-        std::move(deletion_callback));
+        std::move(deletion_callback)));
   } else {
-    part = make_not_null_unique<Part>(
+    part = std::unique_ptr<Part>(new Part(
         message.part_id(),
         message.name(),
+        message.truthful(),
         Mass::ReadFromMessage(message.mass()),
         InertiaTensor<RigidPart>::ReadFromMessage(message.inertia_tensor()),
         RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
             message.rigid_motion()),
-        std::move(deletion_callback));
+        std::move(deletion_callback)));
   }
 
   part->apply_intrinsic_force(
@@ -315,6 +336,27 @@ std::string Part::ShortDebugString() const {
   HexadecimalEncoder</*null_terminated=*/true> encoder;
   auto const hex_id = encoder.Encode(id_bytes);
   return name_ + " (" + hex_id.data.get() + ")";
+}
+
+Part::Part(PartId const part_id,
+           std::string const& name,
+           bool const truthful,
+           Mass const& mass,
+           InertiaTensor<RigidPart> const& inertia_tensor,
+           RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+           std::function<void()> deletion_callback)
+    : part_id_(part_id),
+      name_(name),
+      truthful_(truthful),
+      mass_(mass),
+      inertia_tensor_(inertia_tensor),
+      rigid_motion_(rigid_motion),
+      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      subset_node_(make_not_null_unique<Subset<Part>::Node>()),
+      deletion_callback_(std::move(deletion_callback)) {
+  prehistory_->Append(astronomy::InfinitePast,
+                      {Barycentric::origin, Barycentric::unmoving});
+  history_ = prehistory_->NewForkAtLast();
 }
 
 InertiaTensor<RigidPart> MakeWaterSphereInertiaTensor(Mass const& mass) {

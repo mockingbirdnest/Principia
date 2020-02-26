@@ -219,7 +219,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5165.
+  extensions 5000 to 5999;  // Last used: 5166.
 }
 
 message AdvanceTime {
@@ -1560,12 +1560,28 @@ message PartGetActualDegreesOfFreedom {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-    (is_subject) = true];
+                                 (is_subject) = true];
     required fixed32 part_id = 2;
     required Origin origin = 4;
   }
   message Return {
     required QPRW result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PartIsTruthful {
+  extend Method {
+    optional PartIsTruthful extension = 5166;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed32 part_id = 2;
+  }
+  message Return {
+    required bool result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

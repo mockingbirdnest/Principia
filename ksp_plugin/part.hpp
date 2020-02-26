@@ -43,6 +43,7 @@ using quantities::Torque;
 // Represents a KSP part.
 class Part final {
  public:
+  // A truthful part.
   Part(PartId part_id,
        std::string const& name,
        Mass const& mass,
@@ -50,11 +51,20 @@ class Part final {
        RigidMotion<RigidPart, Barycentric> const& rigid_motion,
        std::function<void()> deletion_callback);
 
+  // An untruthful part.
+  Part(PartId part_id,
+       std::string const& name,
+       DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+       std::function<void()> deletion_callback);
+
   // Calls the deletion callback passed at construction, if any.  This part must
   // not be piled up.
   ~Part();
 
   PartId part_id() const;
+
+  bool truthful() const;
+  void make_truthful();
 
   // Sets or returns the mass and inertia tensor.  Even though a part is
   // massless in the sense that it doesn't exert gravity, it has a mass and an
@@ -146,8 +156,17 @@ class Part final {
   std::string ShortDebugString() const;
 
  private:
+  Part(PartId part_id,
+       std::string const& name,
+       bool truthful,
+       Mass const& mass,
+       InertiaTensor<RigidPart> const& inertia_tensor,
+       RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+       std::function<void()> deletion_callback);
+
   PartId const part_id_;
   std::string const name_;
+  bool truthful_;
   Mass mass_;
   Mass mass_change_;
   InertiaTensor<RigidPart> inertia_tensor_;
