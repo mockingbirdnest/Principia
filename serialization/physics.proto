@@ -87,6 +87,7 @@ message DiscreteTrajectory {
   repeated Litter children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
   optional bytes zfp_timeline = 5;  // Added in Frobenius? Fubini?
+  optional int64 zfp_timeline_size = 6;  // Added in Frobenius? Fubini?
   repeated int32 fork_position = 3;
   optional Downsampling downsampling = 4;  // Added in 陈景润.
 }

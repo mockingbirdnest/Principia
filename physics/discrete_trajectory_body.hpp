@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/array.hpp"
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/fit_hermite_spline.hpp"
@@ -59,7 +61,10 @@ namespace internal_discrete_trajectory {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
+using base::check_not_null;
 using base::make_not_null_unique;
+using base::not_null;
+using base::UniqueArray;
 using numerics::FitHermiteSpline;
 using quantities::si::Metre;
 using quantities::si::Second;
@@ -530,6 +535,60 @@ inline void ZfpCompressDecompress(double const accuracy,
   *bpd = (8 * izfpsize) / (input_size_in_bytes / 8);
 }
 
+inline void ZfpWriteToMessage(double const accuracy,
+                              const zfp_field* const field,
+                              not_null<std::string*> const message) {
+  std::unique_ptr<zfp_stream, std::function<void(zfp_stream*)>> const zfp(
+      zfp_stream_open(/*stream=*/nullptr),
+      [](zfp_stream* const zfp) { zfp_stream_close(zfp); });
+
+  if (accuracy == 0) {
+    zfp_stream_set_reversible(zfp.get());
+  } else {
+    zfp_stream_set_accuracy(zfp.get(), accuracy);
+  }
+  size_t const buffer_size = zfp_stream_maximum_size(zfp.get(), field);
+  UniqueArray<std::uint8_t> const buffer(buffer_size);
+  not_null<bitstream*> const stream =
+      check_not_null(stream_open(buffer.data.get(), buffer_size));
+  zfp_stream_set_bit_stream(zfp.get(), &*stream);
+  zfp_write_header(zfp.get(), field, ZFP_HEADER_FULL);
+  size_t const compressed_size = zfp_compress(zfp.get(), field);
+  CHECK_LT(0, compressed_size);
+  message->append(static_cast<char const*>(stream_data(stream)),
+                  stream_size(stream));
+}
+
+inline void ZfpWriteToMessage2D(double const accuracy,
+                        std::vector<double> const& v,
+                        not_null<std::string*> const message) {
+  constexpr int block = 4;
+  auto const encoded = new double[(v.size() + block - 1) / block][block];
+  for (int i = 0; i < (v.size() + block - 1) / block; ++i) {
+    for (int j = 0; j < block; ++j) {
+      if (block * i + j < v.size()) {
+        encoded[i][j] = v[block * i + j];
+      } else {
+        // This will lead to poor compression at the end, but there is no
+        // support for "ignored" data in zfp at this point.
+        encoded[i][j] = 0;
+      }
+    }
+  }
+
+  // Beware!  See https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
+  // for nx and ny.
+  std::unique_ptr<zfp_field, std::function<void(zfp_field*)>> const field(
+      zfp_field_2d(encoded,
+                   /*type=*/zfp_type_double,
+                   /*nx=*/block,
+                   /*ny=*/(v.size() + block - 1) / block),
+      [](zfp_field* const field) { zfp_field_free(field); });
+  ZfpWriteToMessage(accuracy, field.get(), message);
+
+  delete[] encoded;
+}
+
 inline void ZpfExperiment2D(std::string_view const label,
                             double const accuracy,
                             std::vector<double> const& v,
@@ -547,13 +606,13 @@ inline void ZpfExperiment2D(std::string_view const label,
   }
 
   zfp_type type = zfp_type_double;
-  zfp_field* ifield = zfp_field_2d(input, type, 4, (v.size() + 3) / 4);
+  zfp_field* field = zfp_field_2d(input, type, 4, (v.size() + 3) / 4);
   zfp_field* ofield = zfp_field_2d(output, type, 4, (v.size() + 3) / 4);
   int bytes;
   double compression;
   int bpd;
   ZfpCompressDecompress(
-      accuracy, 8 * v.size(), ifield, ofield, &bytes, &compression, &bpd, out);
+      accuracy, 8 * v.size(), field, ofield, &bytes, &compression, &bpd, out);
   double max = 0;
   for (int i = 0; i < (v.size() + 3) / 4; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -563,7 +622,7 @@ inline void ZpfExperiment2D(std::string_view const label,
   LOG(ERROR) << label << ": bytes: " << bytes
              << ": compression: " << compression << " bpd: " << bpd
              << " error: " << max;
-  zfp_field_free(ifield);
+  zfp_field_free(field);
   zfp_field_free(ofield);
   delete[] input;
   delete[] output;
@@ -581,6 +640,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   std::vector<double> px;
   std::vector<double> py;
   std::vector<double> pz;
+  message->set_zfp_timeline_size(timeline_.size());
   std::string* const zfp_timeline = message->mutable_zfp_timeline();
   for (auto const& [instant, degrees_of_freedom] : timeline_) {
     auto const q = degrees_of_freedom.position() - Frame::origin;
@@ -593,13 +653,20 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     py.push_back(p.coordinates().y / (Metre / Second));
     pz.push_back(p.coordinates().z / (Metre / Second));
   }
-  ZpfExperiment2D("t", 0, t, zfp_timeline);
-  ZpfExperiment2D("q.x", 10.0, qx, zfp_timeline);
-  ZpfExperiment2D("q.y", 10.0, qy, zfp_timeline);
-  ZpfExperiment2D("q.z", 10.0, qz, zfp_timeline);
-  ZpfExperiment2D("p.x", 0.1, px, zfp_timeline);
-  ZpfExperiment2D("p.y", 0.1, py, zfp_timeline);
-  ZpfExperiment2D("p.z", 0.1, pz, zfp_timeline);
+  //ZpfExperiment2D("t", 0, t, zfp_timeline);
+  //ZpfExperiment2D("q.x", 10.0, qx, zfp_timeline);
+  //ZpfExperiment2D("q.y", 10.0, qy, zfp_timeline);
+  //ZpfExperiment2D("q.z", 10.0, qz, zfp_timeline);
+  //ZpfExperiment2D("p.x", 0.1, px, zfp_timeline);
+  //ZpfExperiment2D("p.y", 0.1, py, zfp_timeline);
+  //ZpfExperiment2D("p.z", 0.1, pz, zfp_timeline);
+  ZfpWriteToMessage2D(0, t, zfp_timeline);
+  ZfpWriteToMessage2D(10.0, qx, zfp_timeline);
+  ZfpWriteToMessage2D(10.0, qy, zfp_timeline);
+  ZfpWriteToMessage2D(10.0, qz, zfp_timeline);
+  ZfpWriteToMessage2D(0.1, px, zfp_timeline);
+  ZfpWriteToMessage2D(0.1, py, zfp_timeline);
+  ZfpWriteToMessage2D(0.1, pz, zfp_timeline);
   if (downsampling_.has_value()) {
     downsampling_->WriteToMessage(message->mutable_downsampling(), timeline_);
   }
