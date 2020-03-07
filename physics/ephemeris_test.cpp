@@ -5,12 +5,15 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "base/file.hpp"
 #include "base/macros.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
+#include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -18,6 +21,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "mathematica/mathematica.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
@@ -44,6 +48,7 @@ namespace internal_ephemeris {
 
 using astronomy::ICRS;
 using base::not_null;
+using base::OFStream;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
 using geometry::Displacement;
@@ -59,6 +64,7 @@ using integrators::methods::Fine1987RKNG34;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using integrators::methods::Quinlan1999Order8A;
+using integrators::methods::QuinlanTremaine1990Order12;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
@@ -1056,6 +1062,74 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
     previous_time = time;
   }
 }
+
+#if !defined(_DEBUG)
+// This trajectory is similar to the second trajectory in the first save in
+// #2400.  It exhibits oscillations with a period close to 5600 s and its
+// downsampling period alternates between 120 and 130 s.
+TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
+  SolarSystem<ICRS> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2433282_500000000.proto.txt");
+
+  auto ephemeris = solar_system.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      /*fixed_step_parameters=*/{
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<ICRS>>(),
+          /*step=*/10 * Minute});
+
+  Instant const t0 = Instant() - 1.323698948906726e9 * Second;
+  Instant const t1 = Instant() - 1.323595217786725e9 * Second;
+  Position<ICRS> const q0 =
+      Position<ICRS>{} + Displacement<ICRS>({-7.461169719467950e10 * Metre,
+                                             1.165327644733623e11 * Metre,
+                                             5.049935298178532e10 * Metre});
+  Velocity<ICRS> const p0({-30169.49165384562 * Metre / Second,
+                           -11880.03394238412 * Metre / Second,
+                           200.2551546021678 * Metre / Second});
+
+  MasslessBody probe;
+  DiscreteTrajectory<ICRS> trajectory;
+  trajectory.SetDownsampling(/*max_dense_intervals=*/10'000,
+                             /*tolerance=*/10 * Metre);
+  trajectory.Append(t0, DegreesOfFreedom<ICRS>(q0, p0));
+
+  auto instance = ephemeris->NewInstance(
+      {&trajectory},
+      Ephemeris<ICRS>::NoIntrinsicAccelerations,
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                             Position<ICRS>>(),
+          10 * Second));
+  EXPECT_OK(ephemeris->FlowWithFixedStep(t1, *instance));
+  EXPECT_EQ(1162, trajectory.Size());
+
+  serialization::DiscreteTrajectory message;
+  trajectory.WriteToMessage(&message, {});
+  std::string uncompressed;
+  message.SerializePartialToString(&uncompressed);
+  EXPECT_EQ(178'982, uncompressed.size());
+
+  std::string compressed;
+  auto compressor = google::compression::NewGipfeliCompressor();
+  compressor->Compress(uncompressed, &compressed);
+
+  // We want a change detector, but the actual compressed size varies depending
+  // on the exact numerical values, and therefore on the mathematical library.
+  EXPECT_LE(69'883, compressed.size());
+  EXPECT_GE(69'910, compressed.size());
+
+  {
+    OFStream file(TEMP_DIR / "discrete_trajectory_compression.generated.wl");
+    file << mathematica::Assign(
+        "trajectory",
+        mathematica::ToMathematica(trajectory.begin(), trajectory.end()));
+  }
+}
+#endif
 
 INSTANTIATE_TEST_CASE_P(
     AllEphemerisTests,

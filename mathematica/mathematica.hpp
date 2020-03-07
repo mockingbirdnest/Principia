@@ -10,6 +10,8 @@
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -20,6 +22,8 @@ using geometry::Point;
 using geometry::R3Element;
 using geometry::Vector;
 using numerics::FixedVector;
+using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
 using quantities::Quantity;
 using quantities::Quotient;
 
@@ -40,6 +44,9 @@ std::string PlottableDataset(std::vector<T> const& x, std::vector<U> const& y);
 template<typename T>
 std::string ToMathematica(std::vector<T> const& list);
 
+template<typename It>
+std::string ToMathematica(It begin, It end);
+
 std::string ToMathematica(double const& real);
 
 template<typename T, int size>
@@ -57,8 +64,16 @@ std::string ToMathematica(Vector<S, F> const& vector);
 template<typename V>
 std::string ToMathematica(Point<V> const& point);
 
+template<typename F>
+std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom);
+
 template<typename... Types>
 std::string ToMathematica(std::tuple<Types...> const& tuple);
+
+template<typename R,
+         typename = std::void_t<decltype(std::declval<R>().time)>,
+         typename = std::void_t<decltype(std::declval<R>().degrees_of_freedom)>>
+std::string ToMathematica(R ref);
 
 std::string ToMathematica(
     astronomy::OrbitalElements::EquinoctialElements const& elements);
@@ -70,6 +85,8 @@ std::string ToMathematica(std::string const& str);
 // TODO(egg): escape things properly.
 std::string Escape(std::string const& str);
 
+// TODO(phl): This doesn't work well for complex structures like orbital
+// elements or trajectory iterators.  Surely we can do better.
 template<typename T>
 struct RemoveUnit;
 
