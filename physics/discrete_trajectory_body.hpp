@@ -12,6 +12,8 @@
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/fit_hermite_spline.hpp"
+#include "quantities/si.hpp"
+#include "zfp.h"
 
 namespace principia {
 namespace physics {
@@ -59,6 +61,8 @@ using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
 using numerics::FitHermiteSpline;
+using quantities::si::Metre;
+using quantities::si::Second;
 
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*>
@@ -489,14 +493,15 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
                       timeline);
 }
 
-inline void ZfpCompressDecompress(int const input_size_in_bytes,
+inline void ZfpCompressDecompress(double const accuracy,
+                                  int const input_size_in_bytes,
                                   zfp_field* const ifield,
                                   zfp_field* const ofield,
                                   int* const bytes,
                                   double* compression,
                                   int* const bpd) {
   zfp_stream* zfp = zfp_stream_open(nullptr);
-  zfp_stream_set_accuracy(zfp, 10.0 /*100.0*/);
+  zfp_stream_set_accuracy(zfp, accuracy);
   size_t bufsize = zfp_stream_maximum_size(zfp, ifield);
   void* buffer = malloc(bufsize);
   bitstream* stream = stream_open(buffer, bufsize);
@@ -518,6 +523,7 @@ inline void ZfpCompressDecompress(int const input_size_in_bytes,
 }
 
 inline void ZpfExperiment2D(std::string_view const label,
+                            double const accuracy,
                             std::vector<double> const& v) {
   auto input = new double[(v.size() + 3) / 4][4];
   auto output = new double[(v.size() + 3) / 4][4];
@@ -538,7 +544,7 @@ inline void ZpfExperiment2D(std::string_view const label,
   double compression;
   int bpd;
   ZfpCompressDecompress(
-      8 * v.size(), ifield, ofield, &bytes, &compression, &bpd);
+      accuracy, 8 * v.size(), ifield, ofield, &bytes, &compression, &bpd);
   double max = 0;
   for (int i = 0; i < (v.size() + 3) / 4; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -559,12 +565,31 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
   Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
+  std::vector<double> t;
+  std::vector<double> qx;
+  std::vector<double> qy;
+  std::vector<double> qz;
+  std::vector<double> px;
+  std::vector<double> py;
+  std::vector<double> pz;
   for (auto const& [instant, degrees_of_freedom] : timeline_) {
-    auto const instantaneous_degrees_of_freedom = message->add_timeline();
-    instant.WriteToMessage(instantaneous_degrees_of_freedom->mutable_instant());
-    degrees_of_freedom.WriteToMessage(
-        instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
+    auto const q = degrees_of_freedom.position() - Frame::origin;
+    auto const p = degrees_of_freedom.velocity();
+    t.push_back((instant - Instant{}) / Second);
+    qx.push_back(q.coordinates().x / Metre);
+    qy.push_back(q.coordinates().y / Metre);
+    qz.push_back(q.coordinates().z / Metre);
+    px.push_back(p.coordinates().x / (Metre / Second));
+    py.push_back(p.coordinates().y / (Metre / Second));
+    pz.push_back(p.coordinates().z / (Metre / Second));
   }
+  ZpfExperiment2D("t", 0.1, t);
+  ZpfExperiment2D("q.x", 10.0, qx);
+  ZpfExperiment2D("q.y", 10.0, qy);
+  ZpfExperiment2D("q.z", 10.0, qz);
+  ZpfExperiment2D("p.x", 0.1, px);
+  ZpfExperiment2D("p.y", 0.1, py);
+  ZpfExperiment2D("p.z", 0.1, pz);
   if (downsampling_.has_value()) {
     downsampling_->WriteToMessage(message->mutable_downsampling(), timeline_);
   }
