@@ -5,6 +5,7 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "astronomy/frames.hpp"
@@ -1080,8 +1081,8 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
                                              Position<ICRS>>(),
           /*step=*/10 * Minute});
 
-  Instant const t0 = Instant{} - 1.323698948906726e9 * Second;
-  Instant const t1 = Instant{} - 1.323595217786725e9 * Second;
+  Instant const t0 = Instant() - 1.323698948906726e9 * Second;
+  Instant const t1 = Instant() - 1.323595217786725e9 * Second;
   Position<ICRS> const q0 =
       Position<ICRS>{} + Displacement<ICRS>({-7.461169719467950e10 * Metre,
                                              1.165327644733623e11 * Metre,
@@ -1115,7 +1116,11 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   std::string compressed;
   auto compressor = google::compression::NewGipfeliCompressor();
   compressor->Compress(uncompressed, &compressed);
-  EXPECT_EQ(69'883, compressed.size());
+
+  // We want a change detector, but the actual compressed size varies depending
+  // on the exact numerical values, and therefore on the mathematical library.
+  EXPECT_LE(69'883, compressed.size());
+  EXPECT_GE(69'910, compressed.size());
 
   {
     OFStream file(TEMP_DIR / "discrete_trajectory_compression.generated.wl");
