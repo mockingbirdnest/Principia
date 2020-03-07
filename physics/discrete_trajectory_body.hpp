@@ -499,9 +499,14 @@ inline void ZfpCompressDecompress(double const accuracy,
                                   zfp_field* const ofield,
                                   int* const bytes,
                                   double* compression,
-                                  int* const bpd) {
+                                  int* const bpd,
+                                  std::string* const out) {
   zfp_stream* zfp = zfp_stream_open(nullptr);
-  zfp_stream_set_accuracy(zfp, accuracy);
+  if (accuracy == 0) {
+    zfp_stream_set_reversible(zfp);
+  } else {
+    zfp_stream_set_accuracy(zfp, accuracy);
+  }
   size_t bufsize = zfp_stream_maximum_size(zfp, ifield);
   void* buffer = malloc(bufsize);
   bitstream* stream = stream_open(buffer, bufsize);
@@ -509,6 +514,9 @@ inline void ZfpCompressDecompress(double const accuracy,
   zfp_write_header(zfp, ifield, ZFP_HEADER_FULL);
   size_t izfpsize = zfp_compress(zfp, ifield);
   CHECK_LT(0, izfpsize);
+  CHECK_EQ(izfpsize, zfp_stream_compressed_size(zfp));
+  out->append(static_cast<char const*>(stream_data(stream)),
+              stream_size(stream));
 
   zfp_stream_rewind(zfp);
   zfp_read_header(zfp, ofield, ZFP_HEADER_FULL);
@@ -524,7 +532,8 @@ inline void ZfpCompressDecompress(double const accuracy,
 
 inline void ZpfExperiment2D(std::string_view const label,
                             double const accuracy,
-                            std::vector<double> const& v) {
+                            std::vector<double> const& v,
+                            std::string* const out) {
   auto input = new double[(v.size() + 3) / 4][4];
   auto output = new double[(v.size() + 3) / 4][4];
   for (int i = 0; i < (v.size() + 3) / 4; ++i) {
@@ -544,7 +553,7 @@ inline void ZpfExperiment2D(std::string_view const label,
   double compression;
   int bpd;
   ZfpCompressDecompress(
-      accuracy, 8 * v.size(), ifield, ofield, &bytes, &compression, &bpd);
+      accuracy, 8 * v.size(), ifield, ofield, &bytes, &compression, &bpd, out);
   double max = 0;
   for (int i = 0; i < (v.size() + 3) / 4; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -572,6 +581,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   std::vector<double> px;
   std::vector<double> py;
   std::vector<double> pz;
+  std::string* const zfp_timeline = message->mutable_zfp_timeline();
   for (auto const& [instant, degrees_of_freedom] : timeline_) {
     auto const q = degrees_of_freedom.position() - Frame::origin;
     auto const p = degrees_of_freedom.velocity();
@@ -583,13 +593,13 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     py.push_back(p.coordinates().y / (Metre / Second));
     pz.push_back(p.coordinates().z / (Metre / Second));
   }
-  ZpfExperiment2D("t", 0.1, t);
-  ZpfExperiment2D("q.x", 10.0, qx);
-  ZpfExperiment2D("q.y", 10.0, qy);
-  ZpfExperiment2D("q.z", 10.0, qz);
-  ZpfExperiment2D("p.x", 0.1, px);
-  ZpfExperiment2D("p.y", 0.1, py);
-  ZpfExperiment2D("p.z", 0.1, pz);
+  ZpfExperiment2D("t", 0, t, zfp_timeline);
+  ZpfExperiment2D("q.x", 10.0, qx, zfp_timeline);
+  ZpfExperiment2D("q.y", 10.0, qy, zfp_timeline);
+  ZpfExperiment2D("q.z", 10.0, qz, zfp_timeline);
+  ZpfExperiment2D("p.x", 0.1, px, zfp_timeline);
+  ZpfExperiment2D("p.y", 0.1, py, zfp_timeline);
+  ZpfExperiment2D("p.z", 0.1, pz, zfp_timeline);
   if (downsampling_.has_value()) {
     downsampling_->WriteToMessage(message->mutable_downsampling(), timeline_);
   }
