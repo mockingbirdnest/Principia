@@ -489,6 +489,71 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
                       timeline);
 }
 
+inline void ZfpCompressDecompress(int const input_size_in_bytes,
+                                  zfp_field* const ifield,
+                                  zfp_field* const ofield,
+                                  int* const bytes,
+                                  double* compression,
+                                  int* const bpd) {
+  zfp_stream* zfp = zfp_stream_open(nullptr);
+  zfp_stream_set_accuracy(zfp, 10.0 /*100.0*/);
+  size_t bufsize = zfp_stream_maximum_size(zfp, ifield);
+  void* buffer = malloc(bufsize);
+  bitstream* stream = stream_open(buffer, bufsize);
+  zfp_stream_set_bit_stream(zfp, stream);
+  zfp_write_header(zfp, ifield, ZFP_HEADER_FULL);
+  size_t izfpsize = zfp_compress(zfp, ifield);
+  CHECK_LT(0, izfpsize);
+
+  zfp_stream_rewind(zfp);
+  zfp_read_header(zfp, ofield, ZFP_HEADER_FULL);
+  size_t ozfpsize = zfp_decompress(zfp, ofield);
+
+  free(buffer);
+  zfp_stream_close(zfp);
+
+  *bytes = izfpsize;
+  *compression = (double)input_size_in_bytes / izfpsize;
+  *bpd = (8 * izfpsize) / (input_size_in_bytes / 8);
+}
+
+inline void ZpfExperiment2D(std::string_view const label,
+                            std::vector<double> const& v) {
+  auto input = new double[(v.size() + 3) / 4][4];
+  auto output = new double[(v.size() + 3) / 4][4];
+  for (int i = 0; i < (v.size() + 3) / 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      if (4 * i + j < v.size()) {
+        input[i][j] = v[4 * i + j];
+      } else {
+        input[i][j] = 0;
+      }
+    }
+  }
+
+  zfp_type type = zfp_type_double;
+  zfp_field* ifield = zfp_field_2d(input, type, 4, (v.size() + 3) / 4);
+  zfp_field* ofield = zfp_field_2d(output, type, 4, (v.size() + 3) / 4);
+  int bytes;
+  double compression;
+  int bpd;
+  ZfpCompressDecompress(
+      8 * v.size(), ifield, ofield, &bytes, &compression, &bpd);
+  double max = 0;
+  for (int i = 0; i < (v.size() + 3) / 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      max = std::max(max, std::abs(input[i][j] - output[i][j]));
+    }
+  }
+  LOG(ERROR) << label << ": bytes: " << bytes
+             << ": compression: " << compression << " bpd: " << bpd
+             << " error: " << max;
+  zfp_field_free(ifield);
+  zfp_field_free(ofield);
+  delete[] input;
+  delete[] output;
+}
+
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
