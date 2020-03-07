@@ -85,6 +85,8 @@ std::string ToMathematica(std::string const& str);
 // TODO(egg): escape things properly.
 std::string Escape(std::string const& str);
 
+// TODO(phl): This doesn't work well for complex structures like orbital
+// elements or trajectory iterators.  Surely we can do better.
 template<typename T>
 struct RemoveUnit;
 
