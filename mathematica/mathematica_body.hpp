@@ -80,6 +80,15 @@ std::string ToMathematica(std::vector<T> const& list) {
   return Apply("List", expressions);
 }
 
+template<typename It>
+std::string ToMathematica(It const begin, It const end) {
+  std::vector<std::string> expressions;
+  for (auto it = begin; it != end; ++it) {
+    expressions.emplace_back(ToMathematica(*it));
+  }
+  return Apply("List", expressions);
+}
+
 inline std::string ToMathematica(double const& real) {
   if (std::isinf(real)) {
     if (real > 0.0) {
@@ -138,6 +147,14 @@ std::string ToMathematica(Point<V> const & point) {
   return ToMathematica(point - Point<V>());
 }
 
+template<typename F>
+std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom) {
+  return Apply(
+      "List",
+      std::vector<std::string>{ToMathematica(degrees_of_freedom.position()),
+                               ToMathematica(degrees_of_freedom.velocity())});
+}
+
 template<typename... Types>
 std::string ToMathematica(std::tuple<Types...> const& tuple) {
   std::vector<std::string> expressions;
@@ -145,6 +162,14 @@ std::string ToMathematica(std::tuple<Types...> const& tuple) {
   TupleHelper<sizeof...(Types), Types...>::ToMathematicaStrings(
       tuple, expressions);
   return Apply("List", expressions);
+}
+
+template<typename R, typename, typename>
+std::string ToMathematica(R const ref) {
+  return Apply(
+      "List",
+      std::vector<std::string>{ToMathematica(ref.time),
+                               ToMathematica(ref.degrees_of_freedom)});
 }
 
 inline std::string ToMathematica(

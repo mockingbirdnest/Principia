@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "base/file.hpp"
 #include "base/macros.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
@@ -18,6 +19,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "mathematica/mathematica.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
@@ -44,6 +46,7 @@ namespace internal_ephemeris {
 
 using astronomy::ICRS;
 using base::not_null;
+using base::OFStream;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
 using geometry::Displacement;
@@ -1058,6 +1061,7 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   }
 }
 
+#if !defined(_DEBUG)
 TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   SolarSystem<ICRS> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -1093,10 +1097,18 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
           SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                              Position<ICRS>>(),
           10 * Second));
-  EXPECT_OK(ephemeris->FlowWithFixedStep(t1, *instance));
+  EXPECT_OK(ephemeris->FlowWithFixedStep(t1 + 10 * Second, *instance));
 
   LOG(ERROR) << trajectory.EvaluateDegreesOfFreedom(t1);
+
+  {
+    OFStream file(TEMP_DIR / "discrete_trajectory_compression.generated.wl");
+    file << mathematica::Assign(
+        "trajectory",
+        mathematica::ToMathematica(trajectory.begin(), trajectory.end()));
+  }
 }
+#endif
 
 INSTANTIATE_TEST_CASE_P(
     AllEphemerisTests,
