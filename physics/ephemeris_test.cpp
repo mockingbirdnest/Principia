@@ -12,6 +12,7 @@
 #include "base/macros.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
+#include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -1062,6 +1063,9 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
 }
 
 #if !defined(_DEBUG)
+// This trajectory is similar to the second trajectory in the first save in
+// #2400.  It exhibits oscillations with a period close to 5600 s and its
+// downsampling period alternates between 120 and 130 s.
 TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   SolarSystem<ICRS> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -1088,6 +1092,8 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
 
   MasslessBody probe;
   DiscreteTrajectory<ICRS> trajectory;
+  trajectory.SetDownsampling(/*max_dense_intervals=*/10'000,
+                             /*tolerance=*/10 * Metre);
   trajectory.Append(t0, DegreesOfFreedom<ICRS>(q0, p0));
 
   auto instance = ephemeris->NewInstance(
@@ -1097,9 +1103,19 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
           SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                              Position<ICRS>>(),
           10 * Second));
-  EXPECT_OK(ephemeris->FlowWithFixedStep(t1 + 10 * Second, *instance));
+  EXPECT_OK(ephemeris->FlowWithFixedStep(t1, *instance));
+  EXPECT_EQ(1162, trajectory.Size());
 
-  LOG(ERROR) << trajectory.EvaluateDegreesOfFreedom(t1);
+  serialization::DiscreteTrajectory message;
+  trajectory.WriteToMessage(&message, {});
+  std::string uncompressed;
+  message.SerializePartialToString(&uncompressed);
+  EXPECT_EQ(178'982, uncompressed.size());
+
+  std::string compressed;
+  auto compressor = google::compression::NewGipfeliCompressor();
+  compressor->Compress(uncompressed, &compressed);
+  EXPECT_EQ(69'883, compressed.size());
 
   {
     OFStream file(TEMP_DIR / "discrete_trajectory_compression.generated.wl");
