@@ -59,6 +59,7 @@ using integrators::methods::Fine1987RKNG34;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using integrators::methods::Quinlan1999Order8A;
+using integrators::methods::QuinlanTremaine1990Order12;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
@@ -1055,6 +1056,46 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
     }
     previous_time = time;
   }
+}
+
+TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
+  SolarSystem<ICRS> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2433282_500000000.proto.txt");
+
+  auto ephemeris = solar_system.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      /*fixed_step_parameters=*/{
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<ICRS>>(),
+          /*step=*/10 * Minute});
+
+  Instant const t0 = Instant{} - 1.323698948906726e9 * Second;
+  Instant const t1 = Instant{} - 1.323595217786725e9 * Second;
+  Position<ICRS> const q0 =
+      Position<ICRS>{} + Displacement<ICRS>({-7.461169719467950e10 * Metre,
+                                             1.165327644733623e11 * Metre,
+                                             5.049935298178532e10 * Metre});
+  Velocity<ICRS> const p0({-30169.49165384562 * Metre / Second,
+                           -11880.03394238412 * Metre / Second,
+                           200.2551546021678 * Metre / Second});
+
+  MasslessBody probe;
+  DiscreteTrajectory<ICRS> trajectory;
+  trajectory.Append(t0, DegreesOfFreedom<ICRS>(q0, p0));
+
+  auto instance = ephemeris->NewInstance(
+      {&trajectory},
+      Ephemeris<ICRS>::NoIntrinsicAccelerations,
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                             Position<ICRS>>(),
+          10 * Second));
+  EXPECT_OK(ephemeris->FlowWithFixedStep(t1, *instance));
+
+  LOG(ERROR) << trajectory.EvaluateDegreesOfFreedom(t1);
 }
 
 INSTANTIATE_TEST_CASE_P(
