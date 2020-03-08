@@ -1122,17 +1122,18 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   EXPECT_LE(69'883, compressed.size());
   EXPECT_GE(69'910, compressed.size());
 
-  DiscreteTrajectory<ICRS> trajectory2;
-  trajectory2.ReadFromMessage(message, /*forks=*/{});
+  auto const trajectory2 =
+      DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*forks=*/{});
 
-  Length max;
+  Length error;
   for (Instant t = t0; t < t1; t += 10 * Second) {
-    max = std::max(
-        max,
-        (trajectory1.EvaluatePosition(t) - trajectory2.EvaluatePosition(t))
+    error = std::max(
+        error,
+        (trajectory1.EvaluatePosition(t) - trajectory2->EvaluatePosition(t))
             .Norm());
   }
-  LOG(ERROR) << max;
+  EXPECT_THAT(error, IsNear(3.3_⑴ * Metre));
+  LOG(ERROR) << error;
 
   {
     OFStream file(TEMP_DIR / "discrete_trajectory_compression.generated.wl");

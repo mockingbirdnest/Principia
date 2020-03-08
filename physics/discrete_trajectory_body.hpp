@@ -14,6 +14,7 @@
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/fit_hermite_spline.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "zfp.h"
 
@@ -67,6 +68,7 @@ using base::not_null;
 using base::UniqueArray;
 using geometry::Displacement;
 using numerics::FitHermiteSpline;
+using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Second;
 
@@ -597,15 +599,15 @@ inline void ZfpReadFromMessage(zfp_field* const field,
       zfp_stream_open(/*stream=*/nullptr),
       [](zfp_stream* const zfp) { zfp_stream_close(zfp); });
 
-  zfp_read_header(zfp.get(), field, ZFP_HEADER_FULL);
-  size_t const field_size = zfp_field_size(field, /*size=*/nullptr);
   not_null<bitstream*> const stream = check_not_null(
-      stream_open(const_cast<char*>(&message.front()), field_size));
+      stream_open(const_cast<char*>(&message.front()), message.size()));
   zfp_stream_set_bit_stream(zfp.get(), &*stream);
+  size_t const header_bits = zfp_read_header(zfp.get(), field, ZFP_HEADER_FULL);
+  CHECK_LT(0, header_bits);
 
-  size_t const uncompressed_size = zfp_decompress(zfp.get(), field);
-  CHECK_LT(0, uncompressed_size);
-  message.remove_prefix(field_size);
+  size_t const compressed_size = zfp_decompress(zfp.get(), field);
+  CHECK_LT(0, compressed_size);
+  message.remove_prefix(compressed_size);
 }
 
 inline void ZfpReadFromMessage2D(int const size,
@@ -687,6 +689,9 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   std::vector<double> py;
   std::vector<double> pz;
   message->set_zfp_timeline_size(timeline_.size());
+  Time const Δt = (timeline_.crbegin()->first - timeline_.cbegin()->first) /
+                  timeline_.size();
+  LOG(ERROR) << Δt;
   std::string* const zfp_timeline = message->mutable_zfp_timeline();
   for (auto const& [instant, degrees_of_freedom] : timeline_) {
     auto const q = degrees_of_freedom.position() - Frame::origin;
@@ -710,9 +715,9 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   ZfpWriteToMessage2D(10.0, qx, zfp_timeline);
   ZfpWriteToMessage2D(10.0, qy, zfp_timeline);
   ZfpWriteToMessage2D(10.0, qz, zfp_timeline);
-  ZfpWriteToMessage2D(0.1, px, zfp_timeline);
-  ZfpWriteToMessage2D(0.1, py, zfp_timeline);
-  ZfpWriteToMessage2D(0.1, pz, zfp_timeline);
+  ZfpWriteToMessage2D(10.0 / (Δt / Second), px, zfp_timeline);
+  ZfpWriteToMessage2D(10.0 / (Δt / Second), py, zfp_timeline);
+  ZfpWriteToMessage2D(10.0 / (Δt / Second), pz, zfp_timeline);
   if (downsampling_.has_value()) {
     downsampling_->WriteToMessage(message->mutable_downsampling(), timeline_);
   }
