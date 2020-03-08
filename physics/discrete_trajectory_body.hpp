@@ -65,6 +65,7 @@ using base::check_not_null;
 using base::make_not_null_unique;
 using base::not_null;
 using base::UniqueArray;
+using geometry::Displacement;
 using numerics::FitHermiteSpline;
 using quantities::si::Metre;
 using quantities::si::Second;
@@ -603,10 +604,12 @@ inline void ZfpReadFromMessage(zfp_field* const field,
   zfp_stream_set_bit_stream(zfp.get(), &*stream);
 
   size_t const uncompressed_size = zfp_decompress(zfp.get(), field);
+  CHECK_LT(0, uncompressed_size);
   message.remove_prefix(field_size);
 }
 
-inline void ZfpReadFromMessage2D(std::int64_t const size,
+inline void ZfpReadFromMessage2D(int const size,
+                                 std::vector<double>& v,
                                  std::string_view& message) {
   constexpr int block = 4;
   auto decoded = new double[(size + block - 1) / block][block];
@@ -620,6 +623,15 @@ inline void ZfpReadFromMessage2D(std::int64_t const size,
 
   ZfpReadFromMessage(field.get(), message);
 
+  for (int i = 0; i < (size + block - 1) / block; ++i) {
+    for (int j = 0; j < block; ++j) {
+      if (block * i + j < size) {
+        v[block * i + j] = decoded[i][j];
+      } else {
+        // Filler data.
+      }
+    }
+  }
   delete[] decoded;
 }
 
@@ -710,12 +722,42 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
-  for (auto timeline_it = message.timeline().begin();
-       timeline_it != message.timeline().end();
-       ++timeline_it) {
-    Append(Instant::ReadFromMessage(timeline_it->instant()),
-           DegreesOfFreedom<Frame>::ReadFromMessage(
-               timeline_it->degrees_of_freedom()));
+  bool const is_pre_frobenius = message.timeline_size() > 0;
+  if (is_pre_frobenius) {
+    for (auto timeline_it = message.timeline().begin();
+         timeline_it != message.timeline().end();
+         ++timeline_it) {
+      Append(Instant::ReadFromMessage(timeline_it->instant()),
+             DegreesOfFreedom<Frame>::ReadFromMessage(
+                 timeline_it->degrees_of_freedom()));
+    }
+  } else {
+    int const size = message.zfp_timeline_size();
+    std::vector<double> t(size);
+    std::vector<double> qx(size);
+    std::vector<double> qy(size);
+    std::vector<double> qz(size);
+    std::vector<double> px(size);
+    std::vector<double> py(size);
+    std::vector<double> pz(size);
+    std::string_view zfp_timeline(message.zfp_timeline().data(),
+                                  message.zfp_timeline().size());
+    ZfpReadFromMessage2D(size, t, zfp_timeline);
+    ZfpReadFromMessage2D(size, qx, zfp_timeline);
+    ZfpReadFromMessage2D(size, qy, zfp_timeline);
+    ZfpReadFromMessage2D(size, qz, zfp_timeline);
+    ZfpReadFromMessage2D(size, px, zfp_timeline);
+    ZfpReadFromMessage2D(size, py, zfp_timeline);
+    ZfpReadFromMessage2D(size, pz, zfp_timeline);
+    for (int i = 0; i < size; ++i) {
+      Position<Frame> const q =
+          Frame::origin +
+          Displacement<Frame>({qx[i] * Metre, qy[i] * Metre, qz[i] * Metre});
+      Velocity<Frame> const p({px[i] * (Metre / Second),
+                               py[i] * (Metre / Second),
+                               pz[i] * (Metre / Second)});
+      Append(Instant() + t[i] * Second, DegreesOfFreedom<Frame>(q, p));
+    }
   }
   if (message.has_downsampling()) {
     CHECK(this->is_root());
