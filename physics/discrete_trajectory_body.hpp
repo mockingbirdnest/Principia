@@ -574,7 +574,8 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
-  bool const is_pre_frobenius = message.timeline_size() > 0;
+  bool const is_pre_frobenius = !message.has_zfp_codec_version() &&
+                                !message.has_zfp_library_version();
   if (is_pre_frobenius) {
     for (auto timeline_it = message.timeline().begin();
          timeline_it != message.timeline().end();
