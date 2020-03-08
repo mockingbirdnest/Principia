@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
-#include "base/array.hpp"
 #include "base/not_null.hpp"
 #include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
@@ -17,7 +16,6 @@
 #include "numerics/fit_hermite_spline.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "zfp.h"
 
 namespace principia {
 namespace physics {
@@ -64,7 +62,6 @@ namespace internal_discrete_trajectory {
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
-using base::not_null;
 using base::ZfpCompressor;
 using geometry::Displacement;
 using numerics::FitHermiteSpline;

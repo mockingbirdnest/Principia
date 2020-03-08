@@ -87,7 +87,8 @@ message DiscreteTrajectory {
   repeated Litter children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
   repeated int32 fork_position = 3;
-  optional Downsampling downsampling = 4;  // Added in 陈景润.
+  // Added in 陈景润.
+  optional Downsampling downsampling = 4;
 
   // ZFP support added in Frobenius.
   optional int32 zfp_codec_version = 7;
