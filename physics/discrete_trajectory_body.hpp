@@ -525,6 +525,8 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   px.reserve(timeline_size);
   py.reserve(timeline_size);
   pz.reserve(timeline_size);
+  std::optional<Instant> previous_instant;
+  Time max_Δt;
   std::string* const zfp_timeline = message->mutable_zfp_timeline();
   for (auto const& [instant, degrees_of_freedom] : timeline_) {
     auto const q = degrees_of_freedom.position() - Frame::origin;
@@ -536,6 +538,10 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     px.push_back(p.coordinates().x / (Metre / Second));
     py.push_back(p.coordinates().y / (Metre / Second));
     pz.push_back(p.coordinates().z / (Metre / Second));
+    if (previous_instant.has_value()) {
+      max_Δt = std::max(max_Δt, instant - *previous_instant);
+    }
+    previous_instant = instant;
   }
 
   // Times are exact.
@@ -545,12 +551,9 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   Length const length_tolerance =
       downsampling_.has_value() ? downsampling_->tolerance() : Length();
   ZfpCompressor length_compressor(length_tolerance / Metre);
-  // Speeds are approximated based on the length tolerance and the average step
+  // Speeds are approximated based on the length tolerance and the maximum step
   // in the timeline.
-  Time const average_Δt =
-      (timeline_.crbegin()->first - timeline_.cbegin()->first) /
-      timeline_size;
-  ZfpCompressor const speed_compressor((length_tolerance / average_Δt) /
+  ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
                                        (Metre / Second));
 
   ZfpCompressor::WriteVersion(message);
