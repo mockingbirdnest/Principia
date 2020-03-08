@@ -95,6 +95,11 @@ typename RemoveUnit<T>::Unitless ExpressIn(
     typename RemoveUnit<T>::Unit const& unit,
     T const& value);
 
+template<typename V>
+typename RemoveUnit<Point<V>>::Unitless ExpressIn(
+    typename RemoveUnit<Point<V>>::Unit const& unit,
+    Point<V> const& value);
+
 template<typename T>
 typename RemoveUnit<std::vector<T>>::Unitless ExpressIn(
     typename RemoveUnit<std::vector<T>>::Unit const& unit,
