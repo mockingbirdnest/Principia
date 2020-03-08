@@ -507,10 +507,6 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
   Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
 
-  // For future compatibility, record the version of ZFP used to compress.
-  message->set_zfp_codec_version(ZFP_CODEC);
-  message->set_zfp_library_version(ZFP_VERSION);
-
   int const timeline_size = timeline_.size();
   message->set_zfp_timeline_size(timeline_size);
 
@@ -559,6 +555,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   ZfpCompressor const speed_compressor((length_tolerance / average_Δt) /
                                        (Metre / Second));
 
+  ZfpCompressor::WriteVersion(message);
   time_compressor.WriteToMessage2D(t, zfp_timeline);
   length_compressor.WriteToMessage2D(qx, zfp_timeline);
   length_compressor.WriteToMessage2D(qy, zfp_timeline);
@@ -601,6 +598,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
                                   message.zfp_timeline().size());
 
     ZfpCompressor decompressor;
+    ZfpCompressor::ReadVersion(message);
     decompressor.ReadFromMessage2D(t, zfp_timeline);
     decompressor.ReadFromMessage2D(qx, zfp_timeline);
     decompressor.ReadFromMessage2D(qy, zfp_timeline);

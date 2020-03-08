@@ -27,6 +27,12 @@ class ZfpCompressor {
   // A compressor created with this constructor can both read and write.
   explicit ZfpCompressor(double accuracy);
 
+  // Read/write the version of ZFP from/to the message.
+  template<typename Message>
+  static void WriteVersion(not_null<Message*> message);
+  template<typename Message>
+  static void ReadVersion(Message const& message);
+
   // Serialization/deserialization of a vector of double into a message using a
   // 2D encoding.  This encodes blocks of 16 doubles and therefore takes
   // advantage of any correlation across these doubles.  The vector |v| may be
@@ -58,3 +64,5 @@ using zfp_compressor_internal::ZfpCompressor;
 
 }  // namespace base
 }  // namespace principia
+
+#include "base/zfp_compressor_body.hpp"

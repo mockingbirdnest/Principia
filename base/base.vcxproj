@@ -71,6 +71,7 @@
     <ClInclude Include="version.generated.h" />
     <ClInclude Include="version.hpp" />
     <ClInclude Include="zfp_compressor.hpp" />
+    <ClInclude Include="zfp_compressor_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="array_test.cpp" />

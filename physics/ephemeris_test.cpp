@@ -1139,6 +1139,9 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
     file << mathematica::Assign(
         "trajectory1",
         mathematica::ToMathematica(trajectory1.begin(), trajectory1.end()));
+    file << mathematica::Assign(
+        "trajectory2",
+        mathematica::ToMathematica(trajectory2->begin(), trajectory2->end()));
   }
 }
 #endif
