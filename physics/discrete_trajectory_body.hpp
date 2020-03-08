@@ -11,6 +11,7 @@
 #include "astronomy/epoch.hpp"
 #include "base/array.hpp"
 #include "base/not_null.hpp"
+#include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/fit_hermite_spline.hpp"
@@ -62,10 +63,9 @@ namespace internal_discrete_trajectory {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
-using base::check_not_null;
 using base::make_not_null_unique;
 using base::not_null;
-using base::UniqueArray;
+using base::ZfpCompressor;
 using geometry::Displacement;
 using numerics::FitHermiteSpline;
 using quantities::Time;
@@ -501,87 +501,6 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
                       timeline);
 }
 
-inline void ZfpWriteToMessage(double const accuracy,
-                              const zfp_field* const field,
-                              not_null<std::string*> const message) {
-  std::unique_ptr<zfp_stream, std::function<void(zfp_stream*)>> const zfp(
-      zfp_stream_open(/*stream=*/nullptr),
-      [](zfp_stream* const zfp) { zfp_stream_close(zfp); });
-
-  if (accuracy == 0) {
-    zfp_stream_set_reversible(zfp.get());
-  } else {
-    zfp_stream_set_accuracy(zfp.get(), accuracy);
-  }
-  size_t const buffer_size = zfp_stream_maximum_size(zfp.get(), field);
-  UniqueArray<std::uint8_t> const buffer(buffer_size);
-  not_null<bitstream*> const stream =
-      check_not_null(stream_open(buffer.data.get(), buffer_size));
-  zfp_stream_set_bit_stream(zfp.get(), &*stream);
-
-  zfp_write_header(zfp.get(), field, ZFP_HEADER_FULL);
-  size_t const compressed_size = zfp_compress(zfp.get(), field);
-  CHECK_LT(0, compressed_size);
-  message->append(static_cast<char const*>(stream_data(stream)),
-                  stream_size(stream));
-}
-
-inline void ZfpWriteToMessage2D(double const accuracy,
-                                std::vector<double>& v,
-                                not_null<std::string*> const message) {
-  // Round up the size of the vector to a multiple of the block size.  This will
-  // lead to poor compression at the end, but there is no support for "ignored"
-  // data in zfp at this point.
-  constexpr int block = 4;
-  v.resize(((v.size() + block - 1) / block) * block, 0);
-  CHECK_EQ(0, v.size() % block);
-
-  // Beware nx and ny!  (And the Jabberwock, my son!)
-  // See https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
-  std::unique_ptr<zfp_field, std::function<void(zfp_field*)>> const field(
-      zfp_field_2d(v.data(),
-                   /*type=*/zfp_type_double,
-                   /*nx=*/block,
-                   /*ny=*/v.size() / block),
-      [](zfp_field* const field) { zfp_field_free(field); });
-  ZfpWriteToMessage(accuracy, field.get(), message);
-}
-
-inline void ZfpReadFromMessage(zfp_field* const field,
-                               std::string_view& message) {
-  std::unique_ptr<zfp_stream, std::function<void(zfp_stream*)>> const zfp(
-      zfp_stream_open(/*stream=*/nullptr),
-      [](zfp_stream* const zfp) { zfp_stream_close(zfp); });
-
-  not_null<bitstream*> const stream = check_not_null(
-      stream_open(const_cast<char*>(&message.front()), message.size()));
-  zfp_stream_set_bit_stream(zfp.get(), &*stream);
-  size_t const header_bits = zfp_read_header(zfp.get(), field, ZFP_HEADER_FULL);
-  CHECK_LT(0, header_bits);
-
-  size_t const compressed_size = zfp_decompress(zfp.get(), field);
-  CHECK_LT(0, compressed_size);
-  message.remove_prefix(compressed_size);
-}
-
-inline void ZfpReadFromMessage2D(std::vector<double>& v,
-                                 std::string_view& message) {
-  // Make sure that we have enough space in the vector to decompress the
-  // padding.
-  constexpr int block = 4;
-  v.resize(((v.size() + block - 1) / block) * block, 0);
-  CHECK_EQ(0, v.size() % block);
-
-  std::unique_ptr<zfp_field, std::function<void(zfp_field*)>> const field(
-      zfp_field_2d(v.data(),
-                   /*type=*/zfp_type_double,
-                   /*nx=*/block,
-                   /*ny=*/v.size() / block),
-      [](zfp_field* const field) { zfp_field_free(field); });
-
-  ZfpReadFromMessage(field.get(), message);
-}
-
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
@@ -594,6 +513,10 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
 
   int const timeline_size = timeline_.size();
   message->set_zfp_timeline_size(timeline_size);
+
+  // The timeline data is made dimensionless and stored in separate arrays per
+  // coordinate.  We expect strong correlations within a coordinate over time,
+  // but not between coordinates.
   std::vector<double> t;
   std::vector<double> qx;
   std::vector<double> qy;
@@ -622,24 +545,28 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   }
 
   // Times are exact.
-  Time const time_tolerance;
+  ZfpCompressor time_compressor(0);
   // Lengths are approximated to the downsampling tolerance if downsampling is
   // enabled, otherwise they are exact.
   Length const length_tolerance =
       downsampling_.has_value() ? downsampling_->tolerance() : Length();
+  ZfpCompressor length_compressor(length_tolerance / Metre);
   // Speeds are approximated based on the length tolerance and the average step
   // in the timeline.
   Time const average_Δt =
       (timeline_.crbegin()->first - timeline_.cbegin()->first) /
       timeline_size;
-  Speed const speed_tolerance = length_tolerance / average_Δt;
-  ZfpWriteToMessage2D(time_tolerance / Second, t, zfp_timeline);
-  ZfpWriteToMessage2D(length_tolerance / Metre, qx, zfp_timeline);
-  ZfpWriteToMessage2D(length_tolerance / Metre, qy, zfp_timeline);
-  ZfpWriteToMessage2D(length_tolerance / Metre, qz, zfp_timeline);
-  ZfpWriteToMessage2D(speed_tolerance / (Metre / Second), px, zfp_timeline);
-  ZfpWriteToMessage2D(speed_tolerance / (Metre / Second), py, zfp_timeline);
-  ZfpWriteToMessage2D(speed_tolerance / (Metre / Second), pz, zfp_timeline);
+  ZfpCompressor const speed_compressor((length_tolerance / average_Δt) /
+                                       (Metre / Second));
+
+  time_compressor.WriteToMessage2D(t, zfp_timeline);
+  length_compressor.WriteToMessage2D(qx, zfp_timeline);
+  length_compressor.WriteToMessage2D(qy, zfp_timeline);
+  length_compressor.WriteToMessage2D(qz, zfp_timeline);
+  speed_compressor.WriteToMessage2D(px, zfp_timeline);
+  speed_compressor.WriteToMessage2D(py, zfp_timeline);
+  speed_compressor.WriteToMessage2D(pz, zfp_timeline);
+
   if (downsampling_.has_value()) {
     downsampling_->WriteToMessage(message->mutable_downsampling(), timeline_);
   }
@@ -672,13 +599,16 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     std::vector<double> pz(timeline_size);
     std::string_view zfp_timeline(message.zfp_timeline().data(),
                                   message.zfp_timeline().size());
-    ZfpReadFromMessage2D(t, zfp_timeline);
-    ZfpReadFromMessage2D(qx, zfp_timeline);
-    ZfpReadFromMessage2D(qy, zfp_timeline);
-    ZfpReadFromMessage2D(qz, zfp_timeline);
-    ZfpReadFromMessage2D(px, zfp_timeline);
-    ZfpReadFromMessage2D(py, zfp_timeline);
-    ZfpReadFromMessage2D(pz, zfp_timeline);
+
+    ZfpCompressor decompressor;
+    decompressor.ReadFromMessage2D(t, zfp_timeline);
+    decompressor.ReadFromMessage2D(qx, zfp_timeline);
+    decompressor.ReadFromMessage2D(qy, zfp_timeline);
+    decompressor.ReadFromMessage2D(qz, zfp_timeline);
+    decompressor.ReadFromMessage2D(px, zfp_timeline);
+    decompressor.ReadFromMessage2D(py, zfp_timeline);
+    decompressor.ReadFromMessage2D(pz, zfp_timeline);
+
     for (int i = 0; i < timeline_size; ++i) {
       Position<Frame> const q =
           Frame::origin +

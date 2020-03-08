@@ -11,8 +11,9 @@ namespace zfp_compressor_internal {
 
 ZfpCompressor::ZfpCompressor(double const accuracy) : accuracy_(accuracy) {}
 
-void ZfpCompressor::WriteToMessage2D(std::vector<double>& v,
-                                     not_null<std::string*> const message) {
+void ZfpCompressor::WriteToMessage2D(
+    std::vector<double>& v,
+    not_null<std::string*> const message) const {
   // Round up the size of the vector to a multiple of the block size.  This will
   // lead to poor compression at the end, but there is no support for "ignored"
   // data in zfp at this point.
@@ -31,7 +32,7 @@ void ZfpCompressor::WriteToMessage2D(std::vector<double>& v,
 }
 
 void ZfpCompressor::ReadFromMessage2D(std::vector<double>& v,
-                                      std::string_view& message) {
+                                      std::string_view& message) const {
   // Make sure that we have enough space in the vector to decompress the
   // padding.
   v.resize(((v.size() + block_ - 1) / block_) * block_, 0);
@@ -48,15 +49,16 @@ void ZfpCompressor::ReadFromMessage2D(std::vector<double>& v,
 }
 
 void ZfpCompressor::WriteToMessage(const zfp_field* const field,
-                                   not_null<std::string*> message) {
+                                   not_null<std::string*> message) const {
   std::unique_ptr<zfp_stream, std::function<void(zfp_stream*)>> const zfp(
       zfp_stream_open(/*stream=*/nullptr),
       [](zfp_stream* const zfp) { zfp_stream_close(zfp); });
 
+  CHECK(accuracy_.has_value());
   if (accuracy_ == 0) {
     zfp_stream_set_reversible(zfp.get());
   } else {
-    zfp_stream_set_accuracy(zfp.get(), accuracy_);
+    zfp_stream_set_accuracy(zfp.get(), *accuracy_);
   }
   size_t const buffer_size = zfp_stream_maximum_size(zfp.get(), field);
   UniqueArray<std::uint8_t> const buffer(buffer_size);
@@ -72,7 +74,7 @@ void ZfpCompressor::WriteToMessage(const zfp_field* const field,
 }
 
 void ZfpCompressor::ReadFromMessage(zfp_field* const field,
-                                    std::string_view& message) {
+                                    std::string_view& message) const {
   std::unique_ptr<zfp_stream, std::function<void(zfp_stream*)>> const zfp(
       zfp_stream_open(/*stream=*/nullptr),
       [](zfp_stream* const zfp) { zfp_stream_close(zfp); });

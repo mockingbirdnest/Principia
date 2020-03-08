@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -19,6 +20,11 @@ using base::not_null;
 // into one.
 class ZfpCompressor {
  public:
+  // A compressor created with this constructor can only be used to read, not to
+  // write.
+  ZfpCompressor() = default;
+
+  // A compressor created with this constructor can both read and write.
   explicit ZfpCompressor(double accuracy);
 
   // Serialization/deserialization of a vector of double into a message using a
@@ -26,20 +32,24 @@ class ZfpCompressor {
   // advantage of any correlation across these doubles.  The vector |v| may be
   // modified by padding it with zeroes.  When reading, the |message| parameter
   // is updated to reflect the data that was consumed.
-  void WriteToMessage2D(std::vector<double>& v, not_null<std::string*> message);
-  void ReadFromMessage2D(std::vector<double>& v, std::string_view& message);
+  void WriteToMessage2D(std::vector<double>& v,
+                        not_null<std::string*> message) const;
+  void ReadFromMessage2D(std::vector<double>& v,
+                         std::string_view& message) const;
 
   // Low-level API: serialization/deserialization of a field (allocated and
   // owned by the caller) into a message (which is expected to by a bytes field
   // of a proto).  When reading, the |message| parameter is updated to reflect
   // the data that was consumed.
-  void WriteToMessage(const zfp_field* field, not_null<std::string*> message);
-  void ReadFromMessage(zfp_field* field, std::string_view& message);
+  void WriteToMessage(const zfp_field* field,
+                      not_null<std::string*> message) const;
+  void ReadFromMessage(zfp_field* field,
+                       std::string_view& message) const;
 
  private:
   static constexpr int block_ = 4;
 
-  double const accuracy_;
+  std::optional<double> const accuracy_;
 };
 
 }  // namespace zfp_compressor_internal

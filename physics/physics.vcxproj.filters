@@ -214,5 +214,8 @@
     <ClCompile Include="..\numerics\elliptic_integrals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\base\zfp_compressor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

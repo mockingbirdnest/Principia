@@ -77,6 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="..\base\zfp_compressor.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
