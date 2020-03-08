@@ -21,6 +21,7 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace physics {
@@ -48,6 +49,7 @@ using quantities::si::Micro;
 using quantities::si::Milli;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
@@ -909,7 +911,7 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   circle.SetDownsampling(/*max_dense_intervals=*/50,
                          /*tolerance=*/1 * Milli(Metre));
   deserialized_circle->SetDownsampling(/*max_dense_intervals=*/50,
-                                     /*tolerance=*/1 * Milli(Metre));
+                                       /*tolerance=*/1 * Milli(Metre));
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Speed const v = ω * r / Radian;
@@ -946,7 +948,12 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
        it1 != circle.end();
        ++it1, ++it2) {
     EXPECT_EQ(it1->time, it2->time);
-    EXPECT_EQ(it1->degrees_of_freedom, it2->degrees_of_freedom);
+    EXPECT_THAT(it2->degrees_of_freedom.position(),
+                AbsoluteErrorFrom(it1->degrees_of_freedom.position(),
+                                  Lt(0.06 * Metre)));
+    EXPECT_THAT(it2->degrees_of_freedom.velocity(),
+                AbsoluteErrorFrom(it1->degrees_of_freedom.velocity(),
+                                  Lt(0.18 * Metre / Second)));
   }
 }
 
