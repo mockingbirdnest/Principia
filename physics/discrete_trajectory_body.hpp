@@ -564,31 +564,22 @@ inline void ZfpReadFromMessage(zfp_field* const field,
   message.remove_prefix(compressed_size);
 }
 
-inline void ZfpReadFromMessage2D(int const size,
-                                 std::vector<double>& v,
+inline void ZfpReadFromMessage2D(std::vector<double>& v,
                                  std::string_view& message) {
+  // Make sure that we have enough space in the vector to decompress the
+  // padding.
   constexpr int block = 4;
-  auto decoded = new double[(size + block - 1) / block][block];
+  v.resize(((v.size() + block - 1) / block) * block, 0);
+  CHECK_EQ(0, v.size() % block);
 
   std::unique_ptr<zfp_field, std::function<void(zfp_field*)>> const field(
-      zfp_field_2d(decoded,
+      zfp_field_2d(v.data(),
                    /*type=*/zfp_type_double,
                    /*nx=*/block,
-                   /*ny=*/(size + block - 1) / block),
+                   /*ny=*/v.size() / block),
       [](zfp_field* const field) { zfp_field_free(field); });
 
   ZfpReadFromMessage(field.get(), message);
-
-  for (int i = 0; i < (size + block - 1) / block; ++i) {
-    for (int j = 0; j < block; ++j) {
-      if (block * i + j < size) {
-        v[block * i + j] = decoded[i][j];
-      } else {
-        // Filler data.
-      }
-    }
-  }
-  delete[] decoded;
 }
 
 template<typename Frame>
@@ -663,24 +654,24 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
                  timeline_it->degrees_of_freedom()));
     }
   } else {
-    int const size = message.zfp_timeline_size();
-    std::vector<double> t(size);
-    std::vector<double> qx(size);
-    std::vector<double> qy(size);
-    std::vector<double> qz(size);
-    std::vector<double> px(size);
-    std::vector<double> py(size);
-    std::vector<double> pz(size);
+    int const timeline_size = message.zfp_timeline_size();
+    std::vector<double> t(timeline_size);
+    std::vector<double> qx(timeline_size);
+    std::vector<double> qy(timeline_size);
+    std::vector<double> qz(timeline_size);
+    std::vector<double> px(timeline_size);
+    std::vector<double> py(timeline_size);
+    std::vector<double> pz(timeline_size);
     std::string_view zfp_timeline(message.zfp_timeline().data(),
                                   message.zfp_timeline().size());
-    ZfpReadFromMessage2D(size, t, zfp_timeline);
-    ZfpReadFromMessage2D(size, qx, zfp_timeline);
-    ZfpReadFromMessage2D(size, qy, zfp_timeline);
-    ZfpReadFromMessage2D(size, qz, zfp_timeline);
-    ZfpReadFromMessage2D(size, px, zfp_timeline);
-    ZfpReadFromMessage2D(size, py, zfp_timeline);
-    ZfpReadFromMessage2D(size, pz, zfp_timeline);
-    for (int i = 0; i < size; ++i) {
+    ZfpReadFromMessage2D(t, zfp_timeline);
+    ZfpReadFromMessage2D(qx, zfp_timeline);
+    ZfpReadFromMessage2D(qy, zfp_timeline);
+    ZfpReadFromMessage2D(qz, zfp_timeline);
+    ZfpReadFromMessage2D(px, zfp_timeline);
+    ZfpReadFromMessage2D(py, zfp_timeline);
+    ZfpReadFromMessage2D(pz, zfp_timeline);
+    for (int i = 0; i < timeline_size; ++i) {
       Position<Frame> const q =
           Frame::origin +
           Displacement<Frame>({qx[i] * Metre, qy[i] * Metre, qz[i] * Metre});
