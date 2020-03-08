@@ -552,6 +552,7 @@ inline void ZfpWriteToMessage(double const accuracy,
   not_null<bitstream*> const stream =
       check_not_null(stream_open(buffer.data.get(), buffer_size));
   zfp_stream_set_bit_stream(zfp.get(), &*stream);
+
   zfp_write_header(zfp.get(), field, ZFP_HEADER_FULL);
   size_t const compressed_size = zfp_compress(zfp.get(), field);
   CHECK_LT(0, compressed_size);
@@ -560,8 +561,8 @@ inline void ZfpWriteToMessage(double const accuracy,
 }
 
 inline void ZfpWriteToMessage2D(double const accuracy,
-                        std::vector<double> const& v,
-                        not_null<std::string*> const message) {
+                                std::vector<double> const& v,
+                                not_null<std::string*> const message) {
   constexpr int block = 4;
   auto const encoded = new double[(v.size() + block - 1) / block][block];
   for (int i = 0; i < (v.size() + block - 1) / block; ++i) {
@@ -576,8 +577,8 @@ inline void ZfpWriteToMessage2D(double const accuracy,
     }
   }
 
-  // Beware!  See https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
-  // for nx and ny.
+  // Beware nx and ny!  (And the Jabberwock, my son!)
+  // See https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
   std::unique_ptr<zfp_field, std::function<void(zfp_field*)>> const field(
       zfp_field_2d(encoded,
                    /*type=*/zfp_type_double,
@@ -587,6 +588,39 @@ inline void ZfpWriteToMessage2D(double const accuracy,
   ZfpWriteToMessage(accuracy, field.get(), message);
 
   delete[] encoded;
+}
+
+inline void ZfpReadFromMessage(zfp_field* const field,
+                               std::string_view& message) {
+  std::unique_ptr<zfp_stream, std::function<void(zfp_stream*)>> const zfp(
+      zfp_stream_open(/*stream=*/nullptr),
+      [](zfp_stream* const zfp) { zfp_stream_close(zfp); });
+
+  zfp_read_header(zfp.get(), field, ZFP_HEADER_FULL);
+  size_t const field_size = zfp_field_size(field, /*size=*/nullptr);
+  not_null<bitstream*> const stream = check_not_null(
+      stream_open(const_cast<char*>(&message.front()), field_size));
+  zfp_stream_set_bit_stream(zfp.get(), &*stream);
+
+  size_t const uncompressed_size = zfp_decompress(zfp.get(), field);
+  message.remove_prefix(field_size);
+}
+
+inline void ZfpReadFromMessage2D(std::int64_t const size,
+                                 std::string_view& message) {
+  constexpr int block = 4;
+  auto decoded = new double[(size + block - 1) / block][block];
+
+  std::unique_ptr<zfp_field, std::function<void(zfp_field*)>> const field(
+      zfp_field_2d(decoded,
+                   /*type=*/zfp_type_double,
+                   /*nx=*/block,
+                   /*ny=*/(size + block - 1) / block),
+      [](zfp_field* const field) { zfp_field_free(field); });
+
+  ZfpReadFromMessage(field.get(), message);
+
+  delete[] decoded;
 }
 
 inline void ZpfExperiment2D(std::string_view const label,
