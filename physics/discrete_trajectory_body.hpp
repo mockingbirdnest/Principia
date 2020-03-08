@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
