@@ -527,33 +527,24 @@ inline void ZfpWriteToMessage(double const accuracy,
 }
 
 inline void ZfpWriteToMessage2D(double const accuracy,
-                                std::vector<double> const& v,
+                                std::vector<double>& v,
                                 not_null<std::string*> const message) {
+  // Round up the size of the vector to a multiple of the block size.  This will
+  // lead to poor compression at the end, but there is no support for "ignored"
+  // data in zfp at this point.
   constexpr int block = 4;
-  auto const encoded = new double[(v.size() + block - 1) / block][block];
-  for (int i = 0; i < (v.size() + block - 1) / block; ++i) {
-    for (int j = 0; j < block; ++j) {
-      if (block * i + j < v.size()) {
-        encoded[i][j] = v[block * i + j];
-      } else {
-        // This will lead to poor compression at the end, but there is no
-        // support for "ignored" data in zfp at this point.
-        encoded[i][j] = 0;
-      }
-    }
-  }
+  v.resize(((v.size() + block - 1) / block) * block, 0);
+  CHECK_EQ(0, v.size() % block);
 
   // Beware nx and ny!  (And the Jabberwock, my son!)
   // See https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
   std::unique_ptr<zfp_field, std::function<void(zfp_field*)>> const field(
-      zfp_field_2d(encoded,
+      zfp_field_2d(v.data(),
                    /*type=*/zfp_type_double,
                    /*nx=*/block,
-                   /*ny=*/(v.size() + block - 1) / block),
+                   /*ny=*/v.size() / block),
       [](zfp_field* const field) { zfp_field_free(field); });
   ZfpWriteToMessage(accuracy, field.get(), message);
-
-  delete[] encoded;
 }
 
 inline void ZfpReadFromMessage(zfp_field* const field,
@@ -605,6 +596,8 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
   Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
+  int const timeline_size = timeline_.size();
+  message->set_zfp_timeline_size(timeline_size);
   std::vector<double> t;
   std::vector<double> qx;
   std::vector<double> qy;
@@ -612,7 +605,13 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   std::vector<double> px;
   std::vector<double> py;
   std::vector<double> pz;
-  message->set_zfp_timeline_size(timeline_.size());
+  t.reserve(timeline_size);
+  qx.reserve(timeline_size);
+  qy.reserve(timeline_size);
+  qz.reserve(timeline_size);
+  px.reserve(timeline_size);
+  py.reserve(timeline_size);
+  pz.reserve(timeline_size);
   std::string* const zfp_timeline = message->mutable_zfp_timeline();
   for (auto const& [instant, degrees_of_freedom] : timeline_) {
     auto const q = degrees_of_freedom.position() - Frame::origin;
@@ -636,7 +635,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   // in the timeline.
   Time const average_Δt =
       (timeline_.crbegin()->first - timeline_.cbegin()->first) /
-      timeline_.size();
+      timeline_size;
   Speed const speed_tolerance = length_tolerance / average_Δt;
   ZfpWriteToMessage2D(time_tolerance / Second, t, zfp_timeline);
   ZfpWriteToMessage2D(length_tolerance / Metre, qx, zfp_timeline);
