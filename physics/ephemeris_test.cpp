@@ -1111,7 +1111,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   trajectory1.WriteToMessage(&message, /*forks=*/{});
   std::string uncompressed;
   message.SerializePartialToString(&uncompressed);
-  EXPECT_EQ(178'982, uncompressed.size());
+  EXPECT_EQ(18'425, uncompressed.size());
 
   std::string compressed;
   auto compressor = google::compression::NewGipfeliCompressor();
@@ -1119,8 +1119,8 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
 
   // We want a change detector, but the actual compressed size varies depending
   // on the exact numerical values, and therefore on the mathematical library.
-  EXPECT_LE(69'883, compressed.size());
-  EXPECT_GE(69'910, compressed.size());
+  EXPECT_LE(16'966, compressed.size());
+  EXPECT_GE(16'966, compressed.size());
 
   auto const trajectory2 =
       DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*forks=*/{});
@@ -1133,7 +1133,6 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
             .Norm());
   }
   EXPECT_THAT(error, IsNear(3.3_⑴ * Metre));
-  LOG(ERROR) << error;
 
   {
     OFStream file(TEMP_DIR / "discrete_trajectory_compression.generated.wl");

@@ -501,43 +501,6 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
                       timeline);
 }
 
-inline void ZfpCompressDecompress(double const accuracy,
-                                  int const input_size_in_bytes,
-                                  zfp_field* const ifield,
-                                  zfp_field* const ofield,
-                                  int* const bytes,
-                                  double* compression,
-                                  int* const bpd,
-                                  std::string* const out) {
-  zfp_stream* zfp = zfp_stream_open(nullptr);
-  if (accuracy == 0) {
-    zfp_stream_set_reversible(zfp);
-  } else {
-    zfp_stream_set_accuracy(zfp, accuracy);
-  }
-  size_t bufsize = zfp_stream_maximum_size(zfp, ifield);
-  void* buffer = malloc(bufsize);
-  bitstream* stream = stream_open(buffer, bufsize);
-  zfp_stream_set_bit_stream(zfp, stream);
-  zfp_write_header(zfp, ifield, ZFP_HEADER_FULL);
-  size_t izfpsize = zfp_compress(zfp, ifield);
-  CHECK_LT(0, izfpsize);
-  CHECK_EQ(izfpsize, zfp_stream_compressed_size(zfp));
-  out->append(static_cast<char const*>(stream_data(stream)),
-              stream_size(stream));
-
-  zfp_stream_rewind(zfp);
-  zfp_read_header(zfp, ofield, ZFP_HEADER_FULL);
-  size_t ozfpsize = zfp_decompress(zfp, ofield);
-
-  free(buffer);
-  zfp_stream_close(zfp);
-
-  *bytes = izfpsize;
-  *compression = (double)input_size_in_bytes / izfpsize;
-  *bpd = (8 * izfpsize) / (input_size_in_bytes / 8);
-}
-
 inline void ZfpWriteToMessage(double const accuracy,
                               const zfp_field* const field,
                               not_null<std::string*> const message) {
@@ -637,45 +600,6 @@ inline void ZfpReadFromMessage2D(int const size,
   delete[] decoded;
 }
 
-inline void ZpfExperiment2D(std::string_view const label,
-                            double const accuracy,
-                            std::vector<double> const& v,
-                            std::string* const out) {
-  auto input = new double[(v.size() + 3) / 4][4];
-  auto output = new double[(v.size() + 3) / 4][4];
-  for (int i = 0; i < (v.size() + 3) / 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      if (4 * i + j < v.size()) {
-        input[i][j] = v[4 * i + j];
-      } else {
-        input[i][j] = 0;
-      }
-    }
-  }
-
-  zfp_type type = zfp_type_double;
-  zfp_field* field = zfp_field_2d(input, type, 4, (v.size() + 3) / 4);
-  zfp_field* ofield = zfp_field_2d(output, type, 4, (v.size() + 3) / 4);
-  int bytes;
-  double compression;
-  int bpd;
-  ZfpCompressDecompress(
-      accuracy, 8 * v.size(), field, ofield, &bytes, &compression, &bpd, out);
-  double max = 0;
-  for (int i = 0; i < (v.size() + 3) / 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      max = std::max(max, std::abs(input[i][j] - output[i][j]));
-    }
-  }
-  LOG(ERROR) << label << ": bytes: " << bytes
-             << ": compression: " << compression << " bpd: " << bpd
-             << " error: " << max;
-  zfp_field_free(field);
-  zfp_field_free(ofield);
-  delete[] input;
-  delete[] output;
-}
-
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
@@ -689,9 +613,6 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   std::vector<double> py;
   std::vector<double> pz;
   message->set_zfp_timeline_size(timeline_.size());
-  Time const Δt = (timeline_.crbegin()->first - timeline_.cbegin()->first) /
-                  timeline_.size();
-  LOG(ERROR) << Δt;
   std::string* const zfp_timeline = message->mutable_zfp_timeline();
   for (auto const& [instant, degrees_of_freedom] : timeline_) {
     auto const q = degrees_of_freedom.position() - Frame::origin;
@@ -704,20 +625,26 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     py.push_back(p.coordinates().y / (Metre / Second));
     pz.push_back(p.coordinates().z / (Metre / Second));
   }
-  //ZpfExperiment2D("t", 0, t, zfp_timeline);
-  //ZpfExperiment2D("q.x", 10.0, qx, zfp_timeline);
-  //ZpfExperiment2D("q.y", 10.0, qy, zfp_timeline);
-  //ZpfExperiment2D("q.z", 10.0, qz, zfp_timeline);
-  //ZpfExperiment2D("p.x", 0.1, px, zfp_timeline);
-  //ZpfExperiment2D("p.y", 0.1, py, zfp_timeline);
-  //ZpfExperiment2D("p.z", 0.1, pz, zfp_timeline);
-  ZfpWriteToMessage2D(0, t, zfp_timeline);
-  ZfpWriteToMessage2D(10.0, qx, zfp_timeline);
-  ZfpWriteToMessage2D(10.0, qy, zfp_timeline);
-  ZfpWriteToMessage2D(10.0, qz, zfp_timeline);
-  ZfpWriteToMessage2D(10.0 / (Δt / Second), px, zfp_timeline);
-  ZfpWriteToMessage2D(10.0 / (Δt / Second), py, zfp_timeline);
-  ZfpWriteToMessage2D(10.0 / (Δt / Second), pz, zfp_timeline);
+
+  // Times are exact.
+  Time const time_tolerance;
+  // Lengths are approximated to the downsampling tolerance if downsampling is
+  // enabled, otherwise they are exact.
+  Length const length_tolerance =
+      downsampling_.has_value() ? downsampling_->tolerance() : Length();
+  // Speeds are approximated based on the length tolerance and the average step
+  // in the timeline.
+  Time const average_Δt =
+      (timeline_.crbegin()->first - timeline_.cbegin()->first) /
+      timeline_.size();
+  Speed const speed_tolerance = length_tolerance / average_Δt;
+  ZfpWriteToMessage2D(time_tolerance / Second, t, zfp_timeline);
+  ZfpWriteToMessage2D(length_tolerance / Metre, qx, zfp_timeline);
+  ZfpWriteToMessage2D(length_tolerance / Metre, qy, zfp_timeline);
+  ZfpWriteToMessage2D(length_tolerance / Metre, qz, zfp_timeline);
+  ZfpWriteToMessage2D(speed_tolerance / (Metre / Second), px, zfp_timeline);
+  ZfpWriteToMessage2D(speed_tolerance / (Metre / Second), py, zfp_timeline);
+  ZfpWriteToMessage2D(speed_tolerance / (Metre / Second), pz, zfp_timeline);
   if (downsampling_.has_value()) {
     downsampling_->WriteToMessage(message->mutable_downsampling(), timeline_);
   }
