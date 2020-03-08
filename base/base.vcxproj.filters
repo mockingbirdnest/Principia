@@ -179,6 +179,9 @@
     <ClInclude Include="traits.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="zfp_compressor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -228,6 +231,9 @@
     </ClCompile>
     <ClCompile Include="base64_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="zfp_compressor.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
