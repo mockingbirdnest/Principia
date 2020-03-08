@@ -86,10 +86,14 @@ message DiscreteTrajectory {
   }
   repeated Litter children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
-  optional bytes zfp_timeline = 5;  // Added in Frobenius? Fubini?
-  optional int32 zfp_timeline_size = 6;  // Added in Frobenius? Fubini?
   repeated int32 fork_position = 3;
   optional Downsampling downsampling = 4;  // Added in 陈景润.
+
+  // ZFP support added in Frobenius.
+  optional int32 zfp_codec_version = 7;
+  optional int32 zfp_library_version = 8;
+  optional bytes zfp_timeline = 5;
+  optional int32 zfp_timeline_size = 6;
 }
 
 message DynamicFrame {
