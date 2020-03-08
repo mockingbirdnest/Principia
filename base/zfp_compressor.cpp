@@ -16,6 +16,10 @@ ZfpCompressor::ZfpCompressor(double const accuracy) : accuracy_(accuracy) {}
 void ZfpCompressor::WriteToMessage2D(
     std::vector<double>& v,
     not_null<std::string*> const message) const {
+  if (v.empty()) {
+    return;
+  }
+
   // Round up the size of the vector to a multiple of the block size.  This will
   // lead to poor compression at the end, but there is no support for "ignored"
   // data in zfp at this point.
@@ -35,6 +39,10 @@ void ZfpCompressor::WriteToMessage2D(
 
 void ZfpCompressor::ReadFromMessage2D(std::vector<double>& v,
                                       std::string_view& message) const {
+  if (v.empty()) {
+    return;
+  }
+
   // Make sure that we have enough space in the vector to decompress the
   // padding.
   v.resize(((v.size() + block_ - 1) / block_) * block_, 0);
