@@ -83,9 +83,9 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private string flags_ = "";
 
-      // Whether the plotting frame must be set to something convenient at the next
-      // opportunity.
-      private bool must_set_plotting_frame_ = false;
+  // Whether the plotting frame must be set to something convenient at the next
+  // opportunity.
+  private bool must_set_plotting_frame_ = false;
 
   private bool time_is_advancing_;
 
