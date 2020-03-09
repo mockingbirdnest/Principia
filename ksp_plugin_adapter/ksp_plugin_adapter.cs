@@ -80,10 +80,12 @@ public partial class PrincipiaPluginAdapter
   private string serialization_compression_ = "";
   [KSPField(isPersistant = true)]
   private string serialization_encoding_ = "hexadecimal";
+  [KSPField(isPersistant = true)]
+  private string flags_ = "";
 
-  // Whether the plotting frame must be set to something convenient at the next
-  // opportunity.
-  private bool must_set_plotting_frame_ = false;
+      // Whether the plotting frame must be set to something convenient at the next
+      // opportunity.
+      private bool must_set_plotting_frame_ = false;
 
   private bool time_is_advancing_;
 
@@ -247,6 +249,8 @@ public partial class PrincipiaPluginAdapter
         Log.Error(message);
       }
     }
+
+    Interface.SetFlags(flags_);
 
     map_node_pool_ = new MapNodePool();
     flight_planner_ = new FlightPlanner(this);

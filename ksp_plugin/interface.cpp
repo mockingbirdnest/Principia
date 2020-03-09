@@ -24,6 +24,7 @@
 #include "base/base64.hpp"
 #include "base/encoder.hpp"
 #include "base/fingerprint2011.hpp"
+#include "base/flags.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
@@ -66,6 +67,7 @@ using base::Base64Encoder;
 using base::check_not_null;
 using base::Encoder;
 using base::Fingerprint2011;
+using base::Flags;
 using base::HexadecimalEncoder;
 using base::make_not_null_unique;
 using base::PullSerializer;
@@ -1039,6 +1041,12 @@ void __cdecl principia__SetBufferDuration(int const seconds) {
 void __cdecl principia__SetBufferedLogging(int const max_severity) {
   journal::Method<journal::SetBufferedLogging> m({max_severity});
   FLAGS_logbuflevel = max_severity;
+  return m.Return();
+}
+
+void __cdecl principia__SetFlags(char const* const flags) {
+  journal::Method<journal::SetFlags> m({flags});
+  Flags::Set(flags);
   return m.Return();
 }
 
