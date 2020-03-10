@@ -1,5 +1,9 @@
 #include "base/flags.hpp"
 
+#include <map>
+#include <set>
+#include <string>
+
 namespace principia {
 namespace base {
 
