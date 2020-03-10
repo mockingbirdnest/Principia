@@ -362,9 +362,9 @@ message CelestialWorldDegreesOfFreedom {
 }
 
 message ClearFlags {
-	extend Method {
-		optional ClearFlags extension = 5167;
-	}
+  extend Method {
+    optional ClearFlags extension = 5167;
+  }
 }
 
 message ClearTargetVessel {
