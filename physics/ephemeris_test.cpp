@@ -1120,7 +1120,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   // We want a change detector, but the actual compressed size varies depending
   // on the exact numerical values, and therefore on the mathematical library.
   EXPECT_LE(69'883, compressed.size());
-  EXPECT_GE(69'910, compressed.size());
+  EXPECT_GE(69'921, compressed.size());
 
   {
     OFStream file(TEMP_DIR / "discrete_trajectory_compression.generated.wl");
