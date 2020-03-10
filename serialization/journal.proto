@@ -219,7 +219,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5166.
+  extensions 5000 to 5999;  // Last used: 5167.
 }
 
 message AdvanceTime {
@@ -359,6 +359,12 @@ message CelestialWorldDegreesOfFreedom {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message ClearFlags {
+	extend Method {
+		optional SetFlags extension = 5167;
+	}
 }
 
 message ClearTargetVessel {
@@ -1907,7 +1913,8 @@ message SetFlags {
     optional SetFlags extension = 5166;
   }
   message In {
-    required string flags = 1;
+    required string name = 1;
+    required string value = 2;
   }
   optional In in = 1;
 }

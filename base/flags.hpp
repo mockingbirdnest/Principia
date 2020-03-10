@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string_view>
 
 namespace principia {
@@ -8,21 +9,24 @@ namespace base {
 
 class Flags {
  public:
-  // |flags| must be a comma-separated string of elements that may contain an
-  // equal sign thus:
-  //   a=b,c=,d
-  static void Set(std::string_view flags);
+  // Remove all the flags.
+  static void Clear();
 
-  // Returns true if the given |flag| was specified as a key in the string
-  // passed to Set.
-  static bool IsPresent(std::string_view flag);
+  // Sets a flag with the given |name| and |value|.
+  static void Set(std::string_view name, std::string_view value);
 
-  // Returns the value associated with the key |flag|, or an empty string if no
-  // value was specified.
-  static std::string const& Value(std::string_view flag);
+  // Returns true if a flag with the given |name| was set (with any value).
+  static bool IsPresent(std::string_view name);
+
+  // Returns true if a flag with the given |name| and |value| was set.
+  static bool IsPresent(std::string_view name, std::string_view value);
+
+  // Returns the values associated with the flag with a given |name|.  Returns
+  // an empty set if there is no flag with the |name|.
+  static std::set<std::string> Values(std::string_view name);
 
  private:
-  static std::map<std::string, std::string> flags_;
+  static std::multimap<std::string, std::string> flags_;
 };
 
 }  // namespace base
