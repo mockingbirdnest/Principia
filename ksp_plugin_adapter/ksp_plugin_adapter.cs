@@ -58,6 +58,7 @@ public partial class PrincipiaPluginAdapter
       "principia_numerics_blueprint";
   private const string principia_override_version_check_config_name_ =
       "principia_override_version_check";
+  private const string flags_ = "flags";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   // Whether the user has hidden the UI.
@@ -80,8 +81,6 @@ public partial class PrincipiaPluginAdapter
   private string serialization_compression_ = "";
   [KSPField(isPersistant = true)]
   private string serialization_encoding_ = "hexadecimal";
-  [KSPField(isPersistant = true)]
-  private string flags_ = "";
 
   // Whether the plotting frame must be set to something convenient at the next
   // opportunity.
@@ -249,8 +248,6 @@ public partial class PrincipiaPluginAdapter
         Log.Error(message);
       }
     }
-
-    Interface.SetFlags(flags_);
 
     map_node_pool_ = new MapNodePool();
     flight_planner_ = new FlightPlanner(this);
@@ -2160,6 +2157,16 @@ public partial class PrincipiaPluginAdapter
     Interface.DeletePlugin(ref plugin_);
     previous_display_mode_ = null;
     navball_changed_ = true;
+
+    // Load the flags.
+    Interface.ClearFlags();
+    ConfigNode flags =  GameDatabase.Instance.GetAtMostOneNode(flags_);
+    ConfigNode[] individual_flags = flags.GetNodes();
+    foreach (ConfigNode individual_flag in individual_flags) {
+      foreach (String value in individual_flag.GetValues()) {
+        Interface.SetFlag(individual_flag.name, value);
+      }
+    }
   }
 
   private void UpdateRenderingFrame(
