@@ -52,6 +52,7 @@
     <ClInclude Include="vessel.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\flags.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\base\version.generated.cc" />
     <ClCompile Include="..\journal\profiles.cpp" />

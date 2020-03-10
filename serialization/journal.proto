@@ -363,7 +363,7 @@ message CelestialWorldDegreesOfFreedom {
 
 message ClearFlags {
 	extend Method {
-		optional SetFlags extension = 5167;
+		optional ClearFlags extension = 5167;
 	}
 }
 
@@ -1908,9 +1908,9 @@ message SetBufferedLogging {
   optional In in = 1;
 }
 
-message SetFlags {
+message SetFlag {
   extend Method {
-    optional SetFlags extension = 5166;
+    optional SetFlag extension = 5166;
   }
   message In {
     required string name = 1;

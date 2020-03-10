@@ -417,6 +417,12 @@ QP __cdecl principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
           FromGameTime(*plugin, time))));
 }
 
+void __cdecl principia__ClearFlags() {
+  journal::Method<journal::ClearFlags> m;
+  Flags::Clear();
+  return m.Return();
+}
+
 void __cdecl principia__ClearWorldRotationalReferenceFrame(
     Plugin* const plugin) {
   journal::Method<journal::ClearWorldRotationalReferenceFrame> m({plugin});
@@ -1044,9 +1050,10 @@ void __cdecl principia__SetBufferedLogging(int const max_severity) {
   return m.Return();
 }
 
-void __cdecl principia__SetFlags(char const* const flags) {
-  journal::Method<journal::SetFlags> m({flags});
-  Flags::Set(flags);
+void __cdecl principia__SetFlag(char const* const name,
+                                char const* const value) {
+  journal::Method<journal::SetFlag> m({name, value});
+  Flags::Set(name, value);
   return m.Return();
 }
 
