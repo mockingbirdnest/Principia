@@ -677,7 +677,8 @@ TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
   {
     PushDeserializer* deserializer = nullptr;
     auto const lines = ReadLinesFromBase64File(
-        R"(P:\Public Mockingbird\Principia\Crashes\2400\0 1958.sfs)");
+        R"(P:\Public Mockingbird\Principia\Crashes\2400\persistent.sfs)");
+    LOG(ERROR) << "Deserialization starting";
     for (std::string const& line : lines) {
       principia__DeserializePlugin(line.c_str(),
                                    line.size(),
