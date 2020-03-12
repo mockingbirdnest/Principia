@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/flags.hpp"
 #include "base/not_null.hpp"
 #include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
@@ -62,6 +63,7 @@ namespace internal_discrete_trajectory {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
+using base::Flags;
 using base::make_not_null_unique;
 using base::ZfpCompressor;
 using geometry::Displacement;
@@ -504,66 +506,76 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
   Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
-
-  int const timeline_size = timeline_.size();
-  message->set_zfp_timeline_size(timeline_size);
-
-  // The timeline data is made dimensionless and stored in separate arrays per
-  // coordinate.  We expect strong correlations within a coordinate over time,
-  // but not between coordinates.
-  std::vector<double> t;
-  std::vector<double> qx;
-  std::vector<double> qy;
-  std::vector<double> qz;
-  std::vector<double> px;
-  std::vector<double> py;
-  std::vector<double> pz;
-  t.reserve(timeline_size);
-  qx.reserve(timeline_size);
-  qy.reserve(timeline_size);
-  qz.reserve(timeline_size);
-  px.reserve(timeline_size);
-  py.reserve(timeline_size);
-  pz.reserve(timeline_size);
-  std::optional<Instant> previous_instant;
-  Time max_Δt;
-  std::string* const zfp_timeline = message->mutable_zfp_timeline();
-  for (auto const& [instant, degrees_of_freedom] : timeline_) {
-    auto const q = degrees_of_freedom.position() - Frame::origin;
-    auto const p = degrees_of_freedom.velocity();
-    t.push_back((instant - Instant{}) / Second);
-    qx.push_back(q.coordinates().x / Metre);
-    qy.push_back(q.coordinates().y / Metre);
-    qz.push_back(q.coordinates().z / Metre);
-    px.push_back(p.coordinates().x / (Metre / Second));
-    py.push_back(p.coordinates().y / (Metre / Second));
-    pz.push_back(p.coordinates().z / (Metre / Second));
-    if (previous_instant.has_value()) {
-      max_Δt = std::max(max_Δt, instant - *previous_instant);
+  if (Flags::IsPresent("zfp", "off")) {
+    for (auto const& [instant, degrees_of_freedom] : timeline_) {
+      auto const instantaneous_degrees_of_freedom = message->add_timeline();
+      instant.WriteToMessage(
+          instantaneous_degrees_of_freedom->mutable_instant());
+      degrees_of_freedom.WriteToMessage(
+          instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
     }
-    previous_instant = instant;
+  } else {
+    int const timeline_size = timeline_.size();
+    auto* const zfp = message->mutable_zfp();
+    zfp->set_timeline_size(timeline_size);
+
+    // The timeline data is made dimensionless and stored in separate arrays per
+    // coordinate.  We expect strong correlations within a coordinate over time,
+    // but not between coordinates.
+    std::vector<double> t;
+    std::vector<double> qx;
+    std::vector<double> qy;
+    std::vector<double> qz;
+    std::vector<double> px;
+    std::vector<double> py;
+    std::vector<double> pz;
+    t.reserve(timeline_size);
+    qx.reserve(timeline_size);
+    qy.reserve(timeline_size);
+    qz.reserve(timeline_size);
+    px.reserve(timeline_size);
+    py.reserve(timeline_size);
+    pz.reserve(timeline_size);
+    std::optional<Instant> previous_instant;
+    Time max_Δt;
+    std::string* const zfp_timeline = zfp->mutable_timeline();
+    for (auto const& [instant, degrees_of_freedom] : timeline_) {
+      auto const q = degrees_of_freedom.position() - Frame::origin;
+      auto const p = degrees_of_freedom.velocity();
+      t.push_back((instant - Instant{}) / Second);
+      qx.push_back(q.coordinates().x / Metre);
+      qy.push_back(q.coordinates().y / Metre);
+      qz.push_back(q.coordinates().z / Metre);
+      px.push_back(p.coordinates().x / (Metre / Second));
+      py.push_back(p.coordinates().y / (Metre / Second));
+      pz.push_back(p.coordinates().z / (Metre / Second));
+      if (previous_instant.has_value()) {
+        max_Δt = std::max(max_Δt, instant - *previous_instant);
+      }
+      previous_instant = instant;
+    }
+
+    // Times are exact.
+    ZfpCompressor time_compressor(0);
+    // Lengths are approximated to the downsampling tolerance if downsampling is
+    // enabled, otherwise they are exact.
+    Length const length_tolerance =
+        downsampling_.has_value() ? downsampling_->tolerance() : Length();
+    ZfpCompressor length_compressor(length_tolerance / Metre);
+    // Speeds are approximated based on the length tolerance and the maximum
+    // step in the timeline.
+    ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
+                                         (Metre / Second));
+
+    ZfpCompressor::WriteVersion(message);
+    time_compressor.WriteToMessage2D(t, zfp_timeline);
+    length_compressor.WriteToMessage2D(qx, zfp_timeline);
+    length_compressor.WriteToMessage2D(qy, zfp_timeline);
+    length_compressor.WriteToMessage2D(qz, zfp_timeline);
+    speed_compressor.WriteToMessage2D(px, zfp_timeline);
+    speed_compressor.WriteToMessage2D(py, zfp_timeline);
+    speed_compressor.WriteToMessage2D(pz, zfp_timeline);
   }
-
-  // Times are exact.
-  ZfpCompressor time_compressor(0);
-  // Lengths are approximated to the downsampling tolerance if downsampling is
-  // enabled, otherwise they are exact.
-  Length const length_tolerance =
-      downsampling_.has_value() ? downsampling_->tolerance() : Length();
-  ZfpCompressor length_compressor(length_tolerance / Metre);
-  // Speeds are approximated based on the length tolerance and the maximum step
-  // in the timeline.
-  ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
-                                       (Metre / Second));
-
-  ZfpCompressor::WriteVersion(message);
-  time_compressor.WriteToMessage2D(t, zfp_timeline);
-  length_compressor.WriteToMessage2D(qx, zfp_timeline);
-  length_compressor.WriteToMessage2D(qy, zfp_timeline);
-  length_compressor.WriteToMessage2D(qz, zfp_timeline);
-  speed_compressor.WriteToMessage2D(px, zfp_timeline);
-  speed_compressor.WriteToMessage2D(py, zfp_timeline);
-  speed_compressor.WriteToMessage2D(pz, zfp_timeline);
 
   if (downsampling_.has_value()) {
     downsampling_->WriteToMessage(message->mutable_downsampling(), timeline_);
@@ -574,8 +586,7 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
-  bool const is_pre_frobenius = !message.has_zfp_codec_version() &&
-                                !message.has_zfp_library_version();
+  bool const is_pre_frobenius = !message.has_zfp();
   if (is_pre_frobenius) {
     for (auto timeline_it = message.timeline().begin();
          timeline_it != message.timeline().end();
@@ -585,10 +596,10 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
                  timeline_it->degrees_of_freedom()));
     }
   } else {
-    CHECK_EQ(ZFP_CODEC, message.zfp_codec_version());
-    CHECK_EQ(ZFP_VERSION, message.zfp_library_version());
+    CHECK_EQ(ZFP_CODEC, message.zfp().codec_version());
+    CHECK_EQ(ZFP_VERSION, message.zfp().library_version());
 
-    int const timeline_size = message.zfp_timeline_size();
+    int const timeline_size = message.zfp().timeline_size();
     std::vector<double> t(timeline_size);
     std::vector<double> qx(timeline_size);
     std::vector<double> qy(timeline_size);
@@ -596,8 +607,8 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     std::vector<double> px(timeline_size);
     std::vector<double> py(timeline_size);
     std::vector<double> pz(timeline_size);
-    std::string_view zfp_timeline(message.zfp_timeline().data(),
-                                  message.zfp_timeline().size());
+    std::string_view zfp_timeline(message.zfp().timeline().data(),
+                                  message.zfp().timeline().size());
 
     ZfpCompressor decompressor;
     ZfpCompressor::ReadVersion(message);

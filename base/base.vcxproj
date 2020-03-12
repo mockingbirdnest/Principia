@@ -29,6 +29,7 @@
     <ClInclude Include="file.hpp" />
     <ClInclude Include="file_body.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />
+    <ClInclude Include="flags.hpp" />
     <ClInclude Include="function.hpp" />
     <ClInclude Include="function_body.hpp" />
     <ClInclude Include="get_line.hpp" />
@@ -80,6 +81,8 @@
     <ClCompile Include="bundle.cpp" />
     <ClCompile Include="bundle_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />
+    <ClCompile Include="flags.cpp" />
+    <ClCompile Include="flags_test.cpp" />
     <ClCompile Include="function_test.cpp" />
     <ClCompile Include="hexadecimal_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />

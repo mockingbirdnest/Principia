@@ -137,11 +137,12 @@ TEST_F(PartTest, Serialization) {
                   .quantity()
                   .magnitude(),
               AlmostEquals(-5, 2));
-  EXPECT_EQ(1, message.prehistory().zfp_timeline_size());
+  EXPECT_EQ(1, message.prehistory().zfp().timeline_size());
   EXPECT_EQ(1, message.prehistory().children_size());
   EXPECT_EQ(1, message.prehistory().children(0).trajectories_size());
   EXPECT_EQ(
-      1, message.prehistory().children(0).trajectories(0).zfp_timeline_size());
+      1,
+      message.prehistory().children(0).trajectories(0).zfp().timeline_size());
 
   auto const p = Part::ReadFromMessage(message, /*deletion_callback=*/nullptr);
   EXPECT_EQ(part_.inertia_tensor(), p->inertia_tensor());

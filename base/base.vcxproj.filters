@@ -179,6 +179,9 @@
     <ClInclude Include="traits.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="flags.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="zfp_compressor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -233,6 +236,12 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="base64_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="flags.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="flags_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="zfp_compressor.cpp">
