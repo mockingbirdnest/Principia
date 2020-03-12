@@ -16,6 +16,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\astronomy\standard_product_3.cpp" />
+    <ClCompile Include="..\base\flags.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\base\version.generated.cc" />
     <ClCompile Include="..\base\zfp_compressor.cpp" />
