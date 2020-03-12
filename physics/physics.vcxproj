@@ -76,6 +76,7 @@
     <ClInclude Include="trajectory.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\flags.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\base\zfp_compressor.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />

@@ -516,7 +516,8 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     }
   } else {
     int const timeline_size = timeline_.size();
-    message->set_zfp_timeline_size(timeline_size);
+    auto* const zfp = message->mutable_zfp();
+    zfp->set_timeline_size(timeline_size);
 
     // The timeline data is made dimensionless and stored in separate arrays per
     // coordinate.  We expect strong correlations within a coordinate over time,
@@ -537,7 +538,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     pz.reserve(timeline_size);
     std::optional<Instant> previous_instant;
     Time max_Δt;
-    std::string* const zfp_timeline = message->mutable_zfp_timeline();
+    std::string* const zfp_timeline = zfp->mutable_timeline();
     for (auto const& [instant, degrees_of_freedom] : timeline_) {
       auto const q = degrees_of_freedom.position() - Frame::origin;
       auto const p = degrees_of_freedom.velocity();
@@ -585,8 +586,7 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
-  bool const is_pre_frobenius = !message.has_zfp_codec_version() &&
-                                !message.has_zfp_library_version();
+  bool const is_pre_frobenius = !message.has_zfp();
   if (is_pre_frobenius) {
     for (auto timeline_it = message.timeline().begin();
          timeline_it != message.timeline().end();
@@ -596,10 +596,10 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
                  timeline_it->degrees_of_freedom()));
     }
   } else {
-    CHECK_EQ(ZFP_CODEC, message.zfp_codec_version());
-    CHECK_EQ(ZFP_VERSION, message.zfp_library_version());
+    CHECK_EQ(ZFP_CODEC, message.zfp().codec_version());
+    CHECK_EQ(ZFP_VERSION, message.zfp().library_version());
 
-    int const timeline_size = message.zfp_timeline_size();
+    int const timeline_size = message.zfp().timeline_size();
     std::vector<double> t(timeline_size);
     std::vector<double> qx(timeline_size);
     std::vector<double> qy(timeline_size);
@@ -607,8 +607,8 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     std::vector<double> px(timeline_size);
     std::vector<double> py(timeline_size);
     std::vector<double> pz(timeline_size);
-    std::string_view zfp_timeline(message.zfp_timeline().data(),
-                                  message.zfp_timeline().size());
+    std::string_view zfp_timeline(message.zfp().timeline().data(),
+                                  message.zfp().timeline().size());
 
     ZfpCompressor decompressor;
     ZfpCompressor::ReadVersion(message);
