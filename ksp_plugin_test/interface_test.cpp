@@ -91,6 +91,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::FillUniquePtr;
 using testing_utilities::ReadFromBinaryFile;
+using testing_utilities::ReadLinesFromBase64File;
 using testing_utilities::ReadFromHexadecimalFile;
 using testing_utilities::ReadLinesFromHexadecimalFile;
 using ::testing::AllOf;
@@ -671,42 +672,44 @@ TEST_F(InterfaceTest, DeserializePlugin) {
 TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
   Plugin const* plugin = nullptr;
 
-  // Read a plugin from a file containing only the "serialized_plugin = " lines.
+  // Read a plugin from a file containing only the "serialized_plugin = " lines,
+  // with "serialized_plugin = " dropped.
   {
     PushDeserializer* deserializer = nullptr;
-    auto const lines = ReadLinesFromHexadecimalFile(
-        R"(C:\Users\phl.mantegna\Downloads\2038-long-load_erdos\2038-long-load_erdos.sfs)");
+    auto const lines = ReadLinesFromBase64File(
+        R"(P:\Public Mockingbird\Principia\Crashes\2400\0 1958.sfs)");
+    LOG(ERROR) << "Deserialization starting";
     for (std::string const& line : lines) {
       principia__DeserializePlugin(line.c_str(),
                                    line.size(),
                                    &deserializer,
                                    &plugin,
                                    /*compressor=*/"gipfeli",
-                                   "hexadecimal");
+                                   "base64");
     }
     principia__DeserializePlugin(lines.front().c_str(),
                                  0,
                                  &deserializer,
                                  &plugin,
                                  /*compressor=*/"gipfeli",
-                                 "hexadecimal");
+                                 "base64");
     LOG(ERROR) << "Deserialization complete";
   }
   EXPECT_THAT(plugin, NotNull());
 
   // Write that plugin back to another file with the same format.
   {
-    OFStream file(TEMP_DIR / "serialized_plugin.proto.hex");
+    OFStream file(TEMP_DIR / "serialized_plugin.proto.b64");
     PullSerializer* serializer = nullptr;
-    char const* hex = nullptr;
+    char const* b64 = nullptr;
     for (;;) {
-      hex = principia__SerializePlugin(
-          plugin, &serializer, "gipfeli", "hexadecimal");
-      if (hex == nullptr) {
+      b64 = principia__SerializePlugin(
+          plugin, &serializer, "gipfeli", "base64");
+      if (b64 == nullptr) {
         break;
       }
-      file << "serialized_plugin = " << hex << "\n";
-      principia__DeleteString(&hex);
+      file << b64 << "\n";
+      principia__DeleteString(&b64);
     }
     LOG(ERROR) << "Serialization complete";
   }
@@ -716,21 +719,21 @@ TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
   {
     PushDeserializer* deserializer = nullptr;
     auto const lines =
-        ReadLinesFromHexadecimalFile(TEMP_DIR / "serialized_plugin.proto.hex");
+        ReadLinesFromBase64File(TEMP_DIR / "serialized_plugin.proto.b64");
     for (std::string const& line : lines) {
       principia__DeserializePlugin(line.c_str(),
                                    line.size(),
                                    &deserializer,
                                    &plugin,
                                    /*compressor=*/"gipfeli",
-                                   "hexadecimal");
+                                   "base64");
     }
     principia__DeserializePlugin(lines.front().c_str(),
                                  0,
                                  &deserializer,
                                  &plugin,
                                  /*compressor=*/"gipfeli",
-                                 "hexadecimal");
+                                 "base64");
     LOG(ERROR) << "Deserialization complete";
   }
 

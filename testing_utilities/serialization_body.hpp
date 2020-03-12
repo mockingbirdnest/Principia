@@ -52,6 +52,29 @@ std::vector<std::uint8_t> ReadFromBinaryFile(
   return binary;
 }
 
+std::vector<std::string> ReadLinesFromBase64File(
+  std::filesystem::path const& filename) {
+  std::fstream file = std::fstream(filename);
+  CHECK(file.good()) << filename;
+  std::vector<std::string> b64;
+  while (!file.eof()) {
+    std::string line;
+    std::getline(file, line);
+    b64.push_back("");
+    for (auto const c : line) {
+      if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
+        (c >= 'a' && c <= 'z') || c == '-' || c == '_') {
+        b64.back().push_back(c);
+      }
+    }
+    if (b64.back().empty()) {
+      b64.pop_back();
+    }
+  }
+  file.close();
+  return b64;
+}
+
 std::string ReadFromHexadecimalFile(
     std::filesystem::path const& filename) {
   std::fstream file = std::fstream(filename);
