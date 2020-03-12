@@ -27,7 +27,7 @@ class Flags {
   static std::set<std::string> Values(std::string_view name);
 
  private:
-  static std::multimap<std::string, std::string> flags_;
+  static std::multimap<std::string, std::string>& flags();
 };
 
 }  // namespace base
