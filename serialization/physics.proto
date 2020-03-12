@@ -89,6 +89,15 @@ message DiscreteTrajectory {
   repeated int32 fork_position = 3;
   // Added in 陈景润.
   optional Downsampling downsampling = 4;
+
+  // Added in Frobenius.
+  message Zfp {
+    required int32 codec_version = 1;
+    required int32 library_version = 2;
+    required bytes timeline = 3;
+    required int32 timeline_size = 4;
+  }
+  optional Zfp zfp = 5;
 }
 
 message DynamicFrame {

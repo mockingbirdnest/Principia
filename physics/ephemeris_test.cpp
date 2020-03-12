@@ -1092,26 +1092,26 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
                            200.2551546021678 * Metre / Second});
 
   MasslessBody probe;
-  DiscreteTrajectory<ICRS> trajectory;
-  trajectory.SetDownsampling(/*max_dense_intervals=*/10'000,
-                             /*tolerance=*/10 * Metre);
-  trajectory.Append(t0, DegreesOfFreedom<ICRS>(q0, p0));
+  DiscreteTrajectory<ICRS> trajectory1;
+  trajectory1.SetDownsampling(/*max_dense_intervals=*/10'000,
+                              /*tolerance=*/10 * Metre);
+  trajectory1.Append(t0, DegreesOfFreedom<ICRS>(q0, p0));
 
   auto instance = ephemeris->NewInstance(
-      {&trajectory},
+      {&trajectory1},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
       Ephemeris<ICRS>::FixedStepParameters(
           SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                              Position<ICRS>>(),
           10 * Second));
   EXPECT_OK(ephemeris->FlowWithFixedStep(t1, *instance));
-  EXPECT_EQ(1162, trajectory.Size());
+  EXPECT_EQ(1162, trajectory1.Size());
 
   serialization::DiscreteTrajectory message;
-  trajectory.WriteToMessage(&message, {});
+  trajectory1.WriteToMessage(&message, /*forks=*/{});
   std::string uncompressed;
   message.SerializePartialToString(&uncompressed);
-  EXPECT_EQ(178'982, uncompressed.size());
+  EXPECT_EQ(18'433, uncompressed.size());
 
   std::string compressed;
   auto compressor = google::compression::NewGipfeliCompressor();
@@ -1119,14 +1119,29 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
 
   // We want a change detector, but the actual compressed size varies depending
   // on the exact numerical values, and therefore on the mathematical library.
-  EXPECT_LE(69'883, compressed.size());
-  EXPECT_GE(69'921, compressed.size());
+  EXPECT_LE(16'974, compressed.size());
+  EXPECT_GE(16'974, compressed.size());
+
+  auto const trajectory2 =
+      DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*forks=*/{});
+
+  Length error;
+  for (Instant t = t0; t < t1; t += 10 * Second) {
+    error = std::max(
+        error,
+        (trajectory1.EvaluatePosition(t) - trajectory2->EvaluatePosition(t))
+            .Norm());
+  }
+  EXPECT_THAT(error, IsNear(3.3_⑴ * Metre));
 
   {
     OFStream file(TEMP_DIR / "discrete_trajectory_compression.generated.wl");
     file << mathematica::Assign(
-        "trajectory",
-        mathematica::ToMathematica(trajectory.begin(), trajectory.end()));
+        "trajectory1",
+        mathematica::ToMathematica(trajectory1.begin(), trajectory1.end()));
+    file << mathematica::Assign(
+        "trajectory2",
+        mathematica::ToMathematica(trajectory2->begin(), trajectory2->end()));
   }
 }
 #endif
