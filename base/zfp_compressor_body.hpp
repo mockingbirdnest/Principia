@@ -2,6 +2,8 @@
 
 #include "base/zfp_compressor.hpp"
 
+#include <functional>
+
 namespace principia {
 namespace base {
 namespace zfp_compressor_internal {
@@ -13,12 +15,10 @@ class NDimensionalHelper {
       std::unique_ptr<zfp_field, std::function<void(zfp_field*)>>;
 
   // Returns the size rounded up to a multiple of 4^(N - 1).
-  constexpr std::int64_t RoundUp(std::int64_t size);
+  static constexpr std::int64_t RoundUp(std::int64_t size);
 
-  unique_zfp_field NewField(std::vector<double> const& v,
-                            zfp_type type,
-                            std::int64_t nx,
-                            std::int64_t ny);
+  static unique_zfp_field NewField(std::vector<double>& v,
+                                   zfp_type type);
 
  private:
   // 4^(N - 1).
@@ -32,16 +32,17 @@ constexpr std::int64_t NDimensionalHelper<N>::RoundUp(std::int64_t const size) {
 }
 
 template<int N>
-NDimensionalHelper<N>::unique_zfp_field NDimensionalHelper<N>::NewField(
-    std::vector<double> const& v,
-    zfp_type const type,
-    std::int64_t const nx,
-    std::int64_t const ny) {
+typename NDimensionalHelper<N>::unique_zfp_field
+NDimensionalHelper<N>::NewField(std::vector<double>& v,
+                                zfp_type const type) {
+  // Beware nx and ny!  (And the Jabberwock, my son!)
+  // See
+  // https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
   CHECK_EQ(0, v.size() % block_);
   if constexpr (N == 1) {
   } else if constexpr (N == 2) {
-    return std::unique_ptr<zfp_field, std::function<void(zfp_field*)>>(
-        zfp_field_2d(v.data(), type, nx, ny),
+    return unique_zfp_field(
+        zfp_field_2d(v.data(), type, /*nx=*/block_, /*ny=*/v.size() / block_),
         [](zfp_field* const field) { zfp_field_free(field); });
   } else if constexpr (N == 3) {
   } else if constexpr (N == 4) {
@@ -79,13 +80,7 @@ void ZfpCompressor::WriteToMessageNDimensional(
   // data in zfp at this point.
   v.resize(Helper::RoundUp(v.size()), 0);
 
-  // Beware nx and ny!  (And the Jabberwock, my son!)
-  // See
-  // https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
-  auto const field = Helper::NewField(v,
-                                      /*type=*/zfp_type_double,
-                                      /*nx=*/block_,
-                                      /*ny=*/v.size() / block_);
+  auto const field = Helper::NewField(v, /*type=*/zfp_type_double);
   WriteToMessage(field.get(), message);
 }
 
@@ -101,10 +96,7 @@ void ZfpCompressor::ReadFromMessageNDimensional(
   // Make sure that we have enough space in the vector to decompress the
   // padding.
   v.resize(Helper::RoundUp(v.size()), 0);
-  auto const field = Helper::NewField(v,
-                                      /*type=*/zfp_type_double,
-                                      /*nx=*/block_,
-                                      /*ny=*/v.size() / block_);
+  auto const field = Helper::NewField(v, /*type=*/zfp_type_double);
   ReadFromMessage(field.get(), message);
 }
 
