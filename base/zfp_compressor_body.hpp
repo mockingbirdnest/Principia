@@ -6,6 +6,50 @@ namespace principia {
 namespace base {
 namespace zfp_compressor_internal {
 
+template<int N>
+class NDimensionalHelper {
+ public:
+  using unique_zfp_field =
+      std::unique_ptr<zfp_field, std::function<void(zfp_field*)>>;
+
+  // Returns the size rounded up to a multiple of 4^(N - 1).
+  constexpr std::int64_t RoundUp(std::int64_t size);
+
+  unique_zfp_field NewField(std::vector<double> const& v,
+                            zfp_type type,
+                            std::int64_t nx,
+                            std::int64_t ny);
+
+ private:
+  // 4^(N - 1).
+  static constexpr std::int64_t block_ = 1 << (2 * (N - 1));
+};
+
+template<int N>
+constexpr std::int64_t NDimensionalHelper<N>::RoundUp(std::int64_t const size) {
+  // Hacker's Delight, H. S. Warren, Jr., section 3-1.
+  return (size + (block_ - 1)) & (-block_);
+}
+
+template<int N>
+NDimensionalHelper<N>::unique_zfp_field NDimensionalHelper<N>::NewField(
+    std::vector<double> const& v,
+    zfp_type const type,
+    std::int64_t const nx,
+    std::int64_t const ny) {
+  CHECK_EQ(0, v.size() % block_);
+  if constexpr (N == 1) {
+  } else if constexpr (N == 2) {
+    return std::unique_ptr<zfp_field, std::function<void(zfp_field*)>>(
+        zfp_field_2d(v.data(), type, nx, ny),
+        [](zfp_field* const field) { zfp_field_free(field); });
+  } else if constexpr (N == 3) {
+  } else if constexpr (N == 4) {
+  } else {
+    static_assert(false, "Unsupported dimension");
+  }
+}
+
 template<typename Message>
 void ZfpCompressor::WriteVersion(not_null<Message*> message) {
   // For future compatibility, record the version of ZFP used to compress.
@@ -28,21 +72,20 @@ void ZfpCompressor::WriteToMessageNDimensional(
   if (v.empty()) {
     return;
   }
+  using Helper = NDimensionalHelper<N>;
 
   // Round up the size of the vector to a multiple of the block size.  This will
   // lead to poor compression at the end, but there is no support for "ignored"
   // data in zfp at this point.
-  v.resize(((v.size() + block_ - 1) / block_) * block_, 0);
-  CHECK_EQ(0, v.size() % block_);
+  v.resize(Helper::RoundUp(v.size()), 0);
 
   // Beware nx and ny!  (And the Jabberwock, my son!)
-  // See https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
-  std::unique_ptr<zfp_field, std::function<void(zfp_field*)>> const field(
-      zfp_field_2d(v.data(),
-                   /*type=*/zfp_type_double,
-                   /*nx=*/block_,
-                   /*ny=*/v.size() / block_),
-      [](zfp_field* const field) { zfp_field_free(field); });
+  // See
+  // https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
+  auto const field = Helper::NewField(v,
+                                      /*type=*/zfp_type_double,
+                                      /*nx=*/block_,
+                                      /*ny=*/v.size() / block_);
   WriteToMessage(field.get(), message);
 }
 
@@ -53,19 +96,15 @@ void ZfpCompressor::ReadFromMessageNDimensional(
   if (v.empty()) {
     return;
   }
+  using Helper = NDimensionalHelper<N>;
 
   // Make sure that we have enough space in the vector to decompress the
   // padding.
-  v.resize(((v.size() + block_ - 1) / block_) * block_, 0);
-  CHECK_EQ(0, v.size() % block_);
-
-  std::unique_ptr<zfp_field, std::function<void(zfp_field*)>> const field(
-      zfp_field_2d(v.data(),
-                   /*type=*/zfp_type_double,
-                   /*nx=*/block_,
-                   /*ny=*/v.size() / block_),
-      [](zfp_field* const field) { zfp_field_free(field); });
-
+  v.resize(Helper::RoundUp(v.size()), 0);
+  auto const field = Helper::NewField(v,
+                                      /*type=*/zfp_type_double,
+                                      /*nx=*/block_,
+                                      /*ny=*/v.size() / block_);
   ReadFromMessage(field.get(), message);
 }
 

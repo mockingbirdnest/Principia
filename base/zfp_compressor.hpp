@@ -55,8 +55,6 @@ class ZfpCompressor {
                        std::string_view& message) const;
 
  private:
-  static constexpr int block_ = 4;
-
   std::optional<double> const accuracy_;
 };
 
