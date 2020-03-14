@@ -33,15 +33,17 @@ class ZfpCompressor {
   template<typename Message>
   static void ReadVersion(Message const& message);
 
-  // Serialization/deserialization of a vector of double into a message using a
-  // 2D encoding.  This encodes blocks of 16 doubles and therefore takes
-  // advantage of any correlation across these doubles.  The vector |v| may be
-  // modified by padding it with zeroes.  When reading, the |message| parameter
-  // is updated to reflect the data that was consumed.
-  void WriteToMessage2D(std::vector<double>& v,
-                        not_null<std::string*> message) const;
-  void ReadFromMessage2D(std::vector<double>& v,
-                         std::string_view& message) const;
+  // Serialization/deserialization of a vector of double into a message using an
+  // N-dimensional encoding.  This encodes blocks of 4^N doubles and therefore
+  // takes advantage of any correlation across these doubles.  The vector |v|
+  // may be modified by padding it with zeroes.  When reading, the |message|
+  // parameter is updated to reflect the data that was consumed.
+  template<int N>
+  void WriteToMessageNDimensional(std::vector<double>& v,
+                                  not_null<std::string*> message) const;
+  template<int N>
+  void ReadFromMessageNDimensional(std::vector<double>& v,
+                                   std::string_view& message) const;
 
   // Low-level API: serialization/deserialization of a field (allocated and
   // owned by the caller) into a message (which is expected to by a bytes field
