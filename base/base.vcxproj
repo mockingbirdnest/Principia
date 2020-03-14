@@ -5,6 +5,15 @@
     <RootNamespace>base</RootNamespace>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="..\third_party_zfp.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <Import Project="..\third_party_zfp.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="..\third_party_zfp.props" />
+  </ImportGroup>
   <ItemGroup>
     <ClInclude Include="array.hpp" />
     <ClInclude Include="array_body.hpp" />
@@ -20,6 +29,7 @@
     <ClInclude Include="file.hpp" />
     <ClInclude Include="file_body.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />
+    <ClInclude Include="flags.hpp" />
     <ClInclude Include="function.hpp" />
     <ClInclude Include="function_body.hpp" />
     <ClInclude Include="get_line.hpp" />
@@ -61,6 +71,8 @@
     <ClInclude Include="unique_ptr_logging_body.hpp" />
     <ClInclude Include="version.generated.h" />
     <ClInclude Include="version.hpp" />
+    <ClInclude Include="zfp_compressor.hpp" />
+    <ClInclude Include="zfp_compressor_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="array_test.cpp" />
@@ -69,6 +81,8 @@
     <ClCompile Include="bundle.cpp" />
     <ClCompile Include="bundle_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />
+    <ClCompile Include="flags.cpp" />
+    <ClCompile Include="flags_test.cpp" />
     <ClCompile Include="function_test.cpp" />
     <ClCompile Include="hexadecimal_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
@@ -79,5 +93,6 @@
     <ClCompile Include="status_test.cpp" />
     <ClCompile Include="thread_pool_test.cpp" />
     <ClCompile Include="version.generated.cc" />
+    <ClCompile Include="zfp_compressor.cpp" />
   </ItemGroup>
 </Project>

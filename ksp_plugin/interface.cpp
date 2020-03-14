@@ -24,6 +24,7 @@
 #include "base/base64.hpp"
 #include "base/encoder.hpp"
 #include "base/fingerprint2011.hpp"
+#include "base/flags.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
@@ -66,6 +67,7 @@ using base::Base64Encoder;
 using base::check_not_null;
 using base::Encoder;
 using base::Fingerprint2011;
+using base::Flags;
 using base::HexadecimalEncoder;
 using base::make_not_null_unique;
 using base::PullSerializer;
@@ -413,6 +415,12 @@ QP __cdecl principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
                         FromXYZ<Position<World>>(
                             origin.main_body_centre_in_world))),
           FromGameTime(*plugin, time))));
+}
+
+void __cdecl principia__ClearFlags() {
+  journal::Method<journal::ClearFlags> m;
+  Flags::Clear();
+  return m.Return();
 }
 
 void __cdecl principia__ClearWorldRotationalReferenceFrame(
@@ -1033,6 +1041,13 @@ void __cdecl principia__SetBufferDuration(int const seconds) {
 void __cdecl principia__SetBufferedLogging(int const max_severity) {
   journal::Method<journal::SetBufferedLogging> m({max_severity});
   FLAGS_logbuflevel = max_severity;
+  return m.Return();
+}
+
+void __cdecl principia__SetFlag(char const* const name,
+                                char const* const value) {
+  journal::Method<journal::SetFlag> m({name, value});
+  Flags::Set(name, value);
   return m.Return();
 }
 

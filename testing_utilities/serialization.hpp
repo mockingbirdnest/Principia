@@ -23,6 +23,9 @@ inline std::vector<std::uint8_t> ReadFromBinaryFile(
 inline std::string ReadFromHexadecimalFile(
     std::filesystem::path const& filename);
 
+inline std::vector<std::string> ReadLinesFromBase64File(
+    std::filesystem::path const& filename);
+
 inline std::vector<std::string> ReadLinesFromHexadecimalFile(
     std::filesystem::path const& filename);
 

@@ -58,6 +58,7 @@ public partial class PrincipiaPluginAdapter
       "principia_numerics_blueprint";
   private const string principia_override_version_check_config_name_ =
       "principia_override_version_check";
+  private const string principia_flags_ = "principia_flags";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   // Whether the user has hidden the UI.
@@ -2208,6 +2209,17 @@ public partial class PrincipiaPluginAdapter
     Interface.DeletePlugin(ref plugin_);
     previous_display_mode_ = null;
     navball_changed_ = true;
+
+    // Load the flags.
+    Interface.ClearFlags();
+    ConfigNode flags =
+        GameDatabase.Instance.GetAtMostOneNode(principia_flags_);
+    if (flags != null) {
+      ConfigNode.ValueList individual_flags = flags.values;
+      foreach (ConfigNode.Value individual_flag in individual_flags) {
+        Interface.SetFlag(individual_flag.name, individual_flag.value);
+      }
+    }
   }
 
   private void UpdateRenderingFrame(

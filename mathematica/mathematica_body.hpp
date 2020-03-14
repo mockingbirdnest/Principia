@@ -80,6 +80,15 @@ std::string ToMathematica(std::vector<T> const& list) {
   return Apply("List", expressions);
 }
 
+template<typename It>
+std::string ToMathematica(It const begin, It const end) {
+  std::vector<std::string> expressions;
+  for (auto it = begin; it != end; ++it) {
+    expressions.emplace_back(ToMathematica(*it));
+  }
+  return Apply("List", expressions);
+}
+
 inline std::string ToMathematica(double const& real) {
   if (std::isinf(real)) {
     if (real > 0.0) {
@@ -138,6 +147,16 @@ std::string ToMathematica(Point<V> const & point) {
   return ToMathematica(point - Point<V>());
 }
 
+template<typename F>
+std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom) {
+  return Apply(
+      "List",
+      std::vector<std::string>{
+          ToMathematica(ExpressIn(Metre, degrees_of_freedom.position())),
+          ToMathematica(
+              ExpressIn(Metre / Second, degrees_of_freedom.velocity()))});
+}
+
 template<typename... Types>
 std::string ToMathematica(std::tuple<Types...> const& tuple) {
   std::vector<std::string> expressions;
@@ -145,6 +164,14 @@ std::string ToMathematica(std::tuple<Types...> const& tuple) {
   TupleHelper<sizeof...(Types), Types...>::ToMathematicaStrings(
       tuple, expressions);
   return Apply("List", expressions);
+}
+
+template<typename R, typename, typename>
+std::string ToMathematica(R const ref) {
+  return Apply(
+      "List",
+      std::vector<std::string>{ToMathematica(ExpressIn(Second, ref.time)),
+                               ToMathematica(ref.degrees_of_freedom)});
 }
 
 inline std::string ToMathematica(
@@ -185,6 +212,12 @@ struct RemoveUnit<Vector<T, F>> {
   using Unitless = Vector<typename RemoveUnit<T>::Unitless, F>;
 };
 
+template<typename V>
+struct RemoveUnit<Point<V>> {
+  using Unit = typename RemoveUnit<V>::Unit;
+  using Unitless = Point<typename RemoveUnit<V>::Unitless>;
+};
+
 template<typename T>
 struct RemoveUnit<std::vector<T>> {
   using Unit = typename RemoveUnit<T>::Unit;
@@ -196,6 +229,14 @@ typename RemoveUnit<T>::Unitless ExpressIn(
     typename RemoveUnit<T>::Unit const& unit,
     T const& value) {
   return value / unit;
+}
+
+template<typename V>
+typename RemoveUnit<Point<V>>::Unitless ExpressIn(
+    typename RemoveUnit<Point<V>>::Unit const& unit,
+    Point<V> const& value) {
+  return (value - Point<V>{}) / unit +
+         typename RemoveUnit<Point<V>>::Unitless{};
 }
 
 template<typename T>
