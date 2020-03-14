@@ -219,7 +219,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5167.
+  extensions 5000 to 5999;  // Last used: 5168.
 }
 
 message AdvanceTime {
@@ -1916,7 +1916,7 @@ message SetBufferedLogging {
 
 message SetFlag {
   extend Method {
-    optional SetFlag extension = 5167;
+    optional SetFlag extension = 5168;
   }
   message In {
     required string name = 1;
