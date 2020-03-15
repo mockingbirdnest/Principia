@@ -82,7 +82,29 @@
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
+    <ClCompile Include="apsides_test.cpp" />
+    <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp" />
+    <ClCompile Include="body_centred_non_rotating_dynamic_frame_test.cpp" />
+    <ClCompile Include="body_centred_body_direction_dynamic_frame_test.cpp" />
+    <ClCompile Include="body_surface_dynamic_frame_test.cpp" />
+    <ClCompile Include="body_surface_frame_field_test.cpp" />
+    <ClCompile Include="body_test.cpp" />
+    <ClCompile Include="checkpointer_test.cpp" />
+    <ClCompile Include="mechanical_system_test.cpp" />
+    <ClCompile Include="continuous_trajectory_test.cpp" />
+    <ClCompile Include="degrees_of_freedom_test.cpp" />
+    <ClCompile Include="discrete_trajectory_test.cpp" />
+    <ClCompile Include="dynamic_frame_test.cpp" />
+    <ClCompile Include="euler_solver_test.cpp" />
+    <ClCompile Include="geopotential_test.cpp" />
+    <ClCompile Include="hierarchical_system_test.cpp" />
+    <ClCompile Include="jacobi_coordinates_test.cpp" />
+    <ClCompile Include="kepler_orbit_test.cpp" />
     <ClCompile Include="protector.cpp" />
+    <ClCompile Include="protector_test.cpp" />
+    <ClCompile Include="rigid_motion_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
+    <ClCompile Include="forkable_test.cpp" />
+    <ClCompile Include="solar_system_test.cpp" />
   </ItemGroup>
 </Project>
