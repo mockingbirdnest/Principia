@@ -2160,12 +2160,11 @@ public partial class PrincipiaPluginAdapter
 
     // Load the flags.
     Interface.ClearFlags();
-    ConfigNode flags =
-        GameDatabase.Instance.GetAtMostOneNode(principia_flags_);
+    ConfigNode.ValueList flags =
+        GameDatabase.Instance.GetAtMostOneNode(principia_flags_)?.values;
     if (flags != null) {
-      ConfigNode.ValueList individual_flags = flags.values;
-      foreach (ConfigNode.Value individual_flag in individual_flags) {
-        Interface.SetFlag(individual_flag.name, individual_flag.value);
+      foreach (ConfigNode.Value flag in flags) {
+        Interface.SetFlag(flag.name, flag.value);
       }
     }
   }
