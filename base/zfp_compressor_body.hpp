@@ -8,7 +8,7 @@ namespace principia {
 namespace base {
 namespace zfp_compressor_internal {
 
-template<int N>
+template<int D>
 class NDimensionalHelper {
  public:
   using unique_zfp_field =
@@ -17,18 +17,18 @@ class NDimensionalHelper {
   static unique_zfp_field NewField(zfp_type type, std::vector<double>& v);
 
  private:
-  // Returns the size rounded up to a multiple of 4^(N - 1).
+  // Returns the size rounded up to a multiple of 4^(D - 1).
   static constexpr std::int64_t RoundUp(std::int64_t size);
 
   // The ZFP block size.
   static constexpr int block_ = 4;
-  // Data must be padded to a multiple of that value, which is 4^(N - 1).
-  static constexpr int padding_ = 1 << (2 * (N - 1));
+  // Data must be padded to a multiple of that value, which is 4^(D - 1).
+  static constexpr int padding_ = 1 << (2 * (D - 1));
 };
 
-template<int N>
-typename NDimensionalHelper<N>::unique_zfp_field
-NDimensionalHelper<N>::NewField(zfp_type const type, std::vector<double>& v) {
+template<int D>
+typename NDimensionalHelper<D>::unique_zfp_field
+NDimensionalHelper<D>::NewField(zfp_type const type, std::vector<double>& v) {
   auto free = [](zfp_field* const field) { zfp_field_free(field); };
 
   // On compression: Round up the size of the vector to a multiple of the block
@@ -42,22 +42,22 @@ NDimensionalHelper<N>::NewField(zfp_type const type, std::vector<double>& v) {
   // Beware nx, ny and friends!  (And the Jabberwock, my son!)
   // See
   // https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
-  if constexpr (N == 1) {
+  if constexpr (D == 1) {
     return unique_zfp_field(
         zfp_field_1d(v.data(), type, /*nx=*/v.size() / padding_),
         std::move(free));
-  } else if constexpr (N == 2) {
+  } else if constexpr (D == 2) {
     return unique_zfp_field(
         zfp_field_2d(v.data(), type, /*nx=*/block_, /*ny=*/v.size() / padding_),
         std::move(free));
-  } else if constexpr (N == 3) {
+  } else if constexpr (D == 3) {
     return unique_zfp_field(zfp_field_3d(v.data(),
                                          type,
                                          /*nx=*/block_,
                                          /*ny=*/block_,
                                          /*nz=*/v.size() / padding_),
                             std::move(free));
-  } else if constexpr (N == 4) {
+  } else if constexpr (D == 4) {
     return unique_zfp_field(zfp_field_4d(v.data(),
                                          type,
                                          /*nx=*/block_,
@@ -70,8 +70,8 @@ NDimensionalHelper<N>::NewField(zfp_type const type, std::vector<double>& v) {
   }
 }
 
-template<int N>
-constexpr std::int64_t NDimensionalHelper<N>::RoundUp(std::int64_t const size) {
+template<int D>
+constexpr std::int64_t NDimensionalHelper<D>::RoundUp(std::int64_t const size) {
   // Hacker's Delight, H. S. Warren, Jr., section 3-1.
   return (size + (padding_ - 1)) & (-padding_);
 }
@@ -91,8 +91,8 @@ void ZfpCompressor::ReadVersion(Message const& message) {
   CHECK_EQ(ZFP_VERSION, message.zfp().library_version());
 }
 
-template<int N>
-void ZfpCompressor::WriteToMessageNDimensional(
+template<int D>
+void ZfpCompressor::WriteToMessageMultidimensional(
     std::vector<double>& v,
     not_null<std::string*> const message) const {
   if (v.empty()) {
@@ -100,12 +100,12 @@ void ZfpCompressor::WriteToMessageNDimensional(
   }
 
   auto const field =
-      NDimensionalHelper<N>::NewField(/*type=*/zfp_type_double, v);
+      NDimensionalHelper<D>::NewField(/*type=*/zfp_type_double, v);
   WriteToMessage(field.get(), message);
 }
 
-template<int N>
-void ZfpCompressor::ReadFromMessageNDimensional(
+template<int D>
+void ZfpCompressor::ReadFromMessageMultidimensional(
     std::vector<double>& v,
     std::string_view& message) const {
   if (v.empty()) {
@@ -113,7 +113,7 @@ void ZfpCompressor::ReadFromMessageNDimensional(
   }
 
   auto const field =
-      NDimensionalHelper<N>::NewField(/*type=*/zfp_type_double, v);
+      NDimensionalHelper<D>::NewField(/*type=*/zfp_type_double, v);
   ReadFromMessage(field.get(), message);
 }
 
