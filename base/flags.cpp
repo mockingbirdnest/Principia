@@ -4,6 +4,8 @@
 #include <set>
 #include <string>
 
+#include "glog/logging.h"
+
 namespace principia {
 namespace base {
 
@@ -12,6 +14,7 @@ void Flags::Clear() {
 }
 
 void Flags::Set(std::string_view const name, std::string_view const value) {
+  LOG(INFO) << "Setting flag " << name << " = " << value;
   flags().emplace(std::string(name), std::string(value));
 }
 
