@@ -14,41 +14,66 @@ class NDimensionalHelper {
   using unique_zfp_field =
       std::unique_ptr<zfp_field, std::function<void(zfp_field*)>>;
 
+  static unique_zfp_field NewField(zfp_type type, std::vector<double>& v);
+
+ private:
   // Returns the size rounded up to a multiple of 4^(N - 1).
   static constexpr std::int64_t RoundUp(std::int64_t size);
 
-  static unique_zfp_field NewField(std::vector<double>& v,
-                                   zfp_type type);
-
- private:
-  // 4^(N - 1).
-  static constexpr std::int64_t block_ = 1 << (2 * (N - 1));
+  // The ZFP block size.
+  static constexpr int block_ = 4;
+  // Data must be padded to a multiple of that value, which is 4^(N - 1).
+  static constexpr int padding_ = 1 << (2 * (N - 1));
 };
+
+template<int N>
+typename NDimensionalHelper<N>::unique_zfp_field
+NDimensionalHelper<N>::NewField(zfp_type const type, std::vector<double>& v) {
+  auto free = [](zfp_field* const field) { zfp_field_free(field); };
+
+  // On compression: Round up the size of the vector to a multiple of the block
+  // size.  This will lead to poor compression at the end, but there is no
+  // support for "ignored" data in zfp at this point.
+  // On decompression: Make sure that we have enough space in the vector to
+  // decompress the padding.
+  v.resize(RoundUp(v.size()), 0);
+  CHECK_EQ(0, v.size() % padding_);
+
+  // Beware nx, ny and friends!  (And the Jabberwock, my son!)
+  // See
+  // https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
+  if constexpr (N == 1) {
+    return unique_zfp_field(
+        zfp_field_1d(v.data(), type, /*nx=*/v.size() / padding_),
+        std::move(free));
+  } else if constexpr (N == 2) {
+    return unique_zfp_field(
+        zfp_field_2d(v.data(), type, /*nx=*/block_, /*ny=*/v.size() / padding_),
+        std::move(free));
+  } else if constexpr (N == 3) {
+    return unique_zfp_field(zfp_field_3d(v.data(),
+                                         type,
+                                         /*nx=*/block_,
+                                         /*ny=*/block_,
+                                         /*nz=*/v.size() / padding_),
+                            std::move(free));
+  } else if constexpr (N == 4) {
+    return unique_zfp_field(zfp_field_4d(v.data(),
+                                         type,
+                                         /*nx=*/block_,
+                                         /*ny=*/block_,
+                                         /*nz=*/block_,
+                                         /*nw=*/v.size() / padding_),
+                            std::move(free));
+  } else {
+    static_assert(false, "Unsupported dimension");
+  }
+}
 
 template<int N>
 constexpr std::int64_t NDimensionalHelper<N>::RoundUp(std::int64_t const size) {
   // Hacker's Delight, H. S. Warren, Jr., section 3-1.
-  return (size + (block_ - 1)) & (-block_);
-}
-
-template<int N>
-typename NDimensionalHelper<N>::unique_zfp_field
-NDimensionalHelper<N>::NewField(std::vector<double>& v,
-                                zfp_type const type) {
-  // Beware nx and ny!  (And the Jabberwock, my son!)
-  // See
-  // https://zfp.readthedocs.io/en/release0.5.5/tutorial.html#high-level-c-interface
-  CHECK_EQ(0, v.size() % block_);
-  if constexpr (N == 1) {
-  } else if constexpr (N == 2) {
-    return unique_zfp_field(
-        zfp_field_2d(v.data(), type, /*nx=*/block_, /*ny=*/v.size() / block_),
-        [](zfp_field* const field) { zfp_field_free(field); });
-  } else if constexpr (N == 3) {
-  } else if constexpr (N == 4) {
-  } else {
-    static_assert(false, "Unsupported dimension");
-  }
+  return (size + (padding_ - 1)) & (-padding_);
 }
 
 template<typename Message>
@@ -73,14 +98,9 @@ void ZfpCompressor::WriteToMessageNDimensional(
   if (v.empty()) {
     return;
   }
-  using Helper = NDimensionalHelper<N>;
 
-  // Round up the size of the vector to a multiple of the block size.  This will
-  // lead to poor compression at the end, but there is no support for "ignored"
-  // data in zfp at this point.
-  v.resize(Helper::RoundUp(v.size()), 0);
-
-  auto const field = Helper::NewField(v, /*type=*/zfp_type_double);
+  auto const field =
+      NDimensionalHelper<N>::NewField(/*type=*/zfp_type_double, v);
   WriteToMessage(field.get(), message);
 }
 
@@ -91,12 +111,9 @@ void ZfpCompressor::ReadFromMessageNDimensional(
   if (v.empty()) {
     return;
   }
-  using Helper = NDimensionalHelper<N>;
 
-  // Make sure that we have enough space in the vector to decompress the
-  // padding.
-  v.resize(Helper::RoundUp(v.size()), 0);
-  auto const field = Helper::NewField(v, /*type=*/zfp_type_double);
+  auto const field =
+      NDimensionalHelper<N>::NewField(/*type=*/zfp_type_double, v);
   ReadFromMessage(field.get(), message);
 }
 
