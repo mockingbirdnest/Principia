@@ -68,10 +68,7 @@ NDimensionalHelper<D>::NewField(zfp_type const type, std::vector<double>& v) {
                                          /*nw=*/v.size() / padding_),
                             std::move(free));
   } else {
-#if PRINCIPIA_COMPILER_MSVC
-    // Clang doesn't seem to discard the else part.
-    static_assert(false, "Unsupported dimension");
-#endif
+    static_assert(D >= 1 && D <= 4, "Unsupported dimension");
   }
 }
 
