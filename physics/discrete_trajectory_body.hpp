@@ -568,13 +568,13 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
                                          (Metre / Second));
 
     ZfpCompressor::WriteVersion(message);
-    time_compressor.WriteToMessage2D(t, zfp_timeline);
-    length_compressor.WriteToMessage2D(qx, zfp_timeline);
-    length_compressor.WriteToMessage2D(qy, zfp_timeline);
-    length_compressor.WriteToMessage2D(qz, zfp_timeline);
-    speed_compressor.WriteToMessage2D(px, zfp_timeline);
-    speed_compressor.WriteToMessage2D(py, zfp_timeline);
-    speed_compressor.WriteToMessage2D(pz, zfp_timeline);
+    time_compressor.WriteToMessageMultidimensional<2>(t, zfp_timeline);
+    length_compressor.WriteToMessageMultidimensional<2>(qx, zfp_timeline);
+    length_compressor.WriteToMessageMultidimensional<2>(qy, zfp_timeline);
+    length_compressor.WriteToMessageMultidimensional<2>(qz, zfp_timeline);
+    speed_compressor.WriteToMessageMultidimensional<2>(px, zfp_timeline);
+    speed_compressor.WriteToMessageMultidimensional<2>(py, zfp_timeline);
+    speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
   }
 
   if (downsampling_.has_value()) {
@@ -612,13 +612,13 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
 
     ZfpCompressor decompressor;
     ZfpCompressor::ReadVersion(message);
-    decompressor.ReadFromMessage2D(t, zfp_timeline);
-    decompressor.ReadFromMessage2D(qx, zfp_timeline);
-    decompressor.ReadFromMessage2D(qy, zfp_timeline);
-    decompressor.ReadFromMessage2D(qz, zfp_timeline);
-    decompressor.ReadFromMessage2D(px, zfp_timeline);
-    decompressor.ReadFromMessage2D(py, zfp_timeline);
-    decompressor.ReadFromMessage2D(pz, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(t, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(qx, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(qy, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(qz, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(px, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(py, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(pz, zfp_timeline);
 
     for (int i = 0; i < timeline_size; ++i) {
       Position<Frame> const q =
