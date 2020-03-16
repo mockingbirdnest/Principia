@@ -74,7 +74,7 @@ NDimensionalHelper<D>::NewField(zfp_type const type, std::vector<double>& v) {
 
 template<int D>
 constexpr std::int64_t NDimensionalHelper<D>::RoundUp(std::int64_t const size) {
-  // Hacker's Delight, H. S. Warren, Jr., section 3-1.
+  // [War03], section 3-1.
   return (size + (padding_ - 1)) & (-padding_);
 }
 
