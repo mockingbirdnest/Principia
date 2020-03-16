@@ -88,8 +88,7 @@ class EulerSolver {
       Bivector<AngularMomentum, PreferredPrincipalAxesFrame>;
 
   // The formula to use, following [CFSZ07], Section 2.2.  They don't have a
-  // formula for the spherical case.  Also note our singular case for case (iii)
-  // which arises when the coordinate along which we don't project is 0.
+  // formula for the spherical case.
   enum class Formula {
     i,
     ii,

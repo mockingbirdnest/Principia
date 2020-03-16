@@ -88,6 +88,11 @@ public partial class PrincipiaPluginAdapter
 
   private bool time_is_advancing_;
 
+  // Used to detect changes of SOI and skip two frames during which we use the
+  // EulerSolver.
+  CelestialBody last_main_body_;
+  private int main_body_change_countdown_ = 1;
+
   private PlanetariumCameraAdjuster planetarium_camera_adjuster_;
 
   private RenderingActions map_renderer_;
@@ -365,15 +370,49 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void UpdateVessel(Vessel vessel, double universal_time) {
-     if (plugin_.HasVessel(vessel.id.ToString())) {
-       QP from_parent = plugin_.VesselFromParent(
-           vessel.mainBody.flightGlobalsIndex,
-           vessel.id.ToString());
-       vessel.orbit.UpdateFromStateVectors(pos : (Vector3d)from_parent.q,
-                                           vel : (Vector3d)from_parent.p,
-                                           refBody : vessel.orbit.referenceBody,
-                                           UT : universal_time);
-     }
+    if (plugin_.HasVessel(vessel.id.ToString())) {
+      QP from_parent = plugin_.VesselFromParent(
+          vessel.mainBody.flightGlobalsIndex,
+          vessel.id.ToString());
+      vessel.orbit.UpdateFromStateVectors(pos : (Vector3d)from_parent.q,
+                                          vel : (Vector3d)from_parent.p,
+                                          refBody : vessel.orbit.referenceBody,
+                                          UT : universal_time);
+      if (vessel.loaded) {
+        foreach (Part part in vessel.parts.Where(part => part.rb != null &&
+                                                         plugin_.PartIsTruthful(
+                                                             part.flightID))) {
+          // TODO(egg): What if the plugin doesn't have the part? this seems
+          // brittle.
+          // NOTE(egg): I am not sure what the origin is here, as we are
+          // running before the floating origin and krakensbane.  Do everything
+          // with respect to the root part, since the overall linear motion of
+          // the vessel is handled with by the orbit anyway.
+          // TODO(egg): check that the vessel is moved *after* this.  Shouldn't
+          // we be calling vessel.orbitDriver.updateFromParameters() after
+          // setting the orbit anyway?
+          QPRW part_actual_motion = plugin_.PartGetActualDegreesOfFreedom(
+              part.flightID,
+              new Origin{
+                  reference_part_is_at_origin = true,
+                  reference_part_is_unmoving = true,
+                  main_body_centre_in_world =
+                      (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
+                  reference_part_id = vessel.rootPart.flightID
+              });
+          part.rb.position = vessel.rootPart.rb.position +
+                             (Vector3d)part_actual_motion.qp.q;
+          part.rb.transform.position = vessel.rootPart.rb.position +
+                                       (Vector3d)part_actual_motion.qp.q;
+          part.rb.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
+          part.rb.transform.rotation =
+              (UnityEngine.QuaternionD)part_actual_motion.r;
+          part.rb.velocity = vessel.rootPart.rb.velocity +
+                             (Vector3d)part_actual_motion.qp.p;
+          part.rb.angularVelocity = (Vector3d)part_actual_motion.w;
+        }
+      }
+    }
   }
 
   private bool time_is_advancing(double universal_time) {
@@ -1136,14 +1175,17 @@ public partial class PrincipiaPluginAdapter
         if (part.rb == null) {
           continue;
         }
-        plugin_.PartSetApparentRigidMotion(
-            part.flightID,
-            // TODO(egg): use the centre of mass.
-            new QP{q = (XYZ)(Vector3d)part.rb.position,
-                   p = (XYZ)(Vector3d)part.rb.velocity},
-            (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
-            (XYZ)(Vector3d)part.rb.angularVelocity,
-            main_body_degrees_of_freedom);
+        if (main_body_change_countdown_ == 0 &&
+            last_main_body_ == FlightGlobals.ActiveVessel?.mainBody) {
+          plugin_.PartSetApparentRigidMotion(
+                part.flightID,
+                // TODO(egg): use the centre of mass.
+                new QP{q = (XYZ)(Vector3d)part.rb.position,
+                       p = (XYZ)(Vector3d)part.rb.velocity},
+                (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
+                (XYZ)(Vector3d)part.rb.angularVelocity,
+                main_body_degrees_of_freedom);
+        }
       }
     }
 
@@ -1209,7 +1251,8 @@ public partial class PrincipiaPluginAdapter
           part.rb.position = (Vector3d)part_actual_motion.qp.q;
           part.rb.transform.position = (Vector3d)part_actual_motion.qp.q;
           part.rb.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
-          part.rb.transform.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
+          part.rb.transform.rotation =
+              (UnityEngine.QuaternionD)part_actual_motion.r;
 
           part.rb.velocity = (Vector3d)part_actual_motion.qp.p;
           part.rb.angularVelocity = (Vector3d)part_actual_motion.w;
@@ -1243,14 +1286,21 @@ public partial class PrincipiaPluginAdapter
       foreach (CelestialBody celestial in FlightGlobals.Bodies) {
         celestial.position += offset;
       }
-      foreach (
-          Vessel vessel in FlightGlobals.Vessels.Where(is_manageable_on_rails)) {
+      foreach (Vessel vessel in FlightGlobals.Vessels.Where(
+          is_manageable_on_rails)) {
         vessel.SetPosition(vessel.transform.position + offset);
       }
       // NOTE(egg): this is almost certainly incorrect, since we give the
       // bodies their positions at the next instant, whereas KSP still expects
       // them at the previous instant, and will propagate them at the beginning
       // of the next frame...
+    }
+
+    if (last_main_body_ != FlightGlobals.ActiveVessel?.mainBody) {
+      main_body_change_countdown_ = 1;
+      last_main_body_ = FlightGlobals.ActiveVessel?.mainBody;
+    } else if (main_body_change_countdown_ > 0) {
+      --main_body_change_countdown_;
     }
   } catch (Exception e) { Log.Fatal(e.ToString()); }
   }
@@ -1500,7 +1550,8 @@ public partial class PrincipiaPluginAdapter
         body.BodyFrame = new Planetarium.CelestialFrame{
             X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
             Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
-            Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}};
+            Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}
+        };
       }
     }
   }
@@ -2001,11 +2052,12 @@ public partial class PrincipiaPluginAdapter
       }
       if (main_vessel_guid != null) {
         using (DisposableIterator rp2_lines_iterator =
-                  planetarium.PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
-                      plugin_, celestial.flightGlobalsIndex, main_vessel_guid)) {
-          GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                colour,
-                                GLLines.Style.Solid);
+            planetarium.
+                PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
+                    plugin_,
+                    celestial.flightGlobalsIndex,
+                    main_vessel_guid)) {
+          GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Solid);
         }
       }
     }

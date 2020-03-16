@@ -217,15 +217,17 @@ class Plugin {
   // relevant part, which must be in a loaded vessel.
   virtual void ApplyPartIntrinsicForce(
       PartId part_id,
-      Vector<Force, World> const& force);
+      Vector<Force, World> const& force) const;
   virtual void ApplyPartIntrinsicForceAtPosition(
       PartId part_id,
       Vector<Force, World> const& force,
       Position<World> const& point_of_force_application,
-      Position<World> const& part_position);
+      Position<World> const& part_position) const;
   virtual void ApplyPartIntrinsicTorque(
       PartId part_id,
-      Bivector<Torque, World> const& torque);
+      Bivector<Torque, World> const& torque) const;
+
+  virtual bool PartIsTruthful(PartId part_id) const;
 
   // Calls |MakeSingleton| for all parts in loaded vessels, enabling the use of
   // union-find for pile up construction.  This must be called after the calls
@@ -472,14 +474,13 @@ class Plugin {
       IndexToOwnedCelestial& celestials,
       std::map<std::string, Index>& name_to_index);
 
-  // Adds a part to a vessel, recording it in the appropriate map and setting up
-  // a deletion callback.
+  // Constructs a part using the constructor arguments, and add it to a vessel,
+  // recording it in the appropriate map and setting up a deletion callback.
+  template<typename... Args>
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
                std::string const& name,
-               Mass const& mass,
-               InertiaTensor<RigidPart> const& inertia_tensor,
-               RigidMotion<RigidPart, Barycentric> const& rigid_motion);
+               Args... args);
 
   // Whether |loaded_vessels_| contains |vessel|.
   bool is_loaded(not_null<Vessel*> vessel) const;
