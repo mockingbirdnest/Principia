@@ -107,7 +107,6 @@ bool __cdecl principia__PartIsTruthful(
   return m.Return(plugin->PartIsTruthful(part_id));
 }
 
-
 void __cdecl principia__PartSetApparentRigidMotion(
     Plugin* const plugin,
     PartId const part_id,
