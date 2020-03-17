@@ -15,7 +15,7 @@ namespace zfp_compressor_internal {
 // small for our purposes.  Therefore, we must not include the bit
 // ZFP_HEADER_META.  We still need a header, though, to record the compression
 // parameters.
-static constexpr uint header_mask = ZFP_HEADER_FULL;
+static constexpr uint header_mask = ZFP_HEADER_MODE | ZFP_HEADER_MAGIC;
 
 ZfpCompressor::ZfpCompressor(double const accuracy) : accuracy_(accuracy) {}
 
