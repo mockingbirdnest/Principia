@@ -446,6 +446,12 @@ public partial class PrincipiaPluginAdapter
     return UnmanageabilityReasons(vessel) == null;
   }
 
+  public static bool is_lit_solid_booster(ModuleEngines module) {
+    return module != null &&
+        module.EngineIgnited &&
+        module.engineType == EngineType.SolidBooster;
+  }
+
   private string UnmanageabilityReasons(Vessel vessel) {
     List<string> reasons = new List<string>(capacity : 3);
     if (vessel.state == Vessel.State.DEAD) {
@@ -1024,6 +1030,8 @@ public partial class PrincipiaPluginAdapter
               part.physicsMass == 0 ? part.rb.mass : part.physicsMass,
               (XYZ)(Vector3d)part.rb.inertiaTensor,
               (WXYZ)(UnityEngine.QuaternionD)part.rb.inertiaTensorRotation,
+              (from PartModule module in part.Modules
+               select module as ModuleEngines).Any(is_lit_solid_booster),
               vessel.id.ToString(),
               vessel.mainBody.flightGlobalsIndex,
               main_body_degrees_of_freedom,

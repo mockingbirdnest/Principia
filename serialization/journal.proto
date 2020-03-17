@@ -1215,6 +1215,7 @@ message InsertOrKeepLoadedPart {
     required double mass_in_tonnes = 3;
     required XYZ moments_of_inertia_in_tonnes = 10;
     required WXYZ principal_axes_rotation = 11;
+    required bool is_solid_rocket_motor = 14;
     required string vessel_guid = 4;
     required int32 main_body_index = 5;
     required QP main_body_world_degrees_of_freedom = 6;
