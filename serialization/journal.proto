@@ -219,7 +219,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5167.
+  extensions 5000 to 5999;  // Last used: 5168.
 }
 
 message AdvanceTime {
@@ -1566,12 +1566,28 @@ message PartGetActualDegreesOfFreedom {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-    (is_subject) = true];
+                                 (is_subject) = true];
     required fixed32 part_id = 2;
     required Origin origin = 4;
   }
   message Return {
     required QPRW result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PartIsTruthful {
+  extend Method {
+    optional PartIsTruthful extension = 5166;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed32 part_id = 2;
+  }
+  message Return {
+    required bool result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1878,16 +1894,6 @@ message SerializePlugin {
   optional Return return = 3;
 }
 
-message SetAngularMomentumConservation {
-  extend Method {
-    optional SetAngularMomentumConservation extension = 5998;
-  }
-  message In {
-    required bool conserve = 1;
-  }
-  optional In in = 1;
-}
-
 message SetBufferDuration {
   extend Method {
     optional SetBufferDuration extension = 5014;
@@ -1910,7 +1916,7 @@ message SetBufferedLogging {
 
 message SetFlag {
   extend Method {
-    optional SetFlag extension = 5166;
+    optional SetFlag extension = 5168;
   }
   message In {
     required string name = 1;

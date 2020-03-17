@@ -288,7 +288,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
 
   CheckPreDeformPileUpInvariants(pile_up);
 
-  pile_up.DeformPileUpIfNeeded();
+  pile_up.DeformPileUpIfNeeded(astronomy::J2000 + 1 * Second);
 
   CheckPreAdvanceTimeInvariants(pile_up);
 
@@ -385,7 +385,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
 
   CheckPreDeformPileUpInvariants(pile_up);
 
-  pile_up.DeformPileUpIfNeeded();
+  pile_up.DeformPileUpIfNeeded(astronomy::J2000 + 1 * Second);
 
   CheckPreAdvanceTimeInvariants(pile_up);
 

@@ -56,6 +56,7 @@ message Part {
   }
   required fixed32 part_id = 4;
   required string name = 9;
+  optional bool truthful = 14;  // Added in Frobenius.
   optional Quantity mass = 2;  // Pre-Fréchet, re-added in Frenet.
   optional PreFrenetInertiaTensor
       pre_frenet_inertia_tensor = 10; // Added in Fréchet.
@@ -84,6 +85,10 @@ message PileUp {
   // Added in Frege.
   map<fixed32, RigidMotion> actual_part_rigid_motion = 9;
   map<fixed32, RigidMotion> apparent_part_rigid_motion = 10;
+  // Added in Frobenius.
+  map<fixed32, AffineMap> rigid_pile_up = 11;
+  optional EulerSolver euler_solver = 12;
+  optional Multivector angular_momentum = 13;  // Required.
   // Added in Cartan.
   optional Ephemeris.AdaptiveStepParameters adaptive_step_parameters = 7;
   optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;

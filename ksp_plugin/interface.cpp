@@ -1029,12 +1029,6 @@ char const* __cdecl principia__SerializePlugin(
   return m.Return(hexadecimal.data.release());
 }
 
-void __cdecl principia__SetAngularMomentumConservation(bool const conserve) {
-  journal::Method<journal::SetAngularMomentumConservation> m({conserve});
-  ksp_plugin::PileUp::conserve_angular_momentum = conserve;
-  return m.Return();
-}
-
 // Sets the maximum number of seconds which logs may be buffered for.
 void __cdecl principia__SetBufferDuration(int const seconds) {
   journal::Method<journal::SetBufferDuration> m({seconds});
