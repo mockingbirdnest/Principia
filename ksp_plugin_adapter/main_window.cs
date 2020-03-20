@@ -6,7 +6,7 @@ namespace ksp_plugin_adapter {
 internal class MainWindow : SupervisedWindowRenderer {
   // Update this section before each release.
   private const string next_release_name_ = "Fubini";
-  private const int next_release_lunation_number_ = 250;
+  private const int next_release_lunation_number_ = 251;
   private readonly DateTimeOffset next_release_date_ =
       new DateTimeOffset(2020, 04, 23, 02, 26, 00, TimeSpan.Zero);
 
