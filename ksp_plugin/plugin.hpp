@@ -207,6 +207,7 @@ class Plugin {
       std::string const& name,
       Mass const& mass,
       InertiaTensor<RigidPart> const& inertia_tensor,
+      bool is_solid_rocket_motor,
       GUID const& vessel_guid,
       Index main_body_index,
       DegreesOfFreedom<World> const& main_body_degrees_of_freedom,

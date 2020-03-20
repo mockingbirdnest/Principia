@@ -97,6 +97,14 @@ InertiaTensor<RigidPart> const& Part::inertia_tensor() const {
   return inertia_tensor_;
 }
 
+void Part::set_is_solid_rocket_motor(bool const is_solid_rocket_motor) {
+  is_solid_rocket_motor_ = is_solid_rocket_motor;
+}
+
+bool Part::is_solid_rocket_motor() const {
+  return is_solid_rocket_motor_;
+}
+
 Mass const& Part::mass_change() const {
   return mass_change_;
 }

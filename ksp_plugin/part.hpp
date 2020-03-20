@@ -74,6 +74,10 @@ class Part final {
   Mass const& mass() const;
   void set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor);
   InertiaTensor<RigidPart> const& inertia_tensor() const;
+  // Whether this part is a solid rocket motor, whose lost mass is expelled with
+  // its angular momentum.
+  void set_is_solid_rocket_motor(bool is_solid_rocket_motor);
+  bool is_solid_rocket_motor() const;
 
   // The difference between successive values passed to |set_mass()|.
   Mass const& mass_change() const;
@@ -168,7 +172,12 @@ class Part final {
   std::string const name_;
   bool truthful_;
   Mass mass_;
+  // NOTE(eggrobin): |mass_change_| and |is_solid_rocket_motor_| are set by
+  // |InsertOrKeepLoadedPart|, and used by |PileUp::RecomputeFromParts|.
+  // Ultimately, both are called in the adapter in |WaitedForFixedUpdate|.
+  // They therefore do not need to be serialized.
   Mass mass_change_;
+  bool is_solid_rocket_motor_ = false;
   InertiaTensor<RigidPart> inertia_tensor_;
   Vector<Force, Barycentric> intrinsic_force_;
   Bivector<Torque, Barycentric> intrinsic_torque_;

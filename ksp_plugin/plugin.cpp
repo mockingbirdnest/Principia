@@ -427,6 +427,7 @@ void Plugin::InsertOrKeepLoadedPart(
     std::string const& name,
     Mass const& mass,
     InertiaTensor<RigidPart> const& inertia_tensor,
+    bool const is_solid_rocket_motor,
     GUID const& vessel_guid,
     Index const main_body_index,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
@@ -478,6 +479,7 @@ void Plugin::InsertOrKeepLoadedPart(
   not_null<Part*> part = vessel->part(part_id);
   part->make_truthful();
   part->set_mass(mass);
+  part->set_is_solid_rocket_motor(is_solid_rocket_motor);
   part->set_inertia_tensor(inertia_tensor);
 }
 
