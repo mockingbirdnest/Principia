@@ -1504,9 +1504,8 @@ public partial class PrincipiaPluginAdapter
                   part_id_to_intrinsic_forces_[physical_parent.flightID],
                   0);
             } else {
-              part_id_to_intrinsic_forces_.Add(
-                  physical_parent.flightID,
-                  new PartCentredForceHolder[2]);
+              part_id_to_intrinsic_forces_.Add(physical_parent.flightID,
+                                               new PartCentredForceHolder[2]);
             }
             int lift_index = part_id_to_intrinsic_forces_[
                                  physical_parent.flightID].Length - 2;
