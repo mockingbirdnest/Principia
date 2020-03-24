@@ -1,6 +1,6 @@
 # Principia
 
-![⚠️](https://placehold.it/10/f00000/000000&text=%20) _If you downloaded Frobenius before March 24, 21:00 UTC, you probably have a buggy version (see [#2504](https://github.com/mockingbirdnest/Principia/issues/2504)).  Please download it again.  If you have the correct version, the version string in the Principia UI says 2020032409-Frobenius-0-g21e623384639abd4bdd277a9fb722e94ee9763e4.  We apologize for the inconvenience._ ![⚠️](https://placehold.it/10/f00000/000000&text=%20)
+![⚠️](https://placehold.it/10/f00000/000000&text=%20) _If you downloaded Frobenius before March 24, 21:00 UTC, you probably have a buggy version (see [#2504](https://github.com/mockingbirdnest/Principia/issues/2503)).  Please download it again.  If you have the correct version, the version string in the Principia UI says 2020032409-Frobenius-0-g21e623384639abd4bdd277a9fb722e94ee9763e4.  We apologize for the inconvenience._ ![⚠️](https://placehold.it/10/f00000/000000&text=%20)
 
 **[Frobenius](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#frobenius), the March version of Principia, is available, with support for the rotational motion of vessels.  Download it [here for 1.5.1, 1.6.1 and 1.7.x](https://bit.ly/2UA0saE), and [here for 1.8.1](https://bit.ly/2xoj70W).**
 
