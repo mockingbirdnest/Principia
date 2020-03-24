@@ -182,7 +182,7 @@ public partial class PrincipiaPluginAdapter
   private readonly Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
       new Dictionary<uint, Vector3d>();
 
-  // Work around  the launch backflip issue encountered in  while releasing
+  // Work around the launch backflip issue encountered while releasing
   // Frobenius.
   // The issue is that the position of a  |ForceHolder| collected in
   // |FashionablyLate| or constructed in |JaiFailliAttendre| is made invalid by
