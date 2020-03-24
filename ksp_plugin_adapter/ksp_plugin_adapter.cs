@@ -1287,7 +1287,6 @@ public partial class PrincipiaPluginAdapter
                           (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
                       reference_part_id =
                           FlightGlobals.ActiveVessel.rootPart.flightID});
-          //Log.Info($"{part.flightID:X} q={(Vector3d)part_actual_motion.qp.q} v={(Vector3d)part_actual_motion.qp.p} ω={(Vector3d)part_actual_motion.w}");
           if (part == FlightGlobals.ActiveVessel.rootPart) {
             QP part_actual_degrees_of_freedom = part_actual_motion.qp;
             q_correction_at_root_part =
