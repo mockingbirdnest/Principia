@@ -276,10 +276,11 @@ public partial class PrincipiaPluginAdapter
           "error; it might get damaged.";
       bad_installation_dialog_.Show();
     }
-#if KSP_VERSION_1_8_1
+#if KSP_VERSION_1_9_1
     if (!(Versioning.version_major == 1 &&
-          (Versioning.version_minor == 8 && Versioning.Revision == 1))) {
-      string expected_version = "1.8.1";
+          (Versioning.version_minor == 8 && Versioning.Revision == 1) ||
+          (Versioning.version_minor == 9 && Versioning.Revision == 1))) {
+      string expected_version = "1.8.1 and 1.9.1";
 #elif KSP_VERSION_1_7_3
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||
@@ -1173,7 +1174,7 @@ public partial class PrincipiaPluginAdapter
             plugin_.ReportGroundCollision(
                 closest_physical_parent(part1).flightID);
           }
-#if KSP_VERSION_1_8_1
+#if KSP_VERSION_1_9_1
           foreach (var collider in part1.currentCollisions.Keys) {
 #elif KSP_VERSION_1_7_3
           foreach (var collider in part1.currentCollisions) {
