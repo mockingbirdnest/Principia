@@ -58,8 +58,10 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
-using astronomy::KSPStabilizedSystemFingerprint;
-using astronomy::KSPStockSystemFingerprint;
+using astronomy::KSP122;
+using astronomy::KSP191;
+using astronomy::KSPStabilizedSystemFingerprints;
+using astronomy::KSPStockSystemFingerprints;
 using astronomy::ParseTT;
 using astronomy::StabilizeKSP;
 using base::check_not_null;
@@ -199,25 +201,35 @@ void Plugin::EndInitialization() {
     LOG(INFO) << "System fingerprint is " << std::hex << std::uppercase
               << system_fingerprint;
 
-    if (system_fingerprint == KSPStockSystemFingerprint) {
-      LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
-      StabilizeKSP(solar_system);
-      auto const hierarchical_system = solar_system.MakeHierarchicalSystem();
-      serialization::HierarchicalSystem message;
-      hierarchical_system->WriteToMessage(&message);
-      uint64_t const system_fingerprint =
-          Fingerprint2011(SerializeAsBytes(message).get());
-      LOG(INFO) << "System fingerprint after stabilization is " << std::hex
-                << std::uppercase << system_fingerprint;
-      CHECK_EQ(KSPStabilizedSystemFingerprint, system_fingerprint)
-          << "Attempt at stabilizing the KSP system failed!\n"
-          << gravity_model_.DebugString() << "\n"
-          << initial_state_.DebugString();
-      LOG(INFO) << "This is the stabilized KSP system, all hail retrobop!";
-    } else if (system_fingerprint == KSPStabilizedSystemFingerprint) {
-      LOG(INFO) << "This is the stabilized KSP system, and we didn't have to "
-                << "stabilize it ourselves.  All hail retrobop anyway!";
-    } else {
+    bool is_well_known = false;
+    for (auto const ksp_version : {KSP122, KSP191}) {
+      if (system_fingerprint == KSPStockSystemFingerprints[ksp_version]) {
+        LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
+        StabilizeKSP(solar_system);
+        auto const hierarchical_system = solar_system.MakeHierarchicalSystem();
+        serialization::HierarchicalSystem message;
+        hierarchical_system->WriteToMessage(&message);
+        uint64_t const system_fingerprint =
+            Fingerprint2011(SerializeAsBytes(message).get());
+        LOG(INFO) << "System fingerprint after stabilization is " << std::hex
+                  << std::uppercase << system_fingerprint;
+        CHECK_EQ(KSPStabilizedSystemFingerprints[ksp_version],
+                 system_fingerprint)
+            << "Attempt at stabilizing the KSP system failed!\n"
+            << gravity_model_.DebugString() << "\n"
+            << initial_state_.DebugString();
+        LOG(INFO) << "This is the stabilized KSP system, all hail retrobop!";
+        is_well_known = true;
+        break;
+      } else if (system_fingerprint ==
+                 KSPStabilizedSystemFingerprints[ksp_version]) {
+        LOG(INFO) << "This is the stabilized KSP system, and we didn't have to "
+                  << "stabilize it ourselves.  All hail retrobop anyway!";
+        is_well_known = true;
+        break;
+      }
+    }
+    if (!is_well_known) {
       LOG(WARNING) << "This is an unknown system, we don't know anything about "
                    << "its stability:\n"
                    << gravity_model_.DebugString() << "\n"
