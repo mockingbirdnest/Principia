@@ -59,7 +59,7 @@ TEST_F(KSPFingerprintTest, Corrected) {
   uint64_t const fingerprint = Fingerprint2011(SerializeAsBytes(message).get());
   LOG(INFO) << "Corrected KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
-  EXPECT_THAT(fingerprint, Eq(KSPStabilizedSystemFingerprint[KSP191]));
+  EXPECT_THAT(fingerprint, Eq(KSPStabilizedSystemFingerprints[KSP191]));
 }
 
 }  // namespace astronomy
