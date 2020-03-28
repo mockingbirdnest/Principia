@@ -268,7 +268,7 @@ class Plugin {
   // |Index|, identifying the origin of |World| with the centre of mass of the
   // |Part| with the given |PartId|.
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
-      Index const index,
+      Index index,
       RigidMotion<Barycentric, World> const& barycentric_to_world,
       Instant const& time) const;
 

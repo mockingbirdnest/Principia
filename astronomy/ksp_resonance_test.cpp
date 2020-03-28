@@ -104,7 +104,7 @@ class KSPResonanceTest : public ::testing::Test {
     joolian_moons_ = {laythe_, vall_, tylo_, bop_, pol_};
 
     for (not_null<MassiveBody const*> const moon : joolian_moons_) {
-      auto const elements = solar_system_.MakeKeplerianElements(
+      auto const elements = SolarSystem<KSP>::MakeKeplerianElements(
           solar_system_.keplerian_initial_state_message(moon->name()).
               elements());
       CHECK(elements.mean_motion) << moon->name();

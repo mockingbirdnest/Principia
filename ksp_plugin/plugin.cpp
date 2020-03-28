@@ -583,7 +583,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     not_null<Vessel*> const vessel = it->second.get();
     Instant const vessel_time =
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
-    if (kept_vessels_.erase(vessel)) {
+    if (kept_vessels_.erase(vessel) > 0) {
       vessel->PrepareHistory(vessel_time);
       ++it;
     } else {

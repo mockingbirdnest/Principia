@@ -160,11 +160,12 @@ void GenerateKopernicusForSlippist1(
     } else {
       CHECK(star.has_value());
       auto const keplerian_elements =
-          solar_system.MakeKeplerianElements(elements);
-      KeplerOrbit<Sky> const kepler_orbit(*solar_system.MakeMassiveBody(*star),
-                                          *solar_system.MakeMassiveBody(body),
-                                          keplerian_elements,
-                                          solar_system.epoch());
+          SolarSystem<Sky>::MakeKeplerianElements(elements);
+      KeplerOrbit<Sky> const kepler_orbit(
+          SolarSystem<Sky>::MakeMassiveBody(*star),
+          SolarSystem<Sky>::MakeMassiveBody(body),
+          keplerian_elements,
+          solar_system.epoch());
       kopernicus_cfg << "    @Orbit {\n";
       kopernicus_cfg << "      %semiMajorAxis = "
                      << DebugString(
