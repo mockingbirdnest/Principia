@@ -1,8 +1,10 @@
 # Principia
 
-**[Frenet](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#frenet), the February version of Principia, is available.  Download it [here for 1.5.1, 1.6.1 and 1.7.x](https://bit.ly/2HL0hmL), and [here for 1.8.1](https://bit.ly/32hCUe1).**
+![⚠️](https://placehold.it/10/f00000/000000&text=%20) _If you downloaded Frobenius before March 24, 21:00 UTC, you probably have a buggy version (see [#2503](https://github.com/mockingbirdnest/Principia/issues/2503)).  Please download it again.  If you have the correct version, the version string in the Principia UI says 2020032409-Frobenius-0-g21e623384639abd4bdd277a9fb722e94ee9763e4.  We apologize for the inconvenience._ ![⚠️](https://placehold.it/10/f00000/000000&text=%20)
 
-**For the convenience of Chinese users, downloads from 腾讯微云: [Principia Frenet for 1.5.1-1.7.3](https://share.weiyun.com/5uta0Re),  [Principia Frenet for 1.8.1](https://share.weiyun.com/589R2ZD), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
+**[Frobenius](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#frobenius), the March version of Principia, is available, with support for the rotational motion of vessels.  Download it [here for 1.5.1, 1.6.1 and 1.7.x](https://bit.ly/2UA0saE), and [here for 1.8.1](https://bit.ly/2xoj70W).**
+
+**For the convenience of Chinese users, downloads from 腾讯微云: [Principia Frobenius for 1.5.1-1.7.3](https://share.weiyun.com/5KvURdd),  [Principia Frobenius for 1.8.1](https://share.weiyun.com/5kWHOup), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +20,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.5.1, 1.6.1 and 1.7.x](https://bit.ly/2HL0hmL), and [here for 1.8.1](https://bit.ly/32hCUe1).  Download the [“Trappist-1 for Principia”](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions#installing-trappist-1-for-principia) mini-mod [here](https://bit.ly/2ZHf3Tt).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Frenet](https://github.com/mockingbirdnest/Principia/releases/tag/2020022316-Frenet) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.5.1, 1.6.1 and 1.7.x](https://bit.ly/2UA0saE), and [here for 1.8.1](https://bit.ly/2xoj70W).  Download the [“Trappist-1 for Principia”](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions#installing-trappist-1-for-principia) mini-mod [here](https://bit.ly/2ZHf3Tt).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Frobenius](https://github.com/mockingbirdnest/Principia/releases/tag/2020032409-Frobenius) release.

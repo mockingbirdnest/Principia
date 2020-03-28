@@ -181,8 +181,52 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, Vector3d>();
   private readonly Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
       new Dictionary<uint, Vector3d>();
-  private readonly Dictionary<uint, Part.ForceHolder[]>
-      part_id_to_intrinsic_forces_ = new Dictionary<uint, Part.ForceHolder[]>();
+
+  // Work around the launch backflip issue encountered while releasing
+  // Frobenius.
+  // The issue is that the position of a  |ForceHolder| collected in
+  // |FashionablyLate| or constructed in |JaiFailliAttendre| is made invalid by
+  // changes to world coordinates in |FloatingOrigin| by the time it is used in
+  // |WaitForFixedUpdate|.
+  // TODO(egg): This should be cleaned up a bit, e.g., by making the plugin and
+  // interface take the |World| lever arm directly, since the lever arm is what
+  // we use in |principia::ksp_plugin::Part|, and it is what we compute below:
+  // this would obviate the need to keep track of the |Part| and to adjust its
+  // position.
+  class PartCentredForceHolder {
+    public static PartCentredForceHolder FromPartForceHolder(
+        Part part,
+        Part.ForceHolder holder) {
+      return new PartCentredForceHolder{
+          part_ = part,
+          part_world_position_ = part.rb.position,
+          force_in_world_coordinates_ = holder.force,
+          part_centred_position_ = holder.pos - part.rb.position};
+    }
+
+    // Note that we must not use |part_.rb.position| in |ToPartForceHolder|,
+    // as that position will then be one frame ahead of the force.
+    // Instead we call |AdjustPartPosition| after |FloatingOrigin| has run,
+    // in |BetterLateThanNever|.  Note that this is also the position stored in
+    // |part_id_to_degrees_of_freedom_|.
+    public void AdjustPartPosition() {
+      part_world_position_ = part_.rb.position;
+    }
+
+    public Part.ForceHolder ToPartForceHolder() {
+      return new Part.ForceHolder{
+          force = force_in_world_coordinates_,
+          pos = part_world_position_ + part_centred_position_};
+    }
+
+    private Part part_;
+    private Vector3d part_world_position_;
+    private Vector3d force_in_world_coordinates_;
+    private Vector3d part_centred_position_;
+  }
+  private readonly Dictionary<uint, PartCentredForceHolder[]>
+      part_id_to_intrinsic_forces_ = new Dictionary<uint,
+                                                    PartCentredForceHolder[]>();
 
   // The degrees of freedom at BetterLateThanNever.  Those are used to insert
   // new parts with the correct initial state.
@@ -232,10 +276,11 @@ public partial class PrincipiaPluginAdapter
           "error; it might get damaged.";
       bad_installation_dialog_.Show();
     }
-#if KSP_VERSION_1_8_1
+#if KSP_VERSION_1_9_1
     if (!(Versioning.version_major == 1 &&
-          (Versioning.version_minor == 8 && Versioning.Revision == 1))) {
-      string expected_version = "1.8.1";
+          (Versioning.version_minor == 8 && Versioning.Revision == 1) ||
+          (Versioning.version_minor == 9 && Versioning.Revision == 1))) {
+      string expected_version = "1.8.1 and 1.9.1";
 #elif KSP_VERSION_1_7_3
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||
@@ -444,6 +489,12 @@ public partial class PrincipiaPluginAdapter
 
   private bool is_manageable(Vessel vessel) {
     return UnmanageabilityReasons(vessel) == null;
+  }
+
+  public static bool is_lit_solid_booster(ModuleEngines module) {
+    return module != null &&
+        module.EngineIgnited &&
+        module.engineType == EngineType.SolidBooster;
   }
 
   private string UnmanageabilityReasons(Vessel vessel) {
@@ -1024,6 +1075,8 @@ public partial class PrincipiaPluginAdapter
               part.physicsMass == 0 ? part.rb.mass : part.physicsMass,
               (XYZ)(Vector3d)part.rb.inertiaTensor,
               (WXYZ)(UnityEngine.QuaternionD)part.rb.inertiaTensorRotation,
+              (from PartModule module in part.Modules
+               select module as ModuleEngines).Any(is_lit_solid_booster),
               vessel.id.ToString(),
               vessel.mainBody.flightGlobalsIndex,
               main_body_degrees_of_freedom,
@@ -1049,7 +1102,9 @@ public partial class PrincipiaPluginAdapter
             }
           }
           if (part_id_to_intrinsic_forces_.ContainsKey(part.flightID)) {
-            foreach (var force in part_id_to_intrinsic_forces_[part.flightID]) {
+            foreach (var part_centred_force in
+                     part_id_to_intrinsic_forces_[part.flightID]) {
+              var force = part_centred_force.ToPartForceHolder();
               plugin_.PartApplyIntrinsicForceAtPosition(
                   part.flightID,
                   (XYZ)force.force,
@@ -1119,7 +1174,7 @@ public partial class PrincipiaPluginAdapter
             plugin_.ReportGroundCollision(
                 closest_physical_parent(part1).flightID);
           }
-#if KSP_VERSION_1_8_1
+#if KSP_VERSION_1_9_1
           foreach (var collider in part1.currentCollisions.Keys) {
 #elif KSP_VERSION_1_7_3
           foreach (var collider in part1.currentCollisions) {
@@ -1418,8 +1473,11 @@ public partial class PrincipiaPluginAdapter
             part_id_to_intrinsic_force_.Add(part.flightID, part.force);
           }
           if (part.forces.Count > 0) {
-            part_id_to_intrinsic_forces_.Add(part.flightID,
-                                             part.forces.ToArray());
+            part_id_to_intrinsic_forces_.Add(
+                part.flightID,
+                (from force in part.forces
+                 select PartCentredForceHolder.FromPartForceHolder(
+                    part, force)).ToArray());
           }
         }
       }
@@ -1442,31 +1500,35 @@ public partial class PrincipiaPluginAdapter
               var previous_holder =
                   part_id_to_intrinsic_forces_[physical_parent.flightID];
               part_id_to_intrinsic_forces_[physical_parent.flightID] =
-                  new Part.ForceHolder[previous_holder.Length + 2];
+                  new PartCentredForceHolder[previous_holder.Length + 2];
               previous_holder.CopyTo(
                   part_id_to_intrinsic_forces_[physical_parent.flightID],
                   0);
             } else {
               part_id_to_intrinsic_forces_.Add(physical_parent.flightID,
-                                               new Part.ForceHolder[2]);
+                                               new PartCentredForceHolder[2]);
             }
             int lift_index = part_id_to_intrinsic_forces_[
                                  physical_parent.flightID].Length - 2;
             int drag_index = lift_index + 1;
             part_id_to_intrinsic_forces_[physical_parent.flightID][lift_index] =
-                new Part.ForceHolder {
-                  force = part.partTransform.TransformDirection(
-                              part.bodyLiftLocalVector),
-                  pos = part.partTransform.TransformPoint(
-                            part.bodyLiftLocalPosition)};
+                PartCentredForceHolder.FromPartForceHolder(
+                    physical_parent,
+                    new Part.ForceHolder {
+                      force = part.partTransform.TransformDirection(
+                                  part.bodyLiftLocalVector),
+                      pos = part.partTransform.TransformPoint(
+                                part.bodyLiftLocalPosition)});
             part_id_to_intrinsic_forces_[physical_parent.flightID][drag_index] =
-                new Part.ForceHolder {
-                  force = -part.dragVectorDir * part.dragScalar,
-                  pos = (physical_parent != part &&
-                         PhysicsGlobals.ApplyDragToNonPhysicsPartsAtParentCoM)
-                            ? physical_parent.rb.worldCenterOfMass
-                            : part.partTransform.TransformPoint(
-                                  part.CoPOffset)};
+                PartCentredForceHolder.FromPartForceHolder(
+                    physical_parent,
+                    new Part.ForceHolder {
+                      force = -part.dragVectorDir * part.dragScalar,
+                      pos = (physical_parent != part &&
+                             PhysicsGlobals.ApplyDragToNonPhysicsPartsAtParentCoM)
+                                ? physical_parent.rb.worldCenterOfMass
+                                : part.partTransform.TransformPoint(
+                                      part.CoPOffset)});
           }
         }
       }
@@ -1486,6 +1548,11 @@ public partial class PrincipiaPluginAdapter
 
   private void BetterLateThanNever() {
     if (PluginRunning()) {
+      foreach (var forces in part_id_to_intrinsic_forces_.Values) {
+        foreach (var force in forces) {
+          force.AdjustPartPosition();
+        }
+      }
       part_id_to_degrees_of_freedom_.Clear();
       foreach (Vessel vessel in
                FlightGlobals.Vessels.Where(v => is_manageable(v) &&

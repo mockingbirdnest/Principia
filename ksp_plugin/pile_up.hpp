@@ -133,10 +133,6 @@ class PileUp {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void()> deletion_callback);
 
-  std::string const& Trace() {
-    return last_correction_trace_;
-  }
-
  private:
   // A pointer to a member function of |Part| used to append a point to either
   // trajectory (history or psychohistory).
@@ -199,8 +195,6 @@ class PileUp {
   // assume that lost mass carries angular momentum in such a way that the
   // angular velocity of a part remains constant.
   Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_change_;
-
-  std::string last_correction_trace_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally
   // integrated with a fixed step using |fixed_instance_|, except in the

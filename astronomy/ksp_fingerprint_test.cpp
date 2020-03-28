@@ -48,7 +48,7 @@ TEST_F(KSPFingerprintTest, Stock) {
   uint64_t const fingerprint = Fingerprint2011(SerializeAsBytes(message).get());
   LOG(INFO) << "Stock KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
-  EXPECT_THAT(fingerprint, Eq(KSPStockSystemFingerprint));
+  EXPECT_THAT(fingerprint, Eq(KSPStockSystemFingerprints[KSP191]));
 }
 
 TEST_F(KSPFingerprintTest, Corrected) {
@@ -59,7 +59,7 @@ TEST_F(KSPFingerprintTest, Corrected) {
   uint64_t const fingerprint = Fingerprint2011(SerializeAsBytes(message).get());
   LOG(INFO) << "Corrected KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
-  EXPECT_THAT(fingerprint, Eq(KSPStabilizedSystemFingerprint));
+  EXPECT_THAT(fingerprint, Eq(KSPStabilizedSystemFingerprints[KSP191]));
 }
 
 }  // namespace astronomy

@@ -135,13 +135,16 @@ void PileUp::RecomputeFromParts() {
         part_motion.Inverse().angular_velocity_of_to_frame();
     InertiaTensor<NonRotatingPileUp> part_inertia_tensor =
         part_motion.orthogonal_map()(part->inertia_tensor());
-    // KSP makes the inertia tensor vary proportionally to the mass; this
-    // corresponds to the body uniformly changing density.
-    angular_momentum_change_ +=
-        Wedge(part_dof.position() - NonRotatingPileUp::origin,
-              part->mass_change() * part_dof.velocity()) * Radian +
-        part->mass_change() / part->mass() *
-            (part_inertia_tensor * part_angular_velocity);
+    if (part->is_solid_rocket_motor()) {
+      // KSP makes the inertia tensor vary proportionally to the mass; this
+      // corresponds to the body uniformly changing density.
+      angular_momentum_change_ +=
+          Wedge(part_dof.position() - NonRotatingPileUp::origin,
+                part->mass_change() * part_dof.velocity()) *
+              Radian +
+          part->mass_change() / part->mass() *
+              (part_inertia_tensor * part_angular_velocity);
+    }
   }
 }
 
@@ -427,7 +430,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
       angular_momentum_ /
       Identity<ApparentPileUp, NonRotatingPileUp>()(inertia_tensor);
 
-  std::stringstream trace;
   // In the |EquivalentRigidPileUp| reference frame, a rigid body with the same
   // inertia and angular momentum as the pile up would be immobile.  We use this
   // intermediate frame to apply a rigid rotational correction to the motions of
@@ -470,29 +472,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
 
   MakeEulerSolver(Identity<ApparentPileUp, NonRotatingPileUp>()(inertia_tensor),
                   t);
-
-  trace << "rotational correction:\n"
-        << (actual_pile_up_equivalent_rotation.Inverse() *
-            apparent_pile_up_equivalent_rotation)
-               .angular_velocity_of_to_frame()
-               .Norm()
-        << "\nangular momentum error:\n"
-        << (Identity<ApparentPileUp, NonRotatingPileUp>()(
-                apparent_angular_momentum) -
-            angular_momentum_)
-               .Norm()
-        << "\ncorresponding rotational correction:\n"
-        << (Identity<ApparentPileUp, NonRotatingPileUp>()(
-                apparent_equivalent_angular_velocity) -
-            actual_equivalent_angular_velocity)
-               .Norm()
-        << u8"\nω apparent:\n"
-        << apparent_equivalent_angular_velocity.Norm()
-        << "\nL in principal axes:\n"
-        << inertia_tensor.Diagonalize<PileUpPrincipalAxes>().rotation.Inverse()(
-               apparent_angular_momentum);
-
-  last_correction_trace_ = trace.str();
 }
 
 Status PileUp::AdvanceTime(Instant const& t) {
