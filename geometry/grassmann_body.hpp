@@ -17,21 +17,12 @@ using base::not_constructible;
 using quantities::ArcTan;
 
 template<typename Scalar, typename Frame>
-constexpr Multivector<Scalar, Frame, 1>::Multivector() {}
-
-template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector(R3Element<Scalar> const& coordinates)
     : coordinates_(coordinates) {}
 
 template<typename Scalar, typename Frame>
-constexpr Multivector<Scalar, Frame, 2>::Multivector() {}
-
-template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 2>::Multivector(R3Element<Scalar> const& coordinates)
     : coordinates_(coordinates) {}
-
-template<typename Scalar, typename Frame>
-constexpr Multivector<Scalar, Frame, 3>::Multivector() {}
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 3>::Multivector(Scalar const& coordinates)
