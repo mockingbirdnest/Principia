@@ -1,6 +1,6 @@
 [
   {
-    "CompileFlags": "-Wall;-fms-compatibility-version=19.10;-Wmicrosoft;-Wno-invalid-token-paste;-Wno-unknown-pragmas;-Wno-unused-value;-I\"C:\\Users\\phl\\Projects\\GitHub\\Principia\\Principia\";-isystem\"..\\Google\\googletest\\googlemock\\include\";-isystem\"..\\Google\\abseil-cpp\";-isystem\"..\\Google\\benchmark\\include\";-isystem\"..\\Google\\gipfeli\\include\";-isystem\"..\\Google\\glog\\src\\windows\";-isystem\"..\\Google\\googletest\\googletest\\include\";-isystem\"..\\Google\\protobuf\\src\";-DSERIALIZATION_DLL=\"\";-isystem\"\"\"\"\"\"..\\Third Party\\zfp\\include\"\"\"\"\"\"\"\"\"\"\"\";-DNOMINMAX;-DNOGDI;-DSOLUTION_DIR=std::filesystem::path()",
+    "CompileFlags": "-Wall;-fms-compatibility-version=19.10;-Wmicrosoft;-Wno-invalid-token-paste;-Wno-unknown-pragmas;-Wno-unused-value;-I\"C:\\Users\\phl\\Projects\\GitHub\\Principia\\Principia\";-isystem\"..\\Google\\googletest\\googlemock\\include\";-isystem\"..\\Google\\abseil-cpp\";-isystem\"..\\Google\\benchmark\\include\";-isystem\"..\\Google\\gipfeli\\include\";-isystem\"..\\Google\\glog\\src\\windows\";-isystem\"..\\Google\\googletest\\googletest\\include\";-isystem\"..\\Google\\protobuf\\src\";-DSERIALIZATION_DLL=\"\";-isystem\"\"\"\"\"\"..\\Third Party\\zfp\\include\"\"\"\"\"\"\"\"\"\"\"\";-DNOMINMAX;-DNOGDI;-DSOLUTION_DIR=std::filesystem::path();-DTEMP_DIR=std::filesystem::path()",
     "FilesToIgnore": "",
     "ProjectsToIgnore": "C:\\Users\\phl\\Projects\\GitHub\\Principia\\Principia\\serialization;",
     "AdditionalIncludes": "IncludeDirectories",
