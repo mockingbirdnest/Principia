@@ -94,17 +94,17 @@ TEST_F(TimeScalesDeathTest, ModernLeaps) {
 }
 
 TEST_F(TimeScalesTest, ConstexprJ2000) {
-  static_assert(j2000_week == J2000, "");
-  static_assert(j2000_from_tt == J2000, "");
-  static_assert(j2000_from_tai == J2000, "");
-  static_assert(j2000_from_utc == J2000, "");
-  static_assert(j2000_tai == j2000_tai_from_tt, "");
-  static_assert(j2000_tai - J2000 == 32.184 * Second, "");
+  static_assert(j2000_week == J2000);
+  static_assert(j2000_from_tt == J2000);
+  static_assert(j2000_from_tai == J2000);
+  static_assert(j2000_from_utc == J2000);
+  static_assert(j2000_tai == j2000_tai_from_tt);
+  static_assert(j2000_tai - J2000 == 32.184 * Second);
 }
 
 TEST_F(TimeScalesTest, ConstexprWeeks) {
   // Check that week dates that go to the previous year work.
-  static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT, "");
+  static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT);
 }
 
 TEST_F(TimeScalesTest, ConstexprMJD2000) {
@@ -112,8 +112,8 @@ TEST_F(TimeScalesTest, ConstexprMJD2000) {
   constexpr Instant mjd51544_utc_from_ut1 =
       "2000-01-01T00:00:00,355"_UT1 + 388.0 * Micro(Second);
 
-  static_assert(mjd51544_utc - mjd51544_utc_from_ut1 < 1 * Nano(Second), "");
-  static_assert(mjd51544_utc - mjd51544_utc_from_ut1 > -1 * Nano(Second), "");
+  static_assert(mjd51544_utc - mjd51544_utc_from_ut1 < 1 * Nano(Second));
+  static_assert(mjd51544_utc - mjd51544_utc_from_ut1 > -1 * Nano(Second));
 }
 
 TEST_F(TimeScalesTest, ReferenceDates) {

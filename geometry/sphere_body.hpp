@@ -25,7 +25,7 @@ Length const& Sphere<Frame>::radius() const {
 }
 
 template<typename Frame>
-Square<Length> const Sphere<Frame>::radius²() const {
+Square<Length> const& Sphere<Frame>::radius²() const {
   return radius²_;
 }
 

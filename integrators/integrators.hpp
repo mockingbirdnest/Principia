@@ -153,7 +153,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
 
     void WriteToMessage(
         not_null<serialization::AdaptiveStepSizeIntegratorInstance::
-                     Parameters*> const message) const;
+                     Parameters*> message) const;
     static Parameters ReadFromMessage(
         serialization::AdaptiveStepSizeIntegratorInstance::Parameters const&
             message);

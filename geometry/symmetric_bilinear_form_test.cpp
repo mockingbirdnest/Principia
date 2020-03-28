@@ -40,8 +40,6 @@ class SymmetricBilinearFormTest : public ::testing::Test {
                            Handedness::Right,
                            serialization::Frame::TEST1>;
 
-  SymmetricBilinearFormTest() {}
-
   template<typename Frame>
   SymmetricBilinearForm<Length, Frame, Vector> MakeSymmetricBilinearForm(
       R3x3Matrix<double> const& untyped_matrix) {

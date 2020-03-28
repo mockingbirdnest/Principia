@@ -12,9 +12,6 @@ namespace geometry {
 namespace internal_identity {
 
 template<typename FromFrame, typename ToFrame>
-Identity<FromFrame, ToFrame>::Identity() {}
-
-template<typename FromFrame, typename ToFrame>
 Sign Identity<FromFrame, ToFrame>::Determinant() const {
   return Sign::Positive();
 }

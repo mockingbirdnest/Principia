@@ -20,7 +20,7 @@ class Sphere {
 
   Position<Frame> const& centre() const;
   Length const& radius() const;
-  Square<Length> const radius²() const;
+  Square<Length> const& radius²() const;
 
  private:
   Position<Frame> const centre_;
