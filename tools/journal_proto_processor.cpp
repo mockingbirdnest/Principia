@@ -23,10 +23,10 @@ using ::google::protobuf::MessageOptions;
 
 namespace {
 
-char const method_message_name[] = "Method";
-char const in_message_name[] = "In";
-char const return_message_name[] = "Return";
-char const out_message_name[] = "Out";
+constexpr char method_message_name[] = "Method";
+constexpr char in_message_name[] = "In";
+constexpr char return_message_name[] = "Return";
+constexpr char out_message_name[] = "Out";
 
 std::string Join(std::vector<std::string> const& v, std::string const& joiner) {
   std::string joined;

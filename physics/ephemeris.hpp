@@ -344,10 +344,10 @@ class Ephemeris {
   static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
       Instant const& t,
       MassiveBody const& body1,
-      std::size_t const b1,
+      std::size_t b1,
       std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
-      std::size_t const b2_begin,
-      std::size_t const b2_end,
+      std::size_t b2_begin,
+      std::size_t b2_end,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations,
       std::vector<Geopotential<Frame>> const& geopotentials);
@@ -360,7 +360,7 @@ class Ephemeris {
   Error ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
-      std::size_t const b1,
+      std::size_t b1,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
       REQUIRES_SHARED(lock_);

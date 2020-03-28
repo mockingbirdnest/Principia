@@ -72,7 +72,7 @@ constexpr Time max_time_between_checkpoints = 180 * Day;
 // downsampling from going postal.
 constexpr double min_radius_tolerance = 0.99;
 
-inline Status const CollisionDetected() {
+inline Status CollisionDetected() {
   return Status(Error::OUT_OF_RANGE, "Collision detected");
 }
 
