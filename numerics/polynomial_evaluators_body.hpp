@@ -9,8 +9,6 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial_evaluators {
 
-namespace {
-
 // Greatest power of 2 less than or equal to n.  8 -> 8, 7 -> 4.
 constexpr int FloorOfPowerOf2(int const n) {
   return n == 0 ? 0 : n == 1 ? 1 : FloorOfPowerOf2(n >> 1) << 1;
@@ -20,8 +18,6 @@ constexpr int FloorOfPowerOf2(int const n) {
 constexpr int CeilingLog2(int const n) {
   return n == 0 ? 0 : n == 1 ? 0 : CeilingLog2(n >> 1) + 1;
 }
-
-}  // namespace
 
 // Generator for repeated squaring:
 //   SquareGenerator<Length, 0>::Type is Exponentiation<Length, 2>
