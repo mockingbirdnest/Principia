@@ -16,7 +16,6 @@ namespace principia {
 namespace quantities {
 
 using si::Radian;
-namespace si = quantities::si;
 
 #define TRIGGER_DEAD_CODE_ELIMINATION
 

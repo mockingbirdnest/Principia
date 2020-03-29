@@ -13,6 +13,8 @@ namespace principia {
 namespace geometry {
 namespace internal_sign {
 
+namespace si = quantities::si;
+
 // Must be defined first because it is called by member functions below.
 template<typename T>
 constexpr T operator*(Sign const left, T const& right) {

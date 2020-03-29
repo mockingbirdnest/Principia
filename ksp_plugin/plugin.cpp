@@ -998,7 +998,7 @@ void Plugin::ComputeAndRenderNodes(
   // irrelevant.
   Length const threshold =
       cast_plotting_frame == nullptr
-          ? Infinity<Length>()
+          ? Infinity<Length>
           : EquatorRelevanceThreshold(
                 *dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
                     cast_plotting_frame->centre()));

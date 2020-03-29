@@ -43,7 +43,7 @@ template<typename Scalar, typename Frame>
 Scalar RP2Point<Scalar, Frame>::x() const {
   if (x_ == Scalar() && z_ == 0.0) {
     // Returns an infinity of the right sign.
-    return Infinity<Square<Scalar>>() / x_;
+    return Infinity<Square<Scalar>> / x_;
   } else {
     return x_ / z_;
   }
@@ -53,7 +53,7 @@ template<typename Scalar, typename Frame>
 Scalar RP2Point<Scalar, Frame>::y() const {
   if (y_ == Scalar() && z_ == 0.0) {
     // Returns an infinity of the right sign.
-    return Infinity<Square<Scalar>>() / y_;
+    return Infinity<Square<Scalar>> / y_;
   } else {
     return y_ / z_;
   }

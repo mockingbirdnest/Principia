@@ -104,10 +104,10 @@ namespace astronomy {
 
 // A minimum bounding rectangle for a set of values of the eccentricity vector.
 struct EccentricityVectorRange {
-  double min_e_cos_ω = +Infinity<double>();
-  double max_e_cos_ω = -Infinity<double>();
-  double min_e_sin_ω = +Infinity<double>();
-  double max_e_sin_ω = -Infinity<double>();
+  double min_e_cos_ω = +Infinity<double>;
+  double max_e_cos_ω = -Infinity<double>;
+  double min_e_sin_ω = +Infinity<double>;
+  double max_e_sin_ω = -Infinity<double>;
 };
 
 struct GeopotentialTruncation {

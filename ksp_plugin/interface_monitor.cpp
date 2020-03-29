@@ -29,8 +29,8 @@ struct Monitor {
 
   int window_index = 0;
   Time total_Δt;
-  Time min_Δt = Infinity<Time>();
-  Time max_Δt = -Infinity<Time>();
+  Time min_Δt = Infinity<Time>;
+  Time max_Δt = -Infinity<Time>;
 };
 
 static_assert(
@@ -75,8 +75,8 @@ void __cdecl principia__MonitorStop(int const i) {
                 << (monitor.name == nullptr ? "" : (": " + *monitor.name))
                 << "] min = " << monitor.min_Δt << ", max = " << monitor.max_Δt
                 << u8", μ = " << monitor.total_Δt / window_size;
-      monitor.min_Δt = Infinity<Time>();
-      monitor.max_Δt = -Infinity<Time>();
+      monitor.min_Δt = Infinity<Time>;
+      monitor.max_Δt = -Infinity<Time>;
       monitor.total_Δt = Time();
     }
   }

@@ -128,24 +128,24 @@ class EulerSolver {
   // Only the parameters needed for the selected formula are non-NaN after
   // construction.
 
-  AngularFrequency λ_ = NaN<AngularFrequency>();
+  AngularFrequency λ_ = NaN<AngularFrequency>;
 
-  AngularMomentum B₂₃_ = NaN<AngularMomentum>();
-  AngularMomentum B₁₃_ = NaN<AngularMomentum>();
-  AngularMomentum B₃₁_ = NaN<AngularMomentum>();
-  AngularMomentum B₂₁_ = NaN<AngularMomentum>();
+  AngularMomentum B₂₃_ = NaN<AngularMomentum>;
+  AngularMomentum B₁₃_ = NaN<AngularMomentum>;
+  AngularMomentum B₃₁_ = NaN<AngularMomentum>;
+  AngularMomentum B₂₁_ = NaN<AngularMomentum>;
 
-  double n_ = NaN<double>();
-  double mc_ = NaN<double>();
-  Angle ν_ = NaN<Angle>();
-  Angle ψ_offset_ = NaN<Angle>();
-  double ψ_arctan_multiplier_ = NaN<double>();
-  MomentOfInertia ψ_cn_multiplier_ = NaN<MomentOfInertia>();
-  MomentOfInertia ψ_sn_multiplier_ = NaN<MomentOfInertia>();
-  AngularMomentum ψ_cosh_multiplier_ = NaN<AngularMomentum>();
-  AngularMomentum ψ_sinh_multiplier_ = NaN<AngularMomentum>();
-  double ψ_elliptic_pi_multiplier_ = NaN<double>();
-  AngularFrequency ψ_t_multiplier_ = NaN<AngularFrequency>();
+  double n_ = NaN<double>;
+  double mc_ = NaN<double>;
+  Angle ν_ = NaN<Angle>;
+  Angle ψ_offset_ = NaN<Angle>;
+  double ψ_arctan_multiplier_ = NaN<double>;
+  MomentOfInertia ψ_cn_multiplier_ = NaN<MomentOfInertia>;
+  MomentOfInertia ψ_sn_multiplier_ = NaN<MomentOfInertia>;
+  AngularMomentum ψ_cosh_multiplier_ = NaN<AngularMomentum>;
+  AngularMomentum ψ_sinh_multiplier_ = NaN<AngularMomentum>;
+  double ψ_elliptic_pi_multiplier_ = NaN<double>;
+  AngularFrequency ψ_t_multiplier_ = NaN<AngularFrequency>;
 };
 
 }  // namespace internal_euler_solver

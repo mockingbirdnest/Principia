@@ -544,8 +544,8 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
     }
   }
 
-  harmonic_thresholds.push({Infinity<Length>(), 0, 0});
-  harmonic_thresholds.push({Infinity<Length>(), 1, 0});
+  harmonic_thresholds.push({Infinity<Length>, 0, 0});
+  harmonic_thresholds.push({Infinity<Length>, 1, 0});
 
   while (!harmonic_thresholds.empty()) {
     auto const& threshold = harmonic_thresholds.top();
@@ -595,7 +595,7 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
   if (r_norm != r_norm) {
     // Short-circuit NaN, to avoid having to deal with an unordered
     // |r_norm| when finding the partition point below.
-    return NaN<ReducedAcceleration>() * Vector<double, Frame>{};
+    return NaN<ReducedAcceleration> * Vector<double, Frame>{};
   }
   // |limiting_degree| is the first degree such that
   // |r_norm >= degree_damping_[limiting_degree].outer_threshold()|, or is

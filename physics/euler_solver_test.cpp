@@ -122,7 +122,7 @@ class EulerSolverTest : public ::testing::Test {
       int const max_ulps) {
     CHECK_EQ(angular_momenta.size(), attitudes.size());
     Energy maximum_kinetic_energy;
-    Energy minimum_kinetic_energy = quantities::Infinity<Energy>();
+    Energy minimum_kinetic_energy = quantities::Infinity<Energy>;
     for (int i = 0; i < angular_momenta.size(); ++i) {
       Bivector<AngularMomentum, PrincipalAxes> const angular_momentum =
           angular_momenta[i];

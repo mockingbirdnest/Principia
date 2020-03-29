@@ -60,14 +60,14 @@ TEST_F(RP2PointTest, Basic) {
   EXPECT_THAT(p2.y(), AlmostEquals(2.0 / 3.0 * Metre, 0));
   EXPECT_THAT(p3.x(), AlmostEquals(2.0 / 5.0 * Metre, 0));
   EXPECT_THAT(p3.y(), AlmostEquals(4.0 / 5.0 * Metre, 0));
-  EXPECT_THAT(p4.x(), AlmostEquals(Infinity<Length>(), 0));
-  EXPECT_THAT(p4.y(), AlmostEquals(Infinity<Length>(), 0));
-  EXPECT_THAT(p5.x(), AlmostEquals(Infinity<Length>(), 0));
-  EXPECT_THAT(p5.y(), AlmostEquals(Infinity<Length>(), 0));
-  EXPECT_THAT(p6.x(), AlmostEquals(Infinity<Length>(), 0));
-  EXPECT_THAT(p6.y(), AlmostEquals(-Infinity<Length>(), 0));
-  EXPECT_THAT(p7.x(), AlmostEquals(-Infinity<Length>(), 0));
-  EXPECT_THAT(p7.y(), AlmostEquals(Infinity<Length>(), 0));
+  EXPECT_THAT(p4.x(), AlmostEquals(Infinity<Length>, 0));
+  EXPECT_THAT(p4.y(), AlmostEquals(Infinity<Length>, 0));
+  EXPECT_THAT(p5.x(), AlmostEquals(Infinity<Length>, 0));
+  EXPECT_THAT(p5.y(), AlmostEquals(Infinity<Length>, 0));
+  EXPECT_THAT(p6.x(), AlmostEquals(Infinity<Length>, 0));
+  EXPECT_THAT(p6.y(), AlmostEquals(-Infinity<Length>, 0));
+  EXPECT_THAT(p7.x(), AlmostEquals(-Infinity<Length>, 0));
+  EXPECT_THAT(p7.y(), AlmostEquals(Infinity<Length>, 0));
 }
 
 }  // namespace internal_rp2_point

@@ -82,7 +82,7 @@ TYPED_TEST(FiniteDifferenceTest, HighDegreePolynomial) {
                         actual_derivative)));
     }
     if constexpr (n == 1) {
-      EXPECT_THAT(log_errors, Each(Infinity<double>()));
+      EXPECT_THAT(log_errors, Each(Infinity<double>));
     } else {
       EXPECT_THAT(AbsoluteError(n - 1, Slope(log_steps, log_errors)),
                   Lt(0.47))

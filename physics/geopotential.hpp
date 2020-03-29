@@ -59,8 +59,8 @@ class HarmonicDamping final {
       Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const;
 
  private:
-  Length outer_threshold_ = Infinity<Length>();
-  Length inner_threshold_ = Infinity<Length>();
+  Length outer_threshold_ = Infinity<Length>;
+  Length inner_threshold_ = Infinity<Length>;
 
   // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
   // following coefficients in monomial basis.

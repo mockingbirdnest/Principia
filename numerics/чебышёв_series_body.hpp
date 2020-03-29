@@ -17,6 +17,7 @@ namespace internal_чебышёв_series {
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using geometry::Multivector;
 using geometry::R3Element;
+namespace si = quantities::si;
 
 // The compiler does a much better job on an |R3Element<double>| than on a
 // |Vector<Quantity>| so we specialize this case.
