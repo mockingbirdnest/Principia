@@ -1,6 +1,0 @@
----
-Checks:            ''
-WarningsAsErrors:  ''
-HeaderFilterRegex: '.*\.hpp'
-FormatStyle:       'file'
-User:              phl
