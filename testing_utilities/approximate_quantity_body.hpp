@@ -56,13 +56,13 @@ std::string ApproximateQuantity<Quantity<Dimensions>>::DebugString() const {
 
 template<typename Dimensions>
 ApproximateQuantity<Quantity<Dimensions>>::ApproximateQuantity(
-    std::string const& representation,
+    std::string representation,
     int const ulp,
     bool const negated,
     double const min_multiplier,
     double const max_multiplier,
     Quantity<Dimensions> const& unit)
-    : representation_(representation),
+    : representation_(std::move(representation)),
       ulp_(ulp),
       negated_(negated),
       min_multiplier_(min_multiplier),

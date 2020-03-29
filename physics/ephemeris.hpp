@@ -160,7 +160,7 @@ class Ephemeris {
             std::vector<DegreesOfFreedom<Frame>> const& initial_state,
             Instant const& initial_time,
             AccuracyParameters const& accuracy_parameters,
-            FixedStepParameters const& fixed_step_parameters);
+            FixedStepParameters fixed_step_parameters);
 
   virtual ~Ephemeris() = default;
 

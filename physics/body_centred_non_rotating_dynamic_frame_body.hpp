@@ -3,6 +3,8 @@
 
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 
+#include <utility>
+
 #include "geometry/identity.hpp"
 #include "geometry/rotation.hpp"
 
@@ -18,10 +20,10 @@ using geometry::Rotation;
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 BodyCentredNonRotatingDynamicFrame(
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    not_null<MassiveBody const*> const centre)
-    : ephemeris_(ephemeris),
-      centre_(centre),
+    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    not_null<MassiveBody const*> centre)
+    : ephemeris_(std::move(ephemeris)),
+      centre_(std::move(centre)),
       centre_trajectory_(ephemeris_->trajectory(centre_)),
       orthogonal_map_(
           [this]() {

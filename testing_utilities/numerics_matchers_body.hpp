@@ -3,6 +3,7 @@
 #include "testing_utilities/numerics_matchers.hpp"
 
 #include <ostream>
+#include <utility>
 
 #include "testing_utilities/numerics.hpp"
 
@@ -18,7 +19,7 @@ template<typename Value>
 class DifferenceFromMatcher : public MatcherInterface<Value> {
  public:
   DifferenceFromMatcher(Value const& expected,
-                        Matcher<Difference<Value>> const& error_matcher);
+                        Matcher<Difference<Value>> error_matcher);
 
   bool MatchAndExplain(Value actual,
                        MatchResultListener* listener) const override;
@@ -37,7 +38,7 @@ class AbsoluteErrorFromMatcher : public MatcherInterface<Value> {
       decltype(AbsoluteError(std::declval<Value>(), std::declval<Value>()));
 
   AbsoluteErrorFromMatcher(Value const& expected,
-                           Matcher<Error> const& error_matcher);
+                           Matcher<Error> error_matcher);
 
   bool MatchAndExplain(Value actual,
                        MatchResultListener* listener) const override;
@@ -53,7 +54,7 @@ template<typename Value>
 class RelativeErrorFromMatcher : public MatcherInterface<Value> {
  public:
   RelativeErrorFromMatcher(Value const& expected,
-                           Matcher<double> const& error_matcher);
+                           Matcher<double> error_matcher);
 
   bool MatchAndExplain(Value actual,
                        MatchResultListener* listener) const override;
@@ -68,8 +69,9 @@ class RelativeErrorFromMatcher : public MatcherInterface<Value> {
 template<typename Value>
 DifferenceFromMatcher<Value>::DifferenceFromMatcher(
     Value const& expected,
-    Matcher<Difference<Value>> const& error_matcher)
-    : expected_(expected), error_matcher_(error_matcher) {}
+    Matcher<Difference<Value>> error_matcher)
+    : expected_(expected),
+      error_matcher_(std::move(error_matcher)) {}
 
 template<typename Value>
 bool DifferenceFromMatcher<Value>::MatchAndExplain(
@@ -96,8 +98,9 @@ void DifferenceFromMatcher<Value>::DescribeNegationTo(std::ostream* os) const {
 template<typename Value>
 AbsoluteErrorFromMatcher<Value>::AbsoluteErrorFromMatcher(
     Value const& expected,
-    Matcher<Error> const& error_matcher)
-    : expected_(expected), error_matcher_(error_matcher) {}
+    Matcher<Error> error_matcher)
+    : expected_(expected),
+      error_matcher_(std::move(error_matcher)) {}
 
 template<typename Value>
 bool AbsoluteErrorFromMatcher<Value>::MatchAndExplain(
@@ -125,8 +128,9 @@ void AbsoluteErrorFromMatcher<Value>::DescribeNegationTo(
 template<typename Value>
 RelativeErrorFromMatcher<Value>::RelativeErrorFromMatcher(
     Value const& expected,
-    Matcher<double> const& error_matcher)
-    : expected_(expected), error_matcher_(error_matcher) {}
+    Matcher<double> error_matcher)
+    : expected_(expected),
+      error_matcher_(std::move(error_matcher)) {}
 
 template<typename Value>
 bool RelativeErrorFromMatcher<Value>::MatchAndExplain(

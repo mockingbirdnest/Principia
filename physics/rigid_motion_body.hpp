@@ -3,6 +3,8 @@
 
 #include "physics/rigid_motion.hpp"
 
+#include <utility>
+
 #include "geometry/identity.hpp"
 #include "geometry/linear_map.hpp"
 
@@ -14,10 +16,10 @@ using geometry::LinearMap;
 
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>::RigidMotion(
-    RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
+    RigidTransformation<FromFrame, ToFrame> rigid_transformation,
     AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
     Velocity<FromFrame> const& velocity_of_to_frame_origin)
-    : rigid_transformation_(rigid_transformation),
+    : rigid_transformation_(std::move(rigid_transformation)),
       angular_velocity_of_to_frame_(angular_velocity_of_to_frame),
       velocity_of_to_frame_origin_(velocity_of_to_frame_origin) {}
 
@@ -171,11 +173,11 @@ std::ostream& operator<<(std::ostream& out,
 
 template<typename FromFrame, typename ToFrame>
 AcceleratedRigidMotion<FromFrame, ToFrame>::AcceleratedRigidMotion(
-    RigidMotion<FromFrame, ToFrame> const& rigid_motion,
+    RigidMotion<FromFrame, ToFrame> rigid_motion,
     Variation<AngularVelocity<FromFrame>> const&
         angular_acceleration_of_to_frame,
     Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin)
-    : rigid_motion_(rigid_motion),
+    : rigid_motion_(std::move(rigid_motion)),
       angular_acceleration_of_to_frame_(angular_acceleration_of_to_frame),
       acceleration_of_to_frame_origin_(acceleration_of_to_frame_origin) {}
 

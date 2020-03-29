@@ -40,7 +40,7 @@ template<typename FromFrame, typename ToFrame>
 class RigidMotion final {
  public:
   RigidMotion(
-      RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
+      RigidTransformation<FromFrame, ToFrame> rigid_transformation,
       AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
       Velocity<FromFrame> const& velocity_of_to_frame_origin);
 
@@ -103,7 +103,7 @@ template<typename FromFrame, typename ToFrame>
 class AcceleratedRigidMotion final {
  public:
   AcceleratedRigidMotion(
-      RigidMotion<FromFrame, ToFrame> const& rigid_motion,
+      RigidMotion<FromFrame, ToFrame> rigid_motion,
       Variation<AngularVelocity<FromFrame>> const&
           angular_acceleration_of_to_frame,
       Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin);

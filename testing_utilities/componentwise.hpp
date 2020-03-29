@@ -47,8 +47,8 @@ Componentwise(XMatcher const& x_matcher,
 template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2 final {
  public:
-  ComponentwiseMatcher2(T1Matcher const& t1_matcher,
-                        T2Matcher const& t2_matcher);
+  ComponentwiseMatcher2(T1Matcher t1_matcher,
+                        T2Matcher t2_matcher);
 
   template <typename PairType>
   operator Matcher<PairType> () const;
@@ -61,9 +61,9 @@ class ComponentwiseMatcher2 final {
 template<typename T1Matcher, typename T2Matcher, typename T3Matcher>
 class ComponentwiseMatcher3 final {
  public:
-  ComponentwiseMatcher3(T1Matcher const& t1_matcher,
-                        T2Matcher const& t2_matcher,
-                        T3Matcher const& t3_matcher);
+  ComponentwiseMatcher3(T1Matcher t1_matcher,
+                        T2Matcher t2_matcher,
+                        T3Matcher t3_matcher);
 
   template <typename TripleType>
   operator Matcher<TripleType> () const;

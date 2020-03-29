@@ -43,8 +43,8 @@ class SolarSystem final {
               bool ignore_frame = false);
 
   // Construct a solar system from the given messages.
-  SolarSystem(serialization::GravityModel const& gravity_model,
-              serialization::InitialState const& initial_state,
+  SolarSystem(serialization::GravityModel gravity_model,
+              serialization::InitialState initial_state,
               bool ignore_frame = false);
 
   SolarSystem(SolarSystem const& other) = delete;

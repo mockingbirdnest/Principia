@@ -161,11 +161,11 @@ class Part final {
 
  private:
   Part(PartId part_id,
-       std::string const& name,
+       std::string name,
        bool truthful,
        Mass const& mass,
        InertiaTensor<RigidPart> const& inertia_tensor,
-       RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+       RigidMotion<RigidPart, Barycentric> rigid_motion,
        std::function<void()> deletion_callback);
 
   PartId const part_id_;

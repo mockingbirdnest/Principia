@@ -17,10 +17,10 @@ using quantities::Difference;
 
 template<typename Argument, typename Value>
 Hermite3<Argument, Value>::Hermite3(
-    std::pair<Argument, Argument> const& arguments,
+    std::pair<Argument, Argument> arguments,
     std::pair<Value, Value> const& values,
     std::pair<Derivative1, Derivative1> const& derivatives)
-    : arguments_(arguments) {
+    : arguments_(std::move(arguments)) {
   a0_ = values.first;
   a1_ = derivatives.first;
   Difference<Argument> const Δargument = arguments_.second - arguments_.first;

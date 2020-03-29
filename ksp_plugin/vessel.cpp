@@ -48,16 +48,17 @@ bool operator!=(Vessel::PrognosticatorParameters const& left,
          left.shutdown != right.shutdown;
 }
 
-Vessel::Vessel(GUID const& guid,
-               std::string const& name,
+Vessel::Vessel(GUID guid,
+               std::string name,
                not_null<Celestial const*> const parent,
                not_null<Ephemeris<Barycentric>*> const ephemeris,
-               Ephemeris<Barycentric>::AdaptiveStepParameters const&
+               Ephemeris<Barycentric>::AdaptiveStepParameters
                    prediction_adaptive_step_parameters)
-    : guid_(guid),
-      name_(name),
+    : guid_(std::move(guid)),
+      name_(std::move(name)),
       body_(),
-      prediction_adaptive_step_parameters_(prediction_adaptive_step_parameters),
+      prediction_adaptive_step_parameters_(
+          std::move(prediction_adaptive_step_parameters)),
       parent_(parent),
       ephemeris_(ephemeris),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {

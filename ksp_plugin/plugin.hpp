@@ -449,8 +449,8 @@ class Plugin {
       Ephemeris<Barycentric>::NewtonianMotionEquation;
 
   // This constructor should only be used during deserialization.
-  Plugin(Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+  Plugin(Ephemeris<Barycentric>::FixedStepParameters history_parameters,
+         Ephemeris<Barycentric>::AdaptiveStepParameters
              psychohistory_parameters);
 
   void InitializeIndices(

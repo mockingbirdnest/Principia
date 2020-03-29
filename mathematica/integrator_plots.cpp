@@ -5,6 +5,7 @@
 #include <fstream>  // NOLINT(readability/streams)
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bundle.hpp"
@@ -204,13 +205,13 @@ class WorkErrorGraphGenerator {
       ODE::SystemState initial_state,
       std::function<Errors(ODE::SystemState const&)> compute_errors,
       Instant const& tmax,
-      std::string const& problem_name)
+      std::string problem_name)
       : methods_(Methods()),
-        compute_accelerations_(compute_accelerations),
-        initial_state_(initial_state),
-        compute_errors_(compute_errors),
+        compute_accelerations_(std::move(compute_accelerations)),
+        initial_state_(std::move(initial_state)),
+        compute_errors_(std::move(compute_errors)),
         tmax_(tmax),
-        problem_name_(problem_name) {
+        problem_name_(std::move(problem_name)) {
     q_errors_.resize(methods_.size());
     v_errors_.resize(methods_.size());
     e_errors_.resize(methods_.size());

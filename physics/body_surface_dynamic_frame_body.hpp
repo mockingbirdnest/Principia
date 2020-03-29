@@ -3,6 +3,8 @@
 
 #include "physics/body_surface_dynamic_frame.hpp"
 
+#include <utility>
+
 #include "base/not_null.hpp"
 #include "geometry/rotation.hpp"
 
@@ -20,10 +22,10 @@ using quantities::Variation;
 template<typename InertialFrame, typename ThisFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
 BodySurfaceDynamicFrame(
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    not_null<RotatingBody<InertialFrame> const*> const centre)
-    : ephemeris_(ephemeris),
-      centre_(centre),
+    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    not_null<RotatingBody<InertialFrame> const*> centre)
+    : ephemeris_(std::move(ephemeris)),
+      centre_(std::move(centre)),
       centre_trajectory_(ephemeris_->trajectory(centre_)) {}
 
 template<typename InertialFrame, typename ThisFrame>

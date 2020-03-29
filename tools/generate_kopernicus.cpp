@@ -162,8 +162,8 @@ void GenerateKopernicusForSlippist1(
       auto const keplerian_elements =
           SolarSystem<Sky>::MakeKeplerianElements(elements);
       KeplerOrbit<Sky> const kepler_orbit(
-          SolarSystem<Sky>::MakeMassiveBody(*star),
-          SolarSystem<Sky>::MakeMassiveBody(body),
+          *SolarSystem<Sky>::MakeMassiveBody(*star),
+          *SolarSystem<Sky>::MakeMassiveBody(body),
           keplerian_elements,
           solar_system.epoch());
       kopernicus_cfg << "    @Orbit {\n";

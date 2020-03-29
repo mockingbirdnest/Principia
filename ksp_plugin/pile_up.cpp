@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
@@ -41,16 +42,15 @@ using ::std::placeholders::_3;
 PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
     Instant const& t,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters,
-    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
+    Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     std::function<void()> deletion_callback)
     : lock_(make_not_null_unique<absl::Mutex>()),
       parts_(std::move(parts)),
       ephemeris_(ephemeris),
-      adaptive_step_parameters_(adaptive_step_parameters),
-      fixed_step_parameters_(fixed_step_parameters),
+      adaptive_step_parameters_(std::move(adaptive_step_parameters)),
+      fixed_step_parameters_(std::move(fixed_step_parameters)),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       deletion_callback_(std::move(deletion_callback)) {
   LOG(INFO) << "Constructing pile up at " << this;
@@ -332,9 +332,8 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
 
 PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters,
-    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
+    Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
     not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
     DiscreteTrajectory<Barycentric>* const psychohistory,
     Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
@@ -343,8 +342,8 @@ PileUp::PileUp(
     : lock_(make_not_null_unique<absl::Mutex>()),
       parts_(std::move(parts)),
       ephemeris_(ephemeris),
-      adaptive_step_parameters_(adaptive_step_parameters),
-      fixed_step_parameters_(fixed_step_parameters),
+      adaptive_step_parameters_(std::move(adaptive_step_parameters)),
+      fixed_step_parameters_(std::move(fixed_step_parameters)),
       history_(std::move(history)),
       psychohistory_(psychohistory),
       angular_momentum_(angular_momentum),

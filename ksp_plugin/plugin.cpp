@@ -1471,11 +1471,11 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 }
 
 Plugin::Plugin(
-    Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+    Ephemeris<Barycentric>::FixedStepParameters history_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters
         psychohistory_parameters)
-    : history_parameters_(history_parameters),
-      psychohistory_parameters_(psychohistory_parameters),
+    : history_parameters_(std::move(history_parameters)),
+      psychohistory_parameters_(std::move(psychohistory_parameters)),
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
 

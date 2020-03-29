@@ -87,7 +87,7 @@ class SymmetricLinearMultistepIntegrator
              AppendState const& append_state,
              Time const& step,
              int startup_step_index,
-             std::list<Step> const& previous_steps,
+             std::list<Step> previous_steps,
              SymmetricLinearMultistepIntegrator const& integrator);
 
     // Performs the startup integration, i.e., computes enough states to either

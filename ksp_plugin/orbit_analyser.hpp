@@ -84,7 +84,7 @@ class OrbitAnalyser {
   };
 
   OrbitAnalyser(not_null<Ephemeris<Barycentric>*> ephemeris,
-                Ephemeris<Barycentric>::FixedStepParameters const&
+                Ephemeris<Barycentric>::FixedStepParameters
                     analysed_trajectory_parameters);
   ~OrbitAnalyser();
 

@@ -84,14 +84,13 @@ using PileUpPrincipalAxes = Frame<serialization::Frame::PluginTag,
 // |Parts|, modeling them as a massless body at their centre of mass.
 class PileUp {
  public:
-  PileUp(std::list<not_null<Part*>>&& parts,
-         Instant const& t,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
-             adaptive_step_parameters,
-         Ephemeris<Barycentric>::FixedStepParameters const&
-             fixed_step_parameters,
-         not_null<Ephemeris<Barycentric>*> ephemeris,
-         std::function<void()> deletion_callback);
+  PileUp(
+      std::list<not_null<Part*>>&& parts,
+      Instant const& t,
+      Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
+      Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
+      not_null<Ephemeris<Barycentric>*> ephemeris,
+      std::function<void()> deletion_callback);
 
   virtual ~PileUp();
 
@@ -140,16 +139,15 @@ class PileUp {
       void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
 
   // For deserialization.
-  PileUp(std::list<not_null<Part*>>&& parts,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
-             adaptive_step_parameters,
-         Ephemeris<Barycentric>::FixedStepParameters const&
-             fixed_step_parameters,
-         not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
-         DiscreteTrajectory<Barycentric>* psychohistory,
-         Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
-         not_null<Ephemeris<Barycentric>*> ephemeris,
-         std::function<void()> deletion_callback);
+  PileUp(
+      std::list<not_null<Part*>>&& parts,
+      Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
+      Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
+      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
+      DiscreteTrajectory<Barycentric>* psychohistory,
+      Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
+      not_null<Ephemeris<Barycentric>*> ephemeris,
+      std::function<void()> deletion_callback);
 
   // Sets |euler_solver_| and updates |rigid_pile_up_|.
   void MakeEulerSolver(InertiaTensor<NonRotatingPileUp> const& inertia_tensor,

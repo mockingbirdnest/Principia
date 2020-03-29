@@ -2,6 +2,7 @@
 #include "ksp_plugin/orbit_analyser.hpp"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
@@ -18,11 +19,12 @@ using physics::DiscreteTrajectory;
 using physics::MasslessBody;
 using quantities::IsFinite;
 
-OrbitAnalyser::OrbitAnalyser(not_null<Ephemeris<Barycentric>*> const ephemeris,
-                             Ephemeris<Barycentric>::FixedStepParameters const&
-                                 analysed_trajectory_parameters)
+OrbitAnalyser::OrbitAnalyser(
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
+    Ephemeris<Barycentric>::FixedStepParameters analysed_trajectory_parameters)
     : ephemeris_(ephemeris),
-      analysed_trajectory_parameters_(analysed_trajectory_parameters) {}
+      analysed_trajectory_parameters_(
+          std::move(analysed_trajectory_parameters)) {}
 
 OrbitAnalyser::~OrbitAnalyser() {
   if (analyser_.joinable()) {

@@ -4,6 +4,7 @@
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 
 #include <algorithm>
+#include <utility>
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
@@ -33,12 +34,12 @@ using quantities::si::Radian;
 template<typename InertialFrame, typename ThisFrame>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 BarycentricRotatingDynamicFrame(
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    not_null<MassiveBody const*> const primary,
-    not_null<MassiveBody const*> const secondary)
-    : ephemeris_(ephemeris),
-      primary_(primary),
-      secondary_(secondary),
+    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    not_null<MassiveBody const*> primary,
+    not_null<MassiveBody const*> secondary)
+    : ephemeris_(std::move(ephemeris)),
+      primary_(std::move(primary)),
+      secondary_(std::move(secondary)),
       primary_trajectory_(ephemeris_->trajectory(primary_)),
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
 

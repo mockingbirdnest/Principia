@@ -192,7 +192,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
-             ToleranceToErrorRatio const& tolerance_to_error_ratio,
+             ToleranceToErrorRatio tolerance_to_error_ratio,
              Parameters const& parameters,
              Time const& time_step,
              bool first_use);
