@@ -164,18 +164,8 @@ constexpr Quotient<double, Quantity<RDimensions>> operator/(
 }
 
 template<typename Q>
-constexpr Q Infinity() {
-  return SIUnit<Q>() * std::numeric_limits<double>::infinity();
-}
-
-template<typename Q>
 constexpr bool IsFinite(Q const& x) {
   return std::isfinite(x / SIUnit<Q>());
-}
-
-template<typename Q>
-constexpr Q NaN() {
-  return SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
 }
 
 template<typename D>

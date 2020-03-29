@@ -104,10 +104,6 @@ class Quantity final {
       Quantity<RDimensions> const& right);
 
   template<typename Q>
-  friend constexpr Q Infinity();
-  template<typename Q>
-  friend constexpr Q NaN();
-  template<typename Q>
   friend constexpr Q SIUnit();
 
   template<typename U>
@@ -127,18 +123,21 @@ template<typename RDimensions>
 constexpr Quotient<double, Quantity<RDimensions>>
 operator/(double, Quantity<RDimensions> const&);
 
-// Used for implementing |si::Unit|.  Don't call directly.
+// Used for implementing |si::Unit|.  Don't call directly, don't export from
+// this namespace.  Defined here to break circular dependencies.
 template<typename Q>
 constexpr Q SIUnit() { return Q(1); };
-// Returns a positive infinity of |Q|.
+
+// A positive infinity of |Q|.
 template<typename Q>
-constexpr Q Infinity();
+constexpr Q Infinity = SIUnit<Q>() * std::numeric_limits<double>::infinity();
+// A quiet NaN of |Q|.
+template<typename Q>
+constexpr Q NaN = SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
+
 template<typename Q>
 constexpr bool IsFinite(Q const& x);
 
-// Returns a quiet NaN of |Q|.
-template<typename Q>
-constexpr Q NaN();
 
 template<typename D>
 std::string Format();
