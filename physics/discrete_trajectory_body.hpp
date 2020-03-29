@@ -588,12 +588,10 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
   bool const is_pre_frobenius = !message.has_zfp();
   if (is_pre_frobenius) {
-    for (auto timeline_it = message.timeline().begin();
-         timeline_it != message.timeline().end();
-         ++timeline_it) {
-      Append(Instant::ReadFromMessage(timeline_it->instant()),
+    for (auto const& instantaneous_dof : message.timeline()) {
+      Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
              DegreesOfFreedom<Frame>::ReadFromMessage(
-                 timeline_it->degrees_of_freedom()));
+                 instantaneous_dof.degrees_of_freedom()));
     }
   } else {
     CHECK_EQ(ZFP_CODEC, message.zfp().codec_version());

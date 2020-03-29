@@ -14,7 +14,7 @@ using base::not_null;
 // |double|).
 class Quaternion final {
  public:
-  Quaternion();
+  constexpr Quaternion() = default;
   explicit Quaternion(double real_part);
   Quaternion(double real_part, R3Element<double> const& imaginary_part);
 
@@ -39,7 +39,7 @@ class Quaternion final {
   static Quaternion ReadFromMessage(serialization::Quaternion const& message);
 
  private:
-  double real_part_;
+  double real_part_ = 0;
   R3Element<double> imaginary_part_;
 };
 

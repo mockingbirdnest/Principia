@@ -8,6 +8,7 @@
 #include <limits>
 #include <optional>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
@@ -72,7 +73,7 @@ constexpr Time max_time_between_checkpoints = 180 * Day;
 // downsampling from going postal.
 constexpr double min_radius_tolerance = 0.99;
 
-inline Status const CollisionDetected() {
+inline Status CollisionDetected() {
   return Status(Error::OUT_OF_RANGE, "Collision detected");
 }
 
@@ -229,9 +230,9 @@ Ephemeris<Frame>::Ephemeris(
     std::vector<DegreesOfFreedom<Frame>> const& initial_state,
     Instant const& initial_time,
     AccuracyParameters const& accuracy_parameters,
-    FixedStepParameters const& fixed_step_parameters)
+    FixedStepParameters fixed_step_parameters)
     : accuracy_parameters_(accuracy_parameters),
-      fixed_step_parameters_(fixed_step_parameters),
+      fixed_step_parameters_(std::move(fixed_step_parameters)),
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
               /*reader=*/MakeCheckpointerReader(this),

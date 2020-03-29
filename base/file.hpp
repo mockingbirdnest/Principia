@@ -11,7 +11,7 @@ namespace internal_file {
 // A RAII wrapper for a |std::ofstream|.
 class OFStream {
  public:
-  OFStream();
+  OFStream() = default;
   explicit OFStream(std::filesystem::path const& path);
   ~OFStream();
 

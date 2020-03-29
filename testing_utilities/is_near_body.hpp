@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -29,8 +30,8 @@ testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
 }
 
 template<typename T>
-IsNearMatcher<T>::IsNearMatcher(ApproximateQuantity<T> const& expected)
-    : expected_(expected) {}
+IsNearMatcher<T>::IsNearMatcher(ApproximateQuantity<T> expected)
+    : expected_(std::move(expected)) {}
 
 template<typename T>
 template<typename Dimensions>

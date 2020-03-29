@@ -583,7 +583,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     not_null<Vessel*> const vessel = it->second.get();
     Instant const vessel_time =
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
-    if (kept_vessels_.erase(vessel)) {
+    if (kept_vessels_.erase(vessel) > 0) {
       vessel->PrepareHistory(vessel_time);
       ++it;
     } else {
@@ -1471,11 +1471,11 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 }
 
 Plugin::Plugin(
-    Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+    Ephemeris<Barycentric>::FixedStepParameters history_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters
         psychohistory_parameters)
-    : history_parameters_(history_parameters),
-      psychohistory_parameters_(psychohistory_parameters),
+    : history_parameters_(std::move(history_parameters)),
+      psychohistory_parameters_(std::move(psychohistory_parameters)),
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
 

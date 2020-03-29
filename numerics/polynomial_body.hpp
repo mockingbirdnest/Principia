@@ -145,8 +145,8 @@ Polynomial<Value, Argument>::ReadFromMessage(
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
-PolynomialInMonomialBasis(Coefficients const& coefficients)
-    : coefficients_(coefficients) {}
+PolynomialInMonomialBasis(Coefficients coefficients)
+    : coefficients_(std::move(coefficients)) {}
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -218,9 +218,9 @@ template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 constexpr
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
-PolynomialInMonomialBasis(Coefficients const& coefficients,
+PolynomialInMonomialBasis(Coefficients coefficients,
                           Point<Argument> const& origin)
-    : coefficients_(coefficients),
+    : coefficients_(std::move(coefficients)),
       origin_(origin) {}
 
 template<typename Value, typename Argument, int degree_,

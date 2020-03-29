@@ -127,8 +127,8 @@ void Reduce(Angle const& angle,
 // |FukushimaEllipticBD| declared in the header file.
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void FukushimaEllipticBDJ(Angle const& φ,
-                          double const n,
-                          double const mc,
+                          double n,
+                          double mc,
                           Angle& B_φǀm,
                           Angle& D_φǀm,
                           ThirdKind& J_φ_nǀm);
@@ -136,8 +136,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
 // Implementation of the B, D, J functions with all arguments reduced.
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void FukushimaEllipticBDJReduced(Angle const& φ,
-                                 double const n,
-                                 double const mc,
+                                 double n,
+                                 double mc,
                                  Angle& B_φǀm,
                                  Angle& D_φǀm,
                                  ThirdKind& J_φ_nǀm);
@@ -146,8 +146,8 @@ void FukushimaEllipticBDJReduced(Angle const& φ,
 // |EllipticFE| declared in the header file.
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void EllipticFEΠ(Angle const& φ,
-                 double const n,
-                 double const mc,
+                 double n,
+                 double mc,
                  Angle& F_φǀm,
                  Angle& E_φǀm,
                  ThirdKind& Π_φ_nǀm);
@@ -263,7 +263,7 @@ class FukushimaEllipticDsBsMaclaurin {
 
  public:
   template<typename... Args, int n = sizeof...(Args)>
-  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
+  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator>
   MakeBsPolynomial(Args... args) {
     using Tuple = std::tuple<Args...>;
     return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
@@ -272,7 +272,7 @@ class FukushimaEllipticDsBsMaclaurin {
   }
 
   template<typename... Args, int n = sizeof...(Args)>
-  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
+  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator>
   MakeDsPolynomial(Args... args) {
     using Tuple = std::tuple<Args...>;
     return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(

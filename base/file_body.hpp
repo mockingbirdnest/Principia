@@ -13,8 +13,6 @@ namespace principia {
 namespace base {
 namespace internal_file {
 
-inline OFStream::OFStream() {}
-
 inline OFStream::OFStream(std::filesystem::path const& path) {
 #if PRINCIPIA_COMPILER_MSVC
   CHECK(path.has_filename()) << path;

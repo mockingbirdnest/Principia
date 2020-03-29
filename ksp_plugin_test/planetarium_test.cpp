@@ -104,7 +104,7 @@ class PlanetariumTest : public ::testing::Test {
                   /*reference_angle=*/0 * Radian,
                   /*reference_instant=*/t0_,
                   /*angular_frequency=*/10 * Radian / Second,
-                  /*ascension_of_pole=*/0 * Radian,
+                  /*right_ascension_of_pole=*/0 * Radian,
                   /*declination_of_pole=*/π / 2 * Radian)),
         bodies_({&body_}) {
     ON_CALL(plotting_frame_, t_min()).WillByDefault(Return(InfinitePast));

@@ -60,7 +60,7 @@ std::vector<std::string> ReadLinesFromBase64File(
   while (!file.eof()) {
     std::string line;
     std::getline(file, line);
-    b64.push_back("");
+    b64.emplace_back();
     for (auto const c : line) {
       if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
         (c >= 'a' && c <= 'z') || c == '-' || c == '_') {
@@ -101,7 +101,7 @@ std::vector<std::string> ReadLinesFromHexadecimalFile(
   while (!file.eof()) {
     std::string line;
     std::getline(file, line);
-    hex.push_back("");
+    hex.emplace_back();
     for (auto const c : line) {
       if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
         hex.back().push_back(c);

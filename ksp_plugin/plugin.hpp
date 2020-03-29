@@ -268,7 +268,7 @@ class Plugin {
   // |Index|, identifying the origin of |World| with the centre of mass of the
   // |Part| with the given |PartId|.
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
-      Index const index,
+      Index index,
       RigidMotion<Barycentric, World> const& barycentric_to_world,
       Instant const& time) const;
 
@@ -449,8 +449,8 @@ class Plugin {
       Ephemeris<Barycentric>::NewtonianMotionEquation;
 
   // This constructor should only be used during deserialization.
-  Plugin(Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+  Plugin(Ephemeris<Barycentric>::FixedStepParameters history_parameters,
+         Ephemeris<Barycentric>::AdaptiveStepParameters
              psychohistory_parameters);
 
   void InitializeIndices(

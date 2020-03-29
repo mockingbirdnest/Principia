@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include "geometry/point.hpp"
@@ -38,11 +39,11 @@ Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
 
 Planetarium::Planetarium(
     Parameters const& parameters,
-    Perspective<Navigation, Camera> const& perspective,
+    Perspective<Navigation, Camera> perspective,
     not_null<Ephemeris<Barycentric> const*> const ephemeris,
     not_null<NavigationFrame const*> const plotting_frame)
     : parameters_(parameters),
-      perspective_(perspective),
+      perspective_(std::move(perspective)),
       ephemeris_(ephemeris),
       plotting_frame_(plotting_frame) {}
 

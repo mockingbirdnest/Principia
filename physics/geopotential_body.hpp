@@ -583,7 +583,7 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
 
 #define PRINCIPIA_CASE_SPHERICAL_HARMONICS(d)                                  \
   case (d):                                                                    \
-    return AllDegrees<std::make_integer_sequence<int, (d + 1)>>::Acceleration( \
+    return AllDegrees<std::make_integer_sequence<int, (d) + 1>>::Acceleration( \
         *this, t, r, r_norm, r², one_over_r³)
 
 template<typename Frame>

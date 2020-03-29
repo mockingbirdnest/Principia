@@ -79,8 +79,8 @@ class Ephemeris {
         Speed const& speed_integration_tolerance);
 
     void WriteToMessage(
-        not_null<serialization::Ephemeris::AdaptiveStepParameters*> const
-            message) const;
+        not_null<serialization::Ephemeris::AdaptiveStepParameters*> message)
+        const;
     static ODEAdaptiveStepParameters ReadFromMessage(
         serialization::Ephemeris::AdaptiveStepParameters const& message);
 
@@ -123,8 +123,7 @@ class Ephemeris {
                        double geopotential_tolerance);
 
     void WriteToMessage(
-        not_null<serialization::Ephemeris::AccuracyParameters*> const
-            message) const;
+        not_null<serialization::Ephemeris::AccuracyParameters*> message) const;
     static AccuracyParameters ReadFromMessage(
         serialization::Ephemeris::AccuracyParameters const& message);
 
@@ -161,7 +160,7 @@ class Ephemeris {
             std::vector<DegreesOfFreedom<Frame>> const& initial_state,
             Instant const& initial_time,
             AccuracyParameters const& accuracy_parameters,
-            FixedStepParameters const& fixed_step_parameters);
+            FixedStepParameters fixed_step_parameters);
 
   virtual ~Ephemeris() = default;
 
@@ -259,8 +258,8 @@ class Ephemeris {
   // Appends to the given trajectories two point for each apsis, one for |body1|
   // and one for |body2|.  The times of |apoapsides1| and |apoapsideds2| are
   // identical (are similarly for |periapsides1| and |periapsides2|).
-  virtual void ComputeApsides(not_null<MassiveBody const*> const body1,
-                              not_null<MassiveBody const*> const body2,
+  virtual void ComputeApsides(not_null<MassiveBody const*> body1,
+                              not_null<MassiveBody const*> body2,
                               DiscreteTrajectory<Frame>& apoapsides1,
                               DiscreteTrajectory<Frame>& periapsides1,
                               DiscreteTrajectory<Frame>& apoapsides2,
@@ -315,7 +314,7 @@ class Ephemeris {
   void CreateCheckpointIfNeeded(Instant const& time) const
       SHARED_LOCKS_REQUIRED(lock_);
   Checkpointer<serialization::Ephemeris>::Reader
-  static MakeCheckpointerReader(Ephemeris* const ephemeris);
+  static MakeCheckpointerReader(Ephemeris* ephemeris);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
@@ -344,10 +343,10 @@ class Ephemeris {
   static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
       Instant const& t,
       MassiveBody const& body1,
-      std::size_t const b1,
+      std::size_t b1,
       std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
-      std::size_t const b2_begin,
-      std::size_t const b2_end,
+      std::size_t b2_begin,
+      std::size_t b2_end,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations,
       std::vector<Geopotential<Frame>> const& geopotentials);
@@ -360,7 +359,7 @@ class Ephemeris {
   Error ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
-      std::size_t const b1,
+      std::size_t b1,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
       REQUIRES_SHARED(lock_);

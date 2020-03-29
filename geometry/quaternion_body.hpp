@@ -18,8 +18,6 @@ using quantities::Abs;
 using quantities::DebugString;
 using quantities::Sqrt;
 
-inline Quaternion::Quaternion() : real_part_(0) {}
-
 inline Quaternion::Quaternion(double const real_part)
     : real_part_(real_part) {}
 

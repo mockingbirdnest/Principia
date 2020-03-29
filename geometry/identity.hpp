@@ -32,7 +32,7 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
                 "Cannot identity frames with different handedness");
 
  public:
-  Identity();
+  Identity() = default;
 
   Sign Determinant() const override;
 

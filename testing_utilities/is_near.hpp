@@ -23,7 +23,7 @@ testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
 template<typename T>
 class IsNearMatcher final {
  public:
-  explicit IsNearMatcher(ApproximateQuantity<T> const& expected);
+  explicit IsNearMatcher(ApproximateQuantity<T> expected);
 
   template<typename Dimensions>
   bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,

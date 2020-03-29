@@ -63,7 +63,7 @@ class Planetarium {
   // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
   // In particular Navigation vs. NavigationFrame is a mess.
   Planetarium(Parameters const& parameters,
-              Perspective<Navigation, Camera> const& perspective,
+              Perspective<Navigation, Camera> perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
               not_null<NavigationFrame const*> plotting_frame);
 

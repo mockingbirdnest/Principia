@@ -48,7 +48,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // the coefficient of highest degree is less than |tolerance|.
   ContinuousTrajectory(Time const& step,
                        Length const& tolerance);
-  virtual ~ContinuousTrajectory() = default;
 
   ContinuousTrajectory(ContinuousTrajectory const&) = delete;
   ContinuousTrajectory(ContinuousTrajectory&&) = delete;

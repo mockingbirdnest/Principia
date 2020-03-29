@@ -47,11 +47,11 @@ class Vessel {
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
-  Vessel(GUID const& guid,
-         std::string const& name,
+  Vessel(GUID guid,
+         std::string name,
          not_null<Celestial const*> parent,
          not_null<Ephemeris<Barycentric>*> ephemeris,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+         Ephemeris<Barycentric>::AdaptiveStepParameters
              prediction_adaptive_step_parameters);
 
   Vessel(Vessel const&) = delete;

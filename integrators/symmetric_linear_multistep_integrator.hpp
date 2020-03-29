@@ -69,7 +69,7 @@ class SymmetricLinearMultistepIntegrator
 
       void WriteToMessage(
           not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
-                       Step*> const message) const;
+                       Step*> message) const;
       template<typename P = Position,
                typename = std::enable_if_t<base::is_serializable_v<P>>>
       static Step ReadFromMessage(
@@ -87,7 +87,7 @@ class SymmetricLinearMultistepIntegrator
              AppendState const& append_state,
              Time const& step,
              int startup_step_index,
-             std::list<Step> const& previous_steps,
+             std::list<Step> previous_steps,
              SymmetricLinearMultistepIntegrator const& integrator);
 
     // Performs the startup integration, i.e., computes enough states to either

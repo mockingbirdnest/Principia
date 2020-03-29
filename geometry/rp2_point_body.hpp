@@ -40,7 +40,7 @@ bool RP2Point<Scalar, Frame>::is_at_infinity() const {
 }
 
 template<typename Scalar, typename Frame>
-Scalar const RP2Point<Scalar, Frame>::x() const {
+Scalar RP2Point<Scalar, Frame>::x() const {
   if (x_ == Scalar() && z_ == 0.0) {
     // Returns an infinity of the right sign.
     return Infinity<Square<Scalar>>() / x_;
@@ -50,7 +50,7 @@ Scalar const RP2Point<Scalar, Frame>::x() const {
 }
 
 template<typename Scalar, typename Frame>
-Scalar const RP2Point<Scalar, Frame>::y() const {
+Scalar RP2Point<Scalar, Frame>::y() const {
   if (y_ == Scalar() && z_ == 0.0) {
     // Returns an infinity of the right sign.
     return Infinity<Square<Scalar>>() / y_;

@@ -3,6 +3,7 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
@@ -347,18 +348,18 @@ std::string Part::ShortDebugString() const {
 }
 
 Part::Part(PartId const part_id,
-           std::string const& name,
+           std::string name,
            bool const truthful,
            Mass const& mass,
            InertiaTensor<RigidPart> const& inertia_tensor,
-           RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+           RigidMotion<RigidPart, Barycentric> rigid_motion,
            std::function<void()> deletion_callback)
     : part_id_(part_id),
-      name_(name),
+      name_(std::move(name)),
       truthful_(truthful),
       mass_(mass),
       inertia_tensor_(inertia_tensor),
-      rigid_motion_(rigid_motion),
+      rigid_motion_(std::move(rigid_motion)),
       prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
       deletion_callback_(std::move(deletion_callback)) {

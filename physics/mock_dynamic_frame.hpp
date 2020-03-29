@@ -14,8 +14,6 @@ namespace internal_dynamic_frame {
 template<typename InertialFrame, typename ThisFrame>
 class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
  public:
-  MockDynamicFrame() {}
-
   MOCK_CONST_METHOD1_T(ToThisFrameAtTime,
                        RigidMotion<InertialFrame, ThisFrame>(Instant const& t));
   MOCK_CONST_METHOD1_T(FromThisFrameAtTime,

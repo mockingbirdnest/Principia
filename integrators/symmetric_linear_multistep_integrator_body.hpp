@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <list>
+#include <utility>
 #include <vector>
 
 #include "geometry/serialization.hpp"
@@ -265,11 +266,11 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Instance(
     AppendState const& append_state,
     Time const& step,
     int const startup_step_index,
-    std::list<Step> const& previous_steps,
+    std::list<Step> previous_steps,
     SymmetricLinearMultistepIntegrator const& integrator)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       startup_step_index_(startup_step_index),
-      previous_steps_(previous_steps),
+      previous_steps_(std::move(previous_steps)),
       integrator_(integrator) {}
 
 template<typename Method, typename Position>

@@ -153,7 +153,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
 
     void WriteToMessage(
         not_null<serialization::AdaptiveStepSizeIntegratorInstance::
-                     Parameters*> const message) const;
+                     Parameters*> message) const;
     static Parameters ReadFromMessage(
         serialization::AdaptiveStepSizeIntegratorInstance::Parameters const&
             message);
@@ -192,7 +192,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
-             ToleranceToErrorRatio const& tolerance_to_error_ratio,
+             ToleranceToErrorRatio tolerance_to_error_ratio,
              Parameters const& parameters,
              Time const& time_step,
              bool first_use);

@@ -26,14 +26,14 @@ class EvaluationHelper<Multivector<Scalar, Frame, rank>> final {
  public:
   EvaluationHelper(
       std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
-      int const degree);
+      int degree);
   EvaluationHelper(EvaluationHelper&& other) = default;
   EvaluationHelper& operator=(EvaluationHelper&& other) = default;
 
   Multivector<Scalar, Frame, rank> EvaluateImplementation(
-      double const scaled_t) const;
+      double scaled_t) const;
 
-  Multivector<Scalar, Frame, rank> coefficients(int const index) const;
+  Multivector<Scalar, Frame, rank> coefficients(int index) const;
   int degree() const;
 
  private:

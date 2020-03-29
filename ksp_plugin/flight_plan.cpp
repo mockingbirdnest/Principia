@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -29,37 +30,36 @@ using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
 
-inline Status const BadDesiredFinalTime() {
+inline Status BadDesiredFinalTime() {
   return Status(FlightPlan::bad_desired_final_time, "Bad desired final time");
 }
 
-inline Status const DoesNotFit() {
+inline Status DoesNotFit() {
   return Status(FlightPlan::does_not_fit, "Does not fit");
 }
 
-inline Status const Singular() {
+inline Status Singular() {
   return Status(FlightPlan::singular, "Singular");
 }
 
 FlightPlan::FlightPlan(
     Mass const& initial_mass,
     Instant const& initial_time,
-    DegreesOfFreedom<Barycentric> const& initial_degrees_of_freedom,
+    DegreesOfFreedom<Barycentric> initial_degrees_of_freedom,
     Instant const& desired_final_time,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters,
-    Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+    Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
+    Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
         generalized_adaptive_step_parameters)
     : initial_mass_(initial_mass),
       initial_time_(initial_time),
-      initial_degrees_of_freedom_(initial_degrees_of_freedom),
+      initial_degrees_of_freedom_(std::move(initial_degrees_of_freedom)),
       desired_final_time_(desired_final_time),
       root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       ephemeris_(ephemeris),
-      adaptive_step_parameters_(adaptive_step_parameters),
+      adaptive_step_parameters_(std::move(adaptive_step_parameters)),
       generalized_adaptive_step_parameters_(
-          generalized_adaptive_step_parameters) {
+          std::move(generalized_adaptive_step_parameters)) {
   CHECK(desired_final_time_ >= initial_time_);
 
   // Set the (single) point of the root.

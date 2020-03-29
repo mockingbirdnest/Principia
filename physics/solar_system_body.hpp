@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
@@ -94,11 +95,11 @@ SolarSystem<Frame>::SolarSystem(
 
 template<typename Frame>
 SolarSystem<Frame>::SolarSystem(
-    serialization::GravityModel const& gravity_model,
-    serialization::InitialState const& initial_state,
+    serialization::GravityModel gravity_model,
+    serialization::InitialState initial_state,
     bool const ignore_frame)
-    : gravity_model_(gravity_model),
-      initial_state_(initial_state) {
+    : gravity_model_(std::move(gravity_model)),
+      initial_state_(std::move(initial_state)) {
   gravity_model_.CheckInitialized();
   initial_state_.CheckInitialized();
 

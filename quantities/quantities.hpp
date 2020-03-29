@@ -54,7 +54,7 @@ class Quantity final {
  public:
   using Dimensions = D;
 
-  constexpr Quantity();
+  constexpr Quantity() = default;
   explicit constexpr Quantity(uninitialized_t);
 
   constexpr Quantity operator+() const;
@@ -82,7 +82,7 @@ class Quantity final {
 
  private:
   explicit constexpr Quantity(double magnitude);
-  double magnitude_;
+  double magnitude_ = 0;
 
   template<typename LDimensions, typename RDimensions>
   friend constexpr Product<Quantity<LDimensions>,

@@ -4,6 +4,7 @@
 #include "testing_utilities/componentwise.hpp"
 
 #include <string>
+#include <utility>
 
 #include "gmock/gmock.h"
 
@@ -31,10 +32,10 @@ Componentwise(XMatcher const& x_matcher,
 
 template<typename T1Matcher, typename T2Matcher>
 ComponentwiseMatcher2<T1Matcher, T2Matcher>::ComponentwiseMatcher2(
-    T1Matcher const& t1_matcher,
-    T2Matcher const& t2_matcher)
-    : t1_matcher_(t1_matcher),
-      t2_matcher_(t2_matcher) {}
+    T1Matcher t1_matcher,
+    T2Matcher t2_matcher)
+    : t1_matcher_(std::move(t1_matcher)),
+      t2_matcher_(std::move(t2_matcher)) {}
 
 template<typename T1Matcher, typename T2Matcher>
 template<typename PairType>
@@ -46,12 +47,12 @@ ComponentwiseMatcher2<T1Matcher, T2Matcher>::operator Matcher<PairType>()
 
 template<typename T1Matcher, typename T2Matcher, typename T3Matcher>
 ComponentwiseMatcher3<T1Matcher, T2Matcher, T3Matcher>::ComponentwiseMatcher3(
-    T1Matcher const& t1_matcher,
-    T2Matcher const& t2_matcher,
-    T3Matcher const& t3_matcher)
-    : t1_matcher_(t1_matcher),
-      t2_matcher_(t2_matcher),
-      t3_matcher_(t3_matcher) {}
+    T1Matcher t1_matcher,
+    T2Matcher t2_matcher,
+    T3Matcher t3_matcher)
+    : t1_matcher_(std::move(t1_matcher)),
+      t2_matcher_(std::move(t2_matcher)),
+      t3_matcher_(std::move(t3_matcher)) {}
 
 template<typename T1Matcher, typename T2Matcher, typename T3Matcher>
 template<typename TripleType>

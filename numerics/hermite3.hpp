@@ -26,7 +26,7 @@ class Hermite3 final {
  public:
   using Derivative1 = Derivative<Value, Argument>;
 
-  Hermite3(std::pair<Argument, Argument> const& arguments,
+  Hermite3(std::pair<Argument, Argument> arguments,
            std::pair<Value, Value> const& values,
            std::pair<Derivative1, Derivative1> const& derivatives);
 

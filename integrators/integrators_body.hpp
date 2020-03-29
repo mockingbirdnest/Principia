@@ -4,8 +4,10 @@
 #include "integrators/integrators.hpp"
 
 #include <limits>
-#include <vector>
 #include <string>
+#include <utility>
+#include <vector>
+
 
 #include "base/macros.hpp"
 #include "base/traits.hpp"
@@ -666,12 +668,12 @@ template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
-    ToleranceToErrorRatio const& tolerance_to_error_ratio,
+    ToleranceToErrorRatio tolerance_to_error_ratio,
     Parameters const& parameters,
     Time const& time_step,
     bool const first_use)
     : Integrator<ODE>::Instance(problem, append_state),
-      tolerance_to_error_ratio_(tolerance_to_error_ratio),
+      tolerance_to_error_ratio_(std::move(tolerance_to_error_ratio)),
       parameters_(parameters),
       time_step_(time_step),
       first_use_(first_use) {

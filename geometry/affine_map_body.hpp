@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <utility>
+
 #include "geometry/point.hpp"
 #include "geometry/grassmann.hpp"
 #include "affine_map.hpp"
@@ -17,10 +19,10 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::AffineMap(
     Point<FromVector> const& from_origin,
     Point<ToVector> const& to_origin,
-    LinearMap<FromFrame, ToFrame> const& linear_map)
+    LinearMap<FromFrame, ToFrame> linear_map)
     : from_origin_(from_origin),
       to_origin_(to_origin),
-      linear_map_(linear_map) {}
+      linear_map_(std::move(linear_map)) {}
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
