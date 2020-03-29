@@ -127,14 +127,9 @@ template<typename RDimensions>
 constexpr Quotient<double, Quantity<RDimensions>>
 operator/(double, Quantity<RDimensions> const&);
 
-// Returns the base or derived SI Unit of |Q|.
-// For instance, |SIUnit<Action>() == Joule * Second|.
+// Used for implementing |si::Unit|.  Don't call directly.
 template<typename Q>
-constexpr Q SIUnit();
-// Returns 1.
-template<>
-constexpr double SIUnit<double>();
-
+constexpr Q SIUnit() { return Q(1); };
 // Returns a positive infinity of |Q|.
 template<typename Q>
 constexpr Q Infinity();
@@ -173,7 +168,6 @@ using internal_quantities::LuminousIntensity;
 using internal_quantities::Mass;
 using internal_quantities::NaN;
 using internal_quantities::Quantity;
-using internal_quantities::SIUnit;
 using internal_quantities::Temperature;
 using internal_quantities::Time;
 

@@ -7,12 +7,11 @@
 #include <string>
 
 #include "base/macros.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_sign {
-
-using quantities::SIUnit;
 
 // Must be defined first because it is called by member functions below.
 template<typename T>
@@ -25,7 +24,7 @@ inline Sign::Sign(double const x) : negative_(std::signbit(x)) {}
 
 template<typename Dimensions>
 Sign::Sign(Quantity<Dimensions> const& x)
-    : Sign(x / SIUnit<Quantity<Dimensions>>()) {}
+    : Sign(x / si::Unit<Quantity<Dimensions>>) {}
 
 template<typename T, typename>
 constexpr Sign Sign::OfNonZero(T x) {

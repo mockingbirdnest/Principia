@@ -18,7 +18,6 @@ namespace internal_point {
 using base::not_constructible;
 using quantities::Product;
 using quantities::Quantity;
-using quantities::SIUnit;
 
 template<typename Vector>
 struct PointSerializer : not_constructible {};

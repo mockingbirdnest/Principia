@@ -70,7 +70,7 @@ struct Unit {
 template<typename Q>
 Unit::Unit(Q const& quantity)
     : dimensions(ExtractDimensions<Q>::dimensions()),
-      scale(quantity / SIUnit<Q>()) {}
+      scale(quantity / si::Unit<Q>) {}
 
 inline Unit::Unit(RuntimeDimensions&& dimensions, double const scale)
     : dimensions(dimensions),
@@ -243,7 +243,7 @@ Q ParseQuantity(std::string const& s) {
 
   Unit const unit = ParseQuotientUnit(unit_string);
   CHECK(ExtractDimensions<Q>::dimensions() == unit.dimensions) << unit_string;
-  return magnitude * unit.scale * SIUnit<Q>();
+  return magnitude * unit.scale * si::Unit<Q>;
 }
 
 }  // namespace internal_parser

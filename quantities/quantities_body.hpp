@@ -164,17 +164,6 @@ constexpr Quotient<double, Quantity<RDimensions>> operator/(
 }
 
 template<typename Q>
-constexpr Q SIUnit() {
-  static_assert(is_quantity<Q>::value, "Not a quantity");
-  return Q(1);
-}
-
-template<>
-constexpr double SIUnit<double>() {
-  return 1;
-}
-
-template<typename Q>
 constexpr Q Infinity() {
   return SIUnit<Q>() * std::numeric_limits<double>::infinity();
 }
@@ -231,7 +220,7 @@ inline std::string DebugString(double const number, int const precision) {
 
 template<typename D>
 std::string DebugString(Quantity<D> const& quantity, int const precision) {
-  return DebugString(quantity / SIUnit<Quantity<D>>(), precision) + " " +
+  return DebugString(quantity / si::Unit<Quantity<D>>, precision) + " " +
          Format<D>();
 }
 

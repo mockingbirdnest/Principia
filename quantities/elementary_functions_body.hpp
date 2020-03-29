@@ -21,40 +21,40 @@ template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
-  return SIUnit<Product<Q1, Q2>>() * std::fma(x / SIUnit<Q1>(),
-                                              y / SIUnit<Q2>(),
-                                              z / SIUnit<Product<Q1, Q2>>());
+  return si::Unit<Product<Q1, Q2>> * std::fma(x / si::Unit<Q1>,
+                                              y / si::Unit<Q2>,
+                                              z / si::Unit<Product<Q1, Q2>>);
 }
 
 template<typename Q>
 FORCE_INLINE(inline) Q Abs(Q const& quantity) {
-  return SIUnit<Q>() * std::abs(quantity / SIUnit<Q>());
+  return si::Unit<Q> * std::abs(quantity / si::Unit<Q>);
 }
 
 template<typename Q>
 Q Mod(Q const& argument, Q const& modulus) {
   double const result =
-      std::fmod(argument / SIUnit<Q>(), modulus / SIUnit<Q>());
+      std::fmod(argument / si::Unit<Q>, modulus / si::Unit<Q>);
   if (result > 0.0) {
-    return result * SIUnit<Q>();
+    return result * si::Unit<Q>;
   } else {
-    return result * SIUnit<Q>() + modulus;
+    return result * si::Unit<Q> + modulus;
   }
 }
 
 template<typename Q>
 SquareRoot<Q> Sqrt(Q const& x) {
 #if PRINCIPIA_USE_SSE3_INTRINSICS
-  auto const x_128d = _mm_set_sd(x / SIUnit<Q>());
-  return SIUnit<SquareRoot<Q>>() * _mm_cvtsd_f64(_mm_sqrt_sd(x_128d, x_128d));
+  auto const x_128d = _mm_set_sd(x / si::Unit<Q>);
+  return si::Unit<SquareRoot<Q>> * _mm_cvtsd_f64(_mm_sqrt_sd(x_128d, x_128d));
 #else
-  return SIUnit<SquareRoot<Q>>() * std::sqrt(x / SIUnit<Q>());
+  return si::Unit<SquareRoot<Q>> * std::sqrt(x / si::Unit<Q>);
 #endif
 }
 
 template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x) {
-  return SIUnit<CubeRoot<Q>>() * numerics::Cbrt(x / SIUnit<Q>());
+  return si::Unit<CubeRoot<Q>> * numerics::Cbrt(x / si::Unit<Q>);
 }
 
 template<int exponent>
@@ -102,7 +102,7 @@ inline constexpr double Pow<3>(double x) {
 
 template<int exponent, typename Q>
 constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
-  return SIUnit<Exponentiation<Q, exponent>>() * Pow<exponent>(x / SIUnit<Q>());
+  return si::Unit<Exponentiation<Q, exponent>> * Pow<exponent>(x / si::Unit<Q>);
 }
 
 inline double Sin(Angle const& α) {
@@ -131,7 +131,7 @@ inline Angle ArcTan(double const y, double const x) {
 }
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
-  return ArcTan(y / SIUnit<Quantity<D>>(), x / SIUnit<Quantity<D>>());
+  return ArcTan(y / si::Unit<Quantity<D>>, x / si::Unit<Quantity<D>>);
 }
 
 inline double Sinh(Angle const& α) {
