@@ -20,10 +20,10 @@ using base::not_constructible;
 using base::not_null;
 using quantities::DebugString;
 using quantities::IsFinite;
-using quantities::SIUnit;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+namespace si = quantities::si;
 
 // A helper struct to scan the elements of a tuple and stringify them.
 template<int index, typename... Types>
@@ -129,7 +129,7 @@ std::string ToMathematica(Quantity<D> const& quantity) {
   if (IsFinite(quantity)) {
     s.replace(s.find("e"), 1, "*^");
   }
-  std::string const number = ToMathematica(quantity / SIUnit<Quantity<D>>());
+  std::string const number = ToMathematica(quantity / si::Unit<Quantity<D>>);
   std::size_t const split = s.find(" ");
   std::string const units = Escape(s.substr(split, s.size()));
   return Apply(

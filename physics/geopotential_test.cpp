@@ -41,7 +41,6 @@ using quantities::Degree3SphericalHarmonicCoefficient;
 using quantities::GravitationalParameter;
 using quantities::ParseQuantity;
 using quantities::Pow;
-using quantities::SIUnit;
 using quantities::si::Degree;
 using quantities::si::Giga;
 using quantities::si::Kilo;
@@ -63,6 +62,7 @@ using ::testing::ElementsAre;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Property;
+namespace si = quantities::si;
 
 class GeopotentialTest : public ::testing::Test {
  protected:
@@ -72,7 +72,7 @@ class GeopotentialTest : public ::testing::Test {
                       serialization::Frame::TEST>;
 
   GeopotentialTest()
-      : massive_body_parameters_(17 * SIUnit<GravitationalParameter>()),
+      : massive_body_parameters_(17 * si::Unit<GravitationalParameter>),
         rotating_body_parameters_(1 * Metre,
                                   3 * Radian,
                                   Instant() + 4 * Second,
@@ -120,7 +120,7 @@ class GeopotentialTest : public ::testing::Test {
       Displacement<ITRS> const& displacement,
       OblateBody<ICRS> const& earth) {
     double const mu =
-        earth.gravitational_parameter() / SIUnit<GravitationalParameter>();
+        earth.gravitational_parameter() / si::Unit<GravitationalParameter>;
     double const rbar = earth.reference_radius() / Metre;
     numerics::FixedMatrix<double, 10, 10> cnm;
     numerics::FixedMatrix<double, 10, 10> snm;
@@ -131,7 +131,7 @@ class GeopotentialTest : public ::testing::Test {
       }
     }
     return Vector<Acceleration, ITRS>(
-        SIUnit<Acceleration>() *
+        si::Unit<Acceleration> *
         astronomy::fortran_astrodynamics_toolkit::
             ComputeGravityAccelerationLear<9, 9>(
                 displacement.coordinates() / Metre, mu, rbar, cnm, snm));
@@ -457,9 +457,9 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
       geopotential.degree_damping(),
       ElementsAre(
           /*0=*/Property(&HarmonicDamping::inner_threshold,
-                         Eq(Infinity<Length>())),
+                         Eq(Infinity<Length>)),
           /*1=*/Property(&HarmonicDamping::inner_threshold,
-                         Eq(Infinity<Length>())),
+                         Eq(Infinity<Length>)),
           /*2=*/Property(&HarmonicDamping::inner_threshold,
                          IsNear(1.5_⑴ * Giga(Metre))),
           /*3=*/Property(&HarmonicDamping::inner_threshold,
@@ -475,9 +475,9 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
 
   EXPECT_THAT(geopotential.degree_damping(),
               Each(Property(&HarmonicDamping::inner_threshold,
-                            Eq(Infinity<Length>()))));
+                            Eq(Infinity<Length>))));
   EXPECT_THAT(geopotential.sectoral_damping().inner_threshold(),
-              Eq(Infinity<Length>()));
+              Eq(Infinity<Length>));
 
   // TODO(egg): This is brittle; we should have |SolarSystem| utilities for
   // that.
@@ -497,9 +497,9 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
       geopotential.degree_damping(),
       ElementsAre(
           /*0=*/Property(&HarmonicDamping::inner_threshold,
-                         Eq(Infinity<Length>())),
+                         Eq(Infinity<Length>)),
           /*1=*/Property(&HarmonicDamping::inner_threshold,
-                         Eq(Infinity<Length>())),
+                         Eq(Infinity<Length>)),
           /*2=*/Property(&HarmonicDamping::inner_threshold,
                          IsNear(105_⑴ * Mega(Metre))),
           /*3=*/Property(&HarmonicDamping::inner_threshold,
@@ -531,9 +531,9 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
       geopotential.degree_damping(),
       ElementsAre(
           /*0=*/Property(&HarmonicDamping::inner_threshold,
-                         Eq(Infinity<Length>())),
+                         Eq(Infinity<Length>)),
           /*1=*/Property(&HarmonicDamping::inner_threshold,
-                         Eq(Infinity<Length>())),
+                         Eq(Infinity<Length>)),
           /*2=*/Property(&HarmonicDamping::inner_threshold,
                          IsNear(1.5_⑴ * Giga(Metre))),
           /*3=*/Property(&HarmonicDamping::inner_threshold,
@@ -568,9 +568,9 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
       geopotential.degree_damping(),
       ElementsAre(
           /*0=*/Property(&HarmonicDamping::inner_threshold,
-                         Eq(Infinity<Length>())),
+                         Eq(Infinity<Length>)),
           /*1=*/Property(&HarmonicDamping::inner_threshold,
-                         Eq(Infinity<Length>())),
+                         Eq(Infinity<Length>)),
           /*2=*/Property(&HarmonicDamping::inner_threshold,
                          IsNear(1.5_⑴ * Giga(Metre))),
           /*3=*/Property(&HarmonicDamping::inner_threshold,
@@ -586,9 +586,9 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
 
   EXPECT_THAT(geopotential.degree_damping(),
               Each(Property(&HarmonicDamping::inner_threshold,
-                            Eq(Infinity<Length>()))));
+                            Eq(Infinity<Length>))));
   EXPECT_THAT(geopotential.sectoral_damping().inner_threshold(),
-              Eq(Infinity<Length>()));
+              Eq(Infinity<Length>));
 }
 
 TEST_F(GeopotentialTest, DampedForces) {

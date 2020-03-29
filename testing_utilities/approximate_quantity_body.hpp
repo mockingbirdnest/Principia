@@ -14,7 +14,7 @@ namespace internal_approximate_quantity {
 
 using quantities::Abs;
 using quantities::Format;
-using quantities::SIUnit;
+namespace si = quantities::si;
 
 template<typename Dimensions>
 Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::min() const {
@@ -33,7 +33,7 @@ Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::unit() const {
 
 template<typename Dimensions>
 bool ApproximateQuantity<Quantity<Dimensions>>::has_trivial_unit() const {
-  return unit_ == SIUnit<Quantity<Dimensions>>();
+  return unit_ == si::Unit<Quantity<Dimensions>>;
 }
 
 template<typename Dimensions>

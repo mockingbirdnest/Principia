@@ -114,7 +114,6 @@ using quantities::MomentOfInertia;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Speed;
-using quantities::SIUnit;
 using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;
@@ -125,6 +124,7 @@ using quantities::si::Second;
 using quantities::si::Tonne;
 using ::google::protobuf::Arena;
 using ::google::protobuf::ArenaOptions;
+namespace si = quantities::si;
 
 namespace {
 
@@ -838,7 +838,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
 
   static constexpr MomentOfInertia zero;
   static constexpr double to_si_unit =
-      Tonne * Pow<2>(Metre) / SIUnit<MomentOfInertia>();
+      Tonne * Pow<2>(Metre) / si::Unit<MomentOfInertia>;
 
   auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
       {moments_of_inertia_in_tonnes.x * to_si_unit,

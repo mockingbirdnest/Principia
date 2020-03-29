@@ -16,7 +16,6 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -39,7 +38,6 @@ using quantities::NaN;
 using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Sin;
-using quantities::SIUnit;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 
@@ -546,8 +544,8 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
     }
   }
 
-  harmonic_thresholds.push({Infinity<Length>(), 0, 0});
-  harmonic_thresholds.push({Infinity<Length>(), 1, 0});
+  harmonic_thresholds.push({Infinity<Length>, 0, 0});
+  harmonic_thresholds.push({Infinity<Length>, 1, 0});
 
   while (!harmonic_thresholds.empty()) {
     auto const& threshold = harmonic_thresholds.top();
@@ -597,7 +595,7 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
   if (r_norm != r_norm) {
     // Short-circuit NaN, to avoid having to deal with an unordered
     // |r_norm| when finding the partition point below.
-    return NaN<ReducedAcceleration>() * Vector<double, Frame>{};
+    return NaN<ReducedAcceleration> * Vector<double, Frame>{};
   }
   // |limiting_degree| is the first degree such that
   // |r_norm >= degree_damping_[limiting_degree].outer_threshold()|, or is

@@ -41,7 +41,6 @@ using quantities::Cos;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Sin;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Stiffness;
 using quantities::Time;

@@ -45,7 +45,7 @@ Instant Checkpointer<Message>::WriteToMessage(
   absl::ReaderMutexLock l(&lock_);
   if (checkpoints_.empty()) {
     // TODO(phl): declare this next to Instant.
-    static Instant infinite_future = Instant() + quantities::Infinity<Time>();
+    static Instant infinite_future = Instant() + quantities::Infinity<Time>;
     return infinite_future;
   } else {
     message->MergeFrom(checkpoints_.cbegin()->second);

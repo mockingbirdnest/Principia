@@ -26,7 +26,6 @@ using quantities::DebugString;
 using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
 using quantities::Sin;
-using quantities::SIUnit;
 using quantities::ToM128D;
 
 // We want zero initialization here, so the default constructor won't do.

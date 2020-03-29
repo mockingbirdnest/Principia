@@ -106,8 +106,8 @@ class KeplerOrbitTest : public ::testing::Test {
   static KeplerianElements<ICRS> SimpleEllipse() {
     KeplerianElements<ICRS> elements;
     elements.eccentricity = 0.5;
-    elements.asymptotic_true_anomaly = -NaN<Angle>();
-    elements.turning_angle = -NaN<Angle>();
+    elements.asymptotic_true_anomaly = -NaN<Angle>;
+    elements.turning_angle = -NaN<Angle>;
     elements.semimajor_axis = 1 * AstronomicalUnit;
     elements.specific_energy =
         -0.5 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
@@ -115,10 +115,10 @@ class KeplerOrbitTest : public ::testing::Test {
         -1 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
     elements.period = 2 * π * JulianYear;
     elements.mean_motion = 1 * Radian / JulianYear;
-    elements.hyperbolic_mean_motion = -NaN<AngularFrequency>();
-    elements.hyperbolic_excess_velocity = -NaN<Speed>();
+    elements.hyperbolic_mean_motion = -NaN<AngularFrequency>;
+    elements.hyperbolic_excess_velocity = -NaN<Speed>;
     elements.semiminor_axis = Sqrt(3) / 2 * AstronomicalUnit;
-    elements.impact_parameter = -NaN<Length>();
+    elements.impact_parameter = -NaN<Length>;
     elements.semilatus_rectum = 0.75 * AstronomicalUnit;
     elements.specific_angular_momentum =
         (Sqrt(3) / 2 * Pow<2>(AstronomicalUnit) / JulianYear) * Radian;
@@ -132,7 +132,7 @@ class KeplerOrbitTest : public ::testing::Test {
 
     elements.true_anomaly = π / 2 * Radian;
     elements.mean_anomaly = (π / 3 - Sqrt(3) / 4) * Radian;
-    elements.hyperbolic_mean_anomaly = +NaN<Angle>();
+    elements.hyperbolic_mean_anomaly = +NaN<Angle>;
     return elements;
   }
 
@@ -146,11 +146,11 @@ class KeplerOrbitTest : public ::testing::Test {
         0.5 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
     elements.characteristic_energy =
         1 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
-    elements.period = -NaN<Time>();
-    elements.mean_motion = -NaN<AngularFrequency>();
+    elements.period = -NaN<Time>;
+    elements.mean_motion = -NaN<AngularFrequency>;
     elements.hyperbolic_mean_motion = 1 * Radian / JulianYear;
     elements.hyperbolic_excess_velocity = 1 * AstronomicalUnit / JulianYear;
-    elements.semiminor_axis = -NaN<Length>();
+    elements.semiminor_axis = -NaN<Length>;
     elements.impact_parameter = Sqrt(5) / 2 * AstronomicalUnit;
     elements.semilatus_rectum = 1.25 * AstronomicalUnit;
     elements.specific_angular_momentum =
@@ -164,7 +164,7 @@ class KeplerOrbitTest : public ::testing::Test {
     elements.longitude_of_periapsis = 1 * Radian;
 
     elements.true_anomaly = π / 2 * Radian;
-    elements.mean_anomaly = -NaN<Angle>();
+    elements.mean_anomaly = -NaN<Angle>;
     elements.hyperbolic_mean_anomaly =
         (3 * Sqrt(5) / 4) * Radian - ArcCosh(1.5);
     return elements;
@@ -182,8 +182,8 @@ class KeplerOrbitTest : public ::testing::Test {
     constexpr double ε³ = ε² * ε;
     constexpr double ε⁴ = ε² * ε²;
     elements.eccentricity = 1 - ε;
-    elements.asymptotic_true_anomaly = -NaN<Angle>();
-    elements.turning_angle = -NaN<Angle>();
+    elements.asymptotic_true_anomaly = -NaN<Angle>;
+    elements.turning_angle = -NaN<Angle>;
     elements.semimajor_axis = 1 * AstronomicalUnit;
     elements.specific_energy =
         -0.5 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
@@ -191,10 +191,10 @@ class KeplerOrbitTest : public ::testing::Test {
         -1 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
     elements.period = 2 * π * JulianYear;
     elements.mean_motion = 1 * Radian / JulianYear;
-    elements.hyperbolic_mean_motion = -NaN<AngularFrequency>();
-    elements.hyperbolic_excess_velocity = -NaN<Speed>();
+    elements.hyperbolic_mean_motion = -NaN<AngularFrequency>;
+    elements.hyperbolic_excess_velocity = -NaN<Speed>;
     elements.semiminor_axis = Sqrt(2 * ε - ε²) * AstronomicalUnit;
-    elements.impact_parameter = -NaN<Length>();
+    elements.impact_parameter = -NaN<Length>;
     elements.semilatus_rectum = (2 * ε - ε²) * AstronomicalUnit;
     elements.specific_angular_momentum =
         (Sqrt(2 * ε - ε²) * Pow<2>(AstronomicalUnit) / JulianYear) * Radian;
@@ -210,7 +210,7 @@ class KeplerOrbitTest : public ::testing::Test {
     // This expression gives the correctly-rounded result for a true anomaly of
     // π / 2, and is off by 0.96 ULPs for a true anomaly of [π / 2].
     elements.mean_anomaly = Sqrt(32 * ε³ / 9 - 16 * ε⁴ / 15) * Radian;
-    elements.hyperbolic_mean_anomaly = +NaN<Angle>();
+    elements.hyperbolic_mean_anomaly = +NaN<Angle>;
     return elements;
   }
 

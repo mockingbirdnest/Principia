@@ -42,7 +42,6 @@ using quantities::Cos;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Sin;
-using quantities::SIUnit;
 using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Micro;

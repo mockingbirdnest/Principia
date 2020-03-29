@@ -107,7 +107,6 @@ using quantities::Force;
 using quantities::Infinity;
 using quantities::Length;
 using quantities::MomentOfInertia;
-using quantities::SIUnit;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
@@ -999,7 +998,7 @@ void Plugin::ComputeAndRenderNodes(
   // irrelevant.
   Length const threshold =
       cast_plotting_frame == nullptr
-          ? Infinity<Length>()
+          ? Infinity<Length>
           : EquatorRelevanceThreshold(
                 *dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
                     cast_plotting_frame->centre()));

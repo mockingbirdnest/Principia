@@ -44,13 +44,13 @@ using quantities::Length;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Quotient;
-using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+namespace si = quantities::si;
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
@@ -85,7 +85,7 @@ GeneralSphericalHarmonicsAccelerationF90(
   Displacement<SurfaceFrame> const r_surface = to_surface_frame(r);
   auto const acceleration_surface =
       Vector<Quotient<Acceleration, GravitationalParameter>, SurfaceFrame>(
-          SIUnit<Quotient<Acceleration, GravitationalParameter>>() *
+          si::Unit<Quotient<Acceleration, GravitationalParameter>> *
           astronomy::fortran_astrodynamics_toolkit::
               ComputeGravityAccelerationLear<degree, order>(
                   r_surface.coordinates() / Metre, mu, rbar, cnm, snm));
@@ -220,7 +220,7 @@ void BM_ComputeGeopotentialF90(benchmark::State& state) {
   auto const earth = MakeEarthBody(solar_system_2000, max_degree);
 
   double mu =
-      earth.gravitational_parameter() / SIUnit<GravitationalParameter>();
+      earth.gravitational_parameter() / si::Unit<GravitationalParameter>;
   double rbar = earth.reference_radius() / Metre;
 
   std::mt19937_64 random(42);

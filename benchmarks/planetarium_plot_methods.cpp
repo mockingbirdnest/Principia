@@ -213,10 +213,10 @@ void RunBenchmark(benchmark::State& state,
     total_lines += lines.size();
     ++iterations;
   }
-  Length min_x = Infinity<Length>();
-  Length min_y = Infinity<Length>();
-  Length max_x = -Infinity<Length>();
-  Length max_y = -Infinity<Length>();
+  Length min_x = Infinity<Length>;
+  Length min_y = Infinity<Length>;
+  Length max_x = -Infinity<Length>;
+  Length max_y = -Infinity<Length>;
   int points = 0;
   for (auto const& line : lines) {
     points += line.size();

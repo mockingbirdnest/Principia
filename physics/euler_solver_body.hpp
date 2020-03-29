@@ -40,7 +40,6 @@ using quantities::Sinh;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
-using quantities::SIUnit;
 using quantities::Tanh;
 using quantities::Time;
 using quantities::Variation;

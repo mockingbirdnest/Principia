@@ -70,7 +70,6 @@ using quantities::ArcTan;
 using quantities::Area;
 using quantities::Mass;
 using quantities::Pow;
-using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::astronomy::AstronomicalUnit;
 using quantities::astronomy::JulianYear;
@@ -100,6 +99,7 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ref;
+namespace si = quantities::si;
 
 namespace {
 
@@ -155,11 +155,11 @@ class EphemerisTest : public testing::TestWithParam<FixedStepSizeIntegrator<
     centre_of_mass = Barycentre<Position<ICRS>, Mass>(
         {q1, q2}, {earth->mass(), moon->mass()});
     Velocity<ICRS> const v1({-2 * π * (q1 - centre_of_mass).Norm() / period,
-                             0 * SIUnit<Speed>(),
-                             0 * SIUnit<Speed>()});
+                             0 * si::Unit<Speed>,
+                             0 * si::Unit<Speed>});
     Velocity<ICRS> const v2({2 * π * (q2 - centre_of_mass).Norm() / period,
-                             0 * SIUnit<Speed>(),
-                             0 * SIUnit<Speed>()});
+                             0 * si::Unit<Speed>,
+                             0 * si::Unit<Speed>});
 
     bodies.push_back(std::move(earth));
     bodies.push_back(std::move(moon));
@@ -447,9 +447,9 @@ TEST_P(EphemerisTest, EarthProbe) {
                         earth_velocity));
   auto const intrinsic_acceleration = [earth, distance](Instant const& t) {
     return Vector<Acceleration, ICRS>(
-        {0 * SIUnit<Acceleration>(),
+        {0 * si::Unit<Acceleration>,
          earth->gravitational_parameter() / (distance * distance),
-         0 * SIUnit<Acceleration>()});
+         0 * si::Unit<Acceleration>});
   };
 
   ephemeris.FlowWithAdaptiveStep(
@@ -568,9 +568,9 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
                          earth_velocity));
   auto const intrinsic_acceleration1 = [earth, distance_1](Instant const& t) {
     return Vector<Acceleration, ICRS>(
-        {0 * SIUnit<Acceleration>(),
+        {0 * si::Unit<Acceleration>,
          earth->gravitational_parameter() / (distance_1 * distance_1),
-         0 * SIUnit<Acceleration>()});
+         0 * si::Unit<Acceleration>});
   };
 
   MasslessBody probe2;
@@ -582,9 +582,9 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
                          earth_velocity));
   auto const intrinsic_acceleration2 = [earth, distance_2](Instant const& t) {
     return Vector<Acceleration, ICRS>(
-        {0 * SIUnit<Acceleration>(),
+        {0 * si::Unit<Acceleration>,
          -earth->gravitational_parameter() / (distance_2 * distance_2),
-         0 * SIUnit<Acceleration>()});
+         0 * si::Unit<Acceleration>});
   };
 
   auto instance = ephemeris.NewInstance(
@@ -785,7 +785,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
               AnyOf(IsNear(1.2e-34_⑴ * Metre / Second / Second),
                     Eq(0 * Metre / Second / Second)));
   EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
-                          -9.832 * SIUnit<Acceleration>()), 6.7e-6);
+                          -9.832 * si::Unit<Acceleration>), 6.7e-6);
 }
 
 #if !defined(_DEBUG)
@@ -870,9 +870,9 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b2));
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b3));
 
-  Velocity<ICRS> const v({0 * SIUnit<Speed>(),
-                          0 * SIUnit<Speed>(),
-                          0 * SIUnit<Speed>()});
+  Velocity<ICRS> const v({0 * si::Unit<Speed>,
+                          0 * si::Unit<Speed>,
+                          0 * si::Unit<Speed>});
   Position<ICRS> const q0 = ICRS::origin +
       Vector<Length, ICRS>({0 * AstronomicalUnit,
                             0 * AstronomicalUnit,
@@ -912,7 +912,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       Vector<Acceleration, ICRS>(
           {(1.5 * μ1 - (9 / Sqrt(512)) * μ2) * Pow<2>(radius) * j2 /
                Pow<4>((q0 - q1).Norm()),
-           0 * SIUnit<Acceleration>(),
+           0 * si::Unit<Acceleration>,
            (-3 * μ3 + (3 / Sqrt(512)) * μ2) * Pow<2>(radius) * j2 /
                Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(
@@ -929,8 +929,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       μ3 * (q3 - q1) / Pow<3>((q3 - q1).Norm()) +
       Vector<Acceleration, ICRS>(
           {-1.5 * μ0 * Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm()),
-           0 * SIUnit<Acceleration>(),
-           0 * SIUnit<Acceleration>()});
+           0 * si::Unit<Acceleration>,
+           0 * si::Unit<Acceleration>});
   EXPECT_THAT(
       actual_acceleration1,
       Componentwise(AlmostEquals(expected_acceleration1.coordinates().x, 2),
@@ -945,7 +945,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       μ3 * (q3 - q2) / Pow<3>((q3 - q2).Norm()) +
       Vector<Acceleration, ICRS>({(9 / Sqrt(512)) * μ0 * Pow<2>(radius) * j2 /
                                       Pow<4>((q0 - q1).Norm()),
-                                  0 * SIUnit<Acceleration>(),
+                                  0 * si::Unit<Acceleration>,
                                   (-3 / Sqrt(512)) * μ0 * Pow<2>(radius) * j2 /
                                       Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(
@@ -961,8 +961,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       μ1 * (q1 - q3) / Pow<3>((q1 - q3).Norm()) +
       μ2 * (q2 - q3) / Pow<3>((q2 - q3).Norm()) +
       Vector<Acceleration, ICRS>(
-          {0 * SIUnit<Acceleration>(),
-           0 * SIUnit<Acceleration>(),
+          {0 * si::Unit<Acceleration>,
+           0 * si::Unit<Acceleration>,
            3 * μ0 * Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(
       actual_acceleration3,

@@ -75,7 +75,6 @@ using physics::RigidMotion;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Pow;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
@@ -112,6 +111,7 @@ using ::testing::SetArgReferee;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
+namespace si = quantities::si;
 
 namespace {
 
@@ -477,13 +477,13 @@ TEST_F(InterfaceTest, InsertUnloadedPart) {
                   vessel_guid,
                   RelativeDegreesOfFreedom<AliceSun>(
                       Displacement<AliceSun>(
-                          {parent_position.x * SIUnit<Length>(),
-                           parent_position.y * SIUnit<Length>(),
-                           parent_position.z * SIUnit<Length>()}),
+                          {parent_position.x * si::Unit<Length>,
+                           parent_position.y * si::Unit<Length>,
+                           parent_position.z * si::Unit<Length>}),
                       Velocity<AliceSun>(
-                          {parent_velocity.x * SIUnit<Speed>(),
-                           parent_velocity.y * SIUnit<Speed>(),
-                           parent_velocity.z * SIUnit<Speed>()}))));
+                          {parent_velocity.x * si::Unit<Speed>,
+                           parent_velocity.y * si::Unit<Speed>,
+                           parent_velocity.z * si::Unit<Speed>}))));
   principia__InsertUnloadedPart(plugin_.get(),
                                 part_id,
                                 part_name,
@@ -493,14 +493,14 @@ TEST_F(InterfaceTest, InsertUnloadedPart) {
 
 TEST_F(InterfaceTest, AdvanceTime) {
   EXPECT_CALL(*plugin_,
-              AdvanceTime(t0_ + time * SIUnit<Time>(),
+              AdvanceTime(t0_ + time * si::Unit<Time>,
                           planetarium_rotation * Degree));
   principia__AdvanceTime(plugin_.get(), time, planetarium_rotation);
 }
 
 TEST_F(InterfaceTest, ForgetAllHistoriesBefore) {
   EXPECT_CALL(*plugin_,
-              ForgetAllHistoriesBefore(t0_ + time * SIUnit<Time>()));
+              ForgetAllHistoriesBefore(t0_ + time * si::Unit<Time>));
   principia__ForgetAllHistoriesBefore(plugin_.get(), time);
 }
 
@@ -509,13 +509,13 @@ TEST_F(InterfaceTest, VesselFromParent) {
               VesselFromParent(celestial_index, vessel_guid))
       .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
                            Displacement<AliceSun>(
-                               {parent_position.x * SIUnit<Length>(),
-                                parent_position.y * SIUnit<Length>(),
-                                parent_position.z * SIUnit<Length>()}),
+                               {parent_position.x * si::Unit<Length>,
+                                parent_position.y * si::Unit<Length>,
+                                parent_position.z * si::Unit<Length>}),
                            Velocity<AliceSun>(
-                               {parent_velocity.x * SIUnit<Speed>(),
-                                parent_velocity.y * SIUnit<Speed>(),
-                                parent_velocity.z * SIUnit<Speed>()}))));
+                               {parent_velocity.x * si::Unit<Speed>,
+                                parent_velocity.y * si::Unit<Speed>,
+                                parent_velocity.z * si::Unit<Speed>}))));
   QP const result = principia__VesselFromParent(plugin_.get(),
                                                 celestial_index,
                                                 vessel_guid);
@@ -527,13 +527,13 @@ TEST_F(InterfaceTest, CelestialFromParent) {
               CelestialFromParent(celestial_index))
       .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
                            Displacement<AliceSun>(
-                               {parent_position.x * SIUnit<Length>(),
-                                parent_position.y * SIUnit<Length>(),
-                                parent_position.z * SIUnit<Length>()}),
+                               {parent_position.x * si::Unit<Length>,
+                                parent_position.y * si::Unit<Length>,
+                                parent_position.z * si::Unit<Length>}),
                            Velocity<AliceSun>(
-                               {parent_velocity.x * SIUnit<Speed>(),
-                                parent_velocity.y * SIUnit<Speed>(),
-                                parent_velocity.z * SIUnit<Speed>()}))));
+                               {parent_velocity.x * si::Unit<Speed>,
+                                parent_velocity.y * si::Unit<Speed>,
+                                parent_velocity.z * si::Unit<Speed>}))));
   QP const result = principia__CelestialFromParent(plugin_.get(),
                                                     celestial_index);
   EXPECT_THAT(result, Eq(parent_relative_degrees_of_freedom));
@@ -591,9 +591,9 @@ TEST_F(InterfaceTest, NavballOrientation) {
 
   Position<World> sun_position =
       World::origin + Displacement<World>(
-                          {1 * SIUnit<Length>(),
-                           2 * SIUnit<Length>(),
-                           3 * SIUnit<Length>()});
+                          {1 * si::Unit<Length>,
+                           2 * si::Unit<Length>,
+                           3 * si::Unit<Length>});
   EXPECT_CALL(*plugin_, NavballFrameField(sun_position))
       .WillOnce(Return(
           ByMove(std::make_unique<CoordinateFrameField<World, Navball>>())));

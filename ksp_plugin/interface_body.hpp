@@ -12,6 +12,7 @@
 #include "geometry/rotation.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace interface {
@@ -24,11 +25,11 @@ using ksp_plugin::RigidPart;
 using physics::Ephemeris;
 using physics::RigidMotion;
 using quantities::Pow;
-using quantities::SIUnit;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+namespace si = quantities::si;
 
 // No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.
@@ -110,14 +111,14 @@ struct XYZConverter<AngularVelocity<Frame>> {
 template<>
 struct XYZConverter<R3Element<MomentOfInertia>> {
   static R3Element<MomentOfInertia> FromXYZ(XYZ const& xyz) {
-    return R3Element<MomentOfInertia>(xyz.x * SIUnit<MomentOfInertia>(),
-                                      xyz.y * SIUnit<MomentOfInertia>(),
-                                      xyz.z * SIUnit<MomentOfInertia>());
+    return R3Element<MomentOfInertia>(xyz.x * si::Unit<MomentOfInertia>,
+                                      xyz.y * si::Unit<MomentOfInertia>,
+                                      xyz.z * si::Unit<MomentOfInertia>);
   }
   static XYZ ToXYZ(R3Element<MomentOfInertia> const& moments_of_inertia) {
-    return {moments_of_inertia.x / SIUnit<MomentOfInertia>(),
-            moments_of_inertia.y / SIUnit<MomentOfInertia>(),
-            moments_of_inertia.z / SIUnit<MomentOfInertia>()};
+    return {moments_of_inertia.x / si::Unit<MomentOfInertia>,
+            moments_of_inertia.y / si::Unit<MomentOfInertia>,
+            moments_of_inertia.z / si::Unit<MomentOfInertia>};
   }
 };
 
@@ -488,8 +489,8 @@ inline XYZ ToXYZ(Velocity<World> const& velocity) {
 
 template<typename T>
 Interval ToInterval(geometry::Interval<T> const& interval) {
-  return {interval.min / quantities::SIUnit<T>(),
-          interval.max / quantities::SIUnit<T>()};
+  return {interval.min / quantities::si::Unit<T>,
+          interval.max / quantities::si::Unit<T>};
 }
 
 inline Instant FromGameTime(Plugin const& plugin,

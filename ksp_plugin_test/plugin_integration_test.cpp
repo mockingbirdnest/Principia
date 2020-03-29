@@ -48,7 +48,6 @@ using quantities::Length;
 using quantities::NaN;
 using quantities::Pow;
 using quantities::Sin;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::astronomy::AstronomicalUnit;

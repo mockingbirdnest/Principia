@@ -45,7 +45,6 @@ using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::GravitationalParameter;
 using quantities::Length;
-using quantities::SIUnit;
 using quantities::Time;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -59,6 +58,7 @@ using testing_utilities::VanishesBefore;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
+namespace si = quantities::si;
 
 namespace {
 
@@ -197,15 +197,15 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, GeometricAcceleration) {
         small_gravitational_parameter_ /
             ((big_to_small - y) * (big_to_small - y));
     Vector<Acceleration, Big> const expected_acceleration(
-                  {0 * SIUnit<Acceleration>(),
+                  {0 * si::Unit<Acceleration>,
                    small_on_position + big_on_position - small_on_big,
-                   0 * SIUnit<Acceleration>()});
+                   0 * si::Unit<Acceleration>});
     EXPECT_THAT(AbsoluteError(
                     big_frame_->GeometricAcceleration(
                         t0_,
                         DegreesOfFreedom<Big>(position, Big::unmoving)),
                     expected_acceleration),
-                Lt(1e-10 * SIUnit<Acceleration>()));
+                Lt(1e-10 * si::Unit<Acceleration>));
   }
 }
 

@@ -20,6 +20,7 @@
 #include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 #include "mathematica/mathematica.hpp"
 #include "serialization/integrators.pb.h"
 #include "testing_utilities/integration.hpp"
@@ -74,7 +75,6 @@ using quantities::Length;
 using quantities::Mass;
 using quantities::Pow;
 using quantities::Sin;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::SpecificEnergy;
 using quantities::Stiffness;
@@ -95,6 +95,7 @@ using testing_utilities::ComputeKeplerAcceleration;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+namespace si = quantities::si;
 
 namespace mathematica {
 
@@ -333,7 +334,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   Length const q_amplitude = 1 * Metre;
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
-  Stiffness const k = SIUnit<Stiffness>();
+  Stiffness const k = si::Unit<Stiffness>;
   Mass const m = 1 * Kilogram;
 
   initial_state.positions.emplace_back(q_amplitude);
@@ -366,7 +367,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
 void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   ODE::SystemState initial_state;
   Instant const t0;
-  GravitationalParameter const μ = SIUnit<GravitationalParameter>();
+  GravitationalParameter const μ = si::Unit<GravitationalParameter>;
   MassiveBody b1(μ);
   MasslessBody b2;
 

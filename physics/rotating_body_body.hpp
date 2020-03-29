@@ -25,7 +25,6 @@ using geometry::Exp;
 using geometry::NormalizeOrZero;
 using geometry::RadiusLatitudeLongitude;
 using geometry::SphericalCoordinates;
-using quantities::SIUnit;
 using quantities::si::Radian;
 
 template<typename Frame>
@@ -46,7 +45,7 @@ RotatingBody<Frame>::Parameters::Parameters(
       angular_frequency_(angular_frequency),
       right_ascension_of_pole_(right_ascension_of_pole),
       declination_of_pole_(declination_of_pole) {
-  CHECK_NE(angular_frequency_, 0.0 * SIUnit<AngularFrequency>())
+  CHECK_NE(angular_frequency_, AngularFrequency())
       << "Rotating body cannot have zero angular velocity";
 }
 

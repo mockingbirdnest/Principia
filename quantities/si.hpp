@@ -15,6 +15,13 @@ namespace quantities {
 // with the SI.
 namespace si {
 
+// Returns the base or derived SI unit of |Q|.
+// For instance, |si::Unit<Action>() == Joule * Second|.
+template<typename Q>
+constexpr Q Unit = internal_quantities::SIUnit<Q>();
+template<>
+constexpr double Unit<double> = 1;
+
 // Prefixes
 template<typename D> constexpr Quantity<D> Yotta(Quantity<D>);
 template<typename D> constexpr Quantity<D> Zetta(Quantity<D>);
@@ -43,15 +50,15 @@ template<typename D> constexpr Quantity<D> Yocto(Quantity<D>);
 // SI base units
 // From the BIPM's SI brochure 8, section 2.1.2, table 1,
 // http://www.bipm.org/en/si/si_brochure/chapter2/2-1/.
-constexpr Length            Metre    = SIUnit<Length>();
-constexpr Mass              Kilogram = SIUnit<Mass>();
-constexpr Time              Second   = SIUnit<Time>();
-constexpr Current           Ampere   = SIUnit<Current>();
-constexpr Temperature       Kelvin   = SIUnit<Temperature>();
-constexpr Amount            Mole     = SIUnit<Amount>();
-constexpr LuminousIntensity Candela  = SIUnit<LuminousIntensity>();
+constexpr Length            Metre    = Unit<Length>;
+constexpr Mass              Kilogram = Unit<Mass>;
+constexpr Time              Second   = Unit<Time>;
+constexpr Current           Ampere   = Unit<Current>;
+constexpr Temperature       Kelvin   = Unit<Temperature>;
+constexpr Amount            Mole     = Unit<Amount>;
+constexpr LuminousIntensity Candela  = Unit<LuminousIntensity>;
 // Not a base unit in the SI.
-constexpr Angle Radian = SIUnit<Angle>();
+constexpr Angle Radian = Unit<Angle>;
 
 // Gram, for use with prefixes.
 constexpr Mass Gram = 1e-3 * Kilogram;
