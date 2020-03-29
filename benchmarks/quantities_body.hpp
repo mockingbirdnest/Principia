@@ -16,6 +16,7 @@ namespace principia {
 namespace quantities {
 
 using si::Radian;
+namespace si = quantities::si;
 
 #define TRIGGER_DEAD_CODE_ELIMINATION
 
@@ -24,7 +25,7 @@ constexpr std::size_t dimension = 100;
 inline void DimensionfulDiscreteCosineTransform(std::vector<Momentum>& result) {
   std::vector<Momentum> input(dimension);
   for (std::size_t i = 0; i < dimension; ++i) {
-    input[i] = i * SIUnit<Momentum>();
+    input[i] = i * si::Unit<Momentum>;
   }
   result.resize(dimension);
   double sign = 1;

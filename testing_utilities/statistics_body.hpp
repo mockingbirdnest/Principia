@@ -14,8 +14,7 @@ namespace internal_statistics {
 
 template<typename T>
 T Mean(std::vector<T> const& x) {
-  using quantities::SIUnit;
-  T total = 0 * SIUnit<T>();
+  T total{};
   for (T const& x_i : x) {
     total += x_i;
   }

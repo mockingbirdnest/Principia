@@ -28,7 +28,6 @@ using quantities::Cbrt;
 using quantities::Density;
 using quantities::MomentOfInertia;
 using quantities::Pow;
-using quantities::SIUnit;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;

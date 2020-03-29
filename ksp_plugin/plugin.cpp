@@ -107,7 +107,6 @@ using quantities::Force;
 using quantities::Infinity;
 using quantities::Length;
 using quantities::MomentOfInertia;
-using quantities::SIUnit;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;

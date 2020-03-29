@@ -40,7 +40,6 @@ using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using quantities::GravitationalParameter;
 using quantities::Pow;
-using quantities::SIUnit;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -61,6 +60,7 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
+namespace si = quantities::si;
 
 class ManœuvreTest : public ::testing::Test {
  protected:
@@ -402,7 +402,7 @@ TEST_F(ManœuvreTest, Serialization) {
   EXPECT_TRUE(message.has_frame());
 
   MockEphemeris<World> ephemeris;
-  MassiveBody const body(SIUnit<GravitationalParameter>());
+  MassiveBody const body(si::Unit<GravitationalParameter>);
   EXPECT_CALL(ephemeris, body_for_serialization_index(666))
       .WillOnce(Return(&body));
   EXPECT_CALL(ephemeris, trajectory(_))

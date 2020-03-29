@@ -46,7 +46,6 @@ using integrators::methods::McLachlanAtela1992Order5Optimal;
 using ksp_plugin::Barycentric;
 using quantities::AngularFrequency;
 using quantities::Length;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
@@ -57,6 +56,7 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
+namespace si = quantities::si;
 
 namespace physics {
 
@@ -150,9 +150,9 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
                                       -1 * AstronomicalUnit,
                                       0 * AstronomicalUnit});
   Velocity<Barycentric> probe_velocity =
-      Velocity<Barycentric>({0 * SIUnit<Speed>(),
+      Velocity<Barycentric>({0 * si::Unit<Speed>,
                              100 * Kilo(Metre) / Second,
-                             0 * SIUnit<Speed>()});
+                             0 * si::Unit<Speed>});
   DiscreteTrajectory<Barycentric> probe_trajectory;
   FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
                                                         probe_velocity,
@@ -200,9 +200,9 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
                                                        -1 * AstronomicalUnit,
                                                        0 * AstronomicalUnit});
   Velocity<Barycentric> probe_velocity =
-      Velocity<Barycentric>({0 * SIUnit<Speed>(),
+      Velocity<Barycentric>({0 * si::Unit<Speed>,
                              100 * Kilo(Metre) / Second,
-                             0 * SIUnit<Speed>()});
+                             0 * si::Unit<Speed>});
   DiscreteTrajectory<Barycentric> probe_trajectory;
   FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
                                                         probe_velocity,

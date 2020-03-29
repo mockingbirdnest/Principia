@@ -31,7 +31,6 @@ using quantities::Action;
 using quantities::Amount;
 using quantities::Length;
 using quantities::Speed;
-using quantities::SIUnit;
 using quantities::si::Metre;
 using quantities::si::Second;
 using ::testing::AllOf;
@@ -41,6 +40,7 @@ using ::testing::Lt;
 using ::testing::Matcher;
 using ::testing::Not;
 using ::testing::_;
+namespace si = quantities::si;
 
 namespace testing_utilities {
 
@@ -88,31 +88,31 @@ TEST_F(ComponentwiseTest, Grassmann) {
 
 TEST_F(ComponentwiseTest, Pair) {
   using VV = Pair<Vector<Action, World>, Vector<Amount, World>>;
-  VV vv(Vector<Action, World>({(1.0 + 1.0e-12) * SIUnit<Action>(),
-                                1.0e-10 *  SIUnit<Action>(),
-                                3.5 *  SIUnit<Action>()}),
-        Vector<Amount, World>({(1.0 + 1.0e-12) * SIUnit<Amount>(),
-                                (2.0 + 1.0e-10) *  SIUnit<Amount>(),
-                                 3.5 *  SIUnit<Amount>()}));
+  VV vv(Vector<Action, World>({(1.0 + 1.0e-12) * si::Unit<Action>,
+                                1.0e-10 *  si::Unit<Action>,
+                                3.5 *  si::Unit<Action>}),
+        Vector<Amount, World>({(1.0 + 1.0e-12) * si::Unit<Amount>,
+                                (2.0 + 1.0e-10) *  si::Unit<Amount>,
+                                 3.5 *  si::Unit<Amount>}));
   EXPECT_THAT(vv, Componentwise(
                       Componentwise(
-                          AlmostEquals(1.0 * SIUnit<Action>(), 4504),
-                          VanishesBefore(1.0 * SIUnit<Action>(), 450360),
-                          Eq(3.5 * SIUnit<Action>())),
+                          AlmostEquals(1.0 * si::Unit<Action>, 4504),
+                          VanishesBefore(1.0 * si::Unit<Action>, 450360),
+                          Eq(3.5 * si::Unit<Action>)),
                       AlmostEquals(
-                          Vector<Amount, World>({1.0 * SIUnit<Amount>(),
-                                                 2.0 *  SIUnit<Amount>(),
-                                                 3.5 *  SIUnit<Amount>()}),
+                          Vector<Amount, World>({1.0 * si::Unit<Amount>,
+                                                 2.0 *  si::Unit<Amount>,
+                                                 3.5 *  si::Unit<Amount>}),
                           225180)));
   EXPECT_THAT(vv, Not(Componentwise(
                       Componentwise(
-                          AlmostEquals(1.0 * SIUnit<Action>(), 4504),
-                          VanishesBefore(1.0 * SIUnit<Action>(), 450360),
-                          Eq(2.5 * SIUnit<Action>())),
+                          AlmostEquals(1.0 * si::Unit<Action>, 4504),
+                          VanishesBefore(1.0 * si::Unit<Action>, 450360),
+                          Eq(2.5 * si::Unit<Action>)),
                       AlmostEquals(
-                          Vector<Amount, World>({1.0 * SIUnit<Amount>(),
-                                                 2.0 *  SIUnit<Amount>(),
-                                                 3.5 *  SIUnit<Amount>()}),
+                          Vector<Amount, World>({1.0 * si::Unit<Amount>,
+                                                 2.0 *  si::Unit<Amount>,
+                                                 3.5 *  si::Unit<Amount>}),
                           2))));
 }
 

@@ -13,6 +13,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "quantities/uk.hpp"
 
 namespace principia {
@@ -25,7 +26,6 @@ using geometry::Vector;
 using geometry::Trivector;
 using quantities::Length;
 using quantities::MagneticFlux;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::bipm::Knot;
 using quantities::cgs::Maxwell;
@@ -33,6 +33,7 @@ using quantities::uk::Foot;
 using testing::Ne;
 using testing::Eq;
 using testing::Not;
+namespace si = quantities::si;
 
 namespace {
 struct World;
@@ -140,7 +141,7 @@ TEST_F(AlmostEqualsTest, Trivector) {
 }
 
 TEST_F(AlmostEqualsTest, Describe) {
-  Speed v1 = 1 * SIUnit<Speed>();
+  Speed v1 = 1 * si::Unit<Speed>;
   {
     std::ostringstream out;
     AlmostEquals(v1, 2, 6).impl().DescribeTo(&out);

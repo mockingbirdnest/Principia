@@ -85,7 +85,6 @@ using quantities::DebugString;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Sin;
-using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;

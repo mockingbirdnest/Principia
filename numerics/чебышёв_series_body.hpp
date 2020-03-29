@@ -17,7 +17,6 @@ namespace internal_чебышёв_series {
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using geometry::Multivector;
 using geometry::R3Element;
-using quantities::SIUnit;
 
 // The compiler does a much better job on an |R3Element<double>| than on a
 // |Vector<Quantity>| so we specialize this case.
@@ -95,7 +94,7 @@ EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluationHelper(
     std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
     int const degree) : degree_(degree) {
   for (auto const& coefficient : coefficients) {
-    coefficients_.push_back(coefficient.coordinates() / SIUnit<Scalar>());
+    coefficients_.push_back(coefficient.coordinates() / si::Unit<Scalar>);
   }
 }
 
@@ -107,10 +106,10 @@ EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluateImplementation(
   R3Element<double> const c_0 = coefficients_[0];
   switch (degree_) {
     case 0:
-      return Multivector<double, Frame, rank>(c_0) * SIUnit<Scalar>();
+      return Multivector<double, Frame, rank>(c_0) * si::Unit<Scalar>;
     case 1:
       return Multivector<double, Frame, rank>(
-                 c_0 + scaled_t * coefficients_[1]) * SIUnit<Scalar>();
+                 c_0 + scaled_t * coefficients_[1]) * si::Unit<Scalar>;
     default:
       // b_degree   = c_degree.
       R3Element<double> b_i = coefficients_[degree_];
@@ -134,11 +133,11 @@ EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluateImplementation(
         b_i = coefficients_[1] + two_scaled_t * b_j - b_i;
         // c_0 + t b_1 - b_2.
         return Multivector<double, Frame, rank>(
-                   c_0 + scaled_t * b_i - b_j) * SIUnit<Scalar>();
+                   c_0 + scaled_t * b_i - b_j) * si::Unit<Scalar>;
       } else {
         // c_0 + t b_1 - b_2.
         return Multivector<double, Frame, rank>(
-                   c_0 + scaled_t * b_j - b_i) * SIUnit<Scalar>();
+                   c_0 + scaled_t * b_j - b_i) * si::Unit<Scalar>;
       }
     }
 }
@@ -148,7 +147,7 @@ Multivector<Scalar, Frame, rank>
 EvaluationHelper<Multivector<Scalar, Frame, rank>>::coefficients(
     int const index) const {
   return Multivector<double, Frame, rank>(
-             coefficients_[index]) * SIUnit<Scalar>();
+             coefficients_[index]) * si::Unit<Scalar>;
 }
 
 template<typename Scalar, typename Frame, int rank>

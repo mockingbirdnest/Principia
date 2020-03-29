@@ -16,7 +16,6 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -39,7 +38,6 @@ using quantities::NaN;
 using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Sin;
-using quantities::SIUnit;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 

@@ -53,7 +53,6 @@ using quantities::AngularFrequency;
 using quantities::Degree2SphericalHarmonicCoefficient;
 using quantities::GravitationalParameter;
 using quantities::Length;
-using quantities::SIUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Hour;
@@ -67,6 +66,7 @@ using testing_utilities::IsNear;
 using testing_utilities::operator""_⑴;
 using ::testing::IsNull;
 using ::testing::NotNull;
+namespace si = quantities::si;
 
 class BodyTest : public testing::Test {
  protected:
@@ -83,7 +83,7 @@ class BodyTest : public testing::Test {
     using F = Frame<Tag, Inertial, Handedness::Right, tag>;
 
     auto const rotating_body =
-        RotatingBody<F>(17 * SIUnit<GravitationalParameter>(),
+        RotatingBody<F>(17 * si::Unit<GravitationalParameter>,
                         typename RotatingBody<F>::Parameters(
                             2 * Metre,
                             3 * Radian,
@@ -115,9 +115,9 @@ class BodyTest : public testing::Test {
 
   MasslessBody massless_body_;
   MassiveBody massive_body_ =
-      MassiveBody(42 * SIUnit<GravitationalParameter>());
+      MassiveBody(42 * si::Unit<GravitationalParameter>);
   RotatingBody<World> rotating_body_ =
-      RotatingBody<World>(17 * SIUnit<GravitationalParameter>(),
+      RotatingBody<World>(17 * si::Unit<GravitationalParameter>,
                           RotatingBody<World>::Parameters(
                               1 * Metre,
                               3 * Radian,
@@ -126,7 +126,7 @@ class BodyTest : public testing::Test {
                               right_ascension_of_pole_,
                               declination_of_pole_));
   OblateBody<World> oblate_body_ =
-      OblateBody<World>(17 * SIUnit<GravitationalParameter>(),
+      OblateBody<World>(17 * si::Unit<GravitationalParameter>,
                         RotatingBody<World>::Parameters(
                             1 * Metre,
                             3 * Radian,
@@ -304,7 +304,7 @@ TEST_F(BodyTest, OblateSerializationCompatibility) {
                       MutableExtension(serialization::OblateBody::extension);
   oblate_body_extension->clear_reference_radius();
   Degree2SphericalHarmonicCoefficient pre_διόφαντος_j2 =
-      7 * SIUnit<Degree2SphericalHarmonicCoefficient>();
+      7 * si::Unit<Degree2SphericalHarmonicCoefficient>;
   pre_διόφαντος_j2.WriteToMessage(
       oblate_body_extension->mutable_pre_diophantos_j2());
 
@@ -314,10 +314,10 @@ TEST_F(BodyTest, OblateSerializationCompatibility) {
       dynamic_cast_not_null<OblateBody<World> const*>(body.get());
   Length const reference_radius = 1 * Metre;
   EXPECT_EQ(7 / (cast_oblate_body->gravitational_parameter() /
-                 SIUnit<GravitationalParameter>()),
+                 si::Unit<GravitationalParameter>),
             cast_oblate_body->j2());
   EXPECT_EQ(reference_radius, cast_oblate_body->reference_radius());
-  EXPECT_EQ(7 * SIUnit<Degree2SphericalHarmonicCoefficient>() /
+  EXPECT_EQ(7 * si::Unit<Degree2SphericalHarmonicCoefficient> /
                 cast_oblate_body->gravitational_parameter(),
             cast_oblate_body->j2_over_μ());
 }

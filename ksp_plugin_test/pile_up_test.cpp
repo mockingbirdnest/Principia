@@ -53,7 +53,6 @@ using quantities::Length;
 using quantities::MomentOfInertia;
 using quantities::Pow;
 using quantities::Speed;
-using quantities::SIUnit;
 using quantities::Time;
 using quantities::si::Kilogram;
 using quantities::si::Metre;

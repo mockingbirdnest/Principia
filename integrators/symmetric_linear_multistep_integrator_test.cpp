@@ -12,6 +12,7 @@
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/is_near.hpp"
@@ -34,7 +35,6 @@ using quantities::Mass;
 using quantities::Pow;
 using quantities::Power;
 using quantities::Sin;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Stiffness;
 using quantities::Time;
@@ -62,6 +62,7 @@ using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
+namespace si = quantities::si;
 
 #define INSTANCE(integrator,                                             \
                  beginning_of_convergence,                               \
@@ -202,7 +203,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Symplecticity) {
   Time const step = 0.2 * Second;
 
   Mass const m = 1 * Kilogram;
-  Stiffness const k = SIUnit<Stiffness>();
+  Stiffness const k = si::Unit<Stiffness>;
   Energy const initial_energy =
       0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
 
@@ -241,7 +242,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Symplecticity) {
   EXPECT_THAT(correlation, Lt(0.011));
   Power const slope = Slope(time, energy_error);
   LOG(INFO) << "Slope                                     : " << slope;
-  EXPECT_THAT(Abs(slope), Lt(2e-6 * SIUnit<Power>()));
+  EXPECT_THAT(Abs(slope), Lt(2e-6 * si::Unit<Power>));
   LOG(INFO) << "Maximum energy error                      : " <<
       max_energy_error;
   EXPECT_EQ(GetParam().expected_energy_error, max_energy_error);

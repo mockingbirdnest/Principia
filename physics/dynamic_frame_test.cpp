@@ -23,12 +23,12 @@ using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Velocity;
 using quantities::GravitationalParameter;
-using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+namespace si = quantities::si;
 
 namespace {
 
@@ -39,7 +39,7 @@ Vector<Acceleration, Circular> Gravity(Instant const& t,
                                        Position<Circular> const& q) {
   Displacement<Circular> const r = q - Circular::origin;
   auto const r² = r.Norm²();
-  return -SIUnit<GravitationalParameter>() * r / (Sqrt(r²) * r²);
+  return -si::Unit<GravitationalParameter> * r / (Sqrt(r²) * r²);
 }
 
 // An inertial frame.

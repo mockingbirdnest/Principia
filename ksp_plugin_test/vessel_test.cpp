@@ -40,7 +40,6 @@ using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RotatingBody;
 using quantities::MomentOfInertia;
-using quantities::SIUnit;
 using quantities::si::Degree;
 using quantities::si::Kilogram;
 using quantities::si::Metre;

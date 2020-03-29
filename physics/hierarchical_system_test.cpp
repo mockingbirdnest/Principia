@@ -22,7 +22,6 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Pow;
-using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -31,6 +30,7 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;
+namespace si = quantities::si;
 
 class HierarchicalSystemTest : public ::testing::Test {
  protected:
@@ -106,7 +106,7 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
 
   auto const new_body = [&body_indices, &bodies]() {
     auto body =
-        make_not_null_unique<MassiveBody>(SIUnit<GravitationalParameter>());
+        make_not_null_unique<MassiveBody>(si::Unit<GravitationalParameter>);
     bodies.emplace_back(body.get());
     body_indices[body.get()] = body_indices.size();
     return body;

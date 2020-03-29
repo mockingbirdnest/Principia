@@ -15,7 +15,6 @@ using geometry::Displacement;
 using geometry::R3x3Matrix;
 using quantities::Force;
 using quantities::MomentOfInertia;
-using quantities::SIUnit;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Newton;

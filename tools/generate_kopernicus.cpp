@@ -30,11 +30,11 @@ using quantities::Length;
 using quantities::Mass;
 using quantities::Mod;
 using quantities::ParseQuantity;
-using quantities::SIUnit;
 using quantities::constants::GravitationalConstant;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
+namespace si = quantities::si;
 
 namespace tools {
 
@@ -134,7 +134,7 @@ void GenerateKopernicusForSlippist1(
     kopernicus_cfg << "      %gravParameter = "
                    << DebugString(ParseQuantity<GravitationalParameter>(
                                       body.gravitational_parameter()) /
-                                  SIUnit<GravitationalParameter>())
+                                  si::Unit<GravitationalParameter>)
                    << "\n";
     kopernicus_cfg << "      %radius = "
                    << DebugString(ParseQuantity<Length>(body.mean_radius()) /
