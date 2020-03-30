@@ -155,7 +155,8 @@ inline void noreturn() { std::exit(0); }
 #define CONSTEXPR_CHECK(condition) CHECK(condition)
 
 // Clang for some reason doesn't like FP arithmetic that yields infinities in
-// constexpr code (MSVC and GCC are fine with that).
+// constexpr code (MSVC and GCC are fine with that).  This will be fixed in
+// Clang 9.0.0 (all hail zygoloid).
 #if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
 #  define CONSTEXPR_INFINITY const
 #else
