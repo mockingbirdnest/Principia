@@ -77,7 +77,7 @@ TEST_F(PlayerTest, PlayTiny) {
   while (player.Play(count)) {
     ++count;
   }
-  EXPECT_EQ(2, count);
+  EXPECT_EQ(3, count);
 }
 
 TEST_F(PlayerTest, DISABLED_SECULAR_Benchmarks) {
@@ -107,33 +107,17 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::FlightPlanReplace::extension);
+        serialization::CatchUpLaggingVessels::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(1204843840);
-    in->set_vessel_guid("6615e657-7c13-4428-bb17-4d9009b4a458");
-    auto* const burn = in->mutable_burn();
-    burn->set_thrust_in_kilonewtons(250.00010393791362);
-    burn->set_specific_impulse_in_seconds_g0(350);
-    auto* const frame = burn->mutable_frame();
-    frame->set_extension(6000);
-    frame->set_centre_index(1);
-    frame->set_primary_index(0);
-    frame->set_secondary_index(0);
-    burn->set_initial_time(3894.6399999993528);
-    auto* const delta_v = burn->mutable_delta_v();
-    delta_v->set_x(0);
-    delta_v->set_y(0);
-    delta_v->set_z(0);
-    burn->set_is_inertially_fixed(true);
-    in->set_index(0);
+    in->set_plugin(2014156823824);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::FlightPlanReplace::extension);
+        serialization::CatchUpLaggingVessels::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<FlightPlanReplace>(
+  CHECK(RunIfAppropriate<CatchUpLaggingVessels>(
       method_in, method_out_return, player));
 #endif
 }
