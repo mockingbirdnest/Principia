@@ -533,8 +533,9 @@ Status PileUp::AdvanceTime(Instant const& t) {
 
   CHECK_NOTNULL(psychohistory_);
 
-  // Append the |history_| authoritatively to the parts' tails and the
-  // |psychohistory_| non-authoritatively.
+  // Append the |history_| to the parts' history and the |psychohistory_| to the
+  // parts' psychohistory.  Drop the history of the pile-up, we won't need it
+  // anymore.
   auto const history_end = history_->end();
   auto const psychohistory_end = psychohistory_->end();
   auto it = history_last;

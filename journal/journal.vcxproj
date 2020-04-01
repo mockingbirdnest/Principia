@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="..\base\version.generated.cc" />
     <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="player.generated.cc">
