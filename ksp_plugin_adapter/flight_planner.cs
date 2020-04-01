@@ -149,9 +149,11 @@ class FlightPlanner : SupervisedWindowRenderer {
         var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
                                                           final_time_.value);
         UpdateStatus(status, null);
-        final_time_.value =
-            plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       }
+      // Always refresh the final time from C++ as it may have changed because
+      // the last burn changed.
+      final_time_.value =
+          plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
 
       FlightPlanAdaptiveStepParameters parameters =
           plugin.FlightPlanGetAdaptiveStepParameters(vessel_guid);
