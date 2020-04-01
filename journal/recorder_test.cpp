@@ -8,6 +8,7 @@
 
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
+#include "base/version.hpp"
 #include "gtest/gtest.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
@@ -85,8 +86,24 @@ TEST_F(RecorderTest, Recording) {
 
   std::vector<serialization::Method> const methods =
       ReadAll(test_name_ + ".journal.hex");
-  EXPECT_EQ(4, methods.size());
+  EXPECT_EQ(6, methods.size());
   auto it = methods.begin();
+  {
+    EXPECT_TRUE(it->HasExtension(serialization::GetVersion::extension));
+    auto const& extension =
+        it->GetExtension(serialization::GetVersion::extension);
+    EXPECT_FALSE(extension.has_out());
+  }
+  ++it;
+  {
+    EXPECT_TRUE(it->HasExtension(serialization::GetVersion::extension));
+    auto const& extension =
+        it->GetExtension(serialization::GetVersion::extension);
+    EXPECT_TRUE(extension.has_out());
+    EXPECT_EQ(base::BuildDate, extension.out().build_date());
+    EXPECT_EQ(base::Version, extension.out().version());
+  }
+  ++it;
   {
     EXPECT_TRUE(it->HasExtension(serialization::DeletePlugin::extension));
     auto const& extension =

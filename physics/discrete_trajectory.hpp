@@ -65,10 +65,10 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
+using internal_forkable::DiscreteTrajectoryIterator;
 using quantities::Acceleration;
 using quantities::Length;
 using quantities::Speed;
-using internal_forkable::DiscreteTrajectoryIterator;
 using numerics::Hermite3;
 
 template<typename Frame>

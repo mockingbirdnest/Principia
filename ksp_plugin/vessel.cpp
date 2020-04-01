@@ -241,6 +241,20 @@ void Vessel::AdvanceTime() {
                            &Part::history_end,
                            *history_);
   psychohistory_ = history_->NewForkAtLast();
+
+  // The reason why we may want to skip the start of the psychohistory is
+  // subtle.  Say that we have a vessel A with points at t₀, t₀ + 10 s,
+  // t₀ + 20 s in its history.  Say that a vessel B is created at t₀ + 23 s,
+  // maybe because of an undocking or a staging, and (some) of the parts of A
+  // are transfered to B.  Now time moves a bit and at t₀ = 24 s we want to
+  // attach the psychohistory of these parts (their centre of mass, really) to
+  // vessel B.  Most of the time the psychohistory will have a *single* point at
+  // t₀ + 24 s and everything will be fine.  However, because the psychohistory
+  // is integrated using an adaptive step, it is possible that it would have
+  // multiple points, say one at t₀ + 21 s and one at t₀ + 24 s.  In this case
+  // trying to insert the point at t₀ + 21 s would put us before the last point
+  // of the history of B and would fail a check.  Therefore, we just ignore that
+  // point.  See #2507.
   AppendToVesselTrajectory(&Part::psychohistory_begin,
                            &Part::psychohistory_end,
                            *psychohistory_);
@@ -588,12 +602,20 @@ void Vessel::AppendToVesselTrajectory(
     ends.push_back((*part.*part_trajectory_end)());
   }
 
+  Instant fork_time;
+  if (!trajectory.is_root()) {
+    fork_time = trajectory.Fork()->time;
+  }
+
   // Loop over the times of the trajectory.
   for (;;) {
     auto const& it0 = its[0];
     bool const at_end_of_part_trajectory = it0 == ends[0];
     Instant const first_time = at_end_of_part_trajectory ? Instant()
                                                          : it0->time;
+    bool const after_fork_time = !at_end_of_part_trajectory &&
+                                 (trajectory.is_root() ||
+                                  first_time > fork_time);
 
     // Loop over the parts at a given time.
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
@@ -614,9 +636,11 @@ void Vessel::AppendToVesselTrajectory(
     }
 
     // Append the parts' barycentre to the trajectory.
-    DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
-        calculator.Get();
-    trajectory.Append(first_time, vessel_degrees_of_freedom);
+    if (after_fork_time) {
+      DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
+          calculator.Get();
+      trajectory.Append(first_time, vessel_degrees_of_freedom);
+    }
   }
 }
 
