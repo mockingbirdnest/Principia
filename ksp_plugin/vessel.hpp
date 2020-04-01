@@ -224,9 +224,8 @@ class Vessel {
 
   // Appends to |trajectory| the centre of mass of the trajectories of the parts
   // denoted by |part_trajectory_begin| and |part_trajectory_end|.  Only the
-  // points that are strictly after |fork_time| are used.
-  void AppendToVesselTrajectory(std::optional<Instant> const& fork_time,
-                                TrajectoryIterator part_trajectory_begin,
+  // points that are strictly after the fork time of the trajectory are used.
+  void AppendToVesselTrajectory(TrajectoryIterator part_trajectory_begin,
                                 TrajectoryIterator part_trajectory_end,
                                 DiscreteTrajectory<Barycentric>& trajectory);
 
