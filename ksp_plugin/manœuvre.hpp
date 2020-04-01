@@ -119,6 +119,9 @@ class Manœuvre {
   // Returns true if ‖Δv‖ is NaN or infinite.
   bool IsSingular() const;
 
+  // Returrns true if and only if time < initial_time;
+  bool IsAfter(Instant const& time) const;
+
   // Returns true if and only if [initial_time, final_time] ⊆ ]begin, end[.
   bool FitsBetween(Instant const& begin, Instant const& end) const;
 

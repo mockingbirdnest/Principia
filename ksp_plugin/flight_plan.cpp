@@ -173,8 +173,17 @@ Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
   if (manœuvre.IsSingular()) {
     return Singular();
   }
-  if (!manœuvre.FitsBetween(start_of_previous_coast(index),
-                            start_of_next_burn(index))) {
+  if (index == number_of_manœuvres() - 1) {
+    // This is the last manœuvre.  If it doesn't fit just because the flight
+    // plan is too short, extend the flight plan.
+    if (manœuvre.IsAfter(start_of_previous_coast(index))) {
+      desired_final_time_ =
+          std::max(desired_final_time_, manœuvre.final_time());
+    } else {
+      return DoesNotFit();
+    }
+  } else if (!manœuvre.FitsBetween(start_of_previous_coast(index),
+                                   start_of_next_burn(index))) {
     return DoesNotFit();
   }
 

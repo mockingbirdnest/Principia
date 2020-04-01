@@ -153,14 +153,19 @@ Instant Manœuvre<InertialFrame, Frame>::final_time() const {
 }
 
 template<typename InertialFrame, typename Frame>
-bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
-                                                 Instant const& end) const {
-  return begin < initial_time() && final_time() < end;
+bool Manœuvre<InertialFrame, Frame>::IsSingular() const {
+  return !IsFinite(Δv().Norm²());
 }
 
 template<typename InertialFrame, typename Frame>
-bool Manœuvre<InertialFrame, Frame>::IsSingular() const {
-  return !IsFinite(Δv().Norm²());
+bool Manœuvre<InertialFrame, Frame>::IsAfter(Instant const& time) const {
+  return time < initial_time();
+}
+
+template<typename InertialFrame, typename Frame>
+bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
+                                                 Instant const& end) const {
+  return begin < initial_time() && final_time() < end;
 }
 
 template<typename InertialFrame, typename Frame>

@@ -77,7 +77,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       RenderFlightPlan(vessel_guid);
     } else if (UnityEngine.GUILayout.Button("Create flight plan")) {
       plugin.FlightPlanCreate(vessel_guid,
-                              plugin.CurrentTime() + 1000,
+                              plugin.CurrentTime() + 3600,
                               vessel_.GetTotalMass());
       final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       Shrink();
