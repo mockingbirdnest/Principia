@@ -246,7 +246,8 @@ class FlightPlanner : SupervisedWindowRenderer {
               plugin.FlightPlanGetManoeuvre(vessel_guid, i + 1).
                   burn.initial_time);
         }
-        final_times.Add(plugin.FlightPlanGetActualFinalTime(vessel_guid));
+        // Allow extending the flight plan.
+        final_times.Add(double.PositiveInfinity);
         int number_of_anomalous_manœuvres =
             plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
 
