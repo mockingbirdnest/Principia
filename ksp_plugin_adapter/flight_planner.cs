@@ -77,7 +77,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       RenderFlightPlan(vessel_guid);
     } else if (UnityEngine.GUILayout.Button("Create flight plan")) {
       plugin.FlightPlanCreate(vessel_guid,
-                              plugin.CurrentTime() + 1000,
+                              plugin.CurrentTime() + 3600,
                               vessel_.GetTotalMass());
       final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       Shrink();
@@ -149,9 +149,11 @@ class FlightPlanner : SupervisedWindowRenderer {
         var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
                                                           final_time_.value);
         UpdateStatus(status, null);
-        final_time_.value =
-            plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       }
+      // Always refresh the final time from C++ as it may have changed because
+      // the last burn changed.
+      final_time_.value =
+          plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
 
       FlightPlanAdaptiveStepParameters parameters =
           plugin.FlightPlanGetAdaptiveStepParameters(vessel_guid);
@@ -244,7 +246,8 @@ class FlightPlanner : SupervisedWindowRenderer {
               plugin.FlightPlanGetManoeuvre(vessel_guid, i + 1).
                   burn.initial_time);
         }
-        final_times.Add(plugin.FlightPlanGetActualFinalTime(vessel_guid));
+        // Allow extending the flight plan.
+        final_times.Add(double.PositiveInfinity);
         int number_of_anomalous_manœuvres =
             plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
 

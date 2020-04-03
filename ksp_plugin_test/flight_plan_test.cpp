@@ -411,18 +411,12 @@ TEST_F(FlightPlanTest, Replace) {
       flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
           final_mass();
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  EXPECT_THAT(flight_plan_->Replace(MakeThirdBurn(), /*index=*/0),
-              StatusIs(FlightPlan::does_not_fit));
-  EXPECT_EQ(old_final_mass,
-            flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
-                final_mass());
-  EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_OK(flight_plan_->Replace(MakeThirdBurn(), /*index=*/0));
   EXPECT_GT(old_final_mass,
             flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
                 final_mass());
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
+  EXPECT_LT(t0_ + 1.7 * Second, flight_plan_->desired_final_time());
 }
 
 TEST_F(FlightPlanTest, Segments) {
