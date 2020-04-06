@@ -33,7 +33,9 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
         allocated_intptrs_.Remove(native_data);
       }
     }
-    CleanUpNativeDataImplementation(actual_native_data);
+    if (actual_native_data != IntPtr.Zero) {
+      CleanUpNativeDataImplementation(actual_native_data);
+    }
   }
 
   // We have no evidence that this method is ever called.
@@ -44,7 +46,9 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
   IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
     IntPtr result = MarshalManagedToNativeImplementation(managed_object);
     lock (allocated_intptrs_) {
-      allocated_intptrs_.Add(result);
+      if (result != IntPtr.Zero) {
+        allocated_intptrs_.Add(result);
+      }
     }
     return result;
   }

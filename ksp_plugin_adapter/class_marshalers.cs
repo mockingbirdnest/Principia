@@ -10,7 +10,7 @@ internal static partial class Interface {
     return new IntPtr(pointer.ToInt64() + offset);
   }
 
-  internal class InBodyParametersMarshaler : ICustomMarshaler {
+  internal class InBodyParametersMarshaler : MonoMarshaler {
 
     [StructLayout(LayoutKind.Sequential)]
     internal class BodyParametersRepresentation {
@@ -34,7 +34,7 @@ internal static partial class Interface {
       return instance_;
     }
 
-    public void CleanUpNativeData(IntPtr native_data) {
+    public override void CleanUpNativeDataImplementation(IntPtr native_data) {
       var representation = new BodyParametersRepresentation();
       Marshal.PtrToStructure(native_data, representation);
       for (int i = 0; i < representation.geopotential_size; ++i) {
@@ -47,7 +47,8 @@ internal static partial class Interface {
       Marshal.FreeHGlobal(native_data);
     }
 
-    public IntPtr MarshalManagedToNative(object managed_object) {
+    public override IntPtr MarshalManagedToNativeImplementation(
+        object managed_object) {
       var parameters = managed_object as BodyParameters;
       Debug.Assert(parameters != null, nameof(parameters) + " != null");
       var representation = new BodyParametersRepresentation{
@@ -83,16 +84,8 @@ internal static partial class Interface {
       return buffer;
     }
 
-    public object MarshalNativeToManaged(IntPtr native_data) {
+    public override object MarshalNativeToManaged(IntPtr native_data) {
       throw Log.Fatal("InBodyParametersMarshaler.MarshalNativeToManaged");
-    }
-
-    public void CleanUpManagedData(object managed_data) {
-      throw Log.Fatal("InBodyParametersMarshaler.CleanUpManagedData");
-    }
-
-    int ICustomMarshaler.GetNativeDataSize() {
-      return -1;
     }
 
     private static readonly InBodyParametersMarshaler instance_ =
