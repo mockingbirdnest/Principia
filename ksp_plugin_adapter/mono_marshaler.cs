@@ -18,8 +18,9 @@ namespace ksp_plugin_adapter {
 internal abstract class MonoMarshaler : ICustomMarshaler {
   // Subclasses must override the following methods to implement the contract
   // defined by .Net.
-  public abstract void ActualCleanUpNativeData(IntPtr native_data);
-  public abstract IntPtr ActualMarshalManagedToNative(object managed_object);
+  public abstract void CleanUpNativeDataImplementation(IntPtr native_data);
+  public abstract IntPtr MarshalManagedToNativeImplementation(
+      object managed_object);
 
   // We have no evidence that this method is ever called.
   void ICustomMarshaler.CleanUpManagedData(object managed_object) {}
@@ -32,7 +33,7 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
         allocated_intptrs_.Remove(native_data);
       }
     }
-    ActualCleanUpNativeData(actual_native_data);
+    CleanUpNativeDataImplementation(actual_native_data);
   }
 
   // We have no evidence that this method is ever called.
@@ -41,7 +42,7 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
   }
 
   IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
-    IntPtr result = ActualMarshalManagedToNative(managed_object);
+    IntPtr result = MarshalManagedToNativeImplementation(managed_object);
     lock (allocated_intptrs_) {
       allocated_intptrs_.Add(result);
     }
