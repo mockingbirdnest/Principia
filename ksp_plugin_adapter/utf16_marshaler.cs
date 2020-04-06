@@ -13,7 +13,6 @@ internal class UnownedUTF16Marshaler : MonoMarshaler {
 
   public override void CleanUpNativeDataImplementation(IntPtr native_data) {
     throw Log.Fatal("use |MarshalAs(UnmanagedType.LPWStr)| for in parameters");
-    Interface.DeleteU16String(ref native_data);
   }
 
   public override IntPtr MarshalManagedToNativeImplementation(
@@ -38,7 +37,7 @@ internal class OwnedUTF16Marshaler : UnownedUTF16Marshaler {
 
   public override object MarshalNativeToManaged(IntPtr native_data) {
     var result = base.MarshalNativeToManaged(native_data);
-    Interface.DeleteString(ref native_data);
+    Interface.DeleteU16String(ref native_data);
     return result;
   }
 
