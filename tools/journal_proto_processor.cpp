@@ -417,7 +417,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
       case journal::serialization::UTF_16:
         field_cs_marshal_[descriptor] =
             "MarshalAs(UnmanagedType.CustomMarshaler, "
-            "MarshalTypeRef = typeof(OutOwnedUTF16Marshaler))";
+            "MarshalTypeRef = typeof(OwnedUTF16Marshaler))";
         break;
     }
   }
@@ -568,8 +568,9 @@ void JournalProtoProcessor::ProcessSingleStringField(
       << " is a string field and cannot be produced. Use a fixed64 field that "
       << "has the (encoding) option instead.";
 
-  field_cs_marshal_[descriptor] = "MarshalAs(UnmanagedType.CustomMarshaler, "
-                                  "MarshalTypeRef = typeof(UTF8Marshaler))";
+  field_cs_marshal_[descriptor] =
+      "MarshalAs(UnmanagedType.CustomMarshaler, "
+      "MarshalTypeRef = typeof(UnownedUTF8Marshaler))";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
   if (options.HasExtension(journal::serialization::size)) {
