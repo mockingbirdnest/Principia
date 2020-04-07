@@ -55,6 +55,10 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
 
   public abstract object MarshalNativeToManaged(IntPtr native_data);
 
+  // Since Mono calls CleanUpNativeData with IntPtrs that have not been
+  // allocated by MarshalManagedToNative, we track here all the values returned
+  // by MarshalManagedToNative and only process in CleanUpNativeData those are
+  // found in this set.
   private static readonly HashSet<IntPtr> allocated_intptrs_ =
       new HashSet<IntPtr>();
 }

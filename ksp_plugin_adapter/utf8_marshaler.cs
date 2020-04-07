@@ -16,13 +16,10 @@ internal abstract class UTF8Marshaler : MonoMarshaler {
 // A marshaler for UTF-8 strings whose ownership is not taken from C++.
 internal class UnownedUTF8Marshaler : UTF8Marshaler {
   public static ICustomMarshaler GetInstance(string s) {
-    UnityEngine.Debug.LogError("UnownedUTF8Marshaler.GetInstance");
     return instance_;
   }
 
   public override void CleanUpNativeDataImplementation(IntPtr native_data) {
-    UnityEngine.Debug.LogError("UnownedUTF8Marshaler.CleanUpNativeData " +
-                               GetHashCode() + " " + native_data);
     Marshal.FreeHGlobal(native_data);
   }
 
@@ -40,9 +37,6 @@ internal class UnownedUTF8Marshaler : UTF8Marshaler {
     utf8_.GetBytes(value, 0, value.Length, bytes, 0);
     bytes[size] = 0;
     Marshal.Copy(bytes, 0, buffer, size + 1);
-    UnityEngine.Debug.LogError("UnownedUTF8Marshaler.MarshalManagedToNative " +
-                               GetHashCode() + " " + buffer + " " +
-                               managed_object);
     return buffer;
   }
 
@@ -52,9 +46,6 @@ internal class UnownedUTF8Marshaler : UTF8Marshaler {
     byte[] bytes = new byte[size];
     Marshal.Copy(native_data, bytes, 0, size);
     var result = utf8_.GetString(bytes, 0, size);
-    UnityEngine.Debug.LogError("UnownedUTF8Marshaler.MarshalNativeToManaged " +
-                               GetHashCode() + " " + native_data + " " +
-                               result);
     return result;
   }
 
@@ -66,16 +57,12 @@ internal class UnownedUTF8Marshaler : UTF8Marshaler {
 // out parameters and returned values.
 internal class OwnedUTF8Marshaler : UnownedUTF8Marshaler {
   public new static ICustomMarshaler GetInstance(string s) {
-    UnityEngine.Debug.LogError("OwnedUTF8Marshaler.GetInstance");
     return instance_;
   }
 
   public override object MarshalNativeToManaged(IntPtr native_data) {
     var result = base.MarshalNativeToManaged(native_data);
     Interface.DeleteString(ref native_data);
-    UnityEngine.Debug.LogError("OwnedUTF8Marshaler.MarshalNativeToManaged " +
-                               GetHashCode() + " " + native_data + " " +
-                               result);
     return result;
   }
 
