@@ -8,17 +8,6 @@ namespace ksp_plugin_adapter {
 
 // A marshaler that knows how to encode/decode UTF-8 strings.
 internal abstract class UTF8Marshaler : MonoMarshaler {
-  protected static readonly Encoding utf8_ =
-      new UTF8Encoding(encoderShouldEmitUTF8Identifier : false,
-                       throwOnInvalidBytes             : true);
-}
-
-// A marshaler for UTF-8 strings whose ownership is not taken from C++.
-internal class UnownedUTF8Marshaler : UTF8Marshaler {
-  public static ICustomMarshaler GetInstance(string s) {
-    return instance_;
-  }
-
   public override void CleanUpNativeDataImplementation(IntPtr native_data) {
     Marshal.FreeHGlobal(native_data);
   }
@@ -40,34 +29,49 @@ internal class UnownedUTF8Marshaler : UTF8Marshaler {
     return buffer;
   }
 
-  public override object MarshalNativeToManaged(IntPtr native_data) {
+  public  object MarshalNativeToManagedImplementation(IntPtr native_data) {
     int size;
-    for (size = 0; Marshal.ReadByte(native_data, size) != 0; ++size) {}
+    for (size = 0; Marshal.ReadByte(native_data, size) != 0; ++size) { }
     byte[] bytes = new byte[size];
     Marshal.Copy(native_data, bytes, 0, size);
     var result = utf8_.GetString(bytes, 0, size);
     return result;
   }
 
-  private static readonly UnownedUTF8Marshaler instance_ =
-      new UnownedUTF8Marshaler();
+  protected static readonly Encoding utf8_ = new UTF8Encoding(
+      encoderShouldEmitUTF8Identifier : false,
+      throwOnInvalidBytes             : true);
 }
 
 // A marshaler for UTF-8 strings whose ownership is taken from C++.  Useful for
 // out parameters and returned values.
-internal class OwnedUTF8Marshaler : UnownedUTF8Marshaler {
-  public new static ICustomMarshaler GetInstance(string s) {
+internal class OwnershipTransferUTF8Marshaler : UTF8Marshaler {
+  public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
 
   public override object MarshalNativeToManaged(IntPtr native_data) {
-    var result = base.MarshalNativeToManaged(native_data);
+    var result = MarshalNativeToManagedImplementation(native_data);
     Interface.DeleteString(ref native_data);
     return result;
   }
 
-  private static readonly OwnedUTF8Marshaler instance_ =
-      new OwnedUTF8Marshaler();
+  private static readonly OwnershipTransferUTF8Marshaler instance_ =
+      new OwnershipTransferUTF8Marshaler();
+}
+
+// A marshaler for UTF-8 strings whose ownership is not taken from C++.
+internal class NoOwnershipTransferUTF8Marshaler : UTF8Marshaler {
+  public static ICustomMarshaler GetInstance(string s) {
+    return instance_;
+  }
+
+  public override object MarshalNativeToManaged(IntPtr native_data) {
+    return MarshalNativeToManagedImplementation(native_data);
+  }
+
+  private static readonly NoOwnershipTransferUTF8Marshaler instance_ =
+      new NoOwnershipTransferUTF8Marshaler();
 }
 
 }  // namespace ksp_plugin_adapter

@@ -412,12 +412,12 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
       case journal::serialization::UTF_8:
         field_cs_marshal_[descriptor] =
             "MarshalAs(UnmanagedType.CustomMarshaler, "
-            "MarshalTypeRef = typeof(OwnedUTF8Marshaler))";
+            "MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))";
         break;
       case journal::serialization::UTF_16:
         field_cs_marshal_[descriptor] =
             "MarshalAs(UnmanagedType.CustomMarshaler, "
-            "MarshalTypeRef = typeof(OwnedUTF16Marshaler))";
+            "MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))";
         break;
     }
   }
@@ -570,7 +570,7 @@ void JournalProtoProcessor::ProcessSingleStringField(
 
   field_cs_marshal_[descriptor] =
       "MarshalAs(UnmanagedType.CustomMarshaler, "
-      "MarshalTypeRef = typeof(UnownedUTF8Marshaler))";
+      "MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
   if (options.HasExtension(journal::serialization::size)) {
