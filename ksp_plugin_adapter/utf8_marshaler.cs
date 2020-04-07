@@ -10,7 +10,7 @@ namespace ksp_plugin_adapter {
 internal abstract class UTF8Marshaler : MonoMarshaler {
   public object MarshalNativeToManagedImplementation(IntPtr native_data) {
     int size;
-    for (size = 0; Marshal.ReadByte(native_data, size) != 0; ++size) { }
+    for (size = 0; Marshal.ReadByte(native_data, size) != 0; ++size) {}
     byte[] bytes = new byte[size];
     Marshal.Copy(native_data, bytes, 0, size);
     var result = utf8_.GetString(bytes, 0, size);
@@ -30,12 +30,12 @@ internal class OwnershipTransferUTF8Marshaler : UTF8Marshaler {
   }
 
   public override void CleanUpNativeDataImplementation(IntPtr native_data) {
-    throw Log.Fatal("use |MarshalAs(UnmanagedType.LPWStr)| for in parameters");
+    throw Log.Fatal("use NoOwnershipTransferUTF8Marshaler for in parameters");
   }
 
   public override IntPtr MarshalManagedToNativeImplementation(
       object managed_object) {
-    throw Log.Fatal("use |MarshalAs(UnmanagedType.LPWStr)| for in parameters");
+    throw Log.Fatal("use NoOwnershipTransferUTF8Marshaler for in parameters");
   }
 
   public override object MarshalNativeToManaged(IntPtr native_data) {
