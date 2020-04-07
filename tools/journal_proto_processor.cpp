@@ -412,12 +412,12 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
       case journal::serialization::UTF_8:
         field_cs_marshal_[descriptor] =
             "MarshalAs(UnmanagedType.CustomMarshaler, "
-            "MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))";
+            "MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))";
         break;
       case journal::serialization::UTF_16:
         field_cs_marshal_[descriptor] =
             "MarshalAs(UnmanagedType.CustomMarshaler, "
-            "MarshalTypeRef = typeof(OutOwnedUTF16Marshaler))";
+            "MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))";
         break;
     }
   }
@@ -568,13 +568,9 @@ void JournalProtoProcessor::ProcessSingleStringField(
       << " is a string field and cannot be produced. Use a fixed64 field that "
       << "has the (encoding) option instead.";
 
-  // Note that it is important to use an out marshmallow for return fields,
-  // hence the use of the |in_| set here.
   field_cs_marshal_[descriptor] =
-      Contains(in_, descriptor) ? "MarshalAs(UnmanagedType.CustomMarshaler, "
-                                  "MarshalTypeRef = typeof(InUTF8Marshaler))"
-                                : "MarshalAs(UnmanagedType.CustomMarshaler, "
-                                  "MarshalTypeRef = typeof(OutUTF8Marshaler))";
+      "MarshalAs(UnmanagedType.CustomMarshaler, "
+      "MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
   if (options.HasExtension(journal::serialization::size)) {

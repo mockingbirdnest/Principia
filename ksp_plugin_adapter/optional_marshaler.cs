@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
+internal class OptionalMarshaler<T> : MonoMarshaler where T : struct {
   // In addition to implementing the |ICustomMarshaler| interface, custom
   // marshalers must implement a static method called |GetInstance| that accepts
   // a |String| as a parameter and has a return type of |ICustomMarshaler|,
@@ -14,22 +14,12 @@ internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
     return instance_;
   }
 
-  void ICustomMarshaler.CleanUpManagedData(object managed_object) {}
-
-  void ICustomMarshaler.CleanUpNativeData(IntPtr native_data) {
-    if (native_data == IntPtr.Zero) {
-      return;
-    }
+  public override void CleanUpNativeDataImplementation(IntPtr native_data) {
     Marshal.FreeHGlobal(native_data);
   }
 
-  int ICustomMarshaler.GetNativeDataSize() {
-    // I think this is supposed to return -1, and I also think it doesn't
-    // matter, but honestly I'm not sure...
-    return -1;
-  }
-
-  IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
+  public override IntPtr MarshalManagedToNativeImplementation(
+      object managed_object) {
     if (managed_object == null) {
       // This is not our job.
       throw Log.Fatal("The runtime returns null for null objects");
@@ -55,7 +45,7 @@ internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
     return ptr;
   }
 
-  object ICustomMarshaler.MarshalNativeToManaged(IntPtr native_data) {
+  public override object MarshalNativeToManaged(IntPtr native_data) {
     if (native_data == IntPtr.Zero) {
       return null;
     } else {

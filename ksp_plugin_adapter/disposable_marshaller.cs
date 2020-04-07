@@ -4,20 +4,15 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal class DisposableIteratorMarshaller : ICustomMarshaler {
-  void ICustomMarshaler.CleanUpManagedData(object managed_object) {}
-
-  int ICustomMarshaler.GetNativeDataSize() {
-    return -1;
-  }
-
+internal class DisposableIteratorMarshaller : MonoMarshaler {
   public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
 
-  void ICustomMarshaler.CleanUpNativeData(IntPtr native_data) {}
+  public override void CleanUpNativeDataImplementation(IntPtr native_data) {}
 
-  IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
+  public override IntPtr MarshalManagedToNativeImplementation(
+      object managed_object) {
     if (managed_object == null) {
       return IntPtr.Zero;
     }
@@ -25,7 +20,7 @@ internal class DisposableIteratorMarshaller : ICustomMarshaler {
     return disposable_iterator.IntPtr;
   }
 
-  object ICustomMarshaler.MarshalNativeToManaged(IntPtr iterator) {
+  public override object MarshalNativeToManaged(IntPtr iterator) {
     return new DisposableIterator(iterator);
   }
 
@@ -33,20 +28,15 @@ internal class DisposableIteratorMarshaller : ICustomMarshaler {
       new DisposableIteratorMarshaller();
 }
 
-internal class DisposablePlanetariumMarshaller : ICustomMarshaler {
-  void ICustomMarshaler.CleanUpManagedData(object managed_object) {}
-
-  int ICustomMarshaler.GetNativeDataSize() {
-    return -1;
-  }
-
+internal class DisposablePlanetariumMarshaller : MonoMarshaler {
   public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
 
-  void ICustomMarshaler.CleanUpNativeData(IntPtr native_data) {}
+  public override void CleanUpNativeDataImplementation(IntPtr native_data) {}
 
-  IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
+  public override IntPtr MarshalManagedToNativeImplementation(
+      object managed_object) {
     if (managed_object == null) {
       return IntPtr.Zero;
     }
@@ -54,7 +44,7 @@ internal class DisposablePlanetariumMarshaller : ICustomMarshaler {
     return disposable_planetarium.IntPtr;
   }
 
-  object ICustomMarshaler.MarshalNativeToManaged(IntPtr planetarium) {
+  public override object MarshalNativeToManaged(IntPtr planetarium) {
     return new DisposablePlanetarium(planetarium);
   }
 
