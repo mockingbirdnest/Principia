@@ -8,28 +8,7 @@ namespace ksp_plugin_adapter {
 
 // A marshaler that knows how to encode/decode UTF-8 strings.
 internal abstract class UTF8Marshaler : MonoMarshaler {
-  public override void CleanUpNativeDataImplementation(IntPtr native_data) {
-    Marshal.FreeHGlobal(native_data);
-  }
-
-  public override IntPtr MarshalManagedToNativeImplementation(
-      object managed_object) {
-    if (!(managed_object is string value)) {
-      throw Log.Fatal(string.Format(CultureInfo.InvariantCulture,
-                                    "|{0}| must be used on a |{1}|.",
-                                    GetType().Name,
-                                    typeof(string).Name));
-    }
-    int size = utf8_.GetByteCount(value);
-    IntPtr buffer = Marshal.AllocHGlobal(size + 1);
-    byte[] bytes = new byte[size + 1];
-    utf8_.GetBytes(value, 0, value.Length, bytes, 0);
-    bytes[size] = 0;
-    Marshal.Copy(bytes, 0, buffer, size + 1);
-    return buffer;
-  }
-
-  public  object MarshalNativeToManagedImplementation(IntPtr native_data) {
+  public object MarshalNativeToManagedImplementation(IntPtr native_data) {
     int size;
     for (size = 0; Marshal.ReadByte(native_data, size) != 0; ++size) { }
     byte[] bytes = new byte[size];
@@ -50,6 +29,15 @@ internal class OwnershipTransferUTF8Marshaler : UTF8Marshaler {
     return instance_;
   }
 
+  public override void CleanUpNativeDataImplementation(IntPtr native_data) {
+    throw Log.Fatal("use |MarshalAs(UnmanagedType.LPWStr)| for in parameters");
+  }
+
+  public override IntPtr MarshalManagedToNativeImplementation(
+      object managed_object) {
+    throw Log.Fatal("use |MarshalAs(UnmanagedType.LPWStr)| for in parameters");
+  }
+
   public override object MarshalNativeToManaged(IntPtr native_data) {
     var result = MarshalNativeToManagedImplementation(native_data);
     Interface.DeleteString(ref native_data);
@@ -64,6 +52,27 @@ internal class OwnershipTransferUTF8Marshaler : UTF8Marshaler {
 internal class NoOwnershipTransferUTF8Marshaler : UTF8Marshaler {
   public static ICustomMarshaler GetInstance(string s) {
     return instance_;
+  }
+
+  public override void CleanUpNativeDataImplementation(IntPtr native_data) {
+    Marshal.FreeHGlobal(native_data);
+  }
+
+  public override IntPtr MarshalManagedToNativeImplementation(
+      object managed_object) {
+    if (!(managed_object is string value)) {
+      throw Log.Fatal(string.Format(CultureInfo.InvariantCulture,
+                                    "|{0}| must be used on a |{1}|.",
+                                    GetType().Name,
+                                    typeof(string).Name));
+    }
+    int size = utf8_.GetByteCount(value);
+    IntPtr buffer = Marshal.AllocHGlobal(size + 1);
+    byte[] bytes = new byte[size + 1];
+    utf8_.GetBytes(value, 0, value.Length, bytes, 0);
+    bytes[size] = 0;
+    Marshal.Copy(bytes, 0, buffer, size + 1);
+    return buffer;
   }
 
   public override object MarshalNativeToManaged(IntPtr native_data) {
