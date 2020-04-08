@@ -61,7 +61,7 @@ void GenerateProfiles() {
   CHECK(interface_generated_h.good());
   interface_generated_h << warning;
   for (auto const& cxx_interface_type_declaration :
-           processor.GetCxxInterfaceTypeDeclarations()) {
+           processor.GetCxxInterchangeTypeDeclarations()) {
     interface_generated_h << cxx_interface_type_declaration;
   }
   for (auto const& cxx_interface_method_declaration :
@@ -78,7 +78,7 @@ void GenerateProfiles() {
   interface_generated_cs << "namespace principia {\n";
   interface_generated_cs << "namespace ksp_plugin_adapter {\n\n";
   for (auto const& cs_interface_type_declaration :
-           processor.GetCsInterfaceTypeDeclarations()) {
+           processor.GetCsInterchangeTypeDeclarations()) {
     interface_generated_cs << cs_interface_type_declaration;
   }
   interface_generated_cs << "internal static partial class Interface {\n\n";
@@ -89,6 +89,20 @@ void GenerateProfiles() {
   interface_generated_cs << "}\n\n";
   interface_generated_cs << "}  // namespace ksp_plugin_adapter\n";
   interface_generated_cs << "}  // namespace principia\n";
+
+  std::ofstream marshalers_generated_cs(ksp_plugin_adapter /
+                                      "marshalers.generated.cs");
+  CHECK(marshalers_generated_cs.good());
+  marshalers_generated_cs << warning;
+  marshalers_generated_cs << "using System;\n";
+  marshalers_generated_cs << "using System.Runtime.InteropServices;\n\n";
+  marshalers_generated_cs << "namespace principia {\n";
+  marshalers_generated_cs << "namespace ksp_plugin_adapter {\n\n";
+  for (auto const& cs_marshaler_class : processor.GetCsMarshalerClasses()) {
+    marshalers_generated_cs << cs_marshaler_class;
+  }
+  marshalers_generated_cs << "}  // namespace ksp_plugin_adapter\n";
+  marshalers_generated_cs << "}  // namespace principia\n";
 }
 
 }  // namespace tools

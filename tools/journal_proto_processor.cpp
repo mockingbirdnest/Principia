@@ -119,9 +119,17 @@ JournalProtoProcessor::GetCsInterfaceMethodDeclarations() const {
 }
 
 std::vector<std::string>
-JournalProtoProcessor::GetCsInterfaceTypeDeclarations() const {
+JournalProtoProcessor::GetCsInterchangeTypeDeclarations() const {
   std::vector<std::string> result;
-  for (auto const& pair : cs_interface_type_declaration_) {
+  for (auto const& pair : cs_interchange_type_declaration_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
+std::vector<std::string> JournalProtoProcessor::GetCsMarshalerClasses() const {
+  std::vector<std::string> result;
+  for (auto const& pair : cs_marshaler_class_) {
     result.push_back(pair.second);
   }
   return result;
@@ -137,9 +145,9 @@ JournalProtoProcessor::GetCxxInterfaceMethodDeclarations() const {
 }
 
 std::vector<std::string>
-JournalProtoProcessor::GetCxxInterfaceTypeDeclarations() const {
+JournalProtoProcessor::GetCxxInterchangeTypeDeclarations() const {
   std::vector<std::string> result;
-  for (auto const& pair : cxx_interface_type_declaration_) {
+  for (auto const& pair : cxx_interchange_type_declaration_) {
     result.push_back(pair.second);
   }
   return result;
@@ -342,7 +350,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         options.GetExtension(journal::serialization::disposable);
     field_cs_custom_marshaler_[descriptor] =
         options.GetExtension(journal::serialization::disposable) +
-        "Marshaller";
+        "Marshaler";
   } else {
     field_cs_type_[descriptor] = "IntPtr";
   }
@@ -400,7 +408,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   }
 
   // Special handlings for produced C-style strings: these are seen from the C#
-  // as strings, and marshalled with immediate destruction.
+  // as strings, and marshaled with immediate destruction.
   if (options.HasExtension(journal::serialization::encoding) &&
       (options.HasExtension(journal::serialization::is_produced) ||
        options.HasExtension(journal::serialization::is_produced_if))) {
@@ -437,10 +445,8 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
 
   MessageOptions const& message_options = message_type->options();
   if (Contains(in_, descriptor) &&
-      message_options.HasExtension(
-          journal::serialization::in_custom_marshaler)) {
-    field_cs_custom_marshaler_[descriptor] = message_options.GetExtension(
-        journal::serialization::in_custom_marshaler);
+      !cs_custom_marshaler_[message_type].empty()) {
+    field_cs_custom_marshaler_[descriptor] = cs_custom_marshaler_[message_type];
     field_cxx_mode_fn_[descriptor] =
         [](std::string const& type) {
           return type + " const&";
@@ -924,14 +930,34 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     Descriptor const* descriptor) {
   std::string const& name = descriptor->name();
   std::string const& parameter_name = ToLower(name);
+  MessageOptions const& options = descriptor->options();
 
   cxx_serialize_definition_[descriptor] =
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ") {\n  serialization::" + name + " m;\n";
 
-  MessageOptions const& options = descriptor->options();
-  if (options.HasExtension(journal::serialization::in_custom_marshaler)) {
-    cs_interface_type_declaration_[descriptor] =
+  // Start by processing the fields.  We need to know if any of them has a
+  // custom marshaler to decide whether we generate a struct or a class.
+  bool const has_custom_marshaler =
+      options.HasExtension(journal::serialization::in_custom_marshaler);
+  bool needs_custom_marshaler = false;
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    FieldDescriptor const* field_descriptor = descriptor->field(i);
+    ProcessField(field_descriptor);
+    if (!has_custom_marshaler &&
+        !field_cs_custom_marshaler_[field_descriptor].empty()) {
+      needs_custom_marshaler = true;
+    }
+  }
+  if (has_custom_marshaler) {
+    cs_custom_marshaler_[descriptor] =
+        options.GetExtension(journal::serialization::in_custom_marshaler);
+  } else if (needs_custom_marshaler) {
+    cs_custom_marshaler_[descriptor] = name + "Marshaler";
+  }
+
+  if (has_custom_marshaler || needs_custom_marshaler) {
+    cs_interchange_type_declaration_[descriptor] =
         "internal partial class " + name + " {\n";
   } else {
     MessageOptions const& message_options = descriptor->options();
@@ -940,18 +966,18 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       CHECK(message_options.GetExtension(journal::serialization::is_public));
       visibility = "public";
     }
-    cs_interface_type_declaration_[descriptor] =
+    cs_interchange_type_declaration_[descriptor] =
         "[StructLayout(LayoutKind.Sequential)]\n" + visibility +
         " partial struct " + name + " {\n";
   }
-  cxx_interface_type_declaration_[descriptor] =
+  cxx_interchange_type_declaration_[descriptor] =
       "extern \"C\"\nstruct " + name + " {\n";
 
+  // Second pass on the fields to actually generate the code.
   std::vector<std::string> deserialized_expressions;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     std::string const& field_descriptor_name = field_descriptor->name();
-    ProcessField(field_descriptor);
 
     // If the field needs extra storage for deserialization, generate it now.
     if (Contains(field_cxx_deserialization_storage_name_, field_descriptor)) {
@@ -995,16 +1021,16 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     // in the interchange messages.  This will need fixing if we ever want to
     // pass non-ASCII strings or to return these structs.
     if (field_cs_private_type_[field_descriptor].empty()) {
-      cs_interface_type_declaration_[descriptor] +=
+      cs_interchange_type_declaration_[descriptor] +=
           "  public " + field_cs_type_[field_descriptor] + " " +
           field_descriptor_name + ";\n";
     } else {
       std::string const field_private_member_name = field_descriptor_name + "_";
       std::vector<std::string> fn_arguments = {field_private_member_name};
-      cs_interface_type_declaration_[descriptor] +=
+      cs_interchange_type_declaration_[descriptor] +=
           "  private " + field_cs_private_type_[field_descriptor] + " " +
           field_private_member_name + ";\n";
-      cs_interface_type_declaration_[descriptor] +=
+      cs_interchange_type_declaration_[descriptor] +=
           "  public " + field_cs_type_[field_descriptor] + " " +
           field_descriptor_name + " {\n" +
           "    " + field_cs_private_getter_fn_[field_descriptor](fn_arguments) +
@@ -1013,14 +1039,47 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
           "\n" +
           "  }\n";
     }
-    cxx_interface_type_declaration_[descriptor] +=
+    cxx_interchange_type_declaration_[descriptor] +=
         "  " + field_cxx_type_[field_descriptor] + " " + field_descriptor_name +
         ";\n";
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
-      cxx_interface_type_declaration_[descriptor] +=
+      cxx_interchange_type_declaration_[descriptor] +=
           "  int " + size_member_name_[field_descriptor] + ";\n";
+    }
+
+    // If we need to generate a marshaler, do it now.
+    if (needs_custom_marshaler) {
+      cs_representation_type_declaration_[descriptor] += "    public ";
+      if (field_cs_custom_marshaler_[field_descriptor].empty()) {
+        cs_representation_type_declaration_[descriptor] +=
+            field_cs_type_[field_descriptor] + " " + field_descriptor_name +
+            ";\n";
+        cs_managed_to_native_definition_[descriptor] +=
+            field_descriptor_name + " = value." + field_descriptor_name + ",\n";
+        cs_native_to_managed_definition_[descriptor] +=
+            field_descriptor_name + " = representation." +
+            field_descriptor_name + ",\n";
+      } else {
+        cs_representation_type_declaration_[descriptor] +=
+            "IntPtr " + field_descriptor_name + ";\n";
+        cs_clean_up_native_definition_[descriptor] +=
+            "    " + field_cs_custom_marshaler_[field_descriptor] +
+            ".GetInstance(\"\").CleanUpNativeData(representation." +
+            field_descriptor_name + ");\n";
+        cs_managed_to_native_definition_[descriptor] +=
+            "        " + field_descriptor_name + " = " +
+            field_cs_custom_marshaler_[field_descriptor] +
+            ".GetInstance(\"\").MarshalManagedToNative(value." +
+            field_descriptor_name + "),\n";
+        cs_native_to_managed_definition_[descriptor] +=
+            "        " + field_descriptor_name + " = " +
+            field_cs_custom_marshaler_[field_descriptor] +
+            ".GetInstance(\"\").MarshalNativeToManaged(representation." +
+            field_descriptor_name + ") as " + field_cs_type_[field_descriptor] +
+            ",\n";
+      }
     }
   }
   cxx_serialize_definition_[descriptor] += "  return m;\n}\n\n";
@@ -1033,10 +1092,54 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
       "};\n}\n\n";
 
-  cs_interface_type_declaration_[descriptor] += "}\n\n";
-  cxx_interface_type_declaration_[descriptor] +=
+  cs_interchange_type_declaration_[descriptor] += "}\n\n";
+  cxx_interchange_type_declaration_[descriptor] +=
       "};\n\nstatic_assert(std::is_pod<" + name +
       ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
+
+  if (needs_custom_marshaler) {
+    cs_marshaler_class_[descriptor] =
+        "internal class " + name + "Marshaler : MonoMarshaler {\n"
+        "  [StructLayout(LayoutKind.Sequential)]\n"
+        "  internal struct Representation {\n" +
+        cs_representation_type_declaration_[descriptor] +
+        "  }\n\n"
+        "  public static ICustomMarshaler GetInstance(string s) {\n"
+        "    return instance_;\n"
+        "  }\n\n"
+        "  public override void CleanUpNativeDataImplementation("
+        "IntPtr native_data) {\n"
+        "    var representation = new Representation();\n"
+        "    Marshal.PtrToStructure(native_data, representation);\n" +
+        cs_clean_up_native_definition_[descriptor] +
+        "    Marshal.FreeHGlobal(native_data);\n"
+        "  }\n\n"
+        "  public override IntPtr MarshalManagedToNativeImplementation("
+        "object managed_object) {\n"
+        "    if (!(managed_object is " + name + " value)) {\n"
+        "      throw new NotSupportedException();\n"
+        "    }\n"
+        "    var representation = new Representation{\n" +
+        cs_managed_to_native_definition_[descriptor] +
+        "    };\n"
+        "    IntPtr buffer = Marshal.AllocHGlobal("
+        "Marshal.SizeOf(representation));\n"
+        "    Marshal.StructureToPtr("
+        "representation, buffer, fDeleteOld: false);\n" +
+        "    return buffer;\n"
+        "  }\n\n"
+        "  public override object MarshalNativeToManaged("
+        "IntPtr native_data) {\n"
+        "    var representation = new Representation();\n"
+        "    Marshal.PtrToStructure(native_data, representation);\n"
+        "    return new " + name + "{\n" +
+        cs_native_to_managed_definition_[descriptor] +
+        "    };\n"
+        "  }\n\n"
+        "  private static readonly " + name + "Marshaler instance_ =\n"
+        "      new " + name + "Marshaler();\n"
+        "}\n\n";
+  }
 }
 
 void JournalProtoProcessor::ProcessMethodExtension(
