@@ -75,6 +75,9 @@ class JournalProtoProcessor final {
   void ProcessInterchangeMessage(Descriptor const* descriptor);
   void ProcessMethodExtension(Descriptor const* descriptor);
 
+  bool HasMarshaler(FieldDescriptor const* descriptor) const;
+  std::string MarshalAs(FieldDescriptor const* descriptor) const;
+
   // As the recursive methods above traverse the protocol buffer type
   // declarations, they enter in the following maps (and set) various pieces of
   // information to help in generating C++ and C# code.  For the simplest use
@@ -214,8 +217,11 @@ class JournalProtoProcessor final {
               std::string(std::vector<std::string> const& identifiers)>>
       field_cs_private_setter_fn_;
 
-  // The C# attribute for marshalling a field.
-  std::map<FieldDescriptor const*, std::string> field_cs_marshal_;
+  // The C# class for marshalling a field.  May be either a custom marshaler
+  // (derived from ICustomMarshaler) or one predefined by .Net.  At most one is
+  // set for a given field.
+  std::map<FieldDescriptor const*, std::string> field_cs_custom_marshaler_;
+  std::map<FieldDescriptor const*, std::string> field_cs_predefined_marshaler_;
 
   // The C# type for a field, suitable for use in a private member when the
   // actual data cannot be exposed directly (think bool).

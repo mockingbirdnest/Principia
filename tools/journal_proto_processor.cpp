@@ -255,9 +255,8 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
   // we would lose static typing.  We use a custom strongly-typed boxed type
   // instead.
   field_cs_type_[descriptor] = cs_boxed_type;
-  field_cs_marshal_[descriptor] =
-      "MarshalAs(UnmanagedType.CustomMarshaler, "
-      "MarshalTypeRef = typeof(OptionalMarshaler<" + cs_unboxed_type + ">))";
+  field_cs_custom_marshaler_[descriptor] =
+      "OptionalMarshaler<" + cs_unboxed_type + ">";
   field_cxx_type_[descriptor] = cxx_type + " const*";
 
   field_cxx_arguments_fn_[descriptor] =
@@ -341,11 +340,9 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
       << descriptor->full_name() << " must not be consumed to be disposable";
     field_cs_type_[descriptor] =
         options.GetExtension(journal::serialization::disposable);
-    field_cs_marshal_[descriptor] =
-        "MarshalAs(UnmanagedType.CustomMarshaler, "
-        "MarshalTypeRef = typeof(" +
+    field_cs_custom_marshaler_[descriptor] =
         options.GetExtension(journal::serialization::disposable) +
-        "Marshaller))";
+        "Marshaller";
   } else {
     field_cs_type_[descriptor] = "IntPtr";
   }
@@ -410,14 +407,12 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     field_cs_type_[descriptor] = "String";
     switch (options.GetExtension(journal::serialization::encoding)) {
       case journal::serialization::UTF_8:
-        field_cs_marshal_[descriptor] =
-            "MarshalAs(UnmanagedType.CustomMarshaler, "
-            "MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))";
+        field_cs_custom_marshaler_[descriptor] =
+            "OwnershipTransferUTF8Marshaler";
         break;
       case journal::serialization::UTF_16:
-        field_cs_marshal_[descriptor] =
-            "MarshalAs(UnmanagedType.CustomMarshaler, "
-            "MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))";
+        field_cs_custom_marshaler_[descriptor] =
+            "OwnershipTransferUTF16Marshaler";
         break;
     }
   }
@@ -444,10 +439,8 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   if (Contains(in_, descriptor) &&
       message_options.HasExtension(
           journal::serialization::in_custom_marshaler)) {
-    field_cs_marshal_[descriptor] =
-        "MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(" +
-        message_options.GetExtension(
-            journal::serialization::in_custom_marshaler) + "))";
+    field_cs_custom_marshaler_[descriptor] = message_options.GetExtension(
+        journal::serialization::in_custom_marshaler);
     field_cxx_mode_fn_[descriptor] =
         [](std::string const& type) {
           return type + " const&";
@@ -460,7 +453,7 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
 void JournalProtoProcessor::ProcessRequiredBoolField(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "bool";
-  field_cs_marshal_[descriptor] = "MarshalAs(UnmanagedType.I1)";
+  field_cs_predefined_marshaler_[descriptor] = "UnmanagedType.I1";
   field_cs_private_type_[descriptor] = "Byte";
   field_cs_private_getter_fn_[descriptor] =
       [](std::vector<std::string> const& identifiers) {
@@ -492,7 +485,7 @@ void JournalProtoProcessor::ProcessRequiredBytesField(
       << descriptor->full_name()
       << " is a bytes field and must have the (encoding) = UTF_16 option.";
 
-  field_cs_marshal_[descriptor] = "MarshalAs(UnmanagedType.LPWStr)";
+  field_cs_predefined_marshaler_[descriptor] = "UnmanagedType.LPWStr";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char16_t const*";
   field_cxx_arguments_fn_[descriptor] =
@@ -568,9 +561,7 @@ void JournalProtoProcessor::ProcessSingleStringField(
       << " is a string field and cannot be produced. Use a fixed64 field that "
       << "has the (encoding) option instead.";
 
-  field_cs_marshal_[descriptor] =
-      "MarshalAs(UnmanagedType.CustomMarshaler, "
-      "MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))";
+  field_cs_custom_marshaler_[descriptor] = "NoOwnershipTransferUTF8Marshaler";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
   if (options.HasExtension(journal::serialization::size)) {
@@ -861,9 +852,9 @@ void JournalProtoProcessor::ProcessInOut(
 
     if (must_generate_code) {
       cs_interface_parameters_[descriptor].push_back(
-          "  " + Join({field_cs_marshal_[field_descriptor].empty()
-                           ? ""
-                           : "[" + field_cs_marshal_[field_descriptor] + "]",
+          "  " + Join({HasMarshaler(field_descriptor)
+                           ? "[" + MarshalAs(field_descriptor) + "]"
+                           : "",
                        field_cs_mode_fn_[field_descriptor](
                            field_cs_type_[field_descriptor])},
                       /*joiner=*/" ") +
@@ -920,9 +911,9 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       << field_descriptor->full_name() << " has incorrect (omit_check) option";
   }
   cs_interface_return_marshal_[descriptor] =
-      field_cs_marshal_[field_descriptor].empty()
-          ? ""
-          : "[return : " + field_cs_marshal_[field_descriptor] + "]";
+      HasMarshaler(field_descriptor)
+          ? "[return : " + MarshalAs(field_descriptor) + "]"
+          : "";
   cs_interface_return_type_[descriptor] = field_cs_type_[field_descriptor];
   cxx_interface_return_type_[descriptor] = field_cxx_type_[field_descriptor];
   cxx_nested_type_declaration_[descriptor] =
@@ -1246,6 +1237,36 @@ void JournalProtoProcessor::ProcessMethodExtension(
   cxx_play_statement_[descriptor] =
       "  ran |= RunIfAppropriate<" + name + ">(\n"
       "             *method_in, *method_out_return);\n";
+}
+
+bool JournalProtoProcessor::HasMarshaler(
+    FieldDescriptor const* descriptor) const {
+  auto const it_custom = field_cs_custom_marshaler_.find(descriptor);
+  auto const it_predefined = field_cs_predefined_marshaler_.find(descriptor);
+  bool const has_custom = it_custom != field_cs_custom_marshaler_.end() &&
+                          !it_custom->second.empty();
+  bool const has_predefined =
+      it_predefined != field_cs_predefined_marshaler_.end() &&
+      !it_predefined->second.empty();
+  CHECK(!(has_custom && has_predefined)) << descriptor->name();
+  return has_custom || has_predefined;
+}
+
+std::string JournalProtoProcessor::MarshalAs(
+    FieldDescriptor const* descriptor) const {
+  auto const it_custom = field_cs_custom_marshaler_.find(descriptor);
+  auto const it_predefined = field_cs_predefined_marshaler_.find(descriptor);
+  if (it_custom != field_cs_custom_marshaler_.end() &&
+      !it_custom->second.empty()) {
+    return "MarshalAs(UnmanagedType.CustomMarshaler, "
+           "MarshalTypeRef = typeof(" +
+           it_custom->second + "))";
+  }
+  if (it_predefined != field_cs_predefined_marshaler_.end() &&
+      !it_predefined->second.empty()) {
+    return "MarshalAs(" + it_predefined->second + ")";
+  }
+  LOG(FATAL) << "Bad marshaler for " << descriptor->name();
 }
 
 }  // namespace internal_journal_proto_processor
