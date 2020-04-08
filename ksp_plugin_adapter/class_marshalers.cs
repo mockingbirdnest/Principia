@@ -94,5 +94,64 @@ internal static partial class Interface {
 
 }
 
+internal class ConfigurationAccuracyParametersMarshaler : MonoMarshaler {
+  [StructLayout(LayoutKind.Sequential)]
+  internal struct Representation {
+    public IntPtr fitting_tolerance;
+    public IntPtr geopotential_tolerance;
+  }
+
+  public static ICustomMarshaler GetInstance(string s) {
+    return instance_;
+  }
+
+  public override void CleanUpNativeDataImplementation(IntPtr native_data) {
+    var representation = new Representation();
+    Marshal.PtrToStructure(native_data, representation);
+    NoOwnershipTransferUTF8Marshaler.GetInstance("").
+        CleanUpNativeData(representation.fitting_tolerance);
+    NoOwnershipTransferUTF8Marshaler.GetInstance("").
+        CleanUpNativeData(representation.geopotential_tolerance);
+    Marshal.FreeHGlobal(native_data);
+  }
+
+  public override IntPtr MarshalManagedToNativeImplementation(
+      object managed_object) {
+    if (!(managed_object is ConfigurationAccuracyParameters value)) {
+      throw new NotSupportedException();
+    }
+    var representation = new Representation{
+        fitting_tolerance = NoOwnershipTransferUTF8Marshaler.GetInstance("").
+            MarshalManagedToNative(value.fitting_tolerance),
+        geopotential_tolerance = NoOwnershipTransferUTF8Marshaler.
+            GetInstance("").
+            MarshalManagedToNative(value.geopotential_tolerance),
+    };
+    IntPtr buffer = Marshal.AllocHGlobal(Marshal.SizeOf(representation));
+    Marshal.StructureToPtr(representation, buffer, fDeleteOld: false);
+    return buffer;
+  }
+
+  public override object MarshalNativeToManaged(IntPtr native_data) {
+    var representation = new Representation();
+    Marshal.PtrToStructure(native_data, representation);
+
+    return new ConfigurationAccuracyParameters{
+        fitting_tolerance = NoOwnershipTransferUTF8Marshaler.GetInstance("").
+                                MarshalNativeToManaged(
+                                    representation.fitting_tolerance) as String,
+        geopotential_tolerance = NoOwnershipTransferUTF8Marshaler.
+                                         GetInstance("").
+                                         MarshalNativeToManaged(
+                                             representation.
+                                                 geopotential_tolerance)
+                                     as String,
+    };
+  }
+
+  private static readonly ConfigurationAccuracyParametersMarshaler instance_ =
+      new ConfigurationAccuracyParametersMarshaler();
+}
+
 }  // namespace ksp_plugin_adapter
 }  // namespace principia
