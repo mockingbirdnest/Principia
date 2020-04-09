@@ -105,6 +105,8 @@ inline Unit ParseUnit(std::string const& s) {
   if (s == "") {
     return Unit(1.0);
   // Units of length.
+  } else if (s == u8"Å") {
+    return Unit(100 * si::Pico(si::Metre));
   } else if (s == u8"μm") {
     return Unit(si::Micro(si::Metre));
   } else if (s == "mm") {
