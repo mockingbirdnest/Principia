@@ -803,8 +803,8 @@ struct HasVessel : not_constructible {
 struct InitializeEphemerisParameters : not_constructible {
   struct In final {
     Plugin* const plugin;
-    ConfigurationAccuracyParameters const accuracy_parameters;
-    ConfigurationFixedStepParameters const fixed_step_parameters;
+    ConfigurationAccuracyParameters const& accuracy_parameters;
+    ConfigurationFixedStepParameters const& fixed_step_parameters;
   };
 
   using Message = serialization::InitializeEphemerisParameters;
@@ -816,7 +816,7 @@ struct InitializeEphemerisParameters : not_constructible {
 struct InitializeHistoryParameters : not_constructible {
   struct In final {
     Plugin* const plugin;
-    ConfigurationFixedStepParameters const parameters;
+    ConfigurationFixedStepParameters const& parameters;
   };
 
   using Message = serialization::InitializeHistoryParameters;
@@ -828,7 +828,7 @@ struct InitializeHistoryParameters : not_constructible {
 struct InitializePsychohistoryParameters : not_constructible {
   struct In final {
     Plugin* const plugin;
-    ConfigurationAdaptiveStepParameters const parameters;
+    ConfigurationAdaptiveStepParameters const& parameters;
   };
 
   using Message = serialization::InitializePsychohistoryParameters;

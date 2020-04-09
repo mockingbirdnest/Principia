@@ -70,20 +70,17 @@ internal partial struct Burn {
   }
 }
 
-[StructLayout(LayoutKind.Sequential)]
-internal partial struct ConfigurationAccuracyParameters {
+internal partial class ConfigurationAccuracyParameters {
   public String fitting_tolerance;
   public String geopotential_tolerance;
 }
 
-[StructLayout(LayoutKind.Sequential)]
-internal partial struct ConfigurationFixedStepParameters {
+internal partial class ConfigurationFixedStepParameters {
   public String fixed_step_size_integrator;
   public String integration_step_size;
 }
 
-[StructLayout(LayoutKind.Sequential)]
-internal partial struct ConfigurationAdaptiveStepParameters {
+internal partial class ConfigurationAdaptiveStepParameters {
   public String adaptive_step_size_integrator;
   public String length_integration_tolerance;
   public String speed_integration_tolerance;
@@ -264,7 +261,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void CatchUpLaggingVessels(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator collided_vessels);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator collided_vessels);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__CelestialFromParent",
@@ -528,8 +525,8 @@ internal static partial class Interface {
       int celestial_index,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator apoapsides,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator periapsides);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator apoapsides,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator periapsides);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanRenderedClosestApproaches",
@@ -539,7 +536,7 @@ internal static partial class Interface {
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator closest_approaches);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator closest_approaches);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanRenderedNodes",
@@ -549,13 +546,13 @@ internal static partial class Interface {
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator ascending,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator descending);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator ascending,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator descending);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanRenderedSegment",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
   internal static extern DisposableIterator FlightPlanRenderedSegment(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid,
@@ -614,7 +611,7 @@ internal static partial class Interface {
   internal static extern void FutureWaitForVesselToCatchUp(
       this IntPtr plugin,
       ref IntPtr future,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator collided_vessels);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator collided_vessels);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__GetBufferDuration",
@@ -669,22 +666,22 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InitializeEphemerisParameters(
       this IntPtr plugin,
-      ConfigurationAccuracyParameters accuracy_parameters,
-      ConfigurationFixedStepParameters fixed_step_parameters);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAccuracyParametersMarshaler))] ConfigurationAccuracyParameters accuracy_parameters,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParametersMarshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__InitializeHistoryParameters",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InitializeHistoryParameters(
       this IntPtr plugin,
-      ConfigurationFixedStepParameters parameters);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParametersMarshaler))] ConfigurationFixedStepParameters parameters);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__InitializePsychohistoryParameters",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InitializePsychohistoryParameters(
       this IntPtr plugin,
-      ConfigurationAdaptiveStepParameters parameters);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAdaptiveStepParametersMarshaler))] ConfigurationAdaptiveStepParameters parameters);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__InsertCelestialAbsoluteCartesian",
@@ -756,7 +753,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   [return : MarshalAs(UnmanagedType.I1)]
   internal static extern bool IteratorAtEnd(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] this DisposableIterator iterator);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__IteratorDelete",
@@ -768,57 +765,57 @@ internal static partial class Interface {
              EntryPoint        = "principia__IteratorGetDiscreteTrajectoryQP",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern QP IteratorGetDiscreteTrajectoryQP(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] this DisposableIterator iterator);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__IteratorGetDiscreteTrajectoryTime",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern double IteratorGetDiscreteTrajectoryTime(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] this DisposableIterator iterator);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__IteratorGetDiscreteTrajectoryXYZ",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZ IteratorGetDiscreteTrajectoryXYZ(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] this DisposableIterator iterator);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__IteratorGetRP2LinesIterator",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
   internal static extern DisposableIterator IteratorGetRP2LinesIterator(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] this DisposableIterator iterator);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__IteratorGetRP2LineXY",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XY IteratorGetRP2LineXY(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] this DisposableIterator iterator);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__IteratorGetVesselGuid",
              CallingConvention = CallingConvention.Cdecl)]
   [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))]
   internal static extern String IteratorGetVesselGuid(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] this DisposableIterator iterator);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__IteratorIncrement",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void IteratorIncrement(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] this DisposableIterator iterator);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__IteratorReset",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void IteratorReset(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] this DisposableIterator iterator);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__IteratorSize",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern int IteratorSize(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] this DisposableIterator iterator);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__LogError",
@@ -943,7 +940,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__PlanetariumCreate",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaller))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))]
   internal static extern DisposablePlanetarium PlanetariumCreate(
       this IntPtr plugin,
       XYZ sun_world_position,
@@ -963,9 +960,9 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__PlanetariumPlotCelestialTrajectoryForPsychohistory",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
   internal static extern DisposableIterator PlanetariumPlotCelestialTrajectoryForPsychohistory(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaller))] this DisposablePlanetarium planetarium,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
       IntPtr plugin,
       int celestial_index,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid,
@@ -974,9 +971,9 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
   internal static extern DisposableIterator PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaller))] this DisposablePlanetarium planetarium,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
       IntPtr plugin,
       int celestial_index,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid);
@@ -984,9 +981,9 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__PlanetariumPlotFlightPlanSegment",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
   internal static extern DisposableIterator PlanetariumPlotFlightPlanSegment(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaller))] this DisposablePlanetarium planetarium,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
       IntPtr plugin,
       int method,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid,
@@ -995,9 +992,9 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__PlanetariumPlotPrediction",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
   internal static extern DisposableIterator PlanetariumPlotPrediction(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaller))] this DisposablePlanetarium planetarium,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
       IntPtr plugin,
       int method,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid);
@@ -1005,9 +1002,9 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__PlanetariumPlotPsychohistory",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
   internal static extern DisposableIterator PlanetariumPlotPsychohistory(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaller))] this DisposablePlanetarium planetarium,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
       IntPtr plugin,
       int method,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid,
@@ -1028,8 +1025,8 @@ internal static partial class Interface {
       int celestial_index,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator apoapsides,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator periapsides);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator apoapsides,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator periapsides);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__RenderedPredictionClosestApproaches",
@@ -1039,7 +1036,7 @@ internal static partial class Interface {
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator closest_approaches);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator closest_approaches);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__RenderedPredictionNodes",
@@ -1049,8 +1046,8 @@ internal static partial class Interface {
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator ascending,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaller))] out DisposableIterator descending);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator ascending,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator descending);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__ReportGroundCollision",
