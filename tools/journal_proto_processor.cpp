@@ -938,8 +938,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
   // Start by processing the fields.  We need to know if any of them has a
   // custom marshaler to decide whether we generate a struct or a class.
-  bool const has_custom_marshaler =
-      options.HasExtension(journal::serialization::in_custom_marshaler);
+  // TODO(phl): Make this const once we generate the marshaler for
+  // BodyParameters.
+  bool has_custom_marshaler =
+      options.HasExtension(journal::serialization::custom_marshaler);
   bool needs_custom_marshaler = false;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
@@ -950,8 +952,16 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     }
   }
   if (has_custom_marshaler) {
-    cs_custom_marshaler_[descriptor] =
-        options.GetExtension(journal::serialization::in_custom_marshaler);
+    // TODO(phl): Remove this hack once we generate the marshaler for
+    // BodyParameters.
+    if (options.GetExtension(journal::serialization::custom_marshaler) ==
+        "none") {
+      has_custom_marshaler = false;
+      needs_custom_marshaler = false;
+    } else {
+      cs_custom_marshaler_[descriptor] =
+          options.GetExtension(journal::serialization::custom_marshaler);
+    }
   } else if (needs_custom_marshaler) {
     cs_custom_marshaler_[descriptor] = name + "Marshaler";
   }
@@ -1066,17 +1076,17 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
             "IntPtr " + field_descriptor_name + ";\n";
         cs_clean_up_native_definition_[descriptor] +=
             "    " + field_cs_custom_marshaler_[field_descriptor] +
-            ".GetInstance(\"\").CleanUpNativeData(representation." +
+            ".GetInstance(null).CleanUpNativeData(representation." +
             field_descriptor_name + ");\n";
         cs_managed_to_native_definition_[descriptor] +=
             "        " + field_descriptor_name + " = " +
             field_cs_custom_marshaler_[field_descriptor] +
-            ".GetInstance(\"\").MarshalManagedToNative(value." +
+            ".GetInstance(null).MarshalManagedToNative(value." +
             field_descriptor_name + "),\n";
         cs_native_to_managed_definition_[descriptor] +=
             "        " + field_descriptor_name + " = " +
             field_cs_custom_marshaler_[field_descriptor] +
-            ".GetInstance(\"\").MarshalNativeToManaged(representation." +
+            ".GetInstance(null).MarshalNativeToManaged(representation." +
             field_descriptor_name + ") as " + field_cs_type_[field_descriptor] +
             ",\n";
       }
@@ -1109,8 +1119,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "  }\n\n"
         "  public override void CleanUpNativeDataImplementation("
         "IntPtr native_data) {\n"
-        "    var representation = new Representation();\n"
-        "    Marshal.PtrToStructure(native_data, representation);\n" +
+        "    var representation = (Representation)Marshal.PtrToStructure("
+        "native_data, typeof(Representation));\n" +
         cs_clean_up_native_definition_[descriptor] +
         "    Marshal.FreeHGlobal(native_data);\n"
         "  }\n\n"
@@ -1130,8 +1140,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "  }\n\n"
         "  public override object MarshalNativeToManaged("
         "IntPtr native_data) {\n"
-        "    var representation = new Representation();\n"
-        "    Marshal.PtrToStructure(native_data, representation);\n"
+        "    var representation = (Representation)Marshal.PtrToStructure("
+        "native_data, typeof(Representation));\n"
         "    return new " + name + "{\n" +
         cs_native_to_managed_definition_[descriptor] +
         "    };\n"
