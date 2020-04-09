@@ -34,9 +34,6 @@ message AdaptiveStepParameters {
 }
 
 message BodyGeopotentialElement {
-  // TODO(phl): Remove this hack once we generate the marshaler for
-  // BodyParameters.
-  option (custom_marshaler) = "none";
   required string degree = 1;
   required string order = 2;
   optional string cos = 3;
@@ -45,7 +42,6 @@ message BodyGeopotentialElement {
 }
 
 message BodyParameters {
-  option (custom_marshaler) = "InBodyParametersMarshaler";
   required string name = 10;
   required string gravitational_parameter = 1;
   optional string reference_instant = 7;

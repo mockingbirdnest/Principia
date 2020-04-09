@@ -197,7 +197,8 @@ std::vector<std::string> JournalProtoProcessor::GetCxxPlayStatements() const {
 
 void JournalProtoProcessor::ProcessRepeatedMessageField(
     FieldDescriptor const* descriptor) {
-  std::string const& message_type_name = descriptor->message_type()->name();
+  Descriptor const* message_type = descriptor->message_type();
+  std::string const& message_type_name = message_type->name();
 
   FieldOptions const& options = descriptor->options();
   CHECK(options.HasExtension(journal::serialization::size))
@@ -205,6 +206,16 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   size_member_name_[descriptor] =
       options.GetExtension(journal::serialization::size);
   field_cs_type_[descriptor] = message_type_name + "[]";
+  if (cs_custom_marshaler_[message_type].empty()) {
+    // This wouldn't be hard, we'd need another RepeatedMarshaller that copies
+    // structs, but we don't need it yet.
+    LOG(FATAL) << "Repeated messages with an element that does not have a "
+                  "custom marshaller are not yet implemented.";
+  } else {
+    field_cs_custom_marshaler_[descriptor] =
+        "RepeatedMarshaler<" + message_type_name + ", " +
+        cs_custom_marshaler_[message_type] + ">";
+  }
   field_cxx_type_[descriptor] = message_type_name + " const*";
 
   field_cxx_arguments_fn_[descriptor] =
@@ -1109,7 +1120,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
   if (needs_custom_marshaler) {
     cs_marshaler_class_[descriptor] =
-        "internal class " + name + "Marshaler : MonoMarshaler {\n"
+        "internal class " + cs_custom_marshaler_[descriptor] +
+        " : MonoMarshaler {\n"
         "  [StructLayout(LayoutKind.Sequential)]\n"
         "  internal struct Representation {\n" +
         cs_representation_type_declaration_[descriptor] +
@@ -1146,8 +1158,9 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         cs_native_to_managed_definition_[descriptor] +
         "    };\n"
         "  }\n\n"
-        "  private static readonly " + name + "Marshaler instance_ =\n"
-        "      new " + name + "Marshaler();\n"
+        "  private static readonly " + cs_custom_marshaler_[descriptor] +
+        " instance_ =\n"
+        "      new " + cs_custom_marshaler_[descriptor] + "();\n"
         "}\n\n";
   }
 }

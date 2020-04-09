@@ -220,12 +220,11 @@ class JournalProtoProcessor final {
               std::string(std::vector<std::string> const& identifiers)>>
       field_cs_private_setter_fn_;
 
-  // The C# class for marshalling a field or a message.  For a field, this may
-  // be either a custom marshaler (derived from ICustomMarshaler) or one
-  // predefined by .Net.  At most one is set for a given field.
+  // The C# class for marshalling a field.  This may be either a custom
+  // marshaler (derived from ICustomMarshaler) or one predefined by .Net.  At
+  // most one is set for a given field.
   std::map<FieldDescriptor const*, std::string> field_cs_custom_marshaler_;
   std::map<FieldDescriptor const*, std::string> field_cs_predefined_marshaler_;
-  std::map<Descriptor const*, std::string> cs_custom_marshaler_;
 
   // The C# type for a field, suitable for use in a private member when the
   // actual data cannot be exposed directly (think bool).
@@ -270,7 +269,11 @@ class JournalProtoProcessor final {
   std::map<Descriptor const*, std::string> cs_interchange_type_declaration_;
   std::map<Descriptor const*, std::string> cxx_interchange_type_declaration_;
 
-  // The C# definition of a class that implements a custom marshaler for an
+  // The name of the C# class that implements a custom marshaler for an
+  // interchange message.
+  std::map<Descriptor const*, std::string> cs_custom_marshaler_;
+
+  // The definition of the C# class that implements a custom marshaler for an
   // interchange message.
   std::map<Descriptor const*, std::string> cs_marshaler_class_;
 
