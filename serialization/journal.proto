@@ -34,6 +34,9 @@ message AdaptiveStepParameters {
 }
 
 message BodyGeopotentialElement {
+  // TODO(phl): Remove this hack once we generate the marshaler for
+  // BodyParameters.
+  option (custom_marshaler) = "none";
   required string degree = 1;
   required string order = 2;
   optional string cos = 3;
@@ -42,7 +45,7 @@ message BodyGeopotentialElement {
 }
 
 message BodyParameters {
-  option (in_custom_marshaler) = "InBodyParametersMarshaler";
+  option (custom_marshaler) = "InBodyParametersMarshaler";
   required string name = 10;
   required string gravitational_parameter = 1;
   optional string reference_instant = 7;
@@ -2214,9 +2217,8 @@ extend google.protobuf.FieldOptions {
 }
 
 extend google.protobuf.MessageOptions {
-  // For an interchange message that is used as an in parameters, specifies the
-  // custom marshaler to use.
-  optional string in_custom_marshaler = 50011;
+  // For an interchange message, specifies the custom marshaler to use.
+  optional string custom_marshaler = 50011;
   // For an interchange message, specifies whether the generated C# struct
   // should be public (the default is internal).
   optional bool is_public = 50012;

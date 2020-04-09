@@ -665,8 +665,8 @@ void __cdecl principia__InitGoogleLogging() {
 
 void __cdecl principia__InitializeEphemerisParameters(
     Plugin* const plugin,
-    ConfigurationAccuracyParameters const accuracy_parameters,
-    ConfigurationFixedStepParameters const fixed_step_parameters) {
+    ConfigurationAccuracyParameters const& accuracy_parameters,
+    ConfigurationFixedStepParameters const& fixed_step_parameters) {
   journal::Method<journal::InitializeEphemerisParameters> m(
       {plugin, accuracy_parameters, fixed_step_parameters});
   CHECK_NOTNULL(plugin);
@@ -678,7 +678,7 @@ void __cdecl principia__InitializeEphemerisParameters(
 
 void __cdecl principia__InitializeHistoryParameters(
     Plugin* const plugin,
-    ConfigurationFixedStepParameters const parameters) {
+    ConfigurationFixedStepParameters const& parameters) {
   journal::Method<journal::InitializeHistoryParameters> m(
       {plugin, parameters});
   CHECK_NOTNULL(plugin);
@@ -688,7 +688,7 @@ void __cdecl principia__InitializeHistoryParameters(
 
 void __cdecl principia__InitializePsychohistoryParameters(
     Plugin* const plugin,
-    ConfigurationAdaptiveStepParameters const parameters) {
+    ConfigurationAdaptiveStepParameters const& parameters) {
   journal::Method<journal::InitializePsychohistoryParameters> m(
       {plugin, parameters});
   CHECK_NOTNULL(plugin);

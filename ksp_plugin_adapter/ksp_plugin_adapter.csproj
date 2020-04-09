@@ -113,7 +113,7 @@
     <Compile Include="dialog.cs" />
     <Compile Include="differential_slider.cs" />
     <Compile Include="disposable.cs" />
-    <Compile Include="disposable_marshaller.cs" />
+    <Compile Include="disposable_marshaler.cs" />
     <Compile Include="external_interface.cs" />
     <Compile Include="flight_planner.cs" />
     <Compile Include="gl_lines.cs" />
@@ -124,6 +124,7 @@
     <Compile Include="logging.cs" />
     <Compile Include="main_window.cs" />
     <Compile Include="map_node_pool.cs" />
+    <Compile Include="marshalers.generated.cs" />
     <Compile Include="orbit_analyser.cs" />
     <Compile Include="planetarium_camera_adjuster.cs" />
     <Compile Include="rendering_actions.cs" />

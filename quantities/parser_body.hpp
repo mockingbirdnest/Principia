@@ -7,6 +7,7 @@
 #include <string>
 
 #include "quantities/astronomy.hpp"
+#include "quantities/bipm.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -105,6 +106,8 @@ inline Unit ParseUnit(std::string const& s) {
   if (s == "") {
     return Unit(1.0);
   // Units of length.
+  } else if (s == u8"Å") {
+    return Unit(bipm::Ångström);
   } else if (s == u8"μm") {
     return Unit(si::Micro(si::Metre));
   } else if (s == "mm") {

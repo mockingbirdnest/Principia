@@ -22,20 +22,23 @@ class JournalProtoProcessor final {
  public:
   void ProcessMessages();
 
-  // ksp_plugin_adapter/interface.cs
+  // ksp_plugin_adapter/interface.generated.cs
   std::vector<std::string> GetCsInterfaceMethodDeclarations() const;
-  std::vector<std::string> GetCsInterfaceTypeDeclarations() const;
+  std::vector<std::string> GetCsInterchangeTypeDeclarations() const;
 
-  // ksp_plugin/interface.hpp
+  // ksp_plugin_adapter/marshalers.generated.cs
+  std::vector<std::string> GetCsMarshalerClasses() const;
+
+  // ksp_plugin/interface.generated.h
   std::vector<std::string> GetCxxInterfaceMethodDeclarations() const;
-  std::vector<std::string> GetCxxInterfaceTypeDeclarations() const;
+  std::vector<std::string> GetCxxInterchangeTypeDeclarations() const;
 
-  // journal/profiles.{hpp,cpp}
+  // journal/profiles.generated.{h,cc}
   std::vector<std::string> GetCxxInterchangeImplementations() const;
   std::vector<std::string> GetCxxMethodImplementations() const;
   std::vector<std::string> GetCxxMethodTypes() const;
 
-  // journal/player.cpp
+  // journal/player.generated.cc
   std::vector<std::string> GetCxxPlayStatements() const;
 
  private:
@@ -74,6 +77,9 @@ class JournalProtoProcessor final {
 
   void ProcessInterchangeMessage(Descriptor const* descriptor);
   void ProcessMethodExtension(Descriptor const* descriptor);
+
+  bool HasMarshaler(FieldDescriptor const* descriptor) const;
+  std::string MarshalAs(FieldDescriptor const* descriptor) const;
 
   // As the recursive methods above traverse the protocol buffer type
   // declarations, they enter in the following maps (and set) various pieces of
@@ -214,8 +220,12 @@ class JournalProtoProcessor final {
               std::string(std::vector<std::string> const& identifiers)>>
       field_cs_private_setter_fn_;
 
-  // The C# attribute for marshalling a field.
-  std::map<FieldDescriptor const*, std::string> field_cs_marshal_;
+  // The C# class for marshalling a field or a message.  For a field, this may
+  // be either a custom marshaler (derived from ICustomMarshaler) or one
+  // predefined by .Net.  At most one is set for a given field.
+  std::map<FieldDescriptor const*, std::string> field_cs_custom_marshaler_;
+  std::map<FieldDescriptor const*, std::string> field_cs_predefined_marshaler_;
+  std::map<Descriptor const*, std::string> cs_custom_marshaler_;
 
   // The C# type for a field, suitable for use in a private member when the
   // actual data cannot be exposed directly (think bool).
@@ -257,8 +267,22 @@ class JournalProtoProcessor final {
 
   // The C#/C++ definition of a type corresponding to an interchange message.
   // The key is a descriptor for an interchange message.
-  std::map<Descriptor const*, std::string> cs_interface_type_declaration_;
-  std::map<Descriptor const*, std::string> cxx_interface_type_declaration_;
+  std::map<Descriptor const*, std::string> cs_interchange_type_declaration_;
+  std::map<Descriptor const*, std::string> cxx_interchange_type_declaration_;
+
+  // The C# definition of a class that implements a custom marshaler for an
+  // interchange message.
+  std::map<Descriptor const*, std::string> cs_marshaler_class_;
+
+  // The C# declarations of fields in the Representation struct of a custom
+  // marshaler.
+  std::map<Descriptor const*, std::string> cs_representation_type_declaration_;
+
+  // The C# statements in the CleanUpNative, MarshalManagedToNative and
+  // MarshalNativeToManaged functions of a custom marshaller.
+  std::map<Descriptor const*, std::string> cs_clean_up_native_definition_;
+  std::map<Descriptor const*, std::string> cs_managed_to_native_definition_;
+  std::map<Descriptor const*, std::string> cs_native_to_managed_definition_;
 
   // The definitions of the Serialize and Deserialize functions for interchange
   // messages.  The key is a descriptor for an interchange message.

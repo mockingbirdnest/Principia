@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal class DisposableIteratorMarshaller : MonoMarshaler {
+internal class DisposableIteratorMarshaler : MonoMarshaler {
   public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
@@ -24,11 +24,11 @@ internal class DisposableIteratorMarshaller : MonoMarshaler {
     return new DisposableIterator(iterator);
   }
 
-  private static readonly DisposableIteratorMarshaller instance_ =
-      new DisposableIteratorMarshaller();
+  private static readonly DisposableIteratorMarshaler instance_ =
+      new DisposableIteratorMarshaler();
 }
 
-internal class DisposablePlanetariumMarshaller : MonoMarshaler {
+internal class DisposablePlanetariumMarshaler : MonoMarshaler {
   public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
@@ -48,8 +48,8 @@ internal class DisposablePlanetariumMarshaller : MonoMarshaler {
     return new DisposablePlanetarium(planetarium);
   }
 
-  private static readonly DisposablePlanetariumMarshaller instance_ =
-      new DisposablePlanetariumMarshaller();
+  private static readonly DisposablePlanetariumMarshaler instance_ =
+      new DisposablePlanetariumMarshaler();
 }
 
 }  // namespace ksp_plugin_adapter
