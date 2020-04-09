@@ -27,7 +27,7 @@ class JournalProtoProcessor final {
   std::vector<std::string> GetCsInterchangeTypeDeclarations() const;
 
   // ksp_plugin_adapter/marshalers.generated.cs
-  std::vector<std::string> GetCsMarshalerClasses() const;
+  std::vector<std::string> GetCsCustomMarshalerClasses() const;
 
   // ksp_plugin/interface.generated.h
   std::vector<std::string> GetCxxInterfaceMethodDeclarations() const;
@@ -271,11 +271,11 @@ class JournalProtoProcessor final {
 
   // The name of the C# class that implements a custom marshaler for an
   // interchange message.
-  std::map<Descriptor const*, std::string> cs_custom_marshaler_;
+  std::map<Descriptor const*, std::string> cs_custom_marshaler_name_;
 
   // The definition of the C# class that implements a custom marshaler for an
   // interchange message.
-  std::map<Descriptor const*, std::string> cs_marshaler_class_;
+  std::map<Descriptor const*, std::string> cs_custom_marshaler_class_;
 
   // The C# declarations of fields in the Representation struct of a custom
   // marshaler.

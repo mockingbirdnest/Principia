@@ -127,9 +127,9 @@ JournalProtoProcessor::GetCsInterchangeTypeDeclarations() const {
   return result;
 }
 
-std::vector<std::string> JournalProtoProcessor::GetCsMarshalerClasses() const {
+std::vector<std::string> JournalProtoProcessor::GetCsCustomMarshalerClasses() const {
   std::vector<std::string> result;
-  for (auto const& pair : cs_marshaler_class_) {
+  for (auto const& pair : cs_custom_marshaler_class_) {
     result.push_back(pair.second);
   }
   return result;
@@ -206,7 +206,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   size_member_name_[descriptor] =
       options.GetExtension(journal::serialization::size);
   field_cs_type_[descriptor] = message_type_name + "[]";
-  if (cs_custom_marshaler_[message_type].empty()) {
+  if (cs_custom_marshaler_name_[message_type].empty()) {
     // This wouldn't be hard, we'd need another RepeatedMarshaller that copies
     // structs, but we don't need it yet.
     LOG(FATAL) << "Repeated messages with an element that does not have a "
@@ -214,7 +214,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   } else {
     field_cs_custom_marshaler_[descriptor] =
         "RepeatedMarshaler<" + message_type_name + ", " +
-        cs_custom_marshaler_[message_type] + ">";
+        cs_custom_marshaler_name_[message_type] + ">";
   }
   field_cxx_type_[descriptor] = message_type_name + " const*";
 
@@ -456,8 +456,8 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
 
   MessageOptions const& message_options = message_type->options();
   if (Contains(in_, descriptor) &&
-      !cs_custom_marshaler_[message_type].empty()) {
-    field_cs_custom_marshaler_[descriptor] = cs_custom_marshaler_[message_type];
+      !cs_custom_marshaler_name_[message_type].empty()) {
+    field_cs_custom_marshaler_[descriptor] = cs_custom_marshaler_name_[message_type];
     field_cxx_mode_fn_[descriptor] =
         [](std::string const& type) {
           return type + " const&";
@@ -970,11 +970,11 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       has_custom_marshaler = false;
       needs_custom_marshaler = false;
     } else {
-      cs_custom_marshaler_[descriptor] =
+      cs_custom_marshaler_name_[descriptor] =
           options.GetExtension(journal::serialization::custom_marshaler);
     }
   } else if (needs_custom_marshaler) {
-    cs_custom_marshaler_[descriptor] = name + "Marshaler";
+    cs_custom_marshaler_name_[descriptor] = name + "Marshaler";
   }
 
   if (has_custom_marshaler || needs_custom_marshaler) {
@@ -1119,8 +1119,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
 
   if (needs_custom_marshaler) {
-    cs_marshaler_class_[descriptor] =
-        "internal class " + cs_custom_marshaler_[descriptor] +
+    cs_custom_marshaler_class_[descriptor] =
+        "internal class " + cs_custom_marshaler_name_[descriptor] +
         " : MonoMarshaler {\n"
         "  [StructLayout(LayoutKind.Sequential)]\n"
         "  internal struct Representation {\n" +
@@ -1158,9 +1158,9 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         cs_native_to_managed_definition_[descriptor] +
         "    };\n"
         "  }\n\n"
-        "  private static readonly " + cs_custom_marshaler_[descriptor] +
+        "  private static readonly " + cs_custom_marshaler_name_[descriptor] +
         " instance_ =\n"
-        "      new " + cs_custom_marshaler_[descriptor] + "();\n"
+        "      new " + cs_custom_marshaler_name_[descriptor] + "();\n"
         "}\n\n";
   }
 }
