@@ -173,12 +173,13 @@ Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
 }
 
 serialization::OblateBody::Geopotential MakeGeopotential(
-    BodyGeopotentialElement const* const geopotential,
-    int const geopotential_size) {
+    BodyGeopotentialElement const* const* const geopotential) {
   // Make sure that we generate at most one row per degree.
   std::map<int, serialization::OblateBody::Geopotential::GeopotentialRow> rows;
-  for (int i = 0; i < geopotential_size; ++i) {
-    BodyGeopotentialElement const& element = geopotential[i];
+  for (BodyGeopotentialElement const* const* e = geopotential;
+       *e != nullptr;
+       ++e) {
+    BodyGeopotentialElement const& element = **e;
     serialization::OblateBody::Geopotential::GeopotentialRow::GeopotentialColumn
         column;
     int const degree = std::stoi(element.degree);
@@ -266,10 +267,9 @@ serialization::GravityModel::Body MakeGravityModel(
   if (body_parameters.j2 != nullptr) {
     gravity_model.set_j2(ParseQuantity<double>(body_parameters.j2));
   }
-  if (body_parameters.geopotential_size > 0) {
+  if (body_parameters.geopotential != nullptr) {
     *gravity_model.mutable_geopotential() =
-        MakeGeopotential(body_parameters.geopotential,
-                         body_parameters.geopotential_size);
+        MakeGeopotential(body_parameters.geopotential);
   }
   LOG(INFO) << "Fingerprint " << std::setw(16) << std::hex << std::uppercase
             << Fingerprint2011(SerializeAsBytes(gravity_model).get())
@@ -478,13 +478,11 @@ void __cdecl principia__DeleteU16String(char16_t const** const native_string) {
 // this last call returns, |*plugin| is not null and may be used by the caller.
 void __cdecl principia__DeserializePlugin(
     char const* const serialization,
-    int const serialization_size,
     PushDeserializer** const deserializer,
     Plugin const** const plugin,
     char const* const compressor,
     char const* const encoder) {
   journal::Method<journal::DeserializePlugin> m({serialization,
-                                                 serialization_size,
                                                  deserializer,
                                                  plugin,
                                                  compressor,
@@ -512,7 +510,8 @@ void __cdecl principia__DeserializePlugin(
   }
 
   // Decode the representation.
-  auto bytes = NewEncoder(encoder)->Decode({serialization, serialization_size});
+  auto bytes = NewEncoder(encoder)->Decode({serialization,
+                                            std::strlen(serialization)});
   auto const bytes_size = bytes.size;
   (*deserializer)->Push(std::move(bytes));
 
