@@ -114,8 +114,7 @@ fi
 pushd zfp
 git checkout master
 git pull
-rm -rf build
-mkdir build
+mkdir -p build
 pushd build
 cmake -DCMAKE_C_COMPILER:FILEPATH=`which clang` -DCMAKE_CXX_COMPILER:FILEPATH=`which clang++` -DCMAKE_C_FLAGS="${C_FLAGS}" -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_LD_FLAGS="${LD_FLAGS}" -DBUILD_SHARED_LIBS=OFF ..
 make -j8
