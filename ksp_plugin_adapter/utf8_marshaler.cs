@@ -61,10 +61,7 @@ internal class NoOwnershipTransferUTF8Marshaler : UTF8Marshaler {
   public override IntPtr MarshalManagedToNativeImplementation(
       object managed_object) {
     if (!(managed_object is string value)) {
-      throw Log.Fatal(string.Format(CultureInfo.InvariantCulture,
-                                    "|{0}| must be used on a |{1}|.",
-                                    GetType().Name,
-                                    typeof(string).Name));
+      throw new NotSupportedException();
     }
     int size = utf8_.GetByteCount(value);
     IntPtr buffer = Marshal.AllocHGlobal(size + 1);

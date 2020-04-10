@@ -11,9 +11,9 @@ internal class RepeatedMarshaler<T, TMarshaler> : MonoMarshaler
   }
 
   public override void CleanUpNativeDataImplementation(IntPtr native_data) {
-    int i = 0;
-    for (;;) {
-      IntPtr native_t = Marshal.ReadIntPtr(native_data, i);
+    int sizeof_intptr = Marshal.SizeOf(typeof(IntPtr));
+    for (int i = 0;; ++i) {
+      IntPtr native_t = Marshal.ReadIntPtr(native_data, i * sizeof_intptr);
       if (native_t == IntPtr.Zero) {
         break;
       }
@@ -27,14 +27,16 @@ internal class RepeatedMarshaler<T, TMarshaler> : MonoMarshaler
     if (!(managed_object is T[] value)) {
       throw new NotSupportedException();
     }
-    int sizeof_t = Marshal.SizeOf(typeof(T));
-    IntPtr native_array = Marshal.AllocHGlobal(sizeof_t * (value.Length + 1));
+    int sizeof_intptr = Marshal.SizeOf(typeof(IntPtr));
+    IntPtr native = Marshal.AllocHGlobal(sizeof_intptr * (value.Length + 1));
     for (int i = 0; i < value.Length; ++i) {
-      IntPtr native_t = t_marshaler_instance_.MarshalManagedToNative(value[i]);
-      Marshal.WriteIntPtr(native_array, i, native_t);
+      Marshal.WriteIntPtr(native,
+                          i * sizeof_intptr,
+                          t_marshaler_instance_.
+                              MarshalManagedToNative(value[i]));
     }
-    Marshal.WriteIntPtr(native_array, value.Length, IntPtr.Zero);
-    return native_array;
+    Marshal.WriteIntPtr(native, value.Length * sizeof_intptr, IntPtr.Zero);
+    return native;
   }
 
   public override object MarshalNativeToManaged(IntPtr native_data) {

@@ -44,6 +44,9 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
   }
 
   IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
+    if (managed_object == null) {
+      return IntPtr.Zero;
+    }
     IntPtr result = MarshalManagedToNativeImplementation(managed_object);
     lock (allocated_intptrs_) {
       if (result != IntPtr.Zero) {
