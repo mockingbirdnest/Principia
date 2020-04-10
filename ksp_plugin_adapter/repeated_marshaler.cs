@@ -32,7 +32,7 @@ internal class RepeatedMarshaler<T, TMarshaler> : MonoMarshaler
     for (int i = 0; i < value.Length; ++i) {
       IntPtr native_t = t_marshaler_instance_.MarshalManagedToNative(value[i]);
       if (native_t == IntPtr.Zero) {
-        // IntPtr.Zero is our termination, so we don't want to get it for a real
+        // IntPtr.Zero is our sentinel, so we don't want to get it for a real
         // element.
         throw new NotSupportedException();
       }
