@@ -109,7 +109,7 @@ make -j8
 popd
 
 if [ ! -d "zfp" ]; then
-  git clone "https://github.com/LLNL/zfp.git"
+  git clone "https://github.com/mockingbirdnest/zfp.git"
 fi
 pushd zfp
 git checkout master
