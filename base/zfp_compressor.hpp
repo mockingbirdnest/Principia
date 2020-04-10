@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "zfp.h"
+#include "zfp/zfp.h"
 
 namespace principia {
 namespace base {
