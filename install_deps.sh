@@ -107,3 +107,17 @@ git pull
 cmake -DCMAKE_C_COMPILER:FILEPATH=`which clang` -DCMAKE_CXX_COMPILER:FILEPATH=`which clang++` -DCMAKE_C_FLAGS="${C_FLAGS}" -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_LD_FLAGS="${LD_FLAGS}" -DBENCHMARK_ENABLE_GTEST_TESTS=OFF
 make -j8
 popd
+
+if [ ! -d "zfp" ]; then
+  git clone "https://github.com/LLNL/zfp.git"
+fi
+pushd zfp
+git checkout master
+git pull
+rm -rf build
+mkdir build
+pushd build
+cmake -DCMAKE_C_COMPILER:FILEPATH=`which clang` -DCMAKE_CXX_COMPILER:FILEPATH=`which clang++` -DCMAKE_C_FLAGS="${C_FLAGS}" -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_LD_FLAGS="${LD_FLAGS}" -DBUILD_SHARED_LIBS=OFF ..
+make -j8
+popd
+popd
