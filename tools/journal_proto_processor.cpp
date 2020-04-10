@@ -122,7 +122,8 @@ JournalProtoProcessor::GetCsInterchangeTypeDeclarations() const {
   return result;
 }
 
-std::vector<std::string> JournalProtoProcessor::GetCsCustomMarshalerClasses() const {
+std::vector<std::string> JournalProtoProcessor::GetCsCustomMarshalerClasses()
+    const {
   std::vector<std::string> result;
   for (auto const& pair : cs_custom_marshaler_class_) {
     result.push_back(pair.second);
@@ -217,8 +218,9 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       [this, descriptor, message_type_name](
           std::string const& prefix, std::string const& expr) {
         std::string const& descriptor_name = descriptor->name();
-        return "  for(" + field_cxx_type_[descriptor] + " " + descriptor_name +
-               " = " + expr + "; "
+        return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
+               " = " + expr + "; " +
+               descriptor_name + " != nullptr && "
                "*" + descriptor_name + " != nullptr; "
                "++" + descriptor_name + ") {\n"
                "    *" + prefix + "add_" + descriptor_name + "() = " +
@@ -462,11 +464,11 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   MessageOptions const& message_options = message_type->options();
   if (Contains(in_, descriptor) &&
       !cs_custom_marshaler_name_[message_type].empty()) {
-    field_cs_custom_marshaler_[descriptor] = cs_custom_marshaler_name_[message_type];
-    field_cxx_mode_fn_[descriptor] =
-        [](std::string const& type) {
-          return type + " const&";
-        };
+    field_cs_custom_marshaler_[descriptor] =
+        cs_custom_marshaler_name_[message_type];
+    field_cxx_mode_fn_[descriptor] = [](std::string const& type) {
+      return type + " const&";
+    };
   }
 
   ProcessSingleMessageField(descriptor);

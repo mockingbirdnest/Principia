@@ -446,7 +446,7 @@ message DeserializePlugin {
     required string serialization = 1;
     required fixed64 deserializer = 2
         [(pointer_to) = "PushDeserializer",
-         (is_consumed_if) = "*serialization == '\\0'"];
+         (is_consumed_if) = "std::string_view(serialization).empty()"];
     required fixed64 plugin = 3 [(pointer_to) = "Plugin const"];
     required string compressor = 4;
     required string encoder = 5;
@@ -454,7 +454,7 @@ message DeserializePlugin {
   message Out {
     required fixed64 deserializer = 1
         [(pointer_to) = "PushDeserializer",
-         (is_produced_if) = "*serialization != '\\0'"];
+         (is_produced_if) = "!std::string_view(serialization).empty()"];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const",
                                  (is_produced) = true];
   }
