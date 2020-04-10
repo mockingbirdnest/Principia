@@ -122,7 +122,8 @@ JournalProtoProcessor::GetCsInterchangeTypeDeclarations() const {
   return result;
 }
 
-std::vector<std::string> JournalProtoProcessor::GetCsCustomMarshalerClasses() const {
+std::vector<std::string> JournalProtoProcessor::GetCsCustomMarshalerClasses()
+    const {
   std::vector<std::string> result;
   for (auto const& pair : cs_custom_marshaler_class_) {
     result.push_back(pair.second);
@@ -451,11 +452,11 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   MessageOptions const& message_options = message_type->options();
   if (Contains(in_, descriptor) &&
       !cs_custom_marshaler_name_[message_type].empty()) {
-    field_cs_custom_marshaler_[descriptor] = cs_custom_marshaler_name_[message_type];
-    field_cxx_mode_fn_[descriptor] =
-        [](std::string const& type) {
-          return type + " const&";
-        };
+    field_cs_custom_marshaler_[descriptor] =
+        cs_custom_marshaler_name_[message_type];
+    field_cxx_mode_fn_[descriptor] = [](std::string const& type) {
+      return type + " const&";
+    };
   }
 
   ProcessSingleMessageField(descriptor);
