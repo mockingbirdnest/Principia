@@ -32,7 +32,7 @@ BodyGeopotentialElement DeserializeBodyGeopotentialElement(serialization::BodyGe
           body_geopotential_element.sin().c_str()};
 }
 
-BodyParameters DeserializeBodyParameters(serialization::BodyParameters const& body_parameters, std::vector<BodyGeopotentialElement>& geopotential_storage) {
+BodyParameters DeserializeBodyParameters(serialization::BodyParameters const& body_parameters, std::pair<std::vector<BodyGeopotentialElement>, std::vector<BodyGeopotentialElement const*>>& geopotential_storage) {
   return {body_parameters.name().c_str(),
           body_parameters.gravitational_parameter().c_str(),
           body_parameters.has_reference_instant() ? body_parameters.reference_instant().c_str() : nullptr,
@@ -47,11 +47,11 @@ BodyParameters DeserializeBodyParameters(serialization::BodyParameters const& bo
           body_parameters.has_j2() ? body_parameters.j2().c_str() : nullptr,
           [&geopotential_storage](::google::protobuf::RepeatedPtrField<serialization::BodyGeopotentialElement> const& messages) {
             for (auto const& message : messages) {
-              geopotential_storage.push_back(DeserializeBodyGeopotentialElement(message));
+              geopotential_storage.first.push_back(DeserializeBodyGeopotentialElement(message));
+              geopotential_storage.second.push_back(&geopotential_storage.first.back());
             }
-            return &geopotential_storage[0];
-          }(body_parameters.geopotential()),
-          body_parameters.geopotential().size()};
+            return &geopotential_storage.second[0];
+          }(body_parameters.geopotential())};
 }
 
 Burn DeserializeBurn(serialization::Burn const& burn) {
@@ -271,8 +271,8 @@ serialization::BodyParameters SerializeBodyParameters(BodyParameters const& body
   if (body_parameters.j2 != nullptr) {
     m.set_j2(body_parameters.j2);
   }
-  for (BodyGeopotentialElement const* geopotential = body_parameters.geopotential; geopotential < body_parameters.geopotential + body_parameters.geopotential_size; ++geopotential) {
-    *m.add_geopotential() = SerializeBodyGeopotentialElement(*geopotential);
+  for(BodyGeopotentialElement const* const* geopotential = body_parameters.geopotential; *geopotential != nullptr; ++geopotential) {
+    *m.add_geopotential() = SerializeBodyGeopotentialElement(**geopotential);
   }
   return m;
 }
@@ -707,7 +707,7 @@ void DeleteU16String::Run(Message const& message, Player::PointerMap& pointer_ma
 
 void DeserializePlugin::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
-  m->set_serialization(std::string(in.serialization, in.serialization_size));
+  m->set_serialization(in.serialization);
   m->set_deserializer(SerializePointer(*in.deserializer));
   m->set_plugin(SerializePointer(*in.plugin));
   m->set_compressor(in.compressor);
@@ -722,17 +722,17 @@ void DeserializePlugin::Fill(Out const& out, not_null<Message*> const message) {
 
 void DeserializePlugin::Run(Message const& message, Player::PointerMap& pointer_map) {
   [[maybe_unused]] auto const& in = message.in();
-  auto serialization = &in.serialization();
+  auto serialization = in.serialization().c_str();
   auto deserializer = DeserializePointer<PushDeserializer*>(pointer_map, in.deserializer());
   auto plugin = DeserializePointer<Plugin const*>(pointer_map, in.plugin());
   auto compressor = in.compressor().c_str();
   auto encoder = in.encoder().c_str();
   [[maybe_unused]] auto const& out = message.out();
-  interface::principia__DeserializePlugin(serialization->c_str(), serialization->size(), &deserializer, &plugin, compressor, encoder);
-  if (serialization->empty()) {
+  interface::principia__DeserializePlugin(serialization, &deserializer, &plugin, compressor, encoder);
+  if (*serialization == '\0') {
     Delete(pointer_map, in.deserializer());
   }
-  if (!serialization->empty()) {
+  if (*serialization != '\0') {
     Insert(pointer_map, out.deserializer(), deserializer);
   }
   Insert(pointer_map, out.plugin(), plugin);
@@ -1525,7 +1525,7 @@ void InsertCelestialAbsoluteCartesian::Run(Message const& message, Player::Point
   auto plugin = DeserializePointer<Plugin*>(pointer_map, in.plugin());
   auto celestial_index = in.celestial_index();
   auto parent_index = in.has_parent_index() ? std::make_unique<int const>(in.parent_index()) : nullptr;
-  std::vector<BodyGeopotentialElement> geopotential_storage;
+  std::pair<std::vector<BodyGeopotentialElement>, std::vector<BodyGeopotentialElement const*>> geopotential_storage;
   auto body_parameters = DeserializeBodyParameters(in.body_parameters(), geopotential_storage);
   auto x = in.x().c_str();
   auto y = in.y().c_str();
@@ -1554,7 +1554,7 @@ void InsertCelestialJacobiKeplerian::Run(Message const& message, Player::Pointer
   auto plugin = DeserializePointer<Plugin*>(pointer_map, in.plugin());
   auto celestial_index = in.celestial_index();
   auto parent_index = in.has_parent_index() ? std::make_unique<int const>(in.parent_index()) : nullptr;
-  std::vector<BodyGeopotentialElement> geopotential_storage;
+  std::pair<std::vector<BodyGeopotentialElement>, std::vector<BodyGeopotentialElement const*>> geopotential_storage;
   auto body_parameters = DeserializeBodyParameters(in.body_parameters(), geopotential_storage);
   auto keplerian_elements = in.has_keplerian_elements() ? std::make_unique<KeplerianElements const>(DeserializeKeplerianElements(in.keplerian_elements())) : nullptr;
   interface::principia__InsertCelestialJacobiKeplerian(plugin, celestial_index, parent_index.get(), body_parameters, keplerian_elements.get());

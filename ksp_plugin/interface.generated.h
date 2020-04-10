@@ -60,8 +60,7 @@ struct BodyParameters {
   char const* angular_frequency;
   char const* reference_radius;
   char const* j2;
-  BodyGeopotentialElement const* geopotential;
-  int geopotential_size;
+  BodyGeopotentialElement const* const* geopotential;
 };
 
 static_assert(std::is_pod<BodyParameters>::value,
@@ -366,7 +365,6 @@ void __cdecl principia__DeleteU16String(
 extern "C" PRINCIPIA_DLL
 void __cdecl principia__DeserializePlugin(
     char const* const serialization,
-    int const serialization_size,
     PushDeserializer** const deserializer,
     Plugin const** const plugin,
     char const* const compressor,

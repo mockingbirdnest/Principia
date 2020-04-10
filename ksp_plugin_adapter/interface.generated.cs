@@ -31,8 +31,7 @@ internal partial struct AdaptiveStepParameters {
   public double speed_integration_tolerance;
 }
 
-[StructLayout(LayoutKind.Sequential)]
-internal partial struct BodyGeopotentialElement {
+internal partial class BodyGeopotentialElement {
   public String degree;
   public String order;
   public String cos;
@@ -352,7 +351,6 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void DeserializePlugin(
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String serialization,
-      int serialization_size,
       ref IntPtr deserializer,
       ref IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String compressor,
@@ -690,7 +688,7 @@ internal static partial class Interface {
       this IntPtr plugin,
       int celestial_index,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 parent_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InBodyParametersMarshaler))] BodyParameters body_parameters,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParametersMarshaler))] BodyParameters body_parameters,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String x,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String y,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String z,
@@ -705,7 +703,7 @@ internal static partial class Interface {
       this IntPtr plugin,
       int celestial_index,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 parent_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InBodyParametersMarshaler))] BodyParameters body_parameters,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParametersMarshaler))] BodyParameters body_parameters,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<KeplerianElements>))] BoxedKeplerianElements keplerian_elements);
 
   [DllImport(dllName           : dll_path,

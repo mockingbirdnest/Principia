@@ -217,7 +217,6 @@ struct DeleteU16String : not_constructible {
 struct DeserializePlugin : not_constructible {
   struct In final {
     char const* const serialization;
-    int const serialization_size;
     PushDeserializer** const deserializer;
     Plugin const** const plugin;
     char const* const compressor;
