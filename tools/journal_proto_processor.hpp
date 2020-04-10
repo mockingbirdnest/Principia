@@ -106,6 +106,9 @@ class JournalProtoProcessor final {
   // present in |in_out_| are not in |out_|.
   std::set<FieldDescriptor const*> out_;
 
+  // The fields that are part of interchange messages.
+  std::set<FieldDescriptor const*> interchange_;
+
   // For all fields, a lambda that takes the name of a local variable containing
   // data extracted (and deserialized) from the field and returns a list of
   // expressions to be passed to the interface.  Deals with passing by reference
@@ -182,7 +185,7 @@ class JournalProtoProcessor final {
                                      std::string const& stmt)>>
       field_cxx_optional_assignment_fn_;
 
-  // For all fields, a lambda that takes a condition to take for the presence
+  // For all fields, a lambda that takes a condition to check for the presence
   // of an optional field (typically something like |message.in().has_bar()|)
   // and a deserialized expression for reading the field (typically the result
   // of |field_cxx_deserializer_fn_|) and returns a conditional expression for

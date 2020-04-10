@@ -266,26 +266,38 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
   // value types.".  We could use a boxed |T|, whose type would be |object|, but
   // we would lose static typing.  We use a custom strongly-typed boxed type
   // instead.
-  field_cs_type_[descriptor] = cs_boxed_type;
-  field_cs_custom_marshaler_[descriptor] =
-      "OptionalMarshaler<" + cs_unboxed_type + ">";
+  if (Contains(interchange_, descriptor)) {
+    Descriptor const* message_type = descriptor->message_type();
+    if (cs_custom_marshaler_name_[message_type].empty()) {
+      field_cs_custom_marshaler_[descriptor] =
+          "OptionalMarshaler<" + cs_unboxed_type + ">";
+    } else {
+      // This wouldn't be hard, we'd need another OptionalMarshaller that calls
+      // the element's marshaler, but we don't need it yet.
+      LOG(FATAL) << "Optional messages with an element that does have a custom "
+                    "marshaller are not yet implemented.";
+    }
+    field_cs_type_[descriptor] = cs_unboxed_type + "?";
+  } else {
+    field_cs_custom_marshaler_[descriptor] =
+        "OptionalMarshaler<" + cs_unboxed_type + ">";
+    field_cs_type_[descriptor] = cs_boxed_type;
+  }
   field_cxx_type_[descriptor] = cxx_type + " const*";
 
   field_cxx_arguments_fn_[descriptor] =
       [](std::string const& identifier) -> std::vector<std::string> {
-        return {identifier + ".get()"};
+        return {identifier};
       };
   field_cxx_indirect_member_get_fn_[descriptor] =
       [](std::string const& expr) {
         return "*" + expr;
       };
-  field_cxx_optional_pointer_fn_[descriptor] = [cxx_type](
-      std::string const& condition,
-      std::string const& expr) {
-    // Tricky.  We need a heap allocation to obtain a pointer to the value.
-    return condition + " ? std::make_unique<" + cxx_type + " const>(" + expr +
-           ") : nullptr";
-  };
+  field_cxx_optional_pointer_fn_[descriptor] =
+      [cxx_type](std::string const& condition, std::string const& expr) {
+        // Tricky.  We need a heap allocation to obtain a pointer to the value.
+        return condition + " ? new " + cxx_type + "(" + expr + ") : nullptr";
+      };
 }
 
 void JournalProtoProcessor::ProcessOptionalDoubleField(
@@ -711,7 +723,7 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
       };
   field_cxx_indirect_member_get_fn_[descriptor] =
       [](std::string const& expr) {
-        return expr;
+       return expr;
       };
   field_cxx_deserializer_fn_[descriptor] =
       [](std::string const& expr) {
@@ -916,6 +928,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   bool needs_custom_marshaler = false;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
+    interchange_.insert(field_descriptor);
     ProcessField(field_descriptor);
     if (!has_custom_marshaler &&
         !field_cs_custom_marshaler_[field_descriptor].empty()) {
@@ -990,7 +1003,9 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         field_cxx_optional_assignment_fn_[field_descriptor](
             serialize_member_name,
             field_cxx_assignment_fn_[field_descriptor](
-                "m.", serialize_member_name));
+                "m.",
+                field_cxx_indirect_member_get_fn_[field_descriptor](
+                    serialize_member_name)));
 
     // TODO(phl): field_cs_private_type_ should be set iff field_cs_marshal_ is
     // set.  This is not the case at the moment because of strings being passed

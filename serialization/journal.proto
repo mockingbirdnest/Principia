@@ -204,16 +204,9 @@ message OrbitAnalysis {
   required double progress_of_next_analysis = 1;
   required int32 primary_index = 2;
   required double mission_duration = 3;
-  // NOTE(egg): we currently have no support in the interface generator for
-  // optional non-string fields in interchange structs.  We use separate
-  // booleans to denote the presence of a value, where the boolean denoting
-  // the presence of field F = f is field F_has_value = 10 + f.
-  required OrbitalElements elements = 4;
-  required bool elements_has_value = 14;
-  required OrbitRecurrence recurrence = 5;
-  required bool recurrence_has_value = 15;
-  required OrbitGroundTrack ground_track = 6;
-  required bool ground_track_has_value = 16;
+  optional OrbitalElements elements = 4;
+  optional OrbitRecurrence recurrence = 5;
+  optional OrbitGroundTrack ground_track = 6;
 }
 
 message Method {
