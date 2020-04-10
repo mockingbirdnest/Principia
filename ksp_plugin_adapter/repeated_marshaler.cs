@@ -30,10 +30,13 @@ internal class RepeatedMarshaler<T, TMarshaler> : MonoMarshaler
     int sizeof_intptr = Marshal.SizeOf(typeof(IntPtr));
     IntPtr native = Marshal.AllocHGlobal(sizeof_intptr * (value.Length + 1));
     for (int i = 0; i < value.Length; ++i) {
-      Marshal.WriteIntPtr(native,
-                          i * sizeof_intptr,
-                          t_marshaler_instance_.
-                              MarshalManagedToNative(value[i]));
+      IntPtr native_t = t_marshaler_instance_.MarshalManagedToNative(value[i]);
+      if (native_t == IntPtr.Zero) {
+        // IntPtr.Zero is our termination, so we don't want to get it for a real
+        // element.
+        throw new NotSupportedException();
+      }
+      Marshal.WriteIntPtr(native, i * sizeof_intptr, native_t);
     }
     Marshal.WriteIntPtr(native, value.Length * sizeof_intptr, IntPtr.Zero);
     return native;
