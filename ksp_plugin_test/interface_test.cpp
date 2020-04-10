@@ -292,7 +292,8 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
       /*reference_angle=*/"0 deg",
       /*angular_velocity=*/"1 rad/s",
       /*reference_radius=*/nullptr,
-      /*j2=*/nullptr};
+      /*j2=*/nullptr,
+      /*geopotential=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,
                                               &parent_index,
@@ -349,7 +350,8 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                                           "2 rad",
                                           "0.3 rad / d",
                                           "1000 km",
-                                          "123e-6"};
+                                          "123e-6",
+                                          /*geopotential=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,
                                               &parent_index,
@@ -406,7 +408,7 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
 
   BodyGeopotentialElement j2 = {"2", "0", "123e-6", nullptr, "456e-6"};
   BodyGeopotentialElement j3 = {"3", "0", "123e-7", nullptr, "-456e-7"};
-  BodyGeopotentialElement j[] = {j2, j3};
+  BodyGeopotentialElement* j[] = {&j2, &j3, nullptr};
   BodyParameters const body_parameters = {"that is called Brian",
                                           "1.2345e6  km^3 / s^2",
                                           "JD2452545",
@@ -419,8 +421,7 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
                                           "0.3 rad / d",
                                           "1000 km",
                                           /*j2=*/nullptr,
-                                          j,
-                                          2};
+                                          j};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,
                                               &parent_index,
@@ -651,19 +652,16 @@ TEST_F(InterfaceTest, SerializePlugin) {
 TEST_F(InterfaceTest, DeserializePlugin) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
-  principia__DeserializePlugin(
-          hexadecimal_simple_plugin_.c_str(),
-          hexadecimal_simple_plugin_.size(),
-          &deserializer,
-          &plugin,
-          /*compressor=*/"",
-          "hexadecimal");
   principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
-                                          0,
-                                          &deserializer,
-                                          &plugin,
-                                          /*compressor=*/"",
-                                          "hexadecimal");
+                               &deserializer,
+                               &plugin,
+                               /*compressor=*/"",
+                               "hexadecimal");
+  principia__DeserializePlugin("",
+                               &deserializer,
+                               &plugin,
+                               /*compressor=*/"",
+                               "hexadecimal");
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
@@ -681,14 +679,12 @@ TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
     LOG(ERROR) << "Deserialization starting";
     for (std::string const& line : lines) {
       principia__DeserializePlugin(line.c_str(),
-                                   line.size(),
                                    &deserializer,
                                    &plugin,
                                    /*compressor=*/"gipfeli",
                                    "base64");
     }
     principia__DeserializePlugin(lines.front().c_str(),
-                                 0,
                                  &deserializer,
                                  &plugin,
                                  /*compressor=*/"gipfeli",
@@ -722,14 +718,12 @@ TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
         ReadLinesFromBase64File(TEMP_DIR / "serialized_plugin.proto.b64");
     for (std::string const& line : lines) {
       principia__DeserializePlugin(line.c_str(),
-                                   line.size(),
                                    &deserializer,
                                    &plugin,
                                    /*compressor=*/"gipfeli",
                                    "base64");
     }
     principia__DeserializePlugin(lines.front().c_str(),
-                                 0,
                                  &deserializer,
                                  &plugin,
                                  /*compressor=*/"gipfeli",

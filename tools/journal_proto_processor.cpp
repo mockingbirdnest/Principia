@@ -217,8 +217,9 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       [this, descriptor, message_type_name](
           std::string const& prefix, std::string const& expr) {
         std::string const& descriptor_name = descriptor->name();
-        return "  for(" + field_cxx_type_[descriptor] + " " + descriptor_name +
-               " = " + expr + "; "
+        return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
+               " = " + expr + "; " +
+               descriptor_name + " != nullptr && "
                "*" + descriptor_name + " != nullptr; "
                "++" + descriptor_name + ") {\n"
                "    *" + prefix + "add_" + descriptor_name + "() = " +
