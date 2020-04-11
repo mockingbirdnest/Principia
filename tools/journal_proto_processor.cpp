@@ -533,9 +533,10 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
     if (Contains(in_, descriptor)) {
       field_cs_custom_marshaler_[descriptor] =
           cs_custom_marshaler_name_[message_type];
-      field_cxx_mode_fn_[descriptor] = [](std::string const& type) {
-        return type + " const&";
-      };
+      field_cxx_mode_fn_[descriptor] =
+          [](std::string const& type) {
+            return type + " const&";
+          };
       // No need to define field_cxx_indirect_member_get_fn_ here because
       // references don't need a level of indirection.
     }
@@ -550,11 +551,14 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
         field_cs_custom_marshaler_[descriptor] =
             cs_custom_marshaler_name_[message_type];
       }
-      field_cxx_mode_fn_[descriptor] = [](std::string const& type) {
-        return type + "*";
-      };
+      field_cxx_mode_fn_[descriptor] =
+          [](std::string const& type) {
+            return type + "*";
+          };
       field_cxx_indirect_member_get_fn_[descriptor] =
-          [](std::string const& expr) { return "*" + expr; };
+          [](std::string const& expr) {
+            return "*" + expr;
+          };
     }
   }
   std::string const deserialization_storage_arguments =
@@ -812,7 +816,7 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
       };
   field_cxx_indirect_member_get_fn_[descriptor] =
       [](std::string const& expr) {
-       return expr;
+        return expr;
       };
   field_cxx_deserializer_fn_[descriptor] =
       [](std::string const& expr) {
