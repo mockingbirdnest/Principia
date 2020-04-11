@@ -204,9 +204,9 @@ message OrbitAnalysis {
   required double progress_of_next_analysis = 1;
   required int32 primary_index = 2;
   required double mission_duration = 3;
-  optional OrbitalElements elements = 4;
-  optional OrbitRecurrence recurrence = 5;
-  optional OrbitGroundTrack ground_track = 6;
+  optional OrbitalElements elements = 4 [(is_produced) = true];
+  optional OrbitRecurrence recurrence = 5 [(is_produced) = true];
+  optional OrbitGroundTrack ground_track = 6 [(is_produced) = true];
 }
 
 message Method {

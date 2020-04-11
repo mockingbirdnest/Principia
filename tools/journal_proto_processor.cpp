@@ -262,6 +262,16 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
     std::string const& cs_boxed_type,
     std::string const& cs_unboxed_type,
     std::string const& cxx_type) {
+  FieldOptions const& options = descriptor->options();
+  std::string custom_marshaler_generic_name;
+  if (options.HasExtension(journal::serialization::is_produced)) {
+    CHECK(options.GetExtension(journal::serialization::is_produced))
+        << descriptor->full_name() << " has incorrect (is_produced) option";
+    custom_marshaler_generic_name = "OwnershipTransferOptionalMarshaler";
+  } else {
+    custom_marshaler_generic_name = "NoOwnershipTransferOptionalMarshaler";
+  }
+
   // It is not possible to use a custom marshaler on an |T?|, as this raises
   // |System.Runtime.InteropServices.MarshalDirectiveException| with the message
   // "Custom marshalers are only allowed on classes, strings, arrays, and boxed
@@ -271,7 +281,7 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
     Descriptor const* message_type = descriptor->message_type();
     if (cs_custom_marshaler_name_[message_type].empty()) {
       field_cs_custom_marshaler_[descriptor] =
-          "OptionalMarshaler<" + cs_unboxed_type + ">";
+          custom_marshaler_generic_name + "<" + cs_unboxed_type + ">";
     } else {
       // This wouldn't be hard, we'd need another OptionalMarshaller that calls
       // the element's marshaler, but we don't need it yet.
@@ -285,9 +295,11 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
     // We could use a boxed |T|, whose type would be |object|, but we would lose
     // static typing.  We use a custom strongly-typed boxed type instead.
     field_cs_custom_marshaler_[descriptor] =
-        "OptionalMarshaler<" + cs_unboxed_type + ">";
+        custom_marshaler_generic_name + "<" + cs_unboxed_type + ">";
     field_cs_type_[descriptor] = cs_boxed_type;
   }
+  // Unfortunately this pointer type cannot be defaulted to nullptr as it would
+  // make the enclosing type non-POD.
   field_cxx_type_[descriptor] = cxx_type + " const*";
 
   field_cxx_arguments_fn_[descriptor] =
