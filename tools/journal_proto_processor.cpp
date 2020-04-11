@@ -265,10 +265,9 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
   // It is not possible to use a custom marshaler on an |T?|, as this raises
   // |System.Runtime.InteropServices.MarshalDirectiveException| with the message
   // "Custom marshalers are only allowed on classes, strings, arrays, and boxed
-  // value types.".  We could use a boxed |T|, whose type would be |object|, but
-  // we would lose static typing.  We use a custom strongly-typed boxed type
-  // instead.
+  // value types.".
   if (Contains(interchange_, descriptor)) {
+    // This may be null as we may be called on a scalar field.
     Descriptor const* message_type = descriptor->message_type();
     if (cs_custom_marshaler_name_[message_type].empty()) {
       field_cs_custom_marshaler_[descriptor] =
@@ -279,8 +278,12 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
       LOG(FATAL) << "Optional messages with an element that does have a custom "
                     "marshaller are not yet implemented.";
     }
+    // For fields of interchange messages we can use a |T?| as the field is not
+    // the part being marshaled, it is the entire interchange message.
     field_cs_type_[descriptor] = cs_unboxed_type + "?";
   } else {
+    // We could use a boxed |T|, whose type would be |object|, but we would lose
+    // static typing.  We use a custom strongly-typed boxed type instead.
     field_cs_custom_marshaler_[descriptor] =
         "OptionalMarshaler<" + cs_unboxed_type + ">";
     field_cs_type_[descriptor] = cs_boxed_type;
@@ -295,10 +298,30 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
       [](std::string const& expr) {
         return "*" + expr;
       };
+}
+
+void JournalProtoProcessor::ProcessOptionalScalarField(
+    FieldDescriptor const* descriptor,
+    std::string const& cxx_type) {
+  // What we would want is a reference to a scalar field of a proto, but this
+  // is not exposed by the proto API.  Instead, we copy the field in a variable
+  // and use the address of that variable.
+  std::string const storage_name = descriptor->name() + "_storage";
+  field_cxx_deserialization_storage_name_[descriptor] = storage_name;
+  field_cxx_deserializer_fn_[descriptor] =
+      [cxx_type, storage_name](
+          std::string const& expr) {
+        // Yes, this lambda generates a lambda.
+        return "[&" + storage_name +
+               "](" + cxx_type + " value) {\n"
+               "            " + storage_name + " = value;\n" +
+               "            return &" + storage_name + ";\n"
+               "          }(" + expr + ")";
+      };
+  field_cxx_deserialization_storage_type_[descriptor] = cxx_type;
   field_cxx_optional_pointer_fn_[descriptor] =
-      [cxx_type](std::string const& condition, std::string const& expr) {
-        // Tricky.  We need a heap allocation to obtain a pointer to the value.
-        return condition + " ? new " + cxx_type + "(" + expr + ") : nullptr";
+      [storage_name](std::string const& condition, std::string const& expr) {
+        return condition + " ? " + expr + " : nullptr";
       };
 }
 
@@ -309,6 +332,7 @@ void JournalProtoProcessor::ProcessOptionalDoubleField(
       /*cs_boxed_type=*/"BoxedDouble",
       /*cs_unboxed_type=*/"double",
       /*cxx_type=*/"double");
+  ProcessOptionalScalarField(descriptor, "double");
 }
 
 void JournalProtoProcessor::ProcessOptionalInt32Field(
@@ -318,6 +342,7 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
       /*cs_boxed_type=*/"BoxedInt32",
       /*cs_unboxed_type=*/"int",
       /*cxx_type=*/"int");
+  ProcessOptionalScalarField(descriptor, "int");
 }
 
 void JournalProtoProcessor::ProcessOptionalMessageField(
@@ -329,6 +354,26 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
       /*cs_boxed_type=*/"Boxed" + message_type_name,
       /*cs_unboxed_type=*/message_type_name,
       /*cxx_type=*/message_type_name);
+
+  std::string const storage_name = descriptor->name() + "_storage";
+  field_cxx_deserialization_storage_name_[descriptor] = storage_name;
+  field_cxx_deserializer_fn_[descriptor] =
+      [message_type_name, storage_name](
+          std::string const& expr) {
+        // Yes, this lambda generates a lambda.
+        return "[&" + storage_name +
+               "](serialization::" + message_type_name + " const& message) {\n"
+               "            " + storage_name + " = Deserialize" +
+               message_type_name +"(message);\n" +
+               "            return &" + storage_name + ";\n"
+               "          }(" + expr + ")";
+      };
+  field_cxx_deserialization_storage_type_[descriptor] = message_type_name;
+  field_cxx_optional_pointer_fn_[descriptor] =
+      [storage_name](std::string const& condition, std::string const& expr) {
+        return condition + " ? " + expr + " : nullptr";
+      };
+
   ProcessSingleMessageField(descriptor);
 }
 
@@ -470,6 +515,14 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
       return type + " const&";
     };
   }
+  std::string const deserialization_storage_arguments =
+      cxx_deserialization_storage_arguments_[message_type];
+  field_cxx_deserializer_fn_[descriptor] =
+      [message_type_name, deserialization_storage_arguments](
+          std::string const& expr) {
+        return "Deserialize" + message_type_name + "(" + expr +
+               deserialization_storage_arguments + ")";
+      };
 
   ProcessSingleMessageField(descriptor);
 }
@@ -560,14 +613,6 @@ void JournalProtoProcessor::ProcessSingleMessageField(
                          std::string const& expr) {
         return "  *" + prefix + "mutable_" + descriptor->name() +
                "() = " + field_cxx_serializer_fn_[descriptor](expr) + ";\n";
-      };
-  const std::string deserialization_storage_arguments =
-      cxx_deserialization_storage_arguments_[message_type];
-  field_cxx_deserializer_fn_[descriptor] =
-      [message_type_name, deserialization_storage_arguments](
-          std::string const& expr) {
-        return "Deserialize" + message_type_name + "(" + expr +
-               deserialization_storage_arguments + ")";
       };
   field_cxx_serializer_fn_[descriptor] =
       [message_type_name](std::string const& expr) {
@@ -828,6 +873,20 @@ void JournalProtoProcessor::ProcessInOut(
             "  " + field_cxx_type_[field_descriptor] + " " +
             run_local_variable + ";\n";
       } else {
+        // If the field is optional, it needs extra storage for deserialization
+        // (not passed to Deserialize) irrespective of whether its message type
+        // needs extra storage.
+        if (Contains(field_cxx_deserialization_storage_name_,
+                     field_descriptor)) {
+          std::string const cxx_deserialization_storage_declaration =
+              "  " + field_cxx_deserialization_storage_type_[field_descriptor] +
+              " " + field_cxx_deserialization_storage_name_[field_descriptor] +
+              ";\n";
+          cxx_run_body_prolog_[descriptor] +=
+              cxx_deserialization_storage_declaration;
+        }
+        // If the field message type needs extra storage for deserialization
+        // (passed to Deserialize) generate it now.
         Descriptor const* field_message_type = field_descriptor->message_type();
         if (Contains(cxx_deserialization_storage_declarations_,
                      field_message_type)) {
@@ -893,7 +952,13 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
     cxx_run_body_epilog_[descriptor] =
         field_cxx_inserter_fn_[field_descriptor](cxx_field_getter, "result");
   } else if (!field_options.HasExtension(journal::serialization::omit_check)) {
-    cxx_run_body_epilog_[descriptor] =
+    Descriptor const* field_message_type = field_descriptor->message_type();
+    if (Contains(cxx_deserialization_storage_declarations_,
+                 field_message_type)) {
+      cxx_run_body_epilog_[descriptor] =
+          cxx_deserialization_storage_declarations_[field_message_type];
+    }
+    cxx_run_body_epilog_[descriptor] +=
         "  PRINCIPIA_CHECK_EQ(" +
         field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) +
         ", result);\n";
@@ -1044,9 +1109,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
             field_cs_type_[field_descriptor] + " " + field_descriptor_name +
             ";\n";
         cs_managed_to_native_definition_[descriptor] +=
-            field_descriptor_name + " = value." + field_descriptor_name + ",\n";
+            "        " + field_descriptor_name + " = value." +
+            field_descriptor_name + ",\n";
         cs_native_to_managed_definition_[descriptor] +=
-            field_descriptor_name + " = representation." +
+            "        " + field_descriptor_name + " = representation." +
             field_descriptor_name + ",\n";
       } else {
         cs_representation_type_declaration_[descriptor] +=

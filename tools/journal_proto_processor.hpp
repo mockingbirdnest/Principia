@@ -48,6 +48,8 @@ class JournalProtoProcessor final {
                                      std::string const& cs_boxed_type,
                                      std::string const& cs_unboxed_type,
                                      std::string const& cxx_type);
+  void ProcessOptionalScalarField(FieldDescriptor const* descriptor,
+                                  std::string const& cxx_type);
   void ProcessOptionalDoubleField(FieldDescriptor const* descriptor);
   void ProcessOptionalInt32Field(FieldDescriptor const* descriptor);
   void ProcessOptionalMessageField(FieldDescriptor const* descriptor);
@@ -288,7 +290,8 @@ class JournalProtoProcessor final {
   std::map<Descriptor const*, std::string> cxx_serialize_definition_;
 
   // For interchange messages that require deserialization storage, the
-  // arguments for the storage in the call to the Deserialize function.
+  // arguments for the storage in the call to the Deserialize function.  Starts
+  // with a comma, arguments are comma-separated.
   std::map<Descriptor const*, std::string>
       cxx_deserialization_storage_arguments_;
 
