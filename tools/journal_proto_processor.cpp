@@ -522,6 +522,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
 
 void JournalProtoProcessor::ProcessRequiredMessageField(
     FieldDescriptor const* descriptor) {
+  FieldOptions const& options = descriptor->options();
   Descriptor const* message_type = descriptor->message_type();
   std::string const& message_type_name = message_type->name();
   field_cs_type_[descriptor] = message_type_name;
@@ -529,26 +530,30 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
 
   if (!cs_custom_marshaler_name_[message_type].empty()) {
     if (Contains(in_, descriptor)) {
-      field_cxx_mode_fn_[descriptor] =
-          [](std::string const& type) {
-            return type + " const&";
-          };
+      field_cs_custom_marshaler_[descriptor] =
+          cs_custom_marshaler_name_[message_type];
+      field_cxx_mode_fn_[descriptor] = [](std::string const& type) {
+        return type + " const&";
+      };
       // No need to define field_cxx_indirect_member_get_fn_ here because
       // references don't need a level of indirection.
     }
     if (Contains(return_, descriptor)) {
-      field_cxx_mode_fn_[descriptor] =
-          [](std::string const& type) {
-            return type + "*";
-          };
+      if (options.HasExtension(journal::serialization::is_produced)) {
+        CHECK(options.GetExtension(journal::serialization::is_produced))
+            << descriptor->full_name() << " has incorrect (is_produced) option";
+        field_cs_custom_marshaler_[descriptor] =
+            "OwnershipTransferMarshaler<" + field_cs_type_[descriptor] + ", " +
+            cs_custom_marshaler_name_[message_type] + ">";
+      } else {
+        field_cs_custom_marshaler_[descriptor] =
+            cs_custom_marshaler_name_[message_type];
+      }
+      field_cxx_mode_fn_[descriptor] = [](std::string const& type) {
+        return type + "*";
+      };
       field_cxx_indirect_member_get_fn_[descriptor] =
-          [](std::string const& expr) {
-            return "*" + expr;
-          };
-    }
-    if (Contains(in_, descriptor) || Contains(return_, descriptor)) {
-      field_cs_custom_marshaler_[descriptor] =
-          cs_custom_marshaler_name_[message_type];
+          [](std::string const& expr) { return "*" + expr; };
     }
   }
   std::string const deserialization_storage_arguments =

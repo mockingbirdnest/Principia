@@ -2130,7 +2130,7 @@ message VesselRefreshAnalysis {
     required int32 ground_track_revolution = 7;
   }
   message Return {
-    required OrbitAnalysis result = 1;
+    required OrbitAnalysis result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
