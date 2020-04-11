@@ -283,5 +283,61 @@ internal class ConfigurationAdaptiveStepParametersMarshaler : MonoMarshaler {
       new ConfigurationAdaptiveStepParametersMarshaler();
 }
 
+internal class OrbitAnalysisMarshaler : MonoMarshaler {
+  [StructLayout(LayoutKind.Sequential)]
+  internal struct Representation {
+    public double progress_of_next_analysis;
+    public int primary_index;
+    public double mission_duration;
+    public IntPtr elements;
+    public IntPtr recurrence;
+    public IntPtr ground_track;
+  }
+
+  public static ICustomMarshaler GetInstance(string s) {
+    return instance_;
+  }
+
+  public override void CleanUpNativeDataImplementation(IntPtr native_data) {
+    var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
+    OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).CleanUpNativeData(representation.elements);
+    OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).CleanUpNativeData(representation.recurrence);
+    OwnershipTransferMarshaler<OrbitGroundTrack, OptionalMarshaler<OrbitGroundTrack>>.GetInstance(null).CleanUpNativeData(representation.ground_track);
+    Marshal.FreeHGlobal(native_data);
+  }
+
+  public override IntPtr MarshalManagedToNativeImplementation(object managed_object) {
+    if (!(managed_object is OrbitAnalysis value)) {
+      throw new NotSupportedException();
+    }
+    var representation = new Representation{
+        progress_of_next_analysis = value.progress_of_next_analysis,
+        primary_index = value.primary_index,
+        mission_duration = value.mission_duration,
+        elements = OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).MarshalManagedToNative(value.elements),
+        recurrence = OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).MarshalManagedToNative(value.recurrence),
+        ground_track = OwnershipTransferMarshaler<OrbitGroundTrack, OptionalMarshaler<OrbitGroundTrack>>.GetInstance(null).MarshalManagedToNative(value.ground_track),
+    };
+    IntPtr buffer = Marshal.AllocHGlobal(Marshal.SizeOf(representation));
+    Marshal.StructureToPtr(representation, buffer, fDeleteOld: false);
+    return buffer;
+  }
+
+  public override object MarshalNativeToManaged(IntPtr native_data) {
+    var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
+    return new OrbitAnalysis{
+        progress_of_next_analysis = representation.progress_of_next_analysis,
+        primary_index = representation.primary_index,
+        mission_duration = representation.mission_duration,
+        elements = OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).MarshalNativeToManaged(representation.elements) as OrbitalElements?,
+        recurrence = OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).MarshalNativeToManaged(representation.recurrence) as OrbitRecurrence?,
+        ground_track = OwnershipTransferMarshaler<OrbitGroundTrack, OptionalMarshaler<OrbitGroundTrack>>.GetInstance(null).MarshalNativeToManaged(representation.ground_track) as OrbitGroundTrack?,
+    };
+  }
+
+  private static readonly OrbitAnalysisMarshaler instance_ =
+      new OrbitAnalysisMarshaler();
+}
+
 }  // namespace ksp_plugin_adapter
 }  // namespace principia

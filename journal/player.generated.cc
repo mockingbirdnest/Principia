@@ -30,6 +30,8 @@
              *method_in, *method_out_return);
   ran |= RunIfAppropriate<CurrentTime>(
              *method_in, *method_out_return);
+  ran |= RunIfAppropriate<DeleteInterchange>(
+             *method_in, *method_out_return);
   ran |= RunIfAppropriate<DeletePlugin>(
              *method_in, *method_out_return);
   ran |= RunIfAppropriate<DeleteString>(

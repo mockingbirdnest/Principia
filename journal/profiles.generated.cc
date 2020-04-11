@@ -185,16 +185,22 @@ OrbitGroundTrack DeserializeOrbitGroundTrack(serialization::OrbitGroundTrack con
   return {DeserializeEquatorialCrossings(orbit_ground_track.equatorial_crossings())};
 }
 
-OrbitAnalysis DeserializeOrbitAnalysis(serialization::OrbitAnalysis const& orbit_analysis) {
+OrbitAnalysis DeserializeOrbitAnalysis(serialization::OrbitAnalysis const& orbit_analysis, OrbitalElements& elements_storage, OrbitRecurrence& recurrence_storage, OrbitGroundTrack& ground_track_storage) {
   return {orbit_analysis.progress_of_next_analysis(),
           orbit_analysis.primary_index(),
           orbit_analysis.mission_duration(),
-          DeserializeOrbitalElements(orbit_analysis.elements()),
-          orbit_analysis.elements_has_value(),
-          DeserializeOrbitRecurrence(orbit_analysis.recurrence()),
-          orbit_analysis.recurrence_has_value(),
-          DeserializeOrbitGroundTrack(orbit_analysis.ground_track()),
-          orbit_analysis.ground_track_has_value()};
+          orbit_analysis.has_elements() ? [&elements_storage](serialization::OrbitalElements const& message) {
+            elements_storage = DeserializeOrbitalElements(message);
+            return &elements_storage;
+          }(orbit_analysis.elements()) : nullptr,
+          orbit_analysis.has_recurrence() ? [&recurrence_storage](serialization::OrbitRecurrence const& message) {
+            recurrence_storage = DeserializeOrbitRecurrence(message);
+            return &recurrence_storage;
+          }(orbit_analysis.recurrence()) : nullptr,
+          orbit_analysis.has_ground_track() ? [&ground_track_storage](serialization::OrbitGroundTrack const& message) {
+            ground_track_storage = DeserializeOrbitGroundTrack(message);
+            return &ground_track_storage;
+          }(orbit_analysis.ground_track()) : nullptr};
 }
 
 serialization::NavigationFrameParameters SerializeNavigationFrameParameters(NavigationFrameParameters const& navigation_frame_parameters) {
@@ -271,7 +277,7 @@ serialization::BodyParameters SerializeBodyParameters(BodyParameters const& body
   if (body_parameters.j2 != nullptr) {
     m.set_j2(body_parameters.j2);
   }
-  for(BodyGeopotentialElement const* const* geopotential = body_parameters.geopotential; *geopotential != nullptr; ++geopotential) {
+  for (BodyGeopotentialElement const* const* geopotential = body_parameters.geopotential; geopotential != nullptr && *geopotential != nullptr; ++geopotential) {
     *m.add_geopotential() = SerializeBodyGeopotentialElement(**geopotential);
   }
   return m;
@@ -451,12 +457,15 @@ serialization::OrbitAnalysis SerializeOrbitAnalysis(OrbitAnalysis const& orbit_a
   m.set_progress_of_next_analysis(orbit_analysis.progress_of_next_analysis);
   m.set_primary_index(orbit_analysis.primary_index);
   m.set_mission_duration(orbit_analysis.mission_duration);
-  *m.mutable_elements() = SerializeOrbitalElements(orbit_analysis.elements);
-  m.set_elements_has_value(orbit_analysis.elements_has_value);
-  *m.mutable_recurrence() = SerializeOrbitRecurrence(orbit_analysis.recurrence);
-  m.set_recurrence_has_value(orbit_analysis.recurrence_has_value);
-  *m.mutable_ground_track() = SerializeOrbitGroundTrack(orbit_analysis.ground_track);
-  m.set_ground_track_has_value(orbit_analysis.ground_track_has_value);
+  if (orbit_analysis.elements != nullptr) {
+    *m.mutable_elements() = SerializeOrbitalElements(*orbit_analysis.elements);
+  }
+  if (orbit_analysis.recurrence != nullptr) {
+    *m.mutable_recurrence() = SerializeOrbitRecurrence(*orbit_analysis.recurrence);
+  }
+  if (orbit_analysis.ground_track != nullptr) {
+    *m.mutable_ground_track() = SerializeOrbitGroundTrack(*orbit_analysis.ground_track);
+  }
   return m;
 }
 
@@ -657,6 +666,22 @@ void CurrentTime::Run(Message const& message, Player::PointerMap& pointer_map) {
   PRINCIPIA_CHECK_EQ(message.return_().result(), result);
 }
 
+void DeleteInterchange::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_native_pointer(SerializePointer(*in.native_pointer));
+}
+
+void DeleteInterchange::Fill(Out const& out, not_null<Message*> const message) {
+  message->mutable_out()->set_native_pointer(SerializePointer(*out.native_pointer));
+}
+
+void DeleteInterchange::Run(Message const& message, Player::PointerMap& pointer_map) {
+  [[maybe_unused]] auto const& in = message.in();
+  auto native_pointer = DeserializePointer<void const*>(pointer_map, in.native_pointer());
+  [[maybe_unused]] auto const& out = message.out();
+  interface::principia__DeleteInterchange(&native_pointer);
+  Delete(pointer_map, in.native_pointer());
+}
+
 void DeletePlugin::Fill(In const& in, not_null<Message*> const message) {
   message->mutable_in()->set_plugin(SerializePointer(*in.plugin));
 }
@@ -729,10 +754,10 @@ void DeserializePlugin::Run(Message const& message, Player::PointerMap& pointer_
   auto encoder = in.encoder().c_str();
   [[maybe_unused]] auto const& out = message.out();
   interface::principia__DeserializePlugin(serialization, &deserializer, &plugin, compressor, encoder);
-  if (*serialization == '\0') {
+  if (std::string_view(serialization).empty()) {
     Delete(pointer_map, in.deserializer());
   }
-  if (*serialization != '\0') {
+  if (!std::string_view(serialization).empty()) {
     Insert(pointer_map, out.deserializer(), deserializer);
   }
   Insert(pointer_map, out.plugin(), plugin);
@@ -1524,7 +1549,11 @@ void InsertCelestialAbsoluteCartesian::Run(Message const& message, Player::Point
   [[maybe_unused]] auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin*>(pointer_map, in.plugin());
   auto celestial_index = in.celestial_index();
-  auto parent_index = in.has_parent_index() ? std::make_unique<int const>(in.parent_index()) : nullptr;
+  int parent_index_storage;
+  auto parent_index = in.has_parent_index() ? [&parent_index_storage](int value) {
+            parent_index_storage = value;
+            return &parent_index_storage;
+          }(in.parent_index()) : nullptr;
   std::pair<std::vector<BodyGeopotentialElement>, std::vector<BodyGeopotentialElement const*>> geopotential_storage;
   auto body_parameters = DeserializeBodyParameters(in.body_parameters(), geopotential_storage);
   auto x = in.x().c_str();
@@ -1533,7 +1562,7 @@ void InsertCelestialAbsoluteCartesian::Run(Message const& message, Player::Point
   auto vx = in.vx().c_str();
   auto vy = in.vy().c_str();
   auto vz = in.vz().c_str();
-  interface::principia__InsertCelestialAbsoluteCartesian(plugin, celestial_index, parent_index.get(), body_parameters, x, y, z, vx, vy, vz);
+  interface::principia__InsertCelestialAbsoluteCartesian(plugin, celestial_index, parent_index, body_parameters, x, y, z, vx, vy, vz);
 }
 
 void InsertCelestialJacobiKeplerian::Fill(In const& in, not_null<Message*> const message) {
@@ -1553,11 +1582,19 @@ void InsertCelestialJacobiKeplerian::Run(Message const& message, Player::Pointer
   [[maybe_unused]] auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin*>(pointer_map, in.plugin());
   auto celestial_index = in.celestial_index();
-  auto parent_index = in.has_parent_index() ? std::make_unique<int const>(in.parent_index()) : nullptr;
+  int parent_index_storage;
+  auto parent_index = in.has_parent_index() ? [&parent_index_storage](int value) {
+            parent_index_storage = value;
+            return &parent_index_storage;
+          }(in.parent_index()) : nullptr;
   std::pair<std::vector<BodyGeopotentialElement>, std::vector<BodyGeopotentialElement const*>> geopotential_storage;
   auto body_parameters = DeserializeBodyParameters(in.body_parameters(), geopotential_storage);
-  auto keplerian_elements = in.has_keplerian_elements() ? std::make_unique<KeplerianElements const>(DeserializeKeplerianElements(in.keplerian_elements())) : nullptr;
-  interface::principia__InsertCelestialJacobiKeplerian(plugin, celestial_index, parent_index.get(), body_parameters, keplerian_elements.get());
+  KeplerianElements keplerian_elements_storage;
+  auto keplerian_elements = in.has_keplerian_elements() ? [&keplerian_elements_storage](serialization::KeplerianElements const& message) {
+            keplerian_elements_storage = DeserializeKeplerianElements(message);
+            return &keplerian_elements_storage;
+          }(in.keplerian_elements()) : nullptr;
+  interface::principia__InsertCelestialJacobiKeplerian(plugin, celestial_index, parent_index, body_parameters, keplerian_elements);
 }
 
 void InsertOrKeepVessel::Fill(In const& in, not_null<Message*> const message) {
@@ -2623,7 +2660,7 @@ void VesselRefreshAnalysis::Fill(In const& in, not_null<Message*> const message)
 }
 
 void VesselRefreshAnalysis::Fill(Return const& result, not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_result() = SerializeOrbitAnalysis(result);
+  *message->mutable_return_()->mutable_result() = SerializeOrbitAnalysis(*result);
 }
 
 void VesselRefreshAnalysis::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -2632,11 +2669,22 @@ void VesselRefreshAnalysis::Run(Message const& message, Player::PointerMap& poin
   auto vessel_guid = in.vessel_guid().c_str();
   auto primary_index = in.primary_index();
   auto mission_duration = in.mission_duration();
-  auto revolutions_per_cycle = in.has_revolutions_per_cycle() ? std::make_unique<int const>(in.revolutions_per_cycle()) : nullptr;
-  auto days_per_cycle = in.has_days_per_cycle() ? std::make_unique<int const>(in.days_per_cycle()) : nullptr;
+  int revolutions_per_cycle_storage;
+  auto revolutions_per_cycle = in.has_revolutions_per_cycle() ? [&revolutions_per_cycle_storage](int value) {
+            revolutions_per_cycle_storage = value;
+            return &revolutions_per_cycle_storage;
+          }(in.revolutions_per_cycle()) : nullptr;
+  int days_per_cycle_storage;
+  auto days_per_cycle = in.has_days_per_cycle() ? [&days_per_cycle_storage](int value) {
+            days_per_cycle_storage = value;
+            return &days_per_cycle_storage;
+          }(in.days_per_cycle()) : nullptr;
   auto ground_track_revolution = in.ground_track_revolution();
-  auto const result = interface::principia__VesselRefreshAnalysis(plugin, vessel_guid, primary_index, mission_duration, revolutions_per_cycle.get(), days_per_cycle.get(), ground_track_revolution);
-  PRINCIPIA_CHECK_EQ(DeserializeOrbitAnalysis(message.return_().result()), result);
+  auto const result = interface::principia__VesselRefreshAnalysis(plugin, vessel_guid, primary_index, mission_duration, revolutions_per_cycle, days_per_cycle, ground_track_revolution);
+  OrbitalElements elements_storage;
+  OrbitRecurrence recurrence_storage;
+  OrbitGroundTrack ground_track_storage;
+  PRINCIPIA_CHECK_EQ(DeserializeOrbitAnalysis(message.return_().result(), elements_storage, recurrence_storage, ground_track_storage), *result);
 }
 
 void VesselSetPredictionAdaptiveStepParameters::Fill(In const& in, not_null<Message*> const message) {

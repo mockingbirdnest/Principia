@@ -169,6 +169,21 @@ struct CurrentTime : not_constructible {
                   Player::PointerMap& pointer_map);
 };
 
+struct DeleteInterchange : not_constructible {
+  struct In final {
+    void const** const native_pointer;
+  };
+  struct Out final {
+    void const** const native_pointer;
+  };
+
+  using Message = serialization::DeleteInterchange;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  Player::PointerMap& pointer_map);
+};
+
 struct DeletePlugin : not_constructible {
   struct In final {
     Plugin const** const plugin;
@@ -1735,7 +1750,7 @@ struct VesselRefreshAnalysis : not_constructible {
     int const* const days_per_cycle;
     int const ground_track_revolution;
   };
-  using Return = OrbitAnalysis;
+  using Return = OrbitAnalysis*;
 
   using Message = serialization::VesselRefreshAnalysis;
   static void Fill(In const& in, not_null<Message*> const message);

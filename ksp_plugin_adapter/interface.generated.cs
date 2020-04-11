@@ -214,29 +214,13 @@ internal partial struct OrbitGroundTrack {
   public EquatorialCrossings equatorial_crossings;
 }
 
-[StructLayout(LayoutKind.Sequential)]
-internal partial struct OrbitAnalysis {
+internal partial class OrbitAnalysis {
   public double progress_of_next_analysis;
   public int primary_index;
   public double mission_duration;
-  public OrbitalElements elements;
-  private Byte elements_has_value_;
-  public bool elements_has_value {
-    get { return elements_has_value_ != (Byte)0; }
-    set { elements_has_value_ = value ? (Byte)1 : (Byte)0; }
-  }
-  public OrbitRecurrence recurrence;
-  private Byte recurrence_has_value_;
-  public bool recurrence_has_value {
-    get { return recurrence_has_value_ != (Byte)0; }
-    set { recurrence_has_value_ = value ? (Byte)1 : (Byte)0; }
-  }
-  public OrbitGroundTrack ground_track;
-  private Byte ground_track_has_value_;
-  public bool ground_track_has_value {
-    get { return ground_track_has_value_ != (Byte)0; }
-    set { ground_track_has_value_ = value ? (Byte)1 : (Byte)0; }
-  }
+  public OrbitalElements? elements;
+  public OrbitRecurrence? recurrence;
+  public OrbitGroundTrack? ground_track;
 }
 
 internal static partial class Interface {
@@ -327,6 +311,12 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern double CurrentTime(
       this IntPtr plugin);
+
+  [DllImport(dllName           : dll_path,
+             EntryPoint        = "principia__DeleteInterchange",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void DeleteInterchange(
+      ref IntPtr native_pointer);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__DeletePlugin",
@@ -1199,6 +1189,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__VesselRefreshAnalysis",
              CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<OrbitAnalysis, OrbitAnalysisMarshaler>))]
   internal static extern OrbitAnalysis VesselRefreshAnalysis(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] String vessel_guid,

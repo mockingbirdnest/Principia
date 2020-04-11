@@ -4,6 +4,9 @@
 
 extern "C"
 struct NavigationFrameParameters {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   int extension;
   int centre_index;
   int primary_index;
@@ -15,6 +18,9 @@ static_assert(std::is_pod<NavigationFrameParameters>::value,
 
 extern "C"
 struct XYZ {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   double x;
   double y;
   double z;
@@ -25,6 +31,9 @@ static_assert(std::is_pod<XYZ>::value,
 
 extern "C"
 struct AdaptiveStepParameters {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   std::int64_t integrator_kind;
   std::int64_t max_steps;
   double length_integration_tolerance;
@@ -36,6 +45,9 @@ static_assert(std::is_pod<AdaptiveStepParameters>::value,
 
 extern "C"
 struct BodyGeopotentialElement {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   char const* degree;
   char const* order;
   char const* cos;
@@ -48,6 +60,9 @@ static_assert(std::is_pod<BodyGeopotentialElement>::value,
 
 extern "C"
 struct BodyParameters {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   char const* name;
   char const* gravitational_parameter;
   char const* reference_instant;
@@ -68,6 +83,9 @@ static_assert(std::is_pod<BodyParameters>::value,
 
 extern "C"
 struct Burn {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   double thrust_in_kilonewtons;
   double specific_impulse_in_seconds_g0;
   NavigationFrameParameters frame;
@@ -81,6 +99,9 @@ static_assert(std::is_pod<Burn>::value,
 
 extern "C"
 struct ConfigurationAccuracyParameters {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   char const* fitting_tolerance;
   char const* geopotential_tolerance;
 };
@@ -90,6 +111,9 @@ static_assert(std::is_pod<ConfigurationAccuracyParameters>::value,
 
 extern "C"
 struct ConfigurationFixedStepParameters {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   char const* fixed_step_size_integrator;
   char const* integration_step_size;
 };
@@ -99,6 +123,9 @@ static_assert(std::is_pod<ConfigurationFixedStepParameters>::value,
 
 extern "C"
 struct ConfigurationAdaptiveStepParameters {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   char const* adaptive_step_size_integrator;
   char const* length_integration_tolerance;
   char const* speed_integration_tolerance;
@@ -109,6 +136,9 @@ static_assert(std::is_pod<ConfigurationAdaptiveStepParameters>::value,
 
 extern "C"
 struct FlightPlanAdaptiveStepParameters {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   std::int64_t integrator_kind;
   std::int64_t generalized_integrator_kind;
   std::int64_t max_steps;
@@ -121,6 +151,9 @@ static_assert(std::is_pod<FlightPlanAdaptiveStepParameters>::value,
 
 extern "C"
 struct KeplerianElements {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   double eccentricity;
   double semimajor_axis;
   double mean_motion;
@@ -135,6 +168,9 @@ static_assert(std::is_pod<KeplerianElements>::value,
 
 extern "C"
 struct NavigationManoeuvre {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   Burn burn;
   double initial_mass_in_tonnes;
   double final_mass_in_tonnes;
@@ -150,6 +186,9 @@ static_assert(std::is_pod<NavigationManoeuvre>::value,
 
 extern "C"
 struct NavigationManoeuvreFrenetTrihedron {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   XYZ binormal;
   XYZ normal;
   XYZ tangent;
@@ -160,6 +199,9 @@ static_assert(std::is_pod<NavigationManoeuvreFrenetTrihedron>::value,
 
 extern "C"
 struct Origin {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   bool reference_part_is_at_origin;
   bool reference_part_is_unmoving;
   uint32_t reference_part_id;
@@ -171,6 +213,9 @@ static_assert(std::is_pod<Origin>::value,
 
 extern "C"
 struct QP {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   XYZ q;
   XYZ p;
 };
@@ -180,6 +225,9 @@ static_assert(std::is_pod<QP>::value,
 
 extern "C"
 struct Status {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   int error;
 };
 
@@ -188,6 +236,9 @@ static_assert(std::is_pod<Status>::value,
 
 extern "C"
 struct WXYZ {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   double w;
   double x;
   double y;
@@ -199,6 +250,9 @@ static_assert(std::is_pod<WXYZ>::value,
 
 extern "C"
 struct QPRW {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   QP qp;
   WXYZ r;
   XYZ w;
@@ -209,6 +263,9 @@ static_assert(std::is_pod<QPRW>::value,
 
 extern "C"
 struct XY {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   double x;
   double y;
 };
@@ -218,6 +275,9 @@ static_assert(std::is_pod<XY>::value,
 
 extern "C"
 struct Interval {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   double min;
   double max;
 };
@@ -227,6 +287,9 @@ static_assert(std::is_pod<Interval>::value,
 
 extern "C"
 struct OrbitalElements {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   double sidereal_period;
   double nodal_period;
   double anomalistic_period;
@@ -243,6 +306,9 @@ static_assert(std::is_pod<OrbitalElements>::value,
 
 extern "C"
 struct OrbitRecurrence {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   int nuo;
   int dto;
   int cto;
@@ -258,6 +324,9 @@ static_assert(std::is_pod<OrbitRecurrence>::value,
 
 extern "C"
 struct EquatorialCrossings {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   Interval longitudes_reduced_to_ascending_pass;
   Interval longitudes_reduced_to_descending_pass;
 };
@@ -267,6 +336,9 @@ static_assert(std::is_pod<EquatorialCrossings>::value,
 
 extern "C"
 struct OrbitGroundTrack {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   EquatorialCrossings equatorial_crossings;
 };
 
@@ -275,15 +347,15 @@ static_assert(std::is_pod<OrbitGroundTrack>::value,
 
 extern "C"
 struct OrbitAnalysis {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
   double progress_of_next_analysis;
   int primary_index;
   double mission_duration;
-  OrbitalElements elements;
-  bool elements_has_value;
-  OrbitRecurrence recurrence;
-  bool recurrence_has_value;
-  OrbitGroundTrack ground_track;
-  bool ground_track_has_value;
+  OrbitalElements const* elements;
+  OrbitRecurrence const* recurrence;
+  OrbitGroundTrack const* ground_track;
 };
 
 static_assert(std::is_pod<OrbitAnalysis>::value,
@@ -349,6 +421,10 @@ void __cdecl principia__ClearWorldRotationalReferenceFrame(
 extern "C" PRINCIPIA_DLL
 double __cdecl principia__CurrentTime(
     Plugin const* const plugin);
+
+extern "C" PRINCIPIA_DLL
+void __cdecl principia__DeleteInterchange(
+    void const** const native_pointer);
 
 extern "C" PRINCIPIA_DLL
 void __cdecl principia__DeletePlugin(
@@ -985,7 +1061,7 @@ XYZ __cdecl principia__VesselNormal(
     char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
-OrbitAnalysis __cdecl principia__VesselRefreshAnalysis(
+OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
     Plugin const* const plugin,
     char const* const vessel_guid,
     int const primary_index,
