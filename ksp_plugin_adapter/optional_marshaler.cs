@@ -5,49 +5,7 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal abstract class OptionalMarshaler<T> : MonoMarshaler where T : struct {
-  public override void CleanUpNativeDataImplementation(IntPtr native_data) {
-    Marshal.FreeHGlobal(native_data);
-  }
-
-  public object MarshalNativeToManagedImplementation(IntPtr native_data) {
-    if (native_data == IntPtr.Zero) {
-      return null;
-    } else {
-      return Marshal.PtrToStructure(native_data, typeof(T));
-    }
-  }
-}
-
-internal class OwnershipTransferOptionalMarshaler<T> : OptionalMarshaler<T>
-    where T : struct {
-  public static ICustomMarshaler GetInstance(string s) {
-    return instance_;
-  }
-
-  public override void CleanUpNativeDataImplementation(IntPtr native_data) {
-    throw Log.Fatal(
-        "use NoOwnershipTransferOptionalMarshaler for in parameters");
-  }
-
-  public override IntPtr MarshalManagedToNativeImplementation(
-      object managed_object) {
-    throw Log.Fatal(
-        "use NoOwnershipTransferOptionalMarshaler for in parameters");
-  }
-
-  public override object MarshalNativeToManaged(IntPtr native_data) {
-    var result = MarshalNativeToManagedImplementation(native_data);
-    Interface.DeleteVoid(ref native_data);
-    return result;
-  }
-
-  private static readonly OwnershipTransferOptionalMarshaler<T> instance_ =
-      new OwnershipTransferOptionalMarshaler<T>();
-}
-
-internal class NoOwnershipTransferOptionalMarshaler<T> : OptionalMarshaler<T>
-    where T : struct {
+internal class OptionalMarshaler<T> : MonoMarshaler where T : struct {
   public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }
@@ -84,11 +42,15 @@ internal class NoOwnershipTransferOptionalMarshaler<T> : OptionalMarshaler<T>
   }
 
   public override object MarshalNativeToManaged(IntPtr native_data) {
-    return MarshalNativeToManagedImplementation(native_data);
+    if (native_data == IntPtr.Zero) {
+      return null;
+    } else {
+      return Marshal.PtrToStructure(native_data, typeof(T));
+    }
   }
 
-  private static readonly NoOwnershipTransferOptionalMarshaler<T> instance_ =
-      new NoOwnershipTransferOptionalMarshaler<T>();
+  private static readonly OptionalMarshaler<T> instance_ =
+      new OptionalMarshaler<T>();
 }
 
 }  // namespace ksp_plugin_adapter

@@ -263,13 +263,22 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
     std::string const& cs_unboxed_type,
     std::string const& cxx_type) {
   FieldOptions const& options = descriptor->options();
-  std::string custom_marshaler_generic_name;
+
+  // Build a lambda to construct a marshaler name.
+  std::function<std::string(std::string const&)> custom_marshaler_generic_name;
   if (options.HasExtension(journal::serialization::is_produced)) {
     CHECK(options.GetExtension(journal::serialization::is_produced))
         << descriptor->full_name() << " has incorrect (is_produced) option";
-    custom_marshaler_generic_name = "OwnershipTransferOptionalMarshaler";
+    custom_marshaler_generic_name =
+        [](std::string const& type) {
+          return "OwnershipTransferMarshaler<" + type +
+                 ", OptionalMarshaler<" + type + ">>";
+        };
   } else {
-    custom_marshaler_generic_name = "NoOwnershipTransferOptionalMarshaler";
+    custom_marshaler_generic_name =
+        [](std::string const& type) {
+          return "OptionalMarshaler<" + type + ">";
+        };
   }
 
   // It is not possible to use a custom marshaler on an |T?|, as this raises
@@ -281,7 +290,7 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
     Descriptor const* message_type = descriptor->message_type();
     if (cs_custom_marshaler_name_[message_type].empty()) {
       field_cs_custom_marshaler_[descriptor] =
-          custom_marshaler_generic_name + "<" + cs_unboxed_type + ">";
+          custom_marshaler_generic_name(cs_unboxed_type);
     } else {
       // This wouldn't be hard, we'd need another OptionalMarshaller that calls
       // the element's marshaler, but we don't need it yet.
@@ -295,7 +304,7 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
     // We could use a boxed |T|, whose type would be |object|, but we would lose
     // static typing.  We use a custom strongly-typed boxed type instead.
     field_cs_custom_marshaler_[descriptor] =
-        custom_marshaler_generic_name + "<" + cs_unboxed_type + ">";
+        custom_marshaler_generic_name(cs_unboxed_type);
     field_cs_type_[descriptor] = cs_boxed_type;
   }
   // Unfortunately this pointer type cannot be defaulted to nullptr as it would

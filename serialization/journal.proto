@@ -393,6 +393,21 @@ message CurrentTime {
   optional Return return = 3;
 }
 
+message DeleteInterchange {
+  extend Method {
+    optional DeleteInterchange extension = 5169;
+  }
+  message In {
+    required fixed64 native_pointer = 1 [(pointer_to) = "void const",
+                                         (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 native_pointer = 1 [(pointer_to) = "void const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
 message DeletePlugin {
   extend Method {
     optional DeletePlugin extension = 5000;
@@ -433,21 +448,6 @@ message DeleteU16String {
   }
   message Out {
     required fixed64 native_string = 1 [(pointer_to) = "char16_t const"];
-  }
-  optional In in = 1;
-  optional Out out = 2;
-}
-
-message DeleteVoid {
-  extend Method {
-    optional DeleteVoid extension = 5169;
-  }
-  message In {
-    required fixed64 native_pointer = 1 [(pointer_to) = "void const",
-                                         (is_consumed) = true];
-  }
-  message Out {
-    required fixed64 native_pointer = 1 [(pointer_to) = "void const"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -2188,7 +2188,7 @@ extend google.protobuf.FieldOptions {
 
   // For a fixed64 field, indicates whether the corresponding pointer is
   // consumed (deleted or has its ownership transferred) or produced (allocated)
-  // by the interface.
+  // by the C++ side.
   optional bool is_consumed = 50002;
   optional bool is_produced = 50003;
 

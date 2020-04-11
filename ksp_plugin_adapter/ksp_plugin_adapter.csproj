@@ -124,6 +124,7 @@
     <Compile Include="main_window.cs" />
     <Compile Include="map_node_pool.cs" />
     <Compile Include="marshalers.generated.cs" />
+    <Compile Include="ownership_transfer_marshaler.cs" />
     <Compile Include="repeated_marshaler.cs" />
     <Compile Include="orbit_analyser.cs" />
     <Compile Include="planetarium_camera_adjuster.cs" />
