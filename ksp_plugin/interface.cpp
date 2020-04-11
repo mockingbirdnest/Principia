@@ -470,6 +470,14 @@ void __cdecl principia__DeleteU16String(char16_t const** const native_string) {
   return m.Return();
 }
 
+void __cdecl principia__DeleteVoid(void const** const native_pointer) {
+  journal::Method<journal::DeleteVoid> m({native_pointer}, {native_pointer});
+  CHECK_NOTNULL(native_pointer);
+  ::operator delete(const_cast<void*>(*native_pointer));
+  *native_pointer = nullptr;
+  return m.Return();
+}
+
 // The caller takes ownership of |**plugin| when it is not null.  No transfer of
 // ownership of |*serialization| or |**deserializer|.  |*deserializer| and
 // |*plugin| must be null on the first call and must be passed unchanged to the

@@ -210,7 +210,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5168.
+  extensions 5000 to 5999;  // Last used: 5169.
 }
 
 message AdvanceTime {
@@ -433,6 +433,21 @@ message DeleteU16String {
   }
   message Out {
     required fixed64 native_string = 1 [(pointer_to) = "char16_t const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message DeleteVoid {
+  extend Method {
+    optional DeleteVoid extension = 5169;
+  }
+  message In {
+    required fixed64 native_pointer = 1 [(pointer_to) = "void const",
+                                         (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 native_pointer = 1 [(pointer_to) = "void const"];
   }
   optional In in = 1;
   optional Out out = 2;

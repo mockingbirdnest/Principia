@@ -1046,8 +1046,14 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "[StructLayout(LayoutKind.Sequential)]\n" + visibility +
         " partial struct " + name + " {\n";
   }
+  // Produce a class-specific overload of new to be able to safely delete the
+  // storage in principia__DeleteVoid.
   cxx_interchange_type_declaration_[descriptor] =
-      "extern \"C\"\nstruct " + name + " {\n";
+      "extern \"C\"\n"
+      "struct " + name + " {\n"
+      "  static void* operator new(std::size_t size) {\n"
+      "    return ::operator new(size);\n"
+      "  };\n";
 
   // Second pass on the fields to actually generate the code.
   std::vector<std::string> deserialized_expressions;
