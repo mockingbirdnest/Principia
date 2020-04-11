@@ -15,13 +15,12 @@ internal class OwnershipTransferMarshaler<T, TMarshaler> : MonoMarshaler
   }
 
   public override void CleanUpNativeDataImplementation(IntPtr native_data) {
-    t_marshaler_instance_.CleanUpNativeDataImplementation(native_data);
+    throw Log.Fatal("no transfer of ownership for in parameters");
   }
 
   public override IntPtr MarshalManagedToNativeImplementation(
       object managed_object) {
-    return t_marshaler_instance_.MarshalManagedToNativeImplementation(
-        managed_object);
+    throw Log.Fatal("no transfer of ownership for in parameters");
   }
 
   public override object MarshalNativeToManaged(IntPtr native_data) {
