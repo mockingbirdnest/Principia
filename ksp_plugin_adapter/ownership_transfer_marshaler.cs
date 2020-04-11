@@ -5,7 +5,7 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 // An adapter that uses TMarshaler to marshal objects of type T, but
-// additionally take ownership of the native data passed in the native-to-
+// additionally takes ownership of the native data passed in the native-to-
 // managed direction.  T may be a struct or a class, but it *must* correspond to
 // an interchange message defined in journal.proto.
 internal class OwnershipTransferMarshaler<T, TMarshaler> : MonoMarshaler

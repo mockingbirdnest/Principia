@@ -817,10 +817,18 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
       [](std::string const& expr) {
         return expr;
       };
-  field_cxx_mode_fn_[descriptor] =
-      [](std::string const& type) {
-        return type;
-      };
+  if (Contains(return_, descriptor)) {
+    // No const on return types.
+    field_cxx_mode_fn_[descriptor] =
+        [](std::string const& type) {
+          return type;
+        };
+  } else {
+    field_cxx_mode_fn_[descriptor] =
+        [](std::string const& type) {
+          return type + " const";
+        };
+  }
   field_cxx_optional_assignment_fn_[descriptor] =
       [](std::string const& expr, std::string const& stmt) {
         return stmt;
@@ -1124,10 +1132,6 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
                 field_cxx_indirect_member_get_fn_[field_descriptor](
                     serialize_member_name)));
 
-    // TODO(phl): field_cs_private_type_ should be set iff field_cs_marshal_ is
-    // set.  This is not the case at the moment because of strings being passed
-    // in the interchange messages.  This will need fixing if we ever want to
-    // pass non-ASCII strings or to return these structs.
     if (field_cs_private_type_[field_descriptor].empty()) {
       cs_interchange_type_declaration_[descriptor] +=
           "  public " + field_cs_type_[field_descriptor] + " " +
