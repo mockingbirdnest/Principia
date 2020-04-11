@@ -105,7 +105,6 @@
   <ItemGroup>
     <Compile Include="boxed.cs" />
     <Compile Include="burn_editor.cs" />
-    <Compile Include="class_marshalers.cs" />
     <Compile Include="compatibility_extensions.cs" />
     <Compile Include="config_node_extensions.cs" />
     <Compile Include="config_node_parsers.cs" />
@@ -125,6 +124,7 @@
     <Compile Include="main_window.cs" />
     <Compile Include="map_node_pool.cs" />
     <Compile Include="marshalers.generated.cs" />
+    <Compile Include="repeated_marshaler.cs" />
     <Compile Include="orbit_analyser.cs" />
     <Compile Include="planetarium_camera_adjuster.cs" />
     <Compile Include="rendering_actions.cs" />

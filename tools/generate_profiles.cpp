@@ -98,8 +98,9 @@ void GenerateProfiles() {
   marshalers_generated_cs << "using System.Runtime.InteropServices;\n\n";
   marshalers_generated_cs << "namespace principia {\n";
   marshalers_generated_cs << "namespace ksp_plugin_adapter {\n\n";
-  for (auto const& cs_marshaler_class : processor.GetCsMarshalerClasses()) {
-    marshalers_generated_cs << cs_marshaler_class;
+  for (auto const& cs_custom_marshaler_class :
+       processor.GetCsCustomMarshalerClasses()) {
+    marshalers_generated_cs << cs_custom_marshaler_class;
   }
   marshalers_generated_cs << "}  // namespace ksp_plugin_adapter\n";
   marshalers_generated_cs << "}  // namespace principia\n";

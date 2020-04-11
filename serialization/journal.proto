@@ -34,9 +34,6 @@ message AdaptiveStepParameters {
 }
 
 message BodyGeopotentialElement {
-  // TODO(phl): Remove this hack once we generate the marshaler for
-  // BodyParameters.
-  option (custom_marshaler) = "none";
   required string degree = 1;
   required string order = 2;
   optional string cos = 3;
@@ -45,7 +42,6 @@ message BodyGeopotentialElement {
 }
 
 message BodyParameters {
-  option (custom_marshaler) = "InBodyParametersMarshaler";
   required string name = 10;
   required string gravitational_parameter = 1;
   optional string reference_instant = 7;
@@ -58,8 +54,7 @@ message BodyParameters {
   optional string angular_frequency = 9;
   optional string reference_radius = 6;
   optional string j2 = 5;  // No parsing in C#.
-  repeated BodyGeopotentialElement geopotential = 11
-      [(size) = "geopotential_size"];
+  repeated BodyGeopotentialElement geopotential = 11;
 }
 
 message Burn {
@@ -455,10 +450,10 @@ message DeserializePlugin {
     optional DeserializePlugin extension = 5050;
   }
   message In {
-    required string serialization = 1 [(size) = "serialization_size"];
+    required string serialization = 1;
     required fixed64 deserializer = 2
         [(pointer_to) = "PushDeserializer",
-         (is_consumed_if) = "serialization->empty()"];
+         (is_consumed_if) = "std::string_view(serialization).empty()"];
     required fixed64 plugin = 3 [(pointer_to) = "Plugin const"];
     required string compressor = 4;
     required string encoder = 5;
@@ -466,7 +461,7 @@ message DeserializePlugin {
   message Out {
     required fixed64 deserializer = 1
         [(pointer_to) = "PushDeserializer",
-         (is_produced_if) = "!serialization->empty()"];
+         (is_produced_if) = "!std::string_view(serialization).empty()"];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const",
                                  (is_produced) = true];
   }
@@ -2182,10 +2177,6 @@ extend google.protobuf.FieldOptions {
   // For a fixed64 field (which is used to represent a pointer), gives the C++
   // designated type of the pointer.
   optional string pointer_to = 50000;
-
-  // For a repeated message or string field that comes with a separate size
-  // parameter, gives the name of the size parameter.
-  optional string size = 50001;
 
   // For a fixed64 field, indicates whether the corresponding pointer is
   // consumed (deleted or has its ownership transferred) or produced (allocated)

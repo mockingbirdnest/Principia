@@ -27,7 +27,7 @@ class JournalProtoProcessor final {
   std::vector<std::string> GetCsInterchangeTypeDeclarations() const;
 
   // ksp_plugin_adapter/marshalers.generated.cs
-  std::vector<std::string> GetCsMarshalerClasses() const;
+  std::vector<std::string> GetCsCustomMarshalerClasses() const;
 
   // ksp_plugin/interface.generated.h
   std::vector<std::string> GetCxxInterfaceMethodDeclarations() const;
@@ -106,17 +106,10 @@ class JournalProtoProcessor final {
   // present in |in_out_| are not in |out_|.
   std::set<FieldDescriptor const*> out_;
 
-  // For fields that have a (size) option, the name of the size member variable
-  // in the In or Out struct.  Special processing is required when filling those
-  // fields from the struct members.  No data for other fields.  This map is
-  // language-independent.
-  std::map<FieldDescriptor const*, std::string> size_member_name_;
-
   // For all fields, a lambda that takes the name of a local variable containing
   // data extracted (and deserialized) from the field and returns a list of
-  // expressions to be passed to the interface.  Deals with passing address and
-  // size for fields that have a size member, and with passing by reference for
-  // fields that are in-out or optional.
+  // expressions to be passed to the interface.  Deals with passing by reference
+  // for fields that are in-out or optional.
   std::map<FieldDescriptor const*,
            std::function<std::vector<std::string>(
                              std::string const& identifier)>>
@@ -146,10 +139,10 @@ class JournalProtoProcessor final {
   // field (typically something like |message.in().bar()|) and returns an
   // expression for the deserialized form of |expr| suitable for storing in a
   // local variable (typically a call to some Deserialize function, but other
-  // transformations are possible).  Deals with passing address and size for
-  // fields that have a size member.
+  // transformations are possible).  Deals with arrays of pointers for repeated
+  // fields.
   std::map<FieldDescriptor const*,
-           std::function<std::vector<std::string>(std::string const& expr)>>
+           std::function<std::string(std::string const& expr)>>
       field_cxx_deserializer_fn_;
 
   // For all fields, a lambda that takes an expression for a struct member and
@@ -209,8 +202,7 @@ class JournalProtoProcessor final {
 
   // For fields that are implemented using private members, a lambda that takes
   // the names of the members and returns the C# implementation of the getter
-  // and setter.  Note that there can be several members, eg because of the
-  // size member.
+  // and setter.
   std::map<FieldDescriptor const*,
            std::function<
               std::string(std::vector<std::string> const& identifiers)>>
@@ -220,12 +212,11 @@ class JournalProtoProcessor final {
               std::string(std::vector<std::string> const& identifiers)>>
       field_cs_private_setter_fn_;
 
-  // The C# class for marshalling a field or a message.  For a field, this may
-  // be either a custom marshaler (derived from ICustomMarshaler) or one
-  // predefined by .Net.  At most one is set for a given field.
+  // The C# class for marshalling a field.  This may be either a custom
+  // marshaler (derived from ICustomMarshaler) or one predefined by .Net.  At
+  // most one is set for a given field.
   std::map<FieldDescriptor const*, std::string> field_cs_custom_marshaler_;
   std::map<FieldDescriptor const*, std::string> field_cs_predefined_marshaler_;
-  std::map<Descriptor const*, std::string> cs_custom_marshaler_;
 
   // The C# type for a field, suitable for use in a private member when the
   // actual data cannot be exposed directly (think bool).
@@ -270,9 +261,13 @@ class JournalProtoProcessor final {
   std::map<Descriptor const*, std::string> cs_interchange_type_declaration_;
   std::map<Descriptor const*, std::string> cxx_interchange_type_declaration_;
 
-  // The C# definition of a class that implements a custom marshaler for an
+  // The name of the C# class that implements a custom marshaler for an
   // interchange message.
-  std::map<Descriptor const*, std::string> cs_marshaler_class_;
+  std::map<Descriptor const*, std::string> cs_custom_marshaler_name_;
+
+  // The definition of the C# class that implements a custom marshaler for an
+  // interchange message.
+  std::map<Descriptor const*, std::string> cs_custom_marshaler_class_;
 
   // The C# declarations of fields in the Representation struct of a custom
   // marshaler.

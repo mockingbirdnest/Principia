@@ -723,14 +723,12 @@ public partial class PrincipiaPluginAdapter
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (string serialization in serializations) {
         Interface.DeserializePlugin(serialization,
-                                    serialization.Length,
                                     ref deserializer,
                                     ref plugin_,
                                     serialization_compression_,
                                     serialization_encoding_);
       }
       Interface.DeserializePlugin("",
-                                  0,
                                   ref deserializer,
                                   ref plugin_,
                                   serialization_compression_,

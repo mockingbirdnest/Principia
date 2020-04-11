@@ -48,7 +48,6 @@ std::unique_ptr<Plugin const> DeserializePluginFromLines(
   int l = 1;
   for (auto const& line : lines) {
     principia__DeserializePlugin(line.c_str(),
-                                 line.size(),
                                  &deserializer,
                                  &plugin,
                                  compressor,
@@ -56,7 +55,6 @@ std::unique_ptr<Plugin const> DeserializePluginFromLines(
     bytes_processed += line.size() >> 1;
   }
   principia__DeserializePlugin("",
-                               0,
                                &deserializer,
                                &plugin,
                                compressor,
