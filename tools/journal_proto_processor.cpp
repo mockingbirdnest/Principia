@@ -520,9 +520,22 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
 
   if (!cs_custom_marshaler_name_[message_type].empty()) {
     if (Contains(in_, descriptor)) {
-      field_cxx_mode_fn_[descriptor] = [](std::string const& type) {
-        return type + " const&";
-      };
+      field_cxx_mode_fn_[descriptor] =
+          [](std::string const& type) {
+            return type + " const&";
+          };
+      // No need to define field_cxx_indirect_member_get_fn_ here because
+      // references don't need a level of indirection.
+    }
+    if (Contains(return_, descriptor)) {
+      field_cxx_mode_fn_[descriptor] =
+          [](std::string const& type) {
+            return type + "*";
+          };
+      field_cxx_indirect_member_get_fn_[descriptor] =
+          [](std::string const& expr) {
+            return "*" + expr;
+          };
     }
     if (Contains(in_, descriptor) || Contains(return_, descriptor)) {
       field_cs_custom_marshaler_[descriptor] =
@@ -792,7 +805,7 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
       };
   field_cxx_mode_fn_[descriptor] =
       [](std::string const& type) {
-        return type + " const";
+        return type;
       };
   field_cxx_optional_assignment_fn_[descriptor] =
       [](std::string const& expr, std::string const& stmt) {
@@ -959,8 +972,9 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   return_.insert(field_descriptor);
   ProcessField(field_descriptor);
   cxx_fill_body_[descriptor] =
-      field_cxx_assignment_fn_[field_descriptor]("message->mutable_return_()->",
-                                                 "result");
+      field_cxx_assignment_fn_[field_descriptor](
+          "message->mutable_return_()->",
+          field_cxx_indirect_member_get_fn_[field_descriptor]("result"));
   std::string const cxx_field_getter =
       "message.return_()." + field_descriptor->name() + "()";
   if (Contains(field_cxx_inserter_fn_, field_descriptor)) {
@@ -975,8 +989,8 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
     }
     cxx_run_body_epilog_[descriptor] +=
         "  PRINCIPIA_CHECK_EQ(" +
-        field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) +
-        ", result);\n";
+        field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) + ", " +
+        field_cxx_indirect_member_get_fn_[field_descriptor]("result") + ");\n";
   } else {
     CHECK(field_options.GetExtension(journal::serialization::omit_check))
       << field_descriptor->full_name() << " has incorrect (omit_check) option";
@@ -986,9 +1000,10 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
           ? "[return : " + MarshalAs(field_descriptor) + "]"
           : "";
   cs_interface_return_type_[descriptor] = field_cs_type_[field_descriptor];
-  cxx_interface_return_type_[descriptor] = field_cxx_type_[field_descriptor];
+  cxx_interface_return_type_[descriptor] =
+      field_cxx_mode_fn_[field_descriptor](field_cxx_type_[field_descriptor]);
   cxx_nested_type_declaration_[descriptor] =
-      "  using Return = " + field_cxx_type_[field_descriptor] + ";\n";
+      "  using Return = " + cxx_interface_return_type_[descriptor] + ";\n";
 }
 
 void JournalProtoProcessor::ProcessInterchangeMessage(
