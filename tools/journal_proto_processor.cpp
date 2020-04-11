@@ -506,14 +506,16 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   field_cs_type_[descriptor] = message_type_name;
   field_cxx_type_[descriptor] = message_type_name;
 
-  MessageOptions const& message_options = message_type->options();
-  if (Contains(in_, descriptor) &&
-      !cs_custom_marshaler_name_[message_type].empty()) {
-    field_cs_custom_marshaler_[descriptor] =
-        cs_custom_marshaler_name_[message_type];
-    field_cxx_mode_fn_[descriptor] = [](std::string const& type) {
-      return type + " const&";
-    };
+  if (!cs_custom_marshaler_name_[message_type].empty()) {
+    if (Contains(in_, descriptor)) {
+      field_cxx_mode_fn_[descriptor] = [](std::string const& type) {
+        return type + " const&";
+      };
+    }
+    if (Contains(in_, descriptor) || Contains(return_, descriptor)) {
+      field_cs_custom_marshaler_[descriptor] =
+          cs_custom_marshaler_name_[message_type];
+    }
   }
   std::string const deserialization_storage_arguments =
       cxx_deserialization_storage_arguments_[message_type];
@@ -942,6 +944,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   FieldOptions const& field_options = field_descriptor->options();
   CHECK_EQ(FieldDescriptor::LABEL_REQUIRED, field_descriptor->label())
       << descriptor->full_name() << " must be required";
+  return_.insert(field_descriptor);
   ProcessField(field_descriptor);
   cxx_fill_body_[descriptor] =
       field_cxx_assignment_fn_[field_descriptor]("message->mutable_return_()->",

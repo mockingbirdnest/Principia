@@ -108,6 +108,9 @@ class JournalProtoProcessor final {
   // present in |in_out_| are not in |out_|.
   std::set<FieldDescriptor const*> out_;
 
+  // The fields that are returned.
+  std::set<FieldDescriptor const*> return_;
+
   // The fields that are part of interchange messages.
   std::set<FieldDescriptor const*> interchange_;
 
