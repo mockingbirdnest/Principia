@@ -198,6 +198,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
 
   FieldOptions const& options = descriptor->options();
   field_cs_type_[descriptor] = message_type_name + "[]";
+  // TODO(phl): Use Contains instead of empty for all the set/map predicates.
   if (cs_custom_marshaler_name_[message_type].empty()) {
     // This wouldn't be hard, we'd need another RepeatedMarshaller that copies
     // structs, but we don't need it yet.
