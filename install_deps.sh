@@ -6,89 +6,48 @@ echo "Required runtime dependencies: libc++1"
 
 #sudo apt-get install clang git unzip wget libc++-dev binutils make automake libtool curl cmake subversion
 
-BASE_FLAGS="-fPIC -O3 -g -DNDEBUG"
-# determine platform for bitness
-
-PLATFORM=$(uname -s)
-if [ "$PLATFORM" == "Darwin" ]; then
-    C_FLAGS="$BASE_FLAGS -mmacosx-version-min=10.11 -arch x86_64"
-elif [ "$PLATFORM" == "Linux" ]; then
-	BITNESS=$(uname -m)
-	if [ "$BITNESS" == "x86_64" ]; then
-	  C_FLAGS="$BASE_FLAGS -m64"
-        else
-      	   C_FLAGS="$BASE_FLAGS -m32"
-        fi
-else
-    C_FLAGS="$BASE_FLAGS"
-fi
-
-LD_FLAGS="$C_FLAGS -stdlib=libc++"
-CXX_FLAGS="-std=c++14 $LD_FLAGS"
-
 mkdir -p deps
-cd deps
+pushd deps
 
-if [ ! -d "protobuf" ]; then
-  git clone "https://github.com/mockingbirdnest/protobuf"
-fi
-pushd protobuf
-git checkout master
-git pull
-./autogen.sh
-if [ "$PLATFORM" == "Linux" ]; then
-    ./autogen.sh # Really definitely needs to run twice on Ubuntu for some reason.
-fi
-./configure CC=clang CXX=clang++ CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++ -lc++abi"
-make -j8
-popd
+for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark zfp; do
+  if [ ! -d "$repo" ]; then
+    git clone "https://github.com/mockingbirdnest/$repo.git"
+  fi
+  pushd "$repo"
+  git checkout master
+  git pull
 
-if [ ! -d "glog" ]; then
-  git clone "https://github.com/mockingbirdnest/glog"
-fi
-pushd glog
-git checkout master
-git pull
-./autogen.sh
-./configure CC=clang CXX=clang++ CFLAGS="$C_FLAGS" CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++ -lc++abi"
-make -j8
-popd
+  AGENT_OS=$(uname -s)
 
-# googlemock/googletest don't need to be compiled
-if [ ! -d "googletest" ]; then
-  git clone "https://github.com/mockingbirdnest/googletest"
-fi
-pushd googletest
-git checkout master
-git pull
-popd
+  PRINCIPIA_C_FLAGS="-fPIC -O3 -g -DNDEBUG"
+  PRINCIPIA_CXX_FLAGS="-std=c++17"
+  PRINCIPIA_LD_FLAGS="-stdlib=libc++"
+  PRINCIPIA_MACOS_CXX_FLAGS="-D_LIBCPP_STD_VER=16"
+  PRINCIPIA_MACOS_VERSION_MIN="10.12"
 
-if [ ! -d "gipfeli" ]; then
-  git clone "https://github.com/mockingbirdnest/gipfeli"
-fi
-pushd gipfeli
-git checkout master
-git pull
-make
-popd
+  if [ -f ./principia_variable_overrides.sh ]; then
+    . ./principia_variable_overrides.sh
+  fi
 
-if [ ! -d "abseil-cpp" ]; then
-  git clone "https://github.com/mockingbirdnest/abseil-cpp"
-fi
-pushd abseil-cpp
-git checkout master
-git pull
-cmake -DCMAKE_C_COMPILER:FILEPATH=`which clang` -DCMAKE_CXX_COMPILER:FILEPATH=`which clang++` -DCMAKE_C_FLAGS="${C_FLAGS}" -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_LD_FLAGS="${LD_FLAGS}" -DBUILD_TESTING=OFF
-make -j8
-popd
+  if [ "${AGENT_OS?}" == "Darwin" ]; then
+    C_FLAGS="${PRINCIPIA_C_FLAGS?} -mmacosx-version-min=${PRINCIPIA_MACOS_VERSION_MIN?} -arch x86_64"
+    CXX_FLAGS="${PRINCIPIA_CXX_FLAGS?} ${PRINCIPIA_MACOS_CXX_FLAGS?}"
+  elif [ "${AGENT_OS?}" == "Linux" ]; then
+    C_FLAGS="${PRINCIPIA_C_FLAGS?} -m64"
+    CXX_FLAGS="${PRINCIPIA_CXX_FLAGS?}"
+  else
+    C_FLAGS="${PRINCIPIA_C_FLAGS?}"
+    CXX_FLAGS="${PRINCIPIA_CXX_FLAGS?}"
+  fi
+  LD_FLAGS="${C_FLAGS?} ${PRINCIPIA_LD_FLAGS?}"
+  CXX_FLAGS="${CXX_FLAGS?} ${LD_FLAGS?}"
 
-if [ ! -d "compatibility" ]; then
-  git clone "https://github.com/mockingbirdnest/compatibility"
-fi
-pushd compatibility
-git checkout master
-git pull
-popd
+  if [ -f ./principia_make.sh ]; then
+    . ./principia_make.sh
+  fi
+
+  popd
+done
 
 if [ ! -d "Optional" ]; then
   mkdir Optional
@@ -98,25 +57,4 @@ curl "https://raw.githubusercontent.com/llvm-mirror/libcxx/52f9ca28a39aa02a2e78f
 touch __undef_macros
 popd
 
-if [ ! -d "benchmark" ]; then
-  git clone "https://github.com/mockingbirdnest/benchmark"
-fi
-pushd benchmark
-git checkout master
-git pull
-cmake -DCMAKE_C_COMPILER:FILEPATH=`which clang` -DCMAKE_CXX_COMPILER:FILEPATH=`which clang++` -DCMAKE_C_FLAGS="${C_FLAGS}" -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_LD_FLAGS="${LD_FLAGS}" -DBENCHMARK_ENABLE_GTEST_TESTS=OFF
-make -j8
-popd
-
-if [ ! -d "zfp" ]; then
-  git clone "https://github.com/mockingbirdnest/zfp.git"
-fi
-pushd zfp
-git checkout master
-git pull
-mkdir -p build
-pushd build
-cmake -DCMAKE_C_COMPILER:FILEPATH=`which clang` -DCMAKE_CXX_COMPILER:FILEPATH=`which clang++` -DCMAKE_C_FLAGS="${C_FLAGS}" -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_LD_FLAGS="${LD_FLAGS}" -DBUILD_SHARED_LIBS=OFF -DZFP_WITH_OPENMP=OFF ..
-make -j8
-popd
 popd
