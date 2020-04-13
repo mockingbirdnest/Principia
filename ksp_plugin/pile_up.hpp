@@ -94,6 +94,9 @@ class PileUp {
 
   virtual ~PileUp();
 
+  std::string trace;
+  static bool conserve_angular_momentum;
+
   // This class is moveable.
   PileUp(PileUp&& pile_up) = default;
   PileUp& operator=(PileUp&& pile_up) = default;

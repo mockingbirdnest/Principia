@@ -240,7 +240,22 @@ internal class MainWindow : SupervisedWindowRenderer {
     UnityEngine.GUI.DragWindow();
   }
 
+  static bool conserve = true;
+
   private void RenderKSPFeatures() {
+    conserve = UnityEngine.GUILayout.Toggle(
+        conserve,
+        "Enforce angular momentum conservation out of warp");
+    Interface.SetAngularMomentumConservation(conserve);
+    string trace = null;
+    if (FlightGlobals.ActiveVessel != null &&
+        plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
+      trace = plugin.VesselGetPileUpTrace(
+          FlightGlobals.ActiveVessel.id.ToString());
+    }
+    UnityEngine.GUILayout.TextArea(
+        trace ?? "No managed active vessel",
+        style : Style.Multiline(UnityEngine.GUI.skin.textArea));
     display_patched_conics = UnityEngine.GUILayout.Toggle(
         value : display_patched_conics,
         text  : "Display patched conics (do not use for flight planning!)");

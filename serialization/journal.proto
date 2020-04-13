@@ -225,6 +225,32 @@ message Method {
   extensions 5000 to 5999;  // Last used: 5168.
 }
 
+message SetAngularMomentumConservation {
+  extend Method {
+    optional SetAngularMomentumConservation extension = 5999;
+  }
+  message In {
+    required bool conserve = 1;
+  }
+  optional In in = 1;
+}
+
+message VesselGetPileUpTrace {
+  extend Method {
+    optional VesselGetPileUpTrace extension = 5998;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required string result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message AdvanceTime {
   extend Method {
     optional AdvanceTime extension = 5019;
