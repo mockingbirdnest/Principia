@@ -436,7 +436,7 @@ public partial class PrincipiaPluginAdapter
           // TODO(egg): check that the vessel is moved *after* this.  Shouldn't
           // we be calling vessel.orbitDriver.updateFromParameters() after
           // setting the orbit anyway?
-          QPRW part_actual_motion = plugin_.PartGetActualDegreesOfFreedom(
+          QPRW part_actual_motion = plugin_.PartGetActualRigidMotion(
               part.flightID,
               new Origin{
                   reference_part_is_at_origin = true,
@@ -1275,7 +1275,7 @@ public partial class PrincipiaPluginAdapter
             continue;
           }
           QPRW part_actual_motion =
-              plugin_.PartGetActualDegreesOfFreedom(
+              plugin_.PartGetActualRigidMotion(
                   part.flightID,
                   new Origin{
                       reference_part_is_at_origin  =
