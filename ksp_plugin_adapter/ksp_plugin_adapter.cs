@@ -1522,11 +1522,11 @@ public partial class PrincipiaPluginAdapter
                     physical_parent,
                     new Part.ForceHolder {
                       force = -part.dragVectorDir * part.dragScalar,
-                      pos = (physical_parent != part &&
-                             PhysicsGlobals.ApplyDragToNonPhysicsPartsAtParentCoM)
+                      pos = (physical_parent != part && PhysicsGlobals.
+                                 ApplyDragToNonPhysicsPartsAtParentCoM)
                                 ? physical_parent.rb.worldCenterOfMass
                                 : part.partTransform.TransformPoint(
-                                      part.CoPOffset)});
+                                    part.CoPOffset)});
           }
         }
       }

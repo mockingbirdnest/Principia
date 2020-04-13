@@ -111,6 +111,7 @@ Status PileUp::DeformAndAdvanceTime(Instant const& t) {
 }
 
 void PileUp::RecomputeFromParts() {
+  absl::MutexLock l(lock_.get());
   mass_ = Mass();
   intrinsic_force_ = Vector<Force, Barycentric>();
   intrinsic_torque_ = Bivector<Torque, NonRotatingPileUp>();
@@ -432,7 +433,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // In the |EquivalentRigidPileUp| reference frame, a rigid body with the same
   // inertia and angular momentum as the pile up would be immobile.  We use this
   // intermediate frame to apply a rigid rotational correction to the motions of
-  // the part coming from the game (the apparent motions) so as to enforce the
+  // the parts coming from the game (the apparent motions) so as to enforce the
   // conservation of the angular momentum (|angular_momentum_| is
   // authoritative).
   using EquivalentRigidPileUp = Frame<enum class EquivalentRigidPileUpTag>;
