@@ -49,8 +49,9 @@ inline std::string Apply(
   result += "[";
   for (int i = 0; i < arguments.size(); ++i) {
     result += arguments[i];
-    result += (i + 1 == arguments.size() ? "]" : ",");
+    result += (i < arguments.size() - 1 ? "," : "");
   }
+  result += "]";
   return result;
 }
 
@@ -105,6 +106,11 @@ inline std::string ToMathematica(double const& real) {
   }
 }
 
+inline std::string ToMathematica(Quaternion const& quaternion) {
+  return ToMathematica<double, R3Element<double>>(
+      {quaternion.real_part(), quaternion.imaginary_part()});
+}
+
 template<typename T, int size>
 std::string ToMathematica(FixedVector<T, size> const & fixed_vector) {
   std::vector<std::string> expressions;
@@ -135,6 +141,11 @@ std::string ToMathematica(Quantity<D> const& quantity) {
   return Apply(
       "SetPrecision",
       {Apply("Quantity", {number, units}), "$MachinePrecision"});
+}
+
+template<typename S, typename F>
+std::string ToMathematica(Bivector<S, F> const& bivector) {
+  return ToMathematica(bivector.coordinates());
 }
 
 template<typename S, typename F>

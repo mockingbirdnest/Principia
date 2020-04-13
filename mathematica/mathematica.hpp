@@ -8,6 +8,7 @@
 #include "astronomy/orbital_elements.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
+#include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -18,7 +19,9 @@ namespace principia {
 namespace mathematica {
 namespace internal_mathematica {
 
+using geometry::Bivector;
 using geometry::Point;
+using geometry::Quaternion;
 using geometry::R3Element;
 using geometry::Vector;
 using numerics::FixedVector;
@@ -55,8 +58,13 @@ std::string ToMathematica(FixedVector<T, size> const& fixed_vector);
 template<typename T>
 std::string ToMathematica(R3Element<T> const& r3_element);
 
+std::string ToMathematica(Quaternion const& quaternion);
+
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity);
+
+template<typename S, typename F>
+std::string ToMathematica(Bivector<S, F> const& bivector);
 
 template<typename S, typename F>
 std::string ToMathematica(Vector<S, F> const& vector);
