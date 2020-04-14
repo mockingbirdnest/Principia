@@ -329,7 +329,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           UnityEngine.GUILayout.Label("Upcoming manœuvre #" +
                                       (first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
-              "Ignition " + FormatTimeSpan(TimeSpan.FromSeconds(
+              "Ignition " + FormatTimeSpan(TimeSpanFromSeconds(
                                 current_time - manœuvre.burn.initial_time)),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
@@ -338,7 +338,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           UnityEngine.GUILayout.Label("Ongoing manœuvre #" +
                                       (first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
-              "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
+              "Cutoff " + FormatTimeSpan(TimeSpanFromSeconds(
                               current_time - manœuvre.final_time)),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
@@ -363,6 +363,22 @@ class FlightPlanner : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label("All manœuvres are in the past",
                                   Style.Warning(UnityEngine.GUI.skin.label));
       UnityEngine.GUILayout.Space(Width(1));
+    }
+  }
+
+  // A conversion function that swallows the overflow/NaN exceptions and
+  // saturates.  Better than killing the UI.
+  internal static TimeSpan TimeSpanFromSeconds(double seconds) {
+    try {
+      return TimeSpan.FromSeconds(seconds);
+    } catch (OverflowException) {
+      if (seconds >= 0.0) {
+        return TimeSpan.MaxValue;
+      } else {
+        return TimeSpan.MinValue;
+      }
+    } catch (ArgumentException) {
+      return TimeSpan.Zero;
     }
   }
 
@@ -406,15 +422,23 @@ class FlightPlanner : SupervisedWindowRenderer {
                          out double s)) {
       return false;
     }
-    value = TimeSpan.FromDays((double)d / (GameSettings.KERBIN_TIME ? 4 : 1)) +
-            TimeSpan.FromHours(h) +
-            TimeSpan.FromMinutes(min) +
-            TimeSpan.FromSeconds(s);
-    return true;
+    // Fail to parse if the user gives us overflowing input.
+    try {
+      value =
+          TimeSpan.FromDays((double)d / (GameSettings.KERBIN_TIME ? 4 : 1)) +
+          TimeSpan.FromHours(h) +
+          TimeSpan.FromMinutes(min) +
+          TimeSpan.FromSeconds(s);
+      return true;
+    } catch (OverflowException) {
+      return false;
+    } catch (ArgumentException) {
+      return false;
+    }
   }
 
   internal string FormatPlanLength(double value) {
-    return FormatPositiveTimeSpan(TimeSpan.FromSeconds(
+    return FormatPositiveTimeSpan(TimeSpanFromSeconds(
                value -
                plugin.FlightPlanGetInitialTime(vessel_.id.ToString())));
   }
@@ -460,7 +484,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       string status_message = "computation failed";  // Preceded by "The".
       string time_out_message =
           timed_out ? " after " +
-                      FormatPositiveTimeSpan(TimeSpan.FromSeconds(
+                      FormatPositiveTimeSpan(TimeSpanFromSeconds(
                            actual_final_time -
                            plugin.FlightPlanGetInitialTime(vessel_guid)))
                     : "";
