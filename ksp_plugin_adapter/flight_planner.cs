@@ -140,6 +140,10 @@ class FlightPlanner : SupervisedWindowRenderer {
           break;
         }
       }
+      // Must be computed during layout as it affects the layout of some of the
+      // differential sliders.
+      number_of_anomalous_manœuvres_ =
+          plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
     }
   }
 
@@ -248,8 +252,6 @@ class FlightPlanner : SupervisedWindowRenderer {
         }
         // Allow extending the flight plan.
         final_times.Add(double.PositiveInfinity);
-        int number_of_anomalous_manœuvres =
-            plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
 
         for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
@@ -257,7 +259,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           if (burn.Render(header          : "Manœuvre #" + (i + 1),
                           anomalous       :
                               i >= (burn_editors_.Count -
-                                    number_of_anomalous_manœuvres),
+                                    number_of_anomalous_manœuvres_),
                           burn_final_time : final_times[i])) {
             var status = plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
             UpdateStatus(status, i);
@@ -532,8 +534,11 @@ class FlightPlanner : SupervisedWindowRenderer {
       if (anomalous_manœuvres > 0) {
         message = "The last " + anomalous_manœuvres + " manœuvres could " +
                   "not be drawn because the " + status_message + "; try " +
-                  remedy_message + " or adjusting manœuvre " +
-                  (manœuvres - anomalous_manœuvres - 1) + ".";
+                  remedy_message +
+                  (anomalous_manœuvres < manœuvres
+                       ?  " or adjusting manœuvre #" +
+                          (manœuvres - anomalous_manœuvres)
+                       : "") + ".";
       } else {
         message = "The " + status_message + "; try " + remedy_message + ".";
       }
@@ -549,6 +554,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   private List<BurnEditor> burn_editors_;
   private readonly DifferentialSlider final_time_;
   private int? first_future_manœuvre_;
+  private int number_of_anomalous_manœuvres_ = 0;
 
   private bool show_guidance_ = false;
   private float warning_height_ = 1;
