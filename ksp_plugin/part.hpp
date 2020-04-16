@@ -63,6 +63,8 @@ class Part final {
 
   PartId part_id() const;
 
+  // When a part is not truthful, all its properties except for name and part_id
+  // are lies and should not be propagated to the game.
   bool truthful() const;
   void make_truthful();
 

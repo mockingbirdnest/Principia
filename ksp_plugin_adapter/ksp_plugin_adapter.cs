@@ -550,6 +550,24 @@ public partial class PrincipiaPluginAdapter
     return height + vertical_speed * Δt < 0;
   }
 
+  private static bool IsNaN(Vector3d v) {
+    return double.IsNaN(v.x + v.y + v.z);
+  }
+
+  private static bool IsNaN(XYZ xyz) {
+    return double.IsNaN(xyz.x + xyz.y + xyz.z);
+  }
+
+  // It seems that parts sometimes have NaN position, velocity or angular
+  // velocity, presumably because they are being destroyed.  Just skip these
+  // unfaithful parts as if they had no rigid body.
+  private static bool PartIsFaithful(Part part) {
+    return part.rb != null &&
+           !IsNaN(part.rb.position) &&
+           !IsNaN(part.rb.velocity) &&
+           !IsNaN(part.rb.angularVelocity);
+  }
+
   private void OverrideRSASTarget(FlightCtrlState state) {
     if (override_rsas_target_ && FlightGlobals.ActiveVessel.Autopilot.Enabled) {
       FlightGlobals.ActiveVessel.Autopilot.SAS.SetTargetOrientation(
@@ -1045,7 +1063,7 @@ public partial class PrincipiaPluginAdapter
                                  !vessel.packed,
                                  out bool inserted);
       if (!vessel.packed) {
-        foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+        foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           QP degrees_of_freedom;
           if (part_id_to_degrees_of_freedom_.ContainsKey(part.flightID)) {
             degrees_of_freedom = part_id_to_degrees_of_freedom_[part.flightID];
@@ -1224,10 +1242,7 @@ public partial class PrincipiaPluginAdapter
       if (!plugin_.HasVessel(vessel.id.ToString())) {
         continue;
       }
-      foreach (Part part in vessel.parts) {
-        if (part.rb == null) {
-          continue;
-        }
+      foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
         if (main_body_change_countdown_ == 0 &&
             last_main_body_ == FlightGlobals.ActiveVessel?.mainBody) {
           plugin_.PartSetApparentRigidMotion(
@@ -1270,10 +1285,7 @@ public partial class PrincipiaPluginAdapter
         if (!plugin_.HasVessel(vessel.id.ToString())) {
           continue;
         }
-        foreach (Part part in vessel.parts) {
-          if (part.rb == null) {
-            continue;
-          }
+        foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           QPRW part_actual_motion =
               plugin_.PartGetActualDegreesOfFreedom(
                   part.flightID,
@@ -1463,7 +1475,7 @@ public partial class PrincipiaPluginAdapter
       foreach (Vessel vessel in
                FlightGlobals.Vessels.Where(v => is_manageable(v) &&
                                                 !v.packed)) {
-        foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+        foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           if (part.torque != Vector3d.zero) {
             part_id_to_intrinsic_torque_.Add(part.flightID, part.torque);
           }
@@ -1555,7 +1567,7 @@ public partial class PrincipiaPluginAdapter
       foreach (Vessel vessel in
                FlightGlobals.Vessels.Where(v => is_manageable(v) &&
                                                 !v.packed)) {
-        foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+        foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           // TODO(egg): use the centre of mass.
           part_id_to_degrees_of_freedom_.Add(
               part.flightID,
@@ -1651,8 +1663,7 @@ public partial class PrincipiaPluginAdapter
         Burn burn = plugin_.FlightPlanGetManoeuvre(
                         vessel_guid,
                         first_future_manœuvre_index.Value).burn;
-        if (flight_planner_.show_guidance &&
-            !double.IsNaN(guidance.x + guidance.y + guidance.z)) {
+        if (flight_planner_.show_guidance && !IsNaN(guidance)) {
           // The user wants to show the guidance node, and that node was
           // properly computed by the C++ code.
           PatchedConicSolver solver = active_vessel.patchedConicSolver;
