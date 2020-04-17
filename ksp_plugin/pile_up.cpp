@@ -477,6 +477,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   auto const α =
       2 * quantities::ArcTan(q.imaginary_part().Norm(), q.real_part());
 
+  // TODO(egg): Use the real Δt.
   if (thresholding && α > ω / (50 * quantities::si::Hertz)) {
     r_apparent = Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity();
     r_actual = Rotation<NonRotatingPileUp, EquivalentRigidPileUp>::Identity();
