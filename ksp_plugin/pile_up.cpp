@@ -443,8 +443,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // We apply a rigid rotational correction to the motions of the parts coming
   // from the game (the apparent motions) so as to enforce the conservation of
   // the angular momentum (|angular_momentum_| is authoritative).
-  // Mapping L_apparent to L_actual by a rigid motion leaves can be done in many
-  // ways.
+  // Mapping L_apparent to L_actual by a rigid motion can be done in many ways.
   // We prefer doing some of that correction by a change of attitude, rather
   // than a solely by a change in angular velocity, since, under isotropic
   // conditions, a change in attitude does not alter the physical system (an in
