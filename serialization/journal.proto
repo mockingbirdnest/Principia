@@ -230,7 +230,9 @@ message SetAngularMomentumConservation {
     optional SetAngularMomentumConservation extension = 5999;
   }
   message In {
-    required bool conserve = 1;
+    required bool correct_orientation = 1;
+    required bool correct_angular_velocity = 2;
+    required bool thresholding = 3;
   }
   optional In in = 1;
 }

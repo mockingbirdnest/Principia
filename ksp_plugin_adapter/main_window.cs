@@ -239,14 +239,23 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
     UnityEngine.GUI.DragWindow();
   }
-
-  static bool conserve = true;
+  
+  static bool correct_orientation = true;
+  static bool correct_angular_velocity = true;
+  static bool thresholding = true;
 
   private void RenderKSPFeatures() {
-    conserve = UnityEngine.GUILayout.Toggle(
-        conserve,
-        "Enforce angular momentum conservation out of warp");
-    Interface.SetAngularMomentumConservation(conserve);
+    correct_orientation = UnityEngine.GUILayout.Toggle(
+        correct_orientation,
+        "Correct orientation");
+    correct_angular_velocity = UnityEngine.GUILayout.Toggle(
+        correct_angular_velocity,
+        "Correct angular velocity");
+    thresholding = UnityEngine.GUILayout.Toggle(
+        thresholding,
+        "Only correct orientation above ω threshold");
+    Interface.SetAngularMomentumConservation(
+        correct_orientation, correct_angular_velocity, thresholding);
     string trace = null;
     if (FlightGlobals.ActiveVessel != null &&
         plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {

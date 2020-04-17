@@ -662,13 +662,13 @@ void Plugin::SetPartApparentRigidMotion(
   // |Barycentric| centred on the current main body.
   RigidMotion<World, ApparentBubble> world_to_apparent_bubble{
       RigidTransformation<World, ApparentBubble>{
-          main_body_degrees_of_freedom.position(),
+          World::origin,
           ApparentBubble::origin,
           OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
               renderer_->WorldToBarycentric(PlanetariumRotation())},
       renderer_->BarycentricToWorld(PlanetariumRotation())(
           -angular_velocity_of_world_),
-      main_body_degrees_of_freedom.velocity()};
+      World::unmoving};
 
   not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
