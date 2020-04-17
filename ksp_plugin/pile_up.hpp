@@ -98,7 +98,6 @@ class PileUp {
   static bool correct_orientation;
   static bool correct_angular_velocity;
   static bool thresholding;
-  static bool trust_the_game_under_the_threshold;
 
   // This class is moveable.
   PileUp(PileUp&& pile_up) = default;

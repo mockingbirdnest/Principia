@@ -744,7 +744,6 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
 bool PileUp::correct_orientation = true;
 bool PileUp::correct_angular_velocity = true;
 bool PileUp::thresholding = true;
-bool PileUp::trust_the_game_under_the_threshold = true;
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin
