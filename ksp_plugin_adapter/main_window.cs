@@ -253,7 +253,7 @@ internal class MainWindow : SupervisedWindowRenderer {
         "Correct angular velocity");
     thresholding = UnityEngine.GUILayout.Toggle(
         thresholding,
-        "Only correct orientation above ω threshold");
+        "Only correct orientation slower than ω");
     Interface.SetAngularMomentumConservation(
         correct_orientation, correct_angular_velocity, thresholding);
     string trace = null;
