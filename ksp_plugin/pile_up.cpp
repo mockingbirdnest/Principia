@@ -446,10 +446,10 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // Mapping L_apparent to L_actual by a rigid motion can be done in many ways.
   // We prefer doing some of that correction by a change of attitude, rather
   // than a solely by a change in angular velocity, since, under isotropic
-  // conditions, a change in attitude does not alter the physical system (an in
-  // particular it does not mess with symplectic integration). We thus try to
+  // conditions, a change in attitude does not alter the physical system (and in
+  // particular it does not mess with symplectic integration).  We thus try to
   // map L̂_apparent to L̂_actual, by rotation around the correction axis defined
-  // above, which is perpendicular to both, and imparting the appropriate
+  // above, which is perpendicular to both, and to impart the appropriate
   // angular velocity correction to correct the norm of L.
   // This amounts to trusting the direction of the angular momentum with respect
   // to the vessel as given to us by the game.
