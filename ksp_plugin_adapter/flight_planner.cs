@@ -23,6 +23,9 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   public void RenderButton() {
+    // NOTE(phl): This logic is replicated in OrbitAnalyser.  Might want to
+    // invest in an intermediate subclass of SupervisedWindowRenderer to factor
+    // it out.
     if (UnityEngine.GUILayout.Button("Flight plan...")) {
       Toggle();
     }
