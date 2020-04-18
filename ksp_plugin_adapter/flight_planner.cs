@@ -25,17 +25,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    // NOTE(phl): This logic is replicated in OrbitAnalyser.  Might want to
-    // invest in an intermediate subclass of SupervisedWindowRenderer to factor
-    // it out.
-    if (UnityEngine.GUILayout.Button("Flight plan...")) {
-      Toggle();
-    }
-    // Override the state of the toggle if there is no predicted vessel.
-    string vessel_guid = predicted_vessel?.id.ToString();
-    if (vessel_guid == null) {
-      Hide();
-    }
+    RenderButton("Flight plan...");
   }
 
   public bool show_guidance => show_guidance_;

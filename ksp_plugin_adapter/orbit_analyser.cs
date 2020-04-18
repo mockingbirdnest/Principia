@@ -179,17 +179,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    // NOTE(phl): This logic is replicated in FlightPlanner.  Might want to
-    // invest in an intermediate subclass of SupervisedWindowRenderer to factor
-    // it out.
-    if (UnityEngine.GUILayout.Button("Orbit analysis...")) {
-      Toggle();
-    }
-    // Override the state of the toggle if there is no active vessel.
-    string vessel_guid = predicted_vessel?.id.ToString();
-    if (vessel_guid == null) {
-      Hide();
-    }
+    RenderButton("Orbit analysis...");
   }
 
   protected override string Title => "Orbit analysis";
