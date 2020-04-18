@@ -30,7 +30,7 @@ internal static class Formatters {
     string formatted_half_width = half_width.FormatN(fractional_digits);
     return $"{formatted_midpoint}±{formatted_half_width}";
   }
-  
+
   // Displays an interval of lengths as midpoint±half-width, in km if the
   // half-width is 100 m or more.
   public static string FormatLengthInterval(this Interval interval) {
@@ -171,28 +171,26 @@ internal static class Formatters {
   }
 }
 
-internal class OrbitAnalyser : SupervisedWindowRenderer {
-  public OrbitAnalyser(PrincipiaPluginAdapter adapter)
-      : base(adapter, UnityEngine.GUILayout.MinWidth(0)) {
+internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
+  public OrbitAnalyser(PrincipiaPluginAdapter adapter,
+                       PredictedVessel predicted_vessel)
+      : base(adapter, predicted_vessel, UnityEngine.GUILayout.MinWidth(0)) {
     adapter_ = adapter;
   }
 
   public void RenderButton() {
-    if (UnityEngine.GUILayout.Button("Orbit analysis...")) {
-      Toggle();
-    }
+    RenderButton("Orbit analysis...");
   }
 
   protected override string Title => "Orbit analysis";
 
   protected override void RenderWindow(int window_id) {
+    string vessel_guid = predicted_vessel?.id.ToString();
+    if (vessel_guid == null) {
+      return;
+    }
+
     using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
-      Vessel vessel = FlightGlobals.ActiveVessel;
-      if (plugin == IntPtr.Zero || vessel == null ||
-          !plugin.HasVessel(vessel.id.ToString())) {
-        Hide();
-        return;
-      }
       CelestialBody primary =
           adapter_.plotting_frame_selector_.selected_celestial;
 
@@ -203,13 +201,13 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       float five_lines = multiline_style.CalcHeight(
           new UnityEngine.GUIContent("1\n2\n3\n4\n5"), Width(1));
       UnityEngine.GUILayout.Label(
-          $@"Analysing orbit of {vessel.vesselName} with respect to {
+          $@"Analysing orbit of {predicted_vessel.vesselName} with respect to {
             primary.NameWithArticle()}...",
           multiline_style,
           UnityEngine.GUILayout.Height(two_lines));
 
       OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
-          vessel.id.ToString(),
+          predicted_vessel.id.ToString(),
           primary.flightGlobalsIndex,
           mission_duration_.value,
           autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
@@ -270,7 +268,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
         multiline_style = Style.Warning(multiline_style);
       }
       string analysis_description =
-          $@"Orbit of {vessel.vesselName} with respect to {
+          $@"Orbit of {predicted_vessel.vesselName} with respect to {
             primary.NameWithArticle()} over {
             mission_duration.FormatDuration(show_seconds : false)}:{"\n"}{
             duration_in_revolutions}";

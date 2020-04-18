@@ -300,8 +300,8 @@ public partial class PrincipiaPluginAdapter
     }
 
     map_node_pool_ = new MapNodePool();
-    flight_planner_ = new FlightPlanner(this);
-    orbit_analyser_ = new OrbitAnalyser(this);
+    flight_planner_ = new FlightPlanner(this, PredictedVessel);
+    orbit_analyser_ = new OrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ = new ReferenceFrameSelector(this,
                                                           UpdateRenderingFrame,
                                                           "Plotting frame");
@@ -322,7 +322,17 @@ public partial class PrincipiaPluginAdapter
   }
 
   private Vessel PredictedVessel() {
-    return FlightGlobals.ActiveVessel ?? space_tracking?.SelectedVessel;
+    if (!PluginRunning()) {
+      return null;
+    }
+    Vessel vessel =
+        FlightGlobals.ActiveVessel ?? space_tracking?.SelectedVessel;
+    string vessel_guid = vessel?.id.ToString();
+    if (vessel_guid != null && plugin_.HasVessel(vessel_guid)) {
+      return vessel;
+    } else {
+      return null;
+    }
   }
 
   private delegate void BodyProcessor(CelestialBody body);
@@ -392,9 +402,7 @@ public partial class PrincipiaPluginAdapter
   private void UpdatePredictions() {
     Vessel main_vessel = PredictedVessel();
     bool ready_to_draw_active_vessel_trajectory =
-        main_vessel != null &&
-        MapView.MapIsEnabled &&
-        plugin_.HasVessel(main_vessel.id.ToString());
+        main_vessel != null && MapView.MapIsEnabled;
 
     if (ready_to_draw_active_vessel_trajectory) {
       plugin_.UpdatePrediction(main_vessel.id.ToString());
@@ -1586,8 +1594,7 @@ public partial class PrincipiaPluginAdapter
     // The only timing that satisfies these constraints is BetterLateThanNever
     // in LateUpdate.
     string main_vessel_guid = PredictedVessel()?.id.ToString();
-    if (MapView.MapIsEnabled && main_vessel_guid != null &&
-        PluginRunning() && plugin_.HasVessel(main_vessel_guid)) {
+    if (MapView.MapIsEnabled && main_vessel_guid != null) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       RenderPredictionMarkers(main_vessel_guid, sun_world_position);
       string target_id =
@@ -1967,9 +1974,6 @@ public partial class PrincipiaPluginAdapter
       RemoveStockTrajectoriesIfNeeded(vessel);
     }
     string main_vessel_guid = PredictedVessel()?.id.ToString();
-    if (main_vessel_guid != null && !plugin_.HasVessel(main_vessel_guid)) {
-      main_vessel_guid = null;
-    }
     if (MapView.MapIsEnabled) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =

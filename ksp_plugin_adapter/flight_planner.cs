@@ -7,8 +7,10 @@ using System.Text.RegularExpressions;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-class FlightPlanner : SupervisedWindowRenderer {
-  public FlightPlanner(PrincipiaPluginAdapter adapter) : base(adapter) {
+class FlightPlanner : VesselSupervisedWindowRenderer {
+  public FlightPlanner(PrincipiaPluginAdapter adapter,
+                       PredictedVessel predicted_vessel)
+      : base(adapter, predicted_vessel) {
     adapter_ = adapter;
     final_time_ = new DifferentialSlider(
                       label            : "Plan length",
@@ -23,15 +25,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    if (UnityEngine.GUILayout.Button("Flight plan...")) {
-      Toggle();
-    }
-    // Override the state of the toggle if there is no active vessel.
-    string vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid == null || !plugin.HasVessel(vessel_guid)) {
-      Hide();
-      vessel_ = FlightGlobals.ActiveVessel;
-    }
+    RenderButton("Flight plan...");
   }
 
   public bool show_guidance => show_guidance_;
@@ -68,8 +62,8 @@ class FlightPlanner : SupervisedWindowRenderer {
     // The UI code proper, executed identically for Layout and Repaint.  We
     // can freely change the state in events like clicks (e.g., in if statements
     // for buttons) as these don't happen between Layout and Repaint.
-    string vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid == null || !plugin.HasVessel(vessel_guid)) {
+    string vessel_guid = predicted_vessel?.id.ToString();
+    if (vessel_guid == null) {
       return;
     }
 
@@ -78,7 +72,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     } else if (UnityEngine.GUILayout.Button("Create flight plan")) {
       plugin.FlightPlanCreate(vessel_guid,
                               plugin.CurrentTime() + 3600,
-                              vessel_.GetTotalMass());
+                              predicted_vessel.GetTotalMass());
       final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       Shrink();
     }
@@ -87,10 +81,9 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   private void UpdateVesselAndBurnEditors() {
     {
-      string vessel_guid = vessel_?.id.ToString();
+      string vessel_guid = predicted_vessel?.id.ToString();
       if (vessel_guid == null ||
-          vessel_ != FlightGlobals.ActiveVessel ||
-          !plugin.HasVessel(vessel_guid) ||
+          previous_predicted_vessel_ != predicted_vessel ||
           !plugin.FlightPlanExists(vessel_guid) ||
           plugin.FlightPlanNumberOfManoeuvres(vessel_guid) !=
               burn_editors_?.Count) {
@@ -101,14 +94,13 @@ class FlightPlanner : SupervisedWindowRenderer {
           burn_editors_ = null;
           Shrink();
         }
-        vessel_ = FlightGlobals.ActiveVessel;
+        previous_predicted_vessel_ = predicted_vessel;
       }
     }
 
     if (burn_editors_ == null) {
-      string vessel_guid = vessel_?.id.ToString();
+      string vessel_guid = predicted_vessel?.id.ToString();
       if (vessel_guid != null &&
-          plugin.HasVessel(vessel_guid) &&
           plugin.FlightPlanExists(vessel_guid)) {
         burn_editors_ = new List<BurnEditor>();
         final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
@@ -118,7 +110,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           // Dummy initial time, we call |Reset| immediately afterwards.
           burn_editors_.Add(
               new BurnEditor(adapter_,
-                             vessel_,
+                             predicted_vessel,
                              initial_time  : 0,
                              index         : burn_editors_.Count,
                              previous_burn : burn_editors_.LastOrDefault()));
@@ -129,7 +121,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
 
     if (burn_editors_ != null) {
-      string vessel_guid = vessel_?.id.ToString();
+      string vessel_guid = predicted_vessel?.id.ToString();
       double current_time = plugin.CurrentTime();
       first_future_manœuvre_ = null;
       for (int i = 0; i < burn_editors_.Count; ++i) {
@@ -291,7 +283,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           }
           var editor =
               new BurnEditor(adapter_,
-                             vessel_,
+                             predicted_vessel,
                              initial_time,
                              index         : burn_editors_.Count,
                              previous_burn : burn_editors_.LastOrDefault());
@@ -318,7 +310,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   private void RenderUpcomingEvents() {
-    string vessel_guid = vessel_.id.ToString();
+    string vessel_guid = predicted_vessel.id.ToString();
     double current_time = plugin.CurrentTime();
 
     Style.HorizontalLine();
@@ -350,7 +342,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       // even though the flight planner is still available to plan it.
       // TODO(egg): We may want to consider setting the burn vector directly
       // rather than going through the solver.
-      if (vessel_.patchedConicSolver != null) {
+      if (predicted_vessel.patchedConicSolver != null) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           show_guidance_ =
               UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
@@ -441,8 +433,8 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   internal string FormatPlanLength(double value) {
     return FormatPositiveTimeSpan(TimeSpanFromSeconds(
-               value -
-               plugin.FlightPlanGetInitialTime(vessel_.id.ToString())));
+                                      value - plugin.FlightPlanGetInitialTime(
+                                          predicted_vessel.id.ToString())));
   }
 
   internal bool TryParsePlanLength(string str, out double value) {
@@ -451,7 +443,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       return false;
     }
     value = ts.TotalSeconds +
-            plugin.FlightPlanGetInitialTime(vessel_.id.ToString());
+            plugin.FlightPlanGetInitialTime(predicted_vessel.id.ToString());
     return true;
   }
 
@@ -472,7 +464,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   private string GetStatusMessage() {
-    string vessel_guid = vessel_?.id.ToString();
+    string vessel_guid = predicted_vessel?.id.ToString();
     string message = "";
     if (vessel_guid != null && !status_.ok()) {
       int anomalous_manœuvres =
@@ -550,7 +542,11 @@ class FlightPlanner : SupervisedWindowRenderer {
   private IntPtr plugin => adapter_.Plugin();
 
   private readonly PrincipiaPluginAdapter adapter_;
-  private Vessel vessel_;
+
+  // Because this class is stateful (it holds the burn_editors_) we must detect
+  // if the vessel changed.  Hence the caching of the vessel.
+  private Vessel previous_predicted_vessel_;
+
   private List<BurnEditor> burn_editors_;
   private readonly DifferentialSlider final_time_;
   private int? first_future_manœuvre_;

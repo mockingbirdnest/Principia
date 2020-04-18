@@ -85,7 +85,13 @@ internal class ScalingRenderer {
   private readonly float unit_;
 }
 
+// A class that gather all the mechanisms for rendering entire windows.  It
+// deals with skins, input locking, sizing, placement, and hiding.  It also
+// persists the position and size of the window.
 internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
+  protected abstract string Title { get; }
+  protected abstract void RenderWindow(int window_id);
+
   protected BaseWindowRenderer(UnityEngine.GUILayoutOption[] options) {
     UnityEngine.GUILayoutOption[] default_options = {GUILayoutMinWidth(20)};
     options_ = options.Length == 0 ? default_options : options;
@@ -217,9 +223,6 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     node.SetValue("y", rectangle_.y, createIfNotFound : true);
   }
 
-  protected abstract string Title { get; }
-  protected abstract void RenderWindow(int window_id);
-
   private static readonly ControlTypes PrincipiaLock =
       ControlTypes.ALLBUTCAMERAS &
       ~ControlTypes.ALL_SHIP_CONTROLS;
@@ -235,6 +238,8 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   private UnityEngine.Rect rectangle_;
 }
 
+// The supervisor of a window decides when to clear input locks, when to render
+// the window and when to delete it.
 internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   public interface ISupervisor {
     event Action LockClearing;
@@ -260,6 +265,41 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   private readonly ISupervisor supervisor_;
 }
 
+// A supervised window that displays properties of a vessel, given by a
+// delegate.  The delegate must return a nonnull value if and only if there is
+// a currently selected/active vessel *and* it is known to the plugin.
+// Subclasses must access the vessel through the predicted_vessel property and
+// should not cache it.
+internal abstract class
+    VesselSupervisedWindowRenderer : SupervisedWindowRenderer {
+  public delegate Vessel PredictedVessel();
+
+  protected VesselSupervisedWindowRenderer(ISupervisor supervisor,
+                                           PredictedVessel predicted_vessel,
+                                           params UnityEngine.GUILayoutOption[]
+                                               options) : base(
+      supervisor,
+      options) {
+    predicted_vessel_ = predicted_vessel;
+  }
+
+  // A helper for implementing the RenderButton() method of the subclasses.
+  protected void RenderButton(string text) {
+    if (UnityEngine.GUILayout.Button(text)) {
+      Toggle();
+    }
+    // Override the state of the toggle if there is no predicted vessel.
+    if (predicted_vessel == null) {
+      Hide();
+    }
+  }
+
+  protected Vessel predicted_vessel => predicted_vessel_();
+
+  private readonly PredictedVessel predicted_vessel_;
+}
+
+// A window without a supervisor is effectively modal.
 internal abstract class UnsupervisedWindowRenderer : BaseWindowRenderer {
   protected UnsupervisedWindowRenderer(
       params UnityEngine.GUILayoutOption[] options) : base(options) {}
