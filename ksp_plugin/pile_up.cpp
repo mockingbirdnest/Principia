@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/pile_up.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <list>
 #include <map>
