@@ -85,7 +85,7 @@ internal class ScalingRenderer {
   private readonly float unit_;
 }
 
-// A class that gather all the mechanisms for rendering entired windows.  It
+// A class that gather all the mechanisms for rendering entire windows.  It
 // deals with skins, input locking, sizing, placement, and hiding.  It also
 // persists the position and size of the window.
 internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
