@@ -3,26 +3,23 @@
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal class MainWindow : SupervisedWindowRenderer {
+internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
   private const string next_release_name_ = "Fubini";
   private const int next_release_lunation_number_ = 251;
   private readonly DateTimeOffset next_release_date_ =
       new DateTimeOffset(2020, 04, 23, 02, 26, 00, TimeSpan.Zero);
 
-  public delegate Vessel PredictedVessel();
-
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
                     OrbitAnalyser orbit_analyser,
                     ReferenceFrameSelector plotting_frame_selector,
                     PredictedVessel predicted_vessel)
-      : base(adapter) {
+      : base(adapter, predicted_vessel) {
     adapter_ = adapter;
     flight_planner_ = flight_planner;
     orbit_analyser_ = orbit_analyser;
     plotting_frame_selector_ = plotting_frame_selector;
-    predicted_vessel_ = predicted_vessel;
     Show();
   }
 
@@ -371,11 +368,9 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderPredictionSettings() {
-    vessel_ = predicted_vessel_();
-
     AdaptiveStepParameters? adaptive_step_parameters = null;
-    string vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
+    string vessel_guid = predicted_vessel?.id.ToString();
+    if (vessel_guid != null) {
       adaptive_step_parameters =
           plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
       prediction_length_tolerance_index_ = Array.FindIndex(
@@ -508,7 +503,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   private readonly FlightPlanner flight_planner_;
   private readonly OrbitAnalyser orbit_analyser_;
   private readonly ReferenceFrameSelector plotting_frame_selector_;
-  private readonly PredictedVessel predicted_vessel_;
 
   private bool selecting_target_celestial_ = false;
 
@@ -531,8 +525,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool must_record_journal_ = false;
   // Whether a journal is currently being recorded.
   private static bool journaling_ = false;
-
-  private Vessel vessel_;
 }
 
 }  // namespace ksp_plugin_adapter

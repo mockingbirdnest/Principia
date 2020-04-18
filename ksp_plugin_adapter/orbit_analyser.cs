@@ -171,9 +171,10 @@ internal static class Formatters {
   }
 }
 
-internal class OrbitAnalyser : SupervisedWindowRenderer {
-  public OrbitAnalyser(PrincipiaPluginAdapter adapter)
-      : base(adapter, UnityEngine.GUILayout.MinWidth(0)) {
+internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
+  public OrbitAnalyser(PrincipiaPluginAdapter adapter,
+                       PredictedVessel predicted_vessel)
+      : base(adapter, predicted_vessel, UnityEngine.GUILayout.MinWidth(0)) {
     adapter_ = adapter;
   }
 
@@ -185,18 +186,17 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       Toggle();
     }
     // Override the state of the toggle if there is no active vessel.
-    string vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid == null || !plugin.HasVessel(vessel_guid)) {
+    string vessel_guid = predicted_vessel?.id.ToString();
+    if (vessel_guid == null) {
       Hide();
-      vessel_ = FlightGlobals.ActiveVessel;
     }
   }
 
   protected override string Title => "Orbit analysis";
 
   protected override void RenderWindow(int window_id) {
-    string vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid == null || !plugin.HasVessel(vessel_guid)) {
+    string vessel_guid = predicted_vessel?.id.ToString();
+    if (vessel_guid == null) {
       return;
     }
 
@@ -211,13 +211,13 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       float five_lines = multiline_style.CalcHeight(
           new UnityEngine.GUIContent("1\n2\n3\n4\n5"), Width(1));
       UnityEngine.GUILayout.Label(
-          $@"Analysing orbit of {vessel_.vesselName} with respect to {
+          $@"Analysing orbit of {predicted_vessel.vesselName} with respect to {
             primary.NameWithArticle()}...",
           multiline_style,
           UnityEngine.GUILayout.Height(two_lines));
 
       OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
-          vessel_.id.ToString(),
+          predicted_vessel.id.ToString(),
           primary.flightGlobalsIndex,
           mission_duration_.value,
           autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
@@ -278,7 +278,7 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
         multiline_style = Style.Warning(multiline_style);
       }
       string analysis_description =
-          $@"Orbit of {vessel_.vesselName} with respect to {
+          $@"Orbit of {predicted_vessel.vesselName} with respect to {
             primary.NameWithArticle()} over {
             mission_duration.FormatDuration(show_seconds : false)}:{"\n"}{
             duration_in_revolutions}";
@@ -426,7 +426,6 @@ internal class OrbitAnalyser : SupervisedWindowRenderer {
       field_width      : 5) {
       value = 7 * 24 * 60 * 60
   };
-  private Vessel vessel_;
   private bool autodetect_recurrence_ = true;
   private int revolutions_per_cycle_ = 1;
   private int days_per_cycle_ = 1;
