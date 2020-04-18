@@ -94,6 +94,11 @@ class PileUp {
 
   virtual ~PileUp();
 
+  std::string trace;
+  static bool correct_orientation;
+  static bool correct_angular_velocity;
+  static bool thresholding;
+
   // This class is moveable.
   PileUp(PileUp&& pile_up) = default;
   PileUp& operator=(PileUp&& pile_up) = default;

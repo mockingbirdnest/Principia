@@ -241,6 +241,26 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderKSPFeatures() {
+    correct_orientation = UnityEngine.GUILayout.Toggle(
+        correct_orientation,
+        "Correct orientation");
+    correct_angular_velocity = UnityEngine.GUILayout.Toggle(
+        correct_angular_velocity,
+        "Correct angular velocity");
+    thresholding = UnityEngine.GUILayout.Toggle(
+        thresholding,
+        "Only correct orientation slower than ω");
+    Interface.SetAngularMomentumConservation(
+        correct_orientation, correct_angular_velocity, thresholding);
+    string trace = null;
+    if (FlightGlobals.ActiveVessel != null &&
+        plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
+      trace = plugin.VesselGetPileUpTrace(
+          FlightGlobals.ActiveVessel.id.ToString());
+    }
+    UnityEngine.GUILayout.TextArea(
+        trace ?? "No managed active vessel",
+        style : Style.Multiline(UnityEngine.GUI.skin.textArea));
     display_patched_conics = UnityEngine.GUILayout.Toggle(
         value : display_patched_conics,
         text  : "Display patched conics (do not use for flight planning!)");
@@ -494,6 +514,13 @@ internal class MainWindow : SupervisedWindowRenderer {
       field_width      : 5) {
       value = 7 * 24 * 60 * 60
   };
+
+  // These flags exist to facilitate investigation of #2519.
+  // They must not be serialized: their non-default values can lead to absurd
+  // behaviour.
+  private static bool correct_orientation = true;
+  private static bool correct_angular_velocity = true;
+  private static bool thresholding = true;
 
   private static readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};

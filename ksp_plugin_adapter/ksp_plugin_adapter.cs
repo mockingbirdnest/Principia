@@ -1251,8 +1251,7 @@ public partial class PrincipiaPluginAdapter
                 new QP{q = (XYZ)(Vector3d)part.rb.position,
                        p = (XYZ)(Vector3d)part.rb.velocity},
                 (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
-                (XYZ)(Vector3d)part.rb.angularVelocity,
-                main_body_degrees_of_freedom);
+                (XYZ)(Vector3d)part.rb.angularVelocity);
         }
       }
     }
