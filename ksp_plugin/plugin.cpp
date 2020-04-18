@@ -656,15 +656,14 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
 void Plugin::SetPartApparentRigidMotion(
     PartId const part_id,
-    RigidMotion<RigidPart, World> const& rigid_motion,
-    DegreesOfFreedom<World> const& main_body_degrees_of_freedom) {
+    RigidMotion<RigidPart, World> const& rigid_motion) {
   // As a reference frame, |ApparentBubble| differs from |World| only by having
   // the same axes as |Barycentric| and being nonrotating.  However, there is
-  // another semantic distinction: |Apparent| coordinates are uncorrected data
-  // from the game, given immediately after its physics step; before
-  // using them, we must correct them in accordance with the data computed by
-  // the pile up.  This correction overrides the origin of position and
-  // velocity, so we need not worry about the current definition of
+  // another semantic distinction: |Apparent...| coordinates are uncorrected
+  // data from the game, given immediately after its physics step; before using
+  // them, we must correct them in accordance with the data computed by the pile
+  // up.  This correction overrides the origin of position and velocity, so we
+  // need not worry about the current definition of
   // |{World::origin, World::unmoving}| as we do when getting the actual degrees
   // of freedom (via |Plugin::BarycentricToWorld|).
   RigidMotion<World, ApparentBubble> world_to_apparent_bubble{

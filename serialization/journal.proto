@@ -1635,7 +1635,6 @@ message PartSetApparentRigidMotion {
     required QP degrees_of_freedom = 3;
     required WXYZ rotation = 5;
     required XYZ angular_velocity = 6;
-    required QP main_body_degrees_of_freedom = 4;
   }
   optional In in = 1;
 }

@@ -239,10 +239,6 @@ internal class MainWindow : SupervisedWindowRenderer {
     }
     UnityEngine.GUI.DragWindow();
   }
-  
-  static bool correct_orientation = true;
-  static bool correct_angular_velocity = true;
-  static bool thresholding = true;
 
   private void RenderKSPFeatures() {
     correct_orientation = UnityEngine.GUILayout.Toggle(
@@ -518,6 +514,13 @@ internal class MainWindow : SupervisedWindowRenderer {
       field_width      : 5) {
       value = 7 * 24 * 60 * 60
   };
+
+  // These flags exist to facilitate investigation of #2519.
+  // They must not be serialized: their non-default values can lead to absurd
+  // behaviour.
+  private static bool correct_orientation = true;
+  private static bool correct_angular_velocity = true;
+  private static bool thresholding = true;
 
   private static readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};

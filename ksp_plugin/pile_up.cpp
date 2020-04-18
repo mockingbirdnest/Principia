@@ -22,8 +22,8 @@ using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
-using geometry::Frame;
 using geometry::Commutator;
+using geometry::Frame;
 using geometry::Identity;
 using geometry::NonRotating;
 using geometry::Normalize;
@@ -445,7 +445,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // the angular momentum (|angular_momentum_| is authoritative).
   // Mapping L_apparent to L_actual by a rigid motion can be done in many ways.
   // We prefer doing some of that correction by a change of attitude, rather
-  // than a solely by a change in angular velocity, since, under isotropic
+  // than solely by a change in angular velocity, since, under isotropic
   // conditions, a change in attitude does not alter the physical system (and in
   // particular it does not mess with symplectic integration).  We thus try to
   // map L̂_apparent to L̂_actual, by rotation around the correction axis defined
@@ -457,7 +457,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // is 0.  We remedy to that by only performing an attitude correction if its
   // angle would be less than ω Δt, where ω is the smaller of the two equivalent
   // angular frequencies |L_actual / I| and |L_apparent / I|.
-  // As a result, as either L tends towards 0, so does the greatest attitude
+  // As a result, as either L tends towards 0, so does the largest attitude
   // correction that we allow.
   // If the attitude correction would exceed this threshold, we leave the
   // attitude unchanged, and the correction in angular momentum is effected
@@ -533,8 +533,9 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // α is the angle of the tentative attitude correction.
   Angle const α =
       2 * quantities::ArcTan(q.imaginary_part().Norm(), q.real_part());
-  AngularFrequency const ω = std::min(apparent_equivalent_angular_velocity.Norm(),
-                          actual_equivalent_angular_velocity.Norm());
+  AngularFrequency const ω =
+      std::min(apparent_equivalent_angular_velocity.Norm(),
+               actual_equivalent_angular_velocity.Norm());
   Time const Δt = t - psychohistory_->back().time;
   if (thresholding && α > ω * Δt) {
     // The attitude correction is too large.  Preserve attitude.
@@ -558,7 +559,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
               EquivalentRigidPileUp::origin,
               apparent_pile_up_equivalent_rotation.Forget<OrthogonalMap>()),
           correct_angular_velocity ? apparent_equivalent_angular_velocity
-                                    : ApparentPileUp::nonrotating,
+                                   : ApparentPileUp::nonrotating,
           ApparentPileUp::unmoving);
   RigidMotion<NonRotatingPileUp, EquivalentRigidPileUp> const
       actual_pile_up_equivalent_motion(
@@ -567,7 +568,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
               EquivalentRigidPileUp::origin,
               actual_pile_up_equivalent_rotation.Forget<OrthogonalMap>()),
           correct_angular_velocity ? actual_equivalent_angular_velocity
-                                    : NonRotatingPileUp::nonrotating,
+                                   : NonRotatingPileUp::nonrotating,
           NonRotatingPileUp::unmoving);
   RigidMotion<ApparentBubble, NonRotatingPileUp> const
       apparent_bubble_to_pile_up_motion =
@@ -590,11 +591,11 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     << "norm: " << apparent_angular_momentum.Norm() << "\n"
     << "Actual: " << angular_momentum_ << "\n"
     << "norm: " << angular_momentum_.Norm() << "\n"
-    << u8"|Lap-Lac|: "
+    << "|Lap-Lac|: "
     << (angular_momentum_ - Identity<ApparentPileUp, NonRotatingPileUp>()(
                                 apparent_angular_momentum))
            .Norm() << "\n"
-    << u8"|Lap|-|Lac|: "
+    << "|Lap|-|Lac|: "
     << angular_momentum_.Norm() - apparent_angular_momentum.Norm() << "\n"
     << u8"∡Lap, Lac: "
     << geometry::AngleBetween(angular_momentum_,
