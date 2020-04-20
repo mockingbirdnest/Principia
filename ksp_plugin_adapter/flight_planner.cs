@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -323,8 +321,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           UnityEngine.GUILayout.Label("Upcoming manœuvre #" +
                                       (first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
-              "Ignition " + FormatTimeSpan(TimeSpanFromSeconds(
-                                current_time - manœuvre.burn.initial_time)),
+              "Ignition " +
+              FormatTimeSpan(current_time - manœuvre.burn.initial_time),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
       } else {
@@ -332,8 +330,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           UnityEngine.GUILayout.Label("Ongoing manœuvre #" +
                                       (first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
-              "Cutoff " + FormatTimeSpan(TimeSpanFromSeconds(
-                              current_time - manœuvre.final_time)),
+              "Cutoff " + FormatTimeSpan(current_time - manœuvre.final_time),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
       }
@@ -360,98 +357,33 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     }
   }
 
-  // A conversion function that swallows the overflow/NaN exceptions and
-  // saturates.  Better than killing the UI.
-  internal static TimeSpan TimeSpanFromSeconds(double seconds) {
-    try {
-      return TimeSpan.FromSeconds(seconds);
-    } catch (OverflowException) {
-      if (seconds >= 0.0) {
-        return TimeSpan.MaxValue;
-      } else {
-        return TimeSpan.MinValue;
-      }
-    } catch (ArgumentException) {
-      return TimeSpan.Zero;
-    }
+  internal static string FormatPositiveTimeSpan(double seconds) {
+    return new PrincipiaTimeSpan(seconds).FormatPositive(
+        with_leading_zeroes: true,
+        with_seconds: true);
   }
 
-  internal static string FormatPositiveTimeSpan(TimeSpan span) {
-    var date_time_formatter = KSPUtil.dateTimeFormatter;
-    double total_seconds = span.TotalSeconds;
-    double seconds = total_seconds % date_time_formatter.Minute;
-    int minutes = ((int)(total_seconds - seconds) % date_time_formatter.Hour) /
-                  date_time_formatter.Minute;
-    int hours =
-        ((int)(total_seconds - seconds - minutes * date_time_formatter.Minute) %
-         date_time_formatter.Day) / date_time_formatter.Hour;
-    int days =
-        (int)(total_seconds - seconds - minutes * date_time_formatter.Minute -
-              hours * date_time_formatter.Hour) / date_time_formatter.Day;
-    return days.ToString("0000;0000") +
-           (is_stock_day
-                ? " d6 " + hours.ToString("0;0")
-                : " d " + hours.ToString("00;00")) + " h " +
-           minutes.ToString("00;00") + " min " + seconds.ToString("00.0;00.0") +
-           " s";
+  internal static string FormatTimeSpan (double seconds) {
+    return new PrincipiaTimeSpan(seconds).Format(
+        with_leading_zeroes: true,
+        with_seconds: true);
   }
 
-  internal static string FormatTimeSpan (TimeSpan span) {
-    return span.Ticks.ToString("+;-") + FormatPositiveTimeSpan(span);
-  }
-
-  internal static bool TryParseTimeSpan(string str, out TimeSpan value) {
-    var date_time_formatter = KSPUtil.dateTimeFormatter;
-    value = TimeSpan.Zero;
-    // Using a technology that is customarily used to parse HTML.
-    string pattern = @"^[+]?\s*(\d+)\s*" +
-                     (is_stock_day ? "d6" : "d") +
-                     @"\s*(\d+)\s*h\s*(\d+)\s*min\s*([0-9.,']+)\s*s$";
-    var regex = new Regex(pattern);
-    var match = regex.Match(str);
-    if (!match.Success) {
-      return false;
-    }
-    string days = match.Groups[1].Value;
-    string hours = match.Groups[2].Value;
-    string minutes = match.Groups[3].Value;
-    string seconds = match.Groups[4].Value;
-    if (!int.TryParse(days, out int d) ||
-        !int.TryParse(hours, out int h) ||
-        !int.TryParse(minutes, out int min) ||
-        !double.TryParse(seconds.Replace(',', '.'),
-                         NumberStyles.AllowDecimalPoint |
-                         NumberStyles.AllowThousands,
-                         Culture.culture.NumberFormat,
-                         out double s)) {
-      return false;
-    }
-    // Fail to parse if the user gives us overflowing input.
-    try {
-      value = TimeSpan.FromSeconds(d * date_time_formatter.Day) +
-              TimeSpan.FromSeconds(h * date_time_formatter.Hour) +
-              TimeSpan.FromSeconds(min * date_time_formatter.Minute) +
-              TimeSpan.FromSeconds(s);
-      return true;
-    } catch (OverflowException) {
-      return false;
-    } catch (ArgumentException) {
-      return false;
-    }
-  }
 
   internal string FormatPlanLength(double value) {
-    return FormatPositiveTimeSpan(TimeSpanFromSeconds(
-                                      value - plugin.FlightPlanGetInitialTime(
-                                          predicted_vessel.id.ToString())));
+    return FormatPositiveTimeSpan(
+        value - plugin.FlightPlanGetInitialTime(
+            predicted_vessel.id.ToString()));
   }
 
-  internal bool TryParsePlanLength(string str, out double value) {
+  internal bool TryParsePlanLength(string text, out double value) {
     value = 0;
-    if (!TryParseTimeSpan(str, out TimeSpan ts)) {
+    if (!PrincipiaTimeSpan.TryParse(text,
+                                    with_seconds: true,
+                                    out PrincipiaTimeSpan ts)) {
       return false;
     }
-    value = ts.TotalSeconds +
+    value = ts.total_seconds +
             plugin.FlightPlanGetInitialTime(predicted_vessel.id.ToString());
     return true;
   }
@@ -485,12 +417,13 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
       string remedy_message = "changing the flight plan";  // Preceded by "Try".
       string status_message = "computation failed";  // Preceded by "The".
-      string time_out_message =
-          timed_out ? " after " +
-                      FormatPositiveTimeSpan(TimeSpanFromSeconds(
-                           actual_final_time -
-                           plugin.FlightPlanGetInitialTime(vessel_guid)))
-                    : "";
+      string time_out_message = timed_out
+                                    ? " after " +
+                                      FormatPositiveTimeSpan(
+                                          actual_final_time -
+                                          plugin.FlightPlanGetInitialTime(
+                                              vessel_guid))
+                                    : "";
       if (status_.is_aborted()) {
         status_message = "integrator reached the maximum number of steps" +
                          time_out_message;
