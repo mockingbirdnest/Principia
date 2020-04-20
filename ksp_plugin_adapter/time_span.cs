@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -52,27 +53,32 @@ class PrincipiaTimeSpan {
       minutes = 0;
       seconds = 0;
     }
-    string formatted_days = with_leading_zeroes
-                                ? (is_stock_day
-                                       ? days.ToString("0000;0000")
-                                       : days.ToString("000;000"))
-                                : (days == 0 ? "" : days.ToString("0;0"));
-    string formatted_hours = with_leading_zeroes || hours != 0
-                                 ? (date_time_formatter.Day /
-                                    date_time_formatter.Hour < 10
-                                        ? hours.ToString("0;0")
-                                        : hours.ToString("00;00"))
-                                 : "";
-    string formatted_minutes = with_leading_zeroes || hours != 0
-                                   ? minutes.ToString("00;00")
-                                   : "";
-    string formatted = formatted_days + $"{nbsp}{day_symbol}{nbsp}" +
-                       formatted_hours + $"{nbsp}h{nbsp}" + formatted_minutes +
-                       $"{nbsp}min";
-    if (with_seconds) {
-      formatted += $"{nbsp}" + seconds.ToString("00.0;00.0") + $"{nbsp}s";
+    var components = new List<string>();
+    if (with_leading_zeroes) {
+      components.Add(is_stock_day
+                         ? days.ToString("0000;0000")
+                         : days.ToString("000;000"));
+    } else if (days != 0) {
+      components.Add(days.ToString("0;0"));
     }
-    return formatted;
+    if (components.Count > 0) {
+      components.Add($"{nbsp}{day_symbol}{nbsp}");
+    }
+    if (components.Count > 0 || with_leading_zeroes || hours != 0) {
+      components.Add(date_time_formatter.Day / date_time_formatter.Hour < 10
+                         ? hours.ToString("0;0")
+                         : hours.ToString("00;00"));
+      components.Add($"{nbsp}h{nbsp}");
+    }
+    if (components.Count > 0 || with_leading_zeroes || minutes != 0 ||
+        !with_seconds) {
+      components.Add(minutes.ToString("00;00"));
+      components.Add($"{nbsp}min");
+    }
+    if (with_seconds) {
+      components.Add($"{nbsp}" + seconds.ToString("00.0;00.0") + $"{nbsp}s");
+    }
+    return string.Join("", components.ToArray());
   }
 
   public double total_seconds => seconds_;
