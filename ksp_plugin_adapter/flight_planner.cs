@@ -377,13 +377,22 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   }
 
   internal static string FormatPositiveTimeSpan(TimeSpan span) {
-    return (GameSettings.KERBIN_TIME
-                ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
-                      " d6 " + (span.Hours % 6).ToString("0;0") + " h "
-                : span.Days.ToString("000;000") + " d " +
-                      span.Hours.ToString("00;00") + " h ") +
-           span.Minutes.ToString("00;00") + " min " +
-           (span.Seconds + span.Milliseconds / 1000m).ToString("00.0;00.0") +
+    var date_time_formatter = KSPUtil.dateTimeFormatter;
+    double total_seconds = span.TotalSeconds;
+    double seconds = total_seconds % date_time_formatter.Minute;
+    int minutes = ((int)(total_seconds - seconds) % date_time_formatter.Hour) /
+                  date_time_formatter.Minute;
+    int hours =
+        ((int)(total_seconds - seconds - minutes * date_time_formatter.Minute) %
+         date_time_formatter.Day) / date_time_formatter.Hour;
+    int days =
+        (int)(total_seconds - seconds - minutes * date_time_formatter.Minute -
+              hours * date_time_formatter.Hour) / date_time_formatter.Day;
+    return days.ToString("0000;0000") +
+           (is_stock_day
+                ? " d6 " + hours.ToString("0;0")
+                : " d " + hours.ToString("00;00")) + " h " +
+           minutes.ToString("00;00") + " min " + seconds.ToString("00.0;00.0") +
            " s";
   }
 
@@ -392,10 +401,11 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   }
 
   internal static bool TryParseTimeSpan(string str, out TimeSpan value) {
+    var date_time_formatter = KSPUtil.dateTimeFormatter;
     value = TimeSpan.Zero;
     // Using a technology that is customarily used to parse HTML.
     string pattern = @"^[+]?\s*(\d+)\s*" +
-                     (GameSettings.KERBIN_TIME ? "d6" : "d") +
+                     (is_stock_day ? "d6" : "d") +
                      @"\s*(\d+)\s*h\s*(\d+)\s*min\s*([0-9.,']+)\s*s$";
     var regex = new Regex(pattern);
     var match = regex.Match(str);
@@ -418,11 +428,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     }
     // Fail to parse if the user gives us overflowing input.
     try {
-      value =
-          TimeSpan.FromDays((double)d / (GameSettings.KERBIN_TIME ? 4 : 1)) +
-          TimeSpan.FromHours(h) +
-          TimeSpan.FromMinutes(min) +
-          TimeSpan.FromSeconds(s);
+      value = TimeSpan.FromSeconds(d * date_time_formatter.Day) +
+              TimeSpan.FromSeconds(h * date_time_formatter.Hour) +
+              TimeSpan.FromSeconds(min * date_time_formatter.Minute) +
+              TimeSpan.FromSeconds(s);
       return true;
     } catch (OverflowException) {
       return false;
@@ -540,6 +549,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   }
 
   private IntPtr plugin => adapter_.Plugin();
+
+  private static bool is_stock_day => GameSettings.KERBIN_TIME &&
+                                      KSPUtil.dateTimeFormatter.Day ==
+                                      6 * 60 * 60;
 
   private readonly PrincipiaPluginAdapter adapter_;
 
