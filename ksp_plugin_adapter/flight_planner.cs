@@ -483,10 +483,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private IntPtr plugin => adapter_.Plugin();
 
-  private static bool is_stock_day => GameSettings.KERBIN_TIME &&
-                                      KSPUtil.dateTimeFormatter.Day ==
-                                      6 * 60 * 60;
-
   private readonly PrincipiaPluginAdapter adapter_;
 
   // Because this class is stateful (it holds the burn_editors_) we must detect
