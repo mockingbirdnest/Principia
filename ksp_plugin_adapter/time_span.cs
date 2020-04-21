@@ -55,7 +55,7 @@ class PrincipiaTimeSpan {
     }
     var components = new List<string>();
     if (with_leading_zeroes) {
-      components.Add(is_stock_day
+      components.Add(day_is_short
                          ? days.ToString("0000;0000")
                          : days.ToString("000;000"));
     } else if (days != 0) {
@@ -65,7 +65,7 @@ class PrincipiaTimeSpan {
       components.Add($"{nbsp}{day_symbol}{nbsp}");
     }
     if (components.Count > 0 || with_leading_zeroes || hours != 0) {
-      components.Add(date_time_formatter.Day / date_time_formatter.Hour < 10
+      components.Add(day_is_short
                          ? hours.ToString("0;0")
                          : hours.ToString("00;00"));
       components.Add($"{nbsp}h{nbsp}");
@@ -122,13 +122,20 @@ class PrincipiaTimeSpan {
   }
 
   public static int day_duration => date_time_formatter.Day;
-  public static string day_symbol => is_stock_day ? "d6" : "d";
+
+  public static string day_symbol =>
+      hour_divides_day && day_is_short
+          ? "d" + (int)(date_time_formatter.Day / date_time_formatter.Hour)
+          : "d";
+
+  private static bool day_is_short =>
+      date_time_formatter.Day / date_time_formatter.Hour < 10;
+  private static bool hour_divides_day =>
+      (int)(date_time_formatter.Day / date_time_formatter.Hour) *
+      date_time_formatter.Hour == date_time_formatter.Day;
 
   private static IDateTimeFormatter date_time_formatter =>
       KSPUtil.dateTimeFormatter;
-
-  private static bool is_stock_day => GameSettings.KERBIN_TIME &&
-                                      date_time_formatter.Day == 6 * 60 * 60;
 
   private readonly double seconds_;
   private const string nbsp = "\xA0";

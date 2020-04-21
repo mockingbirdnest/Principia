@@ -360,18 +360,17 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
 
   private readonly PrincipiaPluginAdapter adapter_;
   private readonly DifferentialSlider mission_duration_ =
-      new DifferentialSlider(label            : "Duration",
-                             unit             : null,
-                             log10_lower_rate : 0,
-                             log10_upper_rate : 7,
-                             min_value        : 10,
-                             max_value        : double.PositiveInfinity,
-                             formatter        :
-                             Formatters.FormatMissionDuration,
-                             parser           : Formatters.
-                                 TryParseMissionDuration,
-                             label_width      : 2,
-                             field_width      : 5) {
+      new DifferentialSlider(
+          label            : "Duration",
+          unit             : null,
+          log10_lower_rate : 0,
+          log10_upper_rate : 7,
+          min_value        : 10,
+          max_value        : double.PositiveInfinity,
+          formatter        : Formatters.FormatMissionDuration,
+          parser           : Formatters.TryParseMissionDuration,
+          label_width      : 2,
+          field_width      : 5) {
           value = 7 * 24 * 60 * 60
       };
   private bool autodetect_recurrence_ = true;
