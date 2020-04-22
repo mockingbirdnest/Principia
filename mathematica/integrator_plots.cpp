@@ -79,6 +79,7 @@ using quantities::Speed;
 using quantities::SpecificEnergy;
 using quantities::Stiffness;
 using quantities::Time;
+using quantities::si::Degree;
 using quantities::si::Joule;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -375,6 +376,8 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   KeplerianElements<World> elements;
   elements.semimajor_axis = 1 * Metre;
   elements.eccentricity = eccentricity;
+  elements.argument_of_periapsis = 0 * Degree;
+  elements.true_anomaly = 0 * Degree;
   KeplerOrbit<World> const orbit(b1, b2, elements, t0);
 
   auto const initial_dof = orbit.StateVectors(t0);

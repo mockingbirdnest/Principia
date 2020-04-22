@@ -34,8 +34,7 @@
     <PrincipiaTestProject Condition="$(ProjectName) == ksp_plugin or
                                      $(ProjectName) == serialization or
                                      $(ProjectName) == benchmarks or
-                                     $(ProjectName) == tools or
-                                     $(ProjectName) == mathematica">false</PrincipiaTestProject>
+                                     $(ProjectName) == tools">false</PrincipiaTestProject>
     <!--Dependency paths.-->
     <PrincipiaDependencyConfiguration>Debug</PrincipiaDependencyConfiguration>
     <PrincipiaDependencyConfiguration Condition="$(PrincipiaOptimize)">Release</PrincipiaDependencyConfiguration>
@@ -53,8 +52,7 @@
                                   $(ProjectName) == serialization">DynamicLibrary</ConfigurationType>
     <ConfigurationType Condition="$(PrincipiaTestProject) or
                                   $(ProjectName) == tools or
-                                  $(ProjectName) == benchmarks or
-                                  $(ProjectName) == mathematica">Application</ConfigurationType>
+                                  $(ProjectName) == benchmarks">Application</ConfigurationType>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="$(ConfigurationType)==Application">
     <Link>

@@ -12,11 +12,11 @@
     <Filter Include="Scripts">
       <UniqueIdentifier>{4e3369e9-9c33-43ea-8662-581a7f97470b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test Files">
+      <UniqueIdentifier>{148dae9a-4f1b-44c1-892c-dd534b1cee4f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="integrator_plots.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,6 +37,12 @@
     </ClCompile>
     <ClCompile Include="..\physics\protector.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mathematica_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="error_analysis_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

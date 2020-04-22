@@ -19,10 +19,11 @@
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\physics\protector.cpp" />
+    <ClCompile Include="error_analysis_test.cpp" />
     <ClCompile Include="integrator_plots.cpp" />
     <ClCompile Include="local_error_analysis.cpp" />
+    <ClCompile Include="mathematica_test.cpp" />
     <ClCompile Include="retrobop_dynamical_stability.cpp" />
-    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="integrator_plots.hpp" />
