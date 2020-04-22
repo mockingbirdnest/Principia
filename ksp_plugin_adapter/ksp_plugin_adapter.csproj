@@ -135,6 +135,7 @@
     <Compile Include="source_location.cs" />
     <Compile Include="style.cs" />
     <Compile Include="mono_marshaler.cs" />
+    <Compile Include="time_span.cs" />
     <Compile Include="utf8_marshaler.cs" />
     <Compile Include="utf16_marshaler.cs" />
     <Compile Include="window_renderer.cs" />
