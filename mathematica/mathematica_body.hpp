@@ -49,7 +49,7 @@ inline std::string Apply(
   result += "[";
   for (int i = 0; i < arguments.size(); ++i) {
     result += arguments[i];
-    result += (i < arguments.size() - 1 ? "," : "");
+    result += (i + 1 < arguments.size() ? "," : "");
   }
   result += "]";
   return result;
