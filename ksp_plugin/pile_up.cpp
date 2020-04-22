@@ -119,6 +119,7 @@ Status PileUp::DeformAndAdvanceTime(Instant const& t) {
 }
 
 void PileUp::RecomputeFromParts() {
+  absl::MutexLock l(lock_.get());
   mass_ = Mass();
   intrinsic_force_ = Vector<Force, Barycentric>();
   intrinsic_torque_ = Bivector<Torque, NonRotatingPileUp>();

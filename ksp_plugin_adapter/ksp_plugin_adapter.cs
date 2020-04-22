@@ -444,7 +444,7 @@ public partial class PrincipiaPluginAdapter
           // TODO(egg): check that the vessel is moved *after* this.  Shouldn't
           // we be calling vessel.orbitDriver.updateFromParameters() after
           // setting the orbit anyway?
-          QPRW part_actual_motion = plugin_.PartGetActualDegreesOfFreedom(
+          QPRW part_actual_motion = plugin_.PartGetActualRigidMotion(
               part.flightID,
               new Origin{
                   reference_part_is_at_origin = true,
@@ -1294,7 +1294,7 @@ public partial class PrincipiaPluginAdapter
         }
         foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           QPRW part_actual_motion =
-              plugin_.PartGetActualDegreesOfFreedom(
+              plugin_.PartGetActualRigidMotion(
                   part.flightID,
                   new Origin{
                       reference_part_is_at_origin  =
@@ -1541,11 +1541,11 @@ public partial class PrincipiaPluginAdapter
                     physical_parent,
                     new Part.ForceHolder {
                       force = -part.dragVectorDir * part.dragScalar,
-                      pos = (physical_parent != part &&
-                             PhysicsGlobals.ApplyDragToNonPhysicsPartsAtParentCoM)
+                      pos = (physical_parent != part && PhysicsGlobals.
+                                 ApplyDragToNonPhysicsPartsAtParentCoM)
                                 ? physical_parent.rb.worldCenterOfMass
                                 : part.partTransform.TransformPoint(
-                                      part.CoPOffset)});
+                                    part.CoPOffset)});
           }
         }
       }

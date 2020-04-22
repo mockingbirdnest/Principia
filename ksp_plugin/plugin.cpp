@@ -461,8 +461,8 @@ void Plugin::InsertOrKeepLoadedPart(
           main_body_frame.ToThisFrameAtTime(previous_time).orthogonal_map() *
               Δplanetarium_rotation.Inverse() *
               renderer_->WorldToBarycentric(PlanetariumRotation())},
-          (renderer_->BarycentricToWorld(PlanetariumRotation()) *
-                Δplanetarium_rotation)(-angular_velocity_of_world_),
+      (renderer_->BarycentricToWorld(PlanetariumRotation()) *
+          Δplanetarium_rotation)(-angular_velocity_of_world_),
       main_body_degrees_of_freedom.velocity()};
   RigidMotion<World, Barycentric> const world_to_barycentric_motion =
       main_body_frame.FromThisFrameAtTime(previous_time) *
