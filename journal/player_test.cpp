@@ -89,7 +89,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Crashes\2507\JOURNAL.20200328-214524)";  // NOLINT
+      R"(P:\Public Mockingbird\Principia\Crashes\2530\JOURNAL.20200416-093807)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -109,7 +109,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
     auto* extension = method_in.MutableExtension(
         serialization::CatchUpLaggingVessels::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(2014156823824);
+    in->set_plugin(2899402431696);
   }
   serialization::Method method_out_return;
   {

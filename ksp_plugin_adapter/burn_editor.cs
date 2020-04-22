@@ -271,16 +271,20 @@ class BurnEditor : ScalingRenderer {
     specific_impulse_in_seconds_g0_ = range;
   }
 
-  internal string FormatPreviousCoastDuration(double value) {
-    return FlightPlanner.FormatPositiveTimeSpan(TimeSpan.FromSeconds(value));
+  internal string FormatPreviousCoastDuration(double seconds) {
+    return new PrincipiaTimeSpan(seconds).FormatPositive(
+        with_leading_zeroes: true,
+        with_seconds: true);
   }
 
-  internal bool TryParsePreviousCoastDuration(string str, out double value) {
+  internal bool TryParsePreviousCoastDuration(string text, out double value) {
     value = 0;
-    if (!FlightPlanner.TryParseTimeSpan(str, out TimeSpan ts)) {
+    if (!PrincipiaTimeSpan.TryParse(text,
+                                    with_seconds: true,
+                                    out PrincipiaTimeSpan ts)) {
       return false;
     }
-    value = ts.TotalSeconds;
+    value = ts.total_seconds;
     return true;
   }
 

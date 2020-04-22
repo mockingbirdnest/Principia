@@ -162,12 +162,12 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
         max = Abs(A(i, k));
       }
     }
-    CHECK_LE(0, r);
-    CHECK_GT(3, r);
+    CHECK_LE(0, r) << *this << " cannot pivot";
+    CHECK_GT(3, r) << *this << " cannot pivot";
     std::swap(A.rows_[k], A.rows_[r]);
     std::swap(L.rows_[k], L.rows_[r]);
     std::swap(b[k], b[r]);
-    CHECK_NE(Scalar{}, A(k, k));
+    CHECK_NE(Scalar{}, A(k, k)) << *this << " is singular";
 
     for (int j = k; j < 3; ++j) {
       Scalar U_kj = A(k, j);
