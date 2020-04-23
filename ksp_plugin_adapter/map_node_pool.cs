@@ -262,8 +262,9 @@ internal class MapNodePool {
           }
           if (properties.object_type != MapObject.ObjectType.PatchTransition) {
             caption.captionLine1 =
-                "T" + FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(
-                          Planetarium.GetUniversalTime() - properties.time));
+                "T" + new PrincipiaTimeSpan(
+                        Planetarium.GetUniversalTime() - properties.time).
+                    Format(with_leading_zeroes: false, with_seconds: true);
           }
         };
     new_node.OnUpdatePosition +=

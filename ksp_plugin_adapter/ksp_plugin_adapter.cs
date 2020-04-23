@@ -300,8 +300,8 @@ public partial class PrincipiaPluginAdapter
     }
 
     map_node_pool_ = new MapNodePool();
-    flight_planner_ = new FlightPlanner(this);
-    orbit_analyser_ = new OrbitAnalyser(this);
+    flight_planner_ = new FlightPlanner(this, PredictedVessel);
+    orbit_analyser_ = new OrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ = new ReferenceFrameSelector(this,
                                                           UpdateRenderingFrame,
                                                           "Plotting frame");
@@ -322,7 +322,17 @@ public partial class PrincipiaPluginAdapter
   }
 
   private Vessel PredictedVessel() {
-    return FlightGlobals.ActiveVessel ?? space_tracking?.SelectedVessel;
+    if (!PluginRunning()) {
+      return null;
+    }
+    Vessel vessel =
+        FlightGlobals.ActiveVessel ?? space_tracking?.SelectedVessel;
+    string vessel_guid = vessel?.id.ToString();
+    if (vessel_guid != null && plugin_.HasVessel(vessel_guid)) {
+      return vessel;
+    } else {
+      return null;
+    }
   }
 
   private delegate void BodyProcessor(CelestialBody body);
@@ -392,9 +402,7 @@ public partial class PrincipiaPluginAdapter
   private void UpdatePredictions() {
     Vessel main_vessel = PredictedVessel();
     bool ready_to_draw_active_vessel_trajectory =
-        main_vessel != null &&
-        MapView.MapIsEnabled &&
-        plugin_.HasVessel(main_vessel.id.ToString());
+        main_vessel != null && MapView.MapIsEnabled;
 
     if (ready_to_draw_active_vessel_trajectory) {
       plugin_.UpdatePrediction(main_vessel.id.ToString());
@@ -436,7 +444,7 @@ public partial class PrincipiaPluginAdapter
           // TODO(egg): check that the vessel is moved *after* this.  Shouldn't
           // we be calling vessel.orbitDriver.updateFromParameters() after
           // setting the orbit anyway?
-          QPRW part_actual_motion = plugin_.PartGetActualDegreesOfFreedom(
+          QPRW part_actual_motion = plugin_.PartGetActualRigidMotion(
               part.flightID,
               new Origin{
                   reference_part_is_at_origin = true,
@@ -548,6 +556,24 @@ public partial class PrincipiaPluginAdapter
     vertical_speed = vessel.verticalSpeed;
     double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
     return height + vertical_speed * Δt < 0;
+  }
+
+  private static bool IsNaN(Vector3d v) {
+    return double.IsNaN(v.x + v.y + v.z);
+  }
+
+  private static bool IsNaN(XYZ xyz) {
+    return double.IsNaN(xyz.x + xyz.y + xyz.z);
+  }
+
+  // It seems that parts sometimes have NaN position, velocity or angular
+  // velocity, presumably because they are being destroyed.  Just skip these
+  // unfaithful parts as if they had no rigid body.
+  private static bool PartIsFaithful(Part part) {
+    return part.rb != null &&
+           !IsNaN(part.rb.position) &&
+           !IsNaN(part.rb.velocity) &&
+           !IsNaN(part.rb.angularVelocity);
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
@@ -1045,7 +1071,7 @@ public partial class PrincipiaPluginAdapter
                                  !vessel.packed,
                                  out bool inserted);
       if (!vessel.packed) {
-        foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+        foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           QP degrees_of_freedom;
           if (part_id_to_degrees_of_freedom_.ContainsKey(part.flightID)) {
             degrees_of_freedom = part_id_to_degrees_of_freedom_[part.flightID];
@@ -1224,10 +1250,7 @@ public partial class PrincipiaPluginAdapter
       if (!plugin_.HasVessel(vessel.id.ToString())) {
         continue;
       }
-      foreach (Part part in vessel.parts) {
-        if (part.rb == null) {
-          continue;
-        }
+      foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
         if (main_body_change_countdown_ == 0 &&
             last_main_body_ == FlightGlobals.ActiveVessel?.mainBody) {
           plugin_.PartSetApparentRigidMotion(
@@ -1236,8 +1259,7 @@ public partial class PrincipiaPluginAdapter
                 new QP{q = (XYZ)(Vector3d)part.rb.position,
                        p = (XYZ)(Vector3d)part.rb.velocity},
                 (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
-                (XYZ)(Vector3d)part.rb.angularVelocity,
-                main_body_degrees_of_freedom);
+                (XYZ)(Vector3d)part.rb.angularVelocity);
         }
       }
     }
@@ -1270,12 +1292,9 @@ public partial class PrincipiaPluginAdapter
         if (!plugin_.HasVessel(vessel.id.ToString())) {
           continue;
         }
-        foreach (Part part in vessel.parts) {
-          if (part.rb == null) {
-            continue;
-          }
+        foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           QPRW part_actual_motion =
-              plugin_.PartGetActualDegreesOfFreedom(
+              plugin_.PartGetActualRigidMotion(
                   part.flightID,
                   new Origin{
                       reference_part_is_at_origin  =
@@ -1463,7 +1482,7 @@ public partial class PrincipiaPluginAdapter
       foreach (Vessel vessel in
                FlightGlobals.Vessels.Where(v => is_manageable(v) &&
                                                 !v.packed)) {
-        foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+        foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           if (part.torque != Vector3d.zero) {
             part_id_to_intrinsic_torque_.Add(part.flightID, part.torque);
           }
@@ -1522,11 +1541,11 @@ public partial class PrincipiaPluginAdapter
                     physical_parent,
                     new Part.ForceHolder {
                       force = -part.dragVectorDir * part.dragScalar,
-                      pos = (physical_parent != part &&
-                             PhysicsGlobals.ApplyDragToNonPhysicsPartsAtParentCoM)
+                      pos = (physical_parent != part && PhysicsGlobals.
+                                 ApplyDragToNonPhysicsPartsAtParentCoM)
                                 ? physical_parent.rb.worldCenterOfMass
                                 : part.partTransform.TransformPoint(
-                                      part.CoPOffset)});
+                                    part.CoPOffset)});
           }
         }
       }
@@ -1555,7 +1574,7 @@ public partial class PrincipiaPluginAdapter
       foreach (Vessel vessel in
                FlightGlobals.Vessels.Where(v => is_manageable(v) &&
                                                 !v.packed)) {
-        foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+        foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           // TODO(egg): use the centre of mass.
           part_id_to_degrees_of_freedom_.Add(
               part.flightID,
@@ -1575,8 +1594,7 @@ public partial class PrincipiaPluginAdapter
     // The only timing that satisfies these constraints is BetterLateThanNever
     // in LateUpdate.
     string main_vessel_guid = PredictedVessel()?.id.ToString();
-    if (MapView.MapIsEnabled && main_vessel_guid != null &&
-        PluginRunning() && plugin_.HasVessel(main_vessel_guid)) {
+    if (MapView.MapIsEnabled && main_vessel_guid != null) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       RenderPredictionMarkers(main_vessel_guid, sun_world_position);
       string target_id =
@@ -1651,8 +1669,7 @@ public partial class PrincipiaPluginAdapter
         Burn burn = plugin_.FlightPlanGetManoeuvre(
                         vessel_guid,
                         first_future_manœuvre_index.Value).burn;
-        if (flight_planner_.show_guidance &&
-            !double.IsNaN(guidance.x + guidance.y + guidance.z)) {
+        if (flight_planner_.show_guidance && !IsNaN(guidance)) {
           // The user wants to show the guidance node, and that node was
           // properly computed by the C++ code.
           PatchedConicSolver solver = active_vessel.patchedConicSolver;
@@ -1957,9 +1974,6 @@ public partial class PrincipiaPluginAdapter
       RemoveStockTrajectoriesIfNeeded(vessel);
     }
     string main_vessel_guid = PredictedVessel()?.id.ToString();
-    if (main_vessel_guid != null && !plugin_.HasVessel(main_vessel_guid)) {
-      main_vessel_guid = null;
-    }
     if (MapView.MapIsEnabled) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =

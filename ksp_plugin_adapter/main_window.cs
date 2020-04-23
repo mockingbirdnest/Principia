@@ -3,26 +3,23 @@
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal class MainWindow : SupervisedWindowRenderer {
+internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name_ = "Fubini";
-  private const int next_release_lunation_number_ = 251;
+  private const string next_release_name_ = "Fuchs";
+  private const int next_release_lunation_number_ = 252;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2020, 04, 23, 02, 26, 00, TimeSpan.Zero);
-
-  public delegate Vessel PredictedVessel();
+      new DateTimeOffset(2020, 05, 22, 17, 39, 00, TimeSpan.Zero);
 
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
                     OrbitAnalyser orbit_analyser,
                     ReferenceFrameSelector plotting_frame_selector,
                     PredictedVessel predicted_vessel)
-      : base(adapter) {
+      : base(adapter, predicted_vessel) {
     adapter_ = adapter;
     flight_planner_ = flight_planner;
     orbit_analyser_ = orbit_analyser;
     plotting_frame_selector_ = plotting_frame_selector;
-    predicted_vessel_ = predicted_vessel;
     Show();
   }
 
@@ -241,6 +238,28 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderKSPFeatures() {
+    if (show_2519_debugging_ui) {
+      correct_orientation = UnityEngine.GUILayout.Toggle(
+          correct_orientation,
+          "Correct orientation");
+      correct_angular_velocity = UnityEngine.GUILayout.Toggle(
+          correct_angular_velocity,
+          "Correct angular velocity");
+      thresholding = UnityEngine.GUILayout.Toggle(
+          thresholding,
+          "Only correct orientation slower than ω");
+      Interface.SetAngularMomentumConservation(
+          correct_orientation, correct_angular_velocity, thresholding);
+      string trace = null;
+      if (FlightGlobals.ActiveVessel != null &&
+          plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
+        trace = plugin.VesselGetPileUpTrace(
+            FlightGlobals.ActiveVessel.id.ToString());
+      }
+      UnityEngine.GUILayout.TextArea(
+          trace ?? "No managed active vessel",
+          style : Style.Multiline(UnityEngine.GUI.skin.textArea));
+    }
     display_patched_conics = UnityEngine.GUILayout.Toggle(
         value : display_patched_conics,
         text  : "Display patched conics (do not use for flight planning!)");
@@ -371,11 +390,9 @@ internal class MainWindow : SupervisedWindowRenderer {
   }
 
   private void RenderPredictionSettings() {
-    vessel_ = predicted_vessel_();
-
     AdaptiveStepParameters? adaptive_step_parameters = null;
-    string vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid != null && plugin.HasVessel(vessel_guid)) {
+    string vessel_guid = predicted_vessel?.id.ToString();
+    if (vessel_guid != null) {
       adaptive_step_parameters =
           plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
       prediction_length_tolerance_index_ = Array.FindIndex(
@@ -495,6 +512,14 @@ internal class MainWindow : SupervisedWindowRenderer {
       value = 7 * 24 * 60 * 60
   };
 
+  // These flags exist to facilitate investigation of #2519.
+  // They must not be serialized: their non-default values can lead to absurd
+  // behaviour.
+  private static bool correct_orientation = true;
+  private static bool correct_angular_velocity = true;
+  private static bool thresholding = true;
+  private static readonly bool show_2519_debugging_ui = false;
+
   private static readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
   private static readonly long[] prediction_steps_ =
@@ -508,7 +533,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   private readonly FlightPlanner flight_planner_;
   private readonly OrbitAnalyser orbit_analyser_;
   private readonly ReferenceFrameSelector plotting_frame_selector_;
-  private readonly PredictedVessel predicted_vessel_;
 
   private bool selecting_target_celestial_ = false;
 
@@ -531,8 +555,6 @@ internal class MainWindow : SupervisedWindowRenderer {
   private bool must_record_journal_ = false;
   // Whether a journal is currently being recorded.
   private static bool journaling_ = false;
-
-  private Vessel vessel_;
 }
 
 }  // namespace ksp_plugin_adapter

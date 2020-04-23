@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace principia {
 namespace ksp_plugin_adapter {
 
-class FlightPlanner : SupervisedWindowRenderer {
-  public FlightPlanner(PrincipiaPluginAdapter adapter) : base(adapter) {
+class FlightPlanner : VesselSupervisedWindowRenderer {
+  public FlightPlanner(PrincipiaPluginAdapter adapter,
+                       PredictedVessel predicted_vessel)
+      : base(adapter, predicted_vessel) {
     adapter_ = adapter;
     final_time_ = new DifferentialSlider(
                       label            : "Plan length",
@@ -23,15 +23,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    if (UnityEngine.GUILayout.Button("Flight plan...")) {
-      Toggle();
-    }
-    // Override the state of the toggle if there is no active vessel.
-    string vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid == null || !plugin.HasVessel(vessel_guid)) {
-      Hide();
-      vessel_ = FlightGlobals.ActiveVessel;
-    }
+    RenderButton("Flight plan...");
   }
 
   public bool show_guidance => show_guidance_;
@@ -68,8 +60,8 @@ class FlightPlanner : SupervisedWindowRenderer {
     // The UI code proper, executed identically for Layout and Repaint.  We
     // can freely change the state in events like clicks (e.g., in if statements
     // for buttons) as these don't happen between Layout and Repaint.
-    string vessel_guid = vessel_?.id.ToString();
-    if (vessel_guid == null || !plugin.HasVessel(vessel_guid)) {
+    string vessel_guid = predicted_vessel?.id.ToString();
+    if (vessel_guid == null) {
       return;
     }
 
@@ -78,7 +70,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     } else if (UnityEngine.GUILayout.Button("Create flight plan")) {
       plugin.FlightPlanCreate(vessel_guid,
                               plugin.CurrentTime() + 3600,
-                              vessel_.GetTotalMass());
+                              predicted_vessel.GetTotalMass());
       final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       Shrink();
     }
@@ -87,10 +79,9 @@ class FlightPlanner : SupervisedWindowRenderer {
 
   private void UpdateVesselAndBurnEditors() {
     {
-      string vessel_guid = vessel_?.id.ToString();
+      string vessel_guid = predicted_vessel?.id.ToString();
       if (vessel_guid == null ||
-          vessel_ != FlightGlobals.ActiveVessel ||
-          !plugin.HasVessel(vessel_guid) ||
+          previous_predicted_vessel_ != predicted_vessel ||
           !plugin.FlightPlanExists(vessel_guid) ||
           plugin.FlightPlanNumberOfManoeuvres(vessel_guid) !=
               burn_editors_?.Count) {
@@ -101,14 +92,13 @@ class FlightPlanner : SupervisedWindowRenderer {
           burn_editors_ = null;
           Shrink();
         }
-        vessel_ = FlightGlobals.ActiveVessel;
+        previous_predicted_vessel_ = predicted_vessel;
       }
     }
 
     if (burn_editors_ == null) {
-      string vessel_guid = vessel_?.id.ToString();
+      string vessel_guid = predicted_vessel?.id.ToString();
       if (vessel_guid != null &&
-          plugin.HasVessel(vessel_guid) &&
           plugin.FlightPlanExists(vessel_guid)) {
         burn_editors_ = new List<BurnEditor>();
         final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
@@ -118,7 +108,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           // Dummy initial time, we call |Reset| immediately afterwards.
           burn_editors_.Add(
               new BurnEditor(adapter_,
-                             vessel_,
+                             predicted_vessel,
                              initial_time  : 0,
                              index         : burn_editors_.Count,
                              previous_burn : burn_editors_.LastOrDefault()));
@@ -129,7 +119,7 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
 
     if (burn_editors_ != null) {
-      string vessel_guid = vessel_?.id.ToString();
+      string vessel_guid = predicted_vessel?.id.ToString();
       double current_time = plugin.CurrentTime();
       first_future_manœuvre_ = null;
       for (int i = 0; i < burn_editors_.Count; ++i) {
@@ -140,6 +130,10 @@ class FlightPlanner : SupervisedWindowRenderer {
           break;
         }
       }
+      // Must be computed during layout as it affects the layout of some of the
+      // differential sliders.
+      number_of_anomalous_manœuvres_ =
+          plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
     }
   }
 
@@ -248,8 +242,6 @@ class FlightPlanner : SupervisedWindowRenderer {
         }
         // Allow extending the flight plan.
         final_times.Add(double.PositiveInfinity);
-        int number_of_anomalous_manœuvres =
-            plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
 
         for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
@@ -257,7 +249,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           if (burn.Render(header          : "Manœuvre #" + (i + 1),
                           anomalous       :
                               i >= (burn_editors_.Count -
-                                    number_of_anomalous_manœuvres),
+                                    number_of_anomalous_manœuvres_),
                           burn_final_time : final_times[i])) {
             var status = plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
             UpdateStatus(status, i);
@@ -289,7 +281,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           }
           var editor =
               new BurnEditor(adapter_,
-                             vessel_,
+                             predicted_vessel,
                              initial_time,
                              index         : burn_editors_.Count,
                              previous_burn : burn_editors_.LastOrDefault());
@@ -316,7 +308,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   private void RenderUpcomingEvents() {
-    string vessel_guid = vessel_.id.ToString();
+    string vessel_guid = predicted_vessel.id.ToString();
     double current_time = plugin.CurrentTime();
 
     Style.HorizontalLine();
@@ -329,8 +321,8 @@ class FlightPlanner : SupervisedWindowRenderer {
           UnityEngine.GUILayout.Label("Upcoming manœuvre #" +
                                       (first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
-              "Ignition " + FormatTimeSpan(TimeSpan.FromSeconds(
-                                current_time - manœuvre.burn.initial_time)),
+              "Ignition " +
+              FormatTimeSpan(current_time - manœuvre.burn.initial_time),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
       } else {
@@ -338,8 +330,7 @@ class FlightPlanner : SupervisedWindowRenderer {
           UnityEngine.GUILayout.Label("Ongoing manœuvre #" +
                                       (first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
-              "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
-                              current_time - manœuvre.final_time)),
+              "Cutoff " + FormatTimeSpan(current_time - manœuvre.final_time),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
       }
@@ -348,7 +339,7 @@ class FlightPlanner : SupervisedWindowRenderer {
       // even though the flight planner is still available to plan it.
       // TODO(egg): We may want to consider setting the burn vector directly
       // rather than going through the solver.
-      if (vessel_.patchedConicSolver != null) {
+      if (predicted_vessel.patchedConicSolver != null) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           show_guidance_ =
               UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
@@ -366,66 +357,34 @@ class FlightPlanner : SupervisedWindowRenderer {
     }
   }
 
-  internal static string FormatPositiveTimeSpan(TimeSpan span) {
-    return (GameSettings.KERBIN_TIME
-                ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
-                      " d6 " + (span.Hours % 6).ToString("0;0") + " h "
-                : span.Days.ToString("000;000") + " d " +
-                      span.Hours.ToString("00;00") + " h ") +
-           span.Minutes.ToString("00;00") + " min " +
-           (span.Seconds + span.Milliseconds / 1000m).ToString("00.0;00.0") +
-           " s";
+  internal static string FormatPositiveTimeSpan(double seconds) {
+    return new PrincipiaTimeSpan(seconds).FormatPositive(
+        with_leading_zeroes: true,
+        with_seconds: true);
   }
 
-  internal static string FormatTimeSpan (TimeSpan span) {
-    return span.Ticks.ToString("+;-") + FormatPositiveTimeSpan(span);
+  internal static string FormatTimeSpan (double seconds) {
+    return new PrincipiaTimeSpan(seconds).Format(
+        with_leading_zeroes: true,
+        with_seconds: true);
   }
 
-  internal static bool TryParseTimeSpan(string str, out TimeSpan value) {
-    value = TimeSpan.Zero;
-    // Using a technology that is customarily used to parse HTML.
-    string pattern = @"^[+]?\s*(\d+)\s*" +
-                     (GameSettings.KERBIN_TIME ? "d6" : "d") +
-                     @"\s*(\d+)\s*h\s*(\d+)\s*min\s*([0-9.,']+)\s*s$";
-    var regex = new Regex(pattern);
-    var match = regex.Match(str);
-    if (!match.Success) {
-      return false;
-    }
-    string days = match.Groups[1].Value;
-    string hours = match.Groups[2].Value;
-    string minutes = match.Groups[3].Value;
-    string seconds = match.Groups[4].Value;
-    if (!int.TryParse(days, out int d) ||
-        !int.TryParse(hours, out int h) ||
-        !int.TryParse(minutes, out int min) ||
-        !double.TryParse(seconds.Replace(',', '.'),
-                         NumberStyles.AllowDecimalPoint |
-                         NumberStyles.AllowThousands,
-                         Culture.culture.NumberFormat,
-                         out double s)) {
-      return false;
-    }
-    value = TimeSpan.FromDays((double)d / (GameSettings.KERBIN_TIME ? 4 : 1)) +
-            TimeSpan.FromHours(h) +
-            TimeSpan.FromMinutes(min) +
-            TimeSpan.FromSeconds(s);
-    return true;
-  }
 
   internal string FormatPlanLength(double value) {
-    return FormatPositiveTimeSpan(TimeSpan.FromSeconds(
-               value -
-               plugin.FlightPlanGetInitialTime(vessel_.id.ToString())));
+    return FormatPositiveTimeSpan(
+        value - plugin.FlightPlanGetInitialTime(
+            predicted_vessel.id.ToString()));
   }
 
-  internal bool TryParsePlanLength(string str, out double value) {
+  internal bool TryParsePlanLength(string text, out double value) {
     value = 0;
-    if (!TryParseTimeSpan(str, out TimeSpan ts)) {
+    if (!PrincipiaTimeSpan.TryParse(text,
+                                    with_seconds: true,
+                                    out PrincipiaTimeSpan ts)) {
       return false;
     }
-    value = ts.TotalSeconds +
-            plugin.FlightPlanGetInitialTime(vessel_.id.ToString());
+    value = ts.total_seconds +
+            plugin.FlightPlanGetInitialTime(predicted_vessel.id.ToString());
     return true;
   }
 
@@ -446,7 +405,7 @@ class FlightPlanner : SupervisedWindowRenderer {
   }
 
   private string GetStatusMessage() {
-    string vessel_guid = vessel_?.id.ToString();
+    string vessel_guid = predicted_vessel?.id.ToString();
     string message = "";
     if (vessel_guid != null && !status_.ok()) {
       int anomalous_manœuvres =
@@ -458,12 +417,13 @@ class FlightPlanner : SupervisedWindowRenderer {
 
       string remedy_message = "changing the flight plan";  // Preceded by "Try".
       string status_message = "computation failed";  // Preceded by "The".
-      string time_out_message =
-          timed_out ? " after " +
-                      FormatPositiveTimeSpan(TimeSpan.FromSeconds(
-                           actual_final_time -
-                           plugin.FlightPlanGetInitialTime(vessel_guid)))
-                    : "";
+      string time_out_message = timed_out
+                                    ? " after " +
+                                      FormatPositiveTimeSpan(
+                                          actual_final_time -
+                                          plugin.FlightPlanGetInitialTime(
+                                              vessel_guid))
+                                    : "";
       if (status_.is_aborted()) {
         status_message = "integrator reached the maximum number of steps" +
                          time_out_message;
@@ -508,8 +468,11 @@ class FlightPlanner : SupervisedWindowRenderer {
       if (anomalous_manœuvres > 0) {
         message = "The last " + anomalous_manœuvres + " manœuvres could " +
                   "not be drawn because the " + status_message + "; try " +
-                  remedy_message + " or adjusting manœuvre " +
-                  (manœuvres - anomalous_manœuvres - 1) + ".";
+                  remedy_message +
+                  (anomalous_manœuvres < manœuvres
+                       ?  " or adjusting manœuvre #" +
+                          (manœuvres - anomalous_manœuvres)
+                       : "") + ".";
       } else {
         message = "The " + status_message + "; try " + remedy_message + ".";
       }
@@ -521,10 +484,15 @@ class FlightPlanner : SupervisedWindowRenderer {
   private IntPtr plugin => adapter_.Plugin();
 
   private readonly PrincipiaPluginAdapter adapter_;
-  private Vessel vessel_;
+
+  // Because this class is stateful (it holds the burn_editors_) we must detect
+  // if the vessel changed.  Hence the caching of the vessel.
+  private Vessel previous_predicted_vessel_;
+
   private List<BurnEditor> burn_editors_;
   private readonly DifferentialSlider final_time_;
   private int? first_future_manœuvre_;
+  private int number_of_anomalous_manœuvres_ = 0;
 
   private bool show_guidance_ = false;
   private float warning_height_ = 1;

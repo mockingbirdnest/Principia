@@ -461,8 +461,8 @@ void Plugin::InsertOrKeepLoadedPart(
           main_body_frame.ToThisFrameAtTime(previous_time).orthogonal_map() *
               Δplanetarium_rotation.Inverse() *
               renderer_->WorldToBarycentric(PlanetariumRotation())},
-          (renderer_->BarycentricToWorld(PlanetariumRotation()) *
-                Δplanetarium_rotation)(-angular_velocity_of_world_),
+      (renderer_->BarycentricToWorld(PlanetariumRotation()) *
+          Δplanetarium_rotation)(-angular_velocity_of_world_),
       main_body_degrees_of_freedom.velocity()};
   RigidMotion<World, Barycentric> const world_to_barycentric_motion =
       main_body_frame.FromThisFrameAtTime(previous_time) *
@@ -656,19 +656,25 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
 void Plugin::SetPartApparentRigidMotion(
     PartId const part_id,
-    RigidMotion<RigidPart, World> const& rigid_motion,
-    DegreesOfFreedom<World> const& main_body_degrees_of_freedom) {
-  // Define |ApparentBubble| as the reference frame with the axes of
-  // |Barycentric| centred on the current main body.
+    RigidMotion<RigidPart, World> const& rigid_motion) {
+  // As a reference frame, |ApparentBubble| differs from |World| only by having
+  // the same axes as |Barycentric| and being nonrotating.  However, there is
+  // another semantic distinction: |Apparent...| coordinates are uncorrected
+  // data from the game, given immediately after its physics step; before using
+  // them, we must correct them in accordance with the data computed by the pile
+  // up.  This correction overrides the origin of position and velocity, so we
+  // need not worry about the current definition of
+  // |{World::origin, World::unmoving}| as we do when getting the actual degrees
+  // of freedom (via |Plugin::BarycentricToWorld|).
   RigidMotion<World, ApparentBubble> world_to_apparent_bubble{
       RigidTransformation<World, ApparentBubble>{
-          main_body_degrees_of_freedom.position(),
+          World::origin,
           ApparentBubble::origin,
           OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
               renderer_->WorldToBarycentric(PlanetariumRotation())},
       renderer_->BarycentricToWorld(PlanetariumRotation())(
           -angular_velocity_of_world_),
-      main_body_degrees_of_freedom.velocity()};
+      World::unmoving};
 
   not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));

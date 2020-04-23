@@ -71,11 +71,11 @@ void __cdecl principia__PartApplyIntrinsicTorque(
   return m.Return();
 }
 
-QPRW __cdecl principia__PartGetActualDegreesOfFreedom(
+QPRW __cdecl principia__PartGetActualRigidMotion(
     Plugin const* const plugin,
     PartId const part_id,
     Origin const origin) {
-  journal::Method<journal::PartGetActualDegreesOfFreedom> m(
+  journal::Method<journal::PartGetActualRigidMotion> m(
       {plugin, part_id, origin});
   CHECK_NOTNULL(plugin);
   RigidMotion<RigidPart, World> const part_motion = plugin->GetPartActualMotion(
@@ -112,20 +112,17 @@ void __cdecl principia__PartSetApparentRigidMotion(
     PartId const part_id,
     QP const degrees_of_freedom,
     WXYZ const rotation,
-    XYZ const angular_velocity,
-    QP const main_body_degrees_of_freedom) {
+    XYZ const angular_velocity) {
   journal::Method<journal::PartSetApparentRigidMotion> m(
       {plugin,
        part_id,
        degrees_of_freedom,
        rotation,
-       angular_velocity,
-       main_body_degrees_of_freedom});
+       angular_velocity});
   CHECK_NOTNULL(plugin);
   plugin->SetPartApparentRigidMotion(
       part_id,
-      MakePartRigidMotion(degrees_of_freedom, rotation, angular_velocity),
-      FromQP<DegreesOfFreedom<World>>(main_body_degrees_of_freedom));
+      MakePartRigidMotion(degrees_of_freedom, rotation, angular_velocity));
   return m.Return();
 }
 
