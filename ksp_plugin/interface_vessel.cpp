@@ -103,18 +103,18 @@ OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
     if (vessel.orbit_analysis()->elements().has_value()) {
       auto const& elements = *vessel.orbit_analysis()->elements();
       analysis->elements = new OrbitalElements{
-          /*sidereal_period=*/elements.sidereal_period() / Second,
-          /*nodal_period=*/elements.nodal_period() / Second,
-          /*anomalistic_period=*/elements.anomalistic_period() / Second,
-          /*nodal_precession=*/elements.nodal_precession() / (Radian / Second),
-          /*mean_semimajor_axis=*/
+          .sidereal_period = elements.sidereal_period() / Second,
+          .nodal_period = elements.nodal_period() / Second,
+          .anomalistic_period = elements.anomalistic_period() / Second,
+          .nodal_precession = elements.nodal_precession() / (Radian / Second),
+          .mean_semimajor_axis =
           ToInterval(elements.mean_semimajor_axis_interval()),
-          /*mean_eccentricity=*/
+          .mean_eccentricity =
           ToInterval(elements.mean_eccentricity_interval()),
-          /*mean_inclination=*/ToInterval(elements.mean_inclination_interval()),
-          /*mean_longitude_of_ascending_nodes=*/
+          .mean_inclination = ToInterval(elements.mean_inclination_interval()),
+          .mean_longitude_of_ascending_nodes =
           ToInterval(elements.mean_longitude_of_ascending_node_interval()),
-          /*mean_argument_of_periapsis=*/
+          .mean_argument_of_periapsis =
           ToInterval(elements.mean_argument_of_periapsis_interval()),
       };
     }
@@ -133,16 +133,16 @@ OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
     if (vessel.orbit_analysis()->recurrence().has_value()) {
       auto const& recurrence = *vessel.orbit_analysis()->recurrence();
       analysis->recurrence = new OrbitRecurrence{
-          /*nuo=*/recurrence.νₒ(),
-          /*dto=*/recurrence.Dᴛₒ(),
-          /*cto=*/recurrence.Cᴛₒ(),
-          /*number_of_revolutions=*/
+          .nuo = recurrence.νₒ(),
+          .dto = recurrence.Dᴛₒ(),
+          .cto = recurrence.Cᴛₒ(),
+          .number_of_revolutions =
           recurrence.number_of_revolutions(),
-          /*equatorial_shift=*/
+          .equatorial_shift =
           recurrence.equatorial_shift() / Radian,
-          /*base_interval=*/recurrence.base_interval() / Radian,
-          /*grid_interval=*/recurrence.grid_interval() / Radian,
-          /*subcycle=*/recurrence.subcycle(),
+          .base_interval = recurrence.base_interval() / Radian,
+          .grid_interval = recurrence.grid_interval() / Radian,
+          .subcycle = recurrence.subcycle(),
       };
     }
     if (vessel.orbit_analysis()->ground_track().has_value() &&
@@ -150,11 +150,11 @@ OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
       auto const& equatorial_crossings =
           *vessel.orbit_analysis()->equatorial_crossings();
       analysis->ground_track = new OrbitGroundTrack{
-          /*equatorial_crossings=*/{
-              /*longitudes_reduced_to_ascending_pass=*/
+          .equatorial_crossings = {
+              .longitudes_reduced_to_ascending_pass =
               ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
                   2 * ground_track_revolution - 1)),
-              /*longitudes_reduced_to_descending_pass=*/
+              .longitudes_reduced_to_descending_pass =
               ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
                   2 * ground_track_revolution)),
           },
