@@ -214,5 +214,42 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
 }
 
+TEST_F(MathematicaTest, Apply) {
+  EXPECT_EQ("Fun[]", Apply("Fun", {}));
+  EXPECT_EQ("Fun[1,[],\"string\"]", Apply("Fun", {"1", "[]", "\"string\""}));
+}
+
+TEST_F(MathematicaTest, Option) {
+  EXPECT_EQ(
+      "Rule["
+      "option,"
+      "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]",
+      Option("option", ToMathematica(3)));
+}
+
+TEST_F(MathematicaTest, Assign) {
+  EXPECT_EQ(
+      "Set["
+      "var,"
+      "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]];\n",
+      Assign("var", ToMathematica(3)));
+}
+
+TEST_F(MathematicaTest, PlottableDataset) {
+  EXPECT_EQ(
+      "Transpose["
+      "List["
+      "List["
+      "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+      "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]],"
+      "List[2,3]]]",
+      PlottableDataset(std::vector<double>{2, 3},
+                       std::vector<std::string>{"2", "3"}));
+}
+
+TEST_F(MathematicaTest, Escape) {
+  EXPECT_EQ("\"foo\"", Escape("foo"));
+}
+
 }  // namespace mathematica
 }  // namespace principia
