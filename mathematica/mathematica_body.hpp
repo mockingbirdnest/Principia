@@ -144,13 +144,13 @@ std::string ToMathematica(Quantity<D> const& quantity) {
 }
 
 template<typename S, typename F>
-std::string ToMathematica(Bivector<S, F> const& bivector) {
-  return ToMathematica(bivector.coordinates());
+std::string ToMathematica(Vector<S, F> const & vector) {
+  return ToMathematica(vector.coordinates());
 }
 
 template<typename S, typename F>
-std::string ToMathematica(Vector<S, F> const & vector) {
-  return ToMathematica(vector.coordinates());
+std::string ToMathematica(Bivector<S, F> const& bivector) {
+  return ToMathematica(bivector.coordinates());
 }
 
 template<typename V>
