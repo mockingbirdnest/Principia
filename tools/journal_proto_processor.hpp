@@ -48,6 +48,8 @@ class JournalProtoProcessor final {
                                      std::string const& cs_boxed_type,
                                      std::string const& cs_unboxed_type,
                                      std::string const& cxx_type);
+  void ProcessOptionalScalarField(FieldDescriptor const* descriptor,
+                                  std::string const& cxx_type);
   void ProcessOptionalDoubleField(FieldDescriptor const* descriptor);
   void ProcessOptionalInt32Field(FieldDescriptor const* descriptor);
   void ProcessOptionalMessageField(FieldDescriptor const* descriptor);
@@ -105,6 +107,12 @@ class JournalProtoProcessor final {
   // interface with an extra level of indirection.  Note that the in fields
   // present in |in_out_| are not in |out_|.
   std::set<FieldDescriptor const*> out_;
+
+  // The fields that are returned.
+  std::set<FieldDescriptor const*> return_;
+
+  // The fields that are part of interchange messages.
+  std::set<FieldDescriptor const*> interchange_;
 
   // For all fields, a lambda that takes the name of a local variable containing
   // data extracted (and deserialized) from the field and returns a list of
@@ -182,7 +190,7 @@ class JournalProtoProcessor final {
                                      std::string const& stmt)>>
       field_cxx_optional_assignment_fn_;
 
-  // For all fields, a lambda that takes a condition to take for the presence
+  // For all fields, a lambda that takes a condition to check for the presence
   // of an optional field (typically something like |message.in().has_bar()|)
   // and a deserialized expression for reading the field (typically the result
   // of |field_cxx_deserializer_fn_|) and returns a conditional expression for
@@ -285,7 +293,8 @@ class JournalProtoProcessor final {
   std::map<Descriptor const*, std::string> cxx_serialize_definition_;
 
   // For interchange messages that require deserialization storage, the
-  // arguments for the storage in the call to the Deserialize function.
+  // arguments for the storage in the call to the Deserialize function.  Starts
+  // with a comma, arguments are comma-separated.
   std::map<Descriptor const*, std::string>
       cxx_deserialization_storage_arguments_;
 

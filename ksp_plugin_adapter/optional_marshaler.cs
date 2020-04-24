@@ -6,10 +6,6 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class OptionalMarshaler<T> : MonoMarshaler where T : struct {
-  // In addition to implementing the |ICustomMarshaler| interface, custom
-  // marshalers must implement a static method called |GetInstance| that accepts
-  // a |String| as a parameter and has a return type of |ICustomMarshaler|,
-  // see https://goo.gl/wwmBTa.
   public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }

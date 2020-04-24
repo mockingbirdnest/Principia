@@ -21,6 +21,7 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
   public abstract void CleanUpNativeDataImplementation(IntPtr native_data);
   public abstract IntPtr MarshalManagedToNativeImplementation(
       object managed_object);
+  public abstract object MarshalNativeToManaged(IntPtr native_data);
 
   // We have no evidence that this method is ever called.
   void ICustomMarshaler.CleanUpManagedData(object managed_object) {}
@@ -55,8 +56,6 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
     }
     return result;
   }
-
-  public abstract object MarshalNativeToManaged(IntPtr native_data);
 
   // Since Mono calls CleanUpNativeData with IntPtrs that have not been
   // allocated by MarshalManagedToNative, we track here all the values returned
