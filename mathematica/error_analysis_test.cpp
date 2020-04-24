@@ -59,7 +59,7 @@ TEST_F(ErrorAnalysisTest,
   StatisticallyAnalyseStability();
 }
 
-TEST_F(ErrorAnalysisTest, LocalErrorAnalysis) {
+TEST_F(ErrorAnalysisTest, DISABLED_LocalErrorAnalysis) {
   google::LogToStderr();
   std::vector<std::string> argv = ::testing::internal::GetArgvs();
   std::map<std::string, std::optional<std::string>> flags;
