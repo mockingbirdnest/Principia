@@ -75,8 +75,10 @@
       <AdditionalIncludeDirectories>C:\Program Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj /w14714 /Zc:char8_t-</AdditionalOptions>
       <AdditionalOptions Condition="$(ProjectName) != serialization">/w14061 %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard Condition="$(ProjectName) == astronomy">stdcpplatest</LanguageStandard>
-      <LanguageStandard Condition="$(ProjectName) != astronomy">stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard Condition="$(ProjectName) == astronomy or
+                                   $(ProjectName) == ksp_plugin or
+                                   $(ProjectName) == ksp_plugin_test">stdcpplatest</LanguageStandard>
       <WarningLevel Condition="!$(PrincipiaCompilerClangLLVM)">Level3</WarningLevel>
       <WarningLevel Condition="$(PrincipiaCompilerClangLLVM) and
                                $(ProjectName) == serialization">TurnOffAllWarnings</WarningLevel>

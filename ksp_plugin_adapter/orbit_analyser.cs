@@ -170,10 +170,12 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           autodetect_recurrence_ ? null : (int?)days_per_cycle_,
           ground_track_revolution_);
       if (autodetect_recurrence_ &&
-          analysis.recurrence.number_of_revolutions != 0 &&
-          analysis.recurrence.cto != 0) {
-        revolutions_per_cycle_ = analysis.recurrence.number_of_revolutions;
-        days_per_cycle_ = analysis.recurrence.cto;
+          analysis.recurrence.HasValue &&
+          analysis.recurrence.Value.number_of_revolutions != 0 &&
+          analysis.recurrence.Value.cto != 0) {
+        revolutions_per_cycle_ =
+            analysis.recurrence.Value.number_of_revolutions;
+        days_per_cycle_ = analysis.recurrence.Value.cto;
       }
       UnityEngine.GUILayout.HorizontalScrollbar(
           value      : 0,
@@ -181,19 +183,10 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           leftValue  : 0,
           rightValue : 1);
 
-      OrbitalElements? elements = null;
-      OrbitRecurrence? recurrence = null;
-      OrbitGroundTrack? ground_track = null;
+      OrbitalElements? elements = analysis.elements;
+      OrbitRecurrence? recurrence = analysis.recurrence;
+      OrbitGroundTrack? ground_track = analysis.ground_track;
       double mission_duration = analysis.mission_duration;
-      if (analysis.elements_has_value) {
-        elements = analysis.elements;
-      }
-      if (analysis.recurrence_has_value) {
-          recurrence = analysis.recurrence;
-      }
-      if (analysis.ground_track_has_value) {
-          ground_track = analysis.ground_track;
-      }
       primary = FlightGlobals.Bodies[analysis.primary_index];
 
       Style.HorizontalLine();
@@ -205,9 +198,10 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
             (int)(mission_duration / elements.Value.nodal_period);
         int anomalistic_revolutions =
             (int)(mission_duration / elements.Value.anomalistic_period);
-        int ground_track_cycles = analysis.recurrence_has_value
-            ? nodal_revolutions / analysis.recurrence.number_of_revolutions
-            : 0;
+        int ground_track_cycles = analysis.recurrence.HasValue
+                                      ? nodal_revolutions / analysis.recurrence.
+                                            Value.number_of_revolutions
+                                      : 0;
         string duration_in_ground_track_cycles = ground_track_cycles > 0
             ? $" ({ground_track_cycles.FormatN(0)} ground track cycles)"
             : "";

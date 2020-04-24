@@ -437,6 +437,15 @@ double __cdecl principia__CurrentTime(Plugin const* const plugin) {
   return m.Return(ToGameTime(*plugin, plugin->CurrentTime()));
 }
 
+void __cdecl principia__DeleteInterchange(void const** const native_pointer) {
+  journal::Method<journal::DeleteInterchange> m({native_pointer},
+                                                {native_pointer});
+  CHECK_NOTNULL(native_pointer);
+  ::operator delete(const_cast<void*>(*native_pointer));
+  *native_pointer = nullptr;
+  return m.Return();
+}
+
 // Deletes and nulls |*plugin|.
 // |plugin| must not be null.  No transfer of ownership of |*plugin|, takes
 // ownership of |**plugin|.
