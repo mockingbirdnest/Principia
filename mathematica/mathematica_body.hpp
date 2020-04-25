@@ -55,42 +55,53 @@ inline std::string Apply(
   return result;
 }
 
-template<typename T>
-std::string Option(std::string const& name, T const& right) {
-  return Apply("Rule", {name, ToMathematica(right)});
+template<typename T, typename... Qs>
+std::string Option(std::string const& name,
+                   T const& right,
+                   ExpressIn2<Qs...> express_in) {
+  return Apply("Rule", {name, ToMathematica(right, express_in)});
 }
 
-template<typename T>
-std::string Assign(std::string const& name, T const& right) {
-  return Apply("Set", {name, ToMathematica(right)}) + ";\n";
+template<typename T, typename... Qs>
+std::string Assign(std::string const& name,
+                   T const& right,
+                   ExpressIn2<Qs...> express_in) {
+  return Apply("Set", {name, ToMathematica(right, express_in)}) + ";\n";
 }
 
-template<typename T, typename U>
-std::string PlottableDataset(std::vector<T> const& x, std::vector<U> const& y) {
-  std::vector<std::string> const xy = {ToMathematica(x), ToMathematica(y)};
-  return Apply("Transpose", {ToMathematica(xy)});
+template<typename T, typename U, typename... Qs>
+std::string PlottableDataset(std::vector<T> const& x,
+                             std::vector<U> const& y,
+                             ExpressIn2<Qs...> express_in) {
+  std::vector<std::string> const xy = {ToMathematica(x, express_in),
+                                       ToMathematica(y, express_in)};
+  return Apply("Transpose", {ToMathematica(xy, express_in)});
 }
 
-template<typename T>
-std::string ToMathematica(std::vector<T> const& list) {
+template<typename T, typename... Qs>
+std::string ToMathematica(std::vector<T> const& list,
+                          ExpressIn2<Qs...> express_in) {
   std::vector<std::string> expressions;
   expressions.reserve(list.size());
   for (auto const& expression : list) {
-    expressions.emplace_back(ToMathematica(expression));
+    expressions.emplace_back(ToMathematica(expression, express_in));
   }
   return Apply("List", expressions);
 }
 
-template<typename It>
-std::string ToMathematica(It const begin, It const end) {
+template<typename It, typename... Qs>
+std::string ToMathematica(It const begin, It const end,
+                          ExpressIn2<Qs...> express_in) {
   std::vector<std::string> expressions;
   for (auto it = begin; it != end; ++it) {
-    expressions.emplace_back(ToMathematica(*it));
+    expressions.emplace_back(ToMathematica(*it, express_in));
   }
   return Apply("List", expressions);
 }
 
-inline std::string ToMathematica(double const& real) {
+template<typename... Qs>
+std::string ToMathematica(double const real,
+                          ExpressIn2<Qs...> /*express_in*/) {
   if (std::isinf(real)) {
     if (real > 0.0) {
       return "Infinity";
@@ -106,33 +117,37 @@ inline std::string ToMathematica(double const& real) {
   }
 }
 
-inline std::string ToMathematica(Quaternion const& quaternion) {
-  return ToMathematica<double, R3Element<double>>(
-      {quaternion.real_part(), quaternion.imaginary_part()});
+template<typename... Qs>
+std::string ToMathematica(Quaternion const& quaternion,
+                          ExpressIn2<Qs...> express_in) {
+  return ToMathematica(
+      std::tuple{quaternion.real_part(), quaternion.imaginary_part()});
 }
 
-template<typename T, int size>
-std::string ToMathematica(FixedVector<T, size> const& fixed_vector) {
+template<typename T, int size, typename... Qs>
+std::string ToMathematica(FixedVector<T, size> const& fixed_vector,
+                          ExpressIn2<Qs...> express_in) {
   std::vector<std::string> expressions;
   for (int i = 0; i < size; ++i) {
-    expressions.emplace_back(ToMathematica(fixed_vector[i]));
+    expressions.emplace_back(ToMathematica(fixed_vector[i], express_in));
   }
   return Apply("List", expressions);
 }
 
-template<typename T>
-std::string ToMathematica(R3Element<T> const& r3_element) {
+template<typename T, typename... Qs>
+std::string ToMathematica(R3Element<T> const& r3_element,
+                          ExpressIn2<Qs...> express_in) {
   std::vector<std::string> expressions;
-  expressions.emplace_back(ToMathematica(r3_element.x));
-  expressions.emplace_back(ToMathematica(r3_element.y));
-  expressions.emplace_back(ToMathematica(r3_element.z));
+  expressions.emplace_back(ToMathematica(r3_element.x, express_in));
+  expressions.emplace_back(ToMathematica(r3_element.y, express_in));
+  expressions.emplace_back(ToMathematica(r3_element.z, express_in));
   return Apply("List", expressions);
 }
 
 template<typename D, typename... Qs>
 std::string ToMathematica(Quantity<D> const& quantity,
                           ExpressIn2<Qs...> express_in) {
-  if (express_in.is_default()) {
+  if constexpr (ExpressIn2<Qs...>::is_default) {
     std::string s = DebugString(quantity);
     std::string const number = ToMathematica(quantity / si::Unit<Quantity<D>>);
     std::size_t const split = s.find(" ");
@@ -144,29 +159,32 @@ std::string ToMathematica(Quantity<D> const& quantity,
   }
 }
 
-template<typename S, typename F>
-std::string ToMathematica(Vector<S, F> const& vector) {
-  return ToMathematica(vector.coordinates());
+template<typename S, typename F, typename... Qs>
+std::string ToMathematica(Vector<S, F> const& vector,
+                          ExpressIn2<Qs...> express_in) {
+  return ToMathematica(vector.coordinates(), express_in);
 }
 
-template<typename S, typename F>
-std::string ToMathematica(Bivector<S, F> const& bivector) {
-  return ToMathematica(bivector.coordinates());
+template<typename S, typename F, typename... Qs>
+std::string ToMathematica(Bivector<S, F> const& bivector,
+                          ExpressIn2<Qs...> express_in) {
+  return ToMathematica(bivector.coordinates(), express_in);
 }
 
-template<typename V>
-std::string ToMathematica(Point<V> const & point) {
-  return ToMathematica(point - Point<V>());
+template<typename V, typename... Qs>
+std::string ToMathematica(Point<V> const & point,
+                          ExpressIn2<Qs...> express_in) {
+  return ToMathematica(point - Point<V>(), express_in);
 }
 
-template<typename F>
-std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom) {
+template<typename F, typename... Qs>
+std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom,
+                          ExpressIn2<Qs...> express_in) {
   return Apply(
       "List",
       std::vector<std::string>{
-          ToMathematica(ExpressIn(Metre, degrees_of_freedom.position())),
-          ToMathematica(
-              ExpressIn(Metre / Second, degrees_of_freedom.velocity()))});
+          ToMathematica(degrees_of_freedom.position(), express_in),
+          ToMathematica(degrees_of_freedom.velocity(), express_in)});
 }
 
 template<typename... Types>
@@ -186,8 +204,10 @@ std::string ToMathematica(R const ref) {
                                ToMathematica(ref.degrees_of_freedom)});
 }
 
-inline std::string ToMathematica(
-    astronomy::OrbitalElements::EquinoctialElements const& elements) {
+template<typename... Qs>
+std::string ToMathematica(
+    astronomy::OrbitalElements::EquinoctialElements const& elements,
+    ExpressIn2<Qs...> express_in) {
   return ToMathematica(std::make_tuple((elements.t - J2000) / Second,
                                        elements.a / Metre,
                                        elements.h,
@@ -199,7 +219,9 @@ inline std::string ToMathematica(
                                        elements.qʹ));
 }
 
-inline std::string ToMathematica(std::string const& str) {
+template<typename... Qs>
+std::string ToMathematica(std::string const& str,
+                          ExpressIn2<Qs...>) {
   return str;
 }
 

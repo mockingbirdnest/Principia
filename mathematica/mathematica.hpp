@@ -43,14 +43,11 @@ using quantities::Time;
 template<typename... Qs>
 class ExpressIn2 {
  public:
-  ExpressIn2() {}
+  // static_assert
 
-  template<typename = std::enable_if_t<(sizeof...(Qs) > 0)>>
-  ExpressIn2(Qs const&... qs) : units_(std::make_tuple(qs...)) {
-    // static_assert
-  }
+  static constexpr bool is_default = sizeof...(Qs) == 0;
 
-  bool is_default() const { return !units_.has_value(); }
+  ExpressIn2(Qs const&... qs) : units_(std::make_tuple(qs...)) {}
 
   template<typename Q>
   double operator()(Q const& q) const {
@@ -71,57 +68,74 @@ class ExpressIn2 {
     if constexpr (exponent == 0) {
       return q2;
     } else {
-      return q2 / Pow<exponent>(std::get<Q1>(units_.value()));
+      return q2 / Pow<exponent>(std::get<Q1>(units_));
     }
   }
 
-  std::optional<std::tuple<Qs...>> units_;
+  std::tuple<Qs...> units_;
 };
 
 std::string Apply(std::string const& function,
                   std::vector<std::string> const& arguments);
 
-template<typename T>
-std::string Option(std::string const& name, T const& right);
+template<typename T, typename... Qs>
+std::string Option(std::string const& name,
+                   T const& right,
+                   ExpressIn2<Qs...> express_in = {});
 
-template<typename T>
-std::string Assign(std::string const& name, T const& right);
+template<typename T, typename... Qs>
+std::string Assign(std::string const& name,
+                   T const& right,
+                   ExpressIn2<Qs...> express_in = {});
 
-template<typename T, typename U>
-std::string PlottableDataset(std::vector<T> const& x, std::vector<U> const& y);
+template<typename T, typename U, typename... Qs>
+std::string PlottableDataset(std::vector<T> const& x,
+                             std::vector<U> const& y,
+                             ExpressIn2<Qs...> express_in = {});
 
-template<typename T>
-std::string ToMathematica(std::vector<T> const& list);
+template<typename T, typename... Qs>
+std::string ToMathematica(std::vector<T> const& list,
+                          ExpressIn2<Qs...> express_in = {});
 
-template<typename It>
-std::string ToMathematica(It begin, It end);
+template<typename It, typename... Qs>
+std::string ToMathematica(It begin, It end,
+                          ExpressIn2<Qs...> express_in = {});
 
-std::string ToMathematica(double const& real);
+template<typename... Qs>
+std::string ToMathematica(double real,
+                          ExpressIn2<Qs...> express_in = {});
 
-template<typename T, int size>
-std::string ToMathematica(FixedVector<T, size> const& fixed_vector);
+template<typename T, int size, typename... Qs>
+std::string ToMathematica(FixedVector<T, size> const& fixed_vector,
+                          ExpressIn2<Qs...> express_in = {});
 
-template<typename T>
-std::string ToMathematica(R3Element<T> const& r3_element);
+template<typename T, typename... Qs>
+std::string ToMathematica(R3Element<T> const& r3_element,
+                          ExpressIn2<Qs...> express_in = {});
 
-std::string ToMathematica(Quaternion const& quaternion);
+template<typename... Qs>
+std::string ToMathematica(Quaternion const& quaternion,
+                          ExpressIn2<Qs...> express_in = {});
 
 template<typename D, typename... Qs>
-std::string ToMathematica(
-    Quantity<D> const& quantity,
-    ExpressIn2<Qs...> express_in = {});
+std::string ToMathematica(Quantity<D> const& quantity,
+                          ExpressIn2<Qs...> express_in = {});
 
-template<typename S, typename F>
-std::string ToMathematica(Vector<S, F> const& vector);
+template<typename S, typename F, typename... Qs>
+std::string ToMathematica(Vector<S, F> const& vector,
+                          ExpressIn2<Qs...> express_in = {});
 
-template<typename S, typename F>
-std::string ToMathematica(Bivector<S, F> const& bivector);
+template<typename S, typename F, typename... Qs>
+std::string ToMathematica(Bivector<S, F> const& bivector,
+                          ExpressIn2<Qs...> express_in = {});
 
-template<typename V>
-std::string ToMathematica(Point<V> const& point);
+template<typename V, typename... Qs>
+std::string ToMathematica(Point<V> const& point,
+                          ExpressIn2<Qs...> express_in = {});
 
-template<typename F>
-std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom);
+template<typename F, typename... Qs>
+std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom,
+                          ExpressIn2<Qs...> express_in = {});
 
 template<typename... Types>
 std::string ToMathematica(std::tuple<Types...> const& tuple);
@@ -131,11 +145,15 @@ template<typename R,
          typename = std::void_t<decltype(std::declval<R>().degrees_of_freedom)>>
 std::string ToMathematica(R ref);
 
+template<typename... Qs>
 std::string ToMathematica(
-    astronomy::OrbitalElements::EquinoctialElements const& elements);
+    astronomy::OrbitalElements::EquinoctialElements const& elements,
+    ExpressIn2<Qs...> express_in = {});
 
 // Returns its argument.
-std::string ToMathematica(std::string const& str);
+template<typename... Qs>
+std::string ToMathematica(std::string const& str,
+                          ExpressIn2<Qs...> express_in = {});
 
 // Wraps the string in quotes.
 // TODO(egg): escape things properly.

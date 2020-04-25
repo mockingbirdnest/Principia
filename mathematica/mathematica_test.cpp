@@ -34,6 +34,7 @@ using geometry::Velocity;
 using numerics::FixedVector;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using quantities::Speed;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
@@ -41,10 +42,10 @@ using quantities::si::Second;
 
 class MathematicaTest : public ::testing::Test {
  protected:
+  using F = Frame<enum class FTag>;
 };
 
 TEST_F(MathematicaTest, ToMathematica) {
-  using F = Frame<enum class FTag>;
   {
     EXPECT_EQ(
         "List["
@@ -143,13 +144,37 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ(
         "List["
         "List["
+        "SetPrecision["
+        "Quantity["
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+        "\" m\"],"
+        "$MachinePrecision],"
+        "SetPrecision["
+        "Quantity["
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]],"
+        "\" m\"],"
+        "$MachinePrecision],"
+        "SetPrecision["
+        "Quantity["
+        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision],"
+        "\" m\"],"
+        "$MachinePrecision]],"
         "List["
+        "SetPrecision["
+        "Quantity["
         "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision],"
+        "\" m s^-1\"],"
+        "$MachinePrecision],"
+        "SetPrecision["
+        "Quantity["
         "SetPrecision[-5.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision]]]",
+        "\" m s^-1\"],"
+        "$MachinePrecision],"
+        "SetPrecision["
+        "Quantity["
+        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision],"
+        "\" m s^-1\"],"
+        "$MachinePrecision]]]",
         ToMathematica(DegreesOfFreedom<F>(
             F::origin +
                 Displacement<F>({2.0 * Metre, 3.0 * Metre, -4.0 * Metre}),
@@ -158,18 +183,18 @@ TEST_F(MathematicaTest, ToMathematica) {
                          8.0 * Metre / Second}))));
   }
   {
-    //EXPECT_EQ(
-    //    "List["
-    //    "SetPrecision["
-    //    "Quantity[SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-    //    "\" m\"],$MachinePrecision],"
-    //    "SetPrecision["
-    //    "Quantity[SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-    //    "\" s\"],$MachinePrecision],"
-    //    "SetPrecision["
-    //    "Quantity[SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-    //    "\" m s^-1\"],$MachinePrecision]]",
-    //    ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
+    EXPECT_EQ(
+        "List["
+        "SetPrecision["
+        "Quantity[SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+        "\" m\"],$MachinePrecision],"
+        "SetPrecision["
+        "Quantity[SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+        "\" s\"],$MachinePrecision],"
+        "SetPrecision["
+        "Quantity[SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
+        "\" m s^-1\"],$MachinePrecision]]",
+        ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
   }
   {
     DiscreteTrajectory<F> trajectory;
@@ -185,13 +210,37 @@ TEST_F(MathematicaTest, ToMathematica) {
         "List[SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
         "List["
         "List["
+        "SetPrecision["
+        "Quantity["
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+        "\" m\"],"
+        "$MachinePrecision],"
+        "SetPrecision["
+        "Quantity["
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]],"
+        "\" m\"],"
+        "$MachinePrecision],"
+        "SetPrecision["
+        "Quantity["
+        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision],"
+        "\" m\"],"
+        "$MachinePrecision]],"
         "List["
+        "SetPrecision["
+        "Quantity["
         "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision],"
+        "\" m s^-1\"],"
+        "$MachinePrecision],"
+        "SetPrecision["
+        "Quantity["
         "SetPrecision[-5.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision]]]]",
+        "\" m s^-1\"],"
+        "$MachinePrecision],"
+        "SetPrecision["
+        "Quantity["
+        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision],"
+        "\" m s^-1\"],"
+        "$MachinePrecision]]]]",
         ToMathematica(*trajectory.begin()));
   }
   {
@@ -253,19 +302,28 @@ TEST_F(MathematicaTest, Escape) {
 }
 
 TEST_F(MathematicaTest, ExpressIn2) {
-  auto c = ExpressIn2<quantities::Angle>().Divide<1, quantities::Angle>(
-      1 * quantities::si::Radian);
-
-  //auto a = ExpressIn2(Metre, Second);
-  //ExpressIn2<quantities::Length> b;
-  //EXPECT_EQ(
-  //  "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
-  //  ToMathematica(3.0 * Metre / Second / Second, ExpressIn2(Metre, Second)));
-  //EXPECT_EQ("SetPrecision[+5.72957795130823229*^+01,$MachinePrecision]",
-  //  ToMathematica(1 * Radian, ExpressIn2(Degree)));
-  //EXPECT_DEATH({
-  //    ToMathematica(1 * Radian, ExpressIn2(Metre));
-  //  }, "Missing unit to decompose");
+  ExpressIn2<> default;  // Check that this compiles.
+  {
+    EXPECT_EQ("SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
+              ToMathematica(3.0 * Metre / Second / Second,
+                            ExpressIn2(Metre, Second)));
+    EXPECT_EQ("SetPrecision[+5.72957795130823229*^+01,$MachinePrecision]",
+              ToMathematica(1 * Radian, ExpressIn2(Degree)));
+  }
+  {
+    EXPECT_EQ(
+        "List["
+        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]",
+        ToMathematica(Vector<Speed, F>({2.0 * Metre / Second,
+                                        3.0 * Metre / Second,
+                                        -4.0 * Metre / Second}),
+                      ExpressIn2(Metre, Second)));
+  }
+#if 0
+  ToMathematica(1 * Radian, ExpressIn2(Metre));
+#endif
 }
 
 }  // namespace mathematica
