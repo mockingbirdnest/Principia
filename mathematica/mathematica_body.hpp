@@ -130,17 +130,18 @@ std::string ToMathematica(R3Element<T> const& r3_element) {
 }
 
 template<typename D>
-std::string ToMathematica(Quantity<D> const& quantity) {
-  std::string s = DebugString(quantity);
-  if (IsFinite(quantity)) {
-    s.replace(s.find("e"), 1, "*^");
+std::string ToMathematica(Quantity<D> const& quantity,
+                          std::optional<ExpressIn2> express_in) {
+  if (express_in == std::nullopt) {
+    std::string s = DebugString(quantity);
+    std::string const number = ToMathematica(quantity / si::Unit<Quantity<D>>);
+    std::size_t const split = s.find(" ");
+    std::string const units = Escape(s.substr(split, s.size()));
+    return Apply("SetPrecision",
+                 {Apply("Quantity", {number, units}), "$MachinePrecision"});
+  } else {
+    return ToMathematica(express_in.value()(quantity));
   }
-  std::string const number = ToMathematica(quantity / si::Unit<Quantity<D>>);
-  std::size_t const split = s.find(" ");
-  std::string const units = Escape(s.substr(split, s.size()));
-  return Apply(
-      "SetPrecision",
-      {Apply("Quantity", {number, units}), "$MachinePrecision"});
 }
 
 template<typename D>

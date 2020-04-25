@@ -71,8 +71,8 @@ TEST_F(MathematicaTest, ToMathematica) {
   {
     EXPECT_EQ("SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
               ToMathematica(3.0));
-    EXPECT_EQ("SetPrecision[-2.00000000000000000*^+00,$MachinePrecision]",
-              ToMathematica(-2.0));
+    EXPECT_EQ("SetPrecision[-2.00000000000000000*^+09,$MachinePrecision]",
+              ToMathematica(-2.0e9));
     EXPECT_EQ("SetPrecision[-0.00000000000000000*^+00,$MachinePrecision]",
               ToMathematica(-0.0));
   }
@@ -254,10 +254,13 @@ TEST_F(MathematicaTest, Escape) {
 
 TEST_F(MathematicaTest, ExpressIn2) {
   EXPECT_EQ(
-      "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
-      ToMathematica(3.0 * Metre / Second / Second, ExpressIn2(Metre, Second)));
+    "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
+    ToMathematica(3.0 * Metre / Second / Second, ExpressIn2(Metre, Second)));
   EXPECT_EQ("SetPrecision[+5.72957795130823229*^+01,$MachinePrecision]",
-            ToMathematica(1 * Radian, ExpressIn2(Degree)));
+    ToMathematica(1 * Radian, ExpressIn2(Degree)));
+  EXPECT_DEATH({
+      ToMathematica(1 * Radian, ExpressIn2(Metre));
+    }, "Missing unit to decompose");
 }
 
 }  // namespace mathematica
