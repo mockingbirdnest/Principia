@@ -207,7 +207,12 @@ TEST_F(MathematicaTest, ToMathematica) {
                          -5.0 * Metre / Second,
                          8.0 * Metre / Second})));
     EXPECT_EQ(
-        "List[SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+        "List["
+        "SetPrecision["
+        "Quantity["
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+        "\" s\"],"
+        "$MachinePrecision],"
         "List["
         "List["
         "SetPrecision["
@@ -301,14 +306,14 @@ TEST_F(MathematicaTest, Escape) {
   EXPECT_EQ("\"foo\"", Escape("foo"));
 }
 
-TEST_F(MathematicaTest, ExpressIn2) {
-  ExpressIn2<> default;  // Check that this compiles.
+TEST_F(MathematicaTest, ExpressIn) {
+  ExpressIn<> default;  // Check that this compiles.
   {
     EXPECT_EQ("SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
               ToMathematica(3.0 * Metre / Second / Second,
-                            ExpressIn2(Metre, Second)));
+                            ExpressIn(Metre, Second)));
     EXPECT_EQ("SetPrecision[+5.72957795130823229*^+01,$MachinePrecision]",
-              ToMathematica(1 * Radian, ExpressIn2(Degree)));
+              ToMathematica(1 * Radian, ExpressIn(Degree)));
   }
   {
     EXPECT_EQ(
@@ -319,10 +324,10 @@ TEST_F(MathematicaTest, ExpressIn2) {
         ToMathematica(Vector<Speed, F>({2.0 * Metre / Second,
                                         3.0 * Metre / Second,
                                         -4.0 * Metre / Second}),
-                      ExpressIn2(Metre, Second)));
+                      ExpressIn(Metre, Second)));
   }
 #if 0
-  ToMathematica(1 * Radian, ExpressIn2(Metre));
+  ToMathematica(1 * Radian, ExpressIn(Metre));
 #endif
 }
 
