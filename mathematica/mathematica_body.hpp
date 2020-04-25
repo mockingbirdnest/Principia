@@ -112,7 +112,7 @@ inline std::string ToMathematica(Quaternion const& quaternion) {
 }
 
 template<typename T, int size>
-std::string ToMathematica(FixedVector<T, size> const & fixed_vector) {
+std::string ToMathematica(FixedVector<T, size> const& fixed_vector) {
   std::vector<std::string> expressions;
   for (int i = 0; i < size; ++i) {
     expressions.emplace_back(ToMathematica(fixed_vector[i]));
@@ -144,13 +144,13 @@ std::string ToMathematica(Quantity<D> const& quantity) {
 }
 
 template<typename S, typename F>
-std::string ToMathematica(Bivector<S, F> const& bivector) {
-  return ToMathematica(bivector.coordinates());
+std::string ToMathematica(Vector<S, F> const& vector) {
+  return ToMathematica(vector.coordinates());
 }
 
 template<typename S, typename F>
-std::string ToMathematica(Vector<S, F> const & vector) {
-  return ToMathematica(vector.coordinates());
+std::string ToMathematica(Bivector<S, F> const& bivector) {
+  return ToMathematica(bivector.coordinates());
 }
 
 template<typename V>

@@ -12,7 +12,6 @@
 #include "geometry/r3_element.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -26,7 +25,6 @@ using geometry::R3Element;
 using geometry::Vector;
 using numerics::FixedVector;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
 using quantities::Quantity;
 using quantities::Quotient;
 
@@ -38,8 +36,6 @@ std::string Option(std::string const& name, T const& right);
 
 template<typename T>
 std::string Assign(std::string const& name, T const& right);
-
-std::string Export(std::string const& file, std::string const& expression);
 
 template<typename T, typename U>
 std::string PlottableDataset(std::vector<T> const& x, std::vector<U> const& y);
@@ -64,10 +60,10 @@ template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity);
 
 template<typename S, typename F>
-std::string ToMathematica(Bivector<S, F> const& bivector);
+std::string ToMathematica(Vector<S, F> const& vector);
 
 template<typename S, typename F>
-std::string ToMathematica(Vector<S, F> const& vector);
+std::string ToMathematica(Bivector<S, F> const& bivector);
 
 template<typename V>
 std::string ToMathematica(Point<V> const& point);
@@ -118,7 +114,6 @@ typename RemoveUnit<std::vector<T>>::Unitless ExpressIn(
 using internal_mathematica::Apply;
 using internal_mathematica::Assign;
 using internal_mathematica::Escape;
-using internal_mathematica::Export;
 using internal_mathematica::ExpressIn;
 using internal_mathematica::Option;
 using internal_mathematica::PlottableDataset;

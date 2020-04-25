@@ -19,7 +19,9 @@ void Bundle::Add(Task task) {
 
 Status Bundle::Join() {
   joining_ = true;
-  all_done_.WaitForNotification();
+  if (number_of_active_workers_ > 0) {
+    all_done_.WaitForNotification();
+  }
   JoinAll();
   absl::ReaderMutexLock status_lock(&status_lock_);
   return status_;
@@ -27,7 +29,8 @@ Status Bundle::Join() {
 
 Status Bundle::JoinWithin(std::chrono::steady_clock::duration Δt) {
   joining_ = true;
-  if (!all_done_.WaitForNotificationWithTimeout(absl::FromChrono(Δt))) {
+  if (number_of_active_workers_ > 0 &&
+      !all_done_.WaitForNotificationWithTimeout(absl::FromChrono(Δt))) {
     absl::MutexLock l(&status_lock_);
     status_ = Status(Error::DEADLINE_EXCEEDED, "bundle deadline exceeded");
   }
@@ -38,7 +41,8 @@ Status Bundle::JoinWithin(std::chrono::steady_clock::duration Δt) {
 
 Status Bundle::JoinBefore(std::chrono::system_clock::time_point t) {
   joining_ = true;
-  if (!all_done_.WaitForNotificationWithDeadline(absl::FromChrono(t))) {
+  if (number_of_active_workers_ > 0 &&
+      !all_done_.WaitForNotificationWithDeadline(absl::FromChrono(t))) {
     absl::MutexLock l(&status_lock_);
     status_ = Status(Error::DEADLINE_EXCEEDED, "bundle deadline exceeded");
   }
