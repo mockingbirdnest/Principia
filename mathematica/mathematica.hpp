@@ -1,9 +1,9 @@
 ﻿
 #pragma once
 
-#include <optional>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "astronomy/orbital_elements.hpp"
@@ -43,20 +43,28 @@ using quantities::Temperature;
 using quantities::Time;
 
 // A helper class for type erasure of quantities.  It may be used with the
-// functions on this file to remove the dimensions of quantities (we know that
+// functions in this file to remove the dimensions of quantities (we know that
 // Mathematica is sluggish when processing quantities).  Usage:
 //
 //   ToMathematica(... , ExpressIn(Metre, Second, Degree));
 //
-// The construction parameters must be for the base units of the SI.  They may
-// be in any order.  If not enough parameters are specified for complete type
-// erasure of the argument, compilation fails.
+// The construction parameters must be for the base SI units.  They may be in
+// any order.  If not enough parameters are specified for complete type erasure
+// of the argument, compilation fails.
 template<typename... Qs>
 class ExpressIn {
  public:
-  // static_assert
-
   static constexpr bool is_default = sizeof...(Qs) == 0;
+
+  // Check that only base SI units are specified.  If a unit is specified
+  // multiple times, the calls to std::get in operator() won't compile.
+  static_assert(
+      is_default ||
+      ((std::is_same_v<Qs, Length> || std::is_same_v<Qs, Mass> ||
+        std::is_same_v<Qs, Time> || std::is_same_v<Qs, Current> ||
+        std::is_same_v<Qs, Temperature> || std::is_same_v<Qs, Amount> ||
+        std::is_same_v<Qs, LuminousIntensity> || std::is_same_v<Qs, Angle>) ||
+       ...));
 
   ExpressIn(Qs const&... qs);
 
