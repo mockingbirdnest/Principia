@@ -143,6 +143,12 @@ std::string ToMathematica(Quantity<D> const& quantity) {
       {Apply("Quantity", {number, units}), "$MachinePrecision"});
 }
 
+template<typename D>
+std::string ToMathematica(Quantity<D> const& quantity,
+                          const ExpressIn2& express_in) {
+  return ToMathematica(express_in(quantity));
+}
+
 template<typename S, typename F>
 std::string ToMathematica(Vector<S, F> const& vector) {
   return ToMathematica(vector.coordinates());

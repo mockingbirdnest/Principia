@@ -34,6 +34,7 @@ using geometry::Velocity;
 using numerics::FixedVector;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
@@ -249,6 +250,14 @@ TEST_F(MathematicaTest, PlottableDataset) {
 
 TEST_F(MathematicaTest, Escape) {
   EXPECT_EQ("\"foo\"", Escape("foo"));
+}
+
+TEST_F(MathematicaTest, ExpressIn2) {
+  EXPECT_EQ(
+      "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
+      ToMathematica(3.0 * Metre / Second / Second, ExpressIn2(Metre, Second)));
+  EXPECT_EQ("SetPrecision[+5.72957795130823229*^+01,$MachinePrecision]",
+            ToMathematica(1 * Radian, ExpressIn2(Degree)));
 }
 
 }  // namespace mathematica
