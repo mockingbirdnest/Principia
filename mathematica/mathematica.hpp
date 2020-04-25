@@ -67,7 +67,7 @@ class ExpressIn {
         std::is_same_v<Qs, LuminousIntensity> || std::is_same_v<Qs, Angle>) ||
        ...));
 
-  ExpressIn(Qs const&... qs);
+  ExpressIn(Qs const&... qs);  // NOLINT(runtime/explicit)
 
   template<typename Q>
   double operator()(Q const& q) const;
