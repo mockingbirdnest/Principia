@@ -15,6 +15,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/tuples.hpp"
 
 namespace principia {
 namespace mathematica {
@@ -31,6 +32,7 @@ using quantities::Amount;
 using quantities::Angle;
 using quantities::Current;
 using quantities::Exponentiation;
+using quantities::is_tuple_v;
 using quantities::Length;
 using quantities::LuminousIntensity;
 using quantities::Mass;
@@ -41,7 +43,7 @@ using quantities::Temperature;
 using quantities::Time;
 
 // A helper class for type erasure of quantities.  It may be used with the
-// functions on this class to remove the dimensions of quantities (we know that
+// functions on this file to remove the dimensions of quantities (we know that
 // Mathematica is sluggish when processing quantities).  Usage:
 //
 //   ToMathematica(... , ExpressIn(Metre, Second, Degree));
@@ -130,8 +132,11 @@ template<typename F, typename... Qs>
 std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom,
                           ExpressIn<Qs...> express_in = {});
 
-template<typename... Types>
-std::string ToMathematica(std::tuple<Types...> const& tuple);
+template<typename Tuple,
+         typename = std::enable_if_t<is_tuple_v<Tuple>>,
+         typename... Qs>
+std::string ToMathematica(Tuple const& tuple,
+                          ExpressIn<Qs...> express_in = {});
 
 template<typename R,
          typename = std::void_t<decltype(std::declval<R>().time)>,

@@ -253,16 +253,26 @@ TEST_F(MathematicaTest, ToMathematica) {
         Instant(), 1 * Metre, 2, 3, 4 * Radian, 5, 6, 7, 8};
     EXPECT_EQ(
         "List["
+        "SetPrecision["
+        "Quantity["
         "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+        "\" s\"],"
+        "$MachinePrecision],"
+        "SetPrecision["
+        "Quantity[SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+        "\" m\"],"
+        "$MachinePrecision],"
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision["
+        "Quantity[SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
+        "\" rad\"],"
+        "$MachinePrecision],"
         "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision],"
         "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision],"
         "SetPrecision[+7.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision]]"
-    , ToMathematica(elements));
+        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision]]",
+        ToMathematica(elements));
   }
   {
     EXPECT_EQ("foo\"bar", ToMathematica("foo\"bar"));
@@ -349,6 +359,22 @@ TEST_F(MathematicaTest, ExpressIn) {
         "SetPrecision[-5.00000000000000000*^+00,$MachinePrecision],"
         "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision]]]]",
         ToMathematica(*trajectory.begin(), ExpressIn(Metre, Second)));
+  }
+  {
+    OrbitalElements::EquinoctialElements elements{
+        Instant(), 1 * Metre, 2, 3, 4 * Radian, 5, 6, 7, 8};
+    EXPECT_EQ(
+        "List["
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+7.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision]]",
+        ToMathematica(elements, ExpressIn(Metre, Second, Radian)));
   }
 
 // Does not compile, by design.

@@ -26,19 +26,23 @@ using quantities::si::Second;
 namespace si = quantities::si;
 
 // A helper struct to scan the elements of a tuple and stringify them.
-template<int index, typename... Types>
+template<int index, typename Tuple, typename... Qs>
 struct TupleHelper : not_constructible {
-  static void ToMathematicaStrings(std::tuple<Types...> const& tuple,
-                                   std::vector<std::string>& expressions) {
-    TupleHelper<index - 1, Types...>::ToMathematicaStrings(tuple, expressions);
-    expressions.push_back(ToMathematica(std::get<index - 1>(tuple)));
+  static void ToMathematicaStrings(Tuple const& tuple,
+                                   std::vector<std::string>& expressions,
+                                   ExpressIn<Qs...> express_in) {
+    TupleHelper<index - 1, Tuple, Qs...>::ToMathematicaStrings(
+        tuple, expressions, express_in);
+    expressions.push_back(ToMathematica(std::get<index - 1>(tuple),
+                          express_in));
   }
 };
 
-template<typename... Types>
-struct TupleHelper<0, Types...> : not_constructible {
-  static void ToMathematicaStrings(std::tuple<Types...> const& tuple,
-                                   std::vector<std::string>& expressions) {}
+template<typename Tuple, typename... Qs>
+struct TupleHelper<0, Tuple, Qs...> : not_constructible {
+  static void ToMathematicaStrings(Tuple const& tuple,
+                                   std::vector<std::string>& expressions,
+                                   ExpressIn<Qs...> express_in) {}
 };
 
 inline std::string Apply(
@@ -150,7 +154,8 @@ template<typename... Qs>
 std::string ToMathematica(Quaternion const& quaternion,
                           ExpressIn<Qs...> express_in) {
   return ToMathematica(
-      std::tuple{quaternion.real_part(), quaternion.imaginary_part()});
+      std::tuple{quaternion.real_part(), quaternion.imaginary_part()},
+      express_in);
 }
 
 template<typename T, int size, typename... Qs>
@@ -216,12 +221,12 @@ std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom,
           ToMathematica(degrees_of_freedom.velocity(), express_in)});
 }
 
-template<typename... Types>
-std::string ToMathematica(std::tuple<Types...> const& tuple) {
+template<typename Tuple, typename, typename... Qs>
+std::string ToMathematica(Tuple const& tuple, ExpressIn<Qs...> express_in) {
   std::vector<std::string> expressions;
-  expressions.reserve(sizeof...(Types));
-  TupleHelper<sizeof...(Types), Types...>::ToMathematicaStrings(
-      tuple, expressions);
+  expressions.reserve(std::tuple_size_v<Tuple>);
+  TupleHelper<std::tuple_size_v<Tuple>, Tuple, Qs...>::ToMathematicaStrings(
+      tuple, expressions, express_in);
   return Apply("List", expressions);
 }
 
@@ -238,15 +243,16 @@ template<typename... Qs>
 std::string ToMathematica(
     astronomy::OrbitalElements::EquinoctialElements const& elements,
     ExpressIn<Qs...> express_in) {
-  return ToMathematica(std::make_tuple((elements.t - J2000) / Second,
-                                       elements.a / Metre,
+  return ToMathematica(std::make_tuple((elements.t - J2000),
+                                       elements.a,
                                        elements.h,
                                        elements.k,
-                                       elements.λ / Radian,
+                                       elements.λ,
                                        elements.p,
                                        elements.q,
                                        elements.pʹ,
-                                       elements.qʹ));
+                                       elements.qʹ),
+                       express_in);
 }
 
 template<typename... Qs>
