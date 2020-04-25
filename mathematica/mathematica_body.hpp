@@ -129,10 +129,10 @@ std::string ToMathematica(R3Element<T> const& r3_element) {
   return Apply("List", expressions);
 }
 
-template<typename D>
+template<typename D, typename... Qs>
 std::string ToMathematica(Quantity<D> const& quantity,
-                          std::optional<ExpressIn2> express_in) {
-  if (express_in == std::nullopt) {
+                          ExpressIn2<Qs...> express_in) {
+  if (express_in.is_default()) {
     std::string s = DebugString(quantity);
     std::string const number = ToMathematica(quantity / si::Unit<Quantity<D>>);
     std::size_t const split = s.find(" ");
@@ -140,14 +140,8 @@ std::string ToMathematica(Quantity<D> const& quantity,
     return Apply("SetPrecision",
                  {Apply("Quantity", {number, units}), "$MachinePrecision"});
   } else {
-    return ToMathematica(express_in.value()(quantity));
+    return ToMathematica(express_in(quantity));
   }
-}
-
-template<typename D>
-std::string ToMathematica(Quantity<D> const& quantity,
-                          const ExpressIn2& express_in) {
-  return ToMathematica(express_in(quantity));
 }
 
 template<typename S, typename F>

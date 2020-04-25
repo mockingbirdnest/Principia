@@ -40,70 +40,42 @@ using quantities::Quotient;
 using quantities::Temperature;
 using quantities::Time;
 
+template<typename... Qs>
 class ExpressIn2 {
-public:
-  template<typename... Q>
-  explicit ExpressIn2(Q const&... q) {
-    FillUnits(q...);
+ public:
+  ExpressIn2() {}
+
+  template<typename = std::enable_if_t<(sizeof...(Qs) > 0)>>
+  ExpressIn2(Qs const&... qs) : units_(std::make_tuple(qs...)) {
+    // static_assert
   }
+
+  bool is_default() const { return !units_.has_value(); }
 
   template<typename Q>
   double operator()(Q const& q) const {
-    return Divide<Q::Dimensions::Length>(
-        Divide<Q::Dimensions::Mass>(
-            Divide<Q::Dimensions::Time>(
-                Divide<Q::Dimensions::Current>(
-                    Divide<Q::Dimensions::Temperature>(
-                        Divide<Q::Dimensions::Amount>(
-                            Divide<Q::Dimensions::LuminousIntensity>(
-                                Divide<Q::Dimensions::Angle>(
-                                    q, std::get<std::optional<Angle>>(units_)),
-                                std::get<std::optional<LuminousIntensity>>(
-                                    units_)),
-                            std::get<std::optional<Amount>>(units_)),
-                        std::get<std::optional<Temperature>>(units_)),
-                    std::get<std::optional<Current>>(units_)),
-                std::get<std::optional<Time>>(units_)),
-            std::get<std::optional<Mass>>(units_)),
-        std::get<std::optional<Length>>(units_));
+    return Divide<Q::Dimensions::Length, Length>(
+        Divide<Q::Dimensions::Mass, Mass>(
+            Divide<Q::Dimensions::Time, Time>(
+                Divide<Q::Dimensions::Current, Current>(
+                    Divide<Q::Dimensions::Temperature, Temperature>(
+                        Divide<Q::Dimensions::Amount, Amount>(
+                            Divide<Q::Dimensions::LuminousIntensity,
+                                   LuminousIntensity>(
+                                Divide<Q::Dimensions::Angle, Angle>(q))))))));
   }
 
- private:
-  template<std::int64_t exponent, typename QLeft, typename QRight>
-  static Quotient<QLeft, Exponentiation<QRight, exponent>> Divide(
-    QLeft const& q_left,
-    std::optional<QRight> const& q_right) {
+ //private:
+  template<std::int64_t exponent, typename Q1, typename Q2>
+  Quotient<Q2, Exponentiation<Q1, exponent>> Divide(Q2 const& q2) const {
     if constexpr (exponent == 0) {
-      return q_left;
-    }
-    else {
-      CHECK(q_right.has_value()) << "Missing unit to decompose " << q_left;
-      return q_left / Pow<exponent>(q_right.value());
+      return q2;
+    } else {
+      return q2 / Pow<exponent>(std::get<Q1>(units_.value()));
     }
   }
 
-
-  template<typename QHead, typename... QTail>
-  void FillUnits(QHead const& qhead, QTail const&... qtail) {
-    // The following will fail to compile if QHead is not one of the units in
-    // units_.
-    auto& unit = std::get<std::optional<QHead>>(units_);
-    CHECK(!unit.has_value()) << qhead << " is a redundant specification";
-    unit = qhead;
-    if constexpr (sizeof...(QTail) > 0) {
-      FillUnits(qtail...);
-    }
-  }
-
-  std::tuple<std::optional<Length>,
-    std::optional<Mass>,
-    std::optional<Time>,
-    std::optional<Current>,
-    std::optional<Temperature>,
-    std::optional<Amount>,
-    std::optional<LuminousIntensity>,
-    std::optional<Angle>>
-    units_;
+  std::optional<std::tuple<Qs...>> units_;
 };
 
 std::string Apply(std::string const& function,
@@ -134,9 +106,10 @@ std::string ToMathematica(R3Element<T> const& r3_element);
 
 std::string ToMathematica(Quaternion const& quaternion);
 
-template<typename D>
-std::string ToMathematica(Quantity<D> const& quantity,
-                          std::optional<ExpressIn2> express_in = std::nullopt);
+template<typename D, typename... Qs>
+std::string ToMathematica(
+    Quantity<D> const& quantity,
+    ExpressIn2<Qs...> express_in = {});
 
 template<typename S, typename F>
 std::string ToMathematica(Vector<S, F> const& vector);
