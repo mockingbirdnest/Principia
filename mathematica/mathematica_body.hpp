@@ -225,12 +225,13 @@ std::string ToMathematica(std::tuple<Types...> const& tuple) {
   return Apply("List", expressions);
 }
 
-template<typename R, typename, typename>
-std::string ToMathematica(R const ref) {
-  return Apply(
-      "List",
-      std::vector<std::string>{ToMathematica(ref.time),
-                               ToMathematica(ref.degrees_of_freedom)});
+template<typename R, typename, typename, typename... Qs>
+std::string ToMathematica(R const ref,
+                          ExpressIn<Qs...> express_in) {
+  return Apply("List",
+               std::vector<std::string>{
+                   ToMathematica(ref.time, express_in),
+                   ToMathematica(ref.degrees_of_freedom, express_in)});
 }
 
 template<typename... Qs>

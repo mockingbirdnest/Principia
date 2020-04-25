@@ -42,7 +42,7 @@ using quantities::Time;
 
 // A helper class for type erasure of quantities.  It may be used with the
 // functions on this class to remove the dimensions of quantities (we know that
-// Mathematica is sluggish when processing quantities.  Usage:
+// Mathematica is sluggish when processing quantities).  Usage:
 //
 //   ToMathematica(... , ExpressIn(Metre, Second, Degree));
 //
@@ -135,8 +135,10 @@ std::string ToMathematica(std::tuple<Types...> const& tuple);
 
 template<typename R,
          typename = std::void_t<decltype(std::declval<R>().time)>,
-         typename = std::void_t<decltype(std::declval<R>().degrees_of_freedom)>>
-std::string ToMathematica(R ref);
+         typename = std::void_t<decltype(std::declval<R>().degrees_of_freedom)>,
+         typename... Qs>
+std::string ToMathematica(R ref,
+                          ExpressIn<Qs...> express_in = {});
 
 template<typename... Qs>
 std::string ToMathematica(

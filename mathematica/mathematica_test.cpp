@@ -326,6 +326,32 @@ TEST_F(MathematicaTest, ExpressIn) {
                                         -4.0 * Metre / Second}),
                       ExpressIn(Metre, Second)));
   }
+  {
+    DiscreteTrajectory<F> trajectory;
+    trajectory.Append(
+        Instant(),
+        DegreesOfFreedom<F>(
+            F::origin +
+                Displacement<F>({2.0 * Metre, 3.0 * Metre, -4.0 * Metre}),
+            Velocity<F>({-1.0 * Metre / Second,
+                         -5.0 * Metre / Second,
+                         8.0 * Metre / Second})));
+    EXPECT_EQ(
+        "List["
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+        "List["
+        "List["
+        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]],"
+        "List["
+        "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[-5.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision]]]]",
+        ToMathematica(*trajectory.begin(), ExpressIn(Metre, Second)));
+  }
+
+// Does not compile, by design.
 #if 0
   ToMathematica(1 * Radian, ExpressIn(Metre));
 #endif
