@@ -50,7 +50,8 @@ using quantities::Time;
 //
 // The construction parameters must be for the base SI units.  They may be in
 // any order.  If not enough parameters are specified for complete type erasure
-// of the argument, compilation fails.
+// of the argument, compilation fails.  An object with no template parameters
+// may be used to indicate that type erasure should not happen.
 template<typename... Qs>
 class ExpressIn {
  public:
