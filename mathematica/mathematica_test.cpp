@@ -275,16 +275,17 @@ TEST_F(MathematicaTest, PlottableDataset) {
 }
 
 TEST_F(MathematicaTest, Escape) {
-  EXPECT_EQ("\"foo\"", Escape("foo"));
-  EXPECT_EQ("\"fo\\\"o\"", Escape("fo\"o"));
-  EXPECT_EQ("\"fo\\\\o\"", Escape("fo\\o"));
-  EXPECT_EQ("\"fo\\no\"", Escape("fo\no"));
-  EXPECT_EQ("\"fo\\to\"", Escape("fo\to"));
-  EXPECT_EQ("\"\"", Escape(""));
+  EXPECT_EQ(R"("foo")", Escape("foo"));
+  {
+    // This string messes up the macro.
+    std::string expected = R"("fo\"o")";
+    EXPECT_EQ(expected, Escape("fo\"o"));
+  }
+  EXPECT_EQ(R"("fo\\o")", Escape("fo\\o"));
+  EXPECT_EQ(R"("")", Escape(""));
 }
 
 TEST_F(MathematicaTest, ExpressIn) {
-  ExpressIn<> default;  // Check that this compiles.
   {
     EXPECT_EQ("SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
               ToMathematica(3.0 * Metre / Second / Second,

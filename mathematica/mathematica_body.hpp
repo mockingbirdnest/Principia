@@ -274,12 +274,6 @@ inline std::string Escape(std::string const& str) {
       case '\\':
         result += "\\\\";
         break;
-      case '\n':
-        result += "\\n";
-        break;
-      case '\t':
-        result += "\\t";
-        break;
       default:
         result += c;
         break;
