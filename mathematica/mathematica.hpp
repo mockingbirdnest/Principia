@@ -2,6 +2,7 @@
 #pragma once
 
 #include <filesystem>
+#include <map>
 #include <string>
 #include <tuple>
 #include <type_traits>
