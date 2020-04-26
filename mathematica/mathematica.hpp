@@ -53,16 +53,12 @@ using quantities::Time;
 // The construction parameters must be values of distinct SI base quantities
 // (or Angle). They define a system of units..  They may be in any order.  If
 // the other arguments of the functions contain quantities that are not spanned
-// by that system of units, the call is ill-formed.  An object with no template
-// parameters may be used to indicate that type erasure should not happen.
+// by that system of units, the call is ill-formed.
 template<typename... Qs>
 class ExpressIn {
  public:
-  static constexpr bool is_default = sizeof...(Qs) == 0;
-
   // Check that only SI base quantities or Angle are specified.
   static_assert(
-      is_default ||
       ((std::is_same_v<Qs, Length> || std::is_same_v<Qs, Mass> ||
         std::is_same_v<Qs, Time> || std::is_same_v<Qs, Current> ||
         std::is_same_v<Qs, Temperature> || std::is_same_v<Qs, Amount> ||
@@ -70,8 +66,7 @@ class ExpressIn {
        ...), "Must instantiate with SI base quantities or Angle");
 
   // Check that all quantities are different.
-  static_assert(is_default || all_different_v<Qs...>,
-                "Must use different quantities");
+  static_assert(all_different_v<Qs...>, "Must use different quantities");
 
   ExpressIn(Qs const&... qs);  // NOLINT(runtime/explicit)
 
@@ -88,87 +83,91 @@ class ExpressIn {
 std::string Apply(std::string const& function,
                   std::vector<std::string> const& arguments);
 
-template<typename T, typename... Qs>
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Option(std::string const& name,
                    T const& right,
-                   ExpressIn<Qs...> express_in = {});
+                   OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, typename... Qs>
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Assign(std::string const& name,
                    T const& right,
-                   ExpressIn<Qs...> express_in = {});
+                   OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, typename U, typename... Qs>
+template<typename T, typename U, typename OptionalExpressIn = std::nullopt_t>
 std::string PlottableDataset(std::vector<T> const& x,
                              std::vector<U> const& y,
-                             ExpressIn<Qs...> express_in = {});
+                             OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, typename... Qs>
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::vector<T> const& list,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
-template<typename It, typename... Qs>
+template<typename It, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(It begin, It end,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
-template<typename... Qs>
+template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(double real,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, int size, typename... Qs>
+template<typename T, int size, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(FixedVector<T, size> const& fixed_vector,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, typename... Qs>
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R3Element<T> const& r3_element,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
-template<typename... Qs>
+template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Quaternion const& quaternion,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
 template<typename D, typename... Qs>
 std::string ToMathematica(Quantity<D> const& quantity,
-                          ExpressIn<Qs...> express_in = {});
+                          ExpressIn<Qs...> express_in);
 
-template<typename S, typename F, typename... Qs>
+template<typename D, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(Quantity<D> const& quantity,
+                          std::nullopt_t express_in = std::nullopt);
+
+template<typename S, typename F, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Vector<S, F> const& vector,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
-template<typename S, typename F, typename... Qs>
+template<typename S, typename F, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Bivector<S, F> const& bivector,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
-template<typename V, typename... Qs>
+template<typename V, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Point<V> const& point,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
-template<typename F, typename... Qs>
+template<typename F, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
 template<typename Tuple,
          typename = std::enable_if_t<is_tuple_v<Tuple>>,
-         typename... Qs>
+         typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Tuple const& tuple,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
 template<typename R,
          typename = std::void_t<decltype(std::declval<R>().time)>,
          typename = std::void_t<decltype(std::declval<R>().degrees_of_freedom)>,
-         typename... Qs>
+         typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R ref,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
-template<typename... Qs>
+template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(
     astronomy::OrbitalElements::EquinoctialElements const& elements,
-    ExpressIn<Qs...> express_in = {});
+    OptionalExpressIn express_in = std::nullopt);
 
 // Returns its argument.
-template<typename... Qs>
+template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::string const& str,
-                          ExpressIn<Qs...> express_in = {});
+                          OptionalExpressIn express_in = std::nullopt);
 
 // Wraps the string in quotes.
 // TODO(egg): escape things properly.

@@ -379,7 +379,12 @@ TEST_F(MathematicaTest, ExpressIn) {
 
 // Does not compile, by design.
 #if 0
+  ToMathematica(1 * Radian, "foobar");
+#endif
+#if 0
   ToMathematica(1 * Radian, ExpressIn(Metre));
+#endif
+#if 0
   ToMathematica(1 * Radian, ExpressIn(Degree, Metre, Metre));
 #endif
 }
