@@ -6,6 +6,17 @@ namespace principia {
 namespace base {
 namespace internal_traits {
 
+template<typename... Ts>
+constexpr bool all_different_v = false;
+
+template<>
+constexpr bool all_different_v<> = true;
+
+template<typename T0, typename... Ts>
+constexpr bool all_different_v<T0, Ts...> =
+    (!std::is_same_v<T0, Ts> && ...) && all_different_v<Ts...>;
+
+
 template<template<typename...> typename T, typename U>
 struct is_instance_of : std::false_type {};
 
@@ -55,6 +66,8 @@ template<typename T>
 inline constexpr bool is_serializable_v =
     internal_traits::has_sfinae_read_from_message<T>::value ||
     internal_traits::has_unconditional_read_from_message<T>::value;
+
+using internal_traits::all_different_v;
 
 }  // namespace base
 }  // namespace principia

@@ -83,7 +83,7 @@ void LocalErrorAnalyser::WriteLocalErrors(
   }
   OFStream file(path);
   file << Assign("bodyNames", solar_system_->names());
-  file << Assign("errors", ExpressIn(Metre, errors));
+  file << Assign("errors", errors, ExpressIn(Metre));
 }
 
 not_null<std::unique_ptr<Ephemeris<ICRS>>> LocalErrorAnalyser::ForkEphemeris(
