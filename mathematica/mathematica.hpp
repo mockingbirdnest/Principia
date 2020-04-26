@@ -169,8 +169,7 @@ template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::string const& str,
                           OptionalExpressIn express_in = std::nullopt);
 
-// Wraps the string in quotes.
-// TODO(egg): escape things properly.
+// Wraps the string in quotes and escapes things properly.
 std::string Escape(std::string const& str);
 
 }  // namespace internal_mathematica

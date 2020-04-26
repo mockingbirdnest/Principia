@@ -152,10 +152,12 @@ std::string ToMathematica(double const real,
 
 template<typename OptionalExpressIn>
 std::string ToMathematica(Quaternion const& quaternion,
-                          OptionalExpressIn express_in) {
-  return ToMathematica(
-      std::tuple{quaternion.real_part(), quaternion.imaginary_part()},
-      express_in);
+                          OptionalExpressIn /*express_in*/) {
+  return Apply("Quaternion",
+               {ToMathematica(quaternion.real_part()),
+                ToMathematica(quaternion.imaginary_part().x),
+                ToMathematica(quaternion.imaginary_part().y),
+                ToMathematica(quaternion.imaginary_part().z)});
 }
 
 template<typename T, int size, typename OptionalExpressIn>
@@ -191,8 +193,7 @@ std::string ToMathematica(Quantity<D> const& quantity,
   std::string const number = ToMathematica(quantity / si::Unit<Quantity<D>>);
   std::size_t const split = s.find(" ");
   std::string const units = Escape(s.substr(split, s.size()));
-  return Apply("SetPrecision",
-    { Apply("Quantity", {number, units}), "$MachinePrecision" });
+  return Apply("Quantity", {number, units});
 }
 
 template<typename S, typename F, typename OptionalExpressIn>
@@ -263,11 +264,21 @@ std::string ToMathematica(std::string const& str,
   return str;
 }
 
-// Wraps the string in quotes.
-// TODO(egg): escape things properly.
 inline std::string Escape(std::string const& str) {
-  std::string result = {"\""};
-  result += str;
+  std::string result = "\"";
+  for (const char c : str) {
+    switch (c) {
+      case '"':
+        result += "\\\"";
+        break;
+      case '\\':
+        result += "\\\\";
+        break;
+      default:
+        result += c;
+        break;
+    }
+  }
   result += "\"";
   return result;
 }
