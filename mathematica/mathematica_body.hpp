@@ -227,8 +227,8 @@ template<typename Tuple, typename, typename OptionalExpressIn>
 std::string ToMathematica(Tuple const& tuple, OptionalExpressIn express_in) {
   std::vector<std::string> expressions;
   expressions.reserve(std::tuple_size_v<Tuple>);
-  TupleHelper<std::tuple_size_v<Tuple>, Tuple, OptionalExpressIn>::ToMathematicaStrings(
-      tuple, expressions, express_in);
+  TupleHelper<std::tuple_size_v<Tuple>, Tuple, OptionalExpressIn>::
+      ToMathematicaStrings(tuple, expressions, express_in);
   return Apply("List", expressions);
 }
 
