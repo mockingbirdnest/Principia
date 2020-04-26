@@ -358,11 +358,41 @@ TEST_F(MathematicaTest, ExpressIn) {
 }
 
 TEST_F(MathematicaTest, Logger) {
-  Logger logger(TEMP_DIR / "mathematice_test.wl");
-  logger.Append("a", std::vector{1, 2, 3});
-  logger.Append("b", 4 * Metre / Second);
-  logger.Append("a", F::origin);
+  {
+    Logger logger(TEMP_DIR / "mathematica_test.wl");
+    logger.Append("a", std::vector{1, 2, 3});
+    logger.Append("b", 4 * Metre / Second);
+    logger.Append("a", F::origin);
+  }
   // Go check the file.
+  EXPECT_EQ(
+      "Set["
+      "a,"
+      "List["
+      "List["
+      "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+      "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+      "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]],"
+      "List["
+      "Quantity["
+      "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+      "\" m\"],"
+      "Quantity["
+      "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+      "\" m\"],"
+      "Quantity["
+      "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+      "\" m\"]]]];\n"
+      "Set["
+      "b,"
+      "List["
+      "Quantity["
+      "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
+      "\" m s^-1\"]]];\n",
+      (
+          std::stringstream{}
+          << std::ifstream(TEMP_DIR / "mathematica_test.wl").rdbuf())
+          .str());
 }
 
 }  // namespace mathematica
