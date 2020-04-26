@@ -352,45 +352,45 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
 
   OFStream file(TEMP_DIR / "retrobop_century.generated.wl");
   file << Assign("laytheTimes",
-                 ToMathematica(times_from_epoch[Laythe], ExpressIn(Second)));
+                 times_from_epoch[Laythe], ExpressIn(Second));
   file << Assign("vallTimes",
-                 ToMathematica(times_from_epoch[Vall], ExpressIn(Second)));
+                 times_from_epoch[Vall], ExpressIn(Second));
   file << Assign("tyloTimes",
-                 ToMathematica(times_from_epoch[Tylo], ExpressIn(Second)));
+                 times_from_epoch[Tylo], ExpressIn(Second));
   file << Assign("polTimes",
-                 ToMathematica(times_from_epoch[Pol], ExpressIn(Second)));
+                 times_from_epoch[Pol], ExpressIn(Second));
   file << Assign("bopTimes",
-                 ToMathematica(times_from_epoch[Bop], ExpressIn(Second)));
+                 times_from_epoch[Bop], ExpressIn(Second));
   file << Assign("laytheSeparations",
-                 ToMathematica(extremal_separations[Laythe], ExpressIn(Metre)));
+                 extremal_separations[Laythe], ExpressIn(Metre));
   file << Assign("vallSeparations",
-                 ToMathematica(extremal_separations[Vall], ExpressIn(Metre)));
+                 extremal_separations[Vall], ExpressIn(Metre));
   file << Assign("tyloSeparations",
-                 ToMathematica(extremal_separations[Tylo], ExpressIn(Metre)));
+                 extremal_separations[Tylo], ExpressIn(Metre));
   file << Assign("polSeparations",
-                 ToMathematica(extremal_separations[Pol], ExpressIn(Metre)));
+                 extremal_separations[Pol], ExpressIn(Metre));
   file << Assign("bopSeparations",
-                 ToMathematica(extremal_separations[Bop], ExpressIn(Metre)));
+                 extremal_separations[Bop], ExpressIn(Metre));
 
   file << Assign("bopEccentricities", bop_eccentricities);
   file << Assign("bopInclinations",
-                 ToMathematica(bop_inclinations, ExpressIn(Degree)));
-  file << Assign("bopNodes", ToMathematica(bop_nodes, ExpressIn(Degree)));
+                 bop_inclinations, ExpressIn(Degree));
+  file << Assign("bopNodes",
+                 bop_nodes, ExpressIn(Degree));
   file << Assign("bopArguments",
-                 ToMathematica(bop_arguments_of_periapsis, ExpressIn(Degree)));
+                 bop_arguments_of_periapsis, ExpressIn(Degree));
   file << Assign("bopJacobiEccentricities", bop_jacobi_eccentricities);
   file << Assign("bopJacobiInclinations",
-                 ToMathematica(bop_jacobi_inclinations, ExpressIn(Degree)));
+                 bop_jacobi_inclinations, ExpressIn(Degree));
   file << Assign("bopJacobiNodes",
-                 ToMathematica(bop_jacobi_nodes, ExpressIn(Degree)));
-  file << Assign(
-      "bopJacobiArguments",
-      ToMathematica(bop_jacobi_arguments_of_periapsis, ExpressIn(Degree)));
+                 bop_jacobi_nodes, ExpressIn(Degree));
+  file << Assign("bopJacobiArguments",
+                 bop_jacobi_arguments_of_periapsis, ExpressIn(Degree));
 
   file << Assign("tyloBop",
-                 ToMathematica(tylo_bop_separations, ExpressIn(Metre)));
+                 tylo_bop_separations, ExpressIn(Metre));
   file << Assign("polBop",
-                 ToMathematica(pol_bop_separations, ExpressIn(Metre)));
+                 pol_bop_separations, ExpressIn(Metre));
 }
 
 void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
@@ -441,11 +441,11 @@ void PlotPredictableYears() {
 
   OFStream file(TEMP_DIR / "retrobop_predictable_years.generated.wl");
   file << Assign("barycentricPositions1",
-                 ToMathematica(barycentric_positions_1_year, ExpressIn(Metre)));
+                 barycentric_positions_1_year, ExpressIn(Metre));
   file << Assign("barycentricPositions2",
-                 ToMathematica(barycentric_positions_2_year, ExpressIn(Metre)));
+                 barycentric_positions_2_year, ExpressIn(Metre));
   file << Assign("barycentricPositions5",
-                 ToMathematica(barycentric_positions_5_year, ExpressIn(Metre)));
+                 barycentric_positions_5_year, ExpressIn(Metre));
 }
 
 void PlotCentury() {

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "astronomy/orbital_elements.hpp"
+#include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
@@ -21,6 +22,7 @@ namespace principia {
 namespace mathematica {
 namespace internal_mathematica {
 
+using base::all_different_v;
 using geometry::Bivector;
 using geometry::Point;
 using geometry::Quaternion;
@@ -48,24 +50,28 @@ using quantities::Time;
 //
 //   ToMathematica(... , ExpressIn(Metre, Second, Degree));
 //
-// The construction parameters must be for the base SI units.  They may be in
-// any order.  If not enough parameters are specified for complete type erasure
-// of the argument, compilation fails.  An object with no template parameters
-// may be used to indicate that type erasure should not happen.
+// The construction parameters must be values of distinct SI base quantities
+// (or Angle). They define a system of units..  They may be in any order.  If
+// the other arguments of the functions contain quantities that are not spanned
+// by that system of units, the call is ill-formed.  An object with no template
+// parameters may be used to indicate that type erasure should not happen.
 template<typename... Qs>
 class ExpressIn {
  public:
   static constexpr bool is_default = sizeof...(Qs) == 0;
 
-  // Check that only base SI units are specified.  If a unit is specified
-  // multiple times, the calls to std::get in operator() won't compile.
+  // Check that only SI base quantities or Angle are specified.
   static_assert(
       is_default ||
       ((std::is_same_v<Qs, Length> || std::is_same_v<Qs, Mass> ||
         std::is_same_v<Qs, Time> || std::is_same_v<Qs, Current> ||
         std::is_same_v<Qs, Temperature> || std::is_same_v<Qs, Amount> ||
-        std::is_same_v<Qs, LuminousIntensity> || std::is_same_v<Qs, Angle>) ||
-       ...));
+        std::is_same_v<Qs, LuminousIntensity> || std::is_same_v<Qs, Angle>) &&
+       ...), "Must instantiate with SI base quantities or Angle");
+
+  // Check that all quantities are different.
+  static_assert(is_default || all_different_v<Qs...>,
+                "Must use different quantities");
 
   ExpressIn(Qs const&... qs);  // NOLINT(runtime/explicit)
 

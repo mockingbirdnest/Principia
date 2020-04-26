@@ -380,6 +380,7 @@ TEST_F(MathematicaTest, ExpressIn) {
 // Does not compile, by design.
 #if 0
   ToMathematica(1 * Radian, ExpressIn(Metre));
+  ToMathematica(1 * Radian, ExpressIn(Degree, Metre, Metre));
 #endif
 }
 

@@ -28,6 +28,7 @@ class ErrorAnalysisTest : public ::testing::Test {
  protected:
 };
 
+#if !defined(_DEBUG)
 TEST_F(ErrorAnalysisTest, DISABLED_IntegratorPlots) {
   GenerateSimpleHarmonicMotionWorkErrorGraphs();
   // Circular.
@@ -126,6 +127,7 @@ TEST_F(ErrorAnalysisTest, DISABLED_LocalErrorAnalysis) {
       ParseQuantity<Time>(flags["granularity"].value_or("1 d")),
       ParseQuantity<Time>(flags["duration"].value_or("500 d")));
 }
+#endif
 
 }  // namespace mathematica
 }  // namespace principia
