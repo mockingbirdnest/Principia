@@ -55,9 +55,9 @@ using quantities::Time;
 //   ToMathematica(... , ExpressIn(Metre, Second, Degree));
 //
 // The construction parameters must be values of distinct SI base quantities
-// (or Angle). They define a system of units..  They may be in any order.  If
-// the other arguments of the functions contain quantities that are not spanned
-// by that system of units, the call is ill-formed.
+// (or Angle). They define a system of units.  They may be in any order.  If the
+// other arguments of the functions contain quantities that are not spanned by
+// that system of units, the call is ill-formed.
 template<typename... Qs>
 class ExpressIn {
  public:
