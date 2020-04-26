@@ -357,5 +357,13 @@ TEST_F(MathematicaTest, ExpressIn) {
 #endif
 }
 
+TEST_F(MathematicaTest, Logger) {
+  Logger logger(TEMP_DIR / "mathematice_test.wl");
+  logger.Append("a", std::vector{1, 2, 3});
+  logger.Append("b", 4 * Metre / Second);
+  logger.Append("a", F::origin);
+  // Go check the file.
+}
+
 }  // namespace mathematica
 }  // namespace principia

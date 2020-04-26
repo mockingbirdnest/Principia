@@ -283,6 +283,19 @@ inline std::string Escape(std::string const& str) {
   return result;
 }
 
+inline Logger::Logger(std::filesystem::path const& path) : file_(path) {}
+
+inline Logger::~Logger() {
+  for (auto const& [name, values] : names_and_values_) {
+    file_ << Assign(name, values);
+  }
+}
+
+template<typename... Args>
+void Logger::Append(std::string const& name, Args... args) {
+  names_and_values_[name].push_back(ToMathematica(args...));
+}
+
 }  // namespace internal_mathematica
 }  // namespace mathematica
 }  // namespace principia

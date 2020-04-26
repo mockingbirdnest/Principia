@@ -1,12 +1,14 @@
 ﻿
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include <tuple>
 #include <type_traits>
 #include <vector>
 
 #include "astronomy/orbital_elements.hpp"
+#include "base/file.hpp"
 #include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
@@ -23,6 +25,7 @@ namespace mathematica {
 namespace internal_mathematica {
 
 using base::all_different_v;
+using base::OFStream;
 using geometry::Bivector;
 using geometry::Point;
 using geometry::Quaternion;
@@ -172,12 +175,32 @@ std::string ToMathematica(std::string const& str,
 // Wraps the string in quotes and escapes things properly.
 std::string Escape(std::string const& str);
 
+// An RAII object to help with Mathematica logging.
+class Logger final {
+ public:
+  // Creates a logger object that will, at destruction, write to the given file.
+  explicit Logger(std::filesystem::path const& path);
+  ~Logger();
+
+  // Appends an element to the list of values for the variable |name|.  The
+  // |args...| are passed verbatim to ToMathematica for stringification.  When
+  // this object is destroyed, an assignment is generated for each of the
+  // variables named in a call to Append.
+  template<typename... Args>
+  void Append(std::string const& name, Args... args);
+
+ private:
+  OFStream file_;
+  std::map<std::string, std::vector<std::string>> names_and_values_;
+};
+
 }  // namespace internal_mathematica
 
 using internal_mathematica::Apply;
 using internal_mathematica::Assign;
 using internal_mathematica::Escape;
 using internal_mathematica::ExpressIn;
+using internal_mathematica::Logger;
 using internal_mathematica::Option;
 using internal_mathematica::PlottableDataset;
 using internal_mathematica::ToMathematica;
