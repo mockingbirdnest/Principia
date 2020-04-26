@@ -94,24 +94,19 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(R3Element<double>(2.0, 3.0, -4.0)));
   }
   {
-    // TODO(phl): Use Quaternion[].
     EXPECT_EQ(
-        "List["
+        "Quaternion["
         "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-        "List["
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]]",
+        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]",
         ToMathematica(Quaternion(1.0, R3Element<double>(2.0, 3.0, -4.0))));
   }
   {
-    // TODO(phl): Why two SetPrecision[]?
     EXPECT_EQ(
-        "SetPrecision["
         "Quantity["
         "SetPrecision[+1.50000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"],"
-        "$MachinePrecision]",
+        "\" m s^-1\"]",
         ToMathematica(1.5 * Metre / Second));
   }
   {
@@ -140,41 +135,28 @@ TEST_F(MathematicaTest, ToMathematica) {
                       Vector<double, F>({2.0, 3.0, -4.0})));
   }
   {
-    // TODO(phl): Why no units?
     EXPECT_EQ(
         "List["
         "List["
-        "SetPrecision["
         "Quantity["
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
         "\" m\"],"
-        "$MachinePrecision],"
-        "SetPrecision["
         "Quantity["
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
         "\" m\"],"
-        "$MachinePrecision],"
-        "SetPrecision["
         "Quantity["
         "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],"
-        "$MachinePrecision]],"
+        "\" m\"]],"
         "List["
-        "SetPrecision["
         "Quantity["
         "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision],"
         "\" m s^-1\"],"
-        "$MachinePrecision],"
-        "SetPrecision["
         "Quantity["
         "SetPrecision[-5.00000000000000000*^+00,$MachinePrecision],"
         "\" m s^-1\"],"
-        "$MachinePrecision],"
-        "SetPrecision["
         "Quantity["
         "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"],"
-        "$MachinePrecision]]]",
+        "\" m s^-1\"]]]",
         ToMathematica(DegreesOfFreedom<F>(
             F::origin +
                 Displacement<F>({2.0 * Metre, 3.0 * Metre, -4.0 * Metre}),
@@ -185,15 +167,15 @@ TEST_F(MathematicaTest, ToMathematica) {
   {
     EXPECT_EQ(
         "List["
-        "SetPrecision["
-        "Quantity[SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],$MachinePrecision],"
-        "SetPrecision["
-        "Quantity[SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"],$MachinePrecision],"
-        "SetPrecision["
-        "Quantity[SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"],$MachinePrecision]]",
+        "Quantity["
+        "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+        "\" m\"],"
+        "Quantity["
+        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+        "\" s\"],"
+        "Quantity["
+        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
+        "\" m s^-1\"]]",
         ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
   }
   {
@@ -208,44 +190,30 @@ TEST_F(MathematicaTest, ToMathematica) {
                          8.0 * Metre / Second})));
     EXPECT_EQ(
         "List["
-        "SetPrecision["
         "Quantity["
         "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
         "\" s\"],"
-        "$MachinePrecision],"
         "List["
         "List["
-        "SetPrecision["
         "Quantity["
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
         "\" m\"],"
-        "$MachinePrecision],"
-        "SetPrecision["
         "Quantity["
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
         "\" m\"],"
-        "$MachinePrecision],"
-        "SetPrecision["
         "Quantity["
         "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],"
-        "$MachinePrecision]],"
+        "\" m\"]],"
         "List["
-        "SetPrecision["
         "Quantity["
         "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision],"
         "\" m s^-1\"],"
-        "$MachinePrecision],"
-        "SetPrecision["
         "Quantity["
         "SetPrecision[-5.00000000000000000*^+00,$MachinePrecision],"
         "\" m s^-1\"],"
-        "$MachinePrecision],"
-        "SetPrecision["
         "Quantity["
         "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"],"
-        "$MachinePrecision]]]]",
+        "\" m s^-1\"]]]]",
         ToMathematica(*trajectory.begin()));
   }
   {
@@ -253,21 +221,15 @@ TEST_F(MathematicaTest, ToMathematica) {
         Instant(), 1 * Metre, 2, 3, 4 * Radian, 5, 6, 7, 8};
     EXPECT_EQ(
         "List["
-        "SetPrecision["
         "Quantity["
         "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
         "\" s\"],"
-        "$MachinePrecision],"
-        "SetPrecision["
         "Quantity[SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
         "\" m\"],"
-        "$MachinePrecision],"
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision["
         "Quantity[SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
         "\" rad\"],"
-        "$MachinePrecision],"
         "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision],"
         "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision],"
         "SetPrecision[+7.00000000000000000*^+00,$MachinePrecision],"
@@ -314,6 +276,11 @@ TEST_F(MathematicaTest, PlottableDataset) {
 
 TEST_F(MathematicaTest, Escape) {
   EXPECT_EQ("\"foo\"", Escape("foo"));
+  EXPECT_EQ("\"fo\\\"o\"", Escape("fo\"o"));
+  EXPECT_EQ("\"fo\\\\o\"", Escape("fo\\o"));
+  EXPECT_EQ("\"fo\\no\"", Escape("fo\no"));
+  EXPECT_EQ("\"fo\\to\"", Escape("fo\to"));
+  EXPECT_EQ("\"\"", Escape(""));
 }
 
 TEST_F(MathematicaTest, ExpressIn) {
