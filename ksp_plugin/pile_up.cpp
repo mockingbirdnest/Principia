@@ -36,16 +36,22 @@ using geometry::RigidTransformation;
 using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Wedge;
+using mathematica::ExpressIn;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::Time;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
 using quantities::si::Radian;
+using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+
+static int id = 0;
 
 PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
@@ -60,7 +66,13 @@ PileUp::PileUp(
       adaptive_step_parameters_(std::move(adaptive_step_parameters)),
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      deletion_callback_(std::move(deletion_callback)) {
+      deletion_callback_(std::move(deletion_callback)),
+      logger_([](){
+        std::filesystem::path p = TEMP_DIR / "pile_up";
+        p += std::to_string(++id);
+        p += ".wl";
+        return p;
+      }()) {
   LOG(INFO) << "Constructing pile up at " << this;
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
   for (not_null<Part*> const part : parts_) {
@@ -356,7 +368,13 @@ PileUp::PileUp(
       history_(std::move(history)),
       psychohistory_(psychohistory),
       angular_momentum_(angular_momentum),
-      deletion_callback_(std::move(deletion_callback)) {}
+      deletion_callback_(std::move(deletion_callback)),
+      logger_([]() {
+        std::filesystem::path p = TEMP_DIR / "pile_up";
+        p += std::to_string(++id);
+        p += ".wl";
+        return p;
+      }()) {}
 
 void PileUp::MakeEulerSolver(
     InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
@@ -424,6 +442,13 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   }
   auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
   auto const apparent_angular_momentum = apparent_system.AngularMomentum();
+  logger_.Append("t", t, ExpressIn(Second));
+  logger_.Append("lActual",
+                 angular_momentum_,
+                 ExpressIn(Metre, Kilogram, Second, Radian));
+  logger_.Append("lApparent",
+                 apparent_angular_momentum,
+                 ExpressIn(Metre, Kilogram, Second, Radian));
   // Note that the inertia tensor is with respect to the centre of mass, so it
   // is unaffected by the apparent-bubble-to-pile-up correction, which is rigid
   // and involves no change in axes.
@@ -527,6 +552,12 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // parts, and the angular momentum of the pile up.
   auto actual_equivalent_angular_velocity =
       angular_momentum_ / tentative_attitude_correction(inertia_tensor);
+  logger_.Append("angvelActual",
+                 actual_equivalent_angular_velocity,
+                 ExpressIn(Second, Radian));
+  logger_.Append("angvelApparent",
+                 apparent_equivalent_angular_velocity,
+                 ExpressIn(Second, Radian));
 
   // So far we have only dealt with the essential singularity by removing it.
   // We now need to deal with its neighbourhood, by ensuring that the tentative
@@ -539,6 +570,10 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
       std::min(apparent_equivalent_angular_velocity.Norm(),
                actual_equivalent_angular_velocity.Norm());
   Time const Δt = t - psychohistory_->back().time;
+  logger_.Append("q", q);
+  logger_.Append("alpha", α, ExpressIn(Radian));
+  logger_.Append("omega", ω, ExpressIn(Second, Radian));
+
   if (thresholding && α > ω * Δt) {
     // The attitude correction is too large.  Preserve attitude.
     apparent_pile_up_equivalent_rotation =
