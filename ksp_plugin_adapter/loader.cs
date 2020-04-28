@@ -48,6 +48,13 @@ internal static class Loader {
              string.Join("', '", possible_dll_paths) + "' in directory '" +
              Directory.GetCurrentDirectory() + "'.";
     }
+    foreach (char c in Directory.GetCurrentDirectory()) {
+      if (c >= 128) {
+        return Directory.GetCurrentDirectory() +
+               " contains the non-ASCII character " + c +
+               "; this is known to confuse Mono.";
+      }
+    }
     try {
       loaded_principia_dll_ = true;
       Log.InitGoogleLogging();
