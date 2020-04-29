@@ -359,7 +359,7 @@ TEST_F(MathematicaTest, ExpressIn) {
 
 TEST_F(MathematicaTest, Logger) {
   {
-    Logger logger(TEMP_DIR / "mathematica_test.wl");
+    Logger logger(TEMP_DIR / "mathematica_test.wl", /*make_unique=*/true);
     logger.Append("a", std::vector{1, 2, 3});
     logger.Append("b", 4 * Metre / Second);
     logger.Append("a", F::origin);
@@ -391,7 +391,7 @@ TEST_F(MathematicaTest, Logger) {
       "\" m s^-1\"]]];\n",
       (
           std::stringstream{}
-          << std::ifstream(TEMP_DIR / "mathematica_test.wl").rdbuf())
+          << std::ifstream(TEMP_DIR / "mathematica_test0.wl").rdbuf())
           .str());
 }
 

@@ -284,7 +284,17 @@ inline std::string Escape(std::string const& str) {
   return result;
 }
 
-inline Logger::Logger(std::filesystem::path const& path) : file_(path) {}
+inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
+    : file_([make_unique, &path]() {
+        if (make_unique) {
+          std::filesystem::path filename = path.stem();
+          filename += std::to_string(id_++);
+          filename += path.extension();
+          return path.parent_path() / filename;
+        } else {
+          return path;
+        }
+      }()) {}
 
 inline Logger::~Logger() {
   for (auto const& [name, values] : names_and_values_) {
@@ -296,6 +306,8 @@ template<typename... Args>
 void Logger::Append(std::string const& name, Args... args) {
   names_and_values_[name].push_back(ToMathematica(args...));
 }
+
+inline std::atomic_uint64_t Logger::id_ = 0;
 
 }  // namespace internal_mathematica
 }  // namespace mathematica
