@@ -1,6 +1,6 @@
 # Principia
 
-**[Fubini](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#fubini), the April version of Principia, is available, with support 1.9.1 and bug fixes.  Download it [here for 1.5.1, 1.6.1 and 1.7.x](https://bit.ly/2xK5dXJ), and [here for 1.8.1 and 1.9.1](https://bit.ly/34O0BMc).**
+**[Fubini](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#fubini), the April version of Principia, is available, with support for 1.9.1 and bug fixes.  Download it [here for 1.5.1, 1.6.1 and 1.7.x](https://bit.ly/2xK5dXJ), and [here for 1.8.1 and 1.9.1](https://bit.ly/34O0BMc).**
 
 **For the convenience of Chinese users, downloads from 腾讯微云: [Principia Fubini for 1.5.1-1.7.3](https://share.weiyun.com/5OJQZ2K),  [Principia Fubini for 1.8.1-1.9.1](https://share.weiyun.com/5CI5PLL), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
 
