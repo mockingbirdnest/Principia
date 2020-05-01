@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <deque>
 #include <functional>
 #include <future>
 #include <list>
@@ -144,6 +145,8 @@ class PileUp {
   using AppendToPartTrajectory =
       void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
 
+  using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
+
   // For deserialization.
   PileUp(
       std::list<not_null<Part*>>&& parts,
@@ -178,6 +181,13 @@ class PileUp {
   // |NonRotatingPileUp| degrees of freedom of the parts, as set by
   // |DeformPileUpIfNeeded|.
   void NudgeParts() const;
+
+  // Pushes a new angular momentum on past_apparent_angular_momenta_, keeping
+  // its length bounded, and returns the median apparent_angular_momentum.  This
+  // reduces the noice on the apparent angular momentum.
+  Bivector<AngularMomentum, ApparentPileUp> PushAndGetMedian(
+      Bivector<AngularMomentum, ApparentPileUp> const&
+          apparent_angular_momentum);
 
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
@@ -218,6 +228,10 @@ class PileUp {
 
   // The angular momentum of the pile up with respect to its centre of mass.
   Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_;
+
+  // The previous values of the apparent angular momentum obtained from KSP.
+  std::deque<Bivector<AngularMomentum, ApparentPileUp>>
+      past_apparent_angular_momenta_;
 
   // When present, this instance is used to integrate the trajectory of this
   // pile-up using a fixed-step integrator.  This instance is destroyed

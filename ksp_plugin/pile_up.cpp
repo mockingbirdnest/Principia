@@ -10,6 +10,7 @@
 
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
+#include "geometry/r3_element.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 
@@ -33,6 +34,7 @@ using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Quaternion;
 using geometry::RigidTransformation;
+using geometry::R3Element;
 using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Wedge;
@@ -51,8 +53,6 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
-static int id = 0;
-
 PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
     Instant const& t,
@@ -67,12 +67,7 @@ PileUp::PileUp(
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       deletion_callback_(std::move(deletion_callback)),
-      logger_([](){
-        std::filesystem::path p = TEMP_DIR / "pile_up";
-        p += std::to_string(++id);
-        p += ".wl";
-        return p;
-      }()) {
+      logger_(TEMP_DIR / "pile_up.wl", /*make_unique=*/true) {
   LOG(INFO) << "Constructing pile up at " << this;
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
   for (not_null<Part*> const part : parts_) {
@@ -369,12 +364,7 @@ PileUp::PileUp(
       psychohistory_(psychohistory),
       angular_momentum_(angular_momentum),
       deletion_callback_(std::move(deletion_callback)),
-      logger_([]() {
-        std::filesystem::path p = TEMP_DIR / "pile_up";
-        p += std::to_string(++id);
-        p += ".wl";
-        return p;
-      }()) {}
+      logger_(TEMP_DIR / "pile_up.wl", /*make_unique=*/true) {}
 
 void PileUp::MakeEulerSolver(
     InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
@@ -399,6 +389,7 @@ void PileUp::MakeEulerSolver(
 
 void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   if (apparent_part_rigid_motion_.empty()) {
+    past_apparent_angular_momenta_.clear();
     Bivector<AngularMomentum, PileUpPrincipalAxes> const angular_momentum =
         euler_solver_->AngularMomentumAt(t);
     Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const attitude =
@@ -441,7 +432,8 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
         apparent_part_rigid_motion, part->mass(), part->inertia_tensor());
   }
   auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
-  auto const apparent_angular_momentum = apparent_system.AngularMomentum();
+  auto const apparent_angular_momentum =
+      PushAndGetMedian(apparent_system.AngularMomentum());
   logger_.Append("t", t, ExpressIn(Second));
   logger_.Append("lActual",
                  angular_momentum_,
@@ -750,6 +742,37 @@ void PileUp::NudgeParts() const {
         pile_up_to_barycentric * FindOrDie(actual_part_rigid_motion_, part);
     part->set_rigid_motion(actual_part_rigid_motion);
   }
+}
+
+Bivector<AngularMomentum, PileUp::ApparentPileUp> PileUp::PushAndGetMedian(
+    Bivector<AngularMomentum, ApparentPileUp> const&
+        apparent_angular_momentum) {
+  static constexpr int past_horizon = 25;
+  static_assert(past_horizon % 2 == 1);
+  past_apparent_angular_momenta_.push_back(apparent_angular_momentum);
+  if (past_apparent_angular_momenta_.size() > past_horizon) {
+    past_apparent_angular_momenta_.pop_front();
+  }
+
+  std::vector<AngularMomentum> momenta_x;
+  std::vector<AngularMomentum> momenta_y;
+  std::vector<AngularMomentum> momenta_z;
+  R3Element<AngularMomentum> median;
+  int size = past_apparent_angular_momenta_.size();
+  for (auto const& past_apparent_angular_momentum :
+       past_apparent_angular_momenta_) {
+    auto const coordinates = past_apparent_angular_momentum.coordinates();
+    momenta_x.push_back(coordinates.x);
+    momenta_y.push_back(coordinates.y);
+    momenta_z.push_back(coordinates.z);
+  }
+  auto const mid_x = momenta_x.begin() + size / 2;
+  auto const mid_y = momenta_y.begin() + size / 2;
+  auto const mid_z = momenta_z.begin() + size / 2;
+  std::nth_element(momenta_x.begin(), mid_x, momenta_x.end());
+  std::nth_element(momenta_y.begin(), mid_y, momenta_y.end());
+  std::nth_element(momenta_z.begin(), mid_z, momenta_z.end());
+  return Bivector<AngularMomentum, ApparentPileUp>({*mid_x, *mid_y, *mid_z});
 }
 
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>
