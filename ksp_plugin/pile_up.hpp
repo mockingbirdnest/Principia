@@ -16,7 +16,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
-#include "mathematica/mathematica.hpp"
 #include "numerics/pid.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -247,8 +246,6 @@ class PileUp {
   PID<Bivector<AngularMomentum, ApparentPileUp>,
       /*horizon=*/25,
       /*finite_difference_order=*/5> pid_;
-
-  mathematica::Logger logger_;
 
   friend class TestablePileUp;
 };

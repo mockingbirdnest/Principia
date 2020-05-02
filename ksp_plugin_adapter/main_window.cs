@@ -518,7 +518,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   private static bool correct_orientation = true;
   private static bool correct_angular_velocity = true;
   private static bool thresholding = true;
-  private static readonly bool show_2519_debugging_ui = true;
+  private static readonly bool show_2519_debugging_ui = false;
 
   private static readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
