@@ -1,7 +1,6 @@
 ﻿
 #pragma once
 
-#include <deque>
 #include <functional>
 #include <future>
 #include <list>
@@ -58,9 +57,7 @@ using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::AngularMomentum;
 using quantities::Force;
-using quantities::Inverse;
 using quantities::Mass;
-using quantities::Time;
 using quantities::Torque;
 
 // The origin of |NonRotatingPileUp| is the centre of mass of the pile up.

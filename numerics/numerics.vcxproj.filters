@@ -119,6 +119,12 @@
     <ClInclude Include="elliptic_functions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pid.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pid_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -182,6 +188,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="elliptic_integrals_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pid_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

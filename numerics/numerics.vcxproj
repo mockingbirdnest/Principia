@@ -39,6 +39,8 @@
     <ClInclude Include="newhall.hpp" />
     <ClInclude Include="newhall.mathematica.h" />
     <ClInclude Include="newhall_body.hpp" />
+    <ClInclude Include="pid.hpp" />
+    <ClInclude Include="pid_body.hpp" />
     <ClInclude Include="polynomial.hpp" />
     <ClInclude Include="polynomial_body.hpp" />
     <ClInclude Include="polynomial_evaluators.hpp" />
@@ -68,6 +70,7 @@
     <ClCompile Include="legendre_test.cpp" />
     <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc" />
     <ClCompile Include="newhall_test.cpp" />
+    <ClCompile Include="pid_test.cpp" />
     <ClCompile Include="polynomial_evaluators_test.cpp" />
     <ClCompile Include="polynomial_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />
