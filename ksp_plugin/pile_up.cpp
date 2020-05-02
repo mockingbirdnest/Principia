@@ -11,11 +11,8 @@
 #include "base/flags.hpp"
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
-#include "geometry/r3_element.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
-#include "numerics/finite_difference.hpp"
-#include "quantities/parser.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -38,20 +35,15 @@ using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Quaternion;
 using geometry::RigidTransformation;
-using geometry::R3Element;
 using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Wedge;
-using numerics::FiniteDifference;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::Inverse;
-using quantities::ParseQuantity;
-using quantities::Product;
-using quantities::Quotient;
 using quantities::Time;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -101,7 +93,6 @@ PileUp::PileUp(
            GetPidFlagOr("ki", ki_default),
            GetPidFlagOr("kd", kd_default)) {
   LOG(INFO) << "Constructing pile up at " << this;
-
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
   for (not_null<Part*> const part : parts_) {
     mechanical_system.AddRigidBody(
@@ -587,7 +578,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   AngularFrequency const ω =
       std::min(apparent_equivalent_angular_velocity.Norm(),
                actual_equivalent_angular_velocity.Norm());
-
   if (thresholding && α > ω * Δt) {
     // The attitude correction is too large.  Preserve attitude.
     apparent_pile_up_equivalent_rotation =

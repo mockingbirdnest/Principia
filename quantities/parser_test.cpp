@@ -138,7 +138,7 @@ TEST_F(ParserTest, ParseAngularFrequency) {
 
 TEST_F(ParserTest, ParseRadiance) {
   EXPECT_EQ(1.23 * Watt / (Steradian * Metre * Metre),
-    ParseQuantity<Radiance>("1.23 W sr^-1 m^-2"));
+            ParseQuantity<Radiance>("1.23 W sr^-1 m^-2"));
 }
 
 TEST_F(ParserTest, ParseFrequency) {
