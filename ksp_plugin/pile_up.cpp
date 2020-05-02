@@ -13,6 +13,7 @@
 #include "geometry/identity.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
+#include "quantities/parser.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -44,6 +45,7 @@ using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::Inverse;
+using quantities::ParseQuantity;
 using quantities::Time;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
