@@ -49,6 +49,7 @@ using physics::RigidMotion;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
+using quantities::Inverse;
 using quantities::ParseQuantity;
 using quantities::Product;
 using quantities::Quotient;
@@ -66,6 +67,13 @@ constexpr double kp_default = 0.65;
 constexpr Inverse<Time> ki_default = 0.03 / Second;
 constexpr Time kd_default = 0.0025 * Second;
 
+// Configuration example:
+//   principia_flags
+//   {
+//     kp = 0.65
+//     ki = 0.03 / s
+//     kd = 0.0025 s
+//   }
 template<typename Q>
 Q GetPidFlagOr(std::string_view const name, Q const default) {
   auto const values = Flags::Values(name);
@@ -406,60 +414,6 @@ PileUp::PileUp(
                             GetPidFlagOr("kd", kd_default)});
 }
 
-PileUp::PID::PID(double kp, Inverse<Time> ki, Time kd)
-    : kp_(kp), ki_(ki), kd_(kd) {}
-
-void PileUp::PID::Clear() {
-  angular_momentum_errors_.clear();
-}
-
-Bivector<AngularMomentum, PileUp::ApparentPileUp>
-PileUp::PID::ComputeApparentAngularMomentum(
-    Bivector<AngularMomentum, ApparentPileUp> const& apparent_angular_momentum,
-    Bivector<AngularMomentum, ApparentPileUp> const& actual_angular_momentum,
-    Time const& Δt) {
-  static constexpr int past_horizon = 25;
-  static constexpr int finite_difference_order = 5;
-
-  angular_momentum_errors_.push_back(apparent_angular_momentum -
-                                     actual_angular_momentum);
-  int size = angular_momentum_errors_.size();
-  if (size <= past_horizon) {
-    // If we don't have enough error history, just return our input.
-    return apparent_angular_momentum;
-  }
-  angular_momentum_errors_.pop_front();
-  --size;
-
-  // The last error.
-  R3Element<AngularMomentum> proportional =
-      angular_momentum_errors_.back().coordinates();
-
-  // Compute the integral of the errors.  This is the dumbest possible algorithm
-  // because we do not care too much about the accuracy.
-  R3Element<AngularMomentum> sum;
-  for (auto const& angular_momentum_error : angular_momentum_errors_) {
-    sum += angular_momentum_error.coordinates();
-  }
-  R3Element<Product<AngularMomentum, Time>> const integral = sum * Δt;
-
-  // Compute the derivative of the errors.  A first-order formula would
-  // introduce noise, so it's best to use a higher-order formula.
-  std::array<R3Element<AngularMomentum>, finite_difference_order>
-      angular_momentum_errors{};
-  auto it = angular_momentum_errors_.cend() - finite_difference_order;
-  for (int i = 0; i < finite_difference_order; ++i, ++it) {
-    angular_momentum_errors[i] = it->coordinates();
-  }
-  R3Element<Quotient<AngularMomentum, Time>> const derivative =
-      FiniteDifference(
-          angular_momentum_errors, Δt, finite_difference_order - 1);
-
-  return actual_angular_momentum +
-         Bivector<AngularMomentum, ApparentPileUp>(
-             kp_ * proportional + ki_ * integral + kd_ * derivative);
-}
-
 void PileUp::MakeEulerSolver(
     InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
     Instant const& t) {
@@ -527,7 +481,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   }
   auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
   auto const apparent_angular_momentum =
-      pid_.ComputeApparentAngularMomentum(
+      pid_.ComputeValue(
           apparent_system.AngularMomentum(),
           Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_),
           Δt);

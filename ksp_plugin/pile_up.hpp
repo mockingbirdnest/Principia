@@ -17,6 +17,7 @@
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
 #include "mathematica/mathematica.hpp"
+#include "numerics/pid.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/euler_solver.hpp"
@@ -47,6 +48,7 @@ using geometry::NonRotating;
 using geometry::RigidTransformation;
 using geometry::Vector;
 using integrators::Integrator;
+using numerics::PID;
 using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -158,34 +160,6 @@ class PileUp {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void()> deletion_callback);
 
-  // A PID used to smoothen the value of the apparent angular momentum obtained
-  // from KSP.
-  class PID {
-   public:
-    PID(double kp, Inverse<Time> ki, Time kd);
-
-    // Clears the state of the PID.
-    void Clear();
-
-    // Adds the error between the two momenta to the state of the PID and
-    // returns an apparent angular momentum derived from the control variable.
-    Bivector<AngularMomentum, ApparentPileUp> ComputeApparentAngularMomentum(
-        Bivector<AngularMomentum, ApparentPileUp> const&
-            apparent_angular_momentum,
-        Bivector<AngularMomentum, ApparentPileUp> const&
-            actual_angular_momentum,
-        Time const& Δt);
-
-   private:
-     double const kp_;
-     Inverse<Time> const ki_;
-     Time const kd_;
-
-     // The front element is the oldest.
-     std::deque<Bivector<AngularMomentum, ApparentPileUp>>
-       angular_momentum_errors_;
-  };
-
   // Sets |euler_solver_| and updates |rigid_pile_up_|.
   void MakeEulerSolver(InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
                        Instant const& t);
@@ -268,7 +242,11 @@ class PileUp {
   // Called in the destructor.
   std::function<void()> deletion_callback_;
 
-  PID pid_;
+  // A PID used to smoothen the value of the apparent angular momentum obtained
+  // from KSP.
+  PID<Bivector<AngularMomentum, ApparentPileUp>,
+      /*horizon=*/25,
+      /*finite_difference_order=*/5> pid_;
 
   mathematica::Logger logger_;
 

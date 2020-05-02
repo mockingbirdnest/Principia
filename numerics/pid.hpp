@@ -13,10 +13,10 @@ namespace internal_pid {
 using quantities::Inverse;
 using quantities::Time;
 
-template<typename Value, int past_horizon, int finite_difference_order>
+template<typename Value, int horizon, int finite_difference_order>
 class PID {
 public:
-  static_assert(finite_difference_order <= past_horizon);
+  static_assert(finite_difference_order <= horizon);
 
   PID(double kp, Inverse<Time> const& ki, Time const& kd);
 
