@@ -59,6 +59,7 @@ using physics::RigidMotion;
 using quantities::AngularMomentum;
 using quantities::Force;
 using quantities::Mass;
+using quantities::Time;
 using quantities::Torque;
 
 // The origin of |NonRotatingPileUp| is the centre of mass of the pile up.
@@ -185,9 +186,12 @@ class PileUp {
   // Pushes a new angular momentum on past_apparent_angular_momenta_, keeping
   // its length bounded, and returns the median apparent_angular_momentum.  This
   // reduces the noice on the apparent angular momentum.
-  Bivector<AngularMomentum, ApparentPileUp> PushAndGetMedian(
+  //TODO(phl):Fix the comment
+  Bivector<AngularMomentum, ApparentPileUp> PushAndGetApparent(
       Bivector<AngularMomentum, ApparentPileUp> const&
-          apparent_angular_momentum);
+          apparent_angular_momentum,
+      Bivector<AngularMomentum, ApparentPileUp> const& actual_angular_momentum,
+      Time Δt);
 
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
@@ -230,8 +234,13 @@ class PileUp {
   Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_;
 
   // The previous values of the apparent angular momentum obtained from KSP.
+#if defined(PRINCIPIA_AVERAGE) || defined(PRINCIPIA_MEDIAN)
   std::deque<Bivector<AngularMomentum, ApparentPileUp>>
       past_apparent_angular_momenta_;
+#else
+  std::deque<Bivector<AngularMomentum, ApparentPileUp>>
+      past_angular_momentum_errors_;
+#endif
 
   // When present, this instance is used to integrate the trajectory of this
   // pile-up using a fixed-step integrator.  This instance is destroyed
