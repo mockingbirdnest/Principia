@@ -15,6 +15,7 @@
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "numerics/finite_difference.hpp"
+#include "quantities/parser.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -48,7 +49,7 @@ using physics::RigidMotion;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
-using quantities::Inverse;
+using quantities::ParseQuantity;
 using quantities::Product;
 using quantities::Quotient;
 using quantities::Time;
@@ -60,14 +61,19 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
-std::tuple<Time,Inverse<Time>,double> GetPidFlags() {
-  auto const kd_flags = Flags::Values("kd");
-  auto const ki_flags = Flags::Values("ki");
-  auto const kp_flags = Flags::Values("kp");
-  Time const kd = std::stod(*kd_flags.cbegin()) * Second;
-  Inverse<Time> const ki = std::stod(*ki_flags.cbegin()) / Second;
-  double const kp = std::stod(*kp_flags.cbegin());
-  return std::tuple{kd, ki, kp};
+// NOTE(phl): The default values were tuned on "Fubini oscillator".
+constexpr double kp_default = 0.65;
+constexpr Inverse<Time> ki_default = 0.03 / Second;
+constexpr Time kd_default = 0.0025 * Second;
+
+template<typename Q>
+Q GetPidFlagOr(std::string_view const name, Q const default) {
+  auto const values = Flags::Values(name);
+  if (values.empty()) {
+    return default;
+  } else {
+    return ParseQuantity<Q>(*values.cbegin());
+  }
 }
 
 PileUp::PileUp(
@@ -84,10 +90,16 @@ PileUp::PileUp(
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       deletion_callback_(std::move(deletion_callback)),
-      logger_(TEMP_DIR / "pile_up.wl", /*make_unique=*/true) {
+      logger_(TEMP_DIR / "pile_up.wl", /*make_unique=*/true),
+      pid_(GetPidFlagOr("kp", kp_default),
+           GetPidFlagOr("ki", ki_default),
+           GetPidFlagOr("kd", kd_default)) {
   LOG(INFO) << "Constructing pile up at " << this;
 
-  logger_.Append("flags", GetPidFlags());
+  logger_.Append("flags",
+                 std::tuple{GetPidFlagOr("kp", kp_default),
+                            GetPidFlagOr("ki", ki_default),
+                            GetPidFlagOr("kd", kd_default)});
 
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
   for (not_null<Part*> const part : parts_) {
@@ -384,8 +396,68 @@ PileUp::PileUp(
       psychohistory_(psychohistory),
       angular_momentum_(angular_momentum),
       deletion_callback_(std::move(deletion_callback)),
-      logger_(TEMP_DIR / "pile_up.wl", /*make_unique=*/true) {
-  logger_.Append("flags", GetPidFlags());
+      logger_(TEMP_DIR / "pile_up.wl", /*make_unique=*/true),
+      pid_(GetPidFlagOr("kp", kp_default),
+           GetPidFlagOr("ki", ki_default),
+           GetPidFlagOr("kd", kd_default)) {
+  logger_.Append("flags",
+                 std::tuple{GetPidFlagOr("kp", kp_default),
+                            GetPidFlagOr("ki", ki_default),
+                            GetPidFlagOr("kd", kd_default)});
+}
+
+PileUp::PID::PID(double kp, Inverse<Time> ki, Time kd)
+    : kp_(kp), ki_(ki), kd_(kd) {}
+
+void PileUp::PID::Clear() {
+  angular_momentum_errors_.clear();
+}
+
+Bivector<AngularMomentum, PileUp::ApparentPileUp>
+PileUp::PID::ComputeApparentAngularMomentum(
+    Bivector<AngularMomentum, ApparentPileUp> const& apparent_angular_momentum,
+    Bivector<AngularMomentum, ApparentPileUp> const& actual_angular_momentum,
+    Time const& Δt) {
+  static constexpr int past_horizon = 25;
+  static constexpr int finite_difference_order = 5;
+
+  angular_momentum_errors_.push_back(apparent_angular_momentum -
+                                     actual_angular_momentum);
+  int size = angular_momentum_errors_.size();
+  if (size <= past_horizon) {
+    // If we don't have enough error history, just return our input.
+    return apparent_angular_momentum;
+  }
+  angular_momentum_errors_.pop_front();
+  --size;
+
+  // The last error.
+  R3Element<AngularMomentum> proportional =
+      angular_momentum_errors_.back().coordinates();
+
+  // Compute the integral of the errors.  This is the dumbest possible algorithm
+  // because we do not care too much about the accuracy.
+  R3Element<AngularMomentum> sum;
+  for (auto const& angular_momentum_error : angular_momentum_errors_) {
+    sum += angular_momentum_error.coordinates();
+  }
+  R3Element<Product<AngularMomentum, Time>> const integral = sum * Δt;
+
+  // Compute the derivative of the errors.  A first-order formula would
+  // introduce noise, so it's best to use a higher-order formula.
+  std::array<R3Element<AngularMomentum>, finite_difference_order>
+      angular_momentum_errors{};
+  auto it = angular_momentum_errors_.cend() - finite_difference_order;
+  for (int i = 0; i < finite_difference_order; ++i, ++it) {
+    angular_momentum_errors[i] = it->coordinates();
+  }
+  R3Element<Quotient<AngularMomentum, Time>> const derivative =
+      FiniteDifference(
+          angular_momentum_errors, Δt, finite_difference_order - 1);
+
+  return actual_angular_momentum +
+         Bivector<AngularMomentum, ApparentPileUp>(
+             kp_ * proportional + ki_ * integral + kd_ * derivative);
 }
 
 void PileUp::MakeEulerSolver(
@@ -411,7 +483,7 @@ void PileUp::MakeEulerSolver(
 
 void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   if (apparent_part_rigid_motion_.empty()) {
-    past_angular_momentum_errors_.clear();
+    pid_.Clear();
     Bivector<AngularMomentum, PileUpPrincipalAxes> const angular_momentum =
         euler_solver_->AngularMomentumAt(t);
     Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const attitude =
@@ -454,10 +526,11 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
         apparent_part_rigid_motion, part->mass(), part->inertia_tensor());
   }
   auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
-  auto const apparent_angular_momentum = PushAndGetApparent(
-      apparent_system.AngularMomentum(),
-      Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_),
-      Δt);
+  auto const apparent_angular_momentum =
+      pid_.ComputeApparentAngularMomentum(
+          apparent_system.AngularMomentum(),
+          Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_),
+          Δt);
   logger_.Append("t", t, ExpressIn(Second));
   logger_.Append("lActual",
                  angular_momentum_,
@@ -765,93 +838,6 @@ void PileUp::NudgeParts() const {
         pile_up_to_barycentric * FindOrDie(actual_part_rigid_motion_, part);
     part->set_rigid_motion(actual_part_rigid_motion);
   }
-}
-
-Bivector<AngularMomentum, PileUp::ApparentPileUp> PileUp::PushAndGetApparent(
-    Bivector<AngularMomentum, ApparentPileUp> const& apparent_angular_momentum,
-    Bivector<AngularMomentum, ApparentPileUp> const& actual_angular_momentum,
-    Time const Δt) {
-  static constexpr int past_horizon = 25;
-  static constexpr int finite_difference_order = 5;
-  static_assert(past_horizon % 2 == 1);
-#if defined(PRINCIPIA_AVERAGE)
-  past_apparent_angular_momenta_.push_back(apparent_angular_momentum);
-  int size = past_apparent_angular_momenta_.size();
-  if (size <= past_horizon) {  // <= important for average.
-    return apparent_angular_momentum;
-  }
-  past_apparent_angular_momenta_.pop_front();
-  --size;
-  R3Element<AngularMomentum> sum;
-  for (auto const& past_apparent_angular_momentum :
-       past_apparent_angular_momenta_) {
-    sum += past_apparent_angular_momentum.coordinates();
-  }
-  return Bivector<AngularMomentum, ApparentPileUp>(sum / size);
-#elif defined(PRINCIPIA_MEDIAN)
-  past_apparent_angular_momenta_.push_back(apparent_angular_momentum);
-  int size = past_apparent_angular_momenta_.size();
-  if (size <= past_horizon) {
-    return apparent_angular_momentum;
-  }
-  past_apparent_angular_momenta_.pop_front();
-  --size;
-  std::vector<AngularMomentum> momenta_x;
-  std::vector<AngularMomentum> momenta_y;
-  std::vector<AngularMomentum> momenta_z;
-  for (auto const& past_apparent_angular_momentum :
-    past_apparent_angular_momenta_) {
-    auto const coordinates = past_apparent_angular_momentum.coordinates();
-    momenta_x.push_back(coordinates.x);
-    momenta_y.push_back(coordinates.y);
-    momenta_z.push_back(coordinates.z);
-  }
-  auto const mid_x = momenta_x.begin() + size / 2;
-  auto const mid_y = momenta_y.begin() + size / 2;
-  auto const mid_z = momenta_z.begin() + size / 2;
-  std::nth_element(momenta_x.begin(), mid_x, momenta_x.end());
-  std::nth_element(momenta_y.begin(), mid_y, momenta_y.end());
-  std::nth_element(momenta_z.begin(), mid_z, momenta_z.end());
-  return Bivector<AngularMomentum, ApparentPileUp>({ *mid_x, *mid_y, *mid_z });
-#else
-  past_angular_momentum_errors_.push_back(apparent_angular_momentum -
-                                          actual_angular_momentum);
-  int size = past_angular_momentum_errors_.size();
-  if (size <= past_horizon) {
-    return apparent_angular_momentum;
-  }
-  past_angular_momentum_errors_.pop_front();
-  --size;
-
-  R3Element<AngularMomentum> sum;
-  for (auto const& past_angular_momentum_error :
-       past_angular_momentum_errors_) {
-    sum += past_angular_momentum_error.coordinates();
-  }
-  R3Element<Product<AngularMomentum, Time>> const integral = sum * Δt;
-
-  std::array<R3Element<AngularMomentum>, finite_difference_order>
-      past_angular_momentum_errors{};
-  auto it = past_angular_momentum_errors_.crbegin();
-  for (int i = finite_difference_order - 1; i >= 0; --i) {
-    past_angular_momentum_errors[i] = it->coordinates();
-    ++it;
-  }
-  R3Element<Quotient<AngularMomentum, Time>> const derivative =
-      FiniteDifference(
-          past_angular_momentum_errors, Δt, finite_difference_order - 1);
-
-  R3Element<AngularMomentum> proportional =
-      past_angular_momentum_errors_.crbegin()->coordinates();
-  logger_.Append("errors",
-                 std::tuple{derivative, integral, proportional},
-                 ExpressIn(Metre, Kilogram, Second, Radian));
-
-  auto const [kd, ki, kp] = GetPidFlags();
-  return actual_angular_momentum +
-         Bivector<AngularMomentum, ApparentPileUp>(
-             kd * derivative + ki * integral + kp * proportional);
-#endif
 }
 
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>

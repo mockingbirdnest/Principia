@@ -58,6 +58,7 @@ using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::AngularMomentum;
 using quantities::Force;
+using quantities::Inverse;
 using quantities::Mass;
 using quantities::Time;
 using quantities::Torque;
@@ -146,6 +147,7 @@ class PileUp {
   using AppendToPartTrajectory =
       void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
 
+  // TODO(egg): Document this frame.
   using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
 
   // For deserialization.
@@ -158,6 +160,34 @@ class PileUp {
       Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void()> deletion_callback);
+
+  // A PID used to smoothen the value of the apparent angular momentum obtained
+  // from KSP.
+  class PID {
+   public:
+    PID(double kp, Inverse<Time> ki, Time kd);
+
+    // Clears the state of the PID.
+    void Clear();
+
+    // Adds the error between the two momenta to the state of the PID and
+    // returns an apparent angular momentum derived from the control variable.
+    Bivector<AngularMomentum, ApparentPileUp> ComputeApparentAngularMomentum(
+        Bivector<AngularMomentum, ApparentPileUp> const&
+            apparent_angular_momentum,
+        Bivector<AngularMomentum, ApparentPileUp> const&
+            actual_angular_momentum,
+        Time const& Δt);
+
+   private:
+     double const kp_;
+     Inverse<Time> const ki_;
+     Time const kd_;
+
+     // The front element is the oldest.
+     std::deque<Bivector<AngularMomentum, ApparentPileUp>>
+       angular_momentum_errors_;
+  };
 
   // Sets |euler_solver_| and updates |rigid_pile_up_|.
   void MakeEulerSolver(InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
@@ -182,16 +212,6 @@ class PileUp {
   // |NonRotatingPileUp| degrees of freedom of the parts, as set by
   // |DeformPileUpIfNeeded|.
   void NudgeParts() const;
-
-  // Pushes a new angular momentum on past_apparent_angular_momenta_, keeping
-  // its length bounded, and returns the median apparent_angular_momentum.  This
-  // reduces the noice on the apparent angular momentum.
-  //TODO(phl):Fix the comment
-  Bivector<AngularMomentum, ApparentPileUp> PushAndGetApparent(
-      Bivector<AngularMomentum, ApparentPileUp> const&
-          apparent_angular_momentum,
-      Bivector<AngularMomentum, ApparentPileUp> const& actual_angular_momentum,
-      Time Δt);
 
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
@@ -233,15 +253,6 @@ class PileUp {
   // The angular momentum of the pile up with respect to its centre of mass.
   Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_;
 
-  // The previous values of the apparent angular momentum obtained from KSP.
-#if defined(PRINCIPIA_AVERAGE) || defined(PRINCIPIA_MEDIAN)
-  std::deque<Bivector<AngularMomentum, ApparentPileUp>>
-      past_apparent_angular_momenta_;
-#else
-  std::deque<Bivector<AngularMomentum, ApparentPileUp>>
-      past_angular_momentum_errors_;
-#endif
-
   // When present, this instance is used to integrate the trajectory of this
   // pile-up using a fixed-step integrator.  This instance is destroyed
   // if a variable-step integrator needs to be used because of an intrinsic
@@ -259,6 +270,8 @@ class PileUp {
 
   // Called in the destructor.
   std::function<void()> deletion_callback_;
+
+  PID pid_;
 
   mathematica::Logger logger_;
 
