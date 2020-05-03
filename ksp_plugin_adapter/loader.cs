@@ -48,11 +48,13 @@ internal static class Loader {
              string.Join("', '", possible_dll_paths) + "' in directory '" +
              Directory.GetCurrentDirectory() + "'.";
     }
+    string non_ascii_path_error = null;
     foreach (char c in Directory.GetCurrentDirectory()) {
       if (c >= 128) {
-        return Directory.GetCurrentDirectory() +
-               " contains the non-ASCII character " + c +
-               "; this is known to confuse Mono.";
+        non_ascii_path_error = Directory.GetCurrentDirectory() +
+                             " contains the non-ASCII character " + c +
+                             "; this is known to confuse Mono.";
+        break;
       }
     }
     try {
@@ -61,7 +63,9 @@ internal static class Loader {
       return null;
     } catch (Exception e) {
       UnityEngine.Debug.LogException(e);
-      if (is_cxx_installed == false) {
+      if (non_ascii_path_error != null) {
+        return non_ascii_path_error;
+      } else if (is_cxx_installed == false) {
         return "Dependencies, namely " + required_cxx_packages +
                ", were not found.";
       } else {
