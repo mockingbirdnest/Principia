@@ -6,7 +6,6 @@
 #include <numeric>
 
 #include "numerics/finite_difference.hpp"
-#include "numerics/ulp_distance.hpp"
 
 namespace principia {
 namespace numerics {
@@ -17,8 +16,8 @@ using quantities::Variation;
 
 template<typename Value, int horizon, int finite_difference_order>
 PID<Value, horizon, finite_difference_order>::PID(double const kp,
-                                                       Inverse<Time> const& ki,
-                                                       Time const& kd)
+                                                  Inverse<Time> const& ki,
+                                                  Time const& kd)
     : kp_(kp), ki_(ki), kd_(kd) {}
 
 template<typename Value, int horizon, int finite_difference_order>
@@ -36,6 +35,7 @@ Value PID<Value, horizon, finite_difference_order>::ComputeValue(
   // precision float.
   if (previous_Δt_.has_value() && (Δt < previous_Δt_.value() * (1 - 1e-3) ||
                                    Δt > previous_Δt_.value() * (1 + 1e-3))) {
+    LOG(WARNING) << "Resetting PID, " << Δt << " != " << previous_Δt_.value();
     Clear();
   }
   previous_Δt_ = Δt;
