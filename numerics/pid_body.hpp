@@ -34,8 +34,8 @@ Value PID<Value, horizon, finite_difference_order>::ComputeValue(
   // The PID is not prepared to receive inputs that are not equally spaced.
   // Clear it if that happens, but be very tolerant because KSP uses single-
   // precision float.
-  if (previous_Δt_.has_value() && (Δt < previous_Δt_.value * (1 - 1e-3) ||
-                                   Δt > previous_Δt_.value * (1 + 1e-3))) {
+  if (previous_Δt_.has_value() && (Δt < previous_Δt_.value() * (1 - 1e-3) ||
+                                   Δt > previous_Δt_.value() * (1 + 1e-3))) {
     Clear();
   }
   previous_Δt_ = Δt;
