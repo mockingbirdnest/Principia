@@ -2,6 +2,7 @@
 #pragma once
 
 #include <deque>
+#include <optional>
 
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
