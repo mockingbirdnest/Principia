@@ -67,10 +67,10 @@ constexpr Time kd_default = 0.0025 * Second;
 //     kd = 0.0025 s
 //   }
 template<typename Q>
-Q GetPIDFlagOr(std::string_view const name, Q const default) {
+Q GetPIDFlagOr(std::string_view const name, Q const default_value) {
   auto const values = Flags::Values(name);
   if (values.empty()) {
-    return default;
+    return default_value;
   } else {
     return ParseQuantity<Q>(*values.cbegin());
   }
