@@ -16,7 +16,7 @@ using quantities::Time;
 
 template<typename Value, int horizon, int finite_difference_order>
 class PID {
-public:
+ public:
   static_assert(finite_difference_order <= horizon);
 
   PID(double kp, Inverse<Time> const& ki, Time const& kd);
@@ -31,7 +31,7 @@ public:
                      Value const& set_point,
                      Time const& Δt);
 
-private:
+ private:
   double const kp_;
   Inverse<Time> const ki_;
   Time const kd_;
