@@ -61,14 +61,13 @@ constexpr Inverse<Time> ki_default = 0.03 / Second;
 constexpr Time kd_default = 0.0025 * Second;
 
 // Configuration example:
-//   principia_flags
-//   {
+//   principia_flags {
 //     kp = 0.65
 //     ki = 0.03 / s
 //     kd = 0.0025 s
 //   }
 template<typename Q>
-Q GetPidFlagOr(std::string_view const name, Q const default) {
+Q GetPIDFlagOr(std::string_view const name, Q const default) {
   auto const values = Flags::Values(name);
   if (values.empty()) {
     return default;
@@ -91,9 +90,9 @@ PileUp::PileUp(
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       deletion_callback_(std::move(deletion_callback)),
-      pid_(GetPidFlagOr("kp", kp_default),
-           GetPidFlagOr("ki", ki_default),
-           GetPidFlagOr("kd", kd_default)) {
+      apparent_angular_momentum_controller_(GetPIDFlagOr("kp", kp_default),
+                                            GetPIDFlagOr("ki", ki_default),
+                                            GetPIDFlagOr("kd", kd_default)) {
   LOG(INFO) << "Constructing pile up at " << this;
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
   for (not_null<Part*> const part : parts_) {
@@ -390,10 +389,9 @@ PileUp::PileUp(
       psychohistory_(psychohistory),
       angular_momentum_(angular_momentum),
       deletion_callback_(std::move(deletion_callback)),
-      pid_(GetPidFlagOr("kp", kp_default),
-           GetPidFlagOr("ki", ki_default),
-           GetPidFlagOr("kd", kd_default)) {
-}
+      apparent_angular_momentum_controller_(GetPIDFlagOr("kp", kp_default),
+                                            GetPIDFlagOr("ki", ki_default),
+                                            GetPIDFlagOr("kd", kd_default)) {}
 
 void PileUp::MakeEulerSolver(
     InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
@@ -418,7 +416,7 @@ void PileUp::MakeEulerSolver(
 
 void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   if (apparent_part_rigid_motion_.empty()) {
-    pid_.Clear();
+    apparent_angular_momentum_controller_.Clear();
     Bivector<AngularMomentum, PileUpPrincipalAxes> const angular_momentum =
         euler_solver_->AngularMomentumAt(t);
     Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const attitude =
@@ -462,7 +460,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   }
   auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
   auto const apparent_angular_momentum =
-      pid_.ComputeValue(
+      apparent_angular_momentum_controller_.ComputeValue(
           apparent_system.AngularMomentum(),
           Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_),
           Δt);

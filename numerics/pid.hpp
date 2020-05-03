@@ -23,17 +23,20 @@ public:
   // Clears the state of the PID.
   void Clear();
 
-  // Adds the error between the two values to the state of the PID and
-  // returns an apparent value derived from the actual value and the control
-  // variable.
-  Value ComputeValue(Value const& apparent,
-                     Value const& actual,
+  // Adds the error between the process variable and the set-point to the state
+  // of the PID and returns an process variable derived from the set-point and
+  // the control variable.
+  Value ComputeValue(Value const& process_variable,
+                     Value const& set_point,
                      Time const& Δt);
 
 private:
   double const kp_;
   Inverse<Time> const ki_;
   Time const kd_;
+
+  // The PID is not prepared to receive inputs that are not equally spaced.
+  std::optional<Time> previous_Δt_;
 
   // The front element is the oldest.
   std::deque<Value> errors_;

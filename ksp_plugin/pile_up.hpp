@@ -145,7 +145,10 @@ class PileUp {
   using AppendToPartTrajectory =
       void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
 
-  // TODO(egg): Document this frame.
+  // The axes are those of Barycentric. The origin is the centre of mass of the
+  // pile up.  This frame is distinguished from NonRotatingPileUp in that it is
+  // used to hold uncorrected (apparent) coordinates given by the game, before
+  // the enforcement of conservation laws; see also ApparentBubble.
   using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
 
   // For deserialization.
@@ -245,7 +248,7 @@ class PileUp {
   // from KSP.
   PID<Bivector<AngularMomentum, ApparentPileUp>,
       /*horizon=*/25,
-      /*finite_difference_order=*/5> pid_;
+      /*finite_difference_order=*/5> apparent_angular_momentum_controller_;
 
   friend class TestablePileUp;
 };
