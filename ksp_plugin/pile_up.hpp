@@ -247,6 +247,7 @@ class PileUp {
   // A PID used to smoothen the value of the apparent angular momentum obtained
   // from KSP.
   PID<Bivector<AngularMomentum, ApparentPileUp>,
+      Bivector<AngularMomentum, ApparentPileUp>,
       /*horizon=*/25,
       /*finite_difference_order=*/5> apparent_angular_momentum_controller_;
 

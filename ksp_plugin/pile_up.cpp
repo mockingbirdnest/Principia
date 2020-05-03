@@ -451,7 +451,9 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     CHECK(Contains(apparent_part_rigid_motion_, part));
   }
 
-  Time const Δt = t - psychohistory_->back().time;
+  auto const angular_momentum_in_apparent_pile_up =
+      Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_);
+
   MechanicalSystem<ApparentBubble, ApparentPileUp> apparent_system;
   for (auto const& [part, apparent_part_rigid_motion] :
        apparent_part_rigid_motion_) {
@@ -460,10 +462,11 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   }
   auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
   auto const apparent_angular_momentum =
-      apparent_angular_momentum_controller_.ComputeValue(
+      angular_momentum_in_apparent_pile_up -
+      apparent_angular_momentum_controller_.ComputeControlVariable(
           apparent_system.AngularMomentum(),
-          Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_),
-          Δt);
+          angular_momentum_in_apparent_pile_up,
+          t);
   // Note that the inertia tensor is with respect to the centre of mass, so it
   // is unaffected by the apparent-bubble-to-pile-up correction, which is rigid
   // and involves no change in axes.
@@ -477,7 +480,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   //  actual_correction_axis.coordinates()|.
   auto const apparent_correction_axis = NormalizeOrZero(Commutator(
       apparent_angular_momentum,
-      Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_)));
+      angular_momentum_in_apparent_pile_up));
   auto const actual_correction_axis = NormalizeOrZero(Commutator(
       Identity<ApparentPileUp, NonRotatingPileUp>()(apparent_angular_momentum),
       angular_momentum_));
@@ -578,6 +581,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   AngularFrequency const ω =
       std::min(apparent_equivalent_angular_velocity.Norm(),
                actual_equivalent_angular_velocity.Norm());
+  Time const Δt = t - psychohistory_->back().time;
   if (thresholding && α > ω * Δt) {
     // The attitude correction is too large.  Preserve attitude.
     apparent_pile_up_equivalent_rotation =
