@@ -24,8 +24,8 @@ public:
   void Clear();
 
   // Adds the error between the process variable and the set-point to the state
-  // of the PID and returns an process variable derived from the set-point and
-  // the control variable.
+  // of the PID and returns an updated process variable derived from the
+  // set-point and the control variable.
   Value ComputeValue(Value const& process_variable,
                      Value const& set_point,
                      Time const& Δt);
