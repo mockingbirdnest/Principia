@@ -357,6 +357,8 @@ TEST_F(MathematicaTest, ExpressIn) {
 #endif
 }
 
+// std::filesystem is broken on macOS.
+#if !defined(__APPLE__)
 TEST_F(MathematicaTest, Logger) {
   {
     Logger logger(TEMP_DIR / "mathematica_test.wl", /*make_unique=*/true);
@@ -394,6 +396,7 @@ TEST_F(MathematicaTest, Logger) {
           << std::ifstream(TEMP_DIR / "mathematica_test0.wl").rdbuf())
           .str());
 }
+#endif
 
 }  // namespace mathematica
 }  // namespace principia
