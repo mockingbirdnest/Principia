@@ -16,6 +16,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
+#include "numerics/pid.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/euler_solver.hpp"
@@ -46,6 +47,7 @@ using geometry::NonRotating;
 using geometry::RigidTransformation;
 using geometry::Vector;
 using integrators::Integrator;
+using numerics::PID;
 using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -143,6 +145,12 @@ class PileUp {
   using AppendToPartTrajectory =
       void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
 
+  // The axes are those of Barycentric. The origin is the centre of mass of the
+  // pile up.  This frame is distinguished from NonRotatingPileUp in that it is
+  // used to hold uncorrected (apparent) coordinates given by the game, before
+  // the enforcement of conservation laws; see also ApparentBubble.
+  using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
+
   // For deserialization.
   PileUp(
       std::list<not_null<Part*>>&& parts,
@@ -235,6 +243,13 @@ class PileUp {
 
   // Called in the destructor.
   std::function<void()> deletion_callback_;
+
+  // A PID used to smoothen the value of the apparent angular momentum obtained
+  // from KSP.
+  PID<Bivector<AngularMomentum, ApparentPileUp>,
+      Bivector<AngularMomentum, ApparentPileUp>,
+      /*horizon=*/25,
+      /*finite_difference_order=*/5> apparent_angular_momentum_controller_;
 
   friend class TestablePileUp;
 };

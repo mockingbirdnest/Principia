@@ -216,12 +216,16 @@ inline Unit ParseQuotientUnit(std::string const& s) {
     // Not a quotient.
     return ParseProductUnit(s);
   } else {
-    // A quotient.  Parse each half.
+    // A quotient.  Parse each half.  Note that there may not be a left half for
+    // input like 1.23 / s.
     int const first_nonblank = s.find_first_not_of(' ', last_slash + 1);
     CHECK_NE(std::string::npos, first_nonblank);
-    int const last_nonblank = s.find_last_not_of(' ', last_slash - 1);
-    CHECK_NE(std::string::npos, last_nonblank);
-    auto const left = ParseQuotientUnit(s.substr(0, last_nonblank + 1));
+    int const last_nonblank = last_slash == 0
+                                  ? std::string::npos
+                                  : s.find_last_not_of(' ', last_slash - 1);
+    auto const left = last_nonblank == std::string::npos
+                          ? Unit(1.0)
+                          : ParseQuotientUnit(s.substr(0, last_nonblank + 1));
     auto const right = ParseExponentiationUnit(s.substr(first_nonblank));
     return left / right;
   }

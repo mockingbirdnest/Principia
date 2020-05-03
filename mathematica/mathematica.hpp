@@ -180,7 +180,10 @@ std::string Escape(std::string const& str);
 class Logger final {
  public:
   // Creates a logger object that will, at destruction, write to the given file.
-  explicit Logger(std::filesystem::path const& path);
+  // If make_unique is true, a unique id is inserted before the file extension
+  // to identify different loggers.
+  Logger(std::filesystem::path const& path,
+         bool make_unique = false);
   ~Logger();
 
   // Appends an element to the list of values for the variable |name|.  The
@@ -193,6 +196,8 @@ class Logger final {
  private:
   OFStream file_;
   std::map<std::string, std::vector<std::string>> names_and_values_;
+
+  static std::atomic_uint64_t id_;
 };
 
 }  // namespace internal_mathematica

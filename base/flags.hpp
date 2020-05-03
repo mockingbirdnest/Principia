@@ -8,6 +8,10 @@
 namespace principia {
 namespace base {
 
+// Example of usage: create a file zfp.cfg containing:
+//   principia_flags {
+//     zfp = off
+//   }
 class Flags {
  public:
   // Remove all the flags.

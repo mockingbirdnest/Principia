@@ -8,10 +8,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/flags.hpp"
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
+#include "quantities/parser.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -19,6 +21,7 @@ namespace internal_pile_up {
 
 using base::check_not_null;
 using base::FindOrDie;
+using base::Flags;
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
@@ -41,11 +44,37 @@ using physics::RigidMotion;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::AngularMomentum;
+using quantities::Inverse;
+using quantities::ParseQuantity;
 using quantities::Time;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
 using quantities::si::Radian;
+using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+
+// NOTE(phl): The default values were tuned on "Fubini oscillator".
+constexpr double kp_default = 0.65;
+constexpr Inverse<Time> ki_default = 0.03 / Second;
+constexpr Time kd_default = 0.0025 * Second;
+
+// Configuration example:
+//   principia_flags {
+//     kp = 0.65
+//     ki = 0.03 / s
+//     kd = 0.0025 s
+//   }
+template<typename Q>
+Q GetPIDFlagOr(std::string_view const name, Q const default) {
+  auto const values = Flags::Values(name);
+  if (values.empty()) {
+    return default;
+  } else {
+    return ParseQuantity<Q>(*values.cbegin());
+  }
+}
 
 PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
@@ -60,7 +89,10 @@ PileUp::PileUp(
       adaptive_step_parameters_(std::move(adaptive_step_parameters)),
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      deletion_callback_(std::move(deletion_callback)) {
+      deletion_callback_(std::move(deletion_callback)),
+      apparent_angular_momentum_controller_(GetPIDFlagOr("kp", kp_default),
+                                            GetPIDFlagOr("ki", ki_default),
+                                            GetPIDFlagOr("kd", kd_default)) {
   LOG(INFO) << "Constructing pile up at " << this;
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
   for (not_null<Part*> const part : parts_) {
@@ -356,7 +388,10 @@ PileUp::PileUp(
       history_(std::move(history)),
       psychohistory_(psychohistory),
       angular_momentum_(angular_momentum),
-      deletion_callback_(std::move(deletion_callback)) {}
+      deletion_callback_(std::move(deletion_callback)),
+      apparent_angular_momentum_controller_(GetPIDFlagOr("kp", kp_default),
+                                            GetPIDFlagOr("ki", ki_default),
+                                            GetPIDFlagOr("kd", kd_default)) {}
 
 void PileUp::MakeEulerSolver(
     InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
@@ -381,6 +416,7 @@ void PileUp::MakeEulerSolver(
 
 void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   if (apparent_part_rigid_motion_.empty()) {
+    apparent_angular_momentum_controller_.Clear();
     Bivector<AngularMomentum, PileUpPrincipalAxes> const angular_momentum =
         euler_solver_->AngularMomentumAt(t);
     Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const attitude =
@@ -415,7 +451,9 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     CHECK(Contains(apparent_part_rigid_motion_, part));
   }
 
-  using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
+  auto const angular_momentum_in_apparent_pile_up =
+      Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_);
+
   MechanicalSystem<ApparentBubble, ApparentPileUp> apparent_system;
   for (auto const& [part, apparent_part_rigid_motion] :
        apparent_part_rigid_motion_) {
@@ -423,7 +461,12 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
         apparent_part_rigid_motion, part->mass(), part->inertia_tensor());
   }
   auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
-  auto const apparent_angular_momentum = apparent_system.AngularMomentum();
+  auto const apparent_angular_momentum =
+      angular_momentum_in_apparent_pile_up -
+      apparent_angular_momentum_controller_.ComputeControlVariable(
+          apparent_system.AngularMomentum(),
+          angular_momentum_in_apparent_pile_up,
+          t);
   // Note that the inertia tensor is with respect to the centre of mass, so it
   // is unaffected by the apparent-bubble-to-pile-up correction, which is rigid
   // and involves no change in axes.
@@ -437,7 +480,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   //  actual_correction_axis.coordinates()|.
   auto const apparent_correction_axis = NormalizeOrZero(Commutator(
       apparent_angular_momentum,
-      Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_)));
+      angular_momentum_in_apparent_pile_up));
   auto const actual_correction_axis = NormalizeOrZero(Commutator(
       Identity<ApparentPileUp, NonRotatingPileUp>()(apparent_angular_momentum),
       angular_momentum_));
