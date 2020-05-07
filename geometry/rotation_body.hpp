@@ -19,6 +19,7 @@ namespace internal_rotation {
 
 using base::is_same_template_v;
 using base::not_null;
+using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Sin;
 
@@ -187,6 +188,18 @@ template<typename FromFrame, typename ToFrame>
 Rotation<ToFrame, FromFrame> Rotation<FromFrame, ToFrame>::Inverse() const {
   // Because |quaternion_| has norm 1, its inverse is just its conjugate.
   return Rotation<ToFrame, FromFrame>(quaternion_.Conjugate());
+}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
+Bivector<double, FromFrame> Rotation<FromFrame, ToFrame>::RotationAxis() const {
+  return Bivector<double, FromFrame>(Normalize(quaternion_.imaginary_part()));
+}
+
+template<typename FromFrame, typename ToFrame>
+ Angle Rotation<FromFrame, ToFrame>::RotationAngle() const {
+  return 2 * ArcTan(quaternion_.imaginary_part().Norm(),
+                    quaternion_.real_part());
 }
 
 template<typename FromFrame, typename ToFrame>
