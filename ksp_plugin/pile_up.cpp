@@ -501,14 +501,11 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // This amounts to trusting the direction of the angular momentum with respect
   // to the vessel as given to us by the game.
   // However, mapping L̂_apparent to L̂_actual is essentially singular when either
-  // is 0.  We remedy to that by only performing an attitude correction if its
-  // angle would be less than ω Δt, where ω is the smaller of the two equivalent
-  // angular frequencies |L_actual / I| and |L_apparent / I|.
+  // is 0.  We remedy to that by only performing the full attitude correction if
+  // its angle would be much less than ω Δt, where ω is the geometric mean of
+  // the two equivalent angular frequencies |L_actual / I| and |L_apparent / I|.
   // As a result, as either L tends towards 0, so does the largest attitude
   // correction that we allow.
-  // If the attitude correction would exceed this threshold, we leave the
-  // attitude unchanged, and the correction in angular momentum is effected
-  // solely by a change in angular velocity.
 
   // The correction is computed via an intermediate frame.
   // In the |EquivalentRigidPileUp| reference frame, a rigid body with the same
@@ -516,9 +513,8 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // If no attitude correction is performed, the axes of
   // |EquivalentRigidPileUp|, |ApparentPileUp|, and |NonRotatingPileUp| are
   // identical.
-  // If an attitude correction is performed, the y axis of
-  // |EquivalentRigidPileUp| is the direction of the angular momentum, and the x
-  // axis is the correction axis.
+  // If an attitude correction is performed, the correction occurs between
+  // |ApparentPileUp| and |EquivalentRigidPileUp|.
   // NOTE(egg): while the correction axis is essentially singular at
   // L_apparent = L_actual, the correction itself is only removably singular (as
   // the angle goes to 0).  Since the computation ensured that
@@ -583,17 +579,36 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // The geometric mean of the norms of the equivalent angular velocities; this
   // is zero when either one is zero, and thus it is zero when either angular
   // momentum is zero.
-  AngularFrequency const ω = Sqrt(apparent_equivalent_angular_velocity.Norm() *
-                                  actual_equivalent_angular_velocity.Norm());
+  AngularFrequency const ω =
+      thresholding ? std::min(apparent_equivalent_angular_velocity.Norm(),
+                              actual_equivalent_angular_velocity.Norm())
+                   : Sqrt(apparent_equivalent_angular_velocity.Norm() *
+                          actual_equivalent_angular_velocity.Norm());
   Time const Δt = t - psychohistory_->back().time;
-  Angle const β = thresholding ? Tanh(ω * Δt / α * Radian) * α : α;
+  // This correction angle is bounded by ωΔt (correct at most as fast as the
+  // ship is turning) and by α (correct at most what is needed).
+  // This in particular eliminates the neighbourhood of the singularity where L
+  // is small (and thus ω is small), by using α itself as a scale-free
+  // definition of “small”.
+  Angle const β = thresholding ? (α > ω * Δt ? Angle{} : α)
+                               : Tanh(ω * Δt / α * Radian) * α;
   auto attitude_correction =
       Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity();
   if (!trivial_rotations) {
-    attitude_correction = Rotation<ApparentPileUp, EquivalentRigidPileUp>(
-        -β,
-        apparent_correction_axis,
-        geometry::DefinesFrame<EquivalentRigidPileUp>{});
+    // An active rotation of angle β around apparent_correction_axis maps 
+    // L̂_apparent to its corrected direction.
+    // TODO(egg): The definitions might be more readable if
+    // |EquivalentRigidPileUp| were defined as in Fubini, with its y axis being
+    // L̂_apparent in |ApparentPileUp| and
+    //   Identity<ApparentPileUp, NonRotatingPileUp>()(
+    //       Rotation<ApparentPileUp, ApparentPileUp>(β)(L̂_apparent));
+    // in |NonRotatingPileUp|.  On the other hand, this would make the
+    // computations even more convoluted.
+    attitude_correction =
+        Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity() *
+        Rotation<ApparentPileUp, ApparentPileUp>(
+        β,
+        apparent_correction_axis);
   }
   actual_equivalent_angular_velocity =
       angular_momentum_ / Identity<EquivalentRigidPileUp, NonRotatingPileUp>()(
@@ -798,7 +813,7 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
 
 bool PileUp::correct_orientation = true;
 bool PileUp::correct_angular_velocity = true;
-bool PileUp::thresholding = true;
+bool PileUp::thresholding = false;
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin

@@ -247,7 +247,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
           "Correct angular velocity");
       thresholding = UnityEngine.GUILayout.Toggle(
           thresholding,
-          "Only correct orientation slower than ω");
+          "Fubini orientation correction");
       Interface.SetAngularMomentumConservation(
           correct_orientation, correct_angular_velocity, thresholding);
       string trace = null;
@@ -517,7 +517,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   // behaviour.
   private static bool correct_orientation = true;
   private static bool correct_angular_velocity = true;
-  private static bool thresholding = true;
+  private static bool thresholding = false;
   private static readonly bool show_2519_debugging_ui = true;
 
   private static readonly double[] prediction_length_tolerances_ =
