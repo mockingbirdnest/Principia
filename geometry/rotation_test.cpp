@@ -90,6 +90,11 @@ TEST_F(RotationTest, Identity) {
   EXPECT_THAT(trivector_, Eq(Rot::Identity()(trivector_)));
 }
 
+TEST_F(RotationTest, Equality) {
+  EXPECT_EQ(rotation_a_, rotation_a_);
+  EXPECT_NE(rotation_a_, rotation_b_);
+}
+
 TEST_F(RotationTest, AppliedToVector) {
   EXPECT_THAT(rotation_a_(vector_),
               AlmostEquals(Vector<Length, World>(

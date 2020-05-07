@@ -333,6 +333,18 @@ Rotation<FromFrame, ToFrame> operator*(
   return Rotation<FromFrame, ToFrame>(left.quaternion_ * right.quaternion_);
 }
 
+template<typename From, typename To>
+bool operator==(Rotation<From, To> const& left,
+                Rotation<From, To> const& right) {
+  return left.quaternion_ == right.quaternion_;
+}
+
+template<typename From, typename To>
+bool operator!=(Rotation<From, To> const& left,
+                Rotation<From, To> const& right) {
+  return left.quaternion_ != right.quaternion_;
+}
+
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation) {
