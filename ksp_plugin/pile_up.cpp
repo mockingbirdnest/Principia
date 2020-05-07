@@ -46,6 +46,8 @@ using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::Inverse;
 using quantities::ParseQuantity;
+using quantities::Sqrt;
+using quantities::Tanh;
 using quantities::Time;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -578,20 +580,24 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // α is the angle of the tentative attitude correction.
   Angle const α =
       2 * quantities::ArcTan(q.imaginary_part().Norm(), q.real_part());
-  AngularFrequency const ω =
-      std::min(apparent_equivalent_angular_velocity.Norm(),
-               actual_equivalent_angular_velocity.Norm());
+  // The geometric mean of the norms of the equivalent angular velocities; this
+  // is zero when either one is zero, and thus it is zero when either angular
+  // momentum is zero.
+  AngularFrequency const ω = Sqrt(apparent_equivalent_angular_velocity.Norm() *
+                                  actual_equivalent_angular_velocity.Norm());
   Time const Δt = t - psychohistory_->back().time;
-  if (thresholding && α > ω * Δt) {
-    // The attitude correction is too large.  Preserve attitude.
-    apparent_pile_up_equivalent_rotation =
-        Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity();
-    actual_pile_up_equivalent_rotation =
-        Rotation<NonRotatingPileUp, EquivalentRigidPileUp>::Identity();
-    actual_equivalent_angular_velocity =
-        angular_momentum_ /
-        Identity<ApparentPileUp, NonRotatingPileUp>()(inertia_tensor);
+  Angle const β = thresholding ? Tanh(ω * Δt / α * Radian) * α : α;
+  auto attitude_correction =
+      Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity();
+  if (!trivial_rotations) {
+    attitude_correction = Rotation<ApparentPileUp, EquivalentRigidPileUp>(
+        -β,
+        apparent_correction_axis,
+        geometry::DefinesFrame<EquivalentRigidPileUp>{});
   }
+  actual_equivalent_angular_velocity =
+      angular_momentum_ / Identity<EquivalentRigidPileUp, NonRotatingPileUp>()(
+                              attitude_correction(inertia_tensor));
 
   bool const correcting_orientation =
       apparent_pile_up_equivalent_rotation.quaternion() != Quaternion(1) ||
@@ -602,7 +608,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
           RigidTransformation<ApparentPileUp, EquivalentRigidPileUp>(
               ApparentPileUp::origin,
               EquivalentRigidPileUp::origin,
-              apparent_pile_up_equivalent_rotation.Forget<OrthogonalMap>()),
+              attitude_correction.Forget<OrthogonalMap>()),
           correct_angular_velocity ? apparent_equivalent_angular_velocity
                                    : ApparentPileUp::nonrotating,
           ApparentPileUp::unmoving);
@@ -611,7 +617,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
           RigidTransformation<NonRotatingPileUp, EquivalentRigidPileUp>(
               NonRotatingPileUp::origin,
               EquivalentRigidPileUp::origin,
-              actual_pile_up_equivalent_rotation.Forget<OrthogonalMap>()),
+              OrthogonalMap<NonRotatingPileUp, EquivalentRigidPileUp>::Identity()),
           correct_angular_velocity ? actual_equivalent_angular_velocity
                                    : NonRotatingPileUp::nonrotating,
           NonRotatingPileUp::unmoving);
@@ -649,6 +655,9 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
            quantities::si::Degree
     << u8"°\n"
     << u8"α: " << α / quantities::si::Degree << u8"°\n"
+    << u8"ωΔt: " << ω * Δt / quantities::si::Degree << u8"°\n"
+    << u8"β: " << β / quantities::si::Degree << u8"°\n"
+    << u8"ω: " << ω / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
     << u8"|ωap|: "
     << apparent_equivalent_angular_velocity.Norm() /
            (2 * π * Radian / quantities::si::Minute)
@@ -657,7 +666,8 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     << actual_equivalent_angular_velocity.Norm() /
            (2 * π * Radian / quantities::si::Minute)
     << " rpm\n"
-    << (correcting_orientation ? "CORRECTING ORIENTATION" : u8"—");
+    << u8"Δt: " << Δt / quantities::si::Milli(quantities::si::Second)
+    << u8"ms\n";
   trace = s.str();
 
   MakeEulerSolver(Identity<ApparentPileUp, NonRotatingPileUp>()(inertia_tensor),
