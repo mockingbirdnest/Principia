@@ -109,6 +109,7 @@ Status ContinuousTrajectory<Frame>::Append(
   }
 
   Status status;
+  CHECK_LE(last_points_.size(), divisions);
   if (last_points_.size() == divisions) {
     // These vectors are thread-local to avoid deallocation/reallocation each
     // time we go through this code path.
@@ -293,7 +294,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
   continuous_trajectory->checkpointer_.ReadFromMessage(checkpoint_time,
                                                        message);
 
-    return continuous_trajectory;
+  return continuous_trajectory;
 }
 
 template<typename Frame>
