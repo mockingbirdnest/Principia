@@ -552,15 +552,16 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                        82)));
   EXPECT_THAT(
       p2_.degrees_of_freedom(),
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {26.0 / 9.0 * Metre,
-                                          43.0 / 3.0 * Metre,
-                                          89.0 / 9.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {260.0 / 9.0 * Metre / Second,
-                                      430.0 / 3.0 * Metre / Second,
-                                      890.0 / 9.0 * Metre / Second}), 12)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({26.0 / 9.0 * Metre,
+                                                      43.0 / 3.0 * Metre,
+                                                      89.0 / 9.0 * Metre}),
+                       35),
+          AlmostEquals(Velocity<Barycentric>({260.0 / 9.0 * Metre / Second,
+                                              430.0 / 3.0 * Metre / Second,
+                                              890.0 / 9.0 * Metre / Second}),
+                       36)));
 }
 
 TEST_F(PileUpTest, MidStepIntrinsicForce) {
