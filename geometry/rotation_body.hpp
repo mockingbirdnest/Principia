@@ -197,7 +197,7 @@ Bivector<double, FromFrame> Rotation<FromFrame, ToFrame>::RotationAxis() const {
 }
 
 template<typename FromFrame, typename ToFrame>
- Angle Rotation<FromFrame, ToFrame>::RotationAngle() const {
+Angle Rotation<FromFrame, ToFrame>::RotationAngle() const {
   return 2 * ArcTan(quaternion_.imaginary_part().Norm(),
                     quaternion_.real_part());
 }
