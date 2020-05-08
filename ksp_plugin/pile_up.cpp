@@ -585,7 +585,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
                    : Sqrt(apparent_equivalent_angular_velocity.Norm() *
                           actual_equivalent_angular_velocity.Norm());
   Time const Δt = t - psychohistory_->back().time;
-  // This correction angle is bounded by ωΔt (correct at most as fast as the
+  // This correction angle is bounded by ω Δt (correct at most as fast as the
   // ship is turning) and by α (correct at most what is needed).
   // This in particular eliminates the neighbourhood of the singularity where L
   // is small (and thus ω is small), by using α itself as a scale-free
@@ -606,9 +606,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     // computations even more convoluted.
     attitude_correction =
         Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity() *
-        Rotation<ApparentPileUp, ApparentPileUp>(
-        β,
-        apparent_correction_axis);
+        Rotation<ApparentPileUp, ApparentPileUp>(β, apparent_correction_axis);
   }
   actual_equivalent_angular_velocity =
       angular_momentum_ / Identity<EquivalentRigidPileUp, NonRotatingPileUp>()(
