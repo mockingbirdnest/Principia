@@ -595,7 +595,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   auto attitude_correction =
       Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity();
   if (!trivial_rotations) {
-    // An active rotation of angle β around apparent_correction_axis maps 
+    // An active rotation of angle β around apparent_correction_axis maps
     // L̂_apparent to its corrected direction.
     // TODO(egg): The definitions might be more readable if
     // |EquivalentRigidPileUp| were defined as in Fubini, with its y axis being
@@ -630,7 +630,8 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
           RigidTransformation<NonRotatingPileUp, EquivalentRigidPileUp>(
               NonRotatingPileUp::origin,
               EquivalentRigidPileUp::origin,
-              OrthogonalMap<NonRotatingPileUp, EquivalentRigidPileUp>::Identity()),
+              OrthogonalMap<NonRotatingPileUp,
+                            EquivalentRigidPileUp>::Identity()),
           correct_angular_velocity ? actual_equivalent_angular_velocity
                                    : NonRotatingPileUp::nonrotating,
           NonRotatingPileUp::unmoving);
