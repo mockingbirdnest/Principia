@@ -561,7 +561,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
           AlmostEquals(Velocity<Barycentric>({260.0 / 9.0 * Metre / Second,
                                               430.0 / 3.0 * Metre / Second,
                                               890.0 / 9.0 * Metre / Second}),
-                       36)));
+                       46)));
 }
 
 TEST_F(PileUpTest, MidStepIntrinsicForce) {
