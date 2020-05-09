@@ -19,6 +19,7 @@ namespace internal_rotation {
 
 using base::is_same_template_v;
 using base::not_null;
+using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Sin;
 
@@ -190,6 +191,18 @@ Rotation<ToFrame, FromFrame> Rotation<FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
+Bivector<double, FromFrame> Rotation<FromFrame, ToFrame>::RotationAxis() const {
+  return Bivector<double, FromFrame>(Normalize(quaternion_.imaginary_part()));
+}
+
+template<typename FromFrame, typename ToFrame>
+Angle Rotation<FromFrame, ToFrame>::RotationAngle() const {
+  return 2 * ArcTan(quaternion_.imaginary_part().Norm(),
+                    quaternion_.real_part());
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
@@ -331,6 +344,18 @@ Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right) {
   return Rotation<FromFrame, ToFrame>(left.quaternion_ * right.quaternion_);
+}
+
+template<typename From, typename To>
+bool operator==(Rotation<From, To> const& left,
+                Rotation<From, To> const& right) {
+  return left.quaternion_ == right.quaternion_;
+}
+
+template<typename From, typename To>
+bool operator!=(Rotation<From, To> const& left,
+                Rotation<From, To> const& right) {
+  return left.quaternion_ != right.quaternion_;
 }
 
 template<typename FromFrame, typename ToFrame>
