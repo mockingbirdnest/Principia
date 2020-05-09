@@ -508,6 +508,7 @@ void __cdecl principia__DeserializePlugin(
     *deserializer = new PushDeserializer(chunk_size,
                                          number_of_chunks,
                                          NewCompressor(compressor));
+    CHECK_NOTNULL(arena);
     not_null<serialization::Plugin*> const message =
         Arena::CreateMessage<serialization::Plugin>(arena);
     (*deserializer)->Start(
