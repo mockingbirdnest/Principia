@@ -59,6 +59,7 @@ using physics::RigidMotion;
 using quantities::AngularMomentum;
 using quantities::Force;
 using quantities::Mass;
+using quantities::Time;
 using quantities::Torque;
 
 // The origin of |NonRotatingPileUp| is the centre of mass of the pile up.
@@ -188,6 +189,16 @@ class PileUp {
 
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
+
+  static RigidMotion<ApparentBubble, NonRotatingPileUp>
+  ComputeAngularMomentumCompensation(
+      Time const& Δt,
+      Bivector<AngularMomentum, ApparentPileUp> const&
+          apparent_angular_momentum,
+      Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum_,
+      InertiaTensor<ApparentPileUp> const& inertia_tensor,
+      RigidMotion<ApparentPileUp, ApparentBubble> const& linear_motion,
+      std::string& trace);
 
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;

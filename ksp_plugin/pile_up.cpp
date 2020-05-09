@@ -462,7 +462,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     apparent_system.AddRigidBody(
         apparent_part_rigid_motion, part->mass(), part->inertia_tensor());
   }
-  auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
   auto const apparent_angular_momentum =
       angular_momentum_in_apparent_pile_up -
       apparent_angular_momentum_controller_.ComputeControlVariable(
@@ -473,173 +472,14 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // is unaffected by the apparent-bubble-to-pile-up correction, which is rigid
   // and involves no change in axes.
   auto const inertia_tensor = apparent_system.InertiaTensor();
-
-  // This is the axis around which we may perform an orientation correction.
-  // Identifying the uncorrected (apparent) and corrected coordinates, it is
-  // orthogonal to both.
-  // Note that the computations are identical in coordinates:
-  // |apparent_correction_axis.coordinates() ==
-  //  actual_correction_axis.coordinates()|.
-  auto const apparent_correction_axis = NormalizeOrZero(Commutator(
-      apparent_angular_momentum,
-      angular_momentum_in_apparent_pile_up));
-  auto const actual_correction_axis = NormalizeOrZero(Commutator(
-      Identity<ApparentPileUp, NonRotatingPileUp>()(apparent_angular_momentum),
-      angular_momentum_));
-
-  // We apply a rigid rotational correction to the motions of the parts coming
-  // from the game (the apparent motions) so as to enforce the conservation of
-  // the angular momentum (|angular_momentum_| is authoritative).
-  // Mapping L_apparent to L_actual by a rigid motion can be done in many ways.
-  // We prefer doing some of that correction by a change of attitude, rather
-  // than solely by a change in angular velocity, since, under isotropic
-  // conditions, a change in attitude does not alter the physical system (and in
-  // particular it does not mess with symplectic integration).  We thus try to
-  // map L̂_apparent to L̂_actual, by rotation around the correction axis defined
-  // above, which is perpendicular to both, and to impart the appropriate
-  // angular velocity correction to correct the norm of L.
-  // This amounts to trusting the direction of the angular momentum with respect
-  // to the vessel as given to us by the game.
-  // However, mapping L̂_apparent to L̂_actual is essentially singular when either
-  // is 0.  We remedy to that by only performing the full attitude correction if
-  // its angle would be much less than ω Δt, where ω is the geometric mean of
-  // the two equivalent angular frequencies |L_actual / I| and |L_apparent / I|.
-  // As a result, as either L tends towards 0, so does the largest attitude
-  // correction that we allow.
-
-  // The correction is computed via an intermediate frame.
-  // In the |EquivalentRigidPileUp| reference frame, a rigid body with the same
-  // inertia and angular momentum as the pile up would be immobile.
-  // If no attitude correction is performed, the axes of
-  // |EquivalentRigidPileUp|, |ApparentPileUp|, and |NonRotatingPileUp| are
-  // identical.
-  // If an attitude correction is performed, the correction occurs between
-  // |ApparentPileUp| and |EquivalentRigidPileUp|.
-  // NOTE(egg): while the correction axis is essentially singular at
-  // L_apparent = L_actual, the correction itself is only removably singular (as
-  // the angle goes to 0).  Since the computation ensured that
-  // |apparent_correction_axis.coordinates() ==
-  //  actual_correction_axis.coordinates()| exactly, we need not worry about the
-  // intermediate essential singularity, and only need to remove it.
-  using EquivalentRigidPileUp = Frame<enum class EquivalentRigidPileUpTag>;
-
-  auto const L̂_apparent = NormalizeOrZero(apparent_angular_momentum);
-  auto const L̂_actual = NormalizeOrZero(angular_momentum_);
-  // NOTE(egg):
-  // — The two sides of this disjunction are always equal;
-  // — technically this will also be true on the essential singularity.
-  bool const on_removable_singularity =
-      apparent_correction_axis == Bivector<double, ApparentPileUp>{} ||
-      actual_correction_axis == Bivector<double, NonRotatingPileUp>{};
-  bool const on_essential_singularity =
-      L̂_apparent == Bivector<double, ApparentPileUp>{} ||
-      L̂_actual == Bivector<double, NonRotatingPileUp>{};
-
-  bool const trivial_rotations = !correct_orientation ||
-                                 on_removable_singularity ||
-                                 on_essential_singularity;
-
-  Rotation<ApparentPileUp, EquivalentRigidPileUp>
-      apparent_pile_up_equivalent_rotation =
-          trivial_rotations
-              ? Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity()
-              : Rotation<ApparentPileUp, EquivalentRigidPileUp>(
-                    apparent_correction_axis,
-                    L̂_apparent,
-                    Commutator(apparent_correction_axis, L̂_apparent));
-  Rotation<NonRotatingPileUp, EquivalentRigidPileUp>
-      actual_pile_up_equivalent_rotation =
-          trivial_rotations
-              ? Rotation<NonRotatingPileUp, EquivalentRigidPileUp>::Identity()
-              : Rotation<NonRotatingPileUp, EquivalentRigidPileUp>(
-                    actual_correction_axis,
-                    L̂_actual,
-                    Commutator(actual_correction_axis, L̂_actual));
-  Rotation<ApparentPileUp, NonRotatingPileUp> const
-      tentative_attitude_correction =
-          actual_pile_up_equivalent_rotation.Inverse() *
-          apparent_pile_up_equivalent_rotation;
-
-  // The angular velocity of a rigid body with the inertia and angular momentum
-  // of the apparent parts.
-  auto const apparent_equivalent_angular_velocity =
-      apparent_angular_momentum / inertia_tensor;
-  // The angular velocity of a rigid body with the inertia of the apparent
-  // parts, and the angular momentum of the pile up.
-  auto actual_equivalent_angular_velocity =
-      angular_momentum_ / tentative_attitude_correction(inertia_tensor);
-
-  // So far we have only dealt with the essential singularity by removing it.
-  // We now need to deal with its neighbourhood, by ensuring that the tentative
-  // correction is not too big compared to the angular velocities involved.
-  Quaternion const q = tentative_attitude_correction.quaternion();
-  // α is the angle of the tentative attitude correction.
-  Angle const α =
-      2 * quantities::ArcTan(q.imaginary_part().Norm(), q.real_part());
-  // The geometric mean of the norms of the equivalent angular velocities; this
-  // is zero when either one is zero, and thus it is zero when either angular
-  // momentum is zero.
-  AngularFrequency const ω =
-      thresholding ? std::min(apparent_equivalent_angular_velocity.Norm(),
-                              actual_equivalent_angular_velocity.Norm())
-                   : Sqrt(apparent_equivalent_angular_velocity.Norm() *
-                          actual_equivalent_angular_velocity.Norm());
-  Time const Δt = t - psychohistory_->back().time;
-  // This correction angle is bounded by ω Δt (correct at most as fast as the
-  // ship is turning) and by α (correct at most what is needed).
-  // This in particular eliminates the neighbourhood of the singularity where L
-  // is small (and thus ω is small), by using α itself as a scale-free
-  // definition of “small”.
-  Angle const β = thresholding ? (α > ω * Δt ? Angle{} : α)
-                               : Tanh(ω * Δt / α * Radian) * α;
-  auto attitude_correction =
-      Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity();
-  if (!trivial_rotations) {
-    // An active rotation of angle β around apparent_correction_axis maps
-    // L̂_apparent to its corrected direction.
-    // TODO(egg): The definitions might be more readable if
-    // |EquivalentRigidPileUp| were defined as in Fubini, with its y axis being
-    // L̂_apparent in |ApparentPileUp| and
-    //   Identity<ApparentPileUp, NonRotatingPileUp>()(
-    //       Rotation<ApparentPileUp, ApparentPileUp>(β)(L̂_apparent));
-    // in |NonRotatingPileUp|.  On the other hand, this would make the
-    // computations even more convoluted.
-    attitude_correction =
-        Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity() *
-        Rotation<ApparentPileUp, ApparentPileUp>(β, apparent_correction_axis);
-  }
-  actual_equivalent_angular_velocity =
-      angular_momentum_ / Identity<EquivalentRigidPileUp, NonRotatingPileUp>()(
-                              attitude_correction(inertia_tensor));
-
-  bool const correcting_orientation =
-      apparent_pile_up_equivalent_rotation.quaternion() != Quaternion(1) ||
-      actual_pile_up_equivalent_rotation.quaternion() != Quaternion(1);
-
-  RigidMotion<ApparentPileUp, EquivalentRigidPileUp> const
-      apparent_pile_up_equivalent_motion(
-          RigidTransformation<ApparentPileUp, EquivalentRigidPileUp>(
-              ApparentPileUp::origin,
-              EquivalentRigidPileUp::origin,
-              attitude_correction.Forget<OrthogonalMap>()),
-          correct_angular_velocity ? apparent_equivalent_angular_velocity
-                                   : ApparentPileUp::nonrotating,
-          ApparentPileUp::unmoving);
-  RigidMotion<NonRotatingPileUp, EquivalentRigidPileUp> const
-      actual_pile_up_equivalent_motion(
-          RigidTransformation<NonRotatingPileUp, EquivalentRigidPileUp>(
-              NonRotatingPileUp::origin,
-              EquivalentRigidPileUp::origin,
-              OrthogonalMap<NonRotatingPileUp,
-                            EquivalentRigidPileUp>::Identity()),
-          correct_angular_velocity ? actual_equivalent_angular_velocity
-                                   : NonRotatingPileUp::nonrotating,
-          NonRotatingPileUp::unmoving);
   RigidMotion<ApparentBubble, NonRotatingPileUp> const
-      apparent_bubble_to_pile_up_motion =
-          actual_pile_up_equivalent_motion.Inverse() *
-          apparent_pile_up_equivalent_motion *
-          apparent_system.LinearMotion().Inverse();
+      apparent_bubble_to_pile_up_motion = ComputeAngularMomentumCompensation(
+          /*Δt=*/t - psychohistory_->back().time,
+          apparent_angular_momentum,
+          angular_momentum_,
+          inertia_tensor,
+          apparent_system.LinearMotion(),
+          trace);
 
   // Now update the motions of the parts in the pile-up frame.
   actual_part_rigid_motion_.clear();
@@ -650,39 +490,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
         part, apparent_bubble_to_pile_up_motion * apparent_part_rigid_motion);
   }
   apparent_part_rigid_motion_.clear();
-
-  std::stringstream s;
-  s << "Apparent: " << apparent_angular_momentum << "\n"
-    << "norm: " << apparent_angular_momentum.Norm() << "\n"
-    << "Actual: " << angular_momentum_ << "\n"
-    << "norm: " << angular_momentum_.Norm() << "\n"
-    << "|Lap-Lac|: "
-    << (angular_momentum_ - Identity<ApparentPileUp, NonRotatingPileUp>()(
-                                apparent_angular_momentum))
-           .Norm() << "\n"
-    << "|Lap|-|Lac|: "
-    << angular_momentum_.Norm() - apparent_angular_momentum.Norm() << "\n"
-    << u8"∡Lap, Lac: "
-    << geometry::AngleBetween(angular_momentum_,
-                              Identity<ApparentPileUp, NonRotatingPileUp>()(
-                                  apparent_angular_momentum)) /
-           quantities::si::Degree
-    << u8"°\n"
-    << u8"α: " << α / quantities::si::Degree << u8"°\n"
-    << u8"ωΔt: " << ω * Δt / quantities::si::Degree << u8"°\n"
-    << u8"β: " << β / quantities::si::Degree << u8"°\n"
-    << u8"ω: " << ω / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
-    << u8"|ωap|: "
-    << apparent_equivalent_angular_velocity.Norm() /
-           (2 * π * Radian / quantities::si::Minute)
-    << " rpm\n"
-    << u8"|ωac|: "
-    << actual_equivalent_angular_velocity.Norm() /
-           (2 * π * Radian / quantities::si::Minute)
-    << " rpm\n"
-    << u8"Δt: " << Δt / quantities::si::Milli(quantities::si::Second)
-    << u8"ms\n";
-  trace = s.str();
 
   MakeEulerSolver(Identity<ApparentPileUp, NonRotatingPileUp>()(inertia_tensor),
                   t);
@@ -803,6 +610,215 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
         it->time,
         pile_up_to_barycentric(actual_part_degrees_of_freedom));
   }
+}
+
+RigidMotion<ApparentBubble, NonRotatingPileUp>
+PileUp::ComputeAngularMomentumCompensation(
+    Time const& Δt,
+    Bivector<AngularMomentum, ApparentPileUp> const& apparent_angular_momentum,
+    Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum_,
+    InertiaTensor<ApparentPileUp> const& inertia_tensor,
+    RigidMotion<ApparentPileUp, ApparentBubble> const& linear_motion,
+    std::string& trace) {
+  auto const angular_momentum_in_apparent_pile_up =
+      Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_);
+  // This is the axis around which we may perform an orientation correction.
+  // Identifying the uncorrected (apparent) and corrected coordinates, it is
+  // orthogonal to both.
+  // Note that the computations are identical in coordinates:
+  // |apparent_correction_axis.coordinates() ==
+  //  actual_correction_axis.coordinates()|.
+  auto const apparent_correction_axis = NormalizeOrZero(Commutator(
+      apparent_angular_momentum,
+      angular_momentum_in_apparent_pile_up));
+  auto const actual_correction_axis = NormalizeOrZero(Commutator(
+      Identity<ApparentPileUp, NonRotatingPileUp>()(apparent_angular_momentum),
+      angular_momentum_));
+
+  // We apply a rigid rotational correction to the motions of the parts coming
+  // from the game (the apparent motions) so as to enforce the conservation of
+  // the angular momentum (|angular_momentum_| is authoritative).
+  // Mapping L_apparent to L_actual by a rigid motion can be done in many ways.
+  // We prefer doing some of that correction by a change of attitude, rather
+  // than solely by a change in angular velocity, since, under isotropic
+  // conditions, a change in attitude does not alter the physical system (and in
+  // particular it does not mess with symplectic integration).  We thus try to
+  // map L̂_apparent to L̂_actual, by rotation around the correction axis defined
+  // above, which is perpendicular to both, and to impart the appropriate
+  // angular velocity correction to correct the norm of L.
+  // This amounts to trusting the direction of the angular momentum with respect
+  // to the vessel as given to us by the game.
+  // However, mapping L̂_apparent to L̂_actual is essentially singular when either
+  // is 0.  We remedy to that by only performing the full attitude correction if
+  // its angle would be much less than ω Δt, where ω is the geometric mean of
+  // the two equivalent angular frequencies |L_actual / I| and |L_apparent / I|.
+  // As a result, as either L tends towards 0, so does the largest attitude
+  // correction that we allow.
+
+  // The correction is computed via an intermediate frame.
+  // In the |EquivalentRigidPileUp| reference frame, a rigid body with the same
+  // inertia and angular momentum as the pile up would be immobile.
+  // If no attitude correction is performed, the axes of
+  // |EquivalentRigidPileUp|, |ApparentPileUp|, and |NonRotatingPileUp| are
+  // identical.
+  // If an attitude correction is performed, the correction occurs between
+  // |ApparentPileUp| and |EquivalentRigidPileUp|.
+  // NOTE(egg): while the correction axis is essentially singular at
+  // L_apparent = L_actual, the correction itself is only removably singular (as
+  // the angle goes to 0).  Since the computation ensured that
+  // |apparent_correction_axis.coordinates() ==
+  //  actual_correction_axis.coordinates()| exactly, we need not worry about the
+  // intermediate essential singularity, and only need to remove it.
+  using EquivalentRigidPileUp = Frame<enum class EquivalentRigidPileUpTag>;
+
+  auto const L̂_apparent = NormalizeOrZero(apparent_angular_momentum);
+  auto const L̂_actual = NormalizeOrZero(angular_momentum_);
+  // NOTE(egg):
+  // — The two sides of this disjunction are always equal;
+  // — technically this will also be true on the essential singularity.
+  bool const on_removable_singularity =
+      apparent_correction_axis == Bivector<double, ApparentPileUp>{} ||
+      actual_correction_axis == Bivector<double, NonRotatingPileUp>{};
+  bool const on_essential_singularity =
+      L̂_apparent == Bivector<double, ApparentPileUp>{} ||
+      L̂_actual == Bivector<double, NonRotatingPileUp>{};
+
+  bool const trivial_rotations = !correct_orientation ||
+                                 on_removable_singularity ||
+                                 on_essential_singularity;
+
+  Rotation<ApparentPileUp, EquivalentRigidPileUp>
+      apparent_pile_up_equivalent_rotation =
+          trivial_rotations
+              ? Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity()
+              : Rotation<ApparentPileUp, EquivalentRigidPileUp>(
+                    apparent_correction_axis,
+                    L̂_apparent,
+                    Commutator(apparent_correction_axis, L̂_apparent));
+  Rotation<NonRotatingPileUp, EquivalentRigidPileUp>
+      actual_pile_up_equivalent_rotation =
+          trivial_rotations
+              ? Rotation<NonRotatingPileUp, EquivalentRigidPileUp>::Identity()
+              : Rotation<NonRotatingPileUp, EquivalentRigidPileUp>(
+                    actual_correction_axis,
+                    L̂_actual,
+                    Commutator(actual_correction_axis, L̂_actual));
+  Rotation<ApparentPileUp, NonRotatingPileUp> const
+      tentative_attitude_correction =
+          actual_pile_up_equivalent_rotation.Inverse() *
+          apparent_pile_up_equivalent_rotation;
+
+  // The angular velocity of a rigid body with the inertia and angular momentum
+  // of the apparent parts.
+  auto const apparent_equivalent_angular_velocity =
+      apparent_angular_momentum / inertia_tensor;
+  // The angular velocity of a rigid body with the inertia of the apparent
+  // parts, and the angular momentum of the pile up.
+  auto actual_equivalent_angular_velocity =
+      angular_momentum_ / tentative_attitude_correction(inertia_tensor);
+
+  // So far we have only dealt with the essential singularity by removing it.
+  // We now need to deal with its neighbourhood, by ensuring that the tentative
+  // correction is not too big compared to the angular velocities involved.
+  Quaternion const q = tentative_attitude_correction.quaternion();
+  // α is the angle of the tentative attitude correction.
+  Angle const α =
+      2 * quantities::ArcTan(q.imaginary_part().Norm(), q.real_part());
+  // The geometric mean of the norms of the equivalent angular velocities; this
+  // is zero when either one is zero, and thus it is zero when either angular
+  // momentum is zero.
+  AngularFrequency const ω =
+      thresholding ? std::min(apparent_equivalent_angular_velocity.Norm(),
+                              actual_equivalent_angular_velocity.Norm())
+                   : Sqrt(apparent_equivalent_angular_velocity.Norm() *
+                          actual_equivalent_angular_velocity.Norm());
+  // This correction angle is bounded by ω Δt (correct at most as fast as the
+  // ship is turning) and by α (correct at most what is needed).
+  // This in particular eliminates the neighbourhood of the singularity where L
+  // is small (and thus ω is small), by using α itself as a scale-free
+  // definition of “small”.
+  Angle const β = thresholding ? (α > ω * Δt ? Angle{} : α)
+                               : Tanh(ω * Δt / α * Radian) * α;
+  auto attitude_correction =
+      Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity();
+  if (!trivial_rotations) {
+    // An active rotation of angle β around apparent_correction_axis maps
+    // L̂_apparent to its corrected direction.
+    // TODO(egg): The definitions might be more readable if
+    // |EquivalentRigidPileUp| were defined as in Fubini, with its y axis being
+    // L̂_apparent in |ApparentPileUp| and
+    //   Identity<ApparentPileUp, NonRotatingPileUp>()(
+    //       Rotation<ApparentPileUp, ApparentPileUp>(β)(L̂_apparent));
+    // in |NonRotatingPileUp|.  On the other hand, this would make the
+    // computations even more convoluted.
+    attitude_correction =
+        Rotation<ApparentPileUp, EquivalentRigidPileUp>::Identity() *
+        Rotation<ApparentPileUp, ApparentPileUp>(β, apparent_correction_axis);
+  }
+  actual_equivalent_angular_velocity =
+      angular_momentum_ / Identity<EquivalentRigidPileUp, NonRotatingPileUp>()(
+                              attitude_correction(inertia_tensor));
+
+  bool const correcting_orientation =
+      apparent_pile_up_equivalent_rotation.quaternion() != Quaternion(1) ||
+      actual_pile_up_equivalent_rotation.quaternion() != Quaternion(1);
+
+  RigidMotion<ApparentPileUp, EquivalentRigidPileUp> const
+      apparent_pile_up_equivalent_motion(
+          RigidTransformation<ApparentPileUp, EquivalentRigidPileUp>(
+              ApparentPileUp::origin,
+              EquivalentRigidPileUp::origin,
+              attitude_correction.Forget<OrthogonalMap>()),
+          correct_angular_velocity ? apparent_equivalent_angular_velocity
+                                   : ApparentPileUp::nonrotating,
+          ApparentPileUp::unmoving);
+  RigidMotion<NonRotatingPileUp, EquivalentRigidPileUp> const
+      actual_pile_up_equivalent_motion(
+          RigidTransformation<NonRotatingPileUp, EquivalentRigidPileUp>(
+              NonRotatingPileUp::origin,
+              EquivalentRigidPileUp::origin,
+              OrthogonalMap<NonRotatingPileUp,
+                            EquivalentRigidPileUp>::Identity()),
+          correct_angular_velocity ? actual_equivalent_angular_velocity
+                                   : NonRotatingPileUp::nonrotating,
+          NonRotatingPileUp::unmoving);
+
+  std::stringstream s;
+  s << "Apparent: " << apparent_angular_momentum << "\n"
+    << "norm: " << apparent_angular_momentum.Norm() << "\n"
+    << "Actual: " << angular_momentum_ << "\n"
+    << "norm: " << angular_momentum_.Norm() << "\n"
+    << "|Lap-Lac|: "
+    << (angular_momentum_ - Identity<ApparentPileUp, NonRotatingPileUp>()(
+                                apparent_angular_momentum))
+           .Norm() << "\n"
+    << "|Lap|-|Lac|: "
+    << angular_momentum_.Norm() - apparent_angular_momentum.Norm() << "\n"
+    << u8"∡Lap, Lac: "
+    << geometry::AngleBetween(angular_momentum_,
+                              Identity<ApparentPileUp, NonRotatingPileUp>()(
+                                  apparent_angular_momentum)) /
+           quantities::si::Degree
+    << u8"°\n"
+    << u8"α: " << α / quantities::si::Degree << u8"°\n"
+    << u8"ωΔt: " << ω * Δt / quantities::si::Degree << u8"°\n"
+    << u8"β: " << β / quantities::si::Degree << u8"°\n"
+    << u8"ω: " << ω / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
+    << u8"|ωap|: "
+    << apparent_equivalent_angular_velocity.Norm() /
+           (2 * π * Radian / quantities::si::Minute)
+    << " rpm\n"
+    << u8"|ωac|: "
+    << actual_equivalent_angular_velocity.Norm() /
+           (2 * π * Radian / quantities::si::Minute)
+    << " rpm\n"
+    << u8"Δt: " << Δt / quantities::si::Milli(quantities::si::Second)
+    << u8"ms\n";
+  trace = s.str();
+
+  return actual_pile_up_equivalent_motion.Inverse() *
+         apparent_pile_up_equivalent_motion *
+         linear_motion.Inverse();
 }
 
 PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
