@@ -134,6 +134,16 @@ std::string ToMathematica(It const begin, It const end,
 }
 
 template<typename OptionalExpressIn>
+std::string ToMathematica(bool const b, OptionalExpressIn express_in) {
+  return b ? "True" : "False";
+}
+
+template<typename OptionalExpressIn>
+std::string ToMathematica(std::uint32_t const i, OptionalExpressIn express_in) {
+  return std::to_string(i);
+}
+
+template<typename OptionalExpressIn>
 std::string ToMathematica(double const real,
                           OptionalExpressIn /*express_in*/) {
   if (std::isinf(real)) {
@@ -257,6 +267,16 @@ std::string ToMathematica(
                                        elements.pʹ,
                                        elements.qʹ),
                        express_in);
+}
+
+template<typename T, typename OptionalExpressIn>
+std::string ToMathematica(std::optional<T> const& opt,
+                          OptionalExpressIn express_in) {
+  std::vector<T> value;
+  if (opt.has_value()) {
+    value.push_back(opt.value());
+  }
+  return ToMathematica(value, express_in);
 }
 
 template<typename OptionalExpressIn>

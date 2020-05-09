@@ -111,6 +111,15 @@ std::string ToMathematica(It begin, It end,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(bool b,
+                          OptionalExpressIn express_in = std::nullopt);
+
+// TODO(phl): The integer and float overloads should be templatized.
+template<typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(std::uint32_t i,
+                          OptionalExpressIn express_in = std::nullopt);
+
+template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(double real,
                           OptionalExpressIn express_in = std::nullopt);
 
@@ -167,6 +176,10 @@ template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(
     astronomy::OrbitalElements::EquinoctialElements const& elements,
     OptionalExpressIn express_in = std::nullopt);
+
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(std::optional<T> const& opt,
+                          OptionalExpressIn express_in = std::nullopt);
 
 // Returns its argument.
 template<typename OptionalExpressIn = std::nullopt_t>
