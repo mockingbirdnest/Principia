@@ -193,9 +193,8 @@ class PileUp {
   static RigidMotion<ApparentBubble, NonRotatingPileUp>
   ComputeAngularMomentumCompensation(
       Time const& Δt,
-      Bivector<AngularMomentum, ApparentPileUp> const&
-          apparent_angular_momentum,
-      Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum_,
+      Bivector<AngularMomentum, ApparentPileUp> const& L_apparent,
+      Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,
       InertiaTensor<ApparentPileUp> const& inertia_tensor,
       RigidMotion<ApparentPileUp, ApparentBubble> const& linear_motion,
       std::string& trace);

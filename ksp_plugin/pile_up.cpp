@@ -615,13 +615,13 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
 RigidMotion<ApparentBubble, NonRotatingPileUp>
 PileUp::ComputeAngularMomentumCompensation(
     Time const& Δt,
-    Bivector<AngularMomentum, ApparentPileUp> const& apparent_angular_momentum,
-    Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum_,
+    Bivector<AngularMomentum, ApparentPileUp> const& L_apparent,
+    Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,
     InertiaTensor<ApparentPileUp> const& inertia_tensor,
     RigidMotion<ApparentPileUp, ApparentBubble> const& linear_motion,
     std::string& trace) {
-  auto const angular_momentum_in_apparent_pile_up =
-      Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_);
+  auto const L_actual_in_apparent_pile_up =
+      Identity<NonRotatingPileUp, ApparentPileUp>()(L_actual);
   // This is the axis around which we may perform an orientation correction.
   // Identifying the uncorrected (apparent) and corrected coordinates, it is
   // orthogonal to both.
@@ -629,11 +629,11 @@ PileUp::ComputeAngularMomentumCompensation(
   // |apparent_correction_axis.coordinates() ==
   //  actual_correction_axis.coordinates()|.
   auto const apparent_correction_axis = NormalizeOrZero(Commutator(
-      apparent_angular_momentum,
-      angular_momentum_in_apparent_pile_up));
+      L_apparent,
+      L_actual_in_apparent_pile_up));
   auto const actual_correction_axis = NormalizeOrZero(Commutator(
-      Identity<ApparentPileUp, NonRotatingPileUp>()(apparent_angular_momentum),
-      angular_momentum_));
+      Identity<ApparentPileUp, NonRotatingPileUp>()(L_apparent),
+      L_actual));
 
   // We apply a rigid rotational correction to the motions of the parts coming
   // from the game (the apparent motions) so as to enforce the conservation of
@@ -671,8 +671,8 @@ PileUp::ComputeAngularMomentumCompensation(
   // intermediate essential singularity, and only need to remove it.
   using EquivalentRigidPileUp = Frame<enum class EquivalentRigidPileUpTag>;
 
-  auto const L̂_apparent = NormalizeOrZero(apparent_angular_momentum);
-  auto const L̂_actual = NormalizeOrZero(angular_momentum_);
+  auto const L̂_apparent = NormalizeOrZero(L_apparent);
+  auto const L̂_actual = NormalizeOrZero(L_actual);
   // NOTE(egg):
   // — The two sides of this disjunction are always equal;
   // — technically this will also be true on the essential singularity.
@@ -711,11 +711,11 @@ PileUp::ComputeAngularMomentumCompensation(
   // The angular velocity of a rigid body with the inertia and angular momentum
   // of the apparent parts.
   auto const apparent_equivalent_angular_velocity =
-      apparent_angular_momentum / inertia_tensor;
+      L_apparent / inertia_tensor;
   // The angular velocity of a rigid body with the inertia of the apparent
   // parts, and the angular momentum of the pile up.
   auto actual_equivalent_angular_velocity =
-      angular_momentum_ / tentative_attitude_correction(inertia_tensor);
+      L_actual / tentative_attitude_correction(inertia_tensor);
 
   // So far we have only dealt with the essential singularity by removing it.
   // We now need to deal with its neighbourhood, by ensuring that the tentative
@@ -756,7 +756,7 @@ PileUp::ComputeAngularMomentumCompensation(
         Rotation<ApparentPileUp, ApparentPileUp>(β, apparent_correction_axis);
   }
   actual_equivalent_angular_velocity =
-      angular_momentum_ / Identity<EquivalentRigidPileUp, NonRotatingPileUp>()(
+      L_actual / Identity<EquivalentRigidPileUp, NonRotatingPileUp>()(
                               attitude_correction(inertia_tensor));
 
   bool const correcting_orientation =
@@ -784,20 +784,20 @@ PileUp::ComputeAngularMomentumCompensation(
           NonRotatingPileUp::unmoving);
 
   std::stringstream s;
-  s << "Apparent: " << apparent_angular_momentum << "\n"
-    << "norm: " << apparent_angular_momentum.Norm() << "\n"
-    << "Actual: " << angular_momentum_ << "\n"
-    << "norm: " << angular_momentum_.Norm() << "\n"
+  s << "Apparent: " << L_apparent << "\n"
+    << "norm: " << L_apparent.Norm() << "\n"
+    << "Actual: " << L_actual << "\n"
+    << "norm: " << L_actual.Norm() << "\n"
     << "|Lap-Lac|: "
-    << (angular_momentum_ - Identity<ApparentPileUp, NonRotatingPileUp>()(
-                                apparent_angular_momentum))
+    << (L_actual - Identity<ApparentPileUp, NonRotatingPileUp>()(
+                                L_apparent))
            .Norm() << "\n"
     << "|Lap|-|Lac|: "
-    << angular_momentum_.Norm() - apparent_angular_momentum.Norm() << "\n"
+    << L_actual.Norm() - L_apparent.Norm() << "\n"
     << u8"∡Lap, Lac: "
-    << geometry::AngleBetween(angular_momentum_,
+    << geometry::AngleBetween(L_actual,
                               Identity<ApparentPileUp, NonRotatingPileUp>()(
-                                  apparent_angular_momentum)) /
+                                  L_apparent)) /
            quantities::si::Degree
     << u8"°\n"
     << u8"α: " << α / quantities::si::Degree << u8"°\n"
