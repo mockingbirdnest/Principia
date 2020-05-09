@@ -207,6 +207,13 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   Rotation<ToFrame, FromFrame> Inverse() const;
 
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<std::is_same<F, T>::value>>
+  Bivector<double, FromFrame> RotationAxis() const;
+
+  Angle RotationAngle() const;
+
   template<typename Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
@@ -261,6 +268,12 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   template<typename From, typename Through, typename To>
   friend Rotation<From, To> operator*(Rotation<Through, To> const& left,
                                       Rotation<From, Through> const& right);
+  template<typename From, typename To>
+  friend bool operator==(Rotation<From, To> const& left,
+                         Rotation<From, To> const& right);
+  template<typename From, typename To>
+  friend bool operator!=(Rotation<From, To> const& left,
+                         Rotation<From, To> const& right);
 
   template<typename From, typename To>
   friend std::ostream& operator<<(std::ostream& out,
@@ -272,7 +285,14 @@ Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right);
 
-template<typename FromFrame, typename ToFrame>
+template<typename From, typename To>
+bool operator==(Rotation<From, To> const& left,
+                Rotation<From, To> const& right);
+template<typename From, typename To>
+bool operator!=(Rotation<From, To> const& left,
+                Rotation<From, To> const& right);
+
+  template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation);
 

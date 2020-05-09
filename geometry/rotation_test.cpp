@@ -10,6 +10,7 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
@@ -24,6 +25,7 @@ using quantities::ArcCos;
 using quantities::ArcSin;
 using quantities::Length;
 using quantities::Pow;
+using quantities::Sqrt;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
@@ -88,6 +90,19 @@ TEST_F(RotationTest, Identity) {
   EXPECT_THAT(vector_, Eq(Rot::Identity()(vector_)));
   EXPECT_THAT(bivector_, Eq(Rot::Identity()(bivector_)));
   EXPECT_THAT(trivector_, Eq(Rot::Identity()(trivector_)));
+}
+
+TEST_F(RotationTest, Equality) {
+  EXPECT_EQ(rotation_a_, rotation_a_);
+  EXPECT_NE(rotation_a_, rotation_b_);
+}
+
+TEST_F(RotationTest, AngleAxis) {
+  EXPECT_THAT(rotation_a_.RotationAngle(), AlmostEquals(120 * Degree, 0));
+  EXPECT_THAT(rotation_a_.RotationAxis(),
+              AlmostEquals(Bivector<double, World>(
+                               {1.0 / Sqrt(3), 1.0 / Sqrt(3), 1.0 / Sqrt(3)}),
+                           0));
 }
 
 TEST_F(RotationTest, AppliedToVector) {
