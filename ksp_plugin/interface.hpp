@@ -43,6 +43,7 @@ using geometry::R3Element;
 using geometry::Quaternion;
 using geometry::Vector;
 using geometry::Velocity;
+using ksp_plugin::ApparentWorld;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Camera;

@@ -656,9 +656,9 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
 void Plugin::SetPartApparentRigidMotion(
     PartId const part_id,
-    RigidMotion<RigidPart, World> const& rigid_motion) {
-  // As a reference frame, |ApparentBubble| differs from |World| only by having
-  // the same axes as |Barycentric| and being nonrotating.  However, there is
+    RigidMotion<RigidPart, ApparentWorld> const& rigid_motion) {
+  // As a reference frame, |Apparent| differs from |World| only by having the
+  // same axes as |Barycentric| and being nonrotating.  However, there is
   // another semantic distinction: |Apparent...| coordinates are uncorrected
   // data from the game, given immediately after its physics step; before using
   // them, we must correct them in accordance with the data computed by the pile
@@ -666,22 +666,23 @@ void Plugin::SetPartApparentRigidMotion(
   // need not worry about the current definition of
   // |{World::origin, World::unmoving}| as we do when getting the actual degrees
   // of freedom (via |Plugin::BarycentricToWorld|).
-  RigidMotion<World, ApparentBubble> world_to_apparent_bubble{
-      RigidTransformation<World, ApparentBubble>{
-          World::origin,
-          ApparentBubble::origin,
-          OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
-              renderer_->WorldToBarycentric(PlanetariumRotation())},
-      renderer_->BarycentricToWorld(PlanetariumRotation())(
-          -angular_velocity_of_world_),
-      World::unmoving};
+  RigidMotion<ApparentWorld, Apparent> world_to_apparent{
+      RigidTransformation<ApparentWorld, Apparent>{
+          ApparentWorld::origin,
+          Apparent::origin,
+          OrthogonalMap<Barycentric, Apparent>::Identity() *
+              renderer_->WorldToBarycentric(PlanetariumRotation()) *
+              OrthogonalMap<World, ApparentWorld>::Identity()},
+      Identity<World, ApparentWorld>()(renderer_->BarycentricToWorld(
+          PlanetariumRotation())(-angular_velocity_of_world_)),
+      ApparentWorld::unmoving};
 
   not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
   not_null<Part*> const part = vessel->part(part_id);
   CHECK(part->is_piled_up());
   part->containing_pile_up()->SetPartApparentRigidMotion(
-      part, world_to_apparent_bubble * rigid_motion);
+      part, world_to_apparent * rigid_motion);
 }
 
 RigidMotion<RigidPart, World> Plugin::GetPartActualMotion(

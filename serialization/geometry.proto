@@ -153,7 +153,8 @@ message Frame {
   enum PluginTag {
     ALICE_SUN = 1;
     ALICE_WORLD = 2;
-    APPARENT_BUBBLE = 12;
+    APPARENT = 12;
+    APPARENT_WORLD = 19;
     BARYCENTRIC = 7;
     BODY_WORLD = 9;
     // BUBBLE = 13;
@@ -169,6 +170,8 @@ message Frame {
     RIGID_PART = 16;
     WORLD = 5;
     WORLD_SUN = 6;
+
+    reserved "APPARENT_BUBBLE";
   }
 
   // The frame tags used in the physics library.

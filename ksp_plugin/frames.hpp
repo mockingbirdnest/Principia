@@ -44,14 +44,21 @@ using Barycentric = Frame<serialization::Frame::PluginTag,
                           Handedness::Right,
                           serialization::Frame::BARYCENTRIC>;
 
-// The axes are those of |Barycentric|.  The origin is that of |World|.  This
-// frame is used for degrees of freedom obtained after the physics simulation of
-// the game has run, and before we perform our correction: the origin has no
-// physical significance.
-using ApparentBubble = Frame<serialization::Frame::PluginTag,
-                             NonRotating,
-                             Handedness::Right,
-                             serialization::Frame::APPARENT_BUBBLE>;
+// The |Apparent...| frames are used for data obtained after the physics
+// simulation of the game has run, and before we perform our correction.
+
+// |World| coordinates from the game, but before the correction.
+using ApparentWorld = Frame<serialization::Frame::PluginTag,
+                            NonRotating,
+                            Handedness::Right,
+                            serialization::Frame::APPARENT_WORLD>;
+
+// The axes are those of |Barycentric|.  The origin is that of |ApparentWorld|,
+// and should not be depended upon.
+using Apparent = Frame<serialization::Frame::PluginTag,
+                       NonRotating,
+                       Handedness::Right,
+                       serialization::Frame::APPARENT>;
 
 // |Barycentric|, with its y and z axes swapped.
 using CelestialSphere = Frame<serialization::Frame::PluginTag,

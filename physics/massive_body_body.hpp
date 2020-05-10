@@ -156,7 +156,8 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
         switch (static_cast<Tag>(enum_value_descriptor->number())) {
           ROTATING_BODY_TAG_VALUE_CASE(ALICE_SUN);
           ROTATING_BODY_TAG_VALUE_CASE(ALICE_WORLD);
-          ROTATING_BODY_TAG_VALUE_CASE(APPARENT_BUBBLE);
+          ROTATING_BODY_TAG_VALUE_CASE(APPARENT);
+          ROTATING_BODY_TAG_VALUE_CASE(APPARENT_WORLD);
           ROTATING_BODY_TAG_VALUE_CASE(BARYCENTRIC);
           ROTATING_BODY_TAG_VALUE_CASE(BODY_WORLD);
           ROTATING_BODY_TAG_VALUE_CASE(CAMERA);
