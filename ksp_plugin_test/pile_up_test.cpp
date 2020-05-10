@@ -287,17 +287,12 @@ TEST_F(PileUpTest, AngularMomentum) {
       si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
                                                      {0, 1, 0},
                                                      {0, 0, 2}));
-  RigidMotion<ApparentPileUp, ApparentBubble> const linear_motion(
-      RigidTransformation<ApparentPileUp, ApparentBubble>::Identity(),
-      AngularVelocity<ApparentPileUp>(),
-      Velocity<ApparentPileUp>());
   std::string trace;
   auto const correction = TestablePileUp::ComputeAngularMomentumCorrection(
       /*Δt=*/0.02 * Second,
       L_apparent,
       L_actual,
       inertia_tensor,
-      linear_motion,
       trace);
   LOG(ERROR)<<trace;
   LOG(ERROR)<<correction;

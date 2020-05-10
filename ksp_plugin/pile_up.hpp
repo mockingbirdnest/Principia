@@ -191,13 +191,12 @@ class PileUp {
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
   //TODO(phl):comment
-  static RigidMotion<ApparentBubble, NonRotatingPileUp>
+  static RigidMotion<ApparentPileUp, NonRotatingPileUp>
   ComputeAngularMomentumCorrection(
       Time const& Δt,
       Bivector<AngularMomentum, ApparentPileUp> const& L_apparent,
       Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,
       InertiaTensor<ApparentPileUp> const& inertia_tensor,
-      RigidMotion<ApparentPileUp, ApparentBubble> const& linear_motion,
       std::string& trace);
 
   // Wrapped in a |unique_ptr| to be moveable.

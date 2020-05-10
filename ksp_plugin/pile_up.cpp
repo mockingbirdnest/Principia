@@ -468,18 +468,22 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
           apparent_system.AngularMomentum(),
           angular_momentum_in_apparent_pile_up,
           t);
+
   // Note that the inertia tensor is with respect to the centre of mass, so it
   // is unaffected by the apparent-bubble-to-pile-up correction, which is rigid
   // and involves no change in axes.
   auto const inertia_tensor = apparent_system.InertiaTensor();
-  RigidMotion<ApparentBubble, NonRotatingPileUp> const
-      apparent_bubble_to_pile_up_motion = ComputeAngularMomentumCorrection(
+
+  auto const apparent_pile_up_to_pile_up_motion =
+      ComputeAngularMomentumCorrection(
           /*Δt=*/t - psychohistory_->back().time,
           apparent_angular_momentum,
           angular_momentum_,
           inertia_tensor,
-          apparent_system.LinearMotion(),
           trace);
+  auto const apparent_bubble_to_pile_up_motion =
+      apparent_pile_up_to_pile_up_motion *
+      apparent_system.LinearMotion().Inverse();
 
   // Now update the motions of the parts in the pile-up frame.
   actual_part_rigid_motion_.clear();
@@ -612,13 +616,12 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   }
 }
 
-RigidMotion<ApparentBubble, NonRotatingPileUp>
+RigidMotion<PileUp::ApparentPileUp, NonRotatingPileUp>
 PileUp::ComputeAngularMomentumCorrection(
     Time const& Δt,
     Bivector<AngularMomentum, ApparentPileUp> const& L_apparent,
     Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,
     InertiaTensor<ApparentPileUp> const& inertia_tensor,
-    RigidMotion<ApparentPileUp, ApparentBubble> const& linear_motion,
     std::string& trace) {
   auto const L_actual_in_apparent_pile_up =
       Identity<NonRotatingPileUp, ApparentPileUp>()(L_actual);
@@ -817,8 +820,7 @@ PileUp::ComputeAngularMomentumCorrection(
   trace = s.str();
 
   return actual_pile_up_equivalent_motion.Inverse() *
-         apparent_pile_up_equivalent_motion *
-         linear_motion.Inverse();
+         apparent_pile_up_equivalent_motion;
 }
 
 PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
