@@ -66,8 +66,9 @@ class RigidMotion final {
   // A rigid motion expressing that |FromFrame| and |ToFrame| have the same
   // axes, origin, and instantaneous motion.
   // This function is enabled only if both frames have the same handedness (this
-  // is a requirement of OrthogonalMap::Identity) and if the |motion| of FromFrame
-  // is a special case of that of |ToFrame| (see the comments on |FrameMotion|).
+  // is a requirement of OrthogonalMap::Identity) and if the |motion| of
+  // FromFrame is a special case of that of |ToFrame| (see the comments on
+  // |FrameMotion|).
   template<typename F = FromFrame,
            typename T = ToFrame,
            typename = std::enable_if_t<F::handedness == T::handedness &&
