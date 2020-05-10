@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/status.hpp"
