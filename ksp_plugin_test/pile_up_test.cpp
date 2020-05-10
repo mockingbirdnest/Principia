@@ -11,6 +11,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -38,6 +39,7 @@ using geometry::Displacement;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::R3x3Matrix;
+using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
 using integrators::MockFixedStepSizeIntegrator;
@@ -288,12 +290,24 @@ TEST_F(PileUpTest, AngularMomentum) {
                                                      {0, 1, 0},
                                                      {0, 0, 2}));
   std::string trace;
-  auto const correction = TestablePileUp::ComputeAngularMomentumCorrection(
-      /*Δt=*/0.02 * Second,
-      L_apparent,
-      L_actual,
-      inertia_tensor,
-      trace);
+  RigidMotion<ApparentPileUp, NonRotatingPileUp> const correction =
+      TestablePileUp::ComputeAngularMomentumCorrection(/*Δt=*/0.02 * Second,
+                                                       L_apparent,
+                                                       L_actual,
+                                                       inertia_tensor,
+                                                       trace);
+
+  Rotation<ApparentPileUp, NonRotatingPileUp> const correction_rotation =
+      correction.orthogonal_map().AsRotation();
+  AngularVelocity<ApparentPileUp> const correction_angular_velocity =
+      correction.angular_velocity_of_to_frame();
+  Bivector<AngularMomentum, ApparentPileUp> const correction_angular_momentum =
+      inertia_tensor * correction_angular_velocity;
+
+  Bivector<AngularMomentum, NonRotatingPileUp> const rotated_L_apparent =
+      correction_rotation(L_apparent);
+
+  LOG(ERROR)<<correction_rotation(L_apparent-correction_angular_momentum);
   LOG(ERROR)<<trace;
   LOG(ERROR)<<correction;
 }
