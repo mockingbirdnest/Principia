@@ -19,6 +19,8 @@ using base::Error;
 using base::StatusOr;
 using base::UniqueArray;
 using geometry::AngularVelocity;
+using geometry::Frame;
+using geometry::RadiusLatitudeLongitude;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
 using ksp_plugin::Vessel;
@@ -42,6 +44,95 @@ Status OK() {
 }
 
 }  // namespace
+
+Status __cdecl principia__ExternalCelestialGetPosition(
+    Plugin const* const plugin,
+    int const body_index,
+    double const time,
+    XYZ* const position) {
+  journal::Method<journal::ExternalCelestialGetPosition> m{
+      {plugin,
+       body_index,
+       time},
+      {position}};
+  if (plugin == nullptr) {
+    return m.Return(
+        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+  }
+  Instant const t = FromGameTime(*plugin, time);
+  if (!plugin->HasCelestial(body_index)) {
+    return m.Return(MakeStatus(
+        Error::NOT_FOUND,
+        absl::StrCat("No celestial with index ", body_index)));
+  }
+  auto const& celestial = plugin->GetCelestial(body_index);
+  auto const& trajectory = celestial.trajectory();
+  if (t < trajectory.t_min() || t > trajectory.t_max()) {
+    return m.Return(
+        MakeStatus(Error::OUT_OF_RANGE,
+                   (std::stringstream{}
+                    << "|time| " << t << " does not lie within the domain ["
+                    << trajectory.t_min() << ", " << trajectory.t_max()
+                    << "] of the trajectory of " << celestial.body()->name())
+                       .str()));
+  }
+  auto const from_solar_system_barycentre =
+      plugin->renderer().BarycentricToWorldSun(plugin->PlanetariumRotation())(
+          trajectory.EvaluatePosition(t) - Barycentric::origin);
+  *position = ToXYZ(from_solar_system_barycentre.coordinates() / Metre);
+  return m.Return(OK());
+}
+
+Status __cdecl principia__ExternalCelestialGetSurfacePosition(
+    Plugin const* const plugin,
+    int const body_index,
+    double const planetocentric_latitude_in_radians,
+    double const planetocentric_longitude_in_radians,
+    double const radius,
+    double const time,
+    XYZ* const position) {
+  journal::Method<journal::ExternalCelestialGetSurfacePosition> m{
+      {plugin,
+       body_index,
+       planetocentric_latitude_in_radians,
+       planetocentric_longitude_in_radians,
+       radius,
+       time},
+      {position}};
+  if (plugin == nullptr) {
+    return m.Return(
+        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+  }
+  Instant const t = FromGameTime(*plugin, time);
+  if (!plugin->HasCelestial(body_index)) {
+    return m.Return(MakeStatus(
+        Error::NOT_FOUND,
+        absl::StrCat("No celestial with index ", body_index)));
+  }
+  auto const& celestial = plugin->GetCelestial(body_index);
+  auto const& trajectory = celestial.trajectory();
+  if (t < trajectory.t_min() || t > trajectory.t_max()) {
+    return m.Return(
+        MakeStatus(Error::OUT_OF_RANGE,
+                   (std::stringstream{}
+                    << "|time| " << t << " does not lie within the domain ["
+                    << trajectory.t_min() << ", " << trajectory.t_max()
+                    << "] of the trajectory of " << celestial.body()->name())
+                       .str()));
+  }
+  using Surface = Frame<enum class SurfaceTag>;
+  auto const to_world_axes =
+      plugin->renderer().BarycentricToWorldSun(plugin->PlanetariumRotation()) *
+      celestial.body()->FromSurfaceFrame<Surface>(t).Forget<OrthogonalMap>();
+  auto const planetocentric_displacement = Displacement<Surface>(
+      RadiusLatitudeLongitude(radius * Metre,
+                              planetocentric_latitude_in_radians * Radian,
+                              planetocentric_longitude_in_radians * Radian)
+          .ToCartesian());
+  *position =
+      ToXYZ(to_world_axes(planetocentric_displacement).coordinates() / Metre);
+  return m.Return(OK());
+}
 
 Status __cdecl principia__ExternalFlowFreefall(
     Plugin const* const plugin,
@@ -257,6 +348,43 @@ Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
         ToQP(to_world_body_centred_inertial(
             periapsides.front().degrees_of_freedom));
   }
+  return m.Return(OK());
+}
+
+Status __cdecl principia__ExternalVesselGetPosition(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    double const time,
+    XYZ* const position) {
+  journal::Method<journal::ExternalVesselGetPosition> m{
+      {plugin,
+       vessel_guid,
+       time},
+      {position}};
+  if (plugin == nullptr) {
+    return m.Return(
+        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+  }
+  Instant const t = FromGameTime(*plugin, time);
+  if (!plugin->HasVessel(vessel_guid)) {
+    return m.Return(MakeStatus(
+        Error::NOT_FOUND,
+        absl::StrCat("No vessel with GUID ", vessel_guid)));
+  }
+  auto const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const& trajectory = vessel.psychohistory();
+  if (t < trajectory.t_min() || t > trajectory.t_max()) {
+    return m.Return(MakeStatus(
+        Error::OUT_OF_RANGE,
+        (std::stringstream{}
+         << "|time| " << t << " does not lie within the domain ["
+         << trajectory.t_min() << ", " << trajectory.t_max()
+         << "] of the psychohistory of " << vessel.ShortDebugString()).str()));
+  }
+  auto const from_solar_system_barycentre =
+      plugin->renderer().BarycentricToWorldSun(plugin->PlanetariumRotation())(
+          trajectory.EvaluatePosition(t) - Barycentric::origin);
+  *position = ToXYZ(from_solar_system_barycentre.coordinates() / Metre);
   return m.Return(OK());
 }
 

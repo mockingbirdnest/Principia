@@ -6,6 +6,26 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 public class ExternalInterface {
+  public XYZ CelestialGetPosition(int body_index, double time) {
+    ThrowOnError(
+        adapter_.Plugin().ExternalCelestialGetPosition(
+            body_index, time, out XYZ result));
+    return result;
+  }
+
+  public XYZ CelestialGetSurfacePosition(
+      int body_index,
+      double planetocentric_latitude_in_radians,
+      double planetocentric_longitude_in_radians,
+      double radius,
+      double time) {
+    ThrowOnError(
+        adapter_.Plugin().ExternalCelestialGetSurfacePosition(
+            body_index, planetocentric_latitude_in_radians,
+            planetocentric_longitude_in_radians, radius, time, out XYZ result));
+    return result;
+  }
+
   public XY GeopotentialGetCoefficient(int body_index, int degree, int order) {
     ThrowOnError(
         adapter_.Plugin().ExternalGeopotentialGetCoefficient(
@@ -17,6 +37,13 @@ public class ExternalInterface {
     ThrowOnError(
         adapter_.Plugin().ExternalGeopotentialGetReferenceRadius(
             body_index, out double result));
+    return result;
+  }
+
+  public XYZ VesselGetPosition(string vessel_guid, double time) {
+    ThrowOnError(
+        adapter_.Plugin().ExternalVesselGetPosition(
+            vessel_guid, time, out XYZ result));
     return result;
   }
 
