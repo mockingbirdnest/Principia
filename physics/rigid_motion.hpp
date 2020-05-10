@@ -71,8 +71,8 @@ class RigidMotion final {
   // |FrameMotion|).
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<F::handedness == T::handedness &&
-                                       F::motion <= T::motion>>
+           typename = std::enable_if_t<(F::handedness == T::handedness &&
+                                        F::motion <= T::motion)>>
   static RigidMotion Identity();
 
   // A factory that construct a non-rotating motion using the given degrees of
