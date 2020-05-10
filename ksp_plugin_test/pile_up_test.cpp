@@ -97,7 +97,7 @@ class TestablePileUp : public PileUp {
     return actual_part_rigid_motion_;
   }
 
-  PartTo<RigidMotion<RigidPart, ApparentBubble>> const&
+  PartTo<RigidMotion<RigidPart, Apparent>> const&
   apparent_part_rigid_motion() const {
     return apparent_part_rigid_motion_;
   }
@@ -161,55 +161,52 @@ class PileUpTest : public testing::Test {
                                         10.0 * Metre / Second,
                                         10.0 / 3.0 * Metre / Second}), 17)));
 
-    // Centre of mass of |p1_| and |p2_| in |ApparentBubble|, in SI units:
+    // Centre of mass of |p1_| and |p2_| in |Apparent|, in SI units:
     //   {1 / 9, -1 / 3, -2 / 9} {10 / 9, -10 / 3, -20 / 9}
-    DegreesOfFreedom<ApparentBubble> const p1_dof(
-        ApparentBubble::origin +
-            Displacement<ApparentBubble>({-11.0 / 3.0 * Metre,
-                                          -1.0 * Metre,
-                                          2.0 / 3.0 * Metre}),
-        Velocity<ApparentBubble>({-110.0 / 3.0 * Metre / Second,
-                                  -10.0 * Metre / Second,
-                                  20.0 / 3.0 * Metre / Second}));
-    DegreesOfFreedom<ApparentBubble> const p2_dof(
-        ApparentBubble::origin +
-            Displacement<ApparentBubble>({2.0 * Metre,
-                                          0.0 * Metre,
-                                          -2.0 / 3.0 * Metre}),
-        Velocity<ApparentBubble>({20.0 * Metre / Second,
-                                  0.0 * Metre / Second,
-                                  -20.0 / 3.0 * Metre / Second}));
+    DegreesOfFreedom<Apparent> const p1_dof(
+        Apparent::origin +
+            Displacement<Apparent>(
+                {-11.0 / 3.0 * Metre, -1.0 * Metre, 2.0 / 3.0 * Metre}),
+        Velocity<Apparent>({-110.0 / 3.0 * Metre / Second,
+                            -10.0 * Metre / Second,
+                            20.0 / 3.0 * Metre / Second}));
+    DegreesOfFreedom<Apparent> const p2_dof(
+        Apparent::origin + Displacement<Apparent>(
+                               {2.0 * Metre, 0.0 * Metre, -2.0 / 3.0 * Metre}),
+        Velocity<Apparent>({20.0 * Metre / Second,
+                            0.0 * Metre / Second,
+                            -20.0 / 3.0 * Metre / Second}));
     pile_up.SetPartApparentRigidMotion(
-        &p1_,
-        RigidMotion<RigidPart, ApparentBubble>::MakeNonRotatingMotion(p1_dof));
+        &p1_, RigidMotion<RigidPart, Apparent>::MakeNonRotatingMotion(p1_dof));
     pile_up.SetPartApparentRigidMotion(
-        &p2_,
-        RigidMotion<RigidPart, ApparentBubble>::MakeNonRotatingMotion(p2_dof));
+        &p2_, RigidMotion<RigidPart, Apparent>::MakeNonRotatingMotion(p2_dof));
 
     EXPECT_THAT(
-        pile_up.apparent_part_rigid_motion().at(&p1_)({RigidPart::origin,
-                                                       RigidPart::unmoving}),
-        Componentwise(AlmostEquals(ApparentBubble::origin +
-                                       Displacement<ApparentBubble>(
-                                           {-11.0 / 3.0 * Metre,
-                                            -1.0 * Metre,
-                                            2.0 / 3.0 * Metre}), 0),
-                      AlmostEquals(Velocity<ApparentBubble>(
-                                       {-110.0 / 3.0 * Metre / Second,
-                                        -10.0 * Metre / Second,
-                                        20.0 / 3.0 * Metre / Second}), 4)));
+        pile_up.apparent_part_rigid_motion().at(&p1_)(
+            {RigidPart::origin, RigidPart::unmoving}),
+        Componentwise(
+            AlmostEquals(
+                Apparent::origin +
+                    Displacement<Apparent>(
+                        {-11.0 / 3.0 * Metre, -1.0 * Metre, 2.0 / 3.0 * Metre}),
+                0),
+            AlmostEquals(Velocity<Apparent>({-110.0 / 3.0 * Metre / Second,
+                                             -10.0 * Metre / Second,
+                                             20.0 / 3.0 * Metre / Second}),
+                         4)));
     EXPECT_THAT(
-        pile_up.apparent_part_rigid_motion().at(&p2_)({RigidPart::origin,
-                                                       RigidPart::unmoving}),
-        Componentwise(AlmostEquals(ApparentBubble::origin +
-                                       Displacement<ApparentBubble>(
-                                           {2.0 * Metre,
-                                            0.0 * Metre,
-                                            -2.0 / 3.0 * Metre}), 0),
-                      AlmostEquals(Velocity<ApparentBubble>(
-                                       {20.0 * Metre / Second,
-                                        0.0 * Metre / Second,
-                                        -20.0 / 3.0 * Metre / Second}), 4)));
+        pile_up.apparent_part_rigid_motion().at(&p2_)(
+            {RigidPart::origin, RigidPart::unmoving}),
+        Componentwise(
+            AlmostEquals(
+                Apparent::origin +
+                    Displacement<Apparent>(
+                        {2.0 * Metre, 0.0 * Metre, -2.0 / 3.0 * Metre}),
+                0),
+            AlmostEquals(Velocity<Apparent>({20.0 * Metre / Second,
+                                             0.0 * Metre / Second,
+                                             -20.0 / 3.0 * Metre / Second}),
+                         4)));
   }
 
   void CheckPreAdvanceTimeInvariants(TestablePileUp& pile_up) {
