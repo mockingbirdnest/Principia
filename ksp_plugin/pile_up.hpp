@@ -62,6 +62,12 @@ using quantities::Mass;
 using quantities::Time;
 using quantities::Torque;
 
+// The axes are those of Barycentric. The origin is the centre of mass of the
+// pile up.  This frame is distinguished from NonRotatingPileUp in that it is
+// used to hold uncorrected (apparent) coordinates given by the game, before
+// the enforcement of conservation laws; see also ApparentBubble.
+using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
+
 // The origin of |NonRotatingPileUp| is the centre of mass of the pile up.
 // Its axes are those of |Barycentric|. It is used to describe the rotational
 // motion of the pile up (being a nonrotating frame) without running into
@@ -145,12 +151,6 @@ class PileUp {
   // trajectory (history or psychohistory).
   using AppendToPartTrajectory =
       void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
-
-  // The axes are those of Barycentric. The origin is the centre of mass of the
-  // pile up.  This frame is distinguished from NonRotatingPileUp in that it is
-  // used to hold uncorrected (apparent) coordinates given by the game, before
-  // the enforcement of conservation laws; see also ApparentBubble.
-  using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
 
   // For deserialization.
   PileUp(

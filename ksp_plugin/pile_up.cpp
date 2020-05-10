@@ -616,7 +616,7 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   }
 }
 
-RigidMotion<PileUp::ApparentPileUp, NonRotatingPileUp>
+RigidMotion<ApparentPileUp, NonRotatingPileUp>
 PileUp::ComputeAngularMomentumCorrection(
     Time const& Δt,
     Bivector<AngularMomentum, ApparentPileUp> const& L_apparent,
