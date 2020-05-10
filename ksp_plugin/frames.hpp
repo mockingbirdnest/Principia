@@ -49,7 +49,7 @@ using Barycentric = Frame<serialization::Frame::PluginTag,
 
 // |World| coordinates from the game, but before the correction.
 using ApparentWorld = Frame<serialization::Frame::PluginTag,
-                            NonRotating,
+                            Arbitrary,
                             Handedness::Right,
                             serialization::Frame::APPARENT_WORLD>;
 
@@ -107,14 +107,14 @@ using CameraReference = Frame<serialization::Frame::PluginTag,
 // only be performed between simultaneous quantities, then converted to a
 // consistent (frame, basis) pair before use.
 using AliceSun = Frame<serialization::Frame::PluginTag,
-                       Arbitrary,
+                       NonRotating,
                        Handedness::Right,
                        serialization::Frame::ALICE_SUN>;
 
 // Same as above, but with same axes as |World| instead of those of
 // |AliceWorld|. The caveats are the same as for |AliceSun|.
 using WorldSun = Frame<serialization::Frame::PluginTag,
-                       Arbitrary,
+                       NonRotating,
                        Handedness::Left,
                        serialization::Frame::WORLD_SUN>;
 
