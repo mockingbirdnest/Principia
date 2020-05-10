@@ -26,6 +26,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -36,6 +37,7 @@ using base::make_not_null_unique;
 using base::Status;
 using geometry::AngularVelocity;
 using geometry::Displacement;
+using geometry::NonRotating;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::R3x3Matrix;
@@ -61,10 +63,12 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Micro;
 using quantities::si::Newton;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
+using testing_utilities::VanishesBefore;
 using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
@@ -277,39 +281,65 @@ class PileUpTest : public testing::Test {
 
 TEST_F(PileUpTest, AngularMomentum) {
   using ApparentPileUp = TestablePileUp::ApparentPileUp;
-  Bivector<AngularMomentum, ApparentPileUp> const L_apparent(
-      {0.2 * si::Unit<AngularMomentum>,
-       0.1 * si::Unit<AngularMomentum>,
-       1.9 * si::Unit<AngularMomentum>});
+  using Vessel = Frame<enum class VesselTag>;
+
+  // Prepare the motion and inertia of a vessel that yields the L_apparent that
+  // we want to exercise.
+  RigidMotion<Vessel, ApparentBubble> const apparent_vessel_rigid_motion(
+      RigidTransformation<Vessel, ApparentBubble>::Identity(),
+      AngularVelocity<ApparentBubble>({0.2 * Radian / Second,
+                                       0.1 * Radian / Second,
+                                       0.95 * Radian / Second}),
+      Velocity<ApparentBubble>());
+  InertiaTensor<Vessel> const vessel_inertia_tensor(
+      si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
+                                                     {0, 1, 0},
+                                                     {0, 0, 2}));
+  MechanicalSystem<ApparentBubble, ApparentPileUp> apparent_system;
+  apparent_system.AddRigidBody(apparent_vessel_rigid_motion,
+                               /*mass=*/1 * Kilogram,
+                               vessel_inertia_tensor);
+
+  Bivector<AngularMomentum, ApparentPileUp> const L_apparent =
+      apparent_system.AngularMomentum();
+  EXPECT_THAT(L_apparent,
+              AlmostEquals(Bivector<AngularMomentum, ApparentPileUp>(
+                               {0.2 * si::Unit<AngularMomentum>,
+                                0.1 * si::Unit<AngularMomentum>,
+                                1.9 * si::Unit<AngularMomentum>}),
+                           0));
+  InertiaTensor<ApparentPileUp> const inertia_tensor =
+      apparent_system.InertiaTensor();
+
+  std::string trace;
   Bivector<AngularMomentum, NonRotatingPileUp> const L_actual(
       {0 * si::Unit<AngularMomentum>,
        0 * si::Unit<AngularMomentum>,
        2 * si::Unit<AngularMomentum>});
-  InertiaTensor<ApparentPileUp> const inertia_tensor(
-      si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
-                                                     {0, 1, 0},
-                                                     {0, 0, 2}));
-  std::string trace;
   RigidMotion<ApparentPileUp, NonRotatingPileUp> const correction =
       TestablePileUp::ComputeAngularMomentumCorrection(/*Δt=*/0.02 * Second,
                                                        L_apparent,
                                                        L_actual,
                                                        inertia_tensor,
                                                        trace);
+  LOG(ERROR) << trace;
 
-  Rotation<ApparentPileUp, NonRotatingPileUp> const correction_rotation =
-      correction.orthogonal_map().AsRotation();
-  AngularVelocity<ApparentPileUp> const correction_angular_velocity =
-      correction.angular_velocity_of_to_frame();
-  Bivector<AngularMomentum, ApparentPileUp> const correction_angular_momentum =
-      inertia_tensor * correction_angular_velocity;
+   using CorrectedPileUp = Frame<enum class CorrectedPileUpTag, NonRotating>;
+   MechanicalSystem<NonRotatingPileUp, CorrectedPileUp> corrected_system;
+   RigidMotion<Vessel, NonRotatingPileUp> const corrected_vessel_rigid_motion =
+       correction *
+       apparent_system.LinearMotion().Inverse() *
+       apparent_vessel_rigid_motion;
+   corrected_system.AddRigidBody(corrected_vessel_rigid_motion,
+                                 /*mass=*/1 * Kilogram,
+                                 vessel_inertia_tensor);
+   Bivector<AngularMomentum, CorrectedPileUp> const L_corrected =
+      corrected_system.AngularMomentum();
 
-  Bivector<AngularMomentum, NonRotatingPileUp> const rotated_L_apparent =
-      correction_rotation(L_apparent);
-
-  LOG(ERROR)<<correction_rotation(L_apparent-correction_angular_momentum);
-  LOG(ERROR)<<trace;
-  LOG(ERROR)<<correction;
+  EXPECT_THAT(L_corrected.coordinates(),
+              Componentwise(AlmostEquals(L_actual.coordinates().x, 0),
+                            VanishesBefore(L_actual.Norm(), 0),
+                            AlmostEquals(L_actual.coordinates().z, 0)));
 }
 
 // Exercises the entire lifecycle of a |PileUp| that is subject to an intrinsic
