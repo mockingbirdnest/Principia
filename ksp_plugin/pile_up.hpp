@@ -190,8 +190,9 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
+  //TODO(phl):comment
   static RigidMotion<ApparentBubble, NonRotatingPileUp>
-  ComputeAngularMomentumCompensation(
+  ComputeAngularMomentumCorrection(
       Time const& Δt,
       Bivector<AngularMomentum, ApparentPileUp> const& L_apparent,
       Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,

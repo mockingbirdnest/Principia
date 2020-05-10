@@ -33,6 +33,7 @@ namespace internal_pile_up {
 using base::check_not_null;
 using base::make_not_null_unique;
 using base::Status;
+using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::R3Element;
@@ -71,6 +72,7 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
+namespace si = quantities::si;
 
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
@@ -79,6 +81,9 @@ class TestablePileUp : public PileUp {
   using PileUp::DeformPileUpIfNeeded;
   using PileUp::AdvanceTime;
   using PileUp::NudgeParts;
+  using PileUp::ComputeAngularMomentumCorrection;
+
+  using PileUp::ApparentPileUp;
 
   Mass const& mass() const {
     return mass_;
@@ -267,6 +272,36 @@ class PileUpTest : public testing::Test {
   Part p1_;
   Part p2_;
 };
+
+TEST_F(PileUpTest, AngularMomentum) {
+  using ApparentPileUp = TestablePileUp::ApparentPileUp;
+  Bivector<AngularMomentum, ApparentPileUp> const L_apparent(
+      {0.2 * si::Unit<AngularMomentum>,
+       0.1 * si::Unit<AngularMomentum>,
+       1.9 * si::Unit<AngularMomentum>});
+  Bivector<AngularMomentum, NonRotatingPileUp> const L_actual(
+      {0 * si::Unit<AngularMomentum>,
+       0 * si::Unit<AngularMomentum>,
+       2 * si::Unit<AngularMomentum>});
+  InertiaTensor<ApparentPileUp> const inertia_tensor(
+      si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
+                                                     {0, 1, 0},
+                                                     {0, 0, 2}));
+  RigidMotion<ApparentPileUp, ApparentBubble> const linear_motion(
+      RigidTransformation<ApparentPileUp, ApparentBubble>::Identity(),
+      AngularVelocity<ApparentPileUp>(),
+      Velocity<ApparentPileUp>());
+  std::string trace;
+  auto const correction = TestablePileUp::ComputeAngularMomentumCorrection(
+      /*Δt=*/0.02 * Second,
+      L_apparent,
+      L_actual,
+      inertia_tensor,
+      linear_motion,
+      trace);
+  LOG(ERROR)<<trace;
+  LOG(ERROR)<<correction;
+}
 
 // Exercises the entire lifecycle of a |PileUp| that is subject to an intrinsic
 // force.

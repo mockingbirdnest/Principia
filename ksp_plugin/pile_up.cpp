@@ -473,7 +473,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // and involves no change in axes.
   auto const inertia_tensor = apparent_system.InertiaTensor();
   RigidMotion<ApparentBubble, NonRotatingPileUp> const
-      apparent_bubble_to_pile_up_motion = ComputeAngularMomentumCompensation(
+      apparent_bubble_to_pile_up_motion = ComputeAngularMomentumCorrection(
           /*Δt=*/t - psychohistory_->back().time,
           apparent_angular_momentum,
           angular_momentum_,
@@ -613,7 +613,7 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
 }
 
 RigidMotion<ApparentBubble, NonRotatingPileUp>
-PileUp::ComputeAngularMomentumCompensation(
+PileUp::ComputeAngularMomentumCorrection(
     Time const& Δt,
     Bivector<AngularMomentum, ApparentPileUp> const& L_apparent,
     Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,
