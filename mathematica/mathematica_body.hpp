@@ -191,6 +191,16 @@ std::string ToMathematica(R3Element<T> const& r3_element,
   return Apply("List", expressions);
 }
 
+template<typename T, typename OptionalExpressIn>
+std::string ToMathematica(R3x3Matrix<T> const& r3x3_matrix,
+                          OptionalExpressIn express_in) {
+  std::vector<R3Element<T>> rows;
+  rows.push_back(r3x3_matrix.row_x());
+  rows.push_back(r3x3_matrix.row_y());
+  rows.push_back(r3x3_matrix.row_z());
+  return ToMathematica(rows, express_in);
+}
+
 template<typename D, typename... Qs>
 std::string ToMathematica(Quantity<D> const& quantity,
                           ExpressIn<Qs...> express_in) {
@@ -223,6 +233,15 @@ template<typename V, typename OptionalExpressIn>
 std::string ToMathematica(Point<V> const & point,
                           OptionalExpressIn express_in) {
   return ToMathematica(point - Point<V>(), express_in);
+}
+
+template<typename S,
+         typename F,
+         template<typename, typename> typename M,
+         typename OptionalExpressIn>
+std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,
+                          OptionalExpressIn express_in) {
+  return ToMathematica(form.coordinates(), express_in);
 }
 
 template<typename F, typename OptionalExpressIn>
