@@ -548,8 +548,8 @@ message ExternalCelestialGetSurfacePosition {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required int32 body_index = 2;
-    required double planetocentric_latitude_in_radians = 3;
-    required double planetocentric_longitude_in_radians = 4;
+    required double planetocentric_latitude_in_degrees = 3;
+    required double planetocentric_longitude_in_degrees = 4;
     required double radius = 5;
     required double time = 6;
   }

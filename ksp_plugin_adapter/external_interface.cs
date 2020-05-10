@@ -15,14 +15,14 @@ public class ExternalInterface {
 
   public XYZ CelestialGetSurfacePosition(
       int body_index,
-      double planetocentric_latitude_in_radians,
-      double planetocentric_longitude_in_radians,
+      double planetocentric_latitude_in_degrees,
+      double planetocentric_longitude_in_degrees,
       double radius,
       double time) {
     ThrowOnError(
         adapter_.Plugin().ExternalCelestialGetSurfacePosition(
-            body_index, planetocentric_latitude_in_radians,
-            planetocentric_longitude_in_radians, radius, time, out XYZ result));
+            body_index, planetocentric_latitude_in_degrees,
+            planetocentric_longitude_in_degrees, radius, time, out XYZ result));
     return result;
   }
 

@@ -86,16 +86,16 @@ Status __cdecl principia__ExternalCelestialGetPosition(
 Status __cdecl principia__ExternalCelestialGetSurfacePosition(
     Plugin const* const plugin,
     int const body_index,
-    double const planetocentric_latitude_in_radians,
-    double const planetocentric_longitude_in_radians,
+    double const planetocentric_latitude_in_degrees,
+    double const planetocentric_longitude_in_degrees,
     double const radius,
     double const time,
     XYZ* const position) {
   journal::Method<journal::ExternalCelestialGetSurfacePosition> m{
       {plugin,
        body_index,
-       planetocentric_latitude_in_radians,
-       planetocentric_longitude_in_radians,
+       planetocentric_latitude_in_degrees,
+       planetocentric_longitude_in_degrees,
        radius,
        time},
       {position}};
@@ -126,8 +126,8 @@ Status __cdecl principia__ExternalCelestialGetSurfacePosition(
       celestial.body()->FromSurfaceFrame<Surface>(t).Forget<OrthogonalMap>();
   auto const planetocentric_displacement = Displacement<Surface>(
       RadiusLatitudeLongitude(radius * Metre,
-                              planetocentric_latitude_in_radians * Radian,
-                              planetocentric_longitude_in_radians * Radian)
+                              planetocentric_latitude_in_degrees * Degree,
+                              planetocentric_longitude_in_degrees * Degree)
           .ToCartesian());
   *position =
       ToXYZ(to_world_axes(planetocentric_displacement).coordinates() / Metre);
