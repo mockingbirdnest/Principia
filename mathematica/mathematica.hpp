@@ -117,14 +117,14 @@ std::string ToMathematica(bool b,
 template<typename T,
          typename = std::enable_if_t<std::is_integral_v<T>>,
          typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(T t,
+std::string ToMathematica(T integer,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename T,
          typename = std::enable_if_t<std::is_floating_point_v<T>>,
          typename OptionalExpressIn = std::nullopt_t,
          typename = void>
-std::string ToMathematica(T t,
+std::string ToMathematica(T real,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename T, int size, typename OptionalExpressIn = std::nullopt_t>

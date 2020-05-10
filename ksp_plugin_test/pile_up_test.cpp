@@ -381,7 +381,6 @@ TEST_F(PileUpTest, AngularMomentum) {
         Componentwise(VanishesBefore(L_actual.Norm(), 0),
                       VanishesBefore(L_actual.Norm(), 0),
                       AlmostEquals(L_actual.coordinates().z, 0)));
-
   }
   {
     InertiaTensor<Vessel> const vessel_inertia_tensor(
@@ -410,7 +409,6 @@ TEST_F(PileUpTest, AngularMomentum) {
         Componentwise(VanishesBefore(L_actual.Norm(), 0),
                       VanishesBefore(L_actual.Norm(), 0),
                       AlmostEquals(L_actual.coordinates().z, 1)));
-
   }
   {
     InertiaTensor<Vessel> const vessel_inertia_tensor(
@@ -439,7 +437,6 @@ TEST_F(PileUpTest, AngularMomentum) {
         Componentwise(AlmostEquals(L_actual.coordinates().x, 2),
                       AlmostEquals(L_actual.coordinates().y, 2),
                       AlmostEquals(L_actual.coordinates().z, 2)));
-
   }
 }
 

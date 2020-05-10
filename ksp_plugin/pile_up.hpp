@@ -190,7 +190,8 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
-  //TODO(phl):comment
+  // Computes a rigid motion that adjusts the pile-up to make L_apparent match
+  // L_actual.
   static RigidMotion<ApparentPileUp, NonRotatingPileUp>
   ComputeAngularMomentumCorrection(
       Time const& Δt,

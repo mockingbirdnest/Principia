@@ -139,23 +139,23 @@ std::string ToMathematica(bool const b, OptionalExpressIn /*express_in*/) {
 }
 
 template<typename T, typename, typename OptionalExpressIn>
-std::string ToMathematica(T const t, OptionalExpressIn /*express_in*/) {
-  return std::to_string(t);
+std::string ToMathematica(T const integer, OptionalExpressIn /*express_in*/) {
+  return std::to_string(integer);
 }
 
 template<typename T, typename, typename OptionalExpressIn, typename>
-std::string ToMathematica(T const t,
+std::string ToMathematica(T const real,
                           OptionalExpressIn /*express_in*/) {
-  if (std::isinf(t)) {
-    if (t > 0.0) {
+  if (std::isinf(real)) {
+    if (real > 0.0) {
       return "Infinity";
     } else {
       return Apply("Minus", {"Infinity"});
     }
-  } else if (std::isnan(t)) {
+  } else if (std::isnan(real)) {
     return "Indeterminate";
   } else {
-    std::string s = DebugString(t);
+    std::string s = DebugString(real);
     s.replace(s.find("e"), 1, "*^");
     return Apply("SetPrecision", {s, "$MachinePrecision"});
   }
