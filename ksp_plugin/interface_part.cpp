@@ -122,7 +122,8 @@ void __cdecl principia__PartSetApparentRigidMotion(
   CHECK_NOTNULL(plugin);
   plugin->SetPartApparentRigidMotion(
       part_id,
-      MakePartRigidMotion(degrees_of_freedom, rotation, angular_velocity));
+      MakePartApparentRigidMotion(
+          degrees_of_freedom, rotation, angular_velocity));
   return m.Return();
 }
 
