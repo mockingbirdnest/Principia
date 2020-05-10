@@ -50,7 +50,7 @@ using Barycentric = Frame<serialization::Frame::PluginTag,
 // |World| coordinates from the game, but before the correction.
 using ApparentWorld = Frame<serialization::Frame::PluginTag,
                             Arbitrary,
-                            Handedness::Right,
+                            Handedness::Left,
                             serialization::Frame::APPARENT_WORLD>;
 
 // The axes are those of |Barycentric|.  The origin is that of |ApparentWorld|,
@@ -149,7 +149,8 @@ Permutation<WorldSun, AliceSun> const sun_looking_glass(
 
 using internal_frames::AliceSun;
 using internal_frames::AliceWorld;
-using internal_frames::ApparentBubble;
+using internal_frames::Apparent;
+using internal_frames::ApparentWorld;
 using internal_frames::Barycentric;
 using internal_frames::BodyWorld;
 using internal_frames::Camera;

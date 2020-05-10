@@ -326,8 +326,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
       pile_up->apparent_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
           RigidMotion<RigidPart, Apparent>::MakeNonRotatingMotion(
-              DegreesOfFreedom<Apparent>::ReadFromMessage(
-                  degrees_of_freedom)));
+              DegreesOfFreedom<Apparent>::ReadFromMessage(degrees_of_freedom)));
     }
   } else {
     for (auto const& [part_id, rigid_motion] :
@@ -341,8 +340,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
          message.apparent_part_rigid_motion()) {
       pile_up->apparent_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
-          RigidMotion<RigidPart, Apparent>::ReadFromMessage(
-              rigid_motion));
+          RigidMotion<RigidPart, Apparent>::ReadFromMessage(rigid_motion));
     }
   }
 

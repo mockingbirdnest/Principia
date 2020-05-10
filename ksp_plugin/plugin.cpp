@@ -672,10 +672,9 @@ void Plugin::SetPartApparentRigidMotion(
           Apparent::origin,
           OrthogonalMap<Barycentric, Apparent>::Identity() *
               renderer_->WorldToBarycentric(PlanetariumRotation()) *
-              OrthogonalMap<World, ApparentWorld>::Identity()},
-      Identity<World, ApparentWorld>()(renderer_->BarycentricToWorld(
-          PlanetariumRotation())(-angular_velocity_of_world_)),
-      ApparentWorld::unmoving};
+              OrthogonalMap<ApparentWorld, World>::Identity()},
+      Identity<Barycentric, Apparent>()(angular_velocity_of_world_),
+      Apparent::unmoving};
 
   not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));

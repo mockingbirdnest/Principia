@@ -16,6 +16,8 @@ namespace internal_frame {
 using base::not_constructible;
 using base::not_null;
 
+// The enumerators of |FrameMotion| are ordered from most restrictive to least
+// restrictive; m1 <= m2 means that m1 satisfies the requirements of m2.
 enum FrameMotion {
   Inertial,
   NonRotating,

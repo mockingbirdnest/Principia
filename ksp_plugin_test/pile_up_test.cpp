@@ -165,12 +165,11 @@ class PileUpTest : public testing::Test {
     //   {1 / 9, -1 / 3, -2 / 9} {10 / 9, -10 / 3, -20 / 9}
     DegreesOfFreedom<Apparent> const p1_dof(
         Apparent::origin +
-            Displacement<Apparent>({-11.0 / 3.0 * Metre,
-                                          -1.0 * Metre,
-                                          2.0 / 3.0 * Metre}),
+            Displacement<Apparent>(
+                {-11.0 / 3.0 * Metre, -1.0 * Metre, 2.0 / 3.0 * Metre}),
         Velocity<Apparent>({-110.0 / 3.0 * Metre / Second,
-                                  -10.0 * Metre / Second,
-                                  20.0 / 3.0 * Metre / Second}));
+                            -10.0 * Metre / Second,
+                            20.0 / 3.0 * Metre / Second}));
     DegreesOfFreedom<Apparent> const p2_dof(
         Apparent::origin +
             Displacement<Apparent>({2.0 * Metre,
