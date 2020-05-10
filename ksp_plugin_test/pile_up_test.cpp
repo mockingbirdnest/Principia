@@ -383,6 +383,64 @@ TEST_F(PileUpTest, AngularMomentum) {
                       AlmostEquals(L_actual.coordinates().z, 0)));
 
   }
+  {
+    InertiaTensor<Vessel> const vessel_inertia_tensor(
+        si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
+                                                       {0, 2, 0},
+                                                       {0, 0, 4}));
+    AngularVelocity<ApparentBubble> const vessel_angular_velocity(
+        {0.02 * Radian / Second,
+         0.005 * Radian / Second,
+         0.4975 * Radian / Second});
+    Bivector<AngularMomentum, NonRotatingPileUp> const L_actual(
+        {0 * si::Unit<AngularMomentum>,
+         0 * si::Unit<AngularMomentum>,
+         2 * si::Unit<AngularMomentum>});
+    CheckAngularMomentumCorrection(
+        vessel_inertia_tensor,
+        vessel_angular_velocity,
+        L_actual,
+        /*L_apparent_matcher=*/
+        AlmostEquals(Bivector<AngularMomentum, ApparentPileUp>(
+                         {0.02 * si::Unit<AngularMomentum>,
+                          0.01 * si::Unit<AngularMomentum>,
+                          1.99 * si::Unit<AngularMomentum>}),
+                     1),
+        /*L_corrected_matcher=*/
+        Componentwise(VanishesBefore(L_actual.Norm(), 0),
+                      VanishesBefore(L_actual.Norm(), 0),
+                      AlmostEquals(L_actual.coordinates().z, 1)));
+
+  }
+  {
+    InertiaTensor<Vessel> const vessel_inertia_tensor(
+        si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
+                                                       {0, 2, 0},
+                                                       {0, 0, 4}));
+    AngularVelocity<ApparentBubble> const vessel_angular_velocity(
+        {3.1 * Radian / Second,
+         0.45 * Radian / Second,
+         1.275 * Radian / Second});
+    Bivector<AngularMomentum, NonRotatingPileUp> const L_actual(
+        {3 * si::Unit<AngularMomentum>,
+         1 * si::Unit<AngularMomentum>,
+         5 * si::Unit<AngularMomentum>});
+    CheckAngularMomentumCorrection(
+        vessel_inertia_tensor,
+        vessel_angular_velocity,
+        L_actual,
+        /*L_apparent_matcher=*/
+        AlmostEquals(Bivector<AngularMomentum, ApparentPileUp>(
+                         {3.1 * si::Unit<AngularMomentum>,
+                          0.9 * si::Unit<AngularMomentum>,
+                          5.1 * si::Unit<AngularMomentum>}),
+                     1),
+        /*L_corrected_matcher=*/
+        Componentwise(AlmostEquals(L_actual.coordinates().x, 2),
+                      AlmostEquals(L_actual.coordinates().y, 2),
+                      AlmostEquals(L_actual.coordinates().z, 2)));
+
+  }
 }
 
 // Exercises the entire lifecycle of a |PileUp| that is subject to an intrinsic
