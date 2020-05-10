@@ -254,7 +254,7 @@ class PileUpTest : public testing::Test {
 
   void CheckAngularMomentumCorrection(
       InertiaTensor<Vessel> const& vessel_inertia_tensor,
-      AngularVelocity<ApparentBubble> const& vessel_angular_velocity,
+      AngularVelocity<Apparent> const& vessel_angular_velocity,
       Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,
       Matcher<Bivector<AngularMomentum, ApparentPileUp>> const&
           L_apparent_matcher,
@@ -262,11 +262,11 @@ class PileUpTest : public testing::Test {
           L_corrected_matcher) {
     // Prepare the motion and inertia of a vessel that yields the L_apparent
     // that we want to exercise.
-    RigidMotion<Vessel, ApparentBubble> const apparent_vessel_rigid_motion(
-        RigidTransformation<Vessel, ApparentBubble>::Identity(),
+    RigidMotion<Vessel, Apparent> const apparent_vessel_rigid_motion(
+        RigidTransformation<Vessel, Apparent>::Identity(),
         vessel_angular_velocity,
-        Velocity<ApparentBubble>());
-    MechanicalSystem<ApparentBubble, ApparentPileUp> apparent_system;
+        Velocity<Apparent>());
+    MechanicalSystem<Apparent, ApparentPileUp> apparent_system;
     apparent_system.AddRigidBody(apparent_vessel_rigid_motion,
                                  /*mass=*/1 * Kilogram,
                                  vessel_inertia_tensor);
@@ -328,7 +328,7 @@ TEST_F(PileUpTest, AngularMomentum) {
         si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
                                                        {0, 1, 0},
                                                        {0, 0, 2}));
-    AngularVelocity<ApparentBubble> const vessel_angular_velocity(
+    AngularVelocity<Apparent> const vessel_angular_velocity(
         {0.2 * Radian / Second,
          0.1 * Radian / Second,
          0.95 * Radian / Second});
@@ -356,7 +356,7 @@ TEST_F(PileUpTest, AngularMomentum) {
         si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
                                                        {0, 2, 0},
                                                        {0, 0, 4}));
-    AngularVelocity<ApparentBubble> const vessel_angular_velocity(
+    AngularVelocity<Apparent> const vessel_angular_velocity(
         {0.2 * Radian / Second,
          0.05 * Radian / Second,
          0.475 * Radian / Second});
@@ -384,7 +384,7 @@ TEST_F(PileUpTest, AngularMomentum) {
         si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
                                                        {0, 2, 0},
                                                        {0, 0, 4}));
-    AngularVelocity<ApparentBubble> const vessel_angular_velocity(
+    AngularVelocity<Apparent> const vessel_angular_velocity(
         {0.02 * Radian / Second,
          0.005 * Radian / Second,
          0.4975 * Radian / Second});
@@ -412,7 +412,7 @@ TEST_F(PileUpTest, AngularMomentum) {
         si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
                                                        {0, 2, 0},
                                                        {0, 0, 4}));
-    AngularVelocity<ApparentBubble> const vessel_angular_velocity(
+    AngularVelocity<Apparent> const vessel_angular_velocity(
         {3.1 * Radian / Second,
          0.45 * Radian / Second,
          1.275 * Radian / Second});
