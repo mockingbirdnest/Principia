@@ -134,28 +134,28 @@ std::string ToMathematica(It const begin, It const end,
 }
 
 template<typename OptionalExpressIn>
-std::string ToMathematica(bool const b, OptionalExpressIn express_in) {
+std::string ToMathematica(bool const b, OptionalExpressIn /*express_in*/) {
   return b ? "True" : "False";
 }
 
-template<typename OptionalExpressIn>
-std::string ToMathematica(std::uint32_t const i, OptionalExpressIn express_in) {
-  return std::to_string(i);
+template<typename T, typename, typename OptionalExpressIn>
+std::string ToMathematica(T const t, OptionalExpressIn /*express_in*/) {
+  return std::to_string(t);
 }
 
-template<typename OptionalExpressIn>
-std::string ToMathematica(double const real,
+template<typename T, typename, typename OptionalExpressIn, typename>
+std::string ToMathematica(T const t,
                           OptionalExpressIn /*express_in*/) {
-  if (std::isinf(real)) {
-    if (real > 0.0) {
+  if (std::isinf(t)) {
+    if (t > 0.0) {
       return "Infinity";
     } else {
       return Apply("Minus", {"Infinity"});
     }
-  } else if (std::isnan(real)) {
+  } else if (std::isnan(t)) {
     return "Indeterminate";
   } else {
-    std::string s = DebugString(real);
+    std::string s = DebugString(t);
     s.replace(s.find("e"), 1, "*^");
     return Apply("SetPrecision", {s, "$MachinePrecision"});
   }
@@ -277,6 +277,12 @@ std::string ToMathematica(std::optional<T> const& opt,
     value.push_back(opt.value());
   }
   return ToMathematica(value, express_in);
+}
+
+template<typename OptionalExpressIn>
+std::string ToMathematica(char const* const str,
+                          OptionalExpressIn /*express_in*/) {
+  return std::string(str);
 }
 
 template<typename OptionalExpressIn>
