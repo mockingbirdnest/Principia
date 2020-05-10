@@ -111,7 +111,20 @@ std::string ToMathematica(It begin, It end,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(double real,
+std::string ToMathematica(bool b,
+                          OptionalExpressIn express_in = std::nullopt);
+
+template<typename T,
+         typename = std::enable_if_t<std::is_integral_v<T>>,
+         typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(T integer,
+                          OptionalExpressIn express_in = std::nullopt);
+
+template<typename T,
+         typename = std::enable_if_t<std::is_floating_point_v<T>>,
+         typename OptionalExpressIn = std::nullopt_t,
+         typename = void>
+std::string ToMathematica(T real,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename T, int size, typename OptionalExpressIn = std::nullopt_t>
@@ -168,7 +181,14 @@ std::string ToMathematica(
     astronomy::OrbitalElements::EquinoctialElements const& elements,
     OptionalExpressIn express_in = std::nullopt);
 
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(std::optional<T> const& opt,
+                          OptionalExpressIn express_in = std::nullopt);
+
 // Returns its argument.
+template<typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(char const* str,
+                          OptionalExpressIn express_in = std::nullopt);
 template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::string const& str,
                           OptionalExpressIn express_in = std::nullopt);

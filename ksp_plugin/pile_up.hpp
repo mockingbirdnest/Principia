@@ -59,7 +59,14 @@ using physics::RigidMotion;
 using quantities::AngularMomentum;
 using quantities::Force;
 using quantities::Mass;
+using quantities::Time;
 using quantities::Torque;
+
+// The axes are those of Barycentric. The origin is the centre of mass of the
+// pile up.  This frame is distinguished from NonRotatingPileUp in that it is
+// used to hold uncorrected (apparent) coordinates given by the game, before
+// the enforcement of conservation laws; see also Apparent.
+using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
 
 // The origin of |NonRotatingPileUp| is the centre of mass of the pile up.
 // Its axes are those of |Barycentric|. It is used to describe the rotational
@@ -145,12 +152,6 @@ class PileUp {
   using AppendToPartTrajectory =
       void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
 
-  // The axes are those of Barycentric. The origin is the centre of mass of the
-  // pile up.  This frame is distinguished from NonRotatingPileUp in that it is
-  // used to hold uncorrected (apparent) coordinates given by the game, before
-  // the enforcement of conservation laws; see also Apparent.
-  using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
-
   // For deserialization.
   PileUp(
       std::list<not_null<Part*>>&& parts,
@@ -188,6 +189,16 @@ class PileUp {
 
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
+
+  // Computes a rigid motion that adjusts the pile-up to make L_apparent match
+  // L_actual.
+  static RigidMotion<ApparentPileUp, NonRotatingPileUp>
+  ComputeAngularMomentumCorrection(
+      Time const& Δt,
+      Bivector<AngularMomentum, ApparentPileUp> const& L_apparent,
+      Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,
+      InertiaTensor<ApparentPileUp> const& inertia_tensor,
+      std::string& trace);
 
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;

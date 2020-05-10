@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/status.hpp"
@@ -11,6 +12,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -25,6 +27,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -33,10 +36,13 @@ namespace internal_pile_up {
 using base::check_not_null;
 using base::make_not_null_unique;
 using base::Status;
+using geometry::AngularVelocity;
 using geometry::Displacement;
+using geometry::NonRotating;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::R3x3Matrix;
+using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
 using integrators::MockFixedStepSizeIntegrator;
@@ -58,19 +64,23 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Micro;
 using quantities::si::Newton;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
+using testing_utilities::VanishesBefore;
 using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::IsEmpty;
+using ::testing::Matcher;
 using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
+namespace si = quantities::si;
 
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
@@ -79,6 +89,7 @@ class TestablePileUp : public PileUp {
   using PileUp::DeformPileUpIfNeeded;
   using PileUp::AdvanceTime;
   using PileUp::NudgeParts;
+  using PileUp::ComputeAngularMomentumCorrection;
 
   Mass const& mass() const {
     return mass_;
@@ -105,6 +116,9 @@ class TestablePileUp : public PileUp {
 
 class PileUpTest : public testing::Test {
  protected:
+  using CorrectedPileUp = Frame<enum class CorrectedPileUpTag, NonRotating>;
+  using Vessel = Frame<enum class VesselTag>;
+
   PileUpTest()
       : inertia_tensor1_(MakeWaterSphereInertiaTensor(mass1_)),
         inertia_tensor2_(MakeWaterSphereInertiaTensor(mass2_)),
@@ -239,6 +253,50 @@ class PileUpTest : public testing::Test {
     EXPECT_THAT(pile_up.apparent_part_rigid_motion(), IsEmpty());
   }
 
+  void CheckAngularMomentumCorrection(
+      InertiaTensor<Vessel> const& vessel_inertia_tensor,
+      AngularVelocity<Apparent> const& vessel_angular_velocity,
+      Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,
+      Matcher<Bivector<AngularMomentum, ApparentPileUp>> const&
+          L_apparent_matcher,
+      Matcher<Bivector<AngularMomentum, CorrectedPileUp>> const&
+          L_corrected_matcher) {
+    // Prepare the motion and inertia of a vessel that yields the L_apparent
+    // that we want to exercise.
+    RigidMotion<Vessel, Apparent> const apparent_vessel_rigid_motion(
+        RigidTransformation<Vessel, Apparent>::Identity(),
+        vessel_angular_velocity,
+        Velocity<Apparent>());
+    MechanicalSystem<Apparent, ApparentPileUp> apparent_system;
+    apparent_system.AddRigidBody(apparent_vessel_rigid_motion,
+                                 /*mass=*/1 * Kilogram,
+                                 vessel_inertia_tensor);
+
+    Bivector<AngularMomentum, ApparentPileUp> const L_apparent =
+        apparent_system.AngularMomentum();
+    EXPECT_THAT(L_apparent, L_apparent_matcher);
+    InertiaTensor<ApparentPileUp> const inertia_tensor =
+        apparent_system.InertiaTensor();
+
+    std::string trace;
+    RigidMotion<ApparentPileUp, NonRotatingPileUp> const correction =
+        TestablePileUp::ComputeAngularMomentumCorrection(
+            /*Δt=*/0.02 * Second, L_apparent, L_actual, inertia_tensor, trace);
+    LOG(ERROR) << trace;
+
+    using CorrectedPileUp = Frame<enum class CorrectedPileUpTag, NonRotating>;
+    MechanicalSystem<NonRotatingPileUp, CorrectedPileUp> corrected_system;
+    RigidMotion<Vessel, NonRotatingPileUp> const corrected_vessel_rigid_motion =
+        correction * apparent_system.LinearMotion().Inverse() *
+        apparent_vessel_rigid_motion;
+    corrected_system.AddRigidBody(corrected_vessel_rigid_motion,
+                                  /*mass=*/1 * Kilogram,
+                                  vessel_inertia_tensor);
+    Bivector<AngularMomentum, CorrectedPileUp> const L_corrected =
+        corrected_system.AngularMomentum();
+    EXPECT_THAT(L_corrected, L_corrected_matcher);
+  }
+
   MockFunction<void()> deletion_callback_;
 
   PartId const part_id1_ = 111;
@@ -264,6 +322,121 @@ class PileUpTest : public testing::Test {
   Part p1_;
   Part p2_;
 };
+
+TEST_F(PileUpTest, AngularMomentum) {
+  {
+    InertiaTensor<Vessel> const vessel_inertia_tensor(
+        si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
+                                                       {0, 1, 0},
+                                                       {0, 0, 2}));
+    AngularVelocity<Apparent> const vessel_angular_velocity(
+        {0.2 * Radian / Second,
+         0.1 * Radian / Second,
+         0.95 * Radian / Second});
+    Bivector<AngularMomentum, NonRotatingPileUp> const L_actual(
+        {0 * si::Unit<AngularMomentum>,
+         0 * si::Unit<AngularMomentum>,
+         2 * si::Unit<AngularMomentum>});
+    CheckAngularMomentumCorrection(
+        vessel_inertia_tensor,
+        vessel_angular_velocity,
+        L_actual,
+        /*L_apparent_matcher=*/
+        AlmostEquals(Bivector<AngularMomentum, ApparentPileUp>(
+                         {0.2 * si::Unit<AngularMomentum>,
+                          0.1 * si::Unit<AngularMomentum>,
+                          1.9 * si::Unit<AngularMomentum>}),
+                     0),
+        /*L_corrected_matcher=*/
+        Componentwise(AlmostEquals(L_actual.coordinates().x, 0),
+                      VanishesBefore(L_actual.Norm(), 0),
+                      AlmostEquals(L_actual.coordinates().z, 0)));
+  }
+  {
+    InertiaTensor<Vessel> const vessel_inertia_tensor(
+        si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
+                                                       {0, 2, 0},
+                                                       {0, 0, 4}));
+    AngularVelocity<Apparent> const vessel_angular_velocity(
+        {0.2 * Radian / Second,
+         0.05 * Radian / Second,
+         0.475 * Radian / Second});
+    Bivector<AngularMomentum, NonRotatingPileUp> const L_actual(
+        {0 * si::Unit<AngularMomentum>,
+         0 * si::Unit<AngularMomentum>,
+         2 * si::Unit<AngularMomentum>});
+    CheckAngularMomentumCorrection(
+        vessel_inertia_tensor,
+        vessel_angular_velocity,
+        L_actual,
+        /*L_apparent_matcher=*/
+        AlmostEquals(Bivector<AngularMomentum, ApparentPileUp>(
+                         {0.2 * si::Unit<AngularMomentum>,
+                          0.1 * si::Unit<AngularMomentum>,
+                          1.9 * si::Unit<AngularMomentum>}),
+                     2),
+        /*L_corrected_matcher=*/
+        Componentwise(VanishesBefore(L_actual.Norm(), 0),
+                      VanishesBefore(L_actual.Norm(), 0),
+                      AlmostEquals(L_actual.coordinates().z, 0)));
+  }
+  {
+    InertiaTensor<Vessel> const vessel_inertia_tensor(
+        si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
+                                                       {0, 2, 0},
+                                                       {0, 0, 4}));
+    AngularVelocity<Apparent> const vessel_angular_velocity(
+        {0.02 * Radian / Second,
+         0.005 * Radian / Second,
+         0.4975 * Radian / Second});
+    Bivector<AngularMomentum, NonRotatingPileUp> const L_actual(
+        {0 * si::Unit<AngularMomentum>,
+         0 * si::Unit<AngularMomentum>,
+         2 * si::Unit<AngularMomentum>});
+    CheckAngularMomentumCorrection(
+        vessel_inertia_tensor,
+        vessel_angular_velocity,
+        L_actual,
+        /*L_apparent_matcher=*/
+        AlmostEquals(Bivector<AngularMomentum, ApparentPileUp>(
+                         {0.02 * si::Unit<AngularMomentum>,
+                          0.01 * si::Unit<AngularMomentum>,
+                          1.99 * si::Unit<AngularMomentum>}),
+                     1),
+        /*L_corrected_matcher=*/
+        Componentwise(VanishesBefore(L_actual.Norm(), 0),
+                      VanishesBefore(L_actual.Norm(), 0),
+                      AlmostEquals(L_actual.coordinates().z, 1)));
+  }
+  {
+    InertiaTensor<Vessel> const vessel_inertia_tensor(
+        si::Unit<MomentOfInertia> * R3x3Matrix<double>({1, 0, 0},
+                                                       {0, 2, 0},
+                                                       {0, 0, 4}));
+    AngularVelocity<Apparent> const vessel_angular_velocity(
+        {3.1 * Radian / Second,
+         0.45 * Radian / Second,
+         1.275 * Radian / Second});
+    Bivector<AngularMomentum, NonRotatingPileUp> const L_actual(
+        {3 * si::Unit<AngularMomentum>,
+         1 * si::Unit<AngularMomentum>,
+         5 * si::Unit<AngularMomentum>});
+    CheckAngularMomentumCorrection(
+        vessel_inertia_tensor,
+        vessel_angular_velocity,
+        L_actual,
+        /*L_apparent_matcher=*/
+        AlmostEquals(Bivector<AngularMomentum, ApparentPileUp>(
+                         {3.1 * si::Unit<AngularMomentum>,
+                          0.9 * si::Unit<AngularMomentum>,
+                          5.1 * si::Unit<AngularMomentum>}),
+                     1),
+        /*L_corrected_matcher=*/
+        Componentwise(AlmostEquals(L_actual.coordinates().x, 2),
+                      AlmostEquals(L_actual.coordinates().y, 2),
+                      AlmostEquals(L_actual.coordinates().z, 2)));
+  }
+}
 
 // Exercises the entire lifecycle of a |PileUp| that is subject to an intrinsic
 // force.

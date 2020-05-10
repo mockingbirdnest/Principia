@@ -55,10 +55,10 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ("List[]", ToMathematica(std::vector<int>{}));
   }
   {
-    std::list<int> list;
-    list.push_back(3);
-    list.push_front(2);
-    list.push_back(4);
+    std::list<double> list;
+    list.push_back(3.0);
+    list.push_front(2.0);
+    list.push_back(4.0);
     auto it = list.cbegin();
     ++it;
     ++it;
@@ -68,6 +68,14 @@ TEST_F(MathematicaTest, ToMathematica) {
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]",
         ToMathematica(list.cbegin(), it));
     EXPECT_EQ("List[]", ToMathematica(it, it));
+  }
+  {
+    EXPECT_EQ("True", ToMathematica(true));
+    EXPECT_EQ("False", ToMathematica(false));
+  }
+  {
+    EXPECT_EQ("3", ToMathematica(3));
+    EXPECT_EQ("-2", ToMathematica(-2));
   }
   {
     EXPECT_EQ("SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
@@ -237,6 +245,12 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(elements));
   }
   {
+    std::optional<std::string> opt1;
+    std::optional<std::string> opt2("foo");
+    EXPECT_EQ("List[]", ToMathematica(opt1));
+    EXPECT_EQ("List[foo]", ToMathematica(opt2));
+  }
+  {
     EXPECT_EQ("foo\"bar", ToMathematica("foo\"bar"));
   }
 }
@@ -251,7 +265,7 @@ TEST_F(MathematicaTest, Option) {
       "Rule["
       "option,"
       "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]",
-      Option("option", ToMathematica(3)));
+      Option("option", ToMathematica(3.0)));
 }
 
 TEST_F(MathematicaTest, Assign) {
@@ -259,7 +273,7 @@ TEST_F(MathematicaTest, Assign) {
       "Set["
       "var,"
       "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]];\n",
-      Assign("var", ToMathematica(3)));
+      Assign("var", ToMathematica(3.0)));
 }
 
 TEST_F(MathematicaTest, PlottableDataset) {
@@ -362,7 +376,7 @@ TEST_F(MathematicaTest, ExpressIn) {
 TEST_F(MathematicaTest, Logger) {
   {
     Logger logger(TEMP_DIR / "mathematica_test.wl", /*make_unique=*/true);
-    logger.Append("a", std::vector{1, 2, 3});
+    logger.Append("a", std::vector{1.0, 2.0, 3.0});
     logger.Append("b", 4 * Metre / Second);
     logger.Append("a", F::origin);
   }
