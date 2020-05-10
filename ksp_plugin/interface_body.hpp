@@ -551,8 +551,10 @@ inline RigidMotion<RigidPart, ApparentWorld> MakePartApparentRigidMotion(
     QP const& part_world_degrees_of_freedom,
     WXYZ const& part_rotation,
     XYZ const& part_angular_velocity) {
-  return RigidMotion<World, ApparentWorld>::Identity()(MakePartRigidMotion(
-      part_world_degrees_of_freedom, part_rotation, part_angular_velocity));
+  return RigidMotion<World, ApparentWorld>::Identity() *
+         MakePartRigidMotion(part_world_degrees_of_freedom,
+                             part_rotation,
+                             part_angular_velocity);
 }
 
 }  // namespace interface
