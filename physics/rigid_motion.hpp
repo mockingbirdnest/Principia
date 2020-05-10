@@ -63,9 +63,16 @@ class RigidMotion final {
 
   RigidMotion<ToFrame, FromFrame> Inverse() const;
 
+  // A rigid motion expressing that |FromFrame| and |ToFrame| have the same
+  // axes, origin, and instantaneous motion.
+  // This function is enabled only if both frames have the same handedness (this
+  // is a requirement of OrthogonalMap::Identity) and if the |motion| of
+  // FromFrame is a special case of that of |ToFrame| (see the comments on
+  // |FrameMotion|).
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<std::is_same_v<F, T>>>
+           typename = std::enable_if_t<(F::handedness == T::handedness &&
+                                        F::motion <= T::motion)>>
   static RigidMotion Identity();
 
   // A factory that construct a non-rotating motion using the given degrees of

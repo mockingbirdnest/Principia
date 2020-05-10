@@ -65,7 +65,7 @@ using quantities::Torque;
 // The axes are those of Barycentric. The origin is the centre of mass of the
 // pile up.  This frame is distinguished from NonRotatingPileUp in that it is
 // used to hold uncorrected (apparent) coordinates given by the game, before
-// the enforcement of conservation laws; see also ApparentBubble.
+// the enforcement of conservation laws; see also Apparent.
 using ApparentPileUp = Frame<enum class ApparentPileUpTag, NonRotating>;
 
 // The origin of |NonRotatingPileUp| is the centre of mass of the pile up.
@@ -119,7 +119,7 @@ class PileUp {
   // are doing science.
   void SetPartApparentRigidMotion(
       not_null<Part*> part,
-      RigidMotion<RigidPart, ApparentBubble> const& rigid_motion);
+      RigidMotion<RigidPart, Apparent> const& rigid_motion);
 
   // Deforms the pile-up, advances the time, and nudges the parts, in sequence.
   // Does nothing if the psychohistory is already advanced beyond |t|.  Several
@@ -246,7 +246,7 @@ class PileUp {
       fixed_instance_;
 
   PartTo<RigidMotion<RigidPart, NonRotatingPileUp>> actual_part_rigid_motion_;
-  PartTo<RigidMotion<RigidPart, ApparentBubble>> apparent_part_rigid_motion_;
+  PartTo<RigidMotion<RigidPart, Apparent>> apparent_part_rigid_motion_;
 
   PartTo<RigidTransformation<RigidPart, PileUpPrincipalAxes>> rigid_pile_up_;
   std::optional<EulerSolver<NonRotatingPileUp, PileUpPrincipalAxes>>

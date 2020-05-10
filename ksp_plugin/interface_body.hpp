@@ -545,5 +545,17 @@ inline RigidMotion<RigidPart, World> MakePartRigidMotion(
   return part_rigid_motion;
 }
 
+// Same as |MakePartRigidMotion|, but uses the separate type |ApparentWorld| to
+// avoid mixing uncorrected and corrected data.
+inline RigidMotion<RigidPart, ApparentWorld> MakePartApparentRigidMotion(
+    QP const& part_world_degrees_of_freedom,
+    WXYZ const& part_rotation,
+    XYZ const& part_angular_velocity) {
+  return RigidMotion<World, ApparentWorld>::Identity() *
+         MakePartRigidMotion(part_world_degrees_of_freedom,
+                             part_rotation,
+                             part_angular_velocity);
+}
+
 }  // namespace interface
 }  // namespace principia

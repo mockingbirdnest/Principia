@@ -132,7 +132,7 @@ std::list<not_null<Part*>> const& PileUp::parts() const {
 
 void PileUp::SetPartApparentRigidMotion(
     not_null<Part*> const part,
-    RigidMotion<RigidPart, ApparentBubble> const& rigid_motion) {
+    RigidMotion<RigidPart, Apparent> const& rigid_motion) {
   auto const [_, inserted] =
       apparent_part_rigid_motion_.emplace(part, rigid_motion);
   CHECK(inserted) << "Duplicate part " << part->ShortDebugString() << " at "
@@ -325,9 +325,8 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
          message.apparent_part_degrees_of_freedom()) {
       pile_up->apparent_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
-          RigidMotion<RigidPart, ApparentBubble>::MakeNonRotatingMotion(
-              DegreesOfFreedom<ApparentBubble>::ReadFromMessage(
-                  degrees_of_freedom)));
+          RigidMotion<RigidPart, Apparent>::MakeNonRotatingMotion(
+              DegreesOfFreedom<Apparent>::ReadFromMessage(degrees_of_freedom)));
     }
   } else {
     for (auto const& [part_id, rigid_motion] :
@@ -341,8 +340,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
          message.apparent_part_rigid_motion()) {
       pile_up->apparent_part_rigid_motion_.emplace(
           part_id_to_part(part_id),
-          RigidMotion<RigidPart, ApparentBubble>::ReadFromMessage(
-              rigid_motion));
+          RigidMotion<RigidPart, Apparent>::ReadFromMessage(rigid_motion));
     }
   }
 
@@ -456,7 +454,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   auto const angular_momentum_in_apparent_pile_up =
       Identity<NonRotatingPileUp, ApparentPileUp>()(angular_momentum_);
 
-  MechanicalSystem<ApparentBubble, ApparentPileUp> apparent_system;
+  MechanicalSystem<Apparent, ApparentPileUp> apparent_system;
   for (auto const& [part, apparent_part_rigid_motion] :
        apparent_part_rigid_motion_) {
     apparent_system.AddRigidBody(
