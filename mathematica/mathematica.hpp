@@ -139,7 +139,6 @@ template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R3Element<T> const& r3_element,
                           OptionalExpressIn express_in = std::nullopt);
 
-//TODO(phl):test
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R3x3Matrix<T> const& r3x3_matrix,
                           OptionalExpressIn express_in = std::nullopt);
@@ -168,7 +167,6 @@ template<typename V, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Point<V> const& point,
                           OptionalExpressIn express_in = std::nullopt);
 
-//TODO(phl):test
 template<typename S,
          typename F,
          template<typename, typename> typename M,
