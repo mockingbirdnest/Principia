@@ -284,7 +284,6 @@ class PileUpTest : public testing::Test {
             /*Δt=*/0.02 * Second, L_apparent, L_actual, inertia_tensor, trace);
     LOG(ERROR) << trace;
 
-    using CorrectedPileUp = Frame<enum class CorrectedPileUpTag, NonRotating>;
     MechanicalSystem<NonRotatingPileUp, CorrectedPileUp> corrected_system;
     RigidMotion<Vessel, NonRotatingPileUp> const corrected_vessel_rigid_motion =
         correction * apparent_system.LinearMotion().Inverse() *
