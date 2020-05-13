@@ -190,16 +190,6 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
-  // Computes a rigid motion that adjusts the pile-up to make L_apparent match
-  // L_actual.
-  static RigidMotion<ApparentPileUp, NonRotatingPileUp>
-  ComputeAngularMomentumCorrection(
-      Time const& Δt,
-      Bivector<AngularMomentum, ApparentPileUp> const& L_apparent,
-      Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,
-      InertiaTensor<ApparentPileUp> const& inertia_tensor,
-      std::string& trace);
-
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
 
