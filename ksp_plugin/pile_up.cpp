@@ -424,11 +424,15 @@ void PileUp::AdvanceEulerSolver(Instant t) {
   // TODO(egg): We integrate the |angular_momentum_change_| resulting from
   // changes in mass, but we do not take into account the change in inertia
   // tensor here.
-  auto const effective_torque_ =
+  auto const effective_torque =
       intrinsic_torque_ + angular_momentum_change_ / Δt;
-  if (effective_torque_ == Bivector<Torque, NonRotatingPileUp>{}) {
+  if (effective_torque == Bivector<Torque, NonRotatingPileUp>{}) {
     return;
   }
+  Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const initial_attitude =
+      euler_solver_->AttitudeAt(euler_solver_->AngularMomentumAt(t0), t0);
+  Bivector<Torque, PileUpPrincipalAxes> effective_torque_in_principal_axes =
+      initial_attitude.Inverse()(effective_torque);
   // A hundred steps of NewtonDelambreStørmerVerletLeapfrog at 50 Hz, more in
   // physics warp.
   // TODO(egg): integrators for |DecomposableFirstOrderDifferentialEquation|.
@@ -444,7 +448,10 @@ void PileUp::AdvanceEulerSolver(Instant t) {
     attitude_at_first_stage = Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
         attitude_at_first_stage.quaternion() /
         attitude_at_first_stage.quaternion().Norm());
-    angular_momentum_ += effective_torque_ * h;
+    angular_momentum_ +=
+        body_fixed_forces
+            ? attitude_at_first_stage(effective_torque_in_principal_axes * h)
+            : effective_torque * h;
     euler_solver_.emplace(euler_solver_->moments_of_inertia(),
                           angular_momentum_,
                           attitude_at_first_stage,
@@ -533,9 +540,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     }
   }
 
-  Rotation<ApparentPileUp, NonRotatingPileUp> const attitude_correction =
-      actual_attitude * *apparent_attitude;
-
   // The angular velocity of a rigid body with the inertia and angular momentum
   // of the apparent parts.
   auto const apparent_equivalent_angular_velocity =
@@ -549,8 +553,13 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
               apparent_attitude->Forget<OrthogonalMap>()),
           apparent_equivalent_angular_velocity,
           ApparentPileUp::unmoving);
+  RigidMotion<ApparentPileUp, NonRotatingPileUp> const
+      apparent_to_pile_up_rotational_motion =
+          conserve_angular_momentum
+              ? RigidMotion<ApparentPileUp, NonRotatingPileUp>::Identity()
+              : pile_up_actual_motion * apparent_pile_up_motion;
   RigidMotion<Apparent, NonRotatingPileUp> const apparent_to_pile_up_motion =
-      pile_up_actual_motion * apparent_pile_up_motion *
+      apparent_to_pile_up_rotational_motion *
       apparent_system.LinearMotion().Inverse();
 
   // Now update the motions of the parts in the pile-up frame.
@@ -602,7 +611,9 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   trace = s.str();
 
   // This is what takes the change in moment of inertia into account.
-  MakeEulerSolver(attitude_correction(apparent_inertia_tensor), t);
+  MakeEulerSolver(apparent_to_pile_up_rotational_motion.orthogonal_map()(
+                      apparent_inertia_tensor),
+                  t);
 }
 
 Status PileUp::AdvanceTime(Instant const& t) {
@@ -727,9 +738,9 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
     : pile_up(pile_up),
       future(std::move(future)) {}
 
-bool PileUp::correct_orientation = true;
-bool PileUp::correct_angular_velocity = true;
-bool PileUp::thresholding = false;
+bool PileUp::conserve_angular_momentum = true;
+bool PileUp::body_fixed_forces = true;
+bool PileUp::inertially_fixed_forces = false;
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin

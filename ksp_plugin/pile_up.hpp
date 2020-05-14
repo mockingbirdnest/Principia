@@ -104,9 +104,9 @@ class PileUp {
   virtual ~PileUp();
 
   std::string trace;
-  static bool correct_orientation;
-  static bool correct_angular_velocity;
-  static bool thresholding;
+  static bool conserve_angular_momentum;
+  static bool body_fixed_forces;
+  static bool inertially_fixed_forces;
 
   // This class is moveable.
   PileUp(PileUp&& pile_up) = default;
