@@ -16,6 +16,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
+#include "mathematica/mathematica.hpp"
 #include "numerics/pid.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -201,6 +202,7 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
+
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
 
@@ -262,6 +264,8 @@ class PileUp {
       Bivector<AngularMomentum, ApparentPileUp>,
       /*horizon=*/25,
       /*finite_difference_order=*/5> apparent_angular_momentum_controller_;
+
+  mathematica::Logger logger_;
 
   friend class TestablePileUp;
 };

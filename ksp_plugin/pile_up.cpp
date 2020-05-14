@@ -99,7 +99,8 @@ PileUp::PileUp(
       deletion_callback_(std::move(deletion_callback)),
       apparent_angular_momentum_controller_(GetPIDFlagOr("kp", kp_default),
                                             GetPIDFlagOr("ki", ki_default),
-                                            GetPIDFlagOr("kd", kd_default)) {
+                                            GetPIDFlagOr("kd", kd_default)),
+      logger_(SOLUTION_DIR / "mathematica" / "pile_up", true) {
   LOG(INFO) << "Constructing pile up at " << this;
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
   for (not_null<Part*> const part : parts_) {
@@ -395,7 +396,8 @@ PileUp::PileUp(
       deletion_callback_(std::move(deletion_callback)),
       apparent_angular_momentum_controller_(GetPIDFlagOr("kp", kp_default),
                                             GetPIDFlagOr("ki", ki_default),
-                                            GetPIDFlagOr("kd", kd_default)) {}
+                                            GetPIDFlagOr("kd", kd_default)),
+      logger_(SOLUTION_DIR / "mathematica" / "pile_up", true) {}
 
 void PileUp::MakeEulerSolver(
     InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
@@ -598,6 +600,16 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
 
   AngularVelocity<NonRotatingPileUp> const ω_actual =
       pile_up_actual_motion.Inverse().angular_velocity_of_to_frame();
+      
+  logger_.Append("conserveAngularMomentum", conserve_angular_momentum);
+  logger_.Append("bodyFixedForces", body_fixed_forces);
+  logger_.Append("inertiallyFixedForces", inertially_fixed_forces);
+  logger_.Append("precalculatedTorque", precalculated_torque);
+  logger_.Append("instantInitialForces", instant_initial_forces);
+  logger_.Append(
+      "angularVelocity",
+      ω_actual,
+      mathematica::ExpressIn(2 * π * Radian, quantities::si::Minute));
 
   std::stringstream s;
   s << "|Lap|: " << apparent_angular_momentum.Norm() << "\n"
