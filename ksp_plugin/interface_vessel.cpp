@@ -194,12 +194,16 @@ XYZ __cdecl principia__VesselVelocity(Plugin const* const plugin,
 void __cdecl principia__SetAngularMomentumConservation(
     bool const conserve_angular_momentum,
     bool const body_fixed_forces,
-    bool const inertially_fixed_forces) {
+    bool const inertially_fixed_forces,
+    bool const precalculated_torque,
+    bool const instant_initial_forces) {
   journal::Method<journal::SetAngularMomentumConservation> m(
       {conserve_angular_momentum, body_fixed_forces, inertially_fixed_forces});
   ksp_plugin::PileUp::conserve_angular_momentum = conserve_angular_momentum;
   ksp_plugin::PileUp::body_fixed_forces = body_fixed_forces;
   ksp_plugin::PileUp::inertially_fixed_forces = inertially_fixed_forces;
+  ksp_plugin::PileUp::precalculated_torque = precalculated_torque;
+  ksp_plugin::PileUp::instant_initial_forces = instant_initial_forces;
   return m.Return();
 }
 

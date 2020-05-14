@@ -107,6 +107,8 @@ class PileUp {
   static bool conserve_angular_momentum;
   static bool body_fixed_forces;
   static bool inertially_fixed_forces;
+  static bool precalculated_torque;
+  static bool instant_initial_forces;
 
   // This class is moveable.
   PileUp(PileUp&& pile_up) = default;

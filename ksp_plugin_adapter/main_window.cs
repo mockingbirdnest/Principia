@@ -243,17 +243,43 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       conserve_angular_momentum = UnityEngine.GUILayout.Toggle(
           conserve_angular_momentum,
           "Conserve angular momentum");
-      body_fixed_forces = UnityEngine.GUILayout.Toggle(
+      bool new_body_fixed_forces = UnityEngine.GUILayout.Toggle(
           body_fixed_forces,
           "Body-fixed forces");
-      inertially_fixed_forces = UnityEngine.GUILayout.Toggle(
+      bool new_inertially_fixed_forces = UnityEngine.GUILayout.Toggle(
           inertially_fixed_forces,
-          "Inertially-fixed forces");
-      if (body_fixed_forces) {
-        inertially_fixed_forces = false;
+          "Nonrotating forces on body-fixed application points");
+      bool new_precalculated_torque = UnityEngine.GUILayout.Toggle(
+          precalculated_torque,
+          "Nonrotating forces on nonrotating application points");
+      bool new_instant_initial_forces = UnityEngine.GUILayout.Toggle(
+          instant_initial_forces,
+          "Instant initial forces");
+      Action clear_all = () => {
+          body_fixed_forces = false;
+          inertially_fixed_forces = false;
+          precalculated_torque = false;
+          instant_initial_forces = false;
+      };
+      if (new_body_fixed_forces && !body_fixed_forces) {
+        clear_all();
+        body_fixed_forces = true;
+      } else if (new_inertially_fixed_forces && !inertially_fixed_forces) {
+        clear_all();
+        inertially_fixed_forces = true;
+      } else if (new_precalculated_torque && !precalculated_torque) {
+        clear_all();
+        precalculated_torque = true;
+      } else if (new_instant_initial_forces && !instant_initial_forces) {
+        clear_all();
+        instant_initial_forces = true;
       }
       Interface.SetAngularMomentumConservation(
-          conserve_angular_momentum, body_fixed_forces, inertially_fixed_forces);
+          conserve_angular_momentum,
+          body_fixed_forces,
+          inertially_fixed_forces,
+          precalculated_torque,
+          instant_initial_forces);
       string trace = null;
       if (FlightGlobals.ActiveVessel != null &&
           plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
@@ -521,7 +547,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   // behaviour.
   private static bool conserve_angular_momentum = true;
   private static bool body_fixed_forces = false;
-  private static bool inertially_fixed_forces = true;
+  private static bool inertially_fixed_forces = false;
+  private static bool precalculated_torque = false;
+  private static bool instant_initial_forces = true;
   private static readonly bool show_2519_debugging_ui = true;
 
   private static readonly double[] prediction_length_tolerances_ =

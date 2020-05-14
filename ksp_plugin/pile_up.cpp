@@ -431,45 +431,55 @@ void PileUp::AdvanceEulerSolver(Instant t) {
   }
   Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const initial_attitude =
       euler_solver_->AttitudeAt(euler_solver_->AngularMomentumAt(t0), t0);
-  Bivector<Torque, PileUpPrincipalAxes> effective_torque_in_principal_axes =
-      initial_attitude.Inverse()(effective_torque);
-  // A hundred steps of NewtonDelambreStørmerVerletLeapfrog at 50 Hz, more in
-  // physics warp.
-  // TODO(egg): integrators for |DecomposableFirstOrderDifferentialEquation|.
-  int const n = std::round(Δt / (200 * quantities::si::Micro(Second)));
-  Time const h = Δt / n;
-  for (auto [i, ti] = std::pair{0, t0}; i < n; ++i, ti = t0 + i * h) {
-    Rotation<PileUpPrincipalAxes, NonRotatingPileUp> attitude_at_first_stage =
-        euler_solver_->AttitudeAt(euler_solver_->AngularMomentumAt(ti + h / 2),
-                                  ti + h / 2);
-    // TODO(phl): It seems that the solver doesn’t always provide normalized
-    // quaternions; this adds up over the stages and causes the rocket to blow
-    // up.
-    attitude_at_first_stage = Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
-        attitude_at_first_stage.quaternion() /
-        attitude_at_first_stage.quaternion().Norm());
-    if (inertially_fixed_forces) {
-      for (not_null<Part*> const part : parts_) {
-        angular_momentum_ +=
-            h * (Wedge(attitude_at_first_stage(
-                           rigid_pile_up_.at(part)(RigidPart::origin) -
-                           PileUpPrincipalAxes::origin),
-                       Identity<Barycentric, NonRotatingPileUp>()(
-                           part->intrinsic_force())) *
-                     Radian +
-                 Identity<Barycentric, NonRotatingPileUp>()(
-                     part->intrinsic_torque()));
-      }
-    } else {
-      angular_momentum_ +=
-          body_fixed_forces
-              ? attitude_at_first_stage(effective_torque_in_principal_axes * h)
-              : effective_torque * h;
-    }
+  if (instant_initial_forces) {
+    angular_momentum_ += intrinsic_torque_ * Δt + angular_momentum_change_;
     euler_solver_.emplace(euler_solver_->moments_of_inertia(),
                           angular_momentum_,
-                          attitude_at_first_stage,
-                          ti + h / 2);
+                          initial_attitude,
+                          t0);
+  } else {
+    Bivector<Torque, PileUpPrincipalAxes> effective_torque_in_principal_axes =
+        initial_attitude.Inverse()(effective_torque);
+    // A hundred steps of NewtonDelambreStørmerVerletLeapfrog at 50 Hz, more in
+    // physics warp.  This is overkill, but it makes sure we are integrating
+    // correctly for all practical purposes.
+    // TODO(egg): integrators for |DecomposableFirstOrderDifferentialEquation|.
+    int const n = std::round(Δt / (200 * quantities::si::Micro(Second)));
+    Time const h = Δt / n;
+    for (auto [i, ti] = std::pair{0, t0}; i < n; ++i, ti = t0 + i * h) {
+      Rotation<PileUpPrincipalAxes, NonRotatingPileUp> attitude_at_first_stage =
+          euler_solver_->AttitudeAt(
+              euler_solver_->AngularMomentumAt(ti + h / 2), ti + h / 2);
+      // TODO(phl): It seems that the solver doesn’t always provide normalized
+      // quaternions; this adds up over the steps and causes the rocket to blow
+      // up.
+      attitude_at_first_stage =
+          Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
+              attitude_at_first_stage.quaternion() /
+              attitude_at_first_stage.quaternion().Norm());
+      if (inertially_fixed_forces) {
+        for (not_null<Part*> const part : parts_) {
+          angular_momentum_ +=
+              h * (Wedge(attitude_at_first_stage(
+                             rigid_pile_up_.at(part)(RigidPart::origin) -
+                             PileUpPrincipalAxes::origin),
+                         Identity<Barycentric, NonRotatingPileUp>()(
+                             part->intrinsic_force())) *
+                       Radian +
+                   Identity<Barycentric, NonRotatingPileUp>()(
+                       part->intrinsic_torque()));
+        }
+      } else {
+        angular_momentum_ += body_fixed_forces
+                                 ? attitude_at_first_stage(
+                                       effective_torque_in_principal_axes * h)
+                                 : effective_torque * h;
+      }
+      euler_solver_.emplace(euler_solver_->moments_of_inertia(),
+                            angular_momentum_,
+                            attitude_at_first_stage,
+                            ti + h / 2);
+    }
   }
 }
 
@@ -754,7 +764,9 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
 
 bool PileUp::conserve_angular_momentum = true;
 bool PileUp::body_fixed_forces = false;
-bool PileUp::inertially_fixed_forces = true;
+bool PileUp::inertially_fixed_forces = false;
+bool PileUp::precalculated_torque = false;
+bool PileUp::instant_initial_forces = true;
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin

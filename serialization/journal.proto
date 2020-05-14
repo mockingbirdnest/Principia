@@ -218,9 +218,11 @@ message SetAngularMomentumConservation {
     optional SetAngularMomentumConservation extension = 5999;
   }
   message In {
-    required bool correct_orientation = 1;
-    required bool correct_angular_velocity = 2;
-    required bool thresholding = 3;
+    required bool conserve_angular_momentum = 1;
+    required bool body_fixed_forces = 2;
+    required bool inertially_fixed_forces = 3;
+    required bool precalculated_torque = 4;
+    required bool instant_initial_forces = 5;
   }
   optional In in = 1;
 }
