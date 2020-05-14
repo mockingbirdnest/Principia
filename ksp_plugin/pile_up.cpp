@@ -28,12 +28,16 @@ using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::Commutator;
 using geometry::DeduceSignPreservingOrientation;
+using geometry::DeduceSignReversingOrientation;
+using geometry::EvenPermutation;
 using geometry::Frame;
 using geometry::Identity;
 using geometry::NonRotating;
 using geometry::Normalize;
 using geometry::NormalizeOrZero;
+using geometry::OddPermutation;
 using geometry::OrthogonalMap;
+using geometry::Permutation;
 using geometry::Position;
 using geometry::Quaternion;
 using geometry::RigidTransformation;
@@ -536,14 +540,12 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
   auto const apparent_angular_momentum = apparent_system.AngularMomentum();
   auto const apparent_inertia_tensor = apparent_system.InertiaTensor();
-
-  // TODO(egg): Guard against the discontinuity when the order of the principal
-  // axes changes.
-  using SignedPileUpPrincipalAxes =
-      Frame<enum class SignedPileUpPrincipalAxesTag>;
-  Rotation<ApparentPileUp, SignedPileUpPrincipalAxes> const
+  
+  using PermutedSignedPileUpPrincipalAxes =
+      Frame<enum class PermutedSignedPileUpPrincipalAxesTag>;
+  Rotation<ApparentPileUp, PermutedSignedPileUpPrincipalAxes> const
       signed_apparent_attitude =
-      apparent_inertia_tensor.Diagonalize<SignedPileUpPrincipalAxes>()
+      apparent_inertia_tensor.Diagonalize<PermutedSignedPileUpPrincipalAxes>()
           .rotation.Inverse();
   Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const actual_attitude =
       pile_up_actual_motion.orthogonal_map().AsRotation();
@@ -552,16 +554,53 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   std::optional<Rotation<ApparentPileUp, PileUpPrincipalAxes>>
       apparent_attitude;
 
-  for (auto const x : {Sign::Positive(), Sign::Negative()}) {
-    for (auto const y : {Sign::Positive(), Sign::Negative()}) {
-      Signature<SignedPileUpPrincipalAxes, PileUpPrincipalAxes> s(
-          x, y, DeduceSignPreservingOrientation{});
-      Angle const tentative_α = Abs(
-          (actual_attitude * s.Forget<Rotation>() * signed_apparent_attitude)
-              .RotationAngle());
-      if (tentative_α < α) {
-        α = tentative_α;
-        apparent_attitude = s.Forget<Rotation>() * signed_apparent_attitude;
+  // Orientation-preserving permutation & signature.
+  for (auto const permutation :
+       {EvenPermutation::XYZ, EvenPermutation::YZX, EvenPermutation::ZXY}) {
+    using SignedPileUpPrincipalAxes =
+        Frame<enum class SignedPileUpPrincipalAxesTag>;
+    Permutation<PermutedSignedPileUpPrincipalAxes, SignedPileUpPrincipalAxes> σ(
+        permutation);
+    for (auto const x : {Sign::Positive(), Sign::Negative()}) {
+      for (auto const y : {Sign::Positive(), Sign::Negative()}) {
+        Signature<SignedPileUpPrincipalAxes, PileUpPrincipalAxes> s(
+            x, y, DeduceSignPreservingOrientation{});
+        auto const tentative_apparent_attitude = s.Forget<Rotation>() *
+                                                 σ.Forget<Rotation>() *
+                                                 signed_apparent_attitude;
+        Angle const tentative_α = Abs(
+            (actual_attitude * tentative_apparent_attitude).RotationAngle());
+        if (tentative_α < α) {
+          α = tentative_α;
+          apparent_attitude = tentative_apparent_attitude;
+        }
+      }
+    }
+  }
+
+  // Orientation-reversing permutation & signature.
+  for (auto const permutation :
+       {OddPermutation::XZY, OddPermutation::ZYX, OddPermutation::YXZ}) {
+    using SignedPileUpPrincipalAxes =
+        Frame<enum class SignedPileUpPrincipalAxesTag,
+              Arbitrary,
+              Handedness::Left>;
+    Permutation<PermutedSignedPileUpPrincipalAxes, SignedPileUpPrincipalAxes> σ(
+        permutation);
+    for (auto const x : {Sign::Positive(), Sign::Negative()}) {
+      for (auto const y : {Sign::Positive(), Sign::Negative()}) {
+        Signature<SignedPileUpPrincipalAxes, PileUpPrincipalAxes> s(
+            x, y, DeduceSignReversingOrientation{});
+        auto const tentative_apparent_attitude =
+            (s.Forget<OrthogonalMap>() * σ.Forget<OrthogonalMap>())
+                .AsRotation() *
+            signed_apparent_attitude;
+        Angle const tentative_α = Abs(
+            (actual_attitude * tentative_apparent_attitude).RotationAngle());
+        if (tentative_α < α) {
+          α = tentative_α;
+          apparent_attitude = tentative_apparent_attitude;
+        }
       }
     }
   }
