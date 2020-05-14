@@ -167,6 +167,15 @@ class PileUp {
   void MakeEulerSolver(InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
                        Instant const& t);
 
+  // If there is an |intrinsic_torque_| or an |angular_momentum_change_|, this
+  // function changes the |euler_solver_| accordingly (right now using a very
+  // simple splitting).
+  // If these members vanish, this function has no effect.
+  // TODO(egg): The changes to the moment of inertia should probably be
+  // gradually incorporated as well; right now they take effect instantaneously
+  // in |DeformPileUpIfNeeded|.
+  void AdvanceEulerSolver(Instant t);
+
   // Update the degrees of freedom (in |NonRotatingPileUp|) of all the parts by
   // translating the *apparent* degrees of freedom so that their centre of mass
   // matches that computed by integration.

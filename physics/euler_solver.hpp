@@ -70,6 +70,8 @@ class EulerSolver {
       Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum,
       Instant const& time) const;
 
+  R3Element<MomentOfInertia> const& moments_of_inertia() const;
+
   void WriteToMessage(not_null<serialization::EulerSolver*> message) const;
   static EulerSolver ReadFromMessage(serialization::EulerSolver const& message);
 

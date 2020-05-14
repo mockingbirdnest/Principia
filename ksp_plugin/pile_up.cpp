@@ -148,8 +148,7 @@ Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   absl::MutexLock l(lock_.get());
   Status status;
   if (psychohistory_->back().time < t) {
-    angular_momentum_ += intrinsic_torque_ * (t - psychohistory_->back().time) +
-                         angular_momentum_change_;
+    AdvanceEulerSolver(t);
     DeformPileUpIfNeeded(t);
     status = AdvanceTime(t);
     NudgeParts();
@@ -419,14 +418,45 @@ void PileUp::MakeEulerSolver(
   }
 }
 
+void PileUp::AdvanceEulerSolver(Instant t) {
+  auto const t0 = psychohistory_->back().time;
+  auto const Δt = t - t0;
+  // TODO(egg): We integrate the |angular_momentum_change_| resulting from
+  // changes in mass, but we do not take into account the change in inertia
+  // tensor here.
+  auto const effective_torque_ =
+      intrinsic_torque_ + angular_momentum_change_ / Δt;
+  if (effective_torque_ == Bivector<Torque, NonRotatingPileUp>{}) {
+    return;
+  }
+  // A hundred steps of NewtonDelambreStørmerVerletLeapfrog at 50 Hz, more in
+  // physics warp.
+  // TODO(egg): integrators for |DecomposableFirstOrderDifferentialEquation|.
+  int const n = std::round(Δt / (200 * quantities::si::Micro(Second)));
+  Time const h = Δt / n;
+  for (auto [i, ti] = std::pair{0, t0}; i < n; ++i, ti = t0 + i * h) {
+    Rotation<PileUpPrincipalAxes, NonRotatingPileUp> attitude_at_first_stage =
+        euler_solver_->AttitudeAt(euler_solver_->AngularMomentumAt(ti + h / 2),
+                                  ti + h / 2);
+    // TODO(phl): It seems that the solver doesn’t always provide normalized
+    // quaternions; this adds up over the stages and causes the rocket to blow
+    // up.
+    attitude_at_first_stage = Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
+        attitude_at_first_stage.quaternion() /
+        attitude_at_first_stage.quaternion().Norm());
+    angular_momentum_ += effective_torque_ * h;
+    euler_solver_.emplace(euler_solver_->moments_of_inertia(),
+                          angular_momentum_,
+                          attitude_at_first_stage,
+                          ti + h / 2);
+  }
+}
+
 void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // This is the motion that the pile up would have if it were rigid and had
-  // been freely spinning since we constructed the Euler solver.
-  // TODO(egg): at some point we could try using a fancy splitting to compute
-  // the motion that the pile up would have assuming the torques were applied
-  // constantly during the rotation.
+  // been subjected to constant intrinsic torque and angular momentum change.
   RigidMotion<PileUpPrincipalAxes,
-              NonRotatingPileUp> const pile_up_expected_motion = [this, t] {
+              NonRotatingPileUp> const pile_up_actual_motion = [this, t] {
     Bivector<AngularMomentum, PileUpPrincipalAxes> const angular_momentum =
         euler_solver_->AngularMomentumAt(t);
     Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const attitude =
@@ -447,10 +477,10 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
 
     for (auto& [part, actual_rigid_motion] : actual_part_rigid_motion_) {
       actual_rigid_motion =
-          pile_up_expected_motion * RigidMotion<RigidPart, PileUpPrincipalAxes>(
-                                        rigid_pile_up_.at(part),
-                                        PileUpPrincipalAxes::nonrotating,
-                                        PileUpPrincipalAxes::unmoving);
+          pile_up_actual_motion * RigidMotion<RigidPart, PileUpPrincipalAxes>(
+                                      rigid_pile_up_.at(part),
+                                      PileUpPrincipalAxes::nonrotating,
+                                      PileUpPrincipalAxes::unmoving);
     }
     return;
   }
@@ -474,7 +504,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   auto const apparent_angular_momentum = apparent_system.AngularMomentum();
   auto const apparent_inertia_tensor = apparent_system.InertiaTensor();
 
-  // TODO(egg): Guard against the singularity when the order of the principal
+  // TODO(egg): Guard against the discontinuity when the order of the principal
   // axes changes.
   using SignedPileUpPrincipalAxes =
       Frame<enum class SignedPileUpPrincipalAxesTag>;
@@ -483,7 +513,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
       apparent_inertia_tensor.Diagonalize<SignedPileUpPrincipalAxes>()
           .rotation.Inverse();
   Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const actual_attitude =
-      pile_up_expected_motion.orthogonal_map().AsRotation();
+      pile_up_actual_motion.orthogonal_map().AsRotation();
 
   Angle α = Infinity<Angle>;
   std::optional<Rotation<ApparentPileUp, PileUpPrincipalAxes>>
@@ -510,40 +540,18 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // of the apparent parts.
   auto const apparent_equivalent_angular_velocity =
       apparent_angular_momentum / apparent_inertia_tensor;
-  // The angular velocity of a rigid body with the (reoriented) inertia of the
-  // apparent parts, and the actual angular momentum of the pile up.
-  auto actual_equivalent_angular_velocity =
-      angular_momentum_ / attitude_correction(apparent_inertia_tensor);
 
   RigidMotion<ApparentPileUp, PileUpPrincipalAxes> const
-      apparent_pile_up_equivalent_motion(
+      apparent_pile_up_motion(
           RigidTransformation<ApparentPileUp, PileUpPrincipalAxes>(
               ApparentPileUp::origin,
               PileUpPrincipalAxes::origin,
-              correct_orientation
-                  ? apparent_attitude->Forget<OrthogonalMap>()
-                  : OrthogonalMap<ApparentPileUp,
-                                  PileUpPrincipalAxes>::Identity()),
-          correct_angular_velocity ? apparent_equivalent_angular_velocity
-                                   : ApparentPileUp::nonrotating,
+              apparent_attitude->Forget<OrthogonalMap>()),
+          apparent_equivalent_angular_velocity,
           ApparentPileUp::unmoving);
-  RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp> const
-      actual_pile_up_equivalent_motion(
-          RigidTransformation<PileUpPrincipalAxes, NonRotatingPileUp>(
-              PileUpPrincipalAxes::origin,
-              NonRotatingPileUp::origin,
-              correct_orientation
-                  ? actual_attitude.Forget<OrthogonalMap>()
-                  : OrthogonalMap<PileUpPrincipalAxes,
-                                  NonRotatingPileUp>::Identity()),
-          correct_angular_velocity ? actual_equivalent_angular_velocity
-                                   : NonRotatingPileUp::nonrotating,
-          NonRotatingPileUp::unmoving);
-  RigidMotion<Apparent, NonRotatingPileUp> const
-      apparent_to_pile_up_motion =
-          actual_pile_up_equivalent_motion *
-          apparent_pile_up_equivalent_motion *
-          apparent_system.LinearMotion().Inverse();
+  RigidMotion<Apparent, NonRotatingPileUp> const apparent_to_pile_up_motion =
+      pile_up_actual_motion * apparent_pile_up_motion *
+      apparent_system.LinearMotion().Inverse();
 
   // Now update the motions of the parts in the pile-up frame.
   actual_part_rigid_motion_.clear();
@@ -555,16 +563,12 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   }
   apparent_part_rigid_motion_.clear();
 
-  AngularVelocity<NonRotatingPileUp> const ω_expected =
-      pile_up_expected_motion.Inverse().angular_velocity_of_to_frame();
   AngularVelocity<NonRotatingPileUp> const ω_actual =
-      actual_equivalent_angular_velocity;
+      pile_up_actual_motion.Inverse().angular_velocity_of_to_frame();
 
   std::stringstream s;
-  s << "Apparent: " << apparent_angular_momentum << "\n"
-    << "norm: " << apparent_angular_momentum.Norm() << "\n"
-    << "Actual: " << angular_momentum_ << "\n"
-    << "norm: " << angular_momentum_.Norm() << "\n"
+  s << "|Lap|: " << apparent_angular_momentum.Norm() << "\n"
+    << "|Lac|: " << angular_momentum_.Norm() << "\n"
     << "|Lap-Lac|: "
     << (angular_momentum_ - Identity<ApparentPileUp, NonRotatingPileUp>()(
                                 apparent_angular_momentum))
@@ -579,19 +583,25 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
            quantities::si::Degree
     << u8"°\n"
     << u8"α: " << α / quantities::si::Degree << u8"°\n"
-    << u8"|ωex|: "
-    << ω_expected.Norm() / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
-    << u8"|ωac|: "
-    << ω_actual.Norm() / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
-    << u8"|ωac|-|ωex|"
-    << (ω_actual.Norm() - ω_expected.Norm()) /
+    << u8"|ωap|: "
+    << apparent_equivalent_angular_velocity.Norm() /
            (2 * π * Radian / quantities::si::Minute)
     << " rpm\n"
-    << u8"∡ωex, ωac:"
-    << geometry::AngleBetween(ω_expected, ω_actual) / quantities::si::Degree
+    << u8"|ωac|: "
+    << ω_actual.Norm() / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
+    << u8"|ωac|-|ωap|: "
+    << (ω_actual.Norm() - apparent_equivalent_angular_velocity.Norm()) /
+           (2 * π * Radian / quantities::si::Minute)
+    << " rpm\n"
+    << u8"∡ωac, ωap: "
+    << geometry::AngleBetween(
+           actual_attitude.Inverse()(ω_actual),
+           (*apparent_attitude)(apparent_equivalent_angular_velocity)) /
+           quantities::si::Degree
     << u8"°\n";
   trace = s.str();
 
+  // This is what takes the change in moment of inertia into account.
   MakeEulerSolver(attitude_correction(apparent_inertia_tensor), t);
 }
 

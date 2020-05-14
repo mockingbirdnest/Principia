@@ -399,6 +399,12 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
 }
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
+R3Element<MomentOfInertia> const&
+EulerSolver<InertialFrame, PrincipalAxesFrame>::moments_of_inertia() const {
+  return moments_of_inertia_;
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
 void EulerSolver<InertialFrame, PrincipalAxesFrame>::WriteToMessage(
     not_null<serialization::EulerSolver*> const message) const {
   moments_of_inertia_.WriteToMessage(message->mutable_moments_of_inertia());
