@@ -598,8 +598,8 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   }
   apparent_part_rigid_motion_.clear();
 
-  AngularVelocity<NonRotatingPileUp> const ω_actual =
-      pile_up_actual_motion.Inverse().angular_velocity_of_to_frame();
+  AngularVelocity<PileUpPrincipalAxes> const ω_actual =
+      pile_up_actual_motion.angular_velocity_of_to_frame();
       
   logger_.Append("conserveAngularMomentum", conserve_angular_momentum);
   logger_.Append("bodyFixedForces", body_fixed_forces);
@@ -608,7 +608,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   logger_.Append("instantInitialForces", instant_initial_forces);
   logger_.Append(
       "angularVelocity",
-      ω_actual,
+      std::tuple{t, ω_actual},
       mathematica::ExpressIn(2 * π * Radian, quantities::si::Minute));
 
   std::stringstream s;
@@ -640,7 +640,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     << " rpm\n"
     << u8"∡ωac, ωap: "
     << geometry::AngleBetween(
-           actual_attitude.Inverse()(ω_actual),
+           ω_actual,
            (*apparent_attitude)(apparent_equivalent_angular_velocity)) /
            quantities::si::Degree
     << u8"°\n";
