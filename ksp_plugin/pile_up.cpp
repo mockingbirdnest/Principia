@@ -66,27 +66,6 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
-// NOTE(phl): The default values were tuned on "Fubini oscillator".
-constexpr double kp_default = 0.65;
-constexpr Inverse<Time> ki_default = 0.03 / Second;
-constexpr Time kd_default = 0.0025 * Second;
-
-// Configuration example:
-//   principia_flags {
-//     kp = 0.65
-//     ki = 0.03 / s
-//     kd = 0.0025 s
-//   }
-template<typename Q>
-Q GetPIDFlagOr(std::string_view const name, Q const default_value) {
-  auto const values = Flags::Values(name);
-  if (values.empty()) {
-    return default_value;
-  } else {
-    return ParseQuantity<Q>(*values.cbegin());
-  }
-}
-
 PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
     Instant const& t,
@@ -101,9 +80,6 @@ PileUp::PileUp(
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       deletion_callback_(std::move(deletion_callback)),
-      apparent_angular_momentum_controller_(GetPIDFlagOr("kp", kp_default),
-                                            GetPIDFlagOr("ki", ki_default),
-                                            GetPIDFlagOr("kd", kd_default)),
       logger_(SOLUTION_DIR / "mathematica" / "pile_up", true) {
   LOG(INFO) << "Constructing pile up at " << this;
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
@@ -153,7 +129,6 @@ Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   absl::MutexLock l(lock_.get());
   Status status;
   if (psychohistory_->back().time < t) {
-    AdvanceEulerSolver(t);
     DeformPileUpIfNeeded(t);
     status = AdvanceTime(t);
     NudgeParts();
@@ -398,9 +373,6 @@ PileUp::PileUp(
       psychohistory_(psychohistory),
       angular_momentum_(angular_momentum),
       deletion_callback_(std::move(deletion_callback)),
-      apparent_angular_momentum_controller_(GetPIDFlagOr("kp", kp_default),
-                                            GetPIDFlagOr("ki", ki_default),
-                                            GetPIDFlagOr("kd", kd_default)),
       logger_(SOLUTION_DIR / "mathematica" / "pile_up", true) {}
 
 void PileUp::MakeEulerSolver(
@@ -424,100 +396,18 @@ void PileUp::MakeEulerSolver(
   }
 }
 
-void PileUp::AdvanceEulerSolver(Instant t) {
-  auto const t0 = psychohistory_->back().time;
-  auto const Δt = t - t0;
-  // TODO(egg): We integrate the |angular_momentum_change_| resulting from
-  // changes in mass, but we do not take into account the change in inertia
-  // tensor here.
-  auto const effective_torque =
-      intrinsic_torque_ + angular_momentum_change_ / Δt;
-  if (effective_torque == Bivector<Torque, NonRotatingPileUp>{}) {
-    return;
-  }
-  Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const initial_attitude =
-      euler_solver_->AttitudeAt(euler_solver_->AngularMomentumAt(t0), t0);
-  if (instant_initial_forces) {
-    angular_momentum_ += intrinsic_torque_ * Δt + angular_momentum_change_;
-    euler_solver_.emplace(euler_solver_->moments_of_inertia(),
-                          angular_momentum_,
-                          initial_attitude,
-                          t0);
-  } else {
-    Bivector<Torque, PileUpPrincipalAxes> effective_torque_in_principal_axes =
-        initial_attitude.Inverse()(effective_torque);
-    // A hundred steps of NewtonDelambreStørmerVerletLeapfrog at 50 Hz, more in
-    // physics warp.  This is overkill, but it makes sure we are integrating
-    // correctly for all practical purposes.
-    // TODO(egg): integrators for |DecomposableFirstOrderDifferentialEquation|.
-    int const n = std::round(Δt / (200 * quantities::si::Micro(Second)));
-    Time const h = Δt / n;
-    for (auto [i, ti] = std::pair{0, t0}; i < n; ++i, ti = t0 + i * h) {
-      Rotation<PileUpPrincipalAxes, NonRotatingPileUp> attitude_at_first_stage =
-          euler_solver_->AttitudeAt(
-              euler_solver_->AngularMomentumAt(ti + h / 2), ti + h / 2);
-      // TODO(phl): It seems that the solver doesn’t always provide normalized
-      // quaternions; this adds up over the steps and causes the rocket to blow
-      // up.
-      attitude_at_first_stage =
-          Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
-              attitude_at_first_stage.quaternion() /
-              attitude_at_first_stage.quaternion().Norm());
-      if (inertially_fixed_forces) {
-        for (not_null<Part*> const part : parts_) {
-          angular_momentum_ +=
-              h * (Wedge(attitude_at_first_stage(
-                             rigid_pile_up_.at(part)(RigidPart::origin) -
-                             PileUpPrincipalAxes::origin),
-                         Identity<Barycentric, NonRotatingPileUp>()(
-                             part->intrinsic_force())) *
-                       Radian +
-                   Identity<Barycentric, NonRotatingPileUp>()(
-                       part->intrinsic_torque()));
-        }
-      } else {
-        angular_momentum_ += body_fixed_forces
-                                 ? attitude_at_first_stage(
-                                       effective_torque_in_principal_axes * h)
-                                 : effective_torque * h;
-      }
-      euler_solver_.emplace(euler_solver_->moments_of_inertia(),
-                            angular_momentum_,
-                            attitude_at_first_stage,
-                            ti + h / 2);
-    }
-  }
-}
-
 void PileUp::DeformPileUpIfNeeded(Instant const& t) {
-  // This is the motion that the pile up would have if it were rigid and had
-  // been subjected to constant intrinsic torque and angular momentum change.
-  RigidMotion<PileUpPrincipalAxes,
-              NonRotatingPileUp> const pile_up_actual_motion = [this, t] {
-    Bivector<AngularMomentum, PileUpPrincipalAxes> const angular_momentum =
-        euler_solver_->AngularMomentumAt(t);
-    Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const attitude =
-        euler_solver_->AttitudeAt(angular_momentum, t);
-    AngularVelocity<NonRotatingPileUp> const angular_velocity_of_rigid_pile_up =
-        attitude(euler_solver_->AngularVelocityFor(angular_momentum));
-
-    return RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp>(
-        RigidTransformation<PileUpPrincipalAxes, NonRotatingPileUp>(
-            PileUpPrincipalAxes::origin,
-            NonRotatingPileUp::origin,
-            attitude.Forget<OrthogonalMap>()),
-        angular_velocity_of_rigid_pile_up,
-        NonRotatingPileUp::unmoving);
-  }();
   if (apparent_part_rigid_motion_.empty()) {
-    apparent_angular_momentum_controller_.Clear();
+    RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp> const pile_up_motion =
+        euler_solver_->MotionAt(
+            t, {NonRotatingPileUp::origin, NonRotatingPileUp::unmoving});
 
     for (auto& [part, actual_rigid_motion] : actual_part_rigid_motion_) {
       actual_rigid_motion =
-          pile_up_actual_motion * RigidMotion<RigidPart, PileUpPrincipalAxes>(
-                                      rigid_pile_up_.at(part),
-                                      PileUpPrincipalAxes::nonrotating,
-                                      PileUpPrincipalAxes::unmoving);
+          pile_up_motion * RigidMotion<RigidPart, PileUpPrincipalAxes>(
+                               rigid_pile_up_.at(part),
+                               PileUpPrincipalAxes::nonrotating,
+                               PileUpPrincipalAxes::unmoving);
     }
     return;
   }
@@ -531,6 +421,17 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     CHECK(Contains(apparent_part_rigid_motion_, part));
   }
 
+  Instant const t0 = psychohistory_->back().time;
+  Time const Δt = t - t0;
+  angular_momentum_ += intrinsic_torque_ * Δt + angular_momentum_change_;
+  euler_solver_.emplace(euler_solver_->moments_of_inertia(),
+                        angular_momentum_,
+                        euler_solver_->AttitudeAt(t0),
+                        t0);
+  RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp> const
+      pile_up_actual_motion = euler_solver_->MotionAt(
+          t, {NonRotatingPileUp::origin, NonRotatingPileUp::unmoving});
+
   MechanicalSystem<Apparent, ApparentPileUp> apparent_system;
   for (auto const& [part, apparent_part_rigid_motion] :
        apparent_part_rigid_motion_) {
@@ -540,6 +441,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
   auto const apparent_angular_momentum = apparent_system.AngularMomentum();
   auto const apparent_inertia_tensor = apparent_system.InertiaTensor();
+
   
   using PermutedSignedPileUpPrincipalAxes =
       Frame<enum class PermutedSignedPileUpPrincipalAxesTag>;
@@ -641,10 +543,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
       pile_up_actual_motion.angular_velocity_of_to_frame();
       
   logger_.Append("conserveAngularMomentum", conserve_angular_momentum);
-  logger_.Append("bodyFixedForces", body_fixed_forces);
-  logger_.Append("inertiallyFixedForces", inertially_fixed_forces);
-  logger_.Append("precalculatedTorque", precalculated_torque);
-  logger_.Append("instantInitialForces", instant_initial_forces);
   logger_.Append(
       "angularVelocity",
       std::tuple{t, ω_actual},
@@ -814,10 +712,6 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
       future(std::move(future)) {}
 
 bool PileUp::conserve_angular_momentum = true;
-bool PileUp::body_fixed_forces = false;
-bool PileUp::inertially_fixed_forces = false;
-bool PileUp::precalculated_torque = false;
-bool PileUp::instant_initial_forces = true;
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin

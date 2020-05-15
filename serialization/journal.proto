@@ -219,10 +219,6 @@ message SetAngularMomentumConservation {
   }
   message In {
     required bool conserve_angular_momentum = 1;
-    required bool body_fixed_forces = 2;
-    required bool inertially_fixed_forces = 3;
-    required bool precalculated_torque = 4;
-    required bool instant_initial_forces = 5;
   }
   optional In in = 1;
 }

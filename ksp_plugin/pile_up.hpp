@@ -17,7 +17,6 @@
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
 #include "mathematica/mathematica.hpp"
-#include "numerics/pid.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/euler_solver.hpp"
@@ -48,7 +47,6 @@ using geometry::NonRotating;
 using geometry::RigidTransformation;
 using geometry::Vector;
 using integrators::Integrator;
-using numerics::PID;
 using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -106,10 +104,6 @@ class PileUp {
 
   std::string trace;
   static bool conserve_angular_momentum;
-  static bool body_fixed_forces;
-  static bool inertially_fixed_forces;
-  static bool precalculated_torque;
-  static bool instant_initial_forces;
 
   // This class is moveable.
   PileUp(PileUp&& pile_up) = default;
@@ -169,15 +163,6 @@ class PileUp {
   // Sets |euler_solver_| and updates |rigid_pile_up_|.
   void MakeEulerSolver(InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
                        Instant const& t);
-
-  // If there is an |intrinsic_torque_| or an |angular_momentum_change_|, this
-  // function changes the |euler_solver_| accordingly (right now using a very
-  // simple splitting).
-  // If these members vanish, this function has no effect.
-  // TODO(egg): The changes to the moment of inertia should probably be
-  // gradually incorporated as well; right now they take effect instantaneously
-  // in |DeformPileUpIfNeeded|.
-  void AdvanceEulerSolver(Instant t);
 
   // Update the degrees of freedom (in |NonRotatingPileUp|) of all the parts by
   // translating the *apparent* degrees of freedom so that their centre of mass
@@ -257,13 +242,6 @@ class PileUp {
 
   // Called in the destructor.
   std::function<void()> deletion_callback_;
-
-  // A PID used to smoothen the value of the apparent angular momentum obtained
-  // from KSP.
-  PID<Bivector<AngularMomentum, ApparentPileUp>,
-      Bivector<AngularMomentum, ApparentPileUp>,
-      /*horizon=*/25,
-      /*finite_difference_order=*/5> apparent_angular_momentum_controller_;
 
   mathematica::Logger logger_;
 
