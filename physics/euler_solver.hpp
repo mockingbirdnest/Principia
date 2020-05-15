@@ -10,6 +10,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/physics.pb.h"
@@ -69,6 +70,18 @@ class EulerSolver {
   AttitudeRotation AttitudeAt(
       Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum,
       Instant const& time) const;
+
+  // Equivalent to this->AttitudeAt(this->AngularMomentumAt(time), time), where
+  // the angular momentum is not needed.
+  AttitudeRotation AttitudeAt(Instant const& time) const;
+
+  // The motion of the body at the given time.  The centre of gravity of the
+  // body moves according to |linear_motion|.
+  RigidMotion<PrincipalAxesFrame, InertialFrame> MotionAt(
+      Instant const& time,
+      DegreesOfFreedom<InertialFrame> const& linear_motion) const;
+
+  R3Element<MomentOfInertia> const& moments_of_inertia() const;
 
   void WriteToMessage(not_null<serialization::EulerSolver*> message) const;
   static EulerSolver ReadFromMessage(serialization::EulerSolver const& message);

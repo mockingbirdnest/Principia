@@ -20,6 +20,7 @@ using geometry::Commutator;
 using geometry::DeduceSignPreservingOrientation;
 using geometry::DefinesFrame;
 using geometry::Normalize;
+using geometry::OrthogonalMap;
 using geometry::Quaternion;
 using geometry::Sign;
 using geometry::Vector;
@@ -396,6 +397,40 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     default:
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
   }
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
+EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
+    Instant const& time) const {
+  return AttitudeAt(AngularMomentumAt(time), time);
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+RigidMotion<PrincipalAxesFrame, InertialFrame>
+EulerSolver<InertialFrame, PrincipalAxesFrame>::MotionAt(
+    Instant const& time,
+    DegreesOfFreedom<InertialFrame> const& linear_motion) const {
+  Bivector<AngularMomentum, PrincipalAxesFrame> const angular_momentum =
+      AngularMomentumAt(time);
+  Rotation<PrincipalAxesFrame, InertialFrame> const attitude =
+      AttitudeAt(angular_momentum, time);
+  AngularVelocity<InertialFrame> const angular_velocity =
+      attitude(AngularVelocityFor(angular_momentum));
+
+  return RigidMotion<PrincipalAxesFrame, InertialFrame>(
+      RigidTransformation<PrincipalAxesFrame, InertialFrame>(
+          PrincipalAxesFrame::origin,
+          linear_motion.position(),
+          attitude.template Forget<OrthogonalMap>()),
+      angular_velocity,
+      linear_motion.velocity());
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+R3Element<MomentOfInertia> const&
+EulerSolver<InertialFrame, PrincipalAxesFrame>::moments_of_inertia() const {
+  return moments_of_inertia_;
 }
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
