@@ -10,6 +10,7 @@
 #include "base/status_or.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "physics/apsides.hpp"
 
 namespace principia {
@@ -24,6 +25,7 @@ using geometry::RadiusLatitudeLongitude;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
 using ksp_plugin::Vessel;
+using ksp_plugin::WorldSun;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::ComputeApsides;
 using physics::DiscreteTrajectory;
