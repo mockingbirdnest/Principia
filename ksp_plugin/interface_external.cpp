@@ -59,7 +59,6 @@ Status __cdecl principia__ExternalCelestialGetPosition(
     return m.Return(
         MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
-  Instant const t = FromGameTime(*plugin, time);
   if (!plugin->HasCelestial(body_index)) {
     return m.Return(MakeStatus(
         Error::NOT_FOUND,
@@ -67,6 +66,7 @@ Status __cdecl principia__ExternalCelestialGetPosition(
   }
   auto const& celestial = plugin->GetCelestial(body_index);
   auto const& trajectory = celestial.trajectory();
+  Instant const t = FromGameTime(*plugin, time);
   if (t < trajectory.t_min() || t > trajectory.t_max()) {
     return m.Return(
         MakeStatus(Error::OUT_OF_RANGE,
@@ -103,7 +103,6 @@ Status __cdecl principia__ExternalCelestialGetSurfacePosition(
     return m.Return(
         MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
-  Instant const t = FromGameTime(*plugin, time);
   if (!plugin->HasCelestial(body_index)) {
     return m.Return(MakeStatus(
         Error::NOT_FOUND,
@@ -111,6 +110,7 @@ Status __cdecl principia__ExternalCelestialGetSurfacePosition(
   }
   auto const& celestial = plugin->GetCelestial(body_index);
   auto const& trajectory = celestial.trajectory();
+  Instant const t = FromGameTime(*plugin, time);
   if (t < trajectory.t_min() || t > trajectory.t_max()) {
     return m.Return(
         MakeStatus(Error::OUT_OF_RANGE,
@@ -121,7 +121,7 @@ Status __cdecl principia__ExternalCelestialGetSurfacePosition(
                        .str()));
   }
   using Surface = Frame<enum class SurfaceTag>;
-  auto const to_world_axes =
+  OrthogonalMap<Surface, WorldSun> const to_world_axes =
       plugin->renderer().BarycentricToWorldSun(plugin->PlanetariumRotation()) *
       celestial.body()->FromSurfaceFrame<Surface>(t).Forget<OrthogonalMap>();
   auto const planetocentric_displacement = Displacement<Surface>(
@@ -365,7 +365,6 @@ Status __cdecl principia__ExternalVesselGetPosition(
     return m.Return(
         MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
-  Instant const t = FromGameTime(*plugin, time);
   if (!plugin->HasVessel(vessel_guid)) {
     return m.Return(MakeStatus(
         Error::NOT_FOUND,
@@ -373,6 +372,7 @@ Status __cdecl principia__ExternalVesselGetPosition(
   }
   auto const& vessel = *plugin->GetVessel(vessel_guid);
   auto const& trajectory = vessel.psychohistory();
+  Instant const t = FromGameTime(*plugin, time);
   if (t < trajectory.t_min() || t > trajectory.t_max()) {
     return m.Return(MakeStatus(
         Error::OUT_OF_RANGE,
