@@ -31,14 +31,12 @@ struct FakeTrajectoryTraits : not_constructible {
   static Instant const& time(TimelineDurableConstIterator const& it);
   static Instant const& time(TimelineEphemeralConstIterator const& it);
 
-  static TimelineDurableConstIterator MakeDurable(
-      Timeline const& container,
-      TimelineEphemeralConstIterator const& it);
-  //static TimelineEphemeralConstIterator MakeEphemeral(
-  //    TimelineDurableConstIterator const& it);
-
+  friend bool operator==(TimelineDurableConstIterator const& left,
+                         TimelineDurableConstIterator const& right);
   friend bool operator==(TimelineDurableConstIterator const& left,
                          TimelineEphemeralConstIterator const& right);
+  friend bool operator!=(TimelineDurableConstIterator const& left,
+                         TimelineDurableConstIterator const& right);
   friend bool operator!=(TimelineDurableConstIterator const& left,
                          TimelineEphemeralConstIterator const& right);
   friend TimelineDurableConstIterator& operator++(
@@ -93,6 +91,11 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
       Instant const& time) const override;
   bool timeline_empty() const override;
   std::int64_t timeline_size() const override;
+
+  TimelineDurableConstIterator MakeDurable(
+      TimelineEphemeralConstIterator it) const override;
+  TimelineEphemeralConstIterator MakeEphemeral(
+      TimelineDurableConstIterator it) const override;
 
  protected:
   not_null<FakeTrajectory*> that() override;

@@ -146,6 +146,8 @@ class Forkable {
   bool Empty() const;
 
  protected:
+  using TimelineDurableConstIterator =
+      typename Traits::TimelineDurableConstIterator;
   using TimelineEphemeralConstIterator =
       typename Traits::TimelineEphemeralConstIterator;
 
@@ -164,6 +166,12 @@ class Forkable {
       Instant const& time) const = 0;
   virtual bool timeline_empty() const = 0;
   virtual std::int64_t timeline_size() const = 0;
+
+  // Iterator conversion.
+  virtual TimelineDurableConstIterator MakeDurable(
+      TimelineEphemeralConstIterator it) const = 0;
+  virtual TimelineEphemeralConstIterator MakeEphemeral(
+      TimelineDurableConstIterator it) const = 0;
 
  protected:
   // The API that subclasses may use to implement their public operations.
@@ -210,9 +218,6 @@ class Forkable {
                               std::vector<Tr4jectory**> const& forks);
 
  private:
-  using TimelineDurableConstIterator =
-      typename Traits::TimelineDurableConstIterator;
-
   // Constructs an Iterator by wrapping the timeline iterator
   // |position_in_ancestor_timeline| which must be an iterator in the timeline
   // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
@@ -220,7 +225,7 @@ class Forkable {
   // end if it is an iterator in this object (and |ancestor| is this object).
   It3rator Wrap(
       not_null<Tr4jectory const*> ancestor,
-      TimelineEphemeralConstIterator position_in_ancestor_timeline) const;
+      TimelineDurableConstIterator position_in_ancestor_timeline) const;
 
   // There may be several forks starting from the same time, hence the multimap.
   // A level of indirection is needed to avoid referencing an incomplete type in
