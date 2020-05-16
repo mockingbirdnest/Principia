@@ -157,19 +157,21 @@ class Forkable {
   virtual not_null<Tr4jectory*> that() = 0;
   virtual not_null<Tr4jectory const*> that() const = 0;
 
-  // STL-like operations.
+  // Durable STL-like operations.
+  virtual TimelineDurableConstIterator timeline_durable_begin() const = 0;
+  virtual TimelineDurableConstIterator timeline_durable_end() const = 0;
+  virtual TimelineDurableConstIterator timeline_durable_find(
+      Instant const& time) const = 0;
+  virtual TimelineDurableConstIterator timeline_durable_lower_bound(
+      Instant const& time) const = 0;
+
+  // Ephemeral STL-like operations.
   virtual TimelineEphemeralConstIterator timeline_begin() const = 0;
   virtual TimelineEphemeralConstIterator timeline_end() const = 0;
-  virtual TimelineEphemeralConstIterator timeline_find(
-      Instant const& time) const = 0;
-  virtual TimelineEphemeralConstIterator timeline_lower_bound(
-      Instant const& time) const = 0;
   virtual bool timeline_empty() const = 0;
   virtual std::int64_t timeline_size() const = 0;
 
   // Iterator conversion.
-  virtual TimelineDurableConstIterator MakeDurable(
-      TimelineEphemeralConstIterator it) const = 0;
   virtual TimelineEphemeralConstIterator MakeEphemeral(
       TimelineDurableConstIterator it) const = 0;
 
@@ -184,7 +186,7 @@ class Forkable {
   // trajectory.  Deleting the parent trajectory deletes all child trajectories.
   // |timeline_it| may be at end if it denotes the fork time of this object.
   not_null<Tr4jectory*> NewFork(
-      TimelineEphemeralConstIterator const& timeline_it);
+      TimelineDurableConstIterator const& timeline_it);
 
   // |fork| must be a non-empty root and its first point must be at the same
   // time as the last point of this object.  |fork| is attached to this object
