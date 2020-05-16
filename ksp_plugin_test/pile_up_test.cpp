@@ -89,7 +89,6 @@ class TestablePileUp : public PileUp {
   using PileUp::DeformPileUpIfNeeded;
   using PileUp::AdvanceTime;
   using PileUp::NudgeParts;
-  using PileUp::ComputeAngularMomentumCorrection;
 
   Mass const& mass() const {
     return mass_;
