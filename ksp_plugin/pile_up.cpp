@@ -461,37 +461,41 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // orientation with respect to the new principal axes (from apparent
   // coordinates at |t|), to define the attitude at |t0| of the new principal
   // axes.
-  // TODO(egg): pick the part that moves the slowest with respect to the
-  // principal axes.
-  not_null const reference_part = parts_.front();
+  // We choose the part which rotates the least with respect to the
+  // (instantaneous) principal axes to define the attitude.
+  AngularFrequency reference_part_proper_ω = Infinity<AngularFrequency>;
+  Part* reference_part = nullptr;
+  std::optional<OrthogonalMap<RigidPart, PileUpPrincipalAxes>>
+      reference_part_orientation_in_principal_axes;
+  for (auto const& [part, apparent_part_motion] : apparent_part_rigid_motion_) {
+    RigidMotion<RigidPart, PileUpPrincipalAxes> part_motion_in_principal_axes =
+        (apparent_pile_up_motion.Inverse() *
+         apparent_system.LinearMotion().Inverse() * apparent_part_motion);
+    auto const part_proper_ω =
+        part_motion_in_principal_axes.angular_velocity_of_to_frame().Norm();
+    if (part_proper_ω < reference_part_proper_ω) {
+      reference_part_proper_ω = part_proper_ω;
+      reference_part = part;
+      reference_part_orientation_in_principal_axes =
+          part_motion_in_principal_axes.orthogonal_map();
+    }
+  }
+
   OrthogonalMap<RigidPart, NonRotatingPileUp> const
       reference_part_initial_attitude =
           actual_part_rigid_motion_.at(reference_part).orthogonal_map();
-  OrthogonalMap<RigidPart, ApparentPileUp> const
-      reference_part_apparent_attitude =
-          (apparent_system.LinearMotion().Inverse() *
-           apparent_part_rigid_motion_.at(reference_part))
-              .orthogonal_map();
 
-  // This is the orientation of the reference part with respect to the new
-  // principal axes, i.e., those corresponding to |apparent_inertia_tensor|.
-  OrthogonalMap<RigidPart, PileUpPrincipalAxes>
-      reference_part_attitude_in_pile_up_principal_axes =
-          apparent_pile_up_motion.orthogonal_map().Inverse() *
-          reference_part_apparent_attitude;
-
-  // |reference_part_initial_attitude|, an |actual_part_rigid_motion_|, comes
-  // from the previous EulerSolver.  |initial_attitude|  will be used to
-  // construct the new one.  In order to prevent roundoff accumulation from
-  // eventually producing noticeably non-unit quaternions, we normalize
-  // |initial_attitude|.
+  // |reference_part_initial_attitude|, an |actual_part_rigid_motion_|, is
+  // computed from the output of the previous |EulerSolver|.  |initial_attitude|
+  // will be used to construct the new one.  In order to prevent roundoff
+  // accumulation from eventually producing noticeably non-unit quaternions, we
+  // normalize |initial_attitude|.
   Rotation<PileUpPrincipalAxes, NonRotatingPileUp> initial_attitude =
       (reference_part_initial_attitude *
-       reference_part_attitude_in_pile_up_principal_axes.Inverse())
+       reference_part_orientation_in_principal_axes->Inverse())
           .AsRotation();
   initial_attitude = Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
       initial_attitude.quaternion() / initial_attitude.quaternion().Norm());
-
 
   // We take into account the changes to |angular_momentum_| and to the moments
   // of inertia for the step from t0 to t before propagating the attitude from
@@ -546,8 +550,15 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
       "angularVelocity",
       std::tuple{t, ω_actual},
       mathematica::ExpressIn(2 * π * Radian, quantities::si::Minute));
+  logger_.Append(
+      "referencePartProperAngularvelocity",
+      std::tuple{t, reference_part_proper_ω},
+      mathematica::ExpressIn(2 * π * Radian, quantities::si::Minute));
+  logger_.Append("referencePart",
+                 std::tuple{t, reference_part->ShortDebugString()});
 
   std::stringstream s;
+  constexpr AngularFrequency rpm = 2 * π * Radian / quantities::si::Minute;
   s << "|Lap|: " << apparent_angular_momentum.Norm() << "\n"
     << "|Lac|: " << angular_momentum_.Norm() << "\n"
     << "|Lap-Lac|: "
@@ -564,17 +575,15 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
            quantities::si::Degree
     << u8"°\n"
     << u8"α: " << α / quantities::si::Degree << u8"°\n"
-    << u8"|ωap|: "
-    << ω_apparent.Norm() / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
-    << u8"|ωac|: "
-    << ω_actual.Norm() / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
-    << u8"|ωac|-|ωap|: "
-    << (ω_actual.Norm() - ω_apparent.Norm()) /
-           (2 * π * Radian / quantities::si::Minute)
+    << u8"|ωap|: " << ω_apparent.Norm() / rpm << " rpm\n"
+    << u8"|ωac|: " << ω_actual.Norm() / rpm << " rpm\n"
+    << u8"|ωac|-|ωap|: " << (ω_actual.Norm() - ω_apparent.Norm()) / rpm
     << " rpm\n"
     << u8"∡ωac, ωap: "
     << geometry::AngleBetween(ω_actual, ω_apparent) / quantities::si::Degree
-    << u8"°\n";
+    << u8"°\n"
+    << "reference part: " << reference_part->ShortDebugString() << "\n"
+    << u8"|ωref|: " << reference_part_proper_ω / rpm << " rpm\n";
   trace = s.str();
 }
 
