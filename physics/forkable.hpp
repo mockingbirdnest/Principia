@@ -100,11 +100,6 @@ class ForkableIterator {
 template<typename Tr4jectory, typename It3rator, typename Traits>
 class Forkable {
  public:
-  // An iterator into the timeline of the trajectory.  Must be STL-like.
-  // Beware, if these iterators are invalidated all the guarantees of Forkable
-  // are void.
-  using TimelineConstIterator = typename Traits::TimelineConstIterator;
-
   Forkable() = default;
   virtual ~Forkable() = default;
 
@@ -150,6 +145,11 @@ class Forkable {
   bool Empty() const;
 
  protected:
+  // An iterator into the timeline of the trajectory.  Must be STL-like.
+  // Beware, if these iterators are invalidated all the guarantees of Forkable
+  // are void.
+  using TimelineConstIterator = typename Traits::TimelineConstIterator;
+
   // The API that must be implemented by subclasses.
 
   // Must return |this| of the proper type.
