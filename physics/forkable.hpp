@@ -158,16 +158,17 @@ class Forkable {
   virtual not_null<Tr4jectory const*> that() const = 0;
 
   // Durable STL-like operations.
-  virtual TimelineDurableConstIterator timeline_durable_begin() const = 0;
-  virtual TimelineDurableConstIterator timeline_durable_end() const = 0;
-  virtual TimelineDurableConstIterator timeline_durable_find(
+  virtual TimelineDurableConstIterator timeline_begin() const = 0;
+  virtual TimelineDurableConstIterator timeline_end() const = 0;
+  virtual TimelineDurableConstIterator timeline_find(
       Instant const& time) const = 0;
-  virtual TimelineDurableConstIterator timeline_durable_lower_bound(
+  virtual TimelineDurableConstIterator timeline_lower_bound(
       Instant const& time) const = 0;
 
   // Ephemeral STL-like operations.
-  virtual TimelineEphemeralConstIterator timeline_begin() const = 0;
-  virtual TimelineEphemeralConstIterator timeline_end() const = 0;
+  virtual TimelineEphemeralConstIterator timeline_ephemeral_begin() const = 0;
+  virtual TimelineEphemeralConstIterator timeline_ephemeral_end() const = 0;
+
   virtual bool timeline_empty() const = 0;
   virtual std::int64_t timeline_size() const = 0;
 

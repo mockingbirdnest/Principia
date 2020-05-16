@@ -83,15 +83,15 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
       CheckNoForksBefore;
 
-  TimelineDurableConstIterator timeline_durable_begin() const override;
-  TimelineDurableConstIterator timeline_durable_end() const override;
-  TimelineDurableConstIterator timeline_durable_find(
+  TimelineDurableConstIterator timeline_begin() const override;
+  TimelineDurableConstIterator timeline_end() const override;
+  TimelineDurableConstIterator timeline_find(
       Instant const& time) const override;
-  TimelineDurableConstIterator timeline_durable_lower_bound(
+  TimelineDurableConstIterator timeline_lower_bound(
       Instant const& time) const override;
 
-  TimelineEphemeralConstIterator timeline_begin() const override;
-  TimelineEphemeralConstIterator timeline_end() const override;
+  TimelineEphemeralConstIterator timeline_ephemeral_begin() const override;
+  TimelineEphemeralConstIterator timeline_ephemeral_end() const override;
   bool timeline_empty() const override;
   std::int64_t timeline_size() const override;
 
@@ -151,17 +151,17 @@ void FakeTrajectory::push_back(Instant const& time) {
 }
 
 FakeTrajectory::TimelineDurableConstIterator
-FakeTrajectory::timeline_durable_begin() const {
+FakeTrajectory::timeline_begin() const {
   return {&timeline_, timeline_.empty() ? -1 : 0};
 }
 
 FakeTrajectory::TimelineDurableConstIterator
-FakeTrajectory::timeline_durable_end() const {
+FakeTrajectory::timeline_end() const {
   return {&timeline_, -1};
 }
 
 FakeTrajectory::TimelineDurableConstIterator
-FakeTrajectory::timeline_durable_find(
+FakeTrajectory::timeline_find(
     Instant const& time) const {
   // Stupid O(N) search.
   std::int64_t pos = 0;
@@ -174,7 +174,7 @@ FakeTrajectory::timeline_durable_find(
 }
 
 FakeTrajectory::TimelineDurableConstIterator
-FakeTrajectory::timeline_durable_lower_bound(Instant const& time) const {
+FakeTrajectory::timeline_lower_bound(Instant const& time) const {
   // Stupid O(N) search.
   std::int64_t pos = 0;
   for (auto it = timeline_.begin(); it != timeline_.end(); ++it, ++pos) {
@@ -185,12 +185,12 @@ FakeTrajectory::timeline_durable_lower_bound(Instant const& time) const {
   return {&timeline_, -1};
 }
 
-FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::timeline_begin()
+FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::timeline_ephemeral_begin()
     const {
   return timeline_.begin();
 }
 
-FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::timeline_end()
+FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::timeline_ephemeral_end()
     const {
   return timeline_.end();
 }
@@ -261,7 +261,7 @@ TEST_F(ForkableDeathTest, ForkError) {
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     trajectory_.push_back(t3_);
-    trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+    trajectory_.NewFork(trajectory_.timeline_find(t2_));
   }, "!is_root");
   EXPECT_DEATH({
     trajectory_.Fork();
@@ -280,7 +280,7 @@ TEST_F(ForkableTest, ForkSuccess) {
   EXPECT_EQ(3, trajectory_.Size());
   EXPECT_FALSE(trajectory_.Empty());
   not_null<FakeTrajectory*> const fork =
-       trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+       trajectory_.NewFork(trajectory_.timeline_find(t2_));
   EXPECT_EQ(2, fork->Size());
   EXPECT_FALSE(fork->Empty());
   fork->push_back(t4_);
@@ -297,10 +297,10 @@ TEST_F(ForkableTest, Size) {
   trajectory_.push_back(t1_);
   EXPECT_EQ(1, trajectory_.Size());
   not_null<FakeTrajectory*> const fork1 =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t1_));
+      trajectory_.NewFork(trajectory_.timeline_find(t1_));
   EXPECT_EQ(1, fork1->Size());
   not_null<FakeTrajectory*> const fork2 =
-      fork1->NewFork(fork1->timeline_durable_end());
+      fork1->NewFork(fork1->timeline_end());
   fork2->push_back(t2_);
   EXPECT_EQ(2, fork2->Size());
 }
@@ -310,11 +310,11 @@ TEST_F(ForkableTest, ForkAtLast) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
   not_null<FakeTrajectory*> const fork1 =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t3_));
+      trajectory_.NewFork(trajectory_.timeline_find(t3_));
   not_null<FakeTrajectory*> const fork2 =
-      fork1->NewFork(fork1->timeline_durable_find(LastTime(fork1)));
+      fork1->NewFork(fork1->timeline_find(LastTime(fork1)));
   not_null<FakeTrajectory*> const fork3 =
-      fork2->NewFork(fork2->timeline_durable_find(LastTime(fork1)));
+      fork2->NewFork(fork2->timeline_find(LastTime(fork1)));
   EXPECT_EQ(t3_, LastTime(&trajectory_));
   EXPECT_EQ(t3_, LastTime(fork1));
 
@@ -359,9 +359,9 @@ TEST_F(ForkableDeathTest, DeleteForkError) {
   }, "!is_root");
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
-    FakeTrajectory* fork1 = trajectory_.NewFork(trajectory_.timeline_durable_find(t1_));
+    FakeTrajectory* fork1 = trajectory_.NewFork(trajectory_.timeline_find(t1_));
     fork1->push_back(t2_);
-    FakeTrajectory* fork2 = fork1->NewFork(fork1->timeline_durable_find(t2_));
+    FakeTrajectory* fork2 = fork1->NewFork(fork1->timeline_find(t2_));
     trajectory_.DeleteFork(fork2);
   }, "not a child");
 }
@@ -371,8 +371,8 @@ TEST_F(ForkableTest, DeleteForkSuccess) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
   not_null<FakeTrajectory*> const fork1 =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
-  FakeTrajectory* fork2 = trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
+  FakeTrajectory* fork2 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork1->push_back(t4_);
   trajectory_.DeleteFork(fork2);
   EXPECT_EQ(nullptr, fork2);
@@ -386,7 +386,7 @@ TEST_F(ForkableDeathTest, AttachForkWithCopiedBeginError) {
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     not_null<FakeTrajectory*> const fork =
-        trajectory_.NewFork(trajectory_.timeline_durable_find(t1_));
+        trajectory_.NewFork(trajectory_.timeline_find(t1_));
     trajectory_.AttachForkToCopiedBegin(std::unique_ptr<FakeTrajectory>(fork));
   }, "is_root");
   EXPECT_DEATH({
@@ -406,7 +406,7 @@ TEST_F(ForkableTest, AttachForkWithCopiedBeginSuccess) {
       make_not_null_unique<FakeTrajectory>();
   fork1->push_back(t3_);
   not_null<FakeTrajectory*> const fork2 =
-      fork1->NewFork(fork1->timeline_durable_find(t3_));
+      fork1->NewFork(fork1->timeline_find(t3_));
   fork2->push_back(t4_);
   auto times = Times(fork1.get());
   EXPECT_THAT(times, ElementsAre(t3_));
@@ -426,7 +426,7 @@ TEST_F(ForkableTest, AttachForkWithCopiedBeginSuccess) {
 TEST_F(ForkableTest, AttachForkWithCopiedBeginEmpty) {
   trajectory_.push_back(t1_);
   not_null<FakeTrajectory*> const fork1 =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t1_));
+      trajectory_.NewFork(trajectory_.timeline_find(t1_));
   not_null<std::unique_ptr<FakeTrajectory>> fork2 =
       make_not_null_unique<FakeTrajectory>();
   fork2->push_back(t3_);
@@ -445,9 +445,9 @@ TEST_F(ForkableTest, DetachForkWithCopiedBeginSuccess) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
   not_null<FakeTrajectory*> const fork1 =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
-  FakeTrajectory* fork2 = trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
-  FakeTrajectory* fork3 = fork1->NewFork(fork1->timeline_durable_find(t2_));
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
+  FakeTrajectory* fork2 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
+  FakeTrajectory* fork3 = fork1->NewFork(fork1->timeline_find(t2_));
   fork1->push_back(t4_);
 
   fork1->push_front(t2_);
@@ -478,7 +478,7 @@ TEST_F(ForkableDeathTest, DeleteAllForksAfterError) {
     trajectory_.push_back(t1_);
     trajectory_.push_back(t2_);
     not_null<FakeTrajectory*> const fork =
-        trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+        trajectory_.NewFork(trajectory_.timeline_find(t2_));
     fork->DeleteAllForksAfter(t1_);
   }, "before the fork time");
 }
@@ -488,7 +488,7 @@ TEST_F(ForkableTest, DeleteAllForksAfterSuccess) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
   not_null<FakeTrajectory*> const fork =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork->push_back(t4_);
 
   fork->DeleteAllForksAfter(t3_ + (t4_ - t3_) / 2);
@@ -512,7 +512,7 @@ TEST_F(ForkableDeathTest, CheckNoForksBeforeError) {
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     not_null<FakeTrajectory*> const fork =
-        trajectory_.NewFork(trajectory_.timeline_durable_find(t1_));
+        trajectory_.NewFork(trajectory_.timeline_find(t1_));
     fork->CheckNoForksBefore(t1_);
   }, "nonroot");
   EXPECT_DEATH({
@@ -520,7 +520,7 @@ TEST_F(ForkableDeathTest, CheckNoForksBeforeError) {
     trajectory_.push_back(t2_);
     trajectory_.push_back(t3_);
     not_null<FakeTrajectory*> const fork =
-        trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+        trajectory_.NewFork(trajectory_.timeline_find(t2_));
     fork->push_back(t4_);
     trajectory_.CheckNoForksBefore(t3_);
   }, "found 1 fork");
@@ -531,7 +531,7 @@ TEST_F(ForkableTest, CheckNoForksBeforeSuccess) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
   not_null<FakeTrajectory*> const fork =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork->push_back(t4_);
 
   trajectory_.CheckNoForksBefore(t1_ + (t2_ - t1_) / 2);
@@ -568,7 +568,7 @@ TEST_F(ForkableTest, IteratorDecrementNoForkSuccess) {
 TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
-  auto fork = trajectory_.NewFork(trajectory_.timeline_durable_find(t1_));
+  auto fork = trajectory_.NewFork(trajectory_.timeline_find(t1_));
   trajectory_.push_back(t4_);
   fork->push_back(t3_);
   auto it = fork->end();
@@ -581,9 +581,9 @@ TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
 TEST_F(ForkableTest, IteratorDecrementMultipleForksSuccess) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
-  auto fork1 = trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
-  auto fork2 = fork1->NewFork(fork1->timeline_durable_find(t2_));
-  auto fork3 = fork2->NewFork(fork2->timeline_durable_find(t2_));
+  auto fork1 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
+  auto fork2 = fork1->NewFork(fork1->timeline_find(t2_));
+  auto fork3 = fork2->NewFork(fork2->timeline_find(t2_));
   fork2->push_back(t3_);
   auto it = fork3->end();
   --it;
@@ -615,7 +615,7 @@ TEST_F(ForkableTest, IteratorIncrementNoForkSuccess) {
 TEST_F(ForkableTest, IteratorIncrementForkSuccess) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
-  auto fork = trajectory_.NewFork(trajectory_.timeline_durable_find(t1_));
+  auto fork = trajectory_.NewFork(trajectory_.timeline_find(t1_));
   trajectory_.push_back(t4_);
   fork->push_back(t3_);
   auto it = fork->begin();
@@ -629,9 +629,9 @@ TEST_F(ForkableTest, IteratorIncrementForkSuccess) {
 TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
-  auto fork1 = trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
-  auto fork2 = fork1->NewFork(fork1->timeline_durable_find(t2_));
-  auto fork3 = fork2->NewFork(fork2->timeline_durable_find(t2_));
+  auto fork1 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
+  auto fork2 = fork1->NewFork(fork1->timeline_find(t2_));
+  auto fork3 = fork2->NewFork(fork2->timeline_find(t2_));
   auto it = fork3->begin();
   EXPECT_EQ(t1_, *it);
   ++it;
@@ -655,8 +655,8 @@ TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
 TEST_F(ForkableTest, IteratorEndEquality) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
-  auto fork1 = trajectory_.NewFork(trajectory_.timeline_durable_find(t1_));
-  auto fork2 = trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+  auto fork1 = trajectory_.NewFork(trajectory_.timeline_find(t1_));
+  auto fork2 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
   auto it1 = fork1->end();
   auto it2 = fork2->end();
   EXPECT_NE(it1, it2);
@@ -668,7 +668,7 @@ TEST_F(ForkableTest, Root) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
   not_null<FakeTrajectory*> const fork =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
   EXPECT_TRUE(trajectory_.is_root());
   EXPECT_FALSE(fork->is_root());
   EXPECT_EQ(&trajectory_, trajectory_.root());
@@ -695,7 +695,7 @@ TEST_F(ForkableTest, IteratorBeginSuccess) {
   EXPECT_EQ(it, trajectory_.end());
 
   not_null<FakeTrajectory*> const fork =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork->push_back(t4_);
 
   it = fork->begin();
@@ -728,7 +728,7 @@ TEST_F(ForkableTest, IteratorFindSuccess) {
   EXPECT_EQ(it, trajectory_.end());
 
   not_null<FakeTrajectory*> const fork =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork->push_back(t4_);
 
   it = fork->Find(t0_);
@@ -762,7 +762,7 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   EXPECT_EQ(it, trajectory_.end());
 
   not_null<FakeTrajectory*> const fork1 =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork1->push_back(t4_);
 
   it = fork1->LowerBound(t0_);
@@ -783,7 +783,7 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   EXPECT_EQ(it, fork1->end());
 
   not_null<FakeTrajectory*> const fork2 =
-      fork1->NewFork(fork1->timeline_durable_find(t2_));
+      fork1->NewFork(fork1->timeline_find(t2_));
   fork2->push_back(t5_);
   it = fork2->LowerBound(t4_ - 1 * Second);
   EXPECT_EQ(t5_, *it);
@@ -798,14 +798,14 @@ TEST_F(ForkableTest, FrontBack) {
   EXPECT_EQ(t3_, trajectory_.back());
 
   not_null<FakeTrajectory*> const fork1 =
-      trajectory_.NewFork(trajectory_.timeline_durable_find(t2_));
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork1->push_back(t4_);
 
   EXPECT_EQ(t1_, fork1->front());
   EXPECT_EQ(t4_, fork1->back());
 
   not_null<FakeTrajectory*> const fork2 =
-      fork1->NewFork(fork1->timeline_durable_find(t2_));
+      fork1->NewFork(fork1->timeline_find(t2_));
   fork2->push_back(t5_);
 
   EXPECT_EQ(t1_, fork2->front());
