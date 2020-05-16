@@ -278,6 +278,8 @@ class PileUpTest : public testing::Test {
   Part p2_;
 };
 
+#if 0
+
 // Exercises the entire lifecycle of a |PileUp| that is subject to an intrinsic
 // force.
 TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
@@ -573,6 +575,8 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                               890.0 / 9.0 * Metre / Second}),
                        46)));
 }
+
+#endif
 
 TEST_F(PileUpTest, MidStepIntrinsicForce) {
   // An empty ephemeris; the parameters don't matter, since there are no bodies
