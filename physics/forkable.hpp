@@ -30,9 +30,10 @@ using geometry::Instant;
 // The template parameters with 1337 names are those that participate in this
 // mutual CRTP.
 
-template<typename Tr4jectory, typename It3rator>
+template<typename Tr4jectory, typename It3rator, typename Traits>
 class Forkable;
 
+//TODO(phl):comment
 // This traits class must export declarations similar to the following:
 //
 // using TimelineConstIterator = ...;
@@ -44,15 +45,12 @@ class Forkable;
 // NOTE(phl): This was originally written as a trait under the assumption that
 // we would want to expose STL iterators to clients.  This doesn't seem like a
 // good idea anymore, so maybe this should turn into another CRTP class.
-template<typename Tr4jectory>
-struct ForkableTraits;
 
 // A template for iterating over the timeline of a Forkable object, taking forks
 // into account.
-template<typename Tr4jectory, typename It3rator>
+template<typename Tr4jectory, typename It3rator, typename Traits>
 class ForkableIterator {
-  using TimelineConstIterator =
-      typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
+  using TimelineConstIterator = typename Traits::TimelineConstIterator;
 
  public:
   ForkableIterator() = default;
@@ -93,20 +91,19 @@ class ForkableIterator {
   TimelineConstIterator current_;
   std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
 
-  template<typename, typename>
+  template<typename, typename, typename>
   friend class Forkable;
 };
 
 // This template represents a trajectory which is forkable and iterable (using
 // a ForkableIterator).
-template<typename Tr4jectory, typename It3rator>
+template<typename Tr4jectory, typename It3rator, typename Traits>
 class Forkable {
  public:
   // An iterator into the timeline of the trajectory.  Must be STL-like.
   // Beware, if these iterators are invalidated all the guarantees of Forkable
   // are void.
-  using TimelineConstIterator =
-      typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
+  using TimelineConstIterator = typename Traits::TimelineConstIterator;
 
   Forkable() = default;
   virtual ~Forkable() = default;
@@ -236,7 +233,7 @@ class Forkable {
   std::optional<TimelineConstIterator> position_in_parent_timeline_;
   Children children_;
 
-  template<typename, typename>
+  template<typename, typename, typename>
   friend class ForkableIterator;
 };
 

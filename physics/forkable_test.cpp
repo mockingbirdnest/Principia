@@ -20,18 +20,20 @@ using geometry::Instant;
 using quantities::si::Second;
 using ::testing::ElementsAre;
 
-class FakeTrajectory;
-
-template<>
-struct ForkableTraits<FakeTrajectory> : not_constructible {
+struct FakeTrajectoryTraits : not_constructible {
   using TimelineConstIterator = std::list<Instant>::const_iterator;
   static Instant const& time(TimelineConstIterator const it);
 };
 
-class FakeTrajectoryIterator
-    : public ForkableIterator<FakeTrajectory, FakeTrajectoryIterator> {
+class FakeTrajectory;
+
+class FakeTrajectoryIterator : public ForkableIterator<FakeTrajectory,
+                                                       FakeTrajectoryIterator,
+                                                       FakeTrajectoryTraits> {
  public:
-  using ForkableIterator<FakeTrajectory, FakeTrajectoryIterator>::current;
+  using ForkableIterator<FakeTrajectory,
+                         FakeTrajectoryIterator,
+                         FakeTrajectoryTraits>::current;
   using reference = Instant const&;
 
   reference operator*() const;
@@ -42,7 +44,8 @@ class FakeTrajectoryIterator
 };
 
 class FakeTrajectory : public Forkable<FakeTrajectory,
-                                       FakeTrajectoryIterator> {
+                                       FakeTrajectoryIterator,
+                                       FakeTrajectoryTraits> {
  public:
   using Iterator = FakeTrajectoryIterator;
 
@@ -52,11 +55,16 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   void push_front(Instant const& time);
   void push_back(Instant const& time);
 
-  using Forkable<FakeTrajectory, Iterator>::NewFork;
-  using Forkable<FakeTrajectory, Iterator>::AttachForkToCopiedBegin;
-  using Forkable<FakeTrajectory, Iterator>::DetachForkWithCopiedBegin;
-  using Forkable<FakeTrajectory, Iterator>::DeleteAllForksAfter;
-  using Forkable<FakeTrajectory, Iterator>::CheckNoForksBefore;
+  using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
+      NewFork;
+  using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
+      AttachForkToCopiedBegin;
+  using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
+      DetachForkWithCopiedBegin;
+  using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
+      DeleteAllForksAfter;
+  using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
+      CheckNoForksBefore;
 
   TimelineConstIterator timeline_begin() const override;
   TimelineConstIterator timeline_end() const override;
@@ -74,14 +82,13 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   // Use list<> because we want the iterators to remain valid across operations.
   std::list<Instant> timeline_;
 
-  template<typename, typename>
+  template<typename, typename, typename>
   friend class ForkableIterator;
-  template<typename, typename>
+  template<typename, typename, typename>
   friend class Forkable;
 };
 
-Instant const& ForkableTraits<FakeTrajectory>::time(
-    TimelineConstIterator const it) {
+Instant const& FakeTrajectoryTraits::time(TimelineConstIterator const it) {
   return *it;
 }
 
