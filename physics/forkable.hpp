@@ -29,22 +29,19 @@ using geometry::Instant;
 // and Forkable may then be instantiated using ForkableIterator.
 // The template parameters with 1337 names are those that participate in this
 // mutual CRTP.
+// Both classes have a Traits template parameter that gathers common
+// implementation properties.  The Traits class must export declarations similar
+// to the following:
+//   using Timeline = ...;
+//   using TimelineConstIterator = ...;
+//   static Instant const& time(TimelineConstIterator it);
+//
+// TimelineConstIterator must be an STL-like iterator in the timeline of
+// Tr4jectory.  |time()| must return the corresponding time.  Iterators must be
+// STL-like and *must*not* be invalidated when the trajectory changes.
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 class Forkable;
-
-//TODO(phl):comment
-// This traits class must export declarations similar to the following:
-//
-// using TimelineConstIterator = ...;
-// static Instant const& time(TimelineConstIterator it);
-//
-// TimelineConstIterator must be an STL-like iterator in the timeline of
-// Tr4jectory.  |time()| must return the corresponding time.
-//
-// NOTE(phl): This was originally written as a trait under the assumption that
-// we would want to expose STL iterators to clients.  This doesn't seem like a
-// good idea anymore, so maybe this should turn into another CRTP class.
 
 // A template for iterating over the timeline of a Forkable object, taking forks
 // into account.
@@ -145,9 +142,6 @@ class Forkable {
   bool Empty() const;
 
  protected:
-  // An iterator into the timeline of the trajectory.  Must be STL-like.
-  // Beware, if these iterators are invalidated all the guarantees of Forkable
-  // are void.
   using TimelineConstIterator = typename Traits::TimelineConstIterator;
 
   // The API that must be implemented by subclasses.
