@@ -419,7 +419,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     CHECK(Contains(apparent_part_rigid_motion_, part));
   }
 
-  Instant const t0 = psychohistory_->back().time;
+  Instant const& t0 = psychohistory_->back().time;
   Time const Δt = t - t0;
 
   MechanicalSystem<Apparent, ApparentPileUp> apparent_system;
@@ -428,7 +428,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     apparent_system.AddRigidBody(
         apparent_part_rigid_motion, part->mass(), part->inertia_tensor());
   }
-  auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
   auto const apparent_angular_momentum = apparent_system.AngularMomentum();
   auto const apparent_inertia_tensor = apparent_system.InertiaTensor();
   auto apparent_inertia_eigensystem =
@@ -436,8 +435,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // TODO(phl): |Diagonalize| should produce unit quaternions.
   apparent_inertia_eigensystem.rotation =
       Rotation<PileUpPrincipalAxes, ApparentPileUp>(
-          apparent_inertia_eigensystem.rotation.quaternion() /
-          apparent_inertia_eigensystem.rotation.quaternion().Norm());
+          Normalize(apparent_inertia_eigensystem.rotation.quaternion()));
 
   Rotation<PileUpPrincipalAxes, ApparentPileUp> const apparent_attitude =
       apparent_inertia_eigensystem.rotation;
@@ -455,7 +453,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
 
   // In a non-rigid body, the principal axes are not stable, and cannot be used
   // to determine attitude.  We treat this as a flexible body, and use a part to
-  // propagate the attitude: its attitude at |t0|, is used, together with its
+  // propagate the attitude: its attitude at |t0| is used, together with its
   // orientation with respect to the new principal axes (from apparent
   // coordinates at |t|), to define the attitude at |t0| of the new principal
   // axes.
@@ -466,9 +464,10 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   std::optional<OrthogonalMap<RigidPart, PileUpPrincipalAxes>>
       reference_part_orientation_in_principal_axes;
   for (auto const& [part, apparent_part_motion] : apparent_part_rigid_motion_) {
-    RigidMotion<RigidPart, PileUpPrincipalAxes> part_motion_in_principal_axes =
-        (apparent_pile_up_motion.Inverse() *
-         apparent_system.LinearMotion().Inverse() * apparent_part_motion);
+    RigidMotion<RigidPart, PileUpPrincipalAxes> const
+        part_motion_in_principal_axes =
+            apparent_pile_up_motion.Inverse() *
+            apparent_system.LinearMotion().Inverse() * apparent_part_motion;
     auto const part_proper_ω =
         part_motion_in_principal_axes.angular_velocity_of_to_frame().Norm();
     if (part_proper_ω < reference_part_proper_ω) {
@@ -493,7 +492,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
        reference_part_orientation_in_principal_axes->Inverse())
           .AsRotation();
   initial_attitude = Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
-      initial_attitude.quaternion() / initial_attitude.quaternion().Norm());
+      Normalize(initial_attitude.quaternion()));
 
   // We take into account the changes to |angular_momentum_| and to the moments
   // of inertia for the step from t0 to t before propagating the attitude from
@@ -527,8 +526,8 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
        apparent_part_rigid_motion_) {
     RigidMotion<RigidPart, NonRotatingPileUp> const actual_rigid_motion =
         correction * apparent_part_rigid_motion;
-    actual_part_rigid_motion_.emplace(part,
-                                      correction * apparent_part_rigid_motion);
+
+    actual_part_rigid_motion_.emplace(part, actual_rigid_motion);
     rigid_pile_up_.emplace(
         part,
         actual_pile_up_motion.rigid_transformation().Inverse() *
@@ -536,14 +535,13 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   }
   apparent_part_rigid_motion_.clear();
 
+  std::stringstream s;
   Angle const α =
       rotational_correction.orthogonal_map().AsRotation().RotationAngle();
   AngularVelocity<PileUpPrincipalAxes> const ω_apparent =
       apparent_pile_up_motion.angular_velocity_of_to_frame();
   AngularVelocity<PileUpPrincipalAxes> const ω_actual =
       actual_pile_up_motion.angular_velocity_of_to_frame();
-
-  std::stringstream s;
   constexpr AngularFrequency rpm = 2 * π * Radian / quantities::si::Minute;
   s << "|Lap|: " << apparent_angular_momentum.Norm() << "\n"
     << "|Lac|: " << angular_momentum_.Norm() << "\n"
@@ -667,6 +665,11 @@ void PileUp::NudgeParts() const {
         pile_up_to_barycentric * FindOrDie(actual_part_rigid_motion_, part);
     part->set_rigid_motion(actual_part_rigid_motion);
   }
+}
+
+not_null<Part*> PileUp::PickReferencePart() const
+{
+  return not_null<Part*>();
 }
 
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>

@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEngine;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -243,8 +242,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       conserve_angular_momentum = UnityEngine.GUILayout.Toggle(
           conserve_angular_momentum,
           "Conserve angular momentum");
-      Interface.SetAngularMomentumConservation(
-          conserve_angular_momentum);
+      Interface.SetAngularMomentumConservation(conserve_angular_momentum);
       string trace = null;
       if (FlightGlobals.ActiveVessel != null &&
           plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
@@ -511,10 +509,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   // They must not be serialized: their non-default values can lead to absurd
   // behaviour.
   private static bool conserve_angular_momentum = true;
-  private static bool body_fixed_forces = false;
-  private static bool inertially_fixed_forces = false;
-  private static bool precalculated_torque = false;
-  private static bool instant_initial_forces = true;
   private static readonly bool show_2519_debugging_ui = true;
 
   private static readonly double[] prediction_length_tolerances_ =
