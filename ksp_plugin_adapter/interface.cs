@@ -28,7 +28,7 @@ internal partial struct Status {
   }
 }
 
-internal partial struct XYZ {
+public partial struct XYZ {
   public static explicit operator XYZ(Vector3d v) {
     return new XYZ{x = v.x, y = v.y, z = v.z};
   }

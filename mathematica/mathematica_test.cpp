@@ -11,6 +11,8 @@
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/r3x3_matrix.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "gtest/gtest.h"
 #include "numerics/fixed_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -29,6 +31,8 @@ using geometry::Instant;
 using geometry::Point;
 using geometry::Quaternion;
 using geometry::R3Element;
+using geometry::R3x3Matrix;
+using geometry::SymmetricBilinearForm;
 using geometry::Vector;
 using geometry::Velocity;
 using numerics::FixedVector;
@@ -103,6 +107,25 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
   {
     EXPECT_EQ(
+        "List["
+        "List["
+        "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]],"
+        "List["
+        "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision]],"
+        "List["
+        "SetPrecision[+7.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+9.00000000000000000*^+00,$MachinePrecision]]]",
+        ToMathematica(R3x3Matrix<double>({1.0, 2.0, 3.0},
+                                         {4.0, 5.0, 6.0},
+                                         {7.0, 8.0, 9.0})));
+  }
+  {
+    EXPECT_EQ(
         "Quaternion["
         "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
@@ -141,6 +164,23 @@ TEST_F(MathematicaTest, ToMathematica) {
         "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]",
         ToMathematica(Point<Vector<double, F>>() +
                       Vector<double, F>({2.0, 3.0, -4.0})));
+  }
+  {
+    EXPECT_EQ(
+        "List["
+        "List["
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision]],"
+        "List["
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision]],"
+        "List["
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision]]]",
+        ToMathematica(SymmetricBilinearForm<double, F, Vector>()));
   }
   {
     EXPECT_EQ(
