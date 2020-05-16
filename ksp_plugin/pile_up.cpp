@@ -79,8 +79,7 @@ PileUp::PileUp(
       adaptive_step_parameters_(std::move(adaptive_step_parameters)),
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      deletion_callback_(std::move(deletion_callback)),
-      logger_(SOLUTION_DIR / "mathematica" / "pile_up", true) {
+      deletion_callback_(std::move(deletion_callback)) {
   LOG(INFO) << "Constructing pile up at " << this;
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
   for (not_null<Part*> const part : parts_) {
@@ -372,8 +371,7 @@ PileUp::PileUp(
       history_(std::move(history)),
       psychohistory_(psychohistory),
       angular_momentum_(angular_momentum),
-      deletion_callback_(std::move(deletion_callback)),
-      logger_(SOLUTION_DIR / "mathematica" / "pile_up", true) {}
+      deletion_callback_(std::move(deletion_callback)) {}
 
 void PileUp::MakeEulerSolver(
     InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
@@ -544,20 +542,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
       apparent_pile_up_motion.angular_velocity_of_to_frame();
   AngularVelocity<PileUpPrincipalAxes> const ω_actual =
       actual_pile_up_motion.angular_velocity_of_to_frame();
-
-  logger_.Append("conserveAngularMomentum", conserve_angular_momentum);
-  logger_.Append(
-      "angularVelocity",
-      std::tuple{t, ω_actual},
-      mathematica::ExpressIn(2 * π * Radian, quantities::si::Minute));
-  logger_.Append(
-      "referencePartProperAngularvelocity",
-      std::tuple{t, reference_part_proper_ω},
-      mathematica::ExpressIn(2 * π * Radian, quantities::si::Minute));
-  logger_.Append(
-      "referencePart",
-      std::tuple{t, mathematica::Escape(reference_part->ShortDebugString())},
-      mathematica::ExpressIn(quantities::si::Minute));
 
   std::stringstream s;
   constexpr AngularFrequency rpm = 2 * π * Radian / quantities::si::Minute;
