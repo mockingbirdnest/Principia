@@ -56,6 +56,8 @@ class EulerSolver {
       AttitudeRotation const& initial_attitude,
       Instant const& initial_time);
 
+  R3Element<MomentOfInertia> const& moments_of_inertia() const;
+
   // Computes the angular momentum at the given time in the principal axes.
   // This is mostly useful as input to the following two functions.
   Bivector<AngularMomentum, PrincipalAxesFrame> AngularMomentumAt(
@@ -80,8 +82,6 @@ class EulerSolver {
   RigidMotion<PrincipalAxesFrame, InertialFrame> MotionAt(
       Instant const& time,
       DegreesOfFreedom<InertialFrame> const& linear_motion) const;
-
-  R3Element<MomentOfInertia> const& moments_of_inertia() const;
 
   void WriteToMessage(not_null<serialization::EulerSolver*> message) const;
   static EulerSolver ReadFromMessage(serialization::EulerSolver const& message);
