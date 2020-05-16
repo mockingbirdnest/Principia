@@ -423,7 +423,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
 
   Instant const t0 = psychohistory_->back().time;
   Time const Δt = t - t0;
-  angular_momentum_ += intrinsic_torque_ * Δt + angular_momentum_change_;
 
   MechanicalSystem<Apparent, ApparentPileUp> apparent_system;
   for (auto const& [part, apparent_part_rigid_motion] :
@@ -436,6 +435,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   auto const apparent_inertia_tensor = apparent_system.InertiaTensor();
   auto apparent_inertia_eigensystem =
       apparent_inertia_tensor.Diagonalize<PileUpPrincipalAxes>();
+  // TODO(phl): |Diagonalize| should produce unit quaternions.
   apparent_inertia_eigensystem.rotation =
       Rotation<PileUpPrincipalAxes, ApparentPileUp>(
           apparent_inertia_eigensystem.rotation.quaternion() /
@@ -455,6 +455,12 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
           apparent_angular_momentum / apparent_inertia_tensor,
           ApparentPileUp::unmoving);
 
+  // In a non-rigid body, the principal axes are not stable, and cannot be used
+  // to determine attitude.  We treat this as a flexible body, and use a part to
+  // propagate the attitude: its attitude at |t0|, is used, together with its
+  // orientation with respect to the new principal axes (from apparent
+  // coordinates at |t|), to define the attitude at |t0| of the new principal
+  // axes.
   // TODO(egg): pick the part that moves the slowest with respect to the
   // principal axes.
   not_null const reference_part = parts_.front();
@@ -469,26 +475,32 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
 
   // This is the orientation of the reference part with respect to the new
   // principal axes, i.e., those corresponding to |apparent_inertia_tensor|.
-  // Just as we make the torques take effect before we evolve the pile up as a
-  // rigid body, we take the change in moment of inertia into account.  This
-  // forms a splitting with the game, with the game changing angular momentum
-  // and moment of inertia according to various physical effects (engines,
-  // aerodynamics, internal dynamics, etc.) and the Euler solver changing
-  // attitude and angular velocity according to Euler’s equations.
   OrthogonalMap<RigidPart, PileUpPrincipalAxes>
       reference_part_attitude_in_pile_up_principal_axes =
           apparent_pile_up_motion.orthogonal_map().Inverse() *
           reference_part_apparent_attitude;
 
+  // |reference_part_initial_attitude|, an |actual_part_rigid_motion_|, comes
+  // from the previous EulerSolver.  |initial_attitude|  will be used to
+  // construct the new one.  In order to prevent roundoff accumulation from
+  // eventually producing noticeably non-unit quaternions, we normalize
+  // |initial_attitude|.
   Rotation<PileUpPrincipalAxes, NonRotatingPileUp> initial_attitude =
-      conserve_angular_momentum
-          ? (reference_part_initial_attitude *
-             reference_part_attitude_in_pile_up_principal_axes.Inverse())
-                .AsRotation()
-          : euler_solver_->AttitudeAt(t0);
+      (reference_part_initial_attitude *
+       reference_part_attitude_in_pile_up_principal_axes.Inverse())
+          .AsRotation();
   initial_attitude = Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
       initial_attitude.quaternion() / initial_attitude.quaternion().Norm());
 
+
+  // We take into account the changes to |angular_momentum_| and to the moments
+  // of inertia for the step from t0 to t before propagating the attitude from
+  // t0 to t. This forms a splitting with the game, with the game changing
+  // angular momentum and moment of inertia according to various physical
+  // effects (engines, aerodynamics, internal dynamics, etc.) that depend, among
+  // other things, on the attitude and angular velocity, and the Euler solver
+  // changing attitude and angular velocity according to Euler’s equations.
+  angular_momentum_ += intrinsic_torque_ * Δt + angular_momentum_change_;
   euler_solver_.emplace(
       apparent_inertia_eigensystem.form.coordinates().Diagonal(),
       angular_momentum_,
@@ -521,14 +533,14 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
             actual_rigid_motion.rigid_transformation());
   }
   apparent_part_rigid_motion_.clear();
-  
+
   Angle const α =
       rotational_correction.orthogonal_map().AsRotation().RotationAngle();
   AngularVelocity<PileUpPrincipalAxes> const ω_apparent =
       apparent_pile_up_motion.angular_velocity_of_to_frame();
   AngularVelocity<PileUpPrincipalAxes> const ω_actual =
       actual_pile_up_motion.angular_velocity_of_to_frame();
-      
+
   logger_.Append("conserveAngularMomentum", conserve_angular_momentum);
   logger_.Append(
       "angularVelocity",
@@ -550,13 +562,10 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
                               Identity<ApparentPileUp, NonRotatingPileUp>()(
                                   apparent_angular_momentum)) /
            quantities::si::Degree
-    << rotational_correction({ApparentPileUp::origin, ApparentPileUp::unmoving})
-    << "\n"
     << u8"°\n"
     << u8"α: " << α / quantities::si::Degree << u8"°\n"
     << u8"|ωap|: "
-    << ω_apparent.Norm() / (2 * π * Radian / quantities::si::Minute)
-    << " rpm\n"
+    << ω_apparent.Norm() / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
     << u8"|ωac|: "
     << ω_actual.Norm() / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
     << u8"|ωac|-|ωap|: "
@@ -564,8 +573,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
            (2 * π * Radian / quantities::si::Minute)
     << " rpm\n"
     << u8"∡ωac, ωap: "
-    << geometry::AngleBetween(ω_actual, ω_apparent) /
-           quantities::si::Degree
+    << geometry::AngleBetween(ω_actual, ω_apparent) / quantities::si::Degree
     << u8"°\n";
   trace = s.str();
 }

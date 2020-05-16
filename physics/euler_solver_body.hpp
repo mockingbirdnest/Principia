@@ -413,10 +413,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::MotionAt(
     DegreesOfFreedom<InertialFrame> const& linear_motion) const {
   Bivector<AngularMomentum, PrincipalAxesFrame> const angular_momentum =
       AngularMomentumAt(time);
-  Rotation<PrincipalAxesFrame, InertialFrame> attitude =
+  Rotation<PrincipalAxesFrame, InertialFrame> const attitude =
       AttitudeAt(angular_momentum, time);
-  attitude = Rotation<PrincipalAxesFrame, InertialFrame>(
-      attitude.quaternion() / attitude.quaternion().Norm());
   AngularVelocity<InertialFrame> const angular_velocity =
       attitude(AngularVelocityFor(angular_momentum));
 
