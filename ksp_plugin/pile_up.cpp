@@ -554,9 +554,10 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
       "referencePartProperAngularvelocity",
       std::tuple{t, reference_part_proper_ω},
       mathematica::ExpressIn(2 * π * Radian, quantities::si::Minute));
-  logger_.Append("referencePart",
-                 std::tuple{t, reference_part->ShortDebugString()},
-                 mathematica::ExpressIn(quantities::si::Minute));
+  logger_.Append(
+      "referencePart",
+      std::tuple{t, mathematica::Escape(reference_part->ShortDebugString())},
+      mathematica::ExpressIn(quantities::si::Minute));
 
   std::stringstream s;
   constexpr AngularFrequency rpm = 2 * π * Radian / quantities::si::Minute;
