@@ -273,6 +273,12 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
 }
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
+R3Element<MomentOfInertia> const&
+EulerSolver<InertialFrame, PrincipalAxesFrame>::moments_of_inertia() const {
+  return moments_of_inertia_;
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
 Bivector<AngularMomentum, PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
     Instant const& time) const {
@@ -425,12 +431,6 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::MotionAt(
           attitude.template Forget<OrthogonalMap>()),
       angular_velocity,
       linear_motion.velocity());
-}
-
-template<typename InertialFrame, typename PrincipalAxesFrame>
-R3Element<MomentOfInertia> const&
-EulerSolver<InertialFrame, PrincipalAxesFrame>::moments_of_inertia() const {
-  return moments_of_inertia_;
 }
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
