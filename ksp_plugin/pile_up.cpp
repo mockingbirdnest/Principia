@@ -667,11 +667,6 @@ void PileUp::NudgeParts() const {
   }
 }
 
-not_null<Part*> PileUp::PickReferencePart() const
-{
-  return not_null<Part*>();
-}
-
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>
 void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   auto const& pile_up_dof = it->degrees_of_freedom;
