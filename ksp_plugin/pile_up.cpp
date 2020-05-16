@@ -424,13 +424,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   Instant const t0 = psychohistory_->back().time;
   Time const Δt = t - t0;
   angular_momentum_ += intrinsic_torque_ * Δt + angular_momentum_change_;
-  euler_solver_.emplace(euler_solver_->moments_of_inertia(),
-                        angular_momentum_,
-                        euler_solver_->AttitudeAt(t0),
-                        t0);
-  RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp> const
-      pile_up_actual_motion = euler_solver_->MotionAt(
-          t, {NonRotatingPileUp::origin, NonRotatingPileUp::unmoving});
 
   MechanicalSystem<Apparent, ApparentPileUp> apparent_system;
   for (auto const& [part, apparent_part_rigid_motion] :
@@ -441,106 +434,100 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   auto const apparent_centre_of_mass = apparent_system.centre_of_mass();
   auto const apparent_angular_momentum = apparent_system.AngularMomentum();
   auto const apparent_inertia_tensor = apparent_system.InertiaTensor();
+  auto apparent_inertia_eigensystem =
+      apparent_inertia_tensor.Diagonalize<PileUpPrincipalAxes>();
+  apparent_inertia_eigensystem.rotation =
+      Rotation<PileUpPrincipalAxes, ApparentPileUp>(
+          apparent_inertia_eigensystem.rotation.quaternion() /
+          apparent_inertia_eigensystem.rotation.quaternion().Norm());
 
-  
-  using PermutedSignedPileUpPrincipalAxes =
-      Frame<enum class PermutedSignedPileUpPrincipalAxesTag>;
-  Rotation<ApparentPileUp, PermutedSignedPileUpPrincipalAxes> const
-      signed_apparent_attitude =
-      apparent_inertia_tensor.Diagonalize<PermutedSignedPileUpPrincipalAxes>()
-          .rotation.Inverse();
-  Rotation<PileUpPrincipalAxes, NonRotatingPileUp> const actual_attitude =
-      pile_up_actual_motion.orthogonal_map().AsRotation();
+  Rotation<PileUpPrincipalAxes, ApparentPileUp> const apparent_attitude =
+      apparent_inertia_eigensystem.rotation;
 
-  Angle α = Infinity<Angle>;
-  std::optional<Rotation<ApparentPileUp, PileUpPrincipalAxes>>
-      apparent_attitude;
-
-  // Orientation-preserving permutation & signature.
-  for (auto const permutation :
-       {EvenPermutation::XYZ, EvenPermutation::YZX, EvenPermutation::ZXY}) {
-    using SignedPileUpPrincipalAxes =
-        Frame<enum class SignedPileUpPrincipalAxesTag>;
-    Permutation<PermutedSignedPileUpPrincipalAxes, SignedPileUpPrincipalAxes> σ(
-        permutation);
-    for (auto const x : {Sign::Positive(), Sign::Negative()}) {
-      for (auto const y : {Sign::Positive(), Sign::Negative()}) {
-        Signature<SignedPileUpPrincipalAxes, PileUpPrincipalAxes> s(
-            x, y, DeduceSignPreservingOrientation{});
-        auto const tentative_apparent_attitude = s.Forget<Rotation>() *
-                                                 σ.Forget<Rotation>() *
-                                                 signed_apparent_attitude;
-        Angle const tentative_α = Abs(
-            (actual_attitude * tentative_apparent_attitude).RotationAngle());
-        if (tentative_α < α) {
-          α = tentative_α;
-          apparent_attitude = tentative_apparent_attitude;
-        }
-      }
-    }
-  }
-
-  // Orientation-reversing permutation & signature.
-  for (auto const permutation :
-       {OddPermutation::XZY, OddPermutation::ZYX, OddPermutation::YXZ}) {
-    using SignedPileUpPrincipalAxes =
-        Frame<enum class SignedPileUpPrincipalAxesTag,
-              Arbitrary,
-              Handedness::Left>;
-    Permutation<PermutedSignedPileUpPrincipalAxes, SignedPileUpPrincipalAxes> σ(
-        permutation);
-    for (auto const x : {Sign::Positive(), Sign::Negative()}) {
-      for (auto const y : {Sign::Positive(), Sign::Negative()}) {
-        Signature<SignedPileUpPrincipalAxes, PileUpPrincipalAxes> s(
-            x, y, DeduceSignReversingOrientation{});
-        auto const tentative_apparent_attitude =
-            (s.Forget<OrthogonalMap>() * σ.Forget<OrthogonalMap>())
-                .AsRotation() *
-            signed_apparent_attitude;
-        Angle const tentative_α = Abs(
-            (actual_attitude * tentative_apparent_attitude).RotationAngle());
-        if (tentative_α < α) {
-          α = tentative_α;
-          apparent_attitude = tentative_apparent_attitude;
-        }
-      }
-    }
-  }
-
-  // The angular velocity of a rigid body with the inertia and angular momentum
-  // of the apparent parts.
-  auto const apparent_equivalent_angular_velocity =
-      apparent_angular_momentum / apparent_inertia_tensor;
-
-  RigidMotion<ApparentPileUp, PileUpPrincipalAxes> const
+  // The motion of a hypothetical rigid body with the same moment of inertia and
+  // angular momentum as the apparent parts.
+  RigidMotion<PileUpPrincipalAxes, ApparentPileUp> const
       apparent_pile_up_motion(
-          RigidTransformation<ApparentPileUp, PileUpPrincipalAxes>(
-              ApparentPileUp::origin,
+          RigidTransformation<PileUpPrincipalAxes, ApparentPileUp>(
               PileUpPrincipalAxes::origin,
-              apparent_attitude->Forget<OrthogonalMap>()),
-          apparent_equivalent_angular_velocity,
+              ApparentPileUp::origin,
+              apparent_attitude.Forget<OrthogonalMap>()),
+          apparent_angular_momentum / apparent_inertia_tensor,
           ApparentPileUp::unmoving);
-  RigidMotion<ApparentPileUp, NonRotatingPileUp> const
-      apparent_to_pile_up_rotational_motion =
-          conserve_angular_momentum
-              ? pile_up_actual_motion * apparent_pile_up_motion
-              : RigidMotion<ApparentPileUp, NonRotatingPileUp>::Identity();
-  RigidMotion<Apparent, NonRotatingPileUp> const apparent_to_pile_up_motion =
-      apparent_to_pile_up_rotational_motion *
-      apparent_system.LinearMotion().Inverse();
 
-  // Now update the motions of the parts in the pile-up frame.
+  // TODO(egg): pick the part that moves the slowest with respect to the
+  // principal axes.
+  not_null const reference_part = parts_.front();
+  OrthogonalMap<RigidPart, NonRotatingPileUp> const
+      reference_part_initial_attitude =
+          actual_part_rigid_motion_.at(reference_part).orthogonal_map();
+  OrthogonalMap<RigidPart, ApparentPileUp> const
+      reference_part_apparent_attitude =
+          (apparent_system.LinearMotion().Inverse() *
+           apparent_part_rigid_motion_.at(reference_part))
+              .orthogonal_map();
+
+  // This is the orientation of the reference part with respect to the new
+  // principal axes, i.e., those corresponding to |apparent_inertia_tensor|.
+  // Just as we make the torques take effect before we evolve the pile up as a
+  // rigid body, we take the change in moment of inertia into account.  This
+  // forms a splitting with the game, with the game changing angular momentum
+  // and moment of inertia according to various physical effects (engines,
+  // aerodynamics, internal dynamics, etc.) and the Euler solver changing
+  // attitude and angular velocity according to Euler’s equations.
+  OrthogonalMap<RigidPart, PileUpPrincipalAxes>
+      reference_part_attitude_in_pile_up_principal_axes =
+          apparent_pile_up_motion.orthogonal_map().Inverse() *
+          reference_part_apparent_attitude;
+
+  Rotation<PileUpPrincipalAxes, NonRotatingPileUp> initial_attitude =
+      conserve_angular_momentum
+          ? (reference_part_initial_attitude *
+             reference_part_attitude_in_pile_up_principal_axes.Inverse())
+                .AsRotation()
+          : euler_solver_->AttitudeAt(t0);
+  initial_attitude = Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
+      initial_attitude.quaternion() / initial_attitude.quaternion().Norm());
+
+  euler_solver_.emplace(
+      apparent_inertia_eigensystem.form.coordinates().Diagonal(),
+      angular_momentum_,
+      initial_attitude,
+      t0);
+
+  // This is where we compute our half of the splitting.
+  RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp> const
+      actual_pile_up_motion = euler_solver_->MotionAt(
+          t, {NonRotatingPileUp::origin, NonRotatingPileUp::unmoving});
+
+  RigidMotion<ApparentPileUp, NonRotatingPileUp> const rotational_correction =
+      actual_pile_up_motion * apparent_pile_up_motion.Inverse();
+  RigidMotion<Apparent, NonRotatingPileUp> const correction =
+      rotational_correction * apparent_system.LinearMotion().Inverse();
+
+  // Now update the motions of the parts in the pile-up frame, and keep their
+  // orientations with respect to the principal axes in case we warp.
   actual_part_rigid_motion_.clear();
-  for (auto const& pair : apparent_part_rigid_motion_) {
-    auto const part = pair.first;
-    auto const& apparent_part_rigid_motion = pair.second;
-    actual_part_rigid_motion_.emplace(
-        part, apparent_to_pile_up_motion * apparent_part_rigid_motion);
+  rigid_pile_up_.clear();
+  for (auto const& [part, apparent_part_rigid_motion] :
+       apparent_part_rigid_motion_) {
+    RigidMotion<RigidPart, NonRotatingPileUp> const actual_rigid_motion =
+        correction * apparent_part_rigid_motion;
+    actual_part_rigid_motion_.emplace(part,
+                                      correction * apparent_part_rigid_motion);
+    rigid_pile_up_.emplace(
+        part,
+        actual_pile_up_motion.rigid_transformation().Inverse() *
+            actual_rigid_motion.rigid_transformation());
   }
   apparent_part_rigid_motion_.clear();
-
+  
+  Angle const α =
+      rotational_correction.orthogonal_map().AsRotation().RotationAngle();
+  AngularVelocity<PileUpPrincipalAxes> const ω_apparent =
+      apparent_pile_up_motion.angular_velocity_of_to_frame();
   AngularVelocity<PileUpPrincipalAxes> const ω_actual =
-      pile_up_actual_motion.angular_velocity_of_to_frame();
+      actual_pile_up_motion.angular_velocity_of_to_frame();
       
   logger_.Append("conserveAngularMomentum", conserve_angular_momentum);
   logger_.Append(
@@ -563,30 +550,24 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
                               Identity<ApparentPileUp, NonRotatingPileUp>()(
                                   apparent_angular_momentum)) /
            quantities::si::Degree
+    << rotational_correction({ApparentPileUp::origin, ApparentPileUp::unmoving})
+    << "\n"
     << u8"°\n"
     << u8"α: " << α / quantities::si::Degree << u8"°\n"
     << u8"|ωap|: "
-    << apparent_equivalent_angular_velocity.Norm() /
-           (2 * π * Radian / quantities::si::Minute)
+    << ω_apparent.Norm() / (2 * π * Radian / quantities::si::Minute)
     << " rpm\n"
     << u8"|ωac|: "
     << ω_actual.Norm() / (2 * π * Radian / quantities::si::Minute) << " rpm\n"
     << u8"|ωac|-|ωap|: "
-    << (ω_actual.Norm() - apparent_equivalent_angular_velocity.Norm()) /
+    << (ω_actual.Norm() - ω_apparent.Norm()) /
            (2 * π * Radian / quantities::si::Minute)
     << " rpm\n"
     << u8"∡ωac, ωap: "
-    << geometry::AngleBetween(
-           ω_actual,
-           (*apparent_attitude)(apparent_equivalent_angular_velocity)) /
+    << geometry::AngleBetween(ω_actual, ω_apparent) /
            quantities::si::Degree
     << u8"°\n";
   trace = s.str();
-
-  // This is what takes the change in moment of inertia into account.
-  MakeEulerSolver(apparent_to_pile_up_rotational_motion.orthogonal_map()(
-                      apparent_inertia_tensor),
-                  t);
 }
 
 Status PileUp::AdvanceTime(Instant const& t) {
