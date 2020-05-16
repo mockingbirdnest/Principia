@@ -21,8 +21,30 @@ using quantities::si::Second;
 using ::testing::ElementsAre;
 
 struct FakeTrajectoryTraits : not_constructible {
-  using TimelineConstIterator = std::list<Instant>::const_iterator;
-  static Instant const& time(TimelineConstIterator const it);
+  using Timeline = std::list<Instant>;
+  struct TimelineDurableConstIterator {
+    Timeline const* container;
+    std::int64_t pos;
+  };
+  using TimelineEphemeralConstIterator = Timeline::const_iterator;
+
+  static Instant const& time(TimelineDurableConstIterator const& it);
+  static Instant const& time(TimelineEphemeralConstIterator const& it);
+
+  static TimelineDurableConstIterator MakeDurable(
+      Timeline const& container,
+      TimelineEphemeralConstIterator const& it);
+  //static TimelineEphemeralConstIterator MakeEphemeral(
+  //    TimelineDurableConstIterator const& it);
+
+  friend bool operator==(TimelineDurableConstIterator const& left,
+                         TimelineEphemeralConstIterator const& right);
+  friend bool operator!=(TimelineDurableConstIterator const& left,
+                         TimelineEphemeralConstIterator const& right);
+  friend TimelineDurableConstIterator& operator++(
+      TimelineDurableConstIterator& right);
+  friend TimelineDurableConstIterator& operator--(
+      TimelineDurableConstIterator& right);
 };
 
 class FakeTrajectory;
@@ -31,9 +53,6 @@ class FakeTrajectoryIterator : public ForkableIterator<FakeTrajectory,
                                                        FakeTrajectoryIterator,
                                                        FakeTrajectoryTraits> {
  public:
-  using ForkableIterator<FakeTrajectory,
-                         FakeTrajectoryIterator,
-                         FakeTrajectoryTraits>::current;
   using reference = Instant const&;
 
   reference operator*() const;
@@ -66,11 +85,12 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
       CheckNoForksBefore;
 
-  TimelineConstIterator timeline_begin() const override;
-  TimelineConstIterator timeline_end() const override;
-  TimelineConstIterator timeline_find(Instant const& time) const override;
-  TimelineConstIterator timeline_lower_bound(
-                            Instant const& time) const override;
+  TimelineEphemeralConstIterator timeline_begin() const override;
+  TimelineEphemeralConstIterator timeline_end() const override;
+  TimelineEphemeralConstIterator timeline_find(
+      Instant const& time) const override;
+  TimelineEphemeralConstIterator timeline_lower_bound(
+      Instant const& time) const override;
   bool timeline_empty() const override;
   std::int64_t timeline_size() const override;
 
@@ -88,12 +108,22 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   friend class Forkable;
 };
 
-Instant const& FakeTrajectoryTraits::time(TimelineConstIterator const it) {
+Instant const& FakeTrajectoryTraits::time(
+    TimelineDurableConstIterator const& it) {
+  auto result = it.container->cbegin();
+  std::advance(result, it.pos);
+  return *result;
+}
+
+Instant const& FakeTrajectoryTraits::time(
+    TimelineEphemeralConstIterator const& it) {
   return *it;
 }
 
 FakeTrajectoryIterator::reference FakeTrajectoryIterator::operator*() const {
-  return *current();
+  auto result = current().container->cbegin();
+  std::advance(result, current().pos);
+  return *result;
 }
 
 not_null<FakeTrajectoryIterator*> FakeTrajectoryIterator::that() {
@@ -116,16 +146,18 @@ void FakeTrajectory::push_back(Instant const& time) {
   timeline_.push_back(time);
 }
 
-FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_begin() const {
+FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::timeline_begin()
+    const {
   return timeline_.begin();
 }
 
-FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_end() const {
+FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::timeline_end()
+    const {
   return timeline_.end();
 }
 
-FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_find(
-    Instant const & time) const {
+FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::timeline_find(
+    Instant const& time) const {
   // Stupid O(N) search.
   for (auto it = timeline_.begin(); it != timeline_.end(); ++it) {
     if (*it == time) {
@@ -135,8 +167,8 @@ FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_find(
   return timeline_.end();
 }
 
-FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_lower_bound(
-                                          Instant const& time) const {
+FakeTrajectory::TimelineEphemeralConstIterator
+FakeTrajectory::timeline_lower_bound(Instant const& time) const {
   // Stupid O(N) search.
   for (auto it = timeline_.begin(); it != timeline_.end(); ++it) {
     if (*it >= time) {
@@ -179,7 +211,7 @@ class ForkableTest : public testing::Test {
     for (FakeTrajectory::Iterator it = trajectory->Find(time);
          it != trajectory->end();
          ++it) {
-      after.push_back(*it.current());
+      after.push_back(*it);
     }
     return after;
   }
@@ -188,7 +220,7 @@ class ForkableTest : public testing::Test {
       not_null<FakeTrajectory const*> const trajectory) {
     FakeTrajectory::Iterator it = trajectory->end();
     --it;
-    return *it.current();
+    return *it;
   }
 
   static std::vector<Instant> Times(
@@ -197,7 +229,7 @@ class ForkableTest : public testing::Test {
     for (FakeTrajectory::Iterator it = trajectory->begin();
          it != trajectory->end();
          ++it) {
-      times.push_back(*it.current());
+      times.push_back(*it);
     }
     return times;
   }
@@ -271,7 +303,7 @@ TEST_F(ForkableTest, ForkAtLast) {
   auto times = Times(fork2);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   EXPECT_EQ(t3_, LastTime(fork2));
-  EXPECT_EQ(t3_, *fork2->Fork().current());
+  EXPECT_EQ(t3_, *fork2->Fork());
 
   auto after = After(fork3, t3_);
   EXPECT_THAT(after, ElementsAre(t3_));
@@ -508,11 +540,11 @@ TEST_F(ForkableTest, IteratorDecrementNoForkSuccess) {
   trajectory_.push_back(t3_);
   auto it = trajectory_.end();
   --it;
-  EXPECT_EQ(t3_, *it.current());
+  EXPECT_EQ(t3_, *it);
   --it;
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   --it;
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
 }
 
 TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
@@ -523,9 +555,9 @@ TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
   fork->push_back(t3_);
   auto it = fork->end();
   --it;
-  EXPECT_EQ(t3_, *it.current());
+  EXPECT_EQ(t3_, *it);
   --it;
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
 }
 
 TEST_F(ForkableTest, IteratorDecrementMultipleForksSuccess) {
@@ -537,9 +569,9 @@ TEST_F(ForkableTest, IteratorDecrementMultipleForksSuccess) {
   fork2->push_back(t3_);
   auto it = fork3->end();
   --it;
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   --it;
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   EXPECT_EQ(it, fork3->begin());
 }
 
@@ -555,11 +587,11 @@ TEST_F(ForkableTest, IteratorIncrementNoForkSuccess) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
   auto it = trajectory_.begin();
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   ++it;
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   ++it;
-  EXPECT_EQ(t3_, *it.current());
+  EXPECT_EQ(t3_, *it);
 }
 
 TEST_F(ForkableTest, IteratorIncrementForkSuccess) {
@@ -569,9 +601,9 @@ TEST_F(ForkableTest, IteratorIncrementForkSuccess) {
   trajectory_.push_back(t4_);
   fork->push_back(t3_);
   auto it = fork->begin();
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   ++it;
-  EXPECT_EQ(t3_, *it.current());
+  EXPECT_EQ(t3_, *it);
   ++it;
   EXPECT_EQ(it, fork->end());
 }
@@ -583,20 +615,20 @@ TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
   auto fork2 = fork1->NewFork(fork1->timeline_find(t2_));
   auto fork3 = fork2->NewFork(fork2->timeline_find(t2_));
   auto it = fork3->begin();
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   ++it;
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   ++it;
   EXPECT_EQ(it, fork3->end());
   fork3->push_back(t3_);
   --it;
-  EXPECT_EQ(t3_, *it.current());
+  EXPECT_EQ(t3_, *it);
   it = fork3->begin();
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   ++it;
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   ++it;
-  EXPECT_EQ(t3_, *it.current());
+  EXPECT_EQ(t3_, *it);
   ++it;
   EXPECT_EQ(it, fork3->end());
 }
@@ -623,7 +655,7 @@ TEST_F(ForkableTest, Root) {
   EXPECT_FALSE(fork->is_root());
   EXPECT_EQ(&trajectory_, trajectory_.root());
   EXPECT_EQ(&trajectory_, fork->root());
-  EXPECT_EQ(t2_, *fork->Fork().current());
+  EXPECT_EQ(t2_, *fork->Fork());
 }
 
 TEST_F(ForkableTest, IteratorBeginSuccess) {
@@ -636,11 +668,11 @@ TEST_F(ForkableTest, IteratorBeginSuccess) {
 
   it = trajectory_.begin();
   EXPECT_NE(it, trajectory_.end());
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   ++it;
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   ++it;
-  EXPECT_EQ(t3_, *it.current());
+  EXPECT_EQ(t3_, *it);
   ++it;
   EXPECT_EQ(it, trajectory_.end());
 
@@ -650,11 +682,11 @@ TEST_F(ForkableTest, IteratorBeginSuccess) {
 
   it = fork->begin();
   EXPECT_NE(it, fork->end());
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   ++it;
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   ++it;
-  EXPECT_EQ(t4_, *it.current());
+  EXPECT_EQ(t4_, *it);
   ++it;
   EXPECT_EQ(it, fork->end());
 }
@@ -671,9 +703,9 @@ TEST_F(ForkableTest, IteratorFindSuccess) {
   EXPECT_EQ(it, trajectory_.end());
   it = trajectory_.Find(t1_);
   EXPECT_NE(it, trajectory_.end());
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   it = trajectory_.Find(t2_);
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   it = trajectory_.Find(t4_);
   EXPECT_EQ(it, trajectory_.end());
 
@@ -685,11 +717,11 @@ TEST_F(ForkableTest, IteratorFindSuccess) {
   EXPECT_EQ(it, fork->end());
   it = fork->Find(t1_);
   EXPECT_NE(it, fork->end());
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   it = fork->Find(t2_);
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   it = fork->Find(t4_);
-  EXPECT_EQ(t4_, *it.current());
+  EXPECT_EQ(t4_, *it);
   it = fork->Find(t4_ + 1 * Second);
   EXPECT_EQ(it, fork->end());
 }
@@ -703,11 +735,11 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   trajectory_.push_back(t3_);
 
   it = trajectory_.LowerBound(t0_);
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   it = trajectory_.LowerBound(t1_);
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   it = trajectory_.LowerBound(t2_);
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   it = trajectory_.LowerBound(t4_);
   EXPECT_EQ(it, trajectory_.end());
 
@@ -716,19 +748,19 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   fork1->push_back(t4_);
 
   it = fork1->LowerBound(t0_);
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   it = fork1->LowerBound(t1_);
   EXPECT_NE(it, fork1->end());
-  EXPECT_EQ(t1_, *it.current());
+  EXPECT_EQ(t1_, *it);
   it = fork1->LowerBound(t2_);
-  EXPECT_EQ(t2_, *it.current());
+  EXPECT_EQ(t2_, *it);
   // On the |fork| there is no point at |t3_| so we must land on |t4_|.
   it = fork1->LowerBound(t3_);
-  EXPECT_EQ(t4_, *it.current());
+  EXPECT_EQ(t4_, *it);
   it = fork1->LowerBound(t3_ + 1 * Second);
-  EXPECT_EQ(t4_, *it.current());
+  EXPECT_EQ(t4_, *it);
   it = fork1->LowerBound(t4_);
-  EXPECT_EQ(t4_, *it.current());
+  EXPECT_EQ(t4_, *it);
   it = fork1->LowerBound(t4_ + 1 * Second);
   EXPECT_EQ(it, fork1->end());
 
@@ -736,7 +768,7 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
       fork1->NewFork(fork1->timeline_find(t2_));
   fork2->push_back(t5_);
   it = fork2->LowerBound(t4_ - 1 * Second);
-  EXPECT_EQ(t5_, *it.current());
+  EXPECT_EQ(t5_, *it);
 }
 
 TEST_F(ForkableTest, FrontBack) {

@@ -57,7 +57,8 @@ It3rator& ForkableIterator<Tr4jectory, It3rator, Traits>::operator++() {
       // forks at that time so we must skip them until we find a fork that is at
       // a different time or the end of the children.
       do {
-        current_ = child->timeline_begin();  // May be at end.
+        current_ =
+            Traits::MakeDurable(child->timeline_begin());  // May be at end.
         ancestry_.pop_front();
         if (++ancestry_it == ancestry_.end()) {
           break;
@@ -102,7 +103,7 @@ It3rator& ForkableIterator<Tr4jectory, It3rator, Traits>::operator--() {
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 typename ForkableIterator<Tr4jectory, It3rator, Traits>::
-TimelineConstIterator const&
+TimelineDurableConstIterator const&
 ForkableIterator<Tr4jectory, It3rator, Traits>::current() const {
   return current_;
 }
@@ -188,7 +189,7 @@ It3rator Forkable<Tr4jectory, It3rator, Traits>::end() const {
   not_null<Tr4jectory const*> const ancestor = that();
   It3rator iterator;
   iterator.ancestry_.push_front(ancestor);
-  iterator.current_ = ancestor->timeline_end();
+  iterator.current_ = MakeDurable(ancestor->timeline_end());
   iterator.CheckNormalizedIfEnd();
   return iterator;
 }
@@ -221,10 +222,11 @@ Find(Instant const& time) const {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
         Traits::time(ancestor->timeline_begin()) <= time) {
-      iterator.current_ = ancestor->timeline_find(time);  // May be at end.
+      iterator.current_ =
+          Traits::MakeDurable(ancestor->timeline_find(time));  // May be at end.
       break;
     }
-    iterator.current_ = ancestor->timeline_end();
+    iterator.current_ = MakeDurable(ancestor->timeline_end());
     ancestor = ancestor->parent_;
   } while (ancestor != nullptr);
 
@@ -346,7 +348,7 @@ bool Forkable<Tr4jectory, It3rator, Traits>::Empty() const {
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator, Traits>::NewFork(
-    TimelineConstIterator const& timeline_it) {
+    TimelineEphemeralConstIterator const& timeline_it) {
   // First create a child in the multimap.
   Instant time;
   if (timeline_it == timeline_end()) {
@@ -503,7 +505,7 @@ void Forkable<Tr4jectory, It3rator, Traits>::FillSubTreeFromMessage(
 template<typename Tr4jectory, typename It3rator, typename Traits>
 It3rator Forkable<Tr4jectory, It3rator, Traits>::Wrap(
     not_null<const Tr4jectory*> const ancestor,
-    TimelineConstIterator const position_in_ancestor_timeline) const {
+    TimelineEphemeralConstIterator const position_in_ancestor_timeline) const {
   It3rator iterator;
 
   // Go up the ancestry chain until we find |ancestor| and set |current_| to

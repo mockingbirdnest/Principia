@@ -29,6 +29,7 @@ using geometry::Instant;
 // and Forkable may then be instantiated using ForkableIterator.
 // The template parameters with 1337 names are those that participate in this
 // mutual CRTP.
+//TODO(phl):fix
 // Both classes have a Traits template parameter that gathers common
 // implementation properties.  The Traits class must export declarations similar
 // to the following:
@@ -47,8 +48,6 @@ class Forkable;
 // into account.
 template<typename Tr4jectory, typename It3rator, typename Traits>
 class ForkableIterator {
-  using TimelineConstIterator = typename Traits::TimelineConstIterator;
-
  public:
   ForkableIterator() = default;
   virtual ~ForkableIterator() = default;
@@ -63,13 +62,18 @@ class ForkableIterator {
   It3rator& operator--();
 
  protected:
+  using TimelineDurableConstIterator =
+      typename Traits::TimelineDurableConstIterator;
+  using TimelineEphemeralConstIterator =
+      typename Traits::TimelineEphemeralConstIterator;
+
   // The API that must be implemented by subclasses.
   // Must return |this| of the proper type.
   virtual not_null<It3rator*> that() = 0;
   virtual not_null<It3rator const*> that() const = 0;
 
   // Returns the point in the timeline that is denoted by this iterator.
-  TimelineConstIterator const& current() const;
+  TimelineDurableConstIterator const& current() const;
 
  private:
   // We want a single representation for an end iterator.  In various places
@@ -85,7 +89,7 @@ class ForkableIterator {
 
   // |ancestry_| is never empty.  |current_| is an iterator in the timeline
   // for |ancestry_.front()|.  |current_| may be at end.
-  TimelineConstIterator current_;
+  TimelineDurableConstIterator current_;
   std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
 
   template<typename, typename, typename>
@@ -142,7 +146,8 @@ class Forkable {
   bool Empty() const;
 
  protected:
-  using TimelineConstIterator = typename Traits::TimelineConstIterator;
+  using TimelineEphemeralConstIterator =
+      typename Traits::TimelineEphemeralConstIterator;
 
   // The API that must be implemented by subclasses.
 
@@ -151,11 +156,12 @@ class Forkable {
   virtual not_null<Tr4jectory const*> that() const = 0;
 
   // STL-like operations.
-  virtual TimelineConstIterator timeline_begin() const = 0;
-  virtual TimelineConstIterator timeline_end() const = 0;
-  virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
-  virtual TimelineConstIterator timeline_lower_bound(
-                                    Instant const& time) const = 0;
+  virtual TimelineEphemeralConstIterator timeline_begin() const = 0;
+  virtual TimelineEphemeralConstIterator timeline_end() const = 0;
+  virtual TimelineEphemeralConstIterator timeline_find(
+      Instant const& time) const = 0;
+  virtual TimelineEphemeralConstIterator timeline_lower_bound(
+      Instant const& time) const = 0;
   virtual bool timeline_empty() const = 0;
   virtual std::int64_t timeline_size() const = 0;
 
@@ -169,7 +175,8 @@ class Forkable {
   // greater than |timeline_it|.  The child trajectory is owned by its parent
   // trajectory.  Deleting the parent trajectory deletes all child trajectories.
   // |timeline_it| may be at end if it denotes the fork time of this object.
-  not_null<Tr4jectory*> NewFork(TimelineConstIterator const& timeline_it);
+  not_null<Tr4jectory*> NewFork(
+      TimelineEphemeralConstIterator const& timeline_it);
 
   // |fork| must be a non-empty root and its first point must be at the same
   // time as the last point of this object.  |fork| is attached to this object
@@ -203,13 +210,17 @@ class Forkable {
                               std::vector<Tr4jectory**> const& forks);
 
  private:
+  using TimelineDurableConstIterator =
+      typename Traits::TimelineDurableConstIterator;
+
   // Constructs an Iterator by wrapping the timeline iterator
   // |position_in_ancestor_timeline| which must be an iterator in the timeline
   // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
   // (it may be this object).  |position_in_ancestor_timeline| may only be at
   // end if it is an iterator in this object (and |ancestor| is this object).
-  It3rator Wrap(not_null<Tr4jectory const*> ancestor,
-                TimelineConstIterator position_in_ancestor_timeline) const;
+  It3rator Wrap(
+      not_null<Tr4jectory const*> ancestor,
+      TimelineEphemeralConstIterator position_in_ancestor_timeline) const;
 
   // There may be several forks starting from the same time, hence the multimap.
   // A level of indirection is needed to avoid referencing an incomplete type in
@@ -224,7 +235,7 @@ class Forkable {
 
   // This iterator is at |end()| if the fork time is not in the parent timeline,
   // i.e. is the parent timeline's own fork time.
-  std::optional<TimelineConstIterator> position_in_parent_timeline_;
+  std::optional<TimelineDurableConstIterator> position_in_parent_timeline_;
   Children children_;
 
   template<typename, typename, typename>
