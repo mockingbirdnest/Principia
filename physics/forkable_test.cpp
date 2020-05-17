@@ -229,8 +229,7 @@ FakeTrajectory::TimelineDurableConstIterator FakeTrajectory::MakeDurable(
     TimelineEphemeralConstIterator it) const {
   if (it == timeline_.cend()) {
     return {&timeline_, FakeTrajectory::TimelineDurableConstIterator::end};
-  }
-  else {
+  } else {
     return {&timeline_, std::distance(timeline_.cbegin(), it)};
   }
 }
@@ -402,7 +401,8 @@ TEST_F(ForkableDeathTest, DeleteForkError) {
   }, "!is_root");
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
-    FakeTrajectory* fork1 = trajectory_.NewFork(trajectory_.timeline_ephemeral_find(t1_));
+        FakeTrajectory* fork1 =
+            trajectory_.NewFork(trajectory_.timeline_ephemeral_find(t1_));
     fork1->push_back(t2_);
     FakeTrajectory* fork2 = fork1->NewFork(fork1->timeline_ephemeral_find(t2_));
     trajectory_.DeleteFork(fork2);
@@ -415,7 +415,8 @@ TEST_F(ForkableTest, DeleteForkSuccess) {
   trajectory_.push_back(t3_);
   not_null<FakeTrajectory*> const fork1 =
       trajectory_.NewFork(trajectory_.timeline_ephemeral_find(t2_));
-  FakeTrajectory* fork2 = trajectory_.NewFork(trajectory_.timeline_ephemeral_find(t2_));
+  FakeTrajectory* fork2 =
+      trajectory_.NewFork(trajectory_.timeline_ephemeral_find(t2_));
   fork1->push_back(t4_);
   trajectory_.DeleteFork(fork2);
   EXPECT_EQ(nullptr, fork2);
@@ -489,7 +490,8 @@ TEST_F(ForkableTest, DetachForkWithCopiedBeginSuccess) {
   trajectory_.push_back(t3_);
   not_null<FakeTrajectory*> const fork1 =
       trajectory_.NewFork(trajectory_.timeline_ephemeral_find(t2_));
-  FakeTrajectory* fork2 = trajectory_.NewFork(trajectory_.timeline_ephemeral_find(t2_));
+  FakeTrajectory* fork2 =
+      trajectory_.NewFork(trajectory_.timeline_ephemeral_find(t2_));
   FakeTrajectory* fork3 = fork1->NewFork(fork1->timeline_ephemeral_find(t2_));
   fork1->push_back(t4_);
 
