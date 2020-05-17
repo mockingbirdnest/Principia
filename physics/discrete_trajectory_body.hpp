@@ -384,12 +384,6 @@ DiscreteTrajectory<Frame>::timeline_end() const {
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineDurableConstIterator
-DiscreteTrajectory<Frame>::timeline_find(Instant const& time) const {
-  return timeline_.find(time);
-}
-
-template<typename Frame>
 typename DiscreteTrajectory<Frame>::TimelineEphemeralConstIterator
 DiscreteTrajectory<Frame>::timeline_ephemeral_begin() const {
   return timeline_.begin();
@@ -399,6 +393,12 @@ template<typename Frame>
 typename DiscreteTrajectory<Frame>::TimelineEphemeralConstIterator
 DiscreteTrajectory<Frame>::timeline_ephemeral_end() const {
   return timeline_.end();
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::TimelineEphemeralConstIterator
+DiscreteTrajectory<Frame>::timeline_ephemeral_find(Instant const& time) const {
+  return timeline_.find(time);
 }
 
 template<typename Frame>

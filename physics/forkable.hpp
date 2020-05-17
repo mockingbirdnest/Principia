@@ -160,12 +160,12 @@ class Forkable {
   // Durable STL-like operations.
   virtual TimelineDurableConstIterator timeline_begin() const = 0;
   virtual TimelineDurableConstIterator timeline_end() const = 0;
-  virtual TimelineDurableConstIterator timeline_find(
-      Instant const& time) const = 0;
 
   // Ephemeral STL-like operations.
   virtual TimelineEphemeralConstIterator timeline_ephemeral_begin() const = 0;
   virtual TimelineEphemeralConstIterator timeline_ephemeral_end() const = 0;
+  virtual TimelineEphemeralConstIterator timeline_ephemeral_find(
+      Instant const& time) const = 0;
   virtual TimelineEphemeralConstIterator timeline_ephemeral_lower_bound(
       Instant const& time) const = 0;
 
@@ -189,7 +189,7 @@ class Forkable {
   // trajectory.  Deleting the parent trajectory deletes all child trajectories.
   // |timeline_it| may be at end if it denotes the fork time of this object.
   not_null<Tr4jectory*> NewFork(
-      TimelineDurableConstIterator const& timeline_it);
+      TimelineEphemeralConstIterator const& timeline_it);
 
   // |fork| must be a non-empty root and its first point must be at the same
   // time as the last point of this object.  |fork| is attached to this object

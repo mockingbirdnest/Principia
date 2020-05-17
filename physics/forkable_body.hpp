@@ -228,18 +228,20 @@ Find(Instant const& time) const {
   // the location of |time|, which may be |end()|.  The ancestry has |forkable|
   // at the back, and the object containing |current_| at the front.
   Tr4jectory const* ancestor = that();
+  TimelineEphemeralConstIterator current;
   do {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
         Traits::time(ancestor->timeline_ephemeral_begin()) <= time) {
-      iterator.current_ =
-          ancestor->timeline_find(time);  // May be at end.
+      current =
+          ancestor->timeline_ephemeral_find(time);  // May be at end.
       break;
     }
-    iterator.current_ = ancestor->timeline_end();
+    current = ancestor->timeline_ephemeral_end();
     ancestor = ancestor->parent_;
   } while (ancestor != nullptr);
 
+  iterator.current_ = iterator.ancestry_.front()->MakeDurable(current);
   iterator.NormalizeIfEnd();
   return iterator;
 }
@@ -362,10 +364,10 @@ bool Forkable<Tr4jectory, It3rator, Traits>::Empty() const {
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator, Traits>::NewFork(
-    TimelineDurableConstIterator const& timeline_it) {
+    TimelineEphemeralConstIterator const& timeline_it) {
   // First create a child in the multimap.
   Instant time;
-  if (timeline_it == timeline_end()) {
+  if (timeline_it == timeline_ephemeral_end()) {
     CHECK(!is_root());
     time = (*position_in_parent_children_)->first;
   } else {
@@ -377,7 +379,7 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator, Traits>::NewFork(
   std::unique_ptr<Tr4jectory> const& child_forkable = child_it->second;
   child_forkable->parent_ = that();
   child_forkable->position_in_parent_children_ = child_it;
-  child_forkable->position_in_parent_timeline_ = timeline_it;
+  child_forkable->position_in_parent_timeline_ = MakeDurable(timeline_it);
 
   return child_forkable.get();
 }
@@ -507,7 +509,7 @@ void Forkable<Tr4jectory, It3rator, Traits>::FillSubTreeFromMessage(
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
     for (serialization::DiscreteTrajectory const& child :
              litter.trajectories()) {
-      not_null<Tr4jectory*> fork = NewFork(timeline_find(fork_time));
+      not_null<Tr4jectory*> fork = NewFork(timeline_ephemeral_find(fork_time));
       fork->FillSubTreeFromMessage(child, forks);
       if (has_fork_position) {
         std::int32_t const fork_position = message.fork_position(index);
