@@ -72,8 +72,6 @@ class ForkableIterator {
  protected:
   using TimelineDurableConstIterator =
       typename Traits::TimelineDurableConstIterator;
-  using TimelineEphemeralConstIterator =
-      typename Traits::TimelineEphemeralConstIterator;
 
   // The API that must be implemented by subclasses.
   // Must return |this| of the proper type.
@@ -180,7 +178,7 @@ class Forkable {
   virtual bool timeline_empty() const = 0;
   virtual std::int64_t timeline_size() const = 0;
 
-  // Iterator conversion.
+  // Iterator conversions.
   virtual TimelineDurableConstIterator MakeDurable(
       TimelineEphemeralConstIterator it) const = 0;
   virtual TimelineEphemeralConstIterator MakeEphemeral(
