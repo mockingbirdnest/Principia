@@ -1,7 +1,7 @@
 ﻿
 #include "physics/forkable.hpp"
 
-#include <list>
+#include <limits>
 #include <vector>
 
 #include "base/not_constructible.hpp"
@@ -21,10 +21,14 @@ using quantities::si::Second;
 using ::testing::ElementsAre;
 
 struct FakeTrajectoryTraits : not_constructible {
-  using Timeline = std::list<Instant>;
+  // Use vector<> because we want the iterators to become invalid across
+  // operations.
+  using Timeline = std::vector<Instant>;
   struct TimelineDurableConstIterator {
     Timeline const* container;
     std::int64_t pos;
+    static constexpr std::int64_t end =
+        std::numeric_limits<std::int64_t>::max();
   };
   using TimelineEphemeralConstIterator = Timeline::const_iterator;
 
@@ -98,8 +102,7 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   not_null<FakeTrajectory const*> that() const override;
 
  private:
-  // Use list<> because we want the iterators to remain valid across operations.
-  std::list<Instant> timeline_;
+  FakeTrajectoryTraits::Timeline timeline_;
 
   template<typename, typename, typename>
   friend class ForkableIterator;
@@ -122,13 +125,21 @@ Instant const& FakeTrajectoryTraits::time(
 bool operator==(
     FakeTrajectoryTraits::TimelineDurableConstIterator const left,
     FakeTrajectoryTraits::TimelineDurableConstIterator const right) {
-  return left.container == right.container && left.pos == right.pos;
+  bool const left_at_end = left.pos >= left.container->size();
+  bool const right_at_end = right.pos >= right.container->size();
+  return left.container == right.container &&
+         (left_at_end == right_at_end &&
+          (left_at_end || left.pos == right.pos));
 }
 
 bool operator!=(
     FakeTrajectoryTraits::TimelineDurableConstIterator const left,
     FakeTrajectoryTraits::TimelineDurableConstIterator const right) {
-  return left.container != right.container || left.pos != right.pos;
+  bool const left_at_end = left.pos >= left.container->size();
+  bool const right_at_end = right.pos >= right.container->size();
+  return left.container != right.container ||
+         (left_at_end != right_at_end ||
+          (!left_at_end && left.pos != right.pos));
 }
 
 FakeTrajectoryIterator::reference FakeTrajectoryIterator::operator*() const {
@@ -146,11 +157,11 @@ not_null<FakeTrajectoryIterator const*> FakeTrajectoryIterator::that() const {
 }
 
 void FakeTrajectory::pop_front() {
-  timeline_.pop_front();
+  timeline_.erase(timeline_.cbegin());
 }
 
 void FakeTrajectory::push_front(Instant const& time) {
-  timeline_.push_front(time);
+  timeline_.insert(timeline_.cbegin(), time);
 }
 
 void FakeTrajectory::push_back(Instant const& time) {
@@ -159,12 +170,14 @@ void FakeTrajectory::push_back(Instant const& time) {
 
 FakeTrajectory::TimelineDurableConstIterator
 FakeTrajectory::timeline_begin() const {
-  return {&timeline_, timeline_.empty() ? -1 : 0};
+  return {&timeline_,
+          timeline_.empty() ? FakeTrajectory::TimelineDurableConstIterator::end
+                            : 0};
 }
 
 FakeTrajectory::TimelineDurableConstIterator
 FakeTrajectory::timeline_end() const {
-  return {&timeline_, -1};
+  return {&timeline_, FakeTrajectory::TimelineDurableConstIterator::end};
 }
 
 FakeTrajectory::TimelineDurableConstIterator
@@ -177,7 +190,7 @@ FakeTrajectory::timeline_find(
       return {&timeline_, pos};
     }
   }
-  return {&timeline_, -1};
+  return {&timeline_, FakeTrajectory::TimelineDurableConstIterator::end};
 }
 
 FakeTrajectory::TimelineEphemeralConstIterator
@@ -213,7 +226,7 @@ std::int64_t FakeTrajectory::timeline_size() const {
 FakeTrajectory::TimelineDurableConstIterator FakeTrajectory::MakeDurable(
     TimelineEphemeralConstIterator it) const {
   if (it == timeline_.cend()) {
-    return {&timeline_, -1};
+    return {&timeline_, FakeTrajectory::TimelineDurableConstIterator::end};
   }
   else {
     return {&timeline_, std::distance(timeline_.cbegin(), it)};
@@ -222,7 +235,7 @@ FakeTrajectory::TimelineDurableConstIterator FakeTrajectory::MakeDurable(
 
 FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::MakeEphemeral(
     TimelineDurableConstIterator it) const {
-  if (it.pos == -1) {
+  if (it.pos >= it.container->size()) {
     return it.container->cend();
   } else {
     auto result = it.container->cbegin();
