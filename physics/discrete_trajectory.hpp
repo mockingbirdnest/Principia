@@ -200,6 +200,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   bool timeline_empty() const override;
   std::int64_t timeline_size() const override;
 
+  TimelineDurableConstIterator MakeDurable(
+      TimelineEphemeralConstIterator it) const override;
   TimelineEphemeralConstIterator MakeEphemeral(
       TimelineDurableConstIterator it) const override;
 

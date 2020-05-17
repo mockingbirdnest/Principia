@@ -173,6 +173,8 @@ class Forkable {
   virtual std::int64_t timeline_size() const = 0;
 
   // Iterator conversion.
+  virtual TimelineDurableConstIterator MakeDurable(
+      TimelineEphemeralConstIterator it) const = 0;
   virtual TimelineEphemeralConstIterator MakeEphemeral(
       TimelineDurableConstIterator it) const = 0;
 

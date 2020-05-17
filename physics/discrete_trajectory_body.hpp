@@ -418,6 +418,13 @@ std::int64_t DiscreteTrajectory<Frame>::timeline_size() const {
 }
 
 template<typename Frame>
+typename DiscreteTrajectory<Frame>::TimelineDurableConstIterator
+DiscreteTrajectory<Frame>::MakeDurable(
+    TimelineEphemeralConstIterator const it) const {
+  return it;
+}
+
+template<typename Frame>
 typename DiscreteTrajectory<Frame>::TimelineEphemeralConstIterator
 DiscreteTrajectory<Frame>::MakeEphemeral(
     TimelineDurableConstIterator const it) const {

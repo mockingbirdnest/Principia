@@ -39,10 +39,6 @@ struct FakeTrajectoryTraits : not_constructible {
                          TimelineDurableConstIterator right);
   friend bool operator!=(TimelineDurableConstIterator left,
                          TimelineEphemeralConstIterator right);
-  friend TimelineDurableConstIterator& operator++(
-      TimelineDurableConstIterator& right);
-  friend TimelineDurableConstIterator& operator--(
-      TimelineDurableConstIterator& right);
 };
 
 class FakeTrajectory;
@@ -95,6 +91,8 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   bool timeline_empty() const override;
   std::int64_t timeline_size() const override;
 
+  TimelineDurableConstIterator MakeDurable(
+      TimelineEphemeralConstIterator it) const override;
   TimelineEphemeralConstIterator MakeEphemeral(
       TimelineDurableConstIterator it) const override;
 
@@ -134,11 +132,11 @@ bool operator==(
     FakeTrajectoryTraits::TimelineDurableConstIterator const left,
     FakeTrajectoryTraits::TimelineEphemeralConstIterator const right) {
   if (left.pos == -1) {
-    return right == left.container->end();
-  } else if (right == left.container->end()) {
+    return right == left.container->cend();
+  } else if (right == left.container->cend()) {
     return false;
   } else {
-    return left.pos == std::distance(left.container->begin(), right);
+    return left.pos == std::distance(left.container->cbegin(), right);
   }
 }
 
@@ -152,34 +150,12 @@ bool operator!=(
     FakeTrajectoryTraits::TimelineDurableConstIterator const left,
     FakeTrajectoryTraits::TimelineEphemeralConstIterator const right) {
   if (left.pos == -1) {
-    return right != left.container->end();
-  } else if (right == left.container->end()) {
+    return right != left.container->cend();
+  } else if (right == left.container->cend()) {
     return true;
   } else {
-    return left.pos != std::distance(left.container->begin(), right);
+    return left.pos != std::distance(left.container->cbegin(), right);
   }
-}
-
-FakeTrajectoryTraits::TimelineDurableConstIterator& operator++(
-    FakeTrajectoryTraits::TimelineDurableConstIterator& right) {
-  DCHECK_NE(right.pos, -1);
-  if (right.pos + 1 == right.container->size()) {
-    right.pos = -1;
-  } else {
-    ++right.pos;
-  }
-  return right;
-}
-
-FakeTrajectoryTraits::TimelineDurableConstIterator& operator--(
-    FakeTrajectoryTraits::TimelineDurableConstIterator& right) {
-  DCHECK_NE(right.pos, 0);
-  if (right.pos == -1) {
-    right.pos = right.container->size() - 1;
-  } else {
-    --right.pos;
-  }
-  return right;
 }
 
 FakeTrajectoryIterator::reference FakeTrajectoryIterator::operator*() const {
@@ -223,7 +199,7 @@ FakeTrajectory::timeline_find(
     Instant const& time) const {
   // Stupid O(N) search.
   std::int64_t pos = 0;
-  for (auto it = timeline_.begin(); it != timeline_.end(); ++it, ++pos) {
+  for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it, ++pos) {
     if (*it == time) {
       return {&timeline_, pos};
     }
@@ -235,7 +211,7 @@ FakeTrajectory::TimelineDurableConstIterator
 FakeTrajectory::timeline_lower_bound(Instant const& time) const {
   // Stupid O(N) search.
   std::int64_t pos = 0;
-  for (auto it = timeline_.begin(); it != timeline_.end(); ++it, ++pos) {
+  for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it, ++pos) {
     if (*it >= time) {
       return {&timeline_, pos};
     }
@@ -245,12 +221,12 @@ FakeTrajectory::timeline_lower_bound(Instant const& time) const {
 
 FakeTrajectory::TimelineEphemeralConstIterator
 FakeTrajectory::timeline_ephemeral_begin() const {
-  return timeline_.begin();
+  return timeline_.cbegin();
 }
 
 FakeTrajectory::TimelineEphemeralConstIterator
 FakeTrajectory::timeline_ephemeral_end() const {
-  return timeline_.end();
+  return timeline_.cend();
 }
 
 bool FakeTrajectory::timeline_empty() const {
@@ -261,11 +237,25 @@ std::int64_t FakeTrajectory::timeline_size() const {
   return timeline_.size();
 }
 
+FakeTrajectory::TimelineDurableConstIterator FakeTrajectory::MakeDurable(
+    TimelineEphemeralConstIterator it) const {
+  if (it == timeline_.cend()) {
+    return {&timeline_, -1};
+  }
+  else {
+    return {&timeline_, std::distance(timeline_.cbegin(), it)};
+  }
+}
+
 FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::MakeEphemeral(
     TimelineDurableConstIterator it) const {
-  auto result = it.container->cbegin();
-  std::advance(result, it.pos);
-  return result;
+  if (it.pos == -1) {
+    return it.container->cend();
+  } else {
+    auto result = it.container->cbegin();
+    std::advance(result, it.pos);
+    return result;
+  }
 }
 
 not_null<FakeTrajectory*> FakeTrajectory::that() {
