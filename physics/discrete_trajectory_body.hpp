@@ -26,7 +26,7 @@ namespace internal_forkable {
 using geometry::Instant;
 
 template<typename Frame>
-Instant const& ForkableTraits<DiscreteTrajectory<Frame>>::time(
+Instant const& DiscreteTrajectoryTraits<Frame>::time(
     TimelineConstIterator const it) {
   return it->first;
 }
@@ -505,7 +505,8 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
-  Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
+  Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
+      WriteSubTreeToMessage(message, forks);
   if (Flags::IsPresent("zfp", "off")) {
     for (auto const& [instant, degrees_of_freedom] : timeline_) {
       auto const instantaneous_degrees_of_freedom = message->add_timeline();
@@ -633,8 +634,8 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     downsampling_.emplace(
         Downsampling::ReadFromMessage(message.downsampling(), timeline_));
   }
-  Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message,
-                                                                 forks);
+  Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
+      FillSubTreeFromMessage(message, forks);
 }
 
 template<typename Frame>
