@@ -27,7 +27,7 @@ using geometry::Instant;
 
 template<typename Frame>
 Instant const& DiscreteTrajectoryTraits<Frame>::time(
-    TimelineConstIterator const it) {
+    TimelineDurableConstIterator const it) {
   return it->first;
 }
 
@@ -203,10 +203,10 @@ void DiscreteTrajectory<Frame>::Append(
       this->CheckNoForksBefore(this->back().time);
       downsampling_->increment_dense_intervals(timeline_);
       if (downsampling_->reached_max_dense_intervals()) {
-        std::vector<TimelineConstIterator> dense_iterators;
+        std::vector<TimelineDurableConstIterator> dense_iterators;
         // This contains points, hence one more than intervals.
         dense_iterators.reserve(downsampling_->max_dense_intervals() + 1);
-        for (TimelineConstIterator it =
+        for (TimelineDurableConstIterator it =
                  downsampling_->start_of_dense_timeline();
              it != timeline_.end();
              ++it) {
@@ -221,9 +221,10 @@ void DiscreteTrajectory<Frame>::Append(
         if (right_endpoints.empty()) {
           right_endpoints.push_back(dense_iterators.end() - 1);
         }
-        TimelineConstIterator left = downsampling_->start_of_dense_timeline();
+        TimelineDurableConstIterator left =
+            downsampling_->start_of_dense_timeline();
         for (const auto& it_in_dense_iterators : right_endpoints) {
-          TimelineConstIterator const right = *it_in_dense_iterators;
+          TimelineDurableConstIterator const right = *it_in_dense_iterators;
           timeline_.erase(++left, right);
           left = right;
         }
@@ -371,27 +372,39 @@ DiscreteTrajectory<Frame>::that() const {
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineConstIterator
+typename DiscreteTrajectory<Frame>::TimelineDurableConstIterator
 DiscreteTrajectory<Frame>::timeline_begin() const {
   return timeline_.begin();
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineConstIterator
+typename DiscreteTrajectory<Frame>::TimelineDurableConstIterator
 DiscreteTrajectory<Frame>::timeline_end() const {
   return timeline_.end();
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineConstIterator
+typename DiscreteTrajectory<Frame>::TimelineDurableConstIterator
 DiscreteTrajectory<Frame>::timeline_find(Instant const& time) const {
   return timeline_.find(time);
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineConstIterator
+typename DiscreteTrajectory<Frame>::TimelineDurableConstIterator
 DiscreteTrajectory<Frame>::timeline_lower_bound(Instant const& time) const {
   return timeline_.lower_bound(time);
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::TimelineEphemeralConstIterator
+DiscreteTrajectory<Frame>::timeline_ephemeral_begin() const {
+  return timeline_.begin();
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::TimelineEphemeralConstIterator
+DiscreteTrajectory<Frame>::timeline_ephemeral_end() const {
+  return timeline_.end();
 }
 
 template<typename Frame>
@@ -405,10 +418,17 @@ std::int64_t DiscreteTrajectory<Frame>::timeline_size() const {
 }
 
 template<typename Frame>
+typename DiscreteTrajectory<Frame>::TimelineEphemeralConstIterator
+DiscreteTrajectory<Frame>::MakeEphemeral(
+    TimelineDurableConstIterator const it) const {
+  return it;
+}
+
+template<typename Frame>
 DiscreteTrajectory<Frame>::Downsampling::Downsampling(
     std::int64_t const max_dense_intervals,
     Length const tolerance,
-    TimelineConstIterator const start_of_dense_timeline,
+    TimelineDurableConstIterator const start_of_dense_timeline,
     Timeline const& timeline)
     : max_dense_intervals_(max_dense_intervals),
       tolerance_(tolerance),
@@ -417,7 +437,7 @@ DiscreteTrajectory<Frame>::Downsampling::Downsampling(
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineConstIterator
+typename DiscreteTrajectory<Frame>::TimelineDurableConstIterator
 DiscreteTrajectory<Frame>::Downsampling::start_of_dense_timeline() const {
   return start_of_dense_timeline_;
 }
@@ -430,7 +450,7 @@ Instant const& DiscreteTrajectory<Frame>::Downsampling::first_dense_time()
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::SetStartOfDenseTimeline(
-    TimelineConstIterator const value,
+    TimelineDurableConstIterator const value,
     Timeline const& timeline) {
   start_of_dense_timeline_ = value;
   RecountDenseIntervals(timeline);
@@ -487,7 +507,7 @@ typename DiscreteTrajectory<Frame>::Downsampling
 DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
     Timeline const& timeline) {
-  TimelineConstIterator start_of_dense_timeline;
+  TimelineDurableConstIterator start_of_dense_timeline;
   if (message.has_start_of_dense_timeline()) {
     start_of_dense_timeline = timeline.find(
         Instant::ReadFromMessage(message.start_of_dense_timeline()));
@@ -505,8 +525,8 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
-  Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-      WriteSubTreeToMessage(message, forks);
+  Forkable<DiscreteTrajectory, Iterator, Traits>::WriteSubTreeToMessage(message,
+                                                                        forks);
   if (Flags::IsPresent("zfp", "off")) {
     for (auto const& [instant, degrees_of_freedom] : timeline_) {
       auto const instantaneous_degrees_of_freedom = message->add_timeline();
@@ -634,7 +654,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     downsampling_.emplace(
         Downsampling::ReadFromMessage(message.downsampling(), timeline_));
   }
-  Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
+  Forkable<DiscreteTrajectory, Iterator, Traits>::
       FillSubTreeFromMessage(message, forks);
 }
 

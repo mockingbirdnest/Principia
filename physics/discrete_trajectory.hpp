@@ -34,9 +34,10 @@ using base::not_constructible;
 template<typename Frame>
 struct DiscreteTrajectoryTraits : not_constructible {
   using Timeline = typename std::map<Instant, DegreesOfFreedom<Frame>>;
-  using TimelineConstIterator = typename Timeline::const_iterator;
+  using TimelineDurableConstIterator = typename Timeline::const_iterator;
+  using TimelineEphemeralConstIterator = typename Timeline::const_iterator;
 
-  static Instant const& time(TimelineConstIterator it);
+  static Instant const& time(TimelineDurableConstIterator it);
 };
 
 template<typename Frame>
@@ -176,37 +177,48 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
  protected:
-  using TimelineConstIterator =
-      typename DiscreteTrajectoryTraits<Frame>::TimelineConstIterator;
+  using Traits = typename DiscreteTrajectoryTraits<Frame>;
+  using TimelineDurableConstIterator =
+      typename Traits::TimelineDurableConstIterator;
+  using TimelineEphemeralConstIterator =
+      typename Traits::TimelineEphemeralConstIterator;
 
   // The API inherited from Forkable.
   not_null<DiscreteTrajectory*> that() override;
   not_null<DiscreteTrajectory const*> that() const override;
 
-  TimelineConstIterator timeline_begin() const override;
-  TimelineConstIterator timeline_end() const override;
-  TimelineConstIterator timeline_find(Instant const& time) const override;
-  TimelineConstIterator timeline_lower_bound(
-                            Instant const& time) const override;
+  TimelineDurableConstIterator timeline_begin() const override;
+  TimelineDurableConstIterator timeline_end() const override;
+  TimelineDurableConstIterator timeline_find(
+      Instant const& time) const override;
+  TimelineDurableConstIterator timeline_lower_bound(
+      Instant const& time) const override;
+
+  TimelineEphemeralConstIterator timeline_ephemeral_begin() const override;
+  TimelineEphemeralConstIterator timeline_ephemeral_end() const override;
+
   bool timeline_empty() const override;
   std::int64_t timeline_size() const override;
 
+  TimelineEphemeralConstIterator MakeEphemeral(
+      TimelineDurableConstIterator it) const override;
+
  private:
-  using Timeline = typename DiscreteTrajectoryTraits<Frame>::Timeline;
+  using Timeline = typename Traits::Timeline;
 
   class Downsampling {
    public:
     Downsampling(std::int64_t max_dense_intervals,
                  Length tolerance,
-                 TimelineConstIterator start_of_dense_timeline,
+                 TimelineDurableConstIterator start_of_dense_timeline,
                  Timeline const& timeline);
 
-    TimelineConstIterator start_of_dense_timeline() const;
+    TimelineDurableConstIterator start_of_dense_timeline() const;
     // |start_of_dense_timeline()->first|, for readability.
     Instant const& first_dense_time() const;
     // Keeps |dense_intervals_| consistent with the new
     // |start_of_dense_timeline_|.
-    void SetStartOfDenseTimeline(TimelineConstIterator value,
+    void SetStartOfDenseTimeline(TimelineDurableConstIterator value,
                                  Timeline const& timeline);
 
     // Sets |dense_intervals_| to
@@ -239,7 +251,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     // An iterator to the first point of the timeline which is not the left
     // endpoint of a downsampled interval.  Not |timeline_.end()| if the
     // timeline is nonempty.
-    TimelineConstIterator start_of_dense_timeline_;
+    TimelineDurableConstIterator start_of_dense_timeline_;
     // |std::distance(start_of_dense_timeline, timeline_.cend()) - 1|.  Kept as
     // an optimization for |Append| as it can be maintained by incrementing,
     // whereas |std::distance| is linear in the value of the result.
