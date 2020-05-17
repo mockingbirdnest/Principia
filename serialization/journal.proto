@@ -20,6 +20,7 @@ message NavigationFrameParameters {
 }
 
 message XYZ {
+  option (is_public) = true;
   required double x = 1;
   required double y = 2;
   required double z = 3;
@@ -210,7 +211,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5169.
+  extensions 5000 to 5999;  // Last used: 5172.
 }
 
 message SetAngularMomentumConservation {
@@ -218,9 +219,7 @@ message SetAngularMomentumConservation {
     optional SetAngularMomentumConservation extension = 5999;
   }
   message In {
-    required bool correct_orientation = 1;
-    required bool correct_angular_velocity = 2;
-    required bool thresholding = 3;
+    required bool conserve_angular_momentum = 1;
   }
   optional In in = 1;
 }
@@ -518,6 +517,51 @@ message EndInitialization {
 // These functions form the external API of Principia; announce deprecation one
 // lunation ahead, then make them return UNIMPLEMENTED.
 
+message ExternalCelestialGetPosition {
+  extend Method {
+    optional ExternalCelestialGetPosition extension = 5170;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 body_index = 2;
+    required double time = 3;
+  }
+  message Out {
+    required XYZ position = 1;
+  }
+  message Return {
+    required Status result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message ExternalCelestialGetSurfacePosition {
+  extend Method {
+    optional ExternalCelestialGetSurfacePosition extension = 5171;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 body_index = 2;
+    required double planetocentric_latitude_in_degrees = 3;
+    required double planetocentric_longitude_in_degrees = 4;
+    required double radius = 5;
+    required double time = 6;
+  }
+  message Out {
+    required XYZ position = 1;
+  }
+  message Return {
+    required Status result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
 // Not yet implemented.
 // Solves a free-fall initial value problem, where the initial degrees of
 // freedom and those of the result are given in world coordinates in the
@@ -585,6 +629,27 @@ message ExternalGeopotentialGetReferenceRadius {
   }
   message Out {
     required double reference_radius = 1;
+  }
+  message Return {
+    required Status result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message ExternalVesselGetPosition {
+  extend Method {
+    optional ExternalVesselGetPosition extension = 5172;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double time = 3;
+  }
+  message Out {
+    required XYZ position = 1;
   }
   message Return {
     required Status result = 1;

@@ -198,7 +198,11 @@ Bivector<double, FromFrame> Rotation<FromFrame, ToFrame>::RotationAxis() const {
 
 template<typename FromFrame, typename ToFrame>
 Angle Rotation<FromFrame, ToFrame>::RotationAngle() const {
-  return 2 * ArcTan(quaternion_.imaginary_part().Norm(),
+  // NOTE(egg): We intentionally use the single-parameter arctangent, as we want
+  // a result in [-π, π], thus an arctangent in [-π/2, π/2].
+  // The two-parameter arctangent, with a positive numerator, would lie in
+  // [0, π], and thus the result in [0, 2π].
+  return 2 * ArcTan(quaternion_.imaginary_part().Norm() /
                     quaternion_.real_part());
 }
 

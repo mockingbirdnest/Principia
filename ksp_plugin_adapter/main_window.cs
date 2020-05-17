@@ -239,17 +239,10 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   private void RenderKSPFeatures() {
     if (show_2519_debugging_ui) {
-      correct_orientation = UnityEngine.GUILayout.Toggle(
-          correct_orientation,
-          "Correct orientation");
-      correct_angular_velocity = UnityEngine.GUILayout.Toggle(
-          correct_angular_velocity,
-          "Correct angular velocity");
-      thresholding = UnityEngine.GUILayout.Toggle(
-          thresholding,
-          "Fubini orientation correction");
-      Interface.SetAngularMomentumConservation(
-          correct_orientation, correct_angular_velocity, thresholding);
+      conserve_angular_momentum = UnityEngine.GUILayout.Toggle(
+          conserve_angular_momentum,
+          "Conserve angular momentum");
+      Interface.SetAngularMomentumConservation(conserve_angular_momentum);
       string trace = null;
       if (FlightGlobals.ActiveVessel != null &&
           plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
@@ -515,9 +508,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   // These flags exist to facilitate investigation of #2519.
   // They must not be serialized: their non-default values can lead to absurd
   // behaviour.
-  private static bool correct_orientation = true;
-  private static bool correct_angular_velocity = true;
-  private static bool thresholding = false;
+  private static bool conserve_angular_momentum = true;
   private static readonly bool show_2519_debugging_ui = true;
 
   private static readonly double[] prediction_length_tolerances_ =

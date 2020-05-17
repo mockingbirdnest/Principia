@@ -15,6 +15,8 @@
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/r3x3_matrix.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -31,6 +33,8 @@ using geometry::Bivector;
 using geometry::Point;
 using geometry::Quaternion;
 using geometry::R3Element;
+using geometry::R3x3Matrix;
+using geometry::SymmetricBilinearForm;
 using geometry::Vector;
 using numerics::FixedVector;
 using physics::DegreesOfFreedom;
@@ -135,6 +139,10 @@ template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R3Element<T> const& r3_element,
                           OptionalExpressIn express_in = std::nullopt);
 
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(R3x3Matrix<T> const& r3x3_matrix,
+                          OptionalExpressIn express_in = std::nullopt);
+
 template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Quaternion const& quaternion,
                           OptionalExpressIn express_in = std::nullopt);
@@ -157,6 +165,13 @@ std::string ToMathematica(Bivector<S, F> const& bivector,
 
 template<typename V, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Point<V> const& point,
+                          OptionalExpressIn express_in = std::nullopt);
+
+template<typename S,
+         typename F,
+         template<typename, typename> typename M,
+         typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename F, typename OptionalExpressIn = std::nullopt_t>

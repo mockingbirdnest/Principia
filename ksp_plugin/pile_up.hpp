@@ -16,7 +16,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
-#include "numerics/pid.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/euler_solver.hpp"
@@ -47,7 +46,6 @@ using geometry::NonRotating;
 using geometry::RigidTransformation;
 using geometry::Vector;
 using integrators::Integrator;
-using numerics::PID;
 using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -104,9 +102,7 @@ class PileUp {
   virtual ~PileUp();
 
   std::string trace;
-  static bool correct_orientation;
-  static bool correct_angular_velocity;
-  static bool thresholding;
+  static bool conserve_angular_momentum;
 
   // This class is moveable.
   PileUp(PileUp&& pile_up) = default;
@@ -190,16 +186,6 @@ class PileUp {
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
-  // Computes a rigid motion that adjusts the pile-up to make L_apparent match
-  // L_actual.
-  static RigidMotion<ApparentPileUp, NonRotatingPileUp>
-  ComputeAngularMomentumCorrection(
-      Time const& Δt,
-      Bivector<AngularMomentum, ApparentPileUp> const& L_apparent,
-      Bivector<AngularMomentum, NonRotatingPileUp> const& L_actual,
-      InertiaTensor<ApparentPileUp> const& inertia_tensor,
-      std::string& trace);
-
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
 
@@ -254,13 +240,6 @@ class PileUp {
 
   // Called in the destructor.
   std::function<void()> deletion_callback_;
-
-  // A PID used to smoothen the value of the apparent angular momentum obtained
-  // from KSP.
-  PID<Bivector<AngularMomentum, ApparentPileUp>,
-      Bivector<AngularMomentum, ApparentPileUp>,
-      /*horizon=*/25,
-      /*finite_difference_order=*/5> apparent_angular_momentum_controller_;
 
   friend class TestablePileUp;
 };

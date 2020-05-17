@@ -192,14 +192,10 @@ XYZ __cdecl principia__VesselVelocity(Plugin const* const plugin,
 }
 
 void __cdecl principia__SetAngularMomentumConservation(
-    bool const correct_orientation,
-    bool const correct_angular_velocity,
-    bool const thresholding) {
+    bool const conserve_angular_momentum) {
   journal::Method<journal::SetAngularMomentumConservation> m(
-      {correct_orientation, correct_angular_velocity, thresholding});
-  ksp_plugin::PileUp::correct_orientation = correct_orientation;
-  ksp_plugin::PileUp::correct_angular_velocity = correct_angular_velocity;
-  ksp_plugin::PileUp::thresholding = thresholding;
+      {conserve_angular_momentum});
+  ksp_plugin::PileUp::conserve_angular_momentum = conserve_angular_momentum;
   return m.Return();
 }
 
