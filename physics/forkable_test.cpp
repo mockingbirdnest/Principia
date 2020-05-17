@@ -133,7 +133,7 @@ bool operator==(
 bool operator==(
     FakeTrajectoryTraits::TimelineDurableConstIterator const left,
     FakeTrajectoryTraits::TimelineEphemeralConstIterator const right) {
-  if (left.pos < 0) {
+  if (left.pos == -1) {
     return right == left.container->end();
   } else if (right == left.container->end()) {
     return false;
@@ -151,7 +151,7 @@ bool operator!=(
 bool operator!=(
     FakeTrajectoryTraits::TimelineDurableConstIterator const left,
     FakeTrajectoryTraits::TimelineEphemeralConstIterator const right) {
-  if (left.pos < 0) {
+  if (left.pos == -1) {
     return right != left.container->end();
   } else if (right == left.container->end()) {
     return true;
@@ -162,7 +162,8 @@ bool operator!=(
 
 FakeTrajectoryTraits::TimelineDurableConstIterator& operator++(
     FakeTrajectoryTraits::TimelineDurableConstIterator& right) {
-  if (right.pos < 0 || right.pos + 1 == right.container->size()) {
+  DCHECK_NE(right.pos, -1);
+  if (right.pos + 1 == right.container->size()) {
     right.pos = -1;
   } else {
     ++right.pos;
@@ -172,8 +173,9 @@ FakeTrajectoryTraits::TimelineDurableConstIterator& operator++(
 
 FakeTrajectoryTraits::TimelineDurableConstIterator& operator--(
     FakeTrajectoryTraits::TimelineDurableConstIterator& right) {
-  if (right.pos < 0 || right.pos == 0) {
-    right.pos = -1;
+  DCHECK_NE(right.pos, 0);
+  if (right.pos == -1) {
+    right.pos = right.container->size() - 1;
   } else {
     --right.pos;
   }
@@ -241,13 +243,13 @@ FakeTrajectory::timeline_lower_bound(Instant const& time) const {
   return {&timeline_, -1};
 }
 
-FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::timeline_ephemeral_begin()
-    const {
+FakeTrajectory::TimelineEphemeralConstIterator
+FakeTrajectory::timeline_ephemeral_begin() const {
   return timeline_.begin();
 }
 
-FakeTrajectory::TimelineEphemeralConstIterator FakeTrajectory::timeline_ephemeral_end()
-    const {
+FakeTrajectory::TimelineEphemeralConstIterator
+FakeTrajectory::timeline_ephemeral_end() const {
   return timeline_.end();
 }
 
