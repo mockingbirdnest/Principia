@@ -24,6 +24,8 @@ struct FakeTrajectoryTraits : not_constructible {
   // Use vector<> because we want the iterators to become invalid across
   // operations.
   using Timeline = std::vector<Instant>;
+  // Note that the TimelineDurableConstIterator doesn't remain valid in the
+  // face of insert or erase operations.
   struct TimelineDurableConstIterator {
     Timeline const* container;
     std::int64_t pos;
@@ -125,21 +127,23 @@ Instant const& FakeTrajectoryTraits::time(
 bool operator==(
     FakeTrajectoryTraits::TimelineDurableConstIterator const left,
     FakeTrajectoryTraits::TimelineDurableConstIterator const right) {
-  bool const left_at_end = left.pos >= left.container->size();
-  bool const right_at_end = right.pos >= right.container->size();
-  return left.container == right.container &&
-         (left_at_end == right_at_end &&
-          (left_at_end || left.pos == right.pos));
+  DCHECK(left.container == right.container);
+  DCHECK(left.pos == FakeTrajectoryTraits::TimelineDurableConstIterator::end ||
+         left.pos < left.container->size());
+  DCHECK(right.pos == FakeTrajectoryTraits::TimelineDurableConstIterator::end ||
+         right.pos < right.container->size());
+  return left.pos == right.pos;
 }
 
 bool operator!=(
     FakeTrajectoryTraits::TimelineDurableConstIterator const left,
     FakeTrajectoryTraits::TimelineDurableConstIterator const right) {
-  bool const left_at_end = left.pos >= left.container->size();
-  bool const right_at_end = right.pos >= right.container->size();
-  return left.container != right.container ||
-         (left_at_end != right_at_end ||
-          (!left_at_end && left.pos != right.pos));
+  DCHECK(left.container == right.container);
+  DCHECK(left.pos == FakeTrajectoryTraits::TimelineDurableConstIterator::end ||
+         left.pos < left.container->size());
+  DCHECK(right.pos == FakeTrajectoryTraits::TimelineDurableConstIterator::end ||
+         right.pos < right.container->size());
+  return left.pos != right.pos;
 }
 
 FakeTrajectoryIterator::reference FakeTrajectoryIterator::operator*() const {

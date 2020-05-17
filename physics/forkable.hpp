@@ -29,17 +29,25 @@ using geometry::Instant;
 // and Forkable may then be instantiated using ForkableIterator.
 // The template parameters with 1337 names are those that participate in this
 // mutual CRTP.
-//TODO(phl):fix
+//
 // Both classes have a Traits template parameter that gathers common
 // implementation properties.  The Traits class must export declarations similar
 // to the following:
 //   using Timeline = ...;
-//   using TimelineConstIterator = ...;
-//   static Instant const& time(TimelineConstIterator it);
+//   using TimelineDurableConstIterator = ...;
+//   using TimelineEphemeralConstIterator = ...;
+//   static Instant const& time(TimelineDurableConstIterator it);
+//   static Instant const& time(TimelineEphemeralConstIterator it);
+//   friend bool operator==(TimelineDurableConstIterator left,
+//                          TimelineDurableConstIterator right);
+//   friend bool operator!=(TimelineDurableConstIterator left,
+//                          TimelineDurableConstIterator right);
 //
-// TimelineConstIterator must be an STL-like iterator in the timeline of
-// Tr4jectory.  |time()| must return the corresponding time.  Iterators must be
-// STL-like and *must*not* be invalidated when the trajectory changes.
+// TimelineDurableConstIterator must designate a point in the trajectory and
+// *must*not* be invalidated by changes to the trajectory.
+// TimelineEphemeralConstIterator must be an STL-like iterator in the timeline
+// of Tr4jectory; it may be invalidated by changes to the trajectory.
+// |time()| must return the corresponding time.
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 class Forkable;
