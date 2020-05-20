@@ -514,7 +514,9 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
           t, {NonRotatingPileUp::origin, NonRotatingPileUp::unmoving});
 
   RigidMotion<ApparentPileUp, NonRotatingPileUp> const rotational_correction =
-      actual_pile_up_motion * apparent_pile_up_motion.Inverse();
+      conserve_angular_momentum
+          ? actual_pile_up_motion * apparent_pile_up_motion.Inverse()
+          : RigidMotion<ApparentPileUp, NonRotatingPileUp>::Identity();
   RigidMotion<Apparent, NonRotatingPileUp> const correction =
       rotational_correction * apparent_system.LinearMotion().Inverse();
 
