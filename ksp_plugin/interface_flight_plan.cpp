@@ -255,10 +255,14 @@ XYZ __cdecl principia__FlightPlanGetGuidance(Plugin const* const plugin,
     result = plugin->renderer().BarycentricToWorld(
                  plugin->PlanetariumRotation())(manœuvre.InertialDirection());
   } else {
-    result = plugin->renderer().FrenetToWorld(
-                 *plugin->GetVessel(vessel_guid),
-                 *manœuvre.frame(),
-                 plugin->PlanetariumRotation())(manœuvre.direction());
+    result = plugin->CurrentTime() < manœuvre.initial_time()
+                 ? plugin->renderer().BarycentricToWorld(
+                       plugin->PlanetariumRotation())(
+                       manœuvre.FrenetFrame()(manœuvre.direction()))
+                 : plugin->renderer().FrenetToWorld(
+                       *plugin->GetVessel(vessel_guid),
+                       *manœuvre.frame(),
+                       plugin->PlanetariumRotation())(manœuvre.direction());
   }
   return m.Return(ToXYZ(result));
 }
