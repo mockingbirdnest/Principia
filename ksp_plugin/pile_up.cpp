@@ -535,6 +535,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   }
   apparent_part_rigid_motion_.clear();
 
+#if 0
   std::stringstream s;
   Angle const α =
       rotational_correction.orthogonal_map().AsRotation().RotationAngle();
@@ -569,6 +570,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     << "reference part: " << reference_part->ShortDebugString() << "\n"
     << u8"|ωref|: " << reference_part_proper_ω / rpm << " rpm\n";
   trace = s.str();
+#endif
 }
 
 Status PileUp::AdvanceTime(Instant const& t) {

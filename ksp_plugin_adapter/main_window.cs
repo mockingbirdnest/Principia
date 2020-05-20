@@ -509,7 +509,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   // They must not be serialized: their non-default values can lead to absurd
   // behaviour.
   private static bool conserve_angular_momentum = true;
-  private static readonly bool show_2519_debugging_ui = true;
+  private static readonly bool show_2519_debugging_ui = false;
 
   private static readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
