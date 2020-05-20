@@ -514,7 +514,9 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
           t, {NonRotatingPileUp::origin, NonRotatingPileUp::unmoving});
 
   RigidMotion<ApparentPileUp, NonRotatingPileUp> const rotational_correction =
-      actual_pile_up_motion * apparent_pile_up_motion.Inverse();
+      conserve_angular_momentum
+          ? actual_pile_up_motion * apparent_pile_up_motion.Inverse()
+          : RigidMotion<ApparentPileUp, NonRotatingPileUp>::Identity();
   RigidMotion<Apparent, NonRotatingPileUp> const correction =
       rotational_correction * apparent_system.LinearMotion().Inverse();
 
@@ -535,6 +537,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   }
   apparent_part_rigid_motion_.clear();
 
+#if 0
   std::stringstream s;
   Angle const α =
       rotational_correction.orthogonal_map().AsRotation().RotationAngle();
@@ -569,6 +572,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     << "reference part: " << reference_part->ShortDebugString() << "\n"
     << u8"|ωref|: " << reference_part_proper_ω / rpm << " rpm\n";
   trace = s.str();
+#endif
 }
 
 Status PileUp::AdvanceTime(Instant const& t) {
