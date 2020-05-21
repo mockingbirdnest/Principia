@@ -497,7 +497,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   if (options.HasExtension(journal::serialization::encoding) &&
       (options.HasExtension(journal::serialization::is_produced) ||
        options.HasExtension(journal::serialization::is_produced_if))) {
-    field_cs_type_[descriptor] = "String";
+    field_cs_type_[descriptor] = "string";
     switch (options.GetExtension(journal::serialization::encoding)) {
       case journal::serialization::UTF_8:
         field_cs_custom_marshaler_[descriptor] =
@@ -577,16 +577,16 @@ void JournalProtoProcessor::ProcessRequiredBoolField(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "bool";
   field_cs_predefined_marshaler_[descriptor] = "UnmanagedType.I1";
-  field_cs_private_type_[descriptor] = "Byte";
+  field_cs_private_type_[descriptor] = "byte";
   field_cs_private_getter_fn_[descriptor] =
       [](std::vector<std::string> const& identifiers) {
         CHECK_EQ(1, identifiers.size());
-        return "get { return " + identifiers[0] + " != (Byte)0; }";
+        return "get { return " + identifiers[0] + " != (byte)0; }";
       };
   field_cs_private_setter_fn_[descriptor] =
       [](std::vector<std::string> const& identifiers) {
         CHECK_EQ(1, identifiers.size());
-        return "set { " + identifiers[0] + " = value ? (Byte)1 : (Byte)0; }";
+        return "set { " + identifiers[0] + " = value ? (byte)1 : (byte)0; }";
       };
 
   field_cxx_type_[descriptor] = descriptor->cpp_type_name();
@@ -609,7 +609,7 @@ void JournalProtoProcessor::ProcessRequiredBytesField(
       << " is a bytes field and must have the (encoding) = UTF_16 option.";
 
   field_cs_predefined_marshaler_[descriptor] = "UnmanagedType.LPWStr";
-  field_cs_type_[descriptor] = "String";
+  field_cs_type_[descriptor] = "string";
   field_cxx_type_[descriptor] = "char16_t const*";
   field_cxx_arguments_fn_[descriptor] =
       [](std::string const& identifier) -> std::vector<std::string> {
@@ -639,7 +639,7 @@ void JournalProtoProcessor::ProcessRequiredInt32Field(
 
 void JournalProtoProcessor::ProcessRequiredInt64Field(
     FieldDescriptor const* descriptor) {
-  field_cs_type_[descriptor] = "Int64";
+  field_cs_type_[descriptor] = "long";
   field_cxx_type_[descriptor] = "std::int64_t";
 }
 
@@ -677,7 +677,7 @@ void JournalProtoProcessor::ProcessSingleStringField(
       << "has the (encoding) option instead.";
 
   field_cs_custom_marshaler_[descriptor] = "NoOwnershipTransferUTF8Marshaler";
-  field_cs_type_[descriptor] = "String";
+  field_cs_type_[descriptor] = "string";
   field_cxx_type_[descriptor] = "char const*";
   field_cxx_deserializer_fn_[descriptor] =
       [](std::string const& expr) {

@@ -137,7 +137,8 @@ message QP {
 message Status {
   // A principia::base::Error, or equivalently, a google.rpc.Code.
   required int32 error = 1;
-  required string message = 2;
+  required fixed64 message = 2 [(encoding) = UTF_8,
+                                (is_produced) = true];
 }
 
 message WXYZ {

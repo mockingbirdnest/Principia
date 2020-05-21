@@ -155,7 +155,8 @@ KeplerianElements ToKeplerianElements(
 QP ToQP(DegreesOfFreedom<World> const& dof);
 QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 
-Status ToStatus(base::Status const& status);
+Status const* ToStatus(base::Status const& status);
+Status const* ToStatus(base::Error error, std::string const& message);
 
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 
