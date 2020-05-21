@@ -229,6 +229,7 @@ struct Status {
     return ::operator new(size);
   };
   int error;
+  char const* message;
 };
 
 static_assert(std::is_pod<Status>::value,
@@ -460,14 +461,14 @@ void __cdecl principia__EndInitialization(
     Plugin* const plugin);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__ExternalCelestialGetPosition(
+Status const* __cdecl principia__ExternalCelestialGetPosition(
     Plugin const* const plugin,
     int const body_index,
     double const time,
     XYZ* const position);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__ExternalCelestialGetSurfacePosition(
+Status const* __cdecl principia__ExternalCelestialGetSurfacePosition(
     Plugin const* const plugin,
     int const body_index,
     double const planetocentric_latitude_in_degrees,
@@ -477,7 +478,7 @@ Status __cdecl principia__ExternalCelestialGetSurfacePosition(
     XYZ* const position);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__ExternalFlowFreefall(
+Status const* __cdecl principia__ExternalFlowFreefall(
     Plugin const* const plugin,
     int const central_body_index,
     QP const world_body_centred_initial_degrees_of_freedom,
@@ -486,7 +487,7 @@ Status __cdecl principia__ExternalFlowFreefall(
     QP* const world_body_centred_final_degrees_of_freedom);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__ExternalGeopotentialGetCoefficient(
+Status const* __cdecl principia__ExternalGeopotentialGetCoefficient(
     Plugin const* const plugin,
     int const body_index,
     int const degree,
@@ -494,20 +495,20 @@ Status __cdecl principia__ExternalGeopotentialGetCoefficient(
     XY* const coefficient);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__ExternalGeopotentialGetReferenceRadius(
+Status const* __cdecl principia__ExternalGeopotentialGetReferenceRadius(
     Plugin const* const plugin,
     int const body_index,
     double* const reference_radius);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__ExternalVesselGetPosition(
+Status const* __cdecl principia__ExternalVesselGetPosition(
     Plugin const* const plugin,
     char const* const vessel_guid,
     double const time,
     XYZ* const position);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
+Status const* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
     Plugin const* const plugin,
     int const central_body_index,
     char const* const vessel_guid,
@@ -516,7 +517,7 @@ Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
     QP* const world_body_centred_nearest_degrees_of_freedom);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__FlightPlanAppend(
+Status const* __cdecl principia__FlightPlanAppend(
     Plugin const* const plugin,
     char const* const vessel_guid,
     Burn const burn);
@@ -592,7 +593,7 @@ int __cdecl principia__FlightPlanNumberOfSegments(
     char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__FlightPlanRemoveLast(
+Status const* __cdecl principia__FlightPlanRemoveLast(
     Plugin const* const plugin,
     char const* const vessel_guid);
 
@@ -631,20 +632,20 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
     int const index);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__FlightPlanReplace(
+Status const* __cdecl principia__FlightPlanReplace(
     Plugin const* const plugin,
     char const* const vessel_guid,
     Burn const burn,
     int const index);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__FlightPlanSetAdaptiveStepParameters(
+Status const* __cdecl principia__FlightPlanSetAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid,
     FlightPlanAdaptiveStepParameters const flight_plan_adaptive_step_parameters);
 
 extern "C" PRINCIPIA_DLL
-Status __cdecl principia__FlightPlanSetDesiredFinalTime(
+Status const* __cdecl principia__FlightPlanSetDesiredFinalTime(
     Plugin const* const plugin,
     char const* const vessel_guid,
     double const final_time);
@@ -1093,7 +1094,7 @@ XYZ __cdecl principia__VesselNormal(
     char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
-OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
+OrbitAnalysis const* __cdecl principia__VesselRefreshAnalysis(
     Plugin const* const plugin,
     char const* const vessel_guid,
     int const primary_index,

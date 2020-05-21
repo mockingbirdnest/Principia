@@ -51,11 +51,11 @@ internal class BodyGeopotentialElementMarshaler : MonoMarshaler {
   public override object MarshalNativeToManaged(IntPtr native_data) {
     var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
     return new BodyGeopotentialElement{
-        degree = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.degree) as String,
-        order = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.order) as String,
-        cos = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.cos) as String,
-        j = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.j) as String,
-        sin = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.sin) as String,
+        degree = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.degree) as string,
+        order = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.order) as string,
+        cos = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.cos) as string,
+        j = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.j) as string,
+        sin = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.sin) as string,
     };
   }
 
@@ -130,18 +130,18 @@ internal class BodyParametersMarshaler : MonoMarshaler {
   public override object MarshalNativeToManaged(IntPtr native_data) {
     var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
     return new BodyParameters{
-        name = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.name) as String,
-        gravitational_parameter = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.gravitational_parameter) as String,
-        reference_instant = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.reference_instant) as String,
-        min_radius = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.min_radius) as String,
-        mean_radius = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.mean_radius) as String,
-        max_radius = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.max_radius) as String,
-        axis_right_ascension = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.axis_right_ascension) as String,
-        axis_declination = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.axis_declination) as String,
-        reference_angle = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.reference_angle) as String,
-        angular_frequency = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.angular_frequency) as String,
-        reference_radius = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.reference_radius) as String,
-        j2 = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.j2) as String,
+        name = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.name) as string,
+        gravitational_parameter = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.gravitational_parameter) as string,
+        reference_instant = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.reference_instant) as string,
+        min_radius = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.min_radius) as string,
+        mean_radius = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.mean_radius) as string,
+        max_radius = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.max_radius) as string,
+        axis_right_ascension = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.axis_right_ascension) as string,
+        axis_declination = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.axis_declination) as string,
+        reference_angle = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.reference_angle) as string,
+        angular_frequency = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.angular_frequency) as string,
+        reference_radius = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.reference_radius) as string,
+        j2 = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.j2) as string,
         geopotential = RepeatedMarshaler<BodyGeopotentialElement, BodyGeopotentialElementMarshaler>.GetInstance(null).MarshalNativeToManaged(representation.geopotential) as BodyGeopotentialElement[],
     };
   }
@@ -184,8 +184,8 @@ internal class ConfigurationAccuracyParametersMarshaler : MonoMarshaler {
   public override object MarshalNativeToManaged(IntPtr native_data) {
     var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
     return new ConfigurationAccuracyParameters{
-        fitting_tolerance = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.fitting_tolerance) as String,
-        geopotential_tolerance = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.geopotential_tolerance) as String,
+        fitting_tolerance = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.fitting_tolerance) as string,
+        geopotential_tolerance = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.geopotential_tolerance) as string,
     };
   }
 
@@ -227,8 +227,8 @@ internal class ConfigurationFixedStepParametersMarshaler : MonoMarshaler {
   public override object MarshalNativeToManaged(IntPtr native_data) {
     var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
     return new ConfigurationFixedStepParameters{
-        fixed_step_size_integrator = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.fixed_step_size_integrator) as String,
-        integration_step_size = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.integration_step_size) as String,
+        fixed_step_size_integrator = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.fixed_step_size_integrator) as string,
+        integration_step_size = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.integration_step_size) as string,
     };
   }
 
@@ -273,14 +273,56 @@ internal class ConfigurationAdaptiveStepParametersMarshaler : MonoMarshaler {
   public override object MarshalNativeToManaged(IntPtr native_data) {
     var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
     return new ConfigurationAdaptiveStepParameters{
-        adaptive_step_size_integrator = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.adaptive_step_size_integrator) as String,
-        length_integration_tolerance = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.length_integration_tolerance) as String,
-        speed_integration_tolerance = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.speed_integration_tolerance) as String,
+        adaptive_step_size_integrator = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.adaptive_step_size_integrator) as string,
+        length_integration_tolerance = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.length_integration_tolerance) as string,
+        speed_integration_tolerance = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.speed_integration_tolerance) as string,
     };
   }
 
   private static readonly ConfigurationAdaptiveStepParametersMarshaler instance_ =
       new ConfigurationAdaptiveStepParametersMarshaler();
+}
+
+internal class StatusMarshaler : MonoMarshaler {
+  [StructLayout(LayoutKind.Sequential)]
+  internal struct Representation {
+    public int error;
+    public IntPtr message;
+  }
+
+  public static ICustomMarshaler GetInstance(string s) {
+    return instance_;
+  }
+
+  public override void CleanUpNativeDataImplementation(IntPtr native_data) {
+    var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
+    OwnershipTransferUTF8Marshaler.GetInstance(null).CleanUpNativeData(representation.message);
+    Marshal.FreeHGlobal(native_data);
+  }
+
+  public override IntPtr MarshalManagedToNativeImplementation(object managed_object) {
+    if (!(managed_object is Status value)) {
+      throw new NotSupportedException();
+    }
+    var representation = new Representation{
+        error = value.error,
+        message = OwnershipTransferUTF8Marshaler.GetInstance(null).MarshalManagedToNative(value.message),
+    };
+    IntPtr buffer = Marshal.AllocHGlobal(Marshal.SizeOf(representation));
+    Marshal.StructureToPtr(representation, buffer, fDeleteOld: false);
+    return buffer;
+  }
+
+  public override object MarshalNativeToManaged(IntPtr native_data) {
+    var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
+    return new Status{
+        error = representation.error,
+        message = OwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.message) as string,
+    };
+  }
+
+  private static readonly StatusMarshaler instance_ =
+      new StatusMarshaler();
 }
 
 internal class OrbitAnalysisMarshaler : MonoMarshaler {

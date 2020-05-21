@@ -294,7 +294,7 @@ struct ExternalCelestialGetPosition : not_constructible {
   struct Out final {
     XYZ* const position;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::ExternalCelestialGetPosition;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -316,7 +316,7 @@ struct ExternalCelestialGetSurfacePosition : not_constructible {
   struct Out final {
     XYZ* const position;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::ExternalCelestialGetSurfacePosition;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -337,7 +337,7 @@ struct ExternalFlowFreefall : not_constructible {
   struct Out final {
     QP* const world_body_centred_final_degrees_of_freedom;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::ExternalFlowFreefall;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -357,7 +357,7 @@ struct ExternalGeopotentialGetCoefficient : not_constructible {
   struct Out final {
     XY* const coefficient;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::ExternalGeopotentialGetCoefficient;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -375,7 +375,7 @@ struct ExternalGeopotentialGetReferenceRadius : not_constructible {
   struct Out final {
     double* const reference_radius;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::ExternalGeopotentialGetReferenceRadius;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -394,7 +394,7 @@ struct ExternalVesselGetPosition : not_constructible {
   struct Out final {
     XYZ* const position;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::ExternalVesselGetPosition;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -415,7 +415,7 @@ struct ExternalGetNearestPlannedCoastDegreesOfFreedom : not_constructible {
   struct Out final {
     QP* const world_body_centred_nearest_degrees_of_freedom;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::ExternalGetNearestPlannedCoastDegreesOfFreedom;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -431,7 +431,7 @@ struct FlightPlanAppend : not_constructible {
     char const* const vessel_guid;
     Burn const burn;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::FlightPlanAppend;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -628,7 +628,7 @@ struct FlightPlanRemoveLast : not_constructible {
     Plugin const* const plugin;
     char const* const vessel_guid;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::FlightPlanRemoveLast;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -717,7 +717,7 @@ struct FlightPlanReplace : not_constructible {
     Burn const burn;
     int const index;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::FlightPlanReplace;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -732,7 +732,7 @@ struct FlightPlanSetAdaptiveStepParameters : not_constructible {
     char const* const vessel_guid;
     FlightPlanAdaptiveStepParameters const flight_plan_adaptive_step_parameters;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::FlightPlanSetAdaptiveStepParameters;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -747,7 +747,7 @@ struct FlightPlanSetDesiredFinalTime : not_constructible {
     char const* const vessel_guid;
     double const final_time;
   };
-  using Return = Status;
+  using Return = Status const*;
 
   using Message = serialization::FlightPlanSetDesiredFinalTime;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -1834,7 +1834,7 @@ struct VesselRefreshAnalysis : not_constructible {
     int const* const days_per_cycle;
     int const ground_track_revolution;
   };
-  using Return = OrbitAnalysis*;
+  using Return = OrbitAnalysis const*;
 
   using Message = serialization::VesselRefreshAnalysis;
   static void Fill(In const& in, not_null<Message*> const message);
