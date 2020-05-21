@@ -235,13 +235,13 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       [message_type_name, storage_name](
           std::string const& expr) {
         // Yes, this lambda generates a lambda.
-        return "[&" + storage_name +
+        return "[&pointer_map, &" + storage_name +
                "](::google::protobuf::RepeatedPtrField<serialization::" +
                message_type_name + "> const& messages) {\n"
                "            for (auto const& message : messages) {\n" +
                "              " + storage_name +
                ".first.push_back(Deserialize" + message_type_name +
-               "(message));\n" +
+               "(message, pointer_map));\n" +
                "              " + storage_name +
                ".second.push_back(&" + storage_name + ".first.back());\n" +
                "            }\n"
@@ -383,10 +383,10 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
       [message_type_name, storage_name](
           std::string const& expr) {
         // Yes, this lambda generates a lambda.
-        return "[&" + storage_name +
+        return "[&pointer_map, &" + storage_name +
                "](serialization::" + message_type_name + " const& message) {\n"
                "            " + storage_name + " = Deserialize" +
-               message_type_name +"(message);\n" +
+               message_type_name + "(message, pointer_map);\n" +
                "            return &" + storage_name + ";\n"
                "          }(" + expr + ")";
       };
@@ -457,7 +457,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         << descriptor->full_name() << " has incorrect (is_consumed) option";
     field_cxx_deleter_fn_[descriptor] =
         [](std::string const& expr) {
-          return "  Delete(pointer_map, " + expr + ");\n";
+          return "  Delete(" + expr + ", pointer_map);\n";
         };
   }
   if (options.HasExtension(journal::serialization::is_consumed_if)) {
@@ -468,7 +468,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         [options](std::string const& expr) {
           return "  if (" +
                  options.GetExtension(journal::serialization::is_consumed_if) +
-                 ") {\n    Delete(pointer_map, " + expr + ");\n  }\n";
+                 ") {\n    Delete(" + expr + ", pointer_map);\n  }\n";
         };
   }
   if (options.HasExtension(journal::serialization::is_produced)) {
@@ -476,7 +476,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         << descriptor->full_name() << " has incorrect (is_produced) option";
     field_cxx_inserter_fn_[descriptor] =
         [](std::string const& expr1, std::string const& expr2) {
-          return "  Insert(pointer_map, " + expr1 + ", " + expr2 + ");\n";
+          return "  Insert(" + expr1 + ", " + expr2 + ", pointer_map);\n";
         };
   }
   if (options.HasExtension(journal::serialization::is_produced_if)) {
@@ -487,8 +487,8 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         [options](std::string const& expr1, std::string const& expr2) {
           return "  if (" +
                  options.GetExtension(journal::serialization::is_produced_if) +
-                 ") {\n    Insert(pointer_map, " + expr1 + ", " + expr2 +
-                 ");\n  }\n";
+                 ") {\n    Insert(" + expr1 + ", " + expr2 +
+                 ", pointer_map);\n  }\n";
         };
   }
 
@@ -512,8 +512,8 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
 
   field_cxx_deserializer_fn_[descriptor] =
       [pointer_to](std::string const& expr) {
-        return "DeserializePointer<" + pointer_to + "*>(pointer_map, " + expr +
-               ")";
+        return "DeserializePointer<" + pointer_to + "*>(" + expr +
+               ", pointer_map)";
       };
   field_cxx_serializer_fn_[descriptor] =
       [](std::string const& expr) {
@@ -567,7 +567,7 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
       [message_type_name, deserialization_storage_arguments](
           std::string const& expr) {
         return "Deserialize" + message_type_name + "(" + expr +
-               deserialization_storage_arguments + ")";
+               ", pointer_map" + deserialization_storage_arguments + ")";
       };
 
   ProcessSingleMessageField(descriptor);
@@ -1198,8 +1198,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
   cxx_deserialize_definition_[descriptor] =
       name + " Deserialize" + name + "(serialization::" + name + " const& " +
-      parameter_name + cxx_deserialization_storage_parameters_[descriptor] +
-      ") {\n  return {";
+      parameter_name + ", Player::PointerMap& pointer_map" +
+      cxx_deserialization_storage_parameters_[descriptor] + ") {\n  return {";
   cxx_deserialize_definition_[descriptor] +=
       Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
       "};\n}\n\n";
