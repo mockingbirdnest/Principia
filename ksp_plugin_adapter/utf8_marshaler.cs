@@ -9,6 +9,9 @@ namespace ksp_plugin_adapter {
 // A marshaler that knows how to encode/decode UTF-8 strings.
 internal abstract class UTF8Marshaler : MonoMarshaler {
   public object MarshalNativeToManagedImplementation(IntPtr native_data) {
+    if (native_data == IntPtr.Zero) {
+      return null;
+    }
     int size;
     for (size = 0; Marshal.ReadByte(native_data, size) != 0; ++size) {}
     byte[] bytes = new byte[size];
