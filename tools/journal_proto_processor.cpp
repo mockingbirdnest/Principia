@@ -553,7 +553,7 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
       }
       field_cxx_mode_fn_[descriptor] =
           [](std::string const& type) {
-            return type + "*";
+            return type + " const*";
           };
       field_cxx_indirect_member_get_fn_[descriptor] =
           [](std::string const& expr) {

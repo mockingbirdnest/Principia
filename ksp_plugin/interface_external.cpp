@@ -47,7 +47,7 @@ Status OK() {
 
 }  // namespace
 
-Status __cdecl principia__ExternalCelestialGetPosition(
+Status const* __cdecl principia__ExternalCelestialGetPosition(
     Plugin const* const plugin,
     int const body_index,
     double const time,
@@ -85,7 +85,7 @@ Status __cdecl principia__ExternalCelestialGetPosition(
   return m.Return(OK());
 }
 
-Status __cdecl principia__ExternalCelestialGetSurfacePosition(
+Status const* __cdecl principia__ExternalCelestialGetSurfacePosition(
     Plugin const* const plugin,
     int const body_index,
     double const planetocentric_latitude_in_degrees,
@@ -136,7 +136,7 @@ Status __cdecl principia__ExternalCelestialGetSurfacePosition(
   return m.Return(OK());
 }
 
-Status __cdecl principia__ExternalFlowFreefall(
+Status const* __cdecl principia__ExternalFlowFreefall(
     Plugin const* const plugin,
     int const central_body_index,
     QP const world_body_centred_initial_degrees_of_freedom,
@@ -158,7 +158,7 @@ Status __cdecl principia__ExternalFlowFreefall(
                              "|ExternalFlowFreefall| is not yet implemented"));
 }
 
-Status __cdecl principia__ExternalGeopotentialGetCoefficient(
+Status const* __cdecl principia__ExternalGeopotentialGetCoefficient(
     Plugin const* const plugin,
     int const body_index,
     int const degree,
@@ -204,7 +204,7 @@ Status __cdecl principia__ExternalGeopotentialGetCoefficient(
   return m.Return(OK());
 }
 
-Status __cdecl principia__ExternalGeopotentialGetReferenceRadius(
+Status const* __cdecl principia__ExternalGeopotentialGetReferenceRadius(
     Plugin const* const plugin,
     int const body_index,
     double* const reference_radius) {
@@ -231,7 +231,7 @@ Status __cdecl principia__ExternalGeopotentialGetReferenceRadius(
   return m.Return(OK());
 }
 
-Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
+Status const* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
     Plugin const* const plugin,
     int const central_body_index,
     char const* const vessel_guid,
@@ -353,7 +353,7 @@ Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   return m.Return(OK());
 }
 
-Status __cdecl principia__ExternalVesselGetPosition(
+Status const* __cdecl principia__ExternalVesselGetPosition(
     Plugin const* const plugin,
     char const* const vessel_guid,
     double const time,

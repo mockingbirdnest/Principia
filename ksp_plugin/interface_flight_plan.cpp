@@ -169,9 +169,9 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
 
 }  // namespace
 
-Status __cdecl principia__FlightPlanAppend(Plugin const* const plugin,
-                                           char const* const vessel_guid,
-                                           Burn const burn) {
+Status const *__cdecl principia__FlightPlanAppend(Plugin const* const plugin,
+                                                  char const* const vessel_guid,
+                                                  Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
   CHECK_NOTNULL(plugin);
   return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).
@@ -343,8 +343,9 @@ int __cdecl principia__FlightPlanNumberOfSegments(
   return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_segments());
 }
 
-Status __cdecl principia__FlightPlanRemoveLast(Plugin const* const plugin,
-                                               char const* const vessel_guid) {
+Status const* __cdecl principia__FlightPlanRemoveLast(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
   journal::Method<journal::FlightPlanRemoveLast> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToStatus(GetFlightPlan(*plugin, vessel_guid).RemoveLast()));
@@ -470,10 +471,11 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
       plugin));
 }
 
-Status __cdecl principia__FlightPlanReplace(Plugin const* const plugin,
-                                            char const* const vessel_guid,
-                                            Burn const burn,
-                                            int const index) {
+Status const* __cdecl principia__FlightPlanReplace(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    Burn const burn,
+    int const index) {
   journal::Method<journal::FlightPlanReplace> m({plugin,
                                                  vessel_guid,
                                                  burn,
@@ -484,7 +486,7 @@ Status __cdecl principia__FlightPlanReplace(Plugin const* const plugin,
                                        index)));
 }
 
-Status __cdecl principia__FlightPlanSetAdaptiveStepParameters(
+Status const* __cdecl principia__FlightPlanSetAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid,
     FlightPlanAdaptiveStepParameters const
@@ -499,7 +501,7 @@ Status __cdecl principia__FlightPlanSetAdaptiveStepParameters(
           SetAdaptiveStepParameters(parameters.first, parameters.second)));
 }
 
-Status __cdecl principia__FlightPlanSetDesiredFinalTime(
+Status const* __cdecl principia__FlightPlanSetDesiredFinalTime(
     Plugin const* const plugin,
     char const* const vessel_guid,
     double const final_time) {
