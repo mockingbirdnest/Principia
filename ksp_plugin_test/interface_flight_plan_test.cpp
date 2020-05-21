@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#include <string>
+
 #include "base/not_null.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"

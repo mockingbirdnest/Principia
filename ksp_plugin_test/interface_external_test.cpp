@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#include <string>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin_test/fake_plugin.hpp"

@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <string>
 #include <typeindex>
 #include <type_traits>
 #include <utility>
