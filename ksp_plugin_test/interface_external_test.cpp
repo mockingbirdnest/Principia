@@ -7,7 +7,6 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
@@ -32,7 +31,6 @@ using quantities::si::Milli;
 using quantities::si::Newton;
 using quantities::si::Tonne;
 using testing_utilities::Componentwise;
-using testing_utilities::IsOk;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::operator""_⑴;
@@ -48,6 +46,11 @@ constexpr PartId part_id = 1729;
 constexpr char const* vessel_guid = "NCC 1701-D";
 constexpr char const* part_name = "Picard's desk";
 constexpr char const* vessel_name = "Enterprise";
+
+MATCHER(IsOk,
+        std::string(negation ? "is not" : "is") + " ok") {
+  return arg.error == 0;
+}
 
 }  // namespace
 
@@ -94,17 +97,19 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   QP result;
   auto const to_world =
       plugin_.renderer().BarycentricToWorld(plugin_.PlanetariumRotation());
-  auto const status = principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
-      &plugin_,
-      SolarSystemFactory::Earth,
-      vessel_guid,
-      /*manoeuvre_index=*/0,
-      /*reference_position=*/ToXYZ(
-          to_world(Displacement<Barycentric>(
-              {-100'000 * Kilo(Metre), 0 * Metre, 0 * Metre})).coordinates() /
-                  Metre),
-      &result);
-  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  auto const* const status =
+      principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
+          &plugin_,
+          SolarSystemFactory::Earth,
+          vessel_guid,
+          /*manoeuvre_index=*/0,
+          /*reference_position=*/
+          ToXYZ(to_world(Displacement<Barycentric>(
+                             {-100'000 * Kilo(Metre), 0 * Metre, 0 * Metre}))
+                    .coordinates() /
+                Metre),
+          &result);
+  EXPECT_THAT(*status, IsOk());
   auto const barycentric_result =
       to_world.Inverse()(FromQP<RelativeDegreesOfFreedom<World>>(result));
   // The reference position is far above the apoapsis, so the result is roughly
@@ -123,13 +128,13 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
 TEST_F(InterfaceExternalTest, Geopotential) {
   XY coefficient;
   double radius;
-  auto status = principia__ExternalGeopotentialGetCoefficient(
+  auto const* status = principia__ExternalGeopotentialGetCoefficient(
       &plugin_,
       SolarSystemFactory::Earth,
       /*degree=*/2,
       /*order=*/0,
       &coefficient);
-  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(*status, IsOk());
   EXPECT_THAT(-coefficient.x * Sqrt(5), IsNear(1.08e-3_⑴));
   EXPECT_THAT(coefficient.y, Eq(0));
 
@@ -139,7 +144,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       /*degree=*/3,
       /*order=*/1,
       &coefficient);
-  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(*status, IsOk());
   EXPECT_THAT(coefficient.x, IsNear(2.03e-6_⑴));
   EXPECT_THAT(coefficient.y, IsNear(0.248e-6_⑴));
 
@@ -149,7 +154,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       /*degree=*/1729,
       /*order=*/163,
       &coefficient);
-  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(*status, IsOk());
   EXPECT_THAT(coefficient.x, Eq(0));
   EXPECT_THAT(coefficient.y, Eq(0));
 
@@ -157,7 +162,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       &plugin_,
       SolarSystemFactory::Earth,
       &radius);
-  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(*status, IsOk());
   EXPECT_THAT(radius, Eq(6'378'136.3));
 
   status = principia__ExternalGeopotentialGetCoefficient(
@@ -166,7 +171,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       /*degree=*/2,
       /*order=*/2,
       &coefficient);
-  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(*status, IsOk());
   EXPECT_THAT(coefficient.x, Eq(0));
   EXPECT_THAT(coefficient.y, Eq(0));
 
@@ -176,7 +181,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       /*degree=*/0,
       /*order=*/0,
       &coefficient);
-  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(*status, IsOk());
   EXPECT_THAT(coefficient.x, Eq(1));
   EXPECT_THAT(coefficient.y, Eq(0));
 
@@ -184,7 +189,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       &plugin_,
       SolarSystemFactory::Ariel,
       &radius);
-  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
+  EXPECT_THAT(*status, IsOk());
   EXPECT_THAT(radius, Eq(578'900));
 }
 
