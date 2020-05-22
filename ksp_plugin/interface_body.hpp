@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <limits>
+#include <string>
 #include <utility>
 
 #include "base/array.hpp"
@@ -451,7 +452,7 @@ inline QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
   return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::ToQP(relative_dof);
 }
 
-inline Status const* ToStatus(base::Status const& status) {
+inline Status* ToNewStatus(base::Status const& status) {
   if (status.ok()) {
     return new Status{static_cast<int>(status.error()),
                       /*message=*/nullptr};
@@ -467,9 +468,9 @@ inline Status const* ToStatus(base::Status const& status) {
   }
 }
 
-inline Status const* ToStatus(base::Error const error,
-                              std::string const& message) {
-  return ToStatus(base::Status(error, message));
+inline Status* ToNewStatus(base::Error const error,
+                           std::string const& message) {
+  return ToNewStatus(base::Status(error, message));
 }
 
 inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {

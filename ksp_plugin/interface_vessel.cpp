@@ -68,7 +68,7 @@ XYZ __cdecl principia__VesselNormal(Plugin const* const plugin,
   return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid)));
 }
 
-OrbitAnalysis const* __cdecl principia__VesselRefreshAnalysis(
+OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
     Plugin const* const plugin,
     char const* const vessel_guid,
     int const primary_index,
