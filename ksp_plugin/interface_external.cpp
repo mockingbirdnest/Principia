@@ -35,19 +35,14 @@ using physics::RigidTransformation;
 
 namespace {
 
-// A wrapper for |MakeStatus(base::Status(error, message))|, since we often
-// construct the status in the interface itself.
-Status MakeStatus(Error const error, std::string const& message) {
-  return ToStatus(base::Status(error, message));
-}
-
-Status OK() {
-  return ToStatus(base::Status::OK);
+Status* OK() {
+  static Status* const ok = ToNewStatus(base::Status::OK);
+  return ok;
 }
 
 }  // namespace
 
-Status __cdecl principia__ExternalCelestialGetPosition(
+Status* __cdecl principia__ExternalCelestialGetPosition(
     Plugin const* const plugin,
     int const body_index,
     double const time,
@@ -59,10 +54,10 @@ Status __cdecl principia__ExternalCelestialGetPosition(
       {position}};
   if (plugin == nullptr) {
     return m.Return(
-        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
   if (!plugin->HasCelestial(body_index)) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::NOT_FOUND,
         absl::StrCat("No celestial with index ", body_index)));
   }
@@ -71,12 +66,12 @@ Status __cdecl principia__ExternalCelestialGetPosition(
   Instant const t = FromGameTime(*plugin, time);
   if (t < trajectory.t_min() || t > trajectory.t_max()) {
     return m.Return(
-        MakeStatus(Error::OUT_OF_RANGE,
-                   (std::stringstream{}
-                    << "|time| " << t << " does not lie within the domain ["
-                    << trajectory.t_min() << ", " << trajectory.t_max()
-                    << "] of the trajectory of " << celestial.body()->name())
-                       .str()));
+        ToNewStatus(Error::OUT_OF_RANGE,
+                    (std::stringstream{}
+                     << "|time| " << t << " does not lie within the domain ["
+                     << trajectory.t_min() << ", " << trajectory.t_max()
+                     << "] of the trajectory of " << celestial.body()->name())
+                        .str()));
   }
   auto const from_solar_system_barycentre =
       plugin->renderer().BarycentricToWorldSun(plugin->PlanetariumRotation())(
@@ -85,7 +80,7 @@ Status __cdecl principia__ExternalCelestialGetPosition(
   return m.Return(OK());
 }
 
-Status __cdecl principia__ExternalCelestialGetSurfacePosition(
+Status* __cdecl principia__ExternalCelestialGetSurfacePosition(
     Plugin const* const plugin,
     int const body_index,
     double const planetocentric_latitude_in_degrees,
@@ -103,10 +98,10 @@ Status __cdecl principia__ExternalCelestialGetSurfacePosition(
       {position}};
   if (plugin == nullptr) {
     return m.Return(
-        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
   if (!plugin->HasCelestial(body_index)) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::NOT_FOUND,
         absl::StrCat("No celestial with index ", body_index)));
   }
@@ -115,12 +110,12 @@ Status __cdecl principia__ExternalCelestialGetSurfacePosition(
   Instant const t = FromGameTime(*plugin, time);
   if (t < trajectory.t_min() || t > trajectory.t_max()) {
     return m.Return(
-        MakeStatus(Error::OUT_OF_RANGE,
-                   (std::stringstream{}
-                    << "|time| " << t << " does not lie within the domain ["
-                    << trajectory.t_min() << ", " << trajectory.t_max()
-                    << "] of the trajectory of " << celestial.body()->name())
-                       .str()));
+        ToNewStatus(Error::OUT_OF_RANGE,
+                    (std::stringstream{}
+                     << "|time| " << t << " does not lie within the domain ["
+                     << trajectory.t_min() << ", " << trajectory.t_max()
+                     << "] of the trajectory of " << celestial.body()->name())
+                        .str()));
   }
   using Surface = Frame<enum class SurfaceTag>;
   OrthogonalMap<Surface, WorldSun> const to_world_axes =
@@ -136,7 +131,7 @@ Status __cdecl principia__ExternalCelestialGetSurfacePosition(
   return m.Return(OK());
 }
 
-Status __cdecl principia__ExternalFlowFreefall(
+Status* __cdecl principia__ExternalFlowFreefall(
     Plugin const* const plugin,
     int const central_body_index,
     QP const world_body_centred_initial_degrees_of_freedom,
@@ -152,13 +147,13 @@ Status __cdecl principia__ExternalFlowFreefall(
       {world_body_centred_final_degrees_of_freedom}};
   if (plugin == nullptr) {
     return m.Return(
-        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
-  return m.Return(MakeStatus(Error::UNIMPLEMENTED,
+  return m.Return(ToNewStatus(Error::UNIMPLEMENTED,
                              "|ExternalFlowFreefall| is not yet implemented"));
 }
 
-Status __cdecl principia__ExternalGeopotentialGetCoefficient(
+Status* __cdecl principia__ExternalGeopotentialGetCoefficient(
     Plugin const* const plugin,
     int const body_index,
     int const degree,
@@ -172,15 +167,15 @@ Status __cdecl principia__ExternalGeopotentialGetCoefficient(
       {coefficient}};
   if (plugin == nullptr) {
     return m.Return(
-        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
   if (!plugin->HasCelestial(body_index)) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::NOT_FOUND,
         absl::StrCat("No celestial with index ", body_index)));
   }
   if (order < 0 || order > degree) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::INVALID_ARGUMENT,
         absl::StrCat(u8"Expected 0 ≤ order ≤ degree; got degree = ",
                      degree, ", order = ", order)));
@@ -204,7 +199,7 @@ Status __cdecl principia__ExternalGeopotentialGetCoefficient(
   return m.Return(OK());
 }
 
-Status __cdecl principia__ExternalGeopotentialGetReferenceRadius(
+Status* __cdecl principia__ExternalGeopotentialGetReferenceRadius(
     Plugin const* const plugin,
     int const body_index,
     double* const reference_radius) {
@@ -214,10 +209,10 @@ Status __cdecl principia__ExternalGeopotentialGetReferenceRadius(
       {reference_radius}};
   if (plugin == nullptr) {
     return m.Return(
-        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
   if (!plugin->HasCelestial(body_index)) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::NOT_FOUND,
         absl::StrCat("No celestial with index ", body_index)));
   }
@@ -231,7 +226,7 @@ Status __cdecl principia__ExternalGeopotentialGetReferenceRadius(
   return m.Return(OK());
 }
 
-Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
+Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
     Plugin const* const plugin,
     int const central_body_index,
     char const* const vessel_guid,
@@ -247,32 +242,32 @@ Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
       {world_body_centred_nearest_degrees_of_freedom}};
   if (plugin == nullptr) {
     return m.Return(
-        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
   if (manoeuvre_index < 0) {
-    return m.Return(MakeStatus(Error::INVALID_ARGUMENT,
+    return m.Return(ToNewStatus(Error::INVALID_ARGUMENT,
                               "Invalid negative |manoeuvre_index|" +
                                   std::to_string(manoeuvre_index)));
   }
   if (!plugin->HasCelestial(central_body_index)) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::NOT_FOUND,
         "No celestial with index " + std::to_string(central_body_index)));
   }
   if (!plugin->HasVessel(vessel_guid)) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::NOT_FOUND,
         "No vessel with GUID " + std::string(vessel_guid)));
   }
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   if (!vessel.has_flight_plan()) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::FAILED_PRECONDITION,
         "Vessel " + vessel.ShortDebugString() + " has no flight plan"));
   }
   FlightPlan const& flight_plan = vessel.flight_plan();
   if (manoeuvre_index >= flight_plan.number_of_manœuvres()) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::OUT_OF_RANGE,
         "|manoeuvre_index| " + std::to_string(manoeuvre_index) +
             " out of range, vessel " + vessel.ShortDebugString() + " has " +
@@ -282,7 +277,7 @@ Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   // The index of the coast segment following the desired manœuvre.
   int const segment_index = manoeuvre_index * 2 + 2;
   if (segment_index >= flight_plan.number_of_segments()) {
-    return m.Return(MakeStatus(Error::FAILED_PRECONDITION,
+    return m.Return(ToNewStatus(Error::FAILED_PRECONDITION,
                                u8"A singularity occurs within manœuvre " +
                                    std::to_string(manoeuvre_index) + " of " +
                                    vessel.ShortDebugString()));
@@ -353,7 +348,7 @@ Status __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   return m.Return(OK());
 }
 
-Status __cdecl principia__ExternalVesselGetPosition(
+Status* __cdecl principia__ExternalVesselGetPosition(
     Plugin const* const plugin,
     char const* const vessel_guid,
     double const time,
@@ -365,10 +360,10 @@ Status __cdecl principia__ExternalVesselGetPosition(
       {position}};
   if (plugin == nullptr) {
     return m.Return(
-        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
   if (!plugin->HasVessel(vessel_guid)) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::NOT_FOUND,
         absl::StrCat("No vessel with GUID ", vessel_guid)));
   }
@@ -376,7 +371,7 @@ Status __cdecl principia__ExternalVesselGetPosition(
   auto const& trajectory = vessel.psychohistory();
   Instant const t = FromGameTime(*plugin, time);
   if (t < trajectory.t_min() || t > trajectory.t_max()) {
-    return m.Return(MakeStatus(
+    return m.Return(ToNewStatus(
         Error::OUT_OF_RANGE,
         (std::stringstream{}
          << "|time| " << t << " does not lie within the domain ["

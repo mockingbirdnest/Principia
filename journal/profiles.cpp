@@ -18,9 +18,9 @@ namespace journal {
 namespace {
 
 template<typename T>
-void Insert(Player::PointerMap& pointer_map,
-            std::uint64_t const address,
-            T* const pointer) {
+void Insert(std::uint64_t const address,
+            T* const pointer,
+            Player::PointerMap& pointer_map) {
   void* const inserted_pointer = static_cast<void*>(
       const_cast<typename std::remove_cv<T>::type*>(pointer));
   auto const [it, inserted] = pointer_map.emplace(address, inserted_pointer);
@@ -29,8 +29,8 @@ void Insert(Player::PointerMap& pointer_map,
   }
 }
 
-void Delete(Player::PointerMap& pointer_map,
-            std::uint64_t const address) {
+void Delete(std::uint64_t const address,
+            Player::PointerMap& pointer_map) {
   if (reinterpret_cast<void*>(address) != nullptr) {
     auto const it = pointer_map.find(address);
     CHECK(it != pointer_map.end()) << address;
@@ -40,8 +40,8 @@ void Delete(Player::PointerMap& pointer_map,
 
 template<typename T,
          typename = typename std::enable_if<std::is_pointer<T>::value>::type>
-T DeserializePointer(Player::PointerMap const& pointer_map,
-                     std::uint64_t const address) {
+T DeserializePointer(std::uint64_t const address,
+                     Player::PointerMap const& pointer_map) {
   if (reinterpret_cast<T>(address) == nullptr) {
     return nullptr;
   } else {

@@ -137,8 +137,8 @@ message QP {
 message Status {
   // A principia::base::Error, or equivalently, a google.rpc.Code.
   required int32 error = 1;
-  // TODO(phl): find a way to produce strings in a struct and to interchange
-  // enums.
+  required fixed64 message = 2 [(encoding) = UTF_8,
+                                (is_produced) = true];
 }
 
 message WXYZ {
@@ -531,7 +531,7 @@ message ExternalCelestialGetPosition {
     required XYZ position = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -555,7 +555,7 @@ message ExternalCelestialGetSurfacePosition {
     required XYZ position = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -582,7 +582,7 @@ message ExternalFlowFreefall {
     required QP world_body_centred_final_degrees_of_freedom = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -607,7 +607,7 @@ message ExternalGeopotentialGetCoefficient {
     required XY coefficient = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -631,7 +631,7 @@ message ExternalGeopotentialGetReferenceRadius {
     required double reference_radius = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -652,7 +652,7 @@ message ExternalVesselGetPosition {
     required XYZ position = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -678,7 +678,7 @@ message ExternalGetNearestPlannedCoastDegreesOfFreedom {
     required QP world_body_centred_nearest_degrees_of_freedom = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -698,7 +698,7 @@ message FlightPlanAppend {
     required Burn burn = 3;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -919,7 +919,7 @@ message FlightPlanRemoveLast {
     required string vessel_guid = 2;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1025,7 +1025,7 @@ message FlightPlanReplace {
     required int32 index = 4;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1043,7 +1043,7 @@ message FlightPlanSetAdaptiveStepParameters {
         flight_plan_adaptive_step_parameters = 3;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1060,7 +1060,7 @@ message FlightPlanSetDesiredFinalTime {
     required double final_time = 3;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;

@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#include <string>
+
 #include "base/not_null.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
@@ -109,6 +111,11 @@ MATCHER_P(HasΔv, Δv, "") {
   return arg.intensity.Δv && *arg.intensity.Δv == Δv;
 }
 
+MATCHER(IsOk,
+        std::string(negation ? "is not" : "is") + " ok") {
+  return arg.error == 0;
+}
+
 }  // namespace
 
 class InterfaceFlightPlanTest : public ::testing::Test {
@@ -154,10 +161,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
 
   EXPECT_CALL(flight_plan, SetDesiredFinalTime(Instant() + 60 * Second))
       .WillOnce(Return(base::Status::OK));
-  EXPECT_EQ(0,
-            principia__FlightPlanSetDesiredFinalTime(plugin_.get(),
-                                                     vessel_guid,
-                                                     60).error);
+  EXPECT_THAT(
+      *principia__FlightPlanSetDesiredFinalTime(plugin_.get(), vessel_guid, 60),
+      IsOk());
 
   EXPECT_CALL(flight_plan, initial_time())
       .WillOnce(Return(Instant() + 3 * Second));
@@ -194,15 +200,15 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                       speed_integration_tolerance,
                   33 * Metre / Second))))
       .WillOnce(Return(base::Status::OK));
-  EXPECT_EQ(0,
-            principia__FlightPlanSetAdaptiveStepParameters(
-                plugin_.get(),
-                vessel_guid,
-                {/*integrator_kind=*/1,
-                  /*generalized_integrator_kind=*/2,
-                  /*max_step=*/11,
-                  /*length_integration_tolerance=*/22,
-                  /*speed_integration_tolerance=*/33}).error);
+  EXPECT_THAT(*principia__FlightPlanSetAdaptiveStepParameters(
+                  plugin_.get(),
+                  vessel_guid,
+                  {/*integrator_kind=*/1,
+                   /*generalized_integrator_kind=*/2,
+                   /*max_step=*/11,
+                   /*length_integration_tolerance=*/22,
+                   /*speed_integration_tolerance=*/33}),
+              IsOk());
 
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
@@ -246,10 +252,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                       5 * (Metre / Second),
                                       6 * (Metre / Second)})))))
       .WillOnce(Return(base::Status::OK));
-  EXPECT_EQ(0,
-            principia__FlightPlanAppend(plugin_.get(),
-                                        vessel_guid,
-                                        interface_burn).error);
+  EXPECT_THAT(
+      *principia__FlightPlanAppend(plugin_.get(), vessel_guid, interface_burn),
+      IsOk());
 
   EXPECT_CALL(flight_plan, number_of_manœuvres())
       .WillOnce(Return(4));
@@ -401,8 +406,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                                     6 * (Metre / Second)}))),
           42))
       .WillOnce(Return(base::Status::OK));
-  EXPECT_EQ(0, principia__FlightPlanReplace(
-                   plugin_.get(), vessel_guid, interface_burn, 42).error);
+  EXPECT_THAT(*principia__FlightPlanReplace(
+                  plugin_.get(), vessel_guid, interface_burn, 42),
+              IsOk());
 
   EXPECT_CALL(flight_plan, RemoveLast());
   principia__FlightPlanRemoveLast(plugin_.get(), vessel_guid);

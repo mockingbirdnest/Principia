@@ -416,7 +416,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       bool timed_out = actual_final_time < final_time_.value;
 
       string remedy_message = "changing the flight plan";  // Preceded by "Try".
-      string status_message = "computation failed";  // Preceded by "The".
+      string status_message = "computation failed with error " + status_.error +
+                              " and message \"" + status_.message +
+                              "\"";  // Preceded by "The".
       string time_out_message = timed_out
                                     ? " after " +
                                       FormatPositiveTimeSpan(

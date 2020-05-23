@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <string>
 #include <typeindex>
 #include <type_traits>
 #include <utility>
@@ -155,7 +156,9 @@ KeplerianElements ToKeplerianElements(
 QP ToQP(DegreesOfFreedom<World> const& dof);
 QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 
-Status ToStatus(base::Status const& status);
+// Ownership of the status and its message is transferred to the caller.
+Status* ToNewStatus(base::Status const& status);
+Status* ToNewStatus(base::Error error, std::string const& message);
 
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 

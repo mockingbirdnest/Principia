@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "ksp_plugin/iterators.hpp"
 
 namespace principia {

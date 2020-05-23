@@ -5,8 +5,10 @@
 
 #include <cmath>
 #include <limits>
+#include <string>
 #include <utility>
 
+#include "base/array.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
@@ -17,6 +19,7 @@
 namespace principia {
 namespace interface {
 
+using base::UniqueArray;
 using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
 using geometry::Rotation;
@@ -449,11 +452,25 @@ inline QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
   return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::ToQP(relative_dof);
 }
 
-inline Status ToStatus(base::Status const& status) {
-  if (!status.ok()) {
-    LOG(ERROR) << status.message();
+inline Status* ToNewStatus(base::Status const& status) {
+  if (status.ok()) {
+    return new Status{static_cast<int>(status.error()),
+                      /*message=*/nullptr};
+  } else {
+    std::string const& message = status.message();
+    LOG(ERROR) << message;
+    UniqueArray<char> allocated_message(message.size() + 1);
+    std::memcpy(allocated_message.data.get(),
+                message.c_str(),
+                message.size() + 1);
+    return new Status{static_cast<int>(status.error()),
+                      allocated_message.data.release()};
   }
-  return {static_cast<int>(status.error())};
+}
+
+inline Status* ToNewStatus(base::Error const error,
+                           std::string const& message) {
+  return ToNewStatus(base::Status(error, message));
 }
 
 inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
