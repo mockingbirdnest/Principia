@@ -36,6 +36,7 @@ This project depends upon:
   benchmark library;
 - our [fork](https://github.com/mockingbirdnest/gipfeli) of the Google gipfeli library;
 - our [fork](https://github.com/mockingbirdnest/abseil-cpp) of the Google Abseil C++ library;
+- our [fork]() of the LLNL zfp library;
 - parts of the Chromium codebase (for stack tracing support in glog on Windows),
   *modified according to the instructions below*.
 
@@ -59,6 +60,7 @@ git clone "https://github.com/mockingbirdnest/protobuf.git"
 git clone "https://github.com/mockingbirdnest/benchmark.git"
 git clone "https://github.com/mockingbirdnest/gipfeli.git"
 git clone "https://github.com/mockingbirdnest/abseil-cpp.git"
+git clone "https://github.com/mockingbirdnest/zfp.git"
 git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
 $GitPromptSettings.RepositoriesInWhichToDisableFileStatus += join-path  (gi -path .).FullName chromium
 cd chromium
