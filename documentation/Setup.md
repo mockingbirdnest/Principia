@@ -72,7 +72,31 @@ cd ..
 ```
 ### Building
 
-In `<root>`, run the following command.
+In `<root>`, run the following command:
 ```powershell
 .\Principia\rebuild_all_solutions.ps1
 ```
+
+# Instructions for building Principia on Linux and macOS
+
+*Note that the released binaries for Linux and macOS are built using [Azure pipelines](https://dev.azure.com/mockingbirdnest/Principia/_build).  The instructions below are best effort.*
+
+Before starting, make sure the following are installed on your machine:
+* Build prerequisites: `build-essential`, `clang`, `libc++-dev`, `libc++abi-dev`, `monodevelop`, `subversion`, and `git`;
+* Runtime dependencies: `libc++1`.
+
+## Installing the dependencies
+
+In `<root>/Principia`, run the following command:
+```bash
+./install_deps.sh
+```
+This will install and compile all the third-party components that Principia uses.  Don't proceed with the next step unless this step has completed without errors.
+
+## Building Principia
+
+In `<root>/Principia`, run the following command:
+```bash
+./principia_make.sh
+```
+If some of the unit tests fail, you may or may not be able to run the resulting version of Principia.
