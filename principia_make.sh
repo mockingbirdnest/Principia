@@ -3,7 +3,7 @@
 # it find its dynamic libraries.
 if [ "${AGENT_OS?}" == "Darwin" ]; then
   install_name_tool \
-      -change \ 
+      -change \
           /usr/local/lib/libprotobuf.17.dylib \
           ./deps/protobuf/src/.libs/libprotobuf.17.dylib \
       deps/protobuf/src/.libs/libprotoc.17.dylib
