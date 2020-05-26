@@ -10,7 +10,7 @@ template<typename... Ts>
 constexpr bool all_different_v = false;
 
 template<>
-constexpr bool all_different_v<> = true;
+inline constexpr bool all_different_v<> = true;
 
 template<typename T0, typename... Ts>
 constexpr bool all_different_v<T0, Ts...> =
