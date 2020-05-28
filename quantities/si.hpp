@@ -20,7 +20,7 @@ namespace si {
 template<typename Q>
 constexpr Q Unit = internal_quantities::SIUnit<Q>();
 template<>
-constexpr double Unit<double> = 1;
+inline constexpr double Unit<double> = 1;
 
 // Prefixes
 template<typename D> constexpr Quantity<D> Yotta(Quantity<D>);
