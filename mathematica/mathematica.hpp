@@ -88,9 +88,6 @@ class ExpressIn {
   std::tuple<Qs...> units_;
 };
 
-std::string Apply(std::string const& function,
-                  std::vector<std::string> const& arguments);
-
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Option(std::string const& name,
                    T const& right,
@@ -207,6 +204,7 @@ template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::string const& str,
                           OptionalExpressIn express_in = std::nullopt);
 
+// An RAII object to help with Mathematica logging.
 class Logger final {
  public:
   // Creates a logger object that will, at destruction, write to the given file.
@@ -232,7 +230,6 @@ class Logger final {
 
 }  // namespace internal_mathematica
 
-using internal_mathematica::Apply;
 using internal_mathematica::Assign;
 using internal_mathematica::ExpressIn;
 using internal_mathematica::Logger;

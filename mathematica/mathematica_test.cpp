@@ -295,11 +295,6 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
 }
 
-TEST_F(MathematicaTest, Apply) {
-  EXPECT_EQ("Fun[]", Apply("Fun", {}));
-  EXPECT_EQ("Fun[1,[],\"string\"]", Apply("Fun", {"1", "[]", "\"string\""}));
-}
-
 TEST_F(MathematicaTest, Option) {
   EXPECT_EQ(
       "Rule["

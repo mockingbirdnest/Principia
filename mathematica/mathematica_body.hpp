@@ -46,7 +46,20 @@ inline std::string Escape(std::string_view const str) {
   return result;
 }
 
-// An RAII object to help with Mathematica logging.
+// Does not wrap its arguments in ToMathematica.
+inline std::string Apply(
+    std::string const& function,
+    std::vector<std::string> const& arguments) {
+  std::string result;
+  result += function;
+  result += "[";
+  for (int i = 0; i < arguments.size(); ++i) {
+    result += arguments[i];
+    result += (i + 1 < arguments.size() ? "," : "");
+  }
+  result += "]";
+  return result;
+}
 
 // A helper struct to scan the elements of a tuple and stringify them.
 template<int index, typename Tuple, typename OptionalExpressIn>
@@ -67,20 +80,6 @@ struct TupleHelper<0, Tuple, OptionalExpressIn> : not_constructible {
                                    std::vector<std::string>& expressions,
                                    OptionalExpressIn express_in) {}
 };
-
-inline std::string Apply(
-    std::string const& function,
-    std::vector<std::string> const& arguments) {
-  std::string result;
-  result += function;
-  result += "[";
-  for (int i = 0; i < arguments.size(); ++i) {
-    result += arguments[i];
-    result += (i + 1 < arguments.size() ? "," : "");
-  }
-  result += "]";
-  return result;
-}
 
 template<typename... Qs>
 ExpressIn<Qs...>::ExpressIn(Qs const&... qs)
