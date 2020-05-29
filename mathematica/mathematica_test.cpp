@@ -440,7 +440,7 @@ TEST_F(MathematicaTest, Logger) {
       "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
       "\" m\"]]]];\n"
       "Set["
-      "β,"
+      u8"β,"
       "List["
       "Quantity["
       "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"

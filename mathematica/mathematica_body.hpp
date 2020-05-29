@@ -332,16 +332,6 @@ std::string ToMathematica(std::string const& str,
   return Escape(str);
 }
 
-inline std::string ToMathematica(char const* const str,
-                                 Verbatim const verbatim) {
-  return std::string(str);
-}
-
-inline std::string ToMathematica(std::string const& str,
-                                 Verbatim const verbatim) {
-  return str;
-}
-
 inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
     : file_([make_unique, &path]() {
         if (make_unique) {

@@ -88,9 +88,6 @@ class ExpressIn {
   std::tuple<Qs...> units_;
 };
 
-// A tag for logging a string without escaping.
-struct Verbatim final {};
-
 std::string Apply(std::string const& function,
                   std::vector<std::string> const& arguments);
 
@@ -209,10 +206,6 @@ std::string ToMathematica(char const* str,
 template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::string const& str,
                           OptionalExpressIn express_in = std::nullopt);
-
-// Returns its argument.
-std::string ToMathematica(char const* str, Verbatim verbatim);
-std::string ToMathematica(std::string const& str, Verbatim verbatim);
 
 class Logger final {
  public:
