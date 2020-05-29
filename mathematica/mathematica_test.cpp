@@ -1,4 +1,4 @@
-#include "mathematica/mathematica.hpp"
+﻿#include "mathematica/mathematica.hpp"
 
 #include <list>
 #include <string>
@@ -288,10 +288,10 @@ TEST_F(MathematicaTest, ToMathematica) {
     std::optional<std::string> opt1;
     std::optional<std::string> opt2("foo");
     EXPECT_EQ("List[]", ToMathematica(opt1));
-    EXPECT_EQ("List[foo]", ToMathematica(opt2));
+    EXPECT_EQ("List[\"foo\"]", ToMathematica(opt2));
   }
   {
-    EXPECT_EQ("foo\"bar", ToMathematica("foo\"bar"));
+    EXPECT_EQ("\"foo\\\"bar\"", ToMathematica("foo\"bar"));
   }
 }
 
@@ -305,7 +305,7 @@ TEST_F(MathematicaTest, Option) {
       "Rule["
       "option,"
       "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]",
-      Option("option", ToMathematica(3.0)));
+      Option("option", 3.0));
 }
 
 TEST_F(MathematicaTest, Assign) {
@@ -313,7 +313,7 @@ TEST_F(MathematicaTest, Assign) {
       "Set["
       "var,"
       "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]];\n",
-      Assign("var", ToMathematica(3.0)));
+      Assign("var", 3.0));
 }
 
 TEST_F(MathematicaTest, PlottableDataset) {
@@ -323,20 +323,20 @@ TEST_F(MathematicaTest, PlottableDataset) {
       "List["
       "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
       "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]],"
-      "List[2,3]]]",
+      "List[\"2\",\"3\"]]]",
       PlottableDataset(std::vector<double>{2, 3},
                        std::vector<std::string>{"2", "3"}));
 }
 
 TEST_F(MathematicaTest, Escape) {
-  EXPECT_EQ(R"("foo")", Escape("foo"));
+  EXPECT_EQ(R"("foo")", ToMathematica("foo"));
   {
     // This string messes up the macro.
     std::string expected = R"("fo\"o")";
-    EXPECT_EQ(expected, Escape("fo\"o"));
+    EXPECT_EQ(expected, ToMathematica("fo\"o"));
   }
-  EXPECT_EQ(R"("fo\\o")", Escape("fo\\o"));
-  EXPECT_EQ(R"("")", Escape(""));
+  EXPECT_EQ(R"("fo\\o")", ToMathematica("fo\\o"));
+  EXPECT_EQ(R"("")", ToMathematica(""));
 }
 
 TEST_F(MathematicaTest, ExpressIn) {
@@ -415,9 +415,9 @@ TEST_F(MathematicaTest, ExpressIn) {
 #if !defined(__APPLE__)
 TEST_F(MathematicaTest, Logger) {
   {
-    Logger logger(TEMP_DIR / "mathematica_test.wl", /*make_unique=*/true);
+    Logger logger(TEMP_DIR / "mathematica_test.wl");
     logger.Append("a", std::vector{1.0, 2.0, 3.0});
-    logger.Append("b", 4 * Metre / Second);
+    logger.Append(u8"β", 4 * Metre / Second);
     logger.Append("a", F::origin);
   }
   // Go check the file.
@@ -440,7 +440,7 @@ TEST_F(MathematicaTest, Logger) {
       "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
       "\" m\"]]]];\n"
       "Set["
-      "b,"
+      "β,"
       "List["
       "Quantity["
       "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"

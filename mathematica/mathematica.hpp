@@ -88,6 +88,9 @@ class ExpressIn {
   std::tuple<Qs...> units_;
 };
 
+// A tag for logging a string without escaping.
+struct Verbatim final {};
+
 std::string Apply(std::string const& function,
                   std::vector<std::string> const& arguments);
 
@@ -200,7 +203,6 @@ template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::optional<T> const& opt,
                           OptionalExpressIn express_in = std::nullopt);
 
-// Returns its argument.
 template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(char const* str,
                           OptionalExpressIn express_in = std::nullopt);
@@ -208,17 +210,17 @@ template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::string const& str,
                           OptionalExpressIn express_in = std::nullopt);
 
-// Wraps the string in quotes and escapes things properly.
-std::string Escape(std::string const& str);
+// Returns its argument.
+std::string ToMathematica(char const* str, Verbatim verbatim);
+std::string ToMathematica(std::string const& str, Verbatim verbatim);
 
-// An RAII object to help with Mathematica logging.
 class Logger final {
  public:
   // Creates a logger object that will, at destruction, write to the given file.
   // If make_unique is true, a unique id is inserted before the file extension
   // to identify different loggers.
   Logger(std::filesystem::path const& path,
-         bool make_unique = false);
+         bool make_unique = true);
   ~Logger();
 
   // Appends an element to the list of values for the variable |name|.  The
@@ -239,7 +241,6 @@ class Logger final {
 
 using internal_mathematica::Apply;
 using internal_mathematica::Assign;
-using internal_mathematica::Escape;
 using internal_mathematica::ExpressIn;
 using internal_mathematica::Logger;
 using internal_mathematica::Option;

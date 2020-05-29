@@ -26,6 +26,28 @@ using quantities::si::Radian;
 using quantities::si::Second;
 namespace si = quantities::si;
 
+// Wraps the string in quotes and escapes things properly.
+inline std::string Escape(std::string_view const str) {
+  std::string result = "\"";
+  for (const char c : str) {
+    switch (c) {
+      case '"':
+        result += "\\\"";
+        break;
+      case '\\':
+        result += "\\\\";
+        break;
+      default:
+        result += c;
+        break;
+    }
+  }
+  result += "\"";
+  return result;
+}
+
+// An RAII object to help with Mathematica logging.
+
 // A helper struct to scan the elements of a tuple and stringify them.
 template<int index, typename Tuple, typename OptionalExpressIn>
 struct TupleHelper : not_constructible {
@@ -109,7 +131,7 @@ std::string PlottableDataset(std::vector<T> const& x,
                              OptionalExpressIn express_in) {
   std::vector<std::string> const xy = {ToMathematica(x, express_in),
                                        ToMathematica(y, express_in)};
-  return Apply("Transpose", {ToMathematica(xy, express_in)});
+  return Apply("Transpose", {Apply("List", xy)});
 }
 
 template<typename T, typename OptionalExpressIn>
@@ -301,32 +323,23 @@ std::string ToMathematica(std::optional<T> const& opt,
 template<typename OptionalExpressIn>
 std::string ToMathematica(char const* const str,
                           OptionalExpressIn /*express_in*/) {
-  return std::string(str);
+  return Escape(str);
 }
 
 template<typename OptionalExpressIn>
 std::string ToMathematica(std::string const& str,
                           OptionalExpressIn /*express_in*/) {
-  return str;
+  return Escape(str);
 }
 
-inline std::string Escape(std::string const& str) {
-  std::string result = "\"";
-  for (const char c : str) {
-    switch (c) {
-      case '"':
-        result += "\\\"";
-        break;
-      case '\\':
-        result += "\\\\";
-        break;
-      default:
-        result += c;
-        break;
-    }
-  }
-  result += "\"";
-  return result;
+inline std::string ToMathematica(char const* const str,
+                                 Verbatim const verbatim) {
+  return std::string(str);
+}
+
+inline std::string ToMathematica(std::string const& str,
+                                 Verbatim const verbatim) {
+  return str;
 }
 
 inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
@@ -343,7 +356,7 @@ inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
 
 inline Logger::~Logger() {
   for (auto const& [name, values] : names_and_values_) {
-    file_ << Assign(name, values);
+    file_ << Apply("Set", {name, Apply("List", values)}) + ";\n";
   }
 }
 
