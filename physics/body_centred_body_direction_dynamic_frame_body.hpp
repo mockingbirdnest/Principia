@@ -177,7 +177,7 @@ MotionOfThisFrame(Instant const& t) const {
   Vector<Acceleration, InertialFrame> const r̈ =
       secondary_acceleration - primary_acceleration;
   AngularVelocity<InertialFrame> const& ω =
-      to_this_frame.angular_velocity_of<ThisFrame>();
+      to_this_frame.template angular_velocity_of<ThisFrame>();
   Variation<AngularVelocity<InertialFrame>> const
       angular_acceleration_of_to_frame =
           (Wedge(r, r̈) * Radian - 2 * ω * InnerProduct(r, ṙ)) / r.Norm²();
