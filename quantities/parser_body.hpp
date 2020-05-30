@@ -220,9 +220,9 @@ inline Unit ParseQuotientUnit(std::string const& s) {
     // input like 1.23 / s.
     int const first_nonblank = s.find_first_not_of(' ', last_slash + 1);
     CHECK_NE(std::string::npos, first_nonblank);
-    int const last_nonblank = last_slash == 0
-                                  ? std::string::npos
-                                  : s.find_last_not_of(' ', last_slash - 1);
+    std::size_t const last_nonblank =
+        last_slash == 0 ? std::string::npos
+                        : s.find_last_not_of(' ', last_slash - 1);
     auto const left = last_nonblank == std::string::npos
                           ? Unit(1.0)
                           : ParseQuotientUnit(s.substr(0, last_nonblank + 1));
