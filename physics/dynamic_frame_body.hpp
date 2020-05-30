@@ -57,7 +57,8 @@ DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
   AngularVelocity<ThisFrame> const Ω = to_this_frame.orthogonal_map()(
       to_this_frame.angular_velocity_of<ThisFrame>());
   Variation<AngularVelocity<ThisFrame>> const dΩ_over_dt =
-      to_this_frame.orthogonal_map()(motion.angular_acceleration_of_to_frame());
+      to_this_frame.orthogonal_map()(
+          motion.angular_acceleration_of<ThisFrame>());
   Displacement<ThisFrame> const r =
       degrees_of_freedom.position() - ThisFrame::origin;
 
@@ -67,7 +68,8 @@ DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
                                     from_this_frame.rigid_transformation()(
                                         degrees_of_freedom.position())));
   Vector<Acceleration, ThisFrame> const linear_acceleration =
-      -to_this_frame.orthogonal_map()(motion.acceleration_of_to_frame_origin());
+      -to_this_frame.orthogonal_map()(
+          motion.acceleration_of_origin_of<ThisFrame>());
   Vector<Acceleration, ThisFrame> const coriolis_acceleration_at_point =
       -2 * Ω * degrees_of_freedom.velocity() / Radian;
   Vector<Acceleration, ThisFrame> const centrifugal_acceleration_at_point =

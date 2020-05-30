@@ -28,9 +28,30 @@ using geometry::RigidTransformation;
 using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
+using quantities::AngularAcceleration;
 using quantities::Length;
 using quantities::Variation;
 using quantities::si::Radian;
+
+// A trait to determine if Frame is FromFrame or ToFrame and return the other
+// one as the |type| member.
+template<typename Frame, typename FromFrame, typename ToFrame>
+struct other_frame;
+
+template<typename Frame>
+struct other_frame<Frame, Frame, Frame> {
+  using type = Frame;
+};
+
+template<typename FromFrame, typename ToFrame>
+struct other_frame<FromFrame, FromFrame, ToFrame> {
+  using type = ToFrame;
+};
+
+template<typename FromFrame, typename ToFrame>
+struct other_frame<ToFrame, FromFrame, ToFrame> {
+  using type = FromFrame;
+};
 
 // The instantaneous motion of |ToFrame| with respect to |FromFrame|.
 // This is the derivative of a |RigidTransformation<FromFrame, ToFrame>|.
@@ -39,11 +60,7 @@ using quantities::si::Radian;
 template<typename FromFrame, typename ToFrame>
 class RigidMotion final {
   template<typename T>
-  using other_frame = std::conditional_t<
-      std::is_same_v<T, FromFrame>,
-      ToFrame,
-      std::conditional_t<std::is_same_v<T, ToFrame>, FromFrame, void>>;
-
+  using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
  public:
   RigidMotion(
       RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
@@ -64,9 +81,9 @@ class RigidMotion final {
 
   // The frame F must be either ToFrame or FromFrame.
   template<typename F>
-  AngularVelocity<other_frame<F>> angular_velocity_of() const;
+  AngularVelocity<other_frame_t<F>> angular_velocity_of() const;
   template<typename F>
-  Velocity<other_frame<F>> velocity_of_origin_of() const;
+  Velocity<other_frame_t<F>> velocity_of_origin_of() const;
 
   DegreesOfFreedom<ToFrame> operator()(
       DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const;
@@ -121,23 +138,28 @@ RigidMotion<FromFrame, ToFrame> operator*(
 // second derivative (angular and linear accelerations).
 template<typename FromFrame, typename ToFrame>
 class AcceleratedRigidMotion final {
+  template<typename T>
+  using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
  public:
   AcceleratedRigidMotion(
-      RigidMotion<FromFrame, ToFrame> rigid_motion,
-      Variation<AngularVelocity<FromFrame>> const&
+      RigidMotion<FromFrame, ToFrame> const& rigid_motion,
+      Bivector<AngularAcceleration, FromFrame> const&
           angular_acceleration_of_to_frame,
       Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin);
 
   RigidMotion<FromFrame, ToFrame> const& rigid_motion() const;
-  Variation<AngularVelocity<FromFrame>> const&
-  angular_acceleration_of_to_frame() const;
-  Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin()
-      const;
+
+  template<typename F>
+  Bivector<AngularAcceleration, other_frame_t<F>>
+      angular_acceleration_of() const;
+  template<typename F>
+  Vector<Acceleration, other_frame_t<F>> acceleration_of_origin_of() const;
 
  private:
   RigidMotion<FromFrame, ToFrame> const rigid_motion_;
   // d/dt rigid_motion_.angular_velocity_of_to_frame().
-  Variation<AngularVelocity<FromFrame>> const angular_acceleration_of_to_frame_;
+  Bivector<AngularAcceleration, FromFrame> const
+      angular_acceleration_of_to_frame_;
   // d/dt rigid_motion_.velocity_of_to_frame_origin().
   Vector<Acceleration, FromFrame> const acceleration_of_to_frame_origin_;
 };

@@ -37,7 +37,7 @@ enum class Handedness {
 // or:
 //   using MyFrame = Frame<enum class MyFrameTag, Inertial>;
 //
-// By default, the frame is non-inertial and right-handed.
+// By default, the frame is arbitrary and right-handed.
 //
 // A non-serializable frame misses the ReadFromMessage method but has a
 // WriteToMessage method which fails at execution.  The reason is that
