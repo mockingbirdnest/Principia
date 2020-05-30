@@ -84,7 +84,7 @@ class MechanicalSystem {
   //   ⎛ ∑x²   ∑xy   ∑xy ⎞
   //   ⎜ ∑yx   ∑y²   ∑yz ⎟
   //   ⎝ ∑zx   ∑zy   ∑z² ⎠
-  // whereas the latter (obtained from the former by |Anticommutator()| has the
+  // whereas the latter (obtained from the former by |Anticommutator()|) has the
   // coordinates
   //   ⎛ ∑(y² + z²)   -∑xy      -∑xy    ⎞
   //   ⎜    -∑yx   ∑(x² + z²)   -∑yz    ⎟

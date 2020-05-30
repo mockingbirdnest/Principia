@@ -38,9 +38,15 @@ using quantities::si::Radian;
 // linear part anyway, so we store it (and we forward its action on positions).
 template<typename FromFrame, typename ToFrame>
 class RigidMotion final {
+  template<typename T>
+  using other_frame = std::conditional_t<
+      std::is_same_v<T, FromFrame>,
+      ToFrame,
+      std::conditional_t<std::is_same_v<T, ToFrame>, FromFrame, void>>;
+
  public:
   RigidMotion(
-      RigidTransformation<FromFrame, ToFrame> rigid_transformation,
+      RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
       AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
       Velocity<FromFrame> const& velocity_of_to_frame_origin);
 
@@ -55,8 +61,12 @@ class RigidMotion final {
   RigidTransformation<FromFrame, ToFrame> const& rigid_transformation() const;
   // Returns |rigid_transformation().linear_map()|.
   OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map() const;
-  AngularVelocity<FromFrame> const& angular_velocity_of_to_frame() const;
-  Velocity<FromFrame> const& velocity_of_to_frame_origin() const;
+
+  // The frame F must be either ToFrame or FromFrame.
+  template<typename F>
+  AngularVelocity<other_frame<F>> angular_velocity_of() const;
+  template<typename F>
+  Velocity<other_frame<F>> velocity_of_origin_of() const;
 
   DegreesOfFreedom<ToFrame> operator()(
       DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const;
@@ -92,6 +102,9 @@ class RigidMotion final {
   AngularVelocity<FromFrame> angular_velocity_of_to_frame_;
   // d/dt rigid_transformation⁻¹(ToFrame::origin).
   Velocity<FromFrame> velocity_of_to_frame_origin_;
+
+  template<typename, typename>
+  friend class RigidMotion;
 
   template<typename From, typename Through, typename To>
   friend RigidMotion<From, To> operator*(

@@ -16,10 +16,10 @@ using geometry::LinearMap;
 
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>::RigidMotion(
-    RigidTransformation<FromFrame, ToFrame> rigid_transformation,
+    RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
     AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
     Velocity<FromFrame> const& velocity_of_to_frame_origin)
-    : rigid_transformation_(std::move(rigid_transformation)),
+    : rigid_transformation_(rigid_transformation),
       angular_velocity_of_to_frame_(angular_velocity_of_to_frame),
       velocity_of_to_frame_origin_(velocity_of_to_frame_origin) {}
 
@@ -48,15 +48,30 @@ RigidMotion<FromFrame, ToFrame>::orthogonal_map() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-AngularVelocity<FromFrame> const&
-RigidMotion<FromFrame, ToFrame>::angular_velocity_of_to_frame() const {
-  return angular_velocity_of_to_frame_;
+template<typename F>
+AngularVelocity<
+    typename RigidMotion<FromFrame, ToFrame>::template other_frame<F>>
+RigidMotion<FromFrame, ToFrame>::angular_velocity_of() const {
+  if constexpr (std::is_same_v<F, ToFrame>) {
+    return angular_velocity_of_to_frame_;
+  } else if constexpr (std::is_same_v<F, FromFrame>) {
+    return Inverse().angular_velocity_of_to_frame_;
+  } else {
+    static_assert(false);
+  }
 }
 
 template<typename FromFrame, typename ToFrame>
-Velocity<FromFrame> const&
-RigidMotion<FromFrame, ToFrame>::velocity_of_to_frame_origin() const {
-  return velocity_of_to_frame_origin_;
+template<typename F>
+Velocity<typename RigidMotion<FromFrame, ToFrame>::template other_frame<F>>
+RigidMotion<FromFrame, ToFrame>::velocity_of_origin_of() const {
+  if constexpr (std::is_same_v<F, ToFrame>) {
+    return velocity_of_to_frame_origin_;
+  } else if constexpr (std::is_same_v<F, FromFrame>) {
+    return Inverse().velocity_of_to_frame_origin_;
+  } else {
+    static_assert(false);
+  }
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -154,8 +169,8 @@ std::ostream& operator<<(std::ostream& out,
                          RigidMotion<FromFrame, ToFrame> const& rigid_motion) {
   return out << "{transformation: " << rigid_motion.rigid_transformation()
              << ", angular velocity: "
-             << rigid_motion.angular_velocity_of_to_frame()
-             << ", velocity: " << rigid_motion.velocity_of_to_frame_origin()
+             << rigid_motion.angular_velocity_of<ToFrame>()
+             << ", velocity: " << rigid_motion.velocity_of_origin_of<ToFrame>()
              << "}";
 }
 

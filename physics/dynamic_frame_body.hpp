@@ -55,7 +55,7 @@ DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
   // Beware, we want the angular velocity of ThisFrame as seen in the
   // InertialFrame, but pushed to ThisFrame.  Otherwise the sign is wrong.
   AngularVelocity<ThisFrame> const Ω = to_this_frame.orthogonal_map()(
-      to_this_frame.angular_velocity_of_to_frame());
+      to_this_frame.angular_velocity_of<ThisFrame>());
   Variation<AngularVelocity<ThisFrame>> const dΩ_over_dt =
       to_this_frame.orthogonal_map()(motion.angular_acceleration_of_to_frame());
   Displacement<ThisFrame> const r =
