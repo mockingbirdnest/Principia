@@ -13,7 +13,6 @@
 namespace principia {
 namespace geometry {
 
-
 // A trait to treat types that have a norm uniformly (using Abs for quantities
 // or double, and Norm for multivectors).
 template<typename T,

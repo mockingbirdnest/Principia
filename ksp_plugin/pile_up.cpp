@@ -158,7 +158,7 @@ void PileUp::RecomputeFromParts() {
         Identity<Barycentric, NonRotatingPileUp>()(part->intrinsic_torque());
 
     AngularVelocity<NonRotatingPileUp> const part_angular_velocity =
-        part_motion.Inverse().angular_velocity_of_to_frame();
+        part_motion.angular_velocity_of<RigidPart>();
     InertiaTensor<NonRotatingPileUp> part_inertia_tensor =
         part_motion.orthogonal_map()(part->inertia_tensor());
     if (part->is_solid_rocket_motor()) {
@@ -469,7 +469,8 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
             apparent_pile_up_motion.Inverse() *
             apparent_system.LinearMotion().Inverse() * apparent_part_motion;
     auto const part_proper_ω =
-        part_motion_in_principal_axes.angular_velocity_of_to_frame().Norm();
+        part_motion_in_principal_axes.angular_velocity_of<PileUpPrincipalAxes>()
+            .Norm();
     if (part_proper_ω < reference_part_proper_ω) {
       reference_part_proper_ω = part_proper_ω;
       reference_part = part;

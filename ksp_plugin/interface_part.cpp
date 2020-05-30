@@ -92,7 +92,7 @@ QPRW __cdecl principia__PartGetActualRigidMotion(
   Rotation<RigidPart, World> const part_orientation =
       part_motion.orthogonal_map().AsRotation();
   AngularVelocity<World> const part_angular_velocity =
-      part_motion.Inverse().angular_velocity_of_to_frame();
+      part_motion.angular_velocity_of<RigidPart>();
   return m.Return(
       {ToQP(part_dof),
        ToWXYZ(part_orientation.quaternion()),

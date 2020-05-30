@@ -222,13 +222,13 @@ TEST_F(RigidMotionTest, GroupoidInverse) {
 }
 
 TEST_F(RigidMotionTest, SecondConstructor) {
-  auto const terrestrial_to_selenocentric1 =
+  RigidMotion<Terrestrial, Selenocentric> const terrestrial_to_selenocentric1 =
       geocentric_to_selenocentric_ * geocentric_to_terrestrial_.Inverse();
   DegreesOfFreedom<Selenocentric> const terrestrial_dof_in_selenocentric =
       terrestrial_to_selenocentric1({Terrestrial::origin,
                                      Terrestrial::unmoving});
   AngularVelocity<Selenocentric> const terrestrial_rotation_in_selenocentric =
-      terrestrial_to_selenocentric1.Inverse().angular_velocity_of_to_frame();
+      terrestrial_to_selenocentric1.angular_velocity_of<Terrestrial>();
 
   RigidMotion<Terrestrial, Selenocentric> const terrestrial_to_selenocentric2(
       terrestrial_to_selenocentric1.rigid_transformation(),

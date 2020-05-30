@@ -16,10 +16,10 @@ using geometry::LinearMap;
 
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>::RigidMotion(
-    RigidTransformation<FromFrame, ToFrame> rigid_transformation,
+    RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
     AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
     Velocity<FromFrame> const& velocity_of_to_frame_origin)
-    : rigid_transformation_(std::move(rigid_transformation)),
+    : rigid_transformation_(rigid_transformation),
       angular_velocity_of_to_frame_(angular_velocity_of_to_frame),
       velocity_of_to_frame_origin_(velocity_of_to_frame_origin) {}
 
@@ -48,15 +48,34 @@ RigidMotion<FromFrame, ToFrame>::orthogonal_map() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-AngularVelocity<FromFrame> const&
-RigidMotion<FromFrame, ToFrame>::angular_velocity_of_to_frame() const {
-  return angular_velocity_of_to_frame_;
+template<typename F>
+AngularVelocity<
+    typename RigidMotion<FromFrame, ToFrame>::template other_frame_t<F>>
+RigidMotion<FromFrame, ToFrame>::angular_velocity_of() const {
+  if constexpr (std::is_same_v<F, ToFrame>) {
+    return angular_velocity_of_to_frame_;
+  } else if constexpr (std::is_same_v<F, FromFrame>) {
+    return Inverse().angular_velocity_of_to_frame_;
+  } else {
+    static_assert(std::disjunction_v<std::is_same_v<F, ToFrame>,
+                                     std::is_same_v<F, FromFrame>>,
+                  "Nonsensical frame");
+  }
 }
 
 template<typename FromFrame, typename ToFrame>
-Velocity<FromFrame> const&
-RigidMotion<FromFrame, ToFrame>::velocity_of_to_frame_origin() const {
-  return velocity_of_to_frame_origin_;
+template<typename F>
+Velocity<typename RigidMotion<FromFrame, ToFrame>::template other_frame_t<F>>
+RigidMotion<FromFrame, ToFrame>::velocity_of_origin_of() const {
+  if constexpr (std::is_same_v<F, ToFrame>) {
+    return velocity_of_to_frame_origin_;
+  } else if constexpr (std::is_same_v<F, FromFrame>) {
+    return Inverse().velocity_of_to_frame_origin_;
+  } else {
+    static_assert(std::disjunction_v<std::is_same_v<F, ToFrame>,
+                                     std::is_same_v<F, FromFrame>>,
+                  "Nonsensical frame");
+  }
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -154,8 +173,8 @@ std::ostream& operator<<(std::ostream& out,
                          RigidMotion<FromFrame, ToFrame> const& rigid_motion) {
   return out << "{transformation: " << rigid_motion.rigid_transformation()
              << ", angular velocity: "
-             << rigid_motion.angular_velocity_of_to_frame()
-             << ", velocity: " << rigid_motion.velocity_of_to_frame_origin()
+             << rigid_motion.angular_velocity_of<ToFrame>()
+             << ", velocity: " << rigid_motion.velocity_of_origin_of<ToFrame>()
              << "}";
 }
 
@@ -165,19 +184,19 @@ std::ostream& operator<<(std::ostream& out,
                              accelerated_rigid_motion) {
   return out << "{motion: " << accelerated_rigid_motion.rigid_motion()
              << ", angular acceleration: "
-             << accelerated_rigid_motion.angular_acceleration_of_to_frame()
+             << accelerated_rigid_motion.angular_acceleration_of<ToFrame>()
              << ", acceleration: "
-             << accelerated_rigid_motion.acceleration_of_to_frame_origin()
+             << accelerated_rigid_motion.acceleration_of_origin_of<ToFrame>()
              << "}";
 }
 
 template<typename FromFrame, typename ToFrame>
 AcceleratedRigidMotion<FromFrame, ToFrame>::AcceleratedRigidMotion(
-    RigidMotion<FromFrame, ToFrame> rigid_motion,
-    Variation<AngularVelocity<FromFrame>> const&
+    RigidMotion<FromFrame, ToFrame> const& rigid_motion,
+    Bivector<AngularAcceleration, FromFrame> const&
         angular_acceleration_of_to_frame,
     Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin)
-    : rigid_motion_(std::move(rigid_motion)),
+    : rigid_motion_(rigid_motion),
       angular_acceleration_of_to_frame_(angular_acceleration_of_to_frame),
       acceleration_of_to_frame_origin_(acceleration_of_to_frame_origin) {}
 
@@ -186,17 +205,41 @@ RigidMotion<FromFrame, ToFrame> const&
 AcceleratedRigidMotion<FromFrame, ToFrame>::rigid_motion() const {
   return rigid_motion_;
 }
+
 template<typename FromFrame, typename ToFrame>
-Variation<AngularVelocity<FromFrame>> const&
-AcceleratedRigidMotion<FromFrame, ToFrame>::angular_acceleration_of_to_frame()
-    const {
-  return angular_acceleration_of_to_frame_;
+template<typename F>
+Bivector<AngularAcceleration,
+         typename AcceleratedRigidMotion<FromFrame, ToFrame>::
+             template other_frame_t<F>>
+AcceleratedRigidMotion<FromFrame, ToFrame>::angular_acceleration_of() const {
+  if constexpr (std::is_same_v<F, ToFrame>) {
+    return angular_acceleration_of_to_frame_;
+  } else if constexpr (std::is_same_v<F, FromFrame>) {
+    static_assert(!std::is_same_v<F, FromFrame>,
+                  "Time to implement AcceleratedRigidMotion::Inverse");
+  } else {
+    static_assert(std::disjunction_v<std::is_same_v<F, ToFrame>,
+                                     std::is_same_v<F, FromFrame>>,
+                  "Nonsensical frame");
+  }
 }
+
 template<typename FromFrame, typename ToFrame>
-Vector<Acceleration, FromFrame> const&
-AcceleratedRigidMotion<FromFrame, ToFrame>::acceleration_of_to_frame_origin()
-    const {
-  return acceleration_of_to_frame_origin_;
+template<typename F>
+Vector<Acceleration,
+       typename AcceleratedRigidMotion<FromFrame, ToFrame>::
+           template other_frame_t<F>>
+AcceleratedRigidMotion<FromFrame, ToFrame>::acceleration_of_origin_of() const {
+  if constexpr (std::is_same_v<F, ToFrame>) {
+    return acceleration_of_to_frame_origin_;
+  } else if constexpr (std::is_same_v<F, FromFrame>) {
+    static_assert(!std::is_same_v<F, FromFrame>,
+                  "Time to implement AcceleratedRigidMotion::Inverse");
+  } else {
+    static_assert(std::disjunction_v<std::is_same_v<F, ToFrame>,
+                                     std::is_same_v<F, FromFrame>>,
+                  "Nonsensical frame");
+  }
 }
 
 }  // namespace internal_rigid_motion

@@ -31,7 +31,7 @@ void MechanicalSystem<InertialFrame, SystemFrame>::AddRigidBody(
   sum_of_inertia_tensors_ += inertia_tensor_in_inertial_axes;
   sum_of_intrinsic_angular_momenta_ +=
       Anticommutator(inertia_tensor_in_inertial_axes,
-                     motion.Inverse().angular_velocity_of_to_frame());
+                     motion.angular_velocity_of<BodyFrame>());
 }
 
 template<typename InertialFrame, typename SystemFrame>
