@@ -61,6 +61,7 @@ template<typename FromFrame, typename ToFrame>
 class RigidMotion final {
   template<typename T>
   using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
+
  public:
   RigidMotion(
       RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
@@ -139,6 +140,7 @@ template<typename FromFrame, typename ToFrame>
 class AcceleratedRigidMotion final {
   template<typename T>
   using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
+
  public:
   AcceleratedRigidMotion(
       RigidMotion<FromFrame, ToFrame> const& rigid_motion,
