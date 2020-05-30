@@ -1494,7 +1494,7 @@ public partial class PrincipiaPluginAdapter
                 part.flightID,
                 (from force in part.forces
                  select PartCentredForceHolder.FromPartForceHolder(
-                    part, force)).ToArray());
+                     part, force)).ToArray());
           }
         }
       }

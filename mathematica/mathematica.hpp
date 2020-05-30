@@ -88,9 +88,6 @@ class ExpressIn {
   std::tuple<Qs...> units_;
 };
 
-std::string Apply(std::string const& function,
-                  std::vector<std::string> const& arguments);
-
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Option(std::string const& name,
                    T const& right,
@@ -200,16 +197,12 @@ template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::optional<T> const& opt,
                           OptionalExpressIn express_in = std::nullopt);
 
-// Returns its argument.
 template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(char const* str,
                           OptionalExpressIn express_in = std::nullopt);
 template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::string const& str,
                           OptionalExpressIn express_in = std::nullopt);
-
-// Wraps the string in quotes and escapes things properly.
-std::string Escape(std::string const& str);
 
 // An RAII object to help with Mathematica logging.
 class Logger final {
@@ -218,7 +211,7 @@ class Logger final {
   // If make_unique is true, a unique id is inserted before the file extension
   // to identify different loggers.
   Logger(std::filesystem::path const& path,
-         bool make_unique = false);
+         bool make_unique = true);
   ~Logger();
 
   // Appends an element to the list of values for the variable |name|.  The
@@ -237,9 +230,7 @@ class Logger final {
 
 }  // namespace internal_mathematica
 
-using internal_mathematica::Apply;
 using internal_mathematica::Assign;
-using internal_mathematica::Escape;
 using internal_mathematica::ExpressIn;
 using internal_mathematica::Logger;
 using internal_mathematica::Option;

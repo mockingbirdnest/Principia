@@ -253,7 +253,7 @@ class WorkErrorGraphGenerator {
           PlottableDataset(evaluations_[i], v_errors_[i]));
       e_error_data.emplace_back(
           PlottableDataset(evaluations_[i], e_errors_[i]));
-      names.emplace_back(Escape(methods_[i].name));
+      names.emplace_back(ToMathematica(methods_[i].name));
     }
     std::string result;
     result += Assign("qErrorData", q_error_data);

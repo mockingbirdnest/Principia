@@ -697,7 +697,7 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
     }
     mathematica_entries.push_back({steps[i + 1],
                                    position_errors[i],
-                                   mathematica::Escape(worst_body[i]),
+                                   worst_body[i],
                                    durations[i + 1].count() * Second});
   }
 
