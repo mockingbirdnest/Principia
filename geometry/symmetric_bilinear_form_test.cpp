@@ -1,6 +1,8 @@
 ﻿
 #include "geometry/symmetric_bilinear_form.hpp"
 
+#include <random>
+
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -347,7 +349,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₀),
                 Componentwise(AlmostEquals(1, 0),
                               VanishesBefore(1, 0),
-                              VanishesBefore(1, 0)));
+                              VanishesBefore(1, 1)));
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₁),
                 Componentwise(VanishesBefore(1, 0),
                               AlmostEquals(1, 0),
@@ -378,6 +380,50 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     EXPECT_THAT(f_eigensystem.form(e₂, e₀), AlmostEquals(0 * Metre, 0));
     EXPECT_THAT(f_eigensystem.form(e₂, e₁), AlmostEquals(0 * Metre, 0));
     EXPECT_THAT(f_eigensystem.form(e₂, e₂), AlmostEquals(2 * Metre, 0));
+  }
+
+  // Random matrices.
+#if !defined(_DEBUG)
+  {
+    std::mt19937_64 random(42);
+    std::uniform_real_distribution<> inertia_tensor_distribution(-1000.0,
+                                                                 1000.0);
+    for (int i = 0; i < 1'000'000; ++i) {
+      double const i00 = inertia_tensor_distribution(random);
+      double const i01 = inertia_tensor_distribution(random);
+      double const i02 = inertia_tensor_distribution(random);
+      double const i11 = inertia_tensor_distribution(random);
+      double const i12 = inertia_tensor_distribution(random);
+      double const i22 = inertia_tensor_distribution(random);
+      auto const f = MakeSymmetricBilinearForm<World>(
+          R3x3Matrix<double>({i00, i01, i02},
+                             {i01, i11, i12},
+                             {i02, i12, i22}));
+      auto const f_eigensystem = f.Diagonalize<Eigenworld>();
+
+      EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
+                  AlmostEquals(1.0, 0, 3)) << f;
+    }
+  }
+#endif
+
+  // A poorly-conditioned case that used to yield a non-unit quaternion because
+  // of non-orthogonal eigenvectors.
+  {
+    auto const f = MakeSymmetricBilinearForm<World>(
+        R3x3Matrix<double>({{+2.86210785240963560e+02,
+                             +4.96371874564241580e+02,
+                             +5.70775558185911450e+02},
+                            {+4.96371874564241580e+02,
+                             +7.16992846801826317e+02,
+                             +8.67180777241129135e+02},
+                            {+5.70775558185911450e+02,
+                             +8.67180777241129135e+02,
+                             +9.56737022360950050e+02}}));
+    auto const f_eigensystem = f.Diagonalize<Eigenworld>();
+
+    EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
+                AlmostEquals(1.0, 0)) << f;
   }
 }
 

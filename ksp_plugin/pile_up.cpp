@@ -430,12 +430,8 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   }
   auto const apparent_angular_momentum = apparent_system.AngularMomentum();
   auto const apparent_inertia_tensor = apparent_system.InertiaTensor();
-  auto apparent_inertia_eigensystem =
+  auto const apparent_inertia_eigensystem =
       apparent_inertia_tensor.Diagonalize<PileUpPrincipalAxes>();
-  // TODO(phl): |Diagonalize| should produce unit quaternions.
-  apparent_inertia_eigensystem.rotation =
-      Rotation<PileUpPrincipalAxes, ApparentPileUp>(
-          Normalize(apparent_inertia_eigensystem.rotation.quaternion()));
 
   Rotation<PileUpPrincipalAxes, ApparentPileUp> const apparent_attitude =
       apparent_inertia_eigensystem.rotation;
