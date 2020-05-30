@@ -172,14 +172,16 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
   // Use the Cayley-Hamilton theorem to efficiently find the eigenvectors.  The
   // m matrices contain, in columns, eigenvectors for the corresponding α.
   // However it's possible for a column to be identically 0.  To deal with this
-  // the call to PickEigenvector extracts the column with the largest norm.
+  // the call to PickEigenvector extracts the column with the largest norm, and
+  // we make sure that the eigenvectors remain orthonormal.
   R3x3Matrix<Scalar> const A_minus_α₀I = A - α₀ * I;
   R3x3Matrix<Scalar> const A_minus_α₁I = A - α₁ * I;
   R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
   auto const m₀ = A_minus_α₁I * A_minus_α₂I;
   auto const m₁ = A_minus_α₂I * A_minus_α₀I;
   auto const v₀ = Vector<double, Frame>(PickEigenvector(m₀));
-  auto const v₁ = Vector<double, Frame>(PickEigenvector(m₁));
+  auto const v₁ = Vector<double, Frame>(PickEigenvector(m₁)).
+                      OrthogonalizationAgainst(v₀);
 
   Rotation<Eigenframe, Frame> const rotation{v₀, v₁, Wedge(v₀, v₁)};
   return {form, rotation};
