@@ -79,7 +79,6 @@ class RigidMotion final {
   // Returns |rigid_transformation().linear_map()|.
   OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map() const;
 
-  // The frame F must be either ToFrame or FromFrame.
   template<typename F>
   AngularVelocity<other_frame_t<F>> angular_velocity_of() const;
   template<typename F>
