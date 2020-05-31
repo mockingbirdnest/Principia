@@ -7,6 +7,7 @@
 #include <tuple>
 #include <vector>
 
+#include "absl/strings/ascii.h"
 #include "astronomy/stabilize_ksp.hpp"
 #include "base/file.hpp"
 #include "gmock/gmock.h"
@@ -27,6 +28,7 @@ namespace principia {
 using base::not_null;
 using base::OFStream;
 using geometry::BarycentreCalculator;
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::Instant;
@@ -62,6 +64,7 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
 using ::testing::Lt;
+using ::testing::Matcher;
 
 namespace astronomy {
 
@@ -145,10 +148,12 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
         jool_system_{jool_, laythe_, vall_, tylo_, pol_, bop_},
         joolian_moons_{laythe_, vall_, tylo_, pol_, bop_} {}
 
-  void FillPositions(Ephemeris<KSP> const& ephemeris,
-                     Instant const& initial_time,
-                     Time const& duration,
-                     std::vector<std::vector<Vector<double, KSP>>>& container) {
+  void LogPositions(Ephemeris<KSP> const& ephemeris,
+                    Instant const& initial_time,
+                    Time const& duration,
+                    Matcher<Length> const& matcher,
+                    std::string const& name,
+                    mathematica::Logger& logger) {
     for (Instant t = initial_time;
          t < initial_time + duration;
          t += 45 * Minute) {
@@ -162,11 +167,13 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
         jool_system_barycentre.Add(position(body),
                                    body->gravitational_parameter());
       }
-      container.emplace_back();
+      std::vector<Displacement<KSP>> barycentric_positions;
       for (not_null<MassiveBody const*> const body : jool_system_) {
-        container.back().emplace_back(
-            (position(body) - jool_system_barycentre.Get()) / Metre);
+        barycentric_positions.emplace_back(
+            position(body) - jool_system_barycentre.Get());
+        EXPECT_THAT(barycentric_positions.back().Norm(), matcher);
       }
+      logger.Append(name, barycentric_positions);
     }
   }
 
@@ -198,6 +205,8 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
 #if !defined(_DEBUG)
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
+  mathematica::Logger logger(TEMP_DIR / "ksp_system.generated.wl",
+                             /*make_unique=*/false);
 
 #if 0
   auto const a_century_hence = solar_system_.epoch() + 100 * JulianYear;
@@ -209,28 +218,10 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   ephemeris_->Prolong(a_century_hence);
   LOG(INFO) << "Integration done";
 
-  std::map<not_null<MassiveBody const*>, std::vector<double>>
-      extremal_separations_in_m;
-  std::map<not_null<MassiveBody const*>, std::vector<double>> times_in_s;
   std::map<not_null<MassiveBody const*>, Length> last_separations;
   std::map<not_null<MassiveBody const*>, Sign> last_separation_changes;
 
   Instant t = solar_system_.epoch();
-
-  // Stock elements.
-  std::vector<double> bop_eccentricities;
-  std::vector<double> bop_inclinations_in_degrees;
-  std::vector<double> bop_nodes_in_degrees;
-  std::vector<double> bop_arguments_of_periapsis_in_degrees;
-
-  // Elements around the barycentre of Jool, Laythe, and Vall.
-  std::vector<double> bop_jacobi_eccentricities;
-  std::vector<double> bop_jacobi_nodes_in_degrees;
-  std::vector<double> bop_jacobi_inclinations_in_degrees;
-  std::vector<double> bop_jacobi_arguments_of_periapsis_in_degrees;
-
-  std::vector<double> tylo_bop_separations_in_m;
-  std::vector<double> pol_bop_separations_in_m;
 
   for (not_null<MassiveBody const*> const moon : joolian_moons_) {
     last_separation_changes.emplace(moon, Sign::Positive());
@@ -249,22 +240,27 @@ TEST_F(KSPSystemTest, KerbalSystem) {
     auto const jool_position = position(jool_);
 
     for (not_null<MassiveBody const*> const moon : joolian_moons_) {
+      std::string const moon_name = absl::AsciiStrToLower(moon->name());
       Length const separation = (jool_position - position(moon)).Norm();
       Sign const separation_change = Sign(separation - last_separations[moon]);
       if (separation_change != last_separation_changes.at(moon)) {
-        extremal_separations_in_m[moon].emplace_back(last_separations[moon] /
-                                                     Metre);
-        times_in_s[moon].emplace_back((t - 1 * Hour - solar_system_.epoch()) /
-                                      Second);
+        logger.Append(moon_name + "Separations",
+                      last_separations[moon],
+                      mathematica::ExpressIn(Metre));
+        logger.Append(moon_name + "Times",
+                      t - 1 * Hour - solar_system_.epoch(),
+                      mathematica::ExpressIn(Second));
       }
       last_separations[moon] = separation;
       last_separation_changes.at(moon) = separation_change;
     }
 
-    tylo_bop_separations_in_m.emplace_back(
-        (position(tylo_) - position(bop_)).Norm() / Metre);
-    pol_bop_separations_in_m.emplace_back(
-        (position(pol_) - position(bop_)).Norm() / Metre);
+    logger.Append("tyloBop",
+                  (position(tylo_) - position(bop_)).Norm(),
+                  mathematica::ExpressIn(Metre));
+    logger.Append("polBop",
+                  (position(pol_) - position(bop_)).Norm(),
+                  mathematica::ExpressIn(Metre));
 
     {
       // KSP's osculating elements.
@@ -273,13 +269,16 @@ TEST_F(KSPSystemTest, KerbalSystem) {
                            MasslessBody(),
                            degrees_of_freedom(bop_) - degrees_of_freedom(jool_),
                            t).elements_at_epoch();
-      bop_eccentricities.emplace_back(*bop_elements.eccentricity);
-      bop_inclinations_in_degrees.emplace_back(bop_elements.inclination /
-                                               Degree);
-      bop_nodes_in_degrees.emplace_back(
-          bop_elements.longitude_of_ascending_node / Degree);
-      bop_arguments_of_periapsis_in_degrees.emplace_back(
-          *bop_elements.argument_of_periapsis / Degree);
+      logger.Append("bopEccentricities", *bop_elements.eccentricity);
+      logger.Append("bopInclinations",
+                    bop_elements.inclination,
+                    mathematica::ExpressIn(Degree));
+      logger.Append("bopNodes",
+                    bop_elements.longitude_of_ascending_node,
+                    mathematica::ExpressIn(Degree));
+      logger.Append("bopArguments",
+                    *bop_elements.argument_of_periapsis,
+                    mathematica::ExpressIn(Degree));
     }
 
     {
@@ -296,70 +295,33 @@ TEST_F(KSPSystemTest, KerbalSystem) {
               *bop_,
               degrees_of_freedom(bop_) - innermost_jool_system.Get(),
               t).elements_at_epoch();
-      bop_jacobi_eccentricities.emplace_back(*bop_jacobi_elements.eccentricity);
-      bop_jacobi_inclinations_in_degrees.emplace_back(
-          bop_jacobi_elements.inclination / Degree);
-      bop_jacobi_nodes_in_degrees.emplace_back(
-          bop_jacobi_elements.longitude_of_ascending_node / Degree);
-      bop_jacobi_arguments_of_periapsis_in_degrees.emplace_back(
-          *bop_jacobi_elements.argument_of_periapsis / Degree);
+      logger.Append("bopJacobiEccentricities",
+                    *bop_jacobi_elements.eccentricity);
+      logger.Append("bopJacobiInclinations",
+                    bop_jacobi_elements.inclination,
+                    mathematica::ExpressIn(Degree));
+      logger.Append("bopJacobiNodes",
+                    bop_jacobi_elements.longitude_of_ascending_node,
+                    mathematica::ExpressIn(Degree));
+      logger.Append("bopJacobiArguments",
+                    *bop_jacobi_elements.argument_of_periapsis,
+                    mathematica::ExpressIn(Degree));
     }
   }
 
-  std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_1_year;
-  FillPositions(*ephemeris_,
+  LogPositions(*ephemeris_,
+               solar_system_.epoch(),
+               1 * JulianYear,
+               Lt(3e8 * Metre),
+               "barycentricPositions1",
+               logger);
+  LogPositions(*ephemeris_,
                 solar_system_.epoch(),
-                1 * JulianYear,
-                barycentric_positions_1_year);
-  std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_2_year;
-  FillPositions(*ephemeris_,
-                solar_system_.epoch(),
-                2 * JulianYear,
-                barycentric_positions_2_year);
+               2 * JulianYear,
+               Lt(1 * Metre),
+               "barycentricPositions2",
+               logger);
 
-  for (auto const& body_positions : barycentric_positions_1_year) {
-    for (auto const& body_position : body_positions) {
-      EXPECT_THAT(body_position.Norm(), Lt(3e8));
-    }
-  }
-
-  OFStream file(TEMP_DIR / "ksp_system.generated.wl");
-  file << mathematica::Assign("laytheTimes", times_in_s[laythe_]);
-  file << mathematica::Assign("vallTimes", times_in_s[vall_]);
-  file << mathematica::Assign("tyloTimes", times_in_s[tylo_]);
-  file << mathematica::Assign("polTimes", times_in_s[pol_]);
-  file << mathematica::Assign("bopTimes", times_in_s[bop_]);
-  file << mathematica::Assign("laytheSeparations",
-                              extremal_separations_in_m[laythe_]);
-  file << mathematica::Assign("vallSeparations",
-                              extremal_separations_in_m[vall_]);
-  file << mathematica::Assign("tyloSeparations",
-                              extremal_separations_in_m[tylo_]);
-  file << mathematica::Assign("polSeparations",
-                              extremal_separations_in_m[pol_]);
-  file << mathematica::Assign("bopSeparations",
-                              extremal_separations_in_m[bop_]);
-
-  file << mathematica::Assign("bopEccentricities", bop_eccentricities);
-  file << mathematica::Assign("bopInclinations", bop_inclinations_in_degrees);
-  file << mathematica::Assign("bopNodes", bop_nodes_in_degrees);
-  file << mathematica::Assign("bopArguments",
-                              bop_arguments_of_periapsis_in_degrees);
-  file << mathematica::Assign("bopJacobiEccentricities",
-                              bop_jacobi_eccentricities);
-  file << mathematica::Assign("bopJacobiInclinations",
-                              bop_jacobi_inclinations_in_degrees);
-  file << mathematica::Assign("bopJacobiNodes", bop_jacobi_nodes_in_degrees);
-  file << mathematica::Assign("bopJacobiArguments",
-                              bop_jacobi_arguments_of_periapsis_in_degrees);
-
-  file << mathematica::Assign("tyloBop", tylo_bop_separations_in_m);
-  file << mathematica::Assign("polBop", pol_bop_separations_in_m);
-
-  file << mathematica::Assign("barycentricPositions1",
-                              barycentric_positions_1_year);
-  file << mathematica::Assign("barycentricPositions2",
-                              barycentric_positions_2_year);
 }
 #endif
 
@@ -375,8 +337,9 @@ class KSPSystemConvergenceTest
       protected KSPSystem {
  public:
   static void SetUpTestCase() {
-    file_ = OFStream(SOLUTION_DIR / "mathematica" /
-                     "ksp_system_convergence.generated.wl");
+    logger_ = new mathematica::Logger(
+        SOLUTION_DIR / "mathematica" / "ksp_system_convergence.generated.wl",
+        /*make_unique=*/false);
   }
 
  protected:
@@ -394,14 +357,15 @@ class KSPSystemConvergenceTest
     return GetParam().first_step_in_seconds;
   }
 
-  static OFStream file_;
+  static mathematica::Logger* logger_;
 };
 
-OFStream KSPSystemConvergenceTest::file_;
+mathematica::Logger* KSPSystemConvergenceTest::logger_ = nullptr;
 
 // This takes 2 minutes to run.
 TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
   google::LogToStderr();
+
   Time const integration_duration = 1 * JulianYear;
 
   std::map<std::string, std::vector<DegreesOfFreedom<KSP>>>
@@ -440,12 +404,10 @@ TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
     }
   }
 
-  using MathematicaEntry = std::tuple<Time, Length, std::string, Time>;
-  using MathematicaEntries = std::vector<MathematicaEntry>;
-
   std::vector<Length> position_errors(iterations() - 1);
   std::vector<std::string> worst_body(iterations() - 1);
-  MathematicaEntries mathematica_entries;
+  std::string const test_name(
+      ::testing::UnitTest::GetInstance()->current_test_info()->name());
   for (int i = 0; i < iterations() - 1; ++i) {
     for (auto const& [name, errors] : name_to_errors) {
       if (position_errors[i] < errors[i].displacement().Norm()) {
@@ -454,17 +416,13 @@ TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
       position_errors[i] = std::max(position_errors[i],
                                     errors[i].displacement().Norm());
     }
-    mathematica_entries.push_back({steps[i + 1],
-                                   position_errors[i],
-                                   worst_body[i],
-                                   durations[i + 1].count() * Second});
+    logger_->Append(std::string("ppaKSPSystemConvergence") +
+                        test_name[test_name.size() - 1],
+                    std::tuple(steps[i + 1],
+                               position_errors[i],
+                               worst_body[i],
+                               durations[i + 1].count() * Second));
   }
-
-  std::string const test_name(
-      ::testing::UnitTest::GetInstance()->current_test_info()->name());
-  file_ << mathematica::Assign(
-      std::string("ppaKSPSystemConvergence") + test_name[test_name.size() - 1],
-      mathematica::ToMathematica(mathematica_entries));
 }
 
 INSTANTIATE_TEST_CASE_P(
