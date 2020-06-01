@@ -6,11 +6,12 @@
 #include <vector>
 #include <string>
 
-#include "base/file.hpp"
+#include "base/macros.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/is_near.hpp"
@@ -21,7 +22,6 @@
 
 namespace principia {
 
-using base::OFStream;
 using geometry::Instant;
 using quantities::Abs;
 using quantities::Acceleration;
@@ -33,7 +33,6 @@ using quantities::Mass;
 using quantities::Pow;
 using quantities::Power;
 using quantities::Sin;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Stiffness;
 using quantities::Time;
@@ -61,6 +60,7 @@ using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
+namespace si = quantities::si;
 
 #define INSTANCE(integrator,                                             \
                  beginning_of_convergence,                               \
@@ -120,7 +120,35 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
   // The |beginning_of_convergence| below were carefully chosen using
   // Mathematica to only select the domain where |p| and |step| are properly
   // correlated.
-  return {INSTANCE(Quinlan1999Order8A,
+  return {
+#if OS_MACOSX
+          INSTANCE(Quinlan1999Order8A,
+                   0.07 * Second,
+                   1.00044972306534419e-13 * Metre,
+                   1.00586206031039183e-13 * Metre / Second,
+                   3.93946996135596805e-08 * Joule),
+          INSTANCE(Quinlan1999Order8B,
+                   0.055 * Second,
+                   9.97882332320898513e-14 * Metre,
+                   1.00960906301850173e-13 * Metre / Second,
+                   2.19802622769549316e-08 * Joule),
+          INSTANCE(QuinlanTremaine1990Order8,
+                   0.3 * Second,
+                   9.98298665955132947e-14 * Metre,
+                   1.00759678378636863e-13 * Metre / Second,
+                   6.42628611435824837e-08 * Joule),
+          INSTANCE(QuinlanTremaine1990Order10,
+                   0.3 * Second,
+                   9.96980276113390573e-14 * Metre,
+                   1.02445829597286320e-13 * Metre / Second,
+                   1.03418451580239434e-09 * Joule),
+          INSTANCE(QuinlanTremaine1990Order12,
+                   0.21 * Second,
+                   9.90457715843717779e-14 * Metre,
+                   1.05138120432002324e-13 * Metre / Second,
+                   4.14703826834283973e-11 * Joule)};
+#else
+          INSTANCE(Quinlan1999Order8A,
                    0.07 * Second,
                    1.00044972306534419e-13 * Metre,
                    1.00587940754515159e-13 * Metre / Second,
@@ -145,6 +173,7 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    9.90457715843717779e-14 * Metre,
                    1.05165876007617953e-13 * Metre / Second,
                    4.14703826834283973e-11 * Joule)};
+#endif
 }
 
 }  // namespace
@@ -172,7 +201,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Symplecticity) {
   Time const step = 0.2 * Second;
 
   Mass const m = 1 * Kilogram;
-  Stiffness const k = SIUnit<Stiffness>();
+  Stiffness const k = si::Unit<Stiffness>;
   Energy const initial_energy =
       0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
 
@@ -211,7 +240,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Symplecticity) {
   EXPECT_THAT(correlation, Lt(0.011));
   Power const slope = Slope(time, energy_error);
   LOG(INFO) << "Slope                                     : " << slope;
-  EXPECT_THAT(Abs(slope), Lt(2e-6 * SIUnit<Power>()));
+  EXPECT_THAT(Abs(slope), Lt(2e-6 * si::Unit<Power>));
   LOG(INFO) << "Maximum energy error                      : " <<
       max_energy_error;
   EXPECT_EQ(GetParam().expected_energy_error, max_energy_error);
@@ -250,6 +279,9 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
     final_state = state;
   };
 
+  mathematica::Logger logger(
+      TEMP_DIR / ("convergence." + GetParam().name + ".generated.wl"),
+      /*make_unique=*/false);
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
     auto const instance =
         GetParam().integrator.NewInstance(problem, append_state, step);
@@ -269,17 +301,9 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
     log_step_sizes.push_back(std::log10(step / Second));
     log_q_errors.push_back(log_q_error);
     log_p_errors.push_back(log_p_error);
-  }
-
-  {
-    std::filesystem::path filename;
-    filename += "convergence.";
-    filename += GetParam().name;
-    filename += ".generated.wl";
-    OFStream file(TEMP_DIR / filename);
-    file << mathematica::Assign("logStepSizes", log_step_sizes);
-    file << mathematica::Assign("logQErrors", log_q_errors);
-    file << mathematica::Assign("logPErrors", log_p_errors);
+    logger.Append("logStepSizes", log_step_sizes.back());
+    logger.Append("logQErrors", log_q_errors.back());
+    logger.Append("logPErrors", log_p_errors.back());
   }
 
   double const q_convergence_order = Slope(log_step_sizes, log_q_errors);
@@ -335,8 +359,6 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Termination) {
   EXPECT_EQ(steps, solution.size());
   EXPECT_THAT(solution.back().time.value,
               AllOf(Gt(t_final - step), Le(t_final)));
-  Length q_error;
-  Speed v_error;
   for (int i = 0; i < steps; ++i) {
     Time const t = solution[i].time.value - t_initial;
     EXPECT_THAT(t, AlmostEquals((i + 1) * step, 0));
@@ -403,11 +425,6 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Serialization) {
   Speed const v_initial = 0 * Metre / Second;
   Instant const t_initial;
   Time const step = 0.2 * Second;
-
-  Mass const m = 1 * Kilogram;
-  Stiffness const k = SIUnit<Stiffness>();
-  Energy const initial_energy =
-      0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
 
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;

@@ -3,6 +3,8 @@
 
 #include "physics/body_surface_dynamic_frame.hpp"
 
+#include <utility>
+
 #include "base/not_null.hpp"
 #include "geometry/rotation.hpp"
 
@@ -13,16 +15,17 @@ namespace internal_body_surface_dynamic_frame {
 using base::check_not_null;
 using base::dynamic_cast_not_null;
 using geometry::AngularVelocity;
+using geometry::OrthogonalMap;
 using geometry::Rotation;
 using quantities::Variation;
 
 template<typename InertialFrame, typename ThisFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
 BodySurfaceDynamicFrame(
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    not_null<RotatingBody<InertialFrame> const*> const centre)
-    : ephemeris_(ephemeris),
-      centre_(centre),
+    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    not_null<RotatingBody<InertialFrame> const*> centre)
+    : ephemeris_(std::move(ephemeris)),
+      centre_(std::move(centre)),
       centre_trajectory_(ephemeris_->trajectory(centre_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
@@ -56,7 +59,7 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(centre_degrees_of_freedom.position(),
                            ThisFrame::origin,
-                           rotation.Forget());
+                           rotation.template Forget<OrthogonalMap>());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              angular_velocity,

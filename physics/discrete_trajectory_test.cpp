@@ -21,6 +21,7 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace physics {
@@ -28,6 +29,8 @@ namespace internal_discrete_trajectory {
 
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::Point;
 using geometry::Position;
@@ -39,13 +42,13 @@ using quantities::Cos;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Sin;
-using quantities::SIUnit;
 using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Micro;
 using quantities::si::Milli;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
@@ -58,6 +61,7 @@ using ::testing::Each;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Gt;
+using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Pair;
 using ::testing::Ref;
@@ -65,7 +69,9 @@ using ::testing::Ref;
 class DiscreteTrajectoryTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, true>;
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
 
   DiscreteTrajectoryTest()
       : q1_(World::origin +
@@ -691,8 +697,6 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   not_null<DiscreteTrajectory<World>*> const fork3 =
       massive_trajectory_->NewForkWithCopy(t3_);
   fork3->Append(t4_, d4_);
-  not_null<DiscreteTrajectory<World>*> const fork4 =
-      fork0->NewForkWithCopy(t4_);
   serialization::DiscreteTrajectory message;
   serialization::DiscreteTrajectory reference_message;
 
@@ -720,55 +724,15 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
                                            deserialized_fork2});
   EXPECT_THAT(reference_message, EqualsProto(message));
   EXPECT_THAT(message.children_size(), Eq(2));
-  EXPECT_THAT(message.timeline_size(), Eq(3));
-  EXPECT_THAT(Instant::ReadFromMessage(message.timeline(0).instant()), Eq(t1_));
-  EXPECT_THAT(Instant::ReadFromMessage(message.timeline(1).instant()), Eq(t2_));
-  EXPECT_THAT(Instant::ReadFromMessage(message.timeline(2).instant()), Eq(t3_));
-  EXPECT_THAT(
-      DegreesOfFreedom<World>::ReadFromMessage(
-          message.timeline(0).degrees_of_freedom()), Eq(d1_));
-  EXPECT_THAT(
-        DegreesOfFreedom<World>::ReadFromMessage(
-            message.timeline(1).degrees_of_freedom()), Eq(d2_));
-  EXPECT_THAT(
-        DegreesOfFreedom<World>::ReadFromMessage(
-            message.timeline(2).degrees_of_freedom()), Eq(d3_));
+  EXPECT_THAT(message.zfp().timeline_size(), Eq(3));
   EXPECT_THAT(message.children(0).trajectories_size(), Eq(2));
   EXPECT_THAT(message.children(0).trajectories(0).children_size(), Eq(0));
-  EXPECT_THAT(message.children(0).trajectories(0).timeline_size(), Eq(1));
-  EXPECT_THAT(
-      Instant::ReadFromMessage(
-          message.children(0).trajectories(0).timeline(0).instant()), Eq(t3_));
-  EXPECT_THAT(
-      DegreesOfFreedom<World>::ReadFromMessage(
-          message.children(0).trajectories(0).timeline(0).degrees_of_freedom()),
-      Eq(d3_));
+  EXPECT_THAT(message.children(0).trajectories(0).zfp().timeline_size(), Eq(1));
   EXPECT_THAT(message.children(0).trajectories(1).children_size(), Eq(0));
-  EXPECT_THAT(message.children(0).trajectories(1).timeline_size(), Eq(2));
-  EXPECT_THAT(
-      Instant::ReadFromMessage(
-          message.children(0).trajectories(1).timeline(0).instant()), Eq(t3_));
-  EXPECT_THAT(
-      DegreesOfFreedom<World>::ReadFromMessage(
-          message.children(0).trajectories(1).timeline(0).degrees_of_freedom()),
-      Eq(d3_));
-  EXPECT_THAT(
-      Instant::ReadFromMessage(
-          message.children(0).trajectories(1).timeline(1).instant()), Eq(t4_));
-  EXPECT_THAT(
-      DegreesOfFreedom<World>::ReadFromMessage(
-          message.children(0).trajectories(1).timeline(1).degrees_of_freedom()),
-      Eq(d4_));
+  EXPECT_THAT(message.children(0).trajectories(1).zfp().timeline_size(), Eq(2));
   EXPECT_THAT(message.children(1).trajectories_size(), Eq(1));
   EXPECT_THAT(message.children(1).trajectories(0).children_size(), Eq(0));
-  EXPECT_THAT(message.children(1).trajectories(0).timeline_size(), Eq(1));
-  EXPECT_THAT(
-      Instant::ReadFromMessage(
-          message.children(1).trajectories(0).timeline(0).instant()), Eq(t4_));
-  EXPECT_THAT(
-      DegreesOfFreedom<World>::ReadFromMessage(
-          message.children(1).trajectories(0).timeline(0).degrees_of_freedom()),
-      Eq(d4_));
+  EXPECT_THAT(message.children(1).trajectories(0).zfp().timeline_size(), Eq(1));
 }
 
 TEST_F(DiscreteTrajectoryDeathTest, LastError) {
@@ -907,7 +871,7 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   circle.SetDownsampling(/*max_dense_intervals=*/50,
                          /*tolerance=*/1 * Milli(Metre));
   deserialized_circle->SetDownsampling(/*max_dense_intervals=*/50,
-                                     /*tolerance=*/1 * Milli(Metre));
+                                       /*tolerance=*/1 * Milli(Metre));
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Speed const v = ω * r / Radian;
@@ -927,6 +891,25 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   deserialized_circle->WriteToMessage(&message, /*forks=*/{});
   deserialized_circle =
       DiscreteTrajectory<World>::ReadFromMessage(message, /*forks=*/{});
+
+  // Serialization/deserialization preserves the size, the times, and nudges the
+  // positions by less than the tolerance.
+  EXPECT_THAT(circle.Size(), Eq(39));
+  EXPECT_THAT(deserialized_circle->Size(), circle.Size());
+  for (auto it1 = circle.begin(), it2 = deserialized_circle->begin();
+       it1 != circle.end();
+       ++it1, ++it2) {
+    EXPECT_EQ(it1->time, it2->time);
+    EXPECT_THAT(it2->degrees_of_freedom.position(),
+                AbsoluteErrorFrom(it1->degrees_of_freedom.position(),
+                                  Lt(0.22 * Milli(Metre))));
+    EXPECT_THAT(it2->degrees_of_freedom.velocity(),
+                AbsoluteErrorFrom(it1->degrees_of_freedom.velocity(),
+                                  Lt(1.1 * Milli(Metre) / Second)));
+  }
+
+  // Appending may result in different downsampling because the positions differ
+  // a bit.
   for (; t.value <= t0_ + 10 * Second; t.Increment(10 * Milli(Second))) {
     DegreesOfFreedom<World> const dof =
         {World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
@@ -938,13 +921,20 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
     circle.Append(t.value, dof);
     deserialized_circle->Append(t.value, dof);
   }
+
+  // Despite the difference in downsampling (and therefore in size) the two
+  // trajectories are still within the tolerance.
   EXPECT_THAT(circle.Size(), Eq(77));
-  EXPECT_THAT(deserialized_circle->Size(), Eq(circle.Size()));
-  for (auto it1 = circle.begin(), it2 = deserialized_circle->begin();
-       it1 != circle.end();
-       ++it1, ++it2) {
-    EXPECT_EQ(it1->time, it2->time);
-    EXPECT_EQ(it1->degrees_of_freedom, it2->degrees_of_freedom);
+  EXPECT_THAT(deserialized_circle->Size(), Eq(78));
+  for (auto t = DoublePrecision<Instant>(t0_);
+       t.value <= t0_ + 10 * Second;
+       t.Increment(10 * Milli(Second))) {
+    EXPECT_THAT(deserialized_circle->EvaluatePosition(t.value),
+                AbsoluteErrorFrom(circle.EvaluatePosition(t.value),
+                                  Le(0.23 * Milli(Metre))));
+    EXPECT_THAT(deserialized_circle->EvaluateVelocity(t.value),
+                AbsoluteErrorFrom(circle.EvaluateVelocity(t.value),
+                                  Le(5.7 * Milli(Metre) / Second)));
   }
 }
 

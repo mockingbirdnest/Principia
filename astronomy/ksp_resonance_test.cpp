@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "astronomy/stabilize_ksp.hpp"
-#include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -26,10 +25,11 @@ namespace principia {
 using base::Error;
 using base::make_not_null_unique;
 using base::not_null;
-using base::OFStream;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
+using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
@@ -71,9 +71,7 @@ constexpr Time Δt = 45 * Minute;
 
 class KSPResonanceTest : public ::testing::Test {
  protected:
-  using KSP = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST,
-                    /*frame_is_inertial=*/true>;
+  using KSP = Frame<enum class KSPTag, Inertial>;
 
   using Periods = std::map<not_null<MassiveBody const*>, Time>;
 
@@ -105,7 +103,7 @@ class KSPResonanceTest : public ::testing::Test {
     joolian_moons_ = {laythe_, vall_, tylo_, bop_, pol_};
 
     for (not_null<MassiveBody const*> const moon : joolian_moons_) {
-      auto const elements = solar_system_.MakeKeplerianElements(
+      auto const elements = SolarSystem<KSP>::MakeKeplerianElements(
           solar_system_.keplerian_initial_state_message(moon->name()).
               elements());
       CHECK(elements.mean_motion) << moon->name();
@@ -127,17 +125,13 @@ class KSPResonanceTest : public ::testing::Test {
                     Instant const& t_min,
                     Instant const& t_max,
                     std::string const& name) {
-    // Mathematica tends to be slow when dealing with quantities, so we give
-    // everything in SI units.
-    std::vector<double> times;
-    // Indexed chronologically, then by body.
-    std::vector<std::vector<Vector<double, KSP>>> barycentric_positions;
+    mathematica::Logger logger(TEMP_DIR / (name + ".generated.wl"),
+                               /*make_unique=*/false);
+
     for (Instant t = t_min; t <= t_max; t += Δt) {
       auto const position = [&ephemeris, t](not_null<MassiveBody const*> body) {
         return ephemeris.trajectory(body)->EvaluatePosition(t);
       };
-
-      times.emplace_back((t - solar_system_.epoch()) / Second);
 
       BarycentreCalculator<Position<KSP>, GravitationalParameter>
           jool_system_barycentre;
@@ -145,19 +139,25 @@ class KSPResonanceTest : public ::testing::Test {
         jool_system_barycentre.Add(position(body),
                                    body->gravitational_parameter());
       }
-      barycentric_positions.emplace_back();
+
+      // Indexed by body.
+      std::vector<Displacement<KSP>> barycentric_positions;
       for (not_null<MassiveBody const*> const body : jool_system_) {
         // TODO(egg): when our dynamic frames support that, it would make sense
         // to use a nonrotating dynamic frame centred at the barycentre of the
         // Jool system, instead of computing the barycentre and difference
         // ourselves.
-        barycentric_positions.back().emplace_back(
-            (position(body) - jool_system_barycentre.Get()) / Metre);
+        barycentric_positions.emplace_back(
+            position(body) - jool_system_barycentre.Get());
       }
+
+      logger.Append(name + "t",
+                    t - solar_system_.epoch(),
+                    mathematica::ExpressIn(Second));
+      logger.Append(name + "q",
+                    barycentric_positions,
+                    mathematica::ExpressIn(Metre));
     }
-    OFStream file(TEMP_DIR / (name + ".generated.wl"));
-    file << mathematica::Assign(name + "q", barycentric_positions);
-    file << mathematica::Assign(name + "t", times);
   }
 
   // Compute and log the measured periods of the moons.
@@ -214,7 +214,7 @@ class KSPResonanceTest : public ::testing::Test {
       LOG(INFO) << "  " << moon->name();
       if (t1 > ephemeris.t_max() || t2 > ephemeris.t_max()) {
         LOG(INFO) << "    Aperiodic";
-        actual_periods[moon] = Infinity<Time>();
+        actual_periods[moon] = Infinity<Time>;
       } else {
         actual_periods[moon] =
             Bisect(moon_y, t2 - Δt, t2) - Bisect(moon_y, t1 - Δt, t1);
@@ -240,8 +240,7 @@ class KSPResonanceTest : public ::testing::Test {
   std::vector<not_null<MassiveBody const*>> joolian_moons_;
   Time longest_joolian_period_;
   Periods expected_periods_;
-  // TODO(egg): Frame::unmoving_origin, I have to do this in several places.
-  DegreesOfFreedom<KSP> const origin_ = {KSP::origin, Velocity<KSP>()};
+  DegreesOfFreedom<KSP> const origin_ = {KSP::origin, KSP::unmoving};
 
   Instant short_term_;
   Instant mid_term_;
@@ -290,8 +289,8 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Stock)) {
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(laythe_),
                             expected_periods_.at(laythe_)),
               IsNear(0.874_⑴));
-  EXPECT_THAT(periods_at_mid_term.at(vall_), Eq(Infinity<Time>()));
-  EXPECT_THAT(periods_at_mid_term.at(tylo_), Eq(Infinity<Time>()));
+  EXPECT_THAT(periods_at_mid_term.at(vall_), Eq(Infinity<Time>));
+  EXPECT_THAT(periods_at_mid_term.at(tylo_), Eq(Infinity<Time>));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(bop_),
                             expected_periods_.at(bop_)), IsNear(0.38_⑴));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),

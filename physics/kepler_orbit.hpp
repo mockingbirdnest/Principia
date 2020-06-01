@@ -89,11 +89,7 @@ std::ostream& operator<<(std::ostream& out,
 
 template<typename Frame>
 class KeplerOrbit final {
-  // TODO(egg): This class used to require:
-  //   static_assert(Frame::is_inertial, "Frame must be inertial");
-  // However, it only requires a non-rotating frame; for instance, it is often
-  // used with a body-centred non-rotating frame.  Perhaps we should have a
-  // concept of non-rotating frame.
+  static_assert(!Frame::may_rotate);
 
  public:
   // Exactly one of the |optional|s must be filled in the given

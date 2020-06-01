@@ -47,11 +47,11 @@ class Vessel {
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
-  Vessel(GUID const& guid,
-         std::string const& name,
+  Vessel(GUID guid,
+         std::string name,
          not_null<Celestial const*> parent,
          not_null<Ephemeris<Barycentric>*> ephemeris,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+         Ephemeris<Barycentric>::AdaptiveStepParameters
              prediction_adaptive_step_parameters);
 
   Vessel(Vessel const&) = delete;
@@ -95,7 +95,7 @@ class Vessel {
   // called.
   virtual void FreeParts();
 
-  virtual void ClearAllIntrinsicForces();
+  virtual void ClearAllIntrinsicForcesAndTorques();
 
   // If the history is empty, appends a single point to it, computed as the
   // barycentre of all parts.  |parts_| must not be empty.  After this call,
@@ -223,7 +223,8 @@ class Vessel {
       Status const& status);
 
   // Appends to |trajectory| the centre of mass of the trajectories of the parts
-  // denoted by |part_trajectory_begin| and |part_trajectory_end|.
+  // denoted by |part_trajectory_begin| and |part_trajectory_end|.  Only the
+  // points that are strictly after the fork time of the trajectory are used.
   void AppendToVesselTrajectory(TrajectoryIterator part_trajectory_begin,
                                 TrajectoryIterator part_trajectory_end,
                                 DiscreteTrajectory<Barycentric>& trajectory);

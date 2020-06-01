@@ -83,7 +83,7 @@ TEST(ArrayTest, Return) {
 
 // This test only compiles if the constructor correctly uses |std::forward|.
 TEST(ArrayTest, Move) {
-  auto fn =
+  [[maybe_unused]] auto fn =
       [](std::unique_ptr<int> x,
          std::unique_ptr<int> y) -> BoundedArray<std::unique_ptr<int>, 3> {
     return {std::move(x), std::move(y)};

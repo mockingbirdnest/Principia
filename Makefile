@@ -21,6 +21,7 @@ LIBRARY_TRANSLATION_UNITS              := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TR
 ASTRONOMY_LIB_TRANSLATION_UNITS        := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard astronomy/*.cpp))
 BASE_LIB_TRANSLATION_UNITS             := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard base/*.cpp))
 JOURNAL_LIB_TRANSLATION_UNITS          := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
+MATHEMATICA_LIB_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard mathematica/*.cpp))
 NUMERICS_LIB_TRANSLATION_UNITS         := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard numerics/*.cpp))
 PHYSICS_LIB_TRANSLATION_UNITS          := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard physics/*.cpp))
 PROTO_FILES                            := $(wildcard */*.proto)
@@ -69,23 +70,28 @@ LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
+	$(DEP_DIR)zfp/build/lib/libzfp.a \
 	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
-INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src \
-	-I$(DEP_DIR)gipfeli/include -I$(DEP_DIR)abseil-cpp
+INCLUDES      := -I. -I$(DEP_DIR)glog/src \
+	-I$(DEP_DIR)protobuf/src \
+	-I$(DEP_DIR)gipfeli/include \
+	-I$(DEP_DIR)abseil-cpp \
+	-I$(DEP_DIR)zfp/include
 SHARED_ARGS   := \
-	-std=c++1z -stdlib=libc++ -O3 -g                           \
-	-fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer \
-	-Wall -Wpedantic                                           \
-	-Wno-char-subscripts                                       \
-	-Wno-gnu-anonymous-struct                                  \
-	-Wno-nested-anon-types                                     \
-	-Wno-unknown-pragmas                                       \
-	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'    \
-	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'  \
-	-DTEMP_DIR='std::filesystem::path("/tmp")'                 \
+	-std=c++1z -stdlib=libc++ -O3 -g                              \
+	-fPIC -fexceptions -ferror-limit=1000 -fno-omit-frame-pointer \
+	-Wall -Wpedantic                                              \
+	-Wno-char-subscripts                                          \
+	-Wno-gnu-anonymous-struct                                     \
+	-Wno-gnu-zero-variadic-macro-arguments                        \
+	-Wno-nested-anon-types                                        \
+	-Wno-unknown-pragmas                                          \
+	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
+	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
+	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
 	-DNDEBUG
 
 ifeq ($(UNAME_S),Linux)
@@ -101,7 +107,7 @@ ifeq ($(UNAME_S),Linux)
 endif
 ifeq ($(UNAME_S),Darwin)
     INCLUDES += -I$(DEP_DIR)compatibility/filesystem -I$(DEP_DIR)compatibility/optional -I$(DEP_DIR)Optional
-    SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64
+    SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64 -D_LIBCPP_STD_VER=16
     MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
     SHAREDFLAG := -dynamiclib
 endif
@@ -176,6 +182,7 @@ VERSION_OBJECTS              := $(addprefix $(OBJ_DIRECTORY), $(VERSION_TRANSLAT
 ASTRONOMY_LIB_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(ASTRONOMY_LIB_TRANSLATION_UNITS:.cpp=.o)) $(VERSION_OBJECTS)
 BASE_LIB_OBJECTS             := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o)) $(VERSION_OBJECTS)
 JOURNAL_LIB_OBJECTS          := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
+MATHEMATICA_LIB_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(MATHEMATICA_LIB_TRANSLATION_UNITS:.cpp=.o))
 NUMERICS_LIB_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(NUMERICS_LIB_TRANSLATION_UNITS:.cpp=.o)) $(VERSION_OBJECTS)
 PHYSICS_LIB_OBJECTS          := $(addprefix $(OBJ_DIRECTORY), $(PHYSICS_LIB_TRANSLATION_UNITS:.cpp=.o))
 TEST_OBJECTS                 := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
@@ -235,7 +242,7 @@ $(TEST_BINS)          : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o
 $(PACKAGE_TEST_BINS)  : $(BIN_DIRECTORY)%test : $$(filter $(OBJ_DIRECTORY)%$$(PERCENT), $(TEST_OBJECTS))
 $(PRINCIPIA_TEST_BIN) : $(TEST_OBJECTS)
 
-$(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(PROTO_OBJECTS) $(ASTRONOMY_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
+$(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(PROTO_OBJECTS) $(ASTRONOMY_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(MATHEMATICA_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
@@ -244,7 +251,7 @@ $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOC
 # NOTE(egg): this assumes that only the plugin-dependent tests need to be linked
 # against mock objects.  The classes further up that are big enough to be mocked
 # are likely to be highly templatized, so this will probably hold for a while.
-$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(KSP_PLUGIN) $(ASTRONOMY_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
+$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(KSP_PLUGIN) $(ASTRONOMY_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(MATHEMATICA_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) $(LIBS) -lpthread -o $@
 
@@ -255,15 +262,15 @@ PACKAGE_TEST_TARGETS := $(patsubst $(BIN_DIRECTORY)%, %, $(PACKAGE_TEST_BINS))
 
 # make base/not_null_test compiles bin/base/not_null_test and runs it.
 $(TEST_TARGETS) : % : $(BIN_DIRECTORY)%
-	-$^
+	$^
 
 # make base/test compiles bin/base/test and runs it.
 $(PACKAGE_TEST_TARGETS) : % : $(BIN_DIRECTORY)%
-	-$^
+	$^
 
 test: $(PRINCIPIA_TEST_BIN)
 	@echo "Cake, and grief counseling, will be available at the conclusion of the test."
-	-$^
+	$^
 
 ########## Benchmarks
 

@@ -75,7 +75,6 @@ using physics::RigidMotion;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Pow;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
@@ -91,6 +90,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::FillUniquePtr;
 using testing_utilities::ReadFromBinaryFile;
+using testing_utilities::ReadLinesFromBase64File;
 using testing_utilities::ReadFromHexadecimalFile;
 using testing_utilities::ReadLinesFromHexadecimalFile;
 using ::testing::AllOf;
@@ -111,6 +111,7 @@ using ::testing::SetArgReferee;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
+namespace si = quantities::si;
 
 namespace {
 
@@ -291,7 +292,8 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
       /*reference_angle=*/"0 deg",
       /*angular_velocity=*/"1 rad/s",
       /*reference_radius=*/nullptr,
-      /*j2=*/nullptr};
+      /*j2=*/nullptr,
+      /*geopotential=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,
                                               &parent_index,
@@ -348,7 +350,8 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                                           "2 rad",
                                           "0.3 rad / d",
                                           "1000 km",
-                                          "123e-6"};
+                                          "123e-6",
+                                          /*geopotential=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,
                                               &parent_index,
@@ -405,7 +408,7 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
 
   BodyGeopotentialElement j2 = {"2", "0", "123e-6", nullptr, "456e-6"};
   BodyGeopotentialElement j3 = {"3", "0", "123e-7", nullptr, "-456e-7"};
-  BodyGeopotentialElement j[] = {j2, j3};
+  BodyGeopotentialElement* j[] = {&j2, &j3, nullptr};
   BodyParameters const body_parameters = {"that is called Brian",
                                           "1.2345e6  km^3 / s^2",
                                           "JD2452545",
@@ -418,8 +421,7 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
                                           "0.3 rad / d",
                                           "1000 km",
                                           /*j2=*/nullptr,
-                                          j,
-                                          2};
+                                          j};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,
                                               &parent_index,
@@ -476,13 +478,13 @@ TEST_F(InterfaceTest, InsertUnloadedPart) {
                   vessel_guid,
                   RelativeDegreesOfFreedom<AliceSun>(
                       Displacement<AliceSun>(
-                          {parent_position.x * SIUnit<Length>(),
-                           parent_position.y * SIUnit<Length>(),
-                           parent_position.z * SIUnit<Length>()}),
+                          {parent_position.x * si::Unit<Length>,
+                           parent_position.y * si::Unit<Length>,
+                           parent_position.z * si::Unit<Length>}),
                       Velocity<AliceSun>(
-                          {parent_velocity.x * SIUnit<Speed>(),
-                           parent_velocity.y * SIUnit<Speed>(),
-                           parent_velocity.z * SIUnit<Speed>()}))));
+                          {parent_velocity.x * si::Unit<Speed>,
+                           parent_velocity.y * si::Unit<Speed>,
+                           parent_velocity.z * si::Unit<Speed>}))));
   principia__InsertUnloadedPart(plugin_.get(),
                                 part_id,
                                 part_name,
@@ -492,14 +494,14 @@ TEST_F(InterfaceTest, InsertUnloadedPart) {
 
 TEST_F(InterfaceTest, AdvanceTime) {
   EXPECT_CALL(*plugin_,
-              AdvanceTime(t0_ + time * SIUnit<Time>(),
+              AdvanceTime(t0_ + time * si::Unit<Time>,
                           planetarium_rotation * Degree));
   principia__AdvanceTime(plugin_.get(), time, planetarium_rotation);
 }
 
 TEST_F(InterfaceTest, ForgetAllHistoriesBefore) {
   EXPECT_CALL(*plugin_,
-              ForgetAllHistoriesBefore(t0_ + time * SIUnit<Time>()));
+              ForgetAllHistoriesBefore(t0_ + time * si::Unit<Time>));
   principia__ForgetAllHistoriesBefore(plugin_.get(), time);
 }
 
@@ -508,13 +510,13 @@ TEST_F(InterfaceTest, VesselFromParent) {
               VesselFromParent(celestial_index, vessel_guid))
       .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
                            Displacement<AliceSun>(
-                               {parent_position.x * SIUnit<Length>(),
-                                parent_position.y * SIUnit<Length>(),
-                                parent_position.z * SIUnit<Length>()}),
+                               {parent_position.x * si::Unit<Length>,
+                                parent_position.y * si::Unit<Length>,
+                                parent_position.z * si::Unit<Length>}),
                            Velocity<AliceSun>(
-                               {parent_velocity.x * SIUnit<Speed>(),
-                                parent_velocity.y * SIUnit<Speed>(),
-                                parent_velocity.z * SIUnit<Speed>()}))));
+                               {parent_velocity.x * si::Unit<Speed>,
+                                parent_velocity.y * si::Unit<Speed>,
+                                parent_velocity.z * si::Unit<Speed>}))));
   QP const result = principia__VesselFromParent(plugin_.get(),
                                                 celestial_index,
                                                 vessel_guid);
@@ -526,13 +528,13 @@ TEST_F(InterfaceTest, CelestialFromParent) {
               CelestialFromParent(celestial_index))
       .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
                            Displacement<AliceSun>(
-                               {parent_position.x * SIUnit<Length>(),
-                                parent_position.y * SIUnit<Length>(),
-                                parent_position.z * SIUnit<Length>()}),
+                               {parent_position.x * si::Unit<Length>,
+                                parent_position.y * si::Unit<Length>,
+                                parent_position.z * si::Unit<Length>}),
                            Velocity<AliceSun>(
-                               {parent_velocity.x * SIUnit<Speed>(),
-                                parent_velocity.y * SIUnit<Speed>(),
-                                parent_velocity.z * SIUnit<Speed>()}))));
+                               {parent_velocity.x * si::Unit<Speed>,
+                                parent_velocity.y * si::Unit<Speed>,
+                                parent_velocity.z * si::Unit<Speed>}))));
   QP const result = principia__CelestialFromParent(plugin_.get(),
                                                     celestial_index);
   EXPECT_THAT(result, Eq(parent_relative_degrees_of_freedom));
@@ -590,9 +592,9 @@ TEST_F(InterfaceTest, NavballOrientation) {
 
   Position<World> sun_position =
       World::origin + Displacement<World>(
-                          {1 * SIUnit<Length>(),
-                           2 * SIUnit<Length>(),
-                           3 * SIUnit<Length>()});
+                          {1 * si::Unit<Length>,
+                           2 * si::Unit<Length>,
+                           3 * si::Unit<Length>});
   EXPECT_CALL(*plugin_, NavballFrameField(sun_position))
       .WillOnce(Return(
           ByMove(std::make_unique<CoordinateFrameField<World, Navball>>())));
@@ -650,19 +652,16 @@ TEST_F(InterfaceTest, SerializePlugin) {
 TEST_F(InterfaceTest, DeserializePlugin) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
-  principia__DeserializePlugin(
-          hexadecimal_simple_plugin_.c_str(),
-          hexadecimal_simple_plugin_.size(),
-          &deserializer,
-          &plugin,
-          /*compressor=*/"",
-          "hexadecimal");
   principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
-                                          0,
-                                          &deserializer,
-                                          &plugin,
-                                          /*compressor=*/"",
-                                          "hexadecimal");
+                               &deserializer,
+                               &plugin,
+                               /*compressor=*/"",
+                               "hexadecimal");
+  principia__DeserializePlugin("",
+                               &deserializer,
+                               &plugin,
+                               /*compressor=*/"",
+                               "hexadecimal");
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
@@ -671,42 +670,42 @@ TEST_F(InterfaceTest, DeserializePlugin) {
 TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
   Plugin const* plugin = nullptr;
 
-  // Read a plugin from a file containing only the "serialized_plugin = " lines.
+  // Read a plugin from a file containing only the "serialized_plugin = " lines,
+  // with "serialized_plugin = " dropped.
   {
     PushDeserializer* deserializer = nullptr;
-    auto const lines = ReadLinesFromHexadecimalFile(
-        R"(C:\Users\phl.mantegna\Downloads\2038-long-load_erdos\2038-long-load_erdos.sfs)");
+    auto const lines = ReadLinesFromBase64File(
+        R"(P:\Public Mockingbird\Principia\Crashes\2400\0 1958.sfs)");
+    LOG(ERROR) << "Deserialization starting";
     for (std::string const& line : lines) {
       principia__DeserializePlugin(line.c_str(),
-                                   line.size(),
                                    &deserializer,
                                    &plugin,
                                    /*compressor=*/"gipfeli",
-                                   "hexadecimal");
+                                   "base64");
     }
     principia__DeserializePlugin(lines.front().c_str(),
-                                 0,
                                  &deserializer,
                                  &plugin,
                                  /*compressor=*/"gipfeli",
-                                 "hexadecimal");
+                                 "base64");
     LOG(ERROR) << "Deserialization complete";
   }
   EXPECT_THAT(plugin, NotNull());
 
   // Write that plugin back to another file with the same format.
   {
-    OFStream file(TEMP_DIR / "serialized_plugin.proto.hex");
+    OFStream file(TEMP_DIR / "serialized_plugin.proto.b64");
     PullSerializer* serializer = nullptr;
-    char const* hex = nullptr;
+    char const* b64 = nullptr;
     for (;;) {
-      hex = principia__SerializePlugin(
-          plugin, &serializer, "gipfeli", "hexadecimal");
-      if (hex == nullptr) {
+      b64 = principia__SerializePlugin(
+          plugin, &serializer, "gipfeli", "base64");
+      if (b64 == nullptr) {
         break;
       }
-      file << "serialized_plugin = " << hex << "\n";
-      principia__DeleteString(&hex);
+      file << b64 << "\n";
+      principia__DeleteString(&b64);
     }
     LOG(ERROR) << "Serialization complete";
   }
@@ -716,21 +715,19 @@ TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
   {
     PushDeserializer* deserializer = nullptr;
     auto const lines =
-        ReadLinesFromHexadecimalFile(TEMP_DIR / "serialized_plugin.proto.hex");
+        ReadLinesFromBase64File(TEMP_DIR / "serialized_plugin.proto.b64");
     for (std::string const& line : lines) {
       principia__DeserializePlugin(line.c_str(),
-                                   line.size(),
                                    &deserializer,
                                    &plugin,
                                    /*compressor=*/"gipfeli",
-                                   "hexadecimal");
+                                   "base64");
     }
     principia__DeserializePlugin(lines.front().c_str(),
-                                 0,
                                  &deserializer,
                                  &plugin,
                                  /*compressor=*/"gipfeli",
-                                 "hexadecimal");
+                                 "base64");
     LOG(ERROR) << "Deserialization complete";
   }
 

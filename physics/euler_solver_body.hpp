@@ -17,9 +17,12 @@ namespace physics {
 namespace internal_euler_solver {
 
 using geometry::Commutator;
+using geometry::DeduceSignPreservingOrientation;
 using geometry::DefinesFrame;
 using geometry::Normalize;
+using geometry::OrthogonalMap;
 using geometry::Quaternion;
+using geometry::Sign;
 using geometry::Vector;
 using numerics::EllipticF;
 using numerics::EllipticΠ;
@@ -38,7 +41,6 @@ using quantities::Sinh;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
-using quantities::SIUnit;
 using quantities::Tanh;
 using quantities::Time;
 using quantities::Variation;
@@ -48,15 +50,21 @@ using quantities::si::Radian;
 template<typename InertialFrame, typename PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     R3Element<MomentOfInertia> const& moments_of_inertia,
-    AngularMomentumBivector const& initial_angular_momentum,
+    Bivector<AngularMomentum, InertialFrame> const& initial_angular_momentum,
     AttitudeRotation const& initial_attitude,
     Instant const& initial_time)
     : moments_of_inertia_(moments_of_inertia),
+      serialized_initial_angular_momentum_(initial_angular_momentum),
+      initial_attitude_(initial_attitude),
       initial_time_(initial_time),
       G_(initial_angular_momentum.Norm()),
       ℛ_(Rotation<ℬʹ, InertialFrame>::Identity()),
-      𝒮_(Rotation<PrincipalAxesFrame,
-                  PreferredPrincipalAxesFrame>::Identity()) {
+      𝒮_(Signature<PrincipalAxesFrame,
+                   PreferredPrincipalAxesFrame>::Identity()) {
+  // Do not use initial_angular_momentum after this point.
+  auto const initial_angular_momentum_in_principal_axes =
+      initial_attitude.Inverse()(initial_angular_momentum);
+
   auto const& I₁ = moments_of_inertia_.x;
   auto const& I₂ = moments_of_inertia_.y;
   auto const& I₃ = moments_of_inertia_.z;
@@ -65,7 +73,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
 
   // The usages of this variable prior to the computation of 𝒮_ must not depend
   // on the signs of its coordinates since we may flip it.
-  auto m = initial_angular_momentum.coordinates();
+  auto m = initial_angular_momentum_in_principal_axes.coordinates();
 
   // These computations are such that if, say I₁ == I₂, I₂₁ is +0.0 and I₁₂ is
   // -0.0.
@@ -135,48 +143,23 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   Bivector<double, PreferredPrincipalAxesFrame> e₂({0, 1, 0});
   Bivector<double, PreferredPrincipalAxesFrame> e₃({0, 0, 1});
   if (formula_ == Formula::iii) {
-    if (m.x >= AngularMomentum()) {
-      if (m.z >= AngularMomentum()) {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>::Identity();
-      } else {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>(e₁, -e₂, -e₃);
-      }
-    } else {
-      if (m.z >= AngularMomentum()) {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>(-e₁, -e₂, e₃);
-      } else {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
-      }
-    }
+    𝒮_ = Signature<PrincipalAxesFrame, PreferredPrincipalAxesFrame>(
+        Sign(m.x), DeduceSignPreservingOrientation{}, Sign(m.z));
   } else {
     switch (region_) {
       case Region::e₁: {
-        if (m.x >= AngularMomentum()) {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>::Identity();
-        } else {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
-        }
+        𝒮_ = Signature<PrincipalAxesFrame, PreferredPrincipalAxesFrame>(
+            Sign(m.x), Sign::Positive(), DeduceSignPreservingOrientation{});
         break;
       }
       case Region::e₃: {
-        if (m.z >= AngularMomentum()) {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>::Identity();
-        } else {
-          𝒮_ = Rotation<PrincipalAxesFrame,
-                        PreferredPrincipalAxesFrame>(-e₁, e₂, -e₃);
-        }
+        𝒮_ = Signature<PrincipalAxesFrame, PreferredPrincipalAxesFrame>(
+            DeduceSignPreservingOrientation{}, Sign::Positive(), Sign(m.z));
         break;
       }
       case Region::Motionless: {
-        𝒮_ = Rotation<PrincipalAxesFrame,
-                      PreferredPrincipalAxesFrame>::Identity();
+        𝒮_ = Signature<PrincipalAxesFrame,
+                       PreferredPrincipalAxesFrame>::Identity();
         break;
       }
       default:
@@ -185,12 +168,12 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   }
 
   // Now that 𝒮_ has been computed we can use it to adjust m and to compute ℛ_.
-  initial_angular_momentum_ = 𝒮_(initial_angular_momentum);
+  initial_angular_momentum_ = 𝒮_(initial_angular_momentum_in_principal_axes);
   m = initial_angular_momentum_.coordinates();
   ℛ_ = [this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
     auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
     auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_).Inverse();
-    auto const 𝒮⁻¹ = 𝒮_.Inverse();
+    auto const 𝒮⁻¹ = 𝒮_.Inverse().template Forget<Rotation>();
 
     // This ℛ follows the assumptions in the third paragraph of section 2.3
     // of [CFSZ07], that is, the inertial frame is identified with the
@@ -290,7 +273,13 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
 }
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
-typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumBivector
+R3Element<MomentOfInertia> const&
+EulerSolver<InertialFrame, PrincipalAxesFrame>::moments_of_inertia() const {
+  return moments_of_inertia_;
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+Bivector<AngularMomentum, PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
     Instant const& time) const {
   Time const Δt = time - initial_time_;
@@ -319,10 +308,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
           {B₁₃_ * sech, G_ * Tanh(angle), B₃₁_ * sech});
       break;
     }
-    case Formula::Sphere : {
-      // NOTE(phl): It's unclear how the formulæ degenerate in this case, but
-      // surely λ₃_ becomes 0, so the dependency in time disappears, so this is
-      // my best guess.
+    case Formula::Sphere: {
       m = initial_angular_momentum_;
       break;
     }
@@ -335,7 +321,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularMomentumAt(
 template<typename InertialFrame, typename PrincipalAxesFrame>
 AngularVelocity<PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularVelocityFor(
-    AngularMomentumBivector const& angular_momentum) const {
+    Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum)
+    const {
   auto const& m = angular_momentum;
   auto const& m_coordinates = m.coordinates();
 
@@ -351,7 +338,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AngularVelocityFor(
 template<typename InertialFrame, typename PrincipalAxesFrame>
 typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
 EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
-    AngularMomentumBivector const& angular_momentum,
+    Bivector<AngularMomentum, PrincipalAxesFrame> const& angular_momentum,
     Instant const& time) const {
   Rotation<PreferredPrincipalAxesFrame, ℬₜ> const 𝒫ₜ =
       Compute𝒫ₜ(𝒮_(angular_momentum));
@@ -401,21 +388,71 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     case Region::e₁: {
       Bivector<double, ℬʹ> const e₁({1, 0, 0});
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₁, DefinesFrame<ℬₜ>{});
-      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_;
+      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.template Forget<Rotation>();
     }
     case Region::e₃: {
       Bivector<double, ℬʹ> const e₃({0, 0, 1});
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, e₃, DefinesFrame<ℬₜ>{});
-      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_;
+      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.template Forget<Rotation>();
     }
     case Region::Motionless: {
       Bivector<double, ℬʹ> const unused({0, 1, 0});
       Rotation<ℬₜ, ℬʹ> const 𝒴ₜ(ψ, unused, DefinesFrame<ℬₜ>{});
-      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_;
+      return ℛ_ * 𝒴ₜ * 𝒫ₜ * 𝒮_.template Forget<Rotation>();
     }
     default:
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
   }
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+typename EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeRotation
+EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
+    Instant const& time) const {
+  return AttitudeAt(AngularMomentumAt(time), time);
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+RigidMotion<PrincipalAxesFrame, InertialFrame>
+EulerSolver<InertialFrame, PrincipalAxesFrame>::MotionAt(
+    Instant const& time,
+    DegreesOfFreedom<InertialFrame> const& linear_motion) const {
+  Bivector<AngularMomentum, PrincipalAxesFrame> const angular_momentum =
+      AngularMomentumAt(time);
+  Rotation<PrincipalAxesFrame, InertialFrame> const attitude =
+      AttitudeAt(angular_momentum, time);
+  AngularVelocity<InertialFrame> const angular_velocity =
+      attitude(AngularVelocityFor(angular_momentum));
+
+  return RigidMotion<PrincipalAxesFrame, InertialFrame>(
+      RigidTransformation<PrincipalAxesFrame, InertialFrame>(
+          PrincipalAxesFrame::origin,
+          linear_motion.position(),
+          attitude.template Forget<OrthogonalMap>()),
+      angular_velocity,
+      linear_motion.velocity());
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+void EulerSolver<InertialFrame, PrincipalAxesFrame>::WriteToMessage(
+    not_null<serialization::EulerSolver*> const message) const {
+  moments_of_inertia_.WriteToMessage(message->mutable_moments_of_inertia());
+  serialized_initial_angular_momentum_.WriteToMessage(
+      message->mutable_initial_angular_momentum());
+  initial_attitude_.WriteToMessage(message->mutable_initial_attitude());
+  initial_time_.WriteToMessage(message->mutable_initial_time());
+}
+
+template<typename InertialFrame, typename PrincipalAxesFrame>
+EulerSolver<InertialFrame, PrincipalAxesFrame>
+EulerSolver<InertialFrame, PrincipalAxesFrame>::ReadFromMessage(
+    serialization::EulerSolver const& message) {
+  return EulerSolver(
+      R3Element<MomentOfInertia>::ReadFromMessage(message.moments_of_inertia()),
+      Bivector<AngularMomentum, InertialFrame>::ReadFromMessage(
+          message.initial_angular_momentum()),
+      AttitudeRotation::ReadFromMessage(message.initial_attitude()),
+      Instant::ReadFromMessage(message.initial_time()));
 }
 
 template<typename InertialFrame, typename PrincipalAxesFrame>

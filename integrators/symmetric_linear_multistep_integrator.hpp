@@ -48,6 +48,15 @@ class SymmetricLinearMultistepIntegrator
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
+    template<typename P = Position,
+             typename = std::enable_if_t<base::is_serializable_v<P>>>
+    static not_null<std::unique_ptr<Instance>> ReadFromMessage(
+        serialization::SymmetricLinearMultistepIntegratorInstance const&
+            extension,
+        IntegrationProblem<ODE> const& problem,
+        AppendState const& append_state,
+        Time const& step,
+        SymmetricLinearMultistepIntegrator const& integrator);
 
    private:
     // The data for a previous step of the integration.  The |Displacement|s
@@ -60,7 +69,9 @@ class SymmetricLinearMultistepIntegrator
 
       void WriteToMessage(
           not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
-                       Step*> const message) const;
+                       Step*> message) const;
+      template<typename P = Position,
+               typename = std::enable_if_t<base::is_serializable_v<P>>>
       static Step ReadFromMessage(
           serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
               message);
@@ -76,7 +87,7 @@ class SymmetricLinearMultistepIntegrator
              AppendState const& append_state,
              Time const& step,
              int startup_step_index,
-             std::list<Step> const& previous_steps,
+             std::list<Step> previous_steps,
              SymmetricLinearMultistepIntegrator const& integrator);
 
     // Performs the startup integration, i.e., computes enough states to either
@@ -111,12 +122,6 @@ class SymmetricLinearMultistepIntegrator
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
 
  private:
-  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
-      serialization::FixedStepSizeIntegratorInstance const& message,
-      IntegrationProblem<ODE> const& problem,
-      AppendState const& append_state,
-      Time const& step) const override;
-
   static constexpr auto half_order_ = Method::Half(order);
   static constexpr auto ɑ_ = Method::ɑ;
   static constexpr auto β_numerator_ = Method::β_numerator;

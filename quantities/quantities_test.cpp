@@ -85,15 +85,15 @@ TEST_F(QuantitiesTest, Formatting) {
 #pragma warning(default: 4566)
 
 TEST_F(QuantitiesTest, RotationalUnits) {
-  EXPECT_THAT(SIUnit<AngularFrequency>(), Eq(Radian / Second));
-  EXPECT_THAT(SIUnit<AngularAcceleration>(), Eq(Radian / Pow<2>(Second)));
+  EXPECT_THAT(si::Unit<AngularFrequency>, Eq(Radian / Second));
+  EXPECT_THAT(si::Unit<AngularAcceleration>, Eq(Radian / Pow<2>(Second)));
   // SI Brochure 8th edition, 2006, updated in 2014, Section 2.2.2:
   // For example, the quantity torque may be thought of as the cross product of
   // force and distance, suggesting the unit newton metre, or it may be thought
   // of as energy per angle, suggesting the unit joule per radian.
   // But we do things differently, see the comment in the declaration of
   // MomentOfInertia.
-  EXPECT_THAT(SIUnit<Torque>(), Eq(Joule * Radian));
+  EXPECT_THAT(si::Unit<Torque>, Eq(Joule * Radian));
 }
 
 TEST_F(QuantitiesTest, IsFinite) {
@@ -113,7 +113,8 @@ TEST_F(QuantitiesDeathTest, SerializationError) {
     serialization::Quantity message;
     message.set_dimensions(0x7C00);
     message.set_magnitude(1.0);
-    Speed const speed_of_light = Speed::ReadFromMessage(message);
+    [[maybe_unused]] Speed const speed_of_light =
+        Speed::ReadFromMessage(message);
   }, "representation.*dimensions");
 }
 

@@ -413,6 +413,13 @@ Segments<FromFrame> Perspective<FromFrame, ToFrame>::VisibleSegments(
   return segments;
 }
 
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         Perspective<FromFrame, ToFrame> const& perspective) {
+  return out << "{camera: " << perspective.camera_
+             << ", focal: " << perspective.focal_ << "}";
+}
+
 }  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia

@@ -5,6 +5,7 @@
 
 #include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -17,6 +18,7 @@ namespace geometry {
 
 using astronomy::J2000;
 using astronomy::operator""_TT;
+using quantities::Length;
 using quantities::Time;
 using quantities::Volume;
 using quantities::si::Day;
@@ -29,7 +31,9 @@ using testing_utilities::AlmostEquals;
 class PointTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
 
   Instant const mjd0 = "MJD0"_TT;
 };
@@ -81,13 +85,24 @@ TEST_F(PointTest, Ordering) {
   EXPECT_TRUE(t1 >= t1);
 }
 
+// Uncomment to check that non-serializable frames are detected at compile-time.
+#if 0
+TEST_F(PointTest, SerializationCompilationError) {
+  using F = Frame<enum class FrameTag>;
+  Point<Vector<Length, F>> p;
+  serialization::Point message;
+  p.WriteToMessage(&message);
+}
+#endif
+
 TEST_F(PointDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::Point message;
     Instant const t0;
     Instant const t1 = t0 + 10 * Second;
     t1.WriteToMessage(&message);
-    Position<World> const d2 = Position<World>::ReadFromMessage(message);
+    [[maybe_unused]] Position<World> const d2 =
+        Position<World>::ReadFromMessage(message);
   }, "has_multivector");
   EXPECT_DEATH({
     serialization::Point message;
@@ -95,7 +110,8 @@ TEST_F(PointDeathTest, SerializationError) {
     Position<World> const d1 = origin +
         Displacement<World>({-1 * Metre, 2 * Metre, 3 * Metre});
     d1.WriteToMessage(&message);
-    Instant const t2 = Instant::ReadFromMessage(message);
+    [[maybe_unused]] Instant const t2 =
+        Instant::ReadFromMessage(message);
   }, "has_scalar");
 }
 

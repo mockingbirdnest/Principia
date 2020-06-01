@@ -26,7 +26,7 @@ using quantities::Time;
 // needed to reconstruct the timeline after a give point in time.  When
 // serializing a timeline, the pairs (time, data) are written up to the oldest
 // checkpoint, followed by the checkpoint itself.  When deserializing, the
-// the timeline may be reconstructed as needed based on the checkpoint.
+// timeline may be reconstructed as needed based on the checkpoint.
 // Checkpoints must be created at regular intervals because they are dropped by
 // ForgetBefore: this ensures that there is always a sufficient old checkpoint
 // available the next time serialization is performed.

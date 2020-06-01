@@ -63,7 +63,11 @@ TEST_F(NotNullTest, Move) {
       _MSC_FULL_VER == 192'227'706 || \
       _MSC_FULL_VER == 192'227'724 || \
       _MSC_FULL_VER == 192'227'905 || \
-      _MSC_FULL_VER == 192'328'106)
+      _MSC_FULL_VER == 192'328'106 || \
+      _MSC_FULL_VER == 192'428'314 || \
+      _MSC_FULL_VER == 192'428'316 || \
+      _MSC_FULL_VER == 192'528'610 || \
+      _MSC_FULL_VER == 192'528'611)
   EXPECT_THAT(*(std::unique_ptr<int> const&)int_ptr1, Eq(3));
 #endif
   not_null<std::unique_ptr<int>> int_ptr2 = std::move(int_ptr1);
@@ -172,7 +176,7 @@ TEST_F(NotNullTest, DynamicCast) {
   class Derived : public Base {};
   {
     not_null<Base*> b = new Derived;
-    not_null<Derived*> d = dynamic_cast_not_null<Derived*>(b);
+    [[maybe_unused]] not_null<Derived*> d = dynamic_cast_not_null<Derived*>(b);
     delete b;
   }
   {
@@ -227,7 +231,7 @@ TEST_F(NotNullTest, RValue) {
   owner_int = make_not_null_unique<int>(1729);
 
   not_null<int*> not_null_access_int = owner_int.get();
-  int const* access_const_int = not_null_access_int;
+  [[maybe_unused]] int const* access_const_int = not_null_access_int;
 
   not_null<std::shared_ptr<int>> not_null_shared_int = std::make_shared<int>(3);
   // This exercises |operator OtherPointer() const&|.  The conversion from

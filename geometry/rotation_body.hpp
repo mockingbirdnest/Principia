@@ -5,6 +5,7 @@
 
 #include <algorithm>
 
+#include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
@@ -16,7 +17,9 @@ namespace principia {
 namespace geometry {
 namespace internal_rotation {
 
+using base::is_same_template_v;
 using base::not_null;
+using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Sin;
 
@@ -188,6 +191,22 @@ Rotation<ToFrame, FromFrame> Rotation<FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
+Bivector<double, FromFrame> Rotation<FromFrame, ToFrame>::RotationAxis() const {
+  return Bivector<double, FromFrame>(Normalize(quaternion_.imaginary_part()));
+}
+
+template<typename FromFrame, typename ToFrame>
+Angle Rotation<FromFrame, ToFrame>::RotationAngle() const {
+  // NOTE(egg): We intentionally use the single-parameter arctangent, as we want
+  // a result in [-π, π], thus an arctangent in [-π/2, π/2].
+  // The two-parameter arctangent, with a positive numerator, would lie in
+  // [0, π], and thus the result in [0, 2π].
+  return 2 * ArcTan(quaternion_.imaginary_part().Norm() /
+                    quaternion_.real_part());
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
@@ -205,13 +224,15 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Trivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
-  return trivector;
+  return Trivector<Scalar, ToFrame>(trivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
-SymmetricBilinearForm<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
-    SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
+template<typename Scalar,
+         template<typename, typename> typename Multivector>
+SymmetricBilinearForm<Scalar, ToFrame, Multivector>
+Rotation<FromFrame, ToFrame>::operator()(
+    SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {
   // If R is the rotation and F the form, we compute R * F * R⁻¹.  Note however
   // that we only have mechanisms for applying rotations to column vectors.  If
   // r is a row of F, we first compute the corresponding row of the intermediate
@@ -252,7 +273,7 @@ SymmetricBilinearForm<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
   // The averaging below ensures that the result is symmetric.
   // TODO(phl): Investigate if using a Cholesky or LDL decomposition would help
   // preserve symmetry and/or definiteness.
-  return SymmetricBilinearForm<Scalar, ToFrame>(
+  return SymmetricBilinearForm<Scalar, ToFrame, Multivector>(
           0.5 * (result_matrix + result_matrix.Transpose()));
 }
 
@@ -264,8 +285,11 @@ Rotation<FromFrame, ToFrame>::operator()(T const& t) const {
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
-  return OrthogonalMap<FromFrame, ToFrame>(Sign::Positive(), *this);
+template<template<typename, typename> typename LinearMap>
+LinearMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
+  static_assert(is_same_template_v<LinearMap, OrthogonalMap>,
+                "Unable to forget rotation");
+  return OrthogonalMap<FromFrame, ToFrame>(quaternion_);
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -286,6 +310,7 @@ void Rotation<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename, typename, typename>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
   LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
@@ -301,6 +326,7 @@ void Rotation<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename, typename, typename>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::Rotation const& message) {
   return Rotation(Quaternion::ReadFromMessage(message.quaternion()));
@@ -322,6 +348,18 @@ Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right) {
   return Rotation<FromFrame, ToFrame>(left.quaternion_ * right.quaternion_);
+}
+
+template<typename From, typename To>
+bool operator==(Rotation<From, To> const& left,
+                Rotation<From, To> const& right) {
+  return left.quaternion_ == right.quaternion_;
+}
+
+template<typename From, typename To>
+bool operator!=(Rotation<From, To> const& left,
+                Rotation<From, To> const& right) {
+  return left.quaternion_ != right.quaternion_;
 }
 
 template<typename FromFrame, typename ToFrame>

@@ -5,6 +5,15 @@
     <RootNamespace>physics</RootNamespace>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="..\third_party_zfp.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="..\third_party_zfp.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <Import Project="..\third_party_zfp.props" />
+  </ImportGroup>
   <ItemGroup>
     <ClInclude Include="apsides.hpp" />
     <ClInclude Include="apsides_body.hpp" />
@@ -22,6 +31,8 @@
     <ClInclude Include="body_surface_frame_field_body.hpp" />
     <ClInclude Include="checkpointer.hpp" />
     <ClInclude Include="checkpointer_body.hpp" />
+    <ClInclude Include="mechanical_system.hpp" />
+    <ClInclude Include="mechanical_system_body.hpp" />
     <ClInclude Include="continuous_trajectory_body.hpp" />
     <ClInclude Include="continuous_trajectory.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
@@ -34,8 +45,6 @@
     <ClInclude Include="euler_solver_body.hpp" />
     <ClInclude Include="geopotential.hpp" />
     <ClInclude Include="geopotential_body.hpp" />
-    <ClInclude Include="inertia_tensor.hpp" />
-    <ClInclude Include="inertia_tensor_body.hpp" />
     <ClInclude Include="protector.hpp" />
     <ClInclude Include="hierarchical_system.hpp" />
     <ClInclude Include="hierarchical_system_body.hpp" />
@@ -67,7 +76,9 @@
     <ClInclude Include="trajectory.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\flags.cpp" />
     <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="..\base\zfp_compressor.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
@@ -79,6 +90,7 @@
     <ClCompile Include="body_surface_frame_field_test.cpp" />
     <ClCompile Include="body_test.cpp" />
     <ClCompile Include="checkpointer_test.cpp" />
+    <ClCompile Include="mechanical_system_test.cpp" />
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
     <ClCompile Include="discrete_trajectory_test.cpp" />
@@ -86,7 +98,6 @@
     <ClCompile Include="euler_solver_test.cpp" />
     <ClCompile Include="geopotential_test.cpp" />
     <ClCompile Include="hierarchical_system_test.cpp" />
-    <ClCompile Include="inertia_tensor_test.cpp" />
     <ClCompile Include="jacobi_coordinates_test.cpp" />
     <ClCompile Include="kepler_orbit_test.cpp" />
     <ClCompile Include="protector.cpp" />

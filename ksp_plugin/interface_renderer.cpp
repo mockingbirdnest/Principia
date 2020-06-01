@@ -21,25 +21,26 @@ Renderer& GetRenderer(Plugin* const plugin) {
   return CHECK_NOTNULL(plugin)->renderer();
 }
 
-Renderer const& GetRenderer(Plugin const* const plugin) {
+[[maybe_unused]] Renderer const& GetRenderer(Plugin const* const plugin) {
   return CHECK_NOTNULL(plugin)->renderer();
 }
 
 }  // namespace
 
-void principia__ClearTargetVessel(Plugin* const plugin) {
+void __cdecl principia__ClearTargetVessel(Plugin* const plugin) {
   journal::Method<journal::ClearTargetVessel> m({plugin});
   GetRenderer(plugin).ClearTargetVessel();
   return m.Return();
 }
 
-void principia__RenderedPredictionApsides(Plugin const* const plugin,
-                                          char const* const vessel_guid,
-                                          int const celestial_index,
-                                          XYZ const sun_world_position,
-                                          int const max_points,
-                                          Iterator** const apoapsides,
-                                          Iterator** const periapsides) {
+void __cdecl principia__RenderedPredictionApsides(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const celestial_index,
+    XYZ const sun_world_position,
+    int const max_points,
+    Iterator** const apoapsides,
+    Iterator** const periapsides) {
   journal::Method<journal::RenderedPredictionApsides> m(
       {plugin, vessel_guid, celestial_index, sun_world_position, max_points},
       {apoapsides, periapsides});
@@ -63,7 +64,7 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   return m.Return();
 }
 
-void principia__RenderedPredictionClosestApproaches(
+void __cdecl principia__RenderedPredictionClosestApproaches(
     Plugin const* const plugin,
     char const* const vessel_guid,
     XYZ const sun_world_position,
@@ -87,12 +88,12 @@ void principia__RenderedPredictionClosestApproaches(
   return m.Return();
 }
 
-void principia__RenderedPredictionNodes(Plugin const* const plugin,
-                                        char const* const vessel_guid,
-                                        XYZ const sun_world_position,
-                                        int const max_points,
-                                        Iterator** const ascending,
-                                        Iterator** const descending) {
+void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
+                                                char const* const vessel_guid,
+                                                XYZ const sun_world_position,
+                                                int const max_points,
+                                                Iterator** const ascending,
+                                                Iterator** const descending) {
   journal::Method<journal::RenderedPredictionNodes> m(
       {plugin, vessel_guid, sun_world_position, max_points},
       {ascending, descending});
@@ -117,22 +118,33 @@ void principia__RenderedPredictionNodes(Plugin const* const plugin,
 
 // Calls |plugin| to create a |NavigationFrame| using the given |parameters|,
 // sets it as the current plotting frame.
-void principia__SetPlottingFrame(Plugin* const plugin,
-                                 NavigationFrameParameters const parameters) {
+void __cdecl principia__SetPlottingFrame(
+    Plugin* const plugin,
+    NavigationFrameParameters const parameters) {
   journal::Method<journal::SetPlottingFrame> m({plugin, parameters});
   auto navigation_frame = NewNavigationFrame(*plugin, parameters);
   GetRenderer(plugin).SetPlottingFrame(std::move(navigation_frame));
   return m.Return();
 }
 
-void principia__SetTargetVessel(Plugin* const plugin,
-                                char const* const vessel_guid,
-                                int const reference_body_index) {
+void __cdecl principia__SetTargetVessel(Plugin* const plugin,
+                                        char const* const vessel_guid,
+                                        int const reference_body_index) {
   journal::Method<journal::SetTargetVessel> m(
       {plugin, vessel_guid, reference_body_index});
   CHECK_NOTNULL(plugin);
   plugin->SetTargetVessel(vessel_guid, reference_body_index);
   return m.Return();
+}
+
+WXYZ __cdecl principia__CameraReferenceRotation(Plugin* const plugin) {
+  journal::Method<journal::CameraReferenceRotation> m({plugin});
+  CHECK_NOTNULL(plugin);
+  return m.Return(
+      ToWXYZ(GetRenderer(plugin)
+                 .CameraReferenceRotation(plugin->CurrentTime(),
+                                          plugin->PlanetariumRotation())
+                 .quaternion()));
 }
 
 }  // namespace interface

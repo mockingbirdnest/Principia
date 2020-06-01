@@ -118,7 +118,7 @@ OrbitalElements::OsculatingEquinoctialElements(
     MassiveBody const& primary,
     Body const& secondary) {
   DegreesOfFreedom<PrimaryCentred> const primary_dof{
-      PrimaryCentred::origin, Velocity<PrimaryCentred>{}};
+      PrimaryCentred::origin, PrimaryCentred::unmoving};
   std::vector<EquinoctialElements> result;
   for (auto const& [time, degrees_of_freedom] : trajectory) {
     auto const osculating_elements =
@@ -252,7 +252,6 @@ OrbitalElements::MeanEquinoctialElements(
     // |element| should be a pointer to a member of |EquinoctialElements|;
     // Integrates that element on [tⱼ₋₁, tᵢ + period].
     auto ʃ = [j, &period, &tᵢ, &tⱼ, &tⱼ₋₁, &osculating](auto element) {
-      auto const& next_osculating = osculating[j];
       Time const Δt = tⱼ - tⱼ₋₁;
       Time const dt = tᵢ + period - tⱼ₋₁;
       auto const element_at_end =

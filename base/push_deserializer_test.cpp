@@ -236,7 +236,6 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
             number_of_chunks,
             google::compression::NewGipfeliCompressor());
     auto const written_trajectory = BuildTrajectory();
-    int const byte_size = written_trajectory->ByteSize();
     auto const uncompressed = written_trajectory->SerializePartialAsString();
 
     auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();

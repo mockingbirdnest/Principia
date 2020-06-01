@@ -8,7 +8,6 @@
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
 #include "astronomy/standard_product_3.hpp"
-#include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -27,7 +26,6 @@ namespace astronomy {
 
 using base::make_not_null_unique;
 using base::not_null;
-using base::OFStream;
 using geometry::Instant;
 using geometry::Interval;
 using geometry::Position;
@@ -181,12 +179,15 @@ class OrbitAnalysisTest : public ::testing::Test {
 
     {
       auto const identifier = (std::stringstream() << orbit.satellite).str();
-      OFStream f(SOLUTION_DIR / "mathematica" /
-                 (identifier + "_elements.generated.wl"));
-      f << mathematica::Assign(identifier + "osculatingEquinoctialElements",
-                               elements.osculating_equinoctial_elements());
-      f << mathematica::Assign(identifier + "meanEquinoctialElements",
-                               elements.mean_equinoctial_elements());
+      mathematica::Logger logger(SOLUTION_DIR / "mathematica" /
+                                     (identifier + "_elements.generated.wl"),
+                                 /*make_unique=*/false);
+      logger.Set(identifier + "osculatingEquinoctialElements",
+                 elements.osculating_equinoctial_elements(),
+                 mathematica::ExpressIn(Metre, Second, Radian));
+      logger.Set(identifier + "meanEquinoctialElements",
+                 elements.mean_equinoctial_elements(),
+                 mathematica::ExpressIn(Metre, Second, Radian));
     }
 
     auto const recurrence =

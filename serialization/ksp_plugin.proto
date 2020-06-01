@@ -49,12 +49,23 @@ message Manoeuvre {
 }
 
 message Part {
+  message PreFrenetInertiaTensor {
+    required Quantity mass = 1;
+    required SymmetricBilinearForm form = 2;
+    required Point centre_of_mass = 3;
+  }
   required fixed32 part_id = 4;
   required string name = 9;
-  required Quantity mass = 2;
+  optional bool truthful = 14;  // Added in Frobenius.
+  optional Quantity mass = 2;  // Pre-Fréchet, re-added in Frenet.
+  optional PreFrenetInertiaTensor
+      pre_frenet_inertia_tensor = 10; // Added in Fréchet.
+  optional SymmetricBilinearForm inertia_tensor = 12;  // Added in Frenet.
   required Multivector intrinsic_force = 5;
+  optional Multivector intrinsic_torque = 13;  // Added in Frenet.
   optional int32 containing_pile_up = 6;
-  optional Pair degrees_of_freedom = 1;
+  optional Pair degrees_of_freedom = 1;  // Pre-Fréchet.
+  optional RigidMotion rigid_motion = 11;  // Added in Fréchet.
   required DiscreteTrajectory prehistory = 7;
   optional bool tail_is_authoritative = 8;  // Pre-Cesàro.
 
@@ -67,20 +78,38 @@ message Part {
 
 message PileUp {
   repeated fixed32 part_id = 1;
-  required Quantity mass = 2;
-  required Multivector intrinsic_force = 3;
   required DiscreteTrajectory history = 4;
+  // Pre-Frege.
   map<fixed32, Pair> actual_part_degrees_of_freedom = 5;
   map<fixed32, Pair> apparent_part_degrees_of_freedom = 6;
+  // Added in Frege.
+  map<fixed32, RigidMotion> actual_part_rigid_motion = 9;
+  map<fixed32, RigidMotion> apparent_part_rigid_motion = 10;
+  // Added in Frobenius.
+  map<fixed32, AffineMap> rigid_pile_up = 11;
+  optional EulerSolver euler_solver = 12;
+  optional Multivector angular_momentum = 13;  // Required.
   // Added in Cartan.
   optional Ephemeris.AdaptiveStepParameters adaptive_step_parameters = 7;
   optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;
 
   // Pre-Cesàro.
   reserved "psychohistory";
+
+  // Pre-Fréchet.
+  reserved 2;
+  reserved 3;
+  reserved "mass";
+  reserved "intrinsic_force";
 }
 
 message Plugin {
+	message CelestialParenthood {
+		required int32 index = 1;
+		optional int32 parent_index = 2;
+		// Added in Catalan.
+		optional int32 ephemeris_index = 3;
+	}
   message VesselAndProperties {
     required string guid = 1;
     required Vessel vessel = 2;
@@ -91,11 +120,9 @@ message Plugin {
     reserved 4;
     reserved "dirty";
   }
-  message CelestialParenthood {
-    required int32 index = 1;
-    optional int32 parent_index = 2;
-    // Added in Catalan.
-    optional int32 ephemeris_index = 3;
+  message ZombieAndProperties {
+    required string guid = 1;
+    required Ephemeris.AdaptiveStepParameters prediction_parameters = 2;
   }
   repeated VesselAndProperties vessel = 1;
   map<fixed32, string> part_id_to_vessel = 16;
@@ -110,6 +137,7 @@ message Plugin {
   optional DynamicFrame pre_cauchy_plotting_frame = 11;
   repeated PileUp pile_up = 17;
   optional Renderer renderer = 18;  // Added in Cauchy.
+  repeated ZombieAndProperties zombie = 19;  // Added in Frege.
 
   // Pre-Cardano.
   reserved 3;
@@ -134,7 +162,7 @@ message Vessel {
   required string guid = 13;
   required string name = 19;
   required MasslessBody body = 1;
-  required Ephemeris.AdaptiveStepParameters 
+  required Ephemeris.AdaptiveStepParameters
       prediction_adaptive_step_parameters = 10;
   repeated Part parts = 14;
   repeated fixed32 kept_parts = 15;

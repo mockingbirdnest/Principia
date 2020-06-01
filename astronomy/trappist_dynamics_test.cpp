@@ -266,12 +266,12 @@ Population::Population(Genome const& luca,
                        ComputeFitness compute_fitness,
                        std::mt19937_64& engine,
                        OFStream& file)
-    : current_(size, luca),
-      next_(size, luca),
-      compute_fitness_(std::move(compute_fitness)),
+    : compute_fitness_(std::move(compute_fitness)),
       elitism_(elitism),
       engine_(engine),
-      file_(file) {
+      file_(file),
+      current_(size, luca),
+      next_(size, luca) {
   for (int i = 0; i < current_.size(); ++i) {
     current_[i].Mutate(engine_, /*generation=*/-1);
   }
@@ -1161,12 +1161,12 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
   auto const& star = system_.massive_body(*ephemeris_, star_name);
   auto const& star_trajectory = ephemeris_->trajectory(star);
 
-  OFStream file(TEMP_DIR / "trappist_periods.generated.wl");
+  mathematica::Logger logger(TEMP_DIR / "trappist_periods.generated.wl",
+                             /*make_unique=*/false);
   auto const bodies = ephemeris_->bodies();
   for (auto const& planet : bodies) {
     if (planet != star) {
       auto const& planet_trajectory = ephemeris_->trajectory(planet);
-      std::vector<Time> periods;
       for (Instant t = ephemeris_->t_max() - 2000 * Hour;
            t < ephemeris_->t_max();
            t += 1 * Hour) {
@@ -1176,10 +1176,9 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
             planet_trajectory->EvaluateDegreesOfFreedom(t) -
                 star_trajectory->EvaluateDegreesOfFreedom(t),
             t);
-        periods.push_back(*planet_orbit.elements_at_epoch().period);
+        logger.Append("period" + SanitizedName(*planet),
+                      *planet_orbit.elements_at_epoch().period);
       }
-
-      file << mathematica::Assign("period" + SanitizedName(*planet), periods);
     }
   }
 }
@@ -1187,7 +1186,8 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
 TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
   // Run this test with different ephemerides to make sure that the system is
   // converged.
-  OFStream file(TEMP_DIR / "trappist_transits.generated.wl");
+  mathematica::Logger logger(TEMP_DIR / "trappist_transits.generated.wl",
+                             /*make_unique=*/false);
   int index = 0;
   for (auto const& ephemeris :
        {system_.MakeEphemeris(
@@ -1215,9 +1215,8 @@ TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
       if (planet != star) {
         computations[planet->name()] =
             ComputeTransits(*ephemeris, star, planet);
-        file << mathematica::Assign(
-                    "transit" + absl::StrCat(index) + SanitizedName(*planet),
-                    computations[planet->name()]);
+        logger.Set("transit" + absl::StrCat(index) + SanitizedName(*planet),
+                   computations[planet->name()]);
       }
     }
 
@@ -1233,7 +1232,8 @@ TEST_F(TrappistDynamicsTest, MathematicaAlignments) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
   ephemeris_->Prolong(a_century_later);
 
-  OFStream file(TEMP_DIR / "trappist_alignments.generated.wl");
+  mathematica::Logger logger(TEMP_DIR / "trappist_alignments.generated.wl",
+                             /*make_unique=*/false);
 
   auto const& star = system_.massive_body(*ephemeris_, star_name);
   auto const& star_trajectory = ephemeris_->trajectory(star);
@@ -1244,7 +1244,6 @@ TEST_F(TrappistDynamicsTest, MathematicaAlignments) {
   for (auto const& planet : bodies) {
     if (planet != star && planet != &*home) {
       auto const& planet_trajectory = ephemeris_->trajectory(planet);
-      std::vector<double> views;
       for (Instant t = ephemeris_->t_min();
            t < ephemeris_->t_min() + 1000 * Hour;
            t += 10 * Minute) {
@@ -1254,9 +1253,10 @@ TEST_F(TrappistDynamicsTest, MathematicaAlignments) {
                                  planet_trajectory->EvaluatePosition(t) -
                                      home_trajectory->EvaluatePosition(t),
                                  home->angular_velocity());
-        views.push_back(view / Degree);
+        logger.Append("alignment" + SanitizedName(*planet),
+                      view,
+                      mathematica::ExpressIn(Degree));
       }
-      file << mathematica::Assign("alignment" + SanitizedName(*planet), views);
     }
   }
 }

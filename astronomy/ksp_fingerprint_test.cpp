@@ -19,14 +19,17 @@ namespace astronomy {
 using base::Fingerprint2011;
 using base::SerializeAsBytes;
 using geometry::Frame;
+using geometry::Handedness;
+using geometry::Inertial;
 using physics::SolarSystem;
 using ::testing::Eq;
 
 class KSPFingerprintTest : public ::testing::Test {
  protected:
   using Barycentric = Frame<serialization::Frame::PluginTag,
-                            serialization::Frame::BARYCENTRIC,
-                            true>;
+                            Inertial,
+                            Handedness::Right,
+                            serialization::Frame::BARYCENTRIC>;
 
   KSPFingerprintTest()
       : solar_system_(
@@ -45,7 +48,7 @@ TEST_F(KSPFingerprintTest, Stock) {
   uint64_t const fingerprint = Fingerprint2011(SerializeAsBytes(message).get());
   LOG(INFO) << "Stock KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
-  EXPECT_THAT(fingerprint, Eq(KSPStockSystemFingerprint));
+  EXPECT_THAT(fingerprint, Eq(KSPStockSystemFingerprints[KSP191]));
 }
 
 TEST_F(KSPFingerprintTest, Corrected) {
@@ -56,7 +59,7 @@ TEST_F(KSPFingerprintTest, Corrected) {
   uint64_t const fingerprint = Fingerprint2011(SerializeAsBytes(message).get());
   LOG(INFO) << "Corrected KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
-  EXPECT_THAT(fingerprint, Eq(KSPStabilizedSystemFingerprint));
+  EXPECT_THAT(fingerprint, Eq(KSPStabilizedSystemFingerprints[KSP191]));
 }
 
 }  // namespace astronomy

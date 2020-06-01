@@ -3,13 +3,16 @@
 
 #include <limits>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/status.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -17,10 +20,14 @@
 #include "integrators/mock_integrators.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/mock_ephemeris.hpp"
+#include "physics/rigid_motion.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -29,9 +36,13 @@ namespace internal_pile_up {
 using base::check_not_null;
 using base::make_not_null_unique;
 using base::Status;
+using geometry::AngularVelocity;
 using geometry::Displacement;
+using geometry::NonRotating;
 using geometry::Position;
 using geometry::R3Element;
+using geometry::R3x3Matrix;
+using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
 using integrators::MockFixedStepSizeIntegrator;
@@ -42,8 +53,10 @@ using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::MockEphemeris;
+using physics::RigidMotion;
 using quantities::Acceleration;
 using quantities::Length;
+using quantities::MomentOfInertia;
 using quantities::Pow;
 using quantities::Speed;
 using quantities::Time;
@@ -51,25 +64,27 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Micro;
 using quantities::si::Newton;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
+using testing_utilities::VanishesBefore;
 using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::IsEmpty;
+using ::testing::Matcher;
 using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
+namespace si = quantities::si;
 
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
  public:
-  using RigidPileUp = PileUp::RigidPileUp;
-
   using PileUp::PileUp;
   using PileUp::DeformPileUpIfNeeded;
   using PileUp::AdvanceTime;
@@ -87,24 +102,37 @@ class TestablePileUp : public PileUp {
     return psychohistory_;
   }
 
-  PartTo<DegreesOfFreedom<RigidPileUp>> const&
-  actual_part_degrees_of_freedom() const {
-    return actual_part_degrees_of_freedom_;
+  PartTo<RigidMotion<RigidPart, NonRotatingPileUp>> const&
+  actual_part_rigid_motion() const {
+    return actual_part_rigid_motion_;
   }
 
-  PartTo<DegreesOfFreedom<ApparentBubble>> const&
-  apparent_part_degrees_of_freedom() const {
-    return apparent_part_degrees_of_freedom_;
+  PartTo<RigidMotion<RigidPart, Apparent>> const&
+  apparent_part_rigid_motion() const {
+    return apparent_part_rigid_motion_;
   }
 };
 
 class PileUpTest : public testing::Test {
  protected:
-  using RigidPileUp = TestablePileUp::RigidPileUp;
+  using CorrectedPileUp = Frame<enum class CorrectedPileUpTag, NonRotating>;
+  using Vessel = Frame<enum class VesselTag>;
 
   PileUpTest()
-      : p1_(part_id1_, "p1", mass1_, p1_dof_, /*deletion_callback=*/nullptr),
-        p2_(part_id2_, "p2", mass2_, p2_dof_, /*deletion_callback=*/nullptr) {}
+      : inertia_tensor1_(MakeWaterSphereInertiaTensor(mass1_)),
+        inertia_tensor2_(MakeWaterSphereInertiaTensor(mass2_)),
+        p1_(part_id1_,
+            "p1",
+            mass1_,
+            inertia_tensor1_,
+            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p1_dof_),
+            /*deletion_callback=*/nullptr),
+        p2_(part_id2_,
+            "p2",
+            mass2_,
+            inertia_tensor2_,
+            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p2_dof_),
+            /*deletion_callback=*/nullptr) {}
 
   void CheckPreDeformPileUpInvariants(TestablePileUp& pile_up) {
     EXPECT_EQ(3 * Kilogram, pile_up.mass());
@@ -119,102 +147,109 @@ class PileUpTest : public testing::Test {
                       AlmostEquals(Velocity<Barycentric>(
                                        {130.0 / 3.0 * Metre / Second,
                                         40.0 * Metre / Second,
-                                        110.0 / 3.0 * Metre / Second}), 0)));
+                                        110.0 / 3.0 * Metre / Second}), 4)));
 
     EXPECT_THAT(
-        pile_up.actual_part_degrees_of_freedom().at(&p1_),
-        Componentwise(AlmostEquals(RigidPileUp::origin +
-                                       Displacement<RigidPileUp>(
+        pile_up.actual_part_rigid_motion().at(&p1_)({RigidPart::origin,
+                                                     RigidPart::unmoving}),
+        Componentwise(AlmostEquals(NonRotatingPileUp::origin +
+                                       Displacement<NonRotatingPileUp>(
                                            {-10.0 / 3.0 * Metre,
                                             -2.0 * Metre,
                                             -2.0 / 3.0 * Metre}), 1),
-                      AlmostEquals(Velocity<RigidPileUp>(
+                      AlmostEquals(Velocity<NonRotatingPileUp>(
                                        {-100.0 / 3.0 * Metre / Second,
                                         -20.0 * Metre / Second,
-                                        -20.0 / 3.0 * Metre / Second}), 3)));
+                                        -20.0 / 3.0 * Metre / Second}), 7)));
     EXPECT_THAT(
-        pile_up.actual_part_degrees_of_freedom().at(&p2_),
-        Componentwise(AlmostEquals(RigidPileUp::origin +
-                                       Displacement<RigidPileUp>(
+        pile_up.actual_part_rigid_motion().at(&p2_)({RigidPart::origin,
+                                                     RigidPart::unmoving}),
+        Componentwise(AlmostEquals(NonRotatingPileUp::origin +
+                                       Displacement<NonRotatingPileUp>(
                                            {5.0 / 3.0 * Metre,
                                             1.0 * Metre,
                                             1.0 / 3.0 * Metre}), 3),
-                      AlmostEquals(Velocity<RigidPileUp>(
+                      AlmostEquals(Velocity<NonRotatingPileUp>(
                                        {50.0 / 3.0 * Metre / Second,
                                         10.0 * Metre / Second,
-                                        10.0 / 3.0 * Metre / Second}), 5)));
+                                        10.0 / 3.0 * Metre / Second}), 17)));
 
-    // Centre of mass of |p1_| and |p2_| in |ApparentBubble|, in SI units:
+    // Centre of mass of |p1_| and |p2_| in |Apparent|, in SI units:
     //   {1 / 9, -1 / 3, -2 / 9} {10 / 9, -10 / 3, -20 / 9}
-    pile_up.SetPartApparentDegreesOfFreedom(
-        &p1_,
-        DegreesOfFreedom<ApparentBubble>(
-            ApparentBubble::origin +
-                Displacement<ApparentBubble>({-11.0 / 3.0 * Metre,
-                                              -1.0 * Metre,
-                                              2.0 / 3.0 * Metre}),
-            Velocity<ApparentBubble>({-110.0 / 3.0 * Metre / Second,
-                                      -10.0 * Metre / Second,
-                                      20.0 / 3.0 * Metre / Second})));
-    pile_up.SetPartApparentDegreesOfFreedom(
-        &p2_,
-        DegreesOfFreedom<ApparentBubble>(
-            ApparentBubble::origin +
-                Displacement<ApparentBubble>({2.0 * Metre,
-                                              0.0 * Metre,
-                                              -2.0 / 3.0 * Metre}),
-            Velocity<ApparentBubble>({20.0 * Metre / Second,
-                                      0.0 * Metre / Second,
-                                      -20.0 / 3.0 * Metre / Second})));
+    DegreesOfFreedom<Apparent> const p1_dof(
+        Apparent::origin +
+            Displacement<Apparent>(
+                {-11.0 / 3.0 * Metre, -1.0 * Metre, 2.0 / 3.0 * Metre}),
+        Velocity<Apparent>({-110.0 / 3.0 * Metre / Second,
+                            -10.0 * Metre / Second,
+                            20.0 / 3.0 * Metre / Second}));
+    DegreesOfFreedom<Apparent> const p2_dof(
+        Apparent::origin + Displacement<Apparent>(
+                               {2.0 * Metre, 0.0 * Metre, -2.0 / 3.0 * Metre}),
+        Velocity<Apparent>({20.0 * Metre / Second,
+                            0.0 * Metre / Second,
+                            -20.0 / 3.0 * Metre / Second}));
+    pile_up.SetPartApparentRigidMotion(
+        &p1_, RigidMotion<RigidPart, Apparent>::MakeNonRotatingMotion(p1_dof));
+    pile_up.SetPartApparentRigidMotion(
+        &p2_, RigidMotion<RigidPart, Apparent>::MakeNonRotatingMotion(p2_dof));
 
     EXPECT_THAT(
-        pile_up.apparent_part_degrees_of_freedom().at(&p1_),
-        Componentwise(AlmostEquals(ApparentBubble::origin +
-                                       Displacement<ApparentBubble>(
-                                           {-11.0 / 3.0 * Metre,
-                                            -1.0 * Metre,
-                                            2.0 / 3.0 * Metre}), 0),
-                      AlmostEquals(Velocity<ApparentBubble>(
-                                       {-110.0 / 3.0 * Metre / Second,
-                                        -10.0 * Metre / Second,
-                                        20.0 / 3.0 * Metre / Second}), 0)));
+        pile_up.apparent_part_rigid_motion().at(&p1_)(
+            {RigidPart::origin, RigidPart::unmoving}),
+        Componentwise(
+            AlmostEquals(
+                Apparent::origin +
+                    Displacement<Apparent>(
+                        {-11.0 / 3.0 * Metre, -1.0 * Metre, 2.0 / 3.0 * Metre}),
+                0),
+            AlmostEquals(Velocity<Apparent>({-110.0 / 3.0 * Metre / Second,
+                                             -10.0 * Metre / Second,
+                                             20.0 / 3.0 * Metre / Second}),
+                         4)));
     EXPECT_THAT(
-        pile_up.apparent_part_degrees_of_freedom().at(&p2_),
-        Componentwise(AlmostEquals(ApparentBubble::origin +
-                                       Displacement<ApparentBubble>(
-                                           {2.0 * Metre,
-                                            0.0 * Metre,
-                                            -2.0 / 3.0 * Metre}), 0),
-                      AlmostEquals(Velocity<ApparentBubble>(
-                                       {20.0 * Metre / Second,
-                                        0.0 * Metre / Second,
-                                        -20.0 / 3.0 * Metre / Second}), 0)));
+        pile_up.apparent_part_rigid_motion().at(&p2_)(
+            {RigidPart::origin, RigidPart::unmoving}),
+        Componentwise(
+            AlmostEquals(
+                Apparent::origin +
+                    Displacement<Apparent>(
+                        {2.0 * Metre, 0.0 * Metre, -2.0 / 3.0 * Metre}),
+                0),
+            AlmostEquals(Velocity<Apparent>({20.0 * Metre / Second,
+                                             0.0 * Metre / Second,
+                                             -20.0 / 3.0 * Metre / Second}),
+                         4)));
   }
 
   void CheckPreAdvanceTimeInvariants(TestablePileUp& pile_up) {
-    EXPECT_THAT(
-        pile_up.actual_part_degrees_of_freedom().at(&p1_),
-        Componentwise(AlmostEquals(RigidPileUp::origin +
-                                       Displacement<RigidPileUp>(
-                                           {-34.0 / 9.0 * Metre,
-                                            -2.0 / 3.0 * Metre,
-                                            8.0 / 9.0 * Metre}), 1),
-                      AlmostEquals(Velocity<RigidPileUp>(
-                                       {-340.0 / 9.0 * Metre / Second,
-                                        -20.0 / 3.0 * Metre / Second,
-                                        80.0 / 9.0 * Metre / Second}), 1)));
-    EXPECT_THAT(
-        pile_up.actual_part_degrees_of_freedom().at(&p2_),
-        Componentwise(AlmostEquals(RigidPileUp::origin +
-                                       Displacement<RigidPileUp>(
-                                           {17.0 / 9.0 * Metre,
-                                            1.0 / 3.0 * Metre,
-                                            -4.0 / 9.0 * Metre}), 0),
-                      AlmostEquals(Velocity<RigidPileUp>(
-                                       {170.0 / 9.0 * Metre / Second,
-                                        10.0 / 3.0 * Metre / Second,
-                                        -40.0 / 9.0 * Metre / Second}), 0)));
-    EXPECT_THAT(pile_up.apparent_part_degrees_of_freedom(), IsEmpty());
+    EXPECT_THAT(pile_up.actual_part_rigid_motion().at(&p1_)(
+                    {RigidPart::origin, RigidPart::unmoving}),
+                Componentwise(AlmostEquals(NonRotatingPileUp::origin +
+                                               Displacement<NonRotatingPileUp>(
+                                                   {-34.0 / 9.0 * Metre,
+                                                    -2.0 / 3.0 * Metre,
+                                                    8.0 / 9.0 * Metre}),
+                                           1122),
+                              AlmostEquals(Velocity<NonRotatingPileUp>(
+                                               {-340.0 / 9.0 * Metre / Second,
+                                                -20.0 / 3.0 * Metre / Second,
+                                                80.0 / 9.0 * Metre / Second}),
+                                           1372)));
+    EXPECT_THAT(pile_up.actual_part_rigid_motion().at(&p2_)(
+                    {RigidPart::origin, RigidPart::unmoving}),
+                Componentwise(AlmostEquals(NonRotatingPileUp::origin +
+                                               Displacement<NonRotatingPileUp>(
+                                                   {17.0 / 9.0 * Metre,
+                                                    1.0 / 3.0 * Metre,
+                                                    -4.0 / 9.0 * Metre}),
+                                           1122),
+                              AlmostEquals(Velocity<NonRotatingPileUp>(
+                                               {170.0 / 9.0 * Metre / Second,
+                                                10.0 / 3.0 * Metre / Second,
+                                                -40.0 / 9.0 * Metre / Second}),
+                                           1373)));
+    EXPECT_THAT(pile_up.apparent_part_rigid_motion(), IsEmpty());
   }
 
   MockFunction<void()> deletion_callback_;
@@ -223,6 +258,8 @@ class PileUpTest : public testing::Test {
   PartId const part_id2_ = 222;
   Mass const mass1_ = 1 * Kilogram;
   Mass const mass2_ = 2 * Kilogram;
+  InertiaTensor<RigidPart> inertia_tensor1_;
+  InertiaTensor<RigidPart> inertia_tensor2_;
 
   // Centre of mass of |p1_| and |p2_| in |Barycentric|, in SI units:
   //   {13 / 3, 4, 11 / 3} {130 / 3, 40, 110 / 3}
@@ -241,13 +278,15 @@ class PileUpTest : public testing::Test {
   Part p2_;
 };
 
+#if 0
+
 // Exercises the entire lifecycle of a |PileUp| that is subject to an intrinsic
 // force.
 TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
   MockEphemeris<Barycentric> ephemeris;
-  p1_.increment_intrinsic_force(
+  p1_.apply_intrinsic_force(
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
-  p2_.increment_intrinsic_force(
+  p2_.apply_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(1);
   TestablePileUp pile_up({&p1_, &p2_},
@@ -262,7 +301,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
 
   CheckPreDeformPileUpInvariants(pile_up);
 
-  pile_up.DeformPileUpIfNeeded();
+  pile_up.DeformPileUpIfNeeded(astronomy::J2000 + 1 * Second);
 
   CheckPreAdvanceTimeInvariants(pile_up);
 
@@ -283,28 +322,30 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
   EXPECT_EQ(p1_.psychohistory_begin(), p1_.psychohistory_end());
   EXPECT_THAT(
       p1_.history_begin()->degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {-25.0 / 9.0 * Metre,
-                                          40.0 / 3.0 * Metre,
-                                          101.0 / 9.0 * Metre}), 1),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {-250.0 / 9.0 * Metre / Second,
-                                      400.0 / 3.0 * Metre / Second,
-                                      1010.0 / 9.0 * Metre / Second}), 1)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({-25.0 / 9.0 * Metre,
+                                                      40.0 / 3.0 * Metre,
+                                                      101.0 / 9.0 * Metre}),
+                       69),
+          AlmostEquals(Velocity<Barycentric>({-250.0 / 9.0 * Metre / Second,
+                                              400.0 / 3.0 * Metre / Second,
+                                              1010.0 / 9.0 * Metre / Second}),
+                       88)));
   EXPECT_EQ(++p2_.history_begin(), p2_.history_end());
   EXPECT_EQ(p2_.psychohistory_begin(), p2_.psychohistory_end());
   EXPECT_THAT(
       p2_.history_begin()->degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {26.0 / 9.0 * Metre,
-                                          43.0 / 3.0 * Metre,
-                                          89.0 / 9.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {260.0 / 9.0 * Metre / Second,
-                                      430.0 / 3.0 * Metre / Second,
-                                      890.0 / 9.0 * Metre / Second}), 0)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({26.0 / 9.0 * Metre,
+                                                      43.0 / 3.0 * Metre,
+                                                      89.0 / 9.0 * Metre}),
+                       35),
+          AlmostEquals(Velocity<Barycentric>({260.0 / 9.0 * Metre / Second,
+                                              430.0 / 3.0 * Metre / Second,
+                                              890.0 / 9.0 * Metre / Second}),
+                       43)));
   EXPECT_EQ(1, pile_up.psychohistory()->Size());
   EXPECT_THAT(
       pile_up.psychohistory()->back().degrees_of_freedom,
@@ -322,26 +363,28 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
 
   EXPECT_THAT(
       p1_.degrees_of_freedom(),
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {-25.0 / 9.0 * Metre,
-                                          40.0 / 3.0 * Metre,
-                                          101.0 / 9.0 * Metre}), 1),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {-250.0 / 9.0 * Metre / Second,
-                                      400.0 / 3.0 * Metre / Second,
-                                      1010.0 / 9.0 * Metre / Second}), 1)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({-25.0 / 9.0 * Metre,
+                                                      40.0 / 3.0 * Metre,
+                                                      101.0 / 9.0 * Metre}),
+                       69),
+          AlmostEquals(Velocity<Barycentric>({-250.0 / 9.0 * Metre / Second,
+                                              400.0 / 3.0 * Metre / Second,
+                                              1010.0 / 9.0 * Metre / Second}),
+                       82)));
   EXPECT_THAT(
       p2_.degrees_of_freedom(),
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {26.0 / 9.0 * Metre,
-                                          43.0 / 3.0 * Metre,
-                                          89.0 / 9.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {260.0 / 9.0 * Metre / Second,
-                                      430.0 / 3.0 * Metre / Second,
-                                      890.0 / 9.0 * Metre / Second}), 0)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({26.0 / 9.0 * Metre,
+                                                      43.0 / 3.0 * Metre,
+                                                      89.0 / 9.0 * Metre}),
+                       35),
+          AlmostEquals(Velocity<Barycentric>({260.0 / 9.0 * Metre / Second,
+                                              430.0 / 3.0 * Metre / Second,
+                                              890.0 / 9.0 * Metre / Second}),
+                       46)));
 }
 
 // Same as above, but without an intrinsic force.
@@ -359,7 +402,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
 
   CheckPreDeformPileUpInvariants(pile_up);
 
-  pile_up.DeformPileUpIfNeeded();
+  pile_up.DeformPileUpIfNeeded(astronomy::J2000 + 1 * Second);
 
   CheckPreAdvanceTimeInvariants(pile_up);
 
@@ -414,11 +457,11 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                            Displacement<Barycentric>({-24.1 / 9.0 * Metre,
                                                       40.3 / 3.0 * Metre,
                                                       101.3 / 9.0 * Metre}),
-                       1),
+                       69),
           AlmostEquals(Velocity<Barycentric>({-249.1 / 9.0 * Metre / Second,
                                               400.3 / 3.0 * Metre / Second,
                                               1010.3 / 9.0 * Metre / Second}),
-                       1)));
+                       86)));
   EXPECT_THAT(
       (++p1_.history_begin())->degrees_of_freedom,
       Componentwise(
@@ -426,57 +469,61 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                            Displacement<Barycentric>({-23.2 / 9.0 * Metre,
                                                       40.6 / 3.0 * Metre,
                                                       101.6 / 9.0 * Metre}),
-                       1),
+                       69),
           AlmostEquals(Velocity<Barycentric>({-248.2 / 9.0 * Metre / Second,
                                               400.6 / 3.0 * Metre / Second,
                                               1010.6 / 9.0 * Metre / Second}),
-                       1)));
+                       88)));
   EXPECT_THAT(
       p1_.psychohistory_begin()->degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {-25.0 / 9.0 * Metre,
-                                          40.0 / 3.0 * Metre,
-                                          101.0 / 9.0 * Metre}), 1),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {-250.0 / 9.0 * Metre / Second,
-                                      400.0 / 3.0 * Metre / Second,
-                                      1010.0 / 9.0 * Metre / Second}), 1)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({-25.0 / 9.0 * Metre,
+                                                      40.0 / 3.0 * Metre,
+                                                      101.0 / 9.0 * Metre}),
+                       69),
+          AlmostEquals(Velocity<Barycentric>({-250.0 / 9.0 * Metre / Second,
+                                              400.0 / 3.0 * Metre / Second,
+                                              1010.0 / 9.0 * Metre / Second}),
+                       88)));
   EXPECT_EQ(++(++p2_.history_begin()), p2_.history_end());
   EXPECT_EQ(++p2_.psychohistory_begin(), p2_.psychohistory_end());
   EXPECT_THAT(
       p2_.history_begin()->degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {26.9 / 9.0 * Metre,
-                                          43.3 / 3.0 * Metre,
-                                          89.3 / 9.0 * Metre}), 1),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {260.9 / 9.0 * Metre / Second,
-                                      430.3 / 3.0 * Metre / Second,
-                                      890.3 / 9.0 * Metre / Second}), 1)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({26.9 / 9.0 * Metre,
+                                                      43.3 / 3.0 * Metre,
+                                                      89.3 / 9.0 * Metre}),
+                       35),
+          AlmostEquals(Velocity<Barycentric>({260.9 / 9.0 * Metre / Second,
+                                              430.3 / 3.0 * Metre / Second,
+                                              890.3 / 9.0 * Metre / Second}),
+                       44)));
   EXPECT_THAT(
       (++p2_.history_begin())->degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {27.8 / 9.0 * Metre,
-                                          43.6 / 3.0 * Metre,
-                                          89.6 / 9.0 * Metre}), 1),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {261.8 / 9.0 * Metre / Second,
-                                      430.6 / 3.0 * Metre / Second,
-                                      890.6 / 9.0 * Metre / Second}), 1)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({27.8 / 9.0 * Metre,
+                                                      43.6 / 3.0 * Metre,
+                                                      89.6 / 9.0 * Metre}),
+                       35),
+          AlmostEquals(Velocity<Barycentric>({261.8 / 9.0 * Metre / Second,
+                                              430.6 / 3.0 * Metre / Second,
+                                              890.6 / 9.0 * Metre / Second}),
+                       42)));
   EXPECT_THAT(
       p2_.psychohistory_begin()->degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {26.0 / 9.0 * Metre,
-                                          43.0 / 3.0 * Metre,
-                                          89.0 / 9.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {260.0 / 9.0 * Metre / Second,
-                                      430.0 / 3.0 * Metre / Second,
-                                      890.0 / 9.0 * Metre / Second}), 0)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({26.0 / 9.0 * Metre,
+                                                      43.0 / 3.0 * Metre,
+                                                      89.0 / 9.0 * Metre}),
+                       35),
+          AlmostEquals(Velocity<Barycentric>({260.0 / 9.0 * Metre / Second,
+                                              430.0 / 3.0 * Metre / Second,
+                                              890.0 / 9.0 * Metre / Second}),
+                       43)));
   EXPECT_EQ(2, pile_up.psychohistory()->Size());
   EXPECT_THAT(
       pile_up.psychohistory()->front().degrees_of_freedom,
@@ -505,27 +552,31 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
 
   EXPECT_THAT(
       p1_.degrees_of_freedom(),
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {-25.0 / 9.0 * Metre,
-                                          40.0 / 3.0 * Metre,
-                                          101.0 / 9.0 * Metre}), 1),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {-250.0 / 9.0 * Metre / Second,
-                                      400.0 / 3.0 * Metre / Second,
-                                      1010.0 / 9.0 * Metre / Second}), 1)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({-25.0 / 9.0 * Metre,
+                                                      40.0 / 3.0 * Metre,
+                                                      101.0 / 9.0 * Metre}),
+                       69),
+          AlmostEquals(Velocity<Barycentric>({-250.0 / 9.0 * Metre / Second,
+                                              400.0 / 3.0 * Metre / Second,
+                                              1010.0 / 9.0 * Metre / Second}),
+                       82)));
   EXPECT_THAT(
       p2_.degrees_of_freedom(),
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {26.0 / 9.0 * Metre,
-                                          43.0 / 3.0 * Metre,
-                                          89.0 / 9.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {260.0 / 9.0 * Metre / Second,
-                                      430.0 / 3.0 * Metre / Second,
-                                      890.0 / 9.0 * Metre / Second}), 0)));
+      Componentwise(
+          AlmostEquals(Barycentric::origin +
+                           Displacement<Barycentric>({26.0 / 9.0 * Metre,
+                                                      43.0 / 3.0 * Metre,
+                                                      89.0 / 9.0 * Metre}),
+                       35),
+          AlmostEquals(Velocity<Barycentric>({260.0 / 9.0 * Metre / Second,
+                                              430.0 / 3.0 * Metre / Second,
+                                              890.0 / 9.0 * Metre / Second}),
+                       46)));
 }
+
+#endif
 
 TEST_F(PileUpTest, MidStepIntrinsicForce) {
   // An empty ephemeris; the parameters don't matter, since there are no bodies
@@ -539,7 +590,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
           Barycentric::origin +
               Displacement<Barycentric>(
                   {std::pow(2, 100) * Metre, 0 * Metre, 0 * Metre}),
-          Velocity<Barycentric>{}}};
+          Barycentric::unmoving}};
   Ephemeris<Barycentric> ephemeris{
       std::move(bodies),
       initial_state,
@@ -575,12 +626,14 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
 
   pile_up.AdvanceTime(astronomy::J2000 + 1.5 * fixed_step);
   pile_up.NudgeParts();
-  EXPECT_THAT(p1_.degrees_of_freedom().velocity(), Eq(old_velocity));
+  EXPECT_THAT(p1_.degrees_of_freedom().velocity(),
+              AlmostEquals(old_velocity, 4));
 
   Vector<Acceleration, Barycentric> const a{{1729 * Metre / Pow<2>(Second),
                                              -168 * Metre / Pow<2>(Second),
                                              504 * Metre / Pow<2>(Second)}};
-  pile_up.set_intrinsic_force(p1_.mass() * a);
+  p1_.apply_intrinsic_force(p1_.mass() * a);
+  pile_up.RecomputeFromParts();
   pile_up.AdvanceTime(astronomy::J2000 + 2 * fixed_step);
   pile_up.NudgeParts();
   EXPECT_THAT(p1_.degrees_of_freedom().velocity(),
@@ -589,9 +642,9 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
 
 TEST_F(PileUpTest, Serialization) {
   MockEphemeris<Barycentric> ephemeris;
-  p1_.increment_intrinsic_force(
+  p1_.apply_intrinsic_force(
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
-  p2_.increment_intrinsic_force(
+  p2_.apply_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_, &p2_},
@@ -607,9 +660,9 @@ TEST_F(PileUpTest, Serialization) {
   EXPECT_EQ(2, message.part_id_size());
   EXPECT_EQ(part_id1_, message.part_id(0));
   EXPECT_EQ(part_id2_, message.part_id(1));
-  EXPECT_EQ(1, message.history().timeline_size());
-  EXPECT_EQ(2, message.actual_part_degrees_of_freedom().size());
-  EXPECT_TRUE(message.apparent_part_degrees_of_freedom().empty());
+  EXPECT_EQ(1, message.history().zfp().timeline_size());
+  EXPECT_EQ(2, message.actual_part_rigid_motion().size());
+  EXPECT_TRUE(message.apparent_part_rigid_motion().empty());
 
   auto const part_id_to_part = [this](PartId const part_id) {
     if (part_id == part_id1_) {
@@ -633,9 +686,9 @@ TEST_F(PileUpTest, Serialization) {
 
 TEST_F(PileUpTest, SerializationCompatibility) {
   MockEphemeris<Barycentric> ephemeris;
-  p1_.increment_intrinsic_force(
+  p1_.apply_intrinsic_force(
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
-  p2_.increment_intrinsic_force(
+  p2_.apply_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_, &p2_},
@@ -650,7 +703,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
 
   // Clear the children to simulate pre-Cesàro serialization.
   message.mutable_history()->clear_children();
-  EXPECT_EQ(1, message.history().timeline_size());
+  EXPECT_EQ(1, message.history().zfp().timeline_size());
 
   auto const part_id_to_part = [this](PartId const part_id) {
     if (part_id == part_id1_) {

@@ -68,7 +68,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
   // The coefficients are applied to powers of argument.
   explicit constexpr PolynomialInMonomialBasis(
-      Coefficients const& coefficients);
+      Coefficients coefficients);
 
   FORCE_INLINE(inline) Value
   Evaluate(Argument const& argument) const override;
@@ -140,7 +140,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 
   // The coefficients are relative to origin; in other words they are applied to
   // powers of (argument - origin).
-  constexpr PolynomialInMonomialBasis(Coefficients const& coefficients,
+  constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Point<Argument> const& origin);
 
   FORCE_INLINE(inline) Value

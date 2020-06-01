@@ -6,12 +6,18 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/flags.hpp"
+#include "base/not_null.hpp"
+#include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/fit_hermite_spline.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -20,7 +26,7 @@ namespace internal_forkable {
 using geometry::Instant;
 
 template<typename Frame>
-Instant const& ForkableTraits<DiscreteTrajectory<Frame>>::time(
+Instant const& DiscreteTrajectoryTraits<Frame>::time(
     TimelineConstIterator const it) {
   return it->first;
 }
@@ -57,8 +63,14 @@ namespace internal_discrete_trajectory {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
+using base::Flags;
 using base::make_not_null_unique;
+using base::ZfpCompressor;
+using geometry::Displacement;
 using numerics::FitHermiteSpline;
+using quantities::Time;
+using quantities::si::Metre;
+using quantities::si::Second;
 
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*>
@@ -332,6 +344,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
+template<typename, typename>
 not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
@@ -492,13 +505,79 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
-  Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
-  for (auto const& [instant, degrees_of_freedom] : timeline_) {
-    auto const instantaneous_degrees_of_freedom = message->add_timeline();
-    instant.WriteToMessage(instantaneous_degrees_of_freedom->mutable_instant());
-    degrees_of_freedom.WriteToMessage(
-        instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
+  Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
+      WriteSubTreeToMessage(message, forks);
+  if (Flags::IsPresent("zfp", "off")) {
+    for (auto const& [instant, degrees_of_freedom] : timeline_) {
+      auto const instantaneous_degrees_of_freedom = message->add_timeline();
+      instant.WriteToMessage(
+          instantaneous_degrees_of_freedom->mutable_instant());
+      degrees_of_freedom.WriteToMessage(
+          instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
+    }
+  } else {
+    int const timeline_size = timeline_.size();
+    auto* const zfp = message->mutable_zfp();
+    zfp->set_timeline_size(timeline_size);
+
+    // The timeline data is made dimensionless and stored in separate arrays per
+    // coordinate.  We expect strong correlations within a coordinate over time,
+    // but not between coordinates.
+    std::vector<double> t;
+    std::vector<double> qx;
+    std::vector<double> qy;
+    std::vector<double> qz;
+    std::vector<double> px;
+    std::vector<double> py;
+    std::vector<double> pz;
+    t.reserve(timeline_size);
+    qx.reserve(timeline_size);
+    qy.reserve(timeline_size);
+    qz.reserve(timeline_size);
+    px.reserve(timeline_size);
+    py.reserve(timeline_size);
+    pz.reserve(timeline_size);
+    std::optional<Instant> previous_instant;
+    Time max_Δt;
+    std::string* const zfp_timeline = zfp->mutable_timeline();
+    for (auto const& [instant, degrees_of_freedom] : timeline_) {
+      auto const q = degrees_of_freedom.position() - Frame::origin;
+      auto const p = degrees_of_freedom.velocity();
+      t.push_back((instant - Instant{}) / Second);
+      qx.push_back(q.coordinates().x / Metre);
+      qy.push_back(q.coordinates().y / Metre);
+      qz.push_back(q.coordinates().z / Metre);
+      px.push_back(p.coordinates().x / (Metre / Second));
+      py.push_back(p.coordinates().y / (Metre / Second));
+      pz.push_back(p.coordinates().z / (Metre / Second));
+      if (previous_instant.has_value()) {
+        max_Δt = std::max(max_Δt, instant - *previous_instant);
+      }
+      previous_instant = instant;
+    }
+
+    // Times are exact.
+    ZfpCompressor time_compressor(0);
+    // Lengths are approximated to the downsampling tolerance if downsampling is
+    // enabled, otherwise they are exact.
+    Length const length_tolerance =
+        downsampling_.has_value() ? downsampling_->tolerance() : Length();
+    ZfpCompressor length_compressor(length_tolerance / Metre);
+    // Speeds are approximated based on the length tolerance and the maximum
+    // step in the timeline.
+    ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
+                                         (Metre / Second));
+
+    ZfpCompressor::WriteVersion(message);
+    time_compressor.WriteToMessageMultidimensional<2>(t, zfp_timeline);
+    length_compressor.WriteToMessageMultidimensional<2>(qx, zfp_timeline);
+    length_compressor.WriteToMessageMultidimensional<2>(qy, zfp_timeline);
+    length_compressor.WriteToMessageMultidimensional<2>(qz, zfp_timeline);
+    speed_compressor.WriteToMessageMultidimensional<2>(px, zfp_timeline);
+    speed_compressor.WriteToMessageMultidimensional<2>(py, zfp_timeline);
+    speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
   }
+
   if (downsampling_.has_value()) {
     downsampling_->WriteToMessage(message->mutable_downsampling(), timeline_);
   }
@@ -508,20 +587,55 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
-  for (auto timeline_it = message.timeline().begin();
-       timeline_it != message.timeline().end();
-       ++timeline_it) {
-    Append(Instant::ReadFromMessage(timeline_it->instant()),
-           DegreesOfFreedom<Frame>::ReadFromMessage(
-               timeline_it->degrees_of_freedom()));
+  bool const is_pre_frobenius = !message.has_zfp();
+  if (is_pre_frobenius) {
+    for (auto const& instantaneous_dof : message.timeline()) {
+      Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
+             DegreesOfFreedom<Frame>::ReadFromMessage(
+                 instantaneous_dof.degrees_of_freedom()));
+    }
+  } else {
+    CHECK_EQ(ZFP_CODEC, message.zfp().codec_version());
+    CHECK_EQ(ZFP_VERSION, message.zfp().library_version());
+
+    int const timeline_size = message.zfp().timeline_size();
+    std::vector<double> t(timeline_size);
+    std::vector<double> qx(timeline_size);
+    std::vector<double> qy(timeline_size);
+    std::vector<double> qz(timeline_size);
+    std::vector<double> px(timeline_size);
+    std::vector<double> py(timeline_size);
+    std::vector<double> pz(timeline_size);
+    std::string_view zfp_timeline(message.zfp().timeline().data(),
+                                  message.zfp().timeline().size());
+
+    ZfpCompressor decompressor;
+    ZfpCompressor::ReadVersion(message);
+    decompressor.ReadFromMessageMultidimensional<2>(t, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(qx, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(qy, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(qz, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(px, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(py, zfp_timeline);
+    decompressor.ReadFromMessageMultidimensional<2>(pz, zfp_timeline);
+
+    for (int i = 0; i < timeline_size; ++i) {
+      Position<Frame> const q =
+          Frame::origin +
+          Displacement<Frame>({qx[i] * Metre, qy[i] * Metre, qz[i] * Metre});
+      Velocity<Frame> const p({px[i] * (Metre / Second),
+                               py[i] * (Metre / Second),
+                               pz[i] * (Metre / Second)});
+      Append(Instant() + t[i] * Second, DegreesOfFreedom<Frame>(q, p));
+    }
   }
   if (message.has_downsampling()) {
     CHECK(this->is_root());
     downsampling_.emplace(
         Downsampling::ReadFromMessage(message.downsampling(), timeline_));
   }
-  Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message,
-                                                                 forks);
+  Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
+      FillSubTreeFromMessage(message, forks);
 }
 
 template<typename Frame>

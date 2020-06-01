@@ -3,9 +3,9 @@
 
 #include "testing_utilities/almost_equals.hpp"
 
-#include <float.h>
-#include <math.h>
-#include <stdint.h>
+#include <cfloat>
+#include <cmath>
+#include <cstdint>
 
 #include <algorithm>
 #include <limits>

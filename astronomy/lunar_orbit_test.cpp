@@ -8,7 +8,6 @@
 #include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
-#include "base/file.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
@@ -41,10 +40,11 @@ using astronomy::ICRS;
 using astronomy::J2000;
 using base::dynamic_cast_not_null;
 using base::not_null;
-using base::OFStream;
 using geometry::AngularVelocity;
+using geometry::Arbitrary;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
@@ -102,10 +102,10 @@ namespace astronomy {
 
 // A minimum bounding rectangle for a set of values of the eccentricity vector.
 struct EccentricityVectorRange {
-  double min_e_cos_ω = +Infinity<double>();
-  double max_e_cos_ω = -Infinity<double>();
-  double min_e_sin_ω = +Infinity<double>();
-  double max_e_sin_ω = -Infinity<double>();
+  double min_e_cos_ω = +Infinity<double>;
+  double max_e_cos_ω = -Infinity<double>;
+  double min_e_sin_ω = +Infinity<double>;
+  double max_e_sin_ω = -Infinity<double>;
 };
 
 struct GeopotentialTruncation {
@@ -146,7 +146,7 @@ std::ostream& operator<<(std::ostream& o, GeopotentialTruncation truncation) {
 class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
  protected:
   LunarOrbitTest()
-      : solar_system_2000_([this]() {
+      : solar_system_2000_([]() {
           SolarSystem<ICRS> result(
               SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
               SOLUTION_DIR / "astronomy" /
@@ -167,27 +167,21 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
         moon_(dynamic_cast_not_null<OblateBody<ICRS> const*>(
             solar_system_2000_.massive_body(*ephemeris_, "Moon"))),
         lunar_frame_(ephemeris_.get(), moon_),
-        selenocentre_(Selenocentric::origin, Velocity<Selenocentric>{}) {
+        selenocentre_(Selenocentric::origin, Selenocentric::unmoving) {
     google::LogToStderr();
   }
-
-  enum class LunarTag { surface, selenocentric };
 
   // This Moon-centred, Moon-fixed reference frame has the x axis pointing
   // towards the Earth, and the y axis in the direction of the velocity of the
   // Earth, see figure 1. of Russell and Lara (2006).
-  using LunarSurface = Frame<LunarTag,
-                             LunarTag::surface,
-                             /*frame_is_inertial=*/false>;
+  using LunarSurface = Frame<enum class LunarSurfaceTag, Arbitrary>;
 
   // This reference frame is non-rotating, with its origin at the selenocentre.
   // The axes are those of LunarSurface at J2000.
   // Note that this frame is not actually inertial, but we want to use it with
   // |KeplerOrbit|.  Perhaps we should have a concept of non-rotating, and
   // |KeplerOrbit| should check that; this is good enough for a test.
-  using Selenocentric = Frame<LunarTag,
-                              LunarTag::selenocentric,
-                              /*frame_is_inertial=*/true>;
+  using Selenocentric = Frame<enum class SelenocentricTag, Inertial>;
 
   // We do not use a |BodyCentredNonRotatingDynamicFrame| since that would use
   // ICRS axes.
@@ -198,7 +192,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
             Selenocentric::origin,
             OrthogonalMap<LunarSurface, Selenocentric>::Identity() *
                 lunar_frame_.ToThisFrameAtTime(J2000).orthogonal_map()),
-        /*angular_velocity_of_to_frame=*/AngularVelocity<ICRS>{},
+        /*angular_velocity_of_to_frame=*/ICRS::nonrotating,
         /*velocity_of_to_frame_origin=*/
         ephemeris_->trajectory(moon_)->EvaluateVelocity(t));
   }
@@ -283,10 +277,11 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   Time const integration_step = 10 * Second;
   LOG(INFO) << "Using a " << GetParam() << " selenopotential field";
 
-  OFStream file(SOLUTION_DIR / "mathematica" /
-                absl::StrCat("lunar_orbit_",
-                             GetParam().DegreeAndOrder(),
-                             ".generated.wl"));
+  mathematica::Logger logger(
+      SOLUTION_DIR / "mathematica" /
+          absl::StrCat(
+              "lunar_orbit_", GetParam().DegreeAndOrder(), ".generated.wl"),
+      /*make_unique=*/false);
 
   // We work with orbit C from Russell and Lara (2006), Repeat Ground Track
   // Lunar Orbits in the Full-Potential Plus Third-Body Problem.
@@ -317,8 +312,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3_⑴));
   EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(9.0e-4_⑴));
 
-  file << mathematica::Assign("tu", TU / Second);
-  file << mathematica::Assign("lu", LU / Metre);
+  logger.Set("tu", TU, mathematica::ExpressIn(Second));
+  logger.Set("lu", LU, mathematica::ExpressIn(Metre));
 
   Time const period = 2 * π * TU;
   int const orbits_per_period = 328;
@@ -389,16 +384,6 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
         time, lunar_frame_.ToThisFrameAtTime(time)(degrees_of_freedom));
   }
 
-  // Drop the units when logging to Mathematica, because it is ridiculously
-  // slow at parsing them.
-  std::vector<double> mma_times;
-  std::vector<double> mma_semimajor_axes;
-  std::vector<double> mma_eccentricities;
-  std::vector<double> mma_inclinations;
-  std::vector<double> mma_arguments_of_periapsides;
-  std::vector<double> mma_longitudes_of_ascending_nodes;
-  std::vector<Vector<double, LunarSurface>> mma_displacements;
-
   for (Instant t = J2000; t <= J2000 + 2 * period; t += period / 50'000) {
     auto const elements = KeplerOrbit<Selenocentric>(
         *moon_,
@@ -407,27 +392,27 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
             trajectory.EvaluateDegreesOfFreedom(t)) - selenocentre_,
         t).elements_at_epoch();
 
-    mma_times.push_back((t - J2000) / Second);
-    mma_semimajor_axes.push_back(*elements.semimajor_axis / Metre);
-    mma_inclinations.push_back(elements.inclination / Radian);
-    mma_eccentricities.push_back(*elements.eccentricity);
-    mma_arguments_of_periapsides.push_back(*elements.argument_of_periapsis /
-                                           Radian);
-    mma_longitudes_of_ascending_nodes.push_back(
-        elements.longitude_of_ascending_node / Radian);
-    mma_displacements.push_back(
-        (surface_trajectory.EvaluatePosition(t) - LunarSurface::origin) /
-        Metre);
+    logger.Append("times",
+                  t - J2000,
+                  mathematica::ExpressIn(Second));
+    logger.Append("semimajorAxes",
+                  *elements.semimajor_axis,
+                  mathematica::ExpressIn(Metre));
+    logger.Append("inclinations",
+                  elements.inclination,
+                  mathematica::ExpressIn(Radian));
+    logger.Append("eccentricities",
+                  *elements.eccentricity);
+    logger.Append("arguments",
+                  *elements.argument_of_periapsis,
+                  mathematica::ExpressIn(Radian));
+    logger.Append("longitudesOfAscendingNodes",
+                  elements.longitude_of_ascending_node,
+                  mathematica::ExpressIn(Radian));
+    logger.Append("displacements",
+                  surface_trajectory.EvaluatePosition(t) - LunarSurface::origin,
+                  mathematica::ExpressIn(Metre));
   }
-
-  file << mathematica::Assign("times", mma_times);
-  file << mathematica::Assign("semimajorAxes", mma_semimajor_axes);
-  file << mathematica::Assign("eccentricities", mma_eccentricities);
-  file << mathematica::Assign("inclinations", mma_inclinations);
-  file << mathematica::Assign("arguments", mma_arguments_of_periapsides);
-  file << mathematica::Assign("longitudesOfAscendingNodes",
-                              mma_longitudes_of_ascending_nodes);
-  file << mathematica::Assign("displacements", mma_displacements);
 
   DiscreteTrajectory<LunarSurface> ascending_nodes;
   DiscreteTrajectory<LunarSurface> descending_nodes;
@@ -462,11 +447,6 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   for (auto const& nodes : {Nodes{"ascending", ascending_nodes},
                             Nodes{"descending", descending_nodes}}) {
-    std::vector<double> mma_node_times;
-    std::vector<Vector<double, LunarSurface>> mma_node_displacements;
-    std::vector<double> mma_node_arguments_of_periapsides;
-    std::vector<double> mma_node_eccentricities;
-
     for (auto const& [time, degrees_of_freedom] : nodes.trajectory) {
       auto const elements = KeplerOrbit<Selenocentric>(
           *moon_,
@@ -475,44 +455,37 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
               trajectory.EvaluateDegreesOfFreedom(time)) - selenocentre_,
           time).elements_at_epoch();
 
-      mma_node_times.push_back((time - J2000) / Second);
-      mma_node_displacements.push_back(
-          (degrees_of_freedom.position() - LunarSurface::origin) / Metre);
-      mma_node_arguments_of_periapsides.push_back(
-          *elements.argument_of_periapsis / Radian);
-      mma_node_eccentricities.push_back(*elements.eccentricity);
+      logger.Append(absl::StrCat(nodes.name, "NodeTimes"),
+                    time - J2000,
+                    mathematica::ExpressIn(Second));
+      logger.Append(absl::StrCat(nodes.name, "NodeDisplacements"),
+                    degrees_of_freedom.position() - LunarSurface::origin,
+                    mathematica::ExpressIn(Metre));
+      logger.Append(absl::StrCat(nodes.name, "NodeArguments"),
+                    *elements.argument_of_periapsis,
+                    mathematica::ExpressIn(Radian));
+      logger.Append(absl::StrCat(nodes.name, "NodeEccentricities"),
+                    *elements.eccentricity);
 
       if (nodes.name == "descending") {
         descending_node_eccentricities.push_back(*elements.eccentricity);
         descending_node_arguments.push_back(*elements.argument_of_periapsis);
       }
     }
-    file << mathematica::Assign(absl::StrCat(nodes.name, "NodeTimes"),
-                                mma_node_times);
-    file << mathematica::Assign(absl::StrCat(nodes.name, "NodeDisplacements"),
-                                mma_node_displacements);
-    file << mathematica::Assign(absl::StrCat(nodes.name, "NodeArguments"),
-                                mma_node_arguments_of_periapsides);
-    file << mathematica::Assign(absl::StrCat(nodes.name, "NodeEccentricities"),
-                                mma_node_eccentricities);
   }
 
   for (auto const& apsides : {Apsides{"apoapsis", apoapsides},
                               Apsides{"periapsis", periapsides}}) {
-    std::vector<double> mma_apsis_times;
-    std::vector<Vector<double, LunarSurface>> mma_apsis_displacements;
-
     for (auto const& [time, degrees_of_freedom] : apsides.trajectory) {
-      mma_apsis_times.push_back((time - J2000) / Second);
-      mma_apsis_displacements.push_back(
-          (lunar_frame_.ToThisFrameAtTime(time).rigid_transformation()(
-               degrees_of_freedom.position()) -
-           LunarSurface::origin) / Metre);
+      logger.Append(absl::StrCat(apsides.name, "Times"),
+                    time - J2000,
+                    mathematica::ExpressIn(Second));
+      logger.Append(absl::StrCat(apsides.name, "Displacements"),
+                    lunar_frame_.ToThisFrameAtTime(time).rigid_transformation()(
+                        degrees_of_freedom.position()) -
+                        LunarSurface::origin,
+                    mathematica::ExpressIn(Metre));
     }
-    file << mathematica::Assign(absl::StrCat(apsides.name, "Times"),
-                                mma_apsis_times);
-    file << mathematica::Assign(absl::StrCat(apsides.name, "Displacements"),
-                                mma_apsis_displacements);
   }
 
   {

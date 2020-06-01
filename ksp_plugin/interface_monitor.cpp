@@ -29,8 +29,8 @@ struct Monitor {
 
   int window_index = 0;
   Time total_Δt;
-  Time min_Δt = Infinity<Time>();
-  Time max_Δt = -Infinity<Time>();
+  Time min_Δt = Infinity<Time>;
+  Time max_Δt = -Infinity<Time>;
 };
 
 static_assert(
@@ -43,14 +43,14 @@ std::array<Monitor, monitor_count> monitors{};
 // side effects aside from logging and changing the internal state of the
 // monitors.
 
-void principia__MonitorSetName(int const i, char const* const name) {
+void __cdecl principia__MonitorSetName(int const i, char const* const name) {
   Monitor& monitor = monitors[i];
   if (monitor.name == nullptr) {
     monitor.name = new std::string(name);
   }
 }
 
-void principia__MonitorStart(int const i) {
+void __cdecl principia__MonitorStart(int const i) {
   Monitor& monitor = monitors[i];
   if (!monitor.is_running) {
     monitor.is_running = true;
@@ -58,7 +58,7 @@ void principia__MonitorStart(int const i) {
   }
 }
 
-void principia__MonitorStop(int const i) {
+void __cdecl principia__MonitorStop(int const i) {
   Monitor& monitor = monitors[i];
   if (monitor.is_running) {
     monitor.is_running = false;
@@ -75,8 +75,8 @@ void principia__MonitorStop(int const i) {
                 << (monitor.name == nullptr ? "" : (": " + *monitor.name))
                 << "] min = " << monitor.min_Δt << ", max = " << monitor.max_Δt
                 << u8", μ = " << monitor.total_Δt / window_size;
-      monitor.min_Δt = Infinity<Time>();
-      monitor.max_Δt = -Infinity<Time>();
+      monitor.min_Δt = Infinity<Time>;
+      monitor.max_Δt = -Infinity<Time>;
       monitor.total_Δt = Time();
     }
   }

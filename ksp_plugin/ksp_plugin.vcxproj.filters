@@ -166,6 +166,21 @@
     <ClCompile Include="orbit_analyser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="interface_part.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\numerics\elliptic_functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\numerics\elliptic_integrals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\base\flags.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\base\zfp_compressor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\serialization\journal.proto" />

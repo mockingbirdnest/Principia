@@ -151,5 +151,9 @@ TEST_F(QuaternionTest, Serialization) {
   EXPECT_EQ(q2_, q);
 }
 
+TEST_F(QuaternionTest, Output) {
+  std::cout << q2_ << "\n";
+}
+
 }  // namespace geometry
 }  // namespace principia

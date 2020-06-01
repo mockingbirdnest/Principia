@@ -1,8 +1,11 @@
 ﻿
 #pragma once
 
+#include <utility>
+
 #include "geometry/point.hpp"
 #include "geometry/grassmann.hpp"
+#include "affine_map.hpp"
 
 namespace principia {
 namespace geometry {
@@ -16,10 +19,10 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::AffineMap(
     Point<FromVector> const& from_origin,
     Point<ToVector> const& to_origin,
-    LinearMap<FromFrame, ToFrame> const& linear_map)
+    LinearMap<FromFrame, ToFrame> linear_map)
     : from_origin_(from_origin),
       to_origin_(to_origin),
-      linear_map_(linear_map) {}
+      linear_map_(std::move(linear_map)) {}
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
@@ -43,6 +46,7 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::operator()(
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
+template<typename F, typename T, typename>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::Identity() {
   return AffineMap(Point<FromVector>(),
@@ -72,6 +76,7 @@ void AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::WriteToMessage(
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
+template<typename, typename, typename>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::ReadFromMessage(
     serialization::AffineMap const& message) {
@@ -93,6 +98,16 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
       /*to_origin=*/left.to_origin_ +
           left.linear_map_(right.to_origin_ - left.from_origin_),
       /*linear_map=*/left.linear_map_ * right.linear_map_);
+}
+
+template<typename FromFrame, typename ToFrame, typename Scalar,
+         template<typename, typename> class LinearMap>
+std::ostream& operator<<(
+    std::ostream& out,
+    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& affine_map) {
+  return out << "{from: " << affine_map.from_origin_
+             << ", to: " << affine_map.to_origin_
+             << ", map: " << affine_map.linear_map_ << "}";
 }
 
 }  // namespace internal_affine_map

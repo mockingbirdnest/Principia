@@ -22,9 +22,9 @@ using geometry::AngularVelocity;
 using geometry::Instant;
 using numerics::LegendreNormalizationFactor;
 using quantities::Angle;
-using quantities::SIUnit;
 using quantities::si::Radian;
 using quantities::si::Second;
+namespace si = quantities::si;
 
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(double const j2,
@@ -210,7 +210,7 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
       // In the legacy case we didn't record the reference radius, so we use a
       // dummy value to achieve the right effect.
       CHECK(!message.has_reference_radius()) << message.DebugString();
-      Length const reference_radius = SIUnit<Length>();
+      Length const reference_radius = si::Unit<Length>;
       parameters = std::make_unique<Parameters>(
           Degree2SphericalHarmonicCoefficient::ReadFromMessage(
               message.pre_diophantos_j2()) /

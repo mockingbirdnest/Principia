@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "benchmark/benchmark.h"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -30,9 +31,6 @@
 #include "physics/solar_system.hpp"
 #include "serialization/geometry.pb.h"
 
-// This must come last because apparently it redefines CDECL.
-#include "benchmark/benchmark.h"
-
 namespace principia {
 
 using base::not_null;
@@ -48,7 +46,6 @@ using integrators::methods::McLachlanAtela1992Order5Optimal;
 using ksp_plugin::Barycentric;
 using quantities::AngularFrequency;
 using quantities::Length;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
@@ -59,6 +56,7 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
+namespace si = quantities::si;
 
 namespace physics {
 
@@ -66,8 +64,7 @@ namespace {
 const Length tolerance = 0.01 * Metre;
 }  // namespace
 
-using Rendering = Frame<serialization::Frame::TestTag,
-                        serialization::Frame::TEST, false>;
+using Rendering = Frame<enum class RenderingTag>;
 
 template<typename F, template<typename> class T>
 void FillLinearTrajectory(Position<F> const& initial,
@@ -153,9 +150,9 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
                                       -1 * AstronomicalUnit,
                                       0 * AstronomicalUnit});
   Velocity<Barycentric> probe_velocity =
-      Velocity<Barycentric>({0 * SIUnit<Speed>(),
-                                  100 * Kilo(Metre) / Second,
-                                  0 * SIUnit<Speed>()});
+      Velocity<Barycentric>({0 * si::Unit<Speed>,
+                             100 * Kilo(Metre) / Second,
+                             0 * si::Unit<Speed>});
   DiscreteTrajectory<Barycentric> probe_trajectory;
   FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
                                                         probe_velocity,
@@ -203,9 +200,9 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
                                                        -1 * AstronomicalUnit,
                                                        0 * AstronomicalUnit});
   Velocity<Barycentric> probe_velocity =
-      Velocity<Barycentric>({0 * SIUnit<Speed>(),
+      Velocity<Barycentric>({0 * si::Unit<Speed>,
                              100 * Kilo(Metre) / Second,
-                             0 * SIUnit<Speed>()});
+                             0 * si::Unit<Speed>});
   DiscreteTrajectory<Barycentric> probe_trajectory;
   FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
                                                         probe_velocity,

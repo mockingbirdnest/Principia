@@ -5,17 +5,34 @@
 
 #include <cmath>
 #include <limits>
+#include <string>
 #include <utility>
+
+#include "base/array.hpp"
+#include "geometry/named_quantities.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/rotation.hpp"
+#include "physics/ephemeris.hpp"
+#include "physics/rigid_motion.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace interface {
 
+using base::UniqueArray;
+using geometry::OrthogonalMap;
+using geometry::RigidTransformation;
+using geometry::Rotation;
 using integrators::AdaptiveStepSizeIntegrator;
+using ksp_plugin::RigidPart;
 using physics::Ephemeris;
+using physics::RigidMotion;
+using quantities::Pow;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+namespace si = quantities::si;
 
 // No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.
@@ -81,6 +98,30 @@ struct XYZConverter<Velocity<Frame>> {
   }
   static XYZ ToXYZ(Velocity<Frame> const& velocity) {
     return interface::ToXYZ(velocity.coordinates() / (Metre / Second));
+  }
+};
+
+template<typename Frame>
+struct XYZConverter<AngularVelocity<Frame>> {
+  static AngularVelocity<Frame> FromXYZ(XYZ const& xyz) {
+    return AngularVelocity<Frame>(interface::FromXYZ(xyz) * (Radian / Second));
+  }
+  static XYZ ToXYZ(AngularVelocity<Frame> const& velocity) {
+    return interface::ToXYZ(velocity.coordinates() / (Radian / Second));
+  }
+};
+
+template<>
+struct XYZConverter<R3Element<MomentOfInertia>> {
+  static R3Element<MomentOfInertia> FromXYZ(XYZ const& xyz) {
+    return R3Element<MomentOfInertia>(xyz.x * si::Unit<MomentOfInertia>,
+                                      xyz.y * si::Unit<MomentOfInertia>,
+                                      xyz.z * si::Unit<MomentOfInertia>);
+  }
+  static XYZ ToXYZ(R3Element<MomentOfInertia> const& moments_of_inertia) {
+    return {moments_of_inertia.x / si::Unit<MomentOfInertia>,
+            moments_of_inertia.y / si::Unit<MomentOfInertia>,
+            moments_of_inertia.z / si::Unit<MomentOfInertia>};
   }
 };
 
@@ -177,7 +218,7 @@ inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
          left.ground_track == right.ground_track &&
          left.mission_duration == right.mission_duration &&
          left.primary_index == right.primary_index &&
-         left.progress_of_next_analysis && right.progress_of_next_analysis &&
+         left.progress_of_next_analysis == right.progress_of_next_analysis &&
          left.recurrence == right.recurrence;
 }
 
@@ -220,6 +261,10 @@ inline bool operator==(OrbitalElements const& left,
 
 inline bool operator==(QP const& left, QP const& right) {
   return left.q == right.q && left.p == right.p;
+}
+
+inline bool operator==(QPRW const& left, QPRW const& right) {
+  return left.qp == right.qp && left.r == right.r && left.w == right.w;
 }
 
 inline bool operator==(Status const& left, Status const& right) {
@@ -318,6 +363,15 @@ inline RelativeDegreesOfFreedom<World> FromQP(QP const& qp) {
   return QPConverter<RelativeDegreesOfFreedom<World>>::FromQP(qp);
 }
 
+inline Quaternion FromWXYZ(WXYZ const& wxyz) {
+  // It is critical to normalize the quaternion that we receive from Unity: it
+  // is normalized in *single* precision, which is fine for KSP where the moving
+  // origin of World ensures that coordinates are never very large.  But in the
+  // C++ code we do some computations in Barycentric, which typically results in
+  // large coordinates for which we need normalization in *double* precision.
+  return Normalize(Quaternion{wxyz.w, {wxyz.x, wxyz.y, wxyz.z}});
+}
+
 inline R3Element<double> FromXYZ(XYZ const& xyz) {
   return {xyz.x, xyz.y, xyz.z};
 }
@@ -331,6 +385,18 @@ template<>
 Velocity<Frenet<NavigationFrame>>
 inline FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz) {
   return XYZConverter<Velocity<Frenet<NavigationFrame>>>::FromXYZ(xyz);
+}
+
+template<>
+AngularVelocity<World>
+inline FromXYZ<AngularVelocity<World>>(XYZ const& xyz) {
+  return XYZConverter<AngularVelocity<World>>::FromXYZ(xyz);
+}
+
+template<>
+R3Element<MomentOfInertia>
+inline FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz) {
+  return XYZConverter<R3Element<MomentOfInertia>>::FromXYZ(xyz);
 }
 
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
@@ -386,11 +452,25 @@ inline QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
   return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::ToQP(relative_dof);
 }
 
-inline Status ToStatus(base::Status const& status) {
-  if (!status.ok()) {
-    LOG(ERROR) << status.message();
+inline Status* ToNewStatus(base::Status const& status) {
+  if (status.ok()) {
+    return new Status{static_cast<int>(status.error()),
+                      /*message=*/nullptr};
+  } else {
+    std::string const& message = status.message();
+    LOG(ERROR) << message;
+    UniqueArray<char> allocated_message(message.size() + 1);
+    std::memcpy(allocated_message.data.get(),
+                message.c_str(),
+                message.size() + 1);
+    return new Status{static_cast<int>(status.error()),
+                      allocated_message.data.release()};
   }
-  return {static_cast<int>(status.error())};
+}
+
+inline Status* ToNewStatus(base::Error const error,
+                           std::string const& message) {
+  return ToNewStatus(base::Status(error, message));
 }
 
 inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
@@ -426,8 +506,8 @@ inline XYZ ToXYZ(Velocity<World> const& velocity) {
 
 template<typename T>
 Interval ToInterval(geometry::Interval<T> const& interval) {
-  return {interval.min / quantities::SIUnit<T>(),
-          interval.max / quantities::SIUnit<T>()};
+  return {interval.min / quantities::si::Unit<T>,
+          interval.max / quantities::si::Unit<T>};
 }
 
 inline Instant FromGameTime(Plugin const& plugin,
@@ -462,6 +542,36 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
       LOG(FATAL) << "Unexpected extension " << parameters.extension;
       base::noreturn();
   }
+}
+
+inline RigidMotion<RigidPart, World> MakePartRigidMotion(
+    QP const& part_world_degrees_of_freedom,
+    WXYZ const& part_rotation,
+    XYZ const& part_angular_velocity) {
+  DegreesOfFreedom<World> const part_degrees_of_freedom =
+      FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom);
+  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
+  RigidTransformation<RigidPart, World> const part_rigid_transformation(
+      RigidPart::origin,
+      part_degrees_of_freedom.position(),
+      part_to_world.Forget<OrthogonalMap>());
+  RigidMotion<RigidPart, World> part_rigid_motion(
+      part_rigid_transformation,
+      FromXYZ<AngularVelocity<World>>(part_angular_velocity),
+      part_degrees_of_freedom.velocity());
+  return part_rigid_motion;
+}
+
+// Same as |MakePartRigidMotion|, but uses the separate type |ApparentWorld| to
+// avoid mixing uncorrected and corrected data.
+inline RigidMotion<RigidPart, ApparentWorld> MakePartApparentRigidMotion(
+    QP const& part_world_degrees_of_freedom,
+    WXYZ const& part_rotation,
+    XYZ const& part_angular_velocity) {
+  return RigidMotion<World, ApparentWorld>::Identity() *
+         MakePartRigidMotion(part_world_degrees_of_freedom,
+                             part_rotation,
+                             part_angular_velocity);
 }
 
 }  // namespace interface

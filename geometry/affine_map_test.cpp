@@ -34,7 +34,9 @@ using testing_utilities::RelativeError;
 class AffineMapTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
 
   using Orth = OrthogonalMap<World, World>;
   using Perm = Permutation<World, World>;
@@ -136,6 +138,16 @@ TEST_F(AffineMapTest, Serialization) {
             map2(back_right_bottom_) - origin_);
   EXPECT_EQ(map1(front_left_top_) - origin_,
             map2(front_left_top_) - origin_);
+}
+
+TEST_F(AffineMapTest, Output) {
+  Rot const rotate_left(π / 2 * Radian,
+                        Bivector<Length, World>(upward_.coordinates()));
+  RigidTransformation const affine_map =
+      RigidTransformation(back_right_bottom_,
+                          front_right_bottom_,
+                          rotate_left);
+  std::cout << affine_map << "\n";
 }
 
 }  // namespace geometry

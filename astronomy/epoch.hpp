@@ -31,8 +31,8 @@ using quantities::si::Second;
 // "2000-01-01T11:58:55,816"_UTC
 constexpr Instant J2000;
 
-CONSTEXPR_INFINITY Instant InfinitePast = J2000 - Infinity<Time>();
-CONSTEXPR_INFINITY Instant InfiniteFuture = J2000 + Infinity<Time>();
+CONSTEXPR_INFINITY Instant InfinitePast = J2000 - Infinity<Time>;
+CONSTEXPR_INFINITY Instant InfiniteFuture = J2000 + Infinity<Time>;
 
 }  // namespace internal_epoch
 

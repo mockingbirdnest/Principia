@@ -9,9 +9,6 @@ namespace principia {
 namespace base {
 
 template<typename Element>
-Array<Element>::Array() : data(nullptr), size(0) {}
-
-template<typename Element>
 template<typename OtherElement, typename>
 Array<Element>::Array(Array<OtherElement> const& other)
     : data(other.data), size(other.size) {}
@@ -36,7 +33,7 @@ constexpr Array<Element>::Array(Container const& container)
 template<typename Element>
 template<std::size_t size_plus_1, typename Character, typename>
 constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
-    : data((Element*)characters),  // NOLINT(readability/casting)
+    : data((Element*)characters),  // NOLINT
       size(size_plus_1 - 1) {
   // The |enable_if|s should prevent this from failing, but we explicitly
   // check that the cast is trivial or reinterprets a |char const*|.  The cast

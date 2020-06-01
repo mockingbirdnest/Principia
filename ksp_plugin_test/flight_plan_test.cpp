@@ -76,7 +76,7 @@ class FlightPlanTest : public testing::Test {
     bodies.emplace_back(
         make_not_null_unique<MassiveBody>(1 * Pow<3>(Metre) / Pow<2>(Second)));
     std::vector<DegreesOfFreedom<Barycentric>> initial_state{
-        {Barycentric::origin, Velocity<Barycentric>()}};
+        {Barycentric::origin, Barycentric::unmoving}};
     ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
         std::move(bodies),
         initial_state,
@@ -200,7 +200,7 @@ TEST_F(FlightPlanTest, Singular) {
                         {x0,
                          100 * std::numeric_limits<double>::epsilon() * Metre,
                          0 * Metre}),
-                Velocity<Barycentric>()});
+                Barycentric::unmoving});
   flight_plan_ = std::make_unique<FlightPlan>(
       /*initial_mass=*/1 * Kilogram,
       /*initial_time=*/root_.back().time,
@@ -411,18 +411,12 @@ TEST_F(FlightPlanTest, Replace) {
       flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
           final_mass();
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  EXPECT_THAT(flight_plan_->Replace(MakeThirdBurn(), /*index=*/0),
-              StatusIs(FlightPlan::does_not_fit));
-  EXPECT_EQ(old_final_mass,
-            flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
-                final_mass());
-  EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_OK(flight_plan_->Replace(MakeThirdBurn(), /*index=*/0));
   EXPECT_GT(old_final_mass,
             flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
                 final_mass());
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
+  EXPECT_LT(t0_ + 1.7 * Second, flight_plan_->desired_final_time());
 }
 
 TEST_F(FlightPlanTest, Segments) {

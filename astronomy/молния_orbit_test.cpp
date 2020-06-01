@@ -4,7 +4,6 @@
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
-#include "base/file.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
@@ -33,7 +32,6 @@ namespace principia {
 using astronomy::ICRS;
 using astronomy::J2000;
 using base::dynamic_cast_not_null;
-using base::OFStream;
 using geometry::Instant;
 using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -137,13 +135,9 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
     ephemeris_->FlowWithFixedStep(t, *instance);
   }
 
-  // Drop the units when logging to Mathematica, because it is ridiculously slow
-  // at parsing them.
-  base::OFStream file(SOLUTION_DIR / "mathematica" /
-                      UNICODE_PATH("молния_orbit.generated.wl"));
-  std::vector<geometry::Vector<double, ICRS>> mma_displacements;
-  std::vector<double> mma_arguments_of_periapsis;
-  std::vector<double> mma_longitudes_of_ascending_nodes;
+  mathematica::Logger logger(
+      SOLUTION_DIR / "mathematica" / UNICODE_PATH("молния_orbit.generated.wl"),
+      /*make_unique=*/false);
 
   std::vector<Angle> longitudes_of_ascending_nodes;
   std::vector<Time> times;
@@ -176,11 +170,15 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
                   *actual_elements.argument_of_periapsis),
               0.0026);
 
-    mma_displacements.push_back(relative_dof.displacement() / Metre);
-    mma_arguments_of_periapsis.push_back(
-        *actual_elements.argument_of_periapsis / Radian);
-    mma_longitudes_of_ascending_nodes.push_back(
-        actual_elements.longitude_of_ascending_node / Radian);
+    logger.Append("ppaDisplacements",
+                  relative_dof.displacement(),
+                  mathematica::ExpressIn(Metre));
+    logger.Append("ppaArguments",
+                  *actual_elements.argument_of_periapsis,
+                  mathematica::ExpressIn(Radian));
+    logger.Append("ppaLongitudes",
+                  actual_elements.longitude_of_ascending_node,
+                  mathematica::ExpressIn(Radian));
   }
 
   // Check that we have a regular precession of the longitude.
@@ -201,13 +199,6 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
   EXPECT_THAT(RelativeError(ΔΩ_per_period / (sidereal_day / 2.0),
                             actual_precession_speed),
               IsNear(0.076_⑴));
-
-  file << mathematica::Assign("ppaDisplacements",
-                              mma_displacements);
-  file << mathematica::Assign("ppaArguments",
-                              mma_arguments_of_periapsis);
-  file << mathematica::Assign("ppaLongitudes",
-                              mma_longitudes_of_ascending_nodes);
 }
 
 #endif

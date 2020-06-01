@@ -24,8 +24,8 @@ class RP2Point {
   // Returns the Euclidean (inhomogeneous) coordinates of the point.  May be
   // (simultaneously) infinities.  The sign of infinities and zeroes is in the
   // proper quadrant.
-  Scalar const x() const;
-  Scalar const y() const;
+  Scalar x() const;
+  Scalar y() const;
 
  private:
   Scalar x_;

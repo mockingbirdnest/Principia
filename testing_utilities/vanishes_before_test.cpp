@@ -14,10 +14,10 @@
 
 namespace principia {
 
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::bipm::Knot;
 using ::testing::Ne;
+namespace si = quantities::si;
 
 namespace testing_utilities {
 
@@ -55,7 +55,7 @@ TEST_F(VanishesBeforeTest, Quantity) {
 }
 
 TEST_F(VanishesBeforeTest, Describe) {
-  Speed v1 = 1 * SIUnit<Speed>();
+  Speed v1 = 1 * si::Unit<Speed>;
   {
     std::ostringstream out;
     VanishesBefore(v1, 2, 6).impl().DescribeTo(&out);

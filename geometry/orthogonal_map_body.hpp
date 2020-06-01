@@ -1,9 +1,11 @@
 ﻿
 #pragma once
 
+#include "geometry/orthogonal_map.hpp"
+
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
-#include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
 
@@ -17,43 +19,46 @@ Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-Rotation<FromFrame, ToFrame> const&
-OrthogonalMap<FromFrame, ToFrame>::rotation() const {
-  return rotation_;
+template<typename F, typename T, typename>
+Rotation<FromFrame, ToFrame>
+OrthogonalMap<FromFrame, ToFrame>::AsRotation() const {
+  return Rotation<FromFrame, ToFrame>(quaternion_);
 }
 
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<ToFrame, FromFrame>
 OrthogonalMap<FromFrame, ToFrame>::Inverse() const {
-  return OrthogonalMap<ToFrame, FromFrame>(determinant_, rotation_.Inverse());
+  // Because |quaternion_| has norm 1, its inverse is just its conjugate.
+  return OrthogonalMap<ToFrame, FromFrame>(quaternion_.Conjugate());
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
-  return Vector<Scalar, ToFrame>(determinant_ * rotation_(vector));
+  return MakeRotation()(MakeSignature()(vector));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Bivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
-  return Bivector<Scalar, ToFrame>(rotation_(bivector));
+  return MakeRotation()(MakeSignature()(bivector));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Trivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
-  return determinant_ * trivector;
+  return MakeRotation()(MakeSignature()(trivector));
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
-SymmetricBilinearForm<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::
-operator()(SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
-  return rotation_(form);
+template<typename Scalar, template<typename, typename> typename Multivector>
+SymmetricBilinearForm<Scalar, ToFrame, Multivector>
+OrthogonalMap<FromFrame, ToFrame>::operator()(
+    SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {
+  return MakeRotation()(MakeSignature()(form));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -63,11 +68,13 @@ OrthogonalMap<FromFrame, ToFrame>::operator()(T const& t) const {
   return base::Mappable<OrthogonalMap, T>::Do(*this, t);
 }
 
+// NOTE(phl): VS2019 wants us to name the types F and T below, even though it is
+// happy with ReadFromMessage below.  You can't explain that.
 template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::Identity() {
-  return OrthogonalMap(Sign::Positive(),
-                       Rotation<FromFrame, ToFrame>::Identity());
+  return OrthogonalMap(Quaternion(1));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -79,6 +86,7 @@ void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename, typename, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
@@ -91,33 +99,58 @@ OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
 template<typename FromFrame, typename ToFrame>
 void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::OrthogonalMap*> const message) const {
-  determinant_.WriteToMessage(message->mutable_determinant());
-  rotation_.WriteToMessage(message->mutable_rotation());
+  quaternion_.WriteToMessage(message->mutable_quaternion());
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename, typename, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
     serialization::OrthogonalMap const& message) {
-  return OrthogonalMap(Sign::ReadFromMessage(message.determinant()),
-                       Rotation<FromFrame, ToFrame>::ReadFromMessage(
-                           message.rotation()));
+  bool const is_pre_frege = message.has_rotation();
+  return OrthogonalMap(
+      is_pre_frege
+          ? Quaternion::ReadFromMessage(message.rotation().quaternion())
+          : Quaternion::ReadFromMessage(message.quaternion()));
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap(
-    Sign const& determinant,
-    Rotation<FromFrame, ToFrame> const& rotation)
-    : determinant_(determinant),
-      rotation_(rotation) {}
+OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap(Quaternion const& quaternion)
+    : quaternion_(quaternion) {}
+
+template<typename FromFrame, typename ToFrame>
+constexpr Signature<
+    FromFrame,
+    typename OrthogonalMap<FromFrame, ToFrame>::IntermediateFrame>
+OrthogonalMap<FromFrame, ToFrame>::MakeSignature() {
+  if constexpr (FromFrame::handedness == ToFrame::handedness) {
+    return Signature<FromFrame, IntermediateFrame>::Identity();
+  } else {
+    return Signature<FromFrame, IntermediateFrame>::CentralInversion();
+  }
+}
+
+template<typename FromFrame, typename ToFrame>
+Rotation<typename OrthogonalMap<FromFrame, ToFrame>::IntermediateFrame,
+         ToFrame>
+OrthogonalMap<FromFrame, ToFrame>::MakeRotation() const {
+  return Rotation<IntermediateFrame, ToFrame>(quaternion_);
+}
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> operator*(
     OrthogonalMap<ThroughFrame, ToFrame> const& left,
     OrthogonalMap<FromFrame, ThroughFrame> const& right) {
   return OrthogonalMap<FromFrame, ToFrame>(
-             left.determinant_ * right.determinant_,
-             left.rotation_ * right.rotation_);
+             left.quaternion_ * right.quaternion_);
+}
+
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(
+    std::ostream& out,
+    OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map) {
+  return out << "{determinant: " << orthogonal_map.Determinant()
+             << ", quaternion: " << orthogonal_map.quaternion_ << "}";
 }
 
 }  // namespace internal_orthogonal_map

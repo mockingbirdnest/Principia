@@ -7,19 +7,26 @@
 #include <string>
 
 #include "base/macros.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_sign {
 
-using quantities::SIUnit;
+namespace si = quantities::si;
+
+// Must be defined first because it is called by member functions below.
+template<typename T>
+constexpr T operator*(Sign const left, T const& right) {
+  return left.negative_ ? -right : right;
+}
 
 // TODO(egg): Consider intrinsics.
 inline Sign::Sign(double const x) : negative_(std::signbit(x)) {}
 
 template<typename Dimensions>
 Sign::Sign(Quantity<Dimensions> const& x)
-    : Sign(x / SIUnit<Quantity<Dimensions>>()) {}
+    : Sign(x / si::Unit<Quantity<Dimensions>>) {}
 
 template<typename T, typename>
 constexpr Sign Sign::OfNonZero(T x) {
@@ -76,11 +83,6 @@ constexpr Sign::Sign(bool const negative) : negative_(negative) {}
 
 constexpr Sign operator*(Sign const left, Sign const right) {
   return Sign(/*negative=*/left.negative_ != right.negative_);
-}
-
-template<typename T>
-constexpr T operator*(Sign const left, T const& right) {
-  return left.negative_ ? -right : right;
 }
 
 inline std::string DebugString(Sign const sign) {

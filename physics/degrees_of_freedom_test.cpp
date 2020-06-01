@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -18,38 +19,39 @@ namespace internal_degrees_of_freedom {
 using geometry::Barycentre;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;
+using geometry::Frame;
 using geometry::Position;
 using geometry::Velocity;
 using quantities::Entropy;
 using quantities::Length;
 using quantities::Speed;
-using quantities::SIUnit;
 using testing_utilities::Componentwise;
 using ::testing::Eq;
+namespace si = quantities::si;
 
 class DegreesOfFreedomTest : public testing::Test {
  protected:
-  struct World;
+  using World = Frame<enum class WorldTag>;
 
   DegreesOfFreedomTest()
-      : d1_(origin_ + Displacement<World>({1 * SIUnit<Length>(),
-                                           2 * SIUnit<Length>(),
-                                           3 * SIUnit<Length>()}),
-            Velocity<World>({10 * SIUnit<Speed>(),
-                             20 * SIUnit<Speed>(),
-                             30 * SIUnit<Speed>()})),
-        d2_(origin_ + Displacement<World>({4 * SIUnit<Length>(),
-                                           -5 * SIUnit<Length>(),
-                                           6 * SIUnit<Length>()}),
-            Velocity<World>({40 * SIUnit<Speed>(),
-                             50 * SIUnit<Speed>(),
-                             -60 * SIUnit<Speed>()})),
-        d3_(origin_ + Displacement<World>({-7 * SIUnit<Length>(),
-                                           8 * SIUnit<Length>(),
-                                           -9 * SIUnit<Length>()}),
-            Velocity<World>({-70 * SIUnit<Speed>(),
-                             -80 * SIUnit<Speed>(),
-                             -90 * SIUnit<Speed>()})) {}
+      : d1_(origin_ + Displacement<World>({1 * si::Unit<Length>,
+                                           2 * si::Unit<Length>,
+                                           3 * si::Unit<Length>}),
+            Velocity<World>({10 * si::Unit<Speed>,
+                             20 * si::Unit<Speed>,
+                             30 * si::Unit<Speed>})),
+        d2_(origin_ + Displacement<World>({4 * si::Unit<Length>,
+                                           -5 * si::Unit<Length>,
+                                           6 * si::Unit<Length>}),
+            Velocity<World>({40 * si::Unit<Speed>,
+                             50 * si::Unit<Speed>,
+                             -60 * si::Unit<Speed>})),
+        d3_(origin_ + Displacement<World>({-7 * si::Unit<Length>,
+                                           8 * si::Unit<Length>,
+                                           -9 * si::Unit<Length>}),
+            Velocity<World>({-70 * si::Unit<Speed>,
+                             -80 * si::Unit<Speed>,
+                             -90 * si::Unit<Speed>})) {}
 
   Position<World> origin_;
   DegreesOfFreedom<World> d1_;
@@ -68,7 +70,7 @@ TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
                degrees_of_freedom, weights);
   };
   EXPECT_DEATH({
-    barycentre({d1_, d2_, d3_}, {3 * SIUnit<Entropy>(), 4 * SIUnit<Entropy>()});
+    barycentre({d1_, d2_, d3_}, {3 * si::Unit<Entropy>, 4 * si::Unit<Entropy>});
   }, "unequal sizes");
   EXPECT_DEATH({
     barycentre({}, {});
@@ -103,18 +105,18 @@ TEST_F(DegreesOfFreedomTest, Barycentre) {
   DegreesOfFreedom<World> const barycentre =
       Barycentre<DegreesOfFreedom<World>, Entropy, std::vector>(
           {d1_, d2_, d3_},
-          {3 * SIUnit<Entropy>(),
-           4 * SIUnit<Entropy>(),
-           5 * SIUnit<Entropy>()});
+          {3 * si::Unit<Entropy>,
+           4 * si::Unit<Entropy>,
+           5 * si::Unit<Entropy>});
   EXPECT_THAT(barycentre,
               Componentwise(
                   Eq(origin_ +
-                     Displacement<World>({(-4.0 / 3.0) * SIUnit<Length>(),
-                                          (13.0 / 6.0) * SIUnit<Length>(),
-                                          -1.0 * SIUnit<Length>()})),
-                  Eq(Velocity<World>({(-40.0 / 3.0) * SIUnit<Speed>(),
-                                      (-35.0 / 3.0) * SIUnit<Speed>(),
-                                      -50.0 * SIUnit<Speed>()}))));
+                     Displacement<World>({(-4.0 / 3.0) * si::Unit<Length>,
+                                          (13.0 / 6.0) * si::Unit<Length>,
+                                          -1.0 * si::Unit<Length>})),
+                  Eq(Velocity<World>({(-40.0 / 3.0) * si::Unit<Speed>,
+                                      (-35.0 / 3.0) * si::Unit<Speed>,
+                                      -50.0 * si::Unit<Speed>}))));
 }
 
 TEST_F(DegreesOfFreedomTest, BarycentreCalculator) {
@@ -127,23 +129,23 @@ TEST_F(DegreesOfFreedomTest, BarycentreCalculator) {
   EXPECT_THAT(barycentre,
               Componentwise(
                   Eq(origin_ +
-                     Displacement<World>({(19.0 / 7.0) * SIUnit<Length>(),
-                                          -2.0 * SIUnit<Length>(),
-                                          (33.0 / 7.0) * SIUnit<Length>()})),
-                  Eq(Velocity<World>({(190.0 / 7.0) * SIUnit<Speed>(),
-                                      (260.0 / 7.0) * SIUnit<Speed>(),
-                                      (-150.0 / 7.0) * SIUnit<Speed>()}))));
+                     Displacement<World>({(19.0 / 7.0) * si::Unit<Length>,
+                                          -2.0 * si::Unit<Length>,
+                                          (33.0 / 7.0) * si::Unit<Length>})),
+                  Eq(Velocity<World>({(190.0 / 7.0) * si::Unit<Speed>,
+                                      (260.0 / 7.0) * si::Unit<Speed>,
+                                      (-150.0 / 7.0) * si::Unit<Speed>}))));
   calculator.Add(d3_, 5);
   barycentre = calculator.Get();
   EXPECT_THAT(barycentre,
               Componentwise(
                   Eq(origin_ +
-                     Displacement<World>({(-4.0 / 3.0) * SIUnit<Length>(),
-                                          (13.0 / 6.0) * SIUnit<Length>(),
-                                          -1.0 * SIUnit<Length>()})),
-                  Eq(Velocity<World>({(-40.0 / 3.0) * SIUnit<Speed>(),
-                                      (-35.0 / 3.0) * SIUnit<Speed>(),
-                                      -50.0 * SIUnit<Speed>()}))));
+                     Displacement<World>({(-4.0 / 3.0) * si::Unit<Length>,
+                                          (13.0 / 6.0) * si::Unit<Length>,
+                                          -1.0 * si::Unit<Length>})),
+                  Eq(Velocity<World>({(-40.0 / 3.0) * si::Unit<Speed>,
+                                      (-35.0 / 3.0) * si::Unit<Speed>,
+                                      -50.0 * si::Unit<Speed>}))));
 }
 
 }  // namespace internal_degrees_of_freedom

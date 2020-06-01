@@ -67,7 +67,7 @@ RP2Lines<Length, Camera> PlotMethodN(
 
 }  // namespace
 
-Planetarium* principia__PlanetariumCreate(
+Planetarium* __cdecl principia__PlanetariumCreate(
     Plugin const* const plugin,
     XYZ const sun_world_position,
     XYZ const xyz_opengl_camera_x_in_world,
@@ -101,10 +101,10 @@ Planetarium* principia__PlanetariumCreate(
   Position<World> const camera_position_in_world =
       FromXYZ<Position<World>>(xyz_camera_position_in_world);
 
-  RigidTransformation<Camera, World> const
-      camera_to_world_affine_map(Camera::origin,
-                                 camera_position_in_world,
-                                 camera_to_world_rotation.Forget());
+  RigidTransformation<Camera, World> const camera_to_world_affine_map(
+      Camera::origin,
+      camera_position_in_world,
+      camera_to_world_rotation.Forget<OrthogonalMap>());
   RigidTransformation<World, Navigation> const
       world_to_plotting_affine_map =
           renderer.WorldToPlotting(plugin->CurrentTime(),
@@ -122,7 +122,7 @@ Planetarium* principia__PlanetariumCreate(
   return m.Return(plugin->NewPlanetarium(parameters, perspective).release());
 }
 
-void principia__PlanetariumDelete(
+void __cdecl principia__PlanetariumDelete(
     Planetarium const** const planetarium) {
   journal::Method<journal::PlanetariumDelete> m({planetarium}, {planetarium});
   CHECK_NOTNULL(planetarium);
@@ -130,7 +130,7 @@ void principia__PlanetariumDelete(
   return m.Return();
 }
 
-Iterator* principia__PlanetariumPlotFlightPlanSegment(
+Iterator* __cdecl principia__PlanetariumPlotFlightPlanSegment(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const method,
@@ -166,7 +166,7 @@ Iterator* principia__PlanetariumPlotFlightPlanSegment(
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
 
-Iterator* principia__PlanetariumPlotPrediction(
+Iterator* __cdecl principia__PlanetariumPlotPrediction(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const method,
@@ -187,7 +187,7 @@ Iterator* principia__PlanetariumPlotPrediction(
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
 
-Iterator* principia__PlanetariumPlotPsychohistory(
+Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const method,
@@ -217,10 +217,10 @@ Iterator* principia__PlanetariumPlotPsychohistory(
 }
 
 // Returns an iterator for the rendered past trajectory of the celestial with
-// the given index; the trajectory goes back as far as the history of the vessel
-// with the given GUID, or, if no vessel is provided, up to |max_history_length|
-// seconds before the present time.
-Iterator* principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
+// the given index; the trajectory goes back |max_history_length| seconds before
+// the present time (or to the earliest time available if the relevant |t_min|
+// is more recent).
+Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const celestial_index,
@@ -243,9 +243,7 @@ Iterator* principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
         plugin->GetCelestial(celestial_index).trajectory();
     Instant const first_time = std::max(
         plugin->CurrentTime() - max_history_length * Second,
-        vessel_guid == nullptr
-            ? celestial_trajectory.t_min()
-            : plugin->GetVessel(vessel_guid)->psychohistory().t_min());
+            celestial_trajectory.t_min());
     auto const rp2_lines =
         planetarium->PlotMethod2(celestial_trajectory,
                                  first_time,
@@ -259,7 +257,7 @@ Iterator* principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
 // Returns an iterator for the rendered future trajectory of the celestial with
 // the given index; the trajectory goes as far as the furthest of the final time
 // of the prediction or that of the flight plan.
-Iterator*
+Iterator* __cdecl
 principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
     Planetarium const* const planetarium,
     Plugin const* const plugin,

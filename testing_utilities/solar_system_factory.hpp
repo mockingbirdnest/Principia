@@ -90,13 +90,13 @@ class SolarSystemFactory : not_constructible {
   };
 
   template<typename Frame>
-  static void AdjustAccuracy(Accuracy const accuracy,
+  static void AdjustAccuracy(Accuracy accuracy,
                              SolarSystem<Frame>& solar_system);
 
   template<typename Frame>
   static typename Ephemeris<Frame>::AccuracyParameters MakeAccuracyParameters(
       Length const& fitting_tolerance,
-      Accuracy const accuracy);
+      Accuracy accuracy);
 
   // A solar system at the time of the launch of Простейший Спутник-1.
   static not_null<std::unique_ptr<SolarSystem<ICRS>>>

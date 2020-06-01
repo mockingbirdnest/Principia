@@ -25,9 +25,13 @@ namespace geometry {
 class IdentityTest : public testing::Test {
  protected:
   using World1 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST1, true>;
+                       Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TEST1>;
   using World2 = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST2, true>;
+                       Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TEST2>;
   using Orth = OrthogonalMap<World1, World2>;
   using Id = Identity<World1, World2>;
   using R3 = R3Element<Length>;
@@ -38,7 +42,7 @@ class IdentityTest : public testing::Test {
         bivector_(Bivector<Length, World1>(
             R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
         trivector_(Trivector<Length, World1>(4.0 * Metre)),
-        form_(SymmetricBilinearForm<Length, World1>(
+        form_(SymmetricBilinearForm<Length, World1, Vector>(
             R3x3Matrix<Length>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre},
                                {2.0 * Metre, 5.0 * Metre, 6.0 * Metre},
                                {3.0 * Metre, 6.0 * Metre, 4.0 * Metre}))) {}
@@ -46,7 +50,7 @@ class IdentityTest : public testing::Test {
   Vector<Length, World1> const vector_;
   Bivector<Length, World1> const bivector_;
   Trivector<Length, World1> const trivector_;
-  SymmetricBilinearForm<Length, World1> const form_;
+  SymmetricBilinearForm<Length, World1, Vector> const form_;
 };
 
 using IdentityDeathTest = IdentityTest;
@@ -93,12 +97,12 @@ TEST_F(IdentityTest, Inverse) {
 }
 
 TEST_F(IdentityTest, Forget) {
-  EXPECT_THAT(Id().Forget()(vector_).coordinates(),
+  EXPECT_THAT(Id().Forget<OrthogonalMap>()(vector_).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
 }
 
 TEST_F(IdentityTest, Compose) {
-  struct World3;
+  using World3 = Frame<enum class World3Tag>;
   using Orth12 = OrthogonalMap<World1, World2>;
   using Orth13 = OrthogonalMap<World1, World3>;
   using Orth23 = OrthogonalMap<World2, World3>;
@@ -106,9 +110,9 @@ TEST_F(IdentityTest, Compose) {
   using Id13 = Identity<World1, World3>;
   using Id23 = Identity<World2, World3>;
   Id12 id12;
-  Orth12 const o12 = id12.Forget();
+  Orth12 const o12 = id12.Forget<OrthogonalMap>();
   Id23 id23;
-  Orth23 const o23 = id23.Forget();
+  Orth23 const o23 = id23.Forget<OrthogonalMap>();
   Id13 const id13 = id23 * id12;
   Orth13 const o13 = o23 * o12;
   for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
@@ -141,6 +145,12 @@ TEST_F(IdentityTest, SerializationSuccess) {
   Identity<World1, World2> const id12b =
       Identity<World1, World2>::ReadFromMessage(message);
   EXPECT_THAT(id12a(vector_), id12b(vector_));
+}
+
+TEST_F(IdentityTest, Output) {
+  using Id12 = Identity<World1, World2>;
+  Id12 id12;
+  std::cout << id12 << "\n";
 }
 
 }  // namespace geometry

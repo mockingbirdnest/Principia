@@ -48,7 +48,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // the coefficient of highest degree is less than |tolerance|.
   ContinuousTrajectory(Time const& step,
                        Length const& tolerance);
-  virtual ~ContinuousTrajectory() = default;
 
   ContinuousTrajectory(ContinuousTrajectory const&) = delete;
   ContinuousTrajectory(ContinuousTrajectory&&) = delete;
@@ -91,6 +90,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
@@ -100,6 +101,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Checkpointer<serialization::ContinuousTrajectory>& checkpointer();
   void WriteToCheckpoint(
       not_null<serialization::ContinuousTrajectory*> message);
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   bool ReadFromCheckpoint(serialization::ContinuousTrajectory const& message);
 
  protected:

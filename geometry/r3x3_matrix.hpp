@@ -1,13 +1,14 @@
 ﻿
 #pragma once
 
-// We use ostream for logging purposes.
-#include <iostream>  // NOLINT(readability/streams)
+#include <array>
+#include <iostream>
 #include <string>
 #include <type_traits>
 #include <utility>
 
 #include "base/macros.hpp"
+#include "base/tags.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -18,6 +19,7 @@ namespace geometry {
 namespace internal_r3x3_matrix {
 
 using base::not_null;
+using base::uninitialized_t;
 using quantities::Cube;
 using quantities::is_quantity;
 using quantities::Product;
@@ -29,19 +31,30 @@ using quantities::Quotient;
 template<typename Scalar>
 class R3x3Matrix final {
  public:
+  R3x3Matrix() = default;
+  explicit R3x3Matrix(uninitialized_t);
   R3x3Matrix(R3Element<Scalar> const& row_x,
              R3Element<Scalar> const& row_y,
              R3Element<Scalar> const& row_z);
 
+  static R3x3Matrix DiagonalMatrix(R3Element<Scalar> const& diagonal);
+
+  R3Element<Scalar> Diagonal() const;
+
   Scalar Trace() const;
   Cube<Scalar> Determinant() const;
   R3x3Matrix Transpose() const;
+
+  template<typename RScalar>
+  R3Element<Quotient<RScalar, Scalar>> Solve(
+      R3Element<RScalar> const& rhs) const;
 
   R3Element<Scalar> const& row_x() const;
   R3Element<Scalar> const& row_y() const;
   R3Element<Scalar> const& row_z() const;
 
   Scalar operator()(int r, int c) const;
+  Scalar& operator()(int r, int c);
 
   R3x3Matrix& operator+=(R3x3Matrix const& right);
   R3x3Matrix& operator-=(R3x3Matrix const& right);
@@ -61,11 +74,13 @@ class R3x3Matrix final {
 
  private:
 #endif
-  R3Element<Scalar> row_x_;
-  R3Element<Scalar> row_y_;
-  R3Element<Scalar> row_z_;
+  enum Indices { X = 0, Y = 1, Z = 2 };
+  std::array<R3Element<Scalar>, 3> rows_;
 
 #if !OS_MACOSX
+  template<typename S>
+  friend class R3x3Matrix;
+
   template<typename S>
   friend R3x3Matrix<S> operator+(R3x3Matrix<S> const& right);
   template<typename S>

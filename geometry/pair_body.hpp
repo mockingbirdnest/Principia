@@ -64,6 +64,7 @@ void Pair<T1, T2>::WriteToMessage(
 }
 
 template<typename T1, typename T2>
+template<typename, typename, typename>
 Pair<T1, T2> Pair<T1, T2>::ReadFromMessage(serialization::Pair const& message) {
   T1 const t1 = PointOrMultivectorSerializer<T1, serialization::Pair::Element>::
                     ReadFromMessage(message.t1());

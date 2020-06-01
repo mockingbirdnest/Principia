@@ -12,6 +12,7 @@ namespace internal_parser {
 // This function parses the following grammar:
 //   quantity            ⩴ double quotient_unit
 //   quotient_unit       ⩴ quotient_unit / exponentiation_unit
+//                       | / exponentiation_unit
 //                       | product_unit
 //   product_unit        ⩴ exponentiation_unit [product_unit]
 //   exponentiation_unit ⩴ unit [^ exponent]

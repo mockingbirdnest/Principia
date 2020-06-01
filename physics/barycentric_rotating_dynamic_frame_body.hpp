@@ -4,6 +4,7 @@
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 
 #include <algorithm>
+#include <utility>
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
@@ -18,6 +19,7 @@ namespace internal_barycentric_rotating_dynamic_frame {
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Displacement;
+using geometry::OrthogonalMap;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
 using geometry::Wedge;
@@ -32,12 +34,12 @@ using quantities::si::Radian;
 template<typename InertialFrame, typename ThisFrame>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 BarycentricRotatingDynamicFrame(
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    not_null<MassiveBody const*> const primary,
-    not_null<MassiveBody const*> const secondary)
-    : ephemeris_(ephemeris),
-      primary_(primary),
-      secondary_(secondary),
+    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    not_null<MassiveBody const*> primary,
+    not_null<MassiveBody const*> secondary)
+    : ephemeris_(std::move(ephemeris)),
+      primary_(std::move(primary)),
+      secondary_(std::move(secondary)),
       primary_trajectory_(ephemeris_->trajectory(primary_)),
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
 
@@ -91,7 +93,7 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(barycentre_degrees_of_freedom.position(),
                            ThisFrame::origin,
-                           rotation.Forget());
+                           rotation.template Forget<OrthogonalMap>());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              angular_velocity,
@@ -152,7 +154,7 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
   Vector<Acceleration, InertialFrame> const r̈ =
       secondary_acceleration - primary_acceleration;
   AngularVelocity<InertialFrame> const& ω =
-      to_this_frame.angular_velocity_of_to_frame();
+      to_this_frame.template angular_velocity_of<ThisFrame>();
   Variation<AngularVelocity<InertialFrame>> const
       angular_acceleration_of_to_frame =
           (Wedge(r, r̈) * Radian - 2 * ω * InnerProduct(r, ṙ)) / r.Norm²();

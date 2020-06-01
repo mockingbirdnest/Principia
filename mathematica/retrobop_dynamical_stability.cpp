@@ -351,33 +351,46 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
   }
 
   OFStream file(TEMP_DIR / "retrobop_century.generated.wl");
-  file << Assign("laytheTimes", ExpressIn(Second, times_from_epoch[Laythe]));
-  file << Assign("vallTimes", ExpressIn(Second, times_from_epoch[Vall]));
-  file << Assign("tyloTimes", ExpressIn(Second, times_from_epoch[Tylo]));
-  file << Assign("polTimes", ExpressIn(Second, times_from_epoch[Pol]));
-  file << Assign("bopTimes", ExpressIn(Second, times_from_epoch[Bop]));
+  file << Assign("laytheTimes",
+                 times_from_epoch[Laythe], ExpressIn(Second));
+  file << Assign("vallTimes",
+                 times_from_epoch[Vall], ExpressIn(Second));
+  file << Assign("tyloTimes",
+                 times_from_epoch[Tylo], ExpressIn(Second));
+  file << Assign("polTimes",
+                 times_from_epoch[Pol], ExpressIn(Second));
+  file << Assign("bopTimes",
+                 times_from_epoch[Bop], ExpressIn(Second));
   file << Assign("laytheSeparations",
-                 ExpressIn(Metre, extremal_separations[Laythe]));
+                 extremal_separations[Laythe], ExpressIn(Metre));
   file << Assign("vallSeparations",
-                 ExpressIn(Metre, extremal_separations[Vall]));
+                 extremal_separations[Vall], ExpressIn(Metre));
   file << Assign("tyloSeparations",
-                 ExpressIn(Metre, extremal_separations[Tylo]));
-  file << Assign("polSeparations", ExpressIn(Metre, extremal_separations[Pol]));
-  file << Assign("bopSeparations", ExpressIn(Metre, extremal_separations[Bop]));
+                 extremal_separations[Tylo], ExpressIn(Metre));
+  file << Assign("polSeparations",
+                 extremal_separations[Pol], ExpressIn(Metre));
+  file << Assign("bopSeparations",
+                 extremal_separations[Bop], ExpressIn(Metre));
 
   file << Assign("bopEccentricities", bop_eccentricities);
-  file << Assign("bopInclinations", ExpressIn(Degree, bop_inclinations));
-  file << Assign("bopNodes", ExpressIn(Degree, bop_nodes));
-  file << Assign("bopArguments", ExpressIn(Degree, bop_arguments_of_periapsis));
+  file << Assign("bopInclinations",
+                 bop_inclinations, ExpressIn(Degree));
+  file << Assign("bopNodes",
+                 bop_nodes, ExpressIn(Degree));
+  file << Assign("bopArguments",
+                 bop_arguments_of_periapsis, ExpressIn(Degree));
   file << Assign("bopJacobiEccentricities", bop_jacobi_eccentricities);
   file << Assign("bopJacobiInclinations",
-                 ExpressIn(Degree, bop_jacobi_inclinations));
-  file << Assign("bopJacobiNodes", ExpressIn(Degree, bop_jacobi_nodes));
+                 bop_jacobi_inclinations, ExpressIn(Degree));
+  file << Assign("bopJacobiNodes",
+                 bop_jacobi_nodes, ExpressIn(Degree));
   file << Assign("bopJacobiArguments",
-                 ExpressIn(Degree, bop_jacobi_arguments_of_periapsis));
+                 bop_jacobi_arguments_of_periapsis, ExpressIn(Degree));
 
-  file << Assign("tyloBop", ExpressIn(Metre, tylo_bop_separations));
-  file << Assign("polBop", ExpressIn(Metre, pol_bop_separations));
+  file << Assign("tyloBop",
+                 tylo_bop_separations, ExpressIn(Metre));
+  file << Assign("polBop",
+                 pol_bop_separations, ExpressIn(Metre));
 }
 
 void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
@@ -428,11 +441,11 @@ void PlotPredictableYears() {
 
   OFStream file(TEMP_DIR / "retrobop_predictable_years.generated.wl");
   file << Assign("barycentricPositions1",
-                 ExpressIn(Metre, barycentric_positions_1_year));
+                 barycentric_positions_1_year, ExpressIn(Metre));
   file << Assign("barycentricPositions2",
-                 ExpressIn(Metre, barycentric_positions_2_year));
+                 barycentric_positions_2_year, ExpressIn(Metre));
   file << Assign("barycentricPositions5",
-                 ExpressIn(Metre, barycentric_positions_5_year));
+                 barycentric_positions_5_year, ExpressIn(Metre));
 }
 
 void PlotCentury() {

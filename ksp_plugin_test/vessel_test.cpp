@@ -7,13 +7,18 @@
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
+#include "geometry/named_quantities.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/mock_ephemeris.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -26,11 +31,15 @@ namespace internal_vessel {
 using base::make_not_null_unique;
 using base::Status;
 using geometry::Displacement;
+using geometry::InertiaTensor;
 using geometry::Position;
+using geometry::R3x3Matrix;
 using geometry::Velocity;
 using physics::MassiveBody;
 using physics::MockEphemeris;
+using physics::RigidMotion;
 using physics::RotatingBody;
+using quantities::MomentOfInertia;
 using quantities::si::Degree;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -58,21 +67,27 @@ class VesselTest : public testing::Test {
                   /*right_ascension_of_pole=*/0 * Degree,
                   /*declination_of_pole=*/90 * Degree)),
         celestial_(&body_),
+        inertia_tensor1_(MakeWaterSphereInertiaTensor(mass1_)),
+        inertia_tensor2_(MakeWaterSphereInertiaTensor(mass2_)),
         vessel_("123",
                 "vessel",
                 &celestial_,
                 &ephemeris_,
                 DefaultPredictionParameters()) {
-    auto p1 = make_not_null_unique<Part>(part_id1_,
-                                         "p1",
-                                         mass1_,
-                                         p1_dof_,
-                                         /*deletion_callback=*/nullptr);
-    auto p2 = make_not_null_unique<Part>(part_id2_,
-                                         "p2",
-                                         mass2_,
-                                         p2_dof_,
-                                         /*deletion_callback=*/nullptr);
+    auto p1 = make_not_null_unique<Part>(
+        part_id1_,
+        "p1",
+        mass1_,
+        inertia_tensor1_,
+        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p1_dof_),
+        /*deletion_callback=*/nullptr);
+    auto p2 = make_not_null_unique<Part>(
+        part_id2_,
+        "p2",
+        mass2_,
+        inertia_tensor2_,
+        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p2_dof_),
+        /*deletion_callback=*/nullptr);
     p1_ = p1.get();
     p2_ = p2.get();
     vessel_.AddPart(std::move(p1));
@@ -86,6 +101,8 @@ class VesselTest : public testing::Test {
   PartId const part_id2_ = 222;
   Mass const mass1_ = 1 * Kilogram;
   Mass const mass2_ = 2 * Kilogram;
+  InertiaTensor<RigidPart> inertia_tensor1_;
+  InertiaTensor<RigidPart> inertia_tensor2_;
 
   // Centre of mass of |p1_| and |p2_| in |Barycentric|, in SI units:
   //   {13 / 3, 4, 11 / 3} {130 / 3, 40, 110 / 3}
@@ -157,7 +174,7 @@ TEST_F(VesselTest, PrepareHistory) {
                     AlmostEquals(Velocity<Barycentric>(
                                       {130.0 / 3.0 * Metre / Second,
                                       40.0 * Metre / Second,
-                                      110.0 / 3.0 * Metre / Second}), 0)));
+                                      110.0 / 3.0 * Metre / Second}), 4)));
 }
 
 TEST_F(VesselTest, AdvanceTime) {
@@ -293,7 +310,7 @@ TEST_F(VesselTest, Prediction) {
                     AlmostEquals(Velocity<Barycentric>(
                                       {130.0 / 3.0 * Metre / Second,
                                        40.0 * Metre / Second,
-                                       110.0 / 3.0 * Metre / Second}), 0)));
+                                       110.0 / 3.0 * Metre / Second}), 4)));
   ++it;
   EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
   EXPECT_THAT(

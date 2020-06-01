@@ -22,7 +22,9 @@ namespace internal_apsides {
 
 using base::not_null;
 using geometry::Displacement;
+using geometry::Inertial;
 using geometry::Frame;
+using geometry::Inertial;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -49,8 +51,7 @@ using ::testing::Eq;
 
 class ApsidesTest : public ::testing::Test {
  protected:
-  using World =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, true>;
+  using World = Frame<enum class WorldTag, Inertial>;
 };
 
 #if !defined(_DEBUG)
@@ -63,7 +64,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b));
-  initial_state.emplace_back(World::origin, Velocity<World>());
+  initial_state.emplace_back(World::origin, World::unmoving);
 
   Ephemeris<World> ephemeris(
       std::move(bodies),
@@ -157,7 +158,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b));
-  initial_state.emplace_back(World::origin, Velocity<World>());
+  initial_state.emplace_back(World::origin, World::unmoving);
 
   Ephemeris<World> ephemeris(
       std::move(bodies),

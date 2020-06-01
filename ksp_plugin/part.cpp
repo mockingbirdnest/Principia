@@ -3,10 +3,16 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/not_null.hpp"
+#include "geometry/r3x3_matrix.hpp"
+#include "physics/rigid_motion.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -16,25 +22,44 @@ using base::Array;
 using base::HexadecimalEncoder;
 using base::make_not_null_unique;
 using base::UniqueArray;
+using geometry::R3x3Matrix;
+using physics::RigidTransformation;
+using quantities::Cbrt;
+using quantities::Density;
+using quantities::MomentOfInertia;
+using quantities::Pow;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
+using quantities::si::Radian;
 
-Part::Part(
-    PartId const part_id,
-    std::string const& name,
-    Mass const& mass,
-    DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-    std::function<void()> deletion_callback)
-    : part_id_(part_id),
-      name_(name),
-      mass_(mass),
-      degrees_of_freedom_(degrees_of_freedom),
-      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      subset_node_(make_not_null_unique<Subset<Part>::Node>()),
-      deletion_callback_(std::move(deletion_callback)) {
-  CHECK_GT(mass_, Mass{}) << ShortDebugString();
-  prehistory_->Append(astronomy::InfinitePast,
-                      {Barycentric::origin, Velocity<Barycentric>()});
-  history_ = prehistory_->NewForkAtLast();
-}
+constexpr Mass untruthful_part_mass = 1 * Kilogram;
+
+Part::Part(PartId const part_id,
+           std::string const& name,
+           Mass const& mass,
+           InertiaTensor<RigidPart> const& inertia_tensor,
+           RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+           std::function<void()> deletion_callback)
+    : Part(part_id,
+           name,
+           /*truthful=*/true,
+           mass,
+           inertia_tensor,
+           rigid_motion,
+           std::move(deletion_callback)) {}
+
+Part::Part(PartId part_id,
+           std::string const& name,
+           DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+           std::function<void()> deletion_callback)
+    : Part(part_id,
+           name,
+           /*truthful=*/false,
+           untruthful_part_mass,
+           MakeWaterSphereInertiaTensor(untruthful_part_mass),
+           RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+               degrees_of_freedom),
+           std::move(deletion_callback)) {}
 
 Part::~Part() {
   LOG(INFO) << "Destroying part " << ShortDebugString();
@@ -47,8 +72,16 @@ PartId Part::part_id() const {
   return part_id_;
 }
 
+bool Part::truthful() const {
+  return truthful_;
+}
+
+void Part::make_truthful() {
+  truthful_ = true;
+}
+
 void Part::set_mass(Mass const& mass) {
-  CHECK_GT(mass, Mass{}) << ShortDebugString();
+  mass_change_ = mass - mass_;
   mass_ = mass;
 }
 
@@ -56,11 +89,31 @@ Mass const& Part::mass() const {
   return mass_;
 }
 
+void Part::set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor) {
+  inertia_tensor_ = inertia_tensor;
+}
+
+InertiaTensor<RigidPart> const& Part::inertia_tensor() const {
+  return inertia_tensor_;
+}
+
+void Part::set_is_solid_rocket_motor(bool const is_solid_rocket_motor) {
+  is_solid_rocket_motor_ = is_solid_rocket_motor;
+}
+
+bool Part::is_solid_rocket_motor() const {
+  return is_solid_rocket_motor_;
+}
+
+Mass const& Part::mass_change() const {
+  return mass_change_;
+}
+
 void Part::clear_intrinsic_force() {
   intrinsic_force_ = Vector<Force, Barycentric>{};
 }
 
-void Part::increment_intrinsic_force(
+void Part::apply_intrinsic_force(
     Vector<Force, Barycentric> const& intrinsic_force) {
   intrinsic_force_ += intrinsic_force;
 }
@@ -69,14 +122,37 @@ Vector<Force, Barycentric> const& Part::intrinsic_force() const {
   return intrinsic_force_;
 }
 
-void Part::set_degrees_of_freedom(
-    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  degrees_of_freedom_ = degrees_of_freedom;
+void Part::clear_intrinsic_torque() {
+  intrinsic_torque_ = Bivector<Torque, Barycentric>{};
 }
 
-DegreesOfFreedom<Barycentric> const&
-Part::degrees_of_freedom() const {
-  return degrees_of_freedom_;
+void Part::apply_intrinsic_torque(
+    Bivector<Torque, Barycentric> const& intrinsic_torque) {
+  intrinsic_torque_ += intrinsic_torque;
+}
+
+Bivector<Torque, Barycentric> const& Part::intrinsic_torque() const {
+  return intrinsic_torque_;
+}
+
+void Part::ApplyIntrinsicForceWithLeverArm(
+    Vector<Force, Barycentric> const& intrinsic_force,
+    Displacement<Barycentric> const& lever_arm) {
+  apply_intrinsic_force(intrinsic_force);
+  apply_intrinsic_torque(Wedge(lever_arm, intrinsic_force) * Radian);
+}
+
+void Part::set_rigid_motion(
+    RigidMotion<RigidPart, Barycentric> const& rigid_motion) {
+  rigid_motion_ = rigid_motion;
+}
+
+RigidMotion<RigidPart, Barycentric> const& Part::rigid_motion() const {
+  return rigid_motion_;
+}
+
+DegreesOfFreedom<Barycentric> Part::degrees_of_freedom() const {
+  return rigid_motion_({RigidPart::origin, RigidPart::unmoving});
 }
 
 DiscreteTrajectory<Barycentric>::Iterator Part::history_begin() {
@@ -159,13 +235,16 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
                               serialization_index_for_pile_up) const {
   message->set_part_id(part_id_);
   message->set_name(name_);
+  message->set_truthful(truthful_);
   mass_.WriteToMessage(message->mutable_mass());
+  inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
+  intrinsic_torque_.WriteToMessage(message->mutable_intrinsic_torque());
   if (containing_pile_up_) {
     message->set_containing_pile_up(
         serialization_index_for_pile_up(containing_pile_up_.get()));
   }
-  degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
+  rigid_motion_.WriteToMessage(message->mutable_rigid_motion());
   prehistory_->WriteToMessage(message->mutable_prehistory(),
                               /*forks=*/{history_, psychohistory_});
 }
@@ -174,15 +253,57 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     serialization::Part const& message,
     std::function<void()> deletion_callback) {
   bool const is_pre_cesàro = message.has_tail_is_authoritative();
-  not_null<std::unique_ptr<Part>> part =
-      make_not_null_unique<Part>(message.part_id(),
-                                 message.name(),
-                                 Mass::ReadFromMessage(message.mass()),
-                                 DegreesOfFreedom<Barycentric>::ReadFromMessage(
-                                     message.degrees_of_freedom()),
-                                 std::move(deletion_callback));
-  part->increment_intrinsic_force(
+  bool const is_pre_fréchet = message.has_mass() &&
+                              message.has_degrees_of_freedom();
+  bool const is_pre_frenet =
+      is_pre_fréchet || (message.has_pre_frenet_inertia_tensor() &&
+                         !message.has_intrinsic_torque());
+
+  std::unique_ptr<Part> part;
+  if (is_pre_fréchet) {
+    auto const degrees_of_freedom =
+        DegreesOfFreedom<Barycentric>::ReadFromMessage(
+            message.degrees_of_freedom());
+    part = std::unique_ptr<Part>(new Part(
+        message.part_id(),
+        message.name(),
+        message.truthful(),
+        Mass::ReadFromMessage(message.mass()),
+        MakeWaterSphereInertiaTensor(Mass::ReadFromMessage(message.mass())),
+        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+            degrees_of_freedom),
+        std::move(deletion_callback)));
+  } else if (is_pre_frenet) {
+    part = std::unique_ptr<Part>(new Part(
+        message.part_id(),
+        message.name(),
+        message.truthful(),
+        Mass::ReadFromMessage(message.pre_frenet_inertia_tensor().mass()),
+        InertiaTensor<RigidPart>::ReadFromMessage(
+            message.pre_frenet_inertia_tensor().form()),
+        RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
+            message.rigid_motion()),
+        std::move(deletion_callback)));
+  } else {
+    part = std::unique_ptr<Part>(new Part(
+        message.part_id(),
+        message.name(),
+        message.truthful(),
+        Mass::ReadFromMessage(message.mass()),
+        InertiaTensor<RigidPart>::ReadFromMessage(message.inertia_tensor()),
+        RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
+            message.rigid_motion()),
+        std::move(deletion_callback)));
+  }
+
+  part->apply_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
+  if (!is_pre_frenet) {
+    part->apply_intrinsic_torque(
+        Bivector<Torque, Barycentric>::ReadFromMessage(
+            message.intrinsic_torque()));
+  }
+
   if (is_pre_cesàro) {
     auto tail = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.prehistory(),
@@ -204,7 +325,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
         message.prehistory(),
         /*forks=*/{&part->history_, &part->psychohistory_});
   }
-  return part;
+  return std::move(part);
 }
 
 void Part::FillContainingPileUpFromMessage(
@@ -225,10 +346,39 @@ std::string Part::ShortDebugString() const {
   return name_ + " (" + hex_id.data.get() + ")";
 }
 
+Part::Part(PartId const part_id,
+           std::string name,
+           bool const truthful,
+           Mass const& mass,
+           InertiaTensor<RigidPart> const& inertia_tensor,
+           RigidMotion<RigidPart, Barycentric> rigid_motion,
+           std::function<void()> deletion_callback)
+    : part_id_(part_id),
+      name_(std::move(name)),
+      truthful_(truthful),
+      mass_(mass),
+      inertia_tensor_(inertia_tensor),
+      rigid_motion_(std::move(rigid_motion)),
+      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      subset_node_(make_not_null_unique<Subset<Part>::Node>()),
+      deletion_callback_(std::move(deletion_callback)) {
+  prehistory_->Append(astronomy::InfinitePast,
+                      {Barycentric::origin, Barycentric::unmoving});
+  history_ = prehistory_->NewForkAtLast();
+}
+
+InertiaTensor<RigidPart> MakeWaterSphereInertiaTensor(Mass const& mass) {
+  static constexpr MomentOfInertia zero;
+  static constexpr Density ρ_of_water = 1000 * Kilogram / Pow<3>(Metre);
+  MomentOfInertia const I =
+      Cbrt(9 * Pow<5>(mass) / (250 * Pow<2>(π * ρ_of_water)));
+  return InertiaTensor<RigidPart>(R3x3Matrix<MomentOfInertia>({I, zero, zero},
+                                                              {zero, I, zero},
+                                                              {zero, zero, I}));
+}
+
 std::ostream& operator<<(std::ostream& out, Part const& part) {
-  return out << "{"
-             << part.part_id() << ", "
-             << part.mass() << "}";
+  return out << "{" << part.part_id() << ", " << part.mass() << "}";
 }
 
 }  // namespace internal_part

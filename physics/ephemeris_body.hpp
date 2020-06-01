@@ -8,6 +8,7 @@
 #include <limits>
 #include <optional>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
@@ -72,7 +73,7 @@ constexpr Time max_time_between_checkpoints = 180 * Day;
 // downsampling from going postal.
 constexpr double min_radius_tolerance = 0.99;
 
-inline Status const CollisionDetected() {
+inline Status CollisionDetected() {
   return Status(Error::OUT_OF_RANGE, "Collision detected");
 }
 
@@ -229,15 +230,12 @@ Ephemeris<Frame>::Ephemeris(
     std::vector<DegreesOfFreedom<Frame>> const& initial_state,
     Instant const& initial_time,
     AccuracyParameters const& accuracy_parameters,
-    FixedStepParameters const& fixed_step_parameters)
+    FixedStepParameters fixed_step_parameters)
     : accuracy_parameters_(accuracy_parameters),
-      fixed_step_parameters_(fixed_step_parameters),
+      fixed_step_parameters_(std::move(fixed_step_parameters)),
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
-              /*reader=*/
-              [this](serialization::Ephemeris const& message) {
-                return ReadFromCheckpoint(message);
-              },
+              /*reader=*/MakeCheckpointerReader(this),
               /*writer=*/
               [this](not_null<serialization::Ephemeris*> const message) {
                 WriteToCheckpoint(message);
@@ -735,6 +733,7 @@ void Ephemeris<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
+template<typename, typename>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
@@ -758,7 +757,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   // Dummy initial state and time.  We'll overwrite them later.
   std::vector<DegreesOfFreedom<Frame>> const initial_state(
       bodies.size(),
-      DegreesOfFreedom<Frame>(Position<Frame>(), Velocity<Frame>()));
+      DegreesOfFreedom<Frame>(Frame::origin, Frame::unmoving));
   Instant const initial_time;
   auto ephemeris = make_not_null_unique<Ephemeris<Frame>>(
                        std::move(bodies),
@@ -853,6 +852,19 @@ void Ephemeris<Frame>::WriteToCheckpoint(
 }
 
 template<typename Frame>
+Checkpointer<serialization::Ephemeris>::Reader
+Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
+  if constexpr (base::is_serializable_v<Frame>) {
+    return [ephemeris](serialization::Ephemeris const& message) {
+      return ephemeris->ReadFromCheckpoint(message);
+    };
+  } else {
+    return nullptr;
+  }
+}
+
+template<typename Frame>
+template<typename, typename>
 bool Ephemeris<Frame>::ReadFromCheckpoint(
     serialization::Ephemeris const& message) {
   bool const has_checkpoint = message.has_instance();
@@ -879,10 +891,12 @@ bool Ephemeris<Frame>::ReadFromCheckpoint(
 
 template<typename Frame>
 void Ephemeris<Frame>::CreateCheckpointIfNeeded(Instant const& time) const {
-  lock_.AssertReaderHeld();
-  if (checkpointer_->CreateIfNeeded(time, max_time_between_checkpoints)) {
-    for (auto const& trajectory : trajectories_) {
-      trajectory->checkpointer().CreateUnconditionally(time);
+  if constexpr (base::is_serializable_v<Frame>) {
+    lock_.AssertReaderHeld();
+    if (checkpointer_->CreateIfNeeded(time, max_time_between_checkpoints)) {
+      for (auto const& trajectory : trajectories_) {
+        trajectory->checkpointer().CreateUnconditionally(time);
+      }
     }
   }
 }

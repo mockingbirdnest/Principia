@@ -2,6 +2,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <numeric>
+#include <string>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -22,7 +23,7 @@ using geometry::Sign;
 using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
-using ksp_plugin::ApparentBubble;
+using ksp_plugin::Apparent;
 using physics::DegreesOfFreedom;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
@@ -31,8 +32,8 @@ using quantities::si::Kilo;
 using quantities::si::Newton;
 using quantities::si::Tonne;
 
-XYZ principia__VesselBinormal(Plugin const* const plugin,
-                              char const* const vessel_guid) {
+XYZ __cdecl principia__VesselBinormal(Plugin const* const plugin,
+                                      char const* const vessel_guid) {
   journal::Method<journal::VesselBinormal> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToXYZ(plugin->VesselBinormal(vessel_guid)));
@@ -40,16 +41,17 @@ XYZ principia__VesselBinormal(Plugin const* const plugin,
 
 // Calls |plugin->VesselFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
-QP principia__VesselFromParent(Plugin const* const plugin,
-                               int const parent_index,
-                               char const* const vessel_guid) {
+QP __cdecl principia__VesselFromParent(Plugin const* const plugin,
+                                       int const parent_index,
+                                       char const* const vessel_guid) {
   journal::Method<journal::VesselFromParent> m(
       {plugin, parent_index, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToQP(plugin->VesselFromParent(parent_index, vessel_guid)));
 }
 
-AdaptiveStepParameters principia__VesselGetPredictionAdaptiveStepParameters(
+AdaptiveStepParameters __cdecl
+principia__VesselGetPredictionAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::VesselGetPredictionAdaptiveStepParameters> m(
@@ -59,14 +61,14 @@ AdaptiveStepParameters principia__VesselGetPredictionAdaptiveStepParameters(
       plugin->GetVessel(vessel_guid)->prediction_adaptive_step_parameters()));
 }
 
-XYZ principia__VesselNormal(Plugin const* const plugin,
-                            char const* const vessel_guid) {
+XYZ __cdecl principia__VesselNormal(Plugin const* const plugin,
+                                    char const* const vessel_guid) {
   journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid)));
 }
 
-OrbitAnalysis principia__VesselRefreshAnalysis(
+OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
     Plugin const* const plugin,
     char const* const vessel_guid,
     int const primary_index,
@@ -91,33 +93,30 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
   vessel.RefreshOrbitAnalysis(plugin->GetCelestial(primary_index).body(),
                               mission_duration * Second);
-  OrbitAnalysis analysis{};
-  analysis.progress_of_next_analysis = vessel.progress_of_orbit_analysis();
+  OrbitAnalysis* const analysis = new OrbitAnalysis{};
+  analysis->progress_of_next_analysis = vessel.progress_of_orbit_analysis();
   if (vessel.orbit_analysis() != nullptr) {
-    analysis.primary_index =
+    analysis->primary_index =
         plugin->CelestialIndexOfBody(vessel.orbit_analysis()->primary());
-    analysis.mission_duration =
+    analysis->mission_duration =
         vessel.orbit_analysis()->mission_duration() / Second;
-    analysis.elements_has_value =
-        vessel.orbit_analysis()->elements().has_value();
-    if (analysis.elements_has_value) {
+    if (vessel.orbit_analysis()->elements().has_value()) {
       auto const& elements = *vessel.orbit_analysis()->elements();
-      analysis.elements.anomalistic_period =
-          elements.anomalistic_period() / Second;
-      analysis.elements.nodal_period = elements.nodal_period() / Second;
-      analysis.elements.sidereal_period = elements.sidereal_period() / Second;
-      analysis.elements.nodal_precession =
-          elements.nodal_precession() / (Radian / Second);
-      analysis.elements.mean_argument_of_periapsis =
-          ToInterval(elements.mean_argument_of_periapsis_interval());
-      analysis.elements.mean_eccentricity =
-          ToInterval(elements.mean_eccentricity_interval());
-      analysis.elements.mean_inclination =
-          ToInterval(elements.mean_inclination_interval());
-      analysis.elements.mean_longitude_of_ascending_nodes =
-          ToInterval(elements.mean_longitude_of_ascending_node_interval());
-      analysis.elements.mean_semimajor_axis =
-          ToInterval(elements.mean_semimajor_axis_interval());
+      analysis->elements = new OrbitalElements{
+          .sidereal_period = elements.sidereal_period() / Second,
+          .nodal_period = elements.nodal_period() / Second,
+          .anomalistic_period = elements.anomalistic_period() / Second,
+          .nodal_precession = elements.nodal_precession() / (Radian / Second),
+          .mean_semimajor_axis =
+          ToInterval(elements.mean_semimajor_axis_interval()),
+          .mean_eccentricity =
+          ToInterval(elements.mean_eccentricity_interval()),
+          .mean_inclination = ToInterval(elements.mean_inclination_interval()),
+          .mean_longitude_of_ascending_nodes =
+          ToInterval(elements.mean_longitude_of_ascending_node_interval()),
+          .mean_argument_of_periapsis =
+          ToInterval(elements.mean_argument_of_periapsis_interval()),
+      };
     }
     if (has_nominal_recurrence) {
       int const Cᴛₒ =
@@ -131,43 +130,42 @@ OrbitAnalysis principia__VesselRefreshAnalysis(
     } else {
       vessel.orbit_analysis()->ResetRecurrence();
     }
-    analysis.recurrence_has_value =
-        vessel.orbit_analysis()->recurrence().has_value();
-    if (analysis.recurrence_has_value) {
+    if (vessel.orbit_analysis()->recurrence().has_value()) {
       auto const& recurrence = *vessel.orbit_analysis()->recurrence();
-      analysis.recurrence.nuo = recurrence.νₒ();
-      analysis.recurrence.dto = recurrence.Dᴛₒ();
-      analysis.recurrence.cto = recurrence.Cᴛₒ();
-      analysis.recurrence.number_of_revolutions =
-          recurrence.number_of_revolutions();
-      analysis.recurrence.subcycle = recurrence.subcycle();
-      analysis.recurrence.equatorial_shift =
-          recurrence.equatorial_shift() / Radian;
-      analysis.recurrence.base_interval = recurrence.base_interval() / Radian;
-      analysis.recurrence.grid_interval = recurrence.grid_interval() / Radian;
+      analysis->recurrence = new OrbitRecurrence{
+          .nuo = recurrence.νₒ(),
+          .dto = recurrence.Dᴛₒ(),
+          .cto = recurrence.Cᴛₒ(),
+          .number_of_revolutions =
+          recurrence.number_of_revolutions(),
+          .equatorial_shift =
+          recurrence.equatorial_shift() / Radian,
+          .base_interval = recurrence.base_interval() / Radian,
+          .grid_interval = recurrence.grid_interval() / Radian,
+          .subcycle = recurrence.subcycle(),
+      };
     }
-    analysis.ground_track_has_value =
-        vessel.orbit_analysis()->ground_track().has_value();
-    if (analysis.ground_track_has_value) {
-      if (vessel.orbit_analysis()->equatorial_crossings().has_value()) {
-        auto const& equatorial_crossings =
-            *vessel.orbit_analysis()->equatorial_crossings();
-        analysis.ground_track.equatorial_crossings
-            .longitudes_reduced_to_ascending_pass =
-            ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
-                2 * ground_track_revolution - 1));
-        analysis.ground_track.equatorial_crossings
-            .longitudes_reduced_to_descending_pass =
-            ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
-                2 * ground_track_revolution));
-      }
+    if (vessel.orbit_analysis()->ground_track().has_value() &&
+        vessel.orbit_analysis()->equatorial_crossings().has_value()) {
+      auto const& equatorial_crossings =
+          *vessel.orbit_analysis()->equatorial_crossings();
+      analysis->ground_track = new OrbitGroundTrack{
+          .equatorial_crossings = {
+              .longitudes_reduced_to_ascending_pass =
+              ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
+                  2 * ground_track_revolution - 1)),
+              .longitudes_reduced_to_descending_pass =
+              ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
+                  2 * ground_track_revolution)),
+          },
+      };
     }
   }
 
   return m.Return(analysis);
 }
 
-void principia__VesselSetPredictionAdaptiveStepParameters(
+void __cdecl principia__VesselSetPredictionAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid,
     AdaptiveStepParameters const adaptive_step_parameters) {
@@ -179,18 +177,38 @@ void principia__VesselSetPredictionAdaptiveStepParameters(
   return m.Return();
 }
 
-XYZ principia__VesselTangent(Plugin const* const plugin,
-                             char const* const vessel_guid) {
+XYZ __cdecl principia__VesselTangent(Plugin const* const plugin,
+                                     char const* const vessel_guid) {
   journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToXYZ(plugin->VesselTangent(vessel_guid)));
 }
 
-XYZ principia__VesselVelocity(Plugin const* const plugin,
-                              char const* const vessel_guid) {
+XYZ __cdecl principia__VesselVelocity(Plugin const* const plugin,
+                                      char const* const vessel_guid) {
   journal::Method<journal::VesselVelocity> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToXYZ(plugin->VesselVelocity(vessel_guid)));
+}
+
+void __cdecl principia__SetAngularMomentumConservation(
+    bool const conserve_angular_momentum) {
+  journal::Method<journal::SetAngularMomentumConservation> m(
+      {conserve_angular_momentum});
+  ksp_plugin::PileUp::conserve_angular_momentum = conserve_angular_momentum;
+  return m.Return();
+}
+
+char const* __cdecl principia__VesselGetPileUpTrace(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::VesselGetPileUpTrace> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  char const* trace;
+  plugin->GetVessel(vessel_guid)->ForSomePart([&trace](ksp_plugin::Part& part) {
+    trace = part.containing_pile_up()->trace.data();
+  });
+  return m.Return(trace);
 }
 
 }  // namespace interface

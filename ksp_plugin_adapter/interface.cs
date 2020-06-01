@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal partial struct Status {
+internal partial class Status {
   public static Status OK = new Status{error = 0};
   public bool is_aborted() {
     return error == 10;
@@ -23,12 +23,13 @@ internal partial struct Status {
   }
   public void Update(Status s) {
     if (ok() && !s.ok()) {
-      this = s;
+      this.error = s.error;
+      this.message = s.message;
     }
   }
 }
 
-internal partial struct XYZ {
+public partial struct XYZ {
   public static explicit operator XYZ(Vector3d v) {
     return new XYZ{x = v.x, y = v.y, z = v.z};
   }

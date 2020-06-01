@@ -12,7 +12,7 @@ namespace internal_vessel {
 
 class MockVessel : public Vessel {
  public:
-  MockVessel() : Vessel() {}
+  MockVessel() = default;
 
   MOCK_CONST_METHOD0(body, not_null<MasslessBody const*>());
 

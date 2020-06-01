@@ -2,6 +2,7 @@
 #include "ksp_plugin/orbit_analyser.hpp"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
@@ -12,16 +13,18 @@ namespace ksp_plugin {
 namespace internal_orbit_analyser {
 
 using geometry::Frame;
+using geometry::NonRotating;
+using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::MasslessBody;
-using physics::BodyCentredNonRotatingDynamicFrame;
 using quantities::IsFinite;
 
-OrbitAnalyser::OrbitAnalyser(not_null<Ephemeris<Barycentric>*> const ephemeris,
-                             Ephemeris<Barycentric>::FixedStepParameters const&
-                                 analysed_trajectory_parameters)
+OrbitAnalyser::OrbitAnalyser(
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
+    Ephemeris<Barycentric>::FixedStepParameters analysed_trajectory_parameters)
     : ephemeris_(ephemeris),
-      analysed_trajectory_parameters_(analysed_trajectory_parameters) {}
+      analysed_trajectory_parameters_(
+          std::move(analysed_trajectory_parameters)) {}
 
 OrbitAnalyser::~OrbitAnalyser() {
   if (analyser_.joinable()) {
@@ -121,10 +124,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     // the progress bar being stuck at 100% while the elements and nodes are
     // being computed.
 
-    enum class PrimaryCentredTag { tag };
-    using PrimaryCentred = Frame<PrimaryCentredTag,
-                                 PrimaryCentredTag::tag,
-                                 /*frame_is_inertial=*/false>;
+    using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
     BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
         primary_centred(ephemeris_, parameters->primary);
     DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;

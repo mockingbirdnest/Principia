@@ -14,12 +14,15 @@ using base::not_null;
 // |double|).
 class Quaternion final {
  public:
-  Quaternion();
+  constexpr Quaternion() = default;
   explicit Quaternion(double real_part);
   Quaternion(double real_part, R3Element<double> const& imaginary_part);
 
   double real_part() const;
   R3Element<double> const& imaginary_part() const;
+
+  double Norm() const;
+  double Norm²() const;
 
   Quaternion Conjugate() const;
   Quaternion Inverse() const;
@@ -36,7 +39,7 @@ class Quaternion final {
   static Quaternion ReadFromMessage(serialization::Quaternion const& message);
 
  private:
-  double real_part_;
+  double real_part_ = 0;
   R3Element<double> imaginary_part_;
 };
 
@@ -55,10 +58,13 @@ Quaternion operator*(double left, Quaternion const& right);
 Quaternion operator*(Quaternion const& left, double right);
 Quaternion operator/(Quaternion const& left, double right);
 
+Quaternion Normalize(Quaternion const& quaternion);
+
 std::ostream& operator<<(std::ostream& out, Quaternion const& quaternion);
 
 }  // namespace internal_quaternion
 
+using internal_quaternion::Normalize;
 using internal_quaternion::Quaternion;
 
 }  // namespace geometry

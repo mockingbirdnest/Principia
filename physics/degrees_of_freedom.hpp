@@ -39,6 +39,8 @@ class DegreesOfFreedom : public Pair<Position<Frame>, Velocity<Frame>> {
       Pair<Position<Frame>,
            Velocity<Frame>> const& base);  // NOLINT(runtime/explicit)
 
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static DegreesOfFreedom ReadFromMessage(serialization::Pair const& message);
 
   Position<Frame> const& position() const;

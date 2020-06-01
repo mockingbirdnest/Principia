@@ -20,8 +20,8 @@ using geometry::Multivector;
 using geometry::R3Element;
 using quantities::Length;
 using quantities::Quantity;
-using quantities::SIUnit;
 using quantities::Time;
+namespace si = quantities::si;
 
 namespace numerics {
 
@@ -42,7 +42,7 @@ struct ValueGenerator<double> {
 template<typename D>
 struct ValueGenerator<Quantity<D>> {
   static Quantity<D> Get(std::mt19937_64& random) {
-    return static_cast<double>(random()) * SIUnit<Quantity<D>>();
+    return static_cast<double>(random()) * si::Unit<Quantity<D>>;
   }
 };
 

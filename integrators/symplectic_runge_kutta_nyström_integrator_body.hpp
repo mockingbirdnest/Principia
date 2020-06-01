@@ -156,13 +156,28 @@ void SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
-  auto* const extension =
+  [[maybe_unused]] auto* const extension =
       message
           ->MutableExtension(
               serialization::FixedStepSizeIntegratorInstance::extension)
           ->MutableExtension(
               serialization::SymplecticRungeKuttaNystromIntegratorInstance::
                   extension);
+}
+
+template<typename Method, typename Position>
+not_null<std::unique_ptr<
+    typename SymplecticRungeKuttaNyströmIntegrator<Method, Position>::Instance>>
+SymplecticRungeKuttaNyströmIntegrator<Method, Position>::Instance::
+ReadFromMessage(
+    serialization::SymplecticRungeKuttaNystromIntegratorInstance const&
+        extension,
+    IntegrationProblem<ODE> const& problem,
+    AppendState const& append_state,
+    Time const& step,
+    SymplecticRungeKuttaNyströmIntegrator const& integrator) {
+  return std::unique_ptr<Instance>(
+      new Instance(problem, append_state, step, integrator));
 }
 
 template<typename Method, typename Position>
@@ -235,22 +250,6 @@ void SymplecticRungeKuttaNyströmIntegrator<Method, Position>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> message) const {
   message->set_kind(Method::kind);
   message->set_composition_method(composition);
-}
-
-template<typename Method, typename Position>
-not_null<std::unique_ptr<typename Integrator<
-    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
-SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
-ReadFromMessage(serialization::FixedStepSizeIntegratorInstance const& message,
-                IntegrationProblem<ODE> const& problem,
-                AppendState const& append_state,
-                Time const& step) const {
-  CHECK(message.HasExtension(
-      serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension))
-      << message.DebugString();
-
-  return std::unique_ptr<typename Integrator<ODE>::Instance>(
-      new Instance(problem, append_state, step, *this));
 }
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator

@@ -33,13 +33,15 @@ namespace internal_body_surface_dynamic_frame {
 using astronomy::ICRS;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
+using geometry::Arbitrary;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
 using geometry::Rotation;
-using geometry::Velocity;
 using geometry::Vector;
+using geometry::Velocity;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::GravitationalParameter;
@@ -75,9 +77,13 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the big body and directed to the small one.
   using BigSmallFrame = Frame<serialization::Frame::TestTag,
-                              serialization::Frame::TEST, /*inertial=*/false>;
+                              Arbitrary,
+                              Handedness::Right,
+                              serialization::Frame::TEST>;
   using MockFrame = Frame<serialization::Frame::TestTag,
-                          serialization::Frame::TEST1, /*inertial=*/false>;
+                          Arbitrary,
+                          Handedness::Right,
+                          serialization::Frame::TEST1>;
 
   BodySurfaceDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
@@ -166,7 +172,7 @@ TEST_F(BodySurfaceDynamicFrameTest, ToBigSmallFrameAtTime) {
                               BigSmallFrame::origin),
                 Lt(1.0e-6 * Metre));
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
-                              Velocity<BigSmallFrame>()),
+                              BigSmallFrame::unmoving),
                 Lt(1.0e-4 * Metre / Second));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
@@ -175,7 +181,7 @@ TEST_F(BodySurfaceDynamicFrameTest, ToBigSmallFrameAtTime) {
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
                 Lt(2.7e-4 * Metre));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
-                              Velocity<BigSmallFrame>()),
+                              BigSmallFrame::unmoving),
                 Lt(4.0e-3 * Metre / Second));
   }
 }

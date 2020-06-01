@@ -35,12 +35,12 @@ inline not_null<std::unique_ptr<Body>> Body::ReadFromMessage(
 
 template<typename Frame>
 struct Body::CompatibilityHelper<Frame, false> : not_constructible {
-  static bool is_compatible_with(not_null<Body const*> const body);
+  static bool is_compatible_with(not_null<Body const*> body);
 };
 
 template<typename Frame>
 struct Body::CompatibilityHelper<Frame, true> : not_constructible {
-  static bool is_compatible_with(not_null<Body const*> const body);
+  static bool is_compatible_with(not_null<Body const*> body);
 };
 
 template<typename Frame>

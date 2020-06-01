@@ -21,7 +21,7 @@ using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using quantities::Abs;
 using quantities::FusedMultiplyAdd;
 using quantities::Quantity;
-using quantities::SIUnit;
+namespace si = quantities::si;
 
 // Assumes that |T| and |U| have a memory representation that is a sequence of
 // |double|s, and returns the conjunction of componentwise
@@ -130,7 +130,7 @@ template<typename T, typename U>
 DoublePrecision<Product<T, U>> Scale(T const & scale,
                                      DoublePrecision<U> const& right) {
 #ifdef _DEBUG
-  double const s = scale / quantities::SIUnit<T>();
+  double const s = scale / quantities::si::Unit<T>;
   if (s != 0.0) {
     int exponent;
     double const mantissa = std::frexp(s, &exponent);

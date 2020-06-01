@@ -13,7 +13,7 @@ namespace base {
 template<typename Element>
 struct Array final {
   // An object of size 0.
-  Array();
+  Array() = default;
   // Mostly useful for adding constness.
   template<typename OtherElement,
            typename = typename std::enable_if<
@@ -60,7 +60,7 @@ struct Array final {
   constexpr explicit Array(Character (&characters)[size_plus_1]);
 
   Element* data;
-  std::int64_t size;  // In number of elements.
+  std::int64_t size = 0;  // In number of elements.
 };
 
 // A simple container for a pointer and size.  |data| is owned.

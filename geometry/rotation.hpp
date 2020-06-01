@@ -17,9 +17,12 @@ namespace geometry {
 FORWARD_DECLARE_FROM(orthogonal_map,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      OrthogonalMap);
-FORWARD_DECLARE_FROM(symmetric_bilinear_form,
-                     TEMPLATE(typename Scalar, typename Frame) class,
-                     SymmetricBilinearForm);
+FORWARD_DECLARE_FROM(
+    symmetric_bilinear_form,
+    TEMPLATE(typename Scalar,
+            typename Frame,
+            template<typename S, typename F> typename Multivector) class,
+    SymmetricBilinearForm);
 
 namespace internal_rotation {
 
@@ -73,6 +76,9 @@ struct DefinesFrame final {};
 // algebra.
 template<typename FromFrame, typename ToFrame>
 class Rotation : public LinearMap<FromFrame, ToFrame> {
+  static_assert(FromFrame::handedness == ToFrame::handedness,
+                "Cannot rotate between frames of different handedness");
+
  public:
   explicit Rotation(Quaternion const& quaternion);
 
@@ -201,6 +207,13 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   Rotation<ToFrame, FromFrame> Inverse() const;
 
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<std::is_same<F, T>::value>>
+  Bivector<double, FromFrame> RotationAxis() const;
+
+  Angle RotationAngle() const;
+
   template<typename Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
@@ -213,23 +226,33 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<typename Scalar>
-  SymmetricBilinearForm<Scalar, ToFrame> operator()(
-      SymmetricBilinearForm<Scalar, FromFrame> const& form) const;
+  template<typename Scalar,
+           template<typename S, typename F> typename Multivector>
+  SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
+      SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
 
   template<typename T>
   typename base::Mappable<Rotation, T>::type operator()(T const& t) const;
 
-  OrthogonalMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename> typename LinearMap>
+  LinearMap<FromFrame, ToFrame> Forget() const;
 
   static Rotation Identity();
 
   Quaternion const& quaternion() const;
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<base::is_serializable_v<F> &&
+                                       base::is_serializable_v<T>>>
   static Rotation ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::Rotation*> message) const;
+  template<typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<base::is_serializable_v<F> &&
+                                       base::is_serializable_v<T>>>
   static Rotation ReadFromMessage(serialization::Rotation const& message);
 
  private:
@@ -245,15 +268,33 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   template<typename From, typename Through, typename To>
   friend Rotation<From, To> operator*(Rotation<Through, To> const& left,
                                       Rotation<From, Through> const& right);
+  template<typename From, typename To>
+  friend bool operator==(Rotation<From, To> const& left,
+                         Rotation<From, To> const& right);
+  template<typename From, typename To>
+  friend bool operator!=(Rotation<From, To> const& left,
+                         Rotation<From, To> const& right);
 
-  friend std::ostream& operator<<<>(std::ostream& out,
-                                    Rotation const& rotation);
+  template<typename From, typename To>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  Rotation<From, To> const& rotation);
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right);
+
+template<typename From, typename To>
+bool operator==(Rotation<From, To> const& left,
+                Rotation<From, To> const& right);
+template<typename From, typename To>
+bool operator!=(Rotation<From, To> const& left,
+                Rotation<From, To> const& right);
+
+  template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         Rotation<FromFrame, ToFrame> const& rotation);
 
 }  // namespace internal_rotation
 

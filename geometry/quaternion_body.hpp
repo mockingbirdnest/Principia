@@ -3,13 +3,20 @@
 
 #include "geometry/quaternion.hpp"
 
+#include <string>
+
 #include "geometry/r3_element.hpp"
+#include "geometry/sign.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_quaternion {
 
-inline Quaternion::Quaternion() : real_part_(0) {}
+using quantities::Abs;
+using quantities::DebugString;
+using quantities::Sqrt;
 
 inline Quaternion::Quaternion(double const real_part)
     : real_part_(real_part) {}
@@ -26,6 +33,14 @@ inline double Quaternion::real_part() const {
 inline R3Element<double> const&
 Quaternion::imaginary_part() const {
   return imaginary_part_;
+}
+
+inline double Quaternion::Norm() const {
+  return Sqrt(Norm²());
+}
+
+inline double Quaternion::Norm²() const {
+  return real_part_ * real_part_ + imaginary_part_.Norm²();
 }
 
 inline Quaternion Quaternion::Conjugate() const {
@@ -139,12 +154,27 @@ inline Quaternion operator/(Quaternion const& left, double const right) {
                     left.imaginary_part() / right);
 }
 
+inline Quaternion Normalize(Quaternion const& quaternion) {
+  return quaternion / quaternion.Norm();
+}
+
 inline std::ostream& operator<<(std::ostream& out,
                                 Quaternion const& quaternion) {
-  return out << quaternion.real_part() << " + "
-             << quaternion.imaginary_part().x << " i + "
-             << quaternion.imaginary_part().y << " j + "
-             << quaternion.imaginary_part().z << " k";
+  double const w = quaternion.real_part();
+  double const x = quaternion.imaginary_part().x;
+  double const y = quaternion.imaginary_part().y;
+  double const z = quaternion.imaginary_part().z;
+
+  auto const unsigned_debug_string = [](double const d) {
+    std::string const s = DebugString(Abs(d));
+    CHECK_EQ('+', s[0]);
+    return s.substr(1);
+  };
+
+  return out << w << " "
+             << Sign(x) << " " << unsigned_debug_string(x) << " i "
+             << Sign(y) << " " << unsigned_debug_string(y) << " j "
+             << Sign(z) << " " << unsigned_debug_string(z) << " k";
 }
 
 }  // namespace internal_quaternion

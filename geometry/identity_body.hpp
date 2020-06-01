@@ -12,9 +12,6 @@ namespace geometry {
 namespace internal_identity {
 
 template<typename FromFrame, typename ToFrame>
-Identity<FromFrame, ToFrame>::Identity() {}
-
-template<typename FromFrame, typename ToFrame>
 Sign Identity<FromFrame, ToFrame>::Determinant() const {
   return Sign::Positive();
 }
@@ -46,10 +43,12 @@ Trivector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
-SymmetricBilinearForm<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
-    SymmetricBilinearForm<Scalar, FromFrame> const& form) const {
-  return SymmetricBilinearForm<Scalar, ToFrame>(form.coordinates());
+template<typename Scalar, template<typename, typename> typename Multivector>
+SymmetricBilinearForm<Scalar, ToFrame, Multivector>
+Identity<FromFrame, ToFrame>::operator()(
+    SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {
+  return SymmetricBilinearForm<Scalar, ToFrame, Multivector>(
+      form.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -60,10 +59,9 @@ Identity<FromFrame, ToFrame>::operator()(T const& t) const {
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
-  return OrthogonalMap<FromFrame, ToFrame>(
-      Determinant(),
-      Rotation<FromFrame, ToFrame>::Identity());
+template<template<typename, typename> typename LinearMap>
+LinearMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
+  return LinearMap<FromFrame, ToFrame>::Identity();
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -74,6 +72,7 @@ void Identity<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename, typename, typename>
 Identity<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
   LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
@@ -87,6 +86,7 @@ void Identity<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::Identity*> const message) const {}
 
 template<typename FromFrame, typename ToFrame>
+template<typename, typename, typename>
 Identity<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::ReadFromMessage(
     serialization::Identity const& message) {
   return Identity();
@@ -97,6 +97,12 @@ Identity<FromFrame, ToFrame> operator*(
     Identity<ThroughFrame, ToFrame> const& left,
     Identity<FromFrame, ThroughFrame> const& right) {
   return Identity<FromFrame, ToFrame>();
+}
+
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         Identity<FromFrame, ToFrame> const& identity) {
+  return out << u8"𝟙";
 }
 
 }  // namespace internal_identity

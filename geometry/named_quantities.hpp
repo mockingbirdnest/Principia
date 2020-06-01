@@ -6,6 +6,7 @@
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -44,6 +45,10 @@ using AngularVelocity = Bivector<quantities::AngularFrequency, Frame>;
 template<typename FromFrame, typename ToFrame>
 using RigidTransformation =
     AffineMap<FromFrame, ToFrame, quantities::Length, OrthogonalMap>;
+
+template<typename Frame>
+using InertiaTensor =
+    SymmetricBilinearForm<quantities::MomentOfInertia, Frame, Bivector>;
 
 }  // namespace geometry
 }  // namespace principia

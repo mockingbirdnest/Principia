@@ -18,7 +18,6 @@ namespace internal_point {
 using base::not_constructible;
 using quantities::Product;
 using quantities::Quantity;
-using quantities::SIUnit;
 
 template<typename Vector>
 struct PointSerializer : not_constructible {};
@@ -111,6 +110,7 @@ void Point<Vector>::WriteToMessage(
 }
 
 template<typename Vector>
+template<typename, typename>
 Point<Vector> Point<Vector>::ReadFromMessage(
     serialization::Point const& message) {
   Point result;

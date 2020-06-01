@@ -31,9 +31,11 @@ namespace internal_barycentric_rotating_dynamic_frame {
 
 using astronomy::ICRS;
 using base::check_not_null;
+using geometry::Arbitrary;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
 using geometry::Rotation;
 using geometry::Vector;
@@ -67,9 +69,13 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the barycentre of the two bodies.
   using BigSmallFrame = Frame<serialization::Frame::TestTag,
-                              serialization::Frame::TEST, /*inertial=*/false>;
+                              Arbitrary,
+                              Handedness::Right,
+                              serialization::Frame::TEST>;
   using MockFrame = Frame<serialization::Frame::TestTag,
-                          serialization::Frame::TEST1, /*inertial=*/false>;
+                          Arbitrary,
+                          Handedness::Right,
+                          serialization::Frame::TEST1>;
 
   BarycentricRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
@@ -149,7 +155,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
                               BigSmallFrame::origin),
                 Lt(1.0e-11 * Metre));
     EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.velocity(),
-                              Velocity<BigSmallFrame>()),
+                              BigSmallFrame::unmoving),
                 Lt(1.1e-11 * Metre / Second));
 
     // Check that the bodies don't move and are at the right locations.
@@ -170,7 +176,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
                 Lt(1.0e-6 * Metre));
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
-                              Velocity<BigSmallFrame>()),
+                              BigSmallFrame::unmoving),
                 Lt(1.0e-4 * Metre / Second));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
@@ -179,7 +185,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
                 Lt(1.0e-5 * Metre));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
-                              Velocity<BigSmallFrame>()),
+                              BigSmallFrame::unmoving),
                 Lt(1.0e-4 * Metre / Second));
   }
 }
@@ -230,7 +236,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
           {big_gravitational_parameter_, small_gravitational_parameter_});
   EXPECT_THAT(barycentre_dof.position() - ICRS::origin,
               Eq(Displacement<ICRS>({2 * Metre, 1 * Metre, 0 * Metre})));
-  EXPECT_THAT(barycentre_dof.velocity(), Eq(Velocity<ICRS>()));
+  EXPECT_THAT(barycentre_dof.velocity(), Eq(ICRS::unmoving));
 
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
@@ -292,7 +298,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
           {big_gravitational_parameter_, small_gravitational_parameter_});
   EXPECT_THAT(barycentre_dof.position() - ICRS::origin,
               Eq(Displacement<ICRS>({2 * Metre, 1 * Metre, 0 * Metre})));
-  EXPECT_THAT(barycentre_dof.velocity(), Eq(Velocity<ICRS>()));
+  EXPECT_THAT(barycentre_dof.velocity(), Eq(ICRS::unmoving));
 
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
@@ -354,7 +360,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
           {big_gravitational_parameter_, small_gravitational_parameter_});
   EXPECT_THAT(barycentre_dof.position() - ICRS::origin,
               Eq(Displacement<ICRS>({2 * Metre, 1 * Metre, 0 * Metre})));
-  EXPECT_THAT(barycentre_dof.velocity(), Eq(Velocity<ICRS>()));
+  EXPECT_THAT(barycentre_dof.velocity(), Eq(ICRS::unmoving));
 
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
@@ -418,7 +424,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
           {big_gravitational_parameter_, small_gravitational_parameter_});
   EXPECT_THAT(barycentre_dof.position() - ICRS::origin,
               Eq(Displacement<ICRS>({2 * Metre, 1 * Metre, 0 * Metre})));
-  EXPECT_THAT(barycentre_dof.velocity(), Eq(Velocity<ICRS>()));
+  EXPECT_THAT(barycentre_dof.velocity(), Eq(ICRS::unmoving));
 
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)

@@ -89,6 +89,15 @@ message DiscreteTrajectory {
   repeated int32 fork_position = 3;
   // Added in 陈景润.
   optional Downsampling downsampling = 4;
+
+  // Added in Frobenius.
+  message Zfp {
+    required int32 codec_version = 1;
+    required int32 library_version = 2;
+    required bytes timeline = 3;
+    required int32 timeline_size = 4;
+  }
+  optional Zfp zfp = 5;
 }
 
 message DynamicFrame {
@@ -133,6 +142,13 @@ message Ephemeris {
   // Pre-Буняковский.
   reserved 3, 4;
   reserved "planetary_integrator", "step";
+}
+
+message EulerSolver {
+  required R3Element moments_of_inertia = 1;
+  required Multivector initial_angular_momentum = 2;
+  required Rotation initial_attitude = 3;
+  required Point initial_time = 4;
 }
 
 message HierarchicalSystem {
@@ -212,6 +228,12 @@ message OblateBody {
     Quantity pre_diophantos_j2 = 1;
     Geopotential geopotential = 2;  // Normalized.
   }
+}
+
+message RigidMotion {
+  required AffineMap rigid_transformation = 1;
+  required Multivector angular_velocity_of_to_frame = 2;
+  required Multivector velocity_of_to_frame_origin = 3;
 }
 
 message RotatingBody {

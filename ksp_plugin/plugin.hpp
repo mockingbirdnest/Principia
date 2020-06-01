@@ -16,6 +16,7 @@
 #include "base/status.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/affine_map.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/point.hpp"
@@ -52,7 +53,9 @@ using base::Subset;
 using base::ThreadPool;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
+using geometry::Bivector;
 using geometry::Displacement;
+using geometry::InertiaTensor;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Point;
@@ -80,6 +83,7 @@ using quantities::Force;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Time;
+using quantities::Torque;
 using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;
@@ -202,20 +206,33 @@ class Plugin {
       PartId part_id,
       std::string const& name,
       Mass const& mass,
+      InertiaTensor<RigidPart> const& inertia_tensor,
+      bool is_solid_rocket_motor,
       GUID const& vessel_guid,
       Index main_body_index,
       DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
-      DegreesOfFreedom<World> const& part_degrees_of_freedom,
+      RigidMotion<RigidPart, World> const& part_rigid_motion,
       Time const& Δt);
 
-  // Calls |increment_intrinsic_force| on the relevant part, which must be in a
-  // loaded vessel.
-  virtual void IncrementPartIntrinsicForce(PartId part_id,
-                                           Vector<Force, World> const& force);
+  // Calls |apply_intrinsic_force| and |apply_intrinsic_torque| on the
+  // relevant part, which must be in a loaded vessel.
+  virtual void ApplyPartIntrinsicForce(
+      PartId part_id,
+      Vector<Force, World> const& force) const;
+  virtual void ApplyPartIntrinsicForceAtPosition(
+      PartId part_id,
+      Vector<Force, World> const& force,
+      Position<World> const& point_of_force_application,
+      Position<World> const& part_position) const;
+  virtual void ApplyPartIntrinsicTorque(
+      PartId part_id,
+      Bivector<Torque, World> const& torque) const;
+
+  virtual bool PartIsTruthful(PartId part_id) const;
 
   // Calls |MakeSingleton| for all parts in loaded vessels, enabling the use of
   // union-find for pile up construction.  This must be called after the calls
-  // to |IncrementPartIntrinsicForce|, and before the calls to
+  // to |ApplyPartIntrinsicForce|, and before the calls to
   // |ReportGroundCollision| or |ReportPartCollision|.
   virtual void PrepareToReportCollisions();
 
@@ -233,17 +250,16 @@ class Plugin {
   // the list of |pile_ups_| according to the reported collisions.
   virtual void FreeVesselsAndPartsAndCollectPileUps(Time const& Δt);
 
-  // Calls |SetPartApparentDegreesOfFreedom| on the pile-up containing the
-  // relevant part.  This part must be in a loaded vessel.
-  virtual void SetPartApparentDegreesOfFreedom(
+  // Calls |SetPartApparentRigidMotion| on the pile-up containing the relevant
+  // part.  This part must be in a loaded vessel.
+  virtual void SetPartApparentRigidMotion(
       PartId part_id,
-      DegreesOfFreedom<World> const& degrees_of_freedom,
-      DegreesOfFreedom<World> const& main_body_degrees_of_freedom);
+      RigidMotion<RigidPart, ApparentWorld> const& rigid_motion);
 
-  // Returns the degrees of freedom of the given part in |World|, assuming that
+  // Returns the motion of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
   // |part_at_origin|.
-  virtual DegreesOfFreedom<World> GetPartActualDegreesOfFreedom(
+  virtual RigidMotion<RigidPart, World> GetPartActualMotion(
       PartId part_id,
       RigidMotion<Barycentric, World> const& barycentric_to_world) const;
 
@@ -251,7 +267,7 @@ class Plugin {
   // |Index|, identifying the origin of |World| with the centre of mass of the
   // |Part| with the given |PartId|.
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
-      Index const index,
+      Index index,
       RigidMotion<Barycentric, World> const& barycentric_to_world,
       Instant const& time) const;
 
@@ -432,8 +448,8 @@ class Plugin {
       Ephemeris<Barycentric>::NewtonianMotionEquation;
 
   // This constructor should only be used during deserialization.
-  Plugin(Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+  Plugin(Ephemeris<Barycentric>::FixedStepParameters history_parameters,
+         Ephemeris<Barycentric>::AdaptiveStepParameters
              psychohistory_parameters);
 
   void InitializeIndices(
@@ -458,13 +474,13 @@ class Plugin {
       IndexToOwnedCelestial& celestials,
       std::map<std::string, Index>& name_to_index);
 
-  // Adds a part to a vessel, recording it in the appropriate map and setting up
-  // a deletion callback.
+  // Constructs a part using the constructor arguments, and add it to a vessel,
+  // recording it in the appropriate map and setting up a deletion callback.
+  template<typename... Args>
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
                std::string const& name,
-               Mass mass,
-               DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+               Args... args);
 
   // Whether |loaded_vessels_| contains |vessel|.
   bool is_loaded(not_null<Vessel*> vessel) const;
@@ -525,6 +541,13 @@ class Plugin {
   VesselSet loaded_vessels_;
   // The vessels that will be kept during the next call to |AdvanceTime|.
   VesselConstSet kept_vessels_;
+  // Contains the adaptive step parameters for the vessel that existed in the
+  // past but are no longer known to the plugin.  Useful to avoid losing the
+  // parameters, e.g., when a vessel hits the ground.
+  // NOTE(phl): This is a leaky map, in the sense that we don't remove deleted
+  // vessels from it.  Hopefully it's small enough that we don't care.
+  std::map<GUID, Ephemeris<Barycentric>::AdaptiveStepParameters>
+  zombie_prediction_adaptive_step_parameters_;
 
   friend class NavballFrameField;
   friend class TestablePlugin;

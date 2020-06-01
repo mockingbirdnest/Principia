@@ -152,6 +152,12 @@
     <ClInclude Include="interval_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="signature.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="signature_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -203,6 +209,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="symmetric_bilinear_form_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="signature_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

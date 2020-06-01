@@ -33,7 +33,7 @@ class ApproximateQuantity<Quantity<Dimensions>> {
   std::string DebugString() const;
 
  private:
-  ApproximateQuantity(std::string const& representation,
+  ApproximateQuantity(std::string representation,
                       int ulp,
                       bool negated,
                       double min_multiplier,

@@ -24,20 +24,20 @@ using quantities::Length;
 using quantities::Mass;
 using quantities::Momentum;
 using quantities::Pow;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::Stiffness;
 using quantities::Time;
 using quantities::si::Second;
+namespace si = quantities::si;
 
 inline Status ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
     int* const evaluations) {
-  result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
+  result[0] = -q[0] * (si::Unit<Stiffness> / si::Unit<Mass>);
   if (evaluations != nullptr) {
     ++*evaluations;
   }
@@ -50,7 +50,7 @@ Status ComputeHarmonicOscillatorAcceleration3D(
     std::vector<Position<Frame>> const& q,
     std::vector<Vector<Acceleration, Frame>>& result,
     int* const evaluations) {
-  result[0] = (Frame::origin - q[0]) * (SIUnit<Stiffness>() / SIUnit<Mass>());
+  result[0] = (Frame::origin - q[0]) * (si::Unit<Stiffness> / si::Unit<Mass>);
   if (evaluations != nullptr) {
     ++*evaluations;
   }
@@ -64,7 +64,7 @@ inline Status ComputeKeplerAcceleration(
     int* evaluations) {
   auto const r² = q[0] * q[0] + q[1] * q[1];
   auto const minus_μ_over_r³ =
-      -SIUnit<GravitationalParameter>() * Sqrt(r²) / (r² * r²);
+      -si::Unit<GravitationalParameter> * Sqrt(r²) / (r² * r²);
   result[0] = q[0] * minus_μ_over_r³;
   result[1] = q[1] * minus_μ_over_r³;
   if (evaluations != nullptr) {

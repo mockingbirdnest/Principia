@@ -31,10 +31,10 @@ class MassiveBody : public Body {
     // The constructors are implicit on purpose.
     Parameters(
         GravitationalParameter const& gravitational_parameter);  // NOLINT
-    Parameters(std::string const& name,
+    Parameters(std::string name,
                GravitationalParameter const& gravitational_parameter);
     Parameters(Mass const& mass);  // NOLINT(runtime/explicit)
-    Parameters(std::string const& name,
+    Parameters(std::string name,
                Mass const& mass);
 
     // For pre-Διόφαντος compatibility.
@@ -47,7 +47,7 @@ class MassiveBody : public Body {
     friend class MassiveBody;
   };
 
-  explicit MassiveBody(Parameters const& parameters);
+  explicit MassiveBody(Parameters parameters);
 
   // Returns the construction parameter.
   std::string const& name() const;

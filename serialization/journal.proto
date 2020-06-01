@@ -20,6 +20,7 @@ message NavigationFrameParameters {
 }
 
 message XYZ {
+  option (is_public) = true;
   required double x = 1;
   required double y = 2;
   required double z = 3;
@@ -42,7 +43,6 @@ message BodyGeopotentialElement {
 }
 
 message BodyParameters {
-  option (in_custom_marshaler) = "InBodyParametersMarshaler";
   required string name = 10;
   required string gravitational_parameter = 1;
   optional string reference_instant = 7;
@@ -55,8 +55,7 @@ message BodyParameters {
   optional string angular_frequency = 9;
   optional string reference_radius = 6;
   optional string j2 = 5;  // No parsing in C#.
-  repeated BodyGeopotentialElement geopotential = 11
-      [(size) = "geopotential_size"];
+  repeated BodyGeopotentialElement geopotential = 11;
 }
 
 message Burn {
@@ -138,8 +137,8 @@ message QP {
 message Status {
   // A principia::base::Error, or equivalently, a google.rpc.Code.
   required int32 error = 1;
-  // TODO(phl): find a way to produce strings in a struct and to interchange
-  // enums.
+  required fixed64 message = 2 [(encoding) = UTF_8,
+                                (is_produced) = true];
 }
 
 message WXYZ {
@@ -147,6 +146,12 @@ message WXYZ {
   required double x = 2;
   required double y = 3;
   required double z = 4;
+}
+
+message QPRW {
+  required QP qp = 1;
+  required WXYZ r = 2;
+  required XYZ w = 3;
 }
 
 message XY {
@@ -200,20 +205,39 @@ message OrbitAnalysis {
   required double progress_of_next_analysis = 1;
   required int32 primary_index = 2;
   required double mission_duration = 3;
-  // NOTE(egg): we currently have no support in the interface generator for
-  // optional non-string fields in interchange structs.  We use separate
-  // booleans to denote the presence of a value, where the boolean denoting
-  // the presence of field F = f is field F_has_value = 10 + f.
-  required OrbitalElements elements = 4;
-  required bool elements_has_value = 14;
-  required OrbitRecurrence recurrence = 5;
-  required bool recurrence_has_value = 15;
-  required OrbitGroundTrack ground_track = 6;
-  required bool ground_track_has_value = 16;
+  optional OrbitalElements elements = 4 [(is_produced) = true];
+  optional OrbitRecurrence recurrence = 5 [(is_produced) = true];
+  optional OrbitGroundTrack ground_track = 6 [(is_produced) = true];
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5162.
+  extensions 5000 to 5999;  // Last used: 5172.
+}
+
+message SetAngularMomentumConservation {
+  extend Method {
+    optional SetAngularMomentumConservation extension = 5999;
+  }
+  message In {
+    required bool conserve_angular_momentum = 1;
+  }
+  optional In in = 1;
+}
+
+message VesselGetPileUpTrace {
+  extend Method {
+    optional VesselGetPileUpTrace extension = 5998;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required string result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message AdvanceTime {
@@ -226,6 +250,20 @@ message AdvanceTime {
     required double planetarium_rotation = 3;
   }
   optional In in = 1;
+}
+
+message CameraReferenceRotation {
+  extend Method {
+    optional CameraReferenceRotation extension = 5163;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  message Return {
+    required WXYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message CatchUpLaggingVessels {
@@ -341,6 +379,12 @@ message CelestialWorldDegreesOfFreedom {
   optional Return return = 3;
 }
 
+message ClearFlags {
+  extend Method {
+    optional ClearFlags extension = 5167;
+  }
+}
+
 message ClearTargetVessel {
   extend Method {
     optional ClearTargetVessel extension = 5122;
@@ -374,6 +418,21 @@ message CurrentTime {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message DeleteInterchange {
+  extend Method {
+    optional DeleteInterchange extension = 5169;
+  }
+  message In {
+    required fixed64 native_pointer = 1 [(pointer_to) = "void const",
+                                         (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 native_pointer = 1 [(pointer_to) = "void const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
 }
 
 message DeletePlugin {
@@ -426,10 +485,10 @@ message DeserializePlugin {
     optional DeserializePlugin extension = 5050;
   }
   message In {
-    required string serialization = 1 [(size) = "serialization_size"];
+    required string serialization = 1;
     required fixed64 deserializer = 2
         [(pointer_to) = "PushDeserializer",
-         (is_consumed_if) = "serialization->empty()"];
+         (is_consumed_if) = "std::string_view(serialization).empty()"];
     required fixed64 plugin = 3 [(pointer_to) = "Plugin const"];
     required string compressor = 4;
     required string encoder = 5;
@@ -437,7 +496,7 @@ message DeserializePlugin {
   message Out {
     required fixed64 deserializer = 1
         [(pointer_to) = "PushDeserializer",
-         (is_produced_if) = "!serialization->empty()"];
+         (is_produced_if) = "!std::string_view(serialization).empty()"];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const",
                                  (is_produced) = true];
   }
@@ -457,6 +516,51 @@ message EndInitialization {
 
 // These functions form the external API of Principia; announce deprecation one
 // lunation ahead, then make them return UNIMPLEMENTED.
+
+message ExternalCelestialGetPosition {
+  extend Method {
+    optional ExternalCelestialGetPosition extension = 5170;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 body_index = 2;
+    required double time = 3;
+  }
+  message Out {
+    required XYZ position = 1;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message ExternalCelestialGetSurfacePosition {
+  extend Method {
+    optional ExternalCelestialGetSurfacePosition extension = 5171;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 body_index = 2;
+    required double planetocentric_latitude_in_degrees = 3;
+    required double planetocentric_longitude_in_degrees = 4;
+    required double radius = 5;
+    required double time = 6;
+  }
+  message Out {
+    required XYZ position = 1;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
 
 // Not yet implemented.
 // Solves a free-fall initial value problem, where the initial degrees of
@@ -478,7 +582,7 @@ message ExternalFlowFreefall {
     required QP world_body_centred_final_degrees_of_freedom = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -503,7 +607,7 @@ message ExternalGeopotentialGetCoefficient {
     required XY coefficient = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -527,7 +631,28 @@ message ExternalGeopotentialGetReferenceRadius {
     required double reference_radius = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message ExternalVesselGetPosition {
+  extend Method {
+    optional ExternalVesselGetPosition extension = 5172;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double time = 3;
+  }
+  message Out {
+    required XYZ position = 1;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -553,7 +678,7 @@ message ExternalGetNearestPlannedCoastDegreesOfFreedom {
     required QP world_body_centred_nearest_degrees_of_freedom = 1;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -573,7 +698,7 @@ message FlightPlanAppend {
     required Burn burn = 3;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -794,7 +919,7 @@ message FlightPlanRemoveLast {
     required string vessel_guid = 2;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -900,7 +1025,7 @@ message FlightPlanReplace {
     required int32 index = 4;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -918,7 +1043,7 @@ message FlightPlanSetAdaptiveStepParameters {
         flight_plan_adaptive_step_parameters = 3;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -935,7 +1060,7 @@ message FlightPlanSetDesiredFinalTime {
     required double final_time = 3;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1018,23 +1143,6 @@ message GetBufferedLogging {
   optional Return return = 3;
 }
 
-message GetPartActualDegreesOfFreedom {
-  extend Method {
-    optional GetPartActualDegreesOfFreedom extension = 5116;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required fixed32 part_id = 2;
-    required Origin origin = 4;
-  }
-  message Return {
-    required QP result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message GetStderrLogging {
   extend Method {
     optional GetStderrLogging extension = 5007;
@@ -1108,18 +1216,6 @@ message HasVessel {
   }
   optional In in = 1;
   optional Return return = 3;
-}
-
-message IncrementPartIntrinsicForce {
-  extend Method {
-    optional IncrementPartIntrinsicForce extension = 5114;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required fixed32 part_id = 2;
-    required XYZ force_in_kilonewtons = 3;
-  }
-  optional In in = 1;
 }
 
 message InitializeEphemerisParameters {
@@ -1216,10 +1312,15 @@ message InsertOrKeepLoadedPart {
     required fixed32 part_id = 2;
     required string name = 8;
     required double mass_in_tonnes = 3;
+    required XYZ moments_of_inertia_in_tonnes = 10;
+    required WXYZ principal_axes_rotation = 11;
+    required bool is_solid_rocket_motor = 14;
     required string vessel_guid = 4;
     required int32 main_body_index = 5;
     required QP main_body_world_degrees_of_freedom = 6;
     required QP part_world_degrees_of_freedom = 7;
+    required WXYZ part_rotation = 12;
+    required XYZ part_angular_velocity = 13;
     required double delta_t = 9;
   }
   optional In in = 1;
@@ -1519,6 +1620,91 @@ message NewPlugin {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message PartApplyIntrinsicForce {
+  extend Method {
+    optional PartApplyIntrinsicForce extension = 5114;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required XYZ force_in_kilonewtons = 3;
+  }
+  optional In in = 1;
+}
+
+message PartApplyIntrinsicForceAtPosition {
+  extend Method {
+    optional PartApplyIntrinsicForceAtPosition extension = 5164;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required XYZ force_in_kilonewtons = 3;
+    required XYZ point_of_force_application = 4;
+    required XYZ part_position = 5;
+  }
+  optional In in = 1;
+}
+
+message PartApplyIntrinsicTorque {
+  extend Method {
+    optional PartApplyIntrinsicTorque extension = 5165;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required XYZ torque_in_kilonewton_metre = 3;
+  }
+  optional In in = 1;
+}
+
+message PartGetActualRigidMotion {
+  extend Method {
+    optional PartGetActualRigidMotion extension = 5116;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed32 part_id = 2;
+    required Origin origin = 4;
+  }
+  message Return {
+    required QPRW result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PartIsTruthful {
+  extend Method {
+    optional PartIsTruthful extension = 5166;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed32 part_id = 2;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PartSetApparentRigidMotion {
+  extend Method {
+    optional PartSetApparentRigidMotion extension = 5115;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required QP degrees_of_freedom = 3;
+    required WXYZ rotation = 5;
+    required XYZ angular_velocity = 6;
+  }
+  optional In in = 1;
 }
 
 message PlanetariumCreate {
@@ -1827,6 +2013,17 @@ message SetBufferedLogging {
   optional In in = 1;
 }
 
+message SetFlag {
+  extend Method {
+    optional SetFlag extension = 5168;
+  }
+  message In {
+    required string name = 1;
+    required string value = 2;
+  }
+  optional In in = 1;
+}
+
 message SetMainBody {
   extend Method {
     optional SetMainBody extension = 5097;
@@ -1834,19 +2031,6 @@ message SetMainBody {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required int32 index = 2;
-  }
-  optional In in = 1;
-}
-
-message SetPartApparentDegreesOfFreedom {
-  extend Method {
-    optional SetPartApparentDegreesOfFreedom extension = 5115;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required fixed32 part_id = 2;
-    required QP degrees_of_freedom = 3;
-    required QP main_body_degrees_of_freedom = 4;
   }
   optional In in = 1;
 }
@@ -2038,7 +2222,7 @@ message VesselRefreshAnalysis {
     required int32 ground_track_revolution = 7;
   }
   message Return {
-    required OrbitAnalysis result = 1;
+    required OrbitAnalysis result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -2094,13 +2278,9 @@ extend google.protobuf.FieldOptions {
   // designated type of the pointer.
   optional string pointer_to = 50000;
 
-  // For a repeated message or string field that comes with a separate size
-  // parameter, gives the name of the size parameter.
-  optional string size = 50001;
-
   // For a fixed64 field, indicates whether the corresponding pointer is
   // consumed (deleted or has its ownership transferred) or produced (allocated)
-  // by the interface.
+  // by the C++ side.
   optional bool is_consumed = 50002;
   optional bool is_produced = 50003;
 
@@ -2128,9 +2308,8 @@ extend google.protobuf.FieldOptions {
 }
 
 extend google.protobuf.MessageOptions {
-  // For an interchange message that is used as an in parameters, specifies the
-  // custom marshaler to use.
-  optional string in_custom_marshaler = 50011;
+  // For an interchange message, specifies the custom marshaler to use.
+  optional string custom_marshaler = 50011;
   // For an interchange message, specifies whether the generated C# struct
   // should be public (the default is internal).
   optional bool is_public = 50012;

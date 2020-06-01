@@ -127,8 +127,8 @@ void Reduce(Angle const& angle,
 // |FukushimaEllipticBD| declared in the header file.
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void FukushimaEllipticBDJ(Angle const& φ,
-                          double const n,
-                          double const mc,
+                          double n,
+                          double mc,
                           Angle& B_φǀm,
                           Angle& D_φǀm,
                           ThirdKind& J_φ_nǀm);
@@ -136,8 +136,8 @@ void FukushimaEllipticBDJ(Angle const& φ,
 // Implementation of the B, D, J functions with all arguments reduced.
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void FukushimaEllipticBDJReduced(Angle const& φ,
-                                 double const n,
-                                 double const mc,
+                                 double n,
+                                 double mc,
                                  Angle& B_φǀm,
                                  Angle& D_φǀm,
                                  ThirdKind& J_φ_nǀm);
@@ -146,8 +146,8 @@ void FukushimaEllipticBDJReduced(Angle const& φ,
 // |EllipticFE| declared in the header file.
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void EllipticFEΠ(Angle const& φ,
-                 double const n,
-                 double const mc,
+                 double n,
+                 double mc,
                  Angle& F_φǀm,
                  Angle& E_φǀm,
                  ThirdKind& Π_φ_nǀm);
@@ -263,7 +263,7 @@ class FukushimaEllipticDsBsMaclaurin {
 
  public:
   template<typename... Args, int n = sizeof...(Args)>
-  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
+  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator>
   MakeBsPolynomial(Args... args) {
     using Tuple = std::tuple<Args...>;
     return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
@@ -272,7 +272,7 @@ class FukushimaEllipticDsBsMaclaurin {
   }
 
   template<typename... Args, int n = sizeof...(Args)>
-  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator> const
+  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator>
   MakeDsPolynomial(Args... args) {
     using Tuple = std::tuple<Args...>;
     return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
@@ -1333,8 +1333,6 @@ void FukushimaEllipticBDJ(double const nc,
   CHECK_LE(0, mc);
   if (mc > 1) {  // m < 0
     // See [Fuk11b] B.1.
-    double const m = 1 - mc;
-    double const mN = -m / mc;
     double const mcN = 1 / mc;
 
     Angle B_mN{uninitialized};
@@ -1692,7 +1690,6 @@ Angle FukushimaT(double const t, double const h) {
     return t * FukushimaTMaclaurin9::polynomial.Evaluate(z) * Radian;
   } else if (z < 0.0) {
     double const r = Sqrt(h);
-    double const ri = 1.0 / r;
     return ArcTan(r * t) / r;
   } else if (abs_z < 4.7138547e-02) {
     return t * FukushimaTMaclaurin10::polynomial.Evaluate(z) * Radian;

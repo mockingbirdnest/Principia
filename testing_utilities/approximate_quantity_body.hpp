@@ -14,7 +14,7 @@ namespace internal_approximate_quantity {
 
 using quantities::Abs;
 using quantities::Format;
-using quantities::SIUnit;
+namespace si = quantities::si;
 
 template<typename Dimensions>
 Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::min() const {
@@ -33,7 +33,7 @@ Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::unit() const {
 
 template<typename Dimensions>
 bool ApproximateQuantity<Quantity<Dimensions>>::has_trivial_unit() const {
-  return unit_ == SIUnit<Quantity<Dimensions>>();
+  return unit_ == si::Unit<Quantity<Dimensions>>;
 }
 
 template<typename Dimensions>
@@ -56,13 +56,13 @@ std::string ApproximateQuantity<Quantity<Dimensions>>::DebugString() const {
 
 template<typename Dimensions>
 ApproximateQuantity<Quantity<Dimensions>>::ApproximateQuantity(
-    std::string const& representation,
+    std::string representation,
     int const ulp,
     bool const negated,
     double const min_multiplier,
     double const max_multiplier,
     Quantity<Dimensions> const& unit)
-    : representation_(representation),
+    : representation_(std::move(representation)),
       ulp_(ulp),
       negated_(negated),
       min_multiplier_(min_multiplier),

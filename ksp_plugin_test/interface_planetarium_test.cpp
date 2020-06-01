@@ -4,6 +4,7 @@
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -21,6 +22,7 @@ using base::make_not_null_unique;
 using base::not_null;
 using geometry::Instant;
 using geometry::OrthogonalMap;
+using geometry::Permutation;
 using geometry::RigidTransformation;
 using geometry::Rotation;
 using ksp_plugin::Camera;
@@ -55,7 +57,12 @@ TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
   EXPECT_CALL(*plugin_, PlanetariumRotation())
       .WillRepeatedly(ReturnRef(identity));
   EXPECT_CALL(renderer, WorldToPlotting(_, _, _))
-      .WillOnce(Return(RigidTransformation<World, Navigation>::Identity()));
+      .WillOnce(Return(RigidTransformation<World, Navigation>(
+          World::origin,
+          Navigation::origin,
+          Permutation<World, Navigation>(
+              Permutation<World, Navigation>::CoordinatePermutation::YXZ)
+              .Forget<OrthogonalMap>())));
   EXPECT_CALL(*plugin_, FillPlanetarium(_, _, _))
       .WillOnce(FillUniquePtr<2>(new MockPlanetarium));
 

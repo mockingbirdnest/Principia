@@ -16,6 +16,8 @@ namespace internal_renderer {
 
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
+using geometry::OddPermutation;
+using geometry::Permutation;
 using geometry::RigidTransformation;
 using geometry::Vector;
 using geometry::Velocity;
@@ -118,6 +120,11 @@ Renderer::RenderPlottingTrajectoryInWorld(
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
+
+  //   Dinanzi a me non fuor cose create
+  //   se non etterne, e io etterno duro.
+  //   Lasciate ogne speranza, voi ch’intrate.
+  //
   // This function does unnatural things.
   // - It identifies positions in the plotting frame with those of world using
   // the rigid transformation at the current time, instead of transforming each
@@ -132,7 +139,8 @@ Renderer::RenderPlottingTrajectoryInWorld(
   // velocity).
   // The resulting |DegreesOfFreedom| should be seen as no more than a
   // convenient hack to send a plottable position together with a velocity in
-  // the coordinates we want.
+  // the coordinates we want.  In fact, it needs an articial permutation to
+  // avoid a violation of handedness.
   // TODO(phl): This will no longer be needed once we have support for
   // projections; instead of these convenient lies we can simply say that the
   // camera is fixed in the plotting frame and project there; additional data
@@ -148,7 +156,9 @@ Renderer::RenderPlottingTrajectoryInWorld(
     DegreesOfFreedom<World> const world_degrees_of_freedom = {
         from_plotting_frame_to_world_at_current_time(
             navigation_degrees_of_freedom.position()),
-        geometry::Identity<Navigation, World>{}(
+        geometry::Permutation<Navigation, World>(
+            geometry::Permutation<Navigation,
+                                  World>::CoordinatePermutation::YXZ)(
             navigation_degrees_of_freedom.velocity())};
     trajectory->Append(time, world_degrees_of_freedom);
   }
@@ -178,7 +188,8 @@ OrthogonalMap<Barycentric, World> Renderer::BarycentricToWorld(
 
 OrthogonalMap<Barycentric, WorldSun> Renderer::BarycentricToWorldSun(
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return sun_looking_glass.Inverse().Forget() * planetarium_rotation.Forget();
+  return sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
+         planetarium_rotation.Forget<OrthogonalMap>();
 }
 
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
@@ -206,7 +217,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
               plotting_frame_degrees_of_freedom);
 
   return PlottingToWorld(back.time, planetarium_rotation) *
-         frenet_frame_to_plotting_frame.Forget();
+         frenet_frame_to_plotting_frame.Forget<OrthogonalMap>();
 }
 
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
@@ -219,7 +230,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
   auto const frenet_frame =
       navigation_frame.FrenetFrame(
           back.time,
-          to_navigation(back.degrees_of_freedom)).Forget();
+          to_navigation(back.degrees_of_freedom)).Forget<OrthogonalMap>();
   return BarycentricToWorld(planetarium_rotation) * from_navigation *
          frenet_frame;
 }
@@ -263,6 +274,20 @@ RigidTransformation<World, Navigation> Renderer::WorldToPlotting(
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   return BarycentricToPlotting(time).rigid_transformation() *
          WorldToBarycentric(time, sun_world_position, planetarium_rotation);
+}
+
+Rotation<CameraReference, World> Renderer::CameraReferenceRotation(
+    Instant const& time,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  Permutation<CameraReference, Navigation> const celestial_mirror(
+      OddPermutation::XZY);
+  auto const result =
+      OrthogonalMap<WorldSun, World>::Identity() *
+      sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
+      planetarium_rotation.Forget<OrthogonalMap>() *
+      GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map() *
+      celestial_mirror.Forget<OrthogonalMap>();
+  return result.AsRotation();
 }
 
 void Renderer::WriteToMessage(

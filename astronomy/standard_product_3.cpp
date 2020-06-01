@@ -342,7 +342,7 @@ StandardProduct3::StandardProduct3(
       // If the file does not provide velocities, fill the trajectory with NaN
       // velocities; we then replace it with another trajectory whose velocities
       // are computed using a finite difference formula.
-      Velocity<ITRS> velocity({NaN<Speed>(), NaN<Speed>(), NaN<Speed>()});
+      Velocity<ITRS> velocity({NaN<Speed>, NaN<Speed>, NaN<Speed>});
 
       read_line();
       if (version_ >= Version::C && line.has_value() && columns(1, 2) == "EP") {
@@ -374,7 +374,7 @@ StandardProduct3::StandardProduct3(
       }
 
       // Bad or absent positional and velocity values are to be set to 0.000000.
-      if (position == ITRS::origin || velocity == Velocity<ITRS>()) {
+      if (position == ITRS::origin || velocity == ITRS::unmoving) {
         if (!arc.Empty()) {
           orbit.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
         }

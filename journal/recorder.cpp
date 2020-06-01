@@ -5,8 +5,10 @@
 
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
-#include "glog/logging.h"
 #include "base/serialization.hpp"
+#include "base/version.hpp"
+#include "glog/logging.h"
+#include "journal/profiles.hpp"
 
 namespace principia {
 
@@ -34,6 +36,19 @@ void Recorder::WriteAtDestruction(serialization::Method const& method) {
 void Recorder::Activate(base::not_null<Recorder*> const recorder) {
   CHECK(active_recorder_ == nullptr);
   active_recorder_ = recorder;
+
+  // When the recorder gets activated, pretend that we got a GetVersion call.
+  // This will record the version at the beginning of the journal, which is
+  // useful for forensics.
+  serialization::Method method;
+  not_null<serialization::GetVersion*> const get_version =
+      method.MutableExtension(serialization::GetVersion::extension);
+  active_recorder_->WriteAtConstruction(method);
+  not_null<serialization::GetVersion::Out*> const out =
+      get_version->mutable_out();
+  out->set_build_date(base::BuildDate);
+  out->set_version(base::Version);
+  active_recorder_->WriteAtDestruction(method);
 }
 
 void Recorder::Deactivate() {

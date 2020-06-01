@@ -74,8 +74,8 @@ class PullSerializerTest : public ::testing::Test {
   // always discarded.
   Array<std::uint8_t> OnFull(Array<std::uint8_t> const bytes,
                              std::list<std::string>& strings) {
-    strings.push_back(std::string(reinterpret_cast<const char*>(&bytes.data[0]),
-                                  static_cast<std::size_t>(bytes.size)));
+    strings.emplace_back(reinterpret_cast<const char*>(&bytes.data[0]),
+                         static_cast<std::size_t>(bytes.size));
     return Array<std::uint8_t>(data_, small_chunk_size);
   }
 

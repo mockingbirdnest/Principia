@@ -29,11 +29,13 @@ namespace physics {
 namespace internal_body_centred_non_rotating_dynamic_frame {
 
 using astronomy::ICRS;
+using geometry::Arbitrary;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Rotation;
@@ -43,7 +45,6 @@ using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::GravitationalParameter;
 using quantities::Length;
-using quantities::SIUnit;
 using quantities::Time;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -57,6 +58,7 @@ using testing_utilities::VanishesBefore;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
+namespace si = quantities::si;
 
 namespace {
 
@@ -69,9 +71,13 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
  protected:
   // The non-rotating frame centred on the big body.
   using Big = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST, /*inertial=*/false>;
+                    Arbitrary,
+                    Handedness::Right,
+                    serialization::Frame::TEST>;
   using Small = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, /*inertial=*/false>;
+                      Arbitrary,
+                      Handedness::Right,
+                      serialization::Frame::TEST1>;
 
   BodyCentredNonRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
@@ -191,15 +197,15 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, GeometricAcceleration) {
         small_gravitational_parameter_ /
             ((big_to_small - y) * (big_to_small - y));
     Vector<Acceleration, Big> const expected_acceleration(
-                  {0 * SIUnit<Acceleration>(),
+                  {0 * si::Unit<Acceleration>,
                    small_on_position + big_on_position - small_on_big,
-                   0 * SIUnit<Acceleration>()});
+                   0 * si::Unit<Acceleration>});
     EXPECT_THAT(AbsoluteError(
                     big_frame_->GeometricAcceleration(
                         t0_,
-                        DegreesOfFreedom<Big>(position, Velocity<Big>())),
+                        DegreesOfFreedom<Big>(position, Big::unmoving)),
                     expected_acceleration),
-                Lt(1e-10 * SIUnit<Acceleration>()));
+                Lt(1e-10 * si::Unit<Acceleration>));
   }
 }
 

@@ -19,9 +19,11 @@ using astronomy::operator""_TT;
 using base::make_not_null_unique;
 using base::not_null;
 using geometry::Bivector;
+using geometry::DeduceSignReversingOrientation;
 using geometry::Perspective;
 using geometry::RigidTransformation;
 using geometry::RP2Lines;
+using geometry::Signature;
 using geometry::Vector;
 using geometry::Velocity;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -66,29 +68,43 @@ constexpr Length focal = 1 * Metre;
 
 Perspective<Navigation, Camera> PolarPerspective(
     Length const distance_from_earth) {
+  using LeftNavigation =
+      Frame<enum class LeftNavigationTag, Arbitrary, Handedness::Left>;
   return {
       RigidTransformation<Navigation, Camera>(
           Navigation::origin + Displacement<Navigation>(
                                    {0 * Metre, 0 * Metre, distance_from_earth}),
           Camera::origin,
-          Rotation<Navigation, Camera>(Vector<double, Navigation>({1, 0, 0}),
-                                       Vector<double, Navigation>({0, -1, 0}),
-                                       Bivector<double, Navigation>({0, 0, -1}))
-              .Forget()),
+          Rotation<LeftNavigation, Camera>(
+              Vector<double, LeftNavigation>({1, 0, 0}),
+              Vector<double, LeftNavigation>({0, -1, 0}),
+              Bivector<double, LeftNavigation>({0, 0, -1}))
+              .Forget<OrthogonalMap>() *
+          Signature<Navigation, LeftNavigation>(
+              Sign::Positive(),
+              Sign::Positive(),
+              DeduceSignReversingOrientation{}).Forget<OrthogonalMap>()),
       focal};
 }
 
 Perspective<Navigation, Camera> EquatorialPerspective(
     Length const distance_from_earth) {
+  using LeftNavigation =
+      Frame<enum class LeftNavigationTag, Arbitrary, Handedness::Left>;
   return {
       RigidTransformation<Navigation, Camera>(
           Navigation::origin + Displacement<Navigation>(
                                    {0 * Metre, distance_from_earth, 0 * Metre}),
           Camera::origin,
-          Rotation<Navigation, Camera>(Vector<double, Navigation>({1, 0, 0}),
-                                       Vector<double, Navigation>({0, 0, 1}),
-                                       Bivector<double, Navigation>({0, -1, 0}))
-              .Forget()),
+          Rotation<LeftNavigation, Camera>(
+              Vector<double, LeftNavigation>({1, 0, 0}),
+              Vector<double, LeftNavigation>({0, 0, 1}),
+              Bivector<double, LeftNavigation>({0, -1, 0}))
+              .Forget<OrthogonalMap>() *
+          Signature<Navigation, LeftNavigation>(
+              Sign::Positive(),
+              Sign::Positive(),
+              DeduceSignReversingOrientation{}).Forget<OrthogonalMap>()),
       focal};
 }
 
@@ -197,10 +213,10 @@ void RunBenchmark(benchmark::State& state,
     total_lines += lines.size();
     ++iterations;
   }
-  Length min_x = Infinity<Length>();
-  Length min_y = Infinity<Length>();
-  Length max_x = -Infinity<Length>();
-  Length max_y = -Infinity<Length>();
+  Length min_x = Infinity<Length>;
+  Length min_y = Infinity<Length>;
+  Length max_x = -Infinity<Length>;
+  Length max_y = -Infinity<Length>;
   int points = 0;
   for (auto const& line : lines) {
     points += line.size();

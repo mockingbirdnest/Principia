@@ -30,11 +30,11 @@ using quantities::Length;
 using quantities::Mass;
 using quantities::Mod;
 using quantities::ParseQuantity;
-using quantities::SIUnit;
 using quantities::constants::GravitationalConstant;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
+namespace si = quantities::si;
 
 namespace tools {
 
@@ -134,7 +134,7 @@ void GenerateKopernicusForSlippist1(
     kopernicus_cfg << "      %gravParameter = "
                    << DebugString(ParseQuantity<GravitationalParameter>(
                                       body.gravitational_parameter()) /
-                                  SIUnit<GravitationalParameter>())
+                                  si::Unit<GravitationalParameter>)
                    << "\n";
     kopernicus_cfg << "      %radius = "
                    << DebugString(ParseQuantity<Length>(body.mean_radius()) /
@@ -160,11 +160,12 @@ void GenerateKopernicusForSlippist1(
     } else {
       CHECK(star.has_value());
       auto const keplerian_elements =
-          solar_system.MakeKeplerianElements(elements);
-      KeplerOrbit<Sky> const kepler_orbit(*solar_system.MakeMassiveBody(*star),
-                                          *solar_system.MakeMassiveBody(body),
-                                          keplerian_elements,
-                                          solar_system.epoch());
+          SolarSystem<Sky>::MakeKeplerianElements(elements);
+      KeplerOrbit<Sky> const kepler_orbit(
+          *SolarSystem<Sky>::MakeMassiveBody(*star),
+          *SolarSystem<Sky>::MakeMassiveBody(body),
+          keplerian_elements,
+          solar_system.epoch());
       kopernicus_cfg << "    @Orbit {\n";
       kopernicus_cfg << "      %semiMajorAxis = "
                      << DebugString(
@@ -205,8 +206,6 @@ void GenerateKopernicusForSlippist1(
 
   kopernicus_cfg << "@principia_gravity_model:FOR[Principia] {\n";
   for (std::string const& name : solar_system.names()) {
-    serialization::GravityModel::Body const& body =
-        solar_system.gravity_model_message(name);
     serialization::InitialState::Keplerian::Body::Elements const& elements =
         solar_system.keplerian_initial_state_message(name).elements();
     bool const is_star =

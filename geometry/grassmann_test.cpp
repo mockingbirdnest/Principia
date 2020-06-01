@@ -73,7 +73,9 @@ struct TransparentWedge final {
 class GrassmannTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
 
   R3Element<Length> const null_displacement_ = {0 * Metre,
                                                 0 * Metre,
@@ -255,6 +257,16 @@ TEST_F(GrassmannTest, Normalize) {
   EXPECT_THAT(Normalize(u), Eq(Trivector<double, World>(-1)));
 }
 
+// Uncomment to check that non-serializable frames are detected at compile-time.
+#if 0
+TEST_F(GrassmannTest, SerializationCompilationError) {
+  using F = Frame<enum class FrameTag>;
+  Vector<Length, F> v;
+  serialization::Multivector message;
+  v.WriteToMessage(&message);
+}
+#endif
+
 TEST_F(GrassmannDeathTest, SerializationError) {
   using V = Vector<Length, World>;
   using B = Bivector<Length, World>;
@@ -264,19 +276,19 @@ TEST_F(GrassmannDeathTest, SerializationError) {
     serialization::Multivector message;
     V const v({-1 * Metre, 2 * Metre, 3 * Metre});
     v.WriteToMessage(&message);
-    B const b = B::ReadFromMessage(message);
+    [[maybe_unused]] B const b = B::ReadFromMessage(message);
   }, "has_bivector");
   EXPECT_DEATH({
     serialization::Multivector message;
     B const b({-1 * Metre, 2 * Metre, 3 * Metre});
     b.WriteToMessage(&message);
-    T const t = T::ReadFromMessage(message);
+    [[maybe_unused]] T const t = T::ReadFromMessage(message);
   }, "has_trivector");
   EXPECT_DEATH({
     serialization::Multivector message;
     T const t(1 * Metre);
     t.WriteToMessage(&message);
-    V const v = V::ReadFromMessage(message);
+    [[maybe_unused]] V const v = V::ReadFromMessage(message);
   }, "has_vector");
 }
 

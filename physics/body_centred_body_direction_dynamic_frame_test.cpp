@@ -31,15 +31,16 @@ namespace internal_body_centred_body_direction_dynamic_frame {
 
 using astronomy::ICRS;
 using base::check_not_null;
+using geometry::Arbitrary;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Frame;
+using geometry::Handedness;
 using geometry::Instant;
 using geometry::Rotation;
 using geometry::Vector;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
-using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::Time;
 using quantities::si::Kilo;
@@ -70,9 +71,13 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the big body and directed to the small one.
   using BigSmallFrame = Frame<serialization::Frame::TestTag,
-                              serialization::Frame::TEST, /*inertial=*/false>;
+                              Arbitrary,
+                              Handedness::Right,
+                              serialization::Frame::TEST>;
   using MockFrame = Frame<serialization::Frame::TestTag,
-                          serialization::Frame::TEST1, /*inertial=*/false>;
+                          Arbitrary,
+                          Handedness::Right,
+                          serialization::Frame::TEST1>;
 
   BodyCentredBodyDirectionDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
@@ -156,7 +161,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ToBigSmallFrameAtTime) {
                               BigSmallFrame::origin),
                 Lt(1.0e-6 * Metre));
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
-                              Velocity<BigSmallFrame>()),
+                              BigSmallFrame::unmoving),
                 Lt(1.0e-4 * Metre / Second));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
@@ -165,7 +170,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ToBigSmallFrameAtTime) {
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
                 Lt(1.0e-5 * Metre));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
-                              Velocity<BigSmallFrame>()),
+                              BigSmallFrame::unmoving),
                 Lt(1.0e-4 * Metre / Second));
   }
 }
@@ -196,15 +201,11 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
   Instant const t = t0_ + 0 * Second;
   // The velocity is opposed to the motion and away from the centre.
   DegreesOfFreedom<MockFrame> const point_dof =
-      {Displacement<MockFrame>({0 * Metre, 0 * Metre, 0 * Metre}) +
-           MockFrame::origin,
+      {MockFrame::origin,
        Velocity<MockFrame>({10 * Metre / Second,
                             20 * Metre / Second,
                             30 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) +
-           ICRS::origin,
-       Velocity<ICRS>()};
+  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
   DegreesOfFreedom<ICRS> const small_dof = {
       Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
       Velocity<ICRS>(
@@ -251,13 +252,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CentrifugalAcceleration) {
   DegreesOfFreedom<MockFrame> const point_dof =
       {Displacement<MockFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
            MockFrame::origin,
-       Velocity<MockFrame>({0 * Metre / Second,
-                            0 * Metre / Second,
-                            0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-       Velocity<ICRS>(
-           {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+       MockFrame::unmoving};
+  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
   DegreesOfFreedom<ICRS> const small_dof =
       {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
        Velocity<ICRS>(
@@ -308,10 +304,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, EulerAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-       Velocity<ICRS>(
-           {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
   DegreesOfFreedom<ICRS> const small_dof =
       {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
        Velocity<ICRS>(
@@ -362,10 +355,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-       Velocity<ICRS>(
-           {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
   DegreesOfFreedom<ICRS> const small_dof =
       {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
        Velocity<ICRS>(
@@ -482,10 +472,10 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
   for (Time t = period_ / 32; t <= period_ / 2; t += period_ / 32) {
     auto const dof_from_discrete =
         barycentric_from_discrete.ToThisFrameAtTime(t0_ + t)(
-            {ICRS::origin, Velocity<ICRS>{}});
+            {ICRS::origin, ICRS::unmoving});
     auto const dof_from_both_bodies =
         barycentric_from_both_bodies.ToThisFrameAtTime(t0_ + t)(
-            {ICRS::origin, Velocity<ICRS>{}});
+            {ICRS::origin, ICRS::unmoving});
     EXPECT_THAT(
         (dof_from_discrete.position() - dof_from_both_bodies.position()).Norm(),
         VanishesBefore(1 * Kilo(Metre), 0, 15));

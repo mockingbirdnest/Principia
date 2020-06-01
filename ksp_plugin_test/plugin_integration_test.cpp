@@ -32,6 +32,7 @@ using base::make_not_null_unique;
 using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Identity;
+using geometry::OddPermutation;
 using geometry::Permutation;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
@@ -47,7 +48,6 @@ using quantities::Length;
 using quantities::NaN;
 using quantities::Pow;
 using quantities::Sin;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::astronomy::AstronomicalUnit;
@@ -81,8 +81,7 @@ std::string const vessel_name = "NCC-1701-D";
 class PluginIntegrationTest : public testing::Test {
  protected:
   PluginIntegrationTest()
-      : looking_glass_(Permutation<ICRS, AliceSun>::XZY),
-        solar_system_(
+      : solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
         initial_time_("JD2451545.0625"),
@@ -127,7 +126,6 @@ class PluginIntegrationTest : public testing::Test {
     }
   }
 
-  Permutation<ICRS, AliceSun> looking_glass_;
   not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system_;
   std::string initial_time_;
   Angle planetarium_rotation_;
@@ -203,7 +201,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
   Length apogee = -std::numeric_limits<double>::infinity() * Metre;
   Permutation<AliceSun, World> const alice_sun_to_world =
-      Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
+      Permutation<AliceSun, World>(OddPermutation::XZY);
   Time const δt_long = 10 * Minute;
 #if defined(_DEBUG)
   Time const δt_short = 1 * Minute;
@@ -299,7 +297,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
       plugin_->NewBarycentricRotatingNavigationFrame(SolarSystemFactory::Earth,
                                                      SolarSystemFactory::Moon));
   Permutation<AliceSun, World> const alice_sun_to_world =
-      Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
+      Permutation<AliceSun, World>(OddPermutation::XZY);
   Time const δt_long = 1 * Hour;
 #if defined(_DEBUG)
   Time const duration = 12 * Hour;

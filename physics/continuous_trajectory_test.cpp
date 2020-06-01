@@ -32,6 +32,8 @@ namespace internal_continuous_trajectory {
 
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
+using geometry::Inertial;
 using geometry::Velocity;
 using numerics::Polynomial;
 using numerics::PolynomialInMonomialBasis;
@@ -152,7 +154,9 @@ void TestableContinuousTrajectory<Frame>::ResetBestNewhallApproximation() {
 class ContinuousTrajectoryTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, true>;
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
 
   void FillTrajectory(
       int const number_of_steps,
@@ -186,8 +190,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
                               step,
                               tolerance);
   trajectory->Append(Instant(),
-                     DegreesOfFreedom<World>(Position<World>(),
-                                             Velocity<World>()));
+                     DegreesOfFreedom<World>(World::origin, World::unmoving));
 
   // A case where the errors smoothly decrease.
   {
@@ -585,7 +588,7 @@ TEST_F(ContinuousTrajectoryTest, Continuity) {
 
   Position<World> const p1 =
       trajectory->EvaluatePosition(continuity_time);
-  Position<World> const p2 =
+  [[maybe_unused]] Position<World> const p2 =
       trajectory->EvaluatePosition(continuity_time + step);
   Position<World> const p3 =
       trajectory->EvaluatePosition(continuity_time);

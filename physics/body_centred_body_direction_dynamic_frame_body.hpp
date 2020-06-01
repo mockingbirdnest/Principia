@@ -4,6 +4,7 @@
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 
 #include <algorithm>
+#include <utility>
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
@@ -16,6 +17,7 @@ namespace internal_body_centred_body_direction_dynamic_frame {
 
 using geometry::Bivector;
 using geometry::Displacement;
+using geometry::OrthogonalMap;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
 using geometry::Wedge;
@@ -30,12 +32,12 @@ using quantities::si::Radian;
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
 BodyCentredBodyDirectionDynamicFrame(
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    not_null<Ephemeris<InertialFrame> const*> ephemeris,
     not_null<MassiveBody const*> const primary,
-    not_null<MassiveBody const*> const secondary)
-    : ephemeris_(ephemeris),
+    not_null<MassiveBody const*> secondary)
+    : ephemeris_(std::move(ephemeris)),
       primary_(primary),
-      secondary_(secondary),
+      secondary_(std::move(secondary)),
       compute_gravitational_acceleration_on_primary_(
           [this](Position<InertialFrame> const& position, Instant const& t) {
             return ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
@@ -48,19 +50,18 @@ BodyCentredBodyDirectionDynamicFrame(
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
 BodyCentredBodyDirectionDynamicFrame(
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    std::function<Trajectory<InertialFrame> const&()> const
-        primary_trajectory,
-    not_null<MassiveBody const*> const secondary)
-    : ephemeris_(ephemeris),
+    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    std::function<Trajectory<InertialFrame> const&()> primary_trajectory,
+    not_null<MassiveBody const*> secondary)
+    : ephemeris_(std::move(ephemeris)),
       primary_(nullptr),
-      secondary_(secondary),
+      secondary_(std::move(secondary)),
       compute_gravitational_acceleration_on_primary_(
           [this](Position<InertialFrame> const& position, Instant const& t) {
             return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
                 position, t);
           }),
-      primary_trajectory_(primary_trajectory),
+      primary_trajectory_(std::move(primary_trajectory)),
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
@@ -111,7 +112,7 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(primary_degrees_of_freedom.position(),
                            ThisFrame::origin,
-                           rotation.Forget());
+                           rotation.template Forget<OrthogonalMap>());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              angular_velocity,
@@ -176,7 +177,7 @@ MotionOfThisFrame(Instant const& t) const {
   Vector<Acceleration, InertialFrame> const r̈ =
       secondary_acceleration - primary_acceleration;
   AngularVelocity<InertialFrame> const& ω =
-      to_this_frame.angular_velocity_of_to_frame();
+      to_this_frame.template angular_velocity_of<ThisFrame>();
   Variation<AngularVelocity<InertialFrame>> const
       angular_acceleration_of_to_frame =
           (Wedge(r, r̈) * Radian - 2 * ω * InnerProduct(r, ṙ)) / r.Norm²();

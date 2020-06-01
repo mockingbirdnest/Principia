@@ -5,12 +5,14 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
+#include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -18,6 +20,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "mathematica/mathematica.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
@@ -59,12 +62,12 @@ using integrators::methods::Fine1987RKNG34;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using integrators::methods::Quinlan1999Order8A;
+using integrators::methods::QuinlanTremaine1990Order12;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
 using quantities::Mass;
 using quantities::Pow;
-using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::astronomy::AstronomicalUnit;
 using quantities::astronomy::JulianYear;
@@ -94,6 +97,7 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ref;
+namespace si = quantities::si;
 
 namespace {
 
@@ -149,11 +153,11 @@ class EphemerisTest : public testing::TestWithParam<FixedStepSizeIntegrator<
     centre_of_mass = Barycentre<Position<ICRS>, Mass>(
         {q1, q2}, {earth->mass(), moon->mass()});
     Velocity<ICRS> const v1({-2 * π * (q1 - centre_of_mass).Norm() / period,
-                             0 * SIUnit<Speed>(),
-                             0 * SIUnit<Speed>()});
+                             0 * si::Unit<Speed>,
+                             0 * si::Unit<Speed>});
     Velocity<ICRS> const v2({2 * π * (q2 - centre_of_mass).Norm() / period,
-                             0 * SIUnit<Speed>(),
-                             0 * SIUnit<Speed>()});
+                             0 * si::Unit<Speed>,
+                             0 * si::Unit<Speed>});
 
     bodies.push_back(std::move(earth));
     bodies.push_back(std::move(moon));
@@ -441,9 +445,9 @@ TEST_P(EphemerisTest, EarthProbe) {
                         earth_velocity));
   auto const intrinsic_acceleration = [earth, distance](Instant const& t) {
     return Vector<Acceleration, ICRS>(
-        {0 * SIUnit<Acceleration>(),
+        {0 * si::Unit<Acceleration>,
          earth->gravitational_parameter() / (distance * distance),
-         0 * SIUnit<Acceleration>()});
+         0 * si::Unit<Acceleration>});
   };
 
   ephemeris.FlowWithAdaptiveStep(
@@ -562,9 +566,9 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
                          earth_velocity));
   auto const intrinsic_acceleration1 = [earth, distance_1](Instant const& t) {
     return Vector<Acceleration, ICRS>(
-        {0 * SIUnit<Acceleration>(),
+        {0 * si::Unit<Acceleration>,
          earth->gravitational_parameter() / (distance_1 * distance_1),
-         0 * SIUnit<Acceleration>()});
+         0 * si::Unit<Acceleration>});
   };
 
   MasslessBody probe2;
@@ -576,9 +580,9 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
                          earth_velocity));
   auto const intrinsic_acceleration2 = [earth, distance_2](Instant const& t) {
     return Vector<Acceleration, ICRS>(
-        {0 * SIUnit<Acceleration>(),
+        {0 * si::Unit<Acceleration>,
          -earth->gravitational_parameter() / (distance_2 * distance_2),
-         0 * SIUnit<Acceleration>()});
+         0 * si::Unit<Acceleration>});
   };
 
   auto instance = ephemeris.NewInstance(
@@ -751,8 +755,6 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           2.6e-15 * Metre / Second),
       Ephemeris<ICRS>::unlimited_max_ephemeris_steps);
 
-  Speed const v_elephant_y =
-      trajectory.back().degrees_of_freedom.velocity().coordinates().y;
   std::vector<Displacement<ICRS>> elephant_positions;
   std::vector<Vector<Acceleration, ICRS>> elephant_accelerations;
   for (auto const& [time, degrees_of_freedom] : trajectory) {
@@ -781,7 +783,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
               AnyOf(IsNear(1.2e-34_⑴ * Metre / Second / Second),
                     Eq(0 * Metre / Second / Second)));
   EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
-                          -9.832 * SIUnit<Acceleration>()), 6.7e-6);
+                          -9.832 * si::Unit<Acceleration>), 6.7e-6);
 }
 
 #if !defined(_DEBUG)
@@ -866,9 +868,9 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b2));
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b3));
 
-  Velocity<ICRS> const v({0 * SIUnit<Speed>(),
-                          0 * SIUnit<Speed>(),
-                          0 * SIUnit<Speed>()});
+  Velocity<ICRS> const v({0 * si::Unit<Speed>,
+                          0 * si::Unit<Speed>,
+                          0 * si::Unit<Speed>});
   Position<ICRS> const q0 = ICRS::origin +
       Vector<Length, ICRS>({0 * AstronomicalUnit,
                             0 * AstronomicalUnit,
@@ -908,7 +910,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       Vector<Acceleration, ICRS>(
           {(1.5 * μ1 - (9 / Sqrt(512)) * μ2) * Pow<2>(radius) * j2 /
                Pow<4>((q0 - q1).Norm()),
-           0 * SIUnit<Acceleration>(),
+           0 * si::Unit<Acceleration>,
            (-3 * μ3 + (3 / Sqrt(512)) * μ2) * Pow<2>(radius) * j2 /
                Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(
@@ -925,8 +927,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       μ3 * (q3 - q1) / Pow<3>((q3 - q1).Norm()) +
       Vector<Acceleration, ICRS>(
           {-1.5 * μ0 * Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm()),
-           0 * SIUnit<Acceleration>(),
-           0 * SIUnit<Acceleration>()});
+           0 * si::Unit<Acceleration>,
+           0 * si::Unit<Acceleration>});
   EXPECT_THAT(
       actual_acceleration1,
       Componentwise(AlmostEquals(expected_acceleration1.coordinates().x, 2),
@@ -941,7 +943,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       μ3 * (q3 - q2) / Pow<3>((q3 - q2).Norm()) +
       Vector<Acceleration, ICRS>({(9 / Sqrt(512)) * μ0 * Pow<2>(radius) * j2 /
                                       Pow<4>((q0 - q1).Norm()),
-                                  0 * SIUnit<Acceleration>(),
+                                  0 * si::Unit<Acceleration>,
                                   (-3 / Sqrt(512)) * μ0 * Pow<2>(radius) * j2 /
                                       Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(
@@ -957,8 +959,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       μ1 * (q1 - q3) / Pow<3>((q1 - q3).Norm()) +
       μ2 * (q2 - q3) / Pow<3>((q2 - q3).Norm()) +
       Vector<Acceleration, ICRS>(
-          {0 * SIUnit<Acceleration>(),
-           0 * SIUnit<Acceleration>(),
+          {0 * si::Unit<Acceleration>,
+           0 * si::Unit<Acceleration>,
            3 * μ0 * Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(
       actual_acceleration3,
@@ -1058,6 +1060,85 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
     previous_time = time;
   }
 }
+
+#if !defined(_DEBUG)
+// This trajectory is similar to the second trajectory in the first save in
+// #2400.  It exhibits oscillations with a period close to 5600 s and its
+// downsampling period alternates between 120 and 130 s.
+TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
+  SolarSystem<ICRS> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2433282_500000000.proto.txt");
+
+  auto ephemeris = solar_system.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      /*fixed_step_parameters=*/{
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<ICRS>>(),
+          /*step=*/10 * Minute});
+
+  Instant const t0 = Instant() - 1.323698948906726e9 * Second;
+  Instant const t1 = Instant() - 1.323595217786725e9 * Second;
+  Position<ICRS> const q0 =
+      Position<ICRS>{} + Displacement<ICRS>({-7.461169719467950e10 * Metre,
+                                             1.165327644733623e11 * Metre,
+                                             5.049935298178532e10 * Metre});
+  Velocity<ICRS> const p0({-30169.49165384562 * Metre / Second,
+                           -11880.03394238412 * Metre / Second,
+                           200.2551546021678 * Metre / Second});
+
+  MasslessBody probe;
+  DiscreteTrajectory<ICRS> trajectory1;
+  trajectory1.SetDownsampling(/*max_dense_intervals=*/10'000,
+                              /*tolerance=*/10 * Metre);
+  trajectory1.Append(t0, DegreesOfFreedom<ICRS>(q0, p0));
+
+  auto instance = ephemeris->NewInstance(
+      {&trajectory1},
+      Ephemeris<ICRS>::NoIntrinsicAccelerations,
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                             Position<ICRS>>(),
+          10 * Second));
+  EXPECT_OK(ephemeris->FlowWithFixedStep(t1, *instance));
+  EXPECT_EQ(1162, trajectory1.Size());
+
+  serialization::DiscreteTrajectory message;
+  trajectory1.WriteToMessage(&message, /*forks=*/{});
+  std::string uncompressed;
+  message.SerializePartialToString(&uncompressed);
+  EXPECT_EQ(18'377, uncompressed.size());
+
+  std::string compressed;
+  auto compressor = google::compression::NewGipfeliCompressor();
+  compressor->Compress(uncompressed, &compressed);
+
+  // We want a change detector, but the actual compressed size varies depending
+  // on the exact numerical values, and therefore on the mathematical library.
+  EXPECT_LE(16'935, compressed.size());
+  EXPECT_GE(16'935, compressed.size());
+
+  auto const trajectory2 =
+      DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*forks=*/{});
+
+  Length error;
+  for (Instant t = t0; t < t1; t += 10 * Second) {
+    error = std::max(
+        error,
+        (trajectory1.EvaluatePosition(t) - trajectory2->EvaluatePosition(t))
+            .Norm());
+  }
+  EXPECT_THAT(error, IsNear(3.3_⑴ * Metre));
+
+  mathematica::Logger logger(
+      TEMP_DIR / "discrete_trajectory_compression.generated.wl",
+      /*make_unique=*/false);
+  logger.Set("trajectory1", trajectory1.begin(), trajectory1.end());
+  logger.Set("trajectory2", trajectory2->begin(), trajectory2->end());
+}
+#endif
 
 INSTANTIATE_TEST_CASE_P(
     AllEphemerisTests,

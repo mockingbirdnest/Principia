@@ -16,7 +16,6 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -39,7 +38,6 @@ using quantities::NaN;
 using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Sin;
-using quantities::SIUnit;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 
@@ -68,7 +66,6 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
       Inverse<Square<Length>> const& ℜʹ,
       Inverse<Square<Length>>& σℜ_over_r,
       Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const {
-  Length const& s1 = outer_threshold_;
   Length const& s0 = inner_threshold_;
   if (r_norm <= s0) {
     // Below the inner threshold, σ = 1.
@@ -547,8 +544,8 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
     }
   }
 
-  harmonic_thresholds.push({Infinity<Length>(), 0, 0});
-  harmonic_thresholds.push({Infinity<Length>(), 1, 0});
+  harmonic_thresholds.push({Infinity<Length>, 0, 0});
+  harmonic_thresholds.push({Infinity<Length>, 1, 0});
 
   while (!harmonic_thresholds.empty()) {
     auto const& threshold = harmonic_thresholds.top();
@@ -584,7 +581,7 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
 
 #define PRINCIPIA_CASE_SPHERICAL_HARMONICS(d)                                  \
   case (d):                                                                    \
-    return AllDegrees<std::make_integer_sequence<int, (d + 1)>>::Acceleration( \
+    return AllDegrees<std::make_integer_sequence<int, (d) + 1>>::Acceleration( \
         *this, t, r, r_norm, r², one_over_r³)
 
 template<typename Frame>
@@ -598,7 +595,7 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
   if (r_norm != r_norm) {
     // Short-circuit NaN, to avoid having to deal with an unordered
     // |r_norm| when finding the partition point below.
-    return NaN<ReducedAcceleration>() * Vector<double, Frame>{};
+    return NaN<ReducedAcceleration> * Vector<double, Frame>{};
   }
   // |limiting_degree| is the first degree such that
   // |r_norm >= degree_damping_[limiting_degree].outer_threshold()|, or is

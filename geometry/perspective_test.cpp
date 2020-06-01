@@ -39,9 +39,13 @@ using ::testing::_;
 class PerspectiveTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, false>;
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST1>;
   using Camera = Frame<serialization::Frame::TestTag,
-                       serialization::Frame::TEST2, false>;
+                       Inertial,
+                       Handedness::Right,
+                       serialization::Frame::TEST2>;
 };
 
 TEST_F(PerspectiveTest, Basic) {
@@ -56,7 +60,7 @@ TEST_F(PerspectiveTest, Basic) {
   RigidTransformation<World, Camera> const world_to_camera_transformation(
       camera_origin,
       Camera::origin,
-      world_to_camera_rotation.Forget());
+      world_to_camera_rotation.Forget<OrthogonalMap>());
   Perspective<World, Camera> perspective(world_to_camera_transformation,
                                          /*focal=*/10 * Metre);
 
@@ -183,6 +187,13 @@ TEST_F(PerspectiveTest, SphereSin²HalfAngle) {
 
   EXPECT_THAT(perspective.SphereSin²HalfAngle(sphere),
               AlmostEquals(0.0001, 0));
+}
+
+TEST_F(PerspectiveTest, Output) {
+  Perspective<World, Camera> perspective(
+      RigidTransformation<World, Camera>::Identity(),
+      /*focal=*/1 * Metre);
+  std::cout << perspective << "\n";
 }
 
 class VisibleSegmentsTest : public PerspectiveTest {
@@ -606,6 +617,7 @@ TEST_F(VisibleSegmentsTest, MultipleSpheres) {
   EXPECT_THAT(perspective_.VisibleSegments(segment, {sphere_, sphere2}),
               SizeIs(3));
 }
+
 }  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia

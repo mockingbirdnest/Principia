@@ -96,10 +96,9 @@ class LunarEclipseTest : public ::testing::Test {
 
     // Angle formed by a right circular cone with sides defined by tangent lines
     // between Sun and Earth, and axis running through the centres of each.
-    auto const umbral_half_aperture = [earth, moon, sun](
+    auto const umbral_half_aperture = [earth, sun](
         Instant const& t) {
       auto const q_sun = ephemeris_->trajectory(sun)->EvaluatePosition(t);
-      auto const q_moon = ephemeris_->trajectory(moon)->EvaluatePosition(t);
       auto const q_earth = ephemeris_->trajectory(earth)->EvaluatePosition(t);
       return ArcSin((r_sun_ - (r_earth_ + atmospheric_depth_)) /
                     (q_sun - q_earth).Norm());
@@ -158,10 +157,9 @@ class LunarEclipseTest : public ::testing::Test {
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
 
-    auto const penumbral_half_aperture = [earth, moon, sun](
+    auto const penumbral_half_aperture = [earth, sun](
         Instant const& t) {
       auto const q_sun = ephemeris_->trajectory(sun)->EvaluatePosition(t);
-      auto const q_moon = ephemeris_->trajectory(moon)->EvaluatePosition(t);
       auto const q_earth = ephemeris_->trajectory(earth)->EvaluatePosition(t);
       return ArcSin((r_sun_ + r_earth_ + atmospheric_depth_) /
                     (q_sun - q_earth).Norm());

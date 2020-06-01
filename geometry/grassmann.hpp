@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/traits.hpp"
@@ -39,7 +40,7 @@ class Multivector;
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 1> final {
  public:
-  Multivector();
+  constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
   R3Element<Scalar> const& coordinates() const;
@@ -52,6 +53,8 @@ class Multivector<Scalar, Frame, 1> final {
 
   void WriteToMessage(
       not_null<serialization::Multivector*> message) const;
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -77,7 +80,7 @@ class Multivector<Scalar, Frame, 1> final {
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 2> final {
  public:
-  Multivector();
+  constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
   R3Element<Scalar> const& coordinates() const;
@@ -89,6 +92,8 @@ class Multivector<Scalar, Frame, 2> final {
       Multivector<S, Frame, 2> const& multivector) const;
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -111,7 +116,7 @@ class Multivector<Scalar, Frame, 2> final {
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 3> final {
  public:
-  Multivector();
+  constexpr Multivector() = default;
   explicit Multivector(Scalar const& coordinates);
 
   Scalar const& coordinates() const;
@@ -119,6 +124,8 @@ class Multivector<Scalar, Frame, 3> final {
   Square<Scalar> Norm²() const;
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:

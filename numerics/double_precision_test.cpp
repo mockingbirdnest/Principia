@@ -52,9 +52,7 @@ constexpr double ε² = ε * ε;
 constexpr double ε³ = ε² * ε;
 constexpr double ε⁴ = ε³ * ε;
 
-using World = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST,
-                    /*inertial=*/false>;
+using World = Frame<enum class WorldTag>;
 
 class DoublePrecisionTest : public ::testing::Test {};
 
@@ -239,7 +237,6 @@ TEST_F(DoublePrecisionTest, ComparableTwoSum) {
 TEST_F(DoublePrecisionTest, Consistencies) {
   using Vector = R3Element<double>;
   using Point = Point<Vector>;
-  Point const origin;
   DoublePrecision<Point> const wide_origin{};
   Vector const null_vector{0, 0, 0};
   Vector const v1{π, -e, Sqrt(2)};
