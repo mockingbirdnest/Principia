@@ -4,7 +4,6 @@
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
-#include "base/file.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
@@ -33,7 +32,6 @@ namespace principia {
 using astronomy::ICRS;
 using astronomy::J2000;
 using base::dynamic_cast_not_null;
-using base::OFStream;
 using geometry::Instant;
 using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;

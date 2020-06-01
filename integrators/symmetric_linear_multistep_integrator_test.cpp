@@ -6,7 +6,6 @@
 #include <vector>
 #include <string>
 
-#include "base/file.hpp"
 #include "base/macros.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -23,7 +22,6 @@
 
 namespace principia {
 
-using base::OFStream;
 using geometry::Instant;
 using quantities::Abs;
 using quantities::Acceleration;

@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
-#include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -32,7 +31,6 @@
 namespace principia {
 
 using base::dynamic_cast_not_null;
-using base::OFStream;
 using geometry::AngleBetween;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;

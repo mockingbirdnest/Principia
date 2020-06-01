@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
-#include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -26,7 +25,6 @@ namespace astronomy {
 using astronomy::J2000;
 using base::make_not_null_unique;
 using base::not_null;
-using base::OFStream;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
