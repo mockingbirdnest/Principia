@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "astronomy/stabilize_ksp.hpp"
-#include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -26,7 +25,6 @@ namespace principia {
 using base::Error;
 using base::make_not_null_unique;
 using base::not_null;
-using base::OFStream;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;

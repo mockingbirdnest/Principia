@@ -9,7 +9,6 @@
 
 #include "absl/strings/ascii.h"
 #include "astronomy/stabilize_ksp.hpp"
-#include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
@@ -26,7 +25,6 @@
 namespace principia {
 
 using base::not_null;
-using base::OFStream;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;
 using geometry::Frame;
