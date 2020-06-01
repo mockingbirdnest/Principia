@@ -320,7 +320,6 @@ TEST_F(KSPSystemTest, KerbalSystem) {
                _,
                "barycentricPositions2",
                logger);
-
 }
 #endif
 
