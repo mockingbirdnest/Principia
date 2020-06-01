@@ -6,7 +6,6 @@
 #include <vector>
 #include <string>
 
-#include "base/file.hpp"
 #include "base/macros.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -23,7 +22,6 @@
 
 namespace principia {
 
-using base::OFStream;
 using geometry::Instant;
 using quantities::Abs;
 using quantities::Acceleration;
@@ -281,6 +279,9 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
     final_state = state;
   };
 
+  mathematica::Logger logger(
+      TEMP_DIR / ("convergence." + GetParam().name + ".generated.wl"),
+      /*make_unique=*/false);
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
     auto const instance =
         GetParam().integrator.NewInstance(problem, append_state, step);
@@ -300,17 +301,9 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
     log_step_sizes.push_back(std::log10(step / Second));
     log_q_errors.push_back(log_q_error);
     log_p_errors.push_back(log_p_error);
-  }
-
-  {
-    std::filesystem::path filename;
-    filename += "convergence.";
-    filename += GetParam().name;
-    filename += ".generated.wl";
-    OFStream file(TEMP_DIR / filename);
-    file << mathematica::Assign("logStepSizes", log_step_sizes);
-    file << mathematica::Assign("logQErrors", log_q_errors);
-    file << mathematica::Assign("logPErrors", log_p_errors);
+    logger.Append("logStepSizes", log_step_sizes.back());
+    logger.Append("logQErrors", log_q_errors.back());
+    logger.Append("logPErrors", log_p_errors.back());
   }
 
   double const q_convergence_order = Slope(log_step_sizes, log_q_errors);

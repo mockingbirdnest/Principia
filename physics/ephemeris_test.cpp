@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
-#include "base/file.hpp"
 #include "base/macros.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
@@ -48,7 +47,6 @@ namespace internal_ephemeris {
 
 using astronomy::ICRS;
 using base::not_null;
-using base::OFStream;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
 using geometry::Displacement;
@@ -1134,15 +1132,11 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   }
   EXPECT_THAT(error, IsNear(3.3_⑴ * Metre));
 
-  {
-    OFStream file(TEMP_DIR / "discrete_trajectory_compression.generated.wl");
-    file << mathematica::Assign(
-        "trajectory1",
-        mathematica::ToMathematica(trajectory1.begin(), trajectory1.end()));
-    file << mathematica::Assign(
-        "trajectory2",
-        mathematica::ToMathematica(trajectory2->begin(), trajectory2->end()));
-  }
+  mathematica::Logger logger(
+      TEMP_DIR / "discrete_trajectory_compression.generated.wl",
+      /*make_unique=*/false);
+  logger.Set("trajectory1", trajectory1.begin(), trajectory1.end());
+  logger.Set("trajectory2", trajectory2->begin(), trajectory2->end());
 }
 #endif
 

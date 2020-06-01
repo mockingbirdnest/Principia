@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "astronomy/stabilize_ksp.hpp"
-#include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -26,9 +25,9 @@ namespace principia {
 using base::Error;
 using base::make_not_null_unique;
 using base::not_null;
-using base::OFStream;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::Instant;
@@ -126,17 +125,13 @@ class KSPResonanceTest : public ::testing::Test {
                     Instant const& t_min,
                     Instant const& t_max,
                     std::string const& name) {
-    // Mathematica tends to be slow when dealing with quantities, so we give
-    // everything in SI units.
-    std::vector<double> times;
-    // Indexed chronologically, then by body.
-    std::vector<std::vector<Vector<double, KSP>>> barycentric_positions;
+    mathematica::Logger logger(TEMP_DIR / (name + ".generated.wl"),
+                               /*make_unique=*/false);
+
     for (Instant t = t_min; t <= t_max; t += Δt) {
       auto const position = [&ephemeris, t](not_null<MassiveBody const*> body) {
         return ephemeris.trajectory(body)->EvaluatePosition(t);
       };
-
-      times.emplace_back((t - solar_system_.epoch()) / Second);
 
       BarycentreCalculator<Position<KSP>, GravitationalParameter>
           jool_system_barycentre;
@@ -144,19 +139,25 @@ class KSPResonanceTest : public ::testing::Test {
         jool_system_barycentre.Add(position(body),
                                    body->gravitational_parameter());
       }
-      barycentric_positions.emplace_back();
+
+      // Indexed by body.
+      std::vector<Displacement<KSP>> barycentric_positions;
       for (not_null<MassiveBody const*> const body : jool_system_) {
         // TODO(egg): when our dynamic frames support that, it would make sense
         // to use a nonrotating dynamic frame centred at the barycentre of the
         // Jool system, instead of computing the barycentre and difference
         // ourselves.
-        barycentric_positions.back().emplace_back(
-            (position(body) - jool_system_barycentre.Get()) / Metre);
+        barycentric_positions.emplace_back(
+            position(body) - jool_system_barycentre.Get());
       }
+
+      logger.Append(name + "t",
+                    t - solar_system_.epoch(),
+                    mathematica::ExpressIn(Second));
+      logger.Append(name + "q",
+                    barycentric_positions,
+                    mathematica::ExpressIn(Metre));
     }
-    OFStream file(TEMP_DIR / (name + ".generated.wl"));
-    file << mathematica::Assign(name + "q", barycentric_positions);
-    file << mathematica::Assign(name + "t", times);
   }
 
   // Compute and log the measured periods of the moons.
