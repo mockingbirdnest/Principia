@@ -134,7 +134,6 @@ class OrbitalElementsTest : public ::testing::Test {
 TEST_F(OrbitalElementsTest, KeplerOrbit) {
   // The satellite is under the influence of an isotropic Earth and no third
   // bodies.
-
   SolarSystem<ICRS> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
@@ -212,12 +211,15 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
               Lt(2.2 * ArcMinute));
 
-  OFStream f(SOLUTION_DIR / "mathematica" /
-             "unperturbed_elements.generated.wl");
-  f << mathematica::Assign("unperturbedOsculating",
-                           elements.osculating_equinoctial_elements());
-  f << mathematica::Assign("unperturbedMean",
-                           elements.mean_equinoctial_elements());
+  mathematica::Logger logger(
+      SOLUTION_DIR / "mathematica" / "unperturbed_elements.generated.wl",
+      /*make_unique=*/false);
+  logger.Set("unperturbedOsculating",
+             elements.osculating_equinoctial_elements(),
+             mathematica::ExpressIn(Metre, Second, Radian));
+  logger.Set("unperturbedMean",
+             elements.mean_equinoctial_elements(),
+             mathematica::ExpressIn(Metre, Second, Radian));
 }
 
 TEST_F(OrbitalElementsTest, J2Perturbation) {
@@ -324,12 +326,15 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
                     elements.mean_argument_of_periapsis_interval().measure()),
       IsNear(0.0029_⑴));
 
-  OFStream f(SOLUTION_DIR / "mathematica" /
-             "j2_perturbed_elements.generated.wl");
-  f << mathematica::Assign("j2PerturbedOsculating",
-                           elements.osculating_equinoctial_elements());
-  f << mathematica::Assign("j2PerturbedMean",
-                           elements.mean_equinoctial_elements());
+  mathematica::Logger logger(
+      SOLUTION_DIR / "mathematica" / "j2_perturbed_elements.generated.wl",
+      /*make_unique=*/false);
+  logger.Set("j2PerturbedOsculating",
+             elements.osculating_equinoctial_elements(),
+             mathematica::ExpressIn(Metre, Second, Radian));
+  logger.Set("j2PerturbedMean",
+             elements.mean_equinoctial_elements(),
+             mathematica::ExpressIn(Metre, Second, Radian));
 }
 
 TEST_F(OrbitalElementsTest, RealPerturbation) {
@@ -405,12 +410,15 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
               IsNear(154_⑴ * Degree));
 
-  OFStream f(SOLUTION_DIR / "mathematica" /
-             "fully_perturbed_elements.generated.wl");
-  f << mathematica::Assign("fullyPerturbedOsculating",
-                           elements.osculating_equinoctial_elements());
-  f << mathematica::Assign("fullyPerturbedMean",
-                           elements.mean_equinoctial_elements());
+  mathematica::Logger logger(
+      SOLUTION_DIR / "mathematica" / "fully_perturbed_elements.generated.wl",
+      /*make_unique=*/false);
+  logger.Set("fullyPerturbedOsculating",
+             elements.osculating_equinoctial_elements(),
+             mathematica::ExpressIn(Metre, Second, Radian));
+  logger.Set("fullyPerturbedMean",
+             elements.mean_equinoctial_elements(),
+             mathematica::ExpressIn(Metre, Second, Radian));
 }
 
 #endif

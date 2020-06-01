@@ -181,12 +181,15 @@ class OrbitAnalysisTest : public ::testing::Test {
 
     {
       auto const identifier = (std::stringstream() << orbit.satellite).str();
-      OFStream f(SOLUTION_DIR / "mathematica" /
-                 (identifier + "_elements.generated.wl"));
-      f << mathematica::Assign(identifier + "osculatingEquinoctialElements",
-                               elements.osculating_equinoctial_elements());
-      f << mathematica::Assign(identifier + "meanEquinoctialElements",
-                               elements.mean_equinoctial_elements());
+      mathematica::Logger logger(SOLUTION_DIR / "mathematica" /
+                                     (identifier + "_elements.generated.wl"),
+                                 /*make_unique=*/false);
+      logger.Set(identifier + "osculatingEquinoctialElements",
+                 elements.osculating_equinoctial_elements(),
+                 mathematica::ExpressIn(Metre, Second, Radian));
+      logger.Set(identifier + "meanEquinoctialElements",
+                 elements.mean_equinoctial_elements(),
+                 mathematica::ExpressIn(Metre, Second, Radian));
     }
 
     auto const recurrence =
