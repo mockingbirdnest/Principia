@@ -214,16 +214,24 @@ class Logger final {
          bool make_unique = true);
   ~Logger();
 
-  // Appends an element to the list of values for the variable |name|.  The
+  // Appends an element to the list of values for the List variable |name|.  The
   // |args...| are passed verbatim to ToMathematica for stringification.  When
   // this object is destroyed, an assignment is generated for each of the
   // variables named in a call to Append.
   template<typename... Args>
   void Append(std::string const& name, Args... args);
 
+  // Sets an element as the single value for the variable |name|.  The
+  // |args...| are passed verbatim to ToMathematica for stringification.  When
+  // this object is destroyed, an assignment is generated for each of the
+  // variables named in a call to Set.
+  template<typename... Args>
+  void Set(std::string const& name, Args... args);
+
  private:
   OFStream file_;
-  std::map<std::string, std::vector<std::string>> names_and_values_;
+  std::map<std::string, std::vector<std::string>> name_and_multiple_values_;
+  std::map<std::string, std::string> name_and_single_value_;
 
   static std::atomic_uint64_t id_;
 };

@@ -414,6 +414,7 @@ TEST_F(MathematicaTest, Logger) {
     logger.Append("a", std::vector{1.0, 2.0, 3.0});
     logger.Append(u8"β", 4 * Metre / Second);
     logger.Append("a", F::origin);
+    logger.Set("c", 5.0);
   }
   // Go check the file.
   EXPECT_EQ(
@@ -439,7 +440,10 @@ TEST_F(MathematicaTest, Logger) {
       "List["
       "Quantity["
       "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
-      "\" m s^-1\"]]];\n",
+      "\" m s^-1\"]]];\n"
+      "Set["
+      "c,"
+      "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision]];\n",
       (
           std::stringstream{}
           << std::ifstream(TEMP_DIR / "mathematica_test0.wl").rdbuf())

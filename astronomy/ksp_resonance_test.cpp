@@ -128,7 +128,7 @@ class KSPResonanceTest : public ::testing::Test {
                     Instant const& t_max,
                     std::string const& name) {
     mathematica::Logger logger(TEMP_DIR / (name + ".generated.wl"),
-                               /*make_unique=*/false);
+                               /*make_unique=*/!false);
 
     for (Instant t = t_min; t <= t_max; t += Δt) {
       auto const position = [&ephemeris, t](not_null<MassiveBody const*> body) {

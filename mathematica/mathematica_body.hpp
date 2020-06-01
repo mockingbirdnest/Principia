@@ -344,14 +344,22 @@ inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
       }()) {}
 
 inline Logger::~Logger() {
-  for (auto const& [name, values] : names_and_values_) {
+  for (auto const& [name, values] : name_and_multiple_values_) {
     file_ << Apply("Set", {name, Apply("List", values)}) + ";\n";
+  }
+  for (auto const& [name, value] : name_and_single_value_) {
+    file_ << Apply("Set", {name, value}) + ";\n";
   }
 }
 
 template<typename... Args>
 void Logger::Append(std::string const& name, Args... args) {
-  names_and_values_[name].push_back(ToMathematica(args...));
+  name_and_multiple_values_[name].push_back(ToMathematica(args...));
+}
+
+template<typename... Args>
+void Logger::Set(std::string const& name, Args... args) {
+  name_and_single_value_[name] = ToMathematica(args...);
 }
 
 inline std::atomic_uint64_t Logger::id_ = 0;

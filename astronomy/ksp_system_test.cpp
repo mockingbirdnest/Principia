@@ -65,6 +65,7 @@ using quantities::si::Minute;
 using quantities::si::Second;
 using ::testing::Lt;
 using ::testing::Matcher;
+using ::testing::_;
 
 namespace astronomy {
 
@@ -206,7 +207,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
   mathematica::Logger logger(TEMP_DIR / "ksp_system.generated.wl",
-                             /*make_unique=*/false);
+                             /*make_unique=*/!false);
 
 #if 0
   auto const a_century_hence = solar_system_.epoch() + 100 * JulianYear;
@@ -318,7 +319,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   LogPositions(*ephemeris_,
                 solar_system_.epoch(),
                2 * JulianYear,
-               Lt(1 * Metre),
+               _,
                "barycentricPositions2",
                logger);
 
@@ -339,7 +340,7 @@ class KSPSystemConvergenceTest
   static void SetUpTestCase() {
     logger_ = new mathematica::Logger(
         SOLUTION_DIR / "mathematica" / "ksp_system_convergence.generated.wl",
-        /*make_unique=*/false);
+        /*make_unique=*/!false);
   }
 
  protected:
