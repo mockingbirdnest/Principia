@@ -54,7 +54,7 @@ using quantities::Time;
 
 // Define this value to 1 to force the logger to append "_new" to the file
 // names, which is useful for regression testing of the logger.
-#define PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST 1
+#define PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST 0
 
 // A helper class for type erasure of quantities.  It may be used with the
 // functions in this file to remove the dimensions of quantities (we know that
