@@ -172,7 +172,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
             position(body) - jool_system_barycentre.Get());
         EXPECT_THAT(barycentric_positions.back().Norm(), matcher);
       }
-      logger.Append(name, barycentric_positions);
+      logger.Append(name, barycentric_positions, mathematica::ExpressIn(Metre));
     }
   }
 
