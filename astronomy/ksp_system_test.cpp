@@ -205,7 +205,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
   mathematica::Logger logger(TEMP_DIR / "ksp_system.generated.wl",
-                             /*make_unique=*/!false);
+                             /*make_unique=*/false);
 
 #if 0
   auto const a_century_hence = solar_system_.epoch() + 100 * JulianYear;
@@ -338,7 +338,11 @@ class KSPSystemConvergenceTest
   static void SetUpTestCase() {
     logger_ = new mathematica::Logger(
         SOLUTION_DIR / "mathematica" / "ksp_system_convergence.generated.wl",
-        /*make_unique=*/!false);
+        /*make_unique=*/false);
+  }
+
+  static void TearDownTestCase() {
+    delete logger_;
   }
 
  protected:

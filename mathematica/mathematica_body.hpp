@@ -333,9 +333,14 @@ std::string ToMathematica(std::string const& str,
 
 inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
     : file_([make_unique, &path]() {
-        if (make_unique) {
+        if (make_unique || PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST != 0) {
           std::filesystem::path filename = path.stem();
-          filename += std::to_string(id_++);
+          if (make_unique) {
+            filename += std::to_string(id_++);
+          }
+#if PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST
+          filename += "_new";
+#endif
           filename += path.extension();
           return path.parent_path() / filename;
         } else {

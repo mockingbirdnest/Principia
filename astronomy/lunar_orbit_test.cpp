@@ -283,7 +283,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
       SOLUTION_DIR / "mathematica" /
           absl::StrCat(
               "lunar_orbit_", GetParam().DegreeAndOrder(), ".generated.wl"),
-      /*make_unique=*/!false);
+      /*make_unique=*/false);
 
   // We work with orbit C from Russell and Lara (2006), Repeat Ground Track
   // Lunar Orbits in the Full-Potential Plus Third-Body Problem.
