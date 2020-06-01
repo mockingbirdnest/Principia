@@ -552,6 +552,9 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
 // This test produces the file phobos.generated.wl which is consumed by the
 // notebook phobos.nb.
 TEST(MarsTest, Phobos) {
+  mathematica::Logger logger(TEMP_DIR / "phobos.generated.wl",
+                             /*make_unique=*/false);
+
   SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
@@ -577,24 +580,16 @@ TEST(MarsTest, Phobos) {
   std::vector<Position<ICRS>> phobos_positions;
   std::vector<Velocity<ICRS>> phobos_velocities;
 
-  std::vector<Displacement<ICRS>> mars_phobos_displacements;
-  std::vector<Velocity<ICRS>> mars_phobos_velocities;
   for (Instant t = J2000; t < J2000 + 30 * Day; t += 5 * Minute) {
     mars_positions.push_back(mars_trajectory.EvaluatePosition(t));
     mars_velocities.push_back(mars_trajectory.EvaluateVelocity(t));
     phobos_positions.push_back(phobos_trajectory.EvaluatePosition(t));
     phobos_velocities.push_back(phobos_trajectory.EvaluateVelocity(t));
-    mars_phobos_displacements.push_back(
-        phobos_positions.back() - mars_positions.back());
-    mars_phobos_velocities.push_back(phobos_velocities.back() -
-                                     mars_velocities.back());
+    logger.Append("ppaMarsPhobosDisplacements",
+                  phobos_positions.back() - mars_positions.back());
+    logger.Append("ppaMarsPhobosVelocities",
+                  phobos_velocities.back() - mars_velocities.back());
   }
-
-  OFStream file(TEMP_DIR / "phobos.generated.wl");
-  file << mathematica::Assign("ppaMarsPhobosDisplacements",
-                              mars_phobos_displacements);
-  file << mathematica::Assign("ppaMarsPhobosVelocities",
-                              mars_phobos_velocities);
 }
 
 #endif
@@ -610,8 +605,13 @@ class SolarSystemDynamicsConvergenceTest
     : public ::testing::TestWithParam<ConvergenceTestParameters> {
  public:
   static void SetUpTestCase() {
-    file_ = OFStream(SOLUTION_DIR / "mathematica" /
-                     "solar_system_convergence.generated.wl");
+    logger_ = new mathematica::Logger(
+        SOLUTION_DIR / "mathematica" / "solar_system_convergence.generated.wl",
+        /*make_unique=*/false);
+  }
+
+  static void TearDownTestCase() {
+    delete logger_;
   }
 
  protected:
@@ -628,10 +628,10 @@ class SolarSystemDynamicsConvergenceTest
     return GetParam().first_step_in_seconds;
   }
 
-  static OFStream file_;
+  static mathematica::Logger* logger_;
 };
 
-OFStream SolarSystemDynamicsConvergenceTest::file_;
+mathematica::Logger* SolarSystemDynamicsConvergenceTest::logger_ = nullptr;
 
 // This takes 7-8 minutes to run.
 TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
@@ -681,12 +681,10 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
     }
   }
 
-  using MathematicaEntry = std::tuple<Time, Length, std::string, Time>;
-  using MathematicaEntries = std::vector<MathematicaEntry>;
-
   std::vector<Length> position_errors(iterations() - 1);
   std::vector<std::string> worst_body(iterations() - 1);
-  MathematicaEntries mathematica_entries;
+  std::string const test_name(
+      ::testing::UnitTest::GetInstance()->current_test_info()->name());
   for (int i = 0; i < iterations() - 1; ++i) {
     for (auto const& [name, errors] : name_to_errors) {
       if (position_errors[i] < errors[i].displacement().Norm()) {
@@ -695,17 +693,13 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
       position_errors[i] = std::max(position_errors[i],
                                     errors[i].displacement().Norm());
     }
-    mathematica_entries.push_back({steps[i + 1],
-                                   position_errors[i],
-                                   worst_body[i],
-                                   durations[i + 1].count() * Second});
+    logger_->Append(std::string("ppaSolarSystemConvergence") +
+                        test_name[test_name.size() - 1],
+                    std::tuple(steps[i + 1],
+                               position_errors[i],
+                               worst_body[i],
+                               durations[i + 1].count() * Second));
   }
-
-  std::string const test_name(
-      ::testing::UnitTest::GetInstance()->current_test_info()->name());
-  file_ << mathematica::Assign(std::string("ppaSolarSystemConvergence") +
-                                   test_name[test_name.size() - 1],
-                               mathematica::ToMathematica(mathematica_entries));
 }
 
 INSTANTIATE_TEST_CASE_P(
