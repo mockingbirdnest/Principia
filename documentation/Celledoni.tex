@@ -7,6 +7,7 @@
 
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
+\usepackage{siunitx}
 \counterwithout{equation}{section}
 
 %%%% Shorthands.
@@ -23,13 +24,13 @@ On an Article by Celledoni et al.%
 \maketitle
 \begin{sloppypar}
 \noindent
-This document provides clarifications, corrections, and accuracy improvements to the formul{\ae} presented in \cite{Celledoni2007}.  It follows the notation
-and conventions of that paper.  Note that the preprint \cite{Celledoni2007} differs in some of the formul{\ae} from the final publication \cite{Celledoni2008},
+This document provides clarifications, corrections, and accuracy improvements to the formulæ presented in \cite{Celledoni2007}.  It follows the notation
+and conventions of that paper.  Note that the preprint \cite{Celledoni2007} differs in some of the formulæ from the final publication \cite{Celledoni2008},
 but we generally follow the former.
 \end{sloppypar}
 
 \section*{Preamble}
-We remind the reader of the derivation formul{\ae} for the Jacobian elliptic functions (\cite{NistHMF2010}, section 22.13(i)):
+We remind the reader of the derivation formulæ for the Jacobian elliptic functions (\cite{NistHMF2010}, section 22.13(i)):
 \[
 \begin{dcases}
 \derivop{u}{\JacobiSN u} &= \JacobiCN u \JacobiDN u \\
@@ -110,12 +111,12 @@ The ellipsoids are surfaces of equal kinetic energy and intersect the sphere on 
 value of $T$ .\label{figGT}}
 \end{figure}
 
-In the rest of this section, we describe our notation and derive (corrected) formul{\ae} for the three cases described above.
+In the rest of this section, we describe our notation and derive (corrected) formulæ for the three cases described above.
 \subsection*{Notation}
 \cite{Celledoni2007} uses a dimensionless formulation where $\norm\vm = 1$, and absolute values for $I_{jh}$ and $\gD_j$.  
 We prefer to use a dimensionful formulation where $\norm\vm = G$, and to avoid absolute values.  Thus we define:
 \begin{align*}
-I_{jh} &\DefineAs I_j - I_h &\gD_j &\DefineAs G^2 - 2 T I_j &B_{jh} &\DefineAs \sqrt{±\frac{I_j \gD_h}{I_{jh}}} \\
+I_{jh} &\DefineAs I_j - I_h &\gD_j &\DefineAs G^2 - 2 T I_j\si{\raiseto{2}\radian} &B_{jh} &\DefineAs \sqrt{±\frac{I_j \gD_h}{I_{jh}}} \\
 k &\DefineAs \sqrt{-\frac{\gD_1 I_{32}}{\gD_3 I_{21}}} &\gl_1 &\DefineAs \sqrt{\frac{\gD_1 I_{32}}{I_1 I_2 I_3}} &\gl_3 &\DefineAs \sqrt{\frac{\gD_3 I_{12}}{I_1 I_2 I_3}}
 \end{align*}
 With these definitions, $I_{jh} ≥ 0$ if and only if $j ≥ h$, and we will prove later that $\gD_1 ≥ 0$, $\gD_3 ≤ 0$, and that $\gD_2$ can have either sign.
@@ -126,7 +127,7 @@ to observe that:
 B_{31}^2 + B_{13}^2 = \frac{\gD_1 I_3 - \gD_3 I_1}{I_{31}} = G^2
 \]
 
-Physically, $I_{jh}$ has the dimension of an inertial momentum $\squareBrackets{L^2 M}$.  $G$ has the dimension of an angular
+Physically, $I_{jh}$ has the dimension of a moment of inertia $\squareBrackets{L^2 M}$.  $G$ has the dimension of an angular
 momentum $\squareBrackets{L^2 M T^{-1} A}$.  $T$ has the dimension of an energy $\squareBrackets{L^2 M T^{-2}}$.
 $\gD_j$ has the same dimension as $G^2$.  $B_{jh}$ has the same dimension as 
 $\sqrt{\gD_h}$, i.e., the same dimension as $G$.  $\gl_1$ and $\gl_3$ have the
@@ -154,8 +155,8 @@ The last equation of (\ref{solneuleri}) yields the following value for $\gl$:
 \begin{align*}
 \gl &= \gs \frac{B_{13} B_{21}}{B_{31}} \frac{I_1 - I_2}{I_1 I_2}
 = \gs\sqrt{\frac{I_1 \gD_3}{I_{13}} \frac{I_2 \gD_1}{I_{21}} \frac{I_{31}}{I_3 \gD_1}} \frac{I_1 - I_2}{I_1 I_2} \\
-&= \gs\sqrt{\frac{\gD_3}{I_{21} I_1 I_2 I_3}} \pa{I_1 - I_2}
-= -\gs\sqrt{\frac{\gD_3 I_{21}}{I_1 I_2 I_3}}
+&= \gs\sqrt{\frac{-\gD_3}{I_{21} I_1 I_2 I_3}} \pa{I_1 - I_2}
+= -\gs\sqrt{\frac{-\gD_3 I_{21}}{I_1 I_2 I_3}}
 = -\gs \gl_3
 \end{align*}
 The sign change when moving $I_1 - I_2$ under the radical is necessary because $I_1 - I_2 < 0$.
@@ -187,8 +188,8 @@ The first equation of (\ref{solneulerii}) yields the following value for $\gl$:
 \begin{align*}
 \gl &= \gs \frac{B_{23} B_{31}}{B_{13}} \frac{I_2 - I_3}{I_2 I_3}
 = \gs\sqrt{\frac{I_2 \gD_3}{I_{23}} \frac{I_3 \gD_1}{I_{31}} \frac{I_{13}}{I_1 \gD_3}} \frac{I_2 - I_3}{I_2 I_3} \\
-&= \gs\sqrt{\frac{\gD_1}{I_{23} I_1 I_2 I_3}} \pa{I_2 - I_3}
-= -\gs\sqrt{\frac{\gD_1 I_{23}}{I_1 I_2 I_3}}
+&= \gs\sqrt{\frac{-\gD_1}{I_{23} I_1 I_2 I_3}} \pa{I_2 - I_3}
+= -\gs\sqrt{\frac{-\gD_1 I_{23}}{I_1 I_2 I_3}}
 = -\gs \gl_1
 \end{align*}
 Again, note the change of sign due to the fact that $I_2 - I_3 < 0$.  And again, the same value of $\gl$ can be shown to satisfy the other
@@ -229,11 +230,11 @@ using the fact that ${\gs'}^2 = 1$:
 &= -\gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \frac{I_2 - I_3}{I_2}
 = \gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{I_3}{I_2} - 1}
 \end{align*}
-Now note that in case (iii) we have $2 T I_2 = G^2$ thus $1/I_2 = \frac{2 T}{G^2}$.  $\gl$ can be rewritten as:
+Now note that in case (iii) we have $2 T I_2 \si{\raiseto{2}\radian} = G^2$ thus $1/I_2 = 2 T \si{\raiseto{2}\radian}/G^2$.  $\gl$ can be rewritten as:
 \[
-\gl = \gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{2 T I_3}{G^2} - 1} = \gs' \gs'' \frac{1}{G} \sqrt{-\frac{\gD_1 \gD_3}{I_1 I_3}}
+\gl = \gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{2 T I_3 \si{\raiseto{2}\radian}}{G^2} - 1} = \gs' \gs'' \frac{1}{G} \sqrt{-\frac{\gD_1 \gD_3}{I_1 I_3}}
 \]
-where we have used the fact that $2 T I_3 - G^2 = -\gD_3 = 2 T \pa{I_3 - I_2} > 0$.
+where we have used the fact that $2 T I_3 \si{\raiseto{2}\radian} - G^2 = -\gD_3 = 2 T \si{\raiseto{2}\radian} \pa{I_3 - I_2} ≥ 0$.
 
 We then define:
 \[
@@ -261,7 +262,7 @@ First, we set $\gs$ to be the sign of $m_{01}$.  Then, forming the quotient of t
 \[
 \frac{m_{02}}{m_{03}} = \frac{B_{21}}{B_{31}}\TrigonometricTangent\of{\JacobiAmplitude\of{\gn, k}}
 \]
-thus:
+This equation defines $\gn$ modulo $2 K\of{k}$ because $\JacobiAmplitude\of{\gn + 2 K\of{k}, k} = \JacobiAmplitude\of{\gn, k} + \gp$  (\cite{NistHMF2010}, equation 22.16.2).  It comes:
 \[
 \InverseTrigonometricTangent\of{\frac{m_{02}}{m_{03}} \frac{B_{31}}{B_{21}}} = \JacobiAmplitude\of{\gn, k}
 \]
@@ -269,6 +270,7 @@ and finally we obtain $\gn$ as:
 \[
 \gn = F\of{\InverseTrigonometricTangent\of{\frac{m_{02}}{m_{03}} \frac{B_{31}}{B_{21}}}, k}
 \]
+Any determination of the arc tangent works, because $F\of{\gp + \gf, k} = 2 K\of{k} + F\of{\gf, k}$ (\cite{NistHMF2010}, equation 19.2.10).  In pratice we use the \texttt{atan2} function.
 
 \subsubsection*{Case (ii)}
 Starting from:
@@ -288,6 +290,7 @@ and for $\gn$:
 \[
 \gn = F\of{\InverseTrigonometricTangent\of{\frac{m_{02}}{m_{01}} \frac{B_{13}}{B_{23}}}, k^{-1}}
 \]
+The same comments as above apply regarding the computation of the arc tangent.
 
 \subsubsection*{Case (iii)}
 The initial value ${\vm}_0$  is:
@@ -305,15 +308,15 @@ $\gs'$ and $\gs''$ are set to be the signs of $m_{01}$ and $m_{03}$, respectivel
 \]
 
 \subsection*{Implementation considerations}
-Some of the formul{\ae} given by \cite{Celledoni2007} do not lend themselves to an easy implementation or lead to numerical inaccuracies.  We
-describe in this section the modifications we make to these formul{\ae} in our implementation.
+Some of the formulæ given by \cite{Celledoni2007} do not lend themselves to an easy implementation or lead to numerical inaccuracies.  We
+describe in this section the modifications we make to these formulæ in our implementation.
 
 \subsubsection*{The quantity $\gD_j$}
-We notice that the computation of $\gD_j$ may entail cancellations, so we go back to the definition of $\norm{\vm}$ and of the kinetic energy:
+We notice that the computation of $\gD_j$ as written in \cite{Celledoni2007} entails cancellations, so we go back to the definition of $\norm{\vm}$ and of the kinetic energy:
 \[
 \begin{dcases}
 G^2 &= m_1^2 + m_2^2 + m_3^2 \\
-2 T &= \frac{m_1^2}{I_1} + \frac{m_2^2}{I_2} + \frac{m_3^2}{I_3}
+2 T \si{\raiseto{2}\radian} &= \frac{m_1^2}{I_1} + \frac{m_2^2}{I_2} + \frac{m_3^2}{I_3}
 \end{dcases}
 \]
 When, for instance, $j = 2$, this yields:
@@ -338,7 +341,7 @@ the complementary parameter $m_c = 1 - m$ (see \cite{NistHMF2010}, section 19.1.
 \[
 m_c = 1 - k^2 = 1 + \frac{\gD_1 I_{32}}{\gD_3 I_{21}}
 \]
-where we have used $\gD_3 \leq 0$.  This can be rewritten as follows:
+This can be rewritten as follows:
 \begin{align*}
 m_c &= \frac{\gD_3 I_{21} + \gD_1 I_{32}}{\gD_3 I_{21}}
 =\frac{\pa{G^2 - 2 T I_3}\pa{I_2 - I_1} + \pa{G^2 - 2 T I_1}\pa{I_3 - I_2}}{\gD_3 I_{21}} \\
@@ -380,40 +383,40 @@ decompose $\mathscr R$ as follows:
 
 \cite{Celledoni2007} derive the following expression for $\TimeDerivative{\gy}\of{t}$ (which they write slightly differently):
 \begin{align*}
-\TimeDerivative{\gy}\of{t} &= \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 + \frac{I_{12}I_{23}G^2}{I_2^2 \gD_1 \gD_3}m_2^2}}\\
-&= \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{21}^2 B_{23}^2}m_2^2}}
+\TimeDerivative{\gy}\of{t} &= \frac{2 T \si{\raiseto{2}\radian}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 + \frac{I_{12}I_{23}G^2}{I_2^2 \gD_1 \gD_3}m_2^2}}\\
+&= \frac{2 T \si{\raiseto{2}\radian}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{21}^2 B_{23}^2}m_2^2}}
 \end{align*}
 
 \subsection*{Case (i)}
 In case (i) we have $m_2 = -B_{21} \JacobiSN\of{\gl t - \gn, k}$ and the above expression becomes:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{23}^2}\JacobiSN^2\of{\gl t - \gn, k}}}
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{23}^2}\JacobiSN^2\of{\gl t - \gn, k}}}
 \]
 This expression can be integrated using formula 110.04 of \cite{ByrdFriedman1954} with $\ga = G/B_{23}$ to yield:
 \[
-\gy\of{t} = \frac{2 T}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k}, \frac{G^2}{B_{23}^2}, k}
+\gy\of{t} = \frac{2 T \si{\raiseto{2}\radian}}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k}, \frac{G^2}{B_{23}^2}, k}
 \]
 Note that this differs from the formula given by \cite{Celledoni2007} in the value of $n$.
 
 \subsection*{Case (ii)}
 In case (ii) we have $m_2 = -B_{23} \JacobiSN\of{\gl t - \gn, k^{-1}}$ and a computation similar to the one above gives:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{21}^2}\JacobiSN^2\of{\gl t - \gn, k^{-1}}}}
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{21}^2}\JacobiSN^2\of{\gl t - \gn, k^{-1}}}}
 \]
 and:
 \[
-\gy\of{t} = \frac{2 T}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k^{-1}}, \frac{G^2}{B_{21}^2}, k^{-1}}
+\gy\of{t} = \frac{2 T \si{\raiseto{2}\radian}}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k^{-1}}, \frac{G^2}{B_{21}^2}, k^{-1}}
 \]
 
 \subsection*{Case (iii)}
-In case (ii) we have $m_2 = G \HyperbolicTangent\of{\gl t - \gn}$ and:
+In case (iii) we have $m_2 = G \HyperbolicTangent\of{\gl t - \gn}$ and:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^4}{B_{21}^2 B_{23}^2} \HyperbolicTangent^2\of{\gl t - \gn}}}
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^4}{B_{21}^2 B_{23}^2} \HyperbolicTangent^2\of{\gl t - \gn}}}
 \]
 which can be integrated using:
 \[
 \int{}\frac{1}{1 - n \HyperbolicTangent^2\of{\gl t - \gn}}\diffd{t} = 
-\frac{t}{1 - n} + \frac{\sqrt{n}}{\pa{1 - n}\gl} \InverseHyperbolicTangent\of{\sqrt{n} \HyperbolicTangent\of{\gl t - \gn}}
+\frac{t}{1 - n} - \frac{\sqrt{n}}{\pa{1 - n}\gl} \InverseHyperbolicTangent\of{\sqrt{n} \HyperbolicTangent\of{\gl t - \gn}}
 \]
 
 \subsection*{Implementation considerations}
@@ -440,9 +443,9 @@ p_0^2 + p_3^2 &= \frac{G + m_3}{2 G}
 \]
 and the angle $\gy\of{t}$ for the rotation $\mathscr Y_t$ around $\VectorSymbol{e_3}$:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T + G m_3 / I_3}{G + m_3} + 4 G \frac{p_3 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_3}}{G + m_3}
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian} + G m_3 / I_3}{G + m_3} + 4 G \frac{p_3 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_3}}{G + m_3}
 \]
-They note that these formul{\ae} are only applicable if $m_3 \neq 0$ but go on applying them to case (i) where $m_3 = B_{31} \JacobiCN\of{\gl t - \gn, k}$
+They note that these formulæ are only applicable if $m_3 \neq 0$ but go on applying them to case (i) where $m_3 = B_{31} \JacobiCN\of{\gl t - \gn, k}$
 can be $0$.
 
 One should note at this point that \cite{Celledoni2007} make an error when copying the definition of $f_1\of{u}$ from formula 361.54 of 
@@ -452,8 +455,8 @@ still incorrect and should read:
 f\of{s} \DefineAs -B_{31} \frac{B_{13}}{B_{21}} \InverseTrigonometricTangent\of{\frac{B_{21}}{B_{13}} \JacobiSD\of{\gl s - \gn, k}}
 \]
 
-\subsection*{An alternative quaternionic solution}
-\cite{Celledoni2007} do not explain how they handle cases (ii) and (iii).  It is intriguing to note, though, that the formul{\ae} above work well
+\section*{An alternative quaternionic solution}
+\cite{Celledoni2007} do not explain how they handle cases (ii) and (iii).  It is intriguing to note, though, that the formulæ above work well
 for case (ii) where $m_3 = \gs B_{31} \JacobiDN\of{\gl t - \gn, k^{-1}}$.  The reason is that, without loss of generality, we can apply to the principal
 axes of the body a rotation $\mathscr S$ that maps $m_3$ onto $-m_3$ (there are many possible choices for $\mathscr S$, but for simplicity we pick one that flips the sign of
 either $m_1$ or $m_2$).  With this rotation, the multiplier $\gs$ disappears from $m_3$ and we have $m_3 \geq 0$ for all times, which ensures that
@@ -513,7 +516,7 @@ p_0^2 + p_1^2 &= \frac{G + m_1}{2 G}
 \]
 and, for the angle $\gy\of{t}$ of the rotation $\mathscr Y_t$ around $\VectorSymbol{e_1}$:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T + G m_1 / I_1}{G + m_1} + 4 G \frac{p_1 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_1}}{G + m_1}
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian} + G m_1 / I_1}{G + m_1} + 4 G \frac{p_1 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_1}}{G + m_1}
 \]
 We then write $p_0 = c_0 \sqrt{1 + m_1/G}$ and $p_1= c_1 \sqrt{1 + m_1/G}$ and pick $c_0 = 1/\sqrt{2}$ and $c_1 = 0$.  The quaternion simplifies to:
 \[
@@ -526,7 +529,7 @@ p_3 &= \frac{-m_2}{\sqrt{2 G\pa{G + m_1}}}
 \]
 and the angle to:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T + G m_1 / I_1}{G + m_1} = \frac{G^2 - \gD_1 + G m_1}{I_1\pa{G + m_1}} = \frac{G}{I_1} - \frac{\gD_1/I_1}{G + m_1} =
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian} + G m_1 / I_1}{G + m_1} = \frac{G^2 - \gD_1 + G m_1}{I_1\pa{G + m_1}} = \frac{G}{I_1} - \frac{\gD_1/I_1}{G + m_1} =
 \frac{G}{I_1} - \frac{\gD_1}{G I_1}\frac{1}{1 + m_1/G}
 \]
 Using equation (\ref{integraldn}) with $a = B_{13}/G$ and simplifying the various coefficients we obtain:
@@ -554,8 +557,8 @@ and the angle:
 Using equation (\ref{integraldn}) with $a = B_{31}/G$ and simplifying the various coefficients we obtain:
 \[
 \gy\of{t} = \frac{G}{I_3}t + \frac{G I_{31}}{\gl I_1 I_3}
-\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_3 I_{21}}{I_1 I_{23}}, k} +
-\InverseTrigonometricTangent\of{\sqrt\frac{I_2 I_{31}}{I_1 I_{32}} \JacobiSC\of{\gl t - \gn, k}}
+\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_3 I_{21}}{I_1 I_{23}}, k^{-1}} +
+\InverseTrigonometricTangent\of{\sqrt\frac{I_2 I_{31}}{I_1 I_{32}} \JacobiSC\of{\gl t - \gn, k^{-1}}}
 \]
 
 \subsection*{Case (iii)}
