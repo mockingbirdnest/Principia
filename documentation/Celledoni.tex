@@ -358,6 +358,15 @@ m_c = 1 - k^{-2} = 1 + \frac{\gD_3 I_{21}}{\gD_1 I_{32}}
 In both cases we have $m_c \geq 0$.
 
 \section*{Integration of the rotation matrix}
+In order to be compatible with our geometrical libraries, our notation differs from that of \cite{Celledoni2007}.
+\subsection*{Notation}
+\cite{Celledoni2007} define a number of bases of $\Reals^3$ and define active rotations in $\Reals^3$.  For instance they explain that $\mathscr P_t$ maps $\vm$ to $e_3$ and transforms the basis $\mathscr B_t$ into the basis $\mathscr B^b$.  By contrast, our libraries implement passive rotations where we have multiple copies of $\Reals^3$ with different coordinate systems.  Therefore, we view $\mathscr P_t$ as transforming $\vm$ in the coordinate system $\mathscr B^b$ of the body into $\vm$ in the coordinate system $\mathscr B_t$.  Confusingly, \cite{Celledoni2007} appear to use passive
+rotations when they write matrices, so their $P_t$ has semantics similar to that of our $\mathscr P_t$.
+
+In what follows (and in our code) we try to use the same symbols as \cite{Celledoni2007} with the understanding that our rotations, written in
+script font, are passive, and that the entities denoted by $\mathscr B$ are coordinate systems in multiple copies of $\Reals^3$, not bases in a 
+single copy of $\Reals^3$.
+
 \cite{Celledoni2007} decompose the attitude rotation $\mathscr Q_t$ of the body as follows:
 \[
 \begin{tikzcd}
@@ -430,6 +439,10 @@ When $\TimeDerivative{\vm} = \VectorSymbol{0}$ at $t = 0$, the motion may be com
 eliminated.  But when $\TimeDerivative{\vm} \neq \VectorSymbol{0}$ at $t = 0$ and it later becomes $\VectorSymbol{0}$, there is no way to find a basis at $t$ that 
 continuously corresponds to the one at $t = 0$.
 
+While it might be possible to deal with the neighbourhoods of the stable zeros ($m_1$ and $m_3$) by handling the relevant regions with distinct 
+formulæ (e.g., the low-order precession approximations), this is infeasible for $m_2$ where any neighbourhood of the singularity propagates all the
+way around the separatrix.  The reader is invited to consult figure~\ref{figm}.
+
 In conclusion, we tried to use this approach but had to abandon it because of the impossibility of handling the singularity.
 
 \section*{Integration of the quaternion}
@@ -445,8 +458,22 @@ and the angle $\gy\of{t}$ for the rotation $\mathscr Y_t$ around $\VectorSymbol{
 \[
 \TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian} + G m_3 / I_3}{G + m_3} + 4 G \frac{p_3 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_3}}{G + m_3}
 \]
-They note that these formulæ are only applicable if $m_3 \neq 0$ but go on applying them to case (i) where $m_3 = B_{31} \JacobiCN\of{\gl t - \gn, k}$
-can be $0$.
+Solving these equations they obtain:
+\[
+\begin{dcases}
+p_0 &= \sqrt\frac{1 + m_3/G}{2} \\
+p_1 &= \frac{m_2}{\sqrt{2 G\pa{G + m_3}}} \\
+p_2 &= \frac{-m_1}{\sqrt{2 G\pa{G + m_3}}} \\
+p_3 &= 0
+\end{dcases}
+\]
+and:
+\[
+\gy\of{t} = \frac{G}{I_3}t + \frac{G I_{31}}{\gl I_1 I_3}
+\pa{\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k}, -\pa{\frac{B_{31}}{B_{13}}}^2, k} + f\of{t}}
+\]
+
+They note that these formulæ are only applicable if $m_3 \neq -G$ but go on applying them to case (i) where $m_3 = B_{31} \JacobiCN\of{\gl t - \gn, k}$ can be negative.
 
 One should note at this point that \cite{Celledoni2007} make an error when copying the definition of $f_1\of{u}$ from formula 361.54 of 
 \cite{ByrdFriedman1954}.  This error is corrected in \cite{Celledoni2008}, but the sign of $f\of{s}$ in the definition of $\gy\of{t}$ is
@@ -483,6 +510,7 @@ And for $\mathscr R$:
 \arrow{r}{\mathscr S^{-1}} & {\mathscr B^b} \arrow{r}{\mathscr Q_{t_0}} & {\mathscr B^s}
 \end{tikzcd}
 \] 
+With this choice of $\mathscr S$, the free parameters $\gs$, $\gs'$, and $\gs''$ appearing in the three cases of the resolution of Euler's equation are all $1$.
 
 \subsection*{Integrals}
 We start by computing two integrals that are useful to obtain $\gy\of{t}$.  They are valid for $0 \le a < 1$.  As far as we can tell the following integral,
@@ -535,7 +563,7 @@ and the angle to:
 Using equation (\ref{integraldn}) with $a = B_{13}/G$ and simplifying the various coefficients we obtain:
 \[
 \gy\of{t} = \frac{G}{I_1}t + \frac{G I_{13}}{\gl I_1 I_3}
-\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_1 I_{32}}{I_3 I_{12}}, k} -
+\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k}, \frac{I_1 I_{32}}{I_3 I_{12}}, k} -
 \InverseTrigonometricTangent\of{\sqrt\frac{I_2 I_{31}}{I_3 I_{21}} \JacobiSC\of{\gl t - \gn, k}}
 \]
 
@@ -557,7 +585,7 @@ and the angle:
 Using equation (\ref{integraldn}) with $a = B_{31}/G$ and simplifying the various coefficients we obtain:
 \[
 \gy\of{t} = \frac{G}{I_3}t + \frac{G I_{31}}{\gl I_1 I_3}
-\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn}, \frac{I_3 I_{21}}{I_1 I_{23}}, k^{-1}} +
+\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k^{-1}}, \frac{I_3 I_{21}}{I_1 I_{23}}, k^{-1}} +
 \InverseTrigonometricTangent\of{\sqrt\frac{I_2 I_{31}}{I_1 I_{32}} \JacobiSC\of{\gl t - \gn, k^{-1}}}
 \]
 
