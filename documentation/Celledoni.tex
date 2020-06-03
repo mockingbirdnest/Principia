@@ -365,9 +365,9 @@ canonical basis of $\Reals^3$ to obtain a coordinate representation $\vm$ of $\V
 
 They then define active rotations in the physical (vector) space.  For instance they explain that $\mathscr P_t$ takes $\VectorSymbol M$ to ${\VectorSymbol E}_3^b$ and transforms the basis $\mathscr B_t$ into the basis $\mathscr B^b$.  By contrast, our libraries operate on coordinate
 representations, not abstract vectors, and implement passive rotations where the physical space is represented by multiple copies of $\Reals^3$ with
-different coordinate systems.  Therefore, we view $\mathscr P_t$ as transforming $\vm$ in the coordinate system $\mathscr B^b$ of the body into $\vm$
-in the coordinate system $\mathscr B_t$.  Confusingly, \cite{Celledoni2007} appear to use passive rotations when they write matrices, so their $P_t$
-has semantics similar to that of our $\mathscr P_t$.
+different coordinate systems.  Therefore, we view $\mathscr P_t$ as transforming $\VectorSymbol M$ with coordinates $\vm$ in the coordinate system 
+$\mathscr B^b$ of the body into $\VectorSymbol M$ with coordinates $\ve_3$ in the coordinate system $\mathscr B_t$.  Confusingly, 
+\cite{Celledoni2007} appear to use passive rotations when they write matrices, so their $P_t$ has semantics similar to that of our $\mathscr P_t$.
 
 In what follows (and in our code) we try to use the same symbols as \cite{Celledoni2007} with the understanding that our rotations, written in
 script font, are passive, and that the entities denoted by $\mathscr B$ are coordinate systems in multiple copies of $\Reals^3$, not bases in a 
