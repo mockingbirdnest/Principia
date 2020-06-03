@@ -101,7 +101,7 @@ with precession.  The green curve is the (unstable) case (iii) and any perturbat
 \end{figure}
 
 The solutions may also be visualized by intersecting the sphere $\norm\vm = G$ with ellipsoids defined by the value of the kinetic energy $T$,
-which is also a constant of motion.  Since $T = \frac{G^2 - \gD_2}{2 I_2}$, different values of $T$ determine the same modes as above.
+which is also a constant of motion.  Since $T = \frac{G^2 - \gD_2}{2 I_2 \Radian^2}$, different values of $T$ determine the same modes as above.
 \begin{figure}[htb!]
 \centering
 \includegraphics[scale=0.45]{Celledoni-G-T}
@@ -360,10 +360,10 @@ In both cases we have $m_c \geq 0$.
 In order to be compatible with our geometrical libraries, our notation differs from that of \cite{Celledoni2007}.
 \subsection*{Notation}
 \cite{Celledoni2007} describe the physical space as a three-dimensional vector space where vectors like $\VectorSymbol M$ live.  In this vector space,
-they pick orthonormal bases like $\curlyBrackets{\VectorSymbol{E}^s_1, \VectorSymbol{E}^s_2, \VectorSymbol{E}^s_3}$ which they identify with the
+they pick orthonormal bases like $\curlyBrackets{\VectorSymbol{E}^b_1, \VectorSymbol{E}^b_2, \VectorSymbol{E}^b_3}$ which they identify with the
 canonical basis of $\Reals^3$ to obtain a coordinate representation $\vm$ of $\VectorSymbol M$.
 
-They then define active rotations in the physical (vector) space.  For instance they explain that $\mathscr P_t$ takes $\VectorSymbol M$ to ${\VectorSymbol E}_3^b$ and transforms the basis $\mathscr B_t$ into the basis $\mathscr B^b$.  By contrast, our libraries operate on coordinate
+They then define active rotations in the physical (vector) space.  For instance they explain that $\mathscr P_t$ takes $\VectorSymbol M$ to ${\VectorSymbol E}^b_3$ and transforms the basis $\mathscr B_t$ into the basis $\mathscr B^b$.  By contrast, our libraries operate on coordinate
 representations, not abstract vectors, and implement passive rotations where the physical space is represented by multiple copies of $\Reals^3$ with
 different coordinate systems.  Therefore, we view $\mathscr P_t$ as transforming $\VectorSymbol M$ with coordinates $\vm$ in the coordinate system 
 $\mathscr B^b$ of the body into $\VectorSymbol M$ with coordinates $\ve_3$ in the coordinate system $\mathscr B_t$.  Confusingly, 
@@ -371,7 +371,7 @@ $\mathscr B^b$ of the body into $\VectorSymbol M$ with coordinates $\ve_3$ in th
 
 In what follows (and in our code) we try to use the same symbols as \cite{Celledoni2007} with the understanding that our rotations, written in
 script font, are passive, and that the entities denoted by $\mathscr B$ are coordinate systems in multiple copies of $\Reals^3$, not bases in a 
-single copy of $\Reals^3$.
+single vector space.
 
 \cite{Celledoni2007} decompose the attitude rotation $\mathscr Q_t$ of the body as follows:
 \[
@@ -379,8 +379,8 @@ single copy of $\Reals^3$.
 {\mathscr Q_t: \mathscr B^b} \arrow{r}{\mathscr P_t} & {\mathscr B_t} \arrow{r}{\mathscr Y_t} & {\mathscr B'} \arrow{r}{\mathscr R} & {\mathscr B^s}
 \end{tikzcd}
 \]
-where $\mathscr P_t$ maps $\vm$ onto $\VectorSymbol{e_3^b}$, $\mathscr Y_t$ is a rotation of angle $\gy\of{t}$ around $\vm$, and ${\mathscr R}$
-maps $\VectorSymbol{e_3^s}$ onto $\vm$.  They then assume that $\mathscr Q_{t_0} = \Identity$.  This yields the following decomposition for
+where $\mathscr P_t$ maps $\vm$ onto $\ve_3^b$, $\mathscr Y_t$ is a rotation of angle $\gy\of{t}$ around $\vm$, and ${\mathscr R}$
+maps $\VectorSymbol{e_3^s}$ onto $\vm$, where they assume that $\mathscr Q_{t_0} = \Identity$.  This yields the following decomposition for
 $\mathscr R$:
 \[
 \begin{tikzcd}
