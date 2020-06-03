@@ -8,7 +8,9 @@
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 \usepackage{siunitx}
+
 \counterwithout{equation}{section}
+\sisetup{mode = text, math-rm = \mathscr, power-font = number}
 
 %%%% Shorthands.
 
@@ -116,7 +118,7 @@ In the rest of this section, we describe our notation and derive (corrected) for
 \cite{Celledoni2007} uses a dimensionless formulation where $\norm\vm = 1$, and absolute values for $I_{jh}$ and $\gD_j$.  
 We prefer to use a dimensionful formulation where $\norm\vm = G$, and to avoid absolute values.  Thus we define:
 \begin{align*}
-I_{jh} &\DefineAs I_j - I_h &\gD_j &\DefineAs G^2 - 2 T I_j\si{\raiseto{2}\radian} &B_{jh} &\DefineAs \sqrt{±\frac{I_j \gD_h}{I_{jh}}} \\
+I_{jh} &\DefineAs I_j - I_h &\gD_j &\DefineAs G^2 - 2 T I_j\si{\radian\squared} &B_{jh} &\DefineAs \sqrt{±\frac{I_j \gD_h}{I_{jh}}} \\
 k &\DefineAs \sqrt{-\frac{\gD_1 I_{32}}{\gD_3 I_{21}}} &\gl_1 &\DefineAs \sqrt{\frac{\gD_1 I_{32}}{I_1 I_2 I_3}} &\gl_3 &\DefineAs \sqrt{\frac{\gD_3 I_{12}}{I_1 I_2 I_3}}
 \end{align*}
 With these definitions, $I_{jh} ≥ 0$ if and only if $j ≥ h$, and we will prove later that $\gD_1 ≥ 0$, $\gD_3 ≤ 0$, and that $\gD_2$ can have either sign.
@@ -230,11 +232,11 @@ using the fact that ${\gs'}^2 = 1$:
 &= -\gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \frac{I_2 - I_3}{I_2}
 = \gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{I_3}{I_2} - 1}
 \end{align*}
-Now note that in case (iii) we have $2 T I_2 \si{\raiseto{2}\radian} = G^2$ thus $1/I_2 = 2 T \si{\raiseto{2}\radian}/G^2$.  $\gl$ can be rewritten as:
+Now note that in case (iii) we have $2 T I_2 \si{\radian\squared} = G^2$ thus $1/I_2 = 2 T \si{\radian\squared}/G^2$.  $\gl$ can be rewritten as:
 \[
-\gl = \gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{2 T I_3 \si{\raiseto{2}\radian}}{G^2} - 1} = \gs' \gs'' \frac{1}{G} \sqrt{-\frac{\gD_1 \gD_3}{I_1 I_3}}
+\gl = \gs' \gs'' G \sqrt{-\frac{\gD_1}{I_1 I_3 \gD_3}} \pa{\frac{2 T I_3 \si{\radian\squared}}{G^2} - 1} = \gs' \gs'' \frac{1}{G} \sqrt{-\frac{\gD_1 \gD_3}{I_1 I_3}}
 \]
-where we have used the fact that $2 T I_3 \si{\raiseto{2}\radian} - G^2 = -\gD_3 = 2 T \si{\raiseto{2}\radian} \pa{I_3 - I_2} ≥ 0$.
+where we have used the fact that $2 T I_3 \si{\radian\squared} - G^2 = -\gD_3 = 2 T \si{\radian\squared} \pa{I_3 - I_2} ≥ 0$.
 
 We then define:
 \[
@@ -316,7 +318,7 @@ We notice that the computation of $\gD_j$ as written in \cite{Celledoni2007} ent
 \[
 \begin{dcases}
 G^2 &= m_1^2 + m_2^2 + m_3^2 \\
-2 T \si{\raiseto{2}\radian} &= \frac{m_1^2}{I_1} + \frac{m_2^2}{I_2} + \frac{m_3^2}{I_3}
+2 T \si{\radian\squared} &= \frac{m_1^2}{I_1} + \frac{m_2^2}{I_2} + \frac{m_3^2}{I_3}
 \end{dcases}
 \]
 When, for instance, $j = 2$, this yields:
@@ -360,8 +362,15 @@ In both cases we have $m_c \geq 0$.
 \section*{Integration of the rotation matrix}
 In order to be compatible with our geometrical libraries, our notation differs from that of \cite{Celledoni2007}.
 \subsection*{Notation}
-\cite{Celledoni2007} define a number of bases of $\Reals^3$ and define active rotations in $\Reals^3$.  For instance they explain that $\mathscr P_t$ maps $\vm$ to $e_3$ and transforms the basis $\mathscr B_t$ into the basis $\mathscr B^b$.  By contrast, our libraries implement passive rotations where we have multiple copies of $\Reals^3$ with different coordinate systems.  Therefore, we view $\mathscr P_t$ as transforming $\vm$ in the coordinate system $\mathscr B^b$ of the body into $\vm$ in the coordinate system $\mathscr B_t$.  Confusingly, \cite{Celledoni2007} appear to use passive
-rotations when they write matrices, so their $P_t$ has semantics similar to that of our $\mathscr P_t$.
+\cite{Celledoni2007} describe the physical space as a three-dimensional vector space where vectors like $\VectorSymbol M$ live.  In this vector space,
+they pick orthonormal bases like $\curlyBrackets{\VectorSymbol{E}^s_1, \VectorSymbol{E}^s_2, \VectorSymbol{E}^s_3}$ which they identify with the
+canonical basis of $\Reals^3$ to obtain a coordinate representation $\vm$ of $\VectorSymbol M$.
+
+They then define active rotations in the physical (vector) space.  For instance they explain that $\mathscr P_t$ takes $\VectorSymbol M$ to ${\ve}_3$ and transforms the basis $\mathscr B_t$ into the basis $\mathscr B^b$.  By contrast, our libraries operate on coordinate representations, not
+abstract vectors, and implement passive rotations where the physical space is represented by multiple copies of $\Reals^3$ with different coordinate
+systems.  Therefore, we view $\mathscr P_t$ as transforming $\vm$ in the coordinate system $\mathscr B^b$ of the body into $\vm$ in the
+coordinate system $\mathscr B_t$.  Confusingly, \cite{Celledoni2007} appear to use passive rotations when they write matrices, so their $P_t$ has
+semantics similar to that of our $\mathscr P_t$.
 
 In what follows (and in our code) we try to use the same symbols as \cite{Celledoni2007} with the understanding that our rotations, written in
 script font, are passive, and that the entities denoted by $\mathscr B$ are coordinate systems in multiple copies of $\Reals^3$, not bases in a 
@@ -392,35 +401,35 @@ decompose $\mathscr R$ as follows:
 
 \cite{Celledoni2007} derive the following expression for $\TimeDerivative{\gy}\of{t}$ (which they write slightly differently):
 \begin{align*}
-\TimeDerivative{\gy}\of{t} &= \frac{2 T \si{\raiseto{2}\radian}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 + \frac{I_{12}I_{23}G^2}{I_2^2 \gD_1 \gD_3}m_2^2}}\\
-&= \frac{2 T \si{\raiseto{2}\radian}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{21}^2 B_{23}^2}m_2^2}}
+\TimeDerivative{\gy}\of{t} &= \frac{2 T \si{\radian\squared}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 + \frac{I_{12}I_{23}G^2}{I_2^2 \gD_1 \gD_3}m_2^2}}\\
+&= \frac{2 T \si{\radian\squared}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{21}^2 B_{23}^2}m_2^2}}
 \end{align*}
 
 \subsection*{Case (i)}
 In case (i) we have $m_2 = -B_{21} \JacobiSN\of{\gl t - \gn, k}$ and the above expression becomes:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{23}^2}\JacobiSN^2\of{\gl t - \gn, k}}}
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\radian\squared}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{23}^2}\JacobiSN^2\of{\gl t - \gn, k}}}
 \]
 This expression can be integrated using formula 110.04 of \cite{ByrdFriedman1954} with $\ga = G/B_{23}$ to yield:
 \[
-\gy\of{t} = \frac{2 T \si{\raiseto{2}\radian}}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k}, \frac{G^2}{B_{23}^2}, k}
+\gy\of{t} = \frac{2 T \si{\radian\squared}}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k}, \frac{G^2}{B_{23}^2}, k}
 \]
 Note that this differs from the formula given by \cite{Celledoni2007} in the value of $n$.
 
 \subsection*{Case (ii)}
 In case (ii) we have $m_2 = -B_{23} \JacobiSN\of{\gl t - \gn, k^{-1}}$ and a computation similar to the one above gives:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{21}^2}\JacobiSN^2\of{\gl t - \gn, k^{-1}}}}
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\radian\squared}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^2}{B_{21}^2}\JacobiSN^2\of{\gl t - \gn, k^{-1}}}}
 \]
 and:
 \[
-\gy\of{t} = \frac{2 T \si{\raiseto{2}\radian}}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k^{-1}}, \frac{G^2}{B_{21}^2}, k^{-1}}
+\gy\of{t} = \frac{2 T \si{\radian\squared}}{G}t + \frac{\gD_2}{\gl G I_2}\EllipticPi\of{\JacobiAmplitude\of{\gl t - \gn, k^{-1}}, \frac{G^2}{B_{21}^2}, k^{-1}}
 \]
 
 \subsection*{Case (iii)}
 In case (iii) we have $m_2 = G \HyperbolicTangent\of{\gl t - \gn}$ and:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^4}{B_{21}^2 B_{23}^2} \HyperbolicTangent^2\of{\gl t - \gn}}}
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\radian\squared}}{G} + \frac{\gD_2}{G I_2}\pa{\frac{1}{1 - \frac{G^4}{B_{21}^2 B_{23}^2} \HyperbolicTangent^2\of{\gl t - \gn}}}
 \]
 which can be integrated using:
 \[
@@ -456,7 +465,7 @@ p_0^2 + p_3^2 &= \frac{G + m_3}{2 G}
 \]
 and the angle $\gy\of{t}$ for the rotation $\mathscr Y_t$ around $\VectorSymbol{e_3}$:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian} + G m_3 / I_3}{G + m_3} + 4 G \frac{p_3 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_3}}{G + m_3}
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\radian\squared} + G m_3 / I_3}{G + m_3} + 4 G \frac{p_3 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_3}}{G + m_3}
 \]
 Solving these equations they obtain:
 \[
@@ -544,7 +553,7 @@ p_0^2 + p_1^2 &= \frac{G + m_1}{2 G}
 \]
 and, for the angle $\gy\of{t}$ of the rotation $\mathscr Y_t$ around $\VectorSymbol{e_1}$:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian} + G m_1 / I_1}{G + m_1} + 4 G \frac{p_1 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_1}}{G + m_1}
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\radian\squared} + G m_1 / I_1}{G + m_1} + 4 G \frac{p_1 \TimeDerivative{p_0} - p_0 \TimeDerivative{p_1}}{G + m_1}
 \]
 We then write $p_0 = c_0 \sqrt{1 + m_1/G}$ and $p_1= c_1 \sqrt{1 + m_1/G}$ and pick $c_0 = 1/\sqrt{2}$ and $c_1 = 0$.  The quaternion simplifies to:
 \[
@@ -557,7 +566,7 @@ p_3 &= \frac{-m_2}{\sqrt{2 G\pa{G + m_1}}}
 \]
 and the angle to:
 \[
-\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\raiseto{2}\radian} + G m_1 / I_1}{G + m_1} = \frac{G^2 - \gD_1 + G m_1}{I_1\pa{G + m_1}} = \frac{G}{I_1} - \frac{\gD_1/I_1}{G + m_1} =
+\TimeDerivative{\gy}\of{t} = \frac{2 T \si{\radian\squared} + G m_1 / I_1}{G + m_1} = \frac{G^2 - \gD_1 + G m_1}{I_1\pa{G + m_1}} = \frac{G}{I_1} - \frac{\gD_1/I_1}{G + m_1} =
 \frac{G}{I_1} - \frac{\gD_1}{G I_1}\frac{1}{1 + m_1/G}
 \]
 Using equation (\ref{integraldn}) with $a = B_{13}/G$ and simplifying the various coefficients we obtain:
