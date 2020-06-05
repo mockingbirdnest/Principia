@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/flags.hpp"
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
 #include "ksp_plugin/integrators.hpp"
@@ -21,7 +20,6 @@ namespace internal_pile_up {
 
 using base::check_not_null;
 using base::FindOrDie;
-using base::Flags;
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;

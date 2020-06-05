@@ -495,6 +495,11 @@ public partial class PrincipiaPluginAdapter
            kerbal.fsm.CurrentState == kerbal.st_clamber_acquireP3;
   }
 
+  // Æthelred Kerman.
+  private bool is_unready_kerbal(Vessel vessel) {
+    return vessel.isEVA && vessel.evaController?.Ready == false;
+  }
+
   private bool is_manageable(Vessel vessel) {
     return UnmanageabilityReasons(vessel) == null;
   }
@@ -527,7 +532,7 @@ public partial class PrincipiaPluginAdapter
                   " m above ground with a vertical speed of " + vertical_speed +
                   " m/s");
     }
-    if (vessel.isEVA && vessel.evaController?.Ready == false) {
+    if (is_unready_kerbal(vessel)) {
       reasons.Add("vessel is an unready Kerbal");
     }
     if (vessel.loaded && hack_gravity?.toggle.isOn == true) {
@@ -1228,13 +1233,24 @@ public partial class PrincipiaPluginAdapter
               continue;
             }
             if (vessel2 != null) {
-              if (is_manageable(vessel2)) {
+              if (is_unready_kerbal(vessel2)) {
+                // A Kerbal that just started an EVA and is not ready yet.  If
+                // we let it collide with |vessel1|, it will cause that vessel
+                // to become unmanageable and be removed from the plugin.  Of
+                // course, the vessel will come back once the Kerbal is ready,
+                // but at that point we'll have to trust the position given by
+                // KSP, and in practice that might cause the vessel to jump
+                // by hundreds of metres (#2590).  The bottom line is: we
+                // better ignore the collision, the Kerbal will soon become
+                // ready anyway.
+              } else if (is_manageable(vessel2)) {
                 plugin_.ReportPartCollision(
                     closest_physical_parent(part1).flightID,
                     closest_physical_parent(part2).flightID);
               } else {
                 Log.Info("Reporting collision with the unmanageable vessel " +
-                         vessel2.vesselName);
+                         vessel2.vesselName + " (reason: " +
+                         UnmanageabilityReasons(vessel2) + ")");
                 plugin_.ReportGroundCollision(
                     closest_physical_parent(part1).flightID);
               }

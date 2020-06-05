@@ -1148,7 +1148,9 @@ message GetStderrLogging {
     optional GetStderrLogging extension = 5007;
   }
   message Return {
-    required int32 result = 1;
+    // Omitting the return check here makes it possible to replay the journal
+    // with logging to stderr, which is useful for debugging.
+    required int32 result = 1 [(omit_check) = true];
   }
   optional Return return = 3;
 }
