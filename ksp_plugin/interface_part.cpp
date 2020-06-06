@@ -41,20 +41,16 @@ void __cdecl principia__PartApplyIntrinsicForceAtPosition(
     Plugin* const plugin,
     PartId const part_id,
     XYZ const force_in_kilonewtons,
-    XYZ const point_of_force_application,
-    XYZ const part_position) {
+    XYZ const lever_arm) {
   journal::Method<journal::PartApplyIntrinsicForceAtPosition> m(
       {plugin,
        part_id,
        force_in_kilonewtons,
-       point_of_force_application,
-       part_position});
+       lever_arm});
   CHECK_NOTNULL(plugin)->ApplyPartIntrinsicForceAtPosition(
       part_id,
       Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)),
-      World::origin +
-          Displacement<World>(FromXYZ(point_of_force_application) * Metre),
-      World::origin + Displacement<World>(FromXYZ(part_position) * Metre));
+      Displacement<World>(FromXYZ(lever_arm) * Metre));
   return m.Return();
 }
 

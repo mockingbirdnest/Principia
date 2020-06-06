@@ -222,8 +222,7 @@ class Plugin {
   virtual void ApplyPartIntrinsicForceAtPosition(
       PartId part_id,
       Vector<Force, World> const& force,
-      Position<World> const& point_of_force_application,
-      Position<World> const& part_position) const;
+      Displacement<World> const& lever_arm) const;
   virtual void ApplyPartIntrinsicTorque(
       PartId part_id,
       Bivector<Torque, World> const& torque) const;

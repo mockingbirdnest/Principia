@@ -198,31 +198,15 @@ public partial class PrincipiaPluginAdapter
         Part part,
         Part.ForceHolder holder) {
       return new PartCentredForceHolder{
-          part_ = part,
-          part_world_position_ = part.rb.position,
           force_in_world_coordinates_ = holder.force,
-          part_centred_position_ = holder.pos - part.rb.position};
+          lever_arm_in_world_coordinates_ = holder.pos - part.rb.position};
     }
 
-    // Note that we must not use |part_.rb.position| in |ToPartForceHolder|,
-    // as that position will then be one frame ahead of the force.
-    // Instead we call |AdjustPartPosition| after |FloatingOrigin| has run,
-    // in |BetterLateThanNever|.  Note that this is also the position stored in
-    // |part_id_to_degrees_of_freedom_|.
-    public void AdjustPartPosition() {
-      part_world_position_ = part_.rb.position;
-    }
+    public Vector3d force => force_in_world_coordinates_;
+    public Vector3d lever_arm => lever_arm_in_world_coordinates_;
 
-    public Part.ForceHolder ToPartForceHolder() {
-      return new Part.ForceHolder{
-          force = force_in_world_coordinates_,
-          pos = part_world_position_ + part_centred_position_};
-    }
-
-    private Part part_;
-    private Vector3d part_world_position_;
     private Vector3d force_in_world_coordinates_;
-    private Vector3d part_centred_position_;
+    private Vector3d lever_arm_in_world_coordinates_;
   }
   private readonly Dictionary<uint, PartCentredForceHolder[]>
       part_id_to_intrinsic_forces_ = new Dictionary<uint,
@@ -1133,12 +1117,10 @@ public partial class PrincipiaPluginAdapter
           if (part_id_to_intrinsic_forces_.ContainsKey(part.flightID)) {
             foreach (var part_centred_force in
                      part_id_to_intrinsic_forces_[part.flightID]) {
-              var force = part_centred_force.ToPartForceHolder();
               plugin_.PartApplyIntrinsicForceAtPosition(
                   part.flightID,
-                  (XYZ)force.force,
-                  (XYZ)force.pos,
-                  degrees_of_freedom.q);
+                  (XYZ)part_centred_force.force,
+                  (XYZ)part_centred_force.lever_arm);
             }
           }
         }
@@ -1581,11 +1563,6 @@ public partial class PrincipiaPluginAdapter
 
   private void BetterLateThanNever() {
     if (PluginRunning()) {
-      foreach (var forces in part_id_to_intrinsic_forces_.Values) {
-        foreach (var force in forces) {
-          force.AdjustPartPosition();
-        }
-      }
       part_id_to_degrees_of_freedom_.Clear();
       foreach (Vessel vessel in
                FlightGlobals.Vessels.Where(v => is_manageable(v) &&
