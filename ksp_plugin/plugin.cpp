@@ -506,8 +506,7 @@ void Plugin::ApplyPartIntrinsicForce(PartId const part_id,
 void Plugin::ApplyPartIntrinsicForceAtPosition(
     PartId const part_id,
     Vector<Force, World> const& force,
-    Position<World> const& point_of_force_application,
-    Position<World> const& part_position) const {
+    Displacement<World> const& lever_arm) const {
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
@@ -515,7 +514,7 @@ void Plugin::ApplyPartIntrinsicForceAtPosition(
       renderer_->WorldToBarycentric(PlanetariumRotation());
   vessel->part(part_id)->ApplyIntrinsicForceWithLeverArm(
       world_to_barycentric(force),
-      world_to_barycentric(point_of_force_application - part_position));
+      world_to_barycentric(lever_arm));
 }
 
 void Plugin::ApplyPartIntrinsicTorque(
