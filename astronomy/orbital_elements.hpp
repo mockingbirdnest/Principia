@@ -30,7 +30,6 @@ using quantities::Time;
 
 class OrbitalElements {
  public:
-
   template<typename PrimaryCentred>
   static StatusOr<OrbitalElements> ForTrajectory(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,
