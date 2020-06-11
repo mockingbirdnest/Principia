@@ -106,7 +106,9 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
          trajectory.back().time <
          parameters->first_time + parameters->mission_duration;
          t += parameters->mission_duration / 0x1p10) {
+      auto const flow_status = ephemeris_->FlowWithFixedStep(t, *instance);
       if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
+        // TODO(egg): Report that the integration failed.
         break;
       }
       progress_of_next_analysis_ =
@@ -125,30 +127,49 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     // being computed.
 
     using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
-    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
-        primary_centred(ephemeris_, parameters->primary);
-    DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
-    for (auto const& [time, degrees_of_freedom] : trajectory) {
-      primary_centred_trajectory.Append(
-          time, primary_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
-    }
 
-    auto const elements = OrbitalElements::ForTrajectory(
-        primary_centred_trajectory, *parameters->primary, MasslessBody{});
-    if (elements.ok()) {
-      analysis.elements_ = elements.ValueOrDie();
-      // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
-      // revolutions.
-      analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
-          analysis.elements_->nodal_period(),
-          analysis.elements_->nodal_precession(),
-          *parameters->primary,
-          /*max_abs_Cᴛₒ=*/100);
-      analysis.ground_track_ =
-          OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
-                                          *parameters->primary,
-                                          /*mean_sun=*/std::nullopt);
-      analysis.ResetRecurrence();
+    RotatingBody<Barycentric> const* primary = nullptr;
+    std::unique_ptr<DiscreteTrajectory<PrimaryCentred>> primary_centred_trajectory;
+    auto sidereal_period = quantities::Infinity<Time>;
+    for (auto const body : ephemeris_->bodies()) {
+      BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
+          body_centred(ephemeris_, body);
+      auto body_centred_trajectory =
+          std::make_unique<DiscreteTrajectory<PrimaryCentred>>();
+      for (auto const& [time, degrees_of_freedom] : trajectory) {
+        body_centred_trajectory->Append(
+            time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
+      }
+      auto const tentative_elements =
+          OrbitalElements::TentativeElements::ForTrajectory(
+              *body_centred_trajectory, *body, MasslessBody{});
+      if (tentative_elements.ok() &&
+          tentative_elements.ValueOrDie().sidereal_period() < sidereal_period) {
+        sidereal_period = tentative_elements.ValueOrDie().sidereal_period();
+        primary =
+            base::dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body);
+        primary_centred_trajectory = std::move(body_centred_trajectory);
+      }
+    }
+    if (primary != nullptr) {
+      analysis.primary_ = primary;
+      auto const elements = OrbitalElements::ForTrajectory(
+          *primary_centred_trajectory, *primary, MasslessBody{});
+      if (elements.ok()) {
+        analysis.elements_ = elements.ValueOrDie();
+        // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
+        // revolutions.
+        analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
+            analysis.elements_->nodal_period(),
+            analysis.elements_->nodal_precession(),
+            *primary,
+            /*max_abs_Cᴛₒ=*/100);
+        analysis.ground_track_ =
+            OrbitGroundTrack::ForTrajectory(*primary_centred_trajectory,
+                                            *primary,
+                                            /*mean_sun=*/std::nullopt);
+        analysis.ResetRecurrence();
+      }
     }
 
     {

@@ -30,6 +30,7 @@ using quantities::Time;
 
 class OrbitalElements {
  public:
+
   template<typename PrimaryCentred>
   static StatusOr<OrbitalElements> ForTrajectory(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,
@@ -128,6 +129,22 @@ class OrbitalElements {
   std::vector<EquinoctialElements> const& osculating_equinoctial_elements()
       const;
   std::vector<EquinoctialElements> const& mean_equinoctial_elements() const;
+
+  class TentativeElements {
+   public:
+    template<typename PrimaryCentred>
+    static StatusOr<TentativeElements> ForTrajectory(
+        DiscreteTrajectory<PrimaryCentred> const& trajectory,
+        MassiveBody const& primary,
+        Body const& secondary);
+
+    Time sidereal_period() const;
+
+   private:
+    std::vector<EquinoctialElements> osculating_equinoctial_elements_;
+    Time sidereal_period_;
+    friend class OrbitalElements;
+  };
 
  private:
   OrbitalElements() = default;

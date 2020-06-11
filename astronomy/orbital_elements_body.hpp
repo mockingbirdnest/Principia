@@ -34,21 +34,18 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     DiscreteTrajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
+  StatusOr<TentativeElements> status_or_tentative_elements =
+      TentativeElements::ForTrajectory(trajectory, primary, secondary);
+  if (!status_or_tentative_elements.ok()) {
+    return status_or_tentative_elements.status();
+  }
+  auto tentative_elements =
+      std::move(status_or_tentative_elements).ValueOrDie();
   OrbitalElements orbital_elements;
-  if (trajectory.Size() < 2) {
-    return Status(Error::INVALID_ARGUMENT,
-                  "trajectory.Size() is " + std::to_string(trajectory.Size()));
-  }
   orbital_elements.osculating_equinoctial_elements_ =
-      OsculatingEquinoctialElements(trajectory, primary, secondary);
-  orbital_elements.sidereal_period_ =
-      SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
-  if (!IsFinite(orbital_elements.sidereal_period_)) {
-    // Guard against NaN sidereal periods (from hyperbolic orbits).
-    return Status(
-        Error::OUT_OF_RANGE,
-        "sidereal period is " + DebugString(orbital_elements.sidereal_period_));
-  }
+      std::move(tentative_elements.osculating_equinoctial_elements_);
+  orbital_elements.sidereal_period_ = tentative_elements.sidereal_period_;
+
   orbital_elements.mean_equinoctial_elements_ =
       MeanEquinoctialElements(orbital_elements.osculating_equinoctial_elements_,
                               orbital_elements.sidereal_period_);
@@ -156,6 +153,36 @@ OrbitalElements::osculating_equinoctial_elements() const {
 inline std::vector<OrbitalElements::EquinoctialElements> const&
 OrbitalElements::mean_equinoctial_elements() const {
   return mean_equinoctial_elements_;
+}
+
+template<typename PrimaryCentred>
+StatusOr<OrbitalElements::TentativeElements>
+OrbitalElements::TentativeElements::ForTrajectory(
+    DiscreteTrajectory<PrimaryCentred> const& trajectory,
+    MassiveBody const& primary,
+    Body const& secondary) {
+  if (trajectory.Size() < 2) {
+    return Status(Error::INVALID_ARGUMENT,
+                  "trajectory.Size() is " + std::to_string(trajectory.Size()));
+  }
+  TentativeElements orbital_elements;
+  orbital_elements.osculating_equinoctial_elements_ =
+      OsculatingEquinoctialElements(trajectory, primary, secondary);
+  orbital_elements.sidereal_period_ =
+      SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
+  if (!IsFinite(orbital_elements.sidereal_period_)) {
+    // Guard against NaN sidereal periods (from hyperbolic orbits).
+    // TODO(egg): bail out early if we have NaN elements above, instead of
+    // adding a pile of NaNs.
+    return Status(
+        Error::OUT_OF_RANGE,
+        "sidereal period is " + DebugString(orbital_elements.sidereal_period_));
+  }
+  return orbital_elements;
+}
+
+inline Time OrbitalElements::TentativeElements::sidereal_period() const {
+  return sidereal_period_;
 }
 
 inline Time OrbitalElements::SiderealPeriod(
