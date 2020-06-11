@@ -147,9 +147,6 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
     }
 
     using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
-      CelestialBody primary =
-          adapter_.plotting_frame_selector_.selected_celestial;
-
       mission_duration_.Render(enabled : true);
       var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
       float two_lines = multiline_style.CalcHeight(
@@ -157,14 +154,12 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
       float five_lines = multiline_style.CalcHeight(
           new UnityEngine.GUIContent("1\n2\n3\n4\n5"), Width(1));
       UnityEngine.GUILayout.Label(
-          $@"Analysing orbit of {predicted_vessel.vesselName} with respect to {
-            primary.NameWithArticle()}...",
+          $@"Analysing orbit of {predicted_vessel.vesselName}...",
           multiline_style,
           UnityEngine.GUILayout.Height(two_lines));
 
       OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
           predicted_vessel.id.ToString(),
-          primary.flightGlobalsIndex,
           mission_duration_.value,
           autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
           autodetect_recurrence_ ? null : (int?)days_per_cycle_,
@@ -187,7 +182,9 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
       OrbitRecurrence? recurrence = analysis.recurrence;
       OrbitGroundTrack? ground_track = analysis.ground_track;
       double mission_duration = analysis.mission_duration;
-      primary = FlightGlobals.Bodies[analysis.primary_index];
+      CelestialBody primary =
+          analysis.primary_index.HasValue ? FlightGlobals.Bodies[analysis.primary_index.Value]
+                                          : null;
 
       Style.HorizontalLine();
       string duration_in_revolutions;
@@ -213,15 +210,20 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
       } else {
         duration_in_revolutions =
             "could not determine elements; mission duration may be shorter " +
-            "than a revolution, or trajectory may not be gravitationally " +
-            $"bound to {primary.NameWithArticle()}.";
+            "than a revolution, or trajectory may not be gravitationally bound";
+        if (primary != null) {
+          duration_in_revolutions += $" to {primary.NameWithArticle()}.";
+        }
         multiline_style = Style.Warning(multiline_style);
       }
       string analysis_description =
-          $@"Orbit of {predicted_vessel.vesselName} with respect to {
-            primary.NameWithArticle()} over {
-            mission_duration.FormatDuration(show_seconds : false)}:{"\n"}{
-            duration_in_revolutions}";
+      primary == null 
+          ? $@"{predicted_vessel.vesselName} is not gravitationally bound over {
+               mission_duration.FormatDuration(show_seconds: false)}"
+          : $@"Orbit of {predicted_vessel.vesselName} with respect to {
+               primary.NameWithArticle()} over {
+               mission_duration.FormatDuration(show_seconds : false)}:{"\n"}{
+               duration_in_revolutions}";
       UnityEngine.GUILayout.Label(
           analysis_description,
           multiline_style,

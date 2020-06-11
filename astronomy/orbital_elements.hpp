@@ -149,6 +149,12 @@ class OrbitalElements {
  private:
   OrbitalElements() = default;
 
+  // Returns the osculating equinoctial elements for each point in |trajectory|.
+  // If at any point the osculating orbit is hyperbolic (resulting in NaN
+  // elements), that NaN is appended to the elements, and further elements are
+  // omitted.
+  // Thus, only the last element of the result may be NaN; if it is not NaN, the
+  // size of the result equals |trajectory.size()|.
   template<typename PrimaryCentred>
   static std::vector<EquinoctialElements> OsculatingEquinoctialElements(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,

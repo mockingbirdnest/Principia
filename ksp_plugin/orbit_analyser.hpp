@@ -67,12 +67,11 @@ class OrbitAnalyser {
     void ResetRecurrence();
 
    private:
-    Analysis(Instant const& first_time,
-             not_null<RotatingBody<Barycentric> const*> primary);
+    explicit Analysis(Instant const& first_time);
 
     Instant first_time_;
     Time mission_duration_;
-    not_null<RotatingBody<Barycentric> const*> primary_;
+    RotatingBody<Barycentric> const* primary_ = nullptr;
     std::optional<OrbitalElements> elements_;
     std::optional<OrbitRecurrence> closest_recurrence_;
     std::optional<OrbitRecurrence> recurrence_;
@@ -93,8 +92,7 @@ class OrbitAnalyser {
   void RequestAnalysis(
       Instant const& first_time,
       DegreesOfFreedom<Barycentric> const& first_degrees_of_freedom,
-      Time const& mission_duration,
-      not_null<RotatingBody<Barycentric> const*> primary);
+      Time const& mission_duration);
 
   // Sets |analysis()| to the latest computed analysis.
   void RefreshAnalysis();
@@ -113,7 +111,6 @@ class OrbitAnalyser {
     Instant first_time;
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
     Time mission_duration;
-    not_null<RotatingBody<Barycentric> const*> primary;
   };
 
   void RepeatedlyAnalyseOrbit();

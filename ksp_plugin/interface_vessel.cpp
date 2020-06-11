@@ -71,14 +71,12 @@ XYZ __cdecl principia__VesselNormal(Plugin const* const plugin,
 OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
     Plugin const* const plugin,
     char const* const vessel_guid,
-    int const primary_index,
     double const mission_duration,
     int const* const revolutions_per_cycle,
     int const* const days_per_cycle,
     int const ground_track_revolution) {
   journal::Method<journal::VesselRefreshAnalysis> m({plugin,
                                                      vessel_guid,
-                                                     primary_index,
                                                      mission_duration,
                                                      revolutions_per_cycle,
                                                      days_per_cycle,
@@ -91,13 +89,12 @@ OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
     CHECK_NE(*days_per_cycle, 0);
   }
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
-  vessel.RefreshOrbitAnalysis(plugin->GetCelestial(primary_index).body(),
-                              mission_duration * Second);
+  vessel.RefreshOrbitAnalysis(mission_duration * Second);
   OrbitAnalysis* const analysis = new OrbitAnalysis{};
   analysis->progress_of_next_analysis = vessel.progress_of_orbit_analysis();
   if (vessel.orbit_analysis() != nullptr) {
-    analysis->primary_index =
-        plugin->CelestialIndexOfBody(vessel.orbit_analysis()->primary());
+    analysis->primary_index = new int(
+        plugin->CelestialIndexOfBody(vessel.orbit_analysis()->primary()));
     analysis->mission_duration =
         vessel.orbit_analysis()->mission_duration() / Second;
     if (vessel.orbit_analysis()->elements().has_value()) {

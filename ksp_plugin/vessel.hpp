@@ -176,8 +176,7 @@ class Vessel {
       PileUp::PileUpForSerializationIndex const&
           pile_up_for_serialization_index);
 
-  void RefreshOrbitAnalysis(not_null<RotatingBody<Barycentric> const*> primary,
-                            Time const& mission_duration);
+  void RefreshOrbitAnalysis(Time const& mission_duration);
 
   double progress_of_orbit_analysis() const;
   OrbitAnalyser::Analysis* orbit_analysis();

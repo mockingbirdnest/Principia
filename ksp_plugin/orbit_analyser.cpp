@@ -36,8 +36,7 @@ OrbitAnalyser::~OrbitAnalyser() {
 void OrbitAnalyser::RequestAnalysis(
     Instant const& first_time,
     DegreesOfFreedom<Barycentric> const& first_degrees_of_freedom,
-    Time const& mission_duration,
-    not_null<RotatingBody<Barycentric> const*> primary) {
+    Time const& mission_duration) {
   if (!analyser_.joinable()) {
     analyser_ = std::thread([this] { RepeatedlyAnalyseOrbit(); });
   }
@@ -50,8 +49,7 @@ void OrbitAnalyser::RequestAnalysis(
   parameters_ = {std::move(guard),
                  first_time,
                  first_degrees_of_freedom,
-                 mission_duration,
-                 primary};
+                 mission_duration};
 }
 
 void OrbitAnalyser::RefreshAnalysis() {
@@ -90,8 +88,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       std::swap(parameters, parameters_);
     }
 
-    Analysis analysis{parameters->first_time,
-                      parameters->primary};
+    Analysis analysis{parameters->first_time};
     DiscreteTrajectory<Barycentric> trajectory;
     trajectory.Append(parameters->first_time,
                       parameters->first_degrees_of_freedom);
@@ -233,10 +230,8 @@ void OrbitAnalyser::Analysis::ResetRecurrence() {
   }
 }
 
-OrbitAnalyser::Analysis::Analysis(
-    Instant const& first_time,
-    not_null<RotatingBody<Barycentric> const*> const primary)
-    : first_time_(first_time), primary_(primary) {}
+OrbitAnalyser::Analysis::Analysis(Instant const& first_time)
+    : first_time_(first_time) {}
 
 }  // namespace internal_orbit_analyser
 }  // namespace ksp_plugin

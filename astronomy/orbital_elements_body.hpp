@@ -141,6 +141,9 @@ OrbitalElements::OsculatingEquinoctialElements(
          /*.q = */ tg_½i * Cos(Ω),
          /*.pʹ = */ cotg_½i * Sin(Ω),
          /*.qʹ = */ cotg_½i * Cos(Ω)});
+    if (!IsFinite(result.back().λ)) {
+      break;
+    }
   }
   return result;
 }
@@ -168,16 +171,16 @@ OrbitalElements::TentativeElements::ForTrajectory(
   TentativeElements orbital_elements;
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
-  orbital_elements.sidereal_period_ =
-      SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
-  if (!IsFinite(orbital_elements.sidereal_period_)) {
-    // Guard against NaN sidereal periods (from hyperbolic orbits).
-    // TODO(egg): bail out early if we have NaN elements above, instead of
-    // adding a pile of NaNs.
+  if (!IsFinite(orbital_elements.osculating_equinoctial_elements_.back().λ)) {
     return Status(
         Error::OUT_OF_RANGE,
-        "sidereal period is " + DebugString(orbital_elements.sidereal_period_));
+        "orbit is hyperbolic at " +
+            DebugString(
+                orbital_elements.osculating_equinoctial_elements_.back().t));
   }
+  orbital_elements.sidereal_period_ =
+      SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
+  CHECK(IsFinite(orbital_elements.sidereal_period_)) << orbital_elements.sidereal_period_;
   return orbital_elements;
 }
 

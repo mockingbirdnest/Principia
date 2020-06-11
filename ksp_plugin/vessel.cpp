@@ -461,9 +461,7 @@ void Vessel::FillContainingPileUpsFromMessage(
   }
 }
 
-void Vessel::RefreshOrbitAnalysis(
-    not_null<RotatingBody<Barycentric> const*> const primary,
-    Time const& mission_duration) {
+void Vessel::RefreshOrbitAnalysis(Time const& mission_duration) {
   if (!orbit_analyser_.has_value()) {
     // TODO(egg): perhaps we should get the history parameters from the plugin;
     // on the other hand, these are probably overkill for high orbits anyway,
@@ -474,8 +472,7 @@ void Vessel::RefreshOrbitAnalysis(
   }
   orbit_analyser_->RequestAnalysis(psychohistory_->back().time,
                                    psychohistory_->back().degrees_of_freedom,
-                                   mission_duration,
-                                   primary);
+                                   mission_duration);
   orbit_analyser_->RefreshAnalysis();
 }
 
