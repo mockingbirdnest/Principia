@@ -129,13 +129,15 @@ class OrbitalElements {
       const;
   std::vector<EquinoctialElements> const& mean_equinoctial_elements() const;
 
-  class TentativeElements {
+  class PartialElements {
    public:
     template<typename PrimaryCentred>
-    static StatusOr<TentativeElements> ForTrajectory(
+    static StatusOr<PartialElements> ForTrajectory(
         DiscreteTrajectory<PrimaryCentred> const& trajectory,
         MassiveBody const& primary,
         Body const& secondary);
+
+    StatusOr<OrbitalElements> Complete() const;
 
     Time sidereal_period() const;
 

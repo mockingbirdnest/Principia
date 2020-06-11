@@ -34,35 +34,12 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     DiscreteTrajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
-  StatusOr<TentativeElements> status_or_tentative_elements =
-      TentativeElements::ForTrajectory(trajectory, primary, secondary);
-  if (!status_or_tentative_elements.ok()) {
-    return status_or_tentative_elements.status();
+  StatusOr<PartialElements> partial_elements =
+      PartialElements::ForTrajectory(trajectory, primary, secondary);
+  if (!partial_elements.ok()) {
+    return partial_elements.status();
   }
-  auto tentative_elements =
-      std::move(status_or_tentative_elements).ValueOrDie();
-  OrbitalElements orbital_elements;
-  orbital_elements.osculating_equinoctial_elements_ =
-      std::move(tentative_elements.osculating_equinoctial_elements_);
-  orbital_elements.sidereal_period_ = tentative_elements.sidereal_period_;
-
-  orbital_elements.mean_equinoctial_elements_ =
-      MeanEquinoctialElements(orbital_elements.osculating_equinoctial_elements_,
-                              orbital_elements.sidereal_period_);
-  if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
-    return Status(
-        Error::OUT_OF_RANGE,
-        "trajectory does not span one sidereal period: sidereal period is " +
-            DebugString(orbital_elements.sidereal_period_) +
-            ", trajectory spans " +
-            DebugString(trajectory.back().time -
-                        trajectory.front().time));
-  }
-  orbital_elements.mean_classical_elements_ =
-      ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
-  orbital_elements.ComputePeriodsAndPrecession();
-  orbital_elements.ComputeMeanElementIntervals();
-  return orbital_elements;
+  return partial_elements.ValueOrDie().Complete();
 }
 
 inline std::vector<OrbitalElements::ClassicalElements> const&
@@ -159,8 +136,8 @@ OrbitalElements::mean_equinoctial_elements() const {
 }
 
 template<typename PrimaryCentred>
-StatusOr<OrbitalElements::TentativeElements>
-OrbitalElements::TentativeElements::ForTrajectory(
+StatusOr<OrbitalElements::PartialElements>
+OrbitalElements::PartialElements::ForTrajectory(
     DiscreteTrajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
@@ -168,7 +145,7 @@ OrbitalElements::TentativeElements::ForTrajectory(
     return Status(Error::INVALID_ARGUMENT,
                   "trajectory.Size() is " + std::to_string(trajectory.Size()));
   }
-  TentativeElements orbital_elements;
+  PartialElements orbital_elements;
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
   if (!IsFinite(orbital_elements.osculating_equinoctial_elements_.back().λ)) {
@@ -180,11 +157,39 @@ OrbitalElements::TentativeElements::ForTrajectory(
   }
   orbital_elements.sidereal_period_ =
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
-  CHECK(IsFinite(orbital_elements.sidereal_period_)) << orbital_elements.sidereal_period_;
+  CHECK(IsFinite(orbital_elements.sidereal_period_))
+      << orbital_elements.sidereal_period_;
   return orbital_elements;
 }
 
-inline Time OrbitalElements::TentativeElements::sidereal_period() const {
+inline StatusOr<OrbitalElements> OrbitalElements::PartialElements::Complete()
+    const {
+  OrbitalElements orbital_elements;
+  orbital_elements.osculating_equinoctial_elements_ =
+      osculating_equinoctial_elements_;
+  orbital_elements.sidereal_period_ = sidereal_period_;
+
+  orbital_elements.mean_equinoctial_elements_ =
+      MeanEquinoctialElements(orbital_elements.osculating_equinoctial_elements_,
+                              orbital_elements.sidereal_period_);
+  if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
+    return Status(
+        Error::OUT_OF_RANGE,
+        "trajectory does not span one sidereal period: sidereal period is " +
+            DebugString(orbital_elements.sidereal_period_) +
+            ", trajectory spans " +
+            DebugString(
+                orbital_elements.osculating_equinoctial_elements_.back().t -
+                orbital_elements.osculating_equinoctial_elements_.front().t));
+  }
+  orbital_elements.mean_classical_elements_ =
+      ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
+  orbital_elements.ComputePeriodsAndPrecession();
+  orbital_elements.ComputeMeanElementIntervals();
+  return orbital_elements;
+}
+
+inline Time OrbitalElements::PartialElements::sidereal_period() const {
   return sidereal_period_;
 }
 

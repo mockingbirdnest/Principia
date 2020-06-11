@@ -128,8 +128,10 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
 
     RotatingBody<Barycentric> const* primary = nullptr;
-    std::unique_ptr<DiscreteTrajectory<PrimaryCentred>> primary_centred_trajectory;
     auto sidereal_period = Infinity<Time>;
+    std::unique_ptr<DiscreteTrajectory<PrimaryCentred>>
+        primary_centred_trajectory;
+    std::optional<OrbitalElements::PartialElements> partial_elements;
     for (auto const body : ephemeris_->bodies()) {
       BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
           body_centred(ephemeris_, body);
@@ -140,19 +142,19 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
             time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
       }
       auto const tentative_elements =
-          OrbitalElements::TentativeElements::ForTrajectory(
+          OrbitalElements::PartialElements::ForTrajectory(
               *body_centred_trajectory, *body, MasslessBody{});
       if (tentative_elements.ok() &&
           tentative_elements.ValueOrDie().sidereal_period() < sidereal_period) {
         sidereal_period = tentative_elements.ValueOrDie().sidereal_period();
         primary = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body);
         primary_centred_trajectory = std::move(body_centred_trajectory);
+        partial_elements = tentative_elements.ValueOrDie();
       }
     }
     if (primary != nullptr) {
       analysis.primary_ = primary;
-      auto const elements = OrbitalElements::ForTrajectory(
-          *primary_centred_trajectory, *primary, MasslessBody{});
+      auto const elements = partial_elements->Complete();
       if (elements.ok()) {
         analysis.elements_ = elements.ValueOrDie();
         // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
