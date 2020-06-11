@@ -12,12 +12,14 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_orbit_analyser {
 
+using base::dynamic_cast_not_null;
 using geometry::Frame;
 using geometry::NonRotating;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::MasslessBody;
 using quantities::IsFinite;
+using quantities::Infinity;
 
 OrbitAnalyser::OrbitAnalyser(
     not_null<Ephemeris<Barycentric>*> const ephemeris,
@@ -127,7 +129,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
 
     RotatingBody<Barycentric> const* primary = nullptr;
     std::unique_ptr<DiscreteTrajectory<PrimaryCentred>> primary_centred_trajectory;
-    auto sidereal_period = quantities::Infinity<Time>;
+    auto sidereal_period = Infinity<Time>;
     for (auto const body : ephemeris_->bodies()) {
       BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
           body_centred(ephemeris_, body);
@@ -143,8 +145,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       if (tentative_elements.ok() &&
           tentative_elements.ValueOrDie().sidereal_period() < sidereal_period) {
         sidereal_period = tentative_elements.ValueOrDie().sidereal_period();
-        primary =
-            base::dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body);
+        primary = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body);
         primary_centred_trajectory = std::move(body_centred_trajectory);
       }
     }
