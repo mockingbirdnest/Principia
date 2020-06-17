@@ -161,6 +161,7 @@ message Frame {
     CAMERA = 14;
     CAMERA_REFERENCE = 17;
     CELESTIAL_SPHERE = 8;
+    ECCENTRIC_PART = 20;
     MAIN_BODY_CENTRED = 15;
     NAVBALL = 10;
     NAVIGATION = 4;

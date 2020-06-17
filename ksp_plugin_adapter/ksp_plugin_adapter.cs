@@ -1086,6 +1086,7 @@ public partial class PrincipiaPluginAdapter
               part.flightID,
               part.name,
               part.physicsMass == 0 ? part.rb.mass : part.physicsMass,
+              (XYZ)(Vector3d)part.rb.centerOfMass,
               (XYZ)(Vector3d)part.rb.inertiaTensor,
               (WXYZ)(UnityEngine.QuaternionD)part.rb.inertiaTensorRotation,
               (from PartModule module in part.Modules
