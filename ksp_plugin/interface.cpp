@@ -811,7 +811,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
     PartId const part_id,
     char const* const name,
     double const mass_in_tonnes,
-    XYZ centre_of_mass,
+    XYZ const centre_of_mass,
     XYZ const moments_of_inertia_in_tonnes,
     WXYZ const principal_axes_rotation,
     bool const is_solid_rocket_motor,

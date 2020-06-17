@@ -76,7 +76,9 @@ class Part final {
   void set_mass(Mass const& mass);
   Mass const& mass() const;
   void set_centre_of_mass(Position<EccentricPart> const& centre_of_mass);
-  RigidMotion<RigidPart, EccentricPart> ToEccentric() const;
+  // Returns the transformation from the part-centre-of-mass-centred to the
+  // part-position-centred frame; the offset is set by |set_centre_of_mass|.
+  RigidMotion<RigidPart, EccentricPart> MakeRigidToEccentricMotion() const;
   void set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor);
   InertiaTensor<RigidPart> const& inertia_tensor() const;
   // Whether this part is a solid rocket motor, whose lost mass is expelled with
@@ -173,7 +175,7 @@ class Part final {
        RigidMotion<RigidPart, Barycentric> rigid_motion,
        std::function<void()> deletion_callback);
 
-  static RigidMotion<RigidPart, EccentricPart> ToEccentric(
+  static RigidMotion<RigidPart, EccentricPart> MakeRigidToEccentricMotion(
       Position<EccentricPart> const& centre_of_mass);
 
   PartId const part_id_;

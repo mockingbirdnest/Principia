@@ -47,7 +47,7 @@ Part::Part(PartId const part_id,
            /*truthful=*/true,
            mass,
            inertia_tensor,
-           rigid_motion * ToEccentric(centre_of_mass),
+           rigid_motion * MakeRigidToEccentricMotion(centre_of_mass),
            std::move(deletion_callback)) {}
 
 Part::Part(PartId part_id,
@@ -95,8 +95,8 @@ void Part::set_centre_of_mass(Position<EccentricPart> const& centre_of_mass) {
   centre_of_mass_ = centre_of_mass;
 }
 
-RigidMotion<RigidPart, EccentricPart> Part::ToEccentric() const {
-  return ToEccentric(centre_of_mass_);
+RigidMotion<RigidPart, EccentricPart> Part::MakeRigidToEccentricMotion() const {
+  return MakeRigidToEccentricMotion(centre_of_mass_);
 }
 
 void Part::set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor) {
@@ -384,7 +384,7 @@ Part::Part(PartId const part_id,
   history_ = prehistory_->NewForkAtLast();
 }
 
-RigidMotion<RigidPart, EccentricPart> Part::ToEccentric(
+RigidMotion<RigidPart, EccentricPart> Part::MakeRigidToEccentricMotion(
     Position<EccentricPart> const& centre_of_mass) {
   return RigidMotion<RigidPart, EccentricPart>(
       RigidTransformation<RigidPart, EccentricPart>(
