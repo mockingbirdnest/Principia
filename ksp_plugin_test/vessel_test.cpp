@@ -176,7 +176,7 @@ TEST_F(VesselTest, PrepareHistory) {
                     AlmostEquals(Velocity<Barycentric>(
                                       {130.0 / 3.0 * Metre / Second,
                                       40.0 * Metre / Second,
-                                      110.0 / 3.0 * Metre / Second}), 4)));
+                                      110.0 / 3.0 * Metre / Second}), 8)));
 }
 
 TEST_F(VesselTest, AdvanceTime) {
@@ -312,7 +312,7 @@ TEST_F(VesselTest, Prediction) {
                     AlmostEquals(Velocity<Barycentric>(
                                       {130.0 / 3.0 * Metre / Second,
                                        40.0 * Metre / Second,
-                                       110.0 / 3.0 * Metre / Second}), 4)));
+                                       110.0 / 3.0 * Metre / Second}), 8)));
   ++it;
   EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
   EXPECT_THAT(

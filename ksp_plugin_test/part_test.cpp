@@ -122,7 +122,7 @@ TEST_F(PartTest, Serialization) {
                   .x()
                   .quantity()
                   .magnitude(),
-              AlmostEquals(-4, 2));
+              AlmostEquals(-4, 6));
   EXPECT_THAT(message.rigid_motion()
                   .velocity_of_to_frame_origin()
                   .vector()

@@ -631,7 +631,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   pile_up.AdvanceTime(astronomy::J2000 + 1.5 * fixed_step);
   pile_up.NudgeParts();
   EXPECT_THAT(p1_.degrees_of_freedom().velocity(),
-              AlmostEquals(old_velocity, 4));
+              AlmostEquals(old_velocity, 2));
 
   Vector<Acceleration, Barycentric> const a{{1729 * Metre / Pow<2>(Second),
                                              -168 * Metre / Pow<2>(Second),
