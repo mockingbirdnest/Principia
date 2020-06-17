@@ -683,7 +683,8 @@ void Plugin::SetPartApparentRigidMotion(
   not_null<Part*> const part = vessel->part(part_id);
   CHECK(part->is_piled_up());
   part->containing_pile_up()->SetPartApparentRigidMotion(
-      part, world_to_apparent * rigid_motion * part->ToEccentric());
+      part,
+      world_to_apparent * rigid_motion * part->MakeRigidToEccentricMotion());
 }
 
 RigidMotion<EccentricPart, World> Plugin::GetPartActualMotion(
@@ -691,7 +692,7 @@ RigidMotion<EccentricPart, World> Plugin::GetPartActualMotion(
     RigidMotion<Barycentric, World> const& barycentric_to_world) const {
   Part const& part = *FindOrDie(part_id_to_vessel_, part_id)->part(part_id);
   return barycentric_to_world * part.rigid_motion() *
-         part.ToEccentric().Inverse();
+         part.MakeRigidToEccentricMotion().Inverse();
 }
 
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
