@@ -22,6 +22,7 @@ using base::Array;
 using base::HexadecimalEncoder;
 using base::make_not_null_unique;
 using base::UniqueArray;
+using geometry::OrthogonalMap;
 using geometry::R3x3Matrix;
 using physics::RigidTransformation;
 using quantities::Cbrt;
@@ -37,15 +38,16 @@ constexpr Mass untruthful_part_mass = 1 * Kilogram;
 Part::Part(PartId const part_id,
            std::string const& name,
            Mass const& mass,
+           Position<EccentricPart> const& centre_of_mass,
            InertiaTensor<RigidPart> const& inertia_tensor,
-           RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+           RigidMotion<EccentricPart, Barycentric> const& rigid_motion,
            std::function<void()> deletion_callback)
     : Part(part_id,
            name,
            /*truthful=*/true,
            mass,
            inertia_tensor,
-           rigid_motion,
+           rigid_motion * MakeRigidToEccentricMotion(centre_of_mass),
            std::move(deletion_callback)) {}
 
 Part::Part(PartId part_id,
@@ -87,6 +89,14 @@ void Part::set_mass(Mass const& mass) {
 
 Mass const& Part::mass() const {
   return mass_;
+}
+
+void Part::set_centre_of_mass(Position<EccentricPart> const& centre_of_mass) {
+  centre_of_mass_ = centre_of_mass;
+}
+
+RigidMotion<RigidPart, EccentricPart> Part::MakeRigidToEccentricMotion() const {
+  return MakeRigidToEccentricMotion(centre_of_mass_);
 }
 
 void Part::set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor) {
@@ -237,6 +247,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
   message->set_name(name_);
   message->set_truthful(truthful_);
   mass_.WriteToMessage(message->mutable_mass());
+  centre_of_mass_.WriteToMessage(message->mutable_centre_of_mass());
   inertia_tensor_.WriteToMessage(message->mutable_inertia_tensor());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   intrinsic_torque_.WriteToMessage(message->mutable_intrinsic_torque());
@@ -258,6 +269,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   bool const is_pre_frenet =
       is_pre_fréchet || (message.has_pre_frenet_inertia_tensor() &&
                          !message.has_intrinsic_torque());
+  bool const is_pre_galileo = !message.has_centre_of_mass();
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {
@@ -294,6 +306,11 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
         RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
             message.rigid_motion()),
         std::move(deletion_callback)));
+  }
+
+  if (!is_pre_galileo) {
+    part->set_centre_of_mass(
+        Position<EccentricPart>::ReadFromMessage(message.centre_of_mass()));
   }
 
   part->apply_intrinsic_force(
@@ -365,6 +382,17 @@ Part::Part(PartId const part_id,
   prehistory_->Append(astronomy::InfinitePast,
                       {Barycentric::origin, Barycentric::unmoving});
   history_ = prehistory_->NewForkAtLast();
+}
+
+RigidMotion<RigidPart, EccentricPart> Part::MakeRigidToEccentricMotion(
+    Position<EccentricPart> const& centre_of_mass) {
+  return RigidMotion<RigidPart, EccentricPart>(
+      RigidTransformation<RigidPart, EccentricPart>(
+          RigidPart::origin,
+          centre_of_mass,
+          OrthogonalMap<RigidPart, EccentricPart>::Identity()),
+      RigidPart::nonrotating,
+      RigidPart::unmoving);
 }
 
 InertiaTensor<RigidPart> MakeWaterSphereInertiaTensor(Mass const& mass) {

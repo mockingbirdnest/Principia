@@ -1314,6 +1314,7 @@ message InsertOrKeepLoadedPart {
     required fixed32 part_id = 2;
     required string name = 8;
     required double mass_in_tonnes = 3;
+    required XYZ centre_of_mass = 15;
     required XYZ moments_of_inertia_in_tonnes = 10;
     required WXYZ principal_axes_rotation = 11;
     required bool is_solid_rocket_motor = 14;

@@ -124,14 +124,18 @@ class PileUpTest : public testing::Test {
         p1_(part_id1_,
             "p1",
             mass1_,
+            EccentricPart::origin,
             inertia_tensor1_,
-            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p1_dof_),
+            RigidMotion<EccentricPart, Barycentric>::MakeNonRotatingMotion(
+                p1_dof_),
             /*deletion_callback=*/nullptr),
         p2_(part_id2_,
             "p2",
             mass2_,
+            EccentricPart::origin,
             inertia_tensor2_,
-            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p2_dof_),
+            RigidMotion<EccentricPart, Barycentric>::MakeNonRotatingMotion(
+                p2_dof_),
             /*deletion_callback=*/nullptr) {}
 
   void CheckPreDeformPileUpInvariants(TestablePileUp& pile_up) {
@@ -627,7 +631,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   pile_up.AdvanceTime(astronomy::J2000 + 1.5 * fixed_step);
   pile_up.NudgeParts();
   EXPECT_THAT(p1_.degrees_of_freedom().velocity(),
-              AlmostEquals(old_velocity, 4));
+              AlmostEquals(old_velocity, 2));
 
   Vector<Acceleration, Barycentric> const a{{1729 * Metre / Pow<2>(Second),
                                              -168 * Metre / Pow<2>(Second),

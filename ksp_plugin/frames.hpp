@@ -125,7 +125,15 @@ using Camera = Frame<serialization::Frame::PluginTag,
                      Handedness::Left,
                      serialization::Frame::CAMERA>;
 
-// The frame that defines the orientation of a part.
+// The origin and axes are those of the KSP part; this defines the position and
+// orientation of the part in-game.
+using EccentricPart = Frame<serialization::Frame::PluginTag,
+                            Arbitrary,
+                            Handedness::Left,
+                            serialization::Frame::ECCENTRIC_PART>;
+
+// The axes are those of |EccentricPart|.  The origin is the centre of mass of
+// the part, which may be offset from |EccentricPart::origin|.
 using RigidPart = Frame<serialization::Frame::PluginTag,
                         Arbitrary,
                         Handedness::Left,
@@ -156,6 +164,7 @@ using internal_frames::BodyWorld;
 using internal_frames::Camera;
 using internal_frames::CameraReference;
 using internal_frames::CelestialSphere;
+using internal_frames::EccentricPart;
 using internal_frames::MainBodyCentred;
 using internal_frames::Navball;
 using internal_frames::Navigation;

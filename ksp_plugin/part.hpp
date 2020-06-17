@@ -47,8 +47,9 @@ class Part final {
   Part(PartId part_id,
        std::string const& name,
        Mass const& mass,
+       Position<EccentricPart> const& centre_of_mass,
        InertiaTensor<RigidPart> const& inertia_tensor,
-       RigidMotion<RigidPart, Barycentric> const& rigid_motion,
+       RigidMotion<EccentricPart, Barycentric> const& rigid_motion,
        std::function<void()> deletion_callback);
 
   // An untruthful part.
@@ -74,6 +75,10 @@ class Part final {
   // properties.
   void set_mass(Mass const& mass);
   Mass const& mass() const;
+  void set_centre_of_mass(Position<EccentricPart> const& centre_of_mass);
+  // Returns the transformation from the part-centre-of-mass-centred to the
+  // part-position-centred frame; the offset is set by |set_centre_of_mass|.
+  RigidMotion<RigidPart, EccentricPart> MakeRigidToEccentricMotion() const;
   void set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor);
   InertiaTensor<RigidPart> const& inertia_tensor() const;
   // Whether this part is a solid rocket motor, whose lost mass is expelled with
@@ -170,10 +175,14 @@ class Part final {
        RigidMotion<RigidPart, Barycentric> rigid_motion,
        std::function<void()> deletion_callback);
 
+  static RigidMotion<RigidPart, EccentricPart> MakeRigidToEccentricMotion(
+      Position<EccentricPart> const& centre_of_mass);
+
   PartId const part_id_;
   std::string const name_;
   bool truthful_;
   Mass mass_;
+  Position<EccentricPart> centre_of_mass_ = EccentricPart::origin;
   // NOTE(eggrobin): |mass_change_| and |is_solid_rocket_motor_| are set by
   // |InsertOrKeepLoadedPart|, and used by |PileUp::RecomputeFromParts|.
   // Ultimately, both are called in the adapter in |WaitedForFixedUpdate|.

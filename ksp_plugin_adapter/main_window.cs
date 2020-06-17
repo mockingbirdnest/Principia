@@ -239,6 +239,18 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   private void RenderKSPFeatures() {
     if (show_2519_debugging_ui) {
+      string offsets = "";
+      if (FlightGlobals.ActiveVessel != null) {
+        foreach (var part in FlightGlobals.ActiveVessel.parts) {
+          double? offset = part.rb?.centerOfMass.magnitude;
+          if (offset != 0) {
+            offsets += $"{part.name}: {offset:F3} m; ";
+          }
+        }
+      }
+      UnityEngine.GUILayout.TextArea(
+          offsets,
+          style: Style.Multiline(UnityEngine.GUI.skin.textArea));
       conserve_angular_momentum = UnityEngine.GUILayout.Toggle(
           conserve_angular_momentum,
           "Conserve angular momentum");

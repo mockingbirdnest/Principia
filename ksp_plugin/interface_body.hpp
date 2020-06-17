@@ -24,7 +24,6 @@ using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
 using geometry::Rotation;
 using integrators::AdaptiveStepSizeIntegrator;
-using ksp_plugin::RigidPart;
 using physics::Ephemeris;
 using physics::RigidMotion;
 using quantities::Pow;
@@ -382,6 +381,12 @@ inline Position<World> FromXYZ<Position<World>>(XYZ const& xyz) {
 }
 
 template<>
+inline Position<EccentricPart> FromXYZ<Position<EccentricPart>>(
+    XYZ const& xyz) {
+  return XYZConverter<Position<EccentricPart>>::FromXYZ(xyz);
+}
+
+template<>
 Velocity<Frenet<NavigationFrame>>
 inline FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz) {
   return XYZConverter<Velocity<Frenet<NavigationFrame>>>::FromXYZ(xyz);
@@ -544,18 +549,18 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
   }
 }
 
-inline RigidMotion<RigidPart, World> MakePartRigidMotion(
+inline RigidMotion<EccentricPart, World> MakePartRigidMotion(
     QP const& part_world_degrees_of_freedom,
     WXYZ const& part_rotation,
     XYZ const& part_angular_velocity) {
   DegreesOfFreedom<World> const part_degrees_of_freedom =
       FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom);
-  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
-  RigidTransformation<RigidPart, World> const part_rigid_transformation(
-      RigidPart::origin,
+  Rotation<EccentricPart, World> const part_to_world(FromWXYZ(part_rotation));
+  RigidTransformation<EccentricPart, World> const part_rigid_transformation(
+      EccentricPart::origin,
       part_degrees_of_freedom.position(),
       part_to_world.Forget<OrthogonalMap>());
-  RigidMotion<RigidPart, World> part_rigid_motion(
+  RigidMotion<EccentricPart, World> part_rigid_motion(
       part_rigid_transformation,
       FromXYZ<AngularVelocity<World>>(part_angular_velocity),
       part_degrees_of_freedom.velocity());
@@ -564,7 +569,7 @@ inline RigidMotion<RigidPart, World> MakePartRigidMotion(
 
 // Same as |MakePartRigidMotion|, but uses the separate type |ApparentWorld| to
 // avoid mixing uncorrected and corrected data.
-inline RigidMotion<RigidPart, ApparentWorld> MakePartApparentRigidMotion(
+inline RigidMotion<EccentricPart, ApparentWorld> MakePartApparentRigidMotion(
     QP const& part_world_degrees_of_freedom,
     WXYZ const& part_rotation,
     XYZ const& part_angular_velocity) {

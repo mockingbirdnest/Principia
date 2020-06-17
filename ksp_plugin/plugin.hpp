@@ -206,12 +206,13 @@ class Plugin {
       PartId part_id,
       std::string const& name,
       Mass const& mass,
+      Position<EccentricPart> const& centre_of_mass,
       InertiaTensor<RigidPart> const& inertia_tensor,
       bool is_solid_rocket_motor,
       GUID const& vessel_guid,
       Index main_body_index,
       DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
-      RigidMotion<RigidPart, World> const& part_rigid_motion,
+      RigidMotion<EccentricPart, World> const& part_rigid_motion,
       Time const& Δt);
 
   // Calls |apply_intrinsic_force| and |apply_intrinsic_torque| on the
@@ -253,12 +254,12 @@ class Plugin {
   // part.  This part must be in a loaded vessel.
   virtual void SetPartApparentRigidMotion(
       PartId part_id,
-      RigidMotion<RigidPart, ApparentWorld> const& rigid_motion);
+      RigidMotion<EccentricPart, ApparentWorld> const& rigid_motion);
 
   // Returns the motion of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
   // |part_at_origin|.
-  virtual RigidMotion<RigidPart, World> GetPartActualMotion(
+  virtual RigidMotion<EccentricPart, World> GetPartActualMotion(
       PartId part_id,
       RigidMotion<Barycentric, World> const& barycentric_to_world) const;
 

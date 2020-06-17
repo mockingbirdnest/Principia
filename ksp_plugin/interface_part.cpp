@@ -74,21 +74,22 @@ QPRW __cdecl principia__PartGetActualRigidMotion(
   journal::Method<journal::PartGetActualRigidMotion> m(
       {plugin, part_id, origin});
   CHECK_NOTNULL(plugin);
-  RigidMotion<RigidPart, World> const part_motion = plugin->GetPartActualMotion(
-      part_id,
-      plugin->BarycentricToWorld(
-          origin.reference_part_is_unmoving,
-          origin.reference_part_id,
-          origin.reference_part_is_at_origin
-              ? std::nullopt
-              : std::make_optional(FromXYZ<Position<World>>(
-                    origin.main_body_centre_in_world))));
+  RigidMotion<EccentricPart, World> const part_motion =
+      plugin->GetPartActualMotion(
+          part_id,
+          plugin->BarycentricToWorld(
+              origin.reference_part_is_unmoving,
+              origin.reference_part_id,
+              origin.reference_part_is_at_origin
+                  ? std::nullopt
+                  : std::make_optional(FromXYZ<Position<World>>(
+                        origin.main_body_centre_in_world))));
   DegreesOfFreedom<World> const part_dof =
-      part_motion({RigidPart::origin, RigidPart::unmoving});
-  Rotation<RigidPart, World> const part_orientation =
+      part_motion({EccentricPart::origin, EccentricPart::unmoving});
+  Rotation<EccentricPart, World> const part_orientation =
       part_motion.orthogonal_map().AsRotation();
   AngularVelocity<World> const part_angular_velocity =
-      part_motion.angular_velocity_of<RigidPart>();
+      part_motion.angular_velocity_of<EccentricPart>();
   return m.Return(
       {ToQP(part_dof),
        ToWXYZ(part_orientation.quaternion()),

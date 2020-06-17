@@ -437,12 +437,13 @@ void Plugin::InsertOrKeepLoadedPart(
     PartId const part_id,
     std::string const& name,
     Mass const& mass,
+    Position<EccentricPart> const& centre_of_mass,
     InertiaTensor<RigidPart> const& inertia_tensor,
     bool const is_solid_rocket_motor,
     GUID const& vessel_guid,
     Index const main_body_index,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
-    RigidMotion<RigidPart, World> const& part_rigid_motion,
+    RigidMotion<EccentricPart, World> const& part_rigid_motion,
     Time const& Δt) {
   not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
   CHECK(is_loaded(vessel));
@@ -483,6 +484,7 @@ void Plugin::InsertOrKeepLoadedPart(
             part_id,
             name,
             mass,
+            centre_of_mass,
             inertia_tensor,
             world_to_barycentric_motion * part_rigid_motion);
   }
@@ -490,6 +492,7 @@ void Plugin::InsertOrKeepLoadedPart(
   not_null<Part*> part = vessel->part(part_id);
   part->make_truthful();
   part->set_mass(mass);
+  part->set_centre_of_mass(centre_of_mass);
   part->set_is_solid_rocket_motor(is_solid_rocket_motor);
   part->set_inertia_tensor(inertia_tensor);
 }
@@ -655,7 +658,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
 void Plugin::SetPartApparentRigidMotion(
     PartId const part_id,
-    RigidMotion<RigidPart, ApparentWorld> const& rigid_motion) {
+    RigidMotion<EccentricPart, ApparentWorld> const& rigid_motion) {
   // As a reference frame, |Apparent| differs from |World| only by having the
   // same axes as |Barycentric| and being nonrotating.  However, there is
   // another semantic distinction: |Apparent...| coordinates are uncorrected
@@ -680,14 +683,16 @@ void Plugin::SetPartApparentRigidMotion(
   not_null<Part*> const part = vessel->part(part_id);
   CHECK(part->is_piled_up());
   part->containing_pile_up()->SetPartApparentRigidMotion(
-      part, world_to_apparent * rigid_motion);
+      part,
+      world_to_apparent * rigid_motion * part->MakeRigidToEccentricMotion());
 }
 
-RigidMotion<RigidPart, World> Plugin::GetPartActualMotion(
+RigidMotion<EccentricPart, World> Plugin::GetPartActualMotion(
     PartId const part_id,
     RigidMotion<Barycentric, World> const& barycentric_to_world) const {
-  return barycentric_to_world *
-         FindOrDie(part_id_to_vessel_, part_id)->part(part_id)->rigid_motion();
+  Part const& part = *FindOrDie(part_id_to_vessel_, part_id)->part(part_id);
+  return barycentric_to_world * part.rigid_motion() *
+         part.MakeRigidToEccentricMotion().Inverse();
 }
 
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
