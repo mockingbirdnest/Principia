@@ -31,8 +31,9 @@ class PartTest : public testing::Test {
         part_(part_id_,
               "part",
               mass_,
+              EccentricPart::origin,
               inertia_tensor_,
-              RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+              RigidMotion<EccentricPart, Barycentric>::MakeNonRotatingMotion(
                   degrees_of_freedom_),
               /*deletion_callback=*/nullptr) {
     part_.apply_intrinsic_force(intrinsic_force_);

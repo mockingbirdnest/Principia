@@ -124,14 +124,18 @@ class PileUpTest : public testing::Test {
         p1_(part_id1_,
             "p1",
             mass1_,
+            EccentricPart::origin,
             inertia_tensor1_,
-            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p1_dof_),
+            RigidMotion<EccentricPart, Barycentric>::MakeNonRotatingMotion(
+                p1_dof_),
             /*deletion_callback=*/nullptr),
         p2_(part_id2_,
             "p2",
             mass2_,
+            EccentricPart::origin,
             inertia_tensor2_,
-            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(p2_dof_),
+            RigidMotion<EccentricPart, Barycentric>::MakeNonRotatingMotion(
+                p2_dof_),
             /*deletion_callback=*/nullptr) {}
 
   void CheckPreDeformPileUpInvariants(TestablePileUp& pile_up) {
