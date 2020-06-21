@@ -343,6 +343,16 @@ int __cdecl principia__FlightPlanNumberOfSegments(
   return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_segments());
 }
 
+void __cdecl principia__FlightPlanRebase(Plugin const* const plugin,
+                                         char const* const vessel_guid,
+                                         double const mass_in_tonnes) {
+  journal::Method<journal::FlightPlanRebase> m(
+      {plugin, vessel_guid, mass_in_tonnes});
+  CHECK_NOTNULL(plugin);
+  plugin->GetVessel(vessel_guid)->RebaseFlightPlan(mass_in_tonnes * Tonne);
+  return m.Return();
+}
+
 Status* __cdecl principia__FlightPlanRemoveLast(Plugin const* const plugin,
                                                 char const* const vessel_guid) {
   journal::Method<journal::FlightPlanRemoveLast> m({plugin, vessel_guid});

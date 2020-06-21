@@ -139,6 +139,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
+      if (UnityEngine.GUILayout.Button("Rebase")) {
+        plugin.FlightPlanRebase(vessel_guid, predicted_vessel.GetTotalMass());
+        UpdateVesselAndBurnEditors();
+      }
       if (final_time_.Render(enabled : true)) {
         var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
                                                           final_time_.value);

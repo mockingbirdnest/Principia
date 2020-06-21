@@ -304,6 +304,23 @@ void Vessel::DeleteFlightPlan() {
   flight_plan_.reset();
 }
 
+void Vessel::RebaseFlightPlan(Mass const& initial_mass) {
+  not_null<std::unique_ptr<FlightPlan>> original_flight_plan =
+      std::move(flight_plan_);
+  CreateFlightPlan(
+      original_flight_plan->desired_final_time(),
+      initial_mass,
+      original_flight_plan->adaptive_step_parameters(),
+      original_flight_plan->generalized_adaptive_step_parameters());
+  for (int i = 0; i < original_flight_plan->number_of_manœuvres(); ++i) {
+    auto const& manœuvre = original_flight_plan->GetManœuvre(i);
+    if (manœuvre.initial_time() < flight_plan_->initial_time()) {
+      continue;
+    }
+    flight_plan_->Append(manœuvre.burn());
+  }
+}
+
 void Vessel::RefreshPrediction() {
   absl::MutexLock l(&prognosticator_lock_);
   // The guard below ensures that the ephemeris will not be "forgotten before"

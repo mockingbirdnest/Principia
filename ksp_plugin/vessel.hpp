@@ -150,6 +150,12 @@ class Vessel {
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
 
+  // Requires |has_flight_plan()|.
+  // Deletes |flight_plan_| and recreates it from the current |history_| and
+  // the given |initial_mass|, re-adding any future manœuvres.  Past manœuvres
+  // are discarded, under the assumption that they have been performed.
+  virtual void RebaseFlightPlan(Mass const& initial_mass);
+
   // Tries to replace the current prediction with a more recently computed one.
   // No guarantees that this happens.  No guarantees regarding the end time of
   // the prediction when this call returns.

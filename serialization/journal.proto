@@ -211,7 +211,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5172.
+  extensions 5000 to 5999;  // Last used: 5173.
 }
 
 message SetAngularMomentumConservation {
@@ -907,6 +907,19 @@ message FlightPlanNumberOfSegments {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message FlightPlanRebase {
+  extend Method {
+    optional FlightPlanRebase extension = 5173;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double mass_in_tonnes = 3;
+  }
+  optional In in = 1;
 }
 
 message FlightPlanRemoveLast {
