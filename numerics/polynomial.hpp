@@ -96,12 +96,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
            template<typename, typename, int> class E>
-  constexpr PolynomialInMonomialBasis<V, A, std::max(r, l), E>
+  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
   friend operator+(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
            template<typename, typename, int> class E>
-  constexpr PolynomialInMonomialBasis<V, A, std::max(r, l), E>
+  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
   friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename S,

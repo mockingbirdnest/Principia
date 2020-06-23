@@ -1,9 +1,10 @@
 ﻿
 #pragma once
 
+#include "numerics/poisson_series.hpp"
+
 #include <functional>
 
-#include "numerics/poisson_series.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
