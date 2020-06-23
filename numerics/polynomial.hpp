@@ -90,16 +90,20 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
  private:
   Coefficients coefficients_;
 
-  template<typename V, typename A, int r, int l,
+  template<typename V, typename A, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<V, A, r, E>
+  friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& right);
+  template<typename V, typename A, int l, int r,
            template<typename, typename, int> class E>
   constexpr PolynomialInMonomialBasis<V, A, std::max(r, l), E>
-  friend operator+(PolynomialInMonomialBasis<V, A, r, E> const& left,
-                   PolynomialInMonomialBasis<V, A, l, E> const& right);
-  template<typename V, typename A, int r, int l,
+  friend operator+(PolynomialInMonomialBasis<V, A, l, E> const& left,
+                   PolynomialInMonomialBasis<V, A, r, E> const& right);
+  template<typename V, typename A, int l, int r,
            template<typename, typename, int> class E>
   constexpr PolynomialInMonomialBasis<V, A, std::max(r, l), E>
-  friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& left,
-                   PolynomialInMonomialBasis<V, A, l, E> const& right);
+  friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
+                   PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename S,
            typename V, typename A, int d,
            template<typename, typename, int> class E>
@@ -161,6 +165,18 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 };
 
 // Vector space of polynomials.
+
+template<typename Value, typename Argument, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
+operator+(PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
+              right);
+
+template<typename Value, typename Argument, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
+operator-(PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
+              right);
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
