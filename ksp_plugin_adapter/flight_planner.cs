@@ -139,14 +139,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      if (UnityEngine.GUILayout.Button("Rebase")) {
-        var status = plugin.FlightPlanRebase(
-            vessel_guid, predicted_vessel.GetTotalMass());
-        UpdateStatus(status, null);
-        if (status.ok()) {
-          UpdateVesselAndBurnEditors();
-        }
-      }
       if (final_time_.Render(enabled : true)) {
         var status = plugin.FlightPlanSetDesiredFinalTime(vessel_guid,
                                                           final_time_.value);
@@ -237,6 +229,15 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         Shrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
+        if (UnityEngine.GUILayout.Button("Rebase")) {
+          var status = plugin.FlightPlanRebase(
+              vessel_guid, predicted_vessel.GetTotalMass());
+          UpdateStatus(status, null);
+          if (status.ok()) {
+            return;
+          }
+        }
+
         if (burn_editors_.Count > 0) {
           RenderUpcomingEvents();
         }
