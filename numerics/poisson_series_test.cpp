@@ -56,6 +56,48 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
               AlmostEquals(3 + 11 * Sin(1 * Radian) + 15 * Cos(1 * Radian) +
                                27 * Sin(2 * Radian) + 31 * Cos(2 * Radian),
                            0));
+  EXPECT_THAT(pb.Evaluate(1 * Second),
+              AlmostEquals(7 + 19 * Sin(1 * Radian) + 23 * Cos(1 * Radian) +
+                               35 * Sin(3 * Radian) + 39 * Cos(3 * Radian),
+                           0));
+
+  {
+    auto const identity = +pa;
+    EXPECT_THAT(identity.Evaluate(1 * Second),
+                AlmostEquals(pa.Evaluate(1 * Second), 0));
+  }
+  {
+    auto const negated = -pb;
+    EXPECT_THAT(negated.Evaluate(1 * Second),
+                AlmostEquals(-pb.Evaluate(1 * Second), 0));
+  }
+  {
+    auto const sum = pa + pb;
+    EXPECT_THAT(
+        sum.Evaluate(1 * Second),
+        AlmostEquals(pa.Evaluate(1 * Second) + pb.Evaluate(1 * Second), 0));
+  }
+  {
+    auto const difference = pa - pb;
+    EXPECT_THAT(
+        difference.Evaluate(1 * Second),
+        AlmostEquals(pa.Evaluate(1 * Second) - pb.Evaluate(1 * Second), 0));
+  }
+  {
+    auto const left_product = 3 * pa;
+    EXPECT_THAT(left_product.Evaluate(1 * Second),
+                AlmostEquals(3 * pa.Evaluate(1 * Second), 0));
+  }
+  {
+    auto const right_product = pb * 4;
+    EXPECT_THAT(right_product.Evaluate(1 * Second),
+                AlmostEquals(pb.Evaluate(1 * Second) * 4, 0));
+  }
+  {
+    auto const quotient = pb / 1.5;
+    EXPECT_THAT(quotient.Evaluate(1 * Second),
+                AlmostEquals(pb.Evaluate(1 * Second) / 1.5, 0));
+  }
 }
 
 }  // namespace numerics

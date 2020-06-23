@@ -40,6 +40,40 @@ class PoissonSeries {
  private:
   Polynomial const aperiodic_;
   PolynomialsByAngularFrequency const periodic_;
+
+  template<typename V, int r, template<typename, typename, int> class E>
+  PoissonSeries<V, r, E> friend operator-(PoissonSeries<V, r, E> const& right);
+
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PoissonSeries<V, std::max(l, r), E> friend operator+(
+      PoissonSeries<V, l, E> const& left,
+      PoissonSeries<V, r, E> const& right);
+
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PoissonSeries<V, std::max(l, r), E> friend operator-(
+      PoissonSeries<V, l, E> const& left,
+      PoissonSeries<V, r, E> const& right);
+
+  template<typename Scalar,
+           typename V, int degree_,
+           template<typename, typename, int> class E>
+  PoissonSeries<Product<Scalar, V>, degree_, E> friend operator*(
+      Scalar const& left,
+      PoissonSeries<V, degree_, E> const& right);
+
+  template<typename Scalar,
+           typename V, int degree_,
+           template<typename, typename, int> class E>
+  PoissonSeries<Product<V, Scalar>, degree_, E> friend operator*(
+      PoissonSeries<V, degree_, E> const& left,
+      Scalar const& right);
+
+  template<typename Scalar,
+           typename V, int degree_,
+           template<typename, typename, int> class E>
+  PoissonSeries<Quotient<V, Scalar>, degree_, E> friend operator/(
+      PoissonSeries<V, degree_, E> const& left,
+      Scalar const& right);
 };
 
 // Vector space of Poisson series.
