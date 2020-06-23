@@ -51,7 +51,7 @@ operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   PoissonSeries<Value, rdegree_, Evaluator> result;
   result.aperiodic_ = -right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
-    result.emplace(ω, {.sin = -polynomials.sin, .cos = -polynomials.cos});
+    result.emplace(ω, {/*sin=*/-polynomials.sin, /*cos=*/-polynomials.cos});
   }
   return result;
 }
@@ -80,8 +80,8 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       auto const& polynomials_right = it_right->second;
       result.periodic_.emplace(
           ωl,
-          {.sin = polynomials_left.sin + polynomials_right.sin,
-           .cos = polynomials_left.con + polynomials_right.cos});
+          {/*sin=*/polynomials_left.sin + polynomials_right.sin,
+           /*cos=*/polynomials_left.con + polynomials_right.cos});
     }
   }
   return result;
@@ -105,8 +105,8 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
     } else if (it_left == left.periodic_.cend() || ωr < ωl) {
       auto const& polynomials_right = it_right->second;
       result.periodic_.emplace(ωr,
-                               {.sin = -polynomials_right.sin,
-                                .cos = -polynomials_right.cos});
+                               {/*sin=*/-polynomials_right.sin,
+                                /*cos=*/-polynomials_right.cos});
       ++it_right;
     } else {
       DCHECK_EQ(ωl, ωr);
@@ -114,8 +114,8 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       auto const& polynomials_right = it_right->second;
       result.periodic_.emplace(
           ωl,
-          {.sin = polynomials_left.sin - polynomials_right.sin,
-           .cos = polynomials_left.con - polynomials_right.cos});
+          {/*sin=*/polynomials_left.sin - polynomials_right.sin,
+           /*cos=*/polynomials_left.con - polynomials_right.cos});
     }
   }
   return result;
@@ -130,8 +130,8 @@ operator*(Scalar const& left,
   result.aperiodic_ = left * right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
     result.emplace(ω,
-                   {.sin = left * polynomials.sin,
-                    .cos = left * polynomials.cos});
+                   {/*sin=*/left * polynomials.sin,
+                    /*cos=*/left * polynomials.cos});
   }
   return result;
 }
@@ -145,8 +145,8 @@ operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
   result.aperiodic_ = left.aperiodic_ * right;
   for (auto const& [ω, polynomials] : left.periodic_) {
     result.emplace(ω,
-                   {.sin = polynomials.sin * right,
-                    .cos = polynomials.cos * right});
+                   {/*sin=*/polynomials.sin * right,
+                    /*cos=*/polynomials.cos * right});
   }
   return result;
 }
@@ -160,8 +160,8 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
   result.aperiodic_ = left.aperiodic_ / right;
   for (auto const& [ω, polynomials] : left.periodic_) {
     result.emplace(ω,
-                   {.sin = polynomials.sin / right,
-                    .cos = polynomials.cos / right});
+                   {/*sin=*/polynomials.sin / right,
+                    /*cos=*/polynomials.cos / right});
   }
   return result;
 }

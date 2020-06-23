@@ -23,6 +23,8 @@ class PoissonSeries {
   using Polynomial =
       numerics::PolynomialInMonomialBasis<Value, Time, degree_, Evaluator>;
 
+  // TODO(phl): Use designated initializers for this struct once this project
+  // can be compiled using c++latest.
   struct Polynomials {
     Polynomial sin;
     Polynomial cos;

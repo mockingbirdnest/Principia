@@ -38,12 +38,12 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
   Degree1::Polynomial psb3({17, 18 / Second});
   Degree1::Polynomial pcb3({19, 20 / Second});
 
-  Degree1::Polynomials pa1{.sin = psa1, .cos = pca1};
-  Degree1::Polynomials pb1{.sin = psb1, .cos = pcb1};
+  Degree1::Polynomials pa1{/*sin=*/psa1, /*cos=*/pca1};
+  Degree1::Polynomials pb1{/*sin=*/psb1, /*cos=*/pcb1};
 
-  Degree1::Polynomials pa2{.sin = psa2, .cos = pca2};
+  Degree1::Polynomials pa2{/*sin=*/psa2, /*cos=*/pca2};
 
-  Degree1::Polynomials pb3{.sin = psb3, .cos = pcb3};
+  Degree1::Polynomials pb3{/*sin=*/psb3, /*cos=*/pcb3};
 
   AngularFrequency ω1 = 1 * Radian / Second;
   AngularFrequency ω2 = 2 * Radian / Second;

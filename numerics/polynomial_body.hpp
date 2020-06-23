@@ -278,6 +278,23 @@ ReadFromMessage(serialization::Polynomial const& message) {
   return PolynomialInMonomialBasis(coefficients, origin);
 }
 
+template<typename Value, typename Argument, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
+operator+(PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
+              right) {
+  return right;
+}
+
+template<typename Value, typename Argument, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
+operator-(PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
+              right) {
+  return PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>(
+      -right.coefficients_);
+}
+
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 FORCE_INLINE(constexpr)
