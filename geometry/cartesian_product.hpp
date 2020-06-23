@@ -14,6 +14,12 @@ namespace geometry {
 // polluting the entire universe in cases where they are not useful.
 namespace cartesian_product {
 
+template<typename RTuple>
+constexpr auto operator+(RTuple const& right);
+
+template<typename RTuple>
+constexpr auto operator-(RTuple const& right);
+
 template<typename LTuple, typename RTuple>
 constexpr auto operator+(LTuple const& left, RTuple const& right);
 

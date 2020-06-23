@@ -69,13 +69,18 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
   auto const aperiodic = left.aperiodic_ + right.aperiodic_;
   auto it_left = left.periodic_.cbegin();
   auto it_right = right.periodic_.cbegin();
-  while (it_left != left.periodic_.cend() && it_right != right.periodic_.cend()) {
-    auto const ωl = it_left->first;
-    auto const ωr = it_right->first;
-    if (it_right == right.periodic_.cend() || ωl < ωr) {
+  while (it_left != left.periodic_.cend() ||
+         it_right != right.periodic_.cend()) {
+    auto const ωl = it_left == left.periodic_.cend()
+                        ? Infinity<AngularFrequency>
+                        : it_left->first;
+    auto const ωr = it_right == right.periodic_.cend()
+                        ? Infinity<AngularFrequency>
+                        : it_right->first;
+    if (ωl < ωr) {
       periodic.insert(*it_left);
       ++it_left;
-    } else if (it_left == left.periodic_.cend() || ωr < ωl) {
+    } else if (ωr < ωl) {
       periodic.insert(*it_right);
       ++it_right;
     } else {
@@ -83,11 +88,12 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       auto const& polynomials_left = it_left->second;
       auto const& polynomials_right = it_right->second;
       periodic.emplace(
-          std::piecewise_construct,
           ωl,
           Result::Polynomials{
               /*sin=*/polynomials_left.sin + polynomials_right.sin,
               /*cos=*/polynomials_left.cos + polynomials_right.cos});
+      ++it_left;
+      ++it_right;
     }
   }
   return {aperiodic, std::move(periodic)};
@@ -100,16 +106,21 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   Result::PolynomialsByAngularFrequency periodic;
-  auto const aperiodic = left.aperiodic_ + right.aperiodic_;
+  auto const aperiodic = left.aperiodic_ - right.aperiodic_;
   auto it_left = left.periodic_.cbegin();
   auto it_right = right.periodic_.cbegin();
-  while (it_left != left.periodic_.cend() && it_right != right.periodic_.cend()) {
-    auto const ωl = it_left->first;
-    auto const ωr = it_right->first;
-    if (it_right == right.periodic_.cend() || ωl < ωr) {
+  while (it_left != left.periodic_.cend() ||
+         it_right != right.periodic_.cend()) {
+    auto const ωl = it_left == left.periodic_.cend()
+                        ? Infinity<AngularFrequency>
+                        : it_left->first;
+    auto const ωr = it_right == right.periodic_.cend()
+                        ? Infinity<AngularFrequency>
+                        : it_right->first;
+    if (ωl < ωr) {
       periodic.insert(*it_left);
       ++it_left;
-    } else if (it_left == left.periodic_.cend() || ωr < ωl) {
+    } else if (ωr < ωl) {
       auto const& polynomials_right = it_right->second;
       periodic.emplace(ωr,
                        Result::Polynomials{/*sin=*/-polynomials_right.sin,
@@ -124,6 +135,8 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           Result::Polynomials{
               /*sin=*/polynomials_left.sin - polynomials_right.sin,
               /*cos=*/polynomials_left.cos - polynomials_right.cos});
+      ++it_left;
+      ++it_right;
     }
   }
   return {aperiodic, std::move(periodic)};

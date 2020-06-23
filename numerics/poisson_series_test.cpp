@@ -59,7 +59,7 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
   EXPECT_THAT(pb.Evaluate(1 * Second),
               AlmostEquals(7 + 19 * Sin(1 * Radian) + 23 * Cos(1 * Radian) +
                                35 * Sin(3 * Radian) + 39 * Cos(3 * Radian),
-                           0));
+                           32));
 
   {
     auto const identity = +pa;
@@ -75,7 +75,7 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
     auto const sum = pa + pb;
     EXPECT_THAT(
         sum.Evaluate(1 * Second),
-        AlmostEquals(pa.Evaluate(1 * Second) + pb.Evaluate(1 * Second), 0));
+        AlmostEquals(pa.Evaluate(1 * Second) + pb.Evaluate(1 * Second), 1));
   }
   {
     auto const difference = pa - pb;
@@ -86,7 +86,7 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
   {
     auto const left_product = 3 * pa;
     EXPECT_THAT(left_product.Evaluate(1 * Second),
-                AlmostEquals(3 * pa.Evaluate(1 * Second), 0));
+                AlmostEquals(3 * pa.Evaluate(1 * Second), 1));
   }
   {
     auto const right_product = pb * 4;
@@ -96,7 +96,7 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
   {
     auto const quotient = pb / 1.5;
     EXPECT_THAT(quotient.Evaluate(1 * Second),
-                AlmostEquals(pb.Evaluate(1 * Second) / 1.5, 0));
+                AlmostEquals(pb.Evaluate(1 * Second) / 1.5, 32));
   }
 }
 
