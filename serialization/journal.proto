@@ -919,7 +919,11 @@ message FlightPlanRebase {
     required string vessel_guid = 2;
     required double mass_in_tonnes = 3;
   }
+  message Return {
+    required Status result = 1;
+  }
   optional In in = 1;
+  optional Return return = 3;
 }
 
 message FlightPlanRemoveLast {
