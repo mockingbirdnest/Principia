@@ -19,9 +19,9 @@ using quantities::Time;
 
 // A Poisson series is the sum of terms of the form:
 //   aₙtⁿ      aₙₖ tⁿ sin ωₖ t      aₙₖ tⁿ cos ωₖ t
-// Terms of the first kind are called aperiodic, terms of the second kind are
-// called periodic.  Poisson series form an algebra that is stable by derivation
-// and integration.
+// Terms of the first kind are called aperiodic, terms of the second and third
+// kind are called periodic.  Poisson series form an algebra that is stable by
+// derivation and integration.
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 class PoissonSeries {
