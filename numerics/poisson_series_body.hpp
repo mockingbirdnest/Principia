@@ -15,14 +15,33 @@ using quantities::Cos;
 using quantities::Infinity;
 using quantities::Sin;
 
+// TODO(phl): This file should probably take advantage of emplace_hint.
+
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
     Polynomial const& aperiodic,
     PolynomialsByAngularFrequency const& periodic)
-    : aperiodic_(aperiodic), periodic_(periodic) {
-  for (auto const& [ω, _] : periodic_) {
-    CHECK_LT(AngularFrequency{}, ω);
+    : aperiodic_(aperiodic) {
+  // The |periodic| map may have elements with positive or negative angular
+  // frequencies.  Normalize our member variable to only have positive angular
+  // frequencies.
+  for (auto it = periodic.crbegin(); it != periodic.crend(); ++it) {
+    auto const ω = it->first;
+    if (ω < AngularFrequency{}) {
+      auto const positive_it = periodic_.find(-ω);
+      if (positive_it == periodic_.cend()) {
+        periodic_.emplace(-ω,
+                          Polynomials{/*sin=*/-it->second.sin,
+                                      /*cos=*/it->second.cos});
+      } else {
+        positive_it->second = {
+            /*sin=*/positive_it->second.sin - it->second.sin,
+            /*cos=*/positive_it->second.cos + it->second.cos};
+      }
+    } else {
+      periodic_.insert(*it);
+    }
   }
 }
 

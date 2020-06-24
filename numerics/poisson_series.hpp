@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include <map>
@@ -16,6 +16,11 @@ using quantities::Product;
 using quantities::Quotient;
 using quantities::Time;
 
+// A Poisson series is the sum of terms of the form:
+//   aₙtⁿ      aₙₖ tⁿ sin ωₖ t      aₙₖ tⁿ cos ωₖ t
+// Terms of the first kind are called aperiodic, terms of the second kind are
+// called periodic.  Poisson series form an algebra that is stable by derivation
+// and integration.
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 class PoissonSeries {
@@ -38,36 +43,32 @@ class PoissonSeries {
   Value Evaluate(Time const& t) const;
 
  private:
-  Polynomial const aperiodic_;
-  PolynomialsByAngularFrequency const periodic_;
+  Polynomial aperiodic_;
+  // All the keys in this map are positive.
+  PolynomialsByAngularFrequency periodic_;
 
   template<typename V, int r, template<typename, typename, int> class E>
   PoissonSeries<V, r, E> friend operator-(PoissonSeries<V, r, E> const& right);
-
   template<typename V, int l, int r, template<typename, typename, int> class E>
   PoissonSeries<V, std::max(l, r), E> friend operator+(
       PoissonSeries<V, l, E> const& left,
       PoissonSeries<V, r, E> const& right);
-
   template<typename V, int l, int r, template<typename, typename, int> class E>
   PoissonSeries<V, std::max(l, r), E> friend operator-(
       PoissonSeries<V, l, E> const& left,
       PoissonSeries<V, r, E> const& right);
-
   template<typename Scalar,
            typename V, int degree_,
            template<typename, typename, int> class E>
   PoissonSeries<Product<Scalar, V>, degree_, E> friend operator*(
       Scalar const& left,
       PoissonSeries<V, degree_, E> const& right);
-
   template<typename Scalar,
            typename V, int degree_,
            template<typename, typename, int> class E>
   PoissonSeries<Product<V, Scalar>, degree_, E> friend operator*(
       PoissonSeries<V, degree_, E> const& left,
       Scalar const& right);
-
   template<typename Scalar,
            typename V, int degree_,
            template<typename, typename, int> class E>
