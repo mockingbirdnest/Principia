@@ -123,6 +123,15 @@ PoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>
 operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right);
 
+// Algebra of Poisson series.
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
+operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+          PoissonSeries<RValue, rdegree_, Evaluator> const& right);
+
 }  // namespace internal_poisson_series
 
 using internal_poisson_series::PoissonSeries;

@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <optional>
 
 #include "quantities/elementary_functions.hpp"
 
@@ -210,6 +211,73 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
                      Result::Polynomials{/*sin=*/polynomials.sin / right,
                                          /*cos=*/polynomials.cos / right});
   }
+  return {aperiodic, std::move(periodic)};
+}
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
+operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+          PoissonSeries<RValue, rdegree_, Evaluator> const& right) {
+  using Result =
+      PoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>;
+
+  // Compute all the individual terms using elementary trigonometric identities
+  // and put them in a multimap, because the same frequency may appear multiple
+  // times.
+  std::multimap<AngularFrequency, Result::Polynomials> terms;
+  auto const aperiodic = left.aperiodic_ * right.aperiodic_;
+  for (auto const& [ω, polynomials] : left.periodic_) {
+    terms.emplace(
+        ω,
+        Result::Polynomials{/*sin=*/polynomials.sin * right.aperiodic_,
+                            /*cos=*/polynomials.cos * right.aperiodic_});
+  }
+  for (auto const& [ω, polynomials] : right.periodic_) {
+    terms.emplace(
+        ω,
+        Result::Polynomials{/*sin=*/left.aperiodic_ * polynomials.sin,
+                            /*cos=*/left.aperiodic_ * polynomials.cos});
+  }
+  for (auto const& [ωl, polynomials_left] : left.periodic_) {
+    for (auto const& [ωr, polynomials_right] : right.periodic_) {
+      terms.emplace(ωl - ωr,
+                    Result::Polynomials{
+                        /*sin=*/(-polynomials_left.cos * polynomials_right.sin +
+                                 polynomials_left.sin * polynomials_right.cos) /
+                            2,
+                        /*cos=*/(polynomials_left.sin * polynomials_right.sin +
+                                 polynomials_left.cos * polynomials_right.cos) /
+                            2});
+      terms.emplace(ωl + ωr,
+                    Result::Polynomials{
+                        /*sin=*/(polynomials_left.cos * polynomials_right.sin +
+                                 polynomials_left.sin * polynomials_right.cos) /
+                            2,
+                        /*cos=*/(-polynomials_left.sin * polynomials_right.sin +
+                                 polynomials_left.cos * polynomials_right.cos) /
+                            2});
+    }
+  }
+
+  // Now group the terms together by frequency.
+  Result::PolynomialsByAngularFrequency periodic;
+  std::optional<AngularFrequency> previous_ω;
+  for (auto it = terms.cbegin(); it != terms.cend(); ++it) {
+    auto const& ω = it->first;
+    auto const& polynomials = it->second;
+    if (previous_ω.has_value() && previous_ω.value() == ω) {
+      auto const& previous_polynomials = periodic.rbegin()->second;
+      previous_polynomials = {
+          /*sin=*/previous_polynomials.sin + polynomials.sin,
+          /*cos=*/previous_polynomials.cos + polynomials.cos};
+    } else {
+      periodic.insert(*it);
+    }
+    previous_ω = ω;
+  }
+
   return {aperiodic, std::move(periodic)};
 }
 
