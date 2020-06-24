@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <algorithm>
 #include <map>
 
 #include "numerics/polynomial.hpp"

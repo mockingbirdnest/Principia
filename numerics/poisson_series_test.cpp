@@ -24,7 +24,9 @@ class PoissonSeriesTest : public ::testing::Test {
 };
 
 TEST_F(PoissonSeriesTest, VectorSpace) {
-  Degree1::Polynomial pa0({1, 2 / Second});
+  Degree1::Polynomial pa0({0, 0 / Second});
+  Degree1::Polynomial psa0({100, 200 / Second});
+  Degree1::Polynomial pca0({1, 2 / Second});
   Degree1::Polynomial pb0({3, 4 / Second});
 
   Degree1::Polynomial psa1({5, 6 / Second});
@@ -38,19 +40,22 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
   Degree1::Polynomial psb3({-17, -18 / Second});
   Degree1::Polynomial pcb3({19, 20 / Second});
 
-  Degree1::Polynomials pa1{/*sin=*/psa1, /*cos=*/pca1};
-  Degree1::Polynomials pb1{/*sin=*/psb1, /*cos=*/pcb1};
+  Degree1::Polynomials psca0{/*sin=*/psa0, /*cos=*/pca0};
 
-  Degree1::Polynomials pa2{/*sin=*/psa2, /*cos=*/pca2};
+  Degree1::Polynomials psca1{/*sin=*/psa1, /*cos=*/pca1};
+  Degree1::Polynomials pscb1{/*sin=*/psb1, /*cos=*/pcb1};
 
-  Degree1::Polynomials pb3{/*sin=*/psb3, /*cos=*/pcb3};
+  Degree1::Polynomials psca2{/*sin=*/psa2, /*cos=*/pca2};
 
+  Degree1::Polynomials pscb3{/*sin=*/psb3, /*cos=*/pcb3};
+
+  AngularFrequency ω0 = 0 * Radian / Second;
   AngularFrequency ω1 = 1 * Radian / Second;
   AngularFrequency ω2 = 2 * Radian / Second;
   AngularFrequency ω3 = -3 * Radian / Second;
 
-  Degree1 pa(pa0, {{ω1, pa1}, {ω2, pa2}});
-  Degree1 pb(pb0, {{ω1, pb1}, {ω3, pb3}});
+  Degree1 pa(pa0, {{ω0, psca0}, {ω1, psca1}, {ω2, psca2}});
+  Degree1 pb(pb0, {{ω1, pscb1}, {ω3, pscb3}});
 
   EXPECT_THAT(pa.Evaluate(1 * Second),
               AlmostEquals(3 + 11 * Sin(1 * Radian) + 15 * Cos(1 * Radian) +
