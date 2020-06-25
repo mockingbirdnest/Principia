@@ -27,7 +27,6 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
   // The |periodic| map may have elements with positive or negative angular
   // frequencies.  Normalize our member variable to only have positive angular
   // frequencies.
-  // TODO(phl): It would be good to have +=, -=, etc. for polynomials.
   for (auto it = periodic.crbegin(); it != periodic.crend(); ++it) {
     auto const ω = it->first;
     if (ω < AngularFrequency{}) {
@@ -37,14 +36,13 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
                           Polynomials{/*sin=*/-it->second.sin,
                                       /*cos=*/it->second.cos});
       } else {
-        positive_it->second = {
-            /*sin=*/positive_it->second.sin - it->second.sin,
-            /*cos=*/positive_it->second.cos + it->second.cos};
+        positive_it->second.sin -= it->second.sin;
+        positive_it->second.cos += it->second.cos;
       }
     } else if (ω > AngularFrequency{}) {
       periodic_.insert(*it);
     } else {
-      aperiodic_ = aperiodic_ + it->second.cos;
+      aperiodic_ += it->second.cos;
     }
   }
 }

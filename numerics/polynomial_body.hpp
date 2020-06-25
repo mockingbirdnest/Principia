@@ -186,6 +186,27 @@ Derivative() const {
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>&
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::operator+=(
+    const PolynomialInMonomialBasis& right) {
+  *this = *this + right;
+  return *this;
+}
+
+template<typename Value,
+         typename Argument,
+         int degree_,
+         template<typename, typename, int>
+         class Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>&
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::operator-=(
+    const PolynomialInMonomialBasis& right) {
+  *this = *this - right;
+  return *this;
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
 void PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
     WriteToMessage(not_null<serialization::Polynomial*> message) const {
   message->set_degree(degree_);

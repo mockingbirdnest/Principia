@@ -82,6 +82,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
       Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
   Derivative() const;
 
+  PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
+  PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
+
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
   static PolynomialInMonomialBasis ReadFromMessage(
