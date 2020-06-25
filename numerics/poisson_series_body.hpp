@@ -72,7 +72,7 @@ template<typename Value, int rdegree_,
 PoissonSeries<Value, rdegree_, Evaluator>
 operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PoissonSeries<Value, rdegree_, Evaluator>;
-  Result::PolynomialsByAngularFrequency periodic;
+  typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = -right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
     periodic.emplace(ω,
@@ -88,7 +88,7 @@ PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
 operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
-  Result::PolynomialsByAngularFrequency periodic;
+  typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left.aperiodic_ + right.aperiodic_;
   auto it_left = left.periodic_.cbegin();
   auto it_right = right.periodic_.cbegin();
@@ -128,7 +128,7 @@ PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
 operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
-  Result::PolynomialsByAngularFrequency periodic;
+  typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left.aperiodic_ - right.aperiodic_;
   auto it_left = left.periodic_.cbegin();
   auto it_right = right.periodic_.cbegin();
@@ -171,7 +171,7 @@ PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>
 operator*(Scalar const& left,
           PoissonSeries<Value, degree_, Evaluator> const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
-  Result::PolynomialsByAngularFrequency periodic;
+  typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left * right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
     periodic.emplace(ω,
@@ -187,7 +187,7 @@ PoissonSeries<Product<Value, Scalar>, degree_, Evaluator>
 operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
-  Result::PolynomialsByAngularFrequency periodic;
+  typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left.aperiodic_ * right;
   for (auto const& [ω, polynomials] : left.periodic_) {
     periodic.emplace(ω,
@@ -203,7 +203,7 @@ PoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>
 operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
-  Result::PolynomialsByAngularFrequency periodic;
+  typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left.aperiodic_ / right;
   for (auto const& [ω, polynomials] : left.periodic_) {
     periodic.emplace(ω,
