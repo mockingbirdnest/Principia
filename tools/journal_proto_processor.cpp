@@ -1044,9 +1044,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
   // Start by processing the fields.  We need to know if any of them has a
   // custom marshaler to decide whether we generate a struct or a class.
-  // TODO(phl): Make this const once we generate the marshaler for
-  // BodyParameters.
-  bool has_custom_marshaler =
+  bool const has_custom_marshaler =
       options.HasExtension(journal::serialization::custom_marshaler);
   bool needs_custom_marshaler = false;
   for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -1059,16 +1057,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     }
   }
   if (has_custom_marshaler) {
-    // TODO(phl): Remove this hack once we generate the marshaler for
-    // BodyParameters.
-    if (options.GetExtension(journal::serialization::custom_marshaler) ==
-        "none") {
-      has_custom_marshaler = false;
-      needs_custom_marshaler = false;
-    } else {
-      cs_custom_marshaler_name_[descriptor] =
-          options.GetExtension(journal::serialization::custom_marshaler);
-    }
+    cs_custom_marshaler_name_[descriptor] =
+        options.GetExtension(journal::serialization::custom_marshaler);
   } else if (needs_custom_marshaler) {
     cs_custom_marshaler_name_[descriptor] = name + "Marshaler";
   }
