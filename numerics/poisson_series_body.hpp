@@ -71,10 +71,11 @@ operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = -right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
-    periodic.emplace_hint(periodic.cend(),
-                          ω,
-                          Result::Polynomials{/*sin=*/-polynomials.sin,
-                                              /*cos=*/-polynomials.cos});
+    periodic.emplace_hint(
+        periodic.cend(),
+        ω,
+        typename Result::Polynomials{/*sin=*/-polynomials.sin,
+                                     /*cos=*/-polynomials.cos});
   }
   return {aperiodic, std::move(periodic)};
 }
@@ -110,7 +111,7 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       periodic.emplace_hint(
           periodic.cend(),
           ωl,
-          Result::Polynomials{
+          typename Result::Polynomials{
               /*sin=*/polynomials_left.sin + polynomials_right.sin,
               /*cos=*/polynomials_left.cos + polynomials_right.cos});
       ++it_left;
@@ -146,8 +147,8 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       periodic.emplace_hint(
           periodic.cend(),
           ωr,
-          Result::Polynomials{/*sin=*/-polynomials_right.sin,
-                              /*cos=*/-polynomials_right.cos});
+          typename Result::Polynomials{/*sin=*/-polynomials_right.sin,
+                                       /*cos=*/-polynomials_right.cos});
       ++it_right;
     } else {
       DCHECK_EQ(ωl, ωr);
@@ -156,7 +157,7 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       periodic.emplace_hint(
           periodic.cend(),
           ωl,
-          Result::Polynomials{
+          typename Result::Polynomials{
               /*sin=*/polynomials_left.sin - polynomials_right.sin,
               /*cos=*/polynomials_left.cos - polynomials_right.cos});
       ++it_left;
@@ -175,10 +176,11 @@ operator*(Scalar const& left,
   typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left * right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
-    periodic.emplace_hint(periodic.cend(),
-                          ω,
-                          Result::Polynomials{/*sin=*/left * polynomials.sin,
-                                              /*cos=*/left * polynomials.cos});
+    periodic.emplace_hint(
+        periodic.cend(),
+        ω,
+        typename Result::Polynomials{/*sin=*/left * polynomials.sin,
+                                     /*cos=*/left * polynomials.cos});
   }
   return {aperiodic, std::move(periodic)};
 }
@@ -192,10 +194,11 @@ operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
   typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left.aperiodic_ * right;
   for (auto const& [ω, polynomials] : left.periodic_) {
-    periodic.emplace_hint(periodic.cend(),
-                          ω,
-                          Result::Polynomials{/*sin=*/polynomials.sin * right,
-                                              /*cos=*/polynomials.cos * right});
+    periodic.emplace_hint(
+        periodic.cend(),
+        ω,
+        typename Result::Polynomials{/*sin=*/polynomials.sin * right,
+                                     /*cos=*/polynomials.cos * right});
   }
   return {aperiodic, std::move(periodic)};
 }
@@ -209,10 +212,11 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
   typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left.aperiodic_ / right;
   for (auto const& [ω, polynomials] : left.periodic_) {
-    periodic.emplace_hint(periodic.cend(),
-                          ω,
-                          Result::Polynomials{/*sin=*/polynomials.sin / right,
-                                              /*cos=*/polynomials.cos / right});
+    periodic.emplace_hint(
+        periodic.cend(),
+        ω,
+        typename Result::Polynomials{/*sin=*/polynomials.sin / right,
+                                     /*cos=*/polynomials.cos / right});
   }
   return {aperiodic, std::move(periodic)};
 }
