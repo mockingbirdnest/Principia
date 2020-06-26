@@ -16,8 +16,6 @@ using quantities::Cos;
 using quantities::Infinity;
 using quantities::Sin;
 
-// TODO(phl): This file should probably take advantage of emplace_hint.
-
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
@@ -40,7 +38,7 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
         positive_it->second.cos += it->second.cos;
       }
     } else if (ω > AngularFrequency{}) {
-      periodic_.insert(*it);
+      periodic_.insert(periodic_.cbegin(), *it);
     } else {
       aperiodic_ += it->second.cos;
     }
@@ -73,9 +71,11 @@ operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = -right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
-    periodic.emplace(ω,
-                     Result::Polynomials{/*sin=*/-polynomials.sin,
-                                         /*cos=*/-polynomials.cos});
+    periodic.emplace_hint(
+        periodic.cend(),
+        ω,
+        typename Result::Polynomials{/*sin=*/-polynomials.sin,
+                                     /*cos=*/-polynomials.cos});
   }
   return {aperiodic, std::move(periodic)};
 }
@@ -99,18 +99,19 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
                         ? Infinity<AngularFrequency>
                         : it_right->first;
     if (ωl < ωr) {
-      periodic.insert(*it_left);
+      periodic.insert(periodic.cend(), *it_left);
       ++it_left;
     } else if (ωr < ωl) {
-      periodic.insert(*it_right);
+      periodic.insert(periodic.cend(), *it_right);
       ++it_right;
     } else {
       DCHECK_EQ(ωl, ωr);
       auto const& polynomials_left = it_left->second;
       auto const& polynomials_right = it_right->second;
-      periodic.emplace(
+      periodic.emplace_hint(
+          periodic.cend(),
           ωl,
-          Result::Polynomials{
+          typename Result::Polynomials{
               /*sin=*/polynomials_left.sin + polynomials_right.sin,
               /*cos=*/polynomials_left.cos + polynomials_right.cos});
       ++it_left;
@@ -139,21 +140,24 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
                         ? Infinity<AngularFrequency>
                         : it_right->first;
     if (ωl < ωr) {
-      periodic.insert(*it_left);
+      periodic.insert(periodic.cend(), *it_left);
       ++it_left;
     } else if (ωr < ωl) {
       auto const& polynomials_right = it_right->second;
-      periodic.emplace(ωr,
-                       Result::Polynomials{/*sin=*/-polynomials_right.sin,
-                                           /*cos=*/-polynomials_right.cos});
+      periodic.emplace_hint(
+          periodic.cend(),
+          ωr,
+          typename Result::Polynomials{/*sin=*/-polynomials_right.sin,
+                                       /*cos=*/-polynomials_right.cos});
       ++it_right;
     } else {
       DCHECK_EQ(ωl, ωr);
       auto const& polynomials_left = it_left->second;
       auto const& polynomials_right = it_right->second;
-      periodic.emplace(
+      periodic.emplace_hint(
+          periodic.cend(),
           ωl,
-          Result::Polynomials{
+          typename Result::Polynomials{
               /*sin=*/polynomials_left.sin - polynomials_right.sin,
               /*cos=*/polynomials_left.cos - polynomials_right.cos});
       ++it_left;
@@ -172,9 +176,11 @@ operator*(Scalar const& left,
   typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left * right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
-    periodic.emplace(ω,
-                     Result::Polynomials{/*sin=*/left * polynomials.sin,
-                                         /*cos=*/left * polynomials.cos});
+    periodic.emplace_hint(
+        periodic.cend(),
+        ω,
+        typename Result::Polynomials{/*sin=*/left * polynomials.sin,
+                                     /*cos=*/left * polynomials.cos});
   }
   return {aperiodic, std::move(periodic)};
 }
@@ -188,9 +194,11 @@ operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
   typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left.aperiodic_ * right;
   for (auto const& [ω, polynomials] : left.periodic_) {
-    periodic.emplace(ω,
-                     Result::Polynomials{/*sin=*/polynomials.sin * right,
-                                         /*cos=*/polynomials.cos * right});
+    periodic.emplace_hint(
+        periodic.cend(),
+        ω,
+        typename Result::Polynomials{/*sin=*/polynomials.sin * right,
+                                     /*cos=*/polynomials.cos * right});
   }
   return {aperiodic, std::move(periodic)};
 }
@@ -204,9 +212,11 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
   typename Result::PolynomialsByAngularFrequency periodic;
   auto const aperiodic = left.aperiodic_ / right;
   for (auto const& [ω, polynomials] : left.periodic_) {
-    periodic.emplace(ω,
-                     Result::Polynomials{/*sin=*/polynomials.sin / right,
-                                         /*cos=*/polynomials.cos / right});
+    periodic.emplace_hint(
+        periodic.cend(),
+        ω,
+        typename Result::Polynomials{/*sin=*/polynomials.sin / right,
+                                     /*cos=*/polynomials.cos / right});
   }
   return {aperiodic, std::move(periodic)};
 }
