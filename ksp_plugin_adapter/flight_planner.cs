@@ -229,6 +229,15 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         Shrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
+        if (UnityEngine.GUILayout.Button("Rebase")) {
+          var status = plugin.FlightPlanRebase(
+              vessel_guid, predicted_vessel.GetTotalMass());
+          UpdateStatus(status, null);
+          if (status.ok()) {
+            return;
+          }
+        }
+
         if (burn_editors_.Count > 0) {
           RenderUpcomingEvents();
         }
@@ -465,6 +474,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           status_message = "flight plan is too short";
           remedy_message = "increasing the flight plan duration";
         }
+      } else if (status_.is_unavailable()) {
+        status_message =
+            "flight plan cannot be rebased during scheduled manœuvre execution";
+        remedy_message = "moving the manœuvre or waiting for it to finish";
       }
 
       if (anomalous_manœuvres > 0) {
