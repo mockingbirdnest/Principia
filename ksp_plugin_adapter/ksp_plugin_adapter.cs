@@ -124,6 +124,8 @@ public partial class PrincipiaPluginAdapter
   private Vector3d rsas_target_;
   private bool reset_rsas_target_ = false;
 
+  private int? last_guidance_manœuvre_ = null;
+
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
 
   private Krakensbane krakensbane_;
@@ -1663,7 +1665,15 @@ public partial class PrincipiaPluginAdapter
         Burn burn = plugin_.FlightPlanGetManoeuvre(
                         vessel_guid,
                         first_future_manœuvre_index.Value).burn;
-        if (flight_planner_.show_guidance && !IsNaN(guidance)) {
+        // Clear the guidance node for one frame after scheduled burnout so
+        // that guidance methods (stock SAS, MechJeb, etc.) that follow it
+        // bail out instead of guiding to the next burn with engines still
+        // firing.
+        bool skip_guidance = last_guidance_manœuvre_ != null &&
+            last_guidance_manœuvre_ != first_future_manœuvre_index;
+        last_guidance_manœuvre_ = first_future_manœuvre_index;
+        if (!skip_guidance &&
+            flight_planner_.show_guidance && !IsNaN(guidance)) {
           // The user wants to show the guidance node, and that node was
           // properly computed by the C++ code.
           PatchedConicSolver solver = active_vessel.patchedConicSolver;

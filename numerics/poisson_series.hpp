@@ -59,22 +59,22 @@ class PoissonSeries {
       PoissonSeries<V, l, E> const& left,
       PoissonSeries<V, r, E> const& right);
   template<typename Scalar,
-           typename V, int degree_,
+           typename V, int d,
            template<typename, typename, int> class E>
-  PoissonSeries<Product<Scalar, V>, degree_, E> friend operator*(
+  PoissonSeries<Product<Scalar, V>, d, E> friend operator*(
       Scalar const& left,
-      PoissonSeries<V, degree_, E> const& right);
+      PoissonSeries<V, d, E> const& right);
   template<typename Scalar,
-           typename V, int degree_,
+           typename V, int d,
            template<typename, typename, int> class E>
-  PoissonSeries<Product<V, Scalar>, degree_, E> friend operator*(
-      PoissonSeries<V, degree_, E> const& left,
+  PoissonSeries<Product<V, Scalar>, d, E> friend operator*(
+      PoissonSeries<V, d, E> const& left,
       Scalar const& right);
   template<typename Scalar,
-           typename V, int degree_,
+           typename V, int d,
            template<typename, typename, int> class E>
-  PoissonSeries<Quotient<V, Scalar>, degree_, E> friend operator/(
-      PoissonSeries<V, degree_, E> const& left,
+  PoissonSeries<Quotient<V, Scalar>, d, E> friend operator/(
+      PoissonSeries<V, d, E> const& left,
       Scalar const& right);
 };
 
