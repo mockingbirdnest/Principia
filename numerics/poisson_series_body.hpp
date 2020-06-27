@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <map>
 #include <optional>
 
 #include "quantities/elementary_functions.hpp"
