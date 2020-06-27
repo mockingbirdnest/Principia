@@ -276,7 +276,7 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     auto const& ω = it->first;
     auto const& polynomials = it->second;
     if (previous_ω.has_value() && previous_ω.value() == ω) {
-      auto const& previous_polynomials = periodic.rbegin()->second;
+      auto& previous_polynomials = periodic.rbegin()->second;
       previous_polynomials.sin += polynomials.sin;
       previous_polynomials.cos += polynomials.cos;
     } else {

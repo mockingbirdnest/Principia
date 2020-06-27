@@ -118,5 +118,12 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
   }
 }
 
+TEST_F(PoissonSeriesTest, Algebra) {
+  auto const product = *pa_ * *pb_;
+  EXPECT_THAT(
+      product.Evaluate(1 * Second),
+      AlmostEquals(pa_->Evaluate(1 * Second) * pb_->Evaluate(1 * Second), 6));
+}
+
 }  // namespace numerics
 }  // namespace principia

@@ -49,33 +49,40 @@ class PoissonSeries {
   PolynomialsByAngularFrequency periodic_;
 
   template<typename V, int r, template<typename, typename, int> class E>
-  PoissonSeries<V, r, E> friend operator-(PoissonSeries<V, r, E> const& right);
+  PoissonSeries<V, r, E>
+  friend operator-(PoissonSeries<V, r, E> const& right);
   template<typename V, int l, int r, template<typename, typename, int> class E>
-  PoissonSeries<V, std::max(l, r), E> friend operator+(
-      PoissonSeries<V, l, E> const& left,
-      PoissonSeries<V, r, E> const& right);
+  PoissonSeries<V, std::max(l, r), E>
+  friend operator+(PoissonSeries<V, l, E> const& left,
+                   PoissonSeries<V, r, E> const& right);
   template<typename V, int l, int r, template<typename, typename, int> class E>
-  PoissonSeries<V, std::max(l, r), E> friend operator-(
-      PoissonSeries<V, l, E> const& left,
-      PoissonSeries<V, r, E> const& right);
+  PoissonSeries<V, std::max(l, r), E>
+  friend operator-(PoissonSeries<V, l, E> const& left,
+                   PoissonSeries<V, r, E> const& right);
   template<typename Scalar,
            typename V, int d,
            template<typename, typename, int> class E>
-  PoissonSeries<Product<Scalar, V>, d, E> friend operator*(
-      Scalar const& left,
-      PoissonSeries<V, d, E> const& right);
+  PoissonSeries<Product<Scalar, V>, d, E>
+  friend operator*(Scalar const& left,
+                   PoissonSeries<V, d, E> const& right);
   template<typename Scalar,
            typename V, int d,
            template<typename, typename, int> class E>
-  PoissonSeries<Product<V, Scalar>, d, E> friend operator*(
-      PoissonSeries<V, d, E> const& left,
-      Scalar const& right);
+  PoissonSeries<Product<V, Scalar>, d, E>
+  friend operator*(PoissonSeries<V, d, E> const& left,
+                   Scalar const& right);
   template<typename Scalar,
            typename V, int d,
            template<typename, typename, int> class E>
-  PoissonSeries<Quotient<V, Scalar>, d, E> friend operator/(
-      PoissonSeries<V, d, E> const& left,
-      Scalar const& right);
+  PoissonSeries<Quotient<V, Scalar>, d, E>
+  friend operator/(PoissonSeries<V, d, E> const& left,
+                   Scalar const& right);
+  template<typename L, typename R,
+           int l, int r,
+           template<typename, typename, int> class E>
+  PoissonSeries<Product<L, R>, l + r, E>
+  friend operator*(PoissonSeries<L, l, E> const& left,
+                   PoissonSeries<R, r, E> const& right);
 };
 
 // Vector space of Poisson series.
