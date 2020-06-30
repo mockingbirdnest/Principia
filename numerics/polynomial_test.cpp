@@ -244,6 +244,20 @@ TEST_F(PolynomialTest, Derivative) {
             p3.Derivative<3>().Evaluate(0 * Second));
 }
 
+TEST_F(PolynomialTest, Primitive) {
+  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
+  P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
+
+  EXPECT_THAT(p2.Primitive().Evaluate(0 * Second),
+              AlmostEquals(0 * Kelvin * Second, 0));
+  EXPECT_THAT(p2.Primitive().Evaluate(1 * Second),
+              AlmostEquals(-1.0 / 6.0 * Kelvin * Second, 5));
+  EXPECT_THAT(p2.Primitive().Evaluate(-1 * Second),
+              AlmostEquals(19.0 / 6.0 * Kelvin * Second, 1));
+  EXPECT_THAT(p2.Primitive().Evaluate(2 * Second),
+              AlmostEquals(-40.0 / 3.0 * Kelvin * Second, 1));
+}
+
 TEST_F(PolynomialTest, EvaluateConstant) {
   PolynomialInMonomialBasis<Entropy, Time, 0, HornerEvaluator> const
       horner_boltzmann(std::make_tuple(BoltzmannConstant));

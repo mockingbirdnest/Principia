@@ -43,7 +43,7 @@ TupleDerivation<Tuple, order, std::index_sequence<indices...>>::Derive(
 }
 
 template<typename Argument, typename Tuple,
-         typename = std::make_index_sequence<std::tuple_size_v<Tuple> + 1>>
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
 struct TupleIntegration;
 
 template<typename Argument, typename Tuple, std::size_t... indices>
@@ -55,8 +55,9 @@ template<typename Argument, typename Tuple, std::size_t... indices>
 constexpr auto
 TupleIntegration<Argument, Tuple, std::index_sequence<indices...>>::Integrate(
     Tuple const& tuple) {
-  static constexpr auto zero = std::tuple_element<0, Tuple>{} * Argument{};
-  return std::make_tuple(zero, std::get<indices>(tuple) / (indices + 1)...);
+  static constexpr auto zero = std::tuple_element_t<0, Tuple>{} * Argument{};
+  return std::make_tuple(
+      zero, std::get<indices>(tuple) / static_cast<double>(indices + 1)...);
 }
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
