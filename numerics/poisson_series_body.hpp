@@ -235,24 +235,24 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   // Compute all the individual terms using elementary trigonometric identities
   // and put them in a multimap, because the same frequency may appear multiple
   // times.
-  std::multimap<AngularFrequency, Result::Polynomials> terms;
+  std::multimap<AngularFrequency, typename Result::Polynomials> terms;
   auto const aperiodic = left.aperiodic_ * right.aperiodic_;
   for (auto const& [ω, polynomials] : left.periodic_) {
-    terms.emplace(
-        ω,
-        Result::Polynomials{/*sin=*/polynomials.sin * right.aperiodic_,
-                            /*cos=*/polynomials.cos * right.aperiodic_});
+    terms.emplace(ω,
+                  typename Result::Polynomials{
+                      /*sin=*/polynomials.sin * right.aperiodic_,
+                      /*cos=*/polynomials.cos * right.aperiodic_});
   }
   for (auto const& [ω, polynomials] : right.periodic_) {
-    terms.emplace(
-        ω,
-        Result::Polynomials{/*sin=*/left.aperiodic_ * polynomials.sin,
-                            /*cos=*/left.aperiodic_ * polynomials.cos});
+    terms.emplace(ω,
+                  typename Result::Polynomials{
+                      /*sin=*/left.aperiodic_ * polynomials.sin,
+                      /*cos=*/left.aperiodic_ * polynomials.cos});
   }
   for (auto const& [ωl, polynomials_left] : left.periodic_) {
     for (auto const& [ωr, polynomials_right] : right.periodic_) {
       terms.emplace(ωl - ωr,
-                    Result::Polynomials{
+                    typename Result::Polynomials{
                         /*sin=*/(-polynomials_left.cos * polynomials_right.sin +
                                  polynomials_left.sin * polynomials_right.cos) /
                             2,
@@ -260,7 +260,7 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
                                  polynomials_left.cos * polynomials_right.cos) /
                             2});
       terms.emplace(ωl + ωr,
-                    Result::Polynomials{
+                    typename Result::Polynomials{
                         /*sin=*/(polynomials_left.cos * polynomials_right.sin +
                                  polynomials_left.sin * polynomials_right.cos) /
                             2,
@@ -271,7 +271,7 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   }
 
   // Now group the terms together by frequency.
-  Result::PolynomialsByAngularFrequency periodic;
+  typename Result::PolynomialsByAngularFrequency periodic;
   std::optional<AngularFrequency> previous_ω;
   for (auto it = terms.cbegin(); it != terms.cend(); ++it) {
     auto const& ω = it->first;
