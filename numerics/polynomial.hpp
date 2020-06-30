@@ -83,7 +83,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
       Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
   Derivative() const;
 
-  // The integration constant is zero.
+  // The constant term of the result is zero.
   PolynomialInMonomialBasis<
       Primitive<Value, Argument>, Argument, degree_ + 1, Evaluator>
   Primitive() const;
