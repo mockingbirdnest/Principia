@@ -42,6 +42,24 @@ TupleDerivation<Tuple, order, std::index_sequence<indices...>>::Derive(
                          std::get<order + indices>(tuple)...);
 }
 
+template<typename Argument, typename Tuple,
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
+struct TupleIntegration;
+
+template<typename Argument, typename Tuple, std::size_t... indices>
+struct TupleIntegration<Argument, Tuple, std::index_sequence<indices...>> {
+  static constexpr auto Integrate(Tuple const& tuple);
+};
+
+template<typename Argument, typename Tuple, std::size_t... indices>
+constexpr auto
+TupleIntegration<Argument, Tuple, std::index_sequence<indices...>>::Integrate(
+    Tuple const& tuple) {
+  static constexpr auto zero = std::tuple_element_t<0, Tuple>{} * Argument{};
+  return std::make_tuple(
+      zero, std::get<indices>(tuple) / static_cast<double>(indices + 1)...);
+}
+
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
   static void WriteToMessage(
@@ -182,6 +200,19 @@ Derivative() const {
              quantities::Derivative<Value, Argument, order>, Argument,
              degree_ - order, Evaluator>(
              TupleDerivation<Coefficients, order>::Derive(coefficients_));
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<
+    Primitive<Value, Argument>, Argument, degree_ + 1, Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+Primitive() const {
+  return PolynomialInMonomialBasis<
+             quantities::Primitive<Value, Argument>, Argument,
+             degree_ + 1, Evaluator>(
+             TupleIntegration<Argument, Coefficients>::
+                Integrate(coefficients_));
 }
 
 template<typename Value, typename Argument, int degree_,

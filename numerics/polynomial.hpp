@@ -20,6 +20,7 @@ using base::not_null;
 using geometry::Point;
 using quantities::Derivative;
 using quantities::Derivatives;
+using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
 
@@ -81,6 +82,11 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   PolynomialInMonomialBasis<
       Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
   Derivative() const;
+
+  // The constant term of the result is zero.
+  PolynomialInMonomialBasis<
+      Primitive<Value, Argument>, Argument, degree_ + 1, Evaluator>
+  Primitive() const;
 
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
