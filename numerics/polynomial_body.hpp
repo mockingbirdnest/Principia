@@ -10,6 +10,7 @@
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
+#include "polynomial.hpp"
 
 namespace principia {
 namespace numerics {
@@ -24,6 +25,24 @@ using geometry::cartesian_product::operator*;
 using geometry::cartesian_product::operator/;
 using geometry::polynomial_ring::operator*;
 using quantities::Apply;
+
+// Index-by-index assignment of RTuple to LTuple, which must have at least as
+// many elements (and the types must match).
+template<typename LTuple, typename RTuple,
+         typename = std::make_index_sequence<std::tuple_size_v<RTuple>>>
+struct TupleAssigner;
+
+template<typename LTuple, typename RTuple, std::size_t... indices>
+struct TupleAssigner<LTuple, RTuple, std::index_sequence<indices...>> {
+  void Assign(LTuple& left_tuple, RTuple const& right_tuple);
+};
+
+template<typename LTuple, typename RTuple, std::size_t... indices>
+void TupleAssigner<LTuple, RTuple, std::index_sequence<indices...>>::Assign(
+    LTuple& left_tuple,
+    RTuple const& right_tuple) {
+  (std::get<indices>(left_tuple) = std::get<indices>(right_tuple), ...);
+}
 
 template<typename Tuple, int order,
          typename = std::make_index_sequence<std::tuple_size_v<Tuple> - order>>
@@ -187,6 +206,21 @@ template<typename Value, typename Argument, int degree_,
 constexpr int
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::degree() const {
   return degree_;
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+template<int higher_degree_,
+         template<typename, typename, int> class HigherEvaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+operator PolynomialInMonomialBasis<Value, Argument, higher_degree_,
+                                   HigherEvaluator>() const {
+  static_assert(degree_ <= higher_degree_);
+  using Result = PolynomialInMonomialBasis<Value, Argument, higher_degree_,
+                                           HigherEvaluator>;
+  typename Result::Coefficients higher_coefficients;
+  TupleAssigner::Assign(higher_coefficients, coefficients_);
+  return Result(higher_coefficients);
 }
 
 template<typename Value, typename Argument, int degree_,

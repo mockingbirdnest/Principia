@@ -45,13 +45,10 @@ class PoissonSeries {
   Value Evaluate(Time const& t) const;
 
   // The constant term of the result is zero.
-  PoissonSeries<Primitive<Value, Time>, degree_ + 1, Evaluator> Primitive()
-      const;
+  PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
+  Primitive() const;
 
  private:
-  static Polynomials AngularFrequencyPrimitive(AngularFrequency const& ω,
-                                               Polynomials const& polynomials);
-
   Polynomial aperiodic_;
   // All the keys in this map are positive.
   PolynomialsByAngularFrequency periodic_;
