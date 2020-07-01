@@ -55,7 +55,7 @@ template<typename Argument, typename Tuple, std::size_t... indices>
 constexpr auto
 TupleIntegration<Argument, Tuple, std::index_sequence<indices...>>::Integrate(
     Tuple const& tuple) {
-  static constexpr auto zero = std::tuple_element_t<0, Tuple>{} * Argument{};
+  constexpr auto zero = std::tuple_element_t<0, Tuple>{} * Argument{};
   return std::make_tuple(
       zero, std::get<indices>(tuple) / static_cast<double>(indices + 1)...);
 }
