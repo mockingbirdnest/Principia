@@ -34,14 +34,14 @@ struct TupleAssigner;
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
 struct TupleAssigner<LTuple, RTuple, std::index_sequence<indices...>> {
-  void Assign(LTuple& left_tuple, RTuple const& right_tuple);
+  static void Assign(LTuple& left_tuple, RTuple const& right_tuple);
 };
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
 void TupleAssigner<LTuple, RTuple, std::index_sequence<indices...>>::Assign(
     LTuple& left_tuple,
     RTuple const& right_tuple) {
-  (std::get<indices>(left_tuple) = std::get<indices>(right_tuple), ...);
+  ((std::get<indices>(left_tuple) = std::get<indices>(right_tuple)), ...);
 }
 
 template<typename Tuple, int order,
@@ -219,7 +219,8 @@ operator PolynomialInMonomialBasis<Value, Argument, higher_degree_,
   using Result = PolynomialInMonomialBasis<Value, Argument, higher_degree_,
                                            HigherEvaluator>;
   typename Result::Coefficients higher_coefficients;
-  TupleAssigner::Assign(higher_coefficients, coefficients_);
+  TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
+      higher_coefficients, coefficients_);
   return Result(higher_coefficients);
 }
 
