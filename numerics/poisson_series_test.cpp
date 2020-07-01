@@ -125,5 +125,10 @@ TEST_F(PoissonSeriesTest, Algebra) {
       AlmostEquals(pa_->Evaluate(1 * Second) * pb_->Evaluate(1 * Second), 6));
 }
 
+TEST_F(PoissonSeriesTest, Primitive) {
+  auto const primitive = pa_->Primitive();
+  EXPECT_THAT(primitive.Evaluate(1 * Second), AlmostEquals(1 * Second, 0));
+}
+
 }  // namespace numerics
 }  // namespace principia

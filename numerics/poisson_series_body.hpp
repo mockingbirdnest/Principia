@@ -58,6 +58,44 @@ Value PoissonSeries<Value, degree_, Evaluator>::Evaluate(Time const& t) const {
   return result;
 }
 
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<Primitive<Value, Time>, degree_ + 1, Evaluator>
+PoissonSeries<Value, degree_, Evaluator>::Primitive() const {
+  using Result =
+      PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>;
+  typename Result::PolynomialsByAngularFrequency periodic;
+  typename Result::Polynomial const aperiodic = aperiodic_.Primitive();
+  for (auto const& [ω, polynomials] : periodic_) {
+    periodic.emplace_hint(
+        periodic.cend(),
+        ω,
+        AngularFrequencyPrimitive(ω, polynomials));
+  }
+  return Result{aperiodic, std::move(periodic)};
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+typename PoissonSeries<Value, degree_, Evaluator>::Polynomials
+PoissonSeries<Value, degree_, Evaluator>::AngularFrequencyPrimitive(
+    AngularFrequency const& ω,
+    Polynomials const& polynomials) {
+  // Integration by parts.
+  auto const first_part = Polynomials{/*sin=*/polynomials.cos / ω,
+                                      /*cos=*/-polynomials.sin / ω};
+  if constexpr (degree_ == 0) {
+    return first_part;
+  } else {
+    auto const second_part = AngularFrequencyPrimitive(
+        ω,
+        Polynomials{/*sin=*/-polynomials.cos.Derivative<1>() / ω,
+                    /*cos=*/polynomials.sin.Derivative<1>() / ω});
+    return Polynomials{/*sin=*/first_part.sin + second_part.sin,
+                       /*cos=*/first_part.cos + second_part.cos};
+  }
+}
+
 template<typename Value, int rdegree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value, rdegree_, Evaluator> operator+(
