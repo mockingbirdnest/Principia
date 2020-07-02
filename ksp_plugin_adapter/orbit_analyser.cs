@@ -262,7 +262,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           : "";
       UnityEngine.GUILayout.Label(altitude_warning,
                                   Style.Warning(UnityEngine.GUI.skin.label));
-      UnityEngine.GUILayout.Label("Orbital elements");
+      UnityEngine.GUILayout.Label("Mean orbital elements");
       LabeledField("Sidereal period",
                    elements?.sidereal_period.FormatDuration());
       LabeledField("Nodal period",
@@ -273,12 +273,6 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
                    elements?.mean_semimajor_axis.FormatLengthInterval());
       LabeledField("Eccentricity",
                    elements?.mean_eccentricity.FormatInterval());
-      LabeledField("Mean periapsis altitude",
-                   elements?.mean_periapsis.FormatLengthInterval(
-                       primary.Radius));
-      LabeledField("Mean apoapsis altitude",
-                   elements?.mean_apoapsis.FormatLengthInterval(
-                       primary.Radius));
       LabeledField("Inclination",
                    elements?.mean_inclination.FormatAngleInterval());
       LabeledField(
@@ -290,6 +284,12 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
       LabeledField(
             "Argument of periapsis",
             elements?.mean_argument_of_periapsis.FormatAngleInterval());
+      LabeledField("Altitude of mean periapsis",
+                   elements?.mean_periapsis.FormatLengthInterval(
+                       primary.Radius));
+      LabeledField("Altitude of mean apoapsis",
+                   elements?.mean_apoapsis.FormatLengthInterval(
+                       primary.Radius));
   }
 
   private void RenderOrbitRecurrence(OrbitRecurrence? recurrence,
