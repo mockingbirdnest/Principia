@@ -71,13 +71,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   explicit constexpr PolynomialInMonomialBasis(
       Coefficients coefficients);
 
-  // A polynomial may be explicitly converted to a higher degree (possibly with
-  // a different evaluator).
-  template<int higher_degree_,
-           template<typename, typename, int> class HigherEvaluator>
-  explicit operator PolynomialInMonomialBasis<
-      Value, Argument, higher_degree_, HigherEvaluator>() const;
-
   FORCE_INLINE(inline) Value
   Evaluate(Argument const& argument) const override;
   FORCE_INLINE(inline) Derivative<Value, Argument>
