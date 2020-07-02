@@ -16,7 +16,39 @@ namespace internal_poisson_series {
 
 using quantities::Cos;
 using quantities::Infinity;
+using quantities::Primitive;
 using quantities::Sin;
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+typename PoissonSeries<Primitive<Value, Time>,
+                       degree_ + 1,
+                       Evaluator>::Polynomials
+AngularFrequencyPrimitive(
+    AngularFrequency const& ω,
+    typename PoissonSeries<Value, degree_, Evaluator>::Polynomials const&
+        polynomials) {
+  using Argument = PoissonSeries<Value, degree_, Evaluator>;
+  using Result = PoissonSeries<Primitive<Value, Time>, degree_ + 1, Evaluator>;
+
+  // Integration by parts.
+  typename Result::Polynomials const first_part{
+      /*sin=*/Result::Polynomial(polynomials.cos / ω * Radian),
+      /*cos=*/Result::Polynomial(-polynomials.sin / ω * Radian)};
+  if constexpr (degree_ == 0) {
+    return first_part;
+  } else {
+    auto const sin_polynomial = -polynomials.cos.Derivative<1>() / ω * Radian;
+    auto const cos_polynomial = polynomials.sin.Derivative<1>() / ω * Radian;
+    auto const second_part =
+        AngularFrequencyPrimitive<Value, degree_ - 1, Evaluator>(
+            ω,
+            {/*sin=*/sin_polynomial,
+             /*cos=*/cos_polynomial});
+    return {/*sin=*/first_part.sin + second_part.sin,
+            /*cos=*/first_part.cos + second_part.cos};
+  }
+}
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -56,6 +88,23 @@ Value PoissonSeries<Value, degree_, Evaluator>::Evaluate(Time const& t) const {
               polynomials.cos.Evaluate(t) * Cos(ω * t);
   }
   return result;
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
+PoissonSeries<Value, degree_, Evaluator>::Primitive() const {
+  using Result =
+      PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>;
+  typename Result::PolynomialsByAngularFrequency periodic;
+  typename Result::Polynomial const aperiodic = aperiodic_.Primitive();
+  for (auto const& [ω, polynomials] : periodic_) {
+    periodic.emplace_hint(
+        periodic.cend(),
+        ω,
+        AngularFrequencyPrimitive<Value, degree_, Evaluator>(ω, polynomials));
+  }
+  return Result{aperiodic, std::move(periodic)};
 }
 
 template<typename Value, int rdegree_,

@@ -43,6 +43,10 @@ class PoissonSeries {
 
   Value Evaluate(Time const& t) const;
 
+  // The constant term of the result is zero.
+  PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
+  Primitive() const;
+
  private:
   Polynomial aperiodic_;
   // All the keys in this map are positive.

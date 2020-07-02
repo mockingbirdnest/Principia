@@ -16,6 +16,7 @@ namespace numerics {
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Sin;
+using quantities::Time;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
@@ -24,7 +25,11 @@ class PoissonSeriesTest : public ::testing::Test {
  protected:
   using Degree1 = PoissonSeries<double, 1, HornerEvaluator>;
 
-  PoissonSeriesTest() {
+  PoissonSeriesTest()
+      : ω0_(0 * Radian / Second),
+        ω1_(1 * Radian / Second),
+        ω2_(2 * Radian / Second),
+        ω3_(-3 * Radian / Second) {
     Degree1::Polynomial pa0({0, 0 / Second});
     Degree1::Polynomial psa0({100, 200 / Second});
     Degree1::Polynomial pca0({1, 2 / Second});
@@ -50,19 +55,19 @@ class PoissonSeriesTest : public ::testing::Test {
 
     Degree1::Polynomials pscb3{/*sin=*/psb3, /*cos=*/pcb3};
 
-    AngularFrequency ω0 = 0 * Radian / Second;
-    AngularFrequency ω1 = 1 * Radian / Second;
-    AngularFrequency ω2 = 2 * Radian / Second;
-    AngularFrequency ω3 = -3 * Radian / Second;
-
-    pa_ = std::make_unique<Degree1>(pa0,
-                                    Degree1::PolynomialsByAngularFrequency{
-                                        {ω0, psca0}, {ω1, psca1}, {ω2, psca2}});
-    pb_ = std::make_unique<Degree1>(pb0,
-                                    Degree1::PolynomialsByAngularFrequency{
-                                        {ω1, pscb1}, {ω3, pscb3}});
+    pa_ = std::make_unique<Degree1>(
+        pa0,
+        Degree1::PolynomialsByAngularFrequency{
+            {ω0_, psca0}, {ω1_, psca1}, {ω2_, psca2}});
+    pb_ = std::make_unique<Degree1>(
+        pb0,
+        Degree1::PolynomialsByAngularFrequency{{ω1_, pscb1}, {ω3_, pscb3}});
   }
 
+  AngularFrequency ω0_;
+  AngularFrequency ω1_;
+  AngularFrequency ω2_;
+  AngularFrequency ω3_;
   std::unique_ptr<Degree1> pa_;
   std::unique_ptr<Degree1> pb_;
 };
@@ -123,6 +128,42 @@ TEST_F(PoissonSeriesTest, Algebra) {
   EXPECT_THAT(
       product.Evaluate(1 * Second),
       AlmostEquals(pa_->Evaluate(1 * Second) * pb_->Evaluate(1 * Second), 6));
+}
+
+TEST_F(PoissonSeriesTest, Primitive) {
+  auto const actual_primitive = pb_->Primitive();
+
+  // The primitive was computed using Mathematica.
+  auto const expected_primitive = [=](Time const& t){
+    auto const a0 = 3;
+    auto const a1 = 4 / Second;
+    auto const b0 = 9;
+    auto const b1 = 10 / Second;
+    auto const c0 = 11;
+    auto const c1 = 12 / Second;
+    auto const d0 = -17;
+    auto const d1 = -18 / Second;
+    auto const e0 = 19;
+    auto const e1 = 20 / Second;
+    return a0 * t + (a1 * t * t) / 2 +
+           (c1 * Cos(ω1_ * t) * Radian * Radian) / (ω1_ * ω1_) -
+           (b0 * Cos(ω1_ * t) * Radian) / ω1_ -
+           (b1 * t * Cos(ω1_ * t) * Radian) / ω1_ +
+           (e1 * Cos(ω3_ * t) * Radian * Radian) / (ω3_ * ω3_) -
+           (d0 * Cos(ω3_ * t) * Radian) / ω3_ -
+           (d1 * t * Cos(ω3_ * t) * Radian) / ω3_ +
+           (b1 * Sin(ω1_ * t) * Radian * Radian) / (ω1_ * ω1_) +
+           (c0 * Sin(ω1_ * t) * Radian) / ω1_ +
+           (c1 * t * Sin(ω1_ * t) * Radian) / ω1_ +
+           (d1 * Sin(ω3_ * t) * Radian * Radian) / (ω3_ * ω3_) +
+           (e0 * Sin(ω3_ * t) * Radian) / ω3_ +
+           (e1 * t * Sin(ω3_ * t) * Radian) / ω3_;
+  };
+
+  for (int i = -10; i < 10; ++i) {
+    EXPECT_THAT(actual_primitive.Evaluate(i * Second),
+                AlmostEquals(expected_primitive(i * Second), 0, 6));
+  }
 }
 
 }  // namespace numerics
