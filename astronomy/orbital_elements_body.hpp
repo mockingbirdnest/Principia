@@ -172,6 +172,7 @@ std::vector<Length> OrbitalElements::Distances(
     distances.push_back(
         (degrees_of_freedom.position() - primary_dof.position()).Norm());
   }
+  return distances;
 }
 
 inline std::vector<OrbitalElements::EquinoctialElements> const&
