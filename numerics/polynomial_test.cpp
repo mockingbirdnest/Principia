@@ -152,6 +152,20 @@ TEST_F(PolynomialTest, Evaluate17) {
                                                    0 * Metre}), 0));
 }
 
+// Check that a conversion to increase the degree works.
+TEST_F(PolynomialTest, Conversion) {
+  P2V const p2v(coefficients_);
+  P17 const p17 = P17(p2v);
+  Displacement<World> const d = p17.Evaluate(0.5 * Second);
+  Velocity<World> const v = p17.EvaluateDerivative(0.5 * Second);
+  EXPECT_THAT(d, AlmostEquals(Displacement<World>({0.25 * Metre,
+                                                   0.5 * Metre,
+                                                   1 * Metre}), 0));
+  EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
+                                               1 * Metre / Second,
+                                               0 * Metre / Second}), 0));
+}
+
 TEST_F(PolynomialTest, VectorSpace) {
   P2V const p2v(coefficients_);
   {
