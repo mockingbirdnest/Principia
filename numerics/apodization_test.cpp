@@ -17,7 +17,7 @@ using testing_utilities::AlmostEquals;
 
 class ApodizationTest : public ::testing::Test {
  protected:
-   ApodizationTest() : t1_(t0_ - 1 * Second), t2_(t0_ + 2 * Second) {}
+  ApodizationTest() : t1_(t0_ - 1 * Second), t2_(t0_ + 2 * Second) {}
 
   Instant const t0_;
   Instant const t1_;
