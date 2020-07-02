@@ -20,31 +20,32 @@ using quantities::Sin;
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-typename PoissonSeries<quantities::Primitive<Value, Time>,
+typename PoissonSeries<Primitive<Value, Time>,
                        degree_ + 1,
                        Evaluator>::Polynomials
 AngularFrequencyPrimitive(
     AngularFrequency const& ω,
-    typename PoissonSeries<Value, degree_ + 1, Evaluator>::Polynomials const&
+    typename PoissonSeries<Value, degree_, Evaluator>::Polynomials const&
         polynomials) {
-  using Result =
-      PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>;
+  using Argument = PoissonSeries<Value, degree_, Evaluator>;
+  using Result = PoissonSeries<Primitive<Value, Time>, degree_ + 1, Evaluator>;
 
   // Integration by parts.
-  auto const first_part =
-      typename Result::Polynomials{/*sin=*/polynomials.cos / ω,
-                                   /*cos=*/-polynomials.sin / ω};
+  typename Result::Polynomials const first_part{
+      /*sin=*/Result::Polynomial(polynomials.cos / ω * Radian),
+      /*cos=*/Result::Polynomial(-polynomials.sin / ω * Radian)};
   if constexpr (degree_ == 0) {
     return first_part;
   } else {
-    auto const second_part = AngularFrequencyPrimitive(
-        ω,
-        typename Result::Polynomials{
-            /*sin=*/-polynomials.cos.Derivative<1>() / ω,
-            /*cos=*/polynomials.sin.Derivative<1>() / ω});
-    return
-        typename Result::Polynomials{/*sin=*/first_part.sin + second_part.sin,
-                                     /*cos=*/first_part.cos + second_part.cos};
+    auto const sin_polynomial = -polynomials.cos.Derivative<1>() / ω * Radian;
+    auto const cos_polynomial = polynomials.sin.Derivative<1>() / ω * Radian;
+    auto const second_part =
+        AngularFrequencyPrimitive<Value, degree_ - 1, Evaluator>(
+            ω,
+            {/*sin=*/sin_polynomial,
+             /*cos=*/cos_polynomial});
+    return {/*sin=*/first_part.sin + second_part.sin,
+            /*cos=*/first_part.cos + second_part.cos};
   }
 }
 
