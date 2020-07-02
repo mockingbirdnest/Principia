@@ -13,7 +13,6 @@ namespace numerics {
 namespace internal_poisson_series {
 
 using quantities::AngularFrequency;
-using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
 using quantities::Time;

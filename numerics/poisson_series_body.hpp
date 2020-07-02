@@ -16,6 +16,7 @@ namespace internal_poisson_series {
 
 using quantities::Cos;
 using quantities::Infinity;
+using quantities::Primitive;
 using quantities::Sin;
 
 template<typename Value, int degree_,
