@@ -38,8 +38,8 @@ class OrbitalElements {
 
   // The classical Keplerian elements (a, e, i, Ω, ω, M),
   // together with an epoch.
-  // TODO(egg): consider just using Keplerian elements now that we have the
-  // apsides as well...
+  // TODO(egg): consider just using KeplerianElements now that we have the
+  // apsides as well.
   struct ClassicalElements {
     Instant time;
     Length semimajor_axis;
@@ -132,9 +132,6 @@ class OrbitalElements {
     // tangent; they are better suited to retrograde orbits.
     double pʹ;  // cotg i/2 sin Ω.
     double qʹ;  // cotg i/2 cos Ω.
-
-    // TODO(egg): move this out of here.
-    Length r;
   };
 
   std::vector<EquinoctialElements> const& osculating_equinoctial_elements()
@@ -149,6 +146,10 @@ class OrbitalElements {
       DiscreteTrajectory<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
       Body const& secondary);
+
+  template<typename PrimaryCentred>
+  static std::vector<Length> Distances(
+      DiscreteTrajectory<PrimaryCentred> const& trajectory);
 
   // |equinoctial_elements| must contain at least 2 elements.
   static Time SiderealPeriod(
@@ -170,11 +171,12 @@ class OrbitalElements {
   // element computation is based on it, so it gets computed earlier).
   void ComputePeriodsAndPrecession();
 
-  // |mean_classical_elements_| must have been computed; sets
-  // |mean_*_interval_| accordingly.
-  void ComputeMeanElementIntervals();
+  // |distances_| and |mean_classical_elements_| must have been computed; sets
+  // |distance_interval_| and |mean_*_interval_| accordingly.
+  void ComputeIntervals();
 
   std::vector<EquinoctialElements> osculating_equinoctial_elements_;
+  std::vector<Length> distances_;
   Time sidereal_period_;
   std::vector<EquinoctialElements> mean_equinoctial_elements_;
   std::vector<ClassicalElements> mean_classical_elements_;

@@ -41,6 +41,7 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   }
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
+  orbital_elements.distances_ = Distances(trajectory);
   orbital_elements.sidereal_period_ =
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
   if (!IsFinite(orbital_elements.sidereal_period_)) {
@@ -64,7 +65,7 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   orbital_elements.mean_classical_elements_ =
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
   orbital_elements.ComputePeriodsAndPrecession();
-  orbital_elements.ComputeMeanElementIntervals();
+  orbital_elements.ComputeIntervals();
   return orbital_elements;
 }
 
@@ -155,10 +156,22 @@ OrbitalElements::OsculatingEquinoctialElements(
          /*.p = */ tg_½i * Sin(Ω),
          /*.q = */ tg_½i * Cos(Ω),
          /*.pʹ = */ cotg_½i * Sin(Ω),
-         /*.qʹ = */ cotg_½i * Cos(Ω),
-         (degrees_of_freedom.position() - primary_dof.position()).Norm()});
+         /*.qʹ = */ cotg_½i * Cos(Ω)});
   }
   return result;
+}
+
+template<typename PrimaryCentred>
+std::vector<Length> OrbitalElements::Distances(
+    DiscreteTrajectory<PrimaryCentred> const& trajectory) {
+  std::vector<Length> distances;
+  distances.reserve(trajectory.Size());
+  DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
+                                                     PrimaryCentred::unmoving};
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
+    distances.push_back(
+        (degrees_of_freedom.position() - primary_dof.position()).Norm());
+  }
 }
 
 inline std::vector<OrbitalElements::EquinoctialElements> const&
@@ -392,9 +405,9 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
   nodal_precession_ = 12 * ʃ_Ωt_dt / Δt³;
 }
 
-inline void OrbitalElements::ComputeMeanElementIntervals() {
-  for (auto const& elements : osculating_equinoctial_elements_) {
-    distance_interval_.Include(elements.r);
+inline void OrbitalElements::ComputeIntervals() {
+  for (auto const& r : distances_) {
+    distance_interval_.Include(r);
   } 
   for (auto const& elements : mean_classical_elements_) {
     mean_semimajor_axis_interval_.Include(elements.semimajor_axis);
