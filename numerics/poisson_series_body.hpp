@@ -50,9 +50,6 @@ AngularFrequencyPrimitive(
   }
 }
 
-
-
-
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
