@@ -111,6 +111,18 @@ inline Interval<Angle> OrbitalElements::mean_argument_of_periapsis_interval()
   return mean_argument_of_periapsis_interval_;
 }
 
+inline Interval<Length> OrbitalElements::mean_periapsis_interval() const {
+  return mean_periapsis_interval_;
+}
+
+inline Interval<Length> OrbitalElements::mean_apoapsis_interval() const {
+  return mean_apoapsis_interval_;
+}
+
+inline Interval<Length> OrbitalElements::distance_interval() const {
+  return distance_interval_;
+}
+
 template<typename PrimaryCentred>
 std::vector<OrbitalElements::EquinoctialElements>
 OrbitalElements::OsculatingEquinoctialElements(
@@ -143,7 +155,8 @@ OrbitalElements::OsculatingEquinoctialElements(
          /*.p = */ tg_½i * Sin(Ω),
          /*.q = */ tg_½i * Cos(Ω),
          /*.pʹ = */ cotg_½i * Sin(Ω),
-         /*.qʹ = */ cotg_½i * Cos(Ω)});
+         /*.qʹ = */ cotg_½i * Cos(Ω),
+         (degrees_of_freedom.position() - primary_dof.position()).Norm()});
   }
   return result;
 }
@@ -319,7 +332,9 @@ OrbitalElements::ToClassicalElements(
              : UnwindFrom(classical_elements.back().argument_of_periapsis, ω),
          classical_elements.empty()
              ? Mod(M, 2 * π * Radian)
-             : UnwindFrom(classical_elements.back().mean_anomaly, M)});
+             : UnwindFrom(classical_elements.back().mean_anomaly, M),
+         (1 - e) * equinoctial.a,
+         (1 + e) * equinoctial.a});
   }
   return classical_elements;
 }
@@ -378,6 +393,9 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
 }
 
 inline void OrbitalElements::ComputeMeanElementIntervals() {
+  for (auto const& elements : osculating_equinoctial_elements_) {
+    distance_interval_.Include(elements.r);
+  } 
   for (auto const& elements : mean_classical_elements_) {
     mean_semimajor_axis_interval_.Include(elements.semimajor_axis);
     mean_eccentricity_interval_.Include(elements.eccentricity);
@@ -386,6 +404,8 @@ inline void OrbitalElements::ComputeMeanElementIntervals() {
         elements.longitude_of_ascending_node);
     mean_argument_of_periapsis_interval_.Include(
         elements.argument_of_periapsis);
+    mean_periapsis_interval_.Include(elements.periapsis_distance);
+    mean_apoapsis_interval_.Include(elements.apoapsis_distance);
   }
 }
 

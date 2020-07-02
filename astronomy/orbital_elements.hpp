@@ -38,6 +38,8 @@ class OrbitalElements {
 
   // The classical Keplerian elements (a, e, i, Ω, ω, M),
   // together with an epoch.
+  // TODO(egg): consider just using Keplerian elements now that we have the
+  // apsides as well...
   struct ClassicalElements {
     Instant time;
     Length semimajor_axis;
@@ -46,6 +48,9 @@ class OrbitalElements {
     Angle longitude_of_ascending_node;
     Angle argument_of_periapsis;
     Angle mean_anomaly;
+
+    Length periapsis_distance;
+    Length apoapsis_distance;
   };
 
   // Mean element time series.  These elements are free of short-period
@@ -101,6 +106,10 @@ class OrbitalElements {
   Interval<Angle> mean_longitude_of_ascending_node_interval() const;
   Interval<Angle> mean_argument_of_periapsis_interval() const;
 
+  Interval<Length> mean_periapsis_interval() const;
+  Interval<Length> mean_apoapsis_interval() const;
+  Interval<Length> distance_interval() const;
+
   // The equinoctial elements, and in particular the osculating equinoctial
   // elements, are not directly interesting; anything that could be derived from
   // them should be directly computed by this class instead.  They are however
@@ -123,6 +132,9 @@ class OrbitalElements {
     // tangent; they are better suited to retrograde orbits.
     double pʹ;  // cotg i/2 sin Ω.
     double qʹ;  // cotg i/2 cos Ω.
+
+    // TODO(egg): move this out of here.
+    Length r;
   };
 
   std::vector<EquinoctialElements> const& osculating_equinoctial_elements()
@@ -170,7 +182,11 @@ class OrbitalElements {
   Time nodal_period_;
   AngularFrequency nodal_precession_;
 
+  Interval<Length> distance_interval_;
+
   Interval<Length> mean_semimajor_axis_interval_;
+  Interval<Length> mean_periapsis_interval_;
+  Interval<Length> mean_apoapsis_interval_;
   Interval<double> mean_eccentricity_interval_;
   Interval<Angle> mean_inclination_interval_;
   Interval<Angle> mean_longitude_of_ascending_node_interval_;

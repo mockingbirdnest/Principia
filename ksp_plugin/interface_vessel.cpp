@@ -116,6 +116,9 @@ OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
           ToInterval(elements.mean_longitude_of_ascending_node_interval()),
           .mean_argument_of_periapsis =
           ToInterval(elements.mean_argument_of_periapsis_interval()),
+          .mean_periapsis = ToInterval(elements.mean_periapsis_interval()),
+          .mean_apoapsis = ToInterval(elements.mean_apoapsis_interval()),
+          .distance = ToInterval(elements.distance_interval()),
       };
     }
     if (has_nominal_recurrence) {

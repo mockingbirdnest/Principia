@@ -178,6 +178,9 @@ message OrbitalElements {
   required Interval mean_inclination = 7;
   required Interval mean_longitude_of_ascending_nodes = 8;
   required Interval mean_argument_of_periapsis = 9;
+  required Interval mean_periapsis = 10;
+  required Interval mean_apoapsis = 11;
+  required Interval distance = 12;
 }
 
 message OrbitRecurrence {

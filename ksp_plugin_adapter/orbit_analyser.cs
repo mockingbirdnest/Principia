@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -7,12 +8,19 @@ namespace ksp_plugin_adapter {
 // handling easier, thanks to null-coalescing operators.
 internal static class Formatters {
   // Formats |value| in "N<fractional_digits>" using the Principia culture.
-  public static string FormatN(this double value, int fractional_digits) {
+  public static string FormatN(this double value,
+                               int fractional_digits) {
     return value.ToString($"N{fractional_digits}", Culture.culture);
   }
 
   public static string FormatN(this int value, int fractional_digits) {
     return value.ToString($"N{fractional_digits}", Culture.culture);
+  }
+
+  // Formats |value| (given in metres) in kilometres or metres.
+  // TODO(egg): think about the threshold for metres.
+  public static string FormatAltitude(this double value) {
+    return $"{(value / 1000).FormatN(0)} km";
   }
 
   // Displays an interval as midpoint±half-width.
@@ -28,9 +36,10 @@ internal static class Formatters {
 
   // Displays an interval of lengths as midpoint±half-width, in km if the
   // half-width is 100 m or more.
-  public static string FormatLengthInterval(this Interval interval) {
+  public static string FormatLengthInterval(this Interval interval,
+                                            double offset = 0) {
     double half_width = (interval.max - interval.min) / 2;
-    double midpoint = interval.min + half_width;
+    double midpoint = interval.min - offset + half_width;
     string unit = "m";
     if (half_width >= 100) {
       half_width *= 0.001;
@@ -227,7 +236,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           multiline_style,
           UnityEngine.GUILayout.Height(five_lines));
       Style.HorizontalLine();
-      RenderOrbitalElements(elements);
+      RenderOrbitalElements(elements, primary);
       Style.HorizontalLine();
       RenderOrbitRecurrence(recurrence, primary);
       Style.HorizontalLine();
@@ -236,7 +245,23 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
     UnityEngine.GUI.DragWindow();
   }
 
-  private void RenderOrbitalElements(OrbitalElements? elements) {
+  private void RenderOrbitalElements(OrbitalElements? elements,
+                                     CelestialBody primary) {
+      double? lowest_distance = elements?.distance.min;
+      LabeledField(
+          "Lowest altitude",
+          (lowest_distance - primary?.Radius)?.FormatAltitude());
+      double? lowest_primary_altitude =
+          primary?.ocean == true ? 0 : primary?.pqsController?.radiusMin;
+      string altitude_warning = lowest_distance < lowest_primary_altitude
+          ? "collision"
+          : lowest_distance < primary?.pqsController?.radiusMax
+          ? "collision risk"
+          : lowest_distance < primary?.Radius + primary?.atmosphereDepth
+          ? "reentry"
+          : "";
+      UnityEngine.GUILayout.Label(altitude_warning,
+                                  Style.Warning(UnityEngine.GUI.skin.label));
       UnityEngine.GUILayout.Label("Orbital elements");
       LabeledField("Sidereal period",
                    elements?.sidereal_period.FormatDuration());
@@ -248,6 +273,12 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
                    elements?.mean_semimajor_axis.FormatLengthInterval());
       LabeledField("Eccentricity",
                    elements?.mean_eccentricity.FormatInterval());
+      LabeledField("Mean periapsis altitude",
+                   elements?.mean_periapsis.FormatLengthInterval(
+                       primary.Radius));
+      LabeledField("Mean apoapsis altitude",
+                   elements?.mean_apoapsis.FormatLengthInterval(
+                       primary.Radius));
       LabeledField("Inclination",
                    elements?.mean_inclination.FormatAngleInterval());
       LabeledField(
