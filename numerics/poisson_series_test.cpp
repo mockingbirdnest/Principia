@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -13,6 +14,7 @@
 namespace principia {
 namespace numerics {
 
+using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Sin;
@@ -30,21 +32,21 @@ class PoissonSeriesTest : public ::testing::Test {
         ω1_(1 * Radian / Second),
         ω2_(2 * Radian / Second),
         ω3_(-3 * Radian / Second) {
-    Degree1::Polynomial pa0({0, 0 / Second});
-    Degree1::Polynomial psa0({100, 200 / Second});
-    Degree1::Polynomial pca0({1, 2 / Second});
-    Degree1::Polynomial pb0({3, 4 / Second});
+    Degree1::Polynomial pa0({0, 0 / Second}, t0_);
+    Degree1::Polynomial psa0({100, 200 / Second}, t0_);
+    Degree1::Polynomial pca0({1, 2 / Second}, t0_);
+    Degree1::Polynomial pb0({3, 4 / Second}, t0_);
 
-    Degree1::Polynomial psa1({5, 6 / Second});
-    Degree1::Polynomial pca1({7, 8 / Second});
-    Degree1::Polynomial psb1({9, 10 / Second});
-    Degree1::Polynomial pcb1({11, 12 / Second});
+    Degree1::Polynomial psa1({5, 6 / Second}, t0_);
+    Degree1::Polynomial pca1({7, 8 / Second}, t0_);
+    Degree1::Polynomial psb1({9, 10 / Second}, t0_);
+    Degree1::Polynomial pcb1({11, 12 / Second}, t0_);
 
-    Degree1::Polynomial psa2({13, 14 / Second});
-    Degree1::Polynomial pca2({15, 16 / Second});
+    Degree1::Polynomial psa2({13, 14 / Second}, t0_);
+    Degree1::Polynomial pca2({15, 16 / Second}, t0_);
 
-    Degree1::Polynomial psb3({-17, -18 / Second});
-    Degree1::Polynomial pcb3({19, 20 / Second});
+    Degree1::Polynomial psb3({-17, -18 / Second}, t0_);
+    Degree1::Polynomial pcb3({19, 20 / Second}, t0_);
 
     Degree1::Polynomials psca0{/*sin=*/psa0, /*cos=*/pca0};
 
@@ -64,20 +66,21 @@ class PoissonSeriesTest : public ::testing::Test {
         Degree1::PolynomialsByAngularFrequency{{ω1_, pscb1}, {ω3_, pscb3}});
   }
 
-  AngularFrequency ω0_;
-  AngularFrequency ω1_;
-  AngularFrequency ω2_;
-  AngularFrequency ω3_;
+  Instant const t0_;
+  AngularFrequency const ω0_;
+  AngularFrequency const ω1_;
+  AngularFrequency const ω2_;
+  AngularFrequency const ω3_;
   std::unique_ptr<Degree1> pa_;
   std::unique_ptr<Degree1> pb_;
 };
 
 TEST_F(PoissonSeriesTest, Evaluate) {
-  EXPECT_THAT(pa_->Evaluate(1 * Second),
+  EXPECT_THAT(pa_->Evaluate(t0_ + 1 * Second),
               AlmostEquals(3 + 11 * Sin(1 * Radian) + 15 * Cos(1 * Radian) +
                                27 * Sin(2 * Radian) + 31 * Cos(2 * Radian),
                            0, 1));
-  EXPECT_THAT(pb_->Evaluate(1 * Second),
+  EXPECT_THAT(pb_->Evaluate(t0_ + 1 * Second),
               AlmostEquals(7 + 19 * Sin(1 * Radian) + 23 * Cos(1 * Radian) +
                                35 * Sin(3 * Radian) + 39 * Cos(3 * Radian),
                            32));
@@ -86,48 +89,51 @@ TEST_F(PoissonSeriesTest, Evaluate) {
 TEST_F(PoissonSeriesTest, VectorSpace) {
   {
     auto const identity = +*pa_;
-    EXPECT_THAT(identity.Evaluate(1 * Second),
-                AlmostEquals(pa_->Evaluate(1 * Second), 0));
+    EXPECT_THAT(identity.Evaluate(t0_ + 1 * Second),
+                AlmostEquals(pa_->Evaluate(t0_ + 1 * Second), 0));
   }
   {
     auto const negated = -*pb_;
-    EXPECT_THAT(negated.Evaluate(1 * Second),
-                AlmostEquals(-pb_->Evaluate(1 * Second), 0));
+    EXPECT_THAT(negated.Evaluate(t0_ + 1 * Second),
+                AlmostEquals(-pb_->Evaluate(t0_ + 1 * Second), 0));
   }
   {
     auto const sum = *pa_ + *pb_;
     EXPECT_THAT(
-        sum.Evaluate(1 * Second),
-        AlmostEquals(pa_->Evaluate(1 * Second) + pb_->Evaluate(1 * Second), 1));
+        sum.Evaluate(t0_ + 1 * Second),
+        AlmostEquals(pa_->Evaluate(t0_ + 1 * Second) +
+                     pb_->Evaluate(t0_ + 1 * Second), 1));
   }
   {
     auto const difference = *pa_ - *pb_;
     EXPECT_THAT(
-        difference.Evaluate(1 * Second),
-        AlmostEquals(pa_->Evaluate(1 * Second) - pb_->Evaluate(1 * Second), 0));
+        difference.Evaluate(t0_ + 1 * Second),
+        AlmostEquals(pa_->Evaluate(t0_ + 1 * Second) -
+                     pb_->Evaluate(t0_ + 1 * Second), 0));
   }
   {
     auto const left_product = 3 * *pa_;
-    EXPECT_THAT(left_product.Evaluate(1 * Second),
-                AlmostEquals(3 * pa_->Evaluate(1 * Second), 1));
+    EXPECT_THAT(left_product.Evaluate(t0_ + 1 * Second),
+                AlmostEquals(3 * pa_->Evaluate(t0_ + 1 * Second), 1));
   }
   {
     auto const right_product = *pb_ * 4;
-    EXPECT_THAT(right_product.Evaluate(1 * Second),
-                AlmostEquals(pb_->Evaluate(1 * Second) * 4, 0));
+    EXPECT_THAT(right_product.Evaluate(t0_ + 1 * Second),
+                AlmostEquals(pb_->Evaluate(t0_ + 1 * Second) * 4, 0));
   }
   {
     auto const quotient = *pb_ / 1.5;
-    EXPECT_THAT(quotient.Evaluate(1 * Second),
-                AlmostEquals(pb_->Evaluate(1 * Second) / 1.5, 0, 32));
+    EXPECT_THAT(quotient.Evaluate(t0_ + 1 * Second),
+                AlmostEquals(pb_->Evaluate(t0_ + 1 * Second) / 1.5, 0, 32));
   }
 }
 
 TEST_F(PoissonSeriesTest, Algebra) {
   auto const product = *pa_ * *pb_;
   EXPECT_THAT(
-      product.Evaluate(1 * Second),
-      AlmostEquals(pa_->Evaluate(1 * Second) * pb_->Evaluate(1 * Second), 6));
+      product.Evaluate(t0_ + 1 * Second),
+      AlmostEquals(pa_->Evaluate(t0_ + 1 * Second) *
+                   pb_->Evaluate(t0_ + 1 * Second), 6));
 }
 
 TEST_F(PoissonSeriesTest, Primitive) {
@@ -161,7 +167,7 @@ TEST_F(PoissonSeriesTest, Primitive) {
   };
 
   for (int i = -10; i < 10; ++i) {
-    EXPECT_THAT(actual_primitive.Evaluate(i * Second),
+    EXPECT_THAT(actual_primitive.Evaluate(t0_ + i * Second),
                 AlmostEquals(expected_primitive(i * Second), 0, 6));
   }
 }

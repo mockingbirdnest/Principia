@@ -15,6 +15,7 @@
     <Import Project="..\third_party_zfp.props" />
   </ImportGroup>
   <ItemGroup>
+    <ClInclude Include="apodization_body.hpp" />
     <ClInclude Include="combinatorics.hpp" />
     <ClInclude Include="combinatorics_body.hpp" />
     <ClInclude Include="cbrt.hpp" />
@@ -51,10 +52,12 @@
     <ClInclude Include="root_finders_body.hpp" />
     <ClInclude Include="ulp_distance.hpp" />
     <ClInclude Include="ulp_distance_body.hpp" />
+    <ClInclude Include="apodization.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="apodization_test.cpp" />
     <ClCompile Include="cbrt.cpp" />
     <ClCompile Include="cbrt_test.cpp" />
     <ClCompile Include="combinatorics_test.cpp" />

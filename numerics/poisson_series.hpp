@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <map>
 
+#include "geometry/named_quantities.hpp"
 #include "numerics/polynomial.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -12,6 +13,7 @@ namespace principia {
 namespace numerics {
 namespace internal_poisson_series {
 
+using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Product;
 using quantities::Quotient;
@@ -27,7 +29,7 @@ template<typename Value, int degree_,
 class PoissonSeries {
  public:
   using Polynomial =
-      numerics::PolynomialInMonomialBasis<Value, Time, degree_, Evaluator>;
+      numerics::PolynomialInMonomialBasis<Value, Instant, degree_, Evaluator>;
 
   // TODO(phl): Use designated initializers for this struct once this project
   // can be compiled using c++latest.
@@ -41,13 +43,14 @@ class PoissonSeries {
   PoissonSeries(Polynomial const& aperiodic,
                 PolynomialsByAngularFrequency const& periodic);
 
-  Value Evaluate(Time const& t) const;
+  Value Evaluate(Instant const& t) const;
 
   // The constant term of the result is zero.
   PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
   Primitive() const;
 
  private:
+  Instant origin_;  // Common to all polynomials.
   Polynomial aperiodic_;
   // All the keys in this map are positive.
   PolynomialsByAngularFrequency periodic_;

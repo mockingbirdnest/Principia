@@ -188,6 +188,22 @@ PolynomialInMonomialBasis(Coefficients coefficients)
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
+template<int higher_degree_,
+         template<typename, typename, int> class HigherEvaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+operator PolynomialInMonomialBasis<Value, Argument, higher_degree_,
+                                   HigherEvaluator>() const {
+  static_assert(degree_ <= higher_degree_);
+  using Result = PolynomialInMonomialBasis<Value, Argument, higher_degree_,
+                                           HigherEvaluator>;
+  typename Result::Coefficients higher_coefficients;
+  TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
+      higher_coefficients, coefficients_);
+  return Result(higher_coefficients);
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
 Value PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
 Evaluate(Argument const& argument) const {
   return Evaluator<Value, Argument, degree_>::Evaluate(coefficients_, argument);
@@ -207,22 +223,6 @@ template<typename Value, typename Argument, int degree_,
 constexpr int
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::degree() const {
   return degree_;
-}
-
-template<typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
-template<int higher_degree_,
-         template<typename, typename, int> class HigherEvaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
-operator PolynomialInMonomialBasis<Value, Argument, higher_degree_,
-                                   HigherEvaluator>() const {
-  static_assert(degree_ <= higher_degree_);
-  using Result = PolynomialInMonomialBasis<Value, Argument, higher_degree_,
-                                           HigherEvaluator>;
-  typename Result::Coefficients higher_coefficients;
-  TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
-      higher_coefficients, coefficients_);
-  return Result(higher_coefficients);
 }
 
 template<typename Value, typename Argument, int degree_,
@@ -255,19 +255,16 @@ template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>&
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::operator+=(
-    const PolynomialInMonomialBasis& right) {
+    PolynomialInMonomialBasis const& right) {
   *this = *this + right;
   return *this;
 }
 
-template<typename Value,
-         typename Argument,
-         int degree_,
-         template<typename, typename, int>
-         class Evaluator>
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>&
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::operator-=(
-    const PolynomialInMonomialBasis& right) {
+    PolynomialInMonomialBasis const& right) {
   *this = *this - right;
   return *this;
 }
@@ -313,6 +310,22 @@ PolynomialInMonomialBasis(Coefficients coefficients,
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
+template<int higher_degree_,
+         template<typename, typename, int> class HigherEvaluator>
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
+operator PolynomialInMonomialBasis<Value, Point<Argument>, higher_degree_,
+                                   HigherEvaluator>() const {
+  static_assert(degree_ <= higher_degree_);
+  using Result = PolynomialInMonomialBasis<
+                     Value, Point<Argument>, higher_degree_, HigherEvaluator>;
+  typename Result::Coefficients higher_coefficients;
+  TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
+      higher_coefficients, coefficients_);
+  return Result(higher_coefficients);
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
 Value PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 Evaluate(Point<Argument> const& argument) const {
   return Evaluator<Value, Argument, degree_>::Evaluate(
@@ -334,6 +347,59 @@ constexpr int
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 degree() const {
   return degree_;
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+Point<Argument> const&
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
+origin() const {
+  return origin_;
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+template<int order>
+PolynomialInMonomialBasis<
+    Derivative<Value, Argument, order>, Point<Argument>, degree_ - order,
+    Evaluator>
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
+Derivative() const {
+  return PolynomialInMonomialBasis<
+             quantities::Derivative<Value, Argument, order>, Point<Argument>,
+             degree_ - order, Evaluator>(
+             TupleDerivation<Coefficients, order>::Derive(coefficients_));
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<
+    Primitive<Value, Argument>, Point<Argument>, degree_ + 1, Evaluator>
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
+Primitive() const {
+  return PolynomialInMonomialBasis<
+             quantities::Primitive<Value, Argument>, Point<Argument>,
+             degree_ + 1, Evaluator>(
+             TupleIntegration<Argument, Coefficients>::
+                Integrate(coefficients_));
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>&
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
+operator+=(PolynomialInMonomialBasis const& right) {
+  *this = *this + right;
+  return *this;
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>&
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
+operator-=(PolynomialInMonomialBasis const& right) {
+  *this = *this - right;
+  return *this;
 }
 
 template<typename Value, typename Argument, int degree_,
