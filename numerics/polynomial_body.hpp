@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/not_constructible.hpp"
+#include "base/traits.hpp"
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
@@ -16,6 +17,7 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
+using base::is_instance_of_v;
 using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
@@ -321,7 +323,7 @@ operator PolynomialInMonomialBasis<Value, Point<Argument>, higher_degree_,
   typename Result::Coefficients higher_coefficients;
   TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
       higher_coefficients, coefficients_);
-  return Result(higher_coefficients);
+  return Result(higher_coefficients, origin_);
 }
 
 template<typename Value, typename Argument, int degree_,
@@ -368,7 +370,8 @@ Derivative() const {
   return PolynomialInMonomialBasis<
              quantities::Derivative<Value, Argument, order>, Point<Argument>,
              degree_ - order, Evaluator>(
-             TupleDerivation<Coefficients, order>::Derive(coefficients_));
+             TupleDerivation<Coefficients, order>::Derive(coefficients_),
+             origin_);
 }
 
 template<typename Value, typename Argument, int degree_,
@@ -381,7 +384,8 @@ Primitive() const {
              quantities::Primitive<Value, Argument>, Point<Argument>,
              degree_ + 1, Evaluator>(
              TupleIntegration<Argument, Coefficients>::
-                Integrate(coefficients_));
+                Integrate(coefficients_),
+             origin_);
 }
 
 template<typename Value, typename Argument, int degree_,
@@ -445,8 +449,14 @@ template<typename Value, typename Argument, int rdegree_,
 constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
 operator-(PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
               right) {
-  return PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>(
-      -right.coefficients_);
+  if constexpr (is_instance_of_v<Point, Argument>) {
+    return PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>(
+        -right.coefficients_,
+        right.origin_);
+  } else {
+    return PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>(
+        -right.coefficients_);
+  }
 }
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
@@ -458,9 +468,17 @@ operator+(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
-  return PolynomialInMonomialBasis<Value, Argument,
-                                   std::max(ldegree_, rdegree_), Evaluator>(
-      left.coefficients_ + right.coefficients_);
+  if constexpr (is_instance_of_v<Point, Argument>) {
+    CHECK_EQ(left.origin_, right.origin_);
+    return PolynomialInMonomialBasis<Value, Argument,
+                                     std::max(ldegree_, rdegree_), Evaluator>(
+        left.coefficients_ + right.coefficients_,
+        left.origin_);
+  } else {
+    return PolynomialInMonomialBasis<Value, Argument,
+                                     std::max(ldegree_, rdegree_), Evaluator>(
+        left.coefficients_ + right.coefficients_);
+  }
 }
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
@@ -472,9 +490,17 @@ operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
-  return PolynomialInMonomialBasis<Value, Argument,
-                                   std::max(ldegree_, rdegree_), Evaluator>(
-      left.coefficients_ - right.coefficients_);
+  if constexpr (is_instance_of_v<Point, Argument>) {
+    CHECK_EQ(left.origin_, right.origin_);
+    return PolynomialInMonomialBasis<Value, Argument,
+                                     std::max(ldegree_, rdegree_), Evaluator>(
+        left.coefficients_ - right.coefficients_,
+        left.origin_);
+  } else {
+    return PolynomialInMonomialBasis<Value, Argument,
+                                     std::max(ldegree_, rdegree_), Evaluator>(
+        left.coefficients_ - right.coefficients_);
+  }
 }
 
 template<typename Scalar,
@@ -486,8 +512,14 @@ PolynomialInMonomialBasis<Product<Scalar, Value>, Argument,
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right) {
-  return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_,
-                                   Evaluator>(left * right.coefficients_);
+  if constexpr (is_instance_of_v<Point, Argument>) {
+    return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_,
+                                     Evaluator>(left * right.coefficients_,
+                                                right.origin_);
+  } else {
+    return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_,
+                                     Evaluator>(left * right.coefficients_);
+  }
 }
 
 template<typename Scalar,
@@ -499,8 +531,14 @@ PolynomialInMonomialBasis<Product<Value, Scalar>, Argument,
 operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
-  return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_,
-                                   Evaluator>(left.coefficients_ * right);
+  if constexpr (is_instance_of_v<Point, Argument>) {
+    return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_,
+                                     Evaluator>(left.coefficients_ * right,
+                                                left.origin_);
+  } else {
+    return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_,
+                                     Evaluator>(left.coefficients_ * right);
+  }
 }
 
 template<typename Scalar,
@@ -512,8 +550,14 @@ PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument,
 operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
-  return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_,
-                                   Evaluator>(left.coefficients_ / right);
+  if constexpr (is_instance_of_v<Point, Argument>) {
+    return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_,
+                                     Evaluator>(left.coefficients_ / right,
+                                                left.origin_);
+  } else {
+    return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_,
+                                     Evaluator>(left.coefficients_ / right);
+  }
 }
 
 template<typename LValue, typename RValue,
@@ -527,9 +571,17 @@ operator*(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
-  return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
-                                   ldegree_ + rdegree_, Evaluator>(
-             left.coefficients_ * right.coefficients_);
+  if constexpr (is_instance_of_v<Point, Argument>) {
+    CHECK_EQ(left.origin_, right.origin_);
+    return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
+                                     ldegree_ + rdegree_, Evaluator>(
+               left.coefficients_ * right.coefficients_,
+               left.origin_);
+  } else {
+    return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
+                                     ldegree_ + rdegree_, Evaluator>(
+               left.coefficients_ * right.coefficients_);
+  }
 }
 
 }  // namespace internal_polynomial

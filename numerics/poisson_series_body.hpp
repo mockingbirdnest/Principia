@@ -9,6 +9,7 @@
 #include <optional>
 
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -18,6 +19,7 @@ using quantities::Cos;
 using quantities::Infinity;
 using quantities::Primitive;
 using quantities::Sin;
+using quantities::si::Radian;
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -37,8 +39,10 @@ AngularFrequencyPrimitive(
   if constexpr (degree_ == 0) {
     return first_part;
   } else {
-    auto const sin_polynomial = -polynomials.cos.Derivative<1>() / ω * Radian;
-    auto const cos_polynomial = polynomials.sin.Derivative<1>() / ω * Radian;
+    auto const sin_polynomial =
+        -polynomials.cos.template Derivative<1>() / ω * Radian;
+    auto const cos_polynomial =
+        polynomials.sin.template Derivative<1>() / ω * Radian;
     auto const second_part =
         AngularFrequencyPrimitive<Value, degree_ - 1, Evaluator>(
             ω,

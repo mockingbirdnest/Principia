@@ -200,6 +200,46 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
  private:
   Coefficients coefficients_;
   Point<Argument> origin_;
+
+  template<typename V, typename A, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<V, A, r, E>
+  friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& right);
+  template<typename V, typename A, int l, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
+  friend operator+(PolynomialInMonomialBasis<V, A, l, E> const& left,
+                   PolynomialInMonomialBasis<V, A, r, E> const& right);
+  template<typename V, typename A, int l, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
+  friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
+                   PolynomialInMonomialBasis<V, A, r, E> const& right);
+  template<typename S,
+           typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<Product<S, V>, A, d, E>
+  friend operator*(S const& left,
+                   PolynomialInMonomialBasis<V, A, d, E> const& right);
+  template<typename S,
+           typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<Product<V, S>, A, d, E>
+  friend operator*(PolynomialInMonomialBasis<V, A, d, E> const& left,
+                   S const& right);
+  template<typename S,
+           typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<Quotient<V, S>, A, d, E>
+  friend operator/(PolynomialInMonomialBasis<V, A, d, E> const& left,
+                   S const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<Product<L, R>, A, l + r, E>
+  friend operator*(
+      PolynomialInMonomialBasis<L, A, l, E> const& left,
+      PolynomialInMonomialBasis<R, A, r, E> const& right);
 };
 
 // Vector space of polynomials.

@@ -133,7 +133,7 @@ TEST_F(PoissonSeriesTest, Algebra) {
   EXPECT_THAT(
       product.Evaluate(t0_ + 1 * Second),
       AlmostEquals(pa_->Evaluate(t0_ + 1 * Second) *
-                   pb_->Evaluate(t0_ + 1 * Second), 6));
+                   pb_->Evaluate(t0_ + 1 * Second), 38));
 }
 
 TEST_F(PoissonSeriesTest, Primitive) {
