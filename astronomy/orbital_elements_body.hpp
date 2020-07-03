@@ -409,7 +409,7 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
 inline void OrbitalElements::ComputeIntervals() {
   for (auto const& r : distances_) {
     distance_interval_.Include(r);
-  } 
+  }
   for (auto const& elements : mean_classical_elements_) {
     mean_semimajor_axis_interval_.Include(elements.semimajor_axis);
     mean_eccentricity_interval_.Include(elements.eccentricity);
