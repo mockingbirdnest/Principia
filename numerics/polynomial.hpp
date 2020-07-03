@@ -95,8 +95,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
       Primitive<Value, Argument>, Argument, degree_ + 1, Evaluator>
   Primitive() const;
 
-  PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
-  PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
+  PolynomialInMonomialBasis& operator+=(PolynomialInMonomialBasis const& right);
+  PolynomialInMonomialBasis& operator-=(PolynomialInMonomialBasis const& right);
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
@@ -163,12 +163,34 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Point<Argument> const& origin);
 
+  // A polynomial may be explicitly converted to a higher degree (possibly with
+  // a different evaluator).
+  template<int higher_degree_,
+           template<typename, typename, int> class HigherEvaluator>
+  explicit operator PolynomialInMonomialBasis<
+      Value, Point<Argument>, higher_degree_, HigherEvaluator>() const;
+
   FORCE_INLINE(inline) Value
   Evaluate(Point<Argument> const& argument) const override;
   FORCE_INLINE(inline) Derivative<Value, Argument>
   EvaluateDerivative(Point<Argument> const& argument) const override;
 
   constexpr int degree() const override;
+  Point<Argument> const& origin() const;
+
+  template<int order = 1>
+  PolynomialInMonomialBasis<
+      Derivative<Value, Argument, order>, Point<Argument>, degree_ - order,
+      Evaluator>
+  Derivative() const;
+
+  // The constant term of the result is zero.
+  PolynomialInMonomialBasis<
+      Primitive<Value, Argument>, Point<Argument>, degree_ + 1, Evaluator>
+  Primitive() const;
+
+  PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
+  PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
@@ -178,6 +200,46 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
  private:
   Coefficients coefficients_;
   Point<Argument> origin_;
+
+  template<typename V, typename A, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<V, A, r, E>
+  friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& right);
+  template<typename V, typename A, int l, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
+  friend operator+(PolynomialInMonomialBasis<V, A, l, E> const& left,
+                   PolynomialInMonomialBasis<V, A, r, E> const& right);
+  template<typename V, typename A, int l, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
+  friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
+                   PolynomialInMonomialBasis<V, A, r, E> const& right);
+  template<typename S,
+           typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<Product<S, V>, A, d, E>
+  friend operator*(S const& left,
+                   PolynomialInMonomialBasis<V, A, d, E> const& right);
+  template<typename S,
+           typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<Product<V, S>, A, d, E>
+  friend operator*(PolynomialInMonomialBasis<V, A, d, E> const& left,
+                   S const& right);
+  template<typename S,
+           typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<Quotient<V, S>, A, d, E>
+  friend operator/(PolynomialInMonomialBasis<V, A, d, E> const& left,
+                   S const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<Product<L, R>, A, l + r, E>
+  friend operator*(
+      PolynomialInMonomialBasis<L, A, l, E> const& left,
+      PolynomialInMonomialBasis<R, A, r, E> const& right);
 };
 
 // Vector space of polynomials.

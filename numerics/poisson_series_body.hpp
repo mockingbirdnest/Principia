@@ -9,6 +9,7 @@
 #include <optional>
 
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -18,12 +19,12 @@ using quantities::Cos;
 using quantities::Infinity;
 using quantities::Primitive;
 using quantities::Sin;
+using quantities::si::Radian;
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-typename PoissonSeries<Primitive<Value, Time>,
-                       degree_ + 1,
-                       Evaluator>::Polynomials
+typename PoissonSeries<Primitive<Value, Time>, degree_ + 1, Evaluator>::
+    Polynomials
 AngularFrequencyPrimitive(
     AngularFrequency const& ω,
     typename PoissonSeries<Value, degree_, Evaluator>::Polynomials const&
@@ -33,13 +34,15 @@ AngularFrequencyPrimitive(
 
   // Integration by parts.
   typename Result::Polynomials const first_part{
-      /*sin=*/Result::Polynomial(polynomials.cos / ω * Radian),
-      /*cos=*/Result::Polynomial(-polynomials.sin / ω * Radian)};
+      /*sin=*/typename Result::Polynomial(polynomials.cos / ω * Radian),
+      /*cos=*/typename Result::Polynomial(-polynomials.sin / ω * Radian)};
   if constexpr (degree_ == 0) {
     return first_part;
   } else {
-    auto const sin_polynomial = -polynomials.cos.Derivative<1>() / ω * Radian;
-    auto const cos_polynomial = polynomials.sin.Derivative<1>() / ω * Radian;
+    auto const sin_polynomial =
+        -polynomials.cos.template Derivative<1>() / ω * Radian;
+    auto const cos_polynomial =
+        polynomials.sin.template Derivative<1>() / ω * Radian;
     auto const second_part =
         AngularFrequencyPrimitive<Value, degree_ - 1, Evaluator>(
             ω,
@@ -55,37 +58,45 @@ template<typename Value, int degree_,
 PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
     Polynomial const& aperiodic,
     PolynomialsByAngularFrequency const& periodic)
-    : aperiodic_(aperiodic) {
+    : origin_(aperiodic.origin()),
+      aperiodic_(aperiodic) {
   // The |periodic| map may have elements with positive or negative angular
   // frequencies.  Normalize our member variable to only have positive angular
   // frequencies.
   for (auto it = periodic.crbegin(); it != periodic.crend(); ++it) {
     auto const ω = it->first;
+    auto const polynomials = it->second;
+
+    // All polynomials must have the same origin.
+    CHECK_EQ(origin_, polynomials.sin.origin());
+    CHECK_EQ(origin_, polynomials.cos.origin());
+
     if (ω < AngularFrequency{}) {
       auto const positive_it = periodic_.find(-ω);
       if (positive_it == periodic_.cend()) {
         periodic_.emplace(-ω,
-                          Polynomials{/*sin=*/-it->second.sin,
-                                      /*cos=*/it->second.cos});
+                          Polynomials{/*sin=*/-polynomials.sin,
+                                      /*cos=*/polynomials.cos});
       } else {
-        positive_it->second.sin -= it->second.sin;
-        positive_it->second.cos += it->second.cos;
+        positive_it->second.sin -= polynomials.sin;
+        positive_it->second.cos += polynomials.cos;
       }
     } else if (ω > AngularFrequency{}) {
       periodic_.insert(periodic_.cbegin(), *it);
     } else {
-      aperiodic_ += it->second.cos;
+      aperiodic_ += polynomials.cos;
     }
   }
 }
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-Value PoissonSeries<Value, degree_, Evaluator>::Evaluate(Time const& t) const {
+Value PoissonSeries<Value, degree_, Evaluator>::Evaluate(
+    Instant const& t) const {
   Value result = aperiodic_.Evaluate(t);
   for (auto const& [ω, polynomials] : periodic_) {
-    result += polynomials.sin.Evaluate(t) * Sin(ω * t) +
-              polynomials.cos.Evaluate(t) * Cos(ω * t);
+    result += polynomials.sin.Evaluate(t) * Sin(ω * (t - origin_)) +
+              polynomials.cos.Evaluate(t) * Cos(ω * (t - origin_));
   }
   return result;
 }
