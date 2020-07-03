@@ -15,6 +15,7 @@
     <Import Project="..\third_party_zfp.props" />
   </ImportGroup>
   <ItemGroup>
+    <ClInclude Include="apodization_body.hpp" />
     <ClInclude Include="combinatorics.hpp" />
     <ClInclude Include="combinatorics_body.hpp" />
     <ClInclude Include="cbrt.hpp" />
@@ -41,6 +42,8 @@
     <ClInclude Include="newhall_body.hpp" />
     <ClInclude Include="pid.hpp" />
     <ClInclude Include="pid_body.hpp" />
+    <ClInclude Include="poisson_series.hpp" />
+    <ClInclude Include="poisson_series_body.hpp" />
     <ClInclude Include="polynomial.hpp" />
     <ClInclude Include="polynomial_body.hpp" />
     <ClInclude Include="polynomial_evaluators.hpp" />
@@ -49,10 +52,12 @@
     <ClInclude Include="root_finders_body.hpp" />
     <ClInclude Include="ulp_distance.hpp" />
     <ClInclude Include="ulp_distance_body.hpp" />
+    <ClInclude Include="apodization.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="apodization_test.cpp" />
     <ClCompile Include="cbrt.cpp" />
     <ClCompile Include="cbrt_test.cpp" />
     <ClCompile Include="combinatorics_test.cpp" />
@@ -71,6 +76,7 @@
     <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc" />
     <ClCompile Include="newhall_test.cpp" />
     <ClCompile Include="pid_test.cpp" />
+    <ClCompile Include="poisson_series_test.cpp" />
     <ClCompile Include="polynomial_evaluators_test.cpp" />
     <ClCompile Include="polynomial_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />

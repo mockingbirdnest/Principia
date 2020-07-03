@@ -152,6 +152,20 @@ TEST_F(PolynomialTest, Evaluate17) {
                                                    0 * Metre}), 0));
 }
 
+// Check that a conversion to increase the degree works.
+TEST_F(PolynomialTest, Conversion) {
+  P2V const p2v(coefficients_);
+  P17 const p17 = P17(p2v);
+  Displacement<World> const d = p17.Evaluate(0.5 * Second);
+  Velocity<World> const v = p17.EvaluateDerivative(0.5 * Second);
+  EXPECT_THAT(d, AlmostEquals(Displacement<World>({0.25 * Metre,
+                                                   0.5 * Metre,
+                                                   1 * Metre}), 0));
+  EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
+                                               1 * Metre / Second,
+                                               0 * Metre / Second}), 0));
+}
+
 TEST_F(PolynomialTest, VectorSpace) {
   P2V const p2v(coefficients_);
   {
@@ -242,6 +256,20 @@ TEST_F(PolynomialTest, Derivative) {
             p3.Derivative<2>().Evaluate(0 * Second));
   EXPECT_EQ(6 * Ampere / Second / Second / Second,
             p3.Derivative<3>().Evaluate(0 * Second));
+}
+
+TEST_F(PolynomialTest, Primitive) {
+  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
+  P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
+
+  EXPECT_THAT(p2.Primitive().Evaluate(0 * Second),
+              AlmostEquals(0 * Kelvin * Second, 0));
+  EXPECT_THAT(p2.Primitive().Evaluate(1 * Second),
+              AlmostEquals(-1.0 / 6.0 * Kelvin * Second, 5));
+  EXPECT_THAT(p2.Primitive().Evaluate(-1 * Second),
+              AlmostEquals(19.0 / 6.0 * Kelvin * Second, 1));
+  EXPECT_THAT(p2.Primitive().Evaluate(2 * Second),
+              AlmostEquals(-40.0 / 3.0 * Kelvin * Second, 1));
 }
 
 TEST_F(PolynomialTest, EvaluateConstant) {

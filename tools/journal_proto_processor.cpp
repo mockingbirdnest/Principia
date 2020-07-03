@@ -198,16 +198,15 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
 
   FieldOptions const& options = descriptor->options();
   field_cs_type_[descriptor] = message_type_name + "[]";
-  // TODO(phl): Use Contains instead of empty for all the set/map predicates.
-  if (cs_custom_marshaler_name_[message_type].empty()) {
+  if (Contains(cs_custom_marshaler_name_, message_type)) {
+    field_cs_custom_marshaler_[descriptor] =
+        "RepeatedMarshaler<" + message_type_name + ", " +
+        cs_custom_marshaler_name_[message_type] + ">";
+  } else {
     // This wouldn't be hard, we'd need another RepeatedMarshaller that copies
     // structs, but we don't need it yet.
     LOG(FATAL) << "Repeated messages with an element that does not have a "
                   "custom marshaller are not yet implemented.";
-  } else {
-    field_cs_custom_marshaler_[descriptor] =
-        "RepeatedMarshaler<" + message_type_name + ", " +
-        cs_custom_marshaler_name_[message_type] + ">";
   }
   field_cxx_type_[descriptor] = message_type_name + " const* const*";
 
@@ -289,14 +288,14 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
   if (Contains(interchange_, descriptor)) {
     // This may be null as we may be called on a scalar field.
     Descriptor const* message_type = descriptor->message_type();
-    if (cs_custom_marshaler_name_[message_type].empty()) {
-      field_cs_custom_marshaler_[descriptor] =
-          custom_marshaler_generic_name(cs_unboxed_type);
-    } else {
+    if (Contains(cs_custom_marshaler_name_, message_type)) {
       // This wouldn't be hard, we'd need another OptionalMarshaller that calls
       // the element's marshaler, but we don't need it yet.
       LOG(FATAL) << "Optional messages with an element that does have a custom "
                     "marshaller are not yet implemented.";
+    } else {
+      field_cs_custom_marshaler_[descriptor] =
+          custom_marshaler_generic_name(cs_unboxed_type);
     }
     // For fields of interchange messages we can use a |T?| as the field is not
     // the part being marshaled, it is the entire interchange message.
@@ -529,7 +528,7 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   field_cs_type_[descriptor] = message_type_name;
   field_cxx_type_[descriptor] = message_type_name;
 
-  if (!cs_custom_marshaler_name_[message_type].empty()) {
+  if (Contains(cs_custom_marshaler_name_, message_type)) {
     if (Contains(in_, descriptor)) {
       field_cs_custom_marshaler_[descriptor] =
           cs_custom_marshaler_name_[message_type];
@@ -1045,9 +1044,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
   // Start by processing the fields.  We need to know if any of them has a
   // custom marshaler to decide whether we generate a struct or a class.
-  // TODO(phl): Make this const once we generate the marshaler for
-  // BodyParameters.
-  bool has_custom_marshaler =
+  bool const has_custom_marshaler =
       options.HasExtension(journal::serialization::custom_marshaler);
   bool needs_custom_marshaler = false;
   for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -1055,21 +1052,13 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     interchange_.insert(field_descriptor);
     ProcessField(field_descriptor);
     if (!has_custom_marshaler &&
-        !field_cs_custom_marshaler_[field_descriptor].empty()) {
+        Contains(field_cs_custom_marshaler_, field_descriptor)) {
       needs_custom_marshaler = true;
     }
   }
   if (has_custom_marshaler) {
-    // TODO(phl): Remove this hack once we generate the marshaler for
-    // BodyParameters.
-    if (options.GetExtension(journal::serialization::custom_marshaler) ==
-        "none") {
-      has_custom_marshaler = false;
-      needs_custom_marshaler = false;
-    } else {
-      cs_custom_marshaler_name_[descriptor] =
-          options.GetExtension(journal::serialization::custom_marshaler);
-    }
+    cs_custom_marshaler_name_[descriptor] =
+        options.GetExtension(journal::serialization::custom_marshaler);
   } else if (needs_custom_marshaler) {
     cs_custom_marshaler_name_[descriptor] = name + "Marshaler";
   }
@@ -1137,11 +1126,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
                 field_cxx_indirect_member_get_fn_[field_descriptor](
                     serialize_member_name)));
 
-    if (field_cs_private_type_[field_descriptor].empty()) {
-      cs_interchange_type_declaration_[descriptor] +=
-          "  public " + field_cs_type_[field_descriptor] + " " +
-          field_descriptor_name + ";\n";
-    } else {
+    if (Contains(field_cs_private_type_, field_descriptor)) {
       std::string const field_private_member_name = field_descriptor_name + "_";
       std::vector<std::string> fn_arguments = {field_private_member_name};
       cs_interchange_type_declaration_[descriptor] +=
@@ -1155,6 +1140,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
           "    " + field_cs_private_setter_fn_[field_descriptor](fn_arguments) +
           "\n" +
           "  }\n";
+    } else {
+      cs_interchange_type_declaration_[descriptor] +=
+          "  public " + field_cs_type_[field_descriptor] + " " +
+          field_descriptor_name + ";\n";
     }
     cxx_interchange_type_declaration_[descriptor] +=
         "  " + field_cxx_type_[field_descriptor] + " " + field_descriptor_name +
@@ -1163,17 +1152,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     // If we need to generate a marshaler, do it now.
     if (needs_custom_marshaler) {
       cs_representation_type_declaration_[descriptor] += "    public ";
-      if (field_cs_custom_marshaler_[field_descriptor].empty()) {
-        cs_representation_type_declaration_[descriptor] +=
-            field_cs_type_[field_descriptor] + " " + field_descriptor_name +
-            ";\n";
-        cs_managed_to_native_definition_[descriptor] +=
-            "        " + field_descriptor_name + " = value." +
-            field_descriptor_name + ",\n";
-        cs_native_to_managed_definition_[descriptor] +=
-            "        " + field_descriptor_name + " = representation." +
-            field_descriptor_name + ",\n";
-      } else {
+      if (Contains(field_cs_custom_marshaler_, field_descriptor)) {
         cs_representation_type_declaration_[descriptor] +=
             "IntPtr " + field_descriptor_name + ";\n";
         cs_clean_up_native_definition_[descriptor] +=
@@ -1191,6 +1170,16 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
             ".GetInstance(null).MarshalNativeToManaged(representation." +
             field_descriptor_name + ") as " + field_cs_type_[field_descriptor] +
             ",\n";
+      } else {
+        cs_representation_type_declaration_[descriptor] +=
+            field_cs_type_[field_descriptor] + " " + field_descriptor_name +
+            ";\n";
+        cs_managed_to_native_definition_[descriptor] +=
+            "        " + field_descriptor_name + " = value." +
+            field_descriptor_name + ",\n";
+        cs_native_to_managed_definition_[descriptor] +=
+            "        " + field_descriptor_name + " = representation." +
+            field_descriptor_name + ",\n";
       }
     }
   }
