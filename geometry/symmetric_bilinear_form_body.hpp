@@ -21,6 +21,7 @@ using quantities::Angle;
 using quantities::ArcCos;
 using quantities::Cos;
 using quantities::Sqrt;
+using quantities::Square;
 using quantities::si::Radian;
 
 template<typename Scalar,
@@ -149,6 +150,7 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
     return {form, Rotation<Eigenframe, Frame>::Identity()};
   }
 
+  // When det_B is close to -2 or 2, two of the eigenvalues are close.
   R3x3Matrix<double> const B = A_minus_qI / p;
   double const det_B = B.Determinant();
   Angle const θ = ArcCos(std::clamp(det_B, -2.0, 2.0) * 0.5);
@@ -170,21 +172,38 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
                          {zero, zero, α₂}));
 
   // Use the Cayley-Hamilton theorem to efficiently find the eigenvectors.  The
-  // m matrices contain, in columns, eigenvectors for the corresponding α.
-  // However it's possible for a column to be identically 0.  To deal with this
-  // the call to PickEigenvector extracts the column with the largest norm, and
-  // we make sure that the eigenvectors remain orthonormal.
+  // mᵢ matrices contain, in columns, eigenvectors for the corresponding αᵢ.
   R3x3Matrix<Scalar> const A_minus_α₀I = A - α₀ * I;
   R3x3Matrix<Scalar> const A_minus_α₁I = A - α₁ * I;
   R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
-  auto const m₀ = A_minus_α₁I * A_minus_α₂I;
-  auto const m₁ = A_minus_α₂I * A_minus_α₀I;
-  auto const v₀ = Vector<double, Frame>(PickEigenvector(m₀));
-  auto const v₁ = Vector<double, Frame>(PickEigenvector(m₁)).
-                      OrthogonalizationAgainst(v₀);
 
-  Rotation<Eigenframe, Frame> const rotation{v₀, v₁, Wedge(v₀, v₁)};
-  return {form, rotation};
+  // If two eigenvalues are very close, we want to be as precise as possible for
+  // the eigenvector that's not close to the other two.  That happens for the
+  // inertia of an object that is a disc or a needle.  So we locate the third
+  // eigenvalue and read its eigenvector directly from the matrix mᵢ.  The other
+  // eigenvectors are orthogonal, but they may be far from the truth because of
+  // the singularity.
+  auto const m₁ = A_minus_α₂I * A_minus_α₀I;
+  std::unique_ptr<Rotation<Eigenframe, Frame> const> rotation;
+  if (α₁ - α₀ < α₂ - α₁) {
+    auto const m₂ = A_minus_α₀I * A_minus_α₁I;
+    auto const v₂ =
+        Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₂)));
+    auto const v₁ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₁))
+                                  .OrthogonalizationAgainst(v₂));
+    rotation =
+        std::make_unique<Rotation<Eigenframe, Frame>>(Wedge(v₁, v₂), v₁, v₂);
+  } else {
+    auto const m₀ = A_minus_α₁I * A_minus_α₂I;
+    auto const v₀ =
+        Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₀)));
+    auto const v₁ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₁))
+                                  .OrthogonalizationAgainst(v₀));
+    rotation =
+        std::make_unique<Rotation<Eigenframe, Frame>>(v₀, v₁, Wedge(v₀, v₁));
+  }
+
+  return {form, *rotation};
 }
 
 template<typename Scalar,
@@ -212,19 +231,22 @@ template<typename Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 template<typename S>
-R3Element<double>
+R3Element<S>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::PickEigenvector(
     R3x3Matrix<S> const& matrix) {
   static R3Element<double> const e₀{1, 0, 0};
   static R3Element<double> const e₁{0, 1, 0};
   static R3Element<double> const e₂{0, 0, 1};
   std::array<R3Element<S>, 3> vs = {matrix * e₀, matrix * e₁, matrix * e₂};
+
+  // It's possible for a column to be identically 0.  To deal with this we
+  // extract the column with the largest norm.
   std::sort(vs.begin(),
             vs.end(),
             [](R3Element<S> const& left, R3Element<S> const& right) {
               return left.Norm²() < right.Norm²();
             });
-  return NormalizeOrZero(vs.back());
+  return vs.back();
 }
 
 template<typename Frame, template<typename, typename> typename Multivector>
