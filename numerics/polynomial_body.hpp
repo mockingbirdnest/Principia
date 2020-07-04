@@ -469,7 +469,7 @@ operator+(
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
   if constexpr (is_instance_of_v<Point, Argument>) {
-    CHECK_EQ(left.origin_, right.origin_);
+    CONSTEXPR_CHECK(left.origin_ == right.origin_);
     return PolynomialInMonomialBasis<Value, Argument,
                                      std::max(ldegree_, rdegree_), Evaluator>(
         left.coefficients_ + right.coefficients_,
@@ -491,7 +491,7 @@ operator-(
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
   if constexpr (is_instance_of_v<Point, Argument>) {
-    CHECK_EQ(left.origin_, right.origin_);
+    CONSTEXPR_CHECK(left.origin_ == right.origin_);
     return PolynomialInMonomialBasis<Value, Argument,
                                      std::max(ldegree_, rdegree_), Evaluator>(
         left.coefficients_ - right.coefficients_,
@@ -572,7 +572,7 @@ operator*(
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
   if constexpr (is_instance_of_v<Point, Argument>) {
-    CHECK_EQ(left.origin_, right.origin_);
+    CONSTEXPR_CHECK(left.origin_ == right.origin_);
     return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                      ldegree_ + rdegree_, Evaluator>(
                left.coefficients_ * right.coefficients_,
