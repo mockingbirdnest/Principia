@@ -245,11 +245,11 @@ TEST_F(SymmetricBilinearFormTest, AnticommutatorDiagonalization) {
               Componentwise(0, 1, VanishesBefore(1, 1)));
 
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(0)),
-              Componentwise(0, -1, 0));
+              Componentwise(0, 1, 0));
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(1)),
               Componentwise(0, 0, -1));
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(2)),
-              Componentwise(1, 0, 0));
+              Componentwise(-1, 0, 0));
 }
 
 TEST_F(SymmetricBilinearFormTest, InnerProductForm) {
@@ -353,14 +353,14 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                                     0.68385298338325629274});
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₀),
                 Componentwise(AlmostEquals(1, 0),
-                              VanishesBefore(1, 1),
+                              VanishesBefore(1, 0),
                               VanishesBefore(1, 1)));
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₁),
                 Componentwise(VanishesBefore(1, 0),
                               AlmostEquals(1, 0),
-                              VanishesBefore(1, 1)));
+                              VanishesBefore(1, 0)));
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₂),
-                Componentwise(VanishesBefore(1, 0),
+                Componentwise(VanishesBefore(1, 2),
                               VanishesBefore(1, 2),
                               AlmostEquals(1, 0)));
   }
@@ -433,7 +433,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
 
   // A case with two eigenvalues that are very close (exact relative error
   // 2e-15) that used to yield a non-unit quaternion because of a missing
-  // normalization.
+  // normalization.  Found in game in #2611.
   {
     auto const f = MakeSymmetricBilinearForm<World>(
         R3x3Matrix<double>({{+6.25360854308065672e+00,
@@ -457,21 +457,59 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     // eigenvectors are: that's because the object is very nearly a disc, and
     // our computation yields eigenvectors that are roughly 45° from the real
     // ones.  But at least they are in the right plane and determine a rotation
-    // that correctly aligns the dominant eigenvector.
+    // that correctly aligns the isolated eigenvector.
     EXPECT_THAT(f_eigensystem.rotation(e₀),
                 Componentwise(
                     AbsoluteErrorFrom(-0.71267592684216601514, IsNear(0.7_⑴)),
-                    AbsoluteErrorFrom(0.086267747252993862323, IsNear(0.01_⑴)),
+                    AbsoluteErrorFrom(+0.086267747252993862323, IsNear(0.01_⑴)),
                     AbsoluteErrorFrom(-0.69616872888945048034, IsNear(0.3_⑴))));
     EXPECT_THAT(f_eigensystem.rotation(e₁),
                 Componentwise(
                     AbsoluteErrorFrom(-0.69988076924532898781, IsNear(0.3_⑴)),
                     AbsoluteErrorFrom(-0.02018794239465783510, IsNear(0.07_⑴)),
-                    AbsoluteErrorFrom( 0.71397433835008141314, IsNear(0.7_⑴))));
+                    AbsoluteErrorFrom(+0.71397433835008141314, IsNear(0.7_⑴))));
     EXPECT_THAT(f_eigensystem.rotation(e₂),
-                Componentwise(AlmostEquals(0.04753874357012595212, 10),
-                              AlmostEquals(0.99606742882485799451, 1),
-                              AlmostEquals(0.07476459786563599011, 4)));
+                Componentwise(AlmostEquals(+0.04753874357012595212, 10),
+                              AlmostEquals(+0.99606742882485799451, 1),
+                              AlmostEquals(+0.07476459786563599011, 4)));
+  }
+
+  // A case similar to the previous one, but constructed so that the two largest
+  // eigenvalues that are very close (a needle).
+  {
+    auto const f = MakeSymmetricBilinearForm<World>(
+        R3x3Matrix<double>({{+3.02958892130780040082,
+                             +0.34454179629510833170,
+                             -3.74544524094010311734},
+                            {+0.34454179629510833170,
+                             +9.98296957696546981827,
+                             +0.18513433665111470179},
+                            {-3.74544524094010311734,
+                             +0.18513433665111470179,
+                             +7.98744150172682978089}}));
+    auto const f_eigensystem = f.Diagonalize<Eigenworld>();
+
+    EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
+                AlmostEquals(1.0, 0)) << f;
+    Vector<double, Eigenworld> const e₀({1, 0, 0});
+    Vector<double, Eigenworld> const e₁({0, 1, 0});
+    Vector<double, Eigenworld> const e₂({0, 0, 1});
+
+    // Same comment as above regarding the last two eigenvectors.
+    EXPECT_THAT(f_eigensystem.rotation(e₀),
+                Componentwise(AlmostEquals(+0.88005120297326585654, 1),
+                              AlmostEquals(-0.04350022098854655144, 1),
+                              AlmostEquals(+0.47288223789782508101, 2)));
+    EXPECT_THAT(f_eigensystem.rotation(e₁),
+                Componentwise(
+                    AbsoluteErrorFrom(-0.42509236497268917818, IsNear(0.07_⑴)),
+                    AbsoluteErrorFrom(+0.37170808088366222608, IsNear(1.1_⑴)),
+                    AbsoluteErrorFrom(+0.82530575173550731715, IsNear(0.2_⑴))));
+    EXPECT_THAT(f_eigensystem.rotation(e₂),
+                Componentwise(
+                    AbsoluteErrorFrom(+0.21167513171658507292, IsNear(0.1_⑴)),
+                    AbsoluteErrorFrom(+0.92732994849715299942, IsNear(1.6_⑴)),
+                    AbsoluteErrorFrom(-0.30863053191969508327, IsNear(0.3_⑴))));
   }
 }
 
