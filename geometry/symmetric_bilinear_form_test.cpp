@@ -240,11 +240,11 @@ TEST_F(SymmetricBilinearFormTest, AnticommutatorDiagonalization) {
               Componentwise(0, 1, VanishesBefore(1, 1)));
 
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(0)),
-              Componentwise(0, 1, 0));
+              Componentwise(0, -1, 0));
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(1)),
               Componentwise(0, 0, -1));
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(2)),
-              Componentwise(-1, 0, 0));
+              Componentwise(1, 0, 0));
 }
 
 TEST_F(SymmetricBilinearFormTest, InnerProductForm) {
@@ -348,14 +348,14 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                                     0.68385298338325629274});
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₀),
                 Componentwise(AlmostEquals(1, 0),
-                              VanishesBefore(1, 0),
+                              VanishesBefore(1, 1),
                               VanishesBefore(1, 1)));
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₁),
                 Componentwise(VanishesBefore(1, 0),
                               AlmostEquals(1, 0),
-                              VanishesBefore(1, 0)));
+                              VanishesBefore(1, 1)));
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₂),
-                Componentwise(VanishesBefore(1, 1),
+                Componentwise(VanishesBefore(1, 0),
                               VanishesBefore(1, 2),
                               AlmostEquals(1, 0)));
   }
@@ -420,6 +420,25 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                             {+5.70775558185911450e+02,
                              +8.67180777241129135e+02,
                              +9.56737022360950050e+02}}));
+    auto const f_eigensystem = f.Diagonalize<Eigenworld>();
+
+    EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
+                AlmostEquals(1.0, 0)) << f;
+  }
+
+  // A case with two eigenvalues that are very close that used to yield a non-
+  // unit quaternion because of a missing normalization.
+  {
+    auto const f = MakeSymmetricBilinearForm<World>(
+        R3x3Matrix<double>({{+6.25360854308065672e+00,
+                             +2.24243333089292812e-01,
+                             +1.68316543009972008e-02},
+                            {+2.24243333089292812e-01,
+                             +1.09414207983843497e+01,
+                             +3.52669451554594282e-01},
+                            {+1.68316543009972008e-02,
+                             +3.52669451554594282e-01,
+                             +6.26937749903824937e+00}}));
     auto const f_eigensystem = f.Diagonalize<Eigenworld>();
 
     EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
