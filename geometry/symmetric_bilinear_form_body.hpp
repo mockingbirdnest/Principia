@@ -21,6 +21,7 @@ using quantities::Angle;
 using quantities::ArcCos;
 using quantities::Cos;
 using quantities::Sqrt;
+using quantities::Square;
 using quantities::si::Radian;
 
 template<typename Scalar,
@@ -177,12 +178,11 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
   R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
 
   // If two eigenvalues are very close, we want to be as precise as possible for
-  // the eignvector that's not close to the other two.  That happens for the
+  // the eigenvector that's not close to the other two.  That happens for the
   // inertia of an object that is a disc or a needle.  So we locate the third
   // eigenvalue and read its eigenvector directly from the matrix mᵢ.  The other
   // eigenvectors are orthogonal, but they may be far from the truth because of
-  // the singularity.  If all three eigenvalues are very close, we have a sphere
-  // and anything goes.
+  // the singularity.
   auto const m₁ = A_minus_α₂I * A_minus_α₀I;
   std::unique_ptr<Rotation<Eigenframe, Frame> const> rotation;
   if (α₁ - α₀ < α₂ - α₁) {
@@ -195,7 +195,6 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
         std::make_unique<Rotation<Eigenframe, Frame>>(Wedge(v₁, v₂), v₁, v₂);
   } else {
     auto const m₀ = A_minus_α₁I * A_minus_α₂I;
-    auto const m₁ = A_minus_α₂I * A_minus_α₀I;
     auto const v₀ =
         Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₀)));
     auto const v₁ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₁))
