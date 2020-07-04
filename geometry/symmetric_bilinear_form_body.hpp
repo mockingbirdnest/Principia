@@ -179,9 +179,9 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
   R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
   auto const m₀ = A_minus_α₁I * A_minus_α₂I;
   auto const m₁ = A_minus_α₂I * A_minus_α₀I;
-  auto const v₀ = Vector<double, Frame>(PickEigenvector(m₀));
-  auto const v₁ = Vector<double, Frame>(PickEigenvector(m₁)).
-                      OrthogonalizationAgainst(v₀);
+  auto const v₀ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₀)));
+  auto const v₁ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₁))
+                                .OrthogonalizationAgainst(v₀));
 
   Rotation<Eigenframe, Frame> const rotation{v₀, v₁, Wedge(v₀, v₁)};
   return {form, rotation};
@@ -212,7 +212,7 @@ template<typename Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 template<typename S>
-R3Element<double>
+R3Element<S>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::PickEigenvector(
     R3x3Matrix<S> const& matrix) {
   static R3Element<double> const e₀{1, 0, 0};
@@ -224,7 +224,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::PickEigenvector(
             [](R3Element<S> const& left, R3Element<S> const& right) {
               return left.Norm²() < right.Norm²();
             });
-  return NormalizeOrZero(vs.back());
+  return vs.back();
 }
 
 template<typename Frame, template<typename, typename> typename Multivector>
