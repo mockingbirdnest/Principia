@@ -475,7 +475,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
   }
 
   // A case similar to the previous one, but constructed so that the two largest
-  // eigenvalues that are very close (a needle).
+  // eigenvalues are very close (a needle).
   {
     auto const f = MakeSymmetricBilinearForm<World>(
         R3x3Matrix<double>({{+3.02958892130780040082,
