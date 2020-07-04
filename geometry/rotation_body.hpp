@@ -83,19 +83,7 @@ int BinaryCodedTernaryDigit(int const n, BinaryCodedTernary const number) {
 
 template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
-    : quaternion_(quaternion) {
-  static double min = 1;
-  static double max = 1;
-  if (quaternion.Norm() < min) {
-    min = quaternion.Norm();
-    LOG(ERROR) << quantities::DebugString(min);
-  }
-  if (quaternion.Norm() > max) {
-    max = quaternion.Norm();
-    LOG(ERROR) << quantities::DebugString(max);
-  }
-  LOG_IF(FATAL, quaternion.Norm() < 0.8)<<quaternion;
-}
+    : quaternion_(quaternion) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar, typename F, typename T, typename>
