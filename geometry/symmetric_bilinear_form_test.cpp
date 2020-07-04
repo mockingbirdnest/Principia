@@ -14,6 +14,8 @@
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -25,10 +27,13 @@ using quantities::Length;
 using quantities::Pow;
 using quantities::Square;
 using quantities::si::Metre;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
+using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
+using testing_utilities::operator""_⑴;
 using ::testing::Eq;
 
 class SymmetricBilinearFormTest : public ::testing::Test {
@@ -423,11 +428,12 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     auto const f_eigensystem = f.Diagonalize<Eigenworld>();
 
     EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
-                AlmostEquals(1.0, 0)) << f;
+                AlmostEquals(1.0, 1)) << f;
   }
 
-  // A case with two eigenvalues that are very close that used to yield a non-
-  // unit quaternion because of a missing normalization.
+  // A case with two eigenvalues that are very close (exact relative error
+  // 2e-15) that used to yield a non-unit quaternion because of a missing
+  // normalization.
   {
     auto const f = MakeSymmetricBilinearForm<World>(
         R3x3Matrix<double>({{+6.25360854308065672e+00,
@@ -443,6 +449,29 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
 
     EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
                 AlmostEquals(1.0, 0)) << f;
+    Vector<double, Eigenworld> const e₀({1, 0, 0});
+    Vector<double, Eigenworld> const e₁({0, 1, 0});
+    Vector<double, Eigenworld> const e₂({0, 0, 1});
+
+    // Real eigenvectors obtained with Mathematica.  Note how bad the first two
+    // eigenvectors are: that's because the object is very nearly a disc, and
+    // our computation yields eigenvectors that are roughly 45° from the real
+    // ones.  But at least they are in the right plane and determine a rotation
+    // that correctly aligns the dominant eigenvector.
+    EXPECT_THAT(f_eigensystem.rotation(e₀),
+                Componentwise(
+                    AbsoluteErrorFrom(-0.71267592684216601514, IsNear(0.7_⑴)),
+                    AbsoluteErrorFrom(0.086267747252993862323, IsNear(0.01_⑴)),
+                    AbsoluteErrorFrom(-0.69616872888945048034, IsNear(0.3_⑴))));
+    EXPECT_THAT(f_eigensystem.rotation(e₁),
+                Componentwise(
+                    AbsoluteErrorFrom(-0.69988076924532898781, IsNear(0.3_⑴)),
+                    AbsoluteErrorFrom(-0.02018794239465783510, IsNear(0.07_⑴)),
+                    AbsoluteErrorFrom( 0.71397433835008141314, IsNear(0.7_⑴))));
+    EXPECT_THAT(f_eigensystem.rotation(e₂),
+                Componentwise(AlmostEquals(0.04753874357012595212, 10),
+                              AlmostEquals(0.99606742882485799451, 1),
+                              AlmostEquals(0.07476459786563599011, 4)));
   }
 }
 

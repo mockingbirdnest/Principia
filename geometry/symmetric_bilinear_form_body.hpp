@@ -177,13 +177,13 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
   R3x3Matrix<Scalar> const A_minus_α₀I = A - α₀ * I;
   R3x3Matrix<Scalar> const A_minus_α₁I = A - α₁ * I;
   R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
-  // We use the matrices corresponding to the largest eigenvalues as that
-  // improves the accuracy on the corresponding eigenvectors.
-  auto const m₁ = A_minus_α₂I * A_minus_α₀I;
+  // We start with the eigenvector corresponding to the largest eigenvalue to
+  // make sure that it's the most accurate.
   auto const m₂ = A_minus_α₀I * A_minus_α₁I;
-  auto const v₁ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₁)));
-  auto const v₂ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₂))
-                                .OrthogonalizationAgainst(v₁));
+  auto const m₁ = A_minus_α₂I * A_minus_α₀I;
+  auto const v₂ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₂)));
+  auto const v₁ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₁))
+                                .OrthogonalizationAgainst(v₂));
 
   Rotation<Eigenframe, Frame> const rotation{Wedge(v₁, v₂), v₁, v₂};
   return {form, rotation};
