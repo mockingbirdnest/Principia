@@ -26,10 +26,25 @@ template<template<typename, typename, int> class Evaluator>
 PoissonSeries<double, 0, Evaluator> Hahn(Instant const& t_min,
                                          Instant const& t_max);
 
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> Hamming(Instant const& t_min,
+                                            Instant const& t_max);
+
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> Blackman(Instant const& t_min,
+                                             Instant const& t_max);
+
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> ExactBlackman(Instant const& t_min,
+                                                  Instant const& t_max);
+
 }  // namespace internal_apodization
 
+using internal_apodization::Blackman;
 using internal_apodization::Dirichlet;
+using internal_apodization::ExactBlackman;
 using internal_apodization::Hahn;
+using internal_apodization::Hamming;
 using internal_apodization::Sine;
 
 }  // namespace apodization

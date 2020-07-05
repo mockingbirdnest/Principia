@@ -56,5 +56,29 @@ TEST_F(ApodizationTest, Hahn) {
   EXPECT_THAT(a.Evaluate(t2_), VanishesBefore(1, 0));
 }
 
+TEST_F(ApodizationTest, Hamming) {
+  auto a = apodization::Hamming<HornerEvaluator>(t1_, t2_);
+  EXPECT_THAT(a.Evaluate(t1_), AlmostEquals(2.0 / 23.0, 0));
+  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(71.0 / 92.0, 1));
+  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1, 0));
+  EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(2.0 / 23.0, 0));
+}
+
+TEST_F(ApodizationTest, Blackman) {
+  auto a = apodization::Blackman<HornerEvaluator>(t1_, t2_);
+  EXPECT_THAT(a.Evaluate(t1_), VanishesBefore(1, 0));
+  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(0.63, 1));
+  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1, 1));
+  EXPECT_THAT(a.Evaluate(t2_), VanishesBefore(1, 0));
+}
+
+TEST_F(ApodizationTest, ExactBlackman) {
+  auto a = apodization::ExactBlackman<HornerEvaluator>(t1_, t2_);
+  EXPECT_THAT(a.Evaluate(t1_), AlmostEquals(8.0 / 1163.0, 37));
+  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(11843.0 / 18608.0, 1));
+  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1, 0));
+  EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(8.0 / 1163.0, 37));
+}
+
 }  // namespace numerics
 }  // namespace principia

@@ -46,6 +46,47 @@ PoissonSeries<double, 0, Evaluator> Hahn(Instant const& t_min,
                    /*cos=*/typename Result::Polynomial({-0.5}, t_min)}}});
 }
 
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> Hamming(Instant const& t_min,
+                                            Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, Evaluator>;
+  AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
+  return Result(
+      typename Result::Polynomial({25.0 / 46.0}, t_min),
+      {{ω,
+        {/*sin=*/typename Result::Polynomial({0}, t_min),
+         /*cos=*/typename Result::Polynomial({-21.0 / 46.0}, t_min)}}});
+}
+
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> Blackman(Instant const& t_min,
+                                             Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, Evaluator>;
+  AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
+  return Result(typename Result::Polynomial({0.42}, t_min),
+                {{ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({-0.5}, t_min)}},
+                 {2 * ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({0.08}, t_min)}}});
+}
+
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> ExactBlackman(Instant const& t_min,
+                                                  Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, Evaluator>;
+  AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
+  return Result(
+      typename Result::Polynomial({3969.0 / 9304.0}, t_min),
+      {{ω,
+        {/*sin=*/typename Result::Polynomial({0}, t_min),
+         /*cos=*/typename Result::Polynomial({-1155.0 / 2326.0}, t_min)}},
+       {2 * ω,
+        {/*sin=*/typename Result::Polynomial({0}, t_min),
+         /*cos=*/typename Result::Polynomial({715.0 / 9304.0}, t_min)}}});
+}
+
 }  // namespace internal_apodization
 }  // namespace apodization
 }  // namespace numerics
