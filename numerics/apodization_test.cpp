@@ -104,13 +104,12 @@ TEST_F(ApodizationTest, BlackmanHarris) {
   EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(0.00006, 151));
 }
 
-TEST_F(ApodizationTest, FlatTop) {
-  auto a = apodization::FlatTop<HornerEvaluator>(t1_, t2_);
-  EXPECT_THAT(a.Evaluate(t1_), AlmostEquals(-0.000421051, 24));
-  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(0.19821053, 7));
-  // This function exceeds 1, which is strange.
-  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1.000000003, 0));
-  EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(-0.000421051, 24));
+TEST_F(ApodizationTest, ISO18431_2) {
+  auto a = apodization::ISO18431_2<HornerEvaluator>(t1_, t2_);
+  EXPECT_THAT(a.Evaluate(t1_), AlmostEquals(-0.0028 / 4.6392, 224));
+  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(0.9194 / 4.6392, 6));
+  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1, 0));
+  EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(-0.0028 / 4.6392, 224));
 }
 
 }  // namespace numerics

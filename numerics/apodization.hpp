@@ -50,9 +50,11 @@ template<template<typename, typename, int> class Evaluator>
 PoissonSeries<double, 0, Evaluator> BlackmanHarris(Instant const& t_min,
                                                    Instant const& t_max);
 
+// The flat-top window in Wikipedia is not normalized and comes from Matlab (?).
+// We use the normalized ISO 18431-2 instead, which is very close.
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> FlatTop(Instant const& t_min,
-                                            Instant const& t_max);
+PoissonSeries<double, 0, Evaluator> ISO18431_2(Instant const& t_min,
+                                               Instant const& t_max);
 
 }  // namespace internal_apodization
 
@@ -61,9 +63,9 @@ using internal_apodization::BlackmanHarris;
 using internal_apodization::BlackmanNuttall;
 using internal_apodization::Dirichlet;
 using internal_apodization::ExactBlackman;
-using internal_apodization::FlatTop;
 using internal_apodization::Hahn;
 using internal_apodization::Hamming;
+using internal_apodization::ISO18431_2;
 using internal_apodization::Nuttall;
 using internal_apodization::Sine;
 
