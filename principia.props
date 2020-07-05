@@ -76,7 +76,8 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard Condition="$(ProjectName) == astronomy or
                                    $(ProjectName) == ksp_plugin or
-                                   $(ProjectName) == ksp_plugin_test">stdcpplatest</LanguageStandard>
+                                   $(ProjectName) == ksp_plugin_test or
+                                   $(ProjectName) == mathematica">stdcpplatest</LanguageStandard>
       <WarningLevel Condition="!$(PrincipiaCompilerClangLLVM)">Level3</WarningLevel>
       <WarningLevel Condition="$(PrincipiaCompilerClangLLVM) and
                                $(ProjectName) == serialization">TurnOffAllWarnings</WarningLevel>
