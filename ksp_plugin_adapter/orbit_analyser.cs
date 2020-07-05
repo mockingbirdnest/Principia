@@ -7,8 +7,7 @@ namespace ksp_plugin_adapter {
 // handling easier, thanks to null-coalescing operators.
 internal static class Formatters {
   // Formats |value| in "N<fractional_digits>" using the Principia culture.
-  public static string FormatN(this double value,
-                               int fractional_digits) {
+  public static string FormatN(this double value, int fractional_digits) {
     return value.ToString($"N{fractional_digits}", Culture.culture);
   }
 
@@ -34,7 +33,9 @@ internal static class Formatters {
   }
 
   // Displays an interval of lengths as midpoint±half-width, in km if the
-  // half-width is 100 m or more.
+  // half-width is 100 m or more.  The midpoint is given with respect to
+  // |offset| (for instance, if |interval| is an interval of distances from the
+  // primary and |offset| is the radius of the primary, altitudes are shown).
   public static string FormatLengthInterval(this Interval interval,
                                             double offset = 0) {
     double half_width = (interval.max - interval.min) / 2;

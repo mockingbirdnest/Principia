@@ -180,6 +180,7 @@ message OrbitalElements {
   required Interval mean_argument_of_periapsis = 9;
   required Interval mean_periapsis = 10;
   required Interval mean_apoapsis = 11;
+  // Added in Gallai.
   required Interval distance = 12;
 }
 
