@@ -247,7 +247,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
 
   private void RenderOrbitalElements(OrbitalElements? elements,
                                      CelestialBody primary) {
-      double? lowest_distance = elements?.distance.min;
+      double? lowest_distance = elements?.radial_distance.min;
       LabeledField(
           "Lowest altitude",
           (lowest_distance - primary?.Radius)?.FormatAltitude());
@@ -285,10 +285,10 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
             "Argument of periapsis",
             elements?.mean_argument_of_periapsis.FormatAngleInterval());
       LabeledField("Altitude of mean periapsis",
-                   elements?.mean_periapsis.FormatLengthInterval(
+                   elements?.mean_periapsis_distance.FormatLengthInterval(
                        primary.Radius));
       LabeledField("Altitude of mean apoapsis",
-                   elements?.mean_apoapsis.FormatLengthInterval(
+                   elements?.mean_apoapsis_distance.FormatLengthInterval(
                        primary.Radius));
   }
 

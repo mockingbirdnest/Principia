@@ -41,7 +41,7 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   }
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
-  orbital_elements.distances_ = Distances(trajectory);
+  orbital_elements.radial_distances_ = RadialDistances(trajectory);
   orbital_elements.sidereal_period_ =
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
   if (!IsFinite(orbital_elements.sidereal_period_)) {
@@ -112,16 +112,18 @@ inline Interval<Angle> OrbitalElements::mean_argument_of_periapsis_interval()
   return mean_argument_of_periapsis_interval_;
 }
 
-inline Interval<Length> OrbitalElements::mean_periapsis_interval() const {
-  return mean_periapsis_interval_;
+inline Interval<Length> OrbitalElements::mean_periapsis_distance_interval()
+    const {
+  return mean_periapsis_distance_interval_;
 }
 
-inline Interval<Length> OrbitalElements::mean_apoapsis_interval() const {
-  return mean_apoapsis_interval_;
+inline Interval<Length> OrbitalElements::mean_apoapsis_distance_interval()
+    const {
+  return mean_apoapsis_distance_interval_;
 }
 
-inline Interval<Length> OrbitalElements::distance_interval() const {
-  return distance_interval_;
+inline Interval<Length> OrbitalElements::radial_distance_interval() const {
+  return radial_distance_interval_;
 }
 
 template<typename PrimaryCentred>
@@ -162,17 +164,17 @@ OrbitalElements::OsculatingEquinoctialElements(
 }
 
 template<typename PrimaryCentred>
-std::vector<Length> OrbitalElements::Distances(
+std::vector<Length> OrbitalElements::RadialDistances(
     DiscreteTrajectory<PrimaryCentred> const& trajectory) {
-  std::vector<Length> distances;
-  distances.reserve(trajectory.Size());
+  std::vector<Length> radial_distances;
+  radial_distances.reserve(trajectory.Size());
   DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
                                                      PrimaryCentred::unmoving};
   for (auto const& [time, degrees_of_freedom] : trajectory) {
-    distances.push_back(
+    radial_distances.push_back(
         (degrees_of_freedom.position() - primary_dof.position()).Norm());
   }
-  return distances;
+  return radial_distances;
 }
 
 inline std::vector<OrbitalElements::EquinoctialElements> const&
@@ -407,8 +409,8 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
 }
 
 inline void OrbitalElements::ComputeIntervals() {
-  for (auto const& r : distances_) {
-    distance_interval_.Include(r);
+  for (auto const& r : radial_distances_) {
+    radial_distance_interval_.Include(r);
   }
   for (auto const& elements : mean_classical_elements_) {
     mean_semimajor_axis_interval_.Include(elements.semimajor_axis);
@@ -418,8 +420,8 @@ inline void OrbitalElements::ComputeIntervals() {
         elements.longitude_of_ascending_node);
     mean_argument_of_periapsis_interval_.Include(
         elements.argument_of_periapsis);
-    mean_periapsis_interval_.Include(elements.periapsis_distance);
-    mean_apoapsis_interval_.Include(elements.apoapsis_distance);
+    mean_periapsis_distance_interval_.Include(elements.periapsis_distance);
+    mean_apoapsis_distance_interval_.Include(elements.apoapsis_distance);
   }
 }
 
