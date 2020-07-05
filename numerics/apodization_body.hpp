@@ -36,7 +36,7 @@ PoissonSeries<double, 0, Evaluator> Sine(Instant const& t_min,
 }
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> Hahn(Instant const& t_min,
+PoissonSeries<double, 0, Evaluator> Hann(Instant const& t_min,
                                          Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);

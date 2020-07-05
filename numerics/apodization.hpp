@@ -14,6 +14,7 @@ namespace internal_apodization {
 
 using geometry::Instant;
 
+// ISO 18431-2:2004, section 5.4.
 template<template<typename, typename, int> class Evaluator>
 PoissonSeries<double, 0, Evaluator> Dirichlet(Instant const& t_min,
                                               Instant const& t_max);
@@ -22,8 +23,9 @@ template<template<typename, typename, int> class Evaluator>
 PoissonSeries<double, 0, Evaluator> Sine(Instant const& t_min,
                                          Instant const& t_max);
 
+// ISO 18431-2:2004, section 5.2.
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> Hahn(Instant const& t_min,
+PoissonSeries<double, 0, Evaluator> Hann(Instant const& t_min,
                                          Instant const& t_max);
 
 template<template<typename, typename, int> class Evaluator>
@@ -51,7 +53,8 @@ PoissonSeries<double, 0, Evaluator> BlackmanHarris(Instant const& t_min,
                                                    Instant const& t_max);
 
 // The flat-top window in Wikipedia is not normalized and comes from Matlab (?).
-// We use the normalized ISO 18431-2 instead, which is very close.
+// We use the normalized ISO 18431-2:2004, section 5.3 instead, which is very
+// close.
 template<template<typename, typename, int> class Evaluator>
 PoissonSeries<double, 0, Evaluator> ISO18431_2(Instant const& t_min,
                                                Instant const& t_max);
@@ -63,7 +66,7 @@ using internal_apodization::BlackmanHarris;
 using internal_apodization::BlackmanNuttall;
 using internal_apodization::Dirichlet;
 using internal_apodization::ExactBlackman;
-using internal_apodization::Hahn;
+using internal_apodization::Hann;
 using internal_apodization::Hamming;
 using internal_apodization::ISO18431_2;
 using internal_apodization::Nuttall;
