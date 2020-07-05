@@ -22,9 +22,14 @@ template<template<typename, typename, int> class Evaluator>
 PoissonSeries<double, 0, Evaluator> Sine(Instant const& t_min,
                                          Instant const& t_max);
 
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> Hahn(Instant const& t_min,
+                                         Instant const& t_max);
+
 }  // namespace internal_apodization
 
 using internal_apodization::Dirichlet;
+using internal_apodization::Hahn;
 using internal_apodization::Sine;
 
 }  // namespace apodization

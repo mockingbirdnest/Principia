@@ -35,6 +35,17 @@ PoissonSeries<double, 0, Evaluator> Sine(Instant const& t_min,
                    /*cos=*/typename Result::Polynomial({0}, t_min)}}});
 }
 
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> Hahn(Instant const& t_min,
+                                         Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, Evaluator>;
+  AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
+  return Result(typename Result::Polynomial({0.5}, t_min),
+                {{ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({-0.5}, t_min)}}});
+}
+
 }  // namespace internal_apodization
 }  // namespace apodization
 }  // namespace numerics

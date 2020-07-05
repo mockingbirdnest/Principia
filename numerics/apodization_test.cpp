@@ -48,5 +48,13 @@ TEST_F(ApodizationTest, Sine) {
   EXPECT_THAT(a.Evaluate(t2_), VanishesBefore(1, 1));
 }
 
+TEST_F(ApodizationTest, Hahn) {
+  auto a = apodization::Hahn<HornerEvaluator>(t1_, t2_);
+  EXPECT_THAT(a.Evaluate(t1_), AlmostEquals(0, 0));
+  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(0.75, 1));
+  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1, 0));
+  EXPECT_THAT(a.Evaluate(t2_), VanishesBefore(1, 0));
+}
+
 }  // namespace numerics
 }  // namespace principia
