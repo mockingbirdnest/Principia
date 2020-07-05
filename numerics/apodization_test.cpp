@@ -80,5 +80,38 @@ TEST_F(ApodizationTest, ExactBlackman) {
   EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(8.0 / 1163.0, 37));
 }
 
+TEST_F(ApodizationTest, Nuttall) {
+  auto a = apodization::Nuttall<HornerEvaluator>(t1_, t2_);
+  EXPECT_THAT(a.Evaluate(t1_), VanishesBefore(1, 0));
+  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(0.514746, 2));
+  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1, 0));
+  EXPECT_THAT(a.Evaluate(t2_), VanishesBefore(1, 0));
+}
+
+TEST_F(ApodizationTest, BlackmanNuttall) {
+  auto a = apodization::BlackmanNuttall<HornerEvaluator>(t1_, t2_);
+  EXPECT_THAT(a.Evaluate(t1_), AlmostEquals(0.0003628, 703));
+  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(0.5292298, 1));
+  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1, 0));
+  EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(0.0003628, 703));
+}
+
+TEST_F(ApodizationTest, BlackmanHarris) {
+  auto a = apodization::BlackmanHarris<HornerEvaluator>(t1_, t2_);
+  EXPECT_THAT(a.Evaluate(t1_), AlmostEquals(0.00006, 151));
+  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(0.520575, 1));
+  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1, 0));
+  EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(0.00006, 151));
+}
+
+TEST_F(ApodizationTest, FlatTop) {
+  auto a = apodization::FlatTop<HornerEvaluator>(t1_, t2_);
+  EXPECT_THAT(a.Evaluate(t1_), AlmostEquals(-0.000421051, 24));
+  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(0.19821053, 7));
+  // This function exceeds 1, which is strange.
+  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1.000000003, 0));
+  EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(-0.000421051, 24));
+}
+
 }  // namespace numerics
 }  // namespace principia

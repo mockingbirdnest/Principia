@@ -87,6 +87,78 @@ PoissonSeries<double, 0, Evaluator> ExactBlackman(Instant const& t_min,
          /*cos=*/typename Result::Polynomial({715.0 / 9304.0}, t_min)}}});
 }
 
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> Nuttall(Instant const& t_min,
+                                            Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, Evaluator>;
+  AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
+  return Result(typename Result::Polynomial({0.355768}, t_min),
+                {{ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({-0.487396}, t_min)}},
+                 {2 * ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({0.144232}, t_min)}},
+                 {3 * ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({-0.012604}, t_min)}}});
+}
+
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> BlackmanNuttall(Instant const& t_min,
+                                                    Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, Evaluator>;
+  AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
+  return Result(typename Result::Polynomial({0.3635819}, t_min),
+                {{ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({-0.4891775}, t_min)}},
+                 {2 * ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({0.1365995}, t_min)}},
+                 {3 * ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({-0.0106411}, t_min)}}});
+}
+
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> BlackmanHarris(Instant const& t_min,
+                                                   Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, Evaluator>;
+  AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
+  return Result(typename Result::Polynomial({0.35875}, t_min),
+                {{ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({-0.48829}, t_min)}},
+                 {2 * ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({0.14128}, t_min)}},
+                 {3 * ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({-0.01168}, t_min)}}});
+}
+
+template<template<typename, typename, int> class Evaluator>
+PoissonSeries<double, 0, Evaluator> FlatTop(Instant const& t_min,
+                                            Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, Evaluator>;
+  AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
+  return Result(
+      typename Result::Polynomial({0.21557895}, t_min),
+      {{ω,
+        {/*sin=*/typename Result::Polynomial({0}, t_min),
+         /*cos=*/typename Result::Polynomial({-0.41663158}, t_min)}},
+       {2 * ω,
+        {/*sin=*/typename Result::Polynomial({0}, t_min),
+         /*cos=*/typename Result::Polynomial({0.277263158}, t_min)}},
+       {3 * ω,
+        {/*sin=*/typename Result::Polynomial({0}, t_min),
+         /*cos=*/typename Result::Polynomial({-0.083578947}, t_min)}},
+       {4 * ω,
+        {/*sin=*/typename Result::Polynomial({0}, t_min),
+         /*cos=*/typename Result::Polynomial({0.006947368}, t_min)}}});
+}
+
 }  // namespace internal_apodization
 }  // namespace apodization
 }  // namespace numerics
