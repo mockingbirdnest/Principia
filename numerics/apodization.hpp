@@ -53,8 +53,8 @@ PoissonSeries<double, 0, Evaluator> BlackmanHarris(Instant const& t_min,
                                                    Instant const& t_max);
 
 // The flat-top window in Wikipedia is not normalized and comes from Matlab (?).
-// We use the normalized ISO 18431-2:2004, section 5.3 instead, which is very
-// close.
+// We use the normalized function from ISO 18431-2:2004/Cor.1:2008(en), section
+// 5.3 instead.
 template<template<typename, typename, int> class Evaluator>
 PoissonSeries<double, 0, Evaluator> ISO18431_2(Instant const& t_min,
                                                Instant const& t_max);

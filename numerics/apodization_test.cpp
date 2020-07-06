@@ -106,10 +106,10 @@ TEST_F(ApodizationTest, BlackmanHarris) {
 
 TEST_F(ApodizationTest, ISO18431_2) {
   auto a = apodization::ISO18431_2<HornerEvaluator>(t1_, t2_);
-  EXPECT_THAT(a.Evaluate(t1_), AlmostEquals(-0.0028 / 4.6392, 224));
-  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(0.9194 / 4.6392, 6));
-  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1, 0));
-  EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(-0.0028 / 4.6392, 224));
+  EXPECT_THAT(a.Evaluate(t1_), AlmostEquals(-0.00195313 / 4.63867187, 440));
+  EXPECT_THAT(a.Evaluate(t0_), AlmostEquals(0.9194336 / 4.63867187, 6));
+  EXPECT_THAT(a.Evaluate(mid_), AlmostEquals(1, 1));
+  EXPECT_THAT(a.Evaluate(t2_), AlmostEquals(-0.00195313 / 4.63867187, 440));
 }
 
 }  // namespace numerics
