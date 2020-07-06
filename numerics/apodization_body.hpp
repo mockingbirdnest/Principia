@@ -143,20 +143,23 @@ PoissonSeries<double, 0, Evaluator> ISO18431_2(Instant const& t_min,
                                                Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
-  return Result(
-      typename Result::Polynomial({1.0 / 4.6392}, t_min),
-      {{ω,
-        {/*sin=*/typename Result::Polynomial({0}, t_min),
-         /*cos=*/typename Result::Polynomial({-1.933 / 4.6392}, t_min)}},
-       {2 * ω,
-        {/*sin=*/typename Result::Polynomial({0}, t_min),
-         /*cos=*/typename Result::Polynomial({1.286 / 4.6392}, t_min)}},
-       {3 * ω,
-        {/*sin=*/typename Result::Polynomial({0}, t_min),
-         /*cos=*/typename Result::Polynomial({-0.388 / 4.6392}, t_min)}},
-       {4 * ω,
-        {/*sin=*/typename Result::Polynomial({0}, t_min),
-         /*cos=*/typename Result::Polynomial({0.0322 / 4.6392}, t_min)}}});
+  return Result(typename Result::Polynomial({1.0 / 4.63867187}, t_min),
+                {{ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial(
+                       {-1.93261719 / 4.63867187}, t_min)}},
+                 {2 * ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial(
+                       {1.28613281 / 4.63867187}, t_min)}},
+                 {3 * ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial(
+                       {-0.38769531 / 4.63867187}, t_min)}},
+                 {4 * ω,
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial(
+                       {0.03222656 / 4.63867187}, t_min)}}});
 }
 
 }  // namespace internal_apodization
