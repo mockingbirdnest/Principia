@@ -150,7 +150,7 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 // Inner product space of Poisson series.
 
 // Technically the weight function must be nonnegative for this to be an inner
-// product.  Not sure how with work with the flat-top windows, which can be
+// product.  Not sure how this works with the flat-top windows, which can be
 // negative.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
