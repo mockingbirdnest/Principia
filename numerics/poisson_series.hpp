@@ -15,6 +15,7 @@ namespace internal_poisson_series {
 
 using geometry::Instant;
 using quantities::AngularFrequency;
+using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
 using quantities::Time;
@@ -145,6 +146,21 @@ template<typename LValue, typename RValue,
 PoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
 operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
           PoissonSeries<RValue, rdegree_, Evaluator> const& right);
+
+// Inner product space of Poisson series.
+
+// Technically the weight function must be nonnegative for this to be an inner
+// product.  Not sure how with work with the flat-top windows, which can be
+// negative.
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+Primitive<Product<LValue, RValue>, Time>
+Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max);
 
 }  // namespace internal_poisson_series
 

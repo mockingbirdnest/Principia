@@ -349,6 +349,20 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   return {aperiodic, std::move(periodic)};
 }
 
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+Primitive<Product<LValue, RValue>, Time>
+Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) {
+  auto const integrand = left * right * weight;
+  auto const primitive = integrand.Primitive();
+  return primitive.Evaluate(t_max) - primitive.Evaluate(t_min);
+}
+
 }  // namespace internal_poisson_series
 }  // namespace numerics
 }  // namespace principia

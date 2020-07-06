@@ -5,6 +5,7 @@
 
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
+#include "numerics/apodization.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
@@ -170,6 +171,18 @@ TEST_F(PoissonSeriesTest, Primitive) {
     EXPECT_THAT(actual_primitive.Evaluate(t0_ + i * Second),
                 AlmostEquals(expected_primitive(i * Second), 0, 6));
   }
+}
+
+TEST_F(PoissonSeriesTest, Dot) {
+  Instant const t_min = t0_;
+  Instant const t_max = t0_ + 3 * Second;
+  // Computed using Mathematica.
+  EXPECT_THAT(Dot(*pa_,
+                  *pb_,
+                  apodization::Hann<HornerEvaluator>(t_min, t_max),
+                  t_min,
+                  t_max),
+              AlmostEquals(-1143.765683104456272 * Second, 53));
 }
 
 }  // namespace numerics
