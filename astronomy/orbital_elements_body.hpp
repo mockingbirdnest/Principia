@@ -41,6 +41,7 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   }
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
+  orbital_elements.radial_distances_ = RadialDistances(trajectory);
   orbital_elements.sidereal_period_ =
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
   if (!IsFinite(orbital_elements.sidereal_period_)) {
@@ -64,7 +65,7 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   orbital_elements.mean_classical_elements_ =
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
   orbital_elements.ComputePeriodsAndPrecession();
-  orbital_elements.ComputeMeanElementIntervals();
+  orbital_elements.ComputeIntervals();
   return orbital_elements;
 }
 
@@ -111,6 +112,20 @@ inline Interval<Angle> OrbitalElements::mean_argument_of_periapsis_interval()
   return mean_argument_of_periapsis_interval_;
 }
 
+inline Interval<Length> OrbitalElements::mean_periapsis_distance_interval()
+    const {
+  return mean_periapsis_distance_interval_;
+}
+
+inline Interval<Length> OrbitalElements::mean_apoapsis_distance_interval()
+    const {
+  return mean_apoapsis_distance_interval_;
+}
+
+inline Interval<Length> OrbitalElements::radial_distance_interval() const {
+  return radial_distance_interval_;
+}
+
 template<typename PrimaryCentred>
 std::vector<OrbitalElements::EquinoctialElements>
 OrbitalElements::OsculatingEquinoctialElements(
@@ -146,6 +161,20 @@ OrbitalElements::OsculatingEquinoctialElements(
          /*.qʹ = */ cotg_½i * Cos(Ω)});
   }
   return result;
+}
+
+template<typename PrimaryCentred>
+std::vector<Length> OrbitalElements::RadialDistances(
+    DiscreteTrajectory<PrimaryCentred> const& trajectory) {
+  std::vector<Length> radial_distances;
+  radial_distances.reserve(trajectory.Size());
+  DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
+                                                     PrimaryCentred::unmoving};
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
+    radial_distances.push_back(
+        (degrees_of_freedom.position() - primary_dof.position()).Norm());
+  }
+  return radial_distances;
 }
 
 inline std::vector<OrbitalElements::EquinoctialElements> const&
@@ -306,20 +335,22 @@ OrbitalElements::ToClassicalElements(
     Angle const ω = ϖ - Ω;
     Angle const M = equinoctial.λ - ϖ;
     classical_elements.push_back(
-        {equinoctial.t,
-         equinoctial.a,
-         e,
-         i,
-         classical_elements.empty()
+        {/*.time = */ equinoctial.t,
+         /*.semimajor_axis = */ equinoctial.a,
+         /*.eccentricity = */ e,
+         /*.inclination = */ i,
+         /*.longitude_of_ascending_node = */ classical_elements.empty()
              ? Mod(Ω, 2 * π * Radian)
              : UnwindFrom(classical_elements.back().longitude_of_ascending_node,
                           Ω),
-         classical_elements.empty()
+         /*.argument_of_periapsis = */ classical_elements.empty()
              ? Mod(ω, 2 * π * Radian)
              : UnwindFrom(classical_elements.back().argument_of_periapsis, ω),
-         classical_elements.empty()
+         /*.mean_anomaly = */ classical_elements.empty()
              ? Mod(M, 2 * π * Radian)
-             : UnwindFrom(classical_elements.back().mean_anomaly, M)});
+             : UnwindFrom(classical_elements.back().mean_anomaly, M),
+         /*.periapsis_distance = */ (1 - e) * equinoctial.a,
+         /*.apoapsis_distance = */ (1 + e) * equinoctial.a});
   }
   return classical_elements;
 }
@@ -377,7 +408,10 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
   nodal_precession_ = 12 * ʃ_Ωt_dt / Δt³;
 }
 
-inline void OrbitalElements::ComputeMeanElementIntervals() {
+inline void OrbitalElements::ComputeIntervals() {
+  for (auto const& r : radial_distances_) {
+    radial_distance_interval_.Include(r);
+  }
   for (auto const& elements : mean_classical_elements_) {
     mean_semimajor_axis_interval_.Include(elements.semimajor_axis);
     mean_eccentricity_interval_.Include(elements.eccentricity);
@@ -386,6 +420,8 @@ inline void OrbitalElements::ComputeMeanElementIntervals() {
         elements.longitude_of_ascending_node);
     mean_argument_of_periapsis_interval_.Include(
         elements.argument_of_periapsis);
+    mean_periapsis_distance_interval_.Include(elements.periapsis_distance);
+    mean_apoapsis_distance_interval_.Include(elements.apoapsis_distance);
   }
 }
 

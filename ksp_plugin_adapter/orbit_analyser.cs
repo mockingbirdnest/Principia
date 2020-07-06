@@ -15,6 +15,12 @@ internal static class Formatters {
     return value.ToString($"N{fractional_digits}", Culture.culture);
   }
 
+  // Formats |value| (given in metres) in kilometres or metres.
+  // TODO(egg): think about the threshold for metres.
+  public static string FormatAltitude(this double value) {
+    return $"{(value / 1000).FormatN(0)} km";
+  }
+
   // Displays an interval as midpoint±half-width.
   public static string FormatInterval(this Interval interval) {
     double half_width = (interval.max - interval.min) / 2;
@@ -27,10 +33,13 @@ internal static class Formatters {
   }
 
   // Displays an interval of lengths as midpoint±half-width, in km if the
-  // half-width is 100 m or more.
-  public static string FormatLengthInterval(this Interval interval) {
+  // half-width is 100 m or more.  The midpoint is given with respect to
+  // |offset| (for instance, if |interval| is an interval of distances from the
+  // primary and |offset| is the radius of the primary, altitudes are shown).
+  public static string FormatLengthInterval(this Interval interval,
+                                            double offset = 0) {
     double half_width = (interval.max - interval.min) / 2;
-    double midpoint = interval.min + half_width;
+    double midpoint = interval.min - offset + half_width;
     string unit = "m";
     if (half_width >= 100) {
       half_width *= 0.001;
@@ -227,7 +236,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           multiline_style,
           UnityEngine.GUILayout.Height(five_lines));
       Style.HorizontalLine();
-      RenderOrbitalElements(elements);
+      RenderOrbitalElements(elements, primary);
       Style.HorizontalLine();
       RenderOrbitRecurrence(recurrence, primary);
       Style.HorizontalLine();
@@ -236,8 +245,24 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
     UnityEngine.GUI.DragWindow();
   }
 
-  private void RenderOrbitalElements(OrbitalElements? elements) {
-      UnityEngine.GUILayout.Label("Orbital elements");
+  private void RenderOrbitalElements(OrbitalElements? elements,
+                                     CelestialBody primary) {
+      double? lowest_distance = elements?.radial_distance.min;
+      LabeledField(
+          "Lowest altitude",
+          (lowest_distance - primary?.Radius)?.FormatAltitude());
+      double? lowest_primary_altitude =
+          primary?.ocean == true ? 0 : primary?.pqsController?.radiusMin;
+      string altitude_warning = lowest_distance < lowest_primary_altitude
+          ? "collision"
+          : lowest_distance < primary?.pqsController?.radiusMax
+          ? "collision risk"
+          : lowest_distance < primary?.Radius + primary?.atmosphereDepth
+          ? "reentry"
+          : "";
+      UnityEngine.GUILayout.Label(altitude_warning,
+                                  Style.Warning(UnityEngine.GUI.skin.label));
+      UnityEngine.GUILayout.Label("Mean orbital elements");
       LabeledField("Sidereal period",
                    elements?.sidereal_period.FormatDuration());
       LabeledField("Nodal period",
@@ -259,6 +284,12 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
       LabeledField(
             "Argument of periapsis",
             elements?.mean_argument_of_periapsis.FormatAngleInterval());
+      LabeledField("Altitude of mean periapsis",
+                   elements?.mean_periapsis_distance.FormatLengthInterval(
+                       primary.Radius));
+      LabeledField("Altitude of mean apoapsis",
+                   elements?.mean_apoapsis_distance.FormatLengthInterval(
+                       primary.Radius));
   }
 
   private void RenderOrbitRecurrence(OrbitRecurrence? recurrence,

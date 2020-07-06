@@ -38,6 +38,8 @@ class OrbitalElements {
 
   // The classical Keplerian elements (a, e, i, Ω, ω, M),
   // together with an epoch.
+  // TODO(egg): consider just using KeplerianElements now that we have the
+  // apsides as well.
   struct ClassicalElements {
     Instant time;
     Length semimajor_axis;
@@ -46,6 +48,9 @@ class OrbitalElements {
     Angle longitude_of_ascending_node;
     Angle argument_of_periapsis;
     Angle mean_anomaly;
+
+    Length periapsis_distance;
+    Length apoapsis_distance;
   };
 
   // Mean element time series.  These elements are free of short-period
@@ -101,6 +106,10 @@ class OrbitalElements {
   Interval<Angle> mean_longitude_of_ascending_node_interval() const;
   Interval<Angle> mean_argument_of_periapsis_interval() const;
 
+  Interval<Length> mean_periapsis_distance_interval() const;
+  Interval<Length> mean_apoapsis_distance_interval() const;
+  Interval<Length> radial_distance_interval() const;
+
   // The equinoctial elements, and in particular the osculating equinoctial
   // elements, are not directly interesting; anything that could be derived from
   // them should be directly computed by this class instead.  They are however
@@ -138,6 +147,10 @@ class OrbitalElements {
       MassiveBody const& primary,
       Body const& secondary);
 
+  template<typename PrimaryCentred>
+  static std::vector<Length> RadialDistances(
+      DiscreteTrajectory<PrimaryCentred> const& trajectory);
+
   // |equinoctial_elements| must contain at least 2 elements.
   static Time SiderealPeriod(
       std::vector<EquinoctialElements> const& equinoctial_elements);
@@ -158,11 +171,12 @@ class OrbitalElements {
   // element computation is based on it, so it gets computed earlier).
   void ComputePeriodsAndPrecession();
 
-  // |mean_classical_elements_| must have been computed; sets
-  // |mean_*_interval_| accordingly.
-  void ComputeMeanElementIntervals();
+  // |radial_distances_| and |mean_classical_elements_| must have been computed;
+  // sets |radial_distance_interval_| and |mean_*_interval_| accordingly.
+  void ComputeIntervals();
 
   std::vector<EquinoctialElements> osculating_equinoctial_elements_;
+  std::vector<Length> radial_distances_;
   Time sidereal_period_;
   std::vector<EquinoctialElements> mean_equinoctial_elements_;
   std::vector<ClassicalElements> mean_classical_elements_;
@@ -170,7 +184,11 @@ class OrbitalElements {
   Time nodal_period_;
   AngularFrequency nodal_precession_;
 
+  Interval<Length> radial_distance_interval_;
+
   Interval<Length> mean_semimajor_axis_interval_;
+  Interval<Length> mean_periapsis_distance_interval_;
+  Interval<Length> mean_apoapsis_distance_interval_;
   Interval<double> mean_eccentricity_interval_;
   Interval<Angle> mean_inclination_interval_;
   Interval<Angle> mean_longitude_of_ascending_node_interval_;
