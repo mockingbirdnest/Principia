@@ -55,9 +55,10 @@ class Base32768Test : public testing::Test {
               std::char_traits<char16_t>::compare(
                   output.data.get(), base32768.data, base32768.size));
     for (int i = 0; i < base32768.size; ++i) {
-      EXPECT_EQ(output.data[i], base32768.data[i])
-          << "index=" << i << " actual=" << std::hex << output.data[i]
-          << " expected=" << base32768.data[i];
+      EXPECT_TRUE(output.data[i] == base32768.data[i])
+          << "index=" << i << " actual=" << std::hex
+          << static_cast<int>(output.data[i])
+          << " expected=" << static_cast<int>(base32768.data[i]);
     }
   }
 
