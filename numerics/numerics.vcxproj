@@ -21,6 +21,8 @@
     <ClInclude Include="cbrt.hpp" />
     <ClInclude Include="elliptic_integrals.hpp" />
     <ClInclude Include="elliptic_functions.hpp" />
+    <ClInclude Include="fast_fourier_transform.hpp" />
+    <ClInclude Include="fast_fourier_transform_body.hpp" />
     <ClInclude Include="fast_sin_cos_2π.hpp" />
     <ClInclude Include="finite_difference.hpp" />
     <ClInclude Include="finite_difference.mathematica.h" />
