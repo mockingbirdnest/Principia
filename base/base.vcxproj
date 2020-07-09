@@ -21,6 +21,8 @@
     <ClInclude Include="base32768_body.hpp" />
     <ClInclude Include="base64.hpp" />
     <ClInclude Include="base64_body.hpp" />
+    <ClInclude Include="bits.hpp" />
+    <ClInclude Include="bits_body.hpp" />
     <ClInclude Include="bundle.hpp" />
     <ClInclude Include="constant_function.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
@@ -78,6 +80,7 @@
     <ClCompile Include="array_test.cpp" />
     <ClCompile Include="base32768_test.cpp" />
     <ClCompile Include="base64_test.cpp" />
+    <ClCompile Include="bits_test.cpp" />
     <ClCompile Include="bundle.cpp" />
     <ClCompile Include="bundle_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />
