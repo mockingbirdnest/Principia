@@ -1,5 +1,8 @@
 #include "numerics/fast_fourier_transform.hpp"
 
+#include <algorithm>
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
@@ -14,7 +17,7 @@ using testing_utilities::AlmostEquals;
 using ::testing::ElementsAre;
 
 class FastFourierTransformTest : public ::testing::Test {
-protected:
+ protected:
   using Complex = std::complex<double>;
 
   template<typename Container, int size_>

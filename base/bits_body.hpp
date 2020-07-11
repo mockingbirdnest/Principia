@@ -25,7 +25,7 @@ constexpr int BitReversedIncrement(int const n, int const bits) {
   std::uint32_t mask = 0x8000'0000;
   std::uint32_t x = n << (32 - bits);
   x ^= mask;
-  if ((int)x >= 0) {
+  if (static_cast<std::int32_t>(x) >= 0) {
     do {
       mask >>= 1;
       x ^= mask;
