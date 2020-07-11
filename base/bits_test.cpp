@@ -41,7 +41,6 @@ TEST(BitsTest, BitReversedIncrement) {
   EXPECT_EQ(0x2, BitReversedIncrement(0xC, 4));
   EXPECT_EQ(0x3, BitReversedIncrement(0xD, 4));
   EXPECT_EQ(0x1, BitReversedIncrement(0xE, 4));
-
 }
 
 }  // namespace base

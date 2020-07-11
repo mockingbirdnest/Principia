@@ -19,6 +19,9 @@ using quantities::si::Radian;
 using quantities::si::Unit;
 namespace si = quantities::si;
 
+// This implementation follows Myrnyy, A Simple and Efficient FFT Implementation
+// in C++, Dr. Dobbs, 2007.
+
 template<int array_size_, int chunk_size_ = array_size_>
 class DanielsonLánczos {
  public:
