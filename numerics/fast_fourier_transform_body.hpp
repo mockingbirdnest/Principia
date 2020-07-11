@@ -33,6 +33,20 @@ class DanielsonLánczos<array_size_, 1> {
                                             array_size_>::iterator const begin);
 };
 
+template<int array_size_>
+class DanielsonLánczos<array_size_, 2> {
+ public:
+  static void Transform(typename std::array<std::complex<double>,
+                                            array_size_>::iterator const begin);
+};
+
+template<int array_size_>
+class DanielsonLánczos<array_size_, 4> {
+ public:
+  static void Transform(typename std::array<std::complex<double>,
+                                            array_size_>::iterator const begin);
+};
+
 template<int array_size_, int chunk_size_>
 void DanielsonLánczos<array_size_, chunk_size_>::Transform(
     typename std::array<std::complex<double>, array_size_>::iterator const
@@ -50,7 +64,7 @@ void DanielsonLánczos<array_size_, chunk_size_>::Transform(
   std::complex<double> e⁻²ⁱᵏᶿ = 1;
   auto it = begin;
   for (int k = 0; k < N / 2; ++it, ++k) {
-    auto t = *(it + N / 2) * e⁻²ⁱᵏᶿ;
+    auto const t = *(it + N / 2) * e⁻²ⁱᵏᶿ;
     *(it + N / 2) = *it - t;
     *it += t;
 
@@ -62,6 +76,42 @@ template<int array_size_>
 void DanielsonLánczos<array_size_, 1>::Transform(
     typename std::array<std::complex<double>, array_size_>::iterator const
         begin) {}
+
+template<int array_size_>
+void DanielsonLánczos<array_size_, 2>::Transform(
+    typename std::array<std::complex<double>, array_size_>::iterator const
+        begin) {
+  auto const t = *(begin + 1);
+  *(begin + 1) = *begin - t;
+  *begin += t;
+}
+
+template<int array_size_>
+void DanielsonLánczos<array_size_, 4>::Transform(
+    typename std::array<std::complex<double>, array_size_>::iterator const
+        begin) {
+  {
+    auto const t = *(begin + 1);
+    *(begin + 1) = *begin - t;
+    *begin += t;
+  }
+  {
+    auto const t = *(begin + 3);
+    *(begin + 3) = {(begin + 2)->imag() - t.imag(),
+                    t.real() - (begin + 2)->real()};
+    *(begin + 2) += t;
+  }
+  {
+    auto const t = *(begin + 2);
+    *(begin + 2) = *begin - t;
+    *begin += t;
+  }
+  {
+    auto const t = *(begin + 3);
+    *(begin + 3) = *(begin + 1) - t;
+    *(begin + 1) += t;
+  }
+}
 
 template<typename Container, int size_>
 FastFourierTransform<Container, size_>::FastFourierTransform(

@@ -29,13 +29,13 @@ TEST_F(FastFourierTransformTest, Square) {
   FFT const transform({1, 1, 1, 1, 0, 0, 0, 0});
   EXPECT_THAT(Coefficients(transform),
               ElementsAre(AlmostEquals(Complex{4}, 0),
-                          AlmostEquals(Complex{1, -1 - Sqrt(2)}, 4),
+                          AlmostEquals(Complex{1, -1 - Sqrt(2)}, 1),
                           AlmostEquals(Complex{0}, 0),
-                          AlmostEquals(Complex{1, 1 - Sqrt(2)}, 2),
+                          AlmostEquals(Complex{1, 1 - Sqrt(2)}, 4),
                           AlmostEquals(Complex{0}, 0),
                           AlmostEquals(Complex{1, Sqrt(2) - 1}, 4),
                           AlmostEquals(Complex{0}, 0),
-                          AlmostEquals(Complex{1, 1 + Sqrt(2)}, 3)));
+                          AlmostEquals(Complex{1, 1 + Sqrt(2)}, 2)));
 }
 
 TEST_F(FastFourierTransformTest, Sin) {
@@ -66,18 +66,18 @@ TEST_F(FastFourierTransformTest, Sin) {
           AlmostEquals(Complex{-1.2157306272208018501429984476,
                                +1.7603441806320655123815748876}, 1),
           AlmostEquals(Complex{-0.7372425382844149484214817488,
-                               +0.8380310985140470061957305286}, 9),
+                               +0.8380310985140470061957305286}, 6),
           AlmostEquals(Complex{-0.6197133589762012113067702090,
                                +0.5183935643893893471214059230}, 0),
           AlmostEquals(Complex{-0.5726936754458237681916166204,
-                               +0.3352695668656918501471058013}, 6),
+                               +0.3352695668656918501471058013}, 2),
           AlmostEquals(Complex{-0.5504467338298529673542814016,
                                +0.2045798116680680999699630079}, 6),
           AlmostEquals(Complex{-0.5400094598886346723188351187,
-                               +0.0975085343055921838098913009}, 61),
+                               +0.0975085343055921838098913009}, 29),
           AlmostEquals(Complex{-0.5369114324878041112477204841}, 2),
           AlmostEquals(Complex{-0.5400094598886346723188351187,
-                               -0.0975085343055921838098913009}, 35),
+                               -0.0975085343055921838098913009}, 3),
           AlmostEquals(Complex{-0.5504467338298529673542814016,
                                -0.2045798116680680999699630079}, 2),
           AlmostEquals(Complex{-0.5726936754458237681916166204,
@@ -85,7 +85,7 @@ TEST_F(FastFourierTransformTest, Sin) {
           AlmostEquals(Complex{-0.6197133589762012113067702090,
                                -0.5183935643893893471214059230}, 0),
           AlmostEquals(Complex{-0.7372425382844149484214817488,
-                               -0.8380310985140470061957305286}, 7),
+                               -0.8380310985140470061957305286}, 1),
           AlmostEquals(Complex{-1.2157306272208018501429984476,
                                -1.7603441806320655123815748876}, 2),
           AlmostEquals(Complex{+4.0811719972720017737297705383,
