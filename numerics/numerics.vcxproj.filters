@@ -217,6 +217,9 @@
     <ClCompile Include="apodization_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="fast_fourier_transform_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">

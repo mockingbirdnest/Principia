@@ -17,37 +17,59 @@ using quantities::Angle;
 using quantities::Sin;
 using quantities::si::Radian;
 using quantities::si::Unit;
+namespace si = quantities::si;
 
-template<int size_>
-void DanielsonLánczos(
-    std::array<std::complex<double>, size_>::iterator const begin) {
-  constexpr int size = size_;
+template<int array_size_, int chunk_size_ = array_size_>
+class DanielsonLánczos {
+ public:
+  static void Transform(typename std::array<std::complex<double>,
+                                            array_size_>::iterator const begin);
+};
 
-  DanielsonLánczos<size / 2>(begin);
-  DanielsonLánczos<size / 2>(begin + size / 2);
+template<int array_size_>
+class DanielsonLánczos<array_size_, 1> {
+ public:
+  static void Transform(typename std::array<std::complex<double>,
+                                            array_size_>::iterator const begin);
+};
 
-  Angle const θ = π * Radian / size;
+template<int array_size_, int chunk_size_>
+void DanielsonLánczos<array_size_, chunk_size_>::Transform(
+    typename std::array<std::complex<double>, array_size_>::iterator const
+        begin) {
+  constexpr int N = chunk_size_;
+
+  DanielsonLánczos<array_size_, N / 2>::Transform(begin);
+  DanielsonLánczos<array_size_, N / 2>::Transform(begin + N / 2);
+
+  Angle const θ = π * Radian / N;
   double const sin_θ = Sin(θ);
   double const cos_2θ_minus_1 = -2 * sin_θ * sin_θ;
   double const sin_2θ = Sin(2 * θ);
   std::complex<double> const e⁻²ⁱᶿ_minus_1(cos_2θ_minus_1, -sin_2θ);
-  std::complex<double> const e⁻²ⁱᵏᶿ = 1;
+  std::complex<double> e⁻²ⁱᵏᶿ = 1;
   auto it = begin;
-  for (int i = 0; i < size / 2; ++it, ++i) {
+  for (int k = 0; k < N / 2; ++it, ++k) {
     auto t = *it * e⁻²ⁱᵏᶿ;
-    *(it + size / 2) = *it - t;
+    *(it + N / 2) = *it - t;
     *it += t;
 
     e⁻²ⁱᵏᶿ += e⁻²ⁱᵏᶿ * (e⁻²ⁱᶿ_minus_1);
   }
 }
 
-template<>
-void DanielsonLánczos<1>(
-    std::array<std::complex<double>, 1>::iterator const begin) {}
+template<int array_size_>
+void DanielsonLánczos<array_size_, 1>::Transform(
+    typename std::array<std::complex<double>, array_size_>::iterator const
+        begin) {}
 
-template<typename Container, typename Scalar, int size_>
-FastFourierTransform<Container, Scalar, size_>::FastFourierTransform(
+template<typename Container, int size_>
+FastFourierTransform<Container, size_>::FastFourierTransform(
+    Container const& container)
+    : FastFourierTransform(container.cbegin(), container.cend()) {}
+
+template<typename Container, int size_>
+FastFourierTransform<Container, size_>::FastFourierTransform(
     typename Container::const_iterator begin,
     typename Container::const_iterator end) {
   DCHECK_EQ(size, std::distance(begin, end));
@@ -62,12 +84,13 @@ FastFourierTransform<Container, Scalar, size_>::FastFourierTransform(
     transform_[bit_reversed_index] = *it / si::Unit<Scalar>;
   }
 
-  DanielsonLánczos<size>(transform_.begin());
+  DanielsonLánczos<size>::Transform(transform_.begin());
 }
 
-template<typename Container, typename Scalar, int size_>
-std::array<Square<Scalar>, size_>
-FastFourierTransform<Container, Scalar, size_>::PowerSpectrum() const {
+template<typename Container, int size_>
+std::array<Square<typename FastFourierTransform<Container, size_>::Scalar>,
+           size_>
+FastFourierTransform<Container, size_>::PowerSpectrum() const {
 }
 
 }  // namespace internal_fast_fourier_transform
