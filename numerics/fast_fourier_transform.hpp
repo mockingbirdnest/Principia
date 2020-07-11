@@ -27,7 +27,7 @@ class FastFourierTransform {
   std::array<Square<Scalar>, size_> PowerSpectrum() const;
 
  private:
-  std::array<std::complex<double>> transform_;
+  std::array<std::complex<double>, size> transform_;
 };
 
 }  // namespace internal_fast_fourier_transform
