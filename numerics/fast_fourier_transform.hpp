@@ -13,7 +13,6 @@ namespace numerics {
 namespace internal_fast_fourier_transform {
 
 using base::FloorLog2;
-using quantities::Square;
 
 // This class computes Fourier[{...}, FourierParameters -> {1, -1}] in
 // Mathematica notation.  (The "signal processing" Fourier transform.)
@@ -32,12 +31,10 @@ class FastFourierTransform {
   FastFourierTransform(typename Container::const_iterator begin,
                        typename Container::const_iterator end);
 
-  std::array<std::complex<double>, size_> const& transform() const;
-
-  std::array<Square<Scalar>, size_> PowerSpectrum() const;
-
  private:
   std::array<std::complex<double>, size> transform_;
+
+  friend class FastFourierTransformTest;
 };
 
 }  // namespace internal_fast_fourier_transform

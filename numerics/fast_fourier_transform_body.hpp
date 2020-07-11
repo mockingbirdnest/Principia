@@ -87,18 +87,6 @@ FastFourierTransform<Container, size_>::FastFourierTransform(
   DanielsonLánczos<size>::Transform(transform_.begin());
 }
 
-template<typename Container, int size_>
-std::array<std::complex<double>, size_> const&
-FastFourierTransform<Container, size_>::transform() const {
-  return transform_;
-}
-
-template<typename Container, int size_>
-std::array<Square<typename FastFourierTransform<Container, size_>::Scalar>,
-           size_>
-FastFourierTransform<Container, size_>::PowerSpectrum() const {
-}
-
 }  // namespace internal_fast_fourier_transform
 }  // namespace numerics
 }  // namespace principia
