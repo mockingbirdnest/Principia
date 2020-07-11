@@ -50,7 +50,7 @@ void DanielsonLánczos<array_size_, chunk_size_>::Transform(
   std::complex<double> e⁻²ⁱᵏᶿ = 1;
   auto it = begin;
   for (int k = 0; k < N / 2; ++it, ++k) {
-    auto t = *it * e⁻²ⁱᵏᶿ;
+    auto t = *(it + N / 2) * e⁻²ⁱᵏᶿ;
     *(it + N / 2) = *it - t;
     *it += t;
 
@@ -85,6 +85,12 @@ FastFourierTransform<Container, size_>::FastFourierTransform(
   }
 
   DanielsonLánczos<size>::Transform(transform_.begin());
+}
+
+template<typename Container, int size_>
+std::array<std::complex<double>, size_> const&
+FastFourierTransform<Container, size_>::transform() const {
+  return transform_;
 }
 
 template<typename Container, int size_>
