@@ -16,6 +16,11 @@ using quantities::Square;
 template<typename Container, typename Scalar, int size_>
 class FastFourierTransform {
  public:
+  // The size must be a power of 2.
+  static constexpr int size = size_;
+  static constexpr int log2_size = FloorLog2(size);
+  static_assert(size == 1 << log2_size);
+
   FastFourierTransform(typename Container::const_iterator begin,
                        typename Container::const_iterator end);
 
