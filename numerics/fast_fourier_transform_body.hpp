@@ -145,7 +145,8 @@ FastFourierTransform<Scalar, size_>::FastFourierTransform(
 template<typename Scalar, std::size_t size_>
 FastFourierTransform<Scalar, size_>::FastFourierTransform(
     std::array<Scalar, size> const& container)
-    : FastFourierTransform<Scalar, size_>(container.cbegin(), container.cend()) {}
+    : FastFourierTransform<Scalar, size_>(container.cbegin(),
+                                          container.cend()) {}
 
 }  // namespace internal_fast_fourier_transform
 }  // namespace numerics
