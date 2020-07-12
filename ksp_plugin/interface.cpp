@@ -653,13 +653,13 @@ void __cdecl principia__InitGoogleLogging() {
                               << message;
         });
 
-    LOG(INFO) << "Initialized Google logging for Principia";
-    LOG(INFO) << "Principia version " << principia::base::Version
-              << " built on " << principia::base::BuildDate
-              << " by " << principia::base::CompilerName
-              << " version " << principia::base::CompilerVersion
-              << " for " << principia::base::OperatingSystem
-              << " " << principia::base::Architecture;
+    LOG(ERROR) << "Initialized Google logging for Principia";
+    LOG(ERROR) << "Principia version " << principia::base::Version
+               << " built on " << principia::base::BuildDate
+               << " by " << principia::base::CompilerName
+               << " version " << principia::base::CompilerVersion
+               << " for " << principia::base::OperatingSystem
+               << " " << principia::base::Architecture;
 #if OS_WIN
   MODULEINFO module_info;
   memset(&module_info, 0, sizeof(module_info));
@@ -667,7 +667,7 @@ void __cdecl principia__InitGoogleLogging() {
                              GetModuleHandle(TEXT("principia")),
                              &module_info,
                              sizeof(module_info)));
-  LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
+  LOG(ERROR) << "Base address is " << module_info.lpBaseOfDll;
 #endif
   }
 }
