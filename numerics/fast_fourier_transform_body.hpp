@@ -2,6 +2,8 @@
 
 #include "numerics/fast_fourier_transform.hpp"
 
+#include <optional>
+
 #include "base/bits.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"
@@ -157,6 +159,31 @@ FastFourierTransform<Container, size_>::PowerSpectrum() const {
     ++k;
   }
   return spectrum;
+}
+
+template<typename Container, int size_>
+Interval<AngularFrequency> FastFourierTransform<Container, size_>::Mode()
+    const {
+  auto const spectrum = PowerSpectrum();
+  std::map<AngularFrequency, Square<Scalar>>::const_iterator max =
+      spectrum.end();
+  for (auto it = spectrum.begin(); it != spectrum.end(); ++it) {
+    if (max == spectrum.end() || it->second > max->second) {
+      max = it;
+    }
+  }
+  Interval<AngularFrequency> result;
+  if (max == spectrum.begin()) {
+    result.Include(max->first);
+  } else {
+    result.Include(std::prev(max)->first);
+  }
+  if (max == std::prev(spectrum.end())) {
+    result.Include(max->first);
+  } else {
+    result.Include(std::next(max)->first);
+  }
+  return result;
 }
 
 }  // namespace internal_fast_fourier_transform

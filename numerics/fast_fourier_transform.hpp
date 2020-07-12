@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/bits.hpp"
+#include "geometry/interval.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -13,6 +14,7 @@ namespace numerics {
 namespace internal_fast_fourier_transform {
 
 using base::FloorLog2;
+using geometry::Interval;
 using quantities::AngularFrequency;
 using quantities::Square;
 using quantities::Time;
@@ -37,6 +39,9 @@ class FastFourierTransform {
                        Time const& Δt);
 
   std::map<AngularFrequency, Square<Scalar>> PowerSpectrum() const;
+
+  // Return the interval that contains the largest peak of power.
+  Interval<AngularFrequency> Mode() const;
 
  private:
   Time const Δt_;

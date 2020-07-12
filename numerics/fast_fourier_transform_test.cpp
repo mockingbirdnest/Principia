@@ -1,6 +1,7 @@
 ﻿#include "numerics/fast_fourier_transform.hpp"
 
 #include <algorithm>
+#include <random>
 #include <vector>
 
 #include "gmock/gmock.h"
@@ -13,10 +14,13 @@ namespace principia {
 namespace numerics {
 namespace internal_fast_fourier_transform {
 
+using quantities::Length;
 using quantities::Sqrt;
+using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::ElementsAre;
+using ::testing::Lt;
 using ::testing::Pair;
 
 class FastFourierTransformTest : public ::testing::Test {
@@ -131,6 +135,26 @@ TEST_F(FastFourierTransformTest, Sin) {
                        AlmostEquals(4.5768125922478623650817219388, 2)),
                   Pair(AlmostEquals(15 * π / 8 * Radian / Second, 0),
                        AlmostEquals(49.729867362198687411669694816, 0))));
+}
+
+TEST_F(FastFourierTransformTest, Mode) {
+  using FFT = FastFourierTransform<std::vector<Length>, 1 << 16>;
+  AngularFrequency const ω = 666 * π / FFT::size * Radian / Second;
+  Time const Δt = 1 * Second;
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> noise(-0.5, 0.5);
+  std::vector<Length> signal;
+  for (int n = 0; n < FFT::size; ++n) {
+    signal.push_back((Sin(n * ω * Δt) + noise(random)) * Metre);
+  }
+
+  // Won't fit on the stack.
+  auto transform = std::make_unique<FFT>(signal, Δt);
+
+  auto const mode = transform->Mode();
+  EXPECT_THAT(mode.midpoint(), AlmostEquals(ω, 0));
+  EXPECT_THAT(mode.measure(),
+              AlmostEquals(4 * π / FFT::size * Radian / Second, 24));
 }
 
 }  // namespace internal_fast_fourier_transform
