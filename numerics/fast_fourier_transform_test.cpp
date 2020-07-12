@@ -1,4 +1,4 @@
-#include "numerics/fast_fourier_transform.hpp"
+﻿#include "numerics/fast_fourier_transform.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -6,6 +6,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -13,8 +14,10 @@ namespace numerics {
 namespace internal_fast_fourier_transform {
 
 using quantities::Sqrt;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::ElementsAre;
+using ::testing::Pair;
 
 class FastFourierTransformTest : public ::testing::Test {
  protected:
@@ -29,7 +32,7 @@ class FastFourierTransformTest : public ::testing::Test {
 
 TEST_F(FastFourierTransformTest, Square) {
   using FFT = FastFourierTransform<std::vector<double>, 8>;
-  FFT const transform({1, 1, 1, 1, 0, 0, 0, 0});
+  FFT const transform({1, 1, 1, 1, 0, 0, 0, 0}, 1 * Second);
   EXPECT_THAT(Coefficients(transform),
               ElementsAre(AlmostEquals(Complex{4}, 0),
                           AlmostEquals(Complex{1, -1 - Sqrt(2)}, 1),
@@ -43,7 +46,7 @@ TEST_F(FastFourierTransformTest, Square) {
 
 TEST_F(FastFourierTransformTest, Sin) {
   using FFT = FastFourierTransform<std::vector<double>, 16>;
-  // Sin(x) on [0, 7].
+  // Sin(x) on [0, 7] by steps of 7 / 15 rad (thus ω is 7 / 15 rad / s).
   FFT const transform({+0,
                        +0.44991188055599964373,
                        +0.80360826369441117592,
@@ -59,7 +62,7 @@ TEST_F(FastFourierTransformTest, Sin) {
                        -0.63126663787232131146,
                        -0.21483085764466499644,
                        +0.24754738092257664739,
-                       +0.65698659871878909040});
+                       +0.65698659871878909040}, 1 * Second);
   EXPECT_THAT(
       Coefficients(transform),
       ElementsAre(
@@ -93,6 +96,41 @@ TEST_F(FastFourierTransformTest, Sin) {
                                -1.7603441806320655123815748876}, 2),
           AlmostEquals(Complex{+4.0811719972720017737297705383,
                                +5.7509914354728044020475598497}, 1)));
+
+  EXPECT_THAT(
+      transform.PowerSpectrum(),
+      ElementsAre(Pair(AlmostEquals(0 * Radian / Second, 0),
+                       AlmostEquals(0.7161225188062225589818894003, 0)),
+                  Pair(AlmostEquals(π / 8 * Radian / Second, 0),
+                       AlmostEquals(49.729867362198687411669694816, 0)),
+                  Pair(AlmostEquals(π / 4 * Radian / Second, 0),
+                       AlmostEquals(4.5768125922478623650817219388, 1)),
+                  Pair(AlmostEquals(3 * π / 8 * Radian / Second, 0),
+                       AlmostEquals(1.2458226823327073992355624995, 3)),
+                  Pair(AlmostEquals(π / 2 * Radian / Second, 0),
+                       AlmostEquals(0.6527765348939019854655626516, 1)),
+                  Pair(AlmostEquals(5 * π / 8 * Radian / Second, 0),
+                       AlmostEquals(0.4403837283619551481413056610, 2)),
+                  Pair(AlmostEquals(3 * π / 4 * Radian / Second, 0),
+                       AlmostEquals(0.3448445061260952118899789115, 1)),
+                  Pair(AlmostEquals(7 * π / 8 * Radian / Second, 0),
+                       AlmostEquals(0.3011181310316397868684530905, 18)),
+                  Pair(AlmostEquals(π * Radian / Second, 0),
+                       AlmostEquals(0.2882738863361058320489546747, 4)),
+                  Pair(AlmostEquals(9 * π / 8 * Radian / Second, 0),
+                       AlmostEquals(0.3011181310316397868684530905, 0)),
+                  Pair(AlmostEquals(5 * π / 4 * Radian / Second, 0),
+                       AlmostEquals(0.3448445061260952118899789115, 4)),
+                  Pair(AlmostEquals(11 * π / 8 * Radian / Second, 0),
+                       AlmostEquals(0.4403837283619551481413056610, 15)),
+                  Pair(AlmostEquals(3 * π / 2 * Radian / Second, 0),
+                       AlmostEquals(0.6527765348939019854655626516, 1)),
+                  Pair(AlmostEquals(13 * π / 8 * Radian / Second, 0),
+                       AlmostEquals(1.2458226823327073992355624995, 1)),
+                  Pair(AlmostEquals(7 * π / 4 * Radian / Second, 0),
+                       AlmostEquals(4.5768125922478623650817219388, 2)),
+                  Pair(AlmostEquals(15 * π / 8 * Radian / Second, 0),
+                       AlmostEquals(49.729867362198687411669694816, 0))));
 }
 
 }  // namespace internal_fast_fourier_transform

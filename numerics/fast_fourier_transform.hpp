@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include <array>
@@ -13,6 +13,9 @@ namespace numerics {
 namespace internal_fast_fourier_transform {
 
 using base::FloorLog2;
+using quantities::AngularFrequency;
+using quantities::Square;
+using quantities::Time;
 
 // This class computes Fourier[{...}, FourierParameters -> {1, -1}] in
 // Mathematica notation.  (The "signal processing" Fourier transform.)
@@ -26,12 +29,21 @@ class FastFourierTransform {
 
   using Scalar = typename Container::value_type;
 
-  explicit FastFourierTransform(Container const& container);
-
+  // In these constructors the samples are assumed to be separated by Δt.
+  FastFourierTransform(Container const& container,
+                       Time const& Δt);
   FastFourierTransform(typename Container::const_iterator begin,
-                       typename Container::const_iterator end);
+                       typename Container::const_iterator end,
+                       Time const& Δt);
+
+  std::map<AngularFrequency, Square<Scalar>> PowerSpectrum() const;
 
  private:
+  Time const Δt_;
+  AngularFrequency const ω_;
+
+  // The elements of transform_ are in SI units of Scalar.  They are spaced in
+  // frequency by ω_.
   std::array<std::complex<double>, size> transform_;
 
   friend class FastFourierTransformTest;

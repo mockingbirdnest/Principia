@@ -118,13 +118,17 @@ void DanielsonLánczos<array_size_, 4>::Transform(
 
 template<typename Container, int size_>
 FastFourierTransform<Container, size_>::FastFourierTransform(
-    Container const& container)
-    : FastFourierTransform(container.cbegin(), container.cend()) {}
+    Container const& container,
+    Time const& Δt)
+    : FastFourierTransform(container.cbegin(), container.cend(), Δt) {}
 
 template<typename Container, int size_>
 FastFourierTransform<Container, size_>::FastFourierTransform(
     typename Container::const_iterator begin,
-    typename Container::const_iterator end) {
+    typename Container::const_iterator end,
+    Time const& Δt)
+    : Δt_(Δt),
+      ω_(2 * π * Radian / (size * Δt_)) {
   DCHECK_EQ(size, std::distance(begin, end));
 
   // Type decay, reindexing, and promotion to complex.
@@ -138,6 +142,21 @@ FastFourierTransform<Container, size_>::FastFourierTransform(
   }
 
   DanielsonLánczos<size>::Transform(transform_.begin());
+}
+
+template<typename Container, int size_>
+std::map<AngularFrequency,
+         Square<typename FastFourierTransform<Container, size_>::Scalar>>
+FastFourierTransform<Container, size_>::PowerSpectrum() const {
+  std::map<AngularFrequency, Square<Scalar>> spectrum;
+  int k = 0;
+  for (auto const& coefficient : transform_) {
+    spectrum.emplace_hint(spectrum.end(),
+                          k * ω_,
+                          std::norm(coefficient) * si::Unit<Square<Scalar>>);
+    ++k;
+  }
+  return spectrum;
 }
 
 }  // namespace internal_fast_fourier_transform
