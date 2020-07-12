@@ -116,15 +116,17 @@ void DanielsonLánczos<array_size_, 4>::Transform(
   }
 }
 
-template<typename Container, int size_>
-FastFourierTransform<Container, size_>::FastFourierTransform(
+template<typename Scalar, std::size_t size_>
+template<typename Container, typename>
+FastFourierTransform<Scalar, size_>::FastFourierTransform(
     Container const& container)
     : FastFourierTransform(container.cbegin(), container.cend()) {}
 
-template<typename Container, int size_>
-FastFourierTransform<Container, size_>::FastFourierTransform(
-    typename Container::const_iterator begin,
-    typename Container::const_iterator end) {
+template<typename Scalar, std::size_t size_>
+template<typename Iterator, typename>
+FastFourierTransform<Scalar, size_>::FastFourierTransform(
+    Iterator const begin,
+    Iterator const end) {
   DCHECK_EQ(size, std::distance(begin, end));
 
   // Type decay, reindexing, and promotion to complex.
@@ -139,6 +141,11 @@ FastFourierTransform<Container, size_>::FastFourierTransform(
 
   DanielsonLánczos<size>::Transform(transform_.begin());
 }
+
+template<typename Scalar, std::size_t size_>
+FastFourierTransform<Scalar, size_>::FastFourierTransform(
+    std::array<Scalar, size> const& container)
+    : FastFourierTransform<Scalar, size_>(container.cbegin(), container.cend()) {}
 
 }  // namespace internal_fast_fourier_transform
 }  // namespace numerics

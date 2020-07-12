@@ -20,16 +20,15 @@ class FastFourierTransformTest : public ::testing::Test {
  protected:
   using Complex = std::complex<double>;
 
-  template<typename Container, int size_>
+  template<typename Scalar, std::size_t size_>
   std::array<std::complex<double>, size_> Coefficients(
-      FastFourierTransform<Container, size_> const& fft) {
+      FastFourierTransform<Scalar, size_> const& fft) {
     return fft.transform_;
   }
 };
 
 TEST_F(FastFourierTransformTest, Square) {
-  using FFT = FastFourierTransform<std::vector<double>, 8>;
-  FFT const transform({1, 1, 1, 1, 0, 0, 0, 0});
+  FastFourierTransform<double, 8> const transform({1, 1, 1, 1, 0, 0, 0, 0});
   EXPECT_THAT(Coefficients(transform),
               ElementsAre(AlmostEquals(Complex{4}, 0),
                           AlmostEquals(Complex{1, -1 - Sqrt(2)}, 1),
@@ -42,24 +41,23 @@ TEST_F(FastFourierTransformTest, Square) {
 }
 
 TEST_F(FastFourierTransformTest, Sin) {
-  using FFT = FastFourierTransform<std::vector<double>, 16>;
   // Sin(x) on [0, 7].
-  FFT const transform({+0,
-                       +0.44991188055599964373,
-                       +0.80360826369441117592,
-                       +0.98544972998846018066,
-                       +0.95654873748436662401,
-                       +0.72308588173832461680,
-                       +0.33498815015590491954,
-                       -0.12474816864589884767,
-                       -0.55780658091328209620,
-                       -0.87157577241358806002,
-                       -0.99895491709792831520,
-                       -0.91270346343588987220,
-                       -0.63126663787232131146,
-                       -0.21483085764466499644,
-                       +0.24754738092257664739,
-                       +0.65698659871878909040});
+  FastFourierTransform<double, 16> const transform({+0,
+                                                    +0.44991188055599964373,
+                                                    +0.80360826369441117592,
+                                                    +0.98544972998846018066,
+                                                    +0.95654873748436662401,
+                                                    +0.72308588173832461680,
+                                                    +0.33498815015590491954,
+                                                    -0.12474816864589884767,
+                                                    -0.55780658091328209620,
+                                                    -0.87157577241358806002,
+                                                    -0.99895491709792831520,
+                                                    -0.91270346343588987220,
+                                                    -0.63126663787232131146,
+                                                    -0.21483085764466499644,
+                                                    +0.24754738092257664739,
+                                                    +0.65698659871878909040});
   EXPECT_THAT(
       Coefficients(transform),
       ElementsAre(
