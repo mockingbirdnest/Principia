@@ -1189,7 +1189,6 @@ public partial class PrincipiaPluginAdapter
             plugin_.ReportGroundCollision(
                 closest_physical_parent(part1).flightID);
           }
-#if KSP_VERSION_1_9_1
           var collision_reporter =
               part1.gameObject.GetComponent<CollisionReporter>();
           if (part1.gameObject.GetComponent<CollisionReporter>() == null) {
@@ -1200,9 +1199,6 @@ public partial class PrincipiaPluginAdapter
           }
           foreach (var collision in collision_reporter.collisions) {
             var collider = collision.collider;
-#elif KSP_VERSION_1_7_3
-          foreach (var collider in part1.currentCollisions) {
-#endif
             if (collider == null) {
               // This happens, albeit quite rarely, see #1447.  When it happens,
               // the null collider remains in |currentCollisions| until the next
