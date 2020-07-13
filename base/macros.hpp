@@ -153,6 +153,7 @@ inline void noreturn() { std::exit(0); }
 // Needed to circumvent lint warnings in constexpr functions where CHECK_LT and
 // friends cannot be used.
 #define CONSTEXPR_CHECK(condition) CHECK(condition)
+#define CONSTEXPR_DCHECK(condition) DCHECK(condition)
 
 // Clang for some reason doesn't like FP arithmetic that yields infinities in
 // constexpr code (MSVC and GCC are fine with that).  This will be fixed in

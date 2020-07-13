@@ -21,6 +21,8 @@
     <ClInclude Include="cbrt.hpp" />
     <ClInclude Include="elliptic_integrals.hpp" />
     <ClInclude Include="elliptic_functions.hpp" />
+    <ClInclude Include="fast_fourier_transform.hpp" />
+    <ClInclude Include="fast_fourier_transform_body.hpp" />
     <ClInclude Include="fast_sin_cos_2π.hpp" />
     <ClInclude Include="finite_difference.hpp" />
     <ClInclude Include="finite_difference.mathematica.h" />
@@ -66,6 +68,7 @@
     <ClCompile Include="elliptic_integrals_test.cpp" />
     <ClCompile Include="elliptic_functions.cpp" />
     <ClCompile Include="elliptic_functions_test.cpp" />
+    <ClCompile Include="fast_fourier_transform_test.cpp" />
     <ClCompile Include="fast_sin_cos_2π.cpp" />
     <ClCompile Include="fast_sin_cos_2π_test.cpp" />
     <ClCompile Include="finite_difference_test.cpp" />
