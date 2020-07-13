@@ -39,7 +39,7 @@ TEST_F(FastFourierTransformTest, Square) {
                                                   1 * Second);
   EXPECT_THAT(Coefficients(transform),
               ElementsAre(AlmostEquals(Complex{4}, 0),
-                          AlmostEquals(Complex{1, -1 - Sqrt(2)}, 1),
+                          AlmostEquals(Complex{1, -1 - Sqrt(2)}, 0, 1),
                           AlmostEquals(Complex{0}, 0),
                           AlmostEquals(Complex{1, 1 - Sqrt(2)}, 4),
                           AlmostEquals(Complex{0}, 0),
@@ -89,7 +89,7 @@ TEST_F(FastFourierTransformTest, Sin) {
           AlmostEquals(Complex{-0.5400094598886346723188351187,
                                -0.0975085343055921838098913009}, 3),
           AlmostEquals(Complex{-0.5504467338298529673542814016,
-                               -0.2045798116680680999699630079}, 2),
+                               -0.2045798116680680999699630079}, 2, 6),
           AlmostEquals(Complex{-0.5726936754458237681916166204,
                                -0.3352695668656918501471058013}, 6),
           AlmostEquals(Complex{-0.6197133589762012113067702090,
