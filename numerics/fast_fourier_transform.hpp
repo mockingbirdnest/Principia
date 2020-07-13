@@ -49,6 +49,11 @@ class FastFourierTransform {
   FastFourierTransform(std::array<Scalar, size> const& container,
                        Time const& Δt);
 
+  std::map<AngularFrequency, Square<Scalar>> PowerSpectrum() const;
+
+  // Returns the interval that contains the largest peak of power.
+  Interval<AngularFrequency> Mode() const;
+
  private:
   Time const Δt_;
   AngularFrequency const ω_;

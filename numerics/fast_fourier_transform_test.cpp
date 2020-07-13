@@ -138,7 +138,7 @@ TEST_F(FastFourierTransformTest, Sin) {
 }
 
 TEST_F(FastFourierTransformTest, Mode) {
-  using FFT = FastFourierTransform<std::vector<Length>, 1 << 16>;
+  using FFT = FastFourierTransform<Length, 1 << 16>;
   AngularFrequency const ω = 666 * π / FFT::size * Radian / Second;
   Time const Δt = 1 * Second;
   std::mt19937_64 random(42);

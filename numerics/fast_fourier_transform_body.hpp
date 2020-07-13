@@ -147,10 +147,15 @@ FastFourierTransform<Scalar, size_>::FastFourierTransform(
   DanielsonLánczos<size>::Transform(transform_.begin());
 }
 
-template<typename Container, int size_>
-std::map<AngularFrequency,
-         Square<typename FastFourierTransform<Container, size_>::Scalar>>
-FastFourierTransform<Container, size_>::PowerSpectrum() const {
+template<typename Scalar, std::size_t size_>
+FastFourierTransform<Scalar, size_>::FastFourierTransform(
+    std::array<Scalar, size> const& container,
+    Time const& Δt)
+    : FastFourierTransform(container.cbegin(), container.cend(), Δt) {}
+
+template<typename Scalar, std::size_t size_>
+std::map<AngularFrequency, Square<Scalar>>
+FastFourierTransform<Scalar, size_>::PowerSpectrum() const {
   std::map<AngularFrequency, Square<Scalar>> spectrum;
   int k = 0;
   for (auto const& coefficient : transform_) {
@@ -162,11 +167,10 @@ FastFourierTransform<Container, size_>::PowerSpectrum() const {
   return spectrum;
 }
 
-template<typename Container, int size_>
-Interval<AngularFrequency> FastFourierTransform<Container, size_>::Mode()
-    const {
+template<typename Scalar, std::size_t size_>
+Interval<AngularFrequency> FastFourierTransform<Scalar, size_>::Mode() const {
   auto const spectrum = PowerSpectrum();
-  std::map<AngularFrequency, Square<Scalar>>::const_iterator max =
+  typename std::map<AngularFrequency, Square<Scalar>>::const_iterator max =
       spectrum.end();
   for (auto it = spectrum.begin(); it != spectrum.end(); ++it) {
     if (max == spectrum.end() || it->second > max->second) {
