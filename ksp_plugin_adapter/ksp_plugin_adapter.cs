@@ -1155,11 +1155,11 @@ public partial class PrincipiaPluginAdapter
 
     plugin_.PrepareToReportCollisions();
 
-    // The collisions are reported and stored into |currentCollisions| in
-    // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
-    // Here, the |currentCollisions| are the collisions that occurred in the
-    // physics simulation, which is why we report them before calling
-    // |AdvanceTime|.
+    // The collisions are reported by the
+    // CollisionReporter.OnCollisionEnter|Stay events, which occurred while we
+    // yielded.
+    // Here, the |CollisionReporter.collisions| are the collisions that occurred
+    // in the physics simulation.
     foreach (Vessel vessel1 in
              FlightGlobals.Vessels.Where(v => !v.packed && is_manageable(v))) {
       if (plugin_.HasVessel(vessel1.id.ToString())) {
@@ -1167,6 +1167,7 @@ public partial class PrincipiaPluginAdapter
                               is_clambering(vessel1.evaController))) {
           var vessel2 = vessel1.evaController.LadderPart?.vessel;
           if (vessel2 != null && !vessel2.packed && is_manageable(vessel2)) {
+            Log.Info("Reporting climbing a ladder");
             plugin_.ReportPartCollision(
                 vessel1.rootPart.flightID,
                 closest_physical_parent(
@@ -1188,11 +1189,16 @@ public partial class PrincipiaPluginAdapter
             plugin_.ReportGroundCollision(
                 closest_physical_parent(part1).flightID);
           }
-#if KSP_VERSION_1_9_1
-          foreach (var collider in part1.currentCollisions.Keys) {
-#elif KSP_VERSION_1_7_3
-          foreach (var collider in part1.currentCollisions) {
-#endif
+          var collision_reporter =
+              part1.gameObject.GetComponent<CollisionReporter>();
+          if (part1.gameObject.GetComponent<CollisionReporter>() == null) {
+            // This would only happen if |part1| had been added after
+            // |BetterLateThanNever|, but we never know what the game will throw
+            // at us.
+            continue;
+          }
+          foreach (var collision in collision_reporter.collisions) {
+            var collider = collision.collider;
             if (collider == null) {
               // This happens, albeit quite rarely, see #1447.  When it happens,
               // the null collider remains in |currentCollisions| until the next
@@ -1211,6 +1217,8 @@ public partial class PrincipiaPluginAdapter
               // All parts in a vessel are in the same pile up, so there is no
               // point in reporting this collision; this also causes issues
               // where disappearing kerbals collide with themselves.
+              // NOTE(egg): It is unclear whether this is needed now that we
+              // have the |CollisionReporter|.
               continue;
             }
             if (part1.State == PartStates.DEAD ||
@@ -1229,6 +1237,8 @@ public partial class PrincipiaPluginAdapter
                 // better ignore the collision, the Kerbal will soon become
                 // ready anyway.
               } else if (is_manageable(vessel2)) {
+                Log.Info($@"Reporting collision with collider {collider.name} ({
+                            (UnityLayers)collider.gameObject.layer})");
                 plugin_.ReportPartCollision(
                     closest_physical_parent(part1).flightID,
                     closest_physical_parent(part2).flightID);
@@ -1577,6 +1587,13 @@ public partial class PrincipiaPluginAdapter
               new QP{q = (XYZ)(Vector3d)part.rb.position,
                      p = (XYZ)(Vector3d)part.rb.velocity});
         }
+      }
+    }
+    foreach (Vessel vessel in FlightGlobals.Vessels.Where(v => !v.packed)) {
+      foreach (Part part in vessel.parts.Where(
+                   p => p.gameObject.GetComponent<CollisionReporter>() == null)) {
+        // Ensure that all unpacked parts have a collision reporter.
+        part.gameObject.AddComponent<CollisionReporter>();
       }
     }
   }

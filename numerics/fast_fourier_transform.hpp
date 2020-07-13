@@ -3,6 +3,7 @@
 
 #include <array>
 #include <complex>
+#include <type_traits>
 #include <vector>
 
 #include "base/bits.hpp"
@@ -20,8 +21,8 @@ using quantities::Square;
 using quantities::Time;
 
 // This class computes Fourier[{...}, FourierParameters -> {1, -1}] in
-// Mathematica notation.  (The "signal processing" Fourier transform.)
-template<typename Container, int size_>
+// Mathematica notation (the "signal processing" Fourier transform).
+template<typename Scalar, std::size_t size_>
 class FastFourierTransform {
  public:
   // The size must be a power of 2.
@@ -29,19 +30,24 @@ class FastFourierTransform {
   static constexpr int log2_size = FloorLog2(size);
   static_assert(size == 1 << log2_size);
 
-  using Scalar = typename Container::value_type;
+  // In the constructors, the container must have |size| elements.  The samples
+  // are assumed to be separated by Δt.
 
-  // In these constructors the samples are assumed to be separated by Δt.
+  template<typename Container,
+           typename = std::enable_if_t<
+               std::is_convertible_v<typename Container::value_type, Scalar>>>
   FastFourierTransform(Container const& container,
                        Time const& Δt);
-  FastFourierTransform(typename Container::const_iterator begin,
-                       typename Container::const_iterator end,
+
+  template<typename Iterator,
+           typename = std::enable_if_t<std::is_convertible_v<
+               typename std::iterator_traits<Iterator>::value_type,
+               Scalar>>>
+  FastFourierTransform(Iterator begin, Iterator end,
                        Time const& Δt);
 
-  std::map<AngularFrequency, Square<Scalar>> PowerSpectrum() const;
-
-  // Return the interval that contains the largest peak of power.
-  Interval<AngularFrequency> Mode() const;
+  FastFourierTransform(std::array<Scalar, size> const& container,
+                       Time const& Δt);
 
  private:
   Time const Δt_;
