@@ -19,9 +19,8 @@ using quantities::si::Radian;
 using quantities::si::Unit;
 namespace si = quantities::si;
 
-// This implementation follows Myrnyy, A Simple and Efficient FFT Implementation
-// in C++, Dr. Dobbs, 2007.
-
+// Implementation of the Danielson-Lánczos algorithm using templates for
+// recursion and template specializations for short FFTs [DL42, Myr07].
 template<int array_size_, int chunk_size_ = array_size_>
 class DanielsonLánczos {
  public:
@@ -63,15 +62,15 @@ void DanielsonLánczos<array_size_, chunk_size_>::Transform(
   double const sin_θ = Sin(θ);
   double const cos_2θ_minus_1 = -2 * sin_θ * sin_θ;
   double const sin_2θ = Sin(2 * θ);
+  // Computing e⁻²ⁱ⁽ᵏ⁺¹⁾ᶿ as e⁻²ⁱᵏᶿ + e⁻²ⁱᵏᶿ (e⁻²ⁱᶿ - 1) rather than e⁻²ⁱᵏᶿe⁻²ⁱᶿ
+  // improves accuracy [Myr07].
   std::complex<double> const e⁻²ⁱᶿ_minus_1(cos_2θ_minus_1, -sin_2θ);
   std::complex<double> e⁻²ⁱᵏᶿ = 1;
   auto it = begin;
-  for (int k = 0; k < N / 2; ++it, ++k) {
+  for (int k = 0; k < N / 2; ++it, ++k, e⁻²ⁱᵏᶿ += e⁻²ⁱᵏᶿ * (e⁻²ⁱᶿ_minus_1)) {
     auto const t = *(it + N / 2) * e⁻²ⁱᵏᶿ;
     *(it + N / 2) = *it - t;
     *it += t;
-
-    e⁻²ⁱᵏᶿ += e⁻²ⁱᵏᶿ * (e⁻²ⁱᶿ_minus_1);
   }
 }
 
