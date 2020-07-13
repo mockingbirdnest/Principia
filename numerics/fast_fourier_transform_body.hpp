@@ -2,6 +2,9 @@
 
 #include "numerics/fast_fourier_transform.hpp"
 
+#include <map>
+#include <optional>
+
 #include "base/bits.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"
@@ -118,14 +121,18 @@ void DanielsonLánczos<array_size_, 4>::Transform(
 template<typename Scalar, std::size_t size_>
 template<typename Container, typename>
 FastFourierTransform<Scalar, size_>::FastFourierTransform(
-    Container const& container)
-    : FastFourierTransform(container.cbegin(), container.cend()) {}
+    Container const& container,
+    Time const& Δt)
+    : FastFourierTransform(container.cbegin(), container.cend(), Δt) {}
 
 template<typename Scalar, std::size_t size_>
 template<typename Iterator, typename>
 FastFourierTransform<Scalar, size_>::FastFourierTransform(
     Iterator const begin,
-    Iterator const end) {
+    Iterator const end,
+    Time const& Δt)
+    : Δt_(Δt),
+      ω_(2 * π * Radian / (size * Δt_)) {
   DCHECK_EQ(size, std::distance(begin, end));
 
   // Type decay, reindexing, and promotion to complex.
@@ -143,8 +150,47 @@ FastFourierTransform<Scalar, size_>::FastFourierTransform(
 
 template<typename Scalar, std::size_t size_>
 FastFourierTransform<Scalar, size_>::FastFourierTransform(
-    std::array<Scalar, size> const& container)
-    : FastFourierTransform(container.cbegin(), container.cend()) {}
+    std::array<Scalar, size> const& container,
+    Time const& Δt)
+    : FastFourierTransform(container.cbegin(), container.cend(), Δt) {}
+
+template<typename Scalar, std::size_t size_>
+std::map<AngularFrequency, Square<Scalar>>
+FastFourierTransform<Scalar, size_>::PowerSpectrum() const {
+  std::map<AngularFrequency, Square<Scalar>> spectrum;
+  int k = 0;
+  for (auto const& coefficient : transform_) {
+    spectrum.emplace_hint(spectrum.end(),
+                          k * ω_,
+                          std::norm(coefficient) * si::Unit<Square<Scalar>>);
+    ++k;
+  }
+  return spectrum;
+}
+
+template<typename Scalar, std::size_t size_>
+Interval<AngularFrequency> FastFourierTransform<Scalar, size_>::Mode() const {
+  auto const spectrum = PowerSpectrum();
+  typename std::map<AngularFrequency, Square<Scalar>>::const_iterator max =
+      spectrum.end();
+
+  // Only look at the first size / 2 + 1 elements because the spectrum is
+  // symmetrical.
+  auto it = spectrum.begin();
+  for (int i = 0; i < size / 2 + 1; ++i, ++it) {
+    if (max == spectrum.end() || it->second > max->second) {
+      max = it;
+    }
+  }
+  Interval<AngularFrequency> result;
+  if (max == spectrum.begin()) {
+    result.Include(max->first);
+  } else {
+    result.Include(std::prev(max)->first);
+  }
+  result.Include(std::next(max)->first);
+  return result;
+}
 
 }  // namespace internal_fast_fourier_transform
 }  // namespace numerics
