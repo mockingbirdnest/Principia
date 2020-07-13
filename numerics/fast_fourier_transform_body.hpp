@@ -2,6 +2,7 @@
 
 #include "numerics/fast_fourier_transform.hpp"
 
+#include <map>
 #include <optional>
 
 #include "base/bits.hpp"
