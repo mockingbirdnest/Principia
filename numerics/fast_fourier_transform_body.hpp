@@ -173,7 +173,11 @@ Interval<AngularFrequency> FastFourierTransform<Scalar, size_>::Mode() const {
   auto const spectrum = PowerSpectrum();
   typename std::map<AngularFrequency, Square<Scalar>>::const_iterator max =
       spectrum.end();
-  for (auto it = spectrum.begin(); it != spectrum.end(); ++it) {
+
+  // Only look at the first size / 2 + 1 elements because the spectrum is
+  // symmetrical.
+  auto it = spectrum.begin();
+  for (int i = 0; i < size / 2 + 1; ++i, ++it) {
     if (max == spectrum.end() || it->second > max->second) {
       max = it;
     }
@@ -184,11 +188,7 @@ Interval<AngularFrequency> FastFourierTransform<Scalar, size_>::Mode() const {
   } else {
     result.Include(std::prev(max)->first);
   }
-  if (max == std::prev(spectrum.end())) {
-    result.Include(max->first);
-  } else {
-    result.Include(std::next(max)->first);
-  }
+  result.Include(std::next(max)->first);
   return result;
 }
 
