@@ -352,7 +352,6 @@ XYZ __cdecl principia__AngularMomentumFromAngularVelocity(
   auto const angular_velocity =
       FromXYZ<AngularVelocity<World>>(world_angular_velocity);
 
-
   static constexpr MomentOfInertia zero;
   auto const moments_of_inertia =
       FromXYZ<R3Element<MomentOfInertia>>({moments_of_inertia_in_tonnes.x,
