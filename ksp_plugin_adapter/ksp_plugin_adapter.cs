@@ -184,6 +184,10 @@ public partial class PrincipiaPluginAdapter
   private readonly Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
       new Dictionary<uint, Vector3d>();
 
+  private readonly Dictionary<Vessel, Vector3d>
+      parachuting_kerbal_angular_velocities_ =
+      new Dictionary<Vessel, Vector3d>();
+
   // Work around the launch backflip issue encountered while releasing
   // Frobenius.
   // The issue is that the position of a  |ForceHolder| collected in
@@ -484,6 +488,10 @@ public partial class PrincipiaPluginAdapter
   // Æthelred Kerman.
   private bool is_unready_kerbal(Vessel vessel) {
     return vessel.isEVA && vessel.evaController?.Ready == false;
+  }
+
+  private bool is_parachuting_kerbal(Vessel vessel) {
+    return vessel.isEVA && vessel.evaController.IsChuteState;
   }
 
   private bool is_manageable(Vessel vessel) {
@@ -974,10 +982,21 @@ public partial class PrincipiaPluginAdapter
       previous_display_mode_ = null;
     }
 
+    parachuting_kerbal_angular_velocities_.Clear();
+
     if (PluginRunning()) {
       plugin_.SetMainBody(
           (FlightGlobals.currentMainBody
                ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
+
+      foreach (Vessel vessel in
+                   FlightGlobals.Vessels.Where(
+                       v => is_manageable(v) && !v.packed &&
+                       is_parachuting_kerbal(v))) {
+        parachuting_kerbal_angular_velocities_.Add(
+            vessel,
+            vessel.rootPart.rb.angularVelocity);
+      }
 
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
@@ -1494,8 +1513,38 @@ public partial class PrincipiaPluginAdapter
                FlightGlobals.Vessels.Where(v => is_manageable(v) &&
                                                 !v.packed)) {
         foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
-          if (part.torque != Vector3d.zero) {
-            part_id_to_intrinsic_torque_.Add(part.flightID, part.torque);
+          Vector3d parachute_torque = Vector3d.zero;
+          if (part == vessel.rootPart &&
+              is_parachuting_kerbal(vessel) &&
+              parachuting_kerbal_angular_velocities_.TryGetValue(
+                  vessel, out Vector3d old_angular_velocity)) {
+            // Instead of applying forces some distance from the centre of mass,
+            // or applying torques, EVA parachutes directly set the angular
+            // velocity of the Kerbal.  We register a torque equivalent to the
+            // change in angular momentum; failing to do so would cause the
+            // parachute to act on the linear motion but not the attitude,
+            // so that Kerbals would keep spinning under their parachute in
+            // stock, and would orient themselves head-down (and parachute-down)
+            // with FAR.  See #2607.
+            // To quote ferram4, “consider it all cursed”.
+            Vector3d Δω_world = part.rb.angularVelocity - old_angular_velocity;
+            var ΔL_world =
+                (Vector3d)Interface.AngularMomentumFromAngularVelocity(
+                    world_angular_velocity: (XYZ)Δω_world,
+                    moments_of_inertia_in_tonnes:
+                        (XYZ)(Vector3d)part.rb.inertiaTensor,
+                    principal_axes_rotation: (WXYZ)(UnityEngine.QuaternionD)
+                        part.rb.inertiaTensorRotation,
+                    part_rotation:
+                        (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation);
+            double Δt =
+                Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+            parachute_torque = ΔL_world / Δt;
+          }
+          if (part.torque != Vector3d.zero ||
+              parachute_torque != Vector3d.zero) {
+            part_id_to_intrinsic_torque_.Add(
+                part.flightID, part.torque + parachute_torque);
           }
           if (part.force != Vector3d.zero) {
             part_id_to_intrinsic_force_.Add(part.flightID, part.force);
