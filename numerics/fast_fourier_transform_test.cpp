@@ -41,11 +41,11 @@ TEST_F(FastFourierTransformTest, Square) {
               ElementsAre(AlmostEquals(Complex{4}, 0),
                           AlmostEquals(Complex{1, -1 - Sqrt(2)}, 0, 1),
                           AlmostEquals(Complex{0}, 0),
-                          AlmostEquals(Complex{1, 1 - Sqrt(2)}, 4),
+                          AlmostEquals(Complex{1, 1 - Sqrt(2)}, 4, 8),
                           AlmostEquals(Complex{0}, 0),
                           AlmostEquals(Complex{1, Sqrt(2) - 1}, 4),
                           AlmostEquals(Complex{0}, 0),
-                          AlmostEquals(Complex{1, 1 + Sqrt(2)}, 2)));
+                          AlmostEquals(Complex{1, 1 + Sqrt(2)}, 0, 2)));
 }
 
 TEST_F(FastFourierTransformTest, Sin) {
@@ -91,13 +91,13 @@ TEST_F(FastFourierTransformTest, Sin) {
           AlmostEquals(Complex{-0.5504467338298529673542814016,
                                -0.2045798116680680999699630079}, 2, 6),
           AlmostEquals(Complex{-0.5726936754458237681916166204,
-                               -0.3352695668656918501471058013}, 6),
+                               -0.3352695668656918501471058013}, 6, 8),
           AlmostEquals(Complex{-0.6197133589762012113067702090,
                                -0.5183935643893893471214059230}, 0),
           AlmostEquals(Complex{-0.7372425382844149484214817488,
-                               -0.8380310985140470061957305286}, 1),
+                               -0.8380310985140470061957305286}, 1, 2),
           AlmostEquals(Complex{-1.2157306272208018501429984476,
-                               -1.7603441806320655123815748876}, 2),
+                               -1.7603441806320655123815748876}, 1, 2),
           AlmostEquals(Complex{+4.0811719972720017737297705383,
                                +5.7509914354728044020475598497}, 1)));
 
@@ -110,31 +110,31 @@ TEST_F(FastFourierTransformTest, Sin) {
                   Pair(AlmostEquals(π / 4 * Radian / Second, 0),
                        AlmostEquals(4.5768125922478623650817219388, 1)),
                   Pair(AlmostEquals(3 * π / 8 * Radian / Second, 0),
-                       AlmostEquals(1.2458226823327073992355624995, 3)),
+                       AlmostEquals(1.2458226823327073992355624995, 3, 4)),
                   Pair(AlmostEquals(π / 2 * Radian / Second, 0),
                        AlmostEquals(0.6527765348939019854655626516, 1)),
                   Pair(AlmostEquals(5 * π / 8 * Radian / Second, 0),
-                       AlmostEquals(0.4403837283619551481413056610, 2)),
+                       AlmostEquals(0.4403837283619551481413056610, 2, 3)),
                   Pair(AlmostEquals(3 * π / 4 * Radian / Second, 0),
-                       AlmostEquals(0.3448445061260952118899789115, 1)),
+                       AlmostEquals(0.3448445061260952118899789115, 1, 5)),
                   Pair(AlmostEquals(7 * π / 8 * Radian / Second, 0),
-                       AlmostEquals(0.3011181310316397868684530905, 18)),
+                       AlmostEquals(0.3011181310316397868684530905, 10, 18)),
                   Pair(AlmostEquals(π * Radian / Second, 0),
                        AlmostEquals(0.2882738863361058320489546747, 4)),
                   Pair(AlmostEquals(9 * π / 8 * Radian / Second, 0),
                        AlmostEquals(0.3011181310316397868684530905, 0)),
                   Pair(AlmostEquals(5 * π / 4 * Radian / Second, 0),
-                       AlmostEquals(0.3448445061260952118899789115, 4)),
+                       AlmostEquals(0.3448445061260952118899789115, 1, 4)),
                   Pair(AlmostEquals(11 * π / 8 * Radian / Second, 0),
-                       AlmostEquals(0.4403837283619551481413056610, 15)),
+                       AlmostEquals(0.4403837283619551481413056610, 4, 15)),
                   Pair(AlmostEquals(3 * π / 2 * Radian / Second, 0),
                        AlmostEquals(0.6527765348939019854655626516, 1)),
                   Pair(AlmostEquals(13 * π / 8 * Radian / Second, 0),
                        AlmostEquals(1.2458226823327073992355624995, 1)),
                   Pair(AlmostEquals(7 * π / 4 * Radian / Second, 0),
-                       AlmostEquals(4.5768125922478623650817219388, 2)),
+                       AlmostEquals(4.5768125922478623650817219388, 1, 2)),
                   Pair(AlmostEquals(15 * π / 8 * Radian / Second, 0),
-                       AlmostEquals(49.729867362198687411669694816, 0))));
+                       AlmostEquals(49.729867362198687411669694816, 0, 2))));
 }
 
 TEST_F(FastFourierTransformTest, Mode) {
