@@ -215,7 +215,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5173.
+  extensions 5000 to 5999;  // Last used: 5174.
 }
 
 message SetAngularMomentumConservation {
@@ -254,6 +254,23 @@ message AdvanceTime {
     required double planetarium_rotation = 3;
   }
   optional In in = 1;
+}
+
+message AngularMomentumFromAngularVelocity {
+  extend Method {
+    optional AngularMomentumFromAngularVelocity extension = 5174;
+  }
+  message In {
+    required XYZ world_angular_velocity = 1;
+    required XYZ moments_of_inertia_in_tonnes = 2;
+    required WXYZ principal_axes_rotation = 3;
+    required WXYZ part_rotation = 4;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message CameraReferenceRotation {

@@ -1528,19 +1528,17 @@ public partial class PrincipiaPluginAdapter
             // with FAR.  See #2607.
             // To quote ferram4, “consider it all cursed”.
             Vector3d Δω_world = part.rb.angularVelocity - old_angular_velocity;
-            Vector3d principal_moments_of_inertia = part.rb.inertiaTensor;
-            // |Rigidbody.inertiaTensorRotation goes from |PartPrincipalAxes|
-            // to |RigidPart|.
-            // |Rigidbody.rotation| goes from |RigidPart| to |World|.
-            UnityEngine.QuaternionD principal_axes_to_world =
-                part.rb.rotation * part.rb.inertiaTensorRotation;
-            UnityEngine.QuaternionD world_to_principal_axes =
-                UnityEngine.QuaternionD.Inverse(principal_axes_to_world);
-            Vector3d Δω_principal_axes = world_to_principal_axes * Δω_world;
-            Vector3d ΔL_principal_axes =
-                Vector3d.Scale(principal_moments_of_inertia, Δω_principal_axes);
-            Vector3d ΔL_world = principal_axes_to_world * ΔL_principal_axes;
-            double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+            var ΔL_world =
+                (Vector3d)Interface.AngularMomentumFromAngularVelocity(
+                    world_angular_velocity: (XYZ)Δω_world,
+                    moments_of_inertia_in_tonnes:
+                        (XYZ)(Vector3d)part.rb.inertiaTensor,
+                    principal_axes_rotation: (WXYZ)(UnityEngine.QuaternionD)
+                        part.rb.inertiaTensorRotation,
+                    part_rotation:
+                        (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation);
+            double Δt =
+                Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
             parachute_torque = ΔL_world / Δt;
           }
           if (part.torque != Vector3d.zero ||
