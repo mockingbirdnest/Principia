@@ -161,10 +161,6 @@ RigidMotion<RigidPart, Barycentric> const& Part::rigid_motion() const {
   return rigid_motion_;
 }
 
-DegreesOfFreedom<Barycentric> Part::degrees_of_freedom() const {
-  return rigid_motion_({RigidPart::origin, RigidPart::unmoving});
-}
-
 DiscreteTrajectory<Barycentric>::Iterator Part::history_begin() {
   // Make sure that we skip the point of the prehistory.
   auto it = history_->Fork();
