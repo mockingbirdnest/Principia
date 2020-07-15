@@ -37,6 +37,7 @@ using base::not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::AngularVelocity;
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
@@ -60,6 +61,7 @@ using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::Frenet;
 using physics::RelativeDegreesOfFreedom;
+using quantities::AngularMomentum;
 using quantities::Length;
 using quantities::MomentOfInertia;
 
@@ -171,6 +173,7 @@ XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
 XYZ ToXYZ(Position<World> const& position);
 XYZ ToXYZ(Vector<double, World> const& direction);
 XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);
+XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum);
 
 // Conversions between interchange data and typed data that depend on the state
 // of the plugin.
