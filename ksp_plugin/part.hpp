@@ -112,7 +112,7 @@ class Part final {
 
   // A convenience selector.
   // TODO(phl): Should probably be eliminated at some point.
-  DegreesOfFreedom<Barycentric> degrees_of_freedom() const;
+  // DegreesOfFreedom<Barycentric> degrees_of_freedom() const;
 
   // Return iterators to the beginning and end of the history and psychohistory
   // of the part, respectively.  Either trajectory may be empty, but they are

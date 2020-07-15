@@ -169,7 +169,9 @@ void Vessel::PrepareHistory(Instant const& t) {
               << " at " << t;
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     ForAllParts([&calculator](Part& part) {
-      calculator.Add(part.degrees_of_freedom(), part.mass());
+      calculator.Add(
+          part.rigid_motion()({RigidPart::origin, RigidPart::unmoving}),
+          part.mass());
     });
     CHECK(psychohistory_ == nullptr);
     history_->SetDownsampling(max_dense_intervals, downsampling_tolerance);
