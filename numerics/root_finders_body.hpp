@@ -56,7 +56,8 @@ Argument Bisect(Function f,
   }
 }
 
-//https://en.wikipedia.org/wiki/Golden-section_search
+// See https://en.wikipedia.org/wiki/Golden-section_search for a description of
+// this algorithm.
 template<typename Argument, typename Function, typename Compare>
 Argument GoldenSectionSearch(Function f,
                              Argument const& lower_bound,
