@@ -65,19 +65,45 @@ Argument GoldenSectionSearch(Function f,
   static constexpr double upper_interior_ratio = φ - 1;
   using Value = decltype(f(lower_bound));
 
-  Value f_upper = f(upper_bound);
-  Value f_lower = f(lower_bound);
-  Argument lower_interior = upper_interior_ratio * lower_bound + lower_interior_ratio * upper_bound;
-  Argument upper_interior = lower_interior_ratio * lower_bound + upper_interior_ratio * upper_bound;
+  Argument upper = upper_bound;
+  Value f_upper = f(upper);
+
+  Argument lower = lower_bound;
+  Value f_lower = f(lower);
+
+  Argument lower_interior = Barycentre<Argument, double>(
+      {lower, upper}, {upper_interior_ratio, lower_interior_ratio});
   Value f_lower_interior = f(lower_interior);
+
+  Argument upper_interior = Barycentre<Argument, double>(
+      {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
   Value f_upper_interior = f(upper_interior);
-  Value f_lower_min = std::min(f_lower, f_lower_interior);
-  Value f_upper_min = std::min(f_upper_interior, f_upper);
-  if (f_lower_min < f_upper_min) {
 
-  } else {
-
+  while (lower < lower_interior &&
+         lower_interior < upper_interior &&
+         upper_interior < upper) {
+    Value f_lower_min = std::min(f_lower, f_lower_interior);
+    Value f_upper_min = std::min(f_upper_interior, f_upper);
+    if (f_lower_min < f_upper_min) {
+      upper = upper_interior;
+      f_upper = f_upper_interior;
+      upper_interior = lower_interior;
+      f_upper_interior = f_lower_interior;
+      lower_interior =
+          upper_interior_ratio * lower + lower_interior_ratio * upper;
+      f_lower_interior = f(lower_interior);
+    } else {
+      lower = lower_interior;
+      f_lower = f_lower_interior;
+      lower_interior = upper_interior;
+      f_lower_interior = f_upper_interior;
+      upper_interior =
+          lower_interior_ratio * lower + upper_interior_ratio * upper;
+      f_upper_interior = f(upper_interior);
+    }
   }
+
+  return Barycentre<Argument, double>({lower, upper}, {1, 1});
 }
 
 template<typename Argument, typename Value>
