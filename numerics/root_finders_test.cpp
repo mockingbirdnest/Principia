@@ -58,6 +58,11 @@ TEST_F(RootFindersTest, SquareRoots) {
 
 TEST_F(RootFindersTest, GoldenSectionSearch) {
   Instant const t_0;
+  auto sin = [t_0](Instant const& t) {
+    return Sin((t - t_0) * Radian / Second);
+  };
+
+  // Minimum.
   for (int l = 16; l <= 47; ++l) {
     for (int u = 48; u <= 62; ++u) {
       // The result is not overly precise because near its maximum a the
@@ -66,15 +71,20 @@ TEST_F(RootFindersTest, GoldenSectionSearch) {
       // The second order term vanishes when x and a match on the first 26
       // leading bits (roughly).
       EXPECT_THAT(
-          GoldenSectionSearch(
-              [t_0](Instant const& t) {
-                return Sin((t - t_0) * Radian / Second);
-              },
-              t_0 + l * 0.1 * Second,
-              t_0 + u * 0.1 * Second),
+          GoldenSectionSearch(sin,
+                              t_0 + l * 0.1 * Second,
+                              t_0 + u * 0.1 * Second),
           AlmostEquals(t_0 + 3 * π / 2 * Second, 11'863'280, 11'863'284));
     }
   }
+
+  // Maximum.
+  EXPECT_THAT(
+      (GoldenSectionSearch<Instant, decltype(sin), std::greater<double>>)(
+          sin,
+          t_0 + 1.5 * Second,
+          t_0 + 1.6 * Second),
+      AlmostEquals(t_0 + π / 2 * Second, 47453132));
 }
 
 TEST_F(RootFindersTest, QuadraticEquations) {

@@ -19,6 +19,7 @@ using quantities::Derivative;
 // function agreeing with |f| on the values of |Argument|.
 // If |f(lower_bound)| and |f(upper_bound)| are both nonzero, they must be of
 // opposite signs.
+// TODO(phl): Use Brent's algorithm.
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
                 Argument const& lower_bound,
@@ -26,6 +27,7 @@ Argument Bisect(Function f,
 
 // Performs a golden-section search to find the minimum of |f| between
 // |lower_bound| and |upper_bound|.
+// TODO(phl): Use Brent's algorithm.
 template<typename Argument,
          typename Function,
          typename Compare = std::less<
