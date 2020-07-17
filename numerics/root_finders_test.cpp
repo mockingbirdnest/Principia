@@ -1,6 +1,7 @@
 ﻿
 #include "numerics/root_finders.hpp"
 
+#include <functional>
 #include <vector>
 
 #include "geometry/named_quantities.hpp"
@@ -85,6 +86,12 @@ TEST_F(RootFindersTest, GoldenSectionSearch) {
           t_0 + 1.5 * Second,
           t_0 + 1.6 * Second),
       AlmostEquals(t_0 + π / 2 * Second, 47453132));
+
+  // A big interval will yield a semi-random minimum.
+  EXPECT_THAT(GoldenSectionSearch(sin,
+                                  t_0 - 100 * Second,
+                                  t_0 + 666 * Second),
+              AlmostEquals(t_0 + 119 * π / 2 * Second, 370'728));
 }
 
 TEST_F(RootFindersTest, QuadraticEquations) {

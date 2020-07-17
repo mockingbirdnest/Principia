@@ -3,6 +3,7 @@
 
 #include "root_finders.hpp"
 
+#include <algorithm>
 #include <vector>
 
 #include "geometry/barycentre_calculator.hpp"
