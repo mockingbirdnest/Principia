@@ -25,7 +25,7 @@ Argument Bisect(Function f,
                 Argument const& lower_bound,
                 Argument const& upper_bound);
 
-// Performs a golden-section search to find the minimum of |f| between
+// Performs a golden-section search to find a minimum of |f| between
 // |lower_bound| and |upper_bound|.
 // TODO(phl): Use Brent's algorithm.
 template<typename Argument,
