@@ -56,6 +56,30 @@ Argument Bisect(Function f,
   }
 }
 
+//https://en.wikipedia.org/wiki/Golden-section_search
+template<typename Argument, typename Compare, typename Function>
+Argument GoldenSectionSearch(Function f,
+                             Argument const& lower_bound,
+                             Argument const& upper_bound) {
+  static constexpr double lower_interior_ratio = 2 - φ;
+  static constexpr double upper_interior_ratio = φ - 1;
+  using Value = decltype(f(lower_bound));
+
+  Value f_upper = f(upper_bound);
+  Value f_lower = f(lower_bound);
+  Argument lower_interior = upper_interior_ratio * lower_bound + lower_interior_ratio * upper_bound;
+  Argument upper_interior = lower_interior_ratio * lower_bound + upper_interior_ratio * upper_bound;
+  Value f_lower_interior = f(lower_interior);
+  Value f_upper_interior = f(upper_interior);
+  Value f_lower_min = std::min(f_lower, f_lower_interior);
+  Value f_upper_min = std::min(f_upper_interior, f_upper);
+  if (f_lower_min < f_upper_min) {
+
+  } else {
+
+  }
+}
+
 template<typename Argument, typename Value>
 BoundedArray<Argument, 2> SolveQuadraticEquation(
     Argument const& origin,

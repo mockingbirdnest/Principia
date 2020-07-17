@@ -23,6 +23,12 @@ Argument Bisect(Function f,
                 Argument const& lower_bound,
                 Argument const& upper_bound);
 
+//TODO(phl):comment
+template<typename Argument, typename Compare, typename Function>
+Argument GoldenSectionSearch(Function f,
+                             Argument const& lower_bound,
+                             Argument const& upper_bound);
+
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
 // The result may have 0, 1 or 2 values and is sorted.
