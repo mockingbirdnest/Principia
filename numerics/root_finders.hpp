@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <functional>
 #include <vector>
 
 #include "base/array.hpp"
@@ -23,11 +24,16 @@ Argument Bisect(Function f,
                 Argument const& lower_bound,
                 Argument const& upper_bound);
 
-//TODO(phl):comment
-template<typename Argument, typename Compare, typename Function>
+// Performs a golden-section search to find the minimum of |f| between
+// |lower_bound| and |upper_bound|.
+template<typename Argument,
+         typename Function,
+         typename Compare = std::less<
+             decltype(std::declval<Function>()(std::declval<Argument>()))>>
 Argument GoldenSectionSearch(Function f,
                              Argument const& lower_bound,
-                             Argument const& upper_bound);
+                             Argument const& upper_bound,
+                             Compare comp = Compare());
 
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
@@ -42,6 +48,7 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
 }  // namespace internal_root_finders
 
 using internal_root_finders::Bisect;
+using internal_root_finders::GoldenSectionSearch;
 using internal_root_finders::SolveQuadraticEquation;
 
 }  // namespace numerics

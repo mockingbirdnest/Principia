@@ -6,6 +6,7 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -16,9 +17,11 @@ using geometry::Instant;
 using quantities::Acceleration;
 using quantities::Length;
 using quantities::Pow;
+using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Time;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
@@ -49,6 +52,27 @@ TEST_F(RootFindersTest, SquareRoots) {
       EXPECT_EQ(3, evaluations);
     } else {
       EXPECT_THAT(evaluations, AllOf(Ge(49), Le(58)));
+    }
+  }
+}
+
+TEST_F(RootFindersTest, GoldenSectionSearch) {
+  Instant const t_0;
+  for (int l = 16; l <= 47; ++l) {
+    for (int u = 48; u <= 62; ++u) {
+      // The result is not overly precise because near its maximum a the
+      // function is:
+      //   f(a) + fʺ(a) (x - a) / 2 + o((x - a)²)
+      // The second order term vanishes when x and a match on the first 26
+      // leading bits (roughly).
+      EXPECT_THAT(
+          GoldenSectionSearch(
+              [t_0](Instant const& t) {
+                return Sin((t - t_0) * Radian / Second);
+              },
+              t_0 + l * 0.1 * Second,
+              t_0 + u * 0.1 * Second),
+          AlmostEquals(t_0 + 3 * π / 2 * Second, 11'863'280, 11'863'284));
     }
   }
 }

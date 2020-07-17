@@ -57,10 +57,11 @@ Argument Bisect(Function f,
 }
 
 //https://en.wikipedia.org/wiki/Golden-section_search
-template<typename Argument, typename Compare, typename Function>
+template<typename Argument, typename Function, typename Compare>
 Argument GoldenSectionSearch(Function f,
                              Argument const& lower_bound,
-                             Argument const& upper_bound) {
+                             Argument const& upper_bound,
+                             Compare const comp) {
   static constexpr double lower_interior_ratio = 2 - φ;
   static constexpr double upper_interior_ratio = φ - 1;
   using Value = decltype(f(lower_bound));
@@ -82,23 +83,23 @@ Argument GoldenSectionSearch(Function f,
   while (lower < lower_interior &&
          lower_interior < upper_interior &&
          upper_interior < upper) {
-    Value f_lower_min = std::min(f_lower, f_lower_interior);
-    Value f_upper_min = std::min(f_upper_interior, f_upper);
-    if (f_lower_min < f_upper_min) {
+    Value const f_lower_min = std::min(f_lower, f_lower_interior, comp);
+    Value const f_upper_min = std::min(f_upper_interior, f_upper, comp);
+    if (comp(f_lower_min, f_upper_min)) {
       upper = upper_interior;
       f_upper = f_upper_interior;
       upper_interior = lower_interior;
       f_upper_interior = f_lower_interior;
-      lower_interior =
-          upper_interior_ratio * lower + lower_interior_ratio * upper;
+      lower_interior = Barycentre<Argument, double>(
+          {lower, upper}, {upper_interior_ratio, lower_interior_ratio});
       f_lower_interior = f(lower_interior);
     } else {
       lower = lower_interior;
       f_lower = f_lower_interior;
       lower_interior = upper_interior;
       f_lower_interior = f_upper_interior;
-      upper_interior =
-          lower_interior_ratio * lower + upper_interior_ratio * upper;
+      upper_interior = Barycentre<Argument, double>(
+          {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
       f_upper_interior = f(upper_interior);
     }
   }
