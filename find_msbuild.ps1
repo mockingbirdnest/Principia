@@ -33,10 +33,11 @@ foreach ($name in $names) {
 }
 
 function version-tuple($name) {
-  $tuple = [int[]]$name.split(@("/", "+"))[1].split([string[]]@(".", "-pre."), [StringSplitOptions]::none)
+  $tuple = [double[]]$name.split(@("/", "+"))[1].split(
+      [string[]]@(".", "-pre."), [StringSplitOptions]::none)
   if ($tuple.length -lt 5) {
     # Count non-previews as preview ∞.0.
-    $tuple = $tuple + @((1.0 / 0.0), 0)
+    $tuple = $tuple + @((1.0 / 0.0), 0.0)
   }
   return [tuple]::Create($tuple[0], $tuple[1], $tuple[2], $tuple[3], $tuple[4])
 }
