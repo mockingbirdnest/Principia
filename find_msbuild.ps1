@@ -33,8 +33,7 @@ foreach ($name in $names) {
 }
 
 function version-tuple($name) {
-  $tuple = [int[]]$name.split(@("/", "+"))[1].split(
-      [string[]]@(".", "-pre."), [StringSplitOptions]::none)
+  $tuple = [int[]]$name.split(@("/", "+"))[1].split([string[]]@(".", "-pre."), [StringSplitOptions]::none)
   if ($tuple.length -lt 5) {
     # Count non-previews as preview ∞.0.
     $tuple = $tuple + @((1.0 / 0.0), 0)
@@ -43,9 +42,9 @@ function version-tuple($name) {
 }
 
 if ($strict) {
-  write-error(
-      "Could not find Visual Studio $description;" +
-      " found the following versions:`n$([string]::join("`n", $names))")
+  write-error ("Could not find Visual Studio $description;" +
+               " found the following versions:`n$(
+                   [string]::join("`n", $names))")
 } else {
   $earlier = $null
   $earlier_index = $null
@@ -53,15 +52,15 @@ if ($strict) {
   $later_index = $null
   $i = 0
   foreach ($name in $names) {
-    if ((version-tuple($name) -lt version-tuple($path)) -and
+    if (((version-tuple $name) -lt (version-tuple $path)) -and
         (($earlier -eq $null) -or
-         (version-tuple($name) -gt version-tuple($earlier)))) {
+         ((version-tuple $name) -gt (version-tuple $earlier)))) {
       $earlier = $name
       $earlier_index = $i
     }
-    if ((version-tuple($name) -gt version-tuple($path)) -and
+    if (((version-tuple $name) -gt (version-tuple $path)) -and
         (($later -eq $null) -or
-         (version-tuple($name) -lt version-tuple($later)))) {
+         ((version-tuple $name) -lt (version-tuple $later)))) {
       $later = $name
       $later_index = $i
     }
@@ -74,11 +73,11 @@ if ($strict) {
     $best_match = $earlier
     $i = $earlier_index
   } else {
-    write-error("Could not find Visual Studio")
+    write-error "Could not find Visual Studio"
     exit 1
   }
-  write-warning(
-      "Could not find Visual Studio $description;" +
-      " falling back to $best_match from:`n$([string]::join("`n", $names))")
+  write-warning ("Could not find Visual Studio $description;" +
+                 " falling back to $best_match from:`n$(
+                     [string]::join("`n", $names))")
   return ($msbuildpaths | select-object -index $i)
 }
