@@ -78,6 +78,6 @@ if ($strict) {
   }
   write-warning(
       "Could not find Visual Studio $description;" +
-      " falling back to: $best_match")
+      " falling back to $best_match from:`n$([string]::join("`n", $names))")
   return ($msbuildpaths | select-object -index $i)
 }
