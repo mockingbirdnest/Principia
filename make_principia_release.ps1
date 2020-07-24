@@ -28,7 +28,7 @@ if (!($date -match '^\d{10}$')) {
   exit 1
 }
 
-$msbuild = &".\find_msbuild.ps1"
+$msbuild = &".\find_msbuild.ps1" -strict
 $7zip = "${Env:ProgramW6432}\7-Zip\7z.exe"
 if (!(test-path -path $7zip)) {
   write-error ("Could not find 7-Zip.")
