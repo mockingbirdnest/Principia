@@ -322,11 +322,13 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
   }
   not_null<std::unique_ptr<FlightPlan>> const original_flight_plan =
       std::move(flight_plan_);
-  CreateFlightPlan(
+  Instant const new_desired_final_time =
       new_initial_time >= original_flight_plan->desired_final_time()
           ? new_initial_time + (original_flight_plan->desired_final_time() -
                                 original_flight_plan->initial_time())
-          : original_flight_plan->desired_final_time(),
+          : original_flight_plan->desired_final_time();
+  CreateFlightPlan(
+      new_desired_final_time,
       initial_mass,
       original_flight_plan->adaptive_step_parameters(),
       original_flight_plan->generalized_adaptive_step_parameters());
