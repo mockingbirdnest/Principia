@@ -151,12 +151,14 @@ class Vessel {
   virtual void DeleteFlightPlan();
 
   // Requires |has_flight_plan()|.
-  // if |history_->back().time| lies within a planned manœuvre, UNAVAILABLE is
+  // If |history_->back().time| lies within a planned manœuvre, UNAVAILABLE is
   // returned.
   // Otherwise, deletes |flight_plan_| and recreates it from the current
   // |history_| and the given |initial_mass|, re-adding any future manœuvres.
   // Past manœuvres are discarded, under the assumption that they have been
   // performed.
+  // If |history_->back().time| is greater than the current desired final time,
+  // the flight plan length is kept; otherwise, the desired final time is kept.
   Status RebaseFlightPlan(Mass const& initial_mass);
 
   // Tries to replace the current prediction with a more recently computed one.
