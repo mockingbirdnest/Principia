@@ -239,6 +239,18 @@ class PiecewisePoissonSeries {
   PiecewisePoissonSeries<Product<L, R>, l + r, E>
   friend operator*(PiecewisePoissonSeries<L, l, E> const& left,
                    PoissonSeries<R, r, E> const& right);
+  template<typename L, typename R, int l, int r, int w,
+           template<typename, typename, int> class E>
+  quantities::Primitive<Product<L, R>, Time>
+  friend Dot(PoissonSeries<L, l, E> const& left,
+             PiecewisePoissonSeries<R, r, E> const& right,
+             PoissonSeries<double, w, E> const& weight);
+  template<typename L, typename R, int l, int r, int w,
+           template<typename, typename, int> class E>
+  quantities::Primitive<Product<L, R>, Time>
+  friend Dot(PiecewisePoissonSeries<L, l, E> const& left,
+             PoissonSeries<R, r, E> const& right,
+             PoissonSeries<double, w, E> const& weight);
 };
 
 // Action of Poisson series on piecewise Poisson series.  Note that that while
@@ -317,21 +329,17 @@ template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
 Primitive<Product<LValue, RValue>, Time>
-Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max);
+Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight);
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
 Primitive<Product<LValue, RValue>, Time>
-Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max);
+Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight);
 
 }  // namespace internal_poisson_series
 

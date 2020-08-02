@@ -575,22 +575,42 @@ template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
 Primitive<Product<LValue, RValue>, Time> Dot(
-    PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max) {
+    PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+  using Result = Primitive<Product<LValue, RValue>, Time>;
+  Result result;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    //TODO(phl):correct use of weight?
+    result += Dot(left,
+                  right.series_[i],
+                  weight,
+                  right.bounds_[i],
+                  right.bounds_[i + 1]);
+  }
+  return result;
 }
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
 Primitive<Product<LValue, RValue>, Time> Dot(
-    PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max) {
+    PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+  using Result = Primitive<Product<LValue, RValue>, Time>;
+  Result result;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    //TODO(phl):correct use of weight?
+    result += Dot(left.series_[i],
+                  right,
+                  weight,
+                  left.bounds_[i],
+                  left.bounds_[i + 1]);
+  }
+  return result;
 }
 
 }  // namespace internal_poisson_series
