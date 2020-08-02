@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <functional>
 #include <vector>
 
 #include "base/array.hpp"
@@ -18,10 +19,23 @@ using quantities::Derivative;
 // function agreeing with |f| on the values of |Argument|.
 // If |f(lower_bound)| and |f(upper_bound)| are both nonzero, they must be of
 // opposite signs.
+// TODO(phl): Use Brent's algorithm.
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
                 Argument const& lower_bound,
                 Argument const& upper_bound);
+
+// Performs a golden-section search to find a minimum of |f| between
+// |lower_bound| and |upper_bound|.
+// TODO(phl): Use Brent's algorithm.
+template<typename Argument,
+         typename Function,
+         typename Compare = std::less<
+             decltype(std::declval<Function>()(std::declval<Argument>()))>>
+Argument GoldenSectionSearch(Function f,
+                             Argument const& lower_bound,
+                             Argument const& upper_bound,
+                             Compare comp = Compare());
 
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
@@ -36,6 +50,7 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
 }  // namespace internal_root_finders
 
 using internal_root_finders::Bisect;
+using internal_root_finders::GoldenSectionSearch;
 using internal_root_finders::SolveQuadraticEquation;
 
 }  // namespace numerics

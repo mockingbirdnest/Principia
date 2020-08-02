@@ -169,7 +169,9 @@ void Vessel::PrepareHistory(Instant const& t) {
               << " at " << t;
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     ForAllParts([&calculator](Part& part) {
-      calculator.Add(part.degrees_of_freedom(), part.mass());
+      calculator.Add(
+          part.rigid_motion()({RigidPart::origin, RigidPart::unmoving}),
+          part.mass());
     });
     CHECK(psychohistory_ == nullptr);
     history_->SetDownsampling(max_dense_intervals, downsampling_tolerance);
@@ -302,6 +304,41 @@ void Vessel::CreateFlightPlan(
 
 void Vessel::DeleteFlightPlan() {
   flight_plan_.reset();
+}
+
+Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
+  CHECK(has_flight_plan());
+  Instant const new_initial_time = history_->back().time;
+  int first_manœuvre_kept = 0;
+  for (int i = 0; i < flight_plan_->number_of_manœuvres(); ++i) {
+    auto const& manœuvre = flight_plan_->GetManœuvre(i);
+    if (manœuvre.initial_time() < new_initial_time) {
+      first_manœuvre_kept = i + 1;
+      if (new_initial_time < manœuvre.final_time()) {
+        return Status(Error::UNAVAILABLE,
+                      u8"Cannot rebase during planned manœuvre execution");
+      }
+    }
+  }
+  not_null<std::unique_ptr<FlightPlan>> const original_flight_plan =
+      std::move(flight_plan_);
+  Instant const new_desired_final_time =
+      new_initial_time >= original_flight_plan->desired_final_time()
+          ? new_initial_time + (original_flight_plan->desired_final_time() -
+                                original_flight_plan->initial_time())
+          : original_flight_plan->desired_final_time();
+  CreateFlightPlan(
+      new_desired_final_time,
+      initial_mass,
+      original_flight_plan->adaptive_step_parameters(),
+      original_flight_plan->generalized_adaptive_step_parameters());
+  for (int i = first_manœuvre_kept;
+       i < original_flight_plan->number_of_manœuvres();
+       ++i) {
+    auto const& manœuvre = original_flight_plan->GetManœuvre(i);
+    flight_plan_->Append(manœuvre.burn());
+  }
+  return Status::OK;
 }
 
 void Vessel::RefreshPrediction() {

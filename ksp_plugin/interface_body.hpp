@@ -24,7 +24,6 @@ using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
 using geometry::Rotation;
 using integrators::AdaptiveStepSizeIntegrator;
-using ksp_plugin::RigidPart;
 using physics::Ephemeris;
 using physics::RigidMotion;
 using quantities::Pow;
@@ -32,6 +31,7 @@ using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using quantities::si::Tonne;
 namespace si = quantities::si;
 
 // No partial specialization of functions, so we wrap everything into structs.
@@ -111,17 +111,29 @@ struct XYZConverter<AngularVelocity<Frame>> {
   }
 };
 
+template<typename Frame>
+struct XYZConverter<Bivector<AngularMomentum, Frame>> {
+  static constexpr AngularMomentum mts_unit =
+      Pow<2>(Metre) * Tonne * Radian / Second;
+  static Bivector<AngularMomentum, Frame> FromXYZ(XYZ const& xyz) {
+    return Bivector<AngularMomentum, Frame>(interface::FromXYZ(xyz) * mts_unit);
+  }
+  static XYZ ToXYZ(Bivector<AngularMomentum, Frame> const& velocity) {
+    return interface::ToXYZ(velocity.coordinates() / mts_unit);
+  }
+};
+
 template<>
 struct XYZConverter<R3Element<MomentOfInertia>> {
+  static constexpr MomentOfInertia mts_unit = Pow<2>(Metre) * Tonne;
   static R3Element<MomentOfInertia> FromXYZ(XYZ const& xyz) {
-    return R3Element<MomentOfInertia>(xyz.x * si::Unit<MomentOfInertia>,
-                                      xyz.y * si::Unit<MomentOfInertia>,
-                                      xyz.z * si::Unit<MomentOfInertia>);
+    return R3Element<MomentOfInertia>(
+        xyz.x * mts_unit, xyz.y * mts_unit, xyz.z * mts_unit);
   }
   static XYZ ToXYZ(R3Element<MomentOfInertia> const& moments_of_inertia) {
-    return {moments_of_inertia.x / si::Unit<MomentOfInertia>,
-            moments_of_inertia.y / si::Unit<MomentOfInertia>,
-            moments_of_inertia.z / si::Unit<MomentOfInertia>};
+    return {moments_of_inertia.x / mts_unit,
+            moments_of_inertia.y / mts_unit,
+            moments_of_inertia.z / mts_unit};
   }
 };
 
@@ -382,6 +394,12 @@ inline Position<World> FromXYZ<Position<World>>(XYZ const& xyz) {
 }
 
 template<>
+inline Position<EccentricPart> FromXYZ<Position<EccentricPart>>(
+    XYZ const& xyz) {
+  return XYZConverter<Position<EccentricPart>>::FromXYZ(xyz);
+}
+
+template<>
 Velocity<Frenet<NavigationFrame>>
 inline FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz) {
   return XYZConverter<Velocity<Frenet<NavigationFrame>>>::FromXYZ(xyz);
@@ -504,6 +522,11 @@ inline XYZ ToXYZ(Velocity<World> const& velocity) {
   return XYZConverter<Velocity<World>>::ToXYZ(velocity);
 }
 
+inline XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum) {
+  return XYZConverter<Bivector<AngularMomentum, World>>::ToXYZ(
+      angular_momentum);
+}
+
 template<typename T>
 Interval ToInterval(geometry::Interval<T> const& interval) {
   return {interval.min / quantities::si::Unit<T>,
@@ -544,18 +567,18 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
   }
 }
 
-inline RigidMotion<RigidPart, World> MakePartRigidMotion(
+inline RigidMotion<EccentricPart, World> MakePartRigidMotion(
     QP const& part_world_degrees_of_freedom,
     WXYZ const& part_rotation,
     XYZ const& part_angular_velocity) {
   DegreesOfFreedom<World> const part_degrees_of_freedom =
       FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom);
-  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
-  RigidTransformation<RigidPart, World> const part_rigid_transformation(
-      RigidPart::origin,
+  Rotation<EccentricPart, World> const part_to_world(FromWXYZ(part_rotation));
+  RigidTransformation<EccentricPart, World> const part_rigid_transformation(
+      EccentricPart::origin,
       part_degrees_of_freedom.position(),
       part_to_world.Forget<OrthogonalMap>());
-  RigidMotion<RigidPart, World> part_rigid_motion(
+  RigidMotion<EccentricPart, World> part_rigid_motion(
       part_rigid_transformation,
       FromXYZ<AngularVelocity<World>>(part_angular_velocity),
       part_degrees_of_freedom.velocity());
@@ -564,7 +587,7 @@ inline RigidMotion<RigidPart, World> MakePartRigidMotion(
 
 // Same as |MakePartRigidMotion|, but uses the separate type |ApparentWorld| to
 // avoid mixing uncorrected and corrected data.
-inline RigidMotion<RigidPart, ApparentWorld> MakePartApparentRigidMotion(
+inline RigidMotion<EccentricPart, ApparentWorld> MakePartApparentRigidMotion(
     QP const& part_world_degrees_of_freedom,
     WXYZ const& part_rotation,
     XYZ const& part_angular_velocity) {

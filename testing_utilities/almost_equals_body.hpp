@@ -91,6 +91,33 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    std::complex<double> const actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return MatchAndExplainIdentical(listener);
+  }
+  std::int64_t const real_distance =
+      NormalizedNaNULPDistance(actual.real(), expected_.real());
+  std::int64_t const imag_distance =
+      NormalizedNaNULPDistance(actual.imag(), expected_.imag());
+  std::int64_t const max_distance = std::max({real_distance, imag_distance});
+  bool const real_is_max = real_distance == max_distance;
+  bool const imag_is_max = imag_distance == max_distance;
+  bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the following components are not within " << min_ulps_
+              << " to " << max_ulps_
+              << " ULPs: " << (real_is_max ? "real, " : "")
+              << (imag_is_max ? "imag, " : "");
+    *listener << "the components differ by the following numbers of ULPs: "
+              << "real: " << real_distance << ", imag: " << imag_distance;
+  }
+  return matches;
+}
+
+template<typename T>
 template<typename Scalar>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     geometry::R3Element<Scalar> const& actual,

@@ -290,6 +290,20 @@ constexpr auto PolynomialRing<LTuple, RTuple, lsize_, 1>::Multiply(
 
 namespace cartesian_product {
 
+template<typename RTuple>
+FORCE_INLINE(constexpr) auto operator+(RTuple const& right) {
+  return right;
+}
+
+template<typename RTuple>
+FORCE_INLINE(constexpr)
+auto operator-(RTuple const& right) {
+  std::tuple<> zero;
+  return internal_cartesian_product::
+      CartesianProductAdditiveGroup<decltype(zero), RTuple>::Subtract(zero,
+                                                                      right);
+}
+
 template<typename LTuple, typename RTuple>
 FORCE_INLINE(constexpr)
 auto operator+(LTuple const& left, RTuple const& right) {

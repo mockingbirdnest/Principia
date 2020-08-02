@@ -50,27 +50,24 @@ In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
 
 In order to build for KSP 1.8.1, copy the corresponding KSP 1.8.1 assemblies to `<root>\KSP Assemblies\1.8.1`
 
-### Downloading the Google libraries
+### Downloading the dependencies
 
-In `<root>\Google`, run the following commands.
+In `<root>`, run the following commands.
 ```powershell
-git clone "https://github.com/mockingbirdnest/glog.git"
-git clone "https://github.com/mockingbirdnest/googletest.git"
-git clone "https://github.com/mockingbirdnest/protobuf.git"
-git clone "https://github.com/mockingbirdnest/benchmark.git"
-git clone "https://github.com/mockingbirdnest/gipfeli.git"
-git clone "https://github.com/mockingbirdnest/abseil-cpp.git"
-git clone "https://github.com/mockingbirdnest/zfp.git"
+mkdir "Google"
+mkdir "Third Party"
+push-location -path "Google"
 git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
 $GitPromptSettings.RepositoriesInWhichToDisableFileStatus += join-path  (gi -path .).FullName chromium
-cd chromium
+push-location -path "chromium"
 git config core.sparsecheckout true
 copy "..\..\Principia\documentation\setup files\chromium_sparse_checkout.txt" ".git/info/sparse-checkout"
 git checkout
 copy "..\..\Principia\documentation\setup files\chromium.patch"
 git am "chromium.patch"
 rm "chromium.patch"
-cd ..
+pop-location
+pop-location
 ```
 ### Building
 

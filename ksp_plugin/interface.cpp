@@ -334,6 +334,47 @@ void __cdecl principia__ActivateRecorder(bool const activate) {
   }
 }
 
+XYZ __cdecl principia__AngularMomentumFromAngularVelocity(
+    XYZ world_angular_velocity,
+    XYZ moments_of_inertia_in_tonnes,
+    WXYZ principal_axes_rotation,
+    WXYZ part_rotation) {
+  journal::Method<journal::AngularMomentumFromAngularVelocity> m(
+      {world_angular_velocity,
+       moments_of_inertia_in_tonnes,
+       principal_axes_rotation,
+       part_rotation});
+  using PartPrincipalAxes = Frame<serialization::Frame::PhysicsTag,
+                                  Arbitrary,
+                                  Handedness::Left,
+                                  serialization::Frame::PRINCIPAL_AXES>;
+
+  auto const angular_velocity =
+      FromXYZ<AngularVelocity<World>>(world_angular_velocity);
+
+  static constexpr MomentOfInertia zero;
+  auto const moments_of_inertia =
+      FromXYZ<R3Element<MomentOfInertia>>({moments_of_inertia_in_tonnes.x,
+                                           moments_of_inertia_in_tonnes.y,
+                                           moments_of_inertia_in_tonnes.z});
+  InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_princial_axes(
+      R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
+                                  {zero, moments_of_inertia.y, zero},
+                                  {zero, zero, moments_of_inertia.z}));
+
+  Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
+      FromWXYZ(principal_axes_rotation));
+  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
+
+  InertiaTensor<World> const inertia_tensor =
+      part_to_world(principal_axes_to_part(inertia_tensor_in_princial_axes));
+
+  Bivector<AngularMomentum, World> angular_momentum =
+      inertia_tensor * angular_velocity;
+
+  return m.Return(ToXYZ(angular_momentum));
+}
+
 void __cdecl principia__AdvanceTime(Plugin* const plugin,
                                     double const t,
                                     double const planetarium_rotation) {
@@ -653,13 +694,13 @@ void __cdecl principia__InitGoogleLogging() {
                               << message;
         });
 
-    LOG(INFO) << "Initialized Google logging for Principia";
-    LOG(INFO) << "Principia version " << principia::base::Version
-              << " built on " << principia::base::BuildDate
-              << " by " << principia::base::CompilerName
-              << " version " << principia::base::CompilerVersion
-              << " for " << principia::base::OperatingSystem
-              << " " << principia::base::Architecture;
+    LOG(ERROR) << "Initialized Google logging for Principia";
+    LOG(ERROR) << "Principia version " << principia::base::Version
+               << " built on " << principia::base::BuildDate
+               << " by " << principia::base::CompilerName
+               << " version " << principia::base::CompilerVersion
+               << " for " << principia::base::OperatingSystem
+               << " " << principia::base::Architecture;
 #if OS_WIN
   MODULEINFO module_info;
   memset(&module_info, 0, sizeof(module_info));
@@ -667,7 +708,7 @@ void __cdecl principia__InitGoogleLogging() {
                              GetModuleHandle(TEXT("principia")),
                              &module_info,
                              sizeof(module_info)));
-  LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
+  LOG(ERROR) << "Base address is " << module_info.lpBaseOfDll;
 #endif
   }
 }
@@ -811,6 +852,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
     PartId const part_id,
     char const* const name,
     double const mass_in_tonnes,
+    XYZ const centre_of_mass,
     XYZ const moments_of_inertia_in_tonnes,
     WXYZ const principal_axes_rotation,
     bool const is_solid_rocket_motor,
@@ -826,6 +868,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
        part_id,
        name,
        mass_in_tonnes,
+       centre_of_mass,
        moments_of_inertia_in_tonnes,
        principal_axes_rotation,
        is_solid_rocket_motor,
@@ -846,13 +889,11 @@ void __cdecl principia__InsertOrKeepLoadedPart(
                                   serialization::Frame::PRINCIPAL_AXES>;
 
   static constexpr MomentOfInertia zero;
-  static constexpr double to_si_unit =
-      Tonne * Pow<2>(Metre) / si::Unit<MomentOfInertia>;
 
-  auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
-      {moments_of_inertia_in_tonnes.x * to_si_unit,
-       moments_of_inertia_in_tonnes.y * to_si_unit,
-       moments_of_inertia_in_tonnes.z * to_si_unit});
+  auto const moments_of_inertia =
+      FromXYZ<R3Element<MomentOfInertia>>({moments_of_inertia_in_tonnes.x,
+                                           moments_of_inertia_in_tonnes.y,
+                                           moments_of_inertia_in_tonnes.z});
   InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_princial_axes(
       R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
                                   {zero, moments_of_inertia.y, zero},
@@ -870,6 +911,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
       part_id,
       name,
       mass_in_tonnes * Tonne,
+      FromXYZ<Position<EccentricPart>>(centre_of_mass),
       inertia_tensor_in_rigid_part,
       is_solid_rocket_motor,
       vessel_guid,

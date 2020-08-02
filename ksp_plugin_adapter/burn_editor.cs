@@ -236,7 +236,7 @@ class BurnEditor : ScalingRenderer {
              (from transform in engine.thrusterTransforms
               select Math.Max(0,
                               Vector3d.Dot(reference_direction,
-                                           -transform.up))).Average()).
+                                           -transform.up))).Sum()).
             ToArray();
     thrust_in_kilonewtons_ = thrusts.Sum();
 

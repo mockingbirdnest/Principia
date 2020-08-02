@@ -3,6 +3,7 @@
 
 #include "root_finders.hpp"
 
+#include <algorithm>
 #include <vector>
 
 #include "geometry/barycentre_calculator.hpp"
@@ -54,6 +55,58 @@ Argument Bisect(Function f,
       lower = middle;
     }
   }
+}
+
+// See https://en.wikipedia.org/wiki/Golden-section_search for a description of
+// this algorithm.
+template<typename Argument, typename Function, typename Compare>
+Argument GoldenSectionSearch(Function f,
+                             Argument const& lower_bound,
+                             Argument const& upper_bound,
+                             Compare const comp) {
+  static constexpr double lower_interior_ratio = 2 - φ;
+  static constexpr double upper_interior_ratio = φ - 1;
+  using Value = decltype(f(lower_bound));
+
+  Argument upper = upper_bound;
+  Value f_upper = f(upper);
+
+  Argument lower = lower_bound;
+  Value f_lower = f(lower);
+
+  Argument lower_interior = Barycentre<Argument, double>(
+      {lower, upper}, {upper_interior_ratio, lower_interior_ratio});
+  Value f_lower_interior = f(lower_interior);
+
+  Argument upper_interior = Barycentre<Argument, double>(
+      {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
+  Value f_upper_interior = f(upper_interior);
+
+  while (lower < lower_interior &&
+         lower_interior < upper_interior &&
+         upper_interior < upper) {
+    Value const f_lower_min = std::min(f_lower, f_lower_interior, comp);
+    Value const f_upper_min = std::min(f_upper_interior, f_upper, comp);
+    if (comp(f_lower_min, f_upper_min)) {
+      upper = upper_interior;
+      f_upper = f_upper_interior;
+      upper_interior = lower_interior;
+      f_upper_interior = f_lower_interior;
+      lower_interior = Barycentre<Argument, double>(
+          {lower, upper}, {upper_interior_ratio, lower_interior_ratio});
+      f_lower_interior = f(lower_interior);
+    } else {
+      lower = lower_interior;
+      f_lower = f_lower_interior;
+      lower_interior = upper_interior;
+      f_lower_interior = f_upper_interior;
+      upper_interior = Barycentre<Argument, double>(
+          {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
+      f_upper_interior = f(upper_interior);
+    }
+  }
+
+  return Barycentre<Argument, double>({lower, upper}, {1, 1});
 }
 
 template<typename Argument, typename Value>

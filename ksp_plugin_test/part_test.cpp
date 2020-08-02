@@ -31,8 +31,9 @@ class PartTest : public testing::Test {
         part_(part_id_,
               "part",
               mass_,
+              EccentricPart::origin,
               inertia_tensor_,
-              RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+              RigidMotion<EccentricPart, Barycentric>::MakeNonRotatingMotion(
                   degrees_of_freedom_),
               /*deletion_callback=*/nullptr) {
     part_.apply_intrinsic_force(intrinsic_force_);
@@ -121,7 +122,7 @@ TEST_F(PartTest, Serialization) {
                   .x()
                   .quantity()
                   .magnitude(),
-              AlmostEquals(-4, 2));
+              AlmostEquals(-4, 6));
   EXPECT_THAT(message.rigid_motion()
                   .velocity_of_to_frame_origin()
                   .vector()
@@ -146,7 +147,10 @@ TEST_F(PartTest, Serialization) {
   auto const p = Part::ReadFromMessage(message, /*deletion_callback=*/nullptr);
   EXPECT_EQ(part_.inertia_tensor(), p->inertia_tensor());
   EXPECT_EQ(part_.intrinsic_force(), p->intrinsic_force());
-  EXPECT_EQ(part_.degrees_of_freedom(), p->degrees_of_freedom());
+  EXPECT_EQ(part_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}),
+            p->rigid_motion()({RigidPart::origin, RigidPart::unmoving}));
+  EXPECT_EQ(part_.rigid_motion().angular_velocity_of<RigidPart>(),
+            p->rigid_motion().angular_velocity_of<RigidPart>());
 
   serialization::Part second_message;
   p->WriteToMessage(&second_message,

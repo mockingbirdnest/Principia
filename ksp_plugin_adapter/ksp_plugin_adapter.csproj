@@ -105,6 +105,7 @@
   <ItemGroup>
     <Compile Include="boxed.cs" />
     <Compile Include="burn_editor.cs" />
+    <Compile Include="collision_reporter.cs" />
     <Compile Include="compatibility_extensions.cs" />
     <Compile Include="config_node_extensions.cs" />
     <Compile Include="config_node_parsers.cs" />

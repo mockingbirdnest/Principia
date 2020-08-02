@@ -124,6 +124,8 @@ public partial class PrincipiaPluginAdapter
   private Vector3d rsas_target_;
   private bool reset_rsas_target_ = false;
 
+  private int? last_guidance_manœuvre_ = null;
+
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
 
   private Krakensbane krakensbane_;
@@ -181,6 +183,10 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, Vector3d>();
   private readonly Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
       new Dictionary<uint, Vector3d>();
+
+  private readonly Dictionary<Vessel, Vector3d>
+      parachuting_kerbal_angular_velocities_ =
+      new Dictionary<Vessel, Vector3d>();
 
   // Work around the launch backflip issue encountered while releasing
   // Frobenius.
@@ -482,6 +488,10 @@ public partial class PrincipiaPluginAdapter
   // Æthelred Kerman.
   private bool is_unready_kerbal(Vessel vessel) {
     return vessel.isEVA && vessel.evaController?.Ready == false;
+  }
+
+  private bool is_parachuting_kerbal(Vessel vessel) {
+    return vessel.isEVA && vessel.evaController.IsChuteState;
   }
 
   private bool is_manageable(Vessel vessel) {
@@ -972,10 +982,21 @@ public partial class PrincipiaPluginAdapter
       previous_display_mode_ = null;
     }
 
+    parachuting_kerbal_angular_velocities_.Clear();
+
     if (PluginRunning()) {
       plugin_.SetMainBody(
           (FlightGlobals.currentMainBody
                ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
+
+      foreach (Vessel vessel in
+                   FlightGlobals.Vessels.Where(
+                       v => is_manageable(v) && !v.packed &&
+                       is_parachuting_kerbal(v))) {
+        parachuting_kerbal_angular_velocities_.Add(
+            vessel,
+            vessel.rootPart.rb.angularVelocity);
+      }
 
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
@@ -1086,6 +1107,7 @@ public partial class PrincipiaPluginAdapter
               part.flightID,
               part.name,
               part.physicsMass == 0 ? part.rb.mass : part.physicsMass,
+              (XYZ)(Vector3d)part.rb.centerOfMass,
               (XYZ)(Vector3d)part.rb.inertiaTensor,
               (WXYZ)(UnityEngine.QuaternionD)part.rb.inertiaTensorRotation,
               (from PartModule module in part.Modules
@@ -1152,11 +1174,11 @@ public partial class PrincipiaPluginAdapter
 
     plugin_.PrepareToReportCollisions();
 
-    // The collisions are reported and stored into |currentCollisions| in
-    // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
-    // Here, the |currentCollisions| are the collisions that occurred in the
-    // physics simulation, which is why we report them before calling
-    // |AdvanceTime|.
+    // The collisions are reported by the
+    // CollisionReporter.OnCollisionEnter|Stay events, which occurred while we
+    // yielded.
+    // Here, the |CollisionReporter.collisions| are the collisions that occurred
+    // in the physics simulation.
     foreach (Vessel vessel1 in
              FlightGlobals.Vessels.Where(v => !v.packed && is_manageable(v))) {
       if (plugin_.HasVessel(vessel1.id.ToString())) {
@@ -1164,6 +1186,7 @@ public partial class PrincipiaPluginAdapter
                               is_clambering(vessel1.evaController))) {
           var vessel2 = vessel1.evaController.LadderPart?.vessel;
           if (vessel2 != null && !vessel2.packed && is_manageable(vessel2)) {
+            Log.Info("Reporting climbing a ladder");
             plugin_.ReportPartCollision(
                 vessel1.rootPart.flightID,
                 closest_physical_parent(
@@ -1185,11 +1208,16 @@ public partial class PrincipiaPluginAdapter
             plugin_.ReportGroundCollision(
                 closest_physical_parent(part1).flightID);
           }
-#if KSP_VERSION_1_9_1
-          foreach (var collider in part1.currentCollisions.Keys) {
-#elif KSP_VERSION_1_7_3
-          foreach (var collider in part1.currentCollisions) {
-#endif
+          var collision_reporter =
+              part1.gameObject.GetComponent<CollisionReporter>();
+          if (part1.gameObject.GetComponent<CollisionReporter>() == null) {
+            // This would only happen if |part1| had been added after
+            // |BetterLateThanNever|, but we never know what the game will throw
+            // at us.
+            continue;
+          }
+          foreach (var collision in collision_reporter.collisions) {
+            var collider = collision.collider;
             if (collider == null) {
               // This happens, albeit quite rarely, see #1447.  When it happens,
               // the null collider remains in |currentCollisions| until the next
@@ -1208,6 +1236,8 @@ public partial class PrincipiaPluginAdapter
               // All parts in a vessel are in the same pile up, so there is no
               // point in reporting this collision; this also causes issues
               // where disappearing kerbals collide with themselves.
+              // NOTE(egg): It is unclear whether this is needed now that we
+              // have the |CollisionReporter|.
               continue;
             }
             if (part1.State == PartStates.DEAD ||
@@ -1226,6 +1256,8 @@ public partial class PrincipiaPluginAdapter
                 // better ignore the collision, the Kerbal will soon become
                 // ready anyway.
               } else if (is_manageable(vessel2)) {
+                Log.Info($@"Reporting collision with collider {collider.name} ({
+                            (UnityLayers)collider.gameObject.layer})");
                 plugin_.ReportPartCollision(
                     closest_physical_parent(part1).flightID,
                     closest_physical_parent(part2).flightID);
@@ -1481,8 +1513,38 @@ public partial class PrincipiaPluginAdapter
                FlightGlobals.Vessels.Where(v => is_manageable(v) &&
                                                 !v.packed)) {
         foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
-          if (part.torque != Vector3d.zero) {
-            part_id_to_intrinsic_torque_.Add(part.flightID, part.torque);
+          Vector3d parachute_torque = Vector3d.zero;
+          if (part == vessel.rootPart &&
+              is_parachuting_kerbal(vessel) &&
+              parachuting_kerbal_angular_velocities_.TryGetValue(
+                  vessel, out Vector3d old_angular_velocity)) {
+            // Instead of applying forces some distance from the centre of mass,
+            // or applying torques, EVA parachutes directly set the angular
+            // velocity of the Kerbal.  We register a torque equivalent to the
+            // change in angular momentum; failing to do so would cause the
+            // parachute to act on the linear motion but not the attitude,
+            // so that Kerbals would keep spinning under their parachute in
+            // stock, and would orient themselves head-down (and parachute-down)
+            // with FAR.  See #2607.
+            // To quote ferram4, “consider it all cursed”.
+            Vector3d Δω_world = part.rb.angularVelocity - old_angular_velocity;
+            var ΔL_world =
+                (Vector3d)Interface.AngularMomentumFromAngularVelocity(
+                    world_angular_velocity: (XYZ)Δω_world,
+                    moments_of_inertia_in_tonnes:
+                        (XYZ)(Vector3d)part.rb.inertiaTensor,
+                    principal_axes_rotation: (WXYZ)(UnityEngine.QuaternionD)
+                        part.rb.inertiaTensorRotation,
+                    part_rotation:
+                        (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation);
+            double Δt =
+                Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+            parachute_torque = ΔL_world / Δt;
+          }
+          if (part.torque != Vector3d.zero ||
+              parachute_torque != Vector3d.zero) {
+            part_id_to_intrinsic_torque_.Add(
+                part.flightID, part.torque + parachute_torque);
           }
           if (part.force != Vector3d.zero) {
             part_id_to_intrinsic_force_.Add(part.flightID, part.force);
@@ -1576,6 +1638,13 @@ public partial class PrincipiaPluginAdapter
         }
       }
     }
+    foreach (Vessel vessel in FlightGlobals.Vessels.Where(v => !v.packed)) {
+      foreach (Part part in vessel.parts.Where(
+                   p => p.gameObject.GetComponent<CollisionReporter>() == null)) {
+        // Ensure that all unpacked parts have a collision reporter.
+        part.gameObject.AddComponent<CollisionReporter>();
+      }
+    }
   }
 
   private void BetterLateThanNeverLateUpdate() {
@@ -1662,7 +1731,15 @@ public partial class PrincipiaPluginAdapter
         Burn burn = plugin_.FlightPlanGetManoeuvre(
                         vessel_guid,
                         first_future_manœuvre_index.Value).burn;
-        if (flight_planner_.show_guidance && !IsNaN(guidance)) {
+        // Clear the guidance node for one frame after scheduled burnout so
+        // that guidance methods (stock SAS, MechJeb, etc.) that follow it
+        // bail out instead of guiding to the next burn with engines still
+        // firing.
+        bool skip_guidance = last_guidance_manœuvre_ != null &&
+            last_guidance_manœuvre_ != first_future_manœuvre_index;
+        last_guidance_manœuvre_ = first_future_manœuvre_index;
+        if (!skip_guidance &&
+            flight_planner_.show_guidance && !IsNaN(guidance)) {
           // The user wants to show the guidance node, and that node was
           // properly computed by the C++ code.
           PatchedConicSolver solver = active_vessel.patchedConicSolver;

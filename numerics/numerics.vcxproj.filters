@@ -125,6 +125,24 @@
     <ClInclude Include="pid_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="poisson_series.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="poisson_series_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="apodization.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="apodization_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_fourier_transform.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_fourier_transform_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -191,6 +209,15 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="pid_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="poisson_series_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="apodization_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fast_fourier_transform_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

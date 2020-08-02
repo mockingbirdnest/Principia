@@ -5,10 +5,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name_ = "Galileo";
-  private const int next_release_lunation_number_ = 253;
+  private const string next_release_name_ = "Galois";
+  private const int next_release_lunation_number_ = 255;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2020, 06, 21, 06, 41, 00, TimeSpan.Zero);
+      new DateTimeOffset(2020, 08, 19, 02, 41, 00, TimeSpan.Zero);
 
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
@@ -155,14 +155,14 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
             style : Style.Warning(UnityEngine.GUI.skin.label));
       }
       if (DateTimeOffset.Now > next_release_date_) {
-        if (Versioning.version_minor <= 4) {
+        if (Versioning.version_minor <= 7) {
           UnityEngine.GUILayout.TextArea(
               "Announcement: the new moon of lunation number " +
               next_release_lunation_number_ +
-              " has come; please update KSP to version 1.6.1 and download " +
+              " has come; please update KSP to version 1.8.1 and download " +
               "the latest Principia release, " + next_release_name_ + ". " +
               "Note that RealismOverhaul and RealSolarSystem now support " +
-              "KSP 1.6.1.",
+              "KSP 1.8.1.",
               style : Style.Multiline(UnityEngine.GUI.skin.textArea));
         } else {
           UnityEngine.GUILayout.TextArea(
@@ -239,6 +239,18 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   private void RenderKSPFeatures() {
     if (show_2519_debugging_ui) {
+      string offsets = "";
+      if (FlightGlobals.ActiveVessel != null) {
+        foreach (var part in FlightGlobals.ActiveVessel.parts) {
+          double? offset = part.rb?.centerOfMass.magnitude;
+          if (offset != 0) {
+            offsets += $"{part.name}: {offset:F3} m; ";
+          }
+        }
+      }
+      UnityEngine.GUILayout.TextArea(
+          offsets,
+          style: Style.Multiline(UnityEngine.GUI.skin.textArea));
       conserve_angular_momentum = UnityEngine.GUILayout.Toggle(
           conserve_angular_momentum,
           "Conserve angular momentum");
