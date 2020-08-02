@@ -365,13 +365,15 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries() {}
+PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries() {
+  //TODO(phl):Ugly
+}
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 void PiecewisePoissonSeries<Value, degree_, Evaluator>::Append(
     Interval<Instant> const& interval,
-    PoissonSeries<Value, degree_, Evaluator> const& series) {
+    Series const& series) {
   CHECK_LT(Time{}, interval.measure());
   if (bounds_.empty()) {
     bounds_.push_back(interval.min);
@@ -404,7 +406,23 @@ PiecewisePoissonSeries<quantities::Primitive<Value, Time>,
                        degree_ + 1,
                        Evaluator>
 PiecewisePoissonSeries<Value, degree_, Evaluator>::Primitive() const {
+  using Result = PiecewisePoissonSeries<quantities::Primitive<Value, Time>,
+                                        degree_ + 1,
+                                        Evaluator>;
+  std::vector<typename Result::Series> primitives;
+  for (int i = 0; i < series_.size(); ++i) {
+    primitives.push_back(series[i].Primitive());
+  }
+  return Result(bounds_, primitives);
 }
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries(
+    std::vector<Instant> const& bounds,
+    std::vector<PoissonSeries<Value, degree_, Evaluator>> const& series)
+    : bounds_(bounds),
+      series_(series) {}
 
 }  // namespace internal_poisson_series
 }  // namespace numerics

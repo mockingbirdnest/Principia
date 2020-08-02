@@ -171,10 +171,14 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 class PiecewisePoissonSeries {
  public:
+  using Series = PoissonSeries<Value, degree_, Evaluator>;
+
   PiecewisePoissonSeries();
 
+  // The intervals for successive calls to Append must be consecutive, and the
+  // series must be continuous at the bounds.
   void Append(Interval<Instant> const& interval,
-              PoissonSeries<Value, degree_, Evaluator> const& series);
+              Series const& series);
 
   // t must be in the (inclusive) bounds covered by the series.
   Value Evaluate(Instant const& t) const;
@@ -185,8 +189,11 @@ class PiecewisePoissonSeries {
   Primitive() const;
 
  private:
+  PiecewisePoissonSeries(std::vector<Instant> const& bounds,
+                         std::vector<Series> const& series);
+
   std::vector<Instant> bounds_;
-  std::vector<PoissonSeries<Value, degree_, Evaluator>> series_;
+  std::vector<Series> series_;
 };
 
 // Action of Poisson series on piecewise Poisson series.  Note that that while
