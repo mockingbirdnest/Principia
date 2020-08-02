@@ -336,7 +336,7 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
        i < original_flight_plan->number_of_manœuvres();
        ++i) {
     auto const& manœuvre = original_flight_plan->GetManœuvre(i);
-    flight_plan_->Insert(manœuvre.burn(), i);
+    flight_plan_->Insert(manœuvre.burn(), i - first_manœuvre_kept);
   }
   return Status::OK;
 }
