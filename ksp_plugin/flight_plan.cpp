@@ -97,22 +97,24 @@ NavigationManœuvre const& FlightPlan::GetManœuvre(int const index) const {
   return manœuvres_[index];
 }
 
-Status FlightPlan::Append(NavigationManœuvre::Burn const& burn) {
+Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
+                          int const index) {
+  CHECK_GE(index, 0);
+  CHECK_LE(index, number_of_manœuvres());
   NavigationManœuvre const manœuvre(
-      manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass(),
+      index == 0 ? initial_mass_ : manœuvres_[index - 1].final_mass(),
       burn);
   if (manœuvre.IsSingular()) {
     return Singular();
   }
-  if (!manœuvre.FitsBetween(start_of_last_coast(), desired_final_time_)) {
+  if (!manœuvre.FitsBetween(start_of_previous_coast(index),
+                            start_of_next_burn(index - 1))) {
     return DoesNotFit();
   }
-  // Reset the last coast and integrate it followed by a burn followed by a new
-  // last coast;
-  manœuvres_.push_back(manœuvre);
-  ResetLastSegment();
-  return ComputeSegments(manœuvres_.begin() + manœuvres_.size() - 1,
-                         manœuvres_.end());
+  manœuvres_.insert(manœuvres_.begin() + index, manœuvre);
+  UpdateInitialMassOfManœuvresAfter(index);
+  PopSegmentsAffectedByManœuvre(index);
+  return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
 }
 
 void FlightPlan::ForgetBefore(Instant const& time,
@@ -154,14 +156,13 @@ void FlightPlan::ForgetBefore(Instant const& time,
   initial_degrees_of_freedom_ = root_begin->degrees_of_freedom;
 }
 
-Status FlightPlan::RemoveLast() {
-  CHECK(!manœuvres_.empty());
-  manœuvres_.pop_back();
-  PopLastSegment();  // Last coast.
-  PopLastSegment();  // Last burn.
-  // Clear and recompute the last coast.
-  ResetLastSegment();
-  return ComputeSegments(manœuvres_.end(), manœuvres_.end());
+Status FlightPlan::Remove(int index) {
+  CHECK_GE(index, 0);
+  CHECK_LT(index, number_of_manœuvres());
+  manœuvres_.erase(manœuvres_.begin() + index);
+  UpdateInitialMassOfManœuvresAfter(index);
+  PopSegmentsAffectedByManœuvre(index);
+  return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
 }
 
 Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
@@ -191,21 +192,10 @@ Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
   // follow as they may have a different initial mass.  Also pop the segments
   // that we'll recompute.
   manœuvres_[index] = manœuvre;
-  PopLastSegment();  // Last coast.
-  PopLastSegment();  // Last burn.
-
-  Mass initial_mass = manœuvre.final_mass();
-  for (int i = index + 1; i < manœuvres_.size(); ++i) {
-    manœuvres_[i] = NavigationManœuvre(initial_mass, manœuvres_[i].burn());
-    initial_mass = manœuvres_[i].final_mass();
-    PopLastSegment();  // Last coast.
-    PopLastSegment();  // Last burn.
-  }
+  UpdateInitialMassOfManœuvresAfter(index);
 
   // TODO(phl): Recompute as late as possible.
-  // At this point the last coast is the one to which |manœuvre| gets attached.
-  // Clear it and recompute everything that follows.
-  ResetLastSegment();
+  PopSegmentsAffectedByManœuvre(index);
   return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
 }
 
@@ -474,6 +464,27 @@ void FlightPlan::PopLastSegment() {
   segments_.pop_back();
   if (anomalous_segments_ > 0) {
     --anomalous_segments_;
+  }
+}
+
+void FlightPlan::PopSegmentsAffectedByManœuvre(int index) {
+  // We will keep, for each manœuvre in [0, index[, its burn and the coast
+  // preceding it, as well as the coast preceding manœuvre |index|.
+  int segments_kept = 2 * index + 1;
+  while (number_of_segments() > segments_kept) {
+    PopLastSegment();
+  }
+  ResetLastSegment();
+}
+
+void FlightPlan::UpdateInitialMassOfManœuvresAfter(int index) {
+  if (index >= manœuvres_.size()) {
+    return;
+  }
+  Mass initial_mass = manœuvres_[index].final_mass();
+  for (int i = index + 1; i < manœuvres_.size(); ++i) {
+    manœuvres_[i] = NavigationManœuvre(initial_mass, manœuvres_[i].burn());
+    initial_mass = manœuvres_[i].final_mass();
   }
 }
 
