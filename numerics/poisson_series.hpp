@@ -176,6 +176,7 @@ class PiecewisePoissonSeries {
   void Append(Interval<Instant> const& interval,
               PoissonSeries<Value, degree_, Evaluator> const& series);
 
+  // t must be in the (inclusive) bounds covered by the series.
   Value Evaluate(Instant const& t) const;
 
   // The constant term of the result is ???.
@@ -282,6 +283,7 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 }  // namespace internal_poisson_series
 
+using internal_poisson_series::PiecewisePoissonSeries;
 using internal_poisson_series::PoissonSeries;
 
 }  // namespace numerics

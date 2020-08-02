@@ -363,6 +363,49 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   return primitive.Evaluate(t_max) - primitive.Evaluate(t_min);
 }
 
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries() {}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+void PiecewisePoissonSeries<Value, degree_, Evaluator>::Append(
+    Interval<Instant> const& interval,
+    PoissonSeries<Value, degree_, Evaluator> const& series) {
+  CHECK_LT(Time{}, interval.measure());
+  if (bounds_.empty()) {
+    bounds_.push_back(interval.min);
+  } else {
+    CHECK_EQ(bounds_.back(), interval.min);
+    CHECK_EQ(series_.back().Evaluate(interval.min),
+             series.Evaluate(interval.min));
+  }
+  bounds_.push_back(interval.max);
+  series_.push_back(series);
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+Value PiecewisePoissonSeries<Value, degree_, Evaluator>::Evaluate(
+    Instant const& t) const {
+  CHECK(!bounds_.empty());
+  // If t is an element of bounds_, the returned iterator points to that
+  // element.
+  auto const it = std::lower_bound(bounds_.cbegin(), bounds_.cend(), t);
+  CHECK(it != bounds_.cend())
+      << t << " outside of " << bounds_.front() << " .. " << bounds_.back();
+  auto int index = it - bounds_.cbegin();
+  return series_[std::max(index, series_.size() - 1)];
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<quantities::Primitive<Value, Time>,
+                       degree_ + 1,
+                       Evaluator>
+PiecewisePoissonSeries<Value, degree_, Evaluator>::Primitive() const {
+}
+
 }  // namespace internal_poisson_series
 }  // namespace numerics
 }  // namespace principia
