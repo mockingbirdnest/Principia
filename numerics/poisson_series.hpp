@@ -164,29 +164,30 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const& t_min,
     Instant const& t_max);
 
-// A function defined by Poisson series piecewise.  The pieces must be such that
-// the overall function be continuous.
-//TODO(phl):comment
+// A function defined by Poisson series piecewise.  Each of the Poisson series
+// making up the function applies over the semi-open interval
+// [internal.min, interval.max[.  It's not required that the function be
+// continuous.
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 class PiecewisePoissonSeries {
  public:
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
-  PiecewisePoissonSeries();
+  PiecewisePoissonSeries(Interval<Instant> const& interval,
+                         Series const& series);
 
-  // The intervals for successive calls to Append must be consecutive, and the
-  // series must be continuous at the bounds.
+  // The intervals for successive calls to Append must be consecutive.  For the
+  // first call, the interval must be consecutive with the one passed at
+  // construction.
   void Append(Interval<Instant> const& interval,
               Series const& series);
 
-  // t must be in the (inclusive) bounds covered by the series.
-  Value Evaluate(Instant const& t) const;
+  Instant t_min() const;
+  Instant t_max() const;
 
-  // The constant term of the result is ???.
-  PiecewisePoissonSeries<
-      quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
-  Primitive() const;
+  // t must be in the interval [t_min, t_max[.
+  Value Evaluate(Instant const& t) const;
 
  private:
   PiecewisePoissonSeries(std::vector<Instant> const& bounds,

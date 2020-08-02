@@ -371,8 +371,12 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries() {
-  //TODO(phl):Ugly
+PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries(
+    Interval<Instant> const& interval,
+    Series const& series)
+    : bounds_({interval.min, interval.max}),
+      series_(/*count=*/1, series) {
+  CHECK_LT(Time{}, interval.measure());
 }
 
 template<typename Value, int degree_,
@@ -381,56 +385,37 @@ void PiecewisePoissonSeries<Value, degree_, Evaluator>::Append(
     Interval<Instant> const& interval,
     Series const& series) {
   CHECK_LT(Time{}, interval.measure());
-  if (bounds_.empty()) {
-    bounds_.push_back(interval.min);
-  } else {
-    CHECK_EQ(bounds_.back(), interval.min);
-
-#if defined(_DEBUG)
-    // A half-hearted check that the pieces make up a continuous function.  If
-    // not, evaluation would behave oddly at the bounds between them.
-    constexpr Variation<Value> max_derivative = 1 * si::Unit<Variation<Value>>;
-    auto const pre = series_.back().Evaluate(
-        interval.min - std::numeric_limits<double>::epsilon() * Second);
-    auto const post = series.Evaluate(
-        interval.min + std::numeric_limits<double>::epsilon() * Second);
-    CHECK_LE(
-        Abs(post - pre),
-        2 * max_derivative * std::numeric_limits<double>::epsilon() * Second);
-#endif
-  }
+  CHECK_EQ(bounds_.back(), interval.min);
   bounds_.push_back(interval.max);
   series_.push_back(series);
 }
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-Value PiecewisePoissonSeries<Value, degree_, Evaluator>::Evaluate(
-    Instant const& t) const {
-  CHECK(!bounds_.empty());
-  // If t is an element of bounds_, the returned iterator points to that
-  // element.
-  auto const it = std::lower_bound(bounds_.cbegin(), bounds_.cend(), t);
-  CHECK(it != bounds_.cend())
-      << t << " outside of " << bounds_.front() << " .. " << bounds_.back();
-  std::size_t const index = it - bounds_.cbegin();
-  return series_[std::min(index, series_.size() - 1)].Evaluate(t);
+Instant PiecewisePoissonSeries<Value, degree_, Evaluator>::t_min() const {
+  return bounds_.front();
 }
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<quantities::Primitive<Value, Time>,
-                       degree_ + 1,
-                       Evaluator>
-PiecewisePoissonSeries<Value, degree_, Evaluator>::Primitive() const {
-  using Result = PiecewisePoissonSeries<quantities::Primitive<Value, Time>,
-                                        degree_ + 1,
-                                        Evaluator>;
-  std::vector<typename Result::Series> primitives;
-  for (int i = 0; i < series_.size(); ++i) {
-    primitives.push_back(series[i].Primitive());
-  }
-  return Result(bounds_, primitives);
+Instant PiecewisePoissonSeries<Value, degree_, Evaluator>::t_max() const {
+  return bounds_.back();
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+Value PiecewisePoissonSeries<Value, degree_, Evaluator>::Evaluate(
+    Instant const& t) const {
+  // If t is an element of bounds_, the returned iterator points to the next
+  // element.  Otherwise it point to the upper bound of the interval to which
+  // t belongs.
+  auto const it = std::upper_bound(bounds_.cbegin(), bounds_.cend(), t);
+  CHECK(it != bounds_.cbegin())
+      << "Unexpected result looking up " << t << " in "
+      << bounds_.front() << " .. " << bounds_.back();
+  CHECK(it != bounds_.cend())
+      << t << " is outside of " << bounds_.front() << " .. " << bounds_.back();
+  return series_[it - bounds_.cbegin() - 1].Evaluate(t);
 }
 
 template<typename Value, int degree_,
