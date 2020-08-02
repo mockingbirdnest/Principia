@@ -10,17 +10,22 @@
 
 #include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_poisson_series {
 
+using quantities::Abs;
 using quantities::Cos;
 using quantities::Infinity;
 using quantities::Primitive;
 using quantities::Sin;
+using quantities::Variation;
 using quantities::si::Radian;
+using quantities::si::Second;
+namespace si = quantities::si;
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -380,6 +385,19 @@ void PiecewisePoissonSeries<Value, degree_, Evaluator>::Append(
     bounds_.push_back(interval.min);
   } else {
     CHECK_EQ(bounds_.back(), interval.min);
+
+#if defined(_DEBUG)
+    // A half-hearted check that the pieces make up a continuous function.  If
+    // not, evaluation would behave oddly at the bounds between them.
+    constexpr Variation<Value> max_derivative = 1 * si::Unit<Variation<Value>>;
+    auto const pre = series_.back().Evaluate(
+        interval.min - std::numeric_limits<double>::epsilon() * Second);
+    auto const post = series.Evaluate(
+        interval.min + std::numeric_limits<double>::epsilon() * Second);
+    CHECK_LE(
+        Abs(post - pre),
+        2 * max_derivative * std::numeric_limits<double>::epsilon() * Second);
+#endif
   }
   bounds_.push_back(interval.max);
   series_.push_back(series);

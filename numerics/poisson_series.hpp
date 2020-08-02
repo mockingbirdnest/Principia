@@ -164,7 +164,8 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const& t_min,
     Instant const& t_max);
 
-// A function defined by Poisson series piecewise.
+// A function defined by Poisson series piecewise.  The pieces must be such that
+// the overall function be continuous.
 //TODO(phl):comment
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -174,7 +175,8 @@ class PiecewisePoissonSeries {
 
   PiecewisePoissonSeries();
 
-  // The intervals for successive calls to Append must be consecutive.
+  // The intervals for successive calls to Append must be consecutive, and the
+  // series must be continuous at the bounds.
   void Append(Interval<Instant> const& interval,
               Series const& series);
 
