@@ -7,6 +7,7 @@
 
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/kepler_orbit.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -17,6 +18,7 @@ using geometry::Frame;
 using geometry::NonRotating;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
+using physics::KeplerOrbit;
 using physics::MasslessBody;
 using quantities::IsFinite;
 using quantities::Infinity;
@@ -125,36 +127,35 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     // the progress bar being stuck at 100% while the elements and nodes are
     // being computed.
 
-    using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
-
     RotatingBody<Barycentric> const* primary = nullptr;
-    auto sidereal_period = Infinity<Time>;
-    std::unique_ptr<DiscreteTrajectory<PrimaryCentred>>
-        primary_centred_trajectory;
-    std::optional<OrbitalElements::PartialElements> partial_elements;
+    auto smallest_osculating_period = Infinity<Time>;
     for (auto const body : ephemeris_->bodies()) {
-      BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
-          body_centred(ephemeris_, body);
-      auto body_centred_trajectory =
-          std::make_unique<DiscreteTrajectory<PrimaryCentred>>();
-      for (auto const& [time, degrees_of_freedom] : trajectory) {
-        body_centred_trajectory->Append(
-            time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
-      }
-      auto const tentative_elements =
-          OrbitalElements::PartialElements::ForTrajectory(
-              *body_centred_trajectory, *body, MasslessBody{});
-      if (tentative_elements.ok() &&
-          tentative_elements.ValueOrDie().sidereal_period() < sidereal_period) {
-        sidereal_period = tentative_elements.ValueOrDie().sidereal_period();
+      auto const initial_osculating_elements =
+          KeplerOrbit<Barycentric>{
+              *body,
+              MasslessBody{},
+              parameters->first_degrees_of_freedom -
+                  ephemeris_->trajectory(body)->EvaluateDegreesOfFreedom(
+                      parameters->first_time),
+              parameters->first_time}.elements_at_epoch();
+      if (initial_osculating_elements.period.has_value() &&
+          initial_osculating_elements.period < smallest_osculating_period) {
+        smallest_osculating_period = *initial_osculating_elements.period;
         primary = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body);
-        primary_centred_trajectory = std::move(body_centred_trajectory);
-        partial_elements = tentative_elements.ValueOrDie();
       }
     }
     if (primary != nullptr) {
+      using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
+      DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
+      BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
+          body_centred(ephemeris_, primary);
+      for (auto const& [time, degrees_of_freedom] : trajectory) {
+        primary_centred_trajectory.Append(
+            time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
+      }
       analysis.primary_ = primary;
-      auto const elements = partial_elements->Complete();
+      auto const elements = OrbitalElements::ForTrajectory(
+          primary_centred_trajectory, *primary, MasslessBody{});
       if (elements.ok()) {
         analysis.elements_ = elements.ValueOrDie();
         // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
@@ -165,7 +166,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
             *primary,
             /*max_abs_Cᴛₒ=*/100);
         analysis.ground_track_ =
-            OrbitGroundTrack::ForTrajectory(*primary_centred_trajectory,
+            OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
                                             *primary,
                                             /*mean_sun=*/std::nullopt);
         analysis.ResetRecurrence();
