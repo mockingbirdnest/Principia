@@ -95,8 +95,7 @@ TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
   analyser.RequestAnalysis(arc.begin()->time,
                            itrs_.FromThisFrameAtTime(arc.begin()->time)(
                                arc.begin()->degrees_of_freedom),
-                           3 * Hour,
-                           &earth_);
+                           3 * Hour);
   while (analyser.progress_of_next_analysis() != 1) {
     absl::SleepFor(absl::Milliseconds(10));
   }
