@@ -194,6 +194,51 @@ class PiecewisePoissonSeries {
 
   std::vector<Instant> bounds_;
   std::vector<Series> series_;
+
+  template<typename V, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, r, E>
+  friend operator-(PiecewisePoissonSeries<V, r, E> const& right);
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, std::max(l, r), E>
+  friend operator+(PoissonSeries<V, l, E> const& left,
+                   PiecewisePoissonSeries<V, r, E> const& right);
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, std::max(l, r), E>
+  friend operator+(PiecewisePoissonSeries<V, l, E> const& left,
+                   PoissonSeries<V, r, E> const& right);
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, std::max(l, r), E>
+  friend operator-(PoissonSeries<V, l, E> const& left,
+                   PiecewisePoissonSeries<V, r, E> const& right);
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, std::max(l, r), E>
+  friend operator-(PiecewisePoissonSeries<V, l, E> const& left,
+                   PoissonSeries<V, r, E> const& right);
+  template<typename S, typename V, int d,
+           template<typename, typename, int> class E>
+  PiecewisePoissonSeries<Product<S, V>, d, E>
+  friend operator*(S const& left,
+                   PiecewisePoissonSeries<V, d, E> const& right);
+  template<typename S, typename V, int d,
+           template<typename, typename, int> class E>
+  PiecewisePoissonSeries<Product<V, S>, d, E>
+  friend operator*(PiecewisePoissonSeries<V, d, E> const& left,
+                   S const& right);
+  template<typename S, typename V, int d,
+           template<typename, typename, int> class E>
+  PiecewisePoissonSeries<Quotient<V, S>, d, E>
+  friend operator/(PiecewisePoissonSeries<V, d, E> const& left,
+                   S const& right);
+  template<typename L, typename R, int l, int r,
+           template<typename, typename, int> class E>
+  PiecewisePoissonSeries<Product<L, R>, l + r, E>
+  friend operator*(PoissonSeries<L, l, E> const& left,
+                   PiecewisePoissonSeries<R, r, E> const& right);
+  template<typename L, typename R, int l, int r,
+           template<typename, typename, int> class E>
+  PiecewisePoissonSeries<Product<L, R>, l + r, E>
+  friend operator*(PiecewisePoissonSeries<L, l, E> const& left,
+                   PoissonSeries<R, r, E> const& right);
 };
 
 // Action of Poisson series on piecewise Poisson series.  Note that that while

@@ -435,6 +435,12 @@ template<typename Value, int rdegree_,
          template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Value, rdegree_, Evaluator> operator-(
     PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  using Result = PiecewisePoissonSeries<Value, rdegree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(-right.series_[i]);
+  }
+  return Result(right.bounds_, series);
 }
 
 template<typename Value, int ldegree_, int rdegree_,
