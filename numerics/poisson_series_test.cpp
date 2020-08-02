@@ -11,6 +11,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace numerics {
@@ -19,10 +20,12 @@ using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Sin;
+using quantities::Sqrt;
 using quantities::Time;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::VanishesBefore;
 
 class PoissonSeriesTest : public ::testing::Test {
  protected:
@@ -183,6 +186,41 @@ TEST_F(PoissonSeriesTest, Dot) {
                   t_min,
                   t_max),
               AlmostEquals(-1143.765683104456272 * Second, 53));
+}
+
+class PiecewisePoissonSeriesTest : public ::testing::Test {
+ protected:
+  using Degree0 = PiecewisePoissonSeries<double, 0, HornerEvaluator>;
+
+  PiecewisePoissonSeriesTest() : ω_(π / 2 * Radian / Second) {
+    // 1 - Sin(ω (t - t0)) over [t0_, t0_ + 1 s]
+    ppa_.Append(
+        {t0_, t0_ + 1 * Second},
+        Degree0::Series(Degree0::Series::Polynomial({1}, t0_),
+                        {{ω_,
+                          {/*sin=*/Degree0::Series::Polynomial({-1}, t0_),
+                           /*cos=*/Degree0::Series::Polynomial({0}, t0_)}}}));
+    // Cos(ω (t - t0)) over [t0_ + 1 s, t0_ + 2 s]
+    ppa_.Append(
+        {t0_ + 1 * Second, t0_ + 2 * Second},
+        Degree0::Series(Degree0::Series::Polynomial({0}, t0_),
+                        {{ω_,
+                          {/*sin=*/Degree0::Series::Polynomial({0}, t0_),
+                           /*cos=*/Degree0::Series::Polynomial({1}, t0_)}}}));
+  }
+
+  Instant const t0_;
+  AngularFrequency const ω_;
+  Degree0 ppa_;
+  Degree0 ppb_;
+};
+
+TEST_F(PiecewisePoissonSeriesTest, Evaluate) {
+  EXPECT_THAT(ppa_.Evaluate(t0_), AlmostEquals(1, 0));
+  EXPECT_THAT(ppa_.Evaluate(t0_ + 0.5 * Second), AlmostEquals(Sqrt(0.5), 0));
+  EXPECT_THAT(ppa_.Evaluate(t0_ + 1 * Second), VanishesBefore(1, 0));
+  EXPECT_THAT(ppa_.Evaluate(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5), 1));
+  EXPECT_THAT(ppa_.Evaluate(t0_ + 2 * Second), AlmostEquals(-1, 0));
 }
 
 }  // namespace numerics

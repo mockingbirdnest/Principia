@@ -8,6 +8,7 @@
 #include <map>
 #include <optional>
 
+#include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
@@ -379,8 +380,6 @@ void PiecewisePoissonSeries<Value, degree_, Evaluator>::Append(
     bounds_.push_back(interval.min);
   } else {
     CHECK_EQ(bounds_.back(), interval.min);
-    CHECK_EQ(series_.back().Evaluate(interval.min),
-             series.Evaluate(interval.min));
   }
   bounds_.push_back(interval.max);
   series_.push_back(series);
@@ -396,8 +395,8 @@ Value PiecewisePoissonSeries<Value, degree_, Evaluator>::Evaluate(
   auto const it = std::lower_bound(bounds_.cbegin(), bounds_.cend(), t);
   CHECK(it != bounds_.cend())
       << t << " outside of " << bounds_.front() << " .. " << bounds_.back();
-  auto int index = it - bounds_.cbegin();
-  return series_[std::max(index, series_.size() - 1)];
+  std::size_t const index = it - bounds_.cbegin();
+  return series_[std::min(index, series_.size() - 1)].Evaluate(t);
 }
 
 template<typename Value, int degree_,
