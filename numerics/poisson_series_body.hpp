@@ -448,6 +448,13 @@ template<typename Value, int ldegree_, int rdegree_,
 PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
 operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(left + right.series_[i]);
+  }
+  return Result(right.bounds_, series);
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -455,6 +462,13 @@ template<typename Value, int ldegree_, int rdegree_,
 PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
 operator+(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] + right);
+  }
+  return Result(left.bounds_, series);
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -462,6 +476,13 @@ template<typename Value, int ldegree_, int rdegree_,
 PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
 operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(left - right.series_[i]);
+  }
+  return Result(right.bounds_, series);
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -469,6 +490,13 @@ template<typename Value, int ldegree_, int rdegree_,
 PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
 operator-(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] - right);
+  }
+  return Result(left.bounds_, series);
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -476,6 +504,13 @@ template<typename Scalar, typename Value, int degree_,
 PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator> operator*(
     Scalar const& left,
     PiecewisePoissonSeries<Value, degree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(left * right.series_[i]);
+  }
+  return Result(right.bounds_, series);
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -483,6 +518,13 @@ template<typename Scalar, typename Value, int degree_,
 PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator> operator*(
     PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
     Scalar const& right) {
+  using Result =
+      PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] * right);
+  }
+  return Result(left.bounds_, series);
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -490,6 +532,13 @@ template<typename Scalar, typename Value, int degree_,
 PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator> operator/(
     PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
     Scalar const& right) {
+  using Result =
+      PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] / right);
+  }
+  return Result(left.bounds_, series);
 }
 
 template<typename LValue, typename RValue, int ldegree_, int rdegree_,
@@ -497,6 +546,14 @@ template<typename LValue, typename RValue, int ldegree_, int rdegree_,
 PiecewisePoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
 operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
           PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right) {
+  using Result = PiecewisePoissonSeries<Product<LValue, RValue>,
+                                        ldegree_ + rdegree_,
+                                        Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(left * right.series_[i]);
+  }
+  return Result(right.bounds_, series);
 }
 
 template<typename LValue, typename RValue, int ldegree_, int rdegree_,
@@ -504,6 +561,14 @@ template<typename LValue, typename RValue, int ldegree_, int rdegree_,
 PiecewisePoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
 operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
           PoissonSeries<RValue, rdegree_, Evaluator> const& right) {
+  using Result = PiecewisePoissonSeries<Product<LValue, RValue>,
+                                        ldegree_ + rdegree_,
+                                        Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] * right);
+  }
+  return Result(left.bounds_, series);
 }
 
 template<typename LValue, typename RValue,
