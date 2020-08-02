@@ -253,9 +253,10 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
       LabeledField(
           "Lowest altitude",
           (lowest_distance - primary?.Radius)?.FormatAltitude());
-      double? lowest_primary_altitude =
-          primary?.ocean == true ? 0 : primary?.pqsController?.radiusMin;
-      string altitude_warning = lowest_distance < lowest_primary_altitude
+      double? lowest_primary_distance = primary?.ocean == true
+          ? primary.Radius
+          : primary?.pqsController?.radiusMin;
+      string altitude_warning = lowest_distance < lowest_primary_distance
           ? "collision"
           : lowest_distance < primary?.pqsController?.radiusMax
           ? "collision risk"
