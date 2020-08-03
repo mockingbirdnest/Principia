@@ -169,13 +169,16 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
 
 }  // namespace
 
-Status* __cdecl principia__FlightPlanAppend(Plugin const* const plugin,
+Status* __cdecl principia__FlightPlanInsert(Plugin const* const plugin,
                                             char const* const vessel_guid,
-                                            Burn const burn) {
-  journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
+                                            Burn const burn,
+                                            int const index) {
+  journal::Method<journal::FlightPlanInsert> m(
+      {plugin, vessel_guid, burn, index});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToNewStatus(GetFlightPlan(*plugin, vessel_guid)
-                                  .Append(FromInterfaceBurn(*plugin, burn))));
+  return m.Return(
+      ToNewStatus(GetFlightPlan(*plugin, vessel_guid)
+                      .Insert(FromInterfaceBurn(*plugin, burn), index)));
 }
 
 void __cdecl principia__FlightPlanCreate(Plugin const* const plugin,
@@ -354,12 +357,13 @@ Status* __cdecl principia__FlightPlanRebase(Plugin const* const plugin,
   return m.Return(ToNewStatus(status));
 }
 
-Status* __cdecl principia__FlightPlanRemoveLast(Plugin const* const plugin,
-                                                char const* const vessel_guid) {
-  journal::Method<journal::FlightPlanRemoveLast> m({plugin, vessel_guid});
+Status* __cdecl principia__FlightPlanRemove(Plugin const* const plugin,
+                                            char const* const vessel_guid,
+                                            int const index) {
+  journal::Method<journal::FlightPlanRemove> m({plugin, vessel_guid, index});
   CHECK_NOTNULL(plugin);
   return m.Return(
-      ToNewStatus(GetFlightPlan(*plugin, vessel_guid).RemoveLast()));
+      ToNewStatus(GetFlightPlan(*plugin, vessel_guid).Remove(index)));
 }
 
 void __cdecl principia__FlightPlanRenderedApsides(

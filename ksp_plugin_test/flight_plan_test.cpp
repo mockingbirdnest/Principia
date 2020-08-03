@@ -229,28 +229,30 @@ TEST_F(FlightPlanTest, Singular) {
   EXPECT_THAT(AbsoluteError(singularity, back->time), Lt(1e-4 * Second));
   // Attempting to put a burn past the singularity fails.
   EXPECT_THAT(
-      flight_plan_->Append(
+      flight_plan_->Insert(
           MakeTangentBurn(/*thrust=*/1 * Newton,
                           /*specific_impulse=*/1 * Newton * Second / Kilogram,
                           /*initial_time=*/singularity + 1 * Milli(Second),
-                          /*Δv=*/1 * Metre / Second)),
+                          /*Δv=*/1 * Metre / Second),
+          0),
       StatusIs(integrators::termination_condition::VanishingStepSize));
   EXPECT_EQ(1, flight_plan_->number_of_anomalous_manœuvres());
 
   // Add another manœuvre and check the status.
   EXPECT_THAT(
-      flight_plan_->Append(
+      flight_plan_->Insert(
           MakeTangentBurn(/*thrust=*/1 * Newton,
                           /*specific_impulse=*/1 * Newton * Second / Kilogram,
                           /*initial_time=*/singularity + 10 * Second,
-                          /*Δv=*/1 * Metre / Second)),
+                          /*Δv=*/1 * Metre / Second),
+          1),
       StatusIs(integrators::termination_condition::VanishingStepSize));
   EXPECT_EQ(2, flight_plan_->number_of_anomalous_manœuvres());
 
   // Check that RemoveLast returns the proper statuses.
-  EXPECT_THAT(flight_plan_->RemoveLast(),
+  EXPECT_THAT(flight_plan_->Remove(1),
               StatusIs(integrators::termination_condition::VanishingStepSize));
-  flight_plan_->RemoveLast();
+  flight_plan_->Remove(0);
 
   // The singularity occurs during the burn: we're boosting towards the
   // singularity, so we reach the singularity in less than π / 2√2 s, before the
@@ -258,11 +260,12 @@ TEST_F(FlightPlanTest, Singular) {
   // The derivation of analytic expression for the time at which we reach the
   // singularity is left as an exercise to the reader.
   EXPECT_THAT(
-      flight_plan_->Append(
+      flight_plan_->Insert(
           MakeTangentBurn(/*thrust=*/1 * Newton,
                           /*specific_impulse=*/1 * Newton * Second / Kilogram,
                           /*initial_time=*/t0_ + 0.5 * Second,
-                          /*Δv=*/1 * Metre / Second)),
+                          /*Δv=*/1 * Metre / Second),
+          0),
       StatusIs(integrators::termination_condition::VanishingStepSize));
   EXPECT_EQ(0, flight_plan_->number_of_anomalous_manœuvres());
 
@@ -306,24 +309,24 @@ TEST_F(FlightPlanTest, Singular) {
 
 TEST_F(FlightPlanTest, Append) {
   // Burn ends after final time.
-  EXPECT_THAT(flight_plan_->Append(MakeFirstBurn()),
+  EXPECT_THAT(flight_plan_->Insert(MakeFirstBurn(), 0),
               StatusIs(FlightPlan::does_not_fit));
   EXPECT_EQ(0, flight_plan_->number_of_manœuvres());
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
-  EXPECT_OK(flight_plan_->Append(MakeFirstBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  EXPECT_THAT(flight_plan_->Append(MakeFirstBurn()),
+  EXPECT_THAT(flight_plan_->Insert(MakeFirstBurn(), 1),
               StatusIs(FlightPlan::does_not_fit));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  EXPECT_OK(flight_plan_->Append(MakeSecondBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
   EXPECT_EQ(2, flight_plan_->number_of_manœuvres());
 }
 
 TEST_F(FlightPlanTest, ForgetBefore) {
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
-  EXPECT_OK(flight_plan_->Append(MakeFirstBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  EXPECT_OK(flight_plan_->Append(MakeSecondBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
   EXPECT_EQ(2, flight_plan_->number_of_manœuvres());
   EXPECT_EQ(5, flight_plan_->number_of_segments());
 
@@ -392,21 +395,21 @@ TEST_F(FlightPlanTest, ForgetBefore) {
 
 TEST_F(FlightPlanTest, RemoveLast) {
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
-  EXPECT_OK(flight_plan_->Append(MakeFirstBurn()));
-  EXPECT_OK(flight_plan_->Append(MakeSecondBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
+  EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
   EXPECT_EQ(2, flight_plan_->number_of_manœuvres());
-  flight_plan_->RemoveLast();
+  flight_plan_->Remove(1);
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  flight_plan_->RemoveLast();
+  flight_plan_->Remove(0);
   EXPECT_EQ(0, flight_plan_->number_of_manœuvres());
   // Check that appending still works.
-  EXPECT_OK(flight_plan_->Append(MakeFirstBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
 }
 
 TEST_F(FlightPlanTest, Replace) {
   flight_plan_->SetDesiredFinalTime(t0_ + 1.7 * Second);
-  EXPECT_OK(flight_plan_->Append(MakeFirstBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
   Mass const old_final_mass =
       flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
           final_mass();
@@ -421,9 +424,9 @@ TEST_F(FlightPlanTest, Replace) {
 
 TEST_F(FlightPlanTest, Segments) {
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
-  EXPECT_OK(flight_plan_->Append(MakeFirstBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
   EXPECT_EQ(3, flight_plan_->number_of_segments());
-  EXPECT_OK(flight_plan_->Append(MakeSecondBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
   EXPECT_EQ(5, flight_plan_->number_of_segments());
 
   std::vector<Instant> times;
@@ -449,8 +452,8 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
-  EXPECT_OK(flight_plan_->Append(MakeFirstBurn()));
-  EXPECT_OK(flight_plan_->Append(MakeSecondBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
+  EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
   EXPECT_EQ(5, flight_plan_->number_of_segments());
   flight_plan_->GetSegment(4, begin, end);
   --end;
@@ -517,7 +520,7 @@ TEST_F(FlightPlanTest, GuidedBurn) {
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   auto unguided_burn = MakeFirstBurn();
   unguided_burn.thrust /= 10;
-  EXPECT_OK(flight_plan_->Append(std::move(unguided_burn)));
+  EXPECT_OK(flight_plan_->Insert(std::move(unguided_burn), 0));
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   DiscreteTrajectory<Barycentric>::Iterator last;
@@ -571,7 +574,7 @@ TEST_F(FlightPlanTest, Issue2331) {
                                        specific_impulse,
                                        frame,
                                        inertially_fixed};
-  flight_plan.Append(burn0);
+  flight_plan.Insert(burn0, 0);
 
   NavigationManœuvre::Intensity intensity1;
   intensity1.Δv =
@@ -586,7 +589,7 @@ TEST_F(FlightPlanTest, Issue2331) {
                                        specific_impulse,
                                        frame,
                                        inertially_fixed};
-  flight_plan.Append(burn1);
+  flight_plan.Insert(burn1, 1);
 
   NavigationManœuvre::Intensity intensity2;
   intensity2.Δv = Velocity<Frenet<NavigationFrame>>();
@@ -605,8 +608,8 @@ TEST_F(FlightPlanTest, Issue2331) {
 
 TEST_F(FlightPlanTest, Serialization) {
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
-  EXPECT_OK(flight_plan_->Append(MakeFirstBurn()));
-  EXPECT_OK(flight_plan_->Append(MakeSecondBurn()));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
+  EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
 
   serialization::FlightPlan message;
   flight_plan_->WriteToMessage(&message);
@@ -628,6 +631,34 @@ TEST_F(FlightPlanTest, Serialization) {
   EXPECT_EQ(t0_ + 42 * Second, flight_plan_read->desired_final_time());
   EXPECT_EQ(2, flight_plan_read->number_of_manœuvres());
   EXPECT_EQ(5, flight_plan_read->number_of_segments());
+}
+
+TEST_F(FlightPlanTest, Insertion) {
+  // Check that we get the same flight plan if we add the manœuvres in the
+  // opposite order.
+  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
+  EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
+  EXPECT_THAT(flight_plan_->number_of_manœuvres(), Eq(2));
+  EXPECT_THAT(flight_plan_->number_of_anomalous_manœuvres(), Eq(0));
+
+  serialization::FlightPlan inserted_in_order;
+  flight_plan_->WriteToMessage(&inserted_in_order);
+
+  // This first removal removes a non-last manœuvre.
+  EXPECT_OK(flight_plan_->Remove(0));
+  EXPECT_OK(flight_plan_->Remove(0));
+
+  EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 0));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
+  EXPECT_THAT(flight_plan_->number_of_manœuvres(), Eq(2));
+  EXPECT_THAT(flight_plan_->number_of_anomalous_manœuvres(), Eq(0));
+
+  serialization::FlightPlan inserted_out_of_order;
+  flight_plan_->WriteToMessage(&inserted_out_of_order);
+
+  EXPECT_THAT(inserted_out_of_order.DebugString(),
+              Eq(inserted_in_order.DebugString()));
 }
 
 }  // namespace internal_flight_plan
