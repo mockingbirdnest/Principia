@@ -279,9 +279,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               UpdateStatus(status, null);
               burn_editors_[i].Close();
               burn_editors_.RemoveAt(i);
-              for (int j = i; j < burn_editors_.Count; ++j) {
-                burn_editors_[j].index_ = j;
-              }
+              UpdateBurnEditorIndices();
               Shrink();
               return;
             } else {
@@ -380,9 +378,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         editor.Reset(plugin.FlightPlanGetManoeuvre(
             vessel_guid, index));
         burn_editors_.Insert(index, editor);
-        for (int i = index + 1; i < burn_editors_.Count; ++i) {
-          burn_editors_[i].index_ = i;
-        }
+        UpdateBurnEditorIndices();
         UpdateStatus(status, index);
         Shrink();
         return true;
@@ -529,6 +525,12 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private BurnEditor GetPreviousBurnEditor(BurnEditor editor) {
     int i = burn_editors_.IndexOf(editor);
     return i == 0 ? null : burn_editors_[i - 1];
+  }
+
+  private void UpdateBurnEditorIndices() {
+    for (int j = 0; j < burn_editors_.Count; ++j) {
+      burn_editors_[j].index_ = j;
+    }
   }
 
   private IntPtr plugin => adapter_.Plugin();

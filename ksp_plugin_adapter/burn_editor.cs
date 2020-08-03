@@ -13,7 +13,7 @@ class BurnEditor : ScalingRenderer {
     adapter_ = adapter;
     vessel_ = vessel;
     initial_time_ = initial_time;
-    index_ = index;
+    this.index = index;
     get_burn_at_index_ = get_burn_at_index;
     Δv_tangent_ =
         new DifferentialSlider(label            : "Δv tangent",
@@ -137,8 +137,8 @@ class BurnEditor : ScalingRenderer {
         }
       }
       UnityEngine.GUILayout.Label(
-          index_ == 0 ? "Time base: start of flight plan"
-                      : $"Time base: end of manœuvre #{index_}",
+          index == 0 ? "Time base: start of flight plan"
+                     : $"Time base: end of manœuvre #{index}",
           style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
               alignment = UnityEngine.TextAnchor.UpperLeft});
       using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -300,8 +300,8 @@ class BurnEditor : ScalingRenderer {
   private double final_time => initial_time_ + duration_;
 
   private IntPtr plugin => adapter_.Plugin();
-  public int index_;
-  private BurnEditor previous_burn => get_burn_at_index_(index_ - 1);
+  public int index { private get; set; }
+  private BurnEditor previous_burn => get_burn_at_index_(index - 1);
 
   private bool is_inertially_fixed_;
   private readonly DifferentialSlider Δv_tangent_;
