@@ -108,7 +108,7 @@ Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
     return Singular();
   }
   if (!manœuvre.FitsBetween(start_of_previous_coast(index),
-                            start_of_next_burn(index - 1))) {
+                            start_of_burn(index))) {
     return DoesNotFit();
   }
   manœuvres_.insert(manœuvres_.begin() + index, manœuvre);
@@ -467,17 +467,17 @@ void FlightPlan::PopLastSegment() {
   }
 }
 
-void FlightPlan::PopSegmentsAffectedByManœuvre(int index) {
+void FlightPlan::PopSegmentsAffectedByManœuvre(int const index) {
   // We will keep, for each manœuvre in [0, index[, its burn and the coast
   // preceding it, as well as the coast preceding manœuvre |index|.
-  int segments_kept = 2 * index + 1;
+  int const segments_kept = 2 * index + 1;
   while (number_of_segments() > segments_kept) {
     PopLastSegment();
   }
   ResetLastSegment();
 }
 
-void FlightPlan::UpdateInitialMassOfManœuvresAfter(int index) {
+void FlightPlan::UpdateInitialMassOfManœuvresAfter(int const index) {
   if (index >= manœuvres_.size()) {
     return;
   }
@@ -492,10 +492,13 @@ Instant FlightPlan::start_of_last_coast() const {
   return manœuvres_.empty() ? initial_time_ : manœuvres_.back().final_time();
 }
 
+Instant FlightPlan::start_of_burn(int const index) const {
+  return index == manœuvres_.size() ? desired_final_time_
+                                    : manœuvres_[index].initial_time();
+}
+
 Instant FlightPlan::start_of_next_burn(int const index) const {
-  return index == manœuvres_.size() - 1
-             ? desired_final_time_
-             : manœuvres_[index + 1].initial_time();
+  return start_of_burn(index + 1);
 }
 
 Instant FlightPlan::start_of_previous_coast(int const index) const {

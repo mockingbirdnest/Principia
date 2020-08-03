@@ -188,14 +188,15 @@ class FlightPlan {
   // |manœuvres_[index]|).
   void PopSegmentsAffectedByManœuvre(int index);
 
-  // Reconstructs each manœuvre after |manœuvres_[index]|, keeping the same
-  // burns but recomputing the initial masses from
-  // |manœuvres_[index].final_mass()|.
+  // Reconstructs each manœuvre after |manœuvres_[index]| (starting with
+  // |manœuvres_[index + 1]|), keeping the same burns but recomputing the
+  // initial masses from |manœuvres_[index].final_mass()|.
   void UpdateInitialMassOfManœuvresAfter(int index);
 
   Instant start_of_last_coast() const;
 
   // In the following functions, |index| refers to the index of a manœuvre.
+  Instant start_of_burn(int index) const;
   Instant start_of_next_burn(int index) const;
   Instant start_of_previous_coast(int index) const;
 

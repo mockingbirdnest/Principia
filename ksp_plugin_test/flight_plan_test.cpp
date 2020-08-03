@@ -57,6 +57,7 @@ using quantities::si::Newton;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::StatusIs;
 using testing_utilities::operator""_⑴;
@@ -657,8 +658,7 @@ TEST_F(FlightPlanTest, Insertion) {
   serialization::FlightPlan inserted_out_of_order;
   flight_plan_->WriteToMessage(&inserted_out_of_order);
 
-  EXPECT_THAT(inserted_out_of_order.DebugString(),
-              Eq(inserted_in_order.DebugString()));
+  EXPECT_THAT(inserted_out_of_order, EqualsProto(inserted_in_order));
 }
 
 }  // namespace internal_flight_plan
