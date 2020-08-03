@@ -95,7 +95,7 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
       plugin_.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth),
       /*is_inertially_fixed=*/false};
-  vessel_->flight_plan().Append(std::move(burn));
+  vessel_->flight_plan().Insert(std::move(burn), 0);
   QP result;
   auto const to_world =
       plugin_.renderer().BarycentricToWorld(plugin_.PlanetariumRotation());
