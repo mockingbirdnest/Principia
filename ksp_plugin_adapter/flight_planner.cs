@@ -529,7 +529,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private void UpdateBurnEditorIndices() {
     for (int j = 0; j < burn_editors_.Count; ++j) {
-      burn_editors_[j].index_ = j;
+      burn_editors_[j].index = j;
     }
   }
 
