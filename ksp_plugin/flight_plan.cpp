@@ -67,6 +67,8 @@ FlightPlan::FlightPlan(
 
   // Create a fork for the first coasting trajectory.
   segments_.emplace_back(root_->NewForkWithoutCopy(initial_time_));
+  coast_analysers_.push_back(make_not_null_unique<OrbitAnalyser>(
+      ephemeris_, DefaultHistoryParameters()));
   CHECK(manœuvres_.empty());
   ComputeSegments(manœuvres_.begin(), manœuvres_.end());
 }
@@ -251,6 +253,11 @@ void FlightPlan::GetAllSegments(
   CHECK(begin != end);
 }
 
+OrbitAnalyser::Analysis* FlightPlan::analysis(int coast_index) {
+  coast_analysers_[coast_index]->RefreshAnalysis();
+  return coast_analysers_[coast_index]->analysis();
+}
+
 void FlightPlan::WriteToMessage(
     not_null<serialization::FlightPlan*> const message) const {
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
@@ -410,6 +417,10 @@ Status FlightPlan::ComputeSegments(
         anomalous_segments_ = 1;
         anomalous_status_ = status;
       }
+      coast_analysers_.back()->RequestAnalysis(
+          coast->Fork()->time,
+          coast->Fork()->degrees_of_freedom,
+          coast->back().time - coast->Fork()->time);
     }
 
     AddLastSegment();
@@ -433,6 +444,10 @@ Status FlightPlan::ComputeSegments(
     // having to extend the flight plan by hand.
     desired_final_time_ =
         std::max(desired_final_time_, segments_.back()->t_max());
+    coast_analysers_.back()->RequestAnalysis(
+        segments_.back()->Fork()->time,
+        segments_.back()->Fork()->degrees_of_freedom,
+        desired_final_time_ - segments_.back()->Fork()->time);
     Status const status = CoastSegment(desired_final_time_, segments_.back());
     if (!status.ok()) {
       overall_status.Update(status);
@@ -445,6 +460,10 @@ Status FlightPlan::ComputeSegments(
 
 void FlightPlan::AddLastSegment() {
   segments_.emplace_back(segments_.back()->NewForkAtLast());
+  if (segments_.size() % 2 == 1) {
+    coast_analysers_.emplace_back(make_not_null_unique<OrbitAnalyser>(
+        ephemeris_, DefaultHistoryParameters()));
+  }
   if (anomalous_segments_ > 0) {
     ++anomalous_segments_;
   }
@@ -461,6 +480,9 @@ void FlightPlan::PopLastSegment() {
   DiscreteTrajectory<Barycentric>* trajectory = segments_.back();
   CHECK(!trajectory->is_root());
   trajectory->parent()->DeleteFork(trajectory);
+  if (segments_.size() % 2 == 1) {
+    coast_analysers_.pop_back();
+  }
   segments_.pop_back();
   if (anomalous_segments_ > 0) {
     --anomalous_segments_;

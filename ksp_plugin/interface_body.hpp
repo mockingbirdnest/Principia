@@ -533,6 +533,81 @@ Interval ToInterval(geometry::Interval<T> const& interval) {
           interval.max / quantities::si::Unit<T>};
 }
 
+inline void FillOrbitAnalysis(
+    ksp_plugin::OrbitAnalyser::Analysis& vessel_analysis,
+    ksp_plugin::Plugin const& plugin,
+    bool const has_nominal_recurrence,
+    int const* const revolutions_per_cycle,
+    int const* const days_per_cycle,
+    int const ground_track_revolution,
+    not_null<OrbitAnalysis*> analysis) {
+  analysis->primary_index =
+      new int(plugin.CelestialIndexOfBody(vessel_analysis.primary()));
+  analysis->mission_duration = vessel_analysis.mission_duration() / Second;
+  if (vessel_analysis.elements().has_value()) {
+    auto const& elements = *vessel_analysis.elements();
+    analysis->elements = new OrbitalElements{
+        .sidereal_period = elements.sidereal_period() / Second,
+        .nodal_period = elements.nodal_period() / Second,
+        .anomalistic_period = elements.anomalistic_period() / Second,
+        .nodal_precession = elements.nodal_precession() / (Radian / Second),
+        .mean_semimajor_axis =
+            ToInterval(elements.mean_semimajor_axis_interval()),
+        .mean_eccentricity = ToInterval(elements.mean_eccentricity_interval()),
+        .mean_inclination = ToInterval(elements.mean_inclination_interval()),
+        .mean_longitude_of_ascending_nodes =
+            ToInterval(elements.mean_longitude_of_ascending_node_interval()),
+        .mean_argument_of_periapsis =
+            ToInterval(elements.mean_argument_of_periapsis_interval()),
+        .mean_periapsis_distance =
+            ToInterval(elements.mean_periapsis_distance_interval()),
+        .mean_apoapsis_distance =
+            ToInterval(elements.mean_apoapsis_distance_interval()),
+        .radial_distance = ToInterval(elements.radial_distance_interval()),
+    };
+  }
+  if (has_nominal_recurrence) {
+    int const Cᴛₒ =
+        geometry::Sign(vessel_analysis.primary().angular_frequency()) *
+        std::abs(*days_per_cycle);
+    int const νₒ =
+        std::nearbyint(static_cast<double>(*revolutions_per_cycle) / Cᴛₒ);
+    int const Dᴛₒ = *revolutions_per_cycle - νₒ * Cᴛₒ;
+    int const gcd = std::gcd(Dᴛₒ, Cᴛₒ);
+    vessel_analysis.SetRecurrence({νₒ, Dᴛₒ / gcd, Cᴛₒ / gcd});
+  } else {
+    vessel_analysis.ResetRecurrence();
+  }
+  if (vessel_analysis.recurrence().has_value()) {
+    auto const& recurrence = *vessel_analysis.recurrence();
+    analysis->recurrence = new OrbitRecurrence{
+        .nuo = recurrence.νₒ(),
+        .dto = recurrence.Dᴛₒ(),
+        .cto = recurrence.Cᴛₒ(),
+        .number_of_revolutions = recurrence.number_of_revolutions(),
+        .equatorial_shift = recurrence.equatorial_shift() / Radian,
+        .base_interval = recurrence.base_interval() / Radian,
+        .grid_interval = recurrence.grid_interval() / Radian,
+        .subcycle = recurrence.subcycle(),
+    };
+  }
+  if (vessel_analysis.ground_track().has_value() &&
+      vessel_analysis.equatorial_crossings().has_value()) {
+    auto const& equatorial_crossings = *vessel_analysis.equatorial_crossings();
+    analysis->ground_track = new OrbitGroundTrack{
+        .equatorial_crossings =
+            {
+                .longitudes_reduced_to_ascending_pass =
+                    ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
+                        2 * ground_track_revolution - 1)),
+                .longitudes_reduced_to_descending_pass =
+                    ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
+                        2 * ground_track_revolution)),
+            },
+    };
+  }
+}
+
 inline Instant FromGameTime(Plugin const& plugin,
                             double const t) {
   return plugin.GameEpoch() + t * Second;

@@ -9,6 +9,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
+#include "ksp_plugin/orbit_analyser.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -128,6 +129,9 @@ class FlightPlan {
       DiscreteTrajectory<Barycentric>::Iterator& begin,
       DiscreteTrajectory<Barycentric>::Iterator& end) const;
 
+  // |coast_index| must be in [0, number_of_manœuvres()].
+  virtual OrbitAnalyser::Analysis* analysis(int coast_index);
+
   void WriteToMessage(not_null<serialization::FlightPlan*> message) const;
 
   // This may return a null pointer if the flight plan contained in the
@@ -220,6 +224,7 @@ class FlightPlan {
   Status anomalous_status_;
 
   std::vector<NavigationManœuvre> manœuvres_;
+  std::vector<not_null<std::unique_ptr<OrbitAnalyser>>> coast_analysers_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
