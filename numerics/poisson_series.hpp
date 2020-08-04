@@ -199,10 +199,6 @@ class PiecewisePoissonSeries {
   template<typename V, int r, template<typename, typename, int> class E>
   PiecewisePoissonSeries<V, r, E>
   friend operator-(PiecewisePoissonSeries<V, r, E> const& right);
-  template<typename V, int l, int r, template<typename, typename, int> class E>
-  PiecewisePoissonSeries<V, std::max(l, r), E>
-  friend operator+(PoissonSeries<V, l, E> const& left,
-                   PiecewisePoissonSeries<V, r, E> const& right);
   template<typename S, typename V, int d,
            template<typename, typename, int> class E>
   PiecewisePoissonSeries<Product<S, V>, d, E>
@@ -218,6 +214,10 @@ class PiecewisePoissonSeries {
   PiecewisePoissonSeries<Quotient<V, S>, d, E>
   friend operator/(PiecewisePoissonSeries<V, d, E> const& left,
                    S const& right);
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, std::max(l, r), E>
+  friend operator+(PoissonSeries<V, l, E> const& left,
+                   PiecewisePoissonSeries<V, r, E> const& right);
   template<typename V, int l, int r, template<typename, typename, int> class E>
   PiecewisePoissonSeries<V, std::max(l, r), E>
   friend operator+(PiecewisePoissonSeries<V, l, E> const& left,

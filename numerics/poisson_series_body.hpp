@@ -582,9 +582,7 @@ Primitive<Product<LValue, RValue>, Time> Dot(
     PoissonSeries<double, wdegree_, Evaluator> const& weight) {
   using Result = Primitive<Product<LValue, RValue>, Time>;
   Result result;
-  std::vector<typename Result::Series> series;
   for (int i = 0; i < right.series_.size(); ++i) {
-    //TODO(phl):correct use of weight?
     result += Dot(left,
                   right.series_[i],
                   weight,
@@ -603,9 +601,7 @@ Primitive<Product<LValue, RValue>, Time> Dot(
     PoissonSeries<double, wdegree_, Evaluator> const& weight) {
   using Result = Primitive<Product<LValue, RValue>, Time>;
   Result result;
-  std::vector<typename Result::Series> series;
   for (int i = 0; i < left.series_.size(); ++i) {
-    //TODO(phl):correct use of weight?
     result += Dot(left.series_[i],
                   right,
                   weight,

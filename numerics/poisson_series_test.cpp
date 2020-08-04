@@ -309,5 +309,14 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
   }
 }
 
+TEST_F(PiecewisePoissonSeriesTest, Dot) {
+  Time const d1 = Dot(
+      pp_, p_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
+  Time const d2 = Dot(
+      p_, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
+  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (4 * π) * Second, 1));
+  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (4 * π) * Second, 1));
+}
+
 }  // namespace numerics
 }  // namespace principia
