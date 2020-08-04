@@ -56,28 +56,44 @@ class BurnEditor : ScalingRenderer {
     ComputeEngineCharacteristics();
   }
 
+  public enum Event {
+    None,
+    Changed,
+    Deleted,
+    Minimized,
+    Maximized,
+  }
+
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(string header,
+  public Event Render(string header,
                      bool anomalous,
-                     double burn_final_time,
-                     Action delete) {
+                     double burn_final_time) {
     bool changed = false;
     previous_coast_duration_.max_value = burn_final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Label(header);
-      string frame_info = "";
-      if (!reference_frame_selector_.FrameParameters().Equals(
+      if (UnityEngine.GUILayout.Button(
+              minimized ? "+" : "-", GUILayoutWidth(1))) {
+        minimized = !minimized;
+        return minimized ? Event.Minimized : Event.Maximized;
+      }
+      UnityEngine.GUILayout.Label(minimized ? $"{header} ({Δv():0.000} m/s)"
+                                            : header);
+      string info = "";
+      if (!minimized &&
+          !reference_frame_selector_.FrameParameters().Equals(
               adapter_.plotting_frame_selector_.FrameParameters())) {
-        frame_info = "Manœuvre frame differs from plotting frame";
+        info = "Manœuvre frame differs from plotting frame";
       }
       UnityEngine.GUILayout.Label(
-          frame_info,
+          info,
           Style.RightAligned(Style.Info(UnityEngine.GUI.skin.label)));
       if (UnityEngine.GUILayout.Button("Delete", GUILayoutWidth(2))) {
-        delete();
-        changed = true;
+        return Event.Deleted;
       }
+    }
+    if (minimized) {
+      return Event.None;
     }
     using (new UnityEngine.GUILayout.VerticalScope()) {
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
@@ -152,7 +168,7 @@ class BurnEditor : ScalingRenderer {
                                   Style.Warning(UnityEngine.GUI.skin.label));
       changed_reference_frame_ = false;
     }
-    return changed;
+    return changed ? Event.Changed : Event.None;
   }
 
   public double Δv() {
@@ -297,10 +313,12 @@ class BurnEditor : ScalingRenderer {
                               plugin.FlightPlanGetInitialTime(
                                   vessel_.id.ToString());
 
-  private double final_time => initial_time_ + duration_;
+  public double initial_time => initial_time_;
+  public double final_time => initial_time_ + duration_;
 
   private IntPtr plugin => adapter_.Plugin();
   public int index { private get; set; }
+  public bool minimized { private get; set; } = true;
   private BurnEditor previous_burn => get_burn_at_index_(index - 1);
 
   private bool is_inertially_fixed_;
