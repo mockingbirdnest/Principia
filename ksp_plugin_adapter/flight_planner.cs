@@ -259,22 +259,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
         for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
-          var coast_analysis =
-              plugin.FlightPlanGetCoastAnalysis(vessel_guid, i);
-          string coast_description = "";
-          if (coast_analysis.primary_index.HasValue) {
-            string primary_name =
-                FlightGlobals.Bodies[coast_analysis.primary_index.Value].name;
-            int? revolutions = (int?)(coast_analysis.mission_duration /
-                                      coast_analysis.elements?.sidereal_period);
-            if (revolutions.HasValue) {
-              coast_description = $"{primary_name} orbit ({revolutions} revolutions)";
-            }
-          }
-          UnityEngine.GUILayout.TextArea(coast_description);
-          // In the future, coast information, e.g., orbit analysis will be
-          // shown between these lines.  For now, we only have a button to
-          // insert a burn.
+          RenderCoastAnalysis(i);
           if (RenderAddManœuvreButton(i)) {
             return;
           }
@@ -303,6 +288,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             }
           }
         }
+        RenderCoastAnalysis(burn_editors_.Count);
         if (RenderAddManœuvreButton(burn_editors_.Count)) {
           return;
         }
@@ -358,6 +344,24 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                                   Style.Warning(UnityEngine.GUI.skin.label));
       UnityEngine.GUILayout.Space(Width(1));
     }
+  }
+
+  private void RenderCoastAnalysis(int index) {
+    string vessel_guid = predicted_vessel.id.ToString();
+    var coast_analysis =
+        plugin.FlightPlanGetCoastAnalysis(vessel_guid, index);
+    string coast_description = "";
+    if (coast_analysis.primary_index.HasValue) {
+      string primary_name =
+          FlightGlobals.Bodies[coast_analysis.primary_index.Value].name;
+      int? revolutions = (int?)(coast_analysis.mission_duration /
+                                coast_analysis.elements?.sidereal_period);
+      if (revolutions.HasValue) {
+        coast_description =
+            $"{primary_name} orbit ({revolutions} sidereal rev.)";
+      }
+    }
+    UnityEngine.GUILayout.Label(coast_description);
   }
 
   private bool RenderAddManœuvreButton(int index) {
