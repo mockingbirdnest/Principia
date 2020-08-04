@@ -7,6 +7,7 @@
 #include <functional>
 #include <map>
 #include <optional>
+#include <vector>
 
 #include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"

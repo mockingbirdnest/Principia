@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <map>
+#include <vector>
 
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"

@@ -1,6 +1,7 @@
 ﻿
 #include "numerics/poisson_series.hpp"
 
+#include <limits>
 #include <memory>
 
 #include "geometry/named_quantities.hpp"
