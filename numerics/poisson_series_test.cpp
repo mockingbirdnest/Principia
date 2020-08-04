@@ -194,15 +194,17 @@ class PiecewisePoissonSeriesTest : public ::testing::Test {
 
   PiecewisePoissonSeriesTest()
       : ω_(π / 2 * Radian / Second),
-      // 1 - Sin(ω (t - t0)) over [t0_, t0_ + 1 s]
-        ppa_({t0_, t0_ + 1 * Second},
-             Degree0::Series(
-                 Degree0::Series::Polynomial({1}, t0_),
-                 {{ω_,
-                   {/*sin=*/Degree0::Series::Polynomial({-1}, t0_),
-                    /*cos=*/Degree0::Series::Polynomial({0}, t0_)}}})) {
-    // Cos(ω (t - t0)) over [t0_ + 1 s, t0_ + 2 s]
-    ppa_.Append(
+        p_(Degree0::Series::Polynomial({1.5}, t0_),
+           {{ω_,
+             {/*sin=*/Degree0::Series::Polynomial({0.5}, t0_),
+              /*cos=*/Degree0::Series::Polynomial({-1}, t0_)}}}),
+        pp_({t0_, t0_ + 1 * Second},
+            Degree0::Series(
+                Degree0::Series::Polynomial({1}, t0_),
+                {{ω_,
+                  {/*sin=*/Degree0::Series::Polynomial({-1}, t0_),
+                   /*cos=*/Degree0::Series::Polynomial({0}, t0_)}}})) {
+    pp_.Append(
         {t0_ + 1 * Second, t0_ + 2 * Second},
         Degree0::Series(Degree0::Series::Polynomial({0}, t0_),
                         {{ω_,
@@ -212,21 +214,99 @@ class PiecewisePoissonSeriesTest : public ::testing::Test {
 
   Instant const t0_;
   AngularFrequency const ω_;
-  Degree0 ppa_;
+  // p[t_, t0_] := 3/2 - Cos[π(t - t0)/2] + 1/2 Sin[π(t - t0)/2]
+  Degree0::Series p_;
+  // pp[t_, t0_] := If[t < t0 + 1, 1 - Sin[π(t - t0)/2], Cos[π(t - t0)/2]]
+  Degree0 pp_;
 };
 
 TEST_F(PiecewisePoissonSeriesTest, Evaluate) {
   double const ε = std::numeric_limits<double>::epsilon();
-  EXPECT_THAT(ppa_.Evaluate(t0_), AlmostEquals(1, 0));
-  EXPECT_THAT(ppa_.Evaluate(t0_ + 0.5 * Second),
-              AlmostEquals(1 - Sqrt(0.5), 0));
-  EXPECT_THAT(ppa_.Evaluate(t0_ + 1 * (1 - ε / 2) * Second),
-              AlmostEquals(0, 0));
-  EXPECT_THAT(ppa_.Evaluate(t0_ + 1 * Second), VanishesBefore(1, 0));
-  EXPECT_THAT(ppa_.Evaluate(t0_ + 1 * (1 + ε) * Second), VanishesBefore(1, 3));
-  EXPECT_THAT(ppa_.Evaluate(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5), 1));
-  EXPECT_THAT(ppa_.Evaluate(t0_ + 2 * (1 - ε / 2) * Second),
+  EXPECT_THAT(pp_.Evaluate(t0_), AlmostEquals(1, 0));
+  EXPECT_THAT(pp_.Evaluate(t0_ + 0.5 * Second), AlmostEquals(1 - Sqrt(0.5), 0));
+  EXPECT_THAT(pp_.Evaluate(t0_ + 1 * (1 - ε / 2) * Second), AlmostEquals(0, 0));
+  EXPECT_THAT(pp_.Evaluate(t0_ + 1 * Second), VanishesBefore(1, 0));
+  EXPECT_THAT(pp_.Evaluate(t0_ + 1 * (1 + ε) * Second), VanishesBefore(1, 3));
+  EXPECT_THAT(pp_.Evaluate(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5), 1));
+  EXPECT_THAT(pp_.Evaluate(t0_ + 2 * (1 - ε / 2) * Second),
               AlmostEquals(-1, 0));
+}
+
+TEST_F(PiecewisePoissonSeriesTest, VectorSpace) {
+  {
+    auto const pp = +pp_;
+    EXPECT_THAT(pp.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals(1 - Sqrt(0.5), 0));
+    EXPECT_THAT(pp.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals(-Sqrt(0.5), 1));
+  }
+  {
+    auto const pp = -pp_;
+    EXPECT_THAT(pp.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals(-1 + Sqrt(0.5), 0));
+    EXPECT_THAT(pp.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals(Sqrt(0.5), 1));
+  }
+  {
+    auto const pp = 2 * pp_;
+    EXPECT_THAT(pp.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals(2 - Sqrt(2), 0));
+    EXPECT_THAT(pp.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals(-Sqrt(2), 1));
+  }
+  {
+    auto const pp = pp_ * 3;
+    EXPECT_THAT(pp.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals(3 - 3 * Sqrt(0.5), 0));
+    EXPECT_THAT(pp.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals(-3 * Sqrt(0.5), 1));
+  }
+  {
+    auto const pp = pp_ / 4;
+    EXPECT_THAT(pp.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals((2 - Sqrt(2)) / 8, 0));
+    EXPECT_THAT(pp.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals(-Sqrt(0.5) / 4, 1));
+  }
+}
+
+TEST_F(PiecewisePoissonSeriesTest, Action) {
+  {
+    auto const s1 = p_ + pp_;
+    auto const s2 = pp_ + p_;
+    EXPECT_THAT(s1.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s1.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s2.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s2.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+  }
+  {
+    auto const d1 = p_ - pp_;
+    auto const d2 = pp_ - p_;
+    EXPECT_THAT(d1.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals((2 + Sqrt(2)) / 4, 1));
+    EXPECT_THAT(d1.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
+    EXPECT_THAT(d2.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals((-2 - Sqrt(2)) / 4, 1));
+    EXPECT_THAT(d2.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
+  }
+  {
+    auto const p1 = p_ * pp_;
+    auto const p2 = pp_ * p_;
+    EXPECT_THAT(p1.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals((7 - 4* Sqrt(2))/4, 0));
+    EXPECT_THAT(p1.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
+    EXPECT_THAT(p2.Evaluate(t0_ + 0.5 * Second),
+                AlmostEquals((7 - 4* Sqrt(2))/4, 0));
+    EXPECT_THAT(p2.Evaluate(t0_ + 1.5 * Second),
+                AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
+  }
 }
 
 }  // namespace numerics

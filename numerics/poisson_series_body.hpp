@@ -407,7 +407,7 @@ template<typename Value, int degree_,
 Value PiecewisePoissonSeries<Value, degree_, Evaluator>::Evaluate(
     Instant const& t) const {
   // If t is an element of bounds_, the returned iterator points to the next
-  // element.  Otherwise it point to the upper bound of the interval to which
+  // element.  Otherwise it points to the upper bound of the interval to which
   // t belongs.
   auto const it = std::upper_bound(bounds_.cbegin(), bounds_.cend(), t);
   CHECK(it != bounds_.cbegin())
@@ -443,6 +443,48 @@ PiecewisePoissonSeries<Value, rdegree_, Evaluator> operator-(
     series.push_back(-right.series_[i]);
   }
   return Result(right.bounds_, series);
+}
+
+template<typename Scalar, typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator> operator*(
+    Scalar const& left,
+    PiecewisePoissonSeries<Value, degree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(left * right.series_[i]);
+  }
+  return Result(right.bounds_, series);
+}
+
+template<typename Scalar, typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator> operator*(
+    PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
+    Scalar const& right) {
+  using Result =
+      PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] * right);
+  }
+  return Result(left.bounds_, series);
+}
+
+template<typename Scalar, typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator> operator/(
+    PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
+    Scalar const& right) {
+  using Result =
+      PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] / right);
+  }
+  return Result(left.bounds_, series);
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -497,48 +539,6 @@ operator-(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
   std::vector<typename Result::Series> series;
   for (int i = 0; i < left.series_.size(); ++i) {
     series.push_back(left.series_[i] - right);
-  }
-  return Result(left.bounds_, series);
-}
-
-template<typename Scalar, typename Value, int degree_,
-         template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator> operator*(
-    Scalar const& left,
-    PiecewisePoissonSeries<Value, degree_, Evaluator> const& right) {
-  using Result =
-      PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
-  std::vector<typename Result::Series> series;
-  for (int i = 0; i < right.series_.size(); ++i) {
-    series.push_back(left * right.series_[i]);
-  }
-  return Result(right.bounds_, series);
-}
-
-template<typename Scalar, typename Value, int degree_,
-         template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator> operator*(
-    PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
-    Scalar const& right) {
-  using Result =
-      PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator>;
-  std::vector<typename Result::Series> series;
-  for (int i = 0; i < left.series_.size(); ++i) {
-    series.push_back(left.series_[i] * right);
-  }
-  return Result(left.bounds_, series);
-}
-
-template<typename Scalar, typename Value, int degree_,
-         template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator> operator/(
-    PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
-    Scalar const& right) {
-  using Result =
-      PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>;
-  std::vector<typename Result::Series> series;
-  for (int i = 0; i < left.series_.size(); ++i) {
-    series.push_back(left.series_[i] / right);
   }
   return Result(left.bounds_, series);
 }
