@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Linq;
-using VehiclePhysics;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -281,9 +279,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               return;
             }
             case BurnEditor.Event.Minimized:
-            case BurnEditor.Event.Maximized:
+            case BurnEditor.Event.Maximized: {
               Shrink();
               return;
+            }
             case BurnEditor.Event.Changed: {
               var status =
                   plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
@@ -291,8 +290,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
               break;
             }
-            case BurnEditor.Event.None:
+            case BurnEditor.Event.None: {
               break;
+            }
           }
         }
         Style.HorizontalLine();
@@ -364,18 +364,15 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           : $@"Coast for {
                 (burn_editors_[index].initial_time -
                  start_of_coast).FormatDuration(show_seconds : false)}";
-      UnityEngine.GUILayout.Label(
-          coast_description);
-      if (UnityEngine.GUILayout.Button(
-            "Add manœuvre",
-            GUILayoutWidth(4))) {
+      UnityEngine.GUILayout.Label(coast_description);
+      if (UnityEngine.GUILayout.Button("Add manœuvre", GUILayoutWidth(4))) {
         double initial_time;
         if (index == 0) {
           initial_time = plugin.CurrentTime() + 60;
         } else {
-          initial_time = plugin.FlightPlanGetManoeuvre(
-                              vessel_guid,
-                              index - 1).final_time + 60;
+          initial_time =
+              plugin.FlightPlanGetManoeuvre(vessel_guid,
+                                            index - 1).final_time + 60;
         }
         var editor = new BurnEditor(
             adapter_,

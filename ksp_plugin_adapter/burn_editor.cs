@@ -67,8 +67,8 @@ class BurnEditor : ScalingRenderer {
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
   public Event Render(string header,
-                     bool anomalous,
-                     double burn_final_time) {
+                      bool anomalous,
+                      double burn_final_time) {
     bool changed = false;
     previous_coast_duration_.max_value = burn_final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -87,7 +87,7 @@ class BurnEditor : ScalingRenderer {
       }
       UnityEngine.GUILayout.Label(
           info,
-          Style.RightAligned(Style.Info(UnityEngine.GUI.skin.label)));
+          Style.Info(UnityEngine.GUI.skin.label));
       if (UnityEngine.GUILayout.Button("Delete", GUILayoutWidth(2))) {
         return Event.Deleted;
       }
