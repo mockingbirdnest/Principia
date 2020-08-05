@@ -3,7 +3,9 @@
 
 #include <algorithm>
 #include <map>
+#include <vector>
 
+#include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/polynomial.hpp"
 #include "quantities/named_quantities.hpp"
@@ -14,6 +16,7 @@ namespace numerics {
 namespace internal_poisson_series {
 
 using geometry::Instant;
+using geometry::Interval;
 using quantities::AngularFrequency;
 using quantities::Primitive;
 using quantities::Product;
@@ -162,8 +165,189 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const& t_min,
     Instant const& t_max);
 
+// A function defined by Poisson series piecewise.  Each of the Poisson series
+// making up the function applies over the semi-open interval
+// [internal.min, interval.max[.  It's not required that the function be
+// continuous.
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+class PiecewisePoissonSeries {
+ public:
+  using Series = PoissonSeries<Value, degree_, Evaluator>;
+
+  PiecewisePoissonSeries(Interval<Instant> const& interval,
+                         Series const& series);
+
+  // The intervals for successive calls to Append must be consecutive.  For the
+  // first call, the interval must be consecutive with the one passed at
+  // construction.
+  void Append(Interval<Instant> const& interval,
+              Series const& series);
+
+  Instant t_min() const;
+  Instant t_max() const;
+
+  // t must be in the interval [t_min, t_max[.
+  Value Evaluate(Instant const& t) const;
+
+ private:
+  PiecewisePoissonSeries(std::vector<Instant> const& bounds,
+                         std::vector<Series> const& series);
+
+  std::vector<Instant> bounds_;
+  std::vector<Series> series_;
+
+  template<typename V, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, r, E>
+  friend operator-(PiecewisePoissonSeries<V, r, E> const& right);
+  template<typename S, typename V, int d,
+           template<typename, typename, int> class E>
+  PiecewisePoissonSeries<Product<S, V>, d, E>
+  friend operator*(S const& left,
+                   PiecewisePoissonSeries<V, d, E> const& right);
+  template<typename S, typename V, int d,
+           template<typename, typename, int> class E>
+  PiecewisePoissonSeries<Product<V, S>, d, E>
+  friend operator*(PiecewisePoissonSeries<V, d, E> const& left,
+                   S const& right);
+  template<typename S, typename V, int d,
+           template<typename, typename, int> class E>
+  PiecewisePoissonSeries<Quotient<V, S>, d, E>
+  friend operator/(PiecewisePoissonSeries<V, d, E> const& left,
+                   S const& right);
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, std::max(l, r), E>
+  friend operator+(PoissonSeries<V, l, E> const& left,
+                   PiecewisePoissonSeries<V, r, E> const& right);
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, std::max(l, r), E>
+  friend operator+(PiecewisePoissonSeries<V, l, E> const& left,
+                   PoissonSeries<V, r, E> const& right);
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, std::max(l, r), E>
+  friend operator-(PoissonSeries<V, l, E> const& left,
+                   PiecewisePoissonSeries<V, r, E> const& right);
+  template<typename V, int l, int r, template<typename, typename, int> class E>
+  PiecewisePoissonSeries<V, std::max(l, r), E>
+  friend operator-(PiecewisePoissonSeries<V, l, E> const& left,
+                   PoissonSeries<V, r, E> const& right);
+  template<typename L, typename R, int l, int r,
+           template<typename, typename, int> class E>
+  PiecewisePoissonSeries<Product<L, R>, l + r, E>
+  friend operator*(PoissonSeries<L, l, E> const& left,
+                   PiecewisePoissonSeries<R, r, E> const& right);
+  template<typename L, typename R, int l, int r,
+           template<typename, typename, int> class E>
+  PiecewisePoissonSeries<Product<L, R>, l + r, E>
+  friend operator*(PiecewisePoissonSeries<L, l, E> const& left,
+                   PoissonSeries<R, r, E> const& right);
+  template<typename L, typename R, int l, int r, int w,
+           template<typename, typename, int> class E>
+  quantities::Primitive<Product<L, R>, Time>
+  friend Dot(PoissonSeries<L, l, E> const& left,
+             PiecewisePoissonSeries<R, r, E> const& right,
+             PoissonSeries<double, w, E> const& weight);
+  template<typename L, typename R, int l, int r, int w,
+           template<typename, typename, int> class E>
+  quantities::Primitive<Product<L, R>, Time>
+  friend Dot(PiecewisePoissonSeries<L, l, E> const& left,
+             PoissonSeries<R, r, E> const& right,
+             PoissonSeries<double, w, E> const& weight);
+};
+
+// Some of the vector space operations for piecewise Poisson series.  Note that
+// while piecewise Poisson series have an algebra structure, we do not need it.
+
+template<typename Value, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, rdegree_, Evaluator>
+operator+(PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right);
+
+template<typename Value, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, rdegree_, Evaluator>
+operator-(PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right);
+
+template<typename Scalar,
+         typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator>
+operator*(Scalar const& left,
+          PiecewisePoissonSeries<Value, degree_, Evaluator> const& right);
+
+template<typename Scalar,
+         typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator>
+operator*(PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
+          Scalar const& right);
+
+template<typename Scalar,
+         typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>
+operator/(PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
+          Scalar const& right);
+
+// Action of Poisson series on piecewise Poisson series.
+
+template<typename Value, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
+operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
+          PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right);
+
+template<typename Value, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
+operator+(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
+          PoissonSeries<Value, rdegree_, Evaluator> const& right);
+
+template<typename Value, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
+operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
+          PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right);
+
+template<typename Value, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
+operator-(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
+          PoissonSeries<Value, rdegree_, Evaluator> const& right);
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
+operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+          PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right);
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
+operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+          PoissonSeries<RValue, rdegree_, Evaluator> const& right);
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+Primitive<Product<LValue, RValue>, Time>
+Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight);
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+Primitive<Product<LValue, RValue>, Time>
+Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight);
+
 }  // namespace internal_poisson_series
 
+using internal_poisson_series::PiecewisePoissonSeries;
 using internal_poisson_series::PoissonSeries;
 
 }  // namespace numerics
