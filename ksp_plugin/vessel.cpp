@@ -322,8 +322,13 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
   }
   not_null<std::unique_ptr<FlightPlan>> const original_flight_plan =
       std::move(flight_plan_);
+  Instant const new_desired_final_time =
+      new_initial_time >= original_flight_plan->desired_final_time()
+          ? new_initial_time + (original_flight_plan->desired_final_time() -
+                                original_flight_plan->initial_time())
+          : original_flight_plan->desired_final_time();
   CreateFlightPlan(
-      original_flight_plan->desired_final_time(),
+      new_desired_final_time,
       initial_mass,
       original_flight_plan->adaptive_step_parameters(),
       original_flight_plan->generalized_adaptive_step_parameters());
@@ -331,7 +336,7 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
        i < original_flight_plan->number_of_manœuvres();
        ++i) {
     auto const& manœuvre = original_flight_plan->GetManœuvre(i);
-    flight_plan_->Append(manœuvre.burn());
+    flight_plan_->Insert(manœuvre.burn(), i - first_manœuvre_kept);
   }
   return Status::OK;
 }

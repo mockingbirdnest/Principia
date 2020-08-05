@@ -708,23 +708,6 @@ message ExternalGetNearestPlannedCoastDegreesOfFreedom {
 
 // End of external API.
 
-message FlightPlanAppend {
-  extend Method {
-    optional FlightPlanAppend extension = 5063;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required Burn burn = 3;
-  }
-  message Return {
-    required Status result = 1 [(is_produced) = true];
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message FlightPlanCreate {
   extend Method {
     optional FlightPlanCreate extension = 5071;
@@ -882,6 +865,25 @@ message FlightPlanGetManoeuvreFrenetTrihedron {
   optional Return return = 3;
 }
 
+message FlightPlanInsert {
+  extend Method {
+    optional FlightPlanInsert extension = 5063;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required Burn burn = 3;
+    required int32 index = 4;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+
 message FlightPlanNumberOfAnomalousManoeuvres {
   extend Method {
     optional FlightPlanNumberOfAnomalousManoeuvres extension = 5159;
@@ -947,14 +949,15 @@ message FlightPlanRebase {
   optional Return return = 3;
 }
 
-message FlightPlanRemoveLast {
+message FlightPlanRemove {
   extend Method {
-    optional FlightPlanRemoveLast extension = 5065;
+    optional FlightPlanRemove extension = 5065;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
+    required int32 index = 3;
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
