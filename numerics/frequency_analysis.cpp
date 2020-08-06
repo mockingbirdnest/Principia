@@ -1,0 +1,86 @@
+﻿
+#include "numerics/frequency_analysis.hpp"
+
+#include <random>
+
+#include "geometry/named_quantities.hpp"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "numerics/apodization.hpp"
+#include "numerics/fast_fourier_transform.hpp"
+#include "numerics/polynomial_evaluators.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
+
+namespace principia {
+namespace numerics {
+namespace frequency_analysis {
+
+using geometry::Instant;
+using quantities::AngularFrequency;
+using quantities::Length;
+using quantities::Sin;
+using quantities::Time;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
+using testing_utilities::IsNear;
+using testing_utilities::RelativeErrorFrom;
+using testing_utilities::operator""_⑴;
+
+class FrequencyAnalysisTest : public ::testing::Test {};
+
+TEST_F(FrequencyAnalysisTest, PreciseMode) {
+  using FFT = FastFourierTransform<Length, 1 << 16>;
+  Instant const t0;
+  AngularFrequency const ω = 666.543 * π / FFT::size * Radian / Second;
+  Time const Δt = 1 * Second;
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> noise(-0.5, 0.5);
+
+  using Degree0 = PoissonSeries<double, 0, HornerEvaluator>;
+  Degree0 const sin(Degree0::Polynomial({0}, t0),
+                    {{ω,
+                      {/*sin=*/Degree0::Polynomial({1}, t0),
+                       /*cos=*/Degree0::Polynomial({0}, t0)}}});
+
+  Instant const t_min = t0;
+  Instant const t_max = t0 + (FFT::size - 1) * Δt;
+  std::vector<Length> signal;
+  for (int n = 0; n < FFT::size; ++n) {
+    signal.push_back((sin.Evaluate(t0 + n * Δt) + noise(random)) * Metre);
+  }
+
+  // Won't fit on the stack.
+  auto transform = std::make_unique<FFT>(signal, Δt);
+
+  // The FFT gives us an accuracy which is of the order of the number of points.
+  auto const mode = transform->Mode();
+  EXPECT_THAT(mode.midpoint(),
+              RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
+
+  std::function<Time(Degree0 const& left,
+                     Degree0 const& right,
+                     Degree0 const& weight)> const dot =
+    [t_min, t_max](Degree0 const& left,
+                   Degree0 const& right,
+                   Degree0 const& weight) {
+    return Dot(left, right, weight, t_min, t_max);
+  };
+
+  // The precise analysis is only limited by our ability to pinpoint the
+  // maximum.
+  auto const precise_mode = PreciseMode(
+      mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  EXPECT_THAT(precise_mode,
+              RelativeErrorFrom(ω, IsNear(2.6e-11_⑴)));
+}
+
+}  // namespace frequency_analysis
+}  // namespace numerics
+}  // namespace principia

@@ -47,6 +47,8 @@ class PoissonSeries {
   PoissonSeries(Polynomial const& aperiodic,
                 PolynomialsByAngularFrequency const& periodic);
 
+  Instant const& origin() const;
+
   Value Evaluate(Instant const& t) const;
 
   // The constant term of the result is zero.

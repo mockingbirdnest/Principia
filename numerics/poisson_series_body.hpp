@@ -98,6 +98,12 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+Instant const& PoissonSeries<Value, degree_, Evaluator>::origin() const {
+  return origin_;
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 Value PoissonSeries<Value, degree_, Evaluator>::Evaluate(
     Instant const& t) const {
   Value result = aperiodic_.Evaluate(t);
@@ -387,6 +393,7 @@ void PiecewisePoissonSeries<Value, degree_, Evaluator>::Append(
     Series const& series) {
   CHECK_LT(Time{}, interval.measure());
   CHECK_EQ(bounds_.back(), interval.min);
+  CHECK_EQ(series.origin(), series_.front().origin());
   bounds_.push_back(interval.max);
   series_.push_back(series);
 }

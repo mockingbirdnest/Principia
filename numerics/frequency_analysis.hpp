@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/poisson_series.hpp"
@@ -18,31 +20,25 @@ using quantities::Primitive;
 using quantities::Product;
 using quantities::Time;
 
-template<typename Function, typename RValue,
-         int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
-struct Dotty {
-  Primitive<Product<decltype(std::declval<Function>()()), RValue>, Time>
-  Dot(Function const& left,
-      PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-      PoissonSeries<double, wdegree_, Evaluator> const& weight,
-      Instant const& t_min,
-      Instant const& t_max);
-};
-
+//TODO(phl):comments
 template<typename Function,
-         template<typename,
-                  typename,
-                  int,
-                  int,
-                  template<typename, typename, int>
-                  class>
-         class Dot>
-AngularFrequency PreciseMode(Interval<AngularFrequency> const& fft_mode,
-                             Function const& function);
+         typename RValue, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+AngularFrequency PreciseMode(
+    Interval<AngularFrequency> const& fft_mode,
+    Function const& function,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    std::function<Primitive<Product<decltype(std::declval<Function>().Evaluate(
+                                        std::declval<Instant>())),
+                                    RValue>,
+                            Time>(
+        Function const& left,
+        PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+        PoissonSeries<double, wdegree_, Evaluator> const& weight)> const& dot);
 
 }  // namespace internal_frequency_analysis
 
+using internal_frequency_analysis::PreciseMode;
 
 }  // namespace frequency_analysis
 }  // namespace numerics
