@@ -226,7 +226,7 @@
     <ClCompile Include="fast_fourier_transform_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="frequency_analysis.cpp">
+    <ClCompile Include="frequency_analysis_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
