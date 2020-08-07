@@ -41,19 +41,35 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
   AngularFrequency const ω = 666.543 * π / FFT::size * Radian / Second;
   Time const Δt = 1 * Second;
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> noise(-0.5, 0.5);
+  std::uniform_real_distribution<> amplitude_noise(-0.1, 0.1);
+  std::uniform_real_distribution<> frequency_noise(-100.0, 100.0);
 
   using Degree0 = PoissonSeries<double, 0, HornerEvaluator>;
-  Degree0 const sin(Degree0::Polynomial({0}, t0),
-                    {{ω,
-                      {/*sin=*/Degree0::Polynomial({1}, t0),
-                       /*cos=*/Degree0::Polynomial({0}, t0)}}});
+  Degree0::PolynomialsByAngularFrequency polynomials;
+
+  // Main harmonic.
+  polynomials.emplace(
+      ω,
+      Degree0::Polynomials{/*sin=*/Degree0::Polynomial({1}, t0),
+                           /*cos=*/Degree0::Polynomial({0}, t0)});
+
+  // Noise with lower amplitude and higher frequency.
+  for (int i = 0; i < 10; ++i) {
+    auto const sin_amplitude = amplitude_noise(random);
+    auto const cos_amplitude = amplitude_noise(random);
+    polynomials.emplace(
+        ω * frequency_noise(random),
+        Degree0::Polynomials{/*sin=*/Degree0::Polynomial({sin_amplitude}, t0),
+                             /*cos=*/Degree0::Polynomial({cos_amplitude}, t0)});
+  }
+  Degree0 const sin(Degree0::Polynomial({amplitude_noise(random)}, t0),
+                    polynomials);
 
   Instant const t_min = t0;
   Instant const t_max = t0 + (FFT::size - 1) * Δt;
   std::vector<Length> signal;
   for (int n = 0; n < FFT::size; ++n) {
-    signal.push_back((sin.Evaluate(t0 + n * Δt) + noise(random)) * Metre);
+    signal.push_back(sin.Evaluate(t0 + n * Δt) * Metre);
   }
 
   // Won't fit on the stack.
@@ -78,7 +94,7 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
   auto const precise_mode = PreciseMode(
       mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   EXPECT_THAT(precise_mode,
-              RelativeErrorFrom(ω, IsNear(2.6e-11_⑴)));
+              RelativeErrorFrom(ω, IsNear(6.4e-11_⑴)));
 }
 
 }  // namespace frequency_analysis
