@@ -20,7 +20,11 @@ using quantities::Primitive;
 using quantities::Product;
 using quantities::Time;
 
-//TODO(phl):comments
+// Computes the precise mode of a quasi-periodic function, assuming that the
+// mode is over the interval fft_mode (so named because it has presumably been
+// obtained using FFT).  The function weight is the apodization function.  The
+// function dot is the dot product between function and Poisson series.  See
+// [Cha95].
 template<typename Function,
          typename RValue, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
