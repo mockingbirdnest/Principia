@@ -3,6 +3,8 @@
 
 #include "numerics/frequency_analysis.hpp"
 
+#include <functional>
+
 #include "numerics/root_finders.hpp"
 
 namespace principia {

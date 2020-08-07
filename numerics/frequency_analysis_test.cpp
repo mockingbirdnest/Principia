@@ -2,6 +2,7 @@
 #include "numerics/frequency_analysis.hpp"
 
 #include <random>
+#include <vector>
 
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
