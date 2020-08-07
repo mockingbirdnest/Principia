@@ -19,18 +19,14 @@ AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    std::function<Primitive<Product<decltype(std::declval<Function>().Evaluate(
-                                        std::declval<Instant>())),
+    std::function<Primitive<Product<std::invoke_result_t<Function, Instant>,
                                     RValue>,
                             Time>(
         Function const& left,
         PoissonSeries<RValue, rdegree_, Evaluator> const& right,
         PoissonSeries<double, wdegree_, Evaluator> const& weight)> const& dot) {
   using DotResult =
-      Primitive<Product<decltype(std::declval<Function>().Evaluate(
-                            std::declval<Instant>())),
-                        RValue>,
-                Time>;
+      Primitive<Product<std::invoke_result_t<Function, Instant>, RValue>, Time>;
   using Degree0 = PoissonSeries<double, 0, Evaluator>;
 
   auto amplitude = [&dot, &function, &weight](AngularFrequency const& ω) {

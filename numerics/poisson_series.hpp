@@ -49,7 +49,7 @@ class PoissonSeries {
 
   Instant const& origin() const;
 
-  Value Evaluate(Instant const& t) const;
+  Value operator()(Instant const& t) const;
 
   // The constant term of the result is zero.
   PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
@@ -190,7 +190,7 @@ class PiecewisePoissonSeries {
   Instant t_max() const;
 
   // t must be in the interval [t_min, t_max[.
-  Value Evaluate(Instant const& t) const;
+  Value operator()(Instant const& t) const;
 
  private:
   PiecewisePoissonSeries(std::vector<Instant> const& bounds,

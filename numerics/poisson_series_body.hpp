@@ -104,7 +104,7 @@ Instant const& PoissonSeries<Value, degree_, Evaluator>::origin() const {
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-Value PoissonSeries<Value, degree_, Evaluator>::Evaluate(
+Value PoissonSeries<Value, degree_, Evaluator>::operator()(
     Instant const& t) const {
   Value result = aperiodic_.Evaluate(t);
   for (auto const& [ω, polynomials] : periodic_) {
@@ -373,7 +373,7 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const& t_max) {
   auto const integrand = left * right * weight;
   auto const primitive = integrand.Primitive();
-  return primitive.Evaluate(t_max) - primitive.Evaluate(t_min);
+  return primitive(t_max) - primitive(t_min);
 }
 
 template<typename Value, int degree_,
@@ -412,7 +412,7 @@ Instant PiecewisePoissonSeries<Value, degree_, Evaluator>::t_max() const {
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-Value PiecewisePoissonSeries<Value, degree_, Evaluator>::Evaluate(
+Value PiecewisePoissonSeries<Value, degree_, Evaluator>::operator()(
     Instant const& t) const {
   // If t is an element of bounds_, the returned iterator points to the next
   // element.  Otherwise it points to the upper bound of the interval to which
@@ -423,7 +423,7 @@ Value PiecewisePoissonSeries<Value, degree_, Evaluator>::Evaluate(
       << bounds_.front() << " .. " << bounds_.back();
   CHECK(it != bounds_.cend())
       << t << " is outside of " << bounds_.front() << " .. " << bounds_.back();
-  return series_[it - bounds_.cbegin() - 1].Evaluate(t);
+  return series_[it - bounds_.cbegin() - 1](t);
 }
 
 template<typename Value, int degree_,

@@ -69,7 +69,7 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
   Instant const t_max = t0 + (FFT::size - 1) * Δt;
   std::vector<Length> signal;
   for (int n = 0; n < FFT::size; ++n) {
-    signal.push_back(sin.Evaluate(t0 + n * Δt) * Metre);
+    signal.push_back(sin(t0 + n * Δt) * Metre);
   }
 
   // Won't fit on the stack.
