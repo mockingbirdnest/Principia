@@ -81,11 +81,11 @@ class PoissonSeriesTest : public ::testing::Test {
 };
 
 TEST_F(PoissonSeriesTest, Evaluate) {
-  EXPECT_THAT(pa_->Evaluate(t0_ + 1 * Second),
+  EXPECT_THAT((*pa_)(t0_ + 1 * Second),
               AlmostEquals(3 + 11 * Sin(1 * Radian) + 15 * Cos(1 * Radian) +
                                27 * Sin(2 * Radian) + 31 * Cos(2 * Radian),
                            0, 1));
-  EXPECT_THAT(pb_->Evaluate(t0_ + 1 * Second),
+  EXPECT_THAT((*pb_)(t0_ + 1 * Second),
               AlmostEquals(7 + 19 * Sin(1 * Radian) + 23 * Cos(1 * Radian) +
                                35 * Sin(3 * Radian) + 39 * Cos(3 * Radian),
                            32));
@@ -94,51 +94,48 @@ TEST_F(PoissonSeriesTest, Evaluate) {
 TEST_F(PoissonSeriesTest, VectorSpace) {
   {
     auto const identity = +*pa_;
-    EXPECT_THAT(identity.Evaluate(t0_ + 1 * Second),
-                AlmostEquals(pa_->Evaluate(t0_ + 1 * Second), 0));
+    EXPECT_THAT(identity(t0_ + 1 * Second),
+                AlmostEquals((*pa_)(t0_ + 1 * Second), 0));
   }
   {
     auto const negated = -*pb_;
-    EXPECT_THAT(negated.Evaluate(t0_ + 1 * Second),
-                AlmostEquals(-pb_->Evaluate(t0_ + 1 * Second), 0));
+    EXPECT_THAT(negated(t0_ + 1 * Second),
+                AlmostEquals(-(*pb_)(t0_ + 1 * Second), 0));
   }
   {
     auto const sum = *pa_ + *pb_;
-    EXPECT_THAT(
-        sum.Evaluate(t0_ + 1 * Second),
-        AlmostEquals(pa_->Evaluate(t0_ + 1 * Second) +
-                     pb_->Evaluate(t0_ + 1 * Second), 1));
+    EXPECT_THAT(sum(t0_ + 1 * Second),
+                AlmostEquals((*pa_)(t0_ + 1 * Second) +
+                                 (*pb_)(t0_ + 1 * Second), 1));
   }
   {
     auto const difference = *pa_ - *pb_;
-    EXPECT_THAT(
-        difference.Evaluate(t0_ + 1 * Second),
-        AlmostEquals(pa_->Evaluate(t0_ + 1 * Second) -
-                     pb_->Evaluate(t0_ + 1 * Second), 0));
+    EXPECT_THAT(difference(t0_ + 1 * Second),
+                AlmostEquals((*pa_)(t0_ + 1 * Second) -
+                                 (*pb_)(t0_ + 1 * Second), 0));
   }
   {
     auto const left_product = 3 * *pa_;
-    EXPECT_THAT(left_product.Evaluate(t0_ + 1 * Second),
-                AlmostEquals(3 * pa_->Evaluate(t0_ + 1 * Second), 1));
+    EXPECT_THAT(left_product(t0_ + 1 * Second),
+                AlmostEquals(3 * (*pa_)(t0_ + 1 * Second), 1));
   }
   {
     auto const right_product = *pb_ * 4;
-    EXPECT_THAT(right_product.Evaluate(t0_ + 1 * Second),
-                AlmostEquals(pb_->Evaluate(t0_ + 1 * Second) * 4, 0));
+    EXPECT_THAT(right_product(t0_ + 1 * Second),
+                AlmostEquals((*pb_)(t0_ + 1 * Second) * 4, 0));
   }
   {
     auto const quotient = *pb_ / 1.5;
-    EXPECT_THAT(quotient.Evaluate(t0_ + 1 * Second),
-                AlmostEquals(pb_->Evaluate(t0_ + 1 * Second) / 1.5, 0, 32));
+    EXPECT_THAT(quotient(t0_ + 1 * Second),
+                AlmostEquals((*pb_)(t0_ + 1 * Second) / 1.5, 0, 32));
   }
 }
 
 TEST_F(PoissonSeriesTest, Algebra) {
   auto const product = *pa_ * *pb_;
-  EXPECT_THAT(
-      product.Evaluate(t0_ + 1 * Second),
-      AlmostEquals(pa_->Evaluate(t0_ + 1 * Second) *
-                   pb_->Evaluate(t0_ + 1 * Second), 6, 38));
+  EXPECT_THAT(product(t0_ + 1 * Second),
+              AlmostEquals((*pa_)(t0_ + 1 * Second) *
+                               (*pb_)(t0_ + 1 * Second), 6, 38));
 }
 
 TEST_F(PoissonSeriesTest, Primitive) {
@@ -172,7 +169,7 @@ TEST_F(PoissonSeriesTest, Primitive) {
   };
 
   for (int i = -10; i < 10; ++i) {
-    EXPECT_THAT(actual_primitive.Evaluate(t0_ + i * Second),
+    EXPECT_THAT(actual_primitive(t0_ + i * Second),
                 AlmostEquals(expected_primitive(i * Second), 0, 6));
   }
 }
@@ -223,52 +220,40 @@ class PiecewisePoissonSeriesTest : public ::testing::Test {
 
 TEST_F(PiecewisePoissonSeriesTest, Evaluate) {
   double const ε = std::numeric_limits<double>::epsilon();
-  EXPECT_THAT(pp_.Evaluate(t0_), AlmostEquals(1, 0));
-  EXPECT_THAT(pp_.Evaluate(t0_ + 0.5 * Second),
-              AlmostEquals(1 - Sqrt(0.5), 0, 2));
-  EXPECT_THAT(pp_.Evaluate(t0_ + 1 * (1 - ε / 2) * Second), AlmostEquals(0, 0));
-  EXPECT_THAT(pp_.Evaluate(t0_ + 1 * Second), VanishesBefore(1, 0));
-  EXPECT_THAT(pp_.Evaluate(t0_ + 1 * (1 + ε) * Second), VanishesBefore(1, 3));
-  EXPECT_THAT(pp_.Evaluate(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5), 1));
-  EXPECT_THAT(pp_.Evaluate(t0_ + 2 * (1 - ε / 2) * Second),
-              AlmostEquals(-1, 0));
+  EXPECT_THAT(pp_(t0_), AlmostEquals(1, 0));
+  EXPECT_THAT(pp_(t0_ + 0.5 * Second), AlmostEquals(1 - Sqrt(0.5), 0, 2));
+  EXPECT_THAT(pp_(t0_ + 1 * (1 - ε / 2) * Second), AlmostEquals(0, 0));
+  EXPECT_THAT(pp_(t0_ + 1 * Second), VanishesBefore(1, 0));
+  EXPECT_THAT(pp_(t0_ + 1 * (1 + ε) * Second), VanishesBefore(1, 3));
+  EXPECT_THAT(pp_(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5), 1));
+  EXPECT_THAT(pp_(t0_ + 2 * (1 - ε / 2) * Second), AlmostEquals(-1, 0));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, VectorSpace) {
   {
     auto const pp = +pp_;
-    EXPECT_THAT(pp.Evaluate(t0_ + 0.5 * Second),
-                AlmostEquals(1 - Sqrt(0.5), 0, 2));
-    EXPECT_THAT(pp.Evaluate(t0_ + 1.5 * Second),
-                AlmostEquals(-Sqrt(0.5), 1));
+    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals(1 - Sqrt(0.5), 0, 2));
+    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5), 1));
   }
   {
     auto const pp = -pp_;
-    EXPECT_THAT(pp.Evaluate(t0_ + 0.5 * Second),
-                AlmostEquals(-1 + Sqrt(0.5), 0, 2));
-    EXPECT_THAT(pp.Evaluate(t0_ + 1.5 * Second),
-                AlmostEquals(Sqrt(0.5), 1));
+    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals(-1 + Sqrt(0.5), 0, 2));
+    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(Sqrt(0.5), 1));
   }
   {
     auto const pp = 2 * pp_;
-    EXPECT_THAT(pp.Evaluate(t0_ + 0.5 * Second),
-                AlmostEquals(2 - Sqrt(2), 0, 2));
-    EXPECT_THAT(pp.Evaluate(t0_ + 1.5 * Second),
-                AlmostEquals(-Sqrt(2), 1));
+    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals(2 - Sqrt(2), 0, 2));
+    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(2), 1));
   }
   {
     auto const pp = pp_ * 3;
-    EXPECT_THAT(pp.Evaluate(t0_ + 0.5 * Second),
-                AlmostEquals(3 - 3 * Sqrt(0.5), 0, 4));
-    EXPECT_THAT(pp.Evaluate(t0_ + 1.5 * Second),
-                AlmostEquals(-3 * Sqrt(0.5), 1));
+    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals(3 - 3 * Sqrt(0.5), 0, 4));
+    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(-3 * Sqrt(0.5), 1));
   }
   {
     auto const pp = pp_ / 4;
-    EXPECT_THAT(pp.Evaluate(t0_ + 0.5 * Second),
-                AlmostEquals((2 - Sqrt(2)) / 8, 0, 2));
-    EXPECT_THAT(pp.Evaluate(t0_ + 1.5 * Second),
-                AlmostEquals(-Sqrt(0.5) / 4, 1));
+    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals((2 - Sqrt(2)) / 8, 0, 2));
+    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5) / 4, 1));
   }
 }
 
@@ -276,37 +261,37 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
   {
     auto const s1 = p_ + pp_;
     auto const s2 = pp_ + p_;
-    EXPECT_THAT(s1.Evaluate(t0_ + 0.5 * Second),
+    EXPECT_THAT(s1(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(s1.Evaluate(t0_ + 1.5 * Second),
+    EXPECT_THAT(s1(t0_ + 1.5 * Second),
                 AlmostEquals((6 + Sqrt(2)) / 4, 0));
-    EXPECT_THAT(s2.Evaluate(t0_ + 0.5 * Second),
+    EXPECT_THAT(s2(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(s2.Evaluate(t0_ + 1.5 * Second),
+    EXPECT_THAT(s2(t0_ + 1.5 * Second),
                 AlmostEquals((6 + Sqrt(2)) / 4, 0));
   }
   {
     auto const d1 = p_ - pp_;
     auto const d2 = pp_ - p_;
-    EXPECT_THAT(d1.Evaluate(t0_ + 0.5 * Second),
+    EXPECT_THAT(d1(t0_ + 0.5 * Second),
                 AlmostEquals((2 + Sqrt(2)) / 4, 1));
-    EXPECT_THAT(d1.Evaluate(t0_ + 1.5 * Second),
+    EXPECT_THAT(d1(t0_ + 1.5 * Second),
                 AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(d2.Evaluate(t0_ + 0.5 * Second),
+    EXPECT_THAT(d2(t0_ + 0.5 * Second),
                 AlmostEquals((-2 - Sqrt(2)) / 4, 1));
-    EXPECT_THAT(d2.Evaluate(t0_ + 1.5 * Second),
+    EXPECT_THAT(d2(t0_ + 1.5 * Second),
                 AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
   }
   {
     auto const p1 = p_ * pp_;
     auto const p2 = pp_ * p_;
-    EXPECT_THAT(p1.Evaluate(t0_ + 0.5 * Second),
+    EXPECT_THAT(p1(t0_ + 0.5 * Second),
                 AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
-    EXPECT_THAT(p1.Evaluate(t0_ + 1.5 * Second),
+    EXPECT_THAT(p1(t0_ + 1.5 * Second),
                 AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
-    EXPECT_THAT(p2.Evaluate(t0_ + 0.5 * Second),
+    EXPECT_THAT(p2(t0_ + 0.5 * Second),
                 AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
-    EXPECT_THAT(p2.Evaluate(t0_ + 1.5 * Second),
+    EXPECT_THAT(p2(t0_ + 1.5 * Second),
                 AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
   }
 }
