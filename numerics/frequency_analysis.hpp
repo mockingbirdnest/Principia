@@ -44,6 +44,8 @@ AngularFrequency PreciseMode(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot);
 
+//TODO(phl):comment
+// See [Kud07].
 template<typename Function,
          typename RValue, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
