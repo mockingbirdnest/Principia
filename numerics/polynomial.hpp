@@ -47,6 +47,9 @@ class Polynomial {
   // code.
   virtual int degree() const = 0;
 
+  // Only useful for logging.  Do not use in real code.
+  virtual bool is_zero() const = 0;
+
   virtual void WriteToMessage(
       not_null<serialization::Polynomial*> message) const = 0;
 
@@ -84,6 +87,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   EvaluateDerivative(Argument const& argument) const override;
 
   constexpr int degree() const override;
+  bool is_zero() const override;
 
   template<int order = 1>
   PolynomialInMonomialBasis<
@@ -181,6 +185,8 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   EvaluateDerivative(Point<Argument> const& argument) const override;
 
   constexpr int degree() const override;
+  bool is_zero() const override;
+
   Point<Argument> const& origin() const;
 
   template<int order = 1>

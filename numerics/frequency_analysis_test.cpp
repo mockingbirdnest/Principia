@@ -109,13 +109,15 @@ TEST_F(FrequencyAnalysisTest, Projection) {
   auto const cos =
       internal_frequency_analysis::SeriesGenerator<Degree3, 2>::Cos(
           si::Unit<AngularFrequency>, Instant());
-  //auto const basis =
-  //    internal_frequency_analysis::BasisGenerator<Degree3>::Basis(
-  //        si::Unit<AngularFrequency>, Instant());
+  auto const basis =
+      internal_frequency_analysis::BasisGenerator<Degree3>::Basis(
+          si::Unit<AngularFrequency>, Instant());
   LOG(ERROR)<<one;
   LOG(ERROR)<<sin;
   LOG(ERROR)<<cos;
-  //LOG(ERROR)<<basis;
+  for (int i = 0; i < basis.size(); ++i) {
+    LOG(ERROR)<<i<<" ---- "<<basis[i];
+  }
 }
 
 }  // namespace frequency_analysis
