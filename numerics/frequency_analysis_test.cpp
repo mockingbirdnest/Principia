@@ -98,6 +98,21 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
               RelativeErrorFrom(ω, IsNear(6.4e-11_⑴)));
 }
 
+TEST_F(FrequencyAnalysisTest, Projection) {
+  using Degree3 = PoissonSeries<Length, 3, HornerEvaluator>;
+  auto const one =
+      internal_frequency_analysis::One<Degree3::Polynomial, 2>(Instant());
+  auto const sin =
+      internal_frequency_analysis::SeriesGenerator<Degree3, 2>::Sin(
+          AngularFrequency(), Instant());
+  auto const cos =
+      internal_frequency_analysis::SeriesGenerator<Degree3, 2>::Cos(
+          AngularFrequency(), Instant());
+  auto const basis =
+      internal_frequency_analysis::BasisGenerator<Degree3>::Basis(
+          AngularFrequency(), Instant());
+}
+
 }  // namespace frequency_analysis
 }  // namespace numerics
 }  // namespace principia

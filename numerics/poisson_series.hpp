@@ -32,6 +32,7 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 class PoissonSeries {
  public:
+  static const int degree = degree_;
   using Polynomial =
       numerics::PolynomialInMonomialBasis<Value, Instant, degree_, Evaluator>;
 
