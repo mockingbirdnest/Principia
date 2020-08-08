@@ -145,6 +145,11 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
+  template<typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      PolynomialInMonomialBasis<V, A, d, E> const& polynomial);
 };
 
 template<typename Value, typename Argument, int degree_,
@@ -240,6 +245,11 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
+  template<typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      PolynomialInMonomialBasis<V, A, d, E> const& polynomial);
 };
 
 // Vector space of polynomials.
@@ -313,6 +323,15 @@ operator*(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right);
+
+// Output.
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+std::ostream& operator<<(
+    std::ostream& out,
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        polynomial);
 
 }  // namespace internal_polynomial
 

@@ -103,19 +103,19 @@ TEST_F(FrequencyAnalysisTest, Projection) {
   using Degree3 = PoissonSeries<Length, 3, HornerEvaluator>;
   auto const one =
       internal_frequency_analysis::One<Degree3::Polynomial, 2>(Instant());
-  auto const sin =
-      internal_frequency_analysis::SeriesGenerator<Degree3, 2>::Sin(
-          si::Unit<AngularFrequency>, Instant());
-  auto const cos =
-      internal_frequency_analysis::SeriesGenerator<Degree3, 2>::Cos(
-          si::Unit<AngularFrequency>, Instant());
-  auto const basis =
-      internal_frequency_analysis::BasisGenerator<Degree3>::Basis(
-          si::Unit<AngularFrequency>, Instant());
+  //auto const sin =
+  //    internal_frequency_analysis::SeriesGenerator<Degree3, 2>::Sin(
+  //        si::Unit<AngularFrequency>, Instant());
+  //auto const cos =
+  //    internal_frequency_analysis::SeriesGenerator<Degree3, 2>::Cos(
+  //        si::Unit<AngularFrequency>, Instant());
+  //auto const basis =
+  //    internal_frequency_analysis::BasisGenerator<Degree3>::Basis(
+  //        si::Unit<AngularFrequency>, Instant());
   LOG(ERROR)<<one;
-  LOG(ERROR)<<sin;
-  LOG(ERROR)<<cos;
-  LOG(ERROR)<<basis;
+  //LOG(ERROR)<<sin;
+  //LOG(ERROR)<<cos;
+  //LOG(ERROR)<<basis;
 }
 
 }  // namespace frequency_analysis

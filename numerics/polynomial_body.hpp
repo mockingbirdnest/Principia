@@ -90,6 +90,8 @@ struct TupleSerializer : not_constructible {
   static void FillFromMessage(
       serialization::PolynomialInMonomialBasis const& message,
       Tuple& tuple);
+  static std::string DebugString(Tuple const& tuple,
+                                 std::string const& argument);
 };
 
 template<typename Tuple, int size>
@@ -100,6 +102,8 @@ struct TupleSerializer<Tuple, size, size> : not_constructible {
   static void FillFromMessage(
       serialization::PolynomialInMonomialBasis const& message,
       Tuple& tuple);
+  static std::string DebugString(Tuple const& tuple,
+                                 std::string const& argument);
 };
 
 template<typename Tuple, int k, int size>
@@ -125,6 +129,33 @@ void TupleSerializer<Tuple, k, size>::FillFromMessage(
   TupleSerializer<Tuple, k + 1, size>::FillFromMessage(message, tuple);
 }
 
+template<typename Tuple, int k, int size>
+std::string TupleSerializer<Tuple, k, size>::DebugString(
+    Tuple const& tuple,
+    std::string const& argument) {
+  auto const coefficient = std::get<k>(tuple);
+  std::string head;
+  switch (k) {
+    case 0:
+      head = quantities::DebugString(coefficient);
+      break;
+    case 1:
+      head = quantities::DebugString(coefficient) + " * " + argument;
+      break;
+    default:
+      head = quantities::DebugString(coefficient) + " * " + argument + "^" +
+             std::to_string(k);
+      break;
+  }
+  auto const tail =
+      TupleSerializer<Tuple, k + 1, size>::DebugString(tuple, argument);
+  if (tail.empty()) {
+    return head;
+  } else {
+    return head + " + " + tail;
+  }
+}
+
 template<typename Tuple, int size>
 void TupleSerializer<Tuple, size, size>::WriteToMessage(
     Tuple const& tuple,
@@ -134,6 +165,13 @@ template<typename Tuple, int size>
 void TupleSerializer<Tuple, size, size>::FillFromMessage(
     serialization::PolynomialInMonomialBasis const& message,
     Tuple& tuple) {}
+
+template<typename Tuple, int size>
+std::string TupleSerializer<Tuple, size, size>::DebugString(
+    Tuple const& tuple,
+    std::string const& argument) {
+  return "";
+}
 
 
 #define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                  \
@@ -582,6 +620,26 @@ operator*(
                                      ldegree_ + rdegree_, Evaluator>(
                left.coefficients_ * right.coefficients_);
   }
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+std::ostream& operator<<(
+    std::ostream& out,
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        polynomial) {
+  using Coefficients =
+      typename PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+          Coefficients;
+  if constexpr (is_instance_of_v<Point, Argument>) {
+    out << TupleSerializer<Coefficients, 0>::DebugString(
+        polynomial.coefficients_,
+        "(X - " + DebugString(polynomial.origin_) + ")");
+  } else {
+    out << TupleSerializer<Coefficients, 0>::DebugString(
+        polynomial.coefficients_, "X");
+  }
+  return out;
 }
 
 }  // namespace internal_polynomial
