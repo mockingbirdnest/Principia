@@ -93,21 +93,31 @@ struct BasisGenerator<Series, std::index_sequence<indices...>> {
         Series(One<typename Series::Polynomial, 0>(origin), {{}}),
         SeriesGenerator<Series, indices>::Sin(ω, origin)...,
         SeriesGenerator<Series, indices>::Cos(ω, origin)...};
+
+    // Order all_series by repeatedly swapping its elements.
     if (Series::degree >= 2) {
-      // Reads the series at index i, compute the index j where it must be
-      // stored, squirrel out the series at index j, store the series that was
-      // at index i, repeat.
-      //TODO(phl):Do we believe that there is a single cycle????
-      int i = 2;
-      auto si = all_series[i];
-      do {
-        int const j =
+      // The index of this array is the current index of a series in all_series.
+      // The value is the index of the final resting place of that series in
+      // all_series.  The elements at indices 0, 1 and 2 * Series::degree are
+      // unused.
+      std::array<int, 2 * Series::degree + 1> permutation;
+      for (int i = 2; i < 2 * Series::degree; ++i) {
+        permutation[i] =
             i <= Series::degree ? 2 * i - 1 : 2 * (i - Series::degree);
-        auto const sj = all_series[j];
-        all_series[j] = si;
-        i = j;
-        si = sj;
-      } while (i != 2);
+      }
+      for (int i = 2; i < 2 * Series::degree;) {
+        // Swap the series currently at index i to its final resting place.
+        // Iterate until the series at index i is at its final resting place
+        // (i.e., after we have executed an entire cycle of the permutation).
+        // Then move to the next series.
+        if (i == permutation[i]) {
+          ++i;
+        } else {
+          int const j = permutation[i];
+          std::swap(all_series[i], all_series[j]);
+          std::swap(permutation[i], permutation[j]);
+        }
+      }
     }
     return all_series;
   }
