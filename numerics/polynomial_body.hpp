@@ -270,6 +270,13 @@ PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::degree() const {
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
+bool PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::is_zero()
+    const {
+  return coefficients_ == Coefficients{};
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
 template<int order>
 PolynomialInMonomialBasis<
     Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
@@ -390,6 +397,13 @@ constexpr int
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 degree() const {
   return degree_;
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+bool PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
+is_zero() const {
+  return coefficients_ == Coefficients{};
 }
 
 template<typename Value, typename Argument, int degree_,
