@@ -101,8 +101,6 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
 
 TEST_F(FrequencyAnalysisTest, Projection) {
   using Degree4 = PoissonSeries<Length, 4, HornerEvaluator>;
-  auto const one =
-      internal_frequency_analysis::SeriesGenerator<Degree4, 2>::One(Instant());
   auto const sin =
       internal_frequency_analysis::SeriesGenerator<Degree4, 2>::Sin(
           si::Unit<AngularFrequency>, Instant());
@@ -112,7 +110,6 @@ TEST_F(FrequencyAnalysisTest, Projection) {
   auto const basis =
       internal_frequency_analysis::BasisGenerator<Degree4>::Basis(
           si::Unit<AngularFrequency>, Instant());
-  LOG(ERROR)<<one;
   LOG(ERROR)<<sin;
   LOG(ERROR)<<cos;
   for (int i = 0; i < basis.size(); ++i) {

@@ -19,18 +19,14 @@ namespace si = quantities::si;
 // A helper struct for generating the Poisson series tⁿ sin ω t and tⁿ cos ω t.
 template<typename Series, int n>
 struct SeriesGenerator {
-  // The series 1, irrespective of n.
-  static Series One(Instant const& origin);
   // The series tⁿ sin ω t.
   static Series Sin(AngularFrequency const& ω, Instant const& origin);
   // The series tⁿ cos ω t.
   static Series Cos(AngularFrequency const& ω, Instant const& origin);
 
-private:
+ private:
   // The polynomial tⁿ.
-  static typename Series::Polynomial PolynomialUnit(Instant const& origin);
-  template<typename S, int>
-  friend struct SeriesGenerator;
+  static typename Series::Polynomial Unit(Instant const& origin);
 };
 
 // A helper struct for generating the Кудрявцев basis, i.e., functions of the
@@ -41,16 +37,11 @@ struct BasisGenerator;
 
 template<typename Series, std::size_t... indices>
 struct BasisGenerator<Series, std::index_sequence<indices...>> {
-  static std::array<Series, 2 * Series::degree + 1> Basis(
-      AngularFrequency const& ω,
-      Instant const& origin);
+  //TODO(phl): omega=0
+  static std::array<Series, 2 * Series::degree> Basis(AngularFrequency const& ω,
+                                                      Instant const& origin);
 };
 
-
-template<typename Series, int n>
-Series SeriesGenerator<Series, n>::One(Instant const& origin) {
-  return Series(SeriesGenerator<Series, 0>::PolynomialUnit(origin), {{}});
-}
 
 template<typename Series, int n>
 Series SeriesGenerator<Series, n>::Sin(AngularFrequency const& ω,
@@ -59,7 +50,7 @@ Series SeriesGenerator<Series, n>::Sin(AngularFrequency const& ω,
   typename Series::Polynomial const zero{zeros, origin};
   return Series(zero,
                 {{ω,
-                  {/*sin=*/PolynomialUnit(origin),
+                  {/*sin=*/Unit(origin),
                    /*cos=*/zero}}});
 }
 
@@ -71,11 +62,11 @@ Series SeriesGenerator<Series, n>::Cos(AngularFrequency const& ω,
   return Series(zero,
                 {{ω,
                   {/*sin=*/zero,
-                   /*cos=*/PolynomialUnit(origin)}}});
+                   /*cos=*/Unit(origin)}}});
 }
 
 template<typename Series, int n>
-typename Series::Polynomial SeriesGenerator<Series, n>::PolynomialUnit(
+typename Series::Polynomial SeriesGenerator<Series, n>::Unit(
     Instant const& origin) {
   typename Series::Polynomial::Coefficients coefficients;
   std::get<n>(coefficients) = si::Unit<
@@ -84,14 +75,13 @@ typename Series::Polynomial SeriesGenerator<Series, n>::PolynomialUnit(
 }
 
 template<typename Series, std::size_t... indices>
-std::array<Series, 2 * Series::degree + 1>
+std::array<Series, 2 * Series::degree>
 BasisGenerator<Series, std::index_sequence<indices...>>::Basis(
     AngularFrequency const& ω,
     Instant const& origin) {
-  // This has the elements {1, t Sin(ωt), t² Sin(ωt), ... t Cos(ωt)...}
+  // This has the elements {Sin(ωt), t Sin(ωt), t² Sin(ωt), ..., Cos(ωt), ...}
   // which is not the order we want (we want lower-degree polynomials first).
-  std::array<Series, 2 * Series::degree + 1> all_series = {
-      SeriesGenerator<Series, 0>::One(origin),
+  std::array<Series, 2 * Series::degree> all_series = {
       SeriesGenerator<Series, indices>::Sin(ω, origin)...,
       SeriesGenerator<Series, indices>::Cos(ω, origin)...};
 
@@ -99,14 +89,14 @@ BasisGenerator<Series, std::index_sequence<indices...>>::Basis(
   if (Series::degree >= 2) {
     // The index of this array is the current index of a series in all_series.
     // The value is the index of the final resting place of that series in
-    // all_series.  The elements at indices 0, 1 and 2 * Series::degree are
+    // all_series.  The elements at indices 0 and 2 * Series::degree - 1 are
     // unused.
-    std::array<int, 2 * Series::degree + 1> permutation;
-    for (int i = 2; i < 2 * Series::degree; ++i) {
+    std::array<int, 2 * Series::degree> permutation;
+    for (int i = 1; i < 2 * Series::degree - 1; ++i) {
       permutation[i] =
-          i <= Series::degree ? 2 * i - 1 : 2 * (i - Series::degree);
+          i < Series::degree ? 2 * i : 2 * (i - Series::degree) + 1;
     }
-    for (int i = 2; i < 2 * Series::degree;) {
+    for (int i = 1; i < 2 * Series::degree - 1;) {
       // Swap the series currently at index i to its final resting place.
       // Iterate until the series at index i is at its final resting place
       // (i.e., after we have executed an entire cycle of the permutation).
@@ -168,22 +158,9 @@ Projection(
     DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
-  Instant const& t0 = weight.origin();
 
-  std::vector<Series> basis;
-  typename Series::Polynomial::Coefficients const zeros;
-  basis.emplace_back(typename Series::Polynomial({1}, t0), {{}});
-  typename Series::Polynomial const zero({0}, t0);
-  for (int d = 1; d <= degree_; ++d) {
-    basis.emplace_back(zero,
-                      {{ω,
-                        {/*sin=*/typename Series::Polynomial({1}, t0),
-                         /*cos=*/typename Series::Polynomial({0}, t0)}}});
-    basis.emplace_back(zero,
-                      {{ω,
-                        {/*sin=*/typename Series::Polynomial({1}, t0),
-                         /*cos=*/typename Series::Polynomial({0}, t0)}}});
-  }
+  Instant const& t0 = weight.origin();
+  auto const basis = BasisGenerator<Series>::Basis(ω, t0);
 }
 
 }  // namespace internal_frequency_analysis
