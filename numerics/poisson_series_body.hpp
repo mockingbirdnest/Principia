@@ -362,6 +362,23 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   return {aperiodic, std::move(periodic)};
 }
 
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+std::ostream& operator<<(
+    std::ostream& out,
+    PoissonSeries<Value, degree_, Evaluator> const& series) {
+  out << series.aperiodic_;
+  for (auto const& [ω, polynomials] : series.periodic_) {
+    out << " + ";
+    out << polynomials.sin << " * Sin(" << quantities::DebugString(ω)
+        << " * (T - " << series.origin_ << "))";
+    out << " + ";
+    out << polynomials.cos << " * Cos(" << quantities::DebugString(ω)
+        << " * (T - " << series.origin_ << "))";
+  }
+  return out;
+}
+
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>

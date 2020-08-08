@@ -634,15 +634,19 @@ std::ostream& operator<<(
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
           Coefficients;
+  std::vector<std::string> debug_string;
   if constexpr (is_instance_of_v<Point, Argument>) {
-    out << absl::StrJoin(TupleSerializer<Coefficients, 0>::DebugString(
-                             polynomial.coefficients_,
-                             "(X - " + DebugString(polynomial.origin_) + ")"),
-                         " + ");
+    debug_string = TupleSerializer<Coefficients, 0>::DebugString(
+        polynomial.coefficients_,
+        "(T - " + DebugString(polynomial.origin_) + ")");
   } else {
-    out << absl::StrJoin(TupleSerializer<Coefficients, 0>::DebugString(
-                             polynomial.coefficients_, "X"),
-                         " + ");
+    debug_string = TupleSerializer<Coefficients, 0>::DebugString(
+        polynomial.coefficients_, "T");
+  }
+  if (debug_string.empty()) {
+    out << quantities::DebugString(Value{});
+  } else {
+    out << absl::StrJoin(debug_string, " + ");
   }
   return out;
 }
