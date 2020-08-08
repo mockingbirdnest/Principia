@@ -96,6 +96,9 @@ class PoissonSeries {
   PoissonSeries<Product<L, R>, l + r, E>
   friend operator*(PoissonSeries<L, l, E> const& left,
                    PoissonSeries<R, r, E> const& right);
+  template<typename V, int d, template<typename, typename, int> class E>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  PoissonSeries<V, d, E> const& series);
 };
 
 // Vector space of Poisson series.
@@ -151,6 +154,14 @@ template<typename LValue, typename RValue,
 PoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
 operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
           PoissonSeries<RValue, rdegree_, Evaluator> const& right);
+
+// Output.
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+std::ostream& operator<<(
+    std::ostream& out,
+    PoissonSeries<Value, degree_, Evaluator> const& series);
 
 // Inner product space of Poisson series.
 
