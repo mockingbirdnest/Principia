@@ -21,12 +21,7 @@ AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    std::function<Primitive<Product<std::invoke_result_t<Function, Instant>,
-                                    RValue>,
-                            Time>(
-        Function const& left,
-        PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-        PoissonSeries<double, wdegree_, Evaluator> const& weight)> const& dot) {
+    DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot) {
   using DotResult =
       Primitive<Product<std::invoke_result_t<Function, Instant>, RValue>, Time>;
   using Degree0 = PoissonSeries<double, 0, Evaluator>;
@@ -50,6 +45,17 @@ AngularFrequency PreciseMode(
                              fft_mode.min,
                              fft_mode.max,
                              std::greater<Square<DotResult>>());
+}
+
+template<typename Function,
+         typename RValue, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>, rdegree_, Evaluator>
+Projection(
+    AngularFrequency const& ω,
+    Function const& function,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot) {
 }
 
 }  // namespace internal_frequency_analysis
