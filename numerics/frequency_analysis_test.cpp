@@ -14,6 +14,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
@@ -32,6 +33,7 @@ using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_⑴;
@@ -104,22 +106,6 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
 }
 
 TEST_F(FrequencyAnalysisTest, Projection) {
-  using Degree4 = PoissonSeries<Length, 4, HornerEvaluator>;
-  auto const sin =
-      internal_frequency_analysis::SeriesGenerator<Degree4, 2>::Sin(
-          si::Unit<AngularFrequency>, Instant());
-  auto const cos =
-      internal_frequency_analysis::SeriesGenerator<Degree4, 2>::Cos(
-          si::Unit<AngularFrequency>, Instant());
-  auto const basis =
-      internal_frequency_analysis::BasisGenerator<Degree4>::Basis(
-          si::Unit<AngularFrequency>, Instant());
-  LOG(ERROR)<<sin;
-  LOG(ERROR)<<cos;
-  for (int i = 0; i < basis.size(); ++i) {
-    LOG(ERROR)<<i<<" ---- "<<basis[i];
-  }
-
   Instant const t0;
   AngularFrequency const ω = 666.543 * π * Radian / Second;
   std::mt19937_64 random(42);
@@ -162,6 +148,12 @@ TEST_F(FrequencyAnalysisTest, Projection) {
 
   auto const projection = Projection(
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  LOG(ERROR)<<projection;
+
+  //for (int i = 0; i <= 100; ++i) {
+  //  EXPECT_THAT(projection(t0 + i * Radian / ω),
+  //              AlmostEquals(series(t0 + i * Radian / ω), 0));
+  //}
 }
 
 }  // namespace frequency_analysis
