@@ -121,14 +121,14 @@ BasisGenerator<Series, std::index_sequence<indices...>>::Basis(
 
 
 template<typename Function,
-         typename RValue, int rdegree_, int wdegree_,
+         int wdegree_,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot) {
-  using DotResult = Product<std::invoke_result_t<Function, Instant>, RValue>;
+    DotProduct<Function, double, 0, wdegree_, Evaluator> const& dot) {
+  using Value = std::invoke_result_t<Function, Instant>;
   using Degree0 = PoissonSeries<double, 0, Evaluator>;
 
   auto amplitude = [&dot, &function, &weight](AngularFrequency const& ω) {
@@ -149,54 +149,54 @@ AngularFrequency PreciseMode(
   return GoldenSectionSearch(amplitude,
                              fft_mode.min,
                              fft_mode.max,
-                             std::greater<Square<DotResult>>());
+                             std::greater<Square<Value>>());
 }
 
 template<typename Function,
-         typename RValue, int rdegree_, int wdegree_,
+         int degree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<std::invoke_result_t<Function, Instant>, rdegree_, Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 Projection(
     AngularFrequency const& ω,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot) {
+    DotProduct<Function, std::invoke_result_t<Function, Instant>,
+               degree_, wdegree_, Evaluator> const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
-  using DotProductResult = Product<Value, RValue>;
-  using Series = PoissonSeries<Value, rdegree_, Evaluator>;
+  using Series = PoissonSeries<Value, degree_, Evaluator>;
 
   Instant const& t0 = weight.origin();
   auto const basis = BasisGenerator<Series>::Basis(ω, t0);
   constexpr int basis_size = std::tuple_size_v<decltype(basis)>;
 
-  // Our indices start at 0, unlike those of Кудрявцев which start at 1.
-  FixedLowerTriangularMatrix<Inverse<SquareRoot<DotProductResult>>,
-                             basis_size> α;
+  // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
+  // of Кудрявцев which start at 1.
+  FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
   std::vector<Function> f;
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
   std::array<double, basis_size> A;
 
-  auto const F0 = dot(function, basis[0], weight);
-  auto const Q00 = dot(basis[0], basis[0], weight);
-  α[0][0] = 1 / Sqrt(Q00);
-  A[0] = α[0][0] * α[0][0] * F0;
+  auto const F₀ = dot(function, basis[0], weight);
+  auto const Q₀₀ = dot(basis[0], basis[0], weight);
+  α[0][0] = 1 / Sqrt(Q₀₀);
+  A[0] = F₀ / Q₀₀;
   f.emplace_back(function - A[0] * basis[0]);
   for (int m = 1; m < basis_size; ++m) {
-    // Contains F_m.
+    // Contains Fₘ.
     auto const F = dot(f[m - 1], basis[m], weight);
 
     // Only indices 0 to m are used in this array.  It contains Qₘⱼ.
-    std::array<DotProductResult, basis_size> Q;
+    std::array<Square<Value>, basis_size> Q;
     for (int j = 0; j <= m; ++j) {
       Q[j] = dot(basis[m], basis[j], weight);
     }
 
     // Only indices 0 to m - 1 are used in this array.  It contains Bⱼ⁽ᵐ⁾.
-    std::array<SquareRoot<DotProductResult>, basis_size> B;
+    std::array<Value, basis_size> B;
     for (int j = 0; j < m; ++j) {
-      SquareRoot<DotProductResult> accumulator;
+      Value accumulator;
       for (int s = 0; s <= j; ++s) {
         accumulator -= α[j][s] * Q[s];
       }
@@ -204,11 +204,11 @@ Projection(
     }
 
     {
-      DotProductResult accumulator = Q[m];
+      Square<Value> accumulator = Q[m];
       for (int s = 0; s < m; ++s) {
         accumulator -= B[s] * B[s];
       }
-      DCHECK_LE(DotProductResult{}, accumulator);
+      DCHECK_LE(Square<Value>{}, accumulator);
       α[m][m] = 1 / Sqrt(accumulator);
     }
 
@@ -227,7 +227,7 @@ Projection(
     }
 
     {
-      PoissonSeries<double, rdegree_, Evaluator> accumulator =
+      PoissonSeries<double, degree_, Evaluator> accumulator =
           α[m][0] * basis[0];
       for (int i = 1; i <= m; ++i) {
         accumulator += α[m][i] * basis[i];
@@ -236,8 +236,7 @@ Projection(
     }
   }
 
-  PoissonSeries<std::invoke_result_t<Function, Instant>, rdegree_, Evaluator>
-        result = A[0] * basis[0];
+  PoissonSeries<Value, degree_, Evaluator> result = A[0] * basis[0];
   for (int i = 1; i < basis_size; ++i) {
     result += A[i] * basis[i];
   }

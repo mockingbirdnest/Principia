@@ -32,30 +32,31 @@ using DotProduct =
         PoissonSeries<RValue, rdegree_, Evaluator> const& right,
         PoissonSeries<double, wdegree_, Evaluator> const& weight)>;
 
-// Computes the precise mode of a quasi-periodic function, assuming that the
-// mode is over the interval fft_mode (so named because it has presumably been
+// Computes the precise mode of a quasi-periodic |function|, assuming that the
+// mode is over the interval |fft_mode| (so named because it has presumably been
 // obtained using FFT).  See [Cha95].
-//TODO(phl): RValue == double?
 template<typename Function,
-         typename RValue, int rdegree_, int wdegree_,
+         int wdegree_,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot);
+    DotProduct<Function, double, 0, wdegree_, Evaluator> const& dot);
 
-//TODO(phl):comment  RValue == result?, rdegree_==degree_?
-// See [Kud07].
+// Computes the Кудрявцев projection of |function| on a basis with angular
+// frequency ω and maximum degree |degree_|.  See [Kud07].
+// TODO(phl): We really need multiple angular frequencies.
 template<typename Function,
-         typename RValue, int rdegree_, int wdegree_,
+         int degree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<std::invoke_result_t<Function, Instant>, rdegree_, Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 Projection(
     AngularFrequency const& ω,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot);
+    DotProduct<Function, std::invoke_result_t<Function, Instant>,
+               degree_, wdegree_, Evaluator> const& dot);
 
 }  // namespace internal_frequency_analysis
 
