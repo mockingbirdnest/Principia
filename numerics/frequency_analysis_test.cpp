@@ -123,14 +123,11 @@ TEST_F(FrequencyAnalysisTest, Projection) {
     return Series::Polynomial({c0, c1, c2, c3, c4}, t0);
   };
 
-  Series::PolynomialsByAngularFrequency polynomials;
-  for (int i = 0; i < 10; ++i) {
-    auto const sin = random_polynomial();
-    auto const cos = random_polynomial();
-    polynomials.emplace(ω, Series::Polynomials{sin, cos});
-  }
+  auto const sin = random_polynomial();
+  auto const cos = random_polynomial();
   Series const series(
-      Series::Polynomial(Series::Polynomial::Coefficients{}, t0), polynomials);
+      Series::Polynomial(Series::Polynomial::Coefficients{}, t0),
+      {{ω, Series::Polynomials{sin, cos}}});
 
   Instant const t_min = t0;
   Instant const t_max = t0 + 100 * Radian / ω;
