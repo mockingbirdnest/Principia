@@ -32,9 +32,7 @@ AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    std::function<Primitive<Product<std::invoke_result_t<Function, Instant>,
-                                    RValue>,
-                            Time>(
+    std::function<Product<std::invoke_result_t<Function, Instant>, RValue>(
         Function const& left,
         PoissonSeries<RValue, rdegree_, Evaluator> const& right,
         PoissonSeries<double, wdegree_, Evaluator> const& weight)> const& dot);

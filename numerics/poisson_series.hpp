@@ -156,11 +156,11 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 // Technically the weight function must be nonnegative for this to be an inner
 // product.  Not sure how this works with the flat-top windows, which can be
-// negative.
+// negative.  Note that the result is normalized by dividing by (t_max - t_min).
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-Primitive<Product<LValue, RValue>, Time>
+Product<LValue, RValue>
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
@@ -245,13 +245,13 @@ class PiecewisePoissonSeries {
                    PoissonSeries<R, r, E> const& right);
   template<typename L, typename R, int l, int r, int w,
            template<typename, typename, int> class E>
-  quantities::Primitive<Product<L, R>, Time>
+  Product<L, R>
   friend Dot(PoissonSeries<L, l, E> const& left,
              PiecewisePoissonSeries<R, r, E> const& right,
              PoissonSeries<double, w, E> const& weight);
   template<typename L, typename R, int l, int r, int w,
            template<typename, typename, int> class E>
-  quantities::Primitive<Product<L, R>, Time>
+  Product<L, R>
   friend Dot(PiecewisePoissonSeries<L, l, E> const& left,
              PoissonSeries<R, r, E> const& right,
              PoissonSeries<double, w, E> const& weight);
@@ -334,7 +334,7 @@ operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-Primitive<Product<LValue, RValue>, Time>
+Product<LValue, RValue>
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight);
@@ -342,7 +342,7 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-Primitive<Product<LValue, RValue>, Time>
+Product<LValue, RValue>
 Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight);
