@@ -42,7 +42,7 @@ struct BasisGenerator;
 
 template<typename Series, std::size_t... indices>
 struct BasisGenerator<Series, std::index_sequence<indices...>> {
-  //TODO(phl): omega=0
+  // TODO(phl): Will need to properly handle ω = 0.
   static std::array<Series, 2 * Series::degree + 2> Basis(
       AngularFrequency const& ω,
       Instant const& origin);
