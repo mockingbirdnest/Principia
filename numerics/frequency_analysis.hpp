@@ -35,6 +35,7 @@ using DotProduct =
 // Computes the precise mode of a quasi-periodic function, assuming that the
 // mode is over the interval fft_mode (so named because it has presumably been
 // obtained using FFT).  See [Cha95].
+//TODO(phl): RValue == double?
 template<typename Function,
          typename RValue, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
