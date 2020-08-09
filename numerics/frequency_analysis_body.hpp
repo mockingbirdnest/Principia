@@ -227,6 +227,13 @@ Projection(
       f[m] = f[m - 1] - α[m][m] * F[m] * accumulator;
     }
   }
+
+  PoissonSeries<std::invoke_result_t<Function, Instant>, rdegree_, Evaluator>
+        result = A[0][basis_size - 1] * basis[0];
+  for (int i = 1; i < basis_size; ++i) {
+    result += A[i][basis_size - 1] * basis[i];
+  }
+  return result;
 }
 
 }  // namespace internal_frequency_analysis
