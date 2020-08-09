@@ -292,7 +292,7 @@ template<typename From, typename To>
 bool operator!=(Rotation<From, To> const& left,
                 Rotation<From, To> const& right);
 
-  template<typename FromFrame, typename ToFrame>
+template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation);
 
