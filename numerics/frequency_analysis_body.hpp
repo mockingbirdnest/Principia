@@ -179,6 +179,8 @@ Projection(
   std::array<double, basis_size> A;
 
   auto const F₀ = dot(function, basis[0], weight);
+  // TODO(phl): This does not work if basis does not have the same type as
+  // Function, i.e., if the degrees don't match.
   auto const Q₀₀ = dot(basis[0], basis[0], weight);
   α[0][0] = 1 / Sqrt(Q₀₀);
   A[0] = F₀ / Q₀₀;
