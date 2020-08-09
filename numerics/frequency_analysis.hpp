@@ -45,7 +45,7 @@ AngularFrequency PreciseMode(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot);
 
-//TODO(phl):comment  RValue == result?
+//TODO(phl):comment  RValue == result?, rdegree_==degree_?
 // See [Kud07].
 template<typename Function,
          typename RValue, int rdegree_, int wdegree_,
@@ -60,6 +60,7 @@ Projection(
 }  // namespace internal_frequency_analysis
 
 using internal_frequency_analysis::PreciseMode;
+using internal_frequency_analysis::Projection;
 
 }  // namespace frequency_analysis
 }  // namespace numerics

@@ -25,6 +25,7 @@ namespace frequency_analysis {
 using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Length;
+using quantities::Pow;
 using quantities::Sin;
 using quantities::Square;
 using quantities::Time;
@@ -118,6 +119,49 @@ TEST_F(FrequencyAnalysisTest, Projection) {
   for (int i = 0; i < basis.size(); ++i) {
     LOG(ERROR)<<i<<" ---- "<<basis[i];
   }
+
+  Instant const t0;
+  AngularFrequency const ω = 666.543 * π * Radian / Second;
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> noise(-10.0, 10.0);
+
+  using Series = PoissonSeries<Length, 4, HornerEvaluator>;
+
+  auto random_polynomial = [&noise, &random, &t0]() {
+    auto const c0 = noise(random) * Metre;
+    auto const c1 = noise(random) * Metre / Second;
+    auto const c2 = noise(random) * Metre / Pow<2>(Second);
+    auto const c3 = noise(random) * Metre / Pow<3>(Second);
+    auto const c4 = noise(random) * Metre / Pow<4>(Second);
+
+    return Series::Polynomial({c0, c1, c2, c3, c4}, t0);
+  };
+
+  Series::PolynomialsByAngularFrequency polynomials;
+  for (int i = 0; i < 10; ++i) {
+    auto const sin = random_polynomial();
+    auto const cos = random_polynomial();
+    polynomials.emplace(ω, Series::Polynomials{sin, cos});
+  }
+  Series const series(
+      Series::Polynomial(Series::Polynomial::Coefficients{}, t0), polynomials);
+
+  Instant const t_min = t0;
+  Instant const t_max = t0 + 100 * Radian / ω;
+
+  using Double = PoissonSeries<double, 0, HornerEvaluator>;
+
+  std::function<Square<Length>(Series const& left,
+                               Series const& right,
+                               Double const& weight)> const dot =
+    [t_min, t_max](Series const& left,
+                   Series const& right,
+                   Double const& weight) {
+    return Dot(left, right, weight, t_min, t_max);
+  };
+
+  auto const projection = Projection(
+      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
 }
 
 }  // namespace frequency_analysis

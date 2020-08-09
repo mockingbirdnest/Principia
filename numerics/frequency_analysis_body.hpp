@@ -7,6 +7,7 @@
 
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/root_finders.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -15,6 +16,7 @@ namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
 using quantities::Inverse;
+using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
 namespace si = quantities::si;
@@ -160,11 +162,11 @@ Projection(
     DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
   using DotProductResult = Product<Value, RValue>;
-  using Series = PoissonSeries<Value, degree_, Evaluator>;
+  using Series = PoissonSeries<Value, rdegree_, Evaluator>;
 
   Instant const& t0 = weight.origin();
   auto const basis = BasisGenerator<Series>::Basis(ω, t0);
-  constexpr int basis_size = std::tuple_size_v<decltype(basis);
+  constexpr int basis_size = std::tuple_size_v<decltype(basis)>;
 
   // Our indices start at 0, unlike those of Кудрявцев which start at 1.
   //TODO(phl):Check the indices!
@@ -207,7 +209,7 @@ Projection(
     for (int j = 0; j < m; ++j) {
       double accumulator = 0;
       for (int s = j; s < m; ++s) {
-        accumulator += B[s][m] * α[s][j]
+        accumulator += B[s][m] * α[s][j];
       }
       α[m][j] = α[m][m] * accumulator;
     }
@@ -219,7 +221,7 @@ Projection(
     }
 
     {
-      PoissonSeries<double, degree_, Evaluator> accumulator =
+      PoissonSeries<double, rdegree_, Evaluator> accumulator =
           α[m][0] * basis[0];
       for (int i = 1; i <= m; ++i) {
         accumulator += α[m][i] * basis[i];
