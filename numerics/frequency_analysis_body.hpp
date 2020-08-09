@@ -5,6 +5,7 @@
 
 #include <functional>
 
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/si.hpp"
 
@@ -13,7 +14,9 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
+using quantities::Inverse;
 using quantities::Square;
+using quantities::SquareRoot;
 namespace si = quantities::si;
 
 // A helper struct for generating the Poisson series tⁿ sin ω t and tⁿ cos ω t.
@@ -122,7 +125,7 @@ AngularFrequency PreciseMode(
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot) {
-  using DotResult = Product<std::invoke_result_t<Function, Instant>, RValue;
+  using DotResult = Product<std::invoke_result_t<Function, Instant>, RValue>;
   using Degree0 = PoissonSeries<double, 0, Evaluator>;
 
   auto amplitude = [&dot, &function, &weight](AngularFrequency const& ω) {
@@ -156,7 +159,7 @@ Projection(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
-  using DotProductResult = Primitive<Product<Value, RValue>, Time>;
+  using DotProductResult = Product<Value, RValue>;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
   Instant const& t0 = weight.origin();
@@ -166,40 +169,63 @@ Projection(
   // Our indices start at 0, unlike those of Кудрявцев which start at 1.
   //TODO(phl):Check the indices!
   std::array<DotProductResult, basis_size> F;
+  FixedLowerTriangularMatrix<DotProductResult, basis_size> Q;
+  FixedLowerTriangularMatrix<Inverse<SquareRoot<DotProductResult>>,
+                             basis_size> α;
+  FixedLowerTriangularMatrix<double, basis_size> A;
+  FixedStrictlyLowerTriangularMatrix<SquareRoot<DotProductResult>,
+                                     basis_size> B;
   std::array<Function, basis_size> f;
 
   F[0] = dot(function, basis[0], weight);
-  Q[0, 0] = dot(basis[0], basis[0], weight);
-  α[0, 0] = 1 / Sqrt(Q[0, 0]);
-  A[0, 0] = α[0, 0] * α[0, 0] * F[0];
-  f[0] = function - A[0, 0] basis[0];
+  Q[0][0] = dot(basis[0], basis[0], weight);
+  α[0][0] = 1 / Sqrt(Q[0][0]);
+  A[0][0] = α[0][0] * α[0][0] * F[0];
+  f[0] = function - A[0][0] * basis[0];
   for (int m = 1; m < basis.size(); ++m) {
     F[m] = dot(f[m - 1], basis[m], weight);
     for (int j = 0; j <= m; ++j) {
-      Q[m, j] = dot(basis[m], basis[j], weight);
+      Q[m][j] = dot(basis[m], basis[j], weight);
     }
+
     for (int j = 0; j < m; ++j) {
-      void* B = nullptr;
-      for (int s = 0; s < j; ++s) {
-        B -= α[j, s] * Q[m, s];
+      SquareRoot<DotProductResult> accumulator;
+      for (int s = 0; s <= j; ++s) {
+        accumulator -= α[j][s] * Q[m][s];
       }
-      B[j, m] = B;
+      B[j][m] = accumulator;
     }
-    α[m, m] = 1 / Sqrt(Q...);
-    A[m, m] = α[m, m] * α[m, m] * F[m];
+
+    {
+      DotProductResult accumulator = Q[m][m];
+      for (int s = 0; s < m; ++s) {
+        accumulator -= B[s][m] * B[s][m];
+      }
+      α[m][m] = 1 / Sqrt(accumulator);
+    }
+
     for (int j = 0; j < m; ++j) {
-      void* Bα = nullptr;
+      double accumulator = 0;
       for (int s = j; s < m; ++s) {
-        Bα += B[s, m] * α[s, j]
+        accumulator += B[s][m] * α[s][j]
       }
-      α[m, j] = α[m, m] * Bα;
-      A[j, m] = A[j, m - 1] + α[m, m] * α[m, j] * F[m];
+      α[m][j] = α[m][m] * accumulator;
     }
-    void* αs = nullptr;
-    for (int i = 0; i < m; ++i) {
-      αs += α[m, i] * basis[i];
+
+    A[m][m] = α[m][m] * α[m][m] * F[m];
+
+    for (int j = 0; j < m; ++j) {
+      A[j][m] = A[j][m - 1] + α[m][m] * α[m][j] * F[m];
     }
-    f[m] = f[m - 1] - α[m, m] * F[m] * αs;
+
+    {
+      PoissonSeries<double, degree_, Evaluator> accumulator =
+          α[m][0] * basis[0];
+      for (int i = 1; i <= m; ++i) {
+        accumulator += α[m][i] * basis[i];
+      }
+      f[m] = f[m - 1] - α[m][m] * F[m] * accumulator;
+    }
   }
 }
 

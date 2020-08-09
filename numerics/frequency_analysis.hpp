@@ -26,8 +26,8 @@ using quantities::Time;
 template<typename Function,
          typename RValue, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-using DotProduct = std::function<
-    Product<std::invoke_result_t<Function, Instant>, RValue>(
+using DotProduct =
+    std::function<Product<std::invoke_result_t<Function, Instant>, RValue>(
         Function const& left,
         PoissonSeries<RValue, rdegree_, Evaluator> const& right,
         PoissonSeries<double, wdegree_, Evaluator> const& weight)>;
@@ -44,7 +44,7 @@ AngularFrequency PreciseMode(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot);
 
-//TODO(phl):comment
+//TODO(phl):comment  RValue == result?
 // See [Kud07].
 template<typename Function,
          typename RValue, int rdegree_, int wdegree_,
