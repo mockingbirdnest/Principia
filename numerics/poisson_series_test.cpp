@@ -186,6 +186,10 @@ TEST_F(PoissonSeriesTest, Dot) {
               AlmostEquals(-1143.765683104456272 * Second, 53));
 }
 
+TEST_F(PoissonSeriesTest, Output) {
+  LOG(ERROR) << *pa_;
+}
+
 class PiecewisePoissonSeriesTest : public ::testing::Test {
  protected:
   using Degree0 = PiecewisePoissonSeries<double, 0, HornerEvaluator>;
