@@ -175,7 +175,7 @@ Projection(
   std::vector<Function> f;
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
-  // iteration m it contains A_j^(m-1).
+  // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
   std::array<double, basis_size> A;
 
   auto const F0 = dot(function, basis[0], weight);
@@ -187,13 +187,13 @@ Projection(
     // Contains F_m.
     auto const F = dot(f[m - 1], basis[m], weight);
 
-    // Only indices 0 to m are used in this array.  It contains Q_mj.
+    // Only indices 0 to m are used in this array.  It contains Qₘⱼ.
     std::array<DotProductResult, basis_size> Q;
     for (int j = 0; j <= m; ++j) {
       Q[j] = dot(basis[m], basis[j], weight);
     }
 
-    // Only indices 0 to m - 1 are used in this array.  It contains B_j^(m).
+    // Only indices 0 to m - 1 are used in this array.  It contains Bⱼ⁽ᵐ⁾.
     std::array<SquareRoot<DotProductResult>, basis_size> B;
     for (int j = 0; j < m; ++j) {
       SquareRoot<DotProductResult> accumulator;
