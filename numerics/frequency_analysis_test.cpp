@@ -82,9 +82,9 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
   EXPECT_THAT(mode.midpoint(),
               RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
 
-  std::function<Time(Degree0 const& left,
-                     Degree0 const& right,
-                     Degree0 const& weight)> const dot =
+  std::function<double(Degree0 const& left,
+                       Degree0 const& right,
+                       Degree0 const& weight)> const dot =
     [t_min, t_max](Degree0 const& left,
                    Degree0 const& right,
                    Degree0 const& weight) {

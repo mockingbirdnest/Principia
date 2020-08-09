@@ -27,7 +27,7 @@ template<typename Function,
          typename RValue, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
 using DotProduct = std::function<
-    Primitive<Product<std::invoke_result_t<Function, Instant>, RValue>, Time>(
+    Product<std::invoke_result_t<Function, Instant>, RValue>(
         Function const& left,
         PoissonSeries<RValue, rdegree_, Evaluator> const& right,
         PoissonSeries<double, wdegree_, Evaluator> const& weight)>;

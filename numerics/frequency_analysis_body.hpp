@@ -122,8 +122,7 @@ AngularFrequency PreciseMode(
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     DotProduct<Function, RValue, rdegree_, wdegree_, Evaluator> const& dot) {
-  using DotResult =
-      Primitive<Product<std::invoke_result_t<Function, Instant>, RValue>, Time>;
+  using DotResult = Product<std::invoke_result_t<Function, Instant>, RValue;
   using Degree0 = PoissonSeries<double, 0, Evaluator>;
 
   auto amplitude = [&dot, &function, &weight](AngularFrequency const& ω) {

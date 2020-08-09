@@ -183,7 +183,7 @@ TEST_F(PoissonSeriesTest, Dot) {
                   apodization::Hann<HornerEvaluator>(t_min, t_max),
                   t_min,
                   t_max),
-              AlmostEquals(-1143.765683104456272 * Second, 53));
+              AlmostEquals(-381.25522770148542400, 71));
 }
 
 class PiecewisePoissonSeriesTest : public ::testing::Test {
@@ -297,12 +297,12 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
 }
 
 TEST_F(PiecewisePoissonSeriesTest, Dot) {
-  Time const d1 = Dot(
+  double const d1 = Dot(
       pp_, p_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  Time const d2 = Dot(
+  double const d2 = Dot(
       p_, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (4 * π) * Second, 1));
-  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (4 * π) * Second, 1));
+  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 1));
+  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 1));
 }
 
 }  // namespace numerics
