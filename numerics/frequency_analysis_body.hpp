@@ -200,28 +200,28 @@ Projection(
     // Only indices 0 to m - 1 are used in this array.  It contains Bⱼ⁽ᵐ⁾.
     std::array<Value, basis_size> B;
     for (int j = 0; j < m; ++j) {
-      Value accumulator;
+      Value Σ_αⱼₛ_Qₘₛ{};
       for (int s = 0; s <= j; ++s) {
-        accumulator -= α[j][s] * Q[s];
+        Σ_αⱼₛ_Qₘₛ += α[j][s] * Q[s];
       }
-      B[j] = accumulator;
+      B[j] = -Σ_αⱼₛ_Qₘₛ;
     }
 
     {
-      Square<Value> accumulator = Q[m];
+      Square<Value> Σ_Bₛ⁽ᵐ⁾²{};
       for (int s = 0; s < m; ++s) {
-        accumulator -= B[s] * B[s];
+        Σ_Bₛ⁽ᵐ⁾² += B[s] * B[s];
       }
-      DCHECK_LE(Square<Value>{}, accumulator);
-      α[m][m] = 1 / Sqrt(accumulator);
+      DCHECK_LE(Σ_Bₛ⁽ᵐ⁾², Q[m]);
+      α[m][m] = 1 / Sqrt(Q[m] - Σ_Bₛ⁽ᵐ⁾²);
     }
 
     for (int j = 0; j < m; ++j) {
-      double accumulator = 0;
+      double Σ_Bₛ⁽ᵐ⁾_αₛⱼ = 0;
       for (int s = j; s < m; ++s) {
-        accumulator += B[s] * α[s][j];
+        Σ_Bₛ⁽ᵐ⁾_αₛⱼ += B[s] * α[s][j];
       }
-      α[m][j] = α[m][m] * accumulator;
+      α[m][j] = α[m][m] * Σ_Bₛ⁽ᵐ⁾_αₛⱼ;
     }
 
     A[m] = α[m][m] * α[m][m] * F;
@@ -231,12 +231,12 @@ Projection(
     }
 
     {
-      PoissonSeries<double, degree_, Evaluator> accumulator =
+      PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ =
           α[m][0] * basis[0];
       for (int i = 1; i <= m; ++i) {
-        accumulator += α[m][i] * basis[i];
+        Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
       }
-      f.emplace_back(f[m - 1] - α[m][m] * F * accumulator);
+      f.emplace_back(f[m - 1] - α[m][m] * F * Σ_αₘᵢ_eᵢ);
     }
   }
 

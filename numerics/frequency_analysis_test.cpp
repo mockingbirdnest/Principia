@@ -148,7 +148,7 @@ TEST_F(FrequencyAnalysisTest, Projection) {
 
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection(t0 + i * Radian / ω),
-                AlmostEquals(series(t0 + i * Radian / ω), 0, 2368));
+                AlmostEquals(series(t0 + i * Radian / ω), 0, 2432));
   }
 }
 
