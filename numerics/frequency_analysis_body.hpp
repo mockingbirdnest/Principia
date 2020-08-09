@@ -3,7 +3,9 @@
 
 #include "numerics/frequency_analysis.hpp"
 
+#include <algorithm>
 #include <functional>
+#include <vector>
 
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/root_finders.hpp"
