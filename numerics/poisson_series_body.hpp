@@ -395,7 +395,7 @@ std::ostream& operator<<(
       if (!is_start_of_output) {
         out << " + ";
       }
-      out << polynomials.sin << " * Sin(" << quantities::DebugString(ω)
+      out <<"(" << polynomials.sin << ") * Sin(" << quantities::DebugString(ω)
           << " * (T - " << series.origin_ << "))";
       is_start_of_output = false;
     }
@@ -403,7 +403,7 @@ std::ostream& operator<<(
       if (!is_start_of_output) {
         out << " + ";
       }
-      out << polynomials.cos << " * Cos(" << quantities::DebugString(ω)
+      out << "(" << polynomials.cos << ") * Cos(" << quantities::DebugString(ω)
           << " * (T - " << series.origin_ << "))";
       is_start_of_output = false;
     }

@@ -147,13 +147,12 @@ TEST_F(FrequencyAnalysisTest, Projection) {
   };
 
   auto const projection = Projection(
-      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
-  LOG(ERROR)<<projection;
+      ω, series, apodization::Dirichlet<HornerEvaluator>(t_min, t_max), dot);
 
-  //for (int i = 0; i <= 100; ++i) {
-  //  EXPECT_THAT(projection(t0 + i * Radian / ω),
-  //              AlmostEquals(series(t0 + i * Radian / ω), 0));
-  //}
+  for (int i = 0; i <= 100; ++i) {
+    EXPECT_THAT(projection(t0 + i * Radian / ω),
+                AlmostEquals(series(t0 + i * Radian / ω), 0, 2368));
+  }
 }
 
 }  // namespace frequency_analysis

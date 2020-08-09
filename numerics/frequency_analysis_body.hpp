@@ -37,14 +37,15 @@ struct SeriesGenerator {
 // A helper struct for generating the Кудрявцев basis, i.e., functions of the
 // form tⁿ sin ω t and tⁿ cos ω t properly ordered.
 template<typename Series,
-         typename = std::make_index_sequence<Series::degree>>
+         typename = std::make_index_sequence<Series::degree + 1>>
 struct BasisGenerator;
 
 template<typename Series, std::size_t... indices>
 struct BasisGenerator<Series, std::index_sequence<indices...>> {
   //TODO(phl): omega=0
-  static std::array<Series, 2 * Series::degree> Basis(AngularFrequency const& ω,
-                                                      Instant const& origin);
+  static std::array<Series, 2 * Series::degree + 2> Basis(
+      AngularFrequency const& ω,
+      Instant const& origin);
 };
 
 
@@ -80,13 +81,13 @@ typename Series::Polynomial SeriesGenerator<Series, n>::Unit(
 }
 
 template<typename Series, std::size_t... indices>
-std::array<Series, 2 * Series::degree>
+std::array<Series, 2 * Series::degree + 2>
 BasisGenerator<Series, std::index_sequence<indices...>>::Basis(
     AngularFrequency const& ω,
     Instant const& origin) {
   // This has the elements {Sin(ωt), t Sin(ωt), t² Sin(ωt), ..., Cos(ωt), ...}
   // which is not the order we want (we want lower-degree polynomials first).
-  std::array<Series, 2 * Series::degree> all_series = {
+  std::array<Series, 2 * Series::degree + 2> all_series = {
       SeriesGenerator<Series, indices>::Sin(ω, origin)...,
       SeriesGenerator<Series, indices>::Cos(ω, origin)...};
 
@@ -94,14 +95,14 @@ BasisGenerator<Series, std::index_sequence<indices...>>::Basis(
   if (Series::degree >= 2) {
     // The index of this array is the current index of a series in all_series.
     // The value is the index of the final resting place of that series in
-    // all_series.  The elements at indices 0 and 2 * Series::degree - 1 are
+    // all_series.  The elements at indices 0 and 2 * Series::degree + 1 are
     // unused.
-    std::array<int, 2 * Series::degree> permutation;
-    for (int i = 1; i < 2 * Series::degree - 1; ++i) {
+    std::array<int, 2 * Series::degree + 2> permutation;
+    for (int i = 1; i < 2 * Series::degree + 1; ++i) {
       permutation[i] =
-          i < Series::degree ? 2 * i : 2 * (i - Series::degree) + 1;
+          i <= Series::degree ? 2 * i : 2 * (i - Series::degree) - 1;
     }
-    for (int i = 1; i < 2 * Series::degree - 1;) {
+    for (int i = 1; i < 2 * Series::degree + 1;) {
       // Swap the series currently at index i to its final resting place.
       // Iterate until the series at index i is at its final resting place
       // (i.e., after we have executed an entire cycle of the permutation).
@@ -169,55 +170,60 @@ Projection(
   constexpr int basis_size = std::tuple_size_v<decltype(basis)>;
 
   // Our indices start at 0, unlike those of Кудрявцев which start at 1.
-  //TODO(phl):Check the indices!
-  std::array<DotProductResult, basis_size> F;
-  FixedLowerTriangularMatrix<DotProductResult, basis_size> Q;
   FixedLowerTriangularMatrix<Inverse<SquareRoot<DotProductResult>>,
                              basis_size> α;
-  FixedLowerTriangularMatrix<double, basis_size> A;
-  FixedStrictlyLowerTriangularMatrix<SquareRoot<DotProductResult>,
-                                     basis_size> B;
   std::vector<Function> f;
 
-  F[0] = dot(function, basis[0], weight);
-  Q[0][0] = dot(basis[0], basis[0], weight);
-  α[0][0] = 1 / Sqrt(Q[0][0]);
-  A[0][0] = α[0][0] * α[0][0] * F[0];
-  f.emplace_back(function - A[0][0] * basis[0]);
-  for (int m = 1; m < basis.size(); ++m) {
-    F[m] = dot(f[m - 1], basis[m], weight);
+  // Only indices 0 to m - 1 are used in this array.  At the beginning of
+  // iteration m it contains A_j^(m-1).
+  std::array<double, basis_size> A;
+
+  auto const F0 = dot(function, basis[0], weight);
+  auto const Q00 = dot(basis[0], basis[0], weight);
+  α[0][0] = 1 / Sqrt(Q00);
+  A[0] = α[0][0] * α[0][0] * F0;
+  f.emplace_back(function - A[0] * basis[0]);
+  for (int m = 1; m < basis_size; ++m) {
+    // Contains F_m.
+    auto const F = dot(f[m - 1], basis[m], weight);
+
+    // Only indices 0 to m are used in this array.  It contains Q_mj.
+    std::array<DotProductResult, basis_size> Q;
     for (int j = 0; j <= m; ++j) {
-      Q[m][j] = dot(basis[m], basis[j], weight);
+      Q[j] = dot(basis[m], basis[j], weight);
     }
 
+    // Only indices 0 to m - 1 are used in this array.  It contains B_j^(m).
+    std::array<SquareRoot<DotProductResult>, basis_size> B;
     for (int j = 0; j < m; ++j) {
       SquareRoot<DotProductResult> accumulator;
       for (int s = 0; s <= j; ++s) {
-        accumulator -= α[j][s] * Q[m][s];
+        accumulator -= α[j][s] * Q[s];
       }
-      B[j][m] = accumulator;
+      B[j] = accumulator;
     }
 
     {
-      DotProductResult accumulator = Q[m][m];
+      DotProductResult accumulator = Q[m];
       for (int s = 0; s < m; ++s) {
-        accumulator -= B[s][m] * B[s][m];
+        accumulator -= B[s] * B[s];
       }
+      DCHECK_LE(DotProductResult{}, accumulator);
       α[m][m] = 1 / Sqrt(accumulator);
     }
 
     for (int j = 0; j < m; ++j) {
       double accumulator = 0;
       for (int s = j; s < m; ++s) {
-        accumulator += B[s][m] * α[s][j];
+        accumulator += B[s] * α[s][j];
       }
       α[m][j] = α[m][m] * accumulator;
     }
 
-    A[m][m] = α[m][m] * α[m][m] * F[m];
+    A[m] = α[m][m] * α[m][m] * F;
 
     for (int j = 0; j < m; ++j) {
-      A[j][m] = A[j][m - 1] + α[m][m] * α[m][j] * F[m];
+      A[j] += α[m][m] * α[m][j] * F;
     }
 
     {
@@ -226,14 +232,14 @@ Projection(
       for (int i = 1; i <= m; ++i) {
         accumulator += α[m][i] * basis[i];
       }
-      f.emplace_back(f[m - 1] - α[m][m] * F[m] * accumulator);
+      f.emplace_back(f[m - 1] - α[m][m] * F * accumulator);
     }
   }
 
   PoissonSeries<std::invoke_result_t<Function, Instant>, rdegree_, Evaluator>
-        result = A[0][basis_size - 1] * basis[0];
+        result = A[0] * basis[0];
   for (int i = 1; i < basis_size; ++i) {
-    result += A[i][basis_size - 1] * basis[i];
+    result += A[i] * basis[i];
   }
   return result;
 }
