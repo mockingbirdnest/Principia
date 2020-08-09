@@ -3,8 +3,10 @@
 #include "numerics/polynomial.hpp"
 
 #include <algorithm>
+#include <string>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_cat.h"
