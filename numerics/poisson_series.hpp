@@ -56,6 +56,9 @@ class PoissonSeries {
   PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
   Primitive() const;
 
+  PoissonSeries& operator+=(PoissonSeries const& right);
+  PoissonSeries& operator-=(PoissonSeries const& right);
+
  private:
   Instant origin_;  // Common to all polynomials.
   Polynomial aperiodic_;

@@ -177,13 +177,13 @@ Projection(
   FixedLowerTriangularMatrix<double, basis_size> A;
   FixedStrictlyLowerTriangularMatrix<SquareRoot<DotProductResult>,
                                      basis_size> B;
-  std::array<Function, basis_size> f;
+  std::vector<Function> f;
 
   F[0] = dot(function, basis[0], weight);
   Q[0][0] = dot(basis[0], basis[0], weight);
   α[0][0] = 1 / Sqrt(Q[0][0]);
   A[0][0] = α[0][0] * α[0][0] * F[0];
-  f[0] = function - A[0][0] * basis[0];
+  f.emplace_back(function - A[0][0] * basis[0]);
   for (int m = 1; m < basis.size(); ++m) {
     F[m] = dot(f[m - 1], basis[m], weight);
     for (int j = 0; j <= m; ++j) {
@@ -226,7 +226,7 @@ Projection(
       for (int i = 1; i <= m; ++i) {
         accumulator += α[m][i] * basis[i];
       }
-      f[m] = f[m - 1] - α[m][m] * F[m] * accumulator;
+      f.emplace_back(f[m - 1] - α[m][m] * F[m] * accumulator);
     }
   }
 

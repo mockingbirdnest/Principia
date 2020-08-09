@@ -131,6 +131,24 @@ PoissonSeries<Value, degree_, Evaluator>::Primitive() const {
   return Result{aperiodic, std::move(periodic)};
 }
 
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<Value, degree_, Evaluator>&
+PoissonSeries<Value, degree_, Evaluator>::operator+=(
+    PoissonSeries const& right) {
+  *this = *this + right;
+  return *this;
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<Value, degree_, Evaluator>&
+PoissonSeries<Value, degree_, Evaluator>::operator-=(
+    PoissonSeries const& right) {
+  *this = *this - right;
+  return *this;
+}
+
 template<typename Value, int rdegree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value, rdegree_, Evaluator> operator+(
