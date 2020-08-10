@@ -133,18 +133,20 @@ PoissonSeries<Value, degree_, Evaluator>::Primitive() const {
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+template<typename V, int d, template<typename, typename, int> class E>
 PoissonSeries<Value, degree_, Evaluator>&
 PoissonSeries<Value, degree_, Evaluator>::operator+=(
-    PoissonSeries const& right) {
+    PoissonSeries<V, d, E> const& right) {
   *this = *this + right;
   return *this;
 }
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+template<typename V, int d, template<typename, typename, int> class E>
 PoissonSeries<Value, degree_, Evaluator>&
 PoissonSeries<Value, degree_, Evaluator>::operator-=(
-    PoissonSeries const& right) {
+    PoissonSeries<V, d, E> const& right) {
   *this = *this - right;
   return *this;
 }

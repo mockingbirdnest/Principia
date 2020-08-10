@@ -175,7 +175,6 @@ Projection(AngularFrequency const& ω,
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
   // of Кудрявцев which start at 1.
   FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
-  std::vector<decltype(std::declval<Function>() - std::declval<Series>())> f;
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
@@ -185,10 +184,12 @@ Projection(AngularFrequency const& ω,
   auto const Q₀₀ = dot(basis[0], basis[0], weight);
   α[0][0] = 1 / Sqrt(Q₀₀);
   A[0] = F₀ / Q₀₀;
-  f.emplace_back(function - A[0] * basis[0]);
+
+  // At the beginning of iteration m this contains fₘ₋₁.
+  auto f = function - A[0] * basis[0];
   for (int m = 1; m < basis_size; ++m) {
     // Contains Fₘ.
-    auto const F = dot(f[m - 1], basis[m], weight);
+    auto const F = dot(f, basis[m], weight);
 
     // Only indices 0 to m are used in this array.  It contains Qₘⱼ.
     std::array<Square<Value>, basis_size> Q;
@@ -230,12 +231,11 @@ Projection(AngularFrequency const& ω,
     }
 
     {
-      PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ =
-          α[m][0] * basis[0];
+      PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ = α[m][0] * basis[0];
       for (int i = 1; i <= m; ++i) {
         Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
       }
-      f.emplace_back(f[m - 1] - α[m][m] * F * Σ_αₘᵢ_eᵢ);
+      f -= α[m][m] * F * Σ_αₘᵢ_eᵢ;
     }
   }
 
