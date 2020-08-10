@@ -3,29 +3,134 @@
 
 #include "numerics/frequency_analysis.hpp"
 
+#include <algorithm>
 #include <functional>
+#include <vector>
 
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/root_finders.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
+using quantities::Inverse;
+using quantities::Sqrt;
 using quantities::Square;
+using quantities::SquareRoot;
+namespace si = quantities::si;
+
+// A helper struct for generating the Poisson series tⁿ sin ω t and tⁿ cos ω t.
+template<typename Series, int n>
+struct SeriesGenerator {
+  // The series tⁿ sin ω t.
+  static Series Sin(AngularFrequency const& ω, Instant const& origin);
+  // The series tⁿ cos ω t.
+  static Series Cos(AngularFrequency const& ω, Instant const& origin);
+
+ private:
+  // The polynomial tⁿ.
+  static typename Series::Polynomial Unit(Instant const& origin);
+};
+
+// A helper struct for generating the Кудрявцев basis, i.e., functions of the
+// form tⁿ sin ω t and tⁿ cos ω t properly ordered.
+template<typename Series,
+         typename = std::make_index_sequence<Series::degree + 1>>
+struct BasisGenerator;
+
+template<typename Series, std::size_t... indices>
+struct BasisGenerator<Series, std::index_sequence<indices...>> {
+  // TODO(phl): Will need to properly handle ω = 0.
+  static std::array<Series, 2 * Series::degree + 2> Basis(
+      AngularFrequency const& ω,
+      Instant const& origin);
+};
+
+
+template<typename Series, int n>
+Series SeriesGenerator<Series, n>::Sin(AngularFrequency const& ω,
+                                       Instant const& origin) {
+  typename Series::Polynomial::Coefficients const zeros;
+  typename Series::Polynomial const zero{zeros, origin};
+  return Series(zero,
+                {{ω,
+                  {/*sin=*/Unit(origin),
+                   /*cos=*/zero}}});
+}
+
+template<typename Series, int n>
+Series SeriesGenerator<Series, n>::Cos(AngularFrequency const& ω,
+                                       Instant const& origin) {
+  typename Series::Polynomial::Coefficients const zeros;
+  typename Series::Polynomial const zero{zeros, origin};
+  return Series(zero,
+                {{ω,
+                  {/*sin=*/zero,
+                   /*cos=*/Unit(origin)}}});
+}
+
+template<typename Series, int n>
+typename Series::Polynomial SeriesGenerator<Series, n>::Unit(
+    Instant const& origin) {
+  typename Series::Polynomial::Coefficients coefficients;
+  std::get<n>(coefficients) = si::Unit<
+      std::tuple_element_t<n, typename Series::Polynomial::Coefficients>>;
+  return Series::Polynomial(coefficients, origin);
+}
+
+template<typename Series, std::size_t... indices>
+std::array<Series, 2 * Series::degree + 2>
+BasisGenerator<Series, std::index_sequence<indices...>>::Basis(
+    AngularFrequency const& ω,
+    Instant const& origin) {
+  // This has the elements {Sin(ωt), t Sin(ωt), t² Sin(ωt), ..., Cos(ωt), ...}
+  // which is not the order we want (we want lower-degree polynomials first).
+  std::array<Series, 2 * Series::degree + 2> all_series = {
+      SeriesGenerator<Series, indices>::Sin(ω, origin)...,
+      SeriesGenerator<Series, indices>::Cos(ω, origin)...};
+
+  // Order all_series by repeatedly swapping its elements.
+  if (Series::degree >= 2) {
+    // The index of this array is the current index of a series in all_series.
+    // The value is the index of the final resting place of that series in
+    // all_series.  The elements at indices 0 and 2 * Series::degree + 1 are
+    // unused.
+    std::array<int, 2 * Series::degree + 2> permutation;
+    for (int i = 1; i < 2 * Series::degree + 1; ++i) {
+      permutation[i] =
+          i <= Series::degree ? 2 * i : 2 * (i - Series::degree) - 1;
+    }
+    for (int i = 1; i < 2 * Series::degree + 1;) {
+      // Swap the series currently at index i to its final resting place.
+      // Iterate until the series at index i is at its final resting place
+      // (i.e., after we have executed an entire cycle of the permutation).
+      // Then move to the next series.
+      if (i == permutation[i]) {
+        ++i;
+      } else {
+        int const j = permutation[i];
+        std::swap(all_series[i], all_series[j]);
+        std::swap(permutation[i], permutation[j]);
+      }
+    }
+  }
+  return all_series;
+}
+
 
 template<typename Function,
-         typename RValue, int rdegree_, int wdegree_,
+         int wdegree_,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    std::function<Product<std::invoke_result_t<Function, Instant>, RValue>(
-        Function const& left,
-        PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-        PoissonSeries<double, wdegree_, Evaluator> const& weight)> const& dot) {
-  using DotResult = Product<std::invoke_result_t<Function, Instant>, RValue>;
+    DotProduct<Function, double, 0, wdegree_, Evaluator> const& dot) {
+  using Value = std::invoke_result_t<Function, Instant>;
   using Degree0 = PoissonSeries<double, 0, Evaluator>;
 
   auto amplitude = [&dot, &function, &weight](AngularFrequency const& ω) {
@@ -46,7 +151,100 @@ AngularFrequency PreciseMode(
   return GoldenSectionSearch(amplitude,
                              fft_mode.min,
                              fft_mode.max,
-                             std::greater<Square<DotResult>>());
+                             std::greater<Square<Value>>());
+}
+
+template<typename Function,
+         int degree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
+Projection(
+    AngularFrequency const& ω,
+    Function const& function,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    DotProduct<Function, std::invoke_result_t<Function, Instant>,
+               degree_, wdegree_, Evaluator> const& dot) {
+  using Value = std::invoke_result_t<Function, Instant>;
+  using Series = PoissonSeries<Value, degree_, Evaluator>;
+
+  Instant const& t0 = weight.origin();
+  auto const basis = BasisGenerator<Series>::Basis(ω, t0);
+  constexpr int basis_size = std::tuple_size_v<decltype(basis)>;
+
+  // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
+  // of Кудрявцев which start at 1.
+  FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
+  std::vector<Function> f;
+
+  // Only indices 0 to m - 1 are used in this array.  At the beginning of
+  // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
+  std::array<double, basis_size> A;
+
+  auto const F₀ = dot(function, basis[0], weight);
+  // TODO(phl): This does not work if basis does not have the same type as
+  // Function, i.e., if the degrees don't match.
+  auto const Q₀₀ = dot(basis[0], basis[0], weight);
+  α[0][0] = 1 / Sqrt(Q₀₀);
+  A[0] = F₀ / Q₀₀;
+  f.emplace_back(function - A[0] * basis[0]);
+  for (int m = 1; m < basis_size; ++m) {
+    // Contains Fₘ.
+    auto const F = dot(f[m - 1], basis[m], weight);
+
+    // Only indices 0 to m are used in this array.  It contains Qₘⱼ.
+    std::array<Square<Value>, basis_size> Q;
+    for (int j = 0; j <= m; ++j) {
+      Q[j] = dot(basis[m], basis[j], weight);
+    }
+
+    // Only indices 0 to m - 1 are used in this array.  It contains Bⱼ⁽ᵐ⁾.
+    std::array<Value, basis_size> B;
+    for (int j = 0; j < m; ++j) {
+      Value Σ_αⱼₛ_Qₘₛ{};
+      for (int s = 0; s <= j; ++s) {
+        Σ_αⱼₛ_Qₘₛ += α[j][s] * Q[s];
+      }
+      B[j] = -Σ_αⱼₛ_Qₘₛ;
+    }
+
+    {
+      Square<Value> Σ_Bₛ⁽ᵐ⁾²{};
+      for (int s = 0; s < m; ++s) {
+        Σ_Bₛ⁽ᵐ⁾² += B[s] * B[s];
+      }
+      DCHECK_LE(Σ_Bₛ⁽ᵐ⁾², Q[m]);
+      α[m][m] = 1 / Sqrt(Q[m] - Σ_Bₛ⁽ᵐ⁾²);
+    }
+
+    for (int j = 0; j < m; ++j) {
+      double Σ_Bₛ⁽ᵐ⁾_αₛⱼ = 0;
+      for (int s = j; s < m; ++s) {
+        Σ_Bₛ⁽ᵐ⁾_αₛⱼ += B[s] * α[s][j];
+      }
+      α[m][j] = α[m][m] * Σ_Bₛ⁽ᵐ⁾_αₛⱼ;
+    }
+
+    A[m] = α[m][m] * α[m][m] * F;
+
+    for (int j = 0; j < m; ++j) {
+      A[j] += α[m][m] * α[m][j] * F;
+    }
+
+    {
+      PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ =
+          α[m][0] * basis[0];
+      for (int i = 1; i <= m; ++i) {
+        Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
+      }
+      f.emplace_back(f[m - 1] - α[m][m] * F * Σ_αₘᵢ_eᵢ);
+    }
+  }
+
+  PoissonSeries<Value, degree_, Evaluator> result = A[0] * basis[0];
+  for (int i = 1; i < basis_size; ++i) {
+    result += A[i] * basis[i];
+  }
+  return result;
 }
 
 }  // namespace internal_frequency_analysis

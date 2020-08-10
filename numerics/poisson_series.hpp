@@ -32,6 +32,7 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 class PoissonSeries {
  public:
+  static const int degree = degree_;
   using Polynomial =
       numerics::PolynomialInMonomialBasis<Value, Instant, degree_, Evaluator>;
 
@@ -54,6 +55,9 @@ class PoissonSeries {
   // The constant term of the result is zero.
   PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
   Primitive() const;
+
+  PoissonSeries& operator+=(PoissonSeries const& right);
+  PoissonSeries& operator-=(PoissonSeries const& right);
 
  private:
   Instant origin_;  // Common to all polynomials.

@@ -131,6 +131,24 @@ PoissonSeries<Value, degree_, Evaluator>::Primitive() const {
   return Result{aperiodic, std::move(periodic)};
 }
 
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<Value, degree_, Evaluator>&
+PoissonSeries<Value, degree_, Evaluator>::operator+=(
+    PoissonSeries const& right) {
+  *this = *this + right;
+  return *this;
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<Value, degree_, Evaluator>&
+PoissonSeries<Value, degree_, Evaluator>::operator-=(
+    PoissonSeries const& right) {
+  *this = *this - right;
+  return *this;
+}
+
 template<typename Value, int rdegree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value, rdegree_, Evaluator> operator+(
@@ -377,7 +395,7 @@ std::ostream& operator<<(
       if (!is_start_of_output) {
         out << " + ";
       }
-      out << polynomials.sin << " * Sin(" << quantities::DebugString(ω)
+      out <<"(" << polynomials.sin << ") * Sin(" << quantities::DebugString(ω)
           << " * (T - " << series.origin_ << "))";
       is_start_of_output = false;
     }
@@ -385,7 +403,7 @@ std::ostream& operator<<(
       if (!is_start_of_output) {
         out << " + ";
       }
-      out << polynomials.cos << " * Cos(" << quantities::DebugString(ω)
+      out << "(" << polynomials.cos << ") * Cos(" << quantities::DebugString(ω)
           << " * (T - " << series.origin_ << "))";
       is_start_of_output = false;
     }
