@@ -40,12 +40,35 @@ using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_⑴;
 namespace si = quantities::si;
 
-template<typename LFunction, typename RFunction, typename Weight>
-struct Dotty {
-  static Product<std::invoke_result_t<LFunction, Instant>,
-                 std::invoke_result_t<RFunction, Instant>>
-  Evaluate(LFunction const& left, RFunction const& right, Weight const& weight);
+class DotImplementation {
+ public:
+  DotImplementation(Instant const& t_min, Instant const& t_max);
+
+  template<typename LFunction, typename RFunction, typename Weight>
+  Product<std::invoke_result_t<LFunction, Instant>,
+          std::invoke_result_t<RFunction, Instant>>
+  operator()(LFunction const& left,
+             RFunction const& right,
+             Weight const& weight) const;
+
+ private:
+  Instant const t_min_;
+  Instant const t_max_;
 };
+
+DotImplementation::DotImplementation(Instant const& t_min,
+                                     Instant const& t_max)
+    : t_min_(t_min),
+      t_max_(t_max) {}
+
+template<typename LFunction, typename RFunction, typename Weight>
+Product<std::invoke_result_t<LFunction, Instant>,
+        std::invoke_result_t<RFunction, Instant>>
+DotImplementation::operator()(LFunction const& left,
+                  RFunction const& right,
+                  Weight const& weight) const {
+  return Dot(left, right, weight, t_min_, t_max_);
+}
 
 class FrequencyAnalysisTest : public ::testing::Test {};
 
@@ -94,21 +117,12 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
   EXPECT_THAT(mode.midpoint(),
               RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
 
-  using Double = PoissonSeries<double, 0, HornerEvaluator>;
-
-  std::function<Length(Series const& left,
-                       Double const& right,
-                       Double const& weight)> const dot =
-    [t_min, t_max](Series const& left,
-                   Double const& right,
-                   Double const& weight) {
-    return Dot(left, right, weight, t_min, t_max);
-  };
+  DotImplementation dot(t_min, t_max);
 
   // The precise analysis is only limited by our ability to pinpoint the
   // maximum.
-  auto const precise_mode = PreciseMode<Dotty>(
-      mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max));
+  auto const precise_mode = PreciseMode(
+      mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   EXPECT_THAT(precise_mode,
               RelativeErrorFrom(ω, IsNear(6.4e-11_⑴)));
 }
@@ -139,20 +153,10 @@ TEST_F(FrequencyAnalysisTest, Projection) {
 
   Instant const t_min = t0;
   Instant const t_max = t0 + 100 * Radian / ω;
+  DotImplementation dot(t_min, t_max);
 
-  using Double = PoissonSeries<double, 0, HornerEvaluator>;
-
-  std::function<Square<Length>(Series const& left,
-                               Series const& right,
-                               Double const& weight)> const dot =
-    [t_min, t_max](Series const& left,
-                   Series const& right,
-                   Double const& weight) {
-    return Dot(left, right, weight, t_min, t_max);
-  };
-
-  auto const projection = Projection<Dotty, 4>(
-      ω, series, apodization::Dirichlet<HornerEvaluator>(t_min, t_max));
+  auto const projection = Projection<4>(
+      ω, series, apodization::Dirichlet<HornerEvaluator>(t_min, t_max), dot);
 
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection(t0 + i * Radian / ω),
