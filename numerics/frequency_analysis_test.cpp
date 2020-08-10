@@ -27,6 +27,7 @@ using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Pow;
+using quantities::Product;
 using quantities::Sin;
 using quantities::Square;
 using quantities::Time;
@@ -38,6 +39,13 @@ using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_⑴;
 namespace si = quantities::si;
+
+template<typename LFunction, typename RFunction, typename Weight>
+struct Dotty {
+  static Product<std::invoke_result_t<LFunction, Instant>,
+                 std::invoke_result_t<RFunction, Instant>>
+  Evaluate(LFunction const& left, RFunction const& right, Weight const& weight);
+};
 
 class FrequencyAnalysisTest : public ::testing::Test {};
 
@@ -99,8 +107,8 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
 
   // The precise analysis is only limited by our ability to pinpoint the
   // maximum.
-  auto const precise_mode = PreciseMode(
-      mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  auto const precise_mode = PreciseMode<Dotty>(
+      mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max));
   EXPECT_THAT(precise_mode,
               RelativeErrorFrom(ω, IsNear(6.4e-11_⑴)));
 }
@@ -143,8 +151,8 @@ TEST_F(FrequencyAnalysisTest, Projection) {
     return Dot(left, right, weight, t_min, t_max);
   };
 
-  auto const projection = Projection(
-      ω, series, apodization::Dirichlet<HornerEvaluator>(t_min, t_max), dot);
+  auto const projection = Projection<Dotty, 4>(
+      ω, series, apodization::Dirichlet<HornerEvaluator>(t_min, t_max));
 
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection(t0 + i * Radian / ω),

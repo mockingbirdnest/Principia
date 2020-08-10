@@ -122,18 +122,18 @@ BasisGenerator<Series, std::index_sequence<indices...>>::Basis(
 }
 
 
-template<typename Function,
+template<template<typename, typename, typename> class Dot,
+         typename Function,
          int wdegree_,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    DotProduct<Function, double, 0, wdegree_, Evaluator> const& dot) {
+    PoissonSeries<double, wdegree_, Evaluator> const& weight) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Degree0 = PoissonSeries<double, 0, Evaluator>;
 
-  auto amplitude = [&dot, &function, &weight](AngularFrequency const& ω) {
+  auto amplitude = [&function, &weight](AngularFrequency const& ω) {
     Instant const& t0 = weight.origin();
     Degree0 const sin(typename Degree0::Polynomial({0}, t0),
                       {{ω,
@@ -143,8 +143,12 @@ AngularFrequency PreciseMode(
                       {{ω,
                         {/*sin=*/typename Degree0::Polynomial({0}, t0),
                          /*cos=*/typename Degree0::Polynomial({1}, t0)}}});
-    auto const sin_amplitude = dot(function, sin, weight);
-    auto const cos_amplitude = dot(function, cos, weight);
+    auto const sin_amplitude =
+        Dot<Function, Degree0, decltype(weight)>::Evaluate(
+            function, sin, weight);
+    auto const cos_amplitude =
+        Dot<Function, Degree0, decltype(weight)>::Evaluate(
+            function, cos, weight);
     return sin_amplitude * sin_amplitude + cos_amplitude * cos_amplitude;
   };
 
@@ -154,16 +158,16 @@ AngularFrequency PreciseMode(
                              std::greater<Square<Value>>());
 }
 
-template<typename Function,
-         int degree_, int wdegree_,
+template<template<typename, typename, typename> class Dot,
+         int degree_,
+         typename Function,
+         int wdegree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 Projection(
     AngularFrequency const& ω,
     Function const& function,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    DotProduct<Function, std::invoke_result_t<Function, Instant>,
-               degree_, wdegree_, Evaluator> const& dot) {
+    PoissonSeries<double, wdegree_, Evaluator> const& weight) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
@@ -180,21 +184,28 @@ Projection(
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
   std::array<double, basis_size> A;
 
-  auto const F₀ = dot(function, basis[0], weight);
+  //TODO(phl):Cleanup
+  auto const F₀ = Dot<Function, decltype(basis[0]), decltype(weight)>::Evaluate(
+      function, basis[0], weight);
   // TODO(phl): This does not work if basis does not have the same type as
   // Function, i.e., if the degrees don't match.
-  auto const Q₀₀ = dot(basis[0], basis[0], weight);
+  auto const Q₀₀ =
+      Dot<decltype(basis[0]), decltype(basis[0]), decltype(weight)>::Evaluate(
+          basis[0], basis[0], weight);
   α[0][0] = 1 / Sqrt(Q₀₀);
   A[0] = F₀ / Q₀₀;
   f.emplace_back(function - A[0] * basis[0]);
   for (int m = 1; m < basis_size; ++m) {
     // Contains Fₘ.
-    auto const F = dot(f[m - 1], basis[m], weight);
+    auto const F =
+        Dot<Function, decltype(basis[0]), decltype(weight)>::Evaluate(
+            f[m - 1], basis[m], weight);
 
     // Only indices 0 to m are used in this array.  It contains Qₘⱼ.
     std::array<Square<Value>, basis_size> Q;
     for (int j = 0; j <= m; ++j) {
-      Q[j] = dot(basis[m], basis[j], weight);
+      Q[j] = Dot<decltype(basis[0]), decltype(basis[0]), decltype(weight)>::
+          Evaluate(basis[m], basis[j], weight);
     }
 
     // Only indices 0 to m - 1 are used in this array.  It contains Bⱼ⁽ᵐ⁾.
