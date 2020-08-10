@@ -233,15 +233,22 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
                         ? Infinity<AngularFrequency>
                         : it_right->first;
     if (ωl < ωr) {
-      periodic.insert(periodic.cend(), *it_left);
+      auto const& polynomials_left = it_left->second;
+      periodic.emplace_hint(
+          periodic.cend(),
+          ωl,
+          typename Result::Polynomials{
+              /*sin=*/typename Result::Polynomial(polynomials_left.sin),
+              /*cos=*/typename Result::Polynomial(polynomials_left.cos)});
       ++it_left;
     } else if (ωr < ωl) {
       auto const& polynomials_right = it_right->second;
       periodic.emplace_hint(
           periodic.cend(),
           ωr,
-          typename Result::Polynomials{/*sin=*/-polynomials_right.sin,
-                                       /*cos=*/-polynomials_right.cos});
+          typename Result::Polynomials{
+              /*sin=*/typename Result::Polynomial(-polynomials_right.sin),
+              /*cos=*/typename Result::Polynomial(-polynomials_right.cos)});
       ++it_right;
     } else {
       DCHECK_EQ(ωl, ωr);

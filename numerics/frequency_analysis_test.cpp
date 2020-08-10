@@ -38,6 +38,9 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_⑴;
+using ::testing::AllOf;
+using ::testing::Gt;
+using ::testing::Lt;
 namespace si = quantities::si;
 
 class DotImplementation {
@@ -155,12 +158,29 @@ TEST_F(FrequencyAnalysisTest, Projection) {
   Instant const t_max = t0 + 100 * Radian / ω;
   DotImplementation dot(t_min, t_max);
 
-  auto const projection = Projection<4>(
-      ω, series, apodization::Dirichlet<HornerEvaluator>(t_min, t_max), dot);
-
+  // Projection on a 4-th degree basis accurately reconstructs the function.
+  auto const projection4 = Projection<4>(
+      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
-    EXPECT_THAT(projection(t0 + i * Radian / ω),
-                AlmostEquals(series(t0 + i * Radian / ω), 0, 2432));
+    EXPECT_THAT(projection4(t0 + i * Radian / ω),
+                AlmostEquals(series(t0 + i * Radian / ω), 0, 2688));
+  }
+
+  // Projection on a 5-th degree basis is also accurate.
+  auto const projection5 = Projection<5>(
+      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  for (int i = 0; i <= 100; ++i) {
+    EXPECT_THAT(projection5(t0 + i * Radian / ω),
+                AlmostEquals(series(t0 + i * Radian / ω), 0, 8000));
+  }
+
+  // Projection on a 3-rd degree basis introduces significant errors.
+  auto const projection3 = Projection<3>(
+      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  for (int i = 0; i <= 100; ++i) {
+    EXPECT_THAT(projection3(t0 + i * Radian / ω),
+                RelativeErrorFrom(series(t0 + i * Radian / ω),
+                                  AllOf(Gt(3.6e-13), Lt(9.0e-6))));
   }
 }
 

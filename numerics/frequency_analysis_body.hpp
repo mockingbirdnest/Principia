@@ -176,16 +176,13 @@ Projection(
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
   // of Кудрявцев which start at 1.
   FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
-  std::vector<Function> f;
+  std::vector<decltype(std::declval<Function>() - basis[0])> f;
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
   std::array<double, basis_size> A;
 
-  //TODO(phl):Cleanup
   auto const F₀ = dot(function, basis[0], weight);
-  // TODO(phl): This does not work if basis does not have the same type as
-  // Function, i.e., if the degrees don't match.
   auto const Q₀₀ = dot(basis[0], basis[0], weight);
   α[0][0] = 1 / Sqrt(Q₀₀);
   A[0] = F₀ / Q₀₀;
