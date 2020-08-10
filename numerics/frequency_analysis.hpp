@@ -60,11 +60,10 @@ template<int degree_,
          typename Dot,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
-Projection(
-    AngularFrequency const& ω,
-    Function const& function,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Dot const& dot);
+Projection(AngularFrequency const& ω,
+           Function const& function,
+           PoissonSeries<double, wdegree_, Evaluator> const& weight,
+           Dot const& dot);
 
 }  // namespace internal_frequency_analysis
 

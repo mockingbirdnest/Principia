@@ -161,11 +161,10 @@ template<int degree_,
          typename Dot,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
-Projection(
-    AngularFrequency const& ω,
-    Function const& function,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Dot const& dot) {
+Projection(AngularFrequency const& ω,
+           Function const& function,
+           PoissonSeries<double, wdegree_, Evaluator> const& weight,
+           Dot const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
@@ -176,7 +175,7 @@ Projection(
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
   // of Кудрявцев which start at 1.
   FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
-  std::vector<decltype(std::declval<Function>() - basis[0])> f;
+  std::vector<decltype(std::declval<Function>() - std::declval<Series>())> f;
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
