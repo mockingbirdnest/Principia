@@ -36,7 +36,6 @@ AngularFrequencyPrimitive(
     AngularFrequency const& ω,
     typename PoissonSeries<Value, degree_, Evaluator>::Polynomials const&
         polynomials) {
-  using Argument = PoissonSeries<Value, degree_, Evaluator>;
   using Result = PoissonSeries<Primitive<Value, Time>, degree_ + 1, Evaluator>;
 
   // Integration by parts.
@@ -498,6 +497,26 @@ Value PiecewisePoissonSeries<Value, degree_, Evaluator>::operator()(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+template<typename V, int d, template<typename, typename, int> class E>
+PiecewisePoissonSeries<Value, degree_, Evaluator>&
+PiecewisePoissonSeries<Value, degree_, Evaluator>::operator+=(
+    PoissonSeries<V, d, E> const& right) {
+  *this = *this + right;
+  return *this;
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+template<typename V, int d, template<typename, typename, int> class E>
+PiecewisePoissonSeries<Value, degree_, Evaluator>&
+PiecewisePoissonSeries<Value, degree_, Evaluator>::operator-=(
+    PoissonSeries<V, d, E> const& right) {
+  *this = *this - right;
+  return *this;
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries(
     std::vector<Instant> const& bounds,
     std::vector<PoissonSeries<Value, degree_, Evaluator>> const& series)
@@ -658,6 +677,18 @@ Product<LValue, RValue> Dot(
     PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+  return Dot(left, right, weight, right.t_min(), right.t_max());
+}
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+Product<LValue, RValue> Dot(
+    PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) {
   using Result = Primitive<Product<LValue, RValue>, Time>;
   Result result;
   for (int i = 0; i < right.series_.size(); ++i) {
@@ -665,7 +696,7 @@ Product<LValue, RValue> Dot(
     auto const primitive = integrand.Primitive();
     result += primitive(right.bounds_[i + 1]) - primitive(right.bounds_[i]);
   }
-  return result / (right.t_max() - right.t_min());
+  return result / (t_max - t_min);
 }
 
 template<typename LValue, typename RValue,
@@ -675,6 +706,18 @@ Product<LValue, RValue> Dot(
     PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+  return Dot(left, right, weight, left.t_min(), left.t_max());
+}
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+Product<LValue, RValue> Dot(
+    PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) {
   using Result = Primitive<Product<LValue, RValue>, Time>;
   Result result;
   for (int i = 0; i < left.series_.size(); ++i) {
@@ -682,7 +725,7 @@ Product<LValue, RValue> Dot(
     auto const primitive = integrand.Primitive();
     result += primitive(left.bounds_[i + 1]) - primitive(left.bounds_[i]);
   }
-  return result / (left.t_max() - left.t_min());
+  return result / (t_max - t_min);
 }
 
 }  // namespace internal_poisson_series

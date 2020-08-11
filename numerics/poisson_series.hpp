@@ -209,6 +209,11 @@ class PiecewisePoissonSeries {
   // t must be in the interval [t_min, t_max[.
   Value operator()(Instant const& t) const;
 
+  template<typename V, int d, template<typename, typename, int> class E>
+  PiecewisePoissonSeries& operator+=(PoissonSeries<V, d, E> const& right);
+  template<typename V, int d, template<typename, typename, int> class E>
+  PiecewisePoissonSeries& operator-=(PoissonSeries<V, d, E> const& right);
+
  private:
   PiecewisePoissonSeries(std::vector<Instant> const& bounds,
                          std::vector<Series> const& series);
@@ -265,13 +270,17 @@ class PiecewisePoissonSeries {
   Product<L, R>
   friend Dot(PoissonSeries<L, l, E> const& left,
              PiecewisePoissonSeries<R, r, E> const& right,
-             PoissonSeries<double, w, E> const& weight);
+             PoissonSeries<double, w, E> const& weight,
+             Instant const& t_min,
+             Instant const& t_max);
   template<typename L, typename R, int l, int r, int w,
            template<typename, typename, int> class E>
   Product<L, R>
   friend Dot(PiecewisePoissonSeries<L, l, E> const& left,
              PoissonSeries<R, r, E> const& right,
-             PoissonSeries<double, w, E> const& weight);
+             PoissonSeries<double, w, E> const& weight,
+             Instant const& t_min,
+             Instant const& t_max);
 };
 
 // Some of the vector space operations for piecewise Poisson series.  Note that
@@ -360,9 +369,29 @@ template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
 Product<LValue, RValue>
+Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max);
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+Product<LValue, RValue>
 Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight);
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+Product<LValue, RValue>
+Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max);
 
 }  // namespace internal_poisson_series
 
