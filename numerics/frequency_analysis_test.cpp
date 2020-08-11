@@ -27,6 +27,7 @@ using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Pow;
+using quantities::Product;
 using quantities::Sin;
 using quantities::Square;
 using quantities::Time;
@@ -37,7 +38,40 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_⑴;
+using ::testing::AllOf;
+using ::testing::Gt;
+using ::testing::Lt;
 namespace si = quantities::si;
+
+class DotImplementation {
+ public:
+  DotImplementation(Instant const& t_min, Instant const& t_max);
+
+  template<typename LFunction, typename RFunction, typename Weight>
+  Product<std::invoke_result_t<LFunction, Instant>,
+          std::invoke_result_t<RFunction, Instant>>
+  operator()(LFunction const& left,
+             RFunction const& right,
+             Weight const& weight) const;
+
+ private:
+  Instant const t_min_;
+  Instant const t_max_;
+};
+
+DotImplementation::DotImplementation(Instant const& t_min,
+                                     Instant const& t_max)
+    : t_min_(t_min),
+      t_max_(t_max) {}
+
+template<typename LFunction, typename RFunction, typename Weight>
+Product<std::invoke_result_t<LFunction, Instant>,
+        std::invoke_result_t<RFunction, Instant>>
+DotImplementation::operator()(LFunction const& left,
+                  RFunction const& right,
+                  Weight const& weight) const {
+  return Dot(left, right, weight, t_min_, t_max_);
+}
 
 class FrequencyAnalysisTest : public ::testing::Test {};
 
@@ -86,16 +120,7 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
   EXPECT_THAT(mode.midpoint(),
               RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
 
-  using Double = PoissonSeries<double, 0, HornerEvaluator>;
-
-  std::function<Length(Series const& left,
-                       Double const& right,
-                       Double const& weight)> const dot =
-    [t_min, t_max](Series const& left,
-                   Double const& right,
-                   Double const& weight) {
-    return Dot(left, right, weight, t_min, t_max);
-  };
+  DotImplementation dot(t_min, t_max);
 
   // The precise analysis is only limited by our ability to pinpoint the
   // maximum.
@@ -131,24 +156,31 @@ TEST_F(FrequencyAnalysisTest, Projection) {
 
   Instant const t_min = t0;
   Instant const t_max = t0 + 100 * Radian / ω;
+  DotImplementation dot(t_min, t_max);
 
-  using Double = PoissonSeries<double, 0, HornerEvaluator>;
-
-  std::function<Square<Length>(Series const& left,
-                               Series const& right,
-                               Double const& weight)> const dot =
-    [t_min, t_max](Series const& left,
-                   Series const& right,
-                   Double const& weight) {
-    return Dot(left, right, weight, t_min, t_max);
-  };
-
-  auto const projection = Projection(
-      ω, series, apodization::Dirichlet<HornerEvaluator>(t_min, t_max), dot);
-
+  // Projection on a 4-th degree basis accurately reconstructs the function.
+  auto const projection4 = Projection<4>(
+      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
-    EXPECT_THAT(projection(t0 + i * Radian / ω),
-                AlmostEquals(series(t0 + i * Radian / ω), 0, 2432));
+    EXPECT_THAT(projection4(t0 + i * Radian / ω),
+                AlmostEquals(series(t0 + i * Radian / ω), 0, 2688));
+  }
+
+  // Projection on a 5-th degree basis is also accurate.
+  auto const projection5 = Projection<5>(
+      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  for (int i = 0; i <= 100; ++i) {
+    EXPECT_THAT(projection5(t0 + i * Radian / ω),
+                AlmostEquals(series(t0 + i * Radian / ω), 0, 8000));
+  }
+
+  // Projection on a 3-rd degree basis introduces significant errors.
+  auto const projection3 = Projection<3>(
+      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  for (int i = 0; i <= 100; ++i) {
+    EXPECT_THAT(projection3(t0 + i * Radian / ω),
+                RelativeErrorFrom(series(t0 + i * Radian / ω),
+                                  AllOf(Gt(3.6e-13), Lt(9.0e-6))));
   }
 }
 

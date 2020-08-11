@@ -133,18 +133,20 @@ PoissonSeries<Value, degree_, Evaluator>::Primitive() const {
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+template<typename V, int d, template<typename, typename, int> class E>
 PoissonSeries<Value, degree_, Evaluator>&
 PoissonSeries<Value, degree_, Evaluator>::operator+=(
-    PoissonSeries const& right) {
+    PoissonSeries<V, d, E> const& right) {
   *this = *this + right;
   return *this;
 }
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+template<typename V, int d, template<typename, typename, int> class E>
 PoissonSeries<Value, degree_, Evaluator>&
 PoissonSeries<Value, degree_, Evaluator>::operator-=(
-    PoissonSeries const& right) {
+    PoissonSeries<V, d, E> const& right) {
   *this = *this - right;
   return *this;
 }
@@ -192,10 +194,22 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
                         ? Infinity<AngularFrequency>
                         : it_right->first;
     if (ωl < ωr) {
-      periodic.insert(periodic.cend(), *it_left);
+      auto const& polynomials_left = it_left->second;
+      periodic.emplace_hint(
+          periodic.cend(),
+          ωl,
+          typename Result::Polynomials{
+              /*sin=*/typename Result::Polynomial(polynomials_left.sin),
+              /*cos=*/typename Result::Polynomial(polynomials_left.cos)});
       ++it_left;
     } else if (ωr < ωl) {
-      periodic.insert(periodic.cend(), *it_right);
+      auto const& polynomials_right = it_right->second;
+      periodic.emplace_hint(
+          periodic.cend(),
+          ωr,
+          typename Result::Polynomials{
+              /*sin=*/typename Result::Polynomial(polynomials_right.sin),
+              /*cos=*/typename Result::Polynomial(polynomials_right.cos)});
       ++it_right;
     } else {
       DCHECK_EQ(ωl, ωr);
@@ -233,15 +247,22 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
                         ? Infinity<AngularFrequency>
                         : it_right->first;
     if (ωl < ωr) {
-      periodic.insert(periodic.cend(), *it_left);
+      auto const& polynomials_left = it_left->second;
+      periodic.emplace_hint(
+          periodic.cend(),
+          ωl,
+          typename Result::Polynomials{
+              /*sin=*/typename Result::Polynomial(polynomials_left.sin),
+              /*cos=*/typename Result::Polynomial(polynomials_left.cos)});
       ++it_left;
     } else if (ωr < ωl) {
       auto const& polynomials_right = it_right->second;
       periodic.emplace_hint(
           periodic.cend(),
           ωr,
-          typename Result::Polynomials{/*sin=*/-polynomials_right.sin,
-                                       /*cos=*/-polynomials_right.cos});
+          typename Result::Polynomials{
+              /*sin=*/typename Result::Polynomial(-polynomials_right.sin),
+              /*cos=*/typename Result::Polynomial(-polynomials_right.cos)});
       ++it_right;
     } else {
       DCHECK_EQ(ωl, ωr);

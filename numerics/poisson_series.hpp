@@ -56,8 +56,10 @@ class PoissonSeries {
   PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
   Primitive() const;
 
-  PoissonSeries& operator+=(PoissonSeries const& right);
-  PoissonSeries& operator-=(PoissonSeries const& right);
+  template<typename V, int d, template<typename, typename, int> class E>
+  PoissonSeries& operator+=(PoissonSeries<V, d, E> const& right);
+  template<typename V, int d, template<typename, typename, int> class E>
+  PoissonSeries& operator-=(PoissonSeries<V, d, E> const& right);
 
  private:
   Instant origin_;  // Common to all polynomials.

@@ -124,12 +124,13 @@ BasisGenerator<Series, std::index_sequence<indices...>>::Basis(
 
 template<typename Function,
          int wdegree_,
+         typename Dot,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    DotProduct<Function, double, 0, wdegree_, Evaluator> const& dot) {
+    Dot const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Degree0 = PoissonSeries<double, 0, Evaluator>;
 
@@ -154,16 +155,16 @@ AngularFrequency PreciseMode(
                              std::greater<Square<Value>>());
 }
 
-template<typename Function,
-         int degree_, int wdegree_,
+template<int degree_,
+         typename Function,
+         int wdegree_,
+         typename Dot,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
-Projection(
-    AngularFrequency const& ω,
-    Function const& function,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    DotProduct<Function, std::invoke_result_t<Function, Instant>,
-               degree_, wdegree_, Evaluator> const& dot) {
+Projection(AngularFrequency const& ω,
+           Function const& function,
+           PoissonSeries<double, wdegree_, Evaluator> const& weight,
+           Dot const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
@@ -174,22 +175,21 @@ Projection(
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
   // of Кудрявцев which start at 1.
   FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
-  std::vector<Function> f;
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
   std::array<double, basis_size> A;
 
   auto const F₀ = dot(function, basis[0], weight);
-  // TODO(phl): This does not work if basis does not have the same type as
-  // Function, i.e., if the degrees don't match.
   auto const Q₀₀ = dot(basis[0], basis[0], weight);
   α[0][0] = 1 / Sqrt(Q₀₀);
   A[0] = F₀ / Q₀₀;
-  f.emplace_back(function - A[0] * basis[0]);
+
+  // At the beginning of iteration m this contains fₘ₋₁.
+  auto f = function - A[0] * basis[0];
   for (int m = 1; m < basis_size; ++m) {
     // Contains Fₘ.
-    auto const F = dot(f[m - 1], basis[m], weight);
+    auto const F = dot(f, basis[m], weight);
 
     // Only indices 0 to m are used in this array.  It contains Qₘⱼ.
     std::array<Square<Value>, basis_size> Q;
@@ -231,12 +231,11 @@ Projection(
     }
 
     {
-      PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ =
-          α[m][0] * basis[0];
+      PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ = α[m][0] * basis[0];
       for (int i = 1; i <= m; ++i) {
         Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
       }
-      f.emplace_back(f[m - 1] - α[m][m] * F * Σ_αₘᵢ_eᵢ);
+      f -= α[m][m] * F * Σ_αₘᵢ_eᵢ;
     }
   }
 
