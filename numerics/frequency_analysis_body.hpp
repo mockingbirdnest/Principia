@@ -79,7 +79,7 @@ typename Series::Polynomial SeriesGenerator<Series, n>::Unit(
   typename Series::Polynomial::Coefficients coefficients;
   std::get<n>(coefficients) = si::Unit<
       std::tuple_element_t<n, typename Series::Polynomial::Coefficients>>;
-  return Series::Polynomial(coefficients, origin);
+  return typename Series::Polynomial(coefficients, origin);
 }
 
 template<typename Series, std::size_t... indices>
