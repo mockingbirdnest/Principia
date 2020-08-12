@@ -194,7 +194,7 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   using PiecewiseSeries = PiecewisePoissonSeries<Length, 4, HornerEvaluator>;
 
   auto random_polynomial =
-      [&random, &t0](std::uniform_real_distribution<> const distribution) {
+      [&random, &t0](std::uniform_real_distribution<>& distribution) {
         auto const c0 = distribution(random) * Metre;
         auto const c1 = distribution(random) * Metre / Second;
         auto const c2 = distribution(random) * Metre / Pow<2>(Second);
