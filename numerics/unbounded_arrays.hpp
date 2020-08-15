@@ -32,6 +32,7 @@ class UnboundedVector final {
 
   void Extend(int extra_size);
   void Extend(int extra_size, uninitialized_t);
+  void Extend(std::initializer_list<Scalar> data);
 
   int size() const;
 
@@ -49,10 +50,15 @@ class UnboundedLowerTriangularMatrix final {
  public:
   UnboundedLowerTriangularMatrix(int rows);
   UnboundedLowerTriangularMatrix(int rows, uninitialized_t);
+
+  // The |data| must be in row-major format.
   UnboundedLowerTriangularMatrix(std::initializer_list<Scalar> data);
 
   void Extend(int extra_rows);
   void Extend(int extra_rows, uninitialized_t);
+
+  // The |data| must be in row-major format.
+  void Extend(std::initializer_list<Scalar> data);
 
   int rows() const;
   int dimension() const;

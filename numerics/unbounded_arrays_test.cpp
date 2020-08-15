@@ -69,5 +69,22 @@ TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
   EXPECT_EQ(-666, l4_[3][1]);
 }
 
+TEST_F(UnboundedArraysTest, Extend) {
+  UnboundedVector<double> u2({1, 2});
+  UnboundedVector<double> u4({1, 2, 3, 4});
+  u2.Extend({3, 4});
+  EXPECT_EQ(u2, u4);
+
+  UnboundedLowerTriangularMatrix<double> l3({1,
+                                             2, 3,
+                                             4, 5, 6});
+  UnboundedLowerTriangularMatrix<double> l4({1,
+                                             2, 3,
+                                             4, 5, 6,
+                                             7, 8, 9, 10});
+  l3.Extend({7, 8, 9, 10});
+  EXPECT_EQ(l3, l4);
+}
+
 }  // namespace numerics
 }  // namespace principia
