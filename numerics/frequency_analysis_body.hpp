@@ -211,8 +211,7 @@ IncrementalProjection(Function const& function,
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
-  std::vector<double> A;
-  A.resize(basis_size, 0);
+  UnboundedVector<double> A(basis_size, uninitialized);
 
   auto const F₀ = dot(function, basis[0], weight);
   auto const Q₀₀ = dot(basis[0], basis[0], weight);
@@ -229,15 +228,13 @@ IncrementalProjection(Function const& function,
       auto const F = dot(f, basis[m], weight);
 
       // This vector contains Qₘⱼ.
-      std::vector<Square<Value>> Q;
-      Q.resize(m + 1);
+      UnboundedVector<Square<Value>> Q(m + 1, uninitialized);
       for (int j = 0; j <= m; ++j) {
         Q[j] = dot(basis[m], basis[j], weight);
       }
 
       // This vector contains Bⱼ⁽ᵐ⁾.
-      std::vector<Value> B;
-      B.resize(m);
+      UnboundedVector<Value> B(m, uninitialized);
       for (int j = 0; j < m; ++j) {
         Value Σ_αⱼₛ_Qₘₛ{};
         for (int s = 0; s <= j; ++s) {
@@ -288,12 +285,13 @@ IncrementalProjection(Function const& function,
       return result;
     }
 
-    m_begin = basis_size;
     auto const ω_basis = BasisGenerator<Series>::Basis(ω.value(), t0);
-    basis_size += std::tuple_size_v<decltype(ω_basis)>;
+    constexpr int ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
-    α.Extend(basis_size);
-    A.resize(basis_size, 0);
+    α.Extend(ω_basis_size, uninitialized);
+    A.Extend(ω_basis_size, uninitialized);
+    m_begin = basis_size;
+    basis_size += ω_basis_size;
   }
 }
 
