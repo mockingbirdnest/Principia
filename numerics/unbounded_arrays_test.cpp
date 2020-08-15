@@ -9,12 +9,9 @@ namespace numerics {
 class UnboundedArraysTest : public ::testing::Test {
  protected:
   UnboundedArraysTest()
-    : v3_({10, 31, -47}),
-      v4_({-3, -3, 1, 4}),
-      l4_({ 1,
-            2,  3,
-            5,  8,  13,
-            21, 34, 55, 89}) {}
+      : v3_({10, 31, -47}),
+        v4_({-3, -3, 1, 4}),
+        l4_({1, 2, 3, 5, 8, 13, 21, 34, 55, 89}) {}
 
   UnboundedVector<double> v3_;
   UnboundedVector<double> v4_;
@@ -29,20 +26,12 @@ TEST_F(UnboundedArraysTest, Assignment) {
   EXPECT_EQ(u2, v2);
   EXPECT_EQ(u2, w2);
 
-  UnboundedLowerTriangularMatrix<double> l3({1,
-                                             2, 3,
-                                             4, 5, 6});
-  UnboundedLowerTriangularMatrix<double> m3 = {{1,
-                                                2, 3,
-                                                4, 5, 6}};
-  UnboundedLowerTriangularMatrix<double> n3 = {{0,
-                                                0, 0,
-                                                0, 0, 0}};
+  UnboundedLowerTriangularMatrix<double> l3({1, 2, 3, 4, 5, 6});
+  UnboundedLowerTriangularMatrix<double> m3 = {{1, 2, 3, 4, 5, 6}};
+  UnboundedLowerTriangularMatrix<double> n3 = {{0, 0, 0, 0, 0, 0}};
   UnboundedLowerTriangularMatrix<double> o3(3);
   EXPECT_EQ(o3, n3);
-  n3 = {{1,
-         2, 3,
-         4, 5, 6}};
+  n3 = {{1, 2, 3, 4, 5, 6}};
   EXPECT_EQ(l3, m3);
   EXPECT_EQ(l3, n3);
 }
@@ -75,13 +64,8 @@ TEST_F(UnboundedArraysTest, Extend) {
   u2.Extend({3, 4});
   EXPECT_EQ(u2, u4);
 
-  UnboundedLowerTriangularMatrix<double> l3({1,
-                                             2, 3,
-                                             4, 5, 6});
-  UnboundedLowerTriangularMatrix<double> l4({1,
-                                             2, 3,
-                                             4, 5, 6,
-                                             7, 8, 9, 10});
+  UnboundedLowerTriangularMatrix<double> l3({1, 2, 3, 4, 5, 6});
+  UnboundedLowerTriangularMatrix<double> l4({1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
   l3.Extend({7, 8, 9, 10});
   EXPECT_EQ(l3, l4);
 }
