@@ -9,6 +9,8 @@ namespace principia {
 namespace numerics {
 namespace internal_unbounded_arrays {
 
+using base::uninitialized;
+
 template<typename Scalar>
 UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
     int const rows)
@@ -20,7 +22,7 @@ UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
     int const rows,
     uninitialized_t)
     : rows_(rows),
-      data_(rows_ * (rows_ + 1) / 2, Scalar{uninitialized_t}) {}
+      data_(rows_ * (rows_ + 1) / 2, Scalar{uninitialized}) {}
 
 template<typename Scalar>
 void UnboundedLowerTriangularMatrix<Scalar>::Extend(int const rows) {
@@ -32,7 +34,7 @@ template<typename Scalar>
 void UnboundedLowerTriangularMatrix<Scalar>::Extend(int const rows,
                                                     uninitialized_t) {
   rows_ += rows;
-  data_.resize(rows_ * (rows_ + 1) / 2, Scalar{uninitialized_t});
+  data_.resize(rows_ * (rows_ + 1) / 2, Scalar{uninitialized});
 }
 
 template<typename Scalar>

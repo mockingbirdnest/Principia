@@ -228,14 +228,16 @@ IncrementalProjection(Function const& function,
       // Contains Fₘ.
       auto const F = dot(f, basis[m], weight);
 
-      // Only indices 0 to m are used in this array.  It contains Qₘⱼ.
-      std::array<Square<Value>, basis_size> Q;
+      // This vector contains Qₘⱼ.
+      std::vector<Square<Value>> Q;
+      Q.resize(m + 1);
       for (int j = 0; j <= m; ++j) {
         Q[j] = dot(basis[m], basis[j], weight);
       }
 
-      // Only indices 0 to m - 1 are used in this array.  It contains Bⱼ⁽ᵐ⁾.
-      std::array<Value, basis_size> B;
+      // This vector contains Bⱼ⁽ᵐ⁾.
+      std::vector<Value> B;
+      B.resize(m);
       for (int j = 0; j < m; ++j) {
         Value Σ_αⱼₛ_Qₘₛ{};
         for (int s = 0; s <= j; ++s) {
