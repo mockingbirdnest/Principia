@@ -56,8 +56,7 @@ AngularFrequency PreciseMode(
 // TODO(phl): We really need multiple angular frequencies.
 template<int degree_,
          typename Function,
-         int wdegree_,
-         typename Dot,
+         int wdegree_, typename Dot,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 Projection(AngularFrequency const& ω,

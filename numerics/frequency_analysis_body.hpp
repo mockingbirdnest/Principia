@@ -157,6 +157,30 @@ AngularFrequency PreciseMode(
 
 template<int degree_,
          typename Function,
+         int wdegree_, typename Dot,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
+Projection(AngularFrequency const& ω,
+           Function const& function,
+           PoissonSeries<double, wdegree_, Evaluator> const& weight,
+           Dot const& dot) {
+  std::optional optional_ω = ω;
+
+  // A calculator that returns optional_ω once and then stops.
+  auto angular_frequency_calculator = [&optional_ω](auto const& residual) {
+    auto const result = optional_ω;
+    optional_ω = std::nullopt;
+    return result;
+  };
+
+  return IncrementalProjection<degree_>(function,
+                                        angular_frequency_calculator,
+                                        weight,
+                                        dot);
+}
+
+template<int degree_,
+         typename Function,
          typename AngularFrequencyCalculator, int wdegree_, typename Dot,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
@@ -171,26 +195,31 @@ IncrementalProjection(Function const& function,
   // of Кудрявцев which start at 1.
 
   Instant const& t0 = weight.origin();
+
   std::optional<AngularFrequency> ω = calculator(function);
-  while (ω.has_value()) {
+  CHECK(ω.has_value());
 
-    auto const basis = BasisGenerator<Series>::Basis(ω, t0);
-    constexpr int basis_size = std::tuple_size_v<decltype(basis)>;
+  auto const basis = BasisGenerator<Series>::Basis(ω.value(), t0);
+  constexpr int basis_size = std::tuple_size_v<decltype(basis)>;
 
-    FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
+  FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
 
-    // Only indices 0 to m - 1 are used in this array.  At the beginning of
-    // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
-    std::array<double, basis_size> A;
+  // Only indices 0 to m - 1 are used in this array.  At the beginning of
+  // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
+  std::array<double, basis_size> A;
 
-    auto const F₀ = dot(function, basis[0], weight);
-    auto const Q₀₀ = dot(basis[0], basis[0], weight);
-    α[0][0] = 1 / Sqrt(Q₀₀);
-    A[0] = F₀ / Q₀₀;
+  auto const F₀ = dot(function, basis[0], weight);
+  auto const Q₀₀ = dot(basis[0], basis[0], weight);
+  α[0][0] = 1 / Sqrt(Q₀₀);
+  A[0] = F₀ / Q₀₀;
 
-    // At the beginning of iteration m this contains fₘ₋₁.
-    auto f = function - A[0] * basis[0];
-    for (int m = 1; m < basis_size; ++m) {
+  // At the beginning of iteration m this contains fₘ₋₁.
+  auto f = function - A[0] * basis[0];
+
+  int m_begin = 1;
+  int m_end = basis_size;
+  for (;;) {
+    for (int m = m_begin; m < m_end; ++m) {
       // Contains Fₘ.
       auto const F = dot(f, basis[m], weight);
 
@@ -248,7 +277,16 @@ IncrementalProjection(Function const& function,
     }
 
     ω = calculator(residual);
+    if (!ω.has_value()) {
+      return;
+    }
+
+    basis += BasisGenerator<Series>::Basis(ω.value(), t0);
+    basis_size += std::tuple_size_v<decltype(basis)>;
+    m_begin = m_end;
+    m_end = basis_size;
   }
+
   return result;
 }
 
