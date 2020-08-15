@@ -7,8 +7,9 @@
 #include <functional>
 #include <vector>
 
-#include "numerics/fixed_arrays.hpp"
+#include "base/tags.hpp"
 #include "numerics/root_finders.hpp"
+#include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
@@ -17,6 +18,7 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
+using base::uninitialized;
 using quantities::Inverse;
 using quantities::Sqrt;
 using quantities::Square;
@@ -205,7 +207,7 @@ IncrementalProjection(Function const& function,
   int basis_size = std::tuple_size_v<decltype(ω_basis)>;
   std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
 
-  FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
+  UnboundedLowerTriangularMatrix<Inverse<Value>> α(basis_size, uninitialized);
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
