@@ -5,7 +5,6 @@
 
 #include <cmath>
 
-#include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
