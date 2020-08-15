@@ -65,6 +65,16 @@ Projection(AngularFrequency const& ω,
            PoissonSeries<double, wdegree_, Evaluator> const& weight,
            Dot const& dot);
 
+template<int degree_,
+         typename Function,
+         typename AngularFrequencyCalculator, int wdegree_, typename Dot,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
+IncrementalProjection(Function const& function,
+                      AngularFrequencyCalculator const& calculator,
+                      PoissonSeries<double, wdegree_, Evaluator> const& weight,
+                      Dot const& dot);
+
 }  // namespace internal_frequency_analysis
 
 using internal_frequency_analysis::PreciseMode;

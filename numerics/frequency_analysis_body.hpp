@@ -157,91 +157,97 @@ AngularFrequency PreciseMode(
 
 template<int degree_,
          typename Function,
-         int wdegree_,
-         typename Dot,
+         typename AngularFrequencyCalculator, int wdegree_, typename Dot,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
-Projection(AngularFrequency const& ω,
-           Function const& function,
-           PoissonSeries<double, wdegree_, Evaluator> const& weight,
-           Dot const& dot) {
+IncrementalProjection(Function const& function,
+                      AngularFrequencyCalculator const& calculator,
+                      PoissonSeries<double, wdegree_, Evaluator> const& weight,
+                      Dot const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
-  Instant const& t0 = weight.origin();
-  auto const basis = BasisGenerator<Series>::Basis(ω, t0);
-  constexpr int basis_size = std::tuple_size_v<decltype(basis)>;
-
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
   // of Кудрявцев which start at 1.
-  FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
 
-  // Only indices 0 to m - 1 are used in this array.  At the beginning of
-  // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
-  std::array<double, basis_size> A;
+  Instant const& t0 = weight.origin();
+  std::optional<AngularFrequency> ω = calculator(function);
+  while (ω.has_value()) {
 
-  auto const F₀ = dot(function, basis[0], weight);
-  auto const Q₀₀ = dot(basis[0], basis[0], weight);
-  α[0][0] = 1 / Sqrt(Q₀₀);
-  A[0] = F₀ / Q₀₀;
+    auto const basis = BasisGenerator<Series>::Basis(ω, t0);
+    constexpr int basis_size = std::tuple_size_v<decltype(basis)>;
 
-  // At the beginning of iteration m this contains fₘ₋₁.
-  auto f = function - A[0] * basis[0];
-  for (int m = 1; m < basis_size; ++m) {
-    // Contains Fₘ.
-    auto const F = dot(f, basis[m], weight);
+    FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
 
-    // Only indices 0 to m are used in this array.  It contains Qₘⱼ.
-    std::array<Square<Value>, basis_size> Q;
-    for (int j = 0; j <= m; ++j) {
-      Q[j] = dot(basis[m], basis[j], weight);
-    }
+    // Only indices 0 to m - 1 are used in this array.  At the beginning of
+    // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
+    std::array<double, basis_size> A;
 
-    // Only indices 0 to m - 1 are used in this array.  It contains Bⱼ⁽ᵐ⁾.
-    std::array<Value, basis_size> B;
-    for (int j = 0; j < m; ++j) {
-      Value Σ_αⱼₛ_Qₘₛ{};
-      for (int s = 0; s <= j; ++s) {
-        Σ_αⱼₛ_Qₘₛ += α[j][s] * Q[s];
+    auto const F₀ = dot(function, basis[0], weight);
+    auto const Q₀₀ = dot(basis[0], basis[0], weight);
+    α[0][0] = 1 / Sqrt(Q₀₀);
+    A[0] = F₀ / Q₀₀;
+
+    // At the beginning of iteration m this contains fₘ₋₁.
+    auto f = function - A[0] * basis[0];
+    for (int m = 1; m < basis_size; ++m) {
+      // Contains Fₘ.
+      auto const F = dot(f, basis[m], weight);
+
+      // Only indices 0 to m are used in this array.  It contains Qₘⱼ.
+      std::array<Square<Value>, basis_size> Q;
+      for (int j = 0; j <= m; ++j) {
+        Q[j] = dot(basis[m], basis[j], weight);
       }
-      B[j] = -Σ_αⱼₛ_Qₘₛ;
-    }
 
-    {
-      Square<Value> Σ_Bₛ⁽ᵐ⁾²{};
-      for (int s = 0; s < m; ++s) {
-        Σ_Bₛ⁽ᵐ⁾² += B[s] * B[s];
+      // Only indices 0 to m - 1 are used in this array.  It contains Bⱼ⁽ᵐ⁾.
+      std::array<Value, basis_size> B;
+      for (int j = 0; j < m; ++j) {
+        Value Σ_αⱼₛ_Qₘₛ{};
+        for (int s = 0; s <= j; ++s) {
+          Σ_αⱼₛ_Qₘₛ += α[j][s] * Q[s];
+        }
+        B[j] = -Σ_αⱼₛ_Qₘₛ;
       }
-      DCHECK_LE(Σ_Bₛ⁽ᵐ⁾², Q[m]);
-      α[m][m] = 1 / Sqrt(Q[m] - Σ_Bₛ⁽ᵐ⁾²);
-    }
 
-    for (int j = 0; j < m; ++j) {
-      double Σ_Bₛ⁽ᵐ⁾_αₛⱼ = 0;
-      for (int s = j; s < m; ++s) {
-        Σ_Bₛ⁽ᵐ⁾_αₛⱼ += B[s] * α[s][j];
+      {
+        Square<Value> Σ_Bₛ⁽ᵐ⁾²{};
+        for (int s = 0; s < m; ++s) {
+          Σ_Bₛ⁽ᵐ⁾² += B[s] * B[s];
+        }
+        DCHECK_LE(Σ_Bₛ⁽ᵐ⁾², Q[m]);
+        α[m][m] = 1 / Sqrt(Q[m] - Σ_Bₛ⁽ᵐ⁾²);
       }
-      α[m][j] = α[m][m] * Σ_Bₛ⁽ᵐ⁾_αₛⱼ;
-    }
 
-    A[m] = α[m][m] * α[m][m] * F;
-
-    for (int j = 0; j < m; ++j) {
-      A[j] += α[m][m] * α[m][j] * F;
-    }
-
-    {
-      PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ = α[m][0] * basis[0];
-      for (int i = 1; i <= m; ++i) {
-        Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
+      for (int j = 0; j < m; ++j) {
+        double Σ_Bₛ⁽ᵐ⁾_αₛⱼ = 0;
+        for (int s = j; s < m; ++s) {
+          Σ_Bₛ⁽ᵐ⁾_αₛⱼ += B[s] * α[s][j];
+        }
+        α[m][j] = α[m][m] * Σ_Bₛ⁽ᵐ⁾_αₛⱼ;
       }
-      f -= α[m][m] * F * Σ_αₘᵢ_eᵢ;
-    }
-  }
 
-  PoissonSeries<Value, degree_, Evaluator> result = A[0] * basis[0];
-  for (int i = 1; i < basis_size; ++i) {
-    result += A[i] * basis[i];
+      A[m] = α[m][m] * α[m][m] * F;
+
+      for (int j = 0; j < m; ++j) {
+        A[j] += α[m][m] * α[m][j] * F;
+      }
+
+      {
+        PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ = α[m][0] * basis[0];
+        for (int i = 1; i <= m; ++i) {
+          Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
+        }
+        f -= α[m][m] * F * Σ_αₘᵢ_eᵢ;
+      }
+    }
+
+    PoissonSeries<Value, degree_, Evaluator> residual = A[0] * basis[0];
+    for (int i = 1; i < basis_size; ++i) {
+      residual += A[i] * basis[i];
+    }
+
+    ω = calculator(residual);
   }
   return result;
 }
