@@ -235,6 +235,9 @@
     <ClCompile Include="frequency_analysis_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="unbounded_arrays_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
