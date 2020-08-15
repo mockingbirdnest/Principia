@@ -88,6 +88,7 @@
     <ClCompile Include="polynomial_evaluators_test.cpp" />
     <ClCompile Include="polynomial_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />
+    <ClCompile Include="unbounded_arrays_test.cpp" />
     <ClCompile Include="чебышёв_series_test.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -1,15 +1,19 @@
 
 #pragma once
 
+#include "numerics/unbounded_arrays.hpp"
+
 #include <cmath>
 
 #include "numerics/unbounded_arrays.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_unbounded_arrays {
 
 using base::uninitialized;
+using quantities::Sqrt;
 
 template<class T>
 template<class U, class... Args>
@@ -22,6 +26,10 @@ UnboundedVector<Scalar>::UnboundedVector(int const size)
 template<typename Scalar>
 UnboundedVector<Scalar>::UnboundedVector(int const size, uninitialized_t)
     : data_(size)  {}
+
+template<typename Scalar>
+UnboundedVector<Scalar>::UnboundedVector(std::initializer_list<Scalar> data)
+    : data_(std::move(data)) {}
 
 template<typename Scalar>
 void UnboundedVector<Scalar>::Extend(int const extra_size) {
@@ -67,6 +75,14 @@ UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
     uninitialized_t)
     : rows_(rows),
       data_(rows_ * (rows_ + 1) / 2) {}
+
+template<typename Scalar>
+UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
+    std::initializer_list<Scalar> data)
+    : rows_(static_cast<int>(std::lround((-1 + Sqrt(8 * data.size())) * 0.5))),
+      data_(std::move(data)) {
+  DCHECK_EQ(data_.size(), rows_ * (rows_ + 1) / 2);
+}
 
 template<typename Scalar>
 void UnboundedLowerTriangularMatrix<Scalar>::Extend(int const extra_rows) {

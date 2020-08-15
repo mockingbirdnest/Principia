@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <initializer_list>
 #include <vector>
 
 #include "base/tags.hpp"
@@ -19,11 +20,15 @@ class uninitialized_allocator : public std::allocator<T> {
   void construct(U* p, Args&&... args);
 };
 
+// The following classes are similar to those in fixed_arrays.hpp, but they have
+// an Extend method to add more entries to the arrays.
+
 template<typename Scalar>
 class UnboundedVector final {
  public:
   UnboundedVector(int size);
   UnboundedVector(int size, uninitialized_t);
+  UnboundedVector(std::initializer_list<Scalar> data);
 
   void Extend(int extra_size);
   void Extend(int extra_size, uninitialized_t);
@@ -44,6 +49,7 @@ class UnboundedLowerTriangularMatrix final {
  public:
   UnboundedLowerTriangularMatrix(int rows);
   UnboundedLowerTriangularMatrix(int rows, uninitialized_t);
+  UnboundedLowerTriangularMatrix(std::initializer_list<Scalar> data);
 
   void Extend(int extra_rows);
   void Extend(int extra_rows, uninitialized_t);
