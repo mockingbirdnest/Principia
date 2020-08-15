@@ -149,6 +149,12 @@
     <ClInclude Include="frequency_analysis_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="unbounded_arrays.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="unbounded_arrays_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
