@@ -57,6 +57,8 @@
     <ClInclude Include="ulp_distance.hpp" />
     <ClInclude Include="ulp_distance_body.hpp" />
     <ClInclude Include="apodization.hpp" />
+    <ClInclude Include="unbounded_arrays.hpp" />
+    <ClInclude Include="unbounded_arrays_body.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>

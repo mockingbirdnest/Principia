@@ -232,6 +232,7 @@ bool FixedLowerTriangularMatrix<Scalar, rows>::operator==(
 template<typename Scalar, int rows>
 Scalar* FixedLowerTriangularMatrix<Scalar, rows>::operator[](
     int const index) {
+  DCHECK_LT(index, rows);
   return &data_[index * (index + 1) / 2];
 }
 
@@ -239,6 +240,7 @@ template<typename Scalar, int rows>
 constexpr Scalar const*
 FixedLowerTriangularMatrix<Scalar, rows>::operator[](
     int const index) const {
+  DCHECK_LT(index, rows);
   return &data_[index * (index + 1) / 2];
 }
 
