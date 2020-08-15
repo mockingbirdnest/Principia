@@ -44,6 +44,11 @@ void UnboundedVector<Scalar>::Extend(int const extra_size, uninitialized_t) {
 }
 
 template<typename Scalar>
+void UnboundedVector<Scalar>::Extend(std::initializer_list<Scalar> data) {
+  std::move(data.begin(), data.end(), std::back_inserter(data_));
+}
+
+template<typename Scalar>
 int UnboundedVector<Scalar>::size() const {
   return data_.size();
 }
@@ -95,6 +100,14 @@ void UnboundedLowerTriangularMatrix<Scalar>::Extend(int const extra_rows,
                                                     uninitialized_t) {
   rows_ += extra_rows;
   data_.resize(rows_ * (rows_ + 1) / 2);
+}
+
+template<typename Scalar>
+void UnboundedLowerTriangularMatrix<Scalar>::Extend(
+    std::initializer_list<Scalar> data) {
+  std::move(data.begin(), data.end(), std::back_inserter(data_));
+  rows_ = static_cast<int>(std::lround((-1 + Sqrt(8 * data_.size())) * 0.5));
+  DCHECK_EQ(data_.size(), rows_ * (rows_ + 1) / 2);
 }
 
 template<typename Scalar>
