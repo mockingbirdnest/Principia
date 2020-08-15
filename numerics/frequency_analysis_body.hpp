@@ -199,14 +199,18 @@ IncrementalProjection(Function const& function,
   std::optional<AngularFrequency> ω = calculator(function);
   CHECK(ω.has_value());
 
-  auto const basis = BasisGenerator<Series>::Basis(ω.value(), t0);
-  constexpr int basis_size = std::tuple_size_v<decltype(basis)>;
+  std::vector<Series> basis;
+
+  auto const ω_basis = BasisGenerator<Series>::Basis(ω.value(), t0);
+  int basis_size = std::tuple_size_v<decltype(ω_basis)>;
+  std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
 
   FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
-  std::array<double, basis_size> A;
+  std::vector<double> A;
+  A.resize(basis_size, 0);
 
   auto const F₀ = dot(function, basis[0], weight);
   auto const Q₀₀ = dot(basis[0], basis[0], weight);
@@ -217,9 +221,8 @@ IncrementalProjection(Function const& function,
   auto f = function - A[0] * basis[0];
 
   int m_begin = 1;
-  int m_end = basis_size;
   for (;;) {
-    for (int m = m_begin; m < m_end; ++m) {
+    for (int m = m_begin; m < basis_size; ++m) {
       // Contains Fₘ.
       auto const F = dot(f, basis[m], weight);
 
@@ -271,23 +274,23 @@ IncrementalProjection(Function const& function,
       }
     }
 
-    PoissonSeries<Value, degree_, Evaluator> residual = A[0] * basis[0];
+    PoissonSeries<Value, degree_, Evaluator> result = A[0] * basis[0];
     for (int i = 1; i < basis_size; ++i) {
-      residual += A[i] * basis[i];
+      result += A[i] * basis[i];
     }
 
-    ω = calculator(residual);
+    ω = calculator(f);
     if (!ω.has_value()) {
-      return;
+      return result;
     }
 
-    basis += BasisGenerator<Series>::Basis(ω.value(), t0);
-    basis_size += std::tuple_size_v<decltype(basis)>;
-    m_begin = m_end;
-    m_end = basis_size;
+    m_begin = basis_size;
+    auto const ω_basis = BasisGenerator<Series>::Basis(ω.value(), t0);
+    basis_size += std::tuple_size_v<decltype(ω_basis)>;
+    std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+    α.Extend(basis_size);
+    A.resize(basis_size, 0);
   }
-
-  return result;
 }
 
 }  // namespace internal_frequency_analysis
