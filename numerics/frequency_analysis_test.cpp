@@ -1,6 +1,7 @@
 ﻿
 #include "numerics/frequency_analysis.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <random>
 #include <vector>
@@ -237,6 +238,60 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
     EXPECT_THAT(projection4(t0_ + i * Radian / ω),
                 RelativeErrorFrom(series(t0_ + i * Radian / ω),
                                   AllOf(Gt(2.1e-7), Lt(8.8e-4))));
+  }
+}
+
+TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjection) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> frequency_distribution(2000.0, 3000.0);
+
+  std::vector<AngularFrequency> ωs;
+  std::optional<Series4> series;
+  for (int i = 5; i >= 1; --i) {
+    std::uniform_real_distribution<> amplitude_distribution(-i, i);
+    ωs.push_back(frequency_distribution(random) * Radian / Second);
+    auto const sin = random_polynomial4_(t0_, random, amplitude_distribution);
+    auto const cos = random_polynomial4_(t0_, random, amplitude_distribution);
+    Series4 const s(
+        Series4::Polynomial(Series4::Polynomial::Coefficients{}, t0_),
+        {{ωs.back(), Series4::Polynomials{sin, cos}}});
+    if (series.has_value()) {
+      series.value() += s;
+    } else {
+      series = s;
+    }
+  }
+
+  Instant const t_min = t0_;
+  Instant const t_max =
+      t0_ + 100 * Radian / *std::max_element(ωs.cbegin(), ωs.cend());
+  DotImplementation const dot(t_min, t_max);
+
+  // A perfect calculator for the frequencies of the series.
+  int ω_index = 0;
+  auto angular_frequency_calculator =
+      [&series, t_min, t_max, &ω_index, &ωs](
+          auto const& residual) -> std::optional<AngularFrequency> {
+    for (int i = 0; i <= 5; ++i) {
+      LOG(ERROR)<<ω_index<<" "<<residual(t_min + i * (t_max - t_min) / 5);
+    }
+    if (ω_index == ωs.size()) {
+      return std::nullopt;
+    } else {
+      return ωs[ω_index++];
+    }
+  };
+
+  // Projection on a 4-th degree basis accurately reconstructs the function.
+  auto const projection4 =
+      IncrementalProjection<4>(series.value(),
+                               angular_frequency_calculator,
+                               apodization::Hann<HornerEvaluator>(t_min, t_max),
+                               dot);
+  for (int i = 0; i <= 100; ++i) {
+    EXPECT_THAT(
+        projection4(t_min + i * (t_max - t_min) / 100),
+        AlmostEquals(series.value()(t_min + i * (t_max - t_min) / 100), 0, 0));
   }
 }
 

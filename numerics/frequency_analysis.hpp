@@ -76,6 +76,7 @@ IncrementalProjection(Function const& function,
 
 }  // namespace internal_frequency_analysis
 
+using internal_frequency_analysis::IncrementalProjection;
 using internal_frequency_analysis::PreciseMode;
 using internal_frequency_analysis::Projection;
 

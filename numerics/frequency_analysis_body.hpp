@@ -166,7 +166,7 @@ Projection(AngularFrequency const& ω,
            Function const& function,
            PoissonSeries<double, wdegree_, Evaluator> const& weight,
            Dot const& dot) {
-  std::optional optional_ω = ω;
+  std::optional<AngularFrequency> optional_ω = ω;
 
   // A calculator that returns optional_ω once and then stops.
   auto angular_frequency_calculator = [&optional_ω](auto const& residual) {
