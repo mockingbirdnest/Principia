@@ -203,6 +203,7 @@ IncrementalProjection(Function const& function,
 
   std::vector<Series> basis;
 
+  // TODO(phl): Add support for secular terms.
   auto const ω_basis = BasisGenerator<Series>::Basis(ω.value(), t0);
   int basis_size = std::tuple_size_v<decltype(ω_basis)>;
   std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
