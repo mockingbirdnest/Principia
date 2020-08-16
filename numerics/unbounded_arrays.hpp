@@ -2,6 +2,7 @@
 #pragma once
 
 #include <initializer_list>
+#include <memory>
 #include <vector>
 
 #include "base/tags.hpp"
@@ -26,7 +27,7 @@ class uninitialized_allocator : public std::allocator<T> {
 template<typename Scalar>
 class UnboundedVector final {
  public:
-  UnboundedVector(int size);
+  explicit UnboundedVector(int size);
   UnboundedVector(int size, uninitialized_t);
   UnboundedVector(std::initializer_list<Scalar> data);
 
@@ -48,7 +49,7 @@ class UnboundedVector final {
 template<typename Scalar>
 class UnboundedLowerTriangularMatrix final {
  public:
-  UnboundedLowerTriangularMatrix(int rows);
+  explicit UnboundedLowerTriangularMatrix(int rows);
   UnboundedLowerTriangularMatrix(int rows, uninitialized_t);
 
   // The |data| must be in row-major format.
