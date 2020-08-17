@@ -86,5 +86,21 @@ TEST_F(UnboundedArraysTest, Extend) {
   EXPECT_EQ(l3, l4);
 }
 
+TEST_F(UnboundedArraysTest, Erase) {
+  UnboundedVector<double> u4({1, 2, 3, 4});
+  UnboundedVector<double> u2({1, 2});
+  u4.EraseToEnd(2);
+  EXPECT_EQ(u2, u4);
+
+  UnboundedLowerTriangularMatrix<double> l4({1,
+                                             2, 3,
+                                             4, 5, 6,
+                                             7, 8, 9, 10});
+  UnboundedLowerTriangularMatrix<double> l2({1,
+                                             2, 3});
+  l4.EraseToEnd(2);
+  EXPECT_EQ(l2, l4);
+}
+
 }  // namespace numerics
 }  // namespace principia
