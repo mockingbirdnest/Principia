@@ -38,14 +38,12 @@ PoissonSeries<double, 0, Evaluator> Sine(Instant const& t_min,
 template<template<typename, typename, int> class Evaluator>
 PoissonSeries<double, 0, Evaluator> Hann(Instant const& t_min,
                                          Instant const& t_max) {
-  //TODO(phl): Centre them all.
   using Result = PoissonSeries<double, 0, Evaluator>;
-  auto const t_mid = Barycentre<Instant, double>({t_min, t_max}, {0.5, 0.5});
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
-  return Result(typename Result::Polynomial({0.5}, t_mid),
+  return Result(typename Result::Polynomial({0.5}, t_min),
                 {{ω,
-                  {/*sin=*/typename Result::Polynomial({0}, t_mid),
-                   /*cos=*/typename Result::Polynomial({0.5}, t_mid)}}});
+                  {/*sin=*/typename Result::Polynomial({0}, t_min),
+                   /*cos=*/typename Result::Polynomial({-0.5}, t_min)}}});
 }
 
 template<template<typename, typename, int> class Evaluator>

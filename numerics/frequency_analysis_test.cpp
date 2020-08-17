@@ -266,11 +266,9 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjection) {
     }
   }
 
-  //TODO(phl):Clean this mess.
-  Instant const t_min =
-      t0_ - 100 * Radian / *std::max_element(ωs.cbegin(), ωs.cend());
+  Instant const t_min = t0_;
   Instant const t_max =
-      t0_ + 100 * Radian / *std::max_element(ωs.cbegin(), ωs.cend());
+      t0_ + 200 * Radian / *std::max_element(ωs.cbegin(), ωs.cend());
   DotImplementation const dot(t_min, t_max);
 
   // A perfect calculator for the frequencies of the series.
@@ -282,12 +280,12 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjection) {
       EXPECT_THAT(
           Abs(residual(t_min + i * (t_max - t_min) / 100)),
           ω_index == 0
-              ? AllOf(Gt(3.0e-3 * Metre), Lt(5.8 * Metre))
+              ? AllOf(Gt(2.9e-2 * Metre), Lt(5.8 * Metre))
               : ω_index == 1
-                    ? AllOf(Gt(1.6e-3 * Metre), Lt(14.4 * Metre))
+                    ? AllOf(Gt(6.7e-2 * Metre), Lt(7.9 * Metre))
                     : ω_index == 2
-                          ? AllOf(Gt(1.9e-4 * Metre), Lt(9.5e-1 * Metre))
-                          : AllOf(Gt(6.8e-11 * Metre), Lt(2.8e-6 * Metre)))
+                          ? AllOf(Gt(1.1e-4 * Metre), Lt(9.7e-1 * Metre))
+                          : AllOf(Gt(1.7e-9 * Metre), Lt(4.3e-5 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -297,7 +295,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjection) {
     }
   };
 
-  // Projection on a 4-th degree basis accurately reconstructs the function.
+  // Projection on a 4-th degree basis reconstructs the function with a decent
+  // accuracy.
   auto const projection4 =
       IncrementalProjection<4>(series.value(),
                                angular_frequency_calculator,
@@ -307,7 +306,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjection) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series.value()(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Gt(2.5e-11), Lt(8.5e-6))));
+                          AllOf(Gt(2.4e-9), Lt(1.7e-4))));
   }
 }
 
