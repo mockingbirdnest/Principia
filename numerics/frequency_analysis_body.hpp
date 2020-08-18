@@ -249,17 +249,20 @@ IncrementalProjection(Function const& function,
         for (int s = 0; s < m; ++s) {
           Σ_Bₛ⁽ᵐ⁾² += B[s] * B[s];
         }
-        if (Q[m] <= Σ_Bₛ⁽ᵐ⁾²) {
+        if (Q[m] <= Σ_Bₛ⁽ᵐ⁾² ||
+            (Q[m] - Σ_Bₛ⁽ᵐ⁾²) / std::max(Q[m], Σ_Bₛ⁽ᵐ⁾²) < 0x1.0p-24) {
           // We arrive here when the norm of Σₛ Bₛ⁽ᵐ⁾bₛ + eₘ is small (see
           // [SN97] for the notation) and, due to rounding errors, the computed
-          // value of that norm ends up negative or zero.  It makes no sense to
-          // have complex numbers (or infinities) here because our function is
-          // real and bounded.  Geometrically, we are in a situation where eₘ
-          // is very close to the space spanned by the (bₛ), that is, by the
-          // (eₛ) for i < m.  The fact that the basis elements and no longer
-          // independent when the degree increases is duely noted by [CV84].
-          // Given that eₘ effectively doesn't have benefit for the projection,
-          // we just drop it and continue with the algorithm.
+          // value of the square of that norm ends up negative, zero, or very
+          // small.  It makes no sense to have complex numbers (or infinities)
+          // here because our function is real and bounded.  But even if the
+          // norm could be computed but was very small, we would end up with an
+          // ill-conditioned solution.  Geometrically, we are in a situation
+          // where eₘ is very close to the space spanned by the (bₛ), that is,
+          // by the (eₛ) for i < m.  The fact that the basis elements and no
+          // longer independent when the degree increases is duely noted by
+          // [CV84].  Given that eₘ effectively doesn't have benefit for the
+          // projection, we just drop it and continue with the algorithm.
           LOG(ERROR) << "Q[m]: " << Q[m] << " Σ_Bₛ⁽ᵐ⁾² " << Σ_Bₛ⁽ᵐ⁾²
                      << " difference: " << Q[m] - Σ_Bₛ⁽ᵐ⁾²;
           LOG(ERROR) << "Dropping " << basis[m];
@@ -273,8 +276,6 @@ IncrementalProjection(Function const& function,
           --m;
           continue;
         } else {
-          // TODO(phl): If we have a huge cancellation here, we should probably
-          // drop basis[m] too.
           α[m][m] = 1 / Sqrt(Q[m] - Σ_Bₛ⁽ᵐ⁾²);
         }
       }
