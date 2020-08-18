@@ -273,6 +273,8 @@ IncrementalProjection(Function const& function,
           --m;
           continue;
         } else {
+          // TODO(phl): If we have a huge cancellation here, we should probably
+          // drop basis[m] too.
           α[m][m] = 1 / Sqrt(Q[m] - Σ_Bₛ⁽ᵐ⁾²);
         }
       }
