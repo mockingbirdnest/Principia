@@ -258,7 +258,7 @@ IncrementalProjection(Function const& function,
           // here because our function is real and bounded.  But even if the
           // norm could be computed but was very small, we would end up with an
           // ill-conditioned solution.  Geometrically, we are in a situation
-          // where eₘ/ is very close to the space spanned by the (bₛ), that is,
+          // where eₘ is very close to the space spanned by the (bₛ), that is,
           // by the (eₛ) for i < m.  The fact that the basis elements and no
           // longer independent when the degree increases is duely noted by
           // [CV84].  Given that eₘ effectively doesn't have benefit for the
