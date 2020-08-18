@@ -7,8 +7,9 @@
 #include <functional>
 #include <vector>
 
-#include "numerics/fixed_arrays.hpp"
+#include "base/tags.hpp"
 #include "numerics/root_finders.hpp"
+#include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
@@ -17,6 +18,7 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
+using base::uninitialized;
 using quantities::Inverse;
 using quantities::Sqrt;
 using quantities::Square;
@@ -157,28 +159,60 @@ AngularFrequency PreciseMode(
 
 template<int degree_,
          typename Function,
-         int wdegree_,
-         typename Dot,
+         int wdegree_, typename Dot,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 Projection(AngularFrequency const& ω,
            Function const& function,
            PoissonSeries<double, wdegree_, Evaluator> const& weight,
            Dot const& dot) {
+  std::optional<AngularFrequency> optional_ω = ω;
+
+  // A calculator that returns optional_ω once and then stops.
+  auto angular_frequency_calculator = [&optional_ω](auto const& residual) {
+    auto const result = optional_ω;
+    optional_ω = std::nullopt;
+    return result;
+  };
+
+  return IncrementalProjection<degree_>(function,
+                                        angular_frequency_calculator,
+                                        weight,
+                                        dot);
+}
+
+template<int degree_,
+         typename Function,
+         typename AngularFrequencyCalculator, int wdegree_, typename Dot,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
+IncrementalProjection(Function const& function,
+                      AngularFrequencyCalculator const& calculator,
+                      PoissonSeries<double, wdegree_, Evaluator> const& weight,
+                      Dot const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
-  Instant const& t0 = weight.origin();
-  auto const basis = BasisGenerator<Series>::Basis(ω, t0);
-  constexpr int basis_size = std::tuple_size_v<decltype(basis)>;
-
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
   // of Кудрявцев which start at 1.
-  FixedLowerTriangularMatrix<Inverse<Value>, basis_size> α;
+
+  Instant const& t0 = weight.origin();
+
+  std::optional<AngularFrequency> ω = calculator(function);
+  CHECK(ω.has_value());
+
+  std::vector<Series> basis;
+
+  // TODO(phl): Add support for secular terms.
+  auto const ω_basis = BasisGenerator<Series>::Basis(ω.value(), t0);
+  int basis_size = std::tuple_size_v<decltype(ω_basis)>;
+  std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+
+  UnboundedLowerTriangularMatrix<Inverse<Value>> α(basis_size, uninitialized);
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
-  std::array<double, basis_size> A;
+  UnboundedVector<double> A(basis_size, uninitialized);
 
   auto const F₀ = dot(function, basis[0], weight);
   auto const Q₀₀ = dot(basis[0], basis[0], weight);
@@ -187,63 +221,105 @@ Projection(AngularFrequency const& ω,
 
   // At the beginning of iteration m this contains fₘ₋₁.
   auto f = function - A[0] * basis[0];
-  for (int m = 1; m < basis_size; ++m) {
-    // Contains Fₘ.
-    auto const F = dot(f, basis[m], weight);
 
-    // Only indices 0 to m are used in this array.  It contains Qₘⱼ.
-    std::array<Square<Value>, basis_size> Q;
-    for (int j = 0; j <= m; ++j) {
-      Q[j] = dot(basis[m], basis[j], weight);
-    }
+  int m_begin = 1;
+  for (;;) {
+    for (int m = m_begin; m < basis_size; ++m) {
+      // Contains Fₘ.
+      auto const F = dot(f, basis[m], weight);
 
-    // Only indices 0 to m - 1 are used in this array.  It contains Bⱼ⁽ᵐ⁾.
-    std::array<Value, basis_size> B;
-    for (int j = 0; j < m; ++j) {
-      Value Σ_αⱼₛ_Qₘₛ{};
-      for (int s = 0; s <= j; ++s) {
-        Σ_αⱼₛ_Qₘₛ += α[j][s] * Q[s];
+      // This vector contains Qₘⱼ.
+      UnboundedVector<Square<Value>> Q(m + 1, uninitialized);
+      for (int j = 0; j <= m; ++j) {
+        Q[j] = dot(basis[m], basis[j], weight);
       }
-      B[j] = -Σ_αⱼₛ_Qₘₛ;
-    }
 
-    {
-      Square<Value> Σ_Bₛ⁽ᵐ⁾²{};
-      for (int s = 0; s < m; ++s) {
-        Σ_Bₛ⁽ᵐ⁾² += B[s] * B[s];
+      // This vector contains Bⱼ⁽ᵐ⁾.
+      UnboundedVector<Value> B(m, uninitialized);
+      for (int j = 0; j < m; ++j) {
+        Value Σ_αⱼₛ_Qₘₛ{};
+        for (int s = 0; s <= j; ++s) {
+          Σ_αⱼₛ_Qₘₛ += α[j][s] * Q[s];
+        }
+        B[j] = -Σ_αⱼₛ_Qₘₛ;
       }
-      DCHECK_LE(Σ_Bₛ⁽ᵐ⁾², Q[m]);
-      α[m][m] = 1 / Sqrt(Q[m] - Σ_Bₛ⁽ᵐ⁾²);
-    }
 
-    for (int j = 0; j < m; ++j) {
-      double Σ_Bₛ⁽ᵐ⁾_αₛⱼ = 0;
-      for (int s = j; s < m; ++s) {
-        Σ_Bₛ⁽ᵐ⁾_αₛⱼ += B[s] * α[s][j];
+      {
+        Square<Value> Σ_Bₛ⁽ᵐ⁾²{};
+        for (int s = 0; s < m; ++s) {
+          Σ_Bₛ⁽ᵐ⁾² += B[s] * B[s];
+        }
+        if (Q[m] <= Σ_Bₛ⁽ᵐ⁾²) {
+          // We arrive here when the norm of Σₛ Bₛ⁽ᵐ⁾bₛ + eₘ is small (see
+          // [SN97] for the notation) and, due to rounding errors, the computed
+          // value of that norm ends up negative or zero.  It makes no sense to
+          // have complex numbers (or infinities) here because our function is
+          // real and bounded.  Geometrically, we are in a situation where eₘ
+          // is very close to the space spanned by the (bₛ), that is, by the
+          // (eₛ) for i < m.  The fact that the basis elements and no longer
+          // independent when the degree increases is duely noted by [CV84].
+          // Given that eₘ effectively doesn't have benefit for the projection,
+          // we just drop it and continue with the algorithm.
+          LOG(ERROR) << "Q[m]: " << Q[m] << " Σ_Bₛ⁽ᵐ⁾² " << Σ_Bₛ⁽ᵐ⁾²
+                     << " difference: " << Q[m] - Σ_Bₛ⁽ᵐ⁾²;
+          LOG(ERROR) << "Dropping " << basis[m];
+          int const basis_remaining = basis_size - m - 1;
+          basis.erase(basis.begin() + m);
+          α.EraseToEnd(m);
+          α.Extend(basis_remaining, uninitialized);
+          A.EraseToEnd(m);
+          A.Extend(basis_remaining, uninitialized);
+          --basis_size;
+          --m;
+          continue;
+        } else {
+          // TODO(phl): If we have a huge cancellation here, we should probably
+          // drop basis[m] too.
+          α[m][m] = 1 / Sqrt(Q[m] - Σ_Bₛ⁽ᵐ⁾²);
+        }
       }
-      α[m][j] = α[m][m] * Σ_Bₛ⁽ᵐ⁾_αₛⱼ;
-    }
 
-    A[m] = α[m][m] * α[m][m] * F;
-
-    for (int j = 0; j < m; ++j) {
-      A[j] += α[m][m] * α[m][j] * F;
-    }
-
-    {
-      PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ = α[m][0] * basis[0];
-      for (int i = 1; i <= m; ++i) {
-        Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
+      for (int j = 0; j < m; ++j) {
+        double Σ_Bₛ⁽ᵐ⁾_αₛⱼ = 0;
+        for (int s = j; s < m; ++s) {
+          Σ_Bₛ⁽ᵐ⁾_αₛⱼ += B[s] * α[s][j];
+        }
+        α[m][j] = α[m][m] * Σ_Bₛ⁽ᵐ⁾_αₛⱼ;
       }
-      f -= α[m][m] * F * Σ_αₘᵢ_eᵢ;
+
+      A[m] = α[m][m] * α[m][m] * F;
+
+      for (int j = 0; j < m; ++j) {
+        A[j] += α[m][m] * α[m][j] * F;
+      }
+
+      {
+        PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ = α[m][0] * basis[0];
+        for (int i = 1; i <= m; ++i) {
+          Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
+        }
+        f -= α[m][m] * F * Σ_αₘᵢ_eᵢ;
+      }
     }
+
+    PoissonSeries<Value, degree_, Evaluator> result = A[0] * basis[0];
+    for (int i = 1; i < basis_size; ++i) {
+      result += A[i] * basis[i];
+    }
+
+    ω = calculator(f);
+    if (!ω.has_value()) {
+      return result;
+    }
+
+    auto const ω_basis = BasisGenerator<Series>::Basis(ω.value(), t0);
+    constexpr int ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
+    std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+    α.Extend(ω_basis_size, uninitialized);
+    A.Extend(ω_basis_size, uninitialized);
+    m_begin = basis_size;
+    basis_size += ω_basis_size;
   }
-
-  PoissonSeries<Value, degree_, Evaluator> result = A[0] * basis[0];
-  for (int i = 1; i < basis_size; ++i) {
-    result += A[i] * basis[i];
-  }
-  return result;
 }
 
 }  // namespace internal_frequency_analysis

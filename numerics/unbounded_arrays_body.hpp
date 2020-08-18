@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "quantities/elementary_functions.hpp"
+#include "unbounded_arrays.hpp"
 
 namespace principia {
 namespace numerics {
@@ -45,6 +46,11 @@ void UnboundedVector<Scalar>::Extend(int const extra_size, uninitialized_t) {
 template<typename Scalar>
 void UnboundedVector<Scalar>::Extend(std::initializer_list<Scalar> data) {
   std::move(data.begin(), data.end(), std::back_inserter(data_));
+}
+
+template<typename Scalar>
+void UnboundedVector<Scalar>::EraseToEnd(int const begin_index) {
+  data_.erase(data_.begin() + begin_index, data_.end());
 }
 
 template<typename Scalar>
@@ -110,6 +116,14 @@ void UnboundedLowerTriangularMatrix<Scalar>::Extend(
 }
 
 template<typename Scalar>
+void UnboundedLowerTriangularMatrix<Scalar>::EraseToEnd(
+    int const begin_row_index) {
+  rows_ = begin_row_index;
+  data_.erase(data_.begin() + begin_row_index * (begin_row_index + 1) / 2,
+              data_.end());
+}
+
+template<typename Scalar>
 int UnboundedLowerTriangularMatrix<Scalar>::rows() const {
   return rows_;
 }
@@ -136,6 +150,32 @@ Scalar const* UnboundedLowerTriangularMatrix<Scalar>::operator[](
     int const index) const {
   DCHECK_LT(index, rows_);
   return &data_[index * (index + 1) / 2];
+}
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         UnboundedVector<Scalar> const& vector) {
+  std::stringstream s;
+  for (int i = 0; i < vector.data_.size(); ++i) {
+    s << (i == 0 ? "{" : "") << vector.data_[i]
+      << (i == vector.data_.size() - 1 ? "}" : ", ");
+  }
+  out << s.str();
+  return out;
+}
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         UnboundedLowerTriangularMatrix<Scalar> const& matrix) {
+  std::stringstream s;
+  // TODO(phl): Triangular printout.
+  s << "rows: " << matrix.rows_ << " ";
+  for (int i = 0; i < matrix.data_.size(); ++i) {
+    s << (i == 0 ? "{" : "") << matrix.data_[i]
+      << (i == matrix.data_.size() - 1 ? "}" : ", ");
+  }
+  out << s.str();
+  return out;
 }
 
 }  // namespace internal_unbounded_arrays

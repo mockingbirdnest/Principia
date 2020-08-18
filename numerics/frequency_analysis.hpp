@@ -56,8 +56,7 @@ AngularFrequency PreciseMode(
 // TODO(phl): We really need multiple angular frequencies.
 template<int degree_,
          typename Function,
-         int wdegree_,
-         typename Dot,
+         int wdegree_, typename Dot,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 Projection(AngularFrequency const& ω,
@@ -65,8 +64,37 @@ Projection(AngularFrequency const& ω,
            PoissonSeries<double, wdegree_, Evaluator> const& weight,
            Dot const& dot);
 
+// AngularFrequencyCalculator is a templated functor that implements the
+// extraction of the most relevant frequency out of a (mostly periodic)
+// residual.  Its declaration must look like:
+//
+// class AngularFrequencyCalculator {
+//  public:
+//   ...
+//   template<typename Residual>
+//   std::optional<AngularFrequency>
+//   operator()(Residual const& residual) const;
+//   ...
+//};
+//
+// Where Residual is a functor that takes an Instant and returns an element of a
+// vector space.  The first call to the calculator is with the |function| passed
+// to |IncrementalProjection|.
+// If the calculator cannot find a suitable frequency, or if it wants to stop
+// the algorithm, it does so by returning std::nullopt.
+template<int degree_,
+         typename Function,
+         typename AngularFrequencyCalculator, int wdegree_, typename Dot,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
+IncrementalProjection(Function const& function,
+                      AngularFrequencyCalculator const& calculator,
+                      PoissonSeries<double, wdegree_, Evaluator> const& weight,
+                      Dot const& dot);
+
 }  // namespace internal_frequency_analysis
 
+using internal_frequency_analysis::IncrementalProjection;
 using internal_frequency_analysis::PreciseMode;
 using internal_frequency_analysis::Projection;
 

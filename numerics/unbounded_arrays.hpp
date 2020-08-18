@@ -35,6 +35,8 @@ class UnboundedVector final {
   void Extend(int extra_size, uninitialized_t);
   void Extend(std::initializer_list<Scalar> data);
 
+  void EraseToEnd(int begin_index);
+
   int size() const;
 
   bool operator==(UnboundedVector const& right) const;
@@ -44,6 +46,10 @@ class UnboundedVector final {
 
  private:
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
+
+  template<typename S>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  UnboundedVector<S> const& vector);
 };
 
 template<typename Scalar>
@@ -61,6 +67,8 @@ class UnboundedLowerTriangularMatrix final {
   // The |data| must be in row-major format.
   void Extend(std::initializer_list<Scalar> data);
 
+  void EraseToEnd(int begin_row_index);
+
   int rows() const;
   int dimension() const;
 
@@ -75,7 +83,20 @@ class UnboundedLowerTriangularMatrix final {
  private:
   int rows_;
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
+
+  template<typename S>
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      UnboundedLowerTriangularMatrix<S> const& matrix);
 };
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         UnboundedVector<Scalar> const& vector);
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         UnboundedLowerTriangularMatrix<Scalar> const& matrix);
 
 }  // namespace internal_unbounded_arrays
 
