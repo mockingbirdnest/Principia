@@ -20,7 +20,7 @@ template<class T>
 template<class U, class... Args>
 inline void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {
 #if PRINCIPIA_COMPILER_CLANG
-  ::new ((void*)p) U(std::forward<Args>(args)...);
+  ::new ((void*)p) U(std::forward<Args>(args)...);  // NOLINT
 #endif
 }
 
