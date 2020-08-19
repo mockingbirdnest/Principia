@@ -344,6 +344,33 @@ std::string ToMathematica(
   return Apply("Plus", monomials);
 }
 
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator,
+         typename OptionalExpressIn>
+std::string ToMathematica(
+    PoissonSeries<Value, degree_, Evaluator> const& series,
+    std::string const& variable,
+    OptionalExpressIn express_in) {
+  std::vector<std::string> components = {
+      ToMathematica(series.aperiodic_, variable, express_in)};
+  for (auto const& [ω, polynomials] : series.periodic_) {
+    std::string const polynomial_sin =
+        ToMathematica(polynomials.sin, variable, express_in);
+    std::string const polynomial_cos =
+        ToMathematica(polynomials.cos, variable, express_in);
+    std::string const angle =
+        Apply("Times",
+              {ToMathematica(ω, express_in),
+               Apply("Subtract",
+                     {variable, ToMathematica(series.origin_, express_in)})});
+    components.push_back(Apply("Times",
+                               {polynomial_sin, Apply("Sin", {angle})}));
+    components.push_back(Apply("Times",
+                               {polynomial_cos, Apply("Cos", {angle})}));
+  }
+  return Apply("Plus", components);
+}
+
 template<typename OptionalExpressIn>
 std::string ToMathematica(
     astronomy::OrbitalElements::EquinoctialElements const& elements,

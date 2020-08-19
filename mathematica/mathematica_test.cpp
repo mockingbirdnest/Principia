@@ -15,6 +15,7 @@
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "gtest/gtest.h"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/poisson_series.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -39,6 +40,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using numerics::FixedVector;
 using numerics::HornerEvaluator;
+using numerics::PoissonSeries;
 using numerics::PolynomialInMonomialBasis;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -339,6 +341,19 @@ TEST_F(MathematicaTest, ToMathematica) {
         "2]]]",
         ToMathematica(polynomial2, "t"));
   }
+#if 0
+  // This test does not compile with MSVC 16.6.3: it thinks that operators + and
+  // - on polynomials are ambiguous deep in the constructor of PoissonSeries.
+  {
+    using Series = PoissonSeries<double, 0, HornerEvaluator>;
+    Instant const t0 = Instant() + 3 * Second;
+    Series series(Series::Polynomial({1.5}, t0),
+                  {{4 * Radian / Second,
+                    {/*sin=*/Series::Polynomial({0.5}, t0),
+                     /*cos=*/Series::Polynomial({-1}, t0)}}});
+    EXPECT_EQ("", ToMathematica(series, "t"));
+  }
+#endif
   {
     std::optional<std::string> opt1;
     std::optional<std::string> opt2("foo");
