@@ -5,6 +5,7 @@
 
 #include <cmath>
 
+#include "base/macros.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "unbounded_arrays.hpp"
 
@@ -17,7 +18,11 @@ using quantities::Sqrt;
 
 template<class T>
 template<class U, class... Args>
-inline void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {}
+inline void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {
+#if PRINCIPIA_COMPILER_CLANG
+  ::new ((void*)p) U(std::forward<Args>(args)...);  // NOLINT
+#endif
+}
 
 template<typename Scalar>
 UnboundedVector<Scalar>::UnboundedVector(int const size)
