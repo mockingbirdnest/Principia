@@ -28,6 +28,8 @@ namespace si = quantities::si;
 // A helper struct for generating the Poisson series tⁿ sin ω t and tⁿ cos ω t.
 template<typename Series, int n>
 struct SeriesGenerator {
+  // The series tⁿ.
+  static Series Aperiodic(Instant const& origin);
   // The series tⁿ sin ω t.
   static Series Sin(AngularFrequency const& ω, Instant const& origin);
   // The series tⁿ cos ω t.
@@ -46,12 +48,20 @@ struct BasisGenerator;
 
 template<typename Series, std::size_t... indices>
 struct BasisGenerator<Series, std::index_sequence<indices...>> {
-  // TODO(phl): Will need to properly handle ω = 0.
+  // Basis of aperiodic terms.
+  static std::array<Series, Series::degree + 1> Basis(Instant const& origin);
+
+  // Basis of periodic terms.
   static std::array<Series, 2 * Series::degree + 2> Basis(
       AngularFrequency const& ω,
       Instant const& origin);
 };
 
+
+template<typename Series, int n>
+Series SeriesGenerator<Series, n>::Aperiodic(Instant const& origin) {
+  return Series(Unit(origin), {});
+}
 
 template<typename Series, int n>
 Series SeriesGenerator<Series, n>::Sin(AngularFrequency const& ω,
@@ -82,6 +92,13 @@ typename Series::Polynomial SeriesGenerator<Series, n>::Unit(
   std::get<n>(coefficients) = si::Unit<
       std::tuple_element_t<n, typename Series::Polynomial::Coefficients>>;
   return typename Series::Polynomial(coefficients, origin);
+}
+
+template<typename Series, std::size_t... indices>
+std::array<Series, Series::degree + 1>
+BasisGenerator<Series, std::index_sequence<indices...>>::Basis(
+    Instant const& origin) {
+  return {SeriesGenerator<Series, indices>::Aperiodic(origin)...};
 }
 
 template<typename Series, std::size_t... indices>
@@ -203,10 +220,16 @@ IncrementalProjection(Function const& function,
 
   std::vector<Series> basis;
 
-  // TODO(phl): Add support for secular terms.
-  auto const ω_basis = BasisGenerator<Series>::Basis(ω.value(), t0);
-  int basis_size = std::tuple_size_v<decltype(ω_basis)>;
-  std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+  int basis_size;
+  if (ω.value() == AngularFrequency{}) {
+    auto const ω_basis = BasisGenerator<Series>::Basis(t0);
+    basis_size = std::tuple_size_v<decltype(ω_basis)>;
+    std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+  } else {
+    auto const ω_basis = BasisGenerator<Series>::Basis(ω.value(), t0);
+    basis_size = std::tuple_size_v<decltype(ω_basis)>;
+    std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+  }
 
   UnboundedLowerTriangularMatrix<Inverse<Value>> α(basis_size, uninitialized);
 
@@ -313,9 +336,16 @@ IncrementalProjection(Function const& function,
       return result;
     }
 
-    auto const ω_basis = BasisGenerator<Series>::Basis(ω.value(), t0);
-    constexpr int ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
-    std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+    int ω_basis_size;
+    if (ω.value() == AngularFrequency{}) {
+      auto const ω_basis = BasisGenerator<Series>::Basis(t0);
+      ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
+      std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+    } else {
+      auto const ω_basis = BasisGenerator<Series>::Basis(ω.value(), t0);
+      ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
+      std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+    }
     α.Extend(ω_basis_size, uninitialized);
     A.Extend(ω_basis_size, uninitialized);
     m_begin = basis_size;
