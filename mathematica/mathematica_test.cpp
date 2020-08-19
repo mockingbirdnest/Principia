@@ -341,9 +341,11 @@ TEST_F(MathematicaTest, ToMathematica) {
         "2]]]",
         ToMathematica(polynomial2, "t"));
   }
-#if 0
+#if !PRINCIPIA_COMPILER_MSVC
   // This test does not compile with MSVC 16.6.3: it thinks that operators + and
   // - on polynomials are ambiguous deep in the constructor of PoissonSeries.
+  // But don't despair, because the exact same code compiled in a different
+  // place (frequency_analysis_test.cpp) works like a charm...
   {
     using Series = PoissonSeries<double, 0, HornerEvaluator>;
     Instant const t0 = Instant() + 3 * Second;
@@ -351,7 +353,38 @@ TEST_F(MathematicaTest, ToMathematica) {
                   {{4 * Radian / Second,
                     {/*sin=*/Series::Polynomial({0.5}, t0),
                      /*cos=*/Series::Polynomial({-1}, t0)}}});
-    EXPECT_EQ("", ToMathematica(series, "t"));
+    EXPECT_EQ(
+        "Plus["
+        "Plus["
+        "SetPrecision[+1.50000000000000000*^+00,$MachinePrecision]],"
+        "Times["
+        "Plus["
+        "SetPrecision[+5.00000000000000000*^-01,$MachinePrecision]],"
+        "Sin["
+        "Times["
+        "Quantity["
+        "SetPrecision["
+        "+4.00000000000000000*^+00,$MachinePrecision],"
+        "\" s^-1 rad\"],"
+        "Subtract["
+        "t,"
+        "Quantity["
+        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
+        "\" s\"]]]]],"
+        "Times["
+        "Plus["
+        "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision]],"
+        "Cos["
+        "Times["
+        "Quantity["
+        "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
+        "\" s^-1 rad\"],"
+        "Subtract["
+        "t,"
+        "Quantity["
+        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
+        "\" s\"]]]]]]",
+        ToMathematica(series, "t"));
   }
 #endif
   {
