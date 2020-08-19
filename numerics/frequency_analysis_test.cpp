@@ -195,7 +195,6 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesProjection) {
   }
 }
 
-#if 0
 TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   AngularFrequency const ω = 666.543 * π * Radian / Second;
   std::mt19937_64 random(42);
@@ -242,9 +241,8 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
                                   AllOf(Gt(2.1e-7), Lt(8.8e-4))));
   }
 }
-#endif
 
-TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjection) {
+TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> frequency_distribution(2000.0, 3000.0);
 
@@ -307,6 +305,72 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjection) {
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series.value()(t_min + i * (t_max - t_min) / 100),
                           AllOf(Gt(1.3e-10), Lt(5.4e-4))));
+  }
+}
+
+TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> frequency_distribution(2000.0, 3000.0);
+  std::uniform_real_distribution<> secular_distribution(-30.0, 30.0);
+
+  std::vector<AngularFrequency> ωs = {AngularFrequency{}};
+  Series4 series(
+      random_polynomial4_(t0_, random, secular_distribution), {});
+  for (int i = 3; i >= 1; --i) {
+    std::uniform_real_distribution<> amplitude_distribution(-(1 << i),
+                                                            (1 << i));
+    ωs.push_back(frequency_distribution(random) * Radian / Second);
+    auto const sin = random_polynomial4_(t0_, random, amplitude_distribution);
+    auto const cos = random_polynomial4_(t0_, random, amplitude_distribution);
+    series += Series4(
+        Series4::Polynomial(Series4::Polynomial::Coefficients{}, t0_),
+        {{ωs.back(), Series4::Polynomials{sin, cos}}});
+  }
+
+  Instant const t_min = t0_;
+  Instant const t_max =
+      t0_ + 200 * Radian / *std::max_element(ωs.cbegin(), ωs.cend());
+  DotImplementation const dot(t_min, t_max);
+
+  // A perfect calculator for the frequencies of the series.
+  int ω_index = 0;
+  auto angular_frequency_calculator =
+      [&series, t_min, t_max, &ω_index, &ωs](
+          auto const& residual) -> std::optional<AngularFrequency> {
+    for (int i = 0; i <= 100; ++i) {
+      EXPECT_THAT(
+          Abs(residual(t_min + i * (t_max - t_min) / 100)),
+          ω_index == 0
+              ? AllOf(Gt(12.4 * Metre), Lt(19.5 * Metre))
+              : ω_index == 1
+                    ? AllOf(Gt(8.4e-3 * Metre), Lt(3.7 * Metre))
+                    : ω_index == 2
+                          ? AllOf(Gt(3.3e-2 * Metre), Lt(3.6 * Metre))
+                          : ω_index == 3
+                                ? AllOf(Gt(7.5e-3 * Metre), Lt(5.4 * Metre))
+                                : AllOf(Gt(2.2e-13 * Metre),
+                                        Lt(7.4e-10 * Metre)))
+          << ω_index;
+    }
+    if (ω_index == ωs.size()) {
+      return std::nullopt;
+    } else {
+      return ωs[ω_index++];
+    }
+  };
+
+  // Projection on a 4-th degree basis reconstructs the function with a decent
+  // accuracy.
+  auto const projection4 =
+      IncrementalProjection<4>(series,
+                               angular_frequency_calculator,
+                               apodization::Hann<HornerEvaluator>(t_min, t_max),
+                               dot);
+  for (int i = 0; i <= 100; ++i) {
+    EXPECT_THAT(
+        projection4(t_min + i * (t_max - t_min) / 100),
+        RelativeErrorFrom(series(t_min + i * (t_max - t_min) / 100),
+                          AllOf(Gt(1.2e-14), Lt(4.0e-11))));
   }
 }
 
