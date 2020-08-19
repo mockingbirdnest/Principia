@@ -94,15 +94,23 @@ class ExpressIn {
   std::tuple<Qs...> units_;
 };
 
+// TODO(phl): Rename this function to Rule.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Option(std::string const& name,
                    T const& right,
                    OptionalExpressIn express_in = std::nullopt);
 
+// TODO(phl): Rename this function to Set.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Assign(std::string const& name,
                    T const& right,
                    OptionalExpressIn express_in = std::nullopt);
+
+template<typename T1, typename T2, typename OptionalExpressIn = std::nullopt_t>
+std::string SetDelayed(std::string const& name,
+                       T1 const& arg1,
+                       T2 const& arg2,
+                       OptionalExpressIn express_in = std::nullopt);
 
 template<typename T, typename U, typename OptionalExpressIn = std::nullopt_t>
 std::string PlottableDataset(std::vector<T> const& x,
@@ -258,6 +266,7 @@ using internal_mathematica::ExpressIn;
 using internal_mathematica::Logger;
 using internal_mathematica::Option;
 using internal_mathematica::PlottableDataset;
+using internal_mathematica::SetDelayed;
 using internal_mathematica::ToMathematica;
 
 }  // namespace mathematica

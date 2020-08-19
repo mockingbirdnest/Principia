@@ -126,6 +126,15 @@ std::string Assign(std::string const& name,
   return Apply("Set", {name, ToMathematica(right, express_in)}) + ";\n";
 }
 
+template<typename T1, typename T2, typename OptionalExpressIn>
+std::string SetDelayed(std::string const& name,
+                       T1 const& arg1,
+                       T2 const& arg2,
+                       OptionalExpressIn express_in) {
+  return Apply("SetDelayed",
+               {name, ToMathematica(arg1, arg2, express_in)}) + ";\n";
+}
+
 template<typename T, typename U, typename OptionalExpressIn>
 std::string PlottableDataset(std::vector<T> const& x,
                              std::vector<U> const& y,
