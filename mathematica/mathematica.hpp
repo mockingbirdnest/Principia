@@ -18,6 +18,7 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/polynomial.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
@@ -37,6 +38,7 @@ using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
 using geometry::Vector;
 using numerics::FixedVector;
+using numerics::PolynomialInMonomialBasis;
 using physics::DegreesOfFreedom;
 using quantities::Amount;
 using quantities::Angle;
@@ -191,6 +193,15 @@ template<typename R,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R ref,
                           OptionalExpressIn express_in = std::nullopt);
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator,
+         typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        polynomial,
+    std::string const& variable,
+    OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(

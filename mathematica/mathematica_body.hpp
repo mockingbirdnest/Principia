@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/not_constructible.hpp"
+#include "base/traits.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -17,6 +18,7 @@ namespace mathematica {
 namespace internal_mathematica {
 
 using astronomy::J2000;
+using base::is_instance_of_v;
 using base::not_constructible;
 using base::not_null;
 using quantities::DebugString;
@@ -291,6 +293,46 @@ std::string ToMathematica(R const ref,
                std::vector<std::string>{
                    ToMathematica(ref.time, express_in),
                    ToMathematica(ref.degrees_of_freedom, express_in)});
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator,
+         typename OptionalExpressIn>
+std::string ToMathematica(
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        polynomial,
+    std::string const& variable,
+    OptionalExpressIn express_in) {
+  using Coefficients =
+      typename PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+          Coefficients;
+  std::vector<std::string> coefficients;
+  coefficients.reserve(std::tuple_size_v<Coefficients>);
+  TupleHelper<std::tuple_size_v<Coefficients>,
+              Coefficients,
+              OptionalExpressIn>::ToMathematicaStrings(polynomial.coefficients_,
+                                                       coefficients,
+                                                       express_in);
+  std::string argument;
+  if constexpr (is_instance_of_v<Point, Argument>) {
+    argument = Apply("Subtract",
+                     {variable, ToMathematica(polynomial.origin_, express_in)});
+  } else {
+    argument = variable;
+  }
+  std::vector<std::string> monomials;
+  for (int i = 0; i < coefficients.size(); ++i) {
+    if (i == 0) {
+      monomials.push_back(coefficients[i]);
+    } else if (i == 1) {
+      monomials.push_back(Apply("Times", {coefficients[i], argument}));
+    } else {
+      monomials.push_back(Apply(
+          "Times",
+          {coefficients[i], Apply("Power", {argument, std::to_string(i)})}));
+    }
+  }
+  return Apply("Plus", monomials);
 }
 
 template<typename OptionalExpressIn>

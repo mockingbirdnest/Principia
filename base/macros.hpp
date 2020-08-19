@@ -186,5 +186,14 @@ template_and_class_key declared_name;                \
 }                                                    \
 using internal_##package_name::declared_name
 
+#define FORWARD_DECLARE_FUNCTION_FROM(package_name,        \
+                                      template_and_result, \
+                                      declared_name,       \
+                                      parameters)          \
+namespace internal_##package_name {                        \
+template_and_result declared_name parameters;              \
+}                                                          \
+using internal_##package_name::declared_name
+
 }  // namespace base
 }  // namespace principia
