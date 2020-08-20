@@ -2,6 +2,7 @@
 #pragma once
 
 #include <algorithm>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -12,6 +13,27 @@
 #include "serialization/numerics.pb.h"
 
 namespace principia {
+namespace numerics {
+FORWARD_DECLARE_FROM(polynomial,
+                     TEMPLATE(typename Value, typename Argument, int degree_,
+                              template<typename, typename, int> class Evaluator)
+                              class,
+                     PolynomialInMonomialBasis);
+}  // namespace numerics
+
+namespace mathematica {
+FORWARD_DECLARE_FUNCTION_FROM(
+    mathematica,
+    TEMPLATE(typename Value, typename Argument, int degree_,
+             template<typename, typename, int> class Evaluator,
+             typename OptionalExpressIn) std::string,
+    ToMathematica,
+    (numerics::
+         PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+             polynomial,
+     OptionalExpressIn express_in));
+}  // namespace mathematica
+
 namespace numerics {
 namespace internal_polynomial {
 
@@ -154,6 +176,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   friend std::ostream& operator<<(
       std::ostream& out,
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial);
+  template<typename V, typename A, int d,
+           template<typename, typename, int> class E,
+           typename O>
+  friend std::string mathematica::ToMathematica(
+      PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
+      O express_in);
 };
 
 template<typename Value, typename Argument, int degree_,
@@ -256,6 +284,12 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   friend std::ostream& operator<<(
       std::ostream& out,
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial);
+  template<typename V, typename A, int d,
+           template<typename, typename, int> class E,
+           typename O>
+  friend std::string mathematica::ToMathematica(
+      PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
+      O express_in);
 };
 
 // Vector space of polynomials.

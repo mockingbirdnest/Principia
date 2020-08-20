@@ -654,7 +654,7 @@ std::ostream& operator<<(
   if constexpr (is_instance_of_v<Point, Argument>) {
     debug_string = TupleSerializer<Coefficients, 0>::DebugString(
         polynomial.coefficients_,
-        "(T - " + DebugString(polynomial.origin_) + ")");
+        absl::StrCat("(T - ", DebugString(polynomial.origin_), ")"));
   } else {
     debug_string = TupleSerializer<Coefficients, 0>::DebugString(
         polynomial.coefficients_, "T");

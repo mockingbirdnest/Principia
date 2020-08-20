@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/not_constructible.hpp"
+#include "base/traits.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -17,6 +18,7 @@ namespace mathematica {
 namespace internal_mathematica {
 
 using astronomy::J2000;
+using base::is_instance_of_v;
 using base::not_constructible;
 using base::not_null;
 using quantities::DebugString;
@@ -122,6 +124,12 @@ std::string Assign(std::string const& name,
                    T const& right,
                    OptionalExpressIn express_in) {
   return Apply("Set", {name, ToMathematica(right, express_in)}) + ";\n";
+}
+
+template<typename T, typename OptionalExpressIn>
+std::string Function(T const& body,
+                     OptionalExpressIn express_in) {
+  return Apply("Function", {ToMathematica(body, express_in)}) + ";\n";
 }
 
 template<typename T, typename U, typename OptionalExpressIn>
@@ -256,8 +264,7 @@ std::string ToMathematica(Point<V> const & point,
   return ToMathematica(point - Point<V>(), express_in);
 }
 
-template<typename S,
-         typename F,
+template<typename S, typename F,
          template<typename, typename> typename M,
          typename OptionalExpressIn>
 std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,
@@ -291,6 +298,69 @@ std::string ToMathematica(R const ref,
                std::vector<std::string>{
                    ToMathematica(ref.time, express_in),
                    ToMathematica(ref.degrees_of_freedom, express_in)});
+}
+
+template<typename V, typename A, int d,
+         template<typename, typename, int> class E,
+         typename OptionalExpressIn>
+std::string ToMathematica(
+    PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
+    OptionalExpressIn express_in) {
+  using Coefficients =
+      typename PolynomialInMonomialBasis<V, A, d, E>::Coefficients;
+  std::vector<std::string> coefficients;
+  coefficients.reserve(std::tuple_size_v<Coefficients>);
+  TupleHelper<std::tuple_size_v<Coefficients>,
+              Coefficients,
+              OptionalExpressIn>::ToMathematicaStrings(polynomial.coefficients_,
+                                                       coefficients,
+                                                       express_in);
+  std::string argument;
+  if constexpr (is_instance_of_v<Point, A>) {
+    argument =
+        Apply("Subtract", {"#", ToMathematica(polynomial.origin_, express_in)});
+  } else {
+    argument = "#";
+  }
+  std::vector<std::string> monomials;
+  for (int i = 0; i < coefficients.size(); ++i) {
+    if (i == 0) {
+      monomials.push_back(coefficients[i]);
+    } else if (i == 1) {
+      monomials.push_back(Apply("Times", {coefficients[i], argument}));
+    } else {
+      monomials.push_back(Apply(
+          "Times",
+          {coefficients[i], Apply("Power", {argument, std::to_string(i)})}));
+    }
+  }
+  return Apply("Plus", monomials);
+}
+
+template<typename V, int d,
+         template<typename, typename, int> class E,
+         typename OptionalExpressIn>
+std::string ToMathematica(PoissonSeries<V, d, E> const& series,
+                          std::string const& variable,
+                          OptionalExpressIn express_in) {
+  std::vector<std::string> components = {
+      ToMathematica(series.aperiodic_, variable, express_in)};
+  for (auto const& [ω, polynomials] : series.periodic_) {
+    std::string const polynomial_sin =
+        ToMathematica(polynomials.sin, variable, express_in);
+    std::string const polynomial_cos =
+        ToMathematica(polynomials.cos, variable, express_in);
+    std::string const angle =
+        Apply("Times",
+              {ToMathematica(ω, express_in),
+               Apply("Subtract",
+                     {variable, ToMathematica(series.origin_, express_in)})});
+    components.push_back(Apply("Times",
+                               {polynomial_sin, Apply("Sin", {angle})}));
+    components.push_back(Apply("Times",
+                               {polynomial_cos, Apply("Cos", {angle})}));
+  }
+  return Apply("Plus", components);
 }
 
 template<typename OptionalExpressIn>

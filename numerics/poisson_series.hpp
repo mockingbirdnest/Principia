@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "geometry/interval.hpp"
@@ -12,6 +13,25 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace numerics {
+FORWARD_DECLARE_FROM(poisson_series,
+                     TEMPLATE(typename Value, int degree_,
+                              template<typename, typename, int> class Evaluator)
+                              class,
+                     PoissonSeries);
+}  // namespace numerics
+
+namespace mathematica {
+FORWARD_DECLARE_FUNCTION_FROM(
+    mathematica,
+    TEMPLATE(typename Value, int degree_,
+             template<typename, typename, int> class Evaluator,
+             typename OptionalExpressIn) std::string,
+    ToMathematica,
+    (numerics::PoissonSeries<Value, degree_, Evaluator> const& series,
+     OptionalExpressIn express_in));
+}  // namespace mathematica
+
 namespace numerics {
 namespace internal_poisson_series {
 
@@ -105,6 +125,12 @@ class PoissonSeries {
   template<typename V, int d, template<typename, typename, int> class E>
   friend std::ostream& operator<<(std::ostream& out,
                                   PoissonSeries<V, d, E> const& series);
+  template<typename V, int d,
+           template<typename, typename, int> class E,
+           typename O>
+  friend std::string mathematica::ToMathematica(
+      PoissonSeries<V, d, E> const& polynomial,
+      O express_in);
 };
 
 // Vector space of Poisson series.
