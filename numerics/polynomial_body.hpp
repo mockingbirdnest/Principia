@@ -419,22 +419,25 @@ origin() const {
   return origin_;
 }
 
-template<typename Value, typename Argument, int n,
+template<typename Value, typename Argument, int degree, int n,
          template<typename, typename, int> class Evaluator,
-         typename = std::make_index_sequence<n + 1>>
+         typename = std::make_index_sequence<degree + 1>>
 struct Bino;
 
-template<typename Value, typename Argument, int n,
+template<typename Value, typename Argument, int degree, int n,
          template<typename, typename, int> class Evaluator,
          std::size_t... k>
-struct Bino<Value, Argument, n, Evaluator, std::index_sequence<k...>> {
+struct Bino<Value, Argument, degree, n, Evaluator, std::index_sequence<k...>> {
   using Coefficients =
-      typename PolynomialInMonomialBasis<Value, Point<Argument>, n, Evaluator>::
+      typename
+      PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>::
           Coefficients;
   static typename Coefficients Make(
       std::tuple_element_t<n, Coefficients> const& coefficient,
       Argument const& shift) {
-    return {(coefficient * Binomial(n, k) * Pow<n - k>(shift))...};
+    return {(k <= n ? coefficient * Binomial(n, k) *
+                          Pow<static_cast<int>(n - k)>(shift)
+                    : std::tuple_element_t<k, Coefficients>{})...};
   }
 };
 
@@ -443,22 +446,23 @@ template<typename Value, typename Argument, int degree_,
          typename = std::make_index_sequence<degree_ + 1>>
 struct DuDdu;
 
-template<typename Value, typename Argument, int degree_,
+template<typename Value, typename Argument, int degree,
          template<typename, typename, int> class Evaluator,
          std::size_t... indices>
-struct DuDdu<Value, Argument, degree_, Evaluator,
+struct DuDdu<Value, Argument, degree, Evaluator,
              std::index_sequence<indices...>> {
   using Polynomial =
-      PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>;
+      PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>;
   static Polynomial Make(typename Polynomial::Coefficients const& coefficients,
                          Point<Argument> const& from_origin,
                          Point<Argument> const& to_origin) {
     Argument const shift = to_origin - from_origin;
-    //Needs padding to the degree...
-    return Polynomial(typename Polynomial::Coefficients{(
-                          Bino<Value, Argument, indices, Evaluator>::Make(
-                              std::get<indices>(coefficients), shift))...},
-                      to_origin);
+    return Polynomial(
+        typename Polynomial::Coefficients{(
+            Bino<Value, Argument, degree, indices, Evaluator>::Make(
+                std::get<indices>(coefficients), shift) +
+            ...)},
+        to_origin);
   }
 };
 
