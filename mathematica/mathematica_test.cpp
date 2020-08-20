@@ -304,14 +304,15 @@ TEST_F(MathematicaTest, ToMathematica) {
         "Quantity["
         "SetPrecision[-3.00000000000000000*^+00,$MachinePrecision],"
         "\" m s^-1\"],"
-        "t],"
+        "#],"
         "Times["
         "Quantity["
         "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
         "\" m s^-2\"],"
-        "Power[t,"
+        "Power["
+        "#,"
         "2]]]",
-        ToMathematica(polynomial1, "t"));
+        ToMathematica(polynomial1));
     PolynomialInMonomialBasis<Length, Instant, 2, HornerEvaluator> polynomial2(
         {5 * Metre, 6 * Metre / Second, -7 * Metre / Second / Second},
         Instant() + 2 * Second);
@@ -325,7 +326,7 @@ TEST_F(MathematicaTest, ToMathematica) {
         "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision],"
         "\" m s^-1\"],"
         "Subtract["
-        "t,"
+        "#,"
         "Quantity["
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
         "\" s\"]]],"
@@ -333,13 +334,14 @@ TEST_F(MathematicaTest, ToMathematica) {
         "Quantity["
         "SetPrecision[-7.00000000000000000*^+00,$MachinePrecision],"
         "\" m s^-2\"],"
-        "Power[Subtract["
-        "t,"
+        "Power["
+        "Subtract["
+        "#,"
         "Quantity["
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
         "\" s\"]],"
         "2]]]",
-        ToMathematica(polynomial2, "t"));
+        ToMathematica(polynomial2));
   }
 #if !PRINCIPIA_COMPILER_MSVC
   // This test does not compile with MSVC 16.6.3: it thinks that operators + and
@@ -367,7 +369,7 @@ TEST_F(MathematicaTest, ToMathematica) {
         "+4.00000000000000000*^+00,$MachinePrecision],"
         "\" s^-1 rad\"],"
         "Subtract["
-        "t,"
+        "#,"
         "Quantity["
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
         "\" s\"]]]]],"
@@ -380,11 +382,11 @@ TEST_F(MathematicaTest, ToMathematica) {
         "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
         "\" s^-1 rad\"],"
         "Subtract["
-        "t,"
+        "#,"
         "Quantity["
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
         "\" s\"]]]]]]",
-        ToMathematica(series, "t"));
+        ToMathematica(series));
   }
 #endif
   {
@@ -419,12 +421,11 @@ TEST_F(MathematicaTest, Function) {
       {1, -3});
   EXPECT_EQ(
       "Function["
-      "t,"
       "Plus["
       "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
       "Times[SetPrecision[-3.00000000000000000*^+00,$MachinePrecision],"
-      "t]]];\n",
-      Function(polynomial, "t"));
+      "#]]];\n",
+      Function(polynomial));
 }
 
 TEST_F(MathematicaTest, PlottableDataset) {

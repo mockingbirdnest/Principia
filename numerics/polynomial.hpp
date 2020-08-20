@@ -31,7 +31,6 @@ FORWARD_DECLARE_FUNCTION_FROM(
     (numerics::
          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
              polynomial,
-     std::string const& variable,
      OptionalExpressIn express_in));
 }  // namespace mathematica
 
@@ -182,7 +181,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
            typename O>
   friend std::string mathematica::ToMathematica(
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
-      std::string const& variable,
       O express_in);
 };
 
@@ -291,7 +289,6 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
            typename O>
   friend std::string mathematica::ToMathematica(
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
-      std::string const& variable,
       O express_in);
 };
 

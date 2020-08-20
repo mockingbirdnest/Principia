@@ -128,10 +128,8 @@ std::string Assign(std::string const& name,
 
 template<typename T, typename OptionalExpressIn>
 std::string Function(T const& body,
-                     std::string const& variable,
                      OptionalExpressIn express_in) {
-  return Apply("Function",
-               {variable, ToMathematica(body, variable, express_in)}) + ";\n";
+  return Apply("Function", {ToMathematica(body, express_in)}) + ";\n";
 }
 
 template<typename T, typename U, typename OptionalExpressIn>
@@ -266,8 +264,7 @@ std::string ToMathematica(Point<V> const & point,
   return ToMathematica(point - Point<V>(), express_in);
 }
 
-template<typename S,
-         typename F,
+template<typename S, typename F,
          template<typename, typename> typename M,
          typename OptionalExpressIn>
 std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,
@@ -308,7 +305,6 @@ template<typename V, typename A, int d,
          typename OptionalExpressIn>
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
-    std::string const& variable,
     OptionalExpressIn express_in) {
   using Coefficients =
       typename PolynomialInMonomialBasis<V, A, d, E>::Coefficients;
@@ -321,10 +317,10 @@ std::string ToMathematica(
                                                        express_in);
   std::string argument;
   if constexpr (is_instance_of_v<Point, A>) {
-    argument = Apply("Subtract",
-                     {variable, ToMathematica(polynomial.origin_, express_in)});
+    argument =
+        Apply("Subtract", {"#", ToMathematica(polynomial.origin_, express_in)});
   } else {
-    argument = variable;
+    argument = "#";
   }
   std::vector<std::string> monomials;
   for (int i = 0; i < coefficients.size(); ++i) {

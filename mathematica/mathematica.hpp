@@ -110,7 +110,6 @@ std::string Assign(std::string const& name,
 
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Function(T const& body,
-                     std::string const& variable,
                      OptionalExpressIn express_in = std::nullopt);
 
 template<typename T, typename U, typename OptionalExpressIn = std::nullopt_t>
@@ -179,8 +178,7 @@ template<typename V, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Point<V> const& point,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename S,
-         typename F,
+template<typename S, typename F,
          template<typename, typename> typename M,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,
@@ -208,14 +206,12 @@ template<typename V, typename A, int d,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
-    std::string const& variable,
     OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, int d,
          template<typename, typename, int> class E,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(PoissonSeries<V, d, E> const& series,
-                          std::string const& variable,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t>

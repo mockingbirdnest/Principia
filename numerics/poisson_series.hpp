@@ -29,7 +29,6 @@ FORWARD_DECLARE_FUNCTION_FROM(
              typename OptionalExpressIn) std::string,
     ToMathematica,
     (numerics::PoissonSeries<Value, degree_, Evaluator> const& series,
-     std::string const& variable,
      OptionalExpressIn express_in));
 }  // namespace mathematica
 
@@ -131,7 +130,6 @@ class PoissonSeries {
            typename O>
   friend std::string mathematica::ToMathematica(
       PoissonSeries<V, d, E> const& polynomial,
-      std::string const& variable,
       O express_in);
 };
 
