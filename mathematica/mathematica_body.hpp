@@ -126,13 +126,12 @@ std::string Assign(std::string const& name,
   return Apply("Set", {name, ToMathematica(right, express_in)}) + ";\n";
 }
 
-template<typename T1, typename T2, typename OptionalExpressIn>
-std::string SetDelayed(std::string const& name,
-                       T1 const& arg1,
-                       T2 const& arg2,
-                       OptionalExpressIn express_in) {
-  return Apply("SetDelayed",
-               {name, ToMathematica(arg1, arg2, express_in)}) + ";\n";
+template<typename T, typename OptionalExpressIn>
+std::string Function(T const& body,
+                     std::string const& variable,
+                     OptionalExpressIn express_in) {
+  return Apply("Function",
+               {variable, ToMathematica(body, variable, express_in)}) + ";\n";
 }
 
 template<typename T, typename U, typename OptionalExpressIn>
@@ -304,17 +303,15 @@ std::string ToMathematica(R const ref,
                    ToMathematica(ref.degrees_of_freedom, express_in)});
 }
 
-template<typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator,
+template<typename V, typename A, int d,
+         template<typename, typename, int> class E,
          typename OptionalExpressIn>
 std::string ToMathematica(
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
-        polynomial,
+    PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     std::string const& variable,
     OptionalExpressIn express_in) {
   using Coefficients =
-      typename PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
-          Coefficients;
+      typename PolynomialInMonomialBasis<V, A, d, E>::Coefficients;
   std::vector<std::string> coefficients;
   coefficients.reserve(std::tuple_size_v<Coefficients>);
   TupleHelper<std::tuple_size_v<Coefficients>,
@@ -323,7 +320,7 @@ std::string ToMathematica(
                                                        coefficients,
                                                        express_in);
   std::string argument;
-  if constexpr (is_instance_of_v<Point, Argument>) {
+  if constexpr (is_instance_of_v<Point, A>) {
     argument = Apply("Subtract",
                      {variable, ToMathematica(polynomial.origin_, express_in)});
   } else {
@@ -344,13 +341,12 @@ std::string ToMathematica(
   return Apply("Plus", monomials);
 }
 
-template<typename Value, int degree_,
-         template<typename, typename, int> class Evaluator,
+template<typename V, int d,
+         template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematica(
-    PoissonSeries<Value, degree_, Evaluator> const& series,
-    std::string const& variable,
-    OptionalExpressIn express_in) {
+std::string ToMathematica(PoissonSeries<V, d, E> const& series,
+                          std::string const& variable,
+                          OptionalExpressIn express_in) {
   std::vector<std::string> components = {
       ToMathematica(series.aperiodic_, variable, express_in)};
   for (auto const& [ω, polynomials] : series.periodic_) {

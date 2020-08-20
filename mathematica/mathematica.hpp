@@ -108,11 +108,10 @@ std::string Assign(std::string const& name,
                    T const& right,
                    OptionalExpressIn express_in = std::nullopt);
 
-template<typename T1, typename T2, typename OptionalExpressIn = std::nullopt_t>
-std::string SetDelayed(std::string const& name,
-                       T1 const& arg1,
-                       T2 const& arg2,
-                       OptionalExpressIn express_in = std::nullopt);
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
+std::string Function(T const& body,
+                     std::string const& variable,
+                     OptionalExpressIn express_in = std::nullopt);
 
 template<typename T, typename U, typename OptionalExpressIn = std::nullopt_t>
 std::string PlottableDataset(std::vector<T> const& x,
@@ -204,22 +203,20 @@ template<typename R,
 std::string ToMathematica(R ref,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator,
+template<typename V, typename A, int d,
+         template<typename, typename, int> class E,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
-        polynomial,
+    PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     std::string const& variable,
     OptionalExpressIn express_in = std::nullopt);
 
-template<typename Value, int degree_,
-         template<typename, typename, int> class Evaluator,
+template<typename V, int d,
+         template<typename, typename, int> class E,
          typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(
-    PoissonSeries<Value, degree_, Evaluator> const& series,
-    std::string const& variable,
-    OptionalExpressIn express_in = std::nullopt);
+std::string ToMathematica(PoissonSeries<V, d, E> const& series,
+                          std::string const& variable,
+                          OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(
@@ -273,10 +270,10 @@ class Logger final {
 
 using internal_mathematica::Assign;
 using internal_mathematica::ExpressIn;
+using internal_mathematica::Function;
 using internal_mathematica::Logger;
 using internal_mathematica::Option;
 using internal_mathematica::PlottableDataset;
-using internal_mathematica::SetDelayed;
 using internal_mathematica::ToMathematica;
 
 }  // namespace mathematica

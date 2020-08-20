@@ -414,17 +414,17 @@ TEST_F(MathematicaTest, Assign) {
       Assign("var", 3.0));
 }
 
-TEST_F(MathematicaTest, SetDelayed) {
+TEST_F(MathematicaTest, Function) {
   PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> polynomial(
       {1, -3});
   EXPECT_EQ(
-      "SetDelayed["
-      "f[t_],"
+      "Function["
+      "t,"
       "Plus["
       "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
       "Times[SetPrecision[-3.00000000000000000*^+00,$MachinePrecision],"
       "t]]];\n",
-      SetDelayed("f[t_]", polynomial, "t"));
+      Function(polynomial, "t"));
 }
 
 TEST_F(MathematicaTest, PlottableDataset) {
