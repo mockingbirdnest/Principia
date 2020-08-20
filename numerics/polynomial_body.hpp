@@ -31,6 +31,9 @@ using geometry::cartesian_product::operator*;
 using geometry::cartesian_product::operator/;
 using geometry::polynomial_ring::operator*;
 using quantities::Apply;
+using quantities::Exponentiation;
+using quantities::Pow;
+using quantities::Time;
 
 // Index-by-index assignment of RTuple to LTuple, which must have at least as
 // many elements (and the types must match).
@@ -414,6 +417,58 @@ Point<Argument> const&
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 origin() const {
   return origin_;
+}
+
+template<typename Argument, int n,
+         template<typename, typename, int> class Evaluator,
+         typename = std::make_index_sequence<n + 1>>
+struct Bino;
+
+template<typename Argument, int n,
+         template<typename, typename, int> class Evaluator,
+         std::size_t... k>
+struct Bino<Argument, n, Evaluator, std::index_sequence<k...>> {
+  using Value = Exponentiation<Time, n>;
+  using Polynomial =
+      PolynomialInMonomialBasis<Value, Point<Argument>, n, Evaluator>;
+  static Polynomial Make(Point<Argument> const& from_origin,
+                         Point<Argument> const& to_origin) {
+    Argument const shift = to_origin - from_origin;
+    return Polynomial({(Binomial(n, k) * Pow<n - k>(shift))...}, to_origin);
+  }
+};
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator,
+         typename = std::make_index_sequence<degree_ + 1>>
+struct DuDdu;
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator,
+         std::size_t... indices>
+struct DuDdu<Value, Argument, degree_, Evaluator,
+             std::index_sequence<indices...>> {
+  using Polynomial =
+      PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>;
+  static Polynomial Make(typename Polynomial::Coefficients const& coefficients,
+                         Point<Argument> const& from_origin,
+                         Point<Argument> const& to_origin) {
+    Argument const shift = to_origin - from_origin;
+    return ((std::get<indices>(coefficients) *
+             Bino<Argument, indices, Evaluator>::Make(from_origin, to_origin)) +
+            ...);
+  }
+};
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::AtOrigin(
+    Point<Argument> const& origin) const {
+  // (x - x0)^n = (x - x1 + x1 - x0)^n = Sum (n|k)(x - x1)^k(x1 - x0)^(n - k)
+  // Time^n
+  return DuDdu<Value, Argument, degree_, Evaluator>::Make(
+      coefficients_, origin_, origin);
 }
 
 template<typename Value, typename Argument, int degree_,
