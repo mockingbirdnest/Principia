@@ -419,22 +419,22 @@ origin() const {
   return origin_;
 }
 
-template<typename Argument, int n,
+template<typename Value, typename Argument, int n,
          template<typename, typename, int> class Evaluator,
          typename = std::make_index_sequence<n + 1>>
 struct Bino;
 
-template<typename Argument, int n,
+template<typename Value, typename Argument, int n,
          template<typename, typename, int> class Evaluator,
          std::size_t... k>
-struct Bino<Argument, n, Evaluator, std::index_sequence<k...>> {
-  using Value = Exponentiation<Time, n>;
-  using Polynomial =
-      PolynomialInMonomialBasis<Value, Point<Argument>, n, Evaluator>;
-  static Polynomial Make(Point<Argument> const& from_origin,
-                         Point<Argument> const& to_origin) {
-    Argument const shift = to_origin - from_origin;
-    return Polynomial({(Binomial(n, k) * Pow<n - k>(shift))...}, to_origin);
+struct Bino<Value, Argument, n, Evaluator, std::index_sequence<k...>> {
+  using Coefficients =
+      typename PolynomialInMonomialBasis<Value, Point<Argument>, n, Evaluator>::
+          Coefficients;
+  static typename Coefficients Make(
+      std::tuple_element_t<n, Coefficients> const& coefficient,
+      Argument const& shift) {
+    return {(coefficient * Binomial(n, k) * Pow<n - k>(shift))...};
   }
 };
 
@@ -454,9 +454,11 @@ struct DuDdu<Value, Argument, degree_, Evaluator,
                          Point<Argument> const& from_origin,
                          Point<Argument> const& to_origin) {
     Argument const shift = to_origin - from_origin;
-    return ((std::get<indices>(coefficients) *
-             Bino<Argument, indices, Evaluator>::Make(from_origin, to_origin)) +
-            ...);
+    //Needs padding to the degree...
+    return Polynomial(typename Polynomial::Coefficients{(
+                          Bino<Value, Argument, indices, Evaluator>::Make(
+                              std::get<indices>(coefficients), shift))...},
+                      to_origin);
   }
 };
 
