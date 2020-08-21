@@ -240,6 +240,11 @@ TEST_F(PolynomialTest, AtOrigin) {
   Instant const t0 = Instant() + 3 * Second;
   P2A const p(coefficients_, t0);
   P2A const q = p.AtOrigin(Instant() - 2 * Second);
+  for (Instant t = Instant() - 10 * Second;
+       t < Instant() + 10 * Second;
+       t += 0.3 * Second) {
+    EXPECT_THAT(q.Evaluate(t), AlmostEquals(p.Evaluate(t), 0, 942));
+  }
 }
 
 TEST_F(PolynomialTest, Derivative) {
