@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "numerics/polynomial.hpp"
 
@@ -34,6 +34,54 @@ using quantities::Apply;
 using quantities::Exponentiation;
 using quantities::Pow;
 using quantities::Time;
+
+// A helper for changing the origin of a monomial (x - x₁)ⁿ.  It computes the
+// coefficients of the same monomial as a polynomial of (x - x₂), i.e.:
+//  cₙ(x - x₁)ⁿ = cₙ((x - x₂) + (x₁ - x₂))ⁿ =
+//                Σ cₙ(n k)(x - x₂)ᵏ(x₁ - x₂)ⁿ⁻ᵏ
+// where (n k) is the binomial coefficient.  The coefficients are for a
+// polynomial of the given degree, with zeros for the unneeded high-degree
+// terms.
+template<typename Value, typename Argument, int degree, int n,
+         template<typename, typename, int> class Evaluator,
+         typename = std::make_index_sequence<degree + 1>>
+struct MonomialAtOrigin;
+
+template<typename Value, typename Argument, int degree, int n,
+         template<typename, typename, int> class Evaluator,
+         std::size_t... k>
+struct MonomialAtOrigin<Value, Argument, degree, n,
+                        Evaluator,
+                        std::index_sequence<k...>> {
+  using Coefficients =
+      typename
+      PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>::
+          Coefficients;
+
+  // The parameter coefficient is the coefficient of the monomial.  The
+  // parameter shift is x₁ - x₂, computed only once by the caller.
+  static Coefficients MakeCoefficients(
+      std::tuple_element_t<n, Coefficients> const& coefficient,
+      Argument const& shift) {
+    return {(k <= n ? coefficient * Binomial(n, k) *
+                          Pow<static_cast<int>(n - k)>(shift)
+                    : std::tuple_element_t<k, Coefficients>{})...};
+  }
+};
+
+template<typename Value, typename Argument, int degree, int n,
+         template<typename, typename, int> class Evaluator,
+         std::size_t... k>
+auto MonomialAtOrigin<Value, Argument, degree, n,
+                      Evaluator,
+                      std::index_sequence<k...>>::MakeCoefficients(
+    std::tuple_element_t<n, Coefficients> const& coefficient,
+    Argument const& shift)
+    -> Coefficients {
+  return {(k <= n ? coefficient * Binomial(n, k) *
+                        Pow<static_cast<int>(n - k)>(shift)
+                  : std::tuple_element_t<k, Coefficients>{})...};
+}
 
 // Index-by-index assignment of RTuple to LTuple, which must have at least as
 // many elements (and the types must match).
