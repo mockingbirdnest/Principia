@@ -27,7 +27,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
     mathematica,
     TEMPLATE(typename Value, typename Argument, int degree_,
              template<typename, typename, int> class Evaluator,
-             typename OptionalExpressIn) std::string,
+             typename OptionalExpressIn = std::nullopt_t) std::string,
     ToMathematica,
     (numerics::
          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
