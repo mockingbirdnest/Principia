@@ -110,12 +110,19 @@ MakePolynomial(typename Polynomial::Coefficients const& coefficients,
                 Point<Argument> const& from_origin,
                 Point<Argument> const& to_origin) -> Polynomial {
   Argument const shift = to_origin - from_origin;
-  return Polynomial(
-      typename Polynomial::Coefficients{
-          (MonomialAtOrigin<Value, Argument, degree, indices, Evaluator>::
-               MakeCoefficients(std::get<indices>(coefficients), shift) +
-           ...)},
-      to_origin);
+  std::array<typename Polynomial::Coefficients, degree + 1> const
+      all_coefficients{
+          MonomialAtOrigin<Value, Argument, degree, indices, Evaluator>::
+              MakeCoefficients(std::get<indices>(coefficients), shift)...};
+
+  // It would be nicer to compute the sum using a fold expression, but Clang
+  // refuses to find the operator + in that context.  Fold expressions, the
+  // final frontier...
+  typename Polynomial::Coefficients sum_coefficients;
+  for (auto const& coefficients : all_coefficients) {
+    sum_coefficients = sum_coefficients + coefficients;
+  }
+  return Polynomial(sum_coefficients, to_origin);
 }
 
 // Index-by-index assignment of RTuple to LTuple, which must have at least as
