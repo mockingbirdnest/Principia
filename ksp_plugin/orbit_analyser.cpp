@@ -190,8 +190,8 @@ Time const& OrbitAnalyser::Analysis::mission_duration() const {
   return mission_duration_;
 }
 
-RotatingBody<Barycentric> const& OrbitAnalyser::Analysis::primary() const {
-  return *primary_;
+RotatingBody<Barycentric> const* OrbitAnalyser::Analysis::primary() const {
+  return primary_;
 }
 
 std::optional<OrbitalElements> const& OrbitAnalyser::Analysis::elements()

@@ -46,7 +46,7 @@ class OrbitAnalyser {
    public:
     Instant const& first_time() const;
     Time const& mission_duration() const;
-    RotatingBody<Barycentric> const& primary() const;
+    RotatingBody<Barycentric> const* primary() const;
     std::optional<OrbitalElements> const& elements() const;
     std::optional<OrbitRecurrence> const& recurrence() const;
     std::optional<OrbitGroundTrack> const& ground_track() const;

@@ -93,8 +93,10 @@ OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
   OrbitAnalysis* const analysis = new OrbitAnalysis{};
   analysis->progress_of_next_analysis = vessel.progress_of_orbit_analysis();
   if (vessel.orbit_analysis() != nullptr) {
-    analysis->primary_index = new int(
-        plugin->CelestialIndexOfBody(vessel.orbit_analysis()->primary()));
+    analysis->primary_index = vessel.orbit_analysis()->primary() == nullptr
+                                  ? nullptr
+                                  : new int(plugin->CelestialIndexOfBody(
+                                        *vessel.orbit_analysis()->primary()));
     analysis->mission_duration =
         vessel.orbit_analysis()->mission_duration() / Second;
     if (vessel.orbit_analysis()->elements().has_value()) {
@@ -120,9 +122,10 @@ OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
           .radial_distance = ToInterval(elements.radial_distance_interval()),
       };
     }
-    if (has_nominal_recurrence) {
+    if (has_nominal_recurrence &&
+        vessel.orbit_analysis()->primary() != nullptr) {
       int const Cᴛₒ =
-          Sign(vessel.orbit_analysis()->primary().angular_frequency()) *
+          Sign(vessel.orbit_analysis()->primary()->angular_frequency()) *
           std::abs(*days_per_cycle);
       int const νₒ =
           std::nearbyint(static_cast<double>(*revolutions_per_cycle) / Cᴛₒ);
