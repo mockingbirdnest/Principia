@@ -62,11 +62,7 @@ struct MonomialAtOrigin<Value, Argument, degree, n,
   // parameter shift is x₁ - x₂, computed only once by the caller.
   static Coefficients MakeCoefficients(
       std::tuple_element_t<n, Coefficients> const& coefficient,
-      Argument const& shift) {
-    return {(k <= n ? coefficient * Binomial(n, k) *
-                          Pow<static_cast<int>(n - k)>(shift)
-                    : std::tuple_element_t<k, Coefficients>{})...};
-  }
+      Argument const& shift);
 };
 
 template<typename Value, typename Argument, int degree, int n,
@@ -76,11 +72,50 @@ auto MonomialAtOrigin<Value, Argument, degree, n,
                       Evaluator,
                       std::index_sequence<k...>>::MakeCoefficients(
     std::tuple_element_t<n, Coefficients> const& coefficient,
-    Argument const& shift)
-    -> Coefficients {
+    Argument const& shift) -> Coefficients {
   return {(k <= n ? coefficient * Binomial(n, k) *
                         Pow<static_cast<int>(n - k)>(shift)
                   : std::tuple_element_t<k, Coefficients>{})...};
+}
+
+// A helper for changing the origin of an entire polynomial, by repeatedly
+// using MonomialAtOrigin.  We need two helpers because changing the origin is
+// a quadratic operation in terms of the degree.
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator,
+         typename = std::make_index_sequence<degree_ + 1>>
+struct PolynomialAtOrigin;
+
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> class Evaluator,
+         std::size_t... indices>
+struct PolynomialAtOrigin<Value, Argument, degree, Evaluator,
+                          std::index_sequence<indices...>> {
+  using Polynomial =
+      PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>;
+
+  static Polynomial MakePolynomial(
+      typename Polynomial::Coefficients const& coefficients,
+      Point<Argument> const& from_origin,
+      Point<Argument> const& to_origin);
+};
+
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> class Evaluator,
+         std::size_t ...indices>
+auto PolynomialAtOrigin<Value, Argument, degree,
+                        Evaluator,
+                        std::index_sequence<indices...>>::
+MakePolynomial(typename Polynomial::Coefficients const& coefficients,
+                Point<Argument> const& from_origin,
+                Point<Argument> const& to_origin) -> Polynomial {
+  Argument const shift = to_origin - from_origin;
+  return Polynomial(
+      typename Polynomial::Coefficients{
+          (MonomialAtOrigin<Value, Argument, degree, indices, Evaluator>::
+               MakeCoefficients(std::get<indices>(coefficients), shift) +
+           ...)},
+      to_origin);
 }
 
 // Index-by-index assignment of RTuple to LTuple, which must have at least as
@@ -467,62 +502,15 @@ origin() const {
   return origin_;
 }
 
-template<typename Value, typename Argument, int degree, int n,
-         template<typename, typename, int> class Evaluator,
-         typename = std::make_index_sequence<degree + 1>>
-struct Bino;
-
-template<typename Value, typename Argument, int degree, int n,
-         template<typename, typename, int> class Evaluator,
-         std::size_t... k>
-struct Bino<Value, Argument, degree, n, Evaluator, std::index_sequence<k...>> {
-  using Coefficients =
-      typename
-      PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>::
-          Coefficients;
-  static typename Coefficients Make(
-      std::tuple_element_t<n, Coefficients> const& coefficient,
-      Argument const& shift) {
-    return {(k <= n ? coefficient * Binomial(n, k) *
-                          Pow<static_cast<int>(n - k)>(shift)
-                    : std::tuple_element_t<k, Coefficients>{})...};
-  }
-};
-
-template<typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator,
-         typename = std::make_index_sequence<degree_ + 1>>
-struct DuDdu;
-
-template<typename Value, typename Argument, int degree,
-         template<typename, typename, int> class Evaluator,
-         std::size_t... indices>
-struct DuDdu<Value, Argument, degree, Evaluator,
-             std::index_sequence<indices...>> {
-  using Polynomial =
-      PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>;
-  static Polynomial Make(typename Polynomial::Coefficients const& coefficients,
-                         Point<Argument> const& from_origin,
-                         Point<Argument> const& to_origin) {
-    Argument const shift = to_origin - from_origin;
-    return Polynomial(
-        typename Polynomial::Coefficients{(
-            Bino<Value, Argument, degree, indices, Evaluator>::Make(
-                std::get<indices>(coefficients), shift) +
-            ...)},
-        to_origin);
-  }
-};
-
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::AtOrigin(
     Point<Argument> const& origin) const {
-  // (x - x0)^n = (x - x1 + x1 - x0)^n = Sum (n|k)(x - x1)^k(x1 - x0)^(n - k)
-  // Time^n
-  return DuDdu<Value, Argument, degree_, Evaluator>::Make(
-      coefficients_, origin_, origin);
+  return PolynomialAtOrigin<Value, Argument, degree_, Evaluator>::
+      MakePolynomial(coefficients_,
+                     /*from_origin=*/origin_,
+                     /*to_origin=*/origin);
 }
 
 template<typename Value, typename Argument, int degree_,
