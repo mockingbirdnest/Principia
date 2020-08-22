@@ -343,11 +343,12 @@ TEST_F(MathematicaTest, ToMathematica) {
         "2]]]",
         ToMathematica(polynomial2));
   }
-#if !PRINCIPIA_COMPILER_MSVC
+#if 0
   // This test does not compile with MSVC 16.6.3: it thinks that operators + and
   // - on polynomials are ambiguous deep in the constructor of PoissonSeries.
   // But don't despair, because the exact same code compiled in a different
   // place (frequency_analysis_test.cpp) works like a charm...
+  // With Clang it doesn't because it misses the body of ToMathematica.
   {
     using Series = PoissonSeries<double, 0, HornerEvaluator>;
     Instant const t0 = Instant() + 3 * Second;
