@@ -2,6 +2,7 @@
 #pragma once
 
 #include <algorithm>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -31,7 +32,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
     (numerics::
          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
              polynomial,
-     OptionalExpressIn express_in));
+     OptionalExpressIn express_in = std::nullopt));
 }  // namespace mathematica
 
 namespace numerics {
