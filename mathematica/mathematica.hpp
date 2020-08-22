@@ -210,14 +210,14 @@ std::string ToMathematica(R ref,
 // mathematica.hpp, so the default will properly be on the first declaration.
 template<typename V, typename A, int d,
          template<typename, typename, int> class E,
-         typename OptionalExpressIn = std::nullopt_t>
+         typename OptionalExpressIn /*= std::nullopt_t*/>
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in /*= std::nullopt*/);
 
 template<typename V, int d,
          template<typename, typename, int> class E,
-         typename OptionalExpressIn = std::nullopt_t>
+         typename OptionalExpressIn /*= std::nullopt_t*/>
 std::string ToMathematica(PoissonSeries<V, d, E> const& series,
                           OptionalExpressIn express_in /*= std::nullopt*/);
 
