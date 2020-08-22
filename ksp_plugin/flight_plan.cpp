@@ -27,6 +27,7 @@ using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::Fine1987RKNG34;
 using quantities::Acceleration;
+using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Second;
 
@@ -256,6 +257,68 @@ void FlightPlan::GetAllSegments(
 OrbitAnalyser::Analysis* FlightPlan::analysis(int coast_index) {
   coast_analysers_[coast_index]->RefreshAnalysis();
   return coast_analysers_[coast_index]->analysis();
+}
+
+Status FlightPlan::IncrementCoastRevolutions(int coast_index, Period kind) {
+  auto* const analysis = coast_analysers_[coast_index]->analysis();
+  if (analysis == nullptr) {
+  }
+  if (!analysis->elements().has_value()) {
+  }
+  Time period;
+  switch (kind) {
+    case Period::Sidereal:
+      period = analysis->elements()->sidereal_period();
+      break;
+    case Period::Anomalistic:
+      period = analysis->elements()->anomalistic_period();
+      break;
+    case Period::Nodal:
+      period = analysis->elements()->nodal_period();
+      break;
+    default:
+      LOG(FATAL) << "Unexpected period kind " << static_cast<int>(kind);
+  }
+  Status replacement_status;
+  for (int i = manœuvres_.size() - 1; i >= coast_index; --i) {
+    auto shifted_burn = manœuvres_[i].burn();
+    *shifted_burn.timing.initial_time += period;
+    replacement_status.Update(Replace(shifted_burn, i));
+  }
+  return replacement_status;
+}
+
+Status FlightPlan::DecrementCoastRevolutions(int coast_index, Period kind) {
+  auto* const analysis = coast_analysers_[coast_index]->analysis();
+  if (analysis == nullptr) {
+  }
+  if (!analysis->elements().has_value()) {
+  }
+  Time period;
+  switch (kind) {
+    case Period::Sidereal:
+      period = analysis->elements()->sidereal_period();
+      break;
+    case Period::Anomalistic:
+      period = analysis->elements()->anomalistic_period();
+      break;
+    case Period::Nodal:
+      period = analysis->elements()->nodal_period();
+      break;
+    default:
+      LOG(FATAL) << "Unexpected period kind " << static_cast<int>(kind);
+  }
+  if (manœuvres_[coast_index].initial_time() - period <=
+      start_of_previous_coast(coast_index)) {
+    return DoesNotFit();
+  }
+  Status replacement_status;
+  for (int i = coast_index; i < manœuvres_.size(); ++i) {
+    auto shifted_burn = manœuvres_[i].burn();
+    *shifted_burn.timing.initial_time -= period;
+    replacement_status.Update(Replace(shifted_burn, i));
+  }
+  return replacement_status;
 }
 
 void FlightPlan::WriteToMessage(

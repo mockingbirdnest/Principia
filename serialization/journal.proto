@@ -722,6 +722,24 @@ message FlightPlanCreate {
   optional In in = 1;
 }
 
+message FlightPlanDecrementCoastRevolutions {
+  extend Method {
+    optional FlightPlanDecrementCoastRevolutions extension = 5177;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+    required int32 period_kind = 4;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message FlightPlanDelete {
   extend Method {
     optional FlightPlanDelete extension = 5072;
@@ -877,6 +895,24 @@ message FlightPlanGetManoeuvreFrenetTrihedron {
   }
   message Return {
     required NavigationManoeuvreFrenetTrihedron result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanIncrementCoastRevolutions {
+  extend Method {
+    optional FlightPlanIncrementCoastRevolutions extension = 5176;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+    required int32 period_kind = 4;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;

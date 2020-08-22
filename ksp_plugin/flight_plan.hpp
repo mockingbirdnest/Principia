@@ -132,6 +132,15 @@ class FlightPlan {
   // |coast_index| must be in [0, number_of_manœuvres()].
   virtual OrbitAnalyser::Analysis* analysis(int coast_index);
 
+  enum class Period {
+    Sidereal,
+    Anomalistic,
+    Nodal,
+  };
+
+  Status IncrementCoastRevolutions(int coast_index, Period kind);
+  Status DecrementCoastRevolutions(int coast_index, Period kind);
+
   void WriteToMessage(not_null<serialization::FlightPlan*> message) const;
 
   // This may return a null pointer if the flight plan contained in the

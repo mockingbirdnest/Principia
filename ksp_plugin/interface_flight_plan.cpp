@@ -196,6 +196,21 @@ void __cdecl principia__FlightPlanCreate(Plugin const* const plugin,
   return m.Return();
 }
 
+Status* __cdecl principia__FlightPlanDecrementCoastRevolutions(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const index,
+    int const period_kind) {
+  journal::Method<journal::FlightPlanDecrementCoastRevolutions> m(
+      {plugin, vessel_guid, index, period_kind});
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToNewStatus(
+      plugin->GetVessel(vessel_guid)
+          ->flight_plan()
+          .DecrementCoastRevolutions(
+              index, static_cast<FlightPlan::Period>(period_kind))));
+}
+
 void __cdecl principia__FlightPlanDelete(Plugin const* const plugin,
                                          char const* const vessel_guid) {
   journal::Method<journal::FlightPlanDelete> m({plugin, vessel_guid});
@@ -340,6 +355,21 @@ principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
       frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 0, 1})));
 
   return m.Return(result);
+}
+
+Status* __cdecl principia__FlightPlanIncrementCoastRevolutions(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const index,
+    int const period_kind) {
+  journal::Method<journal::FlightPlanIncrementCoastRevolutions> m(
+      {plugin, vessel_guid, index, period_kind});
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToNewStatus(
+      plugin->GetVessel(vessel_guid)
+          ->flight_plan()
+          .IncrementCoastRevolutions(
+              index, static_cast<FlightPlan::Period>(period_kind))));
 }
 
 int __cdecl principia__FlightPlanNumberOfAnomalousManoeuvres(

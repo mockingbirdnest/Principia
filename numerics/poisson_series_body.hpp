@@ -7,19 +7,26 @@
 #include <functional>
 #include <map>
 #include <optional>
+#include <vector>
 
+#include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_poisson_series {
 
+using quantities::Abs;
 using quantities::Cos;
 using quantities::Infinity;
 using quantities::Primitive;
 using quantities::Sin;
+using quantities::Variation;
 using quantities::si::Radian;
+using quantities::si::Second;
+namespace si = quantities::si;
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -361,6 +368,248 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   auto const integrand = left * right * weight;
   auto const primitive = integrand.Primitive();
   return primitive.Evaluate(t_max) - primitive.Evaluate(t_min);
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries(
+    Interval<Instant> const& interval,
+    Series const& series)
+    : bounds_({interval.min, interval.max}),
+      series_(/*count=*/1, series) {
+  CHECK_LT(Time{}, interval.measure());
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+void PiecewisePoissonSeries<Value, degree_, Evaluator>::Append(
+    Interval<Instant> const& interval,
+    Series const& series) {
+  CHECK_LT(Time{}, interval.measure());
+  CHECK_EQ(bounds_.back(), interval.min);
+  bounds_.push_back(interval.max);
+  series_.push_back(series);
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+Instant PiecewisePoissonSeries<Value, degree_, Evaluator>::t_min() const {
+  return bounds_.front();
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+Instant PiecewisePoissonSeries<Value, degree_, Evaluator>::t_max() const {
+  return bounds_.back();
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+Value PiecewisePoissonSeries<Value, degree_, Evaluator>::Evaluate(
+    Instant const& t) const {
+  // If t is an element of bounds_, the returned iterator points to the next
+  // element.  Otherwise it points to the upper bound of the interval to which
+  // t belongs.
+  auto const it = std::upper_bound(bounds_.cbegin(), bounds_.cend(), t);
+  CHECK(it != bounds_.cbegin())
+      << "Unexpected result looking up " << t << " in "
+      << bounds_.front() << " .. " << bounds_.back();
+  CHECK(it != bounds_.cend())
+      << t << " is outside of " << bounds_.front() << " .. " << bounds_.back();
+  return series_[it - bounds_.cbegin() - 1].Evaluate(t);
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries(
+    std::vector<Instant> const& bounds,
+    std::vector<PoissonSeries<Value, degree_, Evaluator>> const& series)
+    : bounds_(bounds),
+      series_(series) {}
+
+template<typename Value, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, rdegree_, Evaluator> operator+(
+    PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  return right;
+}
+
+template<typename Value, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, rdegree_, Evaluator> operator-(
+    PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  using Result = PiecewisePoissonSeries<Value, rdegree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(-right.series_[i]);
+  }
+  return Result(right.bounds_, series);
+}
+
+template<typename Scalar, typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator> operator*(
+    Scalar const& left,
+    PiecewisePoissonSeries<Value, degree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(left * right.series_[i]);
+  }
+  return Result(right.bounds_, series);
+}
+
+template<typename Scalar, typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator> operator*(
+    PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
+    Scalar const& right) {
+  using Result =
+      PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] * right);
+  }
+  return Result(left.bounds_, series);
+}
+
+template<typename Scalar, typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator> operator/(
+    PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
+    Scalar const& right) {
+  using Result =
+      PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] / right);
+  }
+  return Result(left.bounds_, series);
+}
+
+template<typename Value, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
+operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
+          PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(left + right.series_[i]);
+  }
+  return Result(right.bounds_, series);
+}
+
+template<typename Value, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
+operator+(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
+          PoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] + right);
+  }
+  return Result(left.bounds_, series);
+}
+
+template<typename Value, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
+operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
+          PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(left - right.series_[i]);
+  }
+  return Result(right.bounds_, series);
+}
+
+template<typename Value, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
+operator-(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
+          PoissonSeries<Value, rdegree_, Evaluator> const& right) {
+  using Result =
+      PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] - right);
+  }
+  return Result(left.bounds_, series);
+}
+
+template<typename LValue, typename RValue, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
+operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+          PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right) {
+  using Result = PiecewisePoissonSeries<Product<LValue, RValue>,
+                                        ldegree_ + rdegree_,
+                                        Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(left * right.series_[i]);
+  }
+  return Result(right.bounds_, series);
+}
+
+template<typename LValue, typename RValue, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
+operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+          PoissonSeries<RValue, rdegree_, Evaluator> const& right) {
+  using Result = PiecewisePoissonSeries<Product<LValue, RValue>,
+                                        ldegree_ + rdegree_,
+                                        Evaluator>;
+  std::vector<typename Result::Series> series;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(left.series_[i] * right);
+  }
+  return Result(left.bounds_, series);
+}
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+Primitive<Product<LValue, RValue>, Time> Dot(
+    PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+  using Result = Primitive<Product<LValue, RValue>, Time>;
+  Result result;
+  for (int i = 0; i < right.series_.size(); ++i) {
+    result += Dot(left,
+                  right.series_[i],
+                  weight,
+                  right.bounds_[i],
+                  right.bounds_[i + 1]);
+  }
+  return result;
+}
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+Primitive<Product<LValue, RValue>, Time> Dot(
+    PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+  using Result = Primitive<Product<LValue, RValue>, Time>;
+  Result result;
+  for (int i = 0; i < left.series_.size(); ++i) {
+    result += Dot(left.series_[i],
+                  right,
+                  weight,
+                  left.bounds_[i],
+                  left.bounds_[i + 1]);
+  }
+  return result;
 }
 
 }  // namespace internal_poisson_series
