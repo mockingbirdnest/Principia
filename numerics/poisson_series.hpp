@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -29,7 +30,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
              typename OptionalExpressIn) std::string,
     ToMathematica,
     (numerics::PoissonSeries<Value, degree_, Evaluator> const& series,
-     OptionalExpressIn express_in));
+     OptionalExpressIn express_in = std::nullopt));
 }  // namespace mathematica
 
 namespace numerics {
