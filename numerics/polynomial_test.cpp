@@ -236,6 +236,17 @@ TEST_F(PolynomialTest, Ring) {
   }
 }
 
+TEST_F(PolynomialTest, AtOrigin) {
+  Instant const t0 = Instant() + 3 * Second;
+  P2A const p(coefficients_, t0);
+  P2A const q = p.AtOrigin(Instant() - 2 * Second);
+  for (Instant t = Instant() - 10 * Second;
+       t < Instant() + 10 * Second;
+       t += 0.3 * Second) {
+    EXPECT_THAT(q.Evaluate(t), AlmostEquals(p.Evaluate(t), 0, 942));
+  }
+}
+
 TEST_F(PolynomialTest, Derivative) {
   using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
   using P3 = PolynomialInMonomialBasis<Current, Time, 3, HornerEvaluator>;

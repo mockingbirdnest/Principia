@@ -218,6 +218,9 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 
   Point<Argument> const& origin() const;
 
+  // Returns a copy of this polynomial adjusted to the given origin.
+  PolynomialInMonomialBasis AtOrigin(Point<Argument> const& origin) const;
+
   template<int order = 1>
   PolynomialInMonomialBasis<
       Derivative<Value, Argument, order>, Point<Argument>, degree_ - order,

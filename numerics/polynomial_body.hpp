@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "numerics/polynomial.hpp"
 
@@ -31,6 +31,99 @@ using geometry::cartesian_product::operator*;
 using geometry::cartesian_product::operator/;
 using geometry::polynomial_ring::operator*;
 using quantities::Apply;
+using quantities::Exponentiation;
+using quantities::Pow;
+using quantities::Time;
+
+// A helper for changing the origin of a monomial (x - x₁)ⁿ.  It computes the
+// coefficients of the same monomial as a polynomial of (x - x₂), i.e.:
+//  cₙ(x - x₁)ⁿ = cₙ((x - x₂) + (x₁ - x₂))ⁿ =
+//                Σ cₙ(n k)(x - x₂)ᵏ(x₁ - x₂)ⁿ⁻ᵏ
+// where (n k) is the binomial coefficient.  The coefficients are for a
+// polynomial of the given degree, with zeros for the unneeded high-degree
+// terms.
+template<typename Value, typename Argument, int degree, int n,
+         template<typename, typename, int> class Evaluator,
+         typename = std::make_index_sequence<degree + 1>>
+struct MonomialAtOrigin;
+
+template<typename Value, typename Argument, int degree, int n,
+         template<typename, typename, int> class Evaluator,
+         std::size_t... k>
+struct MonomialAtOrigin<Value, Argument, degree, n,
+                        Evaluator,
+                        std::index_sequence<k...>> {
+  using Coefficients =
+      typename
+      PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>::
+          Coefficients;
+
+  // The parameter coefficient is the coefficient of the monomial.  The
+  // parameter shift is x₁ - x₂, computed only once by the caller.
+  static Coefficients MakeCoefficients(
+      std::tuple_element_t<n, Coefficients> const& coefficient,
+      Argument const& shift);
+};
+
+template<typename Value, typename Argument, int degree, int n,
+         template<typename, typename, int> class Evaluator,
+         std::size_t... k>
+auto MonomialAtOrigin<Value, Argument, degree, n,
+                      Evaluator,
+                      std::index_sequence<k...>>::MakeCoefficients(
+    std::tuple_element_t<n, Coefficients> const& coefficient,
+    Argument const& shift) -> Coefficients {
+  return {(k <= n ? coefficient * Binomial(n, k) *
+                        Pow<static_cast<int>(n - k)>(shift)
+                  : std::tuple_element_t<k, Coefficients>{})...};
+}
+
+// A helper for changing the origin of an entire polynomial, by repeatedly
+// using MonomialAtOrigin.  We need two helpers because changing the origin is
+// a quadratic operation in terms of the degree.
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator,
+         typename = std::make_index_sequence<degree_ + 1>>
+struct PolynomialAtOrigin;
+
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> class Evaluator,
+         std::size_t... indices>
+struct PolynomialAtOrigin<Value, Argument, degree, Evaluator,
+                          std::index_sequence<indices...>> {
+  using Polynomial =
+      PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>;
+
+  static Polynomial MakePolynomial(
+      typename Polynomial::Coefficients const& coefficients,
+      Point<Argument> const& from_origin,
+      Point<Argument> const& to_origin);
+};
+
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> class Evaluator,
+         std::size_t ...indices>
+auto PolynomialAtOrigin<Value, Argument, degree,
+                        Evaluator,
+                        std::index_sequence<indices...>>::
+MakePolynomial(typename Polynomial::Coefficients const& coefficients,
+                Point<Argument> const& from_origin,
+                Point<Argument> const& to_origin) -> Polynomial {
+  Argument const shift = to_origin - from_origin;
+  std::array<typename Polynomial::Coefficients, degree + 1> const
+      all_coefficients{
+          MonomialAtOrigin<Value, Argument, degree, indices, Evaluator>::
+              MakeCoefficients(std::get<indices>(coefficients), shift)...};
+
+  // It would be nicer to compute the sum using a fold expression, but Clang
+  // refuses to find the operator + in that context.  Fold expressions, the
+  // final frontier...
+  typename Polynomial::Coefficients sum_coefficients;
+  for (auto const& coefficients : all_coefficients) {
+    sum_coefficients = sum_coefficients + coefficients;
+  }
+  return Polynomial(sum_coefficients, to_origin);
+}
 
 // Index-by-index assignment of RTuple to LTuple, which must have at least as
 // many elements (and the types must match).
@@ -414,6 +507,17 @@ Point<Argument> const&
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 origin() const {
   return origin_;
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::AtOrigin(
+    Point<Argument> const& origin) const {
+  return PolynomialAtOrigin<Value, Argument, degree_, Evaluator>::
+      MakePolynomial(coefficients_,
+                     /*from_origin=*/origin_,
+                     /*to_origin=*/origin);
 }
 
 template<typename Value, typename Argument, int degree_,
