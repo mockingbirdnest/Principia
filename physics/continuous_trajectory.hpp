@@ -10,7 +10,9 @@
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
+#include "numerics/poisson_series.hpp"
 #include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "physics/checkpointer.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/trajectory.hpp"
@@ -29,6 +31,8 @@ using geometry::Position;
 using geometry::Velocity;
 using quantities::Length;
 using quantities::Time;
+using numerics::EstrinEvaluator;
+using numerics::PiecewisePoissonSeries;
 using numerics::Polynomial;
 
 template<typename Frame>
@@ -39,6 +43,9 @@ class TestableContinuousTrajectory;
 // |t_max()| may return different values.
 template<typename Frame>
 class ContinuousTrajectory : public Trajectory<Frame> {
+  static constexpr int max_degree = 17;
+  static constexpr int min_degree = 3;
+
  public:
   // Constructs a trajectory with the given time |step|.  Because the Чебышёв
   // polynomials have values in the range [-1, 1], the error resulting of
@@ -87,6 +94,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       Instant const& time) const override EXCLUDES(lock_);
 
   // End of the implementation of the interface.
+
+  //TODO(phl):Locking
+  PiecewisePoissonSeries<Position<Frame>, max_degree, EstrinEvaluator>
+  ToPiecewisePoissonSeries() const;
 
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
