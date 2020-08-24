@@ -10,6 +10,7 @@
 
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_cat.h"
+#include "base/macros.hpp"
 #include "base/not_constructible.hpp"
 #include "base/traits.hpp"
 #include "geometry/cartesian_product.hpp"
@@ -555,7 +556,11 @@ template<typename Value, typename Argument, int degree_,
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>&
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 operator+=(PolynomialInMonomialBasis const& right) {
+#if PRINCIPIA_COMPILER_MSVC
+  this->coefficients_ = this->coefficients_ + right.coefficients_;
+#else
   *this = *this + right;
+#endif
   return *this;
 }
 
@@ -564,7 +569,11 @@ template<typename Value, typename Argument, int degree_,
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>&
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 operator-=(PolynomialInMonomialBasis const& right) {
+#if PRINCIPIA_COMPILER_MSVC
+  this->coefficients_ = this->coefficients_ - right.coefficients_;
+#else
   *this = *this - right;
+#endif
   return *this;
 }
 
