@@ -43,6 +43,7 @@ using base::not_null;
 using geometry::Point;
 using quantities::Derivative;
 using quantities::Derivatives;
+using quantities::Difference;
 using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
@@ -119,7 +120,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
   // The constant term of the result is zero.
   PolynomialInMonomialBasis<
-      Primitive<Value, Argument>, Argument, degree_ + 1, Evaluator>
+      Primitive<Difference<Value>, Argument>, Argument, degree_ + 1, Evaluator>
   Primitive() const;
 
   PolynomialInMonomialBasis& operator+=(PolynomialInMonomialBasis const& right);
@@ -229,7 +230,8 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 
   // The constant term of the result is zero.
   PolynomialInMonomialBasis<
-      Primitive<Value, Argument>, Point<Argument>, degree_ + 1, Evaluator>
+      Primitive<Difference<Value>, Argument>, Point<Argument>,
+      degree_ + 1, Evaluator>
   Primitive() const;
 
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);

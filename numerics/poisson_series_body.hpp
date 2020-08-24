@@ -115,10 +115,11 @@ Value PoissonSeries<Value, degree_, Evaluator>::operator()(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
+PoissonSeries<quantities::Primitive<Difference<Value>, Time>,
+              degree_ + 1, Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::Primitive() const {
-  using Result =
-      PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>;
+  using Result = PoissonSeries<quantities::Primitive<Difference<Value>, Time>,
+                               degree_ + 1, Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
   typename Result::Polynomial const aperiodic = aperiodic_.Primitive();
   for (auto const& [ω, polynomials] : periodic_) {
