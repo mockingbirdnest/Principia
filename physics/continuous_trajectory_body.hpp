@@ -214,6 +214,21 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
                                  polynomial->EvaluateDerivative(time));
 }
 
+// Casts the polynomial to one of degree d1, and then increases the degree to
+// d2.
+#define PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(source, d1, d2)       \
+  case d1: {                                                                 \
+    return PolynomialInMonomialBasis<Displacement<Frame>,                    \
+                                     Instant,                                \
+                                     d2,                                     \
+                                     EstrinEvaluator>(                       \
+        dynamic_cast_not_null<PolynomialInMonomialBasis<Displacement<Frame>, \
+                                                        Instant,             \
+                                                        d1,                  \
+                                                        EstrinEvaluator>>(   \
+            &source));                                                       \
+  }
+
 template<typename Frame>
 auto ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries() const
     -> PiecewisePoissonSeries<Displacement<Frame>, max_degree,
@@ -224,23 +239,62 @@ auto ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries() const
   using Poisson = PoissonSeries<Displacement<Frame>, max_degree,
                                 EstrinEvaluator>;
 
+  auto cast_to_max_degree =
+      [](Polynomial<Displacement<Frame>, Instant> const& polynomial) {
+    switch (polynomial.degree()) {
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     3, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     4, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     5, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     6, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     7, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     8, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     9, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     10, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     11, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     12, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     13, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     14, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     15, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     16, max_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
+                                                     17, max_degree);
+      default:
+        LOG(FATAL) << "Unexpected degree " << polynomial.degree();
+    }
+  };
+
   Instant t_min = *first_time_;
   std::unique_ptr<PiecewisePoisson> result;
   for (auto const& [t_max, polynomial] : polynomials_) {
     Interval<Instant> interval;
     interval.Include(t_min);
     interval.Include(t_max);
-    typename Poisson::Polynomial const& p =
-        *dynamic_cast_not_null<typename Poisson::Polynomial*>(polynomial.get());
     if (result == nullptr) {
-      result = std::make_unique<PiecewisePoisson>(interval, Poisson(p, {{}}));
+      result = std::make_unique<PiecewisePoisson>(
+          interval, Poisson(cast_to_max_degree(*polynomial), {{}}));
     } else {
-      result->Append(interval, Poisson(p, {{}}));
+      result->Append(interval, Poisson(cast_to_max_degree(*polynomial), {{}}));
     }
     t_min = t_max;
   }
   return *result;
 }
+
+#undef PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS
 
 template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
