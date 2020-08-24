@@ -23,6 +23,7 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
+using base::dynamic_cast_not_null;
 using base::Error;
 using base::make_not_null_unique;
 using geometry::Interval;
@@ -214,6 +215,34 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
+auto ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries() const
+    -> PiecewisePoissonSeries<Displacement<Frame>, max_degree,
+                              EstrinEvaluator> {
+  CHECK(!polynomials_.empty());
+  using PiecewisePoisson =
+      PiecewisePoissonSeries<Displacement<Frame>, max_degree, EstrinEvaluator>;
+  using Poisson = PoissonSeries<Displacement<Frame>, max_degree,
+                                EstrinEvaluator>;
+
+  Instant t_min = *first_time_;
+  std::unique_ptr<PiecewisePoisson> result;
+  for (auto const& [t_max, polynomial] : polynomials_) {
+    Interval<Instant> interval;
+    interval.Include(t_min);
+    interval.Include(t_max);
+    typename Poisson::Polynomial const& p =
+        *dynamic_cast_not_null<typename Poisson::Polynomial*>(polynomial.get());
+    if (result == nullptr) {
+      result = std::make_unique<PiecewisePoisson>(interval, Poisson(p, {{}}));
+    } else {
+      result->Append(interval, Poisson(p, {{}}));
+    }
+    t_min = t_max;
+  }
+  return *result;
+}
+
+template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
   absl::ReaderMutexLock l(&lock_);
@@ -296,31 +325,6 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
                                                        message);
 
   return continuous_trajectory;
-}
-
-template<typename Frame>
-auto ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries() const
-    -> PiecewisePoissonSeries<Position<Frame>, max_degree, EstrinEvaluator> {
-  CHECK(!polynomials_.empty());
-  using PiecewisePoisson =
-      PiecewisePoissonSeries<Position<Frame>, max_degree, EstrinEvaluator>;
-  using Poisson = PoissonSeries<Position<Frame>, max_degree, EstrinEvaluator>;
-
-  Instant t_min = *first_time;
-  std::unique_ptr<PiecewisePoisson> result;
-  for (auto& const [t_max, polynomial] : polynomials_) {
-    Interval<Instant> interval;
-    interval.Include(t_min);
-    interval.Include(t_max);
-    if (result == nullptr) {
-      result = std::make_unique<PiecewisePoisson>(interval,
-                                                  Poisson(polynomial, {{}}))
-    } else {
-      result->Append(interval, Poisson(polynomial, {{}}));
-    }
-    t_min = t_max;
-  }
-  return *result;
 }
 
 template<typename Frame>

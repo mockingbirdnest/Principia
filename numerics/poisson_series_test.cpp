@@ -20,9 +20,12 @@ namespace numerics {
 using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Cos;
+using quantities::Length;
 using quantities::Sin;
 using quantities::Sqrt;
+using quantities::Square;
 using quantities::Time;
+using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
@@ -192,26 +195,27 @@ TEST_F(PoissonSeriesTest, Output) {
 
 class PiecewisePoissonSeriesTest : public ::testing::Test {
  protected:
-  using Degree0 = PiecewisePoissonSeries<double, 0, HornerEvaluator>;
+  using Degree0 = PiecewisePoissonSeries<Length, 0, HornerEvaluator>;
 
   PiecewisePoissonSeriesTest()
       : ω_(π / 2 * Radian / Second),
-        p_(Degree0::Series::Polynomial({1.5}, t0_),
+        p_(Degree0::Series::Polynomial({1.5 * Metre}, t0_),
            {{ω_,
-             {/*sin=*/Degree0::Series::Polynomial({0.5}, t0_),
-              /*cos=*/Degree0::Series::Polynomial({-1}, t0_)}}}),
+             {/*sin=*/Degree0::Series::Polynomial({0.5 * Metre}, t0_),
+              /*cos=*/Degree0::Series::Polynomial({-1 * Metre}, t0_)}}}),
         pp_({t0_, t0_ + 1 * Second},
             Degree0::Series(
-                Degree0::Series::Polynomial({1}, t0_),
+                Degree0::Series::Polynomial({1 * Metre}, t0_),
                 {{ω_,
-                  {/*sin=*/Degree0::Series::Polynomial({-1}, t0_),
-                   /*cos=*/Degree0::Series::Polynomial({0}, t0_)}}})) {
+                  {/*sin=*/Degree0::Series::Polynomial({-1 * Metre}, t0_),
+                   /*cos=*/Degree0::Series::Polynomial({0 * Metre}, t0_)}}})) {
     pp_.Append(
         {t0_ + 1 * Second, t0_ + 2 * Second},
-        Degree0::Series(Degree0::Series::Polynomial({0}, t0_),
-                        {{ω_,
-                          {/*sin=*/Degree0::Series::Polynomial({0}, t0_),
-                           /*cos=*/Degree0::Series::Polynomial({1}, t0_)}}}));
+        Degree0::Series(
+            Degree0::Series::Polynomial({0 * Metre}, t0_),
+            {{ω_,
+              {/*sin=*/Degree0::Series::Polynomial({0 * Metre}, t0_),
+               /*cos=*/Degree0::Series::Polynomial({1 * Metre}, t0_)}}}));
   }
 
   Instant const t0_;
@@ -224,40 +228,48 @@ class PiecewisePoissonSeriesTest : public ::testing::Test {
 
 TEST_F(PiecewisePoissonSeriesTest, Evaluate) {
   double const ε = std::numeric_limits<double>::epsilon();
-  EXPECT_THAT(pp_(t0_), AlmostEquals(1, 0));
-  EXPECT_THAT(pp_(t0_ + 0.5 * Second), AlmostEquals(1 - Sqrt(0.5), 0, 2));
-  EXPECT_THAT(pp_(t0_ + 1 * (1 - ε / 2) * Second), AlmostEquals(0, 0));
-  EXPECT_THAT(pp_(t0_ + 1 * Second), VanishesBefore(1, 0));
-  EXPECT_THAT(pp_(t0_ + 1 * (1 + ε) * Second), VanishesBefore(1, 3));
-  EXPECT_THAT(pp_(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5), 1));
-  EXPECT_THAT(pp_(t0_ + 2 * (1 - ε / 2) * Second), AlmostEquals(-1, 0));
+  EXPECT_THAT(pp_(t0_), AlmostEquals(1 * Metre, 0));
+  EXPECT_THAT(pp_(t0_ + 0.5 * Second),
+              AlmostEquals((1 - Sqrt(0.5)) * Metre, 0, 2));
+  EXPECT_THAT(pp_(t0_ + 1 * (1 - ε / 2) * Second), AlmostEquals(0 * Metre, 0));
+  EXPECT_THAT(pp_(t0_ + 1 * Second), VanishesBefore(1 * Metre, 0));
+  EXPECT_THAT(pp_(t0_ + 1 * (1 + ε) * Second), VanishesBefore(1 * Metre, 3));
+  EXPECT_THAT(pp_(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5) * Metre, 1));
+  EXPECT_THAT(pp_(t0_ + 2 * (1 - ε / 2) * Second), AlmostEquals(-1 * Metre, 0));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, VectorSpace) {
   {
     auto const pp = +pp_;
-    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals(1 - Sqrt(0.5), 0, 2));
-    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5), 1));
+    EXPECT_THAT(pp(t0_ + 0.5 * Second),
+                AlmostEquals((1 - Sqrt(0.5)) * Metre, 0, 2));
+    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5) * Metre, 1));
   }
   {
     auto const pp = -pp_;
-    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals(-1 + Sqrt(0.5), 0, 2));
-    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(Sqrt(0.5), 1));
+    EXPECT_THAT(pp(t0_ + 0.5 * Second),
+                AlmostEquals((-1 + Sqrt(0.5)) * Metre, 0, 2));
+    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(Sqrt(0.5) * Metre, 1));
   }
   {
     auto const pp = 2 * pp_;
-    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals(2 - Sqrt(2), 0, 2));
-    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(2), 1));
+    EXPECT_THAT(pp(t0_ + 0.5 * Second),
+                AlmostEquals((2 - Sqrt(2)) * Metre, 0, 2));
+    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(2) * Metre, 1));
   }
   {
     auto const pp = pp_ * 3;
-    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals(3 - 3 * Sqrt(0.5), 0, 4));
-    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(-3 * Sqrt(0.5), 1));
+    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals(
+                (3 - 3 * Sqrt(0.5)) * Metre, 0, 4));
+    EXPECT_THAT(pp(t0_ + 1.5 * Second),
+                AlmostEquals(-3 * Sqrt(0.5) * Metre, 1));
   }
   {
     auto const pp = pp_ / 4;
-    EXPECT_THAT(pp(t0_ + 0.5 * Second), AlmostEquals((2 - Sqrt(2)) / 8, 0, 2));
-    EXPECT_THAT(pp(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5) / 4, 1));
+    EXPECT_THAT(pp(t0_ + 0.5 * Second),
+                AlmostEquals((2 - Sqrt(2)) / 8 * Metre, 0, 2));
+    EXPECT_THAT(pp(t0_ + 1.5 * Second),
+                AlmostEquals(-Sqrt(0.5) / 4 * Metre, 1));
   }
 }
 
@@ -266,47 +278,47 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
     auto const s1 = p_ + pp_;
     auto const s2 = pp_ + p_;
     EXPECT_THAT(s1(t0_ + 0.5 * Second),
-                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
+                AlmostEquals((10 - 3 * Sqrt(2)) / 4 * Metre, 0));
     EXPECT_THAT(s1(t0_ + 1.5 * Second),
-                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+                AlmostEquals((6 + Sqrt(2)) / 4 * Metre, 0));
     EXPECT_THAT(s2(t0_ + 0.5 * Second),
-                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
+                AlmostEquals((10 - 3 * Sqrt(2)) / 4 * Metre, 0));
     EXPECT_THAT(s2(t0_ + 1.5 * Second),
-                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+                AlmostEquals((6 + Sqrt(2)) / 4 * Metre, 0));
   }
   {
     auto const d1 = p_ - pp_;
     auto const d2 = pp_ - p_;
     EXPECT_THAT(d1(t0_ + 0.5 * Second),
-                AlmostEquals((2 + Sqrt(2)) / 4, 1));
+                AlmostEquals((2 + Sqrt(2)) / 4 * Metre, 1));
     EXPECT_THAT(d1(t0_ + 1.5 * Second),
-                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
+                AlmostEquals((6 + 5 * Sqrt(2)) / 4 * Metre, 0));
     EXPECT_THAT(d2(t0_ + 0.5 * Second),
-                AlmostEquals((-2 - Sqrt(2)) / 4, 1));
+                AlmostEquals((-2 - Sqrt(2)) / 4 * Metre, 1));
     EXPECT_THAT(d2(t0_ + 1.5 * Second),
-                AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
+                AlmostEquals((-6 - 5 * Sqrt(2)) / 4 * Metre, 0));
   }
   {
     auto const p1 = p_ * pp_;
     auto const p2 = pp_ * p_;
     EXPECT_THAT(p1(t0_ + 0.5 * Second),
-                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+                AlmostEquals((7 - 4* Sqrt(2)) / 4 * Metre * Metre, 0, 4));
     EXPECT_THAT(p1(t0_ + 1.5 * Second),
-                AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
+                AlmostEquals((-3 - 3 * Sqrt(2)) / 4 * Metre * Metre, 1));
     EXPECT_THAT(p2(t0_ + 0.5 * Second),
-                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+                AlmostEquals((7 - 4* Sqrt(2)) / 4 * Metre * Metre, 0, 4));
     EXPECT_THAT(p2(t0_ + 1.5 * Second),
-                AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
+                AlmostEquals((-3 - 3 * Sqrt(2)) / 4 * Metre * Metre, 1));
   }
 }
 
 TEST_F(PiecewisePoissonSeriesTest, Dot) {
-  double const d1 = Dot(
+  Square<Length> const d1 = Dot(
       pp_, p_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  double const d2 = Dot(
+  Square<Length> const d2 = Dot(
       p_, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 1));
-  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 1));
+  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π) * Metre * Metre, 1));
+  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π) * Metre * Metre, 1));
 }
 
 }  // namespace numerics

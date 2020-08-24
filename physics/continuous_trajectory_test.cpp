@@ -435,6 +435,8 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
               DegreesOfFreedom<World>(trajectory->EvaluatePosition(time),
                                       trajectory->EvaluateVelocity(time)));
   }
+
+  auto const piecewise_poisson_series = trajectory->ToPiecewisePoissonSeries();
 }
 
 // An approximation to the trajectory of Io.

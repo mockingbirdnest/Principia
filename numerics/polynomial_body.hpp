@@ -386,12 +386,12 @@ Derivative() const {
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<
-    Primitive<Value, Argument>, Argument, degree_ + 1, Evaluator>
+    Primitive<Difference<Value>, Argument>, Argument, degree_ + 1, Evaluator>
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
 Primitive() const {
   return PolynomialInMonomialBasis<
-             quantities::Primitive<Value, Argument>, Argument,
-             degree_ + 1, Evaluator>(
+             quantities::Primitive<Difference<Value>, Argument>,
+             Argument, degree_ + 1, Evaluator>(
              TupleIntegration<Argument, Coefficients>::
                 Integrate(coefficients_));
 }
@@ -538,12 +538,13 @@ Derivative() const {
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<
-    Primitive<Value, Argument>, Point<Argument>, degree_ + 1, Evaluator>
+    Primitive<Difference<Value>, Argument>, Point<Argument>,
+    degree_ + 1, Evaluator>
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 Primitive() const {
   return PolynomialInMonomialBasis<
-             quantities::Primitive<Value, Argument>, Point<Argument>,
-             degree_ + 1, Evaluator>(
+             quantities::Primitive<Difference<Value>, Argument>,
+             Point<Argument>, degree_ + 1, Evaluator>(
              TupleIntegration<Argument, Coefficients>::
                 Integrate(coefficients_),
              origin_);

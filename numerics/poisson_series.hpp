@@ -39,6 +39,7 @@ namespace internal_poisson_series {
 using geometry::Instant;
 using geometry::Interval;
 using quantities::AngularFrequency;
+using quantities::Difference;
 using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
@@ -74,7 +75,8 @@ class PoissonSeries {
   Value operator()(Instant const& t) const;
 
   // The constant term of the result is zero.
-  PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
+  PoissonSeries<quantities::Primitive<Difference<Value>, Time>,
+                degree_ + 1, Evaluator>
   Primitive() const;
 
   template<typename V, int d, template<typename, typename, int> class E>

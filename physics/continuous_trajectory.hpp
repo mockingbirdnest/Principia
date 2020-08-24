@@ -96,7 +96,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // End of the implementation of the interface.
 
   //TODO(phl):Locking
-  PiecewisePoissonSeries<Position<Frame>, max_degree, EstrinEvaluator>
+  PiecewisePoissonSeries<Displacement<Frame>, max_degree, EstrinEvaluator>
   ToPiecewisePoissonSeries() const;
 
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
@@ -126,6 +126,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // never need to extract their |t_min|.  Logically, the |t_min| for a
   // polynomial is the |t_max| of the previous one.  The first polynomial has a
   // |t_min| which is |*first_time_|.
+  // TODO(phl): These should be polynomials of Position<Frame>, except that
+  // an affine-valued polynomial is not something we support very well.
   struct InstantPolynomialPair {
     InstantPolynomialPair(
         Instant t_max,
