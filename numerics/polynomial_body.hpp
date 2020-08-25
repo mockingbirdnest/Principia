@@ -547,10 +547,9 @@ PolynomialInMonomialBasis<
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 Primitive() const {
   return PolynomialInMonomialBasis<
-             quantities::Primitive<Value, Argument>,
-             Point<Argument>, degree_ + 1, Evaluator>(
-             TupleIntegration<Argument, Coefficients>::
-                Integrate(coefficients_),
+             quantities::Primitive<Value, Argument>, Point<Argument>,
+             degree_ + 1, Evaluator>(
+             TupleIntegration<Argument, Coefficients>::Integrate(coefficients_),
              origin_);
 }
 
