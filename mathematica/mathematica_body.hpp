@@ -341,20 +341,19 @@ template<typename V, int d,
          template<typename, typename, int> class E,
          typename OptionalExpressIn>
 std::string ToMathematica(PoissonSeries<V, d, E> const& series,
-                          std::string const& variable,
                           OptionalExpressIn express_in) {
   std::vector<std::string> components = {
-      ToMathematica(series.aperiodic_, variable, express_in)};
+      ToMathematica(series.aperiodic_, express_in)};
   for (auto const& [ω, polynomials] : series.periodic_) {
     std::string const polynomial_sin =
-        ToMathematica(polynomials.sin, variable, express_in);
+        ToMathematica(polynomials.sin, express_in);
     std::string const polynomial_cos =
-        ToMathematica(polynomials.cos, variable, express_in);
+        ToMathematica(polynomials.cos, express_in);
     std::string const angle =
         Apply("Times",
               {ToMathematica(ω, express_in),
                Apply("Subtract",
-                     {variable, ToMathematica(series.origin_, express_in)})});
+                     {"#", ToMathematica(series.origin_, express_in)})});
     components.push_back(Apply("Times",
                                {polynomial_sin, Apply("Sin", {angle})}));
     components.push_back(Apply("Times",
