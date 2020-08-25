@@ -103,7 +103,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   template<int degree>
   PiecewisePoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>
   ToPiecewisePoissonSeries(Instant const& t_min,
-                           Instant const& t_max) const;
+                           Instant const& t_max,
+                           Instant const& origin) const;
 
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
