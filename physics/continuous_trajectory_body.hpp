@@ -241,15 +241,12 @@ int ContinuousTrajectory<Frame>::PiecewisePoissonSeriesDegree(
 #define PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, d1, d2)     \
   case d1: {                                                                   \
     if constexpr (d1 <= d2) {                                                  \
-      return PolynomialInMonomialBasis<Displacement<Frame>,                    \
-                                       Instant,                                \
-                                       d2,                                     \
-                                       EstrinEvaluator>(                       \
+      return PolynomialInMonomialBasis<Displacement<Frame>, Instant,           \
+                                       d2, EstrinEvaluator>(                   \
           *dynamic_cast_not_null<                                              \
-              PolynomialInMonomialBasis<Displacement<Frame>,                   \
-                                        Instant,                               \
-                                        d1,                                    \
-                                        EstrinEvaluator> const*>(polynomial)); \
+              PolynomialInMonomialBasis<Displacement<Frame>, Instant,          \
+                                        d1, EstrinEvaluator> const*>(          \
+                                        polynomial));                          \
     } else {                                                                   \
       LOG(FATAL) << "Inconsistent degrees " << d1 << " and " << d2;            \
     }                                                                          \
@@ -305,13 +302,14 @@ ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
     Interval<Instant> interval;
     interval.Include(current_t_min);
     interval.Include(current_t_max);
-    auto const polynomial_cast_to_degree = cast_to_degree(it->polynomial.get());
+    auto const polynomial_cast_to_degree_at_origin =
+        cast_to_degree(it->polynomial.get()).AtOrigin(origin);
     if (result == nullptr) {
       result = std::make_unique<PiecewisePoisson>(
-          interval, Poisson(polynomial_cast_to_degree.AtOrigin(origin), {{}}));
+          interval, Poisson(polynomial_cast_to_degree_at_origin, {{}}));
     } else {
       result->Append(interval,
-                     Poisson(polynomial_cast_to_degree.AtOrigin(origin), {{}}));
+                     Poisson(polynomial_cast_to_degree_at_origin, {{}}));
     }
     current_t_min = current_t_max;
     if (it == it_max) {
