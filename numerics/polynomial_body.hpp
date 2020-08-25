@@ -25,7 +25,7 @@ namespace internal_polynomial {
 using base::is_instance_of_v;
 using base::make_not_null_unique;
 using base::not_constructible;
-using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using geometry::cartesian_product::operator+;
 using geometry::cartesian_product::operator-;
 using geometry::cartesian_product::operator*;
@@ -175,7 +175,8 @@ template<typename Argument, typename Tuple, std::size_t... indices>
 constexpr auto
 TupleIntegration<Argument, Tuple, std::index_sequence<indices...>>::Integrate(
     Tuple const& tuple) {
-  constexpr auto zero = std::tuple_element_t<0, Tuple>{} * Argument{};
+  constexpr auto zero =
+      quantities::Primitive<std::tuple_element_t<0, Tuple>, Argument>{};
   return std::make_tuple(
       zero, std::get<indices>(tuple) / static_cast<double>(indices + 1)...);
 }
@@ -208,7 +209,7 @@ template<typename Tuple, int k, int size>
 void TupleSerializer<Tuple, k, size>::WriteToMessage(
     Tuple const& tuple,
     not_null<serialization::PolynomialInMonomialBasis*> message) {
-  DoubleOrQuantityOrMultivectorSerializer<
+  DoubleOrQuantityOrPointOrMultivectorSerializer<
       std::tuple_element_t<k, Tuple>,
       serialization::PolynomialInMonomialBasis::Coefficient>::
       WriteToMessage(std::get<k>(tuple), message->add_coefficient());
@@ -220,7 +221,7 @@ void TupleSerializer<Tuple, k, size>::FillFromMessage(
     serialization::PolynomialInMonomialBasis const& message,
     Tuple& tuple) {
   std::get<k>(tuple) =
-      DoubleOrQuantityOrMultivectorSerializer<
+      DoubleOrQuantityOrPointOrMultivectorSerializer<
           std::tuple_element_t<k, Tuple>,
           serialization::PolynomialInMonomialBasis::Coefficient>::
           ReadFromMessage(message.coefficient(k));
@@ -386,6 +387,7 @@ Derivative() const {
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
+template<typename, typename>
 PolynomialInMonomialBasis<
     Primitive<Value, Argument>, Argument, degree_ + 1, Evaluator>
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
@@ -538,15 +540,16 @@ Derivative() const {
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
+template<typename, typename>
 PolynomialInMonomialBasis<
-    Primitive<Value, Argument>, Point<Argument>, degree_ + 1, Evaluator>
+    Primitive<Value, Argument>, Point<Argument>,
+    degree_ + 1, Evaluator>
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 Primitive() const {
   return PolynomialInMonomialBasis<
              quantities::Primitive<Value, Argument>, Point<Argument>,
              degree_ + 1, Evaluator>(
-             TupleIntegration<Argument, Coefficients>::
-                Integrate(coefficients_),
+             TupleIntegration<Argument, Coefficients>::Integrate(coefficients_),
              origin_);
 }
 
