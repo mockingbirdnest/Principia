@@ -46,7 +46,6 @@ using base::not_null;
 using geometry::Point;
 using quantities::Derivative;
 using quantities::Derivatives;
-using quantities::Difference;
 using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
@@ -70,9 +69,8 @@ class Polynomial {
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;
 
-  // Only useful for benchmarking or analyzing performance.  Do not use in real
-  // code.
-  //TODO(phl):Fix comment.
+  // Only useful for benchmarking, analyzing performance or for downcasting.  Do
+  // not use in other circumstances.
   virtual int degree() const = 0;
 
   // Only useful for logging.  Do not use in real code.

@@ -92,7 +92,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // End of the implementation of the interface.
 
-  //TODO(phl):Locking
   // Returns the degree for a piecewise Poisson series covering the given time
   // interval.
   int PiecewisePoissonSeriesDegree(Instant const& t_min,
