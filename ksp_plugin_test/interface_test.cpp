@@ -675,16 +675,19 @@ TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
   {
     PushDeserializer* deserializer = nullptr;
     auto const lines = ReadLinesFromBase64File(
-        R"(P:\Public Mockingbird\Principia\Crashes\2400\0 1958.sfs)");
+        R"(P:\Public Mockingbird\Principia\Saves\2685\five-minute-scene-change-neptune.txt)");
     LOG(ERROR) << "Deserialization starting";
+    int i = 0;
     for (std::string const& line : lines) {
+      LOG(ERROR)<<i++;
       principia__DeserializePlugin(line.c_str(),
                                    &deserializer,
                                    &plugin,
                                    /*compressor=*/"gipfeli",
                                    "base64");
     }
-    principia__DeserializePlugin(lines.front().c_str(),
+    LOG(ERROR)<<i;
+    principia__DeserializePlugin("",
                                  &deserializer,
                                  &plugin,
                                  /*compressor=*/"gipfeli",

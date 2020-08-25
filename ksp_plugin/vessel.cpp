@@ -472,6 +472,9 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         /*forks=*/{&vessel->psychohistory_, &vessel->prediction_});
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.  Doesn't hurt prior to Εὔδοξος.
+    LOG(ERROR)<<vessel->history_->back().time<<" "<<
+      vessel->psychohistory_->back().time<<" "<<
+      vessel->prediction_->back().time;
     ephemeris->Prolong(vessel->prediction_->back().time);
   }
 
