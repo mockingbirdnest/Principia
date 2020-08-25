@@ -5,9 +5,11 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
@@ -38,6 +40,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_polynomial {
 
+using base::is_instance_of_v;
 using base::not_constructible;
 using base::not_null;
 using geometry::Point;
@@ -120,8 +123,10 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   Derivative() const;
 
   // The constant term of the result is zero.
-  PolynomialInMonomialBasis<
-      Primitive<Difference<Value>, Argument>, Argument, degree_ + 1, Evaluator>
+  template<typename V = Value,
+           typename = std::enable_if_t<!base::is_instance_of_v<Point, V>>>
+  PolynomialInMonomialBasis<Primitive<Value, Argument>, Argument,
+                            degree_ + 1, Evaluator>
   Primitive() const;
 
   PolynomialInMonomialBasis& operator+=(PolynomialInMonomialBasis const& right);
@@ -230,9 +235,10 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   Derivative() const;
 
   // The constant term of the result is zero.
-  PolynomialInMonomialBasis<
-      Primitive<Difference<Value>, Argument>, Point<Argument>,
-      degree_ + 1, Evaluator>
+  template<typename V = Value,
+           typename = std::enable_if_t<!base::is_instance_of_v<Point, V>>>
+  PolynomialInMonomialBasis<Primitive<Value, Argument>, Point<Argument>,
+                            degree_ + 1, Evaluator>
   Primitive() const;
 
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);

@@ -44,9 +44,10 @@ using Derivative = typename std::conditional_t<
     Quotient<Difference<Value>, Exponentiation<Difference<Argument>, order>>>;
 
 // The result type of the primitive of a |Value|-valued function with respect to
-// its |Argument|-valued argument.
+// its |Argument|-valued argument.  The primitive of an affine-valued function
+// does not make much sense, but it must compile, hence the Difference.
 template<typename Value, typename Argument>
-using Primitive = Product<Value, Argument>;
+using Primitive = Product<Difference<Value>, Argument>;
 
 // |Variation<T>| is the type of the time derivative of a |T|-valued function.
 template<typename T>
