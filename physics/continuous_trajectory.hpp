@@ -43,9 +43,6 @@ class TestableContinuousTrajectory;
 // |t_max()| may return different values.
 template<typename Frame>
 class ContinuousTrajectory : public Trajectory<Frame> {
-  static constexpr int max_degree = 17;
-  static constexpr int min_degree = 3;
-
  public:
   // Constructs a trajectory with the given time |step|.  Because the Чебышёв
   // polynomials have values in the range [-1, 1], the error resulting of
@@ -96,8 +93,17 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // End of the implementation of the interface.
 
   //TODO(phl):Locking
-  PiecewisePoissonSeries<Displacement<Frame>, max_degree, EstrinEvaluator>
-  ToPiecewisePoissonSeries() const;
+  // Returns the degree for a piecewise Poisson series covering the given time
+  // interval.
+  int PiecewisePoissonSeriesDegree(Instant const& t_min,
+                                   Instant const& t_max) const;
+
+  // Computes a piecewise Poisson series covering the given time interval.  The
+  // degree must be at least the one returned by the preceding function.
+  template<int degree>
+  PiecewisePoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>
+  ToPiecewisePoissonSeries(Instant const& t_min,
+                           Instant const& t_max) const;
 
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);

@@ -318,10 +318,6 @@ template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer);
 
-template<typename Result,
-         typename Pointer>
-Result dynamic_cast_not_null(Pointer pointer);
-
 }  // namespace base
 }  // namespace principia
 

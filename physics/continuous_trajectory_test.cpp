@@ -436,7 +436,12 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
                                       trajectory->EvaluateVelocity(time)));
   }
 
-  auto const piecewise_poisson_series = trajectory->ToPiecewisePoissonSeries();
+  // Now check that it can be converted to a piecewise Poisson series.
+  EXPECT_EQ(3, trajectory->PiecewisePoissonSeriesDegree(trajectory->t_min(),
+                                                        trajectory->t_max()));
+  auto const piecewise_poisson_series = trajectory->ToPiecewisePoissonSeries<3>(
+      trajectory->t_min(),
+      trajectory->t_max());
 }
 
 // An approximation to the trajectory of Io.

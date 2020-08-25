@@ -36,6 +36,8 @@ using quantities::si::Metre;
 using quantities::si::Second;
 namespace si = quantities::si;
 
+constexpr int max_degree = 17;
+constexpr int min_degree = 3;
 int const max_degree_age = 100;
 
 // Only supports 8 divisions for now.
@@ -214,82 +216,105 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
                                  polynomial->EvaluateDerivative(time));
 }
 
+template<typename Frame>
+int ContinuousTrajectory<Frame>::PiecewisePoissonSeriesDegree(
+    Instant const& t_min,
+    Instant const& t_max) const {
+  absl::ReaderMutexLock l(&lock_);
+  CHECK_LE(t_min_locked(), t_min);
+  CHECK_GE(t_max_locked(), t_max);
+  auto const it_min = FindPolynomialForInstant(t_min);
+  auto const it_max = FindPolynomialForInstant(t_max);
+  int degree = min_degree;
+  for (auto it = it_min;; ++it) {
+    degree = std::max(degree, it->polynomial->degree());
+    if (it == it_max) {
+      break;
+    }
+  }
+  return degree;
+}
+
+
 // Casts the polynomial to one of degree d1, and then increases the degree to
 // d2.
-#define PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(source, d1, d2)       \
-  case d1: {                                                                 \
-    return PolynomialInMonomialBasis<Displacement<Frame>,                    \
-                                     Instant,                                \
-                                     d2,                                     \
-                                     EstrinEvaluator>(                       \
-        dynamic_cast_not_null<PolynomialInMonomialBasis<Displacement<Frame>, \
-                                                        Instant,             \
-                                                        d1,                  \
-                                                        EstrinEvaluator>>(   \
-            &source));                                                       \
+#define PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, d1, d2)     \
+  case d1: {                                                                   \
+    if constexpr (d1 <= d2) {                                                  \
+      return PolynomialInMonomialBasis<Displacement<Frame>,                    \
+                                       Instant,                                \
+                                       d2,                                     \
+                                       EstrinEvaluator>(                       \
+          *dynamic_cast_not_null<                                              \
+              PolynomialInMonomialBasis<Displacement<Frame>,                   \
+                                        Instant,                               \
+                                        d1,                                    \
+                                        EstrinEvaluator> const*>(polynomial)); \
+    } else {                                                                   \
+      LOG(FATAL) << "Inconsistent degrees " << d1 << " and " << d2;            \
+    }                                                                          \
   }
 
 template<typename Frame>
-auto ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries() const
-    -> PiecewisePoissonSeries<Displacement<Frame>, max_degree,
-                              EstrinEvaluator> {
+template<int degree>
+PiecewisePoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>
+ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
+    Instant const& t_min,
+    Instant const& t_max) const {
+  static_assert(degree >= min_degree && degree <= max_degree);
   CHECK(!polynomials_.empty());
   using PiecewisePoisson =
-      PiecewisePoissonSeries<Displacement<Frame>, max_degree, EstrinEvaluator>;
-  using Poisson = PoissonSeries<Displacement<Frame>, max_degree,
-                                EstrinEvaluator>;
+      PiecewisePoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>;
+  using Poisson = PoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>;
 
-  auto cast_to_max_degree =
-      [](Polynomial<Displacement<Frame>, Instant> const& polynomial) {
-    switch (polynomial.degree()) {
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     3, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     4, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     5, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     6, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     7, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     8, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     9, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     10, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     11, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     12, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     13, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     14, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     15, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     16, max_degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial,
-                                                     17, max_degree);
+  auto cast_to_degree =
+      [](not_null<Polynomial<Displacement<Frame>, Instant> const*> const
+             polynomial)
+      -> PolynomialInMonomialBasis<Displacement<Frame>, Instant,
+                                   degree, EstrinEvaluator> {
+    switch (polynomial->degree()) {
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 3, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 4, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 5, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 6, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 7, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 8, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 9, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 10, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 11, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 12, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 13, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 14, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 15, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 16, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 17, degree);
       default:
-        LOG(FATAL) << "Unexpected degree " << polynomial.degree();
+        LOG(FATAL) << "Unexpected degree " << polynomial->degree();
     }
   };
 
-  Instant t_min = *first_time_;
   std::unique_ptr<PiecewisePoisson> result;
-  for (auto const& [t_max, polynomial] : polynomials_) {
+
+  absl::ReaderMutexLock l(&lock_);
+  auto const it_min = FindPolynomialForInstant(t_min);
+  auto const it_max = FindPolynomialForInstant(t_max);
+  Instant current_t_min = t_min;
+  for (auto it = it_min;; ++it) {
+    Instant const current_t_max = std::min(t_max, it->t_max);
     Interval<Instant> interval;
-    interval.Include(t_min);
-    interval.Include(t_max);
+    interval.Include(current_t_min);
+    interval.Include(current_t_max);
     if (result == nullptr) {
       result = std::make_unique<PiecewisePoisson>(
-          interval, Poisson(cast_to_max_degree(*polynomial), {{}}));
+          interval, Poisson(cast_to_degree(it->polynomial.get()), {{}}));
     } else {
-      result->Append(interval, Poisson(cast_to_max_degree(*polynomial), {{}}));
+      result->Append(interval,
+                     Poisson(cast_to_degree(it->polynomial.get()), {{}}));
     }
-    t_min = t_max;
+    current_t_min = current_t_max;
+    if (it == it_max) {
+      break;
+    }
   }
   return *result;
 }
