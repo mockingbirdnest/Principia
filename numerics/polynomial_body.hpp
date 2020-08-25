@@ -25,7 +25,7 @@ namespace internal_polynomial {
 using base::is_instance_of_v;
 using base::make_not_null_unique;
 using base::not_constructible;
-using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using geometry::cartesian_product::operator+;
 using geometry::cartesian_product::operator-;
 using geometry::cartesian_product::operator*;
@@ -208,7 +208,7 @@ template<typename Tuple, int k, int size>
 void TupleSerializer<Tuple, k, size>::WriteToMessage(
     Tuple const& tuple,
     not_null<serialization::PolynomialInMonomialBasis*> message) {
-  DoubleOrQuantityOrMultivectorSerializer<
+  DoubleOrQuantityOrPointOrMultivectorSerializer<
       std::tuple_element_t<k, Tuple>,
       serialization::PolynomialInMonomialBasis::Coefficient>::
       WriteToMessage(std::get<k>(tuple), message->add_coefficient());
@@ -220,7 +220,7 @@ void TupleSerializer<Tuple, k, size>::FillFromMessage(
     serialization::PolynomialInMonomialBasis const& message,
     Tuple& tuple) {
   std::get<k>(tuple) =
-      DoubleOrQuantityOrMultivectorSerializer<
+      DoubleOrQuantityOrPointOrMultivectorSerializer<
           std::tuple_element_t<k, Tuple>,
           serialization::PolynomialInMonomialBasis::Coefficient>::
           ReadFromMessage(message.coefficient(k));

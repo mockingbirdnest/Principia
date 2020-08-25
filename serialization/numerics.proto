@@ -58,6 +58,7 @@ message PolynomialInMonomialBasis {
       double double = 1;
       Quantity quantity = 2;
       Multivector multivector = 3;
+      Point point = 4;
     }
   }
   repeated Coefficient coefficient = 1;

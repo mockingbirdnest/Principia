@@ -60,6 +60,8 @@ class PoissonSeries {
 
   // TODO(phl): Use designated initializers for this struct once this project
   // can be compiled using c++latest.
+  // TODO(phl): If we wanted to have Poisson series returning affine values,
+  // these polynomials should be changed to return Difference<Value>.
   struct Polynomials {
     Polynomial sin;
     Polynomial cos;
