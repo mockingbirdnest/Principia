@@ -142,6 +142,9 @@ TEST_F(PolynomialTest, Evaluate2A) {
   EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
                                                1 * Metre / Second,
                                                0 * Metre / Second}), 0));
+
+  // This compiles.
+  p.Primitive();
 }
 
 // Check that a polynomial can return an affine value.
@@ -161,6 +164,11 @@ TEST_F(PolynomialTest, Evaluate2P) {
   EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
                                                1 * Metre / Second,
                                                0 * Metre / Second}), 0));
+
+  // This doesn't compile (and rightly so).
+#if 0
+  p.Primitive();
+#endif
 }
 
 // Check that a polynomial of high order may be declared.
