@@ -15,6 +15,10 @@
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/mathematica.hpp"
+#include "numerics/apodization.hpp"
+#include "numerics/frequency_analysis.hpp"
+#include "numerics/poisson_series.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -33,6 +37,7 @@ namespace principia {
 using base::dynamic_cast_not_null;
 using geometry::AngleBetween;
 using geometry::AngularVelocity;
+using geometry::Barycentre;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::Commutator;
@@ -56,6 +61,7 @@ using integrators::methods::QuinlanTremaine1990Order12;
 using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
+using numerics::EstrinEvaluator;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -66,9 +72,11 @@ using physics::RigidMotion;
 using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::Angle;
+using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::GravitationalParameter;
 using quantities::Length;
+using quantities::Square;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::ArcSecond;
@@ -89,6 +97,8 @@ using testing_utilities::operator""_⑴;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
+namespace apodization = numerics::apodization;
+namespace frequency_analysis = numerics::frequency_analysis;
 
 namespace astronomy {
 
@@ -547,6 +557,68 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
           IsNear(expected_orbit_error.argument_of_periapsis_drift_per_orbit));
     }
   }
+}
+
+TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
+  SolarSystem<ICRS> solar_system_at_j2000(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
+
+  // NOTE(phl): Keep these parameters aligned with
+  // sol_numerics_blueprint.proto.txt.
+  auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<ICRS>>(),
+          /*step=*/10 * Minute));
+  ephemeris->Prolong(solar_system_at_j2000.epoch() + 1 * JulianYear);
+
+  auto const& io_trajectory =
+      solar_system_at_j2000.trajectory(*ephemeris, "Io");
+  Instant const t_min = io_trajectory.t_min();
+  Instant const t_max = io_trajectory.t_max();
+  int const io_piecewise_poisson_series_degree =
+      io_trajectory.PiecewisePoissonSeriesDegree(t_min, t_max);
+  LOG(ERROR)<<io_piecewise_poisson_series_degree;
+
+  // TODO(phl): Use a switch statement with macros.
+  Instant const t_mid =
+      Barycentre<Instant, double>({t_min, t_max}, {1, 1});
+  auto const io_piecewise_poisson_series =
+      io_trajectory.ToPiecewisePoissonSeries<7>(t_min, t_max, t_mid);
+  LOG(ERROR)<<io_piecewise_poisson_series.t_min()<<" "<<t_min;
+  LOG(ERROR)<<io_piecewise_poisson_series.t_max()<<" "<<t_max;
+
+  bool first = true;
+  auto angular_frequency_calculator =
+      [&first](auto const& residual) -> std::optional<AngularFrequency> {
+    if (first) {
+      first = false;
+      return AngularFrequency();
+    } else {
+      return std::nullopt;
+    }
+  };
+
+  auto io_piecewise_poisson_series_x =
+      [&io_piecewise_poisson_series](Instant const& t) {
+        return io_piecewise_poisson_series(t).coordinates().x;
+      };
+
+  auto dot = [t_min, t_max](auto const& left,
+                            auto const& right,
+                            auto const& weight) -> Square<Length> {
+    return Dot(left, right, weight, t_min, t_max);
+  };
+
+  frequency_analysis::IncrementalProjection<4>(
+      io_piecewise_poisson_series_x,
+      angular_frequency_calculator,
+      apodization::Hann<EstrinEvaluator>(t_min, t_max),
+      dot);
 }
 
 // This test produces the file phobos.generated.wl which is consumed by the

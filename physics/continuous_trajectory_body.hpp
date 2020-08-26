@@ -29,6 +29,7 @@ using base::make_not_null_unique;
 using geometry::Interval;
 using numerics::EstrinEvaluator;
 using numerics::PoissonSeries;
+using numerics::PolynomialInMonomialBasis;
 using numerics::ULPDistance;
 using numerics::ЧебышёвSeries;
 using quantities::DebugString;
