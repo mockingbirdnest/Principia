@@ -158,6 +158,12 @@
     <ClInclude Include="signature_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="hilbert.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hilbert_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -212,6 +218,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="signature_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hilbert_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

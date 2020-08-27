@@ -14,6 +14,8 @@
     <ClInclude Include="cartesian_product_body.hpp" />
     <ClInclude Include="frame.hpp" />
     <ClInclude Include="frame_body.hpp" />
+    <ClInclude Include="hilbert.hpp" />
+    <ClInclude Include="hilbert_body.hpp" />
     <ClInclude Include="identity.hpp" />
     <ClInclude Include="identity_body.hpp" />
     <ClInclude Include="interval.hpp" />
@@ -59,6 +61,7 @@
     <ClCompile Include="barycentre_calculator_test.cpp" />
     <ClCompile Include="frame_test.cpp" />
     <ClCompile Include="grassmann_test.cpp" />
+    <ClCompile Include="hilbert_test.cpp" />
     <ClCompile Include="identity_test.cpp" />
     <ClCompile Include="pair_test.cpp" />
     <ClCompile Include="perspective_test.cpp" />
