@@ -22,6 +22,8 @@ struct Hilbert : base::not_constructible {
   static InnerProductType InnerProduct(T1 const& t1, T2 const& t2);
 
   using NormType = std::conditional_t<std::is_same_v<T1, T2>, T1, void>;
+  template<typename T = T1>
+  static std::enable_if_t<std::is_same_v<T1, T2>, T> Norm(T const& t1);
 };
 
 template<typename T1, typename T2>

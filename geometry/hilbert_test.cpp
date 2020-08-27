@@ -5,6 +5,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "gtest/gtest.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -14,6 +15,7 @@ namespace geometry {
 
 using quantities::Area;
 using quantities::Length;
+using quantities::Sqrt;
 using quantities::Square;
 using quantities::si::Metre;
 
@@ -57,12 +59,17 @@ TEST(HilbertTest, VectorTypes) {
 TEST(HilbertTest, ScalarValues) {
   using H1 = Hilbert<double, double>;
   EXPECT_EQ(6, H1::InnerProduct(2, 3));
+  EXPECT_EQ(2, H1::Norm(2));
 
   using H2 = Hilbert<double, Length>;
   EXPECT_EQ(6 * Metre, H2::InnerProduct(3, 2 * Metre));
+#if 0
+  auto h2 = H2::Norm(6 * Metre);
+#endif
 
   using H3 = Hilbert<Length, Length>;
   EXPECT_EQ(6 * Metre * Metre, H3::InnerProduct(3 * Metre, 2 * Metre));
+  EXPECT_EQ(2 * Metre, H3::Norm(2 * Metre));
 }
 
 TEST(HilbertTest, VectorValues) {
