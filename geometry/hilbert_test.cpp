@@ -24,6 +24,9 @@ using World = Frame<serialization::Frame::TestTag,
                     Handedness::Right,
                     serialization::Frame::TEST>;
 
+// In the code below the parts that are ifdef'ed out do not compile and that's
+// intentional.
+
 TEST(HilbertTest, ScalarTypes) {
   using H1 = Hilbert<double, double>;
   static_assert(std::is_same_v<double, H1::InnerProductType>);
@@ -78,12 +81,17 @@ TEST(HilbertTest, VectorValues) {
 
   using H1 = Hilbert<Vector<double, World>, Vector<double, World>>;
   EXPECT_EQ(14, H1::InnerProduct(v1, v1));
+  EXPECT_EQ(Sqrt(14), H1::Norm(v1));
 
   using H2 = Hilbert<Vector<double, World>, Vector<Length, World>>;
   EXPECT_EQ(-32 * Metre, H2::InnerProduct(v1, v2));
+#if 0
+  auto h2 = H2::Norm(v2);
+#endif
 
   using H3 = Hilbert<Vector<Length, World>, Vector<Length, World>>;
   EXPECT_EQ(77 * Metre * Metre, H3::InnerProduct(v2, v2));
+  EXPECT_EQ(Sqrt(77) * Metre, H3::Norm(v2));
 }
 
 }  // namespace geometry

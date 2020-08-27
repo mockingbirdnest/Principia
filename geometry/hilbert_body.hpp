@@ -35,6 +35,16 @@ auto Hilbert<T1, T2,
   return internal_grassmann::InnerProduct(t1, t2);
 }
 
+template<typename T1, typename T2>
+template<typename T>
+auto Hilbert<T1, T2,
+             std::void_t<decltype(InnerProduct(std::declval<T1>(),
+                                               std::declval<T2>()))>>::
+Norm(T const& t) -> std::enable_if_t<std::is_same_v<T1, T2>,
+                                     decltype(std::declval<T>().Norm())> {
+  return t.Norm();
+}
+
 }  // namespace internal_hilbert
 }  // namespace geometry
 }  // namespace principia

@@ -23,14 +23,13 @@ struct Hilbert : base::not_constructible {
 
   using NormType = std::conditional_t<std::is_same_v<T1, T2>, T1, void>;
   template<typename T = T1>
-  static std::enable_if_t<std::is_same_v<T1, T2>, T> Norm(T const& t1);
+  static std::enable_if_t<std::is_same_v<T1, T2>, T> Norm(T const& t);
 };
 
 template<typename T1, typename T2>
 struct Hilbert<T1, T2,
-               std::void_t<decltype(
-                   InnerProduct(std::declval<T1>(),
-                                std::declval<T2>()))>>
+               std::void_t<decltype(InnerProduct(std::declval<T1>(),
+                                                 std::declval<T2>()))>>
     : base::not_constructible {
   using InnerProductType =
       decltype(InnerProduct(std::declval<T1>(), std::declval<T2>()));
@@ -39,6 +38,9 @@ struct Hilbert<T1, T2,
   using NormType = std::conditional_t<std::is_same_v<T1, T2>,
                                       decltype(std::declval<T1>().Norm()),
                                       void>;
+  template<typename T = T1>
+  static std::enable_if_t<std::is_same_v<T1, T2>,
+                          decltype(std::declval<T>().Norm())> Norm(T const& t);
 };
 
 }  // namespace internal_hilbert
