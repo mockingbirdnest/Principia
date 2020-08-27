@@ -21,15 +21,14 @@ auto Hilbert<T1, T2,
 }
 
 template<typename T>
-auto Hilbert<T, T, std::void_t<std::enable_if_t<is_quantity_v<T>>>>::InnerProduct(T const& t1,
-                                                              T const& t2)
-    -> InnerProductType {
+auto Hilbert<T, T, std::void_t<std::enable_if_t<is_quantity_v<T>>>>::
+    InnerProduct(T const& t1, T const& t2) -> InnerProductType {
   return t1 * t2;
 }
 
 template<typename T>
-auto Hilbert<T, T, std::void_t<std::enable_if_t<is_quantity_v<T>>>>::Norm(T const& t)
-    -> NormType {
+auto Hilbert<T, T, std::void_t<std::enable_if_t<is_quantity_v<T>>>>::Norm(
+    T const& t) -> NormType {
   return Abs(t);
 }
 
