@@ -94,5 +94,15 @@ TEST(HilbertTest, VectorValues) {
   EXPECT_EQ(Sqrt(77) * Metre, H3::Norm(v2));
 }
 
+TEST(HilbertTest, OneParameter) {
+  Vector<Length, World> v2({-4 * Metre, 5 * Metre, -6 * Metre});
+
+  using H1 = Hilbert<double>;
+  EXPECT_EQ(2, H1::Norm(2));
+
+  using H3 = Hilbert<Vector<Length, World>>;
+  EXPECT_EQ(Sqrt(77) * Metre, H3::Norm(v2));
+}
+
 }  // namespace geometry
 }  // namespace principia

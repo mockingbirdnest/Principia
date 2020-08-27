@@ -12,16 +12,24 @@ namespace internal_hilbert {
 
 using quantities::Abs;
 
-template<typename T1, typename T2, typename U>
-auto Hilbert<T1, T2, U>::InnerProduct(T1 const& t1, T2 const& t2)
+template<typename T1, typename T2>
+auto Hilbert<T1, T2,
+             std::void_t<std::enable_if_t<
+                 std::conjunction_v<is_quantity<T1>, is_quantity<T2>>>>>::
+    InnerProduct(T1 const& t1, T2 const& t2) -> InnerProductType {
+  return t1 * t2;
+}
+
+template<typename T>
+auto Hilbert<T, T, std::void_t<std::enable_if_t<is_quantity_v<T>>>>::InnerProduct(T const& t1,
+                                                              T const& t2)
     -> InnerProductType {
   return t1 * t2;
 }
 
-template<typename T1, typename T2, typename U>
 template<typename T>
-auto Hilbert<T1, T2, U>::Norm(T const& t)
-    -> std::enable_if_t<std::is_same_v<T1, T2>, T> {
+auto Hilbert<T, T, std::void_t<std::enable_if_t<is_quantity_v<T>>>>::Norm(T const& t)
+    -> NormType {
   return Abs(t);
 }
 
@@ -35,13 +43,21 @@ auto Hilbert<T1, T2,
   return internal_grassmann::InnerProduct(t1, t2);
 }
 
-template<typename T1, typename T2>
 template<typename T>
-auto Hilbert<T1, T2,
-             std::void_t<decltype(InnerProduct(std::declval<T1>(),
-                                               std::declval<T2>()))>>::
-Norm(T const& t) -> std::enable_if_t<std::is_same_v<T1, T2>,
-                                     decltype(std::declval<T>().Norm())> {
+auto Hilbert<T, T,
+             std::void_t<decltype(InnerProduct(std::declval<T>(),
+                                               std::declval<T>()))>>::
+    InnerProduct(T const& t1, T const& t2) -> InnerProductType {
+  // Is there a better way to avoid recursion than to put our fingers inside
+  // grassmann?
+  return internal_grassmann::InnerProduct(t1, t2);
+}
+
+template<typename T>
+auto Hilbert<T, T,
+             std::void_t<decltype(InnerProduct(std::declval<T>(),
+                                               std::declval<T>()))>>::
+Norm(T const& t) -> NormType {
   return t.Norm();
 }
 
