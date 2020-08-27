@@ -104,5 +104,15 @@ TEST(HilbertTest, OneParameter) {
   EXPECT_EQ(Sqrt(77) * Metre, H3::Norm(v2));
 }
 
+TEST(HilbertTest, BadParameters) {
+#if 0
+  using H1 = Hilbert<void*, Length>;
+  using T1 = H1::InnerProductType;
+
+  using H2 = Hilbert<Bivector<double, World>, Vector<Length, World>>;
+  using T2 = H2::InnerProductType;
+#endif
+}
+
 }  // namespace geometry
 }  // namespace principia
