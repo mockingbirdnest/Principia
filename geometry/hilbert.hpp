@@ -26,15 +26,16 @@ struct Hilbert;
 
 template<typename T1, typename T2>
 struct Hilbert<T1, T2,
-               std::void_t<std::enable_if_t<
-                   std::conjunction_v<is_quantity<T1>, is_quantity<T2>>>>>
+               std::enable_if_t<
+                   std::conjunction_v<is_quantity<T1>, is_quantity<T2>,
+                                      std::negation<std::is_same<T1, T2>>>>>
     : base::not_constructible {
   using InnerProductType = Product<T1, T2>;
   static InnerProductType InnerProduct(T1 const& t1, T2 const& t2);
 };
 
 template<typename T>
-struct Hilbert<T, T, std::void_t<std::enable_if_t<is_quantity_v<T>>>>
+struct Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>
     : base::not_constructible {
   using InnerProductType = Square<T>;
   static InnerProductType InnerProduct(T const& t1, T const& t2);
