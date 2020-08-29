@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "geometry/hilbert.hpp"
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/polynomial.hpp"
@@ -36,6 +37,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_poisson_series {
 
+using geometry::Hilbert;
 using geometry::Instant;
 using geometry::Interval;
 using quantities::AngularFrequency;
@@ -206,7 +208,7 @@ std::ostream& operator<<(
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-Product<LValue, RValue>
+typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
@@ -296,7 +298,7 @@ class PiecewisePoissonSeries {
                    PoissonSeries<R, r, E> const& right);
   template<typename L, typename R, int l, int r, int w,
            template<typename, typename, int> class E>
-  Product<L, R>
+  typename Hilbert<L, R>::InnerProductType
   friend Dot(PoissonSeries<L, l, E> const& left,
              PiecewisePoissonSeries<R, r, E> const& right,
              PoissonSeries<double, w, E> const& weight,
@@ -304,7 +306,7 @@ class PiecewisePoissonSeries {
              Instant const& t_max);
   template<typename L, typename R, int l, int r, int w,
            template<typename, typename, int> class E>
-  Product<L, R>
+  typename Hilbert<L, R>::InnerProductType
   friend Dot(PiecewisePoissonSeries<L, l, E> const& left,
              PoissonSeries<R, r, E> const& right,
              PoissonSeries<double, w, E> const& weight,
@@ -389,7 +391,7 @@ operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-Product<LValue, RValue>
+typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight);
@@ -397,7 +399,7 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-Product<LValue, RValue>
+typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
@@ -407,7 +409,7 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-Product<LValue, RValue>
+typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight);
@@ -415,7 +417,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-Product<LValue, RValue>
+typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,

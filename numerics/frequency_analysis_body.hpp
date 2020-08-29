@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/tags.hpp"
+#include "geometry/hilbert.hpp"
 #include "numerics/root_finders.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -19,6 +20,7 @@ namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
 using base::uninitialized;
+using geometry::Hilbert;
 using quantities::Inverse;
 using quantities::Sqrt;
 using quantities::Square;
@@ -208,6 +210,7 @@ IncrementalProjection(Function const& function,
                       PoissonSeries<double, wdegree_, Evaluator> const& weight,
                       Dot const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
+  using Norm = typename Hilbert<Value>::NormType;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
@@ -231,7 +234,7 @@ IncrementalProjection(Function const& function,
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
   }
 
-  UnboundedLowerTriangularMatrix<Inverse<Value>> α(basis_size, uninitialized);
+  UnboundedLowerTriangularMatrix<Inverse<Norm>> α(basis_size, uninitialized);
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
@@ -252,13 +255,13 @@ IncrementalProjection(Function const& function,
       auto const F = dot(f, basis[m], weight);
 
       // This vector contains Qₘⱼ.
-      UnboundedVector<Square<Value>> Q(m + 1, uninitialized);
+      UnboundedVector<Square<Norm>> Q(m + 1, uninitialized);
       for (int j = 0; j <= m; ++j) {
         Q[j] = dot(basis[m], basis[j], weight);
       }
 
       // This vector contains Bⱼ⁽ᵐ⁾.
-      UnboundedVector<Value> B(m, uninitialized);
+      UnboundedVector<Norm> B(m, uninitialized);
       for (int j = 0; j < m; ++j) {
         Value Σ_αⱼₛ_Qₘₛ{};
         for (int s = 0; s <= j; ++s) {
@@ -268,7 +271,7 @@ IncrementalProjection(Function const& function,
       }
 
       {
-        Square<Value> Σ_Bₛ⁽ᵐ⁾²{};
+        Square<Norm> Σ_Bₛ⁽ᵐ⁾²{};
         for (int s = 0; s < m; ++s) {
           Σ_Bₛ⁽ᵐ⁾² += B[s] * B[s];
         }
