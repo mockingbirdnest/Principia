@@ -265,8 +265,8 @@ template<typename LTuple, typename RTuple,
          template<typename, typename> class CartesianProductMultiplicativeSpace,
          int lsize_>
 class PolynomialRing<LTuple, RTuple,
-                          CartesianProductMultiplicativeSpace,
-                          lsize_, 1> {
+                     CartesianProductMultiplicativeSpace,
+                     lsize_, 1> {
   using RHead = std::tuple_element_t<0, RTuple>;
   using Result = decltype(
       CartesianProductMultiplicativeSpace<RHead, LTuple>::Multiply(
@@ -282,34 +282,44 @@ template<typename LTuple, typename RTuple,
          template<typename, typename> class CartesianProductMultiplicativeSpace,
          int lsize_, int rsize_>
 constexpr auto PolynomialRing<LTuple, RTuple,
-                                   CartesianProductMultiplicativeSpace,
-                                   lsize_, rsize_>::Multiply(
+                              CartesianProductMultiplicativeSpace,
+                              lsize_, rsize_>::Multiply(
     LTuple const& left,
     RTuple const& right) -> Result {
   using cartesian_product::operator+;
-  using funky_product::operator*;
 
   auto const right_head = std::get<0>(right);
   auto const right_tail = TailGenerator<RTuple>::Tail(right);
 
-  return left * right_head +
-         ConsGenerator<Zero, LTupleRTailProduct>::Cons(
-             Zero{}, left * right_tail);
+  using RightHeadType = std::remove_const_t<decltype(right_head)>;
+  using RightTailType = std::remove_const_t<decltype(right_tail)>;
+
+  auto const left_times_right_head =
+      CartesianProductMultiplicativeSpace<RightHeadType, LTuple>::
+          Multiply(left, right_head);
+  auto const left_times_right_tail =  PolynomialRing<
+      LTuple, RightTailType,
+      CartesianProductMultiplicativeSpace>::Multiply(left, right_tail);
+
+  return left_times_right_head +
+         ConsGenerator<Zero, LTupleRTailProduct>::Cons(Zero{},
+                                                       left_times_right_tail);
 }
 
 template<typename LTuple, typename RTuple,
          template<typename, typename> class CartesianProductMultiplicativeSpace,
          int lsize_>
 constexpr auto PolynomialRing<LTuple, RTuple,
-                                   CartesianProductMultiplicativeSpace,
-                                   lsize_, 1>::Multiply(
+                              CartesianProductMultiplicativeSpace,
+                              lsize_, 1>::Multiply(
     LTuple const& left,
     RTuple const& right) -> Result {
-  using funky_product::operator*;
-
   auto const right_head = std::get<0>(right);
-  return left * right_head;
-}}  // namespace internal_polynomial_ring
+  return CartesianProductMultiplicativeSpace<
+             decltype(right_head), LTuple>::Multiply(left, right_head);
+}
+
+}  // namespace internal_polynomial_ring
 
 namespace internal_funky_product {
 
