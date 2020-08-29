@@ -4,6 +4,7 @@
 #include <deque>
 #include <optional>
 
+#include "geometry/hilbert.hpp"
 #include "geometry/named_quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -12,8 +13,8 @@ namespace principia {
 namespace numerics {
 namespace internal_pid {
 
+using geometry::Hilbert;
 using geometry::Instant;
-using geometry::Normed;
 using quantities::Difference;
 using quantities::Product;
 using quantities::Quotient;
@@ -28,13 +29,13 @@ class PID {
  public:
   static_assert(finite_difference_order <= horizon);
 
-  using Kp = Quotient<typename Normed<Output>::NormType,
-                      typename Normed<Difference<Input>>::NormType>;
-  using Ki = Quotient<typename Normed<Output>::NormType,
-                      typename Normed<Product<Difference<Input>, Time>>::
+  using Kp = Quotient<typename Hilbert<Output>::NormType,
+                      typename Hilbert<Difference<Input>>::NormType>;
+  using Ki = Quotient<typename Hilbert<Output>::NormType,
+                      typename Hilbert<Product<Difference<Input>, Time>>::
                           NormType>;
-  using Kd = Quotient<typename Normed<Output>::NormType,
-                      typename Normed<Difference<Variation<Input>>>::NormType>;
+  using Kd = Quotient<typename Hilbert<Output>::NormType,
+                      typename Hilbert<Difference<Variation<Input>>>::NormType>;
 
   PID(Kp const& kp, Ki const& ki, Kd const& kd);
 
