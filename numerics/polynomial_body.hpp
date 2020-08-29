@@ -764,12 +764,12 @@ FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<
     typename Hilbert<LValue, RValue>::InnerProductType, Argument,
     ldegree_ + rdegree_, Evaluator>
-FunkyProduct(
+PointwiseInnerProduct(
     PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
-  using geometry::funky_product::operator*;
+  using geometry::pointwise_inner_product::operator*;
   if constexpr (is_instance_of_v<Point, Argument>) {
     CONSTEXPR_CHECK(left.origin_ == right.origin_);
     return PolynomialInMonomialBasis<

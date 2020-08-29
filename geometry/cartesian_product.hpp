@@ -53,7 +53,7 @@ constexpr auto operator*(LTuple const& left, RTuple const& right);
 
 }  // namespace polynomial_ring
 
-namespace funky_product {
+namespace pointwise_inner_product {
 
 template<typename Scalar, typename Tuple,
          typename = std::enable_if_t<!quantities::is_tuple_v<Scalar>>,
@@ -73,7 +73,7 @@ template<typename LTuple, typename RTuple,
          typename = void, typename = void>
 constexpr auto operator*(LTuple const& left, RTuple const& right);
 
-}  // namespace funky_product
+}  // namespace pointwise_inner_product
 
 }  // namespace geometry
 }  // namespace principia

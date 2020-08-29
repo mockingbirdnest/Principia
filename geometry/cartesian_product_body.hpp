@@ -321,7 +321,7 @@ constexpr auto PolynomialRing<LTuple, RTuple,
 
 }  // namespace internal_polynomial_ring
 
-namespace internal_funky_product {
+namespace internal_pointwise_inner_product {
 
 using geometry::Hilbert;
 using quantities::Apply;
@@ -330,10 +330,10 @@ using internal_cartesian_product::CartesianProductAdditiveGroup;
 
 template<typename Scalar, typename Tuple,
          typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
-class CartesianProductFunkySpace;
+class CartesianProductPointwiseMultiplicativeSpace;
 
 template<typename Scalar, typename Tuple, std::size_t... indices>
-class CartesianProductFunkySpace<Scalar, Tuple,
+class CartesianProductPointwiseMultiplicativeSpace<Scalar, Tuple,
                                  std::index_sequence<indices...>> {
   template<typename T>
   using ScalarLeftProduct = typename Hilbert<Scalar, T>::InnerProductType;
@@ -350,7 +350,7 @@ class CartesianProductFunkySpace<Scalar, Tuple,
 };
 
 template<typename Scalar, typename Tuple, std::size_t... indices>
-constexpr auto CartesianProductFunkySpace<
+constexpr auto CartesianProductPointwiseMultiplicativeSpace<
     Scalar, Tuple,
     std::index_sequence<indices...>>::Multiply(Scalar const& left,
                                                Tuple const& right)
@@ -360,7 +360,7 @@ constexpr auto CartesianProductFunkySpace<
 }
 
 template<typename Scalar, typename Tuple, std::size_t... indices>
-constexpr auto CartesianProductFunkySpace<
+constexpr auto CartesianProductPointwiseMultiplicativeSpace<
     Scalar, Tuple,
     std::index_sequence<indices...>>::Multiply(Tuple const& left,
                                                Scalar const& right)
@@ -369,7 +369,7 @@ constexpr auto CartesianProductFunkySpace<
       std::get<indices>(left), right)...};
 }
 
-}  // namespace internal_funky_product
+}  // namespace internal_pointwise_inner_product
 
 namespace cartesian_product {
 
@@ -434,18 +434,20 @@ auto operator*(LTuple const& left, RTuple const& right) {
 
 }  // namespace polynomial_ring
 
-namespace funky_product {
+namespace pointwise_inner_product {
 
 template<typename Scalar, typename Tuple, typename, typename>
 constexpr auto operator*(Scalar const& left, Tuple const& right) {
-  return internal_funky_product::
-      CartesianProductFunkySpace<Scalar, Tuple>::Multiply(left, right);
+  return internal_pointwise_inner_product::
+      CartesianProductPointwiseMultiplicativeSpace<Scalar, Tuple>::Multiply(
+          left, right);
 }
 
 template<typename Tuple, typename Scalar, typename, typename, typename>
 constexpr auto operator*(Tuple const& left, Scalar const& right) {
-  return internal_funky_product::
-      CartesianProductFunkySpace<Scalar, Tuple>::Multiply(left, right);
+  return internal_pointwise_inner_product::
+      CartesianProductPointwiseMultiplicativeSpace<Scalar, Tuple>::Multiply(
+          left, right);
 }
 
 template<typename LTuple, typename RTuple,
@@ -453,11 +455,11 @@ template<typename LTuple, typename RTuple,
 constexpr auto operator*(LTuple const& left, RTuple const& right) {
   return internal_polynomial_ring::PolynomialRing<
       LTuple, RTuple,
-      internal_funky_product::CartesianProductFunkySpace>::Multiply(
-          left, right);
+      internal_pointwise_inner_product::
+          CartesianProductPointwiseMultiplicativeSpace>::Multiply(left, right);
 }
 
-}  // namespace funky_product
+}  // namespace pointwise_inner_product
 
 }  // namespace geometry
 }  // namespace principia

@@ -266,7 +266,7 @@ TEST_F(PolynomialTest, Ring) {
   }
 }
 
-TEST_F(PolynomialTest, FunkyProduct) {
+TEST_F(PolynomialTest, PointwiseInnerProduct) {
   P2V::Coefficients const coefficients({
       Displacement<World>({0 * Metre,
                            2 * Metre,
@@ -280,7 +280,7 @@ TEST_F(PolynomialTest, FunkyProduct) {
   P2V const p2va(coefficients_);
   P2V const p2vb(coefficients);
 
-  auto const p = FunkyProduct(p2va, p2vb);
+  auto const p = PointwiseInnerProduct(p2va, p2vb);
   {
     auto const actual = p.Evaluate(0 * Second);
     EXPECT_THAT(actual, AlmostEquals(3 * Metre * Metre, 0));
