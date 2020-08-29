@@ -210,7 +210,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
   }
 }
 
-#if 0
+#if 1
 TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
   AngularFrequency const ω = 666.543 * π * Radian / Second;
   std::mt19937_64 random(42);
