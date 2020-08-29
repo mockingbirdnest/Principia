@@ -62,6 +62,8 @@ using SolidAngle   = Square<Angle>;
 // General mechanics
 using Speed        = Variation<Length>;
 using Acceleration = Variation<Speed>;
+using Jerk         = Variation<Acceleration>;
+using Snap         = Variation<Jerk>;
 using Momentum     = Product<Mass, Speed>;
 using Force        = Variation<Momentum>;
 using Stiffness    = Quotient<Force, Length>;
