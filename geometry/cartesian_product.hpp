@@ -55,23 +55,10 @@ constexpr auto operator*(LTuple const& left, RTuple const& right);
 
 namespace pointwise_inner_product {
 
-template<typename Scalar, typename Tuple,
-         typename = std::enable_if_t<!quantities::is_tuple_v<Scalar>>,
-         typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>>
-constexpr auto operator*(Scalar const& left, Tuple const& right);
-
-// The extra typename lifts an ambiguity on the definition.
-template<typename Tuple, typename Scalar,
-         typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>,
-         typename = std::enable_if_t<!quantities::is_tuple_v<Scalar>>,
-         typename = void>
-constexpr auto operator*(Tuple const& left, Scalar const& right);
-
 template<typename LTuple, typename RTuple,
          typename = std::enable_if_t<quantities::is_tuple_v<LTuple>>,
-         typename = std::enable_if_t<quantities::is_tuple_v<RTuple>>,
-         typename = void, typename = void>
-constexpr auto operator*(LTuple const& left, RTuple const& right);
+         typename = std::enable_if_t<quantities::is_tuple_v<RTuple>>>
+constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
 
 }  // namespace pointwise_inner_product
 

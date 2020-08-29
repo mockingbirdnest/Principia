@@ -30,6 +30,7 @@ using geometry::cartesian_product::operator+;
 using geometry::cartesian_product::operator-;
 using geometry::cartesian_product::operator*;
 using geometry::cartesian_product::operator/;
+using geometry::pointwise_inner_product::PointwiseInnerProduct;
 using geometry::polynomial_ring::operator*;
 using quantities::Apply;
 using quantities::Exponentiation;
@@ -769,19 +770,18 @@ PointwiseInnerProduct(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
-  using geometry::pointwise_inner_product::operator*;
   if constexpr (is_instance_of_v<Point, Argument>) {
     CONSTEXPR_CHECK(left.origin_ == right.origin_);
     return PolynomialInMonomialBasis<
                typename Hilbert<LValue, RValue>::InnerProductType, Argument,
                ldegree_ + rdegree_, Evaluator>(
-               left.coefficients_ * right.coefficients_,
+               PointwiseInnerProduct(left.coefficients_, right.coefficients_),
                left.origin_);
   } else {
     return PolynomialInMonomialBasis<
                typename Hilbert<LValue, RValue>::InnerProductType, Argument,
                ldegree_ + rdegree_, Evaluator>(
-               left.coefficients_ * right.coefficients_);
+               PointwiseInnerProduct(left.coefficients_, right.coefficients_));
   }
 }
 
