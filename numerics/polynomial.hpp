@@ -184,7 +184,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
            template<typename, typename, int> class E>
   constexpr PolynomialInMonomialBasis<
       typename Hilbert<L, R>::InnerProductType, A, l + r, E>
-  friend FunkyProduct(
+  friend PointwiseInnerProduct(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename V, typename A, int d,
@@ -305,7 +305,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
            template<typename, typename, int> class E>
   constexpr PolynomialInMonomialBasis<
       typename Hilbert<L, R>::InnerProductType, A, l + r, E>
-  friend FunkyProduct(
+  friend PointwiseInnerProduct(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename V, typename A, int d,
@@ -393,13 +393,15 @@ operator*(
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right);
 
+// Returns a scalar polynomial obtained by pointwise inner product of two
+// vector-valued polynomials.
 template<typename LValue, typename RValue,
          typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 constexpr PolynomialInMonomialBasis<
     typename Hilbert<LValue, RValue>::InnerProductType, Argument,
     ldegree_ + rdegree_, Evaluator>
-FunkyProduct(
+PointwiseInnerProduct(
     PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
