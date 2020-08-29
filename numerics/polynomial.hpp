@@ -10,6 +10,7 @@
 
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
+#include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
@@ -43,6 +44,7 @@ namespace internal_polynomial {
 using base::is_instance_of_v;
 using base::not_constructible;
 using base::not_null;
+using geometry::Hilbert;
 using geometry::Point;
 using quantities::Derivative;
 using quantities::Derivatives;
@@ -177,6 +179,14 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<
+      typename Hilbert<L, R>::InnerProductType, A, l + r, E>
+  friend FunkyProduct(
+      PolynomialInMonomialBasis<L, A, l, E> const& left,
+      PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename V, typename A, int d,
            template<typename, typename, int> class E>
   friend std::ostream& operator<<(
@@ -290,6 +300,14 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<
+      typename Hilbert<L, R>::InnerProductType, A, l + r, E>
+  friend FunkyProduct(
+      PolynomialInMonomialBasis<L, A, l, E> const& left,
+      PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename V, typename A, int d,
            template<typename, typename, int> class E>
   friend std::ostream& operator<<(
@@ -370,6 +388,18 @@ template<typename LValue, typename RValue,
 constexpr PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                     ldegree_ + rdegree_, Evaluator>
 operator*(
+    PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
+        left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
+        right);
+
+template<typename LValue, typename RValue,
+         typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+constexpr PolynomialInMonomialBasis<
+    typename Hilbert<LValue, RValue>::InnerProductType, Argument,
+    ldegree_ + rdegree_, Evaluator>
+FunkyProduct(
     PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&

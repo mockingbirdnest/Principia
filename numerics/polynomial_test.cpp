@@ -235,7 +235,7 @@ TEST_F(PolynomialTest, VectorSpace) {
   }
 }
 
-TEST_F(PolynomialTest, Ring) {
+TEST_F(PolynomialTest, ScalarRing) {
   using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
   using P3 = PolynomialInMonomialBasis<Current, Time, 3, HornerEvaluator>;
   P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
@@ -263,6 +263,43 @@ TEST_F(PolynomialTest, Ring) {
   {
     auto const actual = p.Evaluate(-2 * Second);
     EXPECT_THAT(actual, AlmostEquals(-518 * Ampere * Kelvin, 0));
+  }
+}
+
+TEST_F(PolynomialTest, VectorRing) {
+  P2V::Coefficients const coefficients({
+      Displacement<World>({0 * Metre,
+                           2 * Metre,
+                           3 * Metre}),
+      Velocity<World>({-1 * Metre / Second,
+                       1 * Metre / Second,
+                       0 * Metre / Second}),
+      Vector<Acceleration, World>({1 * Metre / Second / Second,
+                                   1 * Metre / Second / Second,
+                                   -2 * Metre / Second / Second})});
+  P2V const p2va(coefficients_);
+  P2V const p2vb(coefficients);
+
+  auto const p = FunkyProduct(p2va, p2vb);
+  {
+    auto const actual = p.Evaluate(0 * Second);
+    EXPECT_THAT(actual, AlmostEquals(3 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(8 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(-1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(6 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(31 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(-2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(23 * Metre * Metre, 0));
   }
 }
 
