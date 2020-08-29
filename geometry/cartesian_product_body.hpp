@@ -333,8 +333,8 @@ template<typename Scalar, typename Tuple,
 class CartesianProductPointwiseMultiplicativeSpace;
 
 template<typename Scalar, typename Tuple, std::size_t... indices>
-class CartesianProductPointwiseMultiplicativeSpace<Scalar, Tuple,
-                                 std::index_sequence<indices...>> {
+class CartesianProductPointwiseMultiplicativeSpace<
+    Scalar, Tuple, std::index_sequence<indices...>> {
   template<typename T>
   using ScalarLeftProduct = typename Hilbert<Scalar, T>::InnerProductType;
   template<typename T>
