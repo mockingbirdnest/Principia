@@ -19,7 +19,7 @@ namespace internal_r3_element {
 using base::not_null;
 using base::uninitialized_t;
 using quantities::Angle;
-using quantities::is_quantity;
+using quantities::is_quantity_v;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::Quotient;
@@ -114,17 +114,17 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& left,
 // The special case where one of the scalars is |double| is handled separately
 // above in order to allow implicit conversions to |double|.
 template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity<LScalar>::value>>
+         typename = std::enable_if_t<is_quantity_v<LScalar>>>
 R3Element<Product<LScalar, RScalar>>
 operator*(LScalar const& left, R3Element<RScalar> const& right);
 
 template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity<RScalar>::value>>
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
 R3Element<Product<LScalar, RScalar>>
 operator*(R3Element<LScalar> const& left, RScalar const& right);
 
 template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity<RScalar>::value>>
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
 R3Element<Quotient<LScalar, RScalar>>
 operator/(R3Element<LScalar> const& left, RScalar const& right);
 
