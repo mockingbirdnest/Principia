@@ -131,9 +131,6 @@
     <ClInclude Include="sphere_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="named_quantities_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="symmetric_bilinear_form.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

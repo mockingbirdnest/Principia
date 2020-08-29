@@ -21,7 +21,7 @@ namespace internal_r3x3_matrix {
 using base::not_null;
 using base::uninitialized_t;
 using quantities::Cube;
-using quantities::is_quantity;
+using quantities::is_quantity_v;
 using quantities::Product;
 using quantities::Quotient;
 
@@ -152,17 +152,17 @@ R3Element<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<RScalar> const& right);
 
 template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity<LScalar>::value>>
+         typename = std::enable_if_t<is_quantity_v<LScalar>>>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
     R3x3Matrix<RScalar> const& right);
 template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity<LScalar>::value>>
+         typename = std::enable_if_t<is_quantity_v<LScalar>>>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<LScalar> const& left,
     RScalar const& right);
 template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity<LScalar>::value>>
+         typename = std::enable_if_t<is_quantity_v<LScalar>>>
 R3x3Matrix<Quotient<LScalar, RScalar>> operator/(
     R3x3Matrix<LScalar> const& left,
     RScalar const& right);
