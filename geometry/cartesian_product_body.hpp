@@ -176,6 +176,13 @@ constexpr auto CartesianProductVectorSpace<
   return {std::get<indices>(left) / right...};
 }
 
+}  // namespace internal_cartesian_product
+
+namespace internal_polynomial_ring {
+
+using internal_cartesian_product::CartesianProductAdditiveGroup;
+using internal_cartesian_product::CartesianProductVectorSpace;
+
 // A helper for prepending an element to a tuple.  Somewhat similar to
 // std::tuple_cat but conveniently exports the type of the result.
 template<typename Element, typename Tuple,
@@ -287,7 +294,134 @@ constexpr auto PolynomialRing<LTuple, RTuple, lsize_, 1>::Multiply(
   return left * right_head;
 }
 
-}  // namespace internal_cartesian_product
+}  // namespace internal_polynomial_ring
+
+namespace internal_funky_product {
+
+using geometry::Hilbert;
+using quantities::Apply;
+
+using internal_cartesian_product::CartesianProductAdditiveGroup;
+using internal_polynomial_ring::ConsGenerator;
+using internal_polynomial_ring::TailGenerator;
+
+template<typename Scalar, typename Tuple,
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
+class CartesianProductFunkySpace;
+
+template<typename Scalar, typename Tuple, std::size_t... indices>
+class CartesianProductFunkySpace<Scalar, Tuple,
+                                  std::index_sequence<indices...>> {
+  template<typename T>
+  using ScalarLeftProduct = typename Hilbert<Scalar, T>::InnerProductType;
+  template<typename T>
+  using ScalarRightProduct = typename Hilbert<T, Scalar>::InnerProductType;
+
+ public:
+  FORCE_INLINE(static constexpr) Apply<ScalarLeftProduct, Tuple> Multiply(
+      Scalar const& left,
+      Tuple const& right);
+  FORCE_INLINE(static constexpr) Apply<ScalarRightProduct, Tuple> Multiply(
+      Tuple const& left,
+      Scalar const& right);
+};
+
+template<typename Scalar, typename Tuple, std::size_t... indices>
+constexpr auto CartesianProductFunkySpace<
+    Scalar, Tuple,
+    std::index_sequence<indices...>>::Multiply(Scalar const& left,
+                                               Tuple const& right)
+    -> Apply<ScalarLeftProduct, Tuple> {
+  return {Hilbert<Scalar, std::tuple_element_t<indices, Tuple>>::InnerProduct(
+      left, std::get<indices>(right))...};
+}
+
+template<typename Scalar, typename Tuple, std::size_t... indices>
+constexpr auto CartesianProductFunkySpace<
+    Scalar, Tuple,
+    std::index_sequence<indices...>>::Multiply(Tuple const& left,
+                                               Scalar const& right)
+    -> Apply<ScalarRightProduct, Tuple> {
+  return {Hilbert<std::tuple_element_t<indices, Tuple>, Scalar>::InnerProduct(
+      std::get<indices>(left), right)...};
+}
+
+template<typename LTuple, typename RTuple,
+         int lsize_ = std::tuple_size_v<LTuple>,
+         int rsize_ = std::tuple_size_v<RTuple>>
+class PolynomialFunkyRing {
+  // Right is split into head (index 0) and tail (the rest).  The tail is a
+  // polynomial with valuation 1.
+  using RHead = std::tuple_element_t<0, RTuple>;
+  using RTail = typename TailGenerator<RTuple>::Type;
+
+  // To implement the polynomial multiplication left * right_tail, we need to
+  // insert a zero for the lowest degree (because of the valuation 1).  This is
+  // the type of that zero.
+  using LHead = std::tuple_element_t<0, LTuple>;
+  using Zero = typename Hilbert<LHead, RHead>::InnerProductType;
+
+  // The hard part: generating the type of the result.
+  using LTupleRHeadProduct =
+      decltype(CartesianProductFunkySpace<RHead, LTuple>::Multiply(
+          std::declval<LTuple>(),
+          std::declval<RHead>()));
+  using LTupleRTailProduct =
+      decltype(PolynomialFunkyRing<LTuple, RTail>::Multiply(
+          std::declval<LTuple>(),
+          std::declval<RTail>()));
+  using ZeroLTupleRTailProduct =
+      typename ConsGenerator<Zero, LTupleRTailProduct>::Type;
+
+  using Result =
+      decltype(CartesianProductAdditiveGroup<LTupleRHeadProduct,
+                                             ZeroLTupleRTailProduct>::
+                   Add(std::declval<LTupleRHeadProduct>(),
+                       std::declval<ZeroLTupleRTailProduct>()));
+
+ public:
+  FORCE_INLINE(static constexpr)
+  Result Multiply(LTuple const& left, RTuple const& right);
+};
+
+template<typename LTuple, typename RTuple, int lsize_>
+class PolynomialFunkyRing<LTuple, RTuple, lsize_, 1> {
+  using RHead = std::tuple_element_t<0, RTuple>;
+  using Result = decltype(CartesianProductFunkySpace<RHead, LTuple>::Multiply(
+      std::declval<LTuple>(),
+      std::declval<RHead>()));
+
+ public:
+  FORCE_INLINE(static constexpr)
+  Result Multiply(LTuple const& left, RTuple const& right);
+};
+
+template<typename LTuple, typename RTuple, int lsize_, int rsize_>
+constexpr auto PolynomialFunkyRing<LTuple, RTuple, lsize_, rsize_>::Multiply(
+    LTuple const& left,
+    RTuple const& right) -> Result {
+  using cartesian_product::operator+;
+  using funky_product::operator*;
+
+  auto const right_head = std::get<0>(right);
+  auto const right_tail = TailGenerator<RTuple>::Tail(right);
+
+  return left * right_head +
+         ConsGenerator<Zero, LTupleRTailProduct>::Cons(
+             Zero{}, left * right_tail);
+}
+
+template<typename LTuple, typename RTuple, int lsize_>
+constexpr auto PolynomialFunkyRing<LTuple, RTuple, lsize_, 1>::Multiply(
+    LTuple const& left,
+    RTuple const& right) -> Result {
+  using funky_product::operator*;
+
+  auto const right_head = std::get<0>(right);
+  return left * right_head;
+}
+
+}  // namespace internal_funky_product
 
 namespace cartesian_product {
 
@@ -344,11 +478,34 @@ namespace polynomial_ring {
 template<typename LTuple, typename RTuple, typename, typename>
 FORCE_INLINE(constexpr)
 auto operator*(LTuple const& left, RTuple const& right) {
-  return internal_cartesian_product::
+  return internal_polynomial_ring::
       PolynomialRing<LTuple, RTuple>::Multiply(left, right);
 }
 
 }  // namespace polynomial_ring
+
+namespace funky_product {
+
+template<typename Scalar, typename Tuple, typename, typename>
+constexpr auto operator*(Scalar const& left, Tuple const& right) {
+  return internal_funky_product::
+      CartesianProductFunkySpace<Scalar, Tuple>::Multiply(left, right);
+}
+
+template<typename Tuple, typename Scalar, typename, typename, typename>
+constexpr auto operator*(Tuple const& left, Scalar const& right) {
+  return internal_funky_product::
+      CartesianProductFunkySpace<Scalar, Tuple>::Multiply(left, right);
+}
+
+template<typename LTuple, typename RTuple,
+         typename, typename, typename, typename>
+constexpr auto operator*(LTuple const& left, RTuple const& right) {
+  return internal_funky_product::
+      PolynomialFunkyRing<LTuple, RTuple>::Multiply(left, right);
+}
+
+}  // namespace funky_product
 
 }  // namespace geometry
 }  // namespace principia

@@ -769,6 +769,7 @@ FunkyProduct(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
+  using geometry::funky_product::operator*;
   if constexpr (is_instance_of_v<Point, Argument>) {
     CONSTEXPR_CHECK(left.origin_ == right.origin_);
     return PolynomialInMonomialBasis<
