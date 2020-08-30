@@ -8,6 +8,7 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/hilbert.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -28,6 +29,7 @@ namespace numerics {
 namespace frequency_analysis {
 
 using geometry::Handedness;
+using geometry::Hilbert;
 using geometry::Inertial;
 using geometry::Instant;
 using geometry::Frame;
@@ -61,8 +63,8 @@ class DotImplementation {
   DotImplementation(Instant const& t_min, Instant const& t_max);
 
   template<typename LFunction, typename RFunction, typename Weight>
-  Product<std::invoke_result_t<LFunction, Instant>,
-          std::invoke_result_t<RFunction, Instant>>
+  typename Hilbert<std::invoke_result_t<LFunction, Instant>,
+                   std::invoke_result_t<RFunction, Instant>>::InnerProductType
   operator()(LFunction const& left,
              RFunction const& right,
              Weight const& weight) const;
@@ -78,8 +80,8 @@ DotImplementation::DotImplementation(Instant const& t_min,
       t_max_(t_max) {}
 
 template<typename LFunction, typename RFunction, typename Weight>
-Product<std::invoke_result_t<LFunction, Instant>,
-        std::invoke_result_t<RFunction, Instant>>
+typename Hilbert<std::invoke_result_t<LFunction, Instant>,
+                 std::invoke_result_t<RFunction, Instant>>::InnerProductType
 DotImplementation::operator()(LFunction const& left,
                               RFunction const& right,
                               Weight const& weight) const {
@@ -210,7 +212,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
   }
 }
 
-#if 0
+#if 1
 TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
   AngularFrequency const ω = 666.543 * π * Radian / Second;
   std::mt19937_64 random(42);
