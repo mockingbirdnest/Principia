@@ -221,8 +221,14 @@ Tail(Tuple const& tuple) -> Type {
 // the bona fide |CartesianProductVectorSpace|.  If it is not, this implements a
 // multiplication-like operation which has the expected properties with respect
 // to the cartesian product additive group.
+// NOTE(phl): The need for the third, defaulted, parameter to the template
+// template parameter is because Clang, as of 10.0.1, doesn't implement
+// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0522r0.html, see
+// https://godbolt.org/z/9T8M3P.  Visual Studio 16.6.3 does.
 template<typename LTuple, typename RTuple,
-         template<typename, typename> class CartesianProductMultiplicativeSpace,
+         template<typename, typename Tuple,
+                  typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
+         class CartesianProductMultiplicativeSpace,
          int lsize_ = std::tuple_size_v<LTuple>,
          int rsize_ = std::tuple_size_v<RTuple>>
 class PolynomialRing {
@@ -262,7 +268,9 @@ class PolynomialRing {
 };
 
 template<typename LTuple, typename RTuple,
-         template<typename, typename> class CartesianProductMultiplicativeSpace,
+         template<typename, typename Tuple,
+                  typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
+         class CartesianProductMultiplicativeSpace,
          int lsize_>
 class PolynomialRing<LTuple, RTuple,
                      CartesianProductMultiplicativeSpace,
@@ -279,7 +287,9 @@ class PolynomialRing<LTuple, RTuple,
 };
 
 template<typename LTuple, typename RTuple,
-         template<typename, typename> class CartesianProductMultiplicativeSpace,
+         template<typename, typename Tuple,
+                  typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
+         class CartesianProductMultiplicativeSpace,
          int lsize_, int rsize_>
 constexpr auto PolynomialRing<LTuple, RTuple,
                               CartesianProductMultiplicativeSpace,
@@ -307,7 +317,9 @@ constexpr auto PolynomialRing<LTuple, RTuple,
 }
 
 template<typename LTuple, typename RTuple,
-         template<typename, typename> class CartesianProductMultiplicativeSpace,
+         template<typename, typename Tuple,
+                  typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
+         class CartesianProductMultiplicativeSpace,
          int lsize_>
 constexpr auto PolynomialRing<LTuple, RTuple,
                               CartesianProductMultiplicativeSpace,
