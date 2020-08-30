@@ -4,6 +4,8 @@
 #include <limits>
 #include <memory>
 
+#include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "numerics/apodization.hpp"
@@ -17,12 +19,20 @@
 namespace principia {
 namespace numerics {
 
+using geometry::Displacement;
+using geometry::Frame;
+using geometry::Handedness;
+using geometry::Inertial;
 using geometry::Instant;
+using geometry::Vector;
+using geometry::Velocity;
+using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
@@ -30,6 +40,11 @@ using testing_utilities::VanishesBefore;
 
 class PoissonSeriesTest : public ::testing::Test {
  protected:
+  using World = Frame<serialization::Frame::TestTag,
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
+
   using Degree1 = PoissonSeries<double, 1, HornerEvaluator>;
 
   PoissonSeriesTest()
@@ -136,6 +151,36 @@ TEST_F(PoissonSeriesTest, Algebra) {
   EXPECT_THAT(product(t0_ + 1 * Second),
               AlmostEquals((*pa_)(t0_ + 1 * Second) *
                                (*pb_)(t0_ + 1 * Second), 6, 38));
+}
+
+TEST_F(PoissonSeriesTest, PointwiseInnerProduct) {
+  using Degree2 = PoissonSeries<Displacement<World>, 2, HornerEvaluator>;
+  Degree2::Polynomial::Coefficients const coefficients_a({
+      Displacement<World>({0 * Metre,
+                            0 * Metre,
+                            1 * Metre}),
+      Velocity<World>({0 * Metre / Second,
+                        1 * Metre / Second,
+                        0 * Metre / Second}),
+      Vector<Acceleration, World>({1 * Metre / Second / Second,
+                                    0 * Metre / Second / Second,
+                                    0 * Metre / Second / Second})});
+  Degree2::Polynomial::Coefficients const coefficients_b({
+      Displacement<World>({0 * Metre,
+                           2 * Metre,
+                           3 * Metre}),
+      Velocity<World>({-1 * Metre / Second,
+                       1 * Metre / Second,
+                       0 * Metre / Second}),
+      Vector<Acceleration, World>({1 * Metre / Second / Second,
+                                   1 * Metre / Second / Second,
+                                   -2 * Metre / Second / Second})});
+  Degree2 const pa(Degree2::Polynomial({coefficients_a}, t0_), {{}});
+  Degree2 const pb(Degree2::Polynomial({coefficients_b}, t0_), {{}});
+
+  auto const product = PointwiseInnerProduct(pa, pb);
+  EXPECT_THAT(product(t0_ + 1 * Second),
+              AlmostEquals(5 * Metre * Metre, 0));
 }
 
 TEST_F(PoissonSeriesTest, Primitive) {

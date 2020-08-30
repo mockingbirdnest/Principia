@@ -59,6 +59,80 @@ AngularFrequencyPrimitive(
   }
 }
 
+// A helper for multiplication of Poisson series and pointwise inner product.
+// The functor Product must take a pair of Poisson series with the types of left
+// and right and return a suitable Poisson series.
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator,
+         typename Product>
+auto Multiply(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+              PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+              Product const& product) {
+  using Result =
+      PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
+                    ldegree_ + rdegree_,
+                    Evaluator>;
+
+  // Compute all the individual terms using elementary trigonometric identities
+  // and put them in a multimap, because the same frequency may appear multiple
+  // times.
+  std::multimap<AngularFrequency, typename Result::Polynomials> terms;
+  auto const aperiodic = product(left.aperiodic_, right.aperiodic_);
+  for (auto const& [ω, polynomials] : left.periodic_) {
+    terms.emplace(ω,
+                  typename Result::Polynomials{
+                      /*sin=*/product(polynomials.sin, right.aperiodic_),
+                      /*cos=*/product(polynomials.cos, right.aperiodic_)});
+  }
+  for (auto const& [ω, polynomials] : right.periodic_) {
+    terms.emplace(ω,
+                  typename Result::Polynomials{
+                      /*sin=*/product(left.aperiodic_, polynomials.sin),
+                      /*cos=*/product(left.aperiodic_, polynomials.cos)});
+  }
+  for (auto const& [ωl, polynomials_left] : left.periodic_) {
+    for (auto const& [ωr, polynomials_right] : right.periodic_) {
+      terms.emplace(
+          ωl - ωr,
+          typename Result::Polynomials{
+              /*sin=*/(product(-polynomials_left.cos, polynomials_right.sin) +
+                       product(polynomials_left.sin, polynomials_right.cos)) /
+                  2,
+              /*cos=*/(product(polynomials_left.sin, polynomials_right.sin) +
+                       product(polynomials_left.cos, polynomials_right.cos)) /
+                  2});
+      terms.emplace(
+          ωl + ωr,
+          typename Result::Polynomials{
+              /*sin=*/(product(polynomials_left.cos, polynomials_right.sin) +
+                       product(polynomials_left.sin, polynomials_right.cos)) /
+                  2,
+              /*cos=*/(product(-polynomials_left.sin, polynomials_right.sin) +
+                       product(polynomials_left.cos, polynomials_right.cos)) /
+                  2});
+    }
+  }
+
+  // Now group the terms together by frequency.
+  typename Result::PolynomialsByAngularFrequency periodic;
+  std::optional<AngularFrequency> previous_ω;
+  for (auto it = terms.cbegin(); it != terms.cend(); ++it) {
+    auto const& ω = it->first;
+    auto const& polynomials = it->second;
+    if (previous_ω.has_value() && previous_ω.value() == ω) {
+      auto& previous_polynomials = periodic.rbegin()->second;
+      previous_polynomials.sin += polynomials.sin;
+      previous_polynomials.cos += polynomials.cos;
+    } else {
+      periodic.insert(*it);
+    }
+    previous_ω = ω;
+  }
+
+  return Result{aperiodic, std::move(periodic)};
+}
+
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
@@ -340,64 +414,36 @@ template<typename LValue, typename RValue,
 PoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
 operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
           PoissonSeries<RValue, rdegree_, Evaluator> const& right) {
-  using Result =
-      PoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>;
+  auto product =
+      [](typename PoissonSeries<LValue, ldegree_, Evaluator>::Polynomial const&
+             left,
+         typename PoissonSeries<RValue, rdegree_, Evaluator>::Polynomial const&
+             right) {
+    return left * right;
+  };
 
-  // Compute all the individual terms using elementary trigonometric identities
-  // and put them in a multimap, because the same frequency may appear multiple
-  // times.
-  std::multimap<AngularFrequency, typename Result::Polynomials> terms;
-  auto const aperiodic = left.aperiodic_ * right.aperiodic_;
-  for (auto const& [ω, polynomials] : left.periodic_) {
-    terms.emplace(ω,
-                  typename Result::Polynomials{
-                      /*sin=*/polynomials.sin * right.aperiodic_,
-                      /*cos=*/polynomials.cos * right.aperiodic_});
-  }
-  for (auto const& [ω, polynomials] : right.periodic_) {
-    terms.emplace(ω,
-                  typename Result::Polynomials{
-                      /*sin=*/left.aperiodic_ * polynomials.sin,
-                      /*cos=*/left.aperiodic_ * polynomials.cos});
-  }
-  for (auto const& [ωl, polynomials_left] : left.periodic_) {
-    for (auto const& [ωr, polynomials_right] : right.periodic_) {
-      terms.emplace(ωl - ωr,
-                    typename Result::Polynomials{
-                        /*sin=*/(-polynomials_left.cos * polynomials_right.sin +
-                                 polynomials_left.sin * polynomials_right.cos) /
-                            2,
-                        /*cos=*/(polynomials_left.sin * polynomials_right.sin +
-                                 polynomials_left.cos * polynomials_right.cos) /
-                            2});
-      terms.emplace(ωl + ωr,
-                    typename Result::Polynomials{
-                        /*sin=*/(polynomials_left.cos * polynomials_right.sin +
-                                 polynomials_left.sin * polynomials_right.cos) /
-                            2,
-                        /*cos=*/(-polynomials_left.sin * polynomials_right.sin +
-                                 polynomials_left.cos * polynomials_right.cos) /
-                            2});
-    }
-  }
+  return Multiply<LValue, RValue, ldegree_, rdegree_, Evaluator>(
+      left, right, product);
+}
 
-  // Now group the terms together by frequency.
-  typename Result::PolynomialsByAngularFrequency periodic;
-  std::optional<AngularFrequency> previous_ω;
-  for (auto it = terms.cbegin(); it != terms.cend(); ++it) {
-    auto const& ω = it->first;
-    auto const& polynomials = it->second;
-    if (previous_ω.has_value() && previous_ω.value() == ω) {
-      auto& previous_polynomials = periodic.rbegin()->second;
-      previous_polynomials.sin += polynomials.sin;
-      previous_polynomials.cos += polynomials.cos;
-    } else {
-      periodic.insert(*it);
-    }
-    previous_ω = ω;
-  }
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
+              ldegree_ + rdegree_,
+              Evaluator>
+PointwiseInnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+                      PoissonSeries<RValue, rdegree_, Evaluator> const& right) {
+  auto product =
+      [](typename PoissonSeries<LValue, ldegree_, Evaluator>::Polynomial const&
+             left,
+         typename PoissonSeries<RValue, rdegree_, Evaluator>::Polynomial const&
+             right) {
+    return PointwiseInnerProduct(left, right);
+  };
 
-  return {aperiodic, std::move(periodic)};
+  return Multiply<LValue, RValue, ldegree_, rdegree_, Evaluator>(
+      left, right, product);
 }
 
 template<typename Value, int degree_,
@@ -440,7 +486,7 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) {
-  auto const integrand = left * right * weight;
+  auto const integrand = PointwiseInnerProduct(left, right) * weight;
   auto const primitive = integrand.Primitive();
   return (primitive(t_max) - primitive(t_min)) / (t_max - t_min);
 }
@@ -692,7 +738,8 @@ Product<LValue, RValue> Dot(
   using Result = Primitive<Product<LValue, RValue>, Time>;
   Result result;
   for (int i = 0; i < right.series_.size(); ++i) {
-    auto const integrand = left * right.series_[i] * weight;
+    auto const integrand =
+        PointwiseInnerProduct(left, right.series_[i]) * weight;
     auto const primitive = integrand.Primitive();
     result += primitive(right.bounds_[i + 1]) - primitive(right.bounds_[i]);
   }
@@ -721,7 +768,8 @@ Product<LValue, RValue> Dot(
   using Result = Primitive<Product<LValue, RValue>, Time>;
   Result result;
   for (int i = 0; i < left.series_.size(); ++i) {
-    auto const integrand = left.series_[i] * right * weight;
+    auto const integrand =
+        PointwiseInnerProduct(left.series_[i], right) * weight;
     auto const primitive = integrand.Primitive();
     result += primitive(left.bounds_[i + 1]) - primitive(left.bounds_[i]);
   }
