@@ -59,7 +59,9 @@ AngularFrequencyPrimitive(
   }
 }
 
-//TODO(phl):comment
+// A helper for multiplication of Poisson series and pointwise inner product.
+// The functor Product must take a pair of Poisson series with the types of left
+// and right and return a suitable Poisson series.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator,
@@ -78,7 +80,6 @@ auto Multiply(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   std::multimap<AngularFrequency, typename Result::Polynomials> terms;
   auto const aperiodic = product(left.aperiodic_, right.aperiodic_);
   for (auto const& [ω, polynomials] : left.periodic_) {
-    typename Result::Polynomial foo = product(polynomials.sin, right.aperiodic_);
     terms.emplace(ω,
                   typename Result::Polynomials{
                       /*sin=*/product(polynomials.sin, right.aperiodic_),
