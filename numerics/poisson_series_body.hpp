@@ -59,7 +59,9 @@ AngularFrequencyPrimitive(
   }
 }
 
-//TODO(phl):comment
+// A helper for multiplication of Poisson series and pointwise inner product.
+// The functor Product must take a pair of Poisson series with the types of left
+// and right and return a suitable Poisson series.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator,
