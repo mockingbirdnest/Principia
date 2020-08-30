@@ -30,6 +30,7 @@ using geometry::cartesian_product::operator+;
 using geometry::cartesian_product::operator-;
 using geometry::cartesian_product::operator*;
 using geometry::cartesian_product::operator/;
+using geometry::pointwise_inner_product::PointwiseInnerProduct;
 using geometry::polynomial_ring::operator*;
 using quantities::Apply;
 using quantities::Exponentiation;
@@ -754,6 +755,33 @@ operator*(
     return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                      ldegree_ + rdegree_, Evaluator>(
                left.coefficients_ * right.coefficients_);
+  }
+}
+
+template<typename LValue, typename RValue,
+         typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<
+    typename Hilbert<LValue, RValue>::InnerProductType, Argument,
+    ldegree_ + rdegree_, Evaluator>
+PointwiseInnerProduct(
+    PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
+        left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
+        right) {
+  if constexpr (is_instance_of_v<Point, Argument>) {
+    CONSTEXPR_CHECK(left.origin_ == right.origin_);
+    return PolynomialInMonomialBasis<
+               typename Hilbert<LValue, RValue>::InnerProductType, Argument,
+               ldegree_ + rdegree_, Evaluator>(
+               PointwiseInnerProduct(left.coefficients_, right.coefficients_),
+               left.origin_);
+  } else {
+    return PolynomialInMonomialBasis<
+               typename Hilbert<LValue, RValue>::InnerProductType, Argument,
+               ldegree_ + rdegree_, Evaluator>(
+               PointwiseInnerProduct(left.coefficients_, right.coefficients_));
   }
 }
 
