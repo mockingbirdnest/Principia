@@ -121,10 +121,11 @@ class PoissonSeries {
                    Scalar const& right);
   template<typename L, typename R,
            int l, int r,
-           template<typename, typename, int> class E>
-  PoissonSeries<Product<L, R>, l + r, E>
-  friend operator*(PoissonSeries<L, l, E> const& left,
-                   PoissonSeries<R, r, E> const& right);
+           template<typename, typename, int> class E,
+           typename P>
+  auto friend Multiply(PoissonSeries<L, l, E> const& left,
+                       PoissonSeries<R, r, E> const& right,
+                       P const& product);
   template<typename V, int d, template<typename, typename, int> class E>
   friend std::ostream& operator<<(std::ostream& out,
                                   PoissonSeries<V, d, E> const& series);
@@ -189,6 +190,15 @@ template<typename LValue, typename RValue,
 PoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
 operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
           PoissonSeries<RValue, rdegree_, Evaluator> const& right);
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
+              ldegree_ + rdegree_,
+              Evaluator>
+PointwiseInnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+                      PoissonSeries<RValue, rdegree_, Evaluator> const& right);
 
 // Output.
 
