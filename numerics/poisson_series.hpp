@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "geometry/hilbert.hpp"
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/polynomial.hpp"
@@ -36,6 +37,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_poisson_series {
 
+using geometry::Hilbert;
 using geometry::Instant;
 using geometry::Interval;
 using quantities::AngularFrequency;
