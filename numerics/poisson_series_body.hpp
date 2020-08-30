@@ -80,7 +80,6 @@ auto Multiply(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   std::multimap<AngularFrequency, typename Result::Polynomials> terms;
   auto const aperiodic = product(left.aperiodic_, right.aperiodic_);
   for (auto const& [ω, polynomials] : left.periodic_) {
-    typename Result::Polynomial foo = product(polynomials.sin, right.aperiodic_);
     terms.emplace(ω,
                   typename Result::Polynomials{
                       /*sin=*/product(polynomials.sin, right.aperiodic_),
