@@ -333,8 +333,8 @@ template<typename Scalar, typename Tuple,
 class CartesianProductPointwiseMultiplicativeSpace;
 
 template<typename Scalar, typename Tuple, std::size_t... indices>
-class CartesianProductPointwiseMultiplicativeSpace<Scalar, Tuple,
-                                 std::index_sequence<indices...>> {
+class CartesianProductPointwiseMultiplicativeSpace<
+    Scalar, Tuple, std::index_sequence<indices...>> {
   template<typename T>
   using ScalarLeftProduct = typename Hilbert<Scalar, T>::InnerProductType;
   template<typename T>
@@ -436,23 +436,9 @@ auto operator*(LTuple const& left, RTuple const& right) {
 
 namespace pointwise_inner_product {
 
-template<typename Scalar, typename Tuple, typename, typename>
-constexpr auto operator*(Scalar const& left, Tuple const& right) {
-  return internal_pointwise_inner_product::
-      CartesianProductPointwiseMultiplicativeSpace<Scalar, Tuple>::Multiply(
-          left, right);
-}
-
-template<typename Tuple, typename Scalar, typename, typename, typename>
-constexpr auto operator*(Tuple const& left, Scalar const& right) {
-  return internal_pointwise_inner_product::
-      CartesianProductPointwiseMultiplicativeSpace<Scalar, Tuple>::Multiply(
-          left, right);
-}
-
 template<typename LTuple, typename RTuple,
-         typename, typename, typename, typename>
-constexpr auto operator*(LTuple const& left, RTuple const& right) {
+         typename, typename>
+constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right) {
   return internal_polynomial_ring::PolynomialRing<
       LTuple, RTuple,
       internal_pointwise_inner_product::

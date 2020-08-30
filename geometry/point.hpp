@@ -16,7 +16,7 @@ namespace geometry {
 namespace internal_point {
 
 using base::not_null;
-using quantities::is_quantity;
+using quantities::is_quantity_v;
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should
 // be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight
@@ -65,16 +65,16 @@ class Point final {
   friend Point<V> operator+(V const& translation, Point<V> const& point);
 
   template<typename V>
-  friend constexpr typename std::enable_if_t<is_quantity<V>::value, bool>
+  friend constexpr typename std::enable_if_t<is_quantity_v<V>, bool>
   operator<(Point<V> const& left, Point<V> const& right);
   template<typename V>
-  friend constexpr typename std::enable_if_t<is_quantity<V>::value, bool>
+  friend constexpr typename std::enable_if_t<is_quantity_v<V>, bool>
   operator<=(Point<V> const& left, Point<V> const& right);
   template<typename V>
-  friend constexpr typename std::enable_if_t<is_quantity<V>::value, bool>
+  friend constexpr typename std::enable_if_t<is_quantity_v<V>, bool>
   operator>=(Point<V> const& left, Point<V> const& right);
   template<typename V>
-  friend constexpr typename std::enable_if_t<is_quantity<V>::value, bool>
+  friend constexpr typename std::enable_if_t<is_quantity_v<V>, bool>
   operator>(Point<V> const& left, Point<V> const& right);
 
   template<typename V>
@@ -90,19 +90,19 @@ Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point);
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity<Vector>::value, bool>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
 operator<(Point<Vector> const& left, Point<Vector> const& right);
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity<Vector>::value, bool>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
 operator<=(Point<Vector> const& left, Point<Vector> const& right);
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity<Vector>::value, bool>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
 operator>=(Point<Vector> const& left, Point<Vector> const& right);
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity<Vector>::value, bool>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
 operator>(Point<Vector> const& left, Point<Vector> const& right);
 
 template<typename Vector>
