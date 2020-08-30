@@ -191,6 +191,8 @@ PoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
 operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
           PoissonSeries<RValue, rdegree_, Evaluator> const& right);
 
+// Returns a scalar Poisson series obtained by pointwise inner product of two
+// vector-valued series.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
