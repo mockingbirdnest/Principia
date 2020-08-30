@@ -485,6 +485,7 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) {
+  auto const pointwise_inner_product = PointwiseInnerProduct(left, right);
   auto const integrand = left * right * weight;
   auto const primitive = integrand.Primitive();
   return (primitive(t_max) - primitive(t_min)) / (t_max - t_min);
