@@ -485,8 +485,7 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) {
-  auto const pointwise_inner_product = PointwiseInnerProduct(left, right);
-  auto const integrand = left * right * weight;
+  auto const integrand = PointwiseInnerProduct(left, right) * weight;
   auto const primitive = integrand.Primitive();
   return (primitive(t_max) - primitive(t_min)) / (t_max - t_min);
 }
@@ -738,7 +737,8 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   using Result = Primitive<Product<LValue, RValue>, Time>;
   Result result;
   for (int i = 0; i < right.series_.size(); ++i) {
-    auto const integrand = left * right.series_[i] * weight;
+    auto const integrand =
+        PointwiseInnerProduct(left, right.series_[i]) * weight;
     auto const primitive = integrand.Primitive();
     result += primitive(right.bounds_[i + 1]) - primitive(right.bounds_[i]);
   }
@@ -767,7 +767,8 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
   using Result = Primitive<Product<LValue, RValue>, Time>;
   Result result;
   for (int i = 0; i < left.series_.size(); ++i) {
-    auto const integrand = left.series_[i] * right * weight;
+    auto const integrand =
+        PointwiseInnerProduct(left.series_[i], right) * weight;
     auto const primitive = integrand.Primitive();
     result += primitive(left.bounds_[i + 1]) - primitive(left.bounds_[i]);
   }
