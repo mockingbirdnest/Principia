@@ -190,8 +190,9 @@ struct TupleSerializer : not_constructible {
   static void FillFromMessage(
       serialization::PolynomialInMonomialBasis const& message,
       Tuple& tuple);
-  static std::vector<std::string> DebugString(Tuple const& tuple,
-                                              std::string const& argument);
+  // Cannot be called DebugString because of ADL in its body.
+  static std::vector<std::string> TupleDebugString(Tuple const& tuple,
+                                                   std::string const& argument);
 };
 
 template<typename Tuple, int size>
@@ -202,8 +203,9 @@ struct TupleSerializer<Tuple, size, size> : not_constructible {
   static void FillFromMessage(
       serialization::PolynomialInMonomialBasis const& message,
       Tuple& tuple);
-  static std::vector<std::string> DebugString(Tuple const& tuple,
-                                              std::string const& argument);
+  // Cannot be called DebugString because of ADL in its body.
+  static std::vector<std::string> TupleDebugString(Tuple const& tuple,
+                                                   std::string const& argument);
 };
 
 template<typename Tuple, int k, int size>
@@ -230,11 +232,11 @@ void TupleSerializer<Tuple, k, size>::FillFromMessage(
 }
 
 template<typename Tuple, int k, int size>
-std::vector<std::string> TupleSerializer<Tuple, k, size>::DebugString(
+std::vector<std::string> TupleSerializer<Tuple, k, size>::TupleDebugString(
     Tuple const& tuple,
     std::string const& argument) {
   auto tail =
-      TupleSerializer<Tuple, k + 1, size>::DebugString(tuple, argument);
+      TupleSerializer<Tuple, k + 1, size>::TupleDebugString(tuple, argument);
   auto const coefficient = std::get<k>(tuple);
   if (coefficient == std::tuple_element_t<k, Tuple>{}) {
     return tail;
@@ -242,15 +244,15 @@ std::vector<std::string> TupleSerializer<Tuple, k, size>::DebugString(
   std::string head;
   switch (k) {
     case 0:
-      head = quantities::DebugString(coefficient);
+      head = DebugString(coefficient);
       break;
     case 1:
       head = absl::StrCat(
-        quantities::DebugString(coefficient), " * ", argument);
+        DebugString(coefficient), " * ", argument);
       break;
     default:
       head = absl::StrCat(
-          quantities::DebugString(coefficient), " * ", argument, "^", k);
+          DebugString(coefficient), " * ", argument, "^", k);
       break;
   }
   tail.insert(tail.begin(), head);
@@ -268,7 +270,7 @@ void TupleSerializer<Tuple, size, size>::FillFromMessage(
     Tuple& tuple) {}
 
 template<typename Tuple, int size>
-std::vector<std::string> TupleSerializer<Tuple, size, size>::DebugString(
+std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
     Tuple const& tuple,
     std::string const& argument) {
   return {};
@@ -796,15 +798,15 @@ std::ostream& operator<<(
           Coefficients;
   std::vector<std::string> debug_string;
   if constexpr (is_instance_of_v<Point, Argument>) {
-    debug_string = TupleSerializer<Coefficients, 0>::DebugString(
+    debug_string = TupleSerializer<Coefficients, 0>::TupleDebugString(
         polynomial.coefficients_,
         absl::StrCat("(T - ", DebugString(polynomial.origin_), ")"));
   } else {
-    debug_string = TupleSerializer<Coefficients, 0>::DebugString(
+    debug_string = TupleSerializer<Coefficients, 0>::TupleDebugString(
         polynomial.coefficients_, "T");
   }
   if (debug_string.empty()) {
-    out << quantities::DebugString(Value{});
+    out << DebugString(Value{});
   } else {
     out << absl::StrJoin(debug_string, " + ");
   }

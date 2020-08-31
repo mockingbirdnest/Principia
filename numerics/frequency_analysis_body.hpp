@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/tags.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
 #include "numerics/root_finders.hpp"
 #include "numerics/unbounded_arrays.hpp"
@@ -21,11 +22,32 @@ namespace internal_frequency_analysis {
 
 using base::uninitialized;
 using geometry::Hilbert;
+using geometry::Vector;
 using quantities::Inverse;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
 namespace si = quantities::si;
+
+template<typename Value>
+struct Foo {
+  static std::array<Value, 1> Bar() {
+    return si::Unit<Value>;
+  }
+};
+
+template<typename Scalar, typename Frame>
+struct Foo<Vector<Scalar, Frame>> {
+  static std::array<Vector<Scalar, Frame>, 3> Bar() {
+    auto const x =
+        Vector<Scalar, Frame>({si::Unit<Scalar>, Scalar{}, Scalar{}});
+    auto const y =
+        Vector<Scalar, Frame>({Scalar{}, si::Unit<Scalar>, Scalar{}});
+    auto const z =
+        Vector<Scalar, Frame>({Scalar{}, Scalar{}, si::Unit<Scalar>});
+    return {x, y, z};
+  }
+};
 
 // A helper struct for generating the Poisson series tⁿ sin ω t and tⁿ cos ω t.
 template<typename Series, int n>
@@ -212,6 +234,7 @@ IncrementalProjection(Function const& function,
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
   using Norm² = typename Hilbert<Value>::InnerProductType;
+  using Normalized = typename Hilbert<Value>::NormalizedType;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
@@ -322,7 +345,8 @@ IncrementalProjection(Function const& function,
       }
 
       {
-        PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ = α[m][0] * basis[0];
+        PoissonSeries<Normalized, degree_, Evaluator> Σ_αₘᵢ_eᵢ =
+            α[m][0] * basis[0];
         for (int i = 1; i <= m; ++i) {
           Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
         }

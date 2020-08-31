@@ -42,6 +42,8 @@ struct Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>
 
   using NormType = T;
   static NormType Norm(T const& t);
+
+  using NormalizedType = double;
 };
 
 template<typename T1, typename T2>
@@ -65,6 +67,8 @@ struct Hilbert<T, T,
 
   using NormType = decltype(std::declval<T>().Norm());
   static NormType Norm(T const& t);
+
+  using NormalizedType = decltype(std::declval<T>() / NormType());
 };
 
 }  // namespace internal_hilbert
