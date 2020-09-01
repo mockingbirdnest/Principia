@@ -29,32 +29,38 @@ using World = Frame<serialization::Frame::TestTag,
 
 TEST(HilbertTest, ScalarTypes) {
   using H1 = Hilbert<double, double>;
+  static_assert(H1::dimension == 1);
   static_assert(std::is_same_v<double, H1::InnerProductType>);
   static_assert(std::is_same_v<double, H1::NormType>);
 
   using H2 = Hilbert<double, Length>;
+  static_assert(H2::dimension == 1);
   static_assert(std::is_same_v<Length, H2::InnerProductType>);
 #if 0
   H2::NormType h2;
 #endif
 
   using H3 = Hilbert<Length, Length>;
+  static_assert(H3::dimension == 1);
   static_assert(std::is_same_v<Area, H3::InnerProductType>);
   static_assert(std::is_same_v<Length, H3::NormType>);
 }
 
 TEST(HilbertTest, VectorTypes) {
   using H1 = Hilbert<Vector<double, World>, Vector<double, World>>;
+  static_assert(H1::dimension == 3);
   static_assert(std::is_same_v<double, H1::InnerProductType>);
   static_assert(std::is_same_v<double, H1::NormType>);
 
   using H2 = Hilbert<Bivector<double, World>, Bivector<Length, World>>;
+  static_assert(H2::dimension == 3);
   static_assert(std::is_same_v<Length, H2::InnerProductType>);
 #if 0
   H2::NormType h2;
 #endif
 
   using H3 = Hilbert<Trivector<Length, World>, Trivector<Length, World>>;
+  static_assert(H3::dimension == 1);
   static_assert(std::is_same_v<Area, H3::InnerProductType>);
   static_assert(std::is_same_v<Length, H3::NormType>);
 }
