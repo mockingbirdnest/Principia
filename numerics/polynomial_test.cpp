@@ -461,6 +461,16 @@ TEST_F(PolynomialTest, Serialization) {
   }
 }
 
+TEST_F(PolynomialTest, Output) {
+  P2V p2v(coefficients_);
+  P2A p2a(coefficients_, Instant());
+  P17::Coefficients const coefficients;
+  P17 p17(coefficients);
+  LOG(ERROR) << p2v;
+  LOG(ERROR) << p2a;
+  LOG(ERROR) << p17;
+}
+
 }  // namespace numerics
 }  // namespace principia
 
