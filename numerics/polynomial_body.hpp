@@ -33,6 +33,7 @@ using geometry::cartesian_product::operator/;
 using geometry::pointwise_inner_product::PointwiseInnerProduct;
 using geometry::polynomial_ring::operator*;
 using quantities::Apply;
+using quantities::DebugString;
 using quantities::Exponentiation;
 using quantities::Pow;
 using quantities::Time;
