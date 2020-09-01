@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/tags.hpp"
+#include "geometry/hilbert.hpp"
 #include "numerics/root_finders.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -20,6 +21,7 @@ namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
 using base::uninitialized;
+using geometry::Hilbert;
 using quantities::Inverse;
 using quantities::is_quantity_v;
 using quantities::Sqrt;
