@@ -13,22 +13,6 @@
 namespace principia {
 namespace geometry {
 
-// A trait to treat types that have a norm uniformly (using Abs for quantities
-// or double, and Norm for multivectors).
-template<typename T,
-         typename = std::void_t<decltype(quantities::Abs(std::declval<T>()))>>
-struct Normed : base::not_constructible {
-  using NormType = T;
-  static NormType Norm(T const& vector);
-};
-
-template<typename T>
-struct Normed<T, std::void_t<decltype(std::declval<T>().Norm())>>
-    : base::not_constructible {
-  using NormType = decltype(std::declval<T>().Norm());
-  static NormType Norm(T const& vector);
-};
-
 using Instant = Point<quantities::Time>;
 template<typename Frame>
 using Displacement = Vector<quantities::Length, Frame>;
@@ -52,5 +36,3 @@ using InertiaTensor =
 
 }  // namespace geometry
 }  // namespace principia
-
-#include "geometry/named_quantities_body.hpp"

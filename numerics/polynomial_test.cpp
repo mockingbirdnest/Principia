@@ -266,6 +266,43 @@ TEST_F(PolynomialTest, Ring) {
   }
 }
 
+TEST_F(PolynomialTest, PointwiseInnerProduct) {
+  P2V::Coefficients const coefficients({
+      Displacement<World>({0 * Metre,
+                           2 * Metre,
+                           3 * Metre}),
+      Velocity<World>({-1 * Metre / Second,
+                       1 * Metre / Second,
+                       0 * Metre / Second}),
+      Vector<Acceleration, World>({1 * Metre / Second / Second,
+                                   1 * Metre / Second / Second,
+                                   -2 * Metre / Second / Second})});
+  P2V const p2va(coefficients_);
+  P2V const p2vb(coefficients);
+
+  auto const p = PointwiseInnerProduct(p2va, p2vb);
+  {
+    auto const actual = p.Evaluate(0 * Second);
+    EXPECT_THAT(actual, AlmostEquals(3 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(5 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(-1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(1 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(19 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(-2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(11 * Metre * Metre, 0));
+  }
+}
+
 TEST_F(PolynomialTest, AtOrigin) {
   Instant const t0 = Instant() + 3 * Second;
   P2A const p(coefficients_, t0);
@@ -422,6 +459,16 @@ TEST_F(PolynomialTest, Serialization) {
     polynomial_read->WriteToMessage(&message2);
     EXPECT_THAT(message2, EqualsProto(message));
   }
+}
+
+TEST_F(PolynomialTest, Output) {
+  P2V p2v(coefficients_);
+  P2A p2a(coefficients_, Instant());
+  P17::Coefficients const coefficients;
+  P17 p17(coefficients);
+  LOG(ERROR) << p2v;
+  LOG(ERROR) << p2a;
+  LOG(ERROR) << p17;
 }
 
 }  // namespace numerics

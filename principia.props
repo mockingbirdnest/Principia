@@ -43,7 +43,7 @@
   <!--Compiler.-->
   <PropertyGroup>
     <PlatformToolset>v142</PlatformToolset>
-    <PlatformToolset Condition="$(PrincipiaCompilerClangLLVM)">llvm</PlatformToolset>
+    <PlatformToolset Condition="$(PrincipiaCompilerClangLLVM)">ClangCL</PlatformToolset>
   </PropertyGroup>
 
   <!--Target.-->
@@ -81,6 +81,8 @@
       <WarningLevel Condition="$(PrincipiaCompilerClangLLVM) and
                                $(ProjectName) != serialization">EnableAllWarnings</WarningLevel>
       <AdditionalOptions Condition="$(PrincipiaCompilerClangLLVM)">
+        <!-- \-\-version-->
+        <!-- \-v-->
         -Werror=typename-missing
         -Werror=microsoft-template
         -Werror=unknown-argument
