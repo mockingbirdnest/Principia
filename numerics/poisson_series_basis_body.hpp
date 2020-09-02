@@ -2,6 +2,9 @@
 
 #include "numerics/poisson_series_basis.hpp"
 
+#include <algorithm>
+
+#include "geometry/hilbert.hpp"
 #include "quantities/si.hpp"
 #include "quantities/traits.hpp"
 
@@ -9,6 +12,7 @@ namespace principia {
 namespace numerics {
 namespace internal_poisson_series_basis {
 
+using geometry::Hilbert;
 using quantities::is_quantity_v;
 namespace si = quantities::si;
 
