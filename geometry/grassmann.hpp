@@ -40,6 +40,8 @@ class Multivector;
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 1> final {
  public:
+  static constexpr int dimension = 3;
+
   constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
@@ -80,6 +82,8 @@ class Multivector<Scalar, Frame, 1> final {
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 2> final {
  public:
+  static constexpr int dimension = 3;
+
   constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
@@ -116,6 +120,8 @@ class Multivector<Scalar, Frame, 2> final {
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 3> final {
  public:
+  static constexpr int dimension = 1;
+
   constexpr Multivector() = default;
   explicit Multivector(Scalar const& coordinates);
 
