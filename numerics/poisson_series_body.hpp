@@ -735,7 +735,8 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) {
-  using Result = Primitive<Product<LValue, RValue>, Time>;
+  using Result =
+      Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result;
   for (int i = 0; i < right.series_.size(); ++i) {
     auto const integrand =
@@ -765,7 +766,8 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) {
-  using Result = Primitive<Product<LValue, RValue>, Time>;
+  using Result =
+      Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result;
   for (int i = 0; i < left.series_.size(); ++i) {
     auto const integrand =
