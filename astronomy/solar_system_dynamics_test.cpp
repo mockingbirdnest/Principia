@@ -603,11 +603,6 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
     }
   };
 
-  auto io_piecewise_poisson_series_x =
-      [&io_piecewise_poisson_series](Instant const& t) {
-        return io_piecewise_poisson_series(t).coordinates().x;
-      };
-
   auto dot = [t_min, t_max](auto const& left,
                             auto const& right,
                             auto const& weight) -> Square<Length> {
@@ -615,7 +610,7 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
   };
 
   frequency_analysis::IncrementalProjection<4>(
-      io_piecewise_poisson_series_x,
+      io_piecewise_poisson_series,
       angular_frequency_calculator,
       apodization::Hann<EstrinEvaluator>(t_min, t_max),
       dot);
