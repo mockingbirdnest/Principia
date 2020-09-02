@@ -212,7 +212,6 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
   }
 }
 
-#if 1
 TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
   AngularFrequency const ω = 666.543 * π * Radian / Second;
   std::mt19937_64 random(42);
@@ -262,7 +261,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection4(t0_ + i * Radian / ω),
-                AlmostEquals(series(t0_ + i * Radian / ω), 0, 2688));
+                AlmostEquals(series(t0_ + i * Radian / ω), 0, 4016));
   }
 
   // Projection on a 5-th degree basis is also accurate.
@@ -270,7 +269,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection5(t0_ + i * Radian / ω),
-                AlmostEquals(series(t0_ + i * Radian / ω), 0, 8000));
+                AlmostEquals(series(t0_ + i * Radian / ω), 0, 5376));
   }
 
   // Projection on a 3-rd degree basis introduces significant errors.
@@ -279,10 +278,9 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection3(t0_ + i * Radian / ω),
                 RelativeErrorFrom(series(t0_ + i * Radian / ω),
-                                  AllOf(Gt(3.6e-13), Lt(9.0e-6))));
+                                  AllOf(Gt(1.0e-10), Lt(2.7e-7))));
   }
 }
-#endif
 
 TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   AngularFrequency const ω = 666.543 * π * Radian / Second;
