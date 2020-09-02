@@ -2,6 +2,8 @@
 
 #include "numerics/poisson_series_basis.hpp"
 
+#include <algorithm>
+
 #include "quantities/si.hpp"
 #include "quantities/traits.hpp"
 
