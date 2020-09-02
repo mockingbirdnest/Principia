@@ -248,12 +248,10 @@ std::vector<std::string> TupleSerializer<Tuple, k, size>::TupleDebugString(
       head = DebugString(coefficient);
       break;
     case 1:
-      head = absl::StrCat(
-        DebugString(coefficient), " * ", argument);
+      head = absl::StrCat(DebugString(coefficient), " * ", argument);
       break;
     default:
-      head = absl::StrCat(
-          DebugString(coefficient), " * ", argument, "^", k);
+      head = absl::StrCat(DebugString(coefficient), " * ", argument, "^", k);
       break;
   }
   tail.insert(tail.begin(), head);
