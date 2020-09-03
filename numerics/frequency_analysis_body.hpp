@@ -14,6 +14,7 @@
 #include "numerics/root_finders.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -27,6 +28,9 @@ using quantities::Inverse;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 
 template<typename Function,
          int wdegree_,
@@ -138,6 +142,8 @@ IncrementalProjection(Function const& function,
 
   // At the beginning of iteration m this contains fₘ₋₁.
   auto f = function - A[0] * basis[0];
+  logger.Append("F" + std::to_string(degree_), F₀);
+  logger.Append("Q" + std::to_string(degree_), Q₀₀);
 
   int m_begin = 1;
   for (;;) {
@@ -150,6 +156,7 @@ IncrementalProjection(Function const& function,
       for (int j = 0; j <= m; ++j) {
         Q[j] = dot(basis[m], basis[j], weight);
       }
+      logger.Append("F" + std::to_string(degree_), F);
 
       // This vector contains Bⱼ⁽ᵐ⁾.
       UnboundedVector<Norm> B(m, uninitialized);
@@ -225,6 +232,9 @@ IncrementalProjection(Function const& function,
     for (int i = 1; i < basis_size; ++i) {
       result += A[i] * basis[i];
     }
+    logger.Append("approximation" + std::to_string(degree_),
+                  result,
+                  mathematica::ExpressIn(Metre, Second, Radian));
 
     ω = calculator(f);
     if (!ω.has_value()) {

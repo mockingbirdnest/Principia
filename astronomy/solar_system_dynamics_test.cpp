@@ -577,7 +577,7 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<ICRS>>(),
           /*step=*/10 * Minute));
-  ephemeris->Prolong(solar_system_at_j2000.epoch() + 1 * JulianYear);
+  ephemeris->Prolong(solar_system_at_j2000.epoch() + 0.25 * JulianYear);
 
   auto const& io_trajectory =
       solar_system_at_j2000.trajectory(*ephemeris, "Io");
@@ -590,14 +590,42 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
   // TODO(phl): Use a switch statement with macros.
   Instant const t_mid =
       Barycentre<Instant, double>({t_min, t_max}, {1, 1});
+  //TODO(phl):Use the centre of the interval as origin.
   auto const io_piecewise_poisson_series =
-      io_trajectory.ToPiecewisePoissonSeries<7>(t_min, t_max, t_mid);
+      io_trajectory.ToPiecewisePoissonSeries<7>(t_min, t_max, t_min);
   LOG(ERROR)<<io_piecewise_poisson_series.t_min()<<" "<<t_min;
   LOG(ERROR)<<io_piecewise_poisson_series.t_max()<<" "<<t_max;
 
+  std::vector<Displacement<ICRS>> displacements;
+  std::vector<std::tuple<Instant, Displacement<ICRS>>> trajectory;
+  for (int i = 0; i < 1000; ++i) {
+    auto const t = t_min + i * (t_max - t_min) / 1000;
+    auto const current_displacements = io_piecewise_poisson_series(t);
+    displacements.push_back(current_displacements);
+    auto const current_trajectory =
+        io_trajectory.EvaluatePosition(t) - ICRS::origin;
+    trajectory.push_back({t, current_trajectory});
+  }
+  frequency_analysis::logger.Append(
+      "displacements", displacements, mathematica::ExpressIn(Metre));
+  frequency_analysis::logger.Append(
+      "trajectory", trajectory, mathematica::ExpressIn(Metre, Second));
+
   bool first = true;
   auto angular_frequency_calculator =
-      [&first](auto const& residual) -> std::optional<AngularFrequency> {
+      [&first, t_min, t_max](
+          auto const& residual) -> std::optional<AngularFrequency> {
+    Length max_residual;
+    std::vector<Displacement<ICRS>> residuals;
+    for (int i = 0; i < 1000; ++i) {
+      auto const current_residual =
+          residual(t_min + i * (t_max - t_min) / 1000);
+      residuals.push_back(current_residual);
+      max_residual = std::max(max_residual, current_residual.Norm());
+    }
+    frequency_analysis::logger.Append(
+        first ? "first" : "second", residuals, mathematica::ExpressIn(Metre));
+    LOG(ERROR)<<max_residual;
     if (first) {
       first = false;
       return AngularFrequency();
@@ -612,7 +640,20 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
     return Dot(left, right, weight, t_min, t_max);
   };
 
-  frequency_analysis::IncrementalProjection<4>(
+  first = true;
+  frequency_analysis::IncrementalProjection<0>(
+      io_piecewise_poisson_series,
+      angular_frequency_calculator,
+      apodization::Hann<EstrinEvaluator>(t_min, t_max),
+      dot);
+  first = true;
+  frequency_analysis::IncrementalProjection<1>(
+      io_piecewise_poisson_series,
+      angular_frequency_calculator,
+      apodization::Hann<EstrinEvaluator>(t_min, t_max),
+      dot);
+  first = true;
+  frequency_analysis::IncrementalProjection<2>(
       io_piecewise_poisson_series,
       angular_frequency_calculator,
       apodization::Hann<EstrinEvaluator>(t_min, t_max),

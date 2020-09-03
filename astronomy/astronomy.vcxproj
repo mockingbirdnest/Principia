@@ -3,6 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5EEA5210-0FA9-4B44-8466-C40B22D24E8E}</ProjectGuid>
     <RootNamespace>astronomy</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -14,6 +15,11 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="..\third_party_zfp.props" />
   </ImportGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="eop_c04.awk" />
     <None Include="experimental_eop_c02.awk" />

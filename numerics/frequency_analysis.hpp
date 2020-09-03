@@ -5,6 +5,7 @@
 
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
+#include "mathematica/mathematica.hpp"
 #include "numerics/poisson_series.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -97,6 +98,8 @@ IncrementalProjection(Function const& function,
 using internal_frequency_analysis::IncrementalProjection;
 using internal_frequency_analysis::PreciseMode;
 using internal_frequency_analysis::Projection;
+
+mathematica::Logger logger(TEMP_DIR / "frequency_analysis.wl");
 
 }  // namespace frequency_analysis
 }  // namespace numerics
