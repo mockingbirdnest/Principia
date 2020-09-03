@@ -21,6 +21,11 @@ FORWARD_DECLARE_FROM(poisson_series,
                               template<typename, typename, int> class Evaluator)
                               class,
                      PoissonSeries);
+FORWARD_DECLARE_FROM(poisson_series,
+                     TEMPLATE(typename Value, int degree_,
+                              template<typename, typename, int> class Evaluator)
+                              class,
+                     PiecewisePoissonSeries);
 }  // namespace numerics
 
 namespace mathematica {
@@ -31,6 +36,14 @@ FORWARD_DECLARE_FUNCTION_FROM(
              typename OptionalExpressIn = std::nullopt_t) std::string,
     ToMathematica,
     (numerics::PoissonSeries<Value, degree_, Evaluator> const& series,
+     OptionalExpressIn express_in = std::nullopt));
+FORWARD_DECLARE_FUNCTION_FROM(
+    mathematica,
+    TEMPLATE(typename Value, int degree_,
+             template<typename, typename, int> class Evaluator,
+             typename OptionalExpressIn = std::nullopt_t) std::string,
+    ToMathematica,
+    (numerics::PiecewisePoissonSeries<Value, degree_, Evaluator> const& series,
      OptionalExpressIn express_in = std::nullopt));
 }  // namespace mathematica
 
@@ -324,6 +337,12 @@ class PiecewisePoissonSeries {
              PoissonSeries<double, w, E> const& weight,
              Instant const& t_min,
              Instant const& t_max);
+  template<typename V, int d,
+           template<typename, typename, int> class E,
+           typename O>
+  friend std::string mathematica::internal_mathematica::ToMathematica(
+      PiecewisePoissonSeries<V, d, E> const& polynomial,
+      O express_in);
 };
 
 // Some of the vector space operations for piecewise Poisson series.  Note that

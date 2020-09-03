@@ -39,6 +39,7 @@ using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
 using geometry::Vector;
 using numerics::FixedVector;
+using numerics::PiecewisePoissonSeries;
 using numerics::PoissonSeries;
 using numerics::PolynomialInMonomialBasis;
 using physics::DegreesOfFreedom;
@@ -219,6 +220,12 @@ template<typename V, int d,
          template<typename, typename, int> class E,
          typename OptionalExpressIn /*= std::nullopt_t*/>
 std::string ToMathematica(PoissonSeries<V, d, E> const& series,
+                          OptionalExpressIn express_in /*= std::nullopt*/);
+
+template<typename V, int d,
+         template<typename, typename, int> class E,
+         typename OptionalExpressIn /*= std::nullopt_t*/>
+std::string ToMathematica(PiecewisePoissonSeries<V, d, E> const& series,
                           OptionalExpressIn express_in /*= std::nullopt*/);
 
 template<typename OptionalExpressIn = std::nullopt_t>
