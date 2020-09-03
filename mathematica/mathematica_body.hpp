@@ -362,6 +362,24 @@ std::string ToMathematica(PoissonSeries<V, d, E> const& series,
   return Apply("Plus", components);
 }
 
+template<typename V, int d,
+         template<typename, typename, int> class E,
+         typename OptionalExpressIn>
+std::string ToMathematica(PiecewisePoissonSeries<V, d, E> const& series,
+                          OptionalExpressIn express_in) {
+  std::vector<std::string> conditions_and_functions;
+  for (int i = 0; i < series.series_.size(); ++i) {
+    std::string const function = ToMathematica(series.series_[i], express_in);
+    std::string const condition =
+        absl::StrCat("# >= ",
+                     ToMathematica(series.bounds_[i], express_in),
+                     " && # < ",
+                     ToMathematica(series.bounds_[i + 1], express_in));
+    conditions_and_functions.push_back(Apply("List", {function, condition}));
+  }
+  return Apply("Piecewise", {Apply("List", conditions_and_functions)});
+}
+
 template<typename OptionalExpressIn>
 std::string ToMathematica(
     astronomy::OrbitalElements::EquinoctialElements const& elements,
