@@ -272,6 +272,7 @@ class SolarSystemDynamicsTest : public ::testing::Test {
 };
 
 #if !_DEBUG
+#if !defined(_MSVC_LANG) || _MSVC_LANG > 201703L
 TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
   SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -559,6 +560,8 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
   }
 }
 
+#else
+
 TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
   SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -615,6 +618,7 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
       apodization::Hann<EstrinEvaluator>(t_min, t_max),
       dot);
 }
+#endif
 
 // This test produces the file phobos.generated.wl which is consumed by the
 // notebook phobos.nb.
