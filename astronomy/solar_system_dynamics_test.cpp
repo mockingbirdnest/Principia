@@ -590,7 +590,8 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
   // TODO(phl): Use a switch statement with macros.
   Instant const t_mid =
       Barycentre<Instant, double>({t_min, t_max}, {1, 1});
-  //TODO(phl):Use the centre of the interval as origin.
+  // TODO(phl): Use the centre of the interval as origin.
+  // TODO(phl): This is horribly ill-conditioned anyway.
   auto const io_piecewise_poisson_series =
       io_trajectory.ToPiecewisePoissonSeries<7>(t_min, t_max, t_min);
   LOG(ERROR)<<io_piecewise_poisson_series.t_min()<<" "<<t_min;
@@ -617,6 +618,7 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
           auto const& residual) -> std::optional<AngularFrequency> {
     Length max_residual;
     std::vector<Displacement<ICRS>> residuals;
+    // TODO(phl): Allow evaluation at t_max.
     for (int i = 0; i < 1000; ++i) {
       auto const current_residual =
           residual(t_min + i * (t_max - t_min) / 1000);
