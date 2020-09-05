@@ -156,10 +156,11 @@ std::string ToMathematicaExpression(
     std::string const function =
         ToMathematicaExpression(series.series_[i], express_in);
     std::string const condition =
-        absl::StrCat("# >= ",
-                     ToMathematica(series.bounds_[i], express_in),
-                     (i < series.series_.size() - 1 ? " && # < " : " && # <= "),
-                     ToMathematica(series.bounds_[i + 1], express_in));
+        Apply("Between",
+              {"#",
+               Apply("List",
+                     {ToMathematica(series.bounds_[i], express_in),
+                      ToMathematica(series.bounds_[i + 1], express_in)})});
     conditions_and_functions.push_back(Apply("List", {function, condition}));
   }
   return Apply("Piecewise", {Apply("List", conditions_and_functions)});

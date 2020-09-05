@@ -434,12 +434,15 @@ TEST_F(MathematicaTest, ToMathematica) {
         "Quantity["
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
         "\" s\"]]]]]],"
-        "# >= Quantity["
+        "Between["
+        "#,"
+        "List["
+        "Quantity["
         "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"] && "
-        "# <= Quantity["
+        "\" s\"],"
+        "Quantity["
         "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"]]]]]",
+        "\" s\"]]]]]]]",
         ToMathematica(pw));
   }
   {
