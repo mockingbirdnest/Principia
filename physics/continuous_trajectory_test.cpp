@@ -424,6 +424,8 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
   EXPECT_EQ(t0_ + (((number_of_steps - 1) / 8) * 8 + 1) * step,
             trajectory->t_max());
 
+  // Check that the positions and velocities match the ones given by the
+  // functions above.
   for (Instant time = trajectory->t_min();
        time <= trajectory->t_max();
        time += step / number_of_substeps) {
@@ -434,6 +436,20 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
     EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time),
               DegreesOfFreedom<World>(trajectory->EvaluatePosition(time),
                                       trajectory->EvaluateVelocity(time)));
+  }
+
+  // Now check that it can be converted to a piecewise Poisson series.
+  Instant const t_min = trajectory->t_min() + 2 * step / number_of_substeps;
+  Instant const t_max = trajectory->t_max() - 3 * step / number_of_substeps;
+  EXPECT_EQ(3, trajectory->PiecewisePoissonSeriesDegree(t_min, t_max));
+  auto const piecewise_poisson_series =
+      trajectory->ToPiecewisePoissonSeries<3>(t_min, t_max, t0_);
+  EXPECT_EQ(t_min, piecewise_poisson_series.t_min());
+  EXPECT_EQ(t_max, piecewise_poisson_series.t_max());
+  for (Instant time = t_min; time <= t_max; time += step / number_of_substeps) {
+    EXPECT_THAT(
+        piecewise_poisson_series(time),
+        AlmostEquals(trajectory->EvaluatePosition(time) - World::origin, 0, 5));
   }
 }
 

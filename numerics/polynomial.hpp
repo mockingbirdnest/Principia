@@ -71,8 +71,8 @@ class Polynomial {
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;
 
-  // Only useful for benchmarking or analyzing performance.  Do not use in real
-  // code.
+  // Only useful for benchmarking, analyzing performance or for downcasting.  Do
+  // not use in other circumstances.
   virtual int degree() const = 0;
 
   // Only useful for logging.  Do not use in real code.

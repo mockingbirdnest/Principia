@@ -10,7 +10,9 @@
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
+#include "numerics/poisson_series.hpp"
 #include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "physics/checkpointer.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/trajectory.hpp"
@@ -29,6 +31,8 @@ using geometry::Position;
 using geometry::Velocity;
 using quantities::Length;
 using quantities::Time;
+using numerics::EstrinEvaluator;
+using numerics::PiecewisePoissonSeries;
 using numerics::Polynomial;
 
 template<typename Frame>
@@ -88,6 +92,19 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // End of the implementation of the interface.
 
+  // Returns the degree for a piecewise Poisson series covering the given time
+  // interval.
+  int PiecewisePoissonSeriesDegree(Instant const& t_min,
+                                   Instant const& t_max) const;
+
+  // Computes a piecewise Poisson series covering the given time interval.  The
+  // degree must be at least the one returned by the preceding function.
+  template<int degree>
+  PiecewisePoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>
+  ToPiecewisePoissonSeries(Instant const& t_min,
+                           Instant const& t_max,
+                           Instant const& origin) const;
+
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
   template<typename F = Frame,
@@ -115,6 +132,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // never need to extract their |t_min|.  Logically, the |t_min| for a
   // polynomial is the |t_max| of the previous one.  The first polynomial has a
   // |t_min| which is |*first_time_|.
+  // TODO(phl): These should be polynomials returning Position<Frame>.
   struct InstantPolynomialPair {
     InstantPolynomialPair(
         Instant t_max,
