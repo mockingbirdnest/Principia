@@ -5,9 +5,12 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
+#include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
@@ -28,7 +31,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
     TEMPLATE(typename Value, typename Argument, int degree_,
              template<typename, typename, int> class Evaluator,
              typename OptionalExpressIn = std::nullopt_t) std::string,
-    ToMathematica,
+    ToMathematicaExpression,
     (numerics::
          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
              polynomial,
@@ -38,8 +41,10 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_polynomial {
 
+using base::is_instance_of_v;
 using base::not_constructible;
 using base::not_null;
+using geometry::Hilbert;
 using geometry::Point;
 using quantities::Derivative;
 using quantities::Derivatives;
@@ -66,8 +71,8 @@ class Polynomial {
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;
 
-  // Only useful for benchmarking or analyzing performance.  Do not use in real
-  // code.
+  // Only useful for benchmarking, analyzing performance or for downcasting.  Do
+  // not use in other circumstances.
   virtual int degree() const = 0;
 
   // Only useful for logging.  Do not use in real code.
@@ -118,8 +123,10 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   Derivative() const;
 
   // The constant term of the result is zero.
-  PolynomialInMonomialBasis<
-      Primitive<Value, Argument>, Argument, degree_ + 1, Evaluator>
+  template<typename V = Value,
+           typename = std::enable_if_t<!base::is_instance_of_v<Point, V>>>
+  PolynomialInMonomialBasis<Primitive<Value, Argument>, Argument,
+                            degree_ + 1, Evaluator>
   Primitive() const;
 
   PolynomialInMonomialBasis& operator+=(PolynomialInMonomialBasis const& right);
@@ -172,6 +179,14 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<
+      typename Hilbert<L, R>::InnerProductType, A, l + r, E>
+  friend PointwiseInnerProduct(
+      PolynomialInMonomialBasis<L, A, l, E> const& left,
+      PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename V, typename A, int d,
            template<typename, typename, int> class E>
   friend std::ostream& operator<<(
@@ -180,7 +195,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   template<typename V, typename A, int d,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematica(
+  friend std::string mathematica::internal_mathematica::ToMathematicaExpression(
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
       O express_in);
 };
@@ -228,8 +243,10 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   Derivative() const;
 
   // The constant term of the result is zero.
-  PolynomialInMonomialBasis<
-      Primitive<Value, Argument>, Point<Argument>, degree_ + 1, Evaluator>
+  template<typename V = Value,
+           typename = std::enable_if_t<!base::is_instance_of_v<Point, V>>>
+  PolynomialInMonomialBasis<Primitive<Value, Argument>, Point<Argument>,
+                            degree_ + 1, Evaluator>
   Primitive() const;
 
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
@@ -283,6 +300,14 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> class E>
+  constexpr PolynomialInMonomialBasis<
+      typename Hilbert<L, R>::InnerProductType, A, l + r, E>
+  friend PointwiseInnerProduct(
+      PolynomialInMonomialBasis<L, A, l, E> const& left,
+      PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename V, typename A, int d,
            template<typename, typename, int> class E>
   friend std::ostream& operator<<(
@@ -291,7 +316,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   template<typename V, typename A, int d,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematica(
+  friend std::string mathematica::internal_mathematica::ToMathematicaExpression(
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
       O express_in);
 };
@@ -363,6 +388,20 @@ template<typename LValue, typename RValue,
 constexpr PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                     ldegree_ + rdegree_, Evaluator>
 operator*(
+    PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
+        left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
+        right);
+
+// Returns a scalar polynomial obtained by pointwise inner product of two
+// vector-valued polynomials.
+template<typename LValue, typename RValue,
+         typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+constexpr PolynomialInMonomialBasis<
+    typename Hilbert<LValue, RValue>::InnerProductType, Argument,
+    ldegree_ + rdegree_, Evaluator>
+PointwiseInnerProduct(
     PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&

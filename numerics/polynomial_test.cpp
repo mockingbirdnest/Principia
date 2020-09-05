@@ -29,6 +29,7 @@ using geometry::Displacement;
 using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Instant;
+using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
@@ -64,6 +65,8 @@ class PolynomialTest : public ::testing::Test {
   using P2V = PolynomialInMonomialBasis<Displacement<World>, Time, 2,
                                         HornerEvaluator>;
   using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2,
+                                        HornerEvaluator>;
+  using P2P = PolynomialInMonomialBasis<Position<World>, Instant, 2,
                                         HornerEvaluator>;
   using P17 = PolynomialInMonomialBasis<Displacement<World>, Time, 17,
                                         EstrinEvaluator>;
@@ -139,6 +142,33 @@ TEST_F(PolynomialTest, Evaluate2A) {
   EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
                                                1 * Metre / Second,
                                                0 * Metre / Second}), 0));
+
+  // This compiles.
+  p.Primitive();
+}
+
+// Check that a polynomial can return an affine value.
+TEST_F(PolynomialTest, Evaluate2P) {
+  Instant const t0 = Instant() + 0.3 * Second;
+  P2P const p({World::origin + std::get<0>(coefficients_),
+               std::get<1>(coefficients_),
+               std::get<2>(coefficients_)},
+              t0);
+  EXPECT_EQ(2, p.degree());
+  Position<World> const d = p.Evaluate(t0 + 0.5 * Second);
+  Velocity<World> const v = p.EvaluateDerivative(t0 + 0.5 * Second);
+  EXPECT_THAT(d, AlmostEquals(World::origin + Displacement<World>({0.25 * Metre,
+                                                                   0.5 * Metre,
+                                                                   1 * Metre}),
+                              0));
+  EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
+                                               1 * Metre / Second,
+                                               0 * Metre / Second}), 0));
+
+  // This doesn't compile (and rightly so).
+#if 0
+  p.Primitive();
+#endif
 }
 
 // Check that a polynomial of high order may be declared.
@@ -233,6 +263,43 @@ TEST_F(PolynomialTest, Ring) {
   {
     auto const actual = p.Evaluate(-2 * Second);
     EXPECT_THAT(actual, AlmostEquals(-518 * Ampere * Kelvin, 0));
+  }
+}
+
+TEST_F(PolynomialTest, PointwiseInnerProduct) {
+  P2V::Coefficients const coefficients({
+      Displacement<World>({0 * Metre,
+                           2 * Metre,
+                           3 * Metre}),
+      Velocity<World>({-1 * Metre / Second,
+                       1 * Metre / Second,
+                       0 * Metre / Second}),
+      Vector<Acceleration, World>({1 * Metre / Second / Second,
+                                   1 * Metre / Second / Second,
+                                   -2 * Metre / Second / Second})});
+  P2V const p2va(coefficients_);
+  P2V const p2vb(coefficients);
+
+  auto const p = PointwiseInnerProduct(p2va, p2vb);
+  {
+    auto const actual = p.Evaluate(0 * Second);
+    EXPECT_THAT(actual, AlmostEquals(3 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(5 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(-1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(1 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(19 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p.Evaluate(-2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(11 * Metre * Metre, 0));
   }
 }
 
@@ -392,6 +459,16 @@ TEST_F(PolynomialTest, Serialization) {
     polynomial_read->WriteToMessage(&message2);
     EXPECT_THAT(message2, EqualsProto(message));
   }
+}
+
+TEST_F(PolynomialTest, Output) {
+  P2V p2v(coefficients_);
+  P2A p2a(coefficients_, Instant());
+  P17::Coefficients const coefficients;
+  P17 p17(coefficients);
+  LOG(ERROR) << p2v;
+  LOG(ERROR) << p2a;
+  LOG(ERROR) << p17;
 }
 
 }  // namespace numerics

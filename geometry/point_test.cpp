@@ -67,7 +67,7 @@ TEST_F(PointTest, AssignmentOperators) {
 }
 
 TEST_F(PointTest, Ordering) {
-  // Check that is_quantity works for double.
+  // Check that is_quantity_v works for double.
   Point<double> zero;
   Point<double> d1 = zero + 1.0;
   Point<double> d2 = zero -3.0;

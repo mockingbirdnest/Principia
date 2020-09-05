@@ -7,6 +7,7 @@
 #include "astronomy/orbital_elements.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
@@ -31,6 +32,7 @@ using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Instant;
+using geometry::Interval;
 using geometry::Point;
 using geometry::Quaternion;
 using geometry::R3Element;
@@ -40,6 +42,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using numerics::FixedVector;
 using numerics::HornerEvaluator;
+using numerics::PiecewisePoissonSeries;
 using numerics::PoissonSeries;
 using numerics::PolynomialInMonomialBasis;
 using physics::DegreesOfFreedom;
@@ -296,6 +299,7 @@ TEST_F(MathematicaTest, ToMathematica) {
     PolynomialInMonomialBasis<Length, Time, 2, HornerEvaluator> polynomial1(
         {2 * Metre, -3 * Metre / Second, 4 * Metre / Second / Second});
     EXPECT_EQ(
+        "Function["
         "Plus["
         "Quantity["
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
@@ -311,12 +315,13 @@ TEST_F(MathematicaTest, ToMathematica) {
         "\" m s^-2\"],"
         "Power["
         "#,"
-        "2]]]",
+        "2]]]]",
         ToMathematica(polynomial1));
     PolynomialInMonomialBasis<Length, Instant, 2, HornerEvaluator> polynomial2(
         {5 * Metre, 6 * Metre / Second, -7 * Metre / Second / Second},
         Instant() + 2 * Second);
     EXPECT_EQ(
+        "Function["
         "Plus["
         "Quantity["
         "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision],"
@@ -340,7 +345,7 @@ TEST_F(MathematicaTest, ToMathematica) {
         "Quantity["
         "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
         "\" s\"]],"
-        "2]]]",
+        "2]]]]",
         ToMathematica(polynomial2));
   }
   {
@@ -351,6 +356,7 @@ TEST_F(MathematicaTest, ToMathematica) {
                     {/*sin=*/Series::Polynomial({0.5}, t0),
                      /*cos=*/Series::Polynomial({-1}, t0)}}});
     EXPECT_EQ(
+        "Function["
         "Plus["
         "Plus["
         "SetPrecision[+1.50000000000000000*^+00,$MachinePrecision]],"
@@ -380,8 +386,64 @@ TEST_F(MathematicaTest, ToMathematica) {
         "#,"
         "Quantity["
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"]]]]]]",
+        "\" s\"]]]]]]]",
         ToMathematica(series));
+  }
+  {
+    using PiecewiseSeries = PiecewisePoissonSeries<double, 0, HornerEvaluator>;
+    using Series = PiecewiseSeries::Series;
+    Instant const t0 = Instant() + 3 * Second;
+    Series series(Series::Polynomial({1.5}, t0),
+                  {{4 * Radian / Second,
+                    {/*sin=*/Series::Polynomial({0.5}, t0),
+                     /*cos=*/Series::Polynomial({-1}, t0)}}});
+    Interval<Instant> interval{t0 - 2 * Second, t0 + 3 * Second};
+    PiecewiseSeries pw(interval, series);
+    EXPECT_EQ(
+        "Function["
+        "Piecewise["
+        "List["
+        "List["
+        "Plus["
+        "Plus["
+        "SetPrecision[+1.50000000000000000*^+00,$MachinePrecision]],"
+        "Times["
+        "Plus["
+        "SetPrecision[+5.00000000000000000*^-01,$MachinePrecision]],"
+        "Sin["
+        "Times["
+        "Quantity["
+        "SetPrecision["
+        "+4.00000000000000000*^+00,$MachinePrecision],"
+        "\" s^-1 rad\"],"
+        "Subtract["
+        "#,"
+        "Quantity["
+        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
+        "\" s\"]]]]],"
+        "Times["
+        "Plus["
+        "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision]],"
+        "Cos["
+        "Times["
+        "Quantity["
+        "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
+        "\" s^-1 rad\"],"
+        "Subtract["
+        "#,"
+        "Quantity["
+        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
+        "\" s\"]]]]]],"
+        "Between["
+        "#,"
+        "List["
+        "Quantity["
+        "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+        "\" s\"],"
+        "Quantity["
+        "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision],"
+        "\" s\"]]]]]]]",
+        ToMathematica(pw));
   }
   {
     std::optional<std::string> opt1;
@@ -408,18 +470,6 @@ TEST_F(MathematicaTest, Assign) {
       "var,"
       "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]];\n",
       Assign("var", 3.0));
-}
-
-TEST_F(MathematicaTest, Function) {
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> polynomial(
-      {1, -3});
-  EXPECT_EQ(
-      "Function["
-      "Plus["
-      "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-      "Times[SetPrecision[-3.00000000000000000*^+00,$MachinePrecision],"
-      "#]]];\n",
-      Function(polynomial));
 }
 
 TEST_F(MathematicaTest, PlottableDataset) {
