@@ -186,7 +186,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
   Instant const t_max = t0_ + 100 * Radian / ω;
   DotImplementation const dot(t_min, t_max);
 
-  // Projection on a 4-th degree basis accurately reconstructs the function.
+  // Projection on a 4th degree basis accurately reconstructs the function.
   auto const projection4 = Projection<4>(
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
@@ -194,7 +194,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
                 AlmostEquals(series(t0_ + i * Radian / ω), 0, 2688));
   }
 
-  // Projection on a 5-th degree basis is also accurate.
+  // Projection on a 5th degree basis is also accurate.
   auto const projection5 = Projection<5>(
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
@@ -202,7 +202,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
                 AlmostEquals(series(t0_ + i * Radian / ω), 0, 8000));
   }
 
-  // Projection on a 3-rd degree basis introduces significant errors.
+  // Projection on a 3rd degree basis introduces significant errors.
   auto const projection3 = Projection<3>(
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
@@ -256,7 +256,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
   Instant const t_max = t0_ + 100 * Radian / ω;
   DotImplementation const dot(t_min, t_max);
 
-  // Projection on a 4-th degree basis accurately reconstructs the function.
+  // Projection on a 4th degree basis accurately reconstructs the function.
   auto const projection4 = Projection<4>(
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
@@ -264,7 +264,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
                 AlmostEquals(series(t0_ + i * Radian / ω), 0, 4016));
   }
 
-  // Projection on a 5-th degree basis is also accurate.
+  // Projection on a 5th degree basis is also accurate.
   auto const projection5 = Projection<5>(
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
@@ -272,7 +272,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
                 AlmostEquals(series(t0_ + i * Radian / ω), 0, 5376));
   }
 
-  // Projection on a 3-rd degree basis introduces significant errors.
+  // Projection on a 3rd degree basis introduces significant errors.
   auto const projection3 = Projection<3>(
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
@@ -315,7 +315,7 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   Instant const t_max = piecewise_series.t_max();
   DotImplementation const dot(t_min, t_max);
 
-  // Projection on a 4-th degree basis.  The errors are of the order of the
+  // Projection on a 4th degree basis.  The errors are of the order of the
   // perturbation.
   auto const projection4 =
       Projection<4>(ω,
@@ -380,7 +380,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
     }
   };
 
-  // Projection on a 4-th degree basis reconstructs the function with a decent
+  // Projection on a 4th degree basis reconstructs the function with a decent
   // accuracy.
   auto const projection4 =
       IncrementalProjection<4>(series.value(),
@@ -446,7 +446,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
     }
   };
 
-  // Projection on a 4-th degree basis reconstructs the function with a decent
+  // Projection on a 4th degree basis reconstructs the function with a decent
   // accuracy.
   auto const projection4 =
       IncrementalProjection<4>(series,
