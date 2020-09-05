@@ -642,18 +642,18 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
     return Dot(left, right, weight, t_min, t_max);
   };
 
-  first = true;
-  frequency_analysis::IncrementalProjection<0>(
-      io_piecewise_poisson_series,
-      angular_frequency_calculator,
-      apodization::Hann<EstrinEvaluator>(t_min, t_max),
-      dot);
-  first = true;
-  frequency_analysis::IncrementalProjection<1>(
-      io_piecewise_poisson_series,
-      angular_frequency_calculator,
-      apodization::Hann<EstrinEvaluator>(t_min, t_max),
-      dot);
+  //first = true;
+  //frequency_analysis::IncrementalProjection<0>(
+  //    io_piecewise_poisson_series,
+  //    angular_frequency_calculator,
+  //    apodization::Hann<EstrinEvaluator>(t_min, t_max),
+  //    dot);
+  //first = true;
+  //frequency_analysis::IncrementalProjection<1>(
+  //    io_piecewise_poisson_series,
+  //    angular_frequency_calculator,
+  //    apodization::Hann<EstrinEvaluator>(t_min, t_max),
+  //    dot);
   first = true;
   frequency_analysis::IncrementalProjection<2>(
       io_piecewise_poisson_series,

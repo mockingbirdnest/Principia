@@ -135,6 +135,13 @@ IncrementalProjection(Function const& function,
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
   UnboundedVector<double> A(basis_size, uninitialized);
 
+  logger.Append("f" + std::to_string(degree_),
+                function,
+                mathematica::ExpressIn(Metre, Radian, Second));
+  logger.Set("basis" + std::to_string(degree_),
+             basis,
+             mathematica::ExpressIn(Metre, Radian, Second));
+
   Norm² const F₀ = dot(function, basis[0], weight);
   Norm² const Q₀₀ = dot(basis[0], basis[0], weight);
   α[0][0] = 1 / Sqrt(Q₀₀);
@@ -142,21 +149,26 @@ IncrementalProjection(Function const& function,
 
   // At the beginning of iteration m this contains fₘ₋₁.
   auto f = function - A[0] * basis[0];
-  logger.Append("F" + std::to_string(degree_), F₀);
-  logger.Append("Q" + std::to_string(degree_), Q₀₀);
+  logger.Append("F" + std::to_string(degree_), F₀,
+                mathematica::ExpressIn(Metre, Radian, Second));
+  logger.Append("Q" + std::to_string(degree_), Q₀₀,
+                mathematica::ExpressIn(Metre, Radian, Second));
 
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
       // Contains Fₘ.
       Norm² const F = dot(f, basis[m], weight);
+      logger.Append("f" + std::to_string(degree_), f,
+                    mathematica::ExpressIn(Metre, Radian, Second));
+      logger.Append("F" + std::to_string(degree_), F,
+                    mathematica::ExpressIn(Metre, Radian, Second));
 
       // This vector contains Qₘⱼ.
       UnboundedVector<Norm²> Q(m + 1, uninitialized);
       for (int j = 0; j <= m; ++j) {
         Q[j] = dot(basis[m], basis[j], weight);
       }
-      logger.Append("F" + std::to_string(degree_), F);
 
       // This vector contains Bⱼ⁽ᵐ⁾.
       UnboundedVector<Norm> B(m, uninitialized);

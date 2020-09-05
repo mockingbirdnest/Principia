@@ -9,6 +9,7 @@
 #include <optional>
 #include <vector>
 
+#include "numerics/double_precision.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -18,6 +19,8 @@ namespace principia {
 namespace numerics {
 namespace internal_poisson_series {
 
+using numerics::DoublePrecision;
+using numerics::TwoDifference;
 using quantities::Abs;
 using quantities::Cos;
 using quantities::Infinity;
@@ -737,14 +740,16 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const& t_max) {
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
-  Result result;
+  DoublePrecision<Result> result;
   for (int i = 0; i < right.series_.size(); ++i) {
     auto const integrand =
         PointwiseInnerProduct(left, right.series_[i]) * weight;
     auto const primitive = integrand.Primitive();
-    result += primitive(right.bounds_[i + 1]) - primitive(right.bounds_[i]);
+    auto const integral = TwoDifference(primitive(right.bounds_[i + 1]),
+                                        primitive(right.bounds_[i]));
+    result += integral;
   }
-  return result / (t_max - t_min);
+  return result.value / (t_max - t_min);
 }
 
 template<typename LValue, typename RValue,
@@ -768,14 +773,16 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const& t_max) {
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
-  Result result;
+  DoublePrecision<Result> result;
   for (int i = 0; i < left.series_.size(); ++i) {
     auto const integrand =
         PointwiseInnerProduct(left.series_[i], right) * weight;
     auto const primitive = integrand.Primitive();
-    result += primitive(left.bounds_[i + 1]) - primitive(left.bounds_[i]);
+    auto const integral = TwoDifference(primitive(left.bounds_[i + 1]),
+                                        primitive(left.bounds_[i]));
+    result += integral;
   }
-  return result / (t_max - t_min);
+  return result.value / (t_max - t_min);
 }
 
 }  // namespace internal_poisson_series
