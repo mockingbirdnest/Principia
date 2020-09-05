@@ -14,7 +14,6 @@
 #include "geometry/interval.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "quantities/si.hpp"
@@ -29,6 +28,7 @@ using base::make_not_null_unique;
 using geometry::Interval;
 using numerics::EstrinEvaluator;
 using numerics::PoissonSeries;
+using numerics::PolynomialInMonomialBasis;
 using numerics::ULPDistance;
 using numerics::ЧебышёвSeries;
 using quantities::DebugString;
