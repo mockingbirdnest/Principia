@@ -6,6 +6,9 @@
 #include <random>
 #include <vector>
 
+#include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/hilbert.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -25,13 +28,22 @@ namespace principia {
 namespace numerics {
 namespace frequency_analysis {
 
+using geometry::Handedness;
+using geometry::Hilbert;
+using geometry::Inertial;
 using geometry::Instant;
+using geometry::Frame;
+using geometry::Vector;
 using quantities::Abs;
+using quantities::Acceleration;
 using quantities::AngularFrequency;
+using quantities::Jerk;
 using quantities::Length;
 using quantities::Pow;
 using quantities::Product;
 using quantities::Sin;
+using quantities::Snap;
+using quantities::Speed;
 using quantities::Square;
 using quantities::Time;
 using quantities::si::Metre;
@@ -51,8 +63,8 @@ class DotImplementation {
   DotImplementation(Instant const& t_min, Instant const& t_max);
 
   template<typename LFunction, typename RFunction, typename Weight>
-  Product<std::invoke_result_t<LFunction, Instant>,
-          std::invoke_result_t<RFunction, Instant>>
+  typename Hilbert<std::invoke_result_t<LFunction, Instant>,
+                   std::invoke_result_t<RFunction, Instant>>::InnerProductType
   operator()(LFunction const& left,
              RFunction const& right,
              Weight const& weight) const;
@@ -68,8 +80,8 @@ DotImplementation::DotImplementation(Instant const& t_min,
       t_max_(t_max) {}
 
 template<typename LFunction, typename RFunction, typename Weight>
-Product<std::invoke_result_t<LFunction, Instant>,
-        std::invoke_result_t<RFunction, Instant>>
+typename Hilbert<std::invoke_result_t<LFunction, Instant>,
+                 std::invoke_result_t<RFunction, Instant>>::InnerProductType
 DotImplementation::operator()(LFunction const& left,
                               RFunction const& right,
                               Weight const& weight) const {
@@ -78,6 +90,11 @@ DotImplementation::operator()(LFunction const& left,
 
 class FrequencyAnalysisTest : public ::testing::Test {
  protected:
+  using World = Frame<serialization::Frame::TestTag,
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
+
   using Series0 = PoissonSeries<Length, 0, HornerEvaluator>;
   using Series4 = PoissonSeries<Length, 4, HornerEvaluator>;
 
@@ -154,7 +171,7 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
   EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(6.4e-11_⑴)));
 }
 
-TEST_F(FrequencyAnalysisTest, PoissonSeriesProjection) {
+TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
   AngularFrequency const ω = 666.543 * π * Radian / Second;
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> amplitude_distribution(-10.0, 10.0);
@@ -169,7 +186,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesProjection) {
   Instant const t_max = t0_ + 100 * Radian / ω;
   DotImplementation const dot(t_min, t_max);
 
-  // Projection on a 4-th degree basis accurately reconstructs the function.
+  // Projection on a 4th degree basis accurately reconstructs the function.
   auto const projection4 = Projection<4>(
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
@@ -177,7 +194,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesProjection) {
                 AlmostEquals(series(t0_ + i * Radian / ω), 0, 2688));
   }
 
-  // Projection on a 5-th degree basis is also accurate.
+  // Projection on a 5th degree basis is also accurate.
   auto const projection5 = Projection<5>(
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
@@ -185,13 +202,83 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesProjection) {
                 AlmostEquals(series(t0_ + i * Radian / ω), 0, 8000));
   }
 
-  // Projection on a 3-rd degree basis introduces significant errors.
+  // Projection on a 3rd degree basis introduces significant errors.
   auto const projection3 = Projection<3>(
       ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection3(t0_ + i * Radian / ω),
                 RelativeErrorFrom(series(t0_ + i * Radian / ω),
                                   AllOf(Gt(3.6e-13), Lt(9.0e-6))));
+  }
+}
+
+TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
+  AngularFrequency const ω = 666.543 * π * Radian / Second;
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> amplitude_distribution(-10.0, 10.0);
+  using VectorSeries4 =
+      PoissonSeries<Vector<Length, World>, 4, HornerEvaluator>;
+
+  auto random_polynomial4 = [](Instant const& t0,
+                               std::mt19937_64& random,
+                               std::uniform_real_distribution<>& distribution) {
+    auto const c0x = distribution(random) * Metre;
+    auto const c1x = distribution(random) * Metre / Second;
+    auto const c2x = distribution(random) * Metre / Pow<2>(Second);
+    auto const c3x = distribution(random) * Metre / Pow<3>(Second);
+    auto const c4x = distribution(random) * Metre / Pow<4>(Second);
+    auto const c0y = distribution(random) * Metre;
+    auto const c1y = distribution(random) * Metre / Second;
+    auto const c2y = distribution(random) * Metre / Pow<2>(Second);
+    auto const c3y = distribution(random) * Metre / Pow<3>(Second);
+    auto const c4y = distribution(random) * Metre / Pow<4>(Second);
+    auto const c0z = distribution(random) * Metre;
+    auto const c1z = distribution(random) * Metre / Second;
+    auto const c2z = distribution(random) * Metre / Pow<2>(Second);
+    auto const c3z = distribution(random) * Metre / Pow<3>(Second);
+    auto const c4z = distribution(random) * Metre / Pow<4>(Second);
+    Vector<Length, World> const v0({c0x, c0y, c0z});
+    Vector<Speed, World> const v1({c1x, c1y, c1z});
+    Vector<Acceleration, World> const v2({c2x, c2y, c2z});
+    Vector<Jerk, World> const v3({c3x, c3y, c3z});
+    Vector<Snap, World> const v4({c4x, c4y, c4z});
+
+    return VectorSeries4::Polynomial({v0, v1, v2, v3, v4}, t0);
+  };
+
+  auto const sin = random_polynomial4(t0_, random, amplitude_distribution);
+  auto const cos = random_polynomial4(t0_, random, amplitude_distribution);
+  VectorSeries4 const series(
+      VectorSeries4::Polynomial(VectorSeries4::Polynomial::Coefficients{}, t0_),
+      {{ω, VectorSeries4::Polynomials{sin, cos}}});
+
+  Instant const t_min = t0_;
+  Instant const t_max = t0_ + 100 * Radian / ω;
+  DotImplementation const dot(t_min, t_max);
+
+  // Projection on a 4th degree basis accurately reconstructs the function.
+  auto const projection4 = Projection<4>(
+      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  for (int i = 0; i <= 100; ++i) {
+    EXPECT_THAT(projection4(t0_ + i * Radian / ω),
+                AlmostEquals(series(t0_ + i * Radian / ω), 0, 4016));
+  }
+
+  // Projection on a 5th degree basis is also accurate.
+  auto const projection5 = Projection<5>(
+      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  for (int i = 0; i <= 100; ++i) {
+    EXPECT_THAT(projection5(t0_ + i * Radian / ω),
+                AlmostEquals(series(t0_ + i * Radian / ω), 0, 5376));
+  }
+
+  // Projection on a 3rd degree basis introduces significant errors.
+  auto const projection3 = Projection<3>(
+      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  for (int i = 0; i <= 100; ++i) {
+    EXPECT_THAT(projection3(t0_ + i * Radian / ω),
+                RelativeErrorFrom(series(t0_ + i * Radian / ω),
+                                  AllOf(Gt(1.0e-10), Lt(2.7e-7))));
   }
 }
 
@@ -228,7 +315,7 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   Instant const t_max = piecewise_series.t_max();
   DotImplementation const dot(t_min, t_max);
 
-  // Projection on a 4-th degree basis.  The errors are of the order of the
+  // Projection on a 4th degree basis.  The errors are of the order of the
   // perturbation.
   auto const projection4 =
       Projection<4>(ω,
@@ -293,7 +380,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
     }
   };
 
-  // Projection on a 4-th degree basis reconstructs the function with a decent
+  // Projection on a 4th degree basis reconstructs the function with a decent
   // accuracy.
   auto const projection4 =
       IncrementalProjection<4>(series.value(),
@@ -359,7 +446,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
     }
   };
 
-  // Projection on a 4-th degree basis reconstructs the function with a decent
+  // Projection on a 4th degree basis reconstructs the function with a decent
   // accuracy.
   auto const projection4 =
       IncrementalProjection<4>(series,

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/tags.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
 #include "numerics/poisson_series_basis.hpp"
 #include "numerics/root_finders.hpp"
@@ -21,6 +22,7 @@ namespace internal_frequency_analysis {
 
 using base::uninitialized;
 using geometry::Hilbert;
+using geometry::Vector;
 using quantities::Inverse;
 using quantities::Sqrt;
 using quantities::Square;
@@ -93,6 +95,9 @@ IncrementalProjection(Function const& function,
                       PoissonSeries<double, wdegree_, Evaluator> const& weight,
                       Dot const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
+  using Norm = typename Hilbert<Value>::NormType;
+  using Norm² = typename Hilbert<Value>::InnerProductType;
+  using Normalized = typename Hilbert<Value>::NormalizedType;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
@@ -120,14 +125,14 @@ IncrementalProjection(Function const& function,
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
   }
 
-  UnboundedLowerTriangularMatrix<Inverse<Value>> α(basis_size, uninitialized);
+  UnboundedLowerTriangularMatrix<Inverse<Norm>> α(basis_size, uninitialized);
 
   // Only indices 0 to m - 1 are used in this array.  At the beginning of
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
   UnboundedVector<double> A(basis_size, uninitialized);
 
-  auto const F₀ = dot(function, basis[0], weight);
-  auto const Q₀₀ = dot(basis[0], basis[0], weight);
+  Norm² const F₀ = dot(function, basis[0], weight);
+  Norm² const Q₀₀ = dot(basis[0], basis[0], weight);
   α[0][0] = 1 / Sqrt(Q₀₀);
   A[0] = F₀ / Q₀₀;
 
@@ -138,18 +143,18 @@ IncrementalProjection(Function const& function,
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
       // Contains Fₘ.
-      auto const F = dot(f, basis[m], weight);
+      Norm² const F = dot(f, basis[m], weight);
 
       // This vector contains Qₘⱼ.
-      UnboundedVector<Square<Value>> Q(m + 1, uninitialized);
+      UnboundedVector<Norm²> Q(m + 1, uninitialized);
       for (int j = 0; j <= m; ++j) {
         Q[j] = dot(basis[m], basis[j], weight);
       }
 
       // This vector contains Bⱼ⁽ᵐ⁾.
-      UnboundedVector<Value> B(m, uninitialized);
+      UnboundedVector<Norm> B(m, uninitialized);
       for (int j = 0; j < m; ++j) {
-        Value Σ_αⱼₛ_Qₘₛ{};
+        Norm Σ_αⱼₛ_Qₘₛ{};
         for (int s = 0; s <= j; ++s) {
           Σ_αⱼₛ_Qₘₛ += α[j][s] * Q[s];
         }
@@ -157,7 +162,7 @@ IncrementalProjection(Function const& function,
       }
 
       {
-        Square<Value> Σ_Bₛ⁽ᵐ⁾²{};
+        Norm² Σ_Bₛ⁽ᵐ⁾²{};
         for (int s = 0; s < m; ++s) {
           Σ_Bₛ⁽ᵐ⁾² += B[s] * B[s];
         }
@@ -207,7 +212,8 @@ IncrementalProjection(Function const& function,
       }
 
       {
-        PoissonSeries<double, degree_, Evaluator> Σ_αₘᵢ_eᵢ = α[m][0] * basis[0];
+        PoissonSeries<Normalized, degree_, Evaluator> Σ_αₘᵢ_eᵢ =
+            α[m][0] * basis[0];
         for (int i = 1; i <= m; ++i) {
           Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
         }
