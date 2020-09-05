@@ -679,14 +679,12 @@ TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
     LOG(ERROR) << "Deserialization starting";
     int i = 0;
     for (std::string const& line : lines) {
-      LOG(ERROR)<<i++;
       principia__DeserializePlugin(line.c_str(),
                                    &deserializer,
                                    &plugin,
                                    /*compressor=*/"gipfeli",
                                    "base64");
     }
-    LOG(ERROR)<<i;
     principia__DeserializePlugin("",
                                  &deserializer,
                                  &plugin,
@@ -726,7 +724,7 @@ TEST_F(InterfaceTest, DISABLED_SECULAR_DeserializePluginDebug) {
                                    /*compressor=*/"gipfeli",
                                    "base64");
     }
-    principia__DeserializePlugin(lines.front().c_str(),
+    principia__DeserializePlugin("",
                                  &deserializer,
                                  &plugin,
                                  /*compressor=*/"gipfeli",

@@ -400,8 +400,14 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     CHECK(Contains(parts_, part_id));
     message->add_kept_parts(part_id);
   }
+  // Starting with Gateaux we don't save the prediction, see #2685.  Instead we
+  // save an empty prediction that we re-read as a prediction.  This is a bit
+  // hacky, but hopefully we can remove this hack once #2400 is solved.
+  DiscreteTrajectory<Barycentric>* empty_prediction =
+      psychohistory_->NewForkAtLast();
   history_->WriteToMessage(message->mutable_history(),
-                           /*forks=*/{psychohistory_, prediction_});
+                           /*forks=*/{psychohistory_, empty_prediction});
+  psychohistory_->DeleteFork(empty_prediction);
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
