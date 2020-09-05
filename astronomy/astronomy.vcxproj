@@ -112,22 +112,7 @@
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\physics\protector.cpp" />
-    <ClCompile Include="date_time_test.cpp" />
-    <ClCompile Include="ksp_fingerprint_test.cpp" />
-    <ClCompile Include="ksp_resonance_test.cpp" />
-    <ClCompile Include="ksp_system_test.cpp" />
-    <ClCompile Include="geodesy_test.cpp" />
-    <ClCompile Include="lunar_orbit_test.cpp" />
-    <ClCompile Include="orbital_elements_test.cpp" />
-    <ClCompile Include="orbit_analysis_test.cpp" />
-    <ClCompile Include="orbit_recurrence_test.cpp" />
     <ClCompile Include="solar_system_dynamics_test.cpp" />
     <ClCompile Include="standard_product_3.cpp" />
-    <ClCompile Include="standard_product_3_test.cpp" />
-    <ClCompile Include="time_scales_test.cpp" />
-    <ClCompile Include="lunar_eclipse_test.cpp" />
-    <ClCompile Include="mercury_perihelion_test.cpp" />
-    <ClCompile Include="trappist_dynamics_test.cpp" />
-    <ClCompile Include="молния_orbit_test.cpp" />
   </ItemGroup>
 </Project>

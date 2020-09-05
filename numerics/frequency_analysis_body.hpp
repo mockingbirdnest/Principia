@@ -157,12 +157,18 @@ IncrementalProjection(Function const& function,
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
+      if (m == 6) {
+        LOG(ERROR)<<"Doing the logging "<<degree_;
+        do_the_logging = true;
+      }
+
       // Contains Fₘ.
       Norm² const F = dot(f, basis[m], weight);
       logger.Append("f" + std::to_string(degree_), f,
                     mathematica::ExpressIn(Metre, Radian, Second));
       logger.Append("F" + std::to_string(degree_), F,
                     mathematica::ExpressIn(Metre, Radian, Second));
+      do_the_logging = false;
 
       // This vector contains Qₘⱼ.
       UnboundedVector<Norm²> Q(m + 1, uninitialized);

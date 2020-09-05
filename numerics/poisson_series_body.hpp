@@ -27,6 +27,7 @@ using quantities::Infinity;
 using quantities::Primitive;
 using quantities::Sin;
 using quantities::Variation;
+using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 namespace si = quantities::si;
@@ -780,6 +781,16 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     auto const primitive = integrand.Primitive();
     auto const integral = TwoDifference(primitive(left.bounds_[i + 1]),
                                         primitive(left.bounds_[i]));
+    if (do_the_logging) {
+      frequency_analysis::logger.Append(
+          "series",
+          left.series_[i],
+          mathematica::ExpressIn(Metre, Radian, Second));
+      frequency_analysis::logger.Append(
+          "integral",
+          integral.value,
+          mathematica::ExpressIn(Metre, Radian, Second));
+    }
     result += integral;
   }
   return result.value / (t_max - t_min);

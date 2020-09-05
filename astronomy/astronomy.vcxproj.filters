@@ -269,68 +269,23 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="lunar_eclipse_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mercury_perihelion_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="time_scales_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="date_time_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="solar_system_dynamics_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\base\status.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="молния_orbit_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ksp_resonance_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ksp_system_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ksp_fingerprint_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\numerics\cbrt.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="trappist_dynamics_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\base\bundle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="geodesy_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lunar_orbit_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="standard_product_3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="standard_product_3_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\physics\protector.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="orbit_recurrence_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="orbital_elements_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="orbit_analysis_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

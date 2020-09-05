@@ -459,6 +459,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 using internal_poisson_series::PiecewisePoissonSeries;
 using internal_poisson_series::PoissonSeries;
+inline bool do_the_logging = false;
 
 }  // namespace numerics
 }  // namespace principia
