@@ -31,7 +31,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
     TEMPLATE(typename Value, typename Argument, int degree_,
              template<typename, typename, int> class Evaluator,
              typename OptionalExpressIn = std::nullopt_t) std::string,
-    ToMathematica,
+    ToMathematicaExpression,
     (numerics::
          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
              polynomial,
@@ -195,7 +195,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   template<typename V, typename A, int d,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematica(
+  friend std::string mathematica::internal_mathematica::ToMathematicaExpression(
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
       O express_in);
 };
@@ -316,7 +316,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   template<typename V, typename A, int d,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematica(
+  friend std::string mathematica::internal_mathematica::ToMathematicaExpression(
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
       O express_in);
 };
