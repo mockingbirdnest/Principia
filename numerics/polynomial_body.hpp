@@ -390,8 +390,8 @@ Derivative() const {
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 template<typename, typename>
-PolynomialInMonomialBasis<
-    Primitive<Value, Argument>, Argument, degree_ + 1, Evaluator>
+PolynomialInMonomialBasis<Primitive<Value, Argument>, Argument,
+                          degree_ + 1, Evaluator>
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
 Primitive() const {
   return PolynomialInMonomialBasis<
@@ -543,9 +543,8 @@ Derivative() const {
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 template<typename, typename>
-PolynomialInMonomialBasis<
-    Primitive<Value, Argument>, Point<Argument>,
-    degree_ + 1, Evaluator>
+PolynomialInMonomialBasis<Primitive<Value, Argument>, Point<Argument>,
+                          degree_ + 1, Evaluator>
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 Primitive() const {
   return PolynomialInMonomialBasis<
