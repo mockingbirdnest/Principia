@@ -14,7 +14,6 @@
 #include "geometry/interval.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "quantities/si.hpp"
