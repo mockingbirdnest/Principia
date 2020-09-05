@@ -410,18 +410,6 @@ TEST_F(MathematicaTest, Assign) {
       Assign("var", 3.0));
 }
 
-TEST_F(MathematicaTest, Function) {
-  PolynomialInMonomialBasis<double, double, 1, HornerEvaluator> polynomial(
-      {1, -3});
-  EXPECT_EQ(
-      "Function["
-      "Plus["
-      "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-      "Times[SetPrecision[-3.00000000000000000*^+00,$MachinePrecision],"
-      "#]]];\n",
-      Function(polynomial));
-}
-
 TEST_F(MathematicaTest, PlottableDataset) {
   EXPECT_EQ(
       "Transpose["

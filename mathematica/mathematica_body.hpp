@@ -83,6 +83,88 @@ struct TupleHelper<0, Tuple, OptionalExpressIn> : not_constructible {
                                    OptionalExpressIn express_in) {}
 };
 
+template<typename V, typename A, int d,
+         template<typename, typename, int> class E,
+         typename OptionalExpressIn>
+std::string ToMathematicaExpression(
+    PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
+    OptionalExpressIn express_in) {
+  using Coefficients =
+      typename PolynomialInMonomialBasis<V, A, d, E>::Coefficients;
+  std::vector<std::string> coefficients;
+  coefficients.reserve(std::tuple_size_v<Coefficients>);
+  TupleHelper<std::tuple_size_v<Coefficients>,
+              Coefficients,
+              OptionalExpressIn>::ToMathematicaStrings(polynomial.coefficients_,
+                                                       coefficients,
+                                                       express_in);
+  std::string argument;
+  if constexpr (is_instance_of_v<Point, A>) {
+    argument =
+        Apply("Subtract", {"#", ToMathematica(polynomial.origin_, express_in)});
+  } else {
+    argument = "#";
+  }
+  std::vector<std::string> monomials;
+  for (int i = 0; i < coefficients.size(); ++i) {
+    if (i == 0) {
+      monomials.push_back(coefficients[i]);
+    } else if (i == 1) {
+      monomials.push_back(Apply("Times", {coefficients[i], argument}));
+    } else {
+      monomials.push_back(Apply(
+          "Times",
+          {coefficients[i], Apply("Power", {argument, std::to_string(i)})}));
+    }
+  }
+  return Apply("Plus", monomials);
+}
+
+template<typename V, int d,
+         template<typename, typename, int> class E,
+         typename OptionalExpressIn>
+std::string ToMathematicaExpression(PoissonSeries<V, d, E> const& series,
+                                    OptionalExpressIn express_in) {
+  std::vector<std::string> components = {
+      ToMathematicaExpression(series.aperiodic_, express_in)};
+  for (auto const& [ω, polynomials] : series.periodic_) {
+    std::string const polynomial_sin =
+        ToMathematicaExpression(polynomials.sin, express_in);
+    std::string const polynomial_cos =
+        ToMathematicaExpression(polynomials.cos, express_in);
+    std::string const angle =
+        Apply("Times",
+              {ToMathematica(ω, express_in),
+               Apply("Subtract",
+                     {"#", ToMathematica(series.origin_, express_in)})});
+    components.push_back(Apply("Times",
+                               {polynomial_sin, Apply("Sin", {angle})}));
+    components.push_back(Apply("Times",
+                               {polynomial_cos, Apply("Cos", {angle})}));
+  }
+  return Apply("Plus", components);
+}
+
+template<typename V, int d,
+         template<typename, typename, int> class E,
+         typename OptionalExpressIn>
+std::string ToMathematicaExpression(
+    PiecewisePoissonSeries<V, d, E> const& series,
+    OptionalExpressIn express_in) {
+  std::vector<std::string> conditions_and_functions;
+  for (int i = 0; i < series.series_.size(); ++i) {
+    std::string const function =
+        ToMathematicaExpression(series.series_[i], express_in);
+    std::string const condition =
+        absl::StrCat("# >= ",
+                     ToMathematica(series.bounds_[i], express_in),
+                     (i < series.series_.size() - 1 ? " && # < " : " && # <= "),
+                     ToMathematica(series.bounds_[i + 1], express_in));
+    conditions_and_functions.push_back(Apply("List", {function, condition}));
+  }
+  return Apply("Piecewise", {Apply("List", conditions_and_functions)});
+}
+
 template<typename... Qs>
 ExpressIn<Qs...>::ExpressIn(Qs const&... qs)
     : units_(std::make_tuple(qs...)) {}
@@ -124,12 +206,6 @@ std::string Assign(std::string const& name,
                    T const& right,
                    OptionalExpressIn express_in) {
   return Apply("Set", {name, ToMathematica(right, express_in)}) + ";\n";
-}
-
-template<typename T, typename OptionalExpressIn>
-std::string Function(T const& body,
-                     OptionalExpressIn express_in) {
-  return Apply("Function", {ToMathematica(body, express_in)}) + ";\n";
 }
 
 template<typename T, typename U, typename OptionalExpressIn>
@@ -306,35 +382,7 @@ template<typename V, typename A, int d,
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in) {
-  using Coefficients =
-      typename PolynomialInMonomialBasis<V, A, d, E>::Coefficients;
-  std::vector<std::string> coefficients;
-  coefficients.reserve(std::tuple_size_v<Coefficients>);
-  TupleHelper<std::tuple_size_v<Coefficients>,
-              Coefficients,
-              OptionalExpressIn>::ToMathematicaStrings(polynomial.coefficients_,
-                                                       coefficients,
-                                                       express_in);
-  std::string argument;
-  if constexpr (is_instance_of_v<Point, A>) {
-    argument =
-        Apply("Subtract", {"#", ToMathematica(polynomial.origin_, express_in)});
-  } else {
-    argument = "#";
-  }
-  std::vector<std::string> monomials;
-  for (int i = 0; i < coefficients.size(); ++i) {
-    if (i == 0) {
-      monomials.push_back(coefficients[i]);
-    } else if (i == 1) {
-      monomials.push_back(Apply("Times", {coefficients[i], argument}));
-    } else {
-      monomials.push_back(Apply(
-          "Times",
-          {coefficients[i], Apply("Power", {argument, std::to_string(i)})}));
-    }
-  }
-  return Apply("Plus", monomials);
+  return Apply("Function", {ToMathematicaExpression(polynomial, express_in)});
 }
 
 template<typename V, int d,
@@ -342,24 +390,7 @@ template<typename V, int d,
          typename OptionalExpressIn>
 std::string ToMathematica(PoissonSeries<V, d, E> const& series,
                           OptionalExpressIn express_in) {
-  std::vector<std::string> components = {
-      ToMathematica(series.aperiodic_, express_in)};
-  for (auto const& [ω, polynomials] : series.periodic_) {
-    std::string const polynomial_sin =
-        ToMathematica(polynomials.sin, express_in);
-    std::string const polynomial_cos =
-        ToMathematica(polynomials.cos, express_in);
-    std::string const angle =
-        Apply("Times",
-              {ToMathematica(ω, express_in),
-               Apply("Subtract",
-                     {"#", ToMathematica(series.origin_, express_in)})});
-    components.push_back(Apply("Times",
-                               {polynomial_sin, Apply("Sin", {angle})}));
-    components.push_back(Apply("Times",
-                               {polynomial_cos, Apply("Cos", {angle})}));
-  }
-  return Apply("Plus", components);
+  return Apply("Function", {ToMathematicaExpression(series, express_in)});
 }
 
 template<typename V, int d,
@@ -367,17 +398,7 @@ template<typename V, int d,
          typename OptionalExpressIn>
 std::string ToMathematica(PiecewisePoissonSeries<V, d, E> const& series,
                           OptionalExpressIn express_in) {
-  std::vector<std::string> conditions_and_functions;
-  for (int i = 0; i < series.series_.size(); ++i) {
-    std::string const function = ToMathematica(series.series_[i], express_in);
-    std::string const condition =
-        absl::StrCat("# >= ",
-                     ToMathematica(series.bounds_[i], express_in),
-                     " && # < ",
-                     ToMathematica(series.bounds_[i + 1], express_in));
-    conditions_and_functions.push_back(Apply("List", {function, condition}));
-  }
-  return Apply("Piecewise", {Apply("List", conditions_and_functions)});
+  return Apply("Function", {ToMathematicaExpression(series, express_in)});
 }
 
 template<typename OptionalExpressIn>

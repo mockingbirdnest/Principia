@@ -33,18 +33,18 @@ FORWARD_DECLARE_FUNCTION_FROM(
     mathematica,
     TEMPLATE(typename Value, int degree_,
              template<typename, typename, int> class Evaluator,
-             typename OptionalExpressIn = std::nullopt_t) std::string,
-    ToMathematica,
+             typename OptionalExpressIn) std::string,
+    ToMathematicaExpression,
     (numerics::PoissonSeries<Value, degree_, Evaluator> const& series,
-     OptionalExpressIn express_in = std::nullopt));
+     OptionalExpressIn express_in));
 FORWARD_DECLARE_FUNCTION_FROM(
     mathematica,
     TEMPLATE(typename Value, int degree_,
              template<typename, typename, int> class Evaluator,
-             typename OptionalExpressIn = std::nullopt_t) std::string,
-    ToMathematica,
+             typename OptionalExpressIn) std::string,
+    ToMathematicaExpression,
     (numerics::PiecewisePoissonSeries<Value, degree_, Evaluator> const& series,
-     OptionalExpressIn express_in = std::nullopt));
+     OptionalExpressIn express_in));
 }  // namespace mathematica
 
 namespace numerics {
@@ -147,7 +147,7 @@ class PoissonSeries {
   template<typename V, int d,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematica(
+  friend std::string mathematica::internal_mathematica::ToMathematicaExpression(
       PoissonSeries<V, d, E> const& polynomial,
       O express_in);
 };
@@ -340,7 +340,7 @@ class PiecewisePoissonSeries {
   template<typename V, int d,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematica(
+  friend std::string mathematica::internal_mathematica::ToMathematicaExpression(
       PiecewisePoissonSeries<V, d, E> const& polynomial,
       O express_in);
 };

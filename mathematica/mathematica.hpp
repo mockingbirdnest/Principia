@@ -109,10 +109,6 @@ std::string Assign(std::string const& name,
                    T const& right,
                    OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, typename OptionalExpressIn = std::nullopt_t>
-std::string Function(T const& body,
-                     OptionalExpressIn express_in = std::nullopt);
-
 template<typename T, typename U, typename OptionalExpressIn = std::nullopt_t>
 std::string PlottableDataset(std::vector<T> const& x,
                              std::vector<U> const& y,
@@ -202,31 +198,24 @@ template<typename R,
 std::string ToMathematica(R ref,
                           OptionalExpressIn express_in = std::nullopt);
 
-// The default expression in this function and the next appears in the forward
-// declaration found in polynomial.hpp and poisson_series.hpp.  The reason is
-// that the language wants that default to occur on the first declaration of the
-// function.  If a client doesn't use mathematica.hpp with polynomials or
-// Poisson series, it doesn't care about the default.  If it uses both together,
-// polynomial.hpp and poisson_series.hpp will always be included before
-// mathematica.hpp, so the default will properly be on the first declaration.
 template<typename V, typename A, int d,
          template<typename, typename, int> class E,
-         typename OptionalExpressIn /*= std::nullopt_t*/>
+         typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
-    OptionalExpressIn express_in /*= std::nullopt*/);
+    OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, int d,
          template<typename, typename, int> class E,
-         typename OptionalExpressIn /*= std::nullopt_t*/>
+         typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(PoissonSeries<V, d, E> const& series,
-                          OptionalExpressIn express_in /*= std::nullopt*/);
+                          OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, int d,
          template<typename, typename, int> class E,
-         typename OptionalExpressIn /*= std::nullopt_t*/>
+         typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(PiecewisePoissonSeries<V, d, E> const& series,
-                          OptionalExpressIn express_in /*= std::nullopt*/);
+                          OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(
@@ -280,7 +269,6 @@ class Logger final {
 
 using internal_mathematica::Assign;
 using internal_mathematica::ExpressIn;
-using internal_mathematica::Function;
 using internal_mathematica::Logger;
 using internal_mathematica::Option;
 using internal_mathematica::PlottableDataset;
