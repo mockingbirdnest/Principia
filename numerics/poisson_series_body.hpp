@@ -529,7 +529,6 @@ void PiecewisePoissonSeries<Value, degree_, Evaluator>::Append(
     Series const& series) {
   CHECK_LT(Time{}, interval.measure());
   CHECK_EQ(bounds_.back(), interval.min);
-  CHECK_EQ(series.origin(), series_.front().origin());
   bounds_.push_back(interval.max);
   series_.push_back(series);
 }
@@ -550,6 +549,10 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 Value PiecewisePoissonSeries<Value, degree_, Evaluator>::operator()(
     Instant const& t) const {
+  if (t == bounds_.back()) {
+    return series_.back()(t);
+  }
+
   // If t is an element of bounds_, the returned iterator points to the next
   // element.  Otherwise it points to the upper bound of the interval to which
   // t belongs.
@@ -651,6 +654,12 @@ PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator> operator/(
   return Result(left.bounds_, series);
 }
 
+// In practice changing the origin of the piecewise series chunks is horribly
+// ill-conditioned, so the code below changes the origin of the (single) Poisson
+// series.
+// TODO(phl): All these origin changes might be expensive, see if we can factor
+// them.
+
 template<typename Value, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
@@ -660,7 +669,8 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   std::vector<typename Result::Series> series;
   for (int i = 0; i < right.series_.size(); ++i) {
-    series.push_back(left + right.series_[i]);
+    Instant const origin = right.series_[i].origin();
+    series.push_back(left.AtOrigin(origin) + right.series_[i]);
   }
   return Result(right.bounds_, series);
 }
@@ -674,7 +684,8 @@ operator+(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   std::vector<typename Result::Series> series;
   for (int i = 0; i < left.series_.size(); ++i) {
-    series.push_back(left.series_[i] + right);
+    Instant const origin = left.series_[i].origin();
+    series.push_back(left.series_[i] + right.AtOrigin(origin));
   }
   return Result(left.bounds_, series);
 }
@@ -688,7 +699,8 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   std::vector<typename Result::Series> series;
   for (int i = 0; i < right.series_.size(); ++i) {
-    series.push_back(left - right.series_[i]);
+    Instant const origin = right.series_[i].origin();
+    series.push_back(left.AtOrigin(origin) - right.series_[i]);
   }
   return Result(right.bounds_, series);
 }
@@ -702,7 +714,8 @@ operator-(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   std::vector<typename Result::Series> series;
   for (int i = 0; i < left.series_.size(); ++i) {
-    series.push_back(left.series_[i] - right);
+    Instant const origin = left.series_[i].origin();
+    series.push_back(left.series_[i] - right.AtOrigin(origin));
   }
   return Result(left.bounds_, series);
 }
@@ -717,7 +730,8 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
                                         Evaluator>;
   std::vector<typename Result::Series> series;
   for (int i = 0; i < right.series_.size(); ++i) {
-    series.push_back(left * right.series_[i]);
+    Instant const origin = right.series_[i].origin();
+    series.push_back(left.AtOrigin(origin) * right.series_[i]);
   }
   return Result(right.bounds_, series);
 }
@@ -732,7 +746,8 @@ operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
                                         Evaluator>;
   std::vector<typename Result::Series> series;
   for (int i = 0; i < left.series_.size(); ++i) {
-    series.push_back(left.series_[i] * right);
+    Instant const origin = left.series_[i].origin();
+    series.push_back(left.series_[i] * right.AtOrigin(origin));
   }
   return Result(left.bounds_, series);
 }
@@ -760,8 +775,10 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result;
   for (int i = 0; i < right.series_.size(); ++i) {
+    Instant const origin = right.series_[i].origin();
     auto const integrand =
-        PointwiseInnerProduct(left, right.series_[i]) * weight;
+        PointwiseInnerProduct(left.AtOrigin(origin), right.series_[i]) *
+        weight.AtOrigin(origin);
     auto const primitive = integrand.Primitive();
     result += primitive(right.bounds_[i + 1]) - primitive(right.bounds_[i]);
   }
@@ -791,8 +808,10 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result;
   for (int i = 0; i < left.series_.size(); ++i) {
+    Instant const origin = left.series_[i].origin();
     auto const integrand =
-        PointwiseInnerProduct(left.series_[i], right) * weight;
+        PointwiseInnerProduct(left.series_[i], right.AtOrigin(origin)) *
+        weight.AtOrigin(origin);
     auto const primitive = integrand.Primitive();
     result += primitive(left.bounds_[i + 1]) - primitive(left.bounds_[i]);
   }

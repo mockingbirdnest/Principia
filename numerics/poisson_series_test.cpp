@@ -290,6 +290,7 @@ TEST_F(PiecewisePoissonSeriesTest, Evaluate) {
   EXPECT_THAT(pp_(t0_ + 1 * (1 + ε) * Second), VanishesBefore(1, 3));
   EXPECT_THAT(pp_(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5), 1));
   EXPECT_THAT(pp_(t0_ + 2 * (1 - ε / 2) * Second), AlmostEquals(-1, 0));
+  EXPECT_THAT(pp_(t0_ + 2 * Second), AlmostEquals(-1, 0));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, VectorSpace) {
@@ -359,11 +360,61 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
   }
 }
 
+TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
+  auto const p = p_.AtOrigin(t0_ + 2 * Second);
+  {
+    auto const s1 = p + pp_;
+    auto const s2 = pp_ + p;
+    EXPECT_THAT(s1(t0_ + 0.5 * Second),
+                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 1));
+    EXPECT_THAT(s1(t0_ + 1.5 * Second),
+                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s2(t0_ + 0.5 * Second),
+                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 1));
+    EXPECT_THAT(s2(t0_ + 1.5 * Second),
+                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+  }
+  {
+    auto const d1 = p - pp_;
+    auto const d2 = pp_ - p;
+    EXPECT_THAT(d1(t0_ + 0.5 * Second),
+                AlmostEquals((2 + Sqrt(2)) / 4, 2));
+    EXPECT_THAT(d1(t0_ + 1.5 * Second),
+                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
+    EXPECT_THAT(d2(t0_ + 0.5 * Second),
+                AlmostEquals((-2 - Sqrt(2)) / 4, 2));
+    EXPECT_THAT(d2(t0_ + 1.5 * Second),
+                AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
+  }
+  {
+    auto const p1 = p * pp_;
+    auto const p2 = pp_ * p;
+    EXPECT_THAT(p1(t0_ + 0.5 * Second),
+                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+    EXPECT_THAT(p1(t0_ + 1.5 * Second),
+                AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
+    EXPECT_THAT(p2(t0_ + 0.5 * Second),
+                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+    EXPECT_THAT(p2(t0_ + 1.5 * Second),
+                AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
+  }
+}
+
 TEST_F(PiecewisePoissonSeriesTest, Dot) {
   double const d1 = Dot(
       pp_, p_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
   double const d2 = Dot(
       p_, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
+  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 1));
+  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 1));
+}
+
+TEST_F(PiecewisePoissonSeriesTest, DotMultiorigin) {
+  auto const p = p_.AtOrigin(t0_ + 2 * Second);
+  double const d1 = Dot(
+      pp_, p, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
+  double const d2 = Dot(
+      p, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
   EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 1));
   EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 1));
 }
