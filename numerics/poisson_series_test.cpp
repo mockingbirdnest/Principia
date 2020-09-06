@@ -153,6 +153,20 @@ TEST_F(PoissonSeriesTest, Algebra) {
                                (*pb_)(t0_ + 1 * Second), 6, 38));
 }
 
+TEST_F(PoissonSeriesTest, AtOrigin) {
+  auto const pa_at_origin = pa_->AtOrigin(t0_ + 2 * Second);
+  for (int i = -5; i < 5; ++i) {
+    Instant const t = t0_ + i * Second;
+    EXPECT_THAT(pa_at_origin(t), AlmostEquals((*pa_)(t), 0, 45));
+  }
+
+  auto const pb_at_origin = pb_->AtOrigin(t0_ - 7 * Second);
+  for (int i = -5; i < 5; ++i) {
+    Instant const t = t0_ + i * Second;
+    EXPECT_THAT(pb_at_origin(t), AlmostEquals((*pb_)(t), 0, 96));
+  }
+}
+
 TEST_F(PoissonSeriesTest, PointwiseInnerProduct) {
   using Degree2 = PoissonSeries<Displacement<World>, 2, HornerEvaluator>;
   Degree2::Polynomial::Coefficients const coefficients_a({
