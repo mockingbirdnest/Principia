@@ -90,6 +90,9 @@ class PoissonSeries {
 
   Value operator()(Instant const& t) const;
 
+  // Returns a copy of this series adjusted to the given origin.
+  PoissonSeries AtOrigin(Instant const& origin) const;
+
   // The constant term of the result is zero.
   PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
   Primitive() const;

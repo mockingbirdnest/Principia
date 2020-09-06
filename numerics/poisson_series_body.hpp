@@ -189,6 +189,26 @@ Value PoissonSeries<Value, degree_, Evaluator>::operator()(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+PoissonSeries<Value, degree_, Evaluator>
+PoissonSeries<Value, degree_, Evaluator>::AtOrigin(
+    Instant const& origin) const {
+  Instant const shift = origin - origin_;
+  auto const aperiodic = aperiodic_.AtOrigin(origin);
+
+  PolynomialsByAngularFrequency periodic;
+  for (auto const& [ω, polynomials] : periodic_) {
+    Polynomial const sin = polynomials.sin.AtOrigin(origin);
+    Polynomial const cos = polynomials.cos.AtOrigin(origin);
+    periodic.emplace(
+        ω,
+        Polynomials{/*sin=*/sin * Cos(ω * shift) - cos * Sin(ω * shift),
+                    /*cos=*/sin * Sin(ω * shift) + cos * Cos(ω * shift)});
+  }
+  return PoissonSeries(aperiodic, periodic);
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::Primitive() const {
   using Result =
