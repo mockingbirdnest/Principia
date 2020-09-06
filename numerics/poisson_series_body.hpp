@@ -23,6 +23,7 @@ using quantities::Cos;
 using quantities::Infinity;
 using quantities::Primitive;
 using quantities::Sin;
+using quantities::Time;
 using quantities::Variation;
 using quantities::si::Radian;
 using quantities::si::Second;
@@ -192,7 +193,7 @@ template<typename Value, int degree_,
 PoissonSeries<Value, degree_, Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::AtOrigin(
     Instant const& origin) const {
-  Instant const shift = origin - origin_;
+  Time const shift = origin - origin_;
   auto const aperiodic = aperiodic_.AtOrigin(origin);
 
   PolynomialsByAngularFrequency periodic;
