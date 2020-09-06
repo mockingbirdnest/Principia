@@ -257,8 +257,7 @@ template<int degree>
 PiecewisePoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>
 ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
     Instant const& t_min,
-    Instant const& t_max,
-    Instant const& origin) const {
+    Instant const& t_max) const {
   static_assert(degree >= min_degree && degree <= max_degree);
   CHECK(!polynomials_.empty());
   using PiecewisePoisson =
@@ -302,14 +301,12 @@ ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
     Interval<Instant> interval;
     interval.Include(current_t_min);
     interval.Include(current_t_max);
-    auto const polynomial_cast_to_degree_at_origin =
-        cast_to_degree(it->polynomial.get()).AtOrigin(origin);
+    auto const polynomial_cast_to_degree = cast_to_degree(it->polynomial.get());
     if (result == nullptr) {
       result = std::make_unique<PiecewisePoisson>(
-          interval, Poisson(polynomial_cast_to_degree_at_origin, {{}}));
+          interval, Poisson(polynomial_cast_to_degree, {{}}));
     } else {
-      result->Append(interval,
-                     Poisson(polynomial_cast_to_degree_at_origin, {{}}));
+      result->Append(interval, Poisson(polynomial_cast_to_degree, {{}}));
     }
     current_t_min = current_t_max;
     if (it == it_max) {
