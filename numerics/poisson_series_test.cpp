@@ -290,6 +290,7 @@ TEST_F(PiecewisePoissonSeriesTest, Evaluate) {
   EXPECT_THAT(pp_(t0_ + 1 * (1 + ε) * Second), VanishesBefore(1, 3));
   EXPECT_THAT(pp_(t0_ + 1.5 * Second), AlmostEquals(-Sqrt(0.5), 1));
   EXPECT_THAT(pp_(t0_ + 2 * (1 - ε / 2) * Second), AlmostEquals(-1, 0));
+  EXPECT_THAT(pp_(t0_ + 2 * Second), AlmostEquals(-1, 0));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, VectorSpace) {

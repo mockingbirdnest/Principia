@@ -549,6 +549,10 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 Value PiecewisePoissonSeries<Value, degree_, Evaluator>::operator()(
     Instant const& t) const {
+  if (t == bounds_.back()) {
+    return series_.back()(t);
+  }
+
   // If t is an element of bounds_, the returned iterator points to the next
   // element.  Otherwise it points to the upper bound of the interval to which
   // t belongs.
