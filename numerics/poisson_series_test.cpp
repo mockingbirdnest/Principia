@@ -163,7 +163,7 @@ TEST_F(PoissonSeriesTest, AtOrigin) {
   auto const pb_at_origin = pb_->AtOrigin(t0_ - 7 * Second);
   for (int i = -5; i < 5; ++i) {
     Instant const t = t0_ + i * Second;
-    EXPECT_THAT(pb_at_origin(t), AlmostEquals((*pb_)(t), 0, 96));
+    EXPECT_THAT(pb_at_origin(t), AlmostEquals((*pb_)(t), 0, 132));
   }
 }
 
