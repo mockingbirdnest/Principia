@@ -588,18 +588,14 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
   LOG(ERROR)<<io_piecewise_poisson_series_degree;
 
   // TODO(phl): Use a switch statement with macros.
-  Instant const t_mid =
-      Barycentre<Instant, double>({t_min, t_max}, {1, 1});
-  // TODO(phl): Use the centre of the interval as origin.
-  // TODO(phl): This is horribly ill-conditioned anyway.
   auto const io_piecewise_poisson_series =
-      io_trajectory.ToPiecewisePoissonSeries<7>(t_min, t_max, t_min);
+      io_trajectory.ToPiecewisePoissonSeries<7>(t_min, t_max);
   LOG(ERROR)<<io_piecewise_poisson_series.t_min()<<" "<<t_min;
   LOG(ERROR)<<io_piecewise_poisson_series.t_max()<<" "<<t_max;
 
   std::vector<Displacement<ICRS>> displacements;
   std::vector<std::tuple<Instant, Displacement<ICRS>>> trajectory;
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i <= 1000; ++i) {
     auto const t = t_min + i * (t_max - t_min) / 1000;
     auto const current_displacements = io_piecewise_poisson_series(t);
     displacements.push_back(current_displacements);
@@ -618,15 +614,12 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
           auto const& residual) -> std::optional<AngularFrequency> {
     Length max_residual;
     std::vector<Displacement<ICRS>> residuals;
-    // TODO(phl): Allow evaluation at t_max.
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i <= 1000; ++i) {
       auto const current_residual =
           residual(t_min + i * (t_max - t_min) / 1000);
       residuals.push_back(current_residual);
       max_residual = std::max(max_residual, current_residual.Norm());
     }
-    frequency_analysis::logger.Append(
-        first ? "first" : "second", residuals, mathematica::ExpressIn(Metre));
     LOG(ERROR)<<max_residual;
     if (first) {
       first = false;
@@ -642,20 +635,38 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
     return Dot(left, right, weight, t_min, t_max);
   };
 
-  //first = true;
-  //frequency_analysis::IncrementalProjection<0>(
-  //    io_piecewise_poisson_series,
-  //    angular_frequency_calculator,
-  //    apodization::Hann<EstrinEvaluator>(t_min, t_max),
-  //    dot);
-  //first = true;
-  //frequency_analysis::IncrementalProjection<1>(
-  //    io_piecewise_poisson_series,
-  //    angular_frequency_calculator,
-  //    apodization::Hann<EstrinEvaluator>(t_min, t_max),
-  //    dot);
+  first = true;
+  frequency_analysis::IncrementalProjection<0>(
+      io_piecewise_poisson_series,
+      angular_frequency_calculator,
+      apodization::Hann<EstrinEvaluator>(t_min, t_max),
+      dot);
+  first = true;
+  frequency_analysis::IncrementalProjection<1>(
+      io_piecewise_poisson_series,
+      angular_frequency_calculator,
+      apodization::Hann<EstrinEvaluator>(t_min, t_max),
+      dot);
   first = true;
   frequency_analysis::IncrementalProjection<2>(
+      io_piecewise_poisson_series,
+      angular_frequency_calculator,
+      apodization::Hann<EstrinEvaluator>(t_min, t_max),
+      dot);
+  first = true;
+  frequency_analysis::IncrementalProjection<3>(
+      io_piecewise_poisson_series,
+      angular_frequency_calculator,
+      apodization::Hann<EstrinEvaluator>(t_min, t_max),
+      dot);
+  first = true;
+  frequency_analysis::IncrementalProjection<4>(
+      io_piecewise_poisson_series,
+      angular_frequency_calculator,
+      apodization::Hann<EstrinEvaluator>(t_min, t_max),
+      dot);
+  first = true;
+  frequency_analysis::IncrementalProjection<5>(
       io_piecewise_poisson_series,
       angular_frequency_calculator,
       apodization::Hann<EstrinEvaluator>(t_min, t_max),

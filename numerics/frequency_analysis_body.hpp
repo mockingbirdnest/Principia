@@ -245,6 +245,8 @@ IncrementalProjection(Function const& function,
         f -= α[m][m] * F * Σ_αₘᵢ_eᵢ;
       }
     }
+    logger.Append("f" + std::to_string(degree_), f,
+                  mathematica::ExpressIn(Metre, Radian, Second));
 
     PoissonSeries<Value, degree_, Evaluator> result = A[0] * basis[0];
     for (int i = 1; i < basis_size; ++i) {
