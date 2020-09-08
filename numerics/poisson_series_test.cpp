@@ -378,11 +378,11 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
     auto const d1 = p - pp_;
     auto const d2 = pp_ - p;
     EXPECT_THAT(d1(t0_ + 0.5 * Second),
-                AlmostEquals((2 + Sqrt(2)) / 4, 2));
+                AlmostEquals((2 + Sqrt(2)) / 4, 0, 2));
     EXPECT_THAT(d1(t0_ + 1.5 * Second),
                 AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
     EXPECT_THAT(d2(t0_ + 0.5 * Second),
-                AlmostEquals((-2 - Sqrt(2)) / 4, 2));
+                AlmostEquals((-2 - Sqrt(2)) / 4, 0, 2));
     EXPECT_THAT(d2(t0_ + 1.5 * Second),
                 AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
   }
