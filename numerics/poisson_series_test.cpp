@@ -419,5 +419,41 @@ TEST_F(PiecewisePoissonSeriesTest, DotMultiorigin) {
   EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 1));
 }
 
+TEST_F(PiecewisePoissonSeriesTest, Conditioning) {
+  using Degree1 = PiecewisePoissonSeries<double, 1, HornerEvaluator>;
+  using Degree2 = PoissonSeries<double, 2, HornerEvaluator>;
+  // 5.98e10 - 8639 t
+  auto const a0 = 5.979956805e11;
+  auto const a1 = -8639 / Second;
+
+  auto const t_min = t0_;
+  auto const t_max = t0_ + 1e6 * Second;
+
+  Degree1 a(
+      {t_min, t_min + 1000 * Second},
+      Degree1::Series(
+          Degree1::Series::Polynomial({a0, a1}, t_min + 500 * Second), {{}}));
+  for (int i = 1; i < 1000; ++i) {
+    a.Append({t_min + i * 1000 * Second, t_min + (i + 1) * 1000 * Second},
+             Degree1::Series(
+                 Degree1::Series::Polynomial({a0 + i * 1000 * a1 * Second, a1},
+                                             t_min + (1000 * i + 500) * Second),
+                 {{}}));
+  }
+  Degree2 b(Degree2::Polynomial({0, 0 / Second, 1 / Second / Second}, t_min),
+            {{}});
+
+  for (int i = 1; i < 100; ++i) {
+    EXPECT_THAT(a(t_min + i * 2345 * Second),
+                AlmostEquals(5.98e11 - 20258455.0 * i, 0));
+    EXPECT_THAT(b(t_min + i * 2345 * Second),
+                AlmostEquals(5499025.0 * i * i, 0));
+  }
+
+  EXPECT_THAT(
+      Dot(a, b, apodization::Hann<HornerEvaluator>(t_min, t_max), t_min, t_max),
+      AlmostEquals(8.37675173516945e22, 3));
+}
+
 }  // namespace numerics
 }  // namespace principia

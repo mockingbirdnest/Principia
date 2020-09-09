@@ -821,6 +821,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     auto const primitive = integrand.Primitive();
     auto const integral = TwoDifference(primitive(left.bounds_[i + 1]),
                                         primitive(left.bounds_[i]));
+#if 0
     if (do_the_logging) {
       frequency_analysis::logger.Append(
           "series",
@@ -831,6 +832,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
           integral.value,
           mathematica::ExpressIn(Metre, Radian, Second));
     }
+#endif
     result += integral;
   }
   return result.value / (t_max - t_min);
