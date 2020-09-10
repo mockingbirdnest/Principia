@@ -813,6 +813,18 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   DoublePrecision<Result> result;
+#if 0
+  if (do_the_logging) {
+      frequency_analysis::logger.Append(
+          "right",
+          right,
+          mathematica::ExpressIn(Metre, Radian, Second));
+      frequency_analysis::logger.Append(
+          "weight",
+          weight,
+          mathematica::ExpressIn(Metre, Radian, Second));
+  }
+#endif
   for (int i = 0; i < left.series_.size(); ++i) {
     Instant const origin = left.series_[i].origin();
     auto const integrand =
@@ -824,8 +836,28 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 #if 0
     if (do_the_logging) {
       frequency_analysis::logger.Append(
+          "rightAtOrigin",
+          right.AtOrigin(origin),
+          mathematica::ExpressIn(Metre, Radian, Second));
+      frequency_analysis::logger.Append(
+          "weigthAtOrigin",
+          weight.AtOrigin(origin),
+          mathematica::ExpressIn(Metre, Radian, Second));
+      frequency_analysis::logger.Append(
           "series",
           left.series_[i],
+          mathematica::ExpressIn(Metre, Radian, Second));
+      frequency_analysis::logger.Append(
+          "integrand",
+          integrand,
+          mathematica::ExpressIn(Metre, Radian, Second));
+      frequency_analysis::logger.Append(
+          "bounds",
+          std::vector{left.bounds_[i + 1], left.bounds_[i]},
+          mathematica::ExpressIn(Metre, Radian, Second));
+      frequency_analysis::logger.Append(
+          "primitive",
+          primitive,
           mathematica::ExpressIn(Metre, Radian, Second));
       frequency_analysis::logger.Append(
           "integral",

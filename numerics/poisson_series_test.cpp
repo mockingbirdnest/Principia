@@ -29,6 +29,7 @@ using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
+using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Time;
@@ -245,6 +246,40 @@ TEST_F(PoissonSeriesTest, Dot) {
               AlmostEquals(-381.25522770148542400, 71));
 }
 
+TEST_F(PoissonSeriesTest, DotConditioning) {
+  using Degree7 = PoissonSeries<double, 7, HornerEvaluator>;
+  using Degree2 = PoissonSeries<double, 2, HornerEvaluator>;
+
+  Instant const t_min = t0_;
+  Instant const t_max = t0_ + 4800 * Second;
+  Instant const t_mid = t0_ + 2400 * Second;
+
+  Degree7 s7(Degree7::Polynomial({-8.752190840128326e8,
+                                  -6265.007683216121 / Second,
+                                  -0.3289504016189549 / Pow<2>(Second),
+                                  +1.973941298531457e-6 / Pow<3>(Second),
+                                  +4.757589125055360e-11 / Pow<4>(Second),
+                                  -1.668764721235290e-16 / Pow<5>(Second),
+                                  -2.971788090416876e-21 / Pow<6>(Second),
+                                  +5.893739999926978e-27 / Pow<7>(Second)},
+                                 t_mid),
+             {{}});
+
+  Degree2 s2(Degree2::Polynomial({0, 0 / Second, 1 / Second / Second}, t_min),
+             {{}});
+
+  Instant const origin = s7.origin();
+  auto const integrand =
+      PointwiseInnerProduct(s7, s2.AtOrigin(origin)) *
+      apodization::Hann<HornerEvaluator>(t_min, t0_ + 7891200 * Second)
+          .AtOrigin(origin);
+  auto const primitive = integrand.Primitive();
+
+  // Exact value is -7.15802e13
+  LOG(ERROR) << primitive(t_max) << " " << primitive(t_min) << " "
+             << primitive(t_max) - primitive(t_min);
+}
+
 TEST_F(PoissonSeriesTest, Output) {
   LOG(ERROR) << *pa_;
 }
@@ -417,42 +452,6 @@ TEST_F(PiecewisePoissonSeriesTest, DotMultiorigin) {
       p, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
   EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 1));
   EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 1));
-}
-
-TEST_F(PiecewisePoissonSeriesTest, Conditioning) {
-  using Degree1 = PiecewisePoissonSeries<double, 1, HornerEvaluator>;
-  using Degree2 = PoissonSeries<double, 2, HornerEvaluator>;
-  // 5.98e10 - 8639 t
-  auto const a0 = 5.979956805e11;
-  auto const a1 = -8639 / Second;
-
-  auto const t_min = t0_;
-  auto const t_max = t0_ + 1e6 * Second;
-
-  Degree1 a(
-      {t_min, t_min + 1000 * Second},
-      Degree1::Series(
-          Degree1::Series::Polynomial({a0, a1}, t_min + 500 * Second), {{}}));
-  for (int i = 1; i < 1000; ++i) {
-    a.Append({t_min + i * 1000 * Second, t_min + (i + 1) * 1000 * Second},
-             Degree1::Series(
-                 Degree1::Series::Polynomial({a0 + i * 1000 * a1 * Second, a1},
-                                             t_min + (1000 * i + 500) * Second),
-                 {{}}));
-  }
-  Degree2 b(Degree2::Polynomial({0, 0 / Second, 1 / Second / Second}, t_min),
-            {{}});
-
-  for (int i = 1; i < 100; ++i) {
-    EXPECT_THAT(a(t_min + i * 2345 * Second),
-                AlmostEquals(5.98e11 - 20258455.0 * i, 0));
-    EXPECT_THAT(b(t_min + i * 2345 * Second),
-                AlmostEquals(5499025.0 * i * i, 0));
-  }
-
-  EXPECT_THAT(
-      Dot(a, b, apodization::Hann<HornerEvaluator>(t_min, t_max), t_min, t_max),
-      AlmostEquals(8.37675173516945e22, 3));
 }
 
 }  // namespace numerics
