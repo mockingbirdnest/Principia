@@ -227,6 +227,40 @@ PoissonSeries<Value, degree_, Evaluator>::Primitive() const {
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+quantities::Primitive<Value, Time>
+PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
+                                                    Instant const& t2) const {
+  using FirstPart = PoissonSeries<Value, degree_, Evaluator>;
+  using SecondPart = PoissonSeries<Variation<Value>, degree_ - 1, Evaluator>;
+  auto const aperiodic_primitive = aperiodic_.Primitive();
+  quantities::Primitive<Value, Time> result =
+      aperiodic_primitive.Evaluate(t2) - aperiodic_primitive.Evaluate(t1);
+  for (auto const& [ω, polynomials] : periodic_) {
+    // Integration by parts.
+    FirstPart const first_part(
+        typename FirstPart::Polynomial({}, origin_),
+        {{ω,
+          {/*sin=*/typename FirstPart::Polynomial(polynomials.cos ),
+           /*cos=*/typename FirstPart::Polynomial(-polynomials.sin)}}});
+    result += (first_part(t2) - first_part(t1)) / ω * Radian;
+
+    if constexpr (degree_ != 0) {
+      auto const sin_polynomial =
+          -polynomials.cos.template Derivative<1>();
+      auto const cos_polynomial =
+          polynomials.sin.template Derivative<1>();
+      SecondPart const second_part(typename SecondPart::Polynomial({}, origin_),
+                                   {{ω,
+                                     {/*sin=*/sin_polynomial,
+                                      /*cos=*/cos_polynomial}}});
+      result += second_part.Integrate(t1, t2) / ω * Radian;
+    }
+  }
+  return result;
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 template<typename V, int d, template<typename, typename, int> class E>
 PoissonSeries<Value, degree_, Evaluator>&
 PoissonSeries<Value, degree_, Evaluator>::operator+=(
