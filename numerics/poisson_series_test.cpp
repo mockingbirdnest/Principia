@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "numerics/apodization.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "numerics/quadrature.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -286,6 +287,12 @@ TEST_F(PoissonSeriesTest, DotConditioning) {
 
   auto const integral = integrand.Integrate(t_min, t_max);
   LOG(ERROR) << integral;
+
+  for (int n = 1; n < 100'000; n *= 10) {
+    auto const better_integral =
+        quadrature::Midpoint(integrand, t_min, t_max, n);
+    LOG(ERROR) << better_integral;
+  }
 }
 
 TEST_F(PoissonSeriesTest, Output) {
