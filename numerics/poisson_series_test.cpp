@@ -232,6 +232,11 @@ TEST_F(PoissonSeriesTest, Primitive) {
     EXPECT_THAT(actual_primitive(t0_ + i * Second),
                 AlmostEquals(expected_primitive(i * Second), 0, 6));
   }
+
+  EXPECT_THAT(
+      pb_->Integrate(t0_ + 5 * Second, t0_ + 13 * Second),
+      AlmostEquals(
+          expected_primitive(13 * Second) - expected_primitive(5 * Second), 1));
 }
 
 TEST_F(PoissonSeriesTest, Dot) {
@@ -278,6 +283,9 @@ TEST_F(PoissonSeriesTest, DotConditioning) {
   // Exact value is -7.15802e13
   LOG(ERROR) << primitive(t_max) << " " << primitive(t_min) << " "
              << primitive(t_max) - primitive(t_min);
+
+  auto const integral = integrand.Integrate(t_min, t_max);
+  LOG(ERROR) << integral;
 }
 
 TEST_F(PoissonSeriesTest, Output) {
