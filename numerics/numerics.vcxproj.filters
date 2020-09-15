@@ -253,6 +253,9 @@
     <ClCompile Include="poisson_series_basis_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="quadrature_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
