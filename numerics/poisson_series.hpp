@@ -97,6 +97,9 @@ class PoissonSeries {
   PoissonSeries<quantities::Primitive<Value, Time>, degree_ + 1, Evaluator>
   Primitive() const;
 
+  quantities::Primitive<Value, Time> Integrate(Instant const& t1,
+                                               Instant const& t2) const;
+
   template<typename V, int d, template<typename, typename, int> class E>
   PoissonSeries& operator+=(PoissonSeries<V, d, E> const& right);
   template<typename V, int d, template<typename, typename, int> class E>

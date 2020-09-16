@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "numerics/apodization.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "numerics/quadrature.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -29,6 +30,7 @@ using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
+using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Time;
@@ -231,6 +233,11 @@ TEST_F(PoissonSeriesTest, Primitive) {
     EXPECT_THAT(actual_primitive(t0_ + i * Second),
                 AlmostEquals(expected_primitive(i * Second), 0, 6));
   }
+
+  EXPECT_THAT(
+      pb_->Integrate(t0_ + 5 * Second, t0_ + 13 * Second),
+      AlmostEquals(
+          expected_primitive(13 * Second) - expected_primitive(5 * Second), 1));
 }
 
 TEST_F(PoissonSeriesTest, Dot) {
@@ -243,6 +250,49 @@ TEST_F(PoissonSeriesTest, Dot) {
                   t_min,
                   t_max),
               AlmostEquals(-381.25522770148542400, 71));
+}
+
+TEST_F(PoissonSeriesTest, DotConditioning) {
+  using Degree7 = PoissonSeries<double, 7, HornerEvaluator>;
+  using Degree2 = PoissonSeries<double, 2, HornerEvaluator>;
+
+  Instant const t_min = t0_;
+  Instant const t_max = t0_ + 4800 * Second;
+  Instant const t_mid = t0_ + 2400 * Second;
+
+  Degree7 s7(Degree7::Polynomial({-8.752190840128326e8,
+                                  -6265.007683216121 / Second,
+                                  -0.3289504016189549 / Pow<2>(Second),
+                                  +1.973941298531457e-6 / Pow<3>(Second),
+                                  +4.757589125055360e-11 / Pow<4>(Second),
+                                  -1.668764721235290e-16 / Pow<5>(Second),
+                                  -2.971788090416876e-21 / Pow<6>(Second),
+                                  +5.893739999926978e-27 / Pow<7>(Second)},
+                                 t_mid),
+             {{}});
+
+  Degree2 s2(Degree2::Polynomial({0, 0 / Second, 1 / Second / Second}, t_min),
+             {{}});
+
+  Instant const origin = s7.origin();
+  auto const integrand =
+      PointwiseInnerProduct(s7, s2.AtOrigin(origin)) *
+      apodization::Hann<HornerEvaluator>(t_min, t0_ + 7891200 * Second)
+          .AtOrigin(origin);
+  auto const primitive = integrand.Primitive();
+
+  // Exact value is -7.15802e13
+  LOG(ERROR) << primitive(t_max) << " " << primitive(t_min) << " "
+             << primitive(t_max) - primitive(t_min);
+
+  auto const integral = integrand.Integrate(t_min, t_max);
+  LOG(ERROR) << integral;
+
+  for (int n = 1; n < 100'000; n *= 10) {
+    auto const better_integral =
+        quadrature::Midpoint(integrand, t_min, t_max, n);
+    LOG(ERROR) << better_integral;
+  }
 }
 
 TEST_F(PoissonSeriesTest, Output) {
