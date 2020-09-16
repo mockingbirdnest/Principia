@@ -56,6 +56,8 @@
     <ClInclude Include="polynomial_body.hpp" />
     <ClInclude Include="polynomial_evaluators.hpp" />
     <ClInclude Include="polynomial_evaluators_body.hpp" />
+    <ClInclude Include="quadrature.hpp" />
+    <ClInclude Include="quadrature_body.hpp" />
     <ClInclude Include="root_finders.hpp" />
     <ClInclude Include="root_finders_body.hpp" />
     <ClInclude Include="ulp_distance.hpp" />

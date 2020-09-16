@@ -166,6 +166,11 @@
     </ClInclude>
     <ClInclude Include="legendre_roots.mathematica.h">
       <Filter>Header Files</Filter>
+    <ClInclude Include="quadrature.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quadrature_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

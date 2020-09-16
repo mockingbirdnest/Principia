@@ -47,7 +47,7 @@ using Derivative = typename std::conditional_t<
 // its |Argument|-valued argument.  The primitive of an affine-valued function
 // does not make much sense, but it must compile, hence the Difference.
 template<typename Value, typename Argument>
-using Primitive = Product<Difference<Value>, Argument>;
+using Primitive = Product<Difference<Value>, Difference<Argument>>;
 
 // |Variation<T>| is the type of the time derivative of a |T|-valued function.
 template<typename T>
