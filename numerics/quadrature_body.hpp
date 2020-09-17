@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include <array>
-
 #include "numerics/gauss_legendre_weights.mathematica.h"
 #include "numerics/legendre_roots.mathematica.h"
 #include "numerics/quadrature.hpp"
