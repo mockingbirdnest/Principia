@@ -16,6 +16,7 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "numerics/apodization.hpp"
+#include "numerics/fast_fourier_transform.hpp"
 #include "numerics/frequency_analysis.hpp"
 #include "numerics/poisson_series.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -62,6 +63,8 @@ using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using numerics::EstrinEvaluator;
+using numerics::FastFourierTransform;
+using numerics::frequency_analysis::PreciseMode;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -608,9 +611,15 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
   frequency_analysis::logger.Append(
       "trajectory", trajectory, mathematica::ExpressIn(Metre, Second));
 
-  bool first = true;
+  auto dot = [t_min, t_max](auto const& left,
+                            auto const& right,
+                            auto const& weight) -> Square<Length> {
+    return Dot(left, right, weight, t_min, t_max);
+  };
+
+  int step = 0;
   auto angular_frequency_calculator =
-      [&first, t_min, t_max](
+      [&dot, &step, t_min, t_max](
           auto const& residual) -> std::optional<AngularFrequency> {
     Length max_residual;
     std::vector<Displacement<ICRS>> residuals;
@@ -621,51 +630,35 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
       max_residual = std::max(max_residual, current_residual.Norm());
     }
     LOG(ERROR)<<max_residual;
-    if (first) {
-      first = false;
-      return AngularFrequency();
-    } else {
-      return std::nullopt;
+
+    switch (step++) {
+      case 0: {
+        return AngularFrequency();
+      }
+      case 1: {
+        std::vector<Length> distances;
+        Time const Δt = (t_max - t_min) * 0x1p-10;
+        for (int i = 0; i < 1 << 10; ++i) {
+          // TODO(phl): use Hilbert: we are squaring square roots and we should
+          // feel bad (also this would make the call sites cleaner).
+          distances.push_back(residual(t_min + i * Δt).Norm());
+        }
+        auto fft = std::make_unique<FastFourierTransform<Length, 1 << 10>>(
+            distances, Δt);
+        auto const mode = fft->Mode();
+        auto const precise_mode = PreciseMode(
+            mode,
+            [&residual](auto const& t) { return residual(t).Norm(); },
+            apodization::Hann<EstrinEvaluator>(t_min, t_max),
+            dot);
+        return precise_mode;
+      }
+      default: {
+        return std::nullopt;
+      }
     }
   };
 
-  auto dot = [t_min, t_max](auto const& left,
-                            auto const& right,
-                            auto const& weight) -> Square<Length> {
-    return Dot(left, right, weight, t_min, t_max);
-  };
-
-  first = true;
-  frequency_analysis::IncrementalProjection<0>(
-      io_piecewise_poisson_series,
-      angular_frequency_calculator,
-      apodization::Hann<EstrinEvaluator>(t_min, t_max),
-      dot);
-  first = true;
-  frequency_analysis::IncrementalProjection<1>(
-      io_piecewise_poisson_series,
-      angular_frequency_calculator,
-      apodization::Hann<EstrinEvaluator>(t_min, t_max),
-      dot);
-  first = true;
-  frequency_analysis::IncrementalProjection<2>(
-      io_piecewise_poisson_series,
-      angular_frequency_calculator,
-      apodization::Hann<EstrinEvaluator>(t_min, t_max),
-      dot);
-  first = true;
-  frequency_analysis::IncrementalProjection<3>(
-      io_piecewise_poisson_series,
-      angular_frequency_calculator,
-      apodization::Hann<EstrinEvaluator>(t_min, t_max),
-      dot);
-  first = true;
-  frequency_analysis::IncrementalProjection<4>(
-      io_piecewise_poisson_series,
-      angular_frequency_calculator,
-      apodization::Hann<EstrinEvaluator>(t_min, t_max),
-      dot);
-  first = true;
   frequency_analysis::IncrementalProjection<5>(
       io_piecewise_poisson_series,
       angular_frequency_calculator,
