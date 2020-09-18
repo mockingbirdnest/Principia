@@ -12,6 +12,12 @@ namespace internal_quadrature {
 
 using quantities::Primitive;
 
+template<int points, typename Argument, typename Function>
+Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
+    Function const& function,
+    Argument const& lower_bound,
+    Argument const& upper_bound);
+
 template<typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(
     Function const& function,
@@ -21,6 +27,7 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(
 
 }  // namespace internal_quadrature
 
+using internal_quadrature::GaussLegendre;
 using internal_quadrature::Midpoint;
 
 }  // namespace quadrature

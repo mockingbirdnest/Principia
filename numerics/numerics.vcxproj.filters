@@ -161,6 +161,11 @@
     <ClInclude Include="poisson_series_basis_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="gauss_legendre_weights.mathematica.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="legendre_roots.mathematica.h">
+      <Filter>Header Files</Filter>
     <ClInclude Include="quadrature.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -252,6 +257,9 @@
     </ClCompile>
     <ClCompile Include="poisson_series_basis_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="quadrature_test.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

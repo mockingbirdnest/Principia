@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "numerics/gauss_legendre_weights.mathematica.h"
+#include "numerics/legendre_roots.mathematica.h"
 #include "numerics/quadrature.hpp"
 
 namespace principia {
@@ -9,6 +11,35 @@ namespace quadrature {
 namespace internal_quadrature {
 
 using quantities::Difference;
+
+template<int points, typename Argument, typename Function>
+Primitive<std::invoke_result_t<Function, Argument>, Argument> Gauss(
+    Function const& function,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    double const* const nodes,
+    double const* const weights) {
+  Difference<Argument> half_width = (upper_bound - lower_bound) / 2;
+  std::invoke_result_t<Function, Argument> result{};
+  for (int i = 0; i < points; ++i) {
+    Argument const scaled_node = lower_bound + half_width * (nodes[i] + 1);
+    // TODO(phl): Consider compensated summation.
+    result += weights[i] * function(scaled_node);
+  }
+  return result * half_width;
+}
+
+template<int points, typename Argument, typename Function>
+Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
+    Function const& function,
+    Argument const& lower_bound,
+    Argument const& upper_bound) {
+  return Gauss<points>(function,
+                       lower_bound,
+                       upper_bound,
+                       LegendreRoots[points],
+                       GaussLegendreWeights[points]);
+}
 
 template<typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(
