@@ -9,7 +9,7 @@
 #include <optional>
 #include <vector>
 
-#include "numerics/double_precision.hpp"
+#include "numerics/quadrature.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -19,8 +19,6 @@ namespace principia {
 namespace numerics {
 namespace internal_poisson_series {
 
-using numerics::DoublePrecision;
-using numerics::TwoDifference;
 using quantities::Abs;
 using quantities::Cos;
 using quantities::Infinity;
@@ -811,18 +809,18 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const& t_max) {
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
-  DoublePrecision<Result> result;
+  Result result{};
   for (int i = 0; i < right.series_.size(); ++i) {
     Instant const origin = right.series_[i].origin();
     auto const integrand =
         PointwiseInnerProduct(left.AtOrigin(origin), right.series_[i]) *
         weight.AtOrigin(origin);
-    auto const primitive = integrand.Primitive();
-    auto const integral = TwoDifference(primitive(right.bounds_[i + 1]),
-                                        primitive(right.bounds_[i]));
+    auto const integral =
+        quadrature::GaussLegendre<ldegree_ + rdegree_ + wdegree_>(
+            integrand, right.bounds_[i], right.bounds_[i + 1]);
     result += integral;
   }
-  return result.value / (t_max - t_min);
+  return result / (t_max - t_min);
 }
 
 template<typename LValue, typename RValue,
@@ -846,7 +844,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const& t_max) {
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
-  DoublePrecision<Result> result;
+  Result result{};
 #if 0
   if (do_the_logging) {
       frequency_analysis::logger.Append(
@@ -864,9 +862,9 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     auto const integrand =
         PointwiseInnerProduct(left.series_[i], right.AtOrigin(origin)) *
         weight.AtOrigin(origin);
-    auto const primitive = integrand.Primitive();
-    auto const integral = TwoDifference(primitive(left.bounds_[i + 1]),
-                                        primitive(left.bounds_[i]));
+    auto const integral =
+        quadrature::GaussLegendre<ldegree_ + rdegree_ + wdegree_>(
+            integrand, left.bounds_[i], left.bounds_[i + 1]);
 #if 0
     if (do_the_logging) {
       frequency_analysis::logger.Append(
@@ -901,7 +899,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 #endif
     result += integral;
   }
-  return result.value / (t_max - t_min);
+  return result / (t_max - t_min);
 }
 
 }  // namespace internal_poisson_series
