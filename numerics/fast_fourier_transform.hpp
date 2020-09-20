@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bits.hpp"
+#include "geometry/hilbert.hpp"
 #include "geometry/interval.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -16,14 +17,14 @@ namespace numerics {
 namespace internal_fast_fourier_transform {
 
 using base::FloorLog2;
+using geometry::Hilbert;
 using geometry::Interval;
 using quantities::AngularFrequency;
-using quantities::Square;
 using quantities::Time;
 
 // This class computes Fourier[{...}, FourierParameters -> {1, -1}] in
 // Mathematica notation (the "signal processing" Fourier transform).
-template<typename Scalar, std::size_t size_>
+template<typename Value, std::size_t size_>
 class FastFourierTransform {
  public:
   // The size must be a power of 2.
@@ -36,21 +37,22 @@ class FastFourierTransform {
 
   template<typename Container,
            typename = std::enable_if_t<
-               std::is_convertible_v<typename Container::value_type, Scalar>>>
+               std::is_convertible_v<typename Container::value_type, Value>>>
   FastFourierTransform(Container const& container,
                        Time const& Δt);
 
   template<typename Iterator,
            typename = std::enable_if_t<std::is_convertible_v<
                typename std::iterator_traits<Iterator>::value_type,
-               Scalar>>>
+               Value>>>
   FastFourierTransform(Iterator begin, Iterator end,
                        Time const& Δt);
 
-  FastFourierTransform(std::array<Scalar, size> const& container,
+  FastFourierTransform(std::array<Value, size> const& container,
                        Time const& Δt);
 
-  std::map<AngularFrequency, Square<Scalar>> PowerSpectrum() const;
+  std::map<AngularFrequency, typename Hilbert<Value>::InnerProductType>
+  PowerSpectrum() const;
 
   // Returns the interval that contains the largest peak of power.
   Interval<AngularFrequency> Mode() const;
@@ -59,7 +61,7 @@ class FastFourierTransform {
   Time const Δt_;
   AngularFrequency const ω_;
 
-  // The elements of transform_ are in SI units of Scalar.  They are spaced in
+  // The elements of transform_ are in SI units of Value.  They are spaced in
   // frequency by ω_.
   std::array<std::complex<double>, size> transform_;
 

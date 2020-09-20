@@ -28,11 +28,11 @@ namespace principia {
 namespace numerics {
 namespace frequency_analysis {
 
+using geometry::Frame;
 using geometry::Handedness;
 using geometry::Hilbert;
 using geometry::Inertial;
 using geometry::Instant;
-using geometry::Frame;
 using geometry::Vector;
 using quantities::Abs;
 using quantities::Acceleration;

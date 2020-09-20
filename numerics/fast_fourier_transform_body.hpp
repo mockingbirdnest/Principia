@@ -118,16 +118,16 @@ void DanielsonLánczos<array_size_, 4>::Transform(
   }
 }
 
-template<typename Scalar, std::size_t size_>
+template<typename Value, std::size_t size_>
 template<typename Container, typename>
-FastFourierTransform<Scalar, size_>::FastFourierTransform(
+FastFourierTransform<Value, size_>::FastFourierTransform(
     Container const& container,
     Time const& Δt)
     : FastFourierTransform(container.cbegin(), container.cend(), Δt) {}
 
-template<typename Scalar, std::size_t size_>
+template<typename Value, std::size_t size_>
 template<typename Iterator, typename>
-FastFourierTransform<Scalar, size_>::FastFourierTransform(
+FastFourierTransform<Value, size_>::FastFourierTransform(
     Iterator const begin,
     Iterator const end,
     Time const& Δt)
@@ -142,37 +142,41 @@ FastFourierTransform<Scalar, size_>::FastFourierTransform(
        ++it,
        bit_reversed_index = BitReversedIncrement(bit_reversed_index,
                                                  log2_size)) {
-    transform_[bit_reversed_index] = *it / si::Unit<Scalar>;
+    transform_[bit_reversed_index] = *it / si::Unit<Value>;
   }
 
   DanielsonLánczos<size>::Transform(transform_.begin());
 }
 
-template<typename Scalar, std::size_t size_>
-FastFourierTransform<Scalar, size_>::FastFourierTransform(
-    std::array<Scalar, size> const& container,
+template<typename Value, std::size_t size_>
+FastFourierTransform<Value, size_>::FastFourierTransform(
+    std::array<Value, size> const& container,
     Time const& Δt)
     : FastFourierTransform(container.cbegin(), container.cend(), Δt) {}
 
-template<typename Scalar, std::size_t size_>
-std::map<AngularFrequency, Square<Scalar>>
-FastFourierTransform<Scalar, size_>::PowerSpectrum() const {
-  std::map<AngularFrequency, Square<Scalar>> spectrum;
+template<typename Value, std::size_t size_>
+std::map<AngularFrequency, typename Hilbert<Value>::InnerProductType>
+FastFourierTransform<Value, size_>::PowerSpectrum() const {
+  std::map<AngularFrequency, typename Hilbert<Value>::InnerProductType>
+      spectrum;
   int k = 0;
   for (auto const& coefficient : transform_) {
-    spectrum.emplace_hint(spectrum.end(),
-                          k * ω_,
-                          std::norm(coefficient) * si::Unit<Square<Scalar>>);
+    spectrum.emplace_hint(
+        spectrum.end(),
+        k * ω_,
+        std::norm(coefficient) *
+            si::Unit<typename Hilbert<Value>::InnerProductType>);
     ++k;
   }
   return spectrum;
 }
 
-template<typename Scalar, std::size_t size_>
-Interval<AngularFrequency> FastFourierTransform<Scalar, size_>::Mode() const {
+template<typename Value, std::size_t size_>
+Interval<AngularFrequency> FastFourierTransform<Value, size_>::Mode() const {
   auto const spectrum = PowerSpectrum();
-  typename std::map<AngularFrequency, Square<Scalar>>::const_iterator max =
-      spectrum.end();
+  typename std::map<AngularFrequency,
+                    typename Hilbert<Value>::InnerProductType>::const_iterator
+      max = spectrum.end();
 
   // Only look at the first size / 2 + 1 elements because the spectrum is
   // symmetrical.
