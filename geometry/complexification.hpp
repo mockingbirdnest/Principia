@@ -1,6 +1,5 @@
 #pragma once
 
-#include <complex>
 #include <type_traits>
 #include <ostream>
 
@@ -11,9 +10,10 @@ namespace principia {
 namespace geometry {
 namespace internal_complexification {
 
+using quantities::Difference;
 using quantities::Product;
 using quantities::Quotient;
-using quantities::is_quantity_v;
+using quantities::Sum;
 
 template<typename Vector>
 class Complexification {
@@ -21,9 +21,6 @@ class Complexification {
   explicit Complexification(Vector const& real_part);
   explicit Complexification(Vector const& real_part,
                             Vector const& imaginary_part);
-  template<typename V = Vector,
-           typename = std::enable_if_t<std::is_same_v<V, double>>>
-  explicit Complexification(std::complex<V> const& z);
 
   Vector const& real_part() const;
   Vector const& imaginary_part() const;
@@ -49,24 +46,30 @@ Complexification<Vector> operator+(Complexification<Vector> const& right);
 template<typename Vector>
 Complexification<Vector> operator-(Complexification<Vector> const& right);
 
+template<typename L, typename Vector>
+Complexification<Sum<L, Vector>> operator+(
+    L const& left,
+    Complexification<Vector> const& right);
+template<typename Vector, typename R>
+Complexification<Sum<Vector, R>> operator+(
+    Complexification<Vector> const& left,
+    R const& right);
 template<typename Vector>
-Complexification<Vector> operator+(Vector const& left,
-                                   Complexification<Vector> const& right);
+Complexification<Vector> operator+(
+    Complexification<Vector> const& left,
+    Complexification<Vector> const& right);
+template<typename L, typename Vector>
+Complexification<Difference<L, Vector>> operator-(
+    L const& left,
+    Complexification<Vector> const& right);
+template<typename Vector, typename R>
+Complexification<Difference<Vector, R>> operator-(
+    Complexification<Vector> const& left,
+    R const& right);
 template<typename Vector>
-Complexification<Vector> operator+(Complexification<Vector> const& left,
-                                   Vector const& right);
-template<typename Vector>
-Complexification<Vector> operator+(Complexification<Vector> const& left,
-                                   Complexification<Vector> const& right);
-template<typename Vector>
-Complexification<Vector> operator-(Vector const& left,
-                                   Complexification<Vector> const& right);
-template<typename Vector>
-Complexification<Vector> operator-(Complexification<Vector> const& left,
-                                   Vector const& right);
-template<typename Vector>
-Complexification<Vector> operator-(Complexification<Vector> const& left,
-                                   Complexification<Vector> const& right);
+Complexification<Vector> operator-(
+    Complexification<Vector> const& left,
+    Complexification<Vector> const& right);
 
 template<typename L, typename RVector>
 Complexification<Product<L, RVector>> operator*(

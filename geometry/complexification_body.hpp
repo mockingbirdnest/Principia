@@ -16,11 +16,6 @@ Complexification<Vector>::Complexification(Vector const& real_part,
     : real_part_(real_part), imaginary_part_(imaginary_part) {}
 
 template<typename Vector>
-template<typename V, typename>
-Complexification<Vector>::Complexification(std::complex<V> const& z)
-    : real_part_(z.real()), imaginary_part_(z.imag()) {}
-
-template<typename Vector>
 Vector const& Complexification<Vector>::real_part() const {
   return real_part_;
 }
@@ -67,18 +62,19 @@ Complexification<Vector> operator-(Complexification<Vector> const& right) {
   return Complexification<Vector>{-right.real_part(), -right.imaginary_part()};
 }
 
-template<typename Vector>
-Complexification<Vector> operator+(Vector const& left,
-                                   Complexification<Vector> const& right) {
-  return Complexification<Vector>{left + right.real_part(),
-                                  right.imaginary_part()};
+template<typename L, typename Vector>
+Complexification<Sum<L, Vector>> operator+(
+    L const& left,
+    Complexification<Vector> const& right) {
+  return Complexification<Sum<L, Vector>>{left + right.real_part(),
+                                          right.imaginary_part()};
 }
 
-template<typename Vector>
-Complexification<Vector> operator+(Complexification<Vector> const& left,
-                                   Vector const& right) {
-  return Complexification<Vector>{left.real_part() + right,
-                                  left.imaginary_part()};
+template<typename Vector, typename R>
+Complexification<Sum<Vector, R>> operator+(Complexification<Vector> const& left,
+                                           R const& right) {
+  return Complexification<Sum<Vector, R>>{left.real_part() + right,
+                                          left.imaginary_part()};
 }
 
 template<typename Vector>
@@ -89,18 +85,20 @@ Complexification<Vector> operator+(Complexification<Vector> const& left,
       left.imaginary_part() + right.imaginary_part()};
 }
 
-template<typename Vector>
-Complexification<Vector> operator-(Vector const& left,
-                                   Complexification<Vector> const& right) {
-  return Complexification<Vector>{left - right.real_part(),
-                                  -right.imaginary_part()};
+template<typename L, typename Vector>
+Complexification<Difference<L, Vector>> operator-(
+    L const& left,
+    Complexification<Vector> const& right) {
+  return Complexification<Difference<L, Vector>>{left - right.real_part(),
+                                                 right.imaginary_part()};
 }
 
-template<typename Vector>
-Complexification<Vector> operator-(Complexification<Vector> const& left,
-                                   Vector const& right) {
-  return Complexification<Vector>{left.real_part() - right,
-                                  left.imaginary_part()};
+template<typename Vector, typename R>
+Complexification<Difference<Vector, R>> operator-(
+    Complexification<Vector> const& left,
+    R const& right) {
+  return Complexification<Difference<Vector, R>>{left.real_part() - right,
+                                                 left.imaginary_part()};
 }
 
 template<typename Vector>
@@ -168,13 +166,12 @@ Complexification<Quotient<LVector, RVector>> operator/(
   auto const& ri = right.imaginary_part();
   auto const& denominator = rr * rr + ri * ri;
   return Complexification<Quotient<LVector, RVector>>(
-      (lr * rr + li * ri) / denominator,
-      (-lr * ri + li * rr) / denominator);
+      (lr * rr + li * ri) / denominator, (-lr * ri + li * rr) / denominator);
 }
 
 template<typename Vector>
 std::ostream& operator<<(std::ostream& out, Complexification<Vector> const& z) {
-  return out << z.real_part() << " + i " << z.imaginary_part();
+  return out << z.real_part() << " + " << z.imaginary_part() << " i";
 }
 
 }  // namespace internal_complexification

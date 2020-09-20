@@ -1,6 +1,8 @@
 ﻿
 #include "geometry/complexification.hpp"
 
+#include <sstream>
+
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -102,6 +104,10 @@ TEST_F(ComplexificationTest, Norm²) {
               Eq((vx * vx.Conjugate() +
                   vy * vy.Conjugate() +
                   vz * vz.Conjugate()).real_part()));
+}
+
+TEST_F(ComplexificationTest, Logging) {
+  EXPECT_THAT((std::stringstream() << (2 * i_ - 1)).str(), Eq("-1 + 2 i"));
 }
 
 }  // namespace geometry
