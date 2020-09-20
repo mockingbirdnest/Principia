@@ -98,10 +98,10 @@ TEST_F(ComplexificationTest, Norm²) {
   auto const vy = v1_.coordinates().y + i_ * v2_.coordinates().y;
   auto const vz = v1_.coordinates().z + i_ * v2_.coordinates().z;
 
-  EXPECT_THAT(
-      v.Norm²(),
-      Eq((vx * vx.Conjugate() + vy * vy.Conjugate() + vz * vz.Conjugate())
-             .real_part()));
+  EXPECT_THAT(v.Norm²(),
+              Eq((vx * vx.Conjugate() +
+                  vy * vy.Conjugate() +
+                  vz * vz.Conjugate()).real_part()));
 }
 
 }  // namespace geometry
