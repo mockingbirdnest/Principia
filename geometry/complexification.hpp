@@ -19,7 +19,10 @@ using quantities::Sum;
 template<typename Vector>
 class Complexification {
  public:
-  explicit Complexification(Vector const& real_part);
+  Complexification() = default;
+  template<typename V,
+           typename = std::enable_if_t<std::is_convertible_v<V, Vector>>>
+  Complexification(V const& real_part);
   explicit Complexification(Vector const& real_part,
                             Vector const& imaginary_part);
 
@@ -30,9 +33,18 @@ class Complexification {
 
   typename Hilbert<Vector>::InnerProductType Norm²() const;
 
+  template<typename R>
+  Complexification& operator+=(R const& right);
+  template<typename R>
+  Complexification& operator-=(R const& right);
+  template<typename R>
+  Complexification& operator*=(R const& right);
+  template<typename R>
+  Complexification& operator/=(R const& right);
+
  private:
-  Vector real_part_;
-  Vector imaginary_part_;
+  Vector real_part_{};
+  Vector imaginary_part_{};
 };
 
 template<typename Vector>

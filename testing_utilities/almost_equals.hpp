@@ -7,6 +7,7 @@
 #include <complex>
 #include <string>
 
+#include "geometry/complexification.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
@@ -49,7 +50,7 @@ class AlmostEqualsMatcher final {
                        testing::MatchResultListener* listener) const;
   bool MatchAndExplain(double actual,
                        testing::MatchResultListener* listener) const;
-  bool MatchAndExplain(std::complex<double> actual,
+  bool MatchAndExplain(geometry::Complexification<double> actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar>
   bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,

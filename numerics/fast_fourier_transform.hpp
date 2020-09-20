@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bits.hpp"
+#include "geometry/complexification.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/interval.hpp"
 #include "quantities/named_quantities.hpp"
@@ -17,6 +18,7 @@ namespace numerics {
 namespace internal_fast_fourier_transform {
 
 using base::FloorLog2;
+using geometry::Complexification;
 using geometry::Hilbert;
 using geometry::Interval;
 using quantities::AngularFrequency;
@@ -61,9 +63,14 @@ class FastFourierTransform {
   Time const Δt_;
   AngularFrequency const ω_;
 
+  // A type obtained by complexifying the signal or frequency space, and
+  // discarding the units.  The Fourier transform is computed in place, so that
+  // the same member successively holds the signal and frequency.
+  using Complex = Complexification<typename Hilbert<Value>::NormalizedType>;
+
   // The elements of transform_ are in SI units of Value.  They are spaced in
   // frequency by ω_.
-  std::array<std::complex<double>, size> transform_;
+  std::array<Complex, size> transform_;
 
   friend class FastFourierTransformTest;
 };

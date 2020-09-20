@@ -92,16 +92,18 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 
 template<typename T>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    std::complex<double> const actual,
+    geometry::Complexification<double> const actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
     return MatchAndExplainIdentical(listener);
   }
   std::int64_t const real_distance =
-      NormalizedNaNULPDistance(actual.real(), expected_.real());
+      NormalizedNaNULPDistance(actual.real_part(),
+                               expected_.real_part());
   std::int64_t const imag_distance =
-      NormalizedNaNULPDistance(actual.imag(), expected_.imag());
+      NormalizedNaNULPDistance(actual.imaginary_part(),
+                               expected_.imaginary_part());
   std::int64_t const max_distance = std::max({real_distance, imag_distance});
   bool const real_is_max = real_distance == max_distance;
   bool const imag_is_max = imag_distance == max_distance;

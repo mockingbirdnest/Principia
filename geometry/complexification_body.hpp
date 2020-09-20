@@ -8,7 +8,8 @@ namespace geometry {
 namespace internal_complexification {
 
 template<typename Vector>
-Complexification<Vector>::Complexification(Vector const& real_part)
+template<typename V, typename>
+Complexification<Vector>::Complexification(V const& real_part)
     : real_part_(real_part) {}
 
 template<typename Vector>
@@ -37,6 +38,30 @@ typename Hilbert<Vector>::InnerProductType Complexification<Vector>::Norm²()
   // TODO(egg): Hilbert::Norm².
   return Hilbert<Vector>::InnerProduct(real_part_, real_part_) +
          Hilbert<Vector>::InnerProduct(imaginary_part_, imaginary_part_);
+}
+
+template<typename Vector>
+template<typename R>
+Complexification<Vector>& Complexification<Vector>::operator+=(R const& right) {
+  return *this = *this + right;
+}
+
+template<typename Vector>
+template<typename R>
+Complexification<Vector>& Complexification<Vector>::operator-=(R const& right) {
+  return *this = *this - right;
+}
+
+template<typename Vector>
+template<typename R>
+Complexification<Vector>& Complexification<Vector>::operator*=(R const& right) {
+  return *this = *this * right;
+}
+
+template<typename Vector>
+template<typename R>
+Complexification<Vector>& Complexification<Vector>::operator/=(R const& right) {
+  return *this = *this / right;
 }
 
 template<typename Vector>

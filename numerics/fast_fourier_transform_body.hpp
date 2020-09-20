@@ -24,42 +24,41 @@ namespace si = quantities::si;
 
 // Implementation of the Danielson-Lánczos algorithm using templates for
 // recursion and template specializations for short FFTs [DL42, Myr07].
-template<int array_size_, int chunk_size_ = array_size_>
+template<typename Complex, int array_size_, int chunk_size_ = array_size_>
 class DanielsonLánczos {
  public:
-  static void Transform(typename std::array<std::complex<double>,
+  static void Transform(typename std::array<Complex,
                                             array_size_>::iterator const begin);
 };
 
-template<int array_size_>
-class DanielsonLánczos<array_size_, 1> {
+template<typename Complex, int array_size_>
+class DanielsonLánczos<Complex, array_size_, 1> {
  public:
-  static void Transform(typename std::array<std::complex<double>,
+  static void Transform(typename std::array<Complex,
                                             array_size_>::iterator const begin);
 };
 
-template<int array_size_>
-class DanielsonLánczos<array_size_, 2> {
+template<typename Complex, int array_size_>
+class DanielsonLánczos<Complex, array_size_, 2> {
  public:
-  static void Transform(typename std::array<std::complex<double>,
+  static void Transform(typename std::array<Complex,
                                             array_size_>::iterator const begin);
 };
 
-template<int array_size_>
-class DanielsonLánczos<array_size_, 4> {
+template<typename Complex, int array_size_>
+class DanielsonLánczos<Complex, array_size_, 4> {
  public:
-  static void Transform(typename std::array<std::complex<double>,
+  static void Transform(typename std::array<Complex,
                                             array_size_>::iterator const begin);
 };
 
-template<int array_size_, int chunk_size_>
-void DanielsonLánczos<array_size_, chunk_size_>::Transform(
-    typename std::array<std::complex<double>, array_size_>::iterator const
-        begin) {
+template<typename Complex, int array_size_, int chunk_size_>
+void DanielsonLánczos<Complex, array_size_, chunk_size_>::Transform(
+    typename std::array<Complex, array_size_>::iterator const begin) {
   constexpr int N = chunk_size_;
 
-  DanielsonLánczos<array_size_, N / 2>::Transform(begin);
-  DanielsonLánczos<array_size_, N / 2>::Transform(begin + N / 2);
+  DanielsonLánczos<Complex, array_size_, N / 2>::Transform(begin);
+  DanielsonLánczos<Complex, array_size_, N / 2>::Transform(begin + N / 2);
 
   Angle const θ = π * Radian / N;
   double const sin_θ = Sin(θ);
@@ -67,8 +66,8 @@ void DanielsonLánczos<array_size_, chunk_size_>::Transform(
   double const sin_2θ = Sin(2 * θ);
   // Computing e⁻²ⁱ⁽ᵏ⁺¹⁾ᶿ as e⁻²ⁱᵏᶿ + e⁻²ⁱᵏᶿ (e⁻²ⁱᶿ - 1) rather than e⁻²ⁱᵏᶿe⁻²ⁱᶿ
   // improves accuracy [Myr07].
-  std::complex<double> const e⁻²ⁱᶿ_minus_1(cos_2θ_minus_1, -sin_2θ);
-  std::complex<double> e⁻²ⁱᵏᶿ = 1;
+  Complexification<double> const e⁻²ⁱᶿ_minus_1(cos_2θ_minus_1, -sin_2θ);
+  Complexification<double> e⁻²ⁱᵏᶿ = 1;
   auto it = begin;
   for (int k = 0; k < N / 2; ++it, ++k, e⁻²ⁱᵏᶿ += e⁻²ⁱᵏᶿ * (e⁻²ⁱᶿ_minus_1)) {
     auto const t = *(it + N / 2) * e⁻²ⁱᵏᶿ;
@@ -77,24 +76,21 @@ void DanielsonLánczos<array_size_, chunk_size_>::Transform(
   }
 }
 
-template<int array_size_>
-void DanielsonLánczos<array_size_, 1>::Transform(
-    typename std::array<std::complex<double>, array_size_>::iterator const
-        begin) {}
+template<typename Complex, int array_size_>
+void DanielsonLánczos<Complex, array_size_, 1>::Transform(
+    typename std::array<Complex, array_size_>::iterator const begin) {}
 
-template<int array_size_>
-void DanielsonLánczos<array_size_, 2>::Transform(
-    typename std::array<std::complex<double>, array_size_>::iterator const
-        begin) {
+template<typename Complex, int array_size_>
+void DanielsonLánczos<Complex, array_size_, 2>::Transform(
+    typename std::array<Complex, array_size_>::iterator const begin) {
   auto const t = *(begin + 1);
   *(begin + 1) = *begin - t;
   *begin += t;
 }
 
-template<int array_size_>
-void DanielsonLánczos<array_size_, 4>::Transform(
-    typename std::array<std::complex<double>, array_size_>::iterator const
-        begin) {
+template<typename Complex, int array_size_>
+void DanielsonLánczos<Complex, array_size_, 4>::Transform(
+    typename std::array<Complex, array_size_>::iterator const begin) {
   {
     auto const t = *(begin + 1);
     *(begin + 1) = *begin - t;
@@ -102,8 +98,8 @@ void DanielsonLánczos<array_size_, 4>::Transform(
   }
   {
     auto const t = *(begin + 3);
-    *(begin + 3) = {(begin + 2)->imag() - t.imag(),
-                    t.real() - (begin + 2)->real()};
+    *(begin + 3) = {(begin + 2)->imaginary_part() - t.imaginary_part(),
+                    t.real_part() - (begin + 2)->real_part()};
     *(begin + 2) += t;
   }
   {
@@ -142,10 +138,11 @@ FastFourierTransform<Value, size_>::FastFourierTransform(
        ++it,
        bit_reversed_index = BitReversedIncrement(bit_reversed_index,
                                                  log2_size)) {
-    transform_[bit_reversed_index] = *it / si::Unit<Value>;
+    transform_[bit_reversed_index] =
+        *it / si::Unit<typename Hilbert<Value>::NormType>;
   }
 
-  DanielsonLánczos<size>::Transform(transform_.begin());
+  DanielsonLánczos<Complex, size>::Transform(transform_.begin());
 }
 
 template<typename Value, std::size_t size_>
@@ -164,7 +161,7 @@ FastFourierTransform<Value, size_>::PowerSpectrum() const {
     spectrum.emplace_hint(
         spectrum.end(),
         k * ω_,
-        std::norm(coefficient) *
+        coefficient.Norm²() *
             si::Unit<typename Hilbert<Value>::InnerProductType>);
     ++k;
   }

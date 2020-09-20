@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 
+#include "geometry/complexification.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -37,10 +38,10 @@ class FastFourierTransformTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using Complex = std::complex<double>;
+  using Complex = Complexification<double>;
 
   template<typename Scalar, std::size_t size_>
-  std::array<std::complex<double>, size_> Coefficients(
+  std::array<Complexification<double>, size_> Coefficients(
       FastFourierTransform<Scalar, size_> const& fft) {
     return fft.transform_;
   }
@@ -175,8 +176,9 @@ TEST_F(FastFourierTransformTest, Vector) {
   Time const Δt = 1 * Second;
   std::vector<Displacement<World>> signal;
   for (int n = 0; n < FFT::size; ++n) {
-    signal.push_back(Displacement<World>(
-        {Sin(n * ω * Δt) * Metre, Cos(n * ω * Δt) * Metre, 1 * Metre}));
+    signal.push_back(Displacement<World>({Sin(n * ω * Δt) * Metre,
+                                          Cos(n * ω * Δt) * Metre,
+                                          Sin(2 * n * ω * Δt) * Metre}));
   }
 
   // Won't fit on the stack.
