@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include <type_traits>
@@ -27,7 +28,7 @@ class Complexification {
 
   Complexification Conjugate() const;
 
-  typename Hilbert<Vector>::InnerProductType Norm�() const;
+  typename Hilbert<Vector>::InnerProductType Norm²() const;
 
  private:
   Vector real_part_;

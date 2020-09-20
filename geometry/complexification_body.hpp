@@ -1,3 +1,4 @@
+ï»¿
 #pragma once
 
 #include "geometry/complexification.hpp"
@@ -31,9 +32,9 @@ Complexification<Vector> Complexification<Vector>::Conjugate() const {
 }
 
 template<typename Vector>
-typename Hilbert<Vector>::InnerProductType Complexification<Vector>::Norm²()
+typename Hilbert<Vector>::InnerProductType Complexification<Vector>::NormÂ²()
     const {
-  // TODO(egg): Hilbert::Norm².
+  // TODO(egg): Hilbert::NormÂ².
   return Hilbert<Vector>::InnerProduct(real_part_, real_part_) +
          Hilbert<Vector>::InnerProduct(imaginary_part_, imaginary_part_);
 }
