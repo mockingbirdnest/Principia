@@ -23,8 +23,7 @@ class Complexification {
   template<typename V,
            typename = std::enable_if_t<std::is_convertible_v<V, Vector>>>
   Complexification(V const& real_part);  // NOLINT(runtime/explicit)
-  explicit Complexification(Vector const& real_part,
-                            Vector const& imaginary_part);
+  Complexification(Vector const& real_part, Vector const& imaginary_part);
 
   Vector const& real_part() const;
   Vector const& imaginary_part() const;
