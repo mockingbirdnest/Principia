@@ -99,7 +99,7 @@ using internal_frequency_analysis::IncrementalProjection;
 using internal_frequency_analysis::PreciseMode;
 using internal_frequency_analysis::Projection;
 
-mathematica::Logger logger(TEMP_DIR / "frequency_analysis.wl");
+//mathematica::Logger logger(TEMP_DIR / "frequency_analysis.wl");
 
 }  // namespace frequency_analysis
 }  // namespace numerics

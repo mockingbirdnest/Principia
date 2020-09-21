@@ -566,6 +566,8 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
 #else
 
 TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
+  mathematica::Logger logger(TEMP_DIR / "frequency_analysis.wl",
+                             /*make_unique=*/false);
   SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
@@ -593,8 +595,8 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
   // TODO(phl): Use a switch statement with macros.
   auto const io_piecewise_poisson_series =
       io_trajectory.ToPiecewisePoissonSeries<7>(t_min, t_max);
-  LOG(ERROR)<<io_piecewise_poisson_series.t_min()<<" "<<t_min;
-  LOG(ERROR)<<io_piecewise_poisson_series.t_max()<<" "<<t_max;
+  //LOG(ERROR)<<io_piecewise_poisson_series.t_min()<<" "<<t_min;
+  //LOG(ERROR)<<io_piecewise_poisson_series.t_max()<<" "<<t_max;
 
   std::vector<Displacement<ICRS>> displacements;
   std::vector<std::tuple<Instant, Displacement<ICRS>>> trajectory;
@@ -606,10 +608,10 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
         io_trajectory.EvaluatePosition(t) - ICRS::origin;
     trajectory.push_back({t, current_trajectory});
   }
-  frequency_analysis::logger.Append(
-      "displacements", displacements, mathematica::ExpressIn(Metre));
-  frequency_analysis::logger.Append(
-      "trajectory", trajectory, mathematica::ExpressIn(Metre, Second));
+  //frequency_analysis::logger.Append(
+  //    "displacements", displacements, mathematica::ExpressIn(Metre));
+  //frequency_analysis::logger.Append(
+  //    "trajectory", trajectory, mathematica::ExpressIn(Metre, Second));
 
   auto dot = [t_min, t_max](auto const& left,
                             auto const& right,
@@ -619,42 +621,55 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
 
   int step = 0;
   auto angular_frequency_calculator =
-      [&dot, &step, t_min, t_max](
+      [&dot, &logger, &step, t_min, t_max](
           auto const& residual) -> std::optional<AngularFrequency> {
-    Length max_residual;
-    std::vector<Displacement<ICRS>> residuals;
-    for (int i = 0; i <= 1000; ++i) {
-      auto const current_residual =
-          residual(t_min + i * (t_max - t_min) / 1000);
-      residuals.push_back(current_residual);
-      max_residual = std::max(max_residual, current_residual.Norm());
-    }
-    LOG(ERROR)<<"max_residual="<<max_residual;
-
     switch (step++) {
       case 0: {
         return AngularFrequency();
       }
-      case 1: {
+      case 1:
+      case 2:
+      case 3:/*
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+      case 9:
+      case 10:*/ {
+        Length max_residual;
         std::vector<Displacement<ICRS>> residuals;
         Time const Δt = (t_max - t_min) * 0x1p-10;
         for (int i = 0; i < 1 << 10; ++i) {
           residuals.push_back(residual(t_min + i * Δt));
+          max_residual = std::max(max_residual, residuals.back().Norm());
         }
+        LOG(ERROR)<<"max_residual="<<max_residual;
         auto fft =
             std::make_unique<FastFourierTransform<Displacement<ICRS>, 1 << 10>>(
                 residuals, Δt);
         auto const mode = fft->Mode();
-        LOG(ERROR)<<"period="<<2 * π/mode.midpoint();
+        LOG(ERROR) << "period=" << 2 * π * Radian / mode.midpoint();
         auto const precise_mode =
             PreciseMode(mode,
                         residual,
                         apodization::Hann<EstrinEvaluator>(t_min, t_max),
                         dot);
-        LOG(ERROR)<<"precise_period="<<2 * π/precise_mode;
+        auto const precise_period = 2 * π * Radian / precise_mode;
+        LOG(ERROR) << "precise_period=" << precise_period;
+        logger.Append(
+            "precisePeriod", precise_period, mathematica::ExpressIn(Second));
         return precise_mode;
       }
       default: {
+        Length max_residual;
+        std::vector<Displacement<ICRS>> residuals;
+        Time const Δt = (t_max - t_min) * 0x1p-10;
+        for (int i = 0; i < 1 << 10; ++i) {
+          residuals.push_back(residual(t_min + i * Δt));
+          max_residual = std::max(max_residual, residuals.back().Norm());
+        }
+        LOG(ERROR)<<"max_residual="<<max_residual;
         return std::nullopt;
       }
     }
