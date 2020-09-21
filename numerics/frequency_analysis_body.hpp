@@ -42,27 +42,26 @@ AngularFrequency PreciseMode(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Dot const& dot) {
   using Value = std::invoke_result_t<Function, Instant>;
-  using Degree0 = PoissonSeries<double, 0, Evaluator>;
+  using Degree0 =
+      PoissonSeries<typename Hilbert<Value>::NormalizedType, 0, Evaluator>;
 
   auto amplitude = [&dot, &function, &weight](AngularFrequency const& ω) {
+    constexpr int dimension = typename Hilbert<Value>::dimension;
     Instant const& t0 = weight.origin();
-    Degree0 const sin(typename Degree0::Polynomial({0}, t0),
-                      {{ω,
-                        {/*sin=*/typename Degree0::Polynomial({1}, t0),
-                         /*cos=*/typename Degree0::Polynomial({0}, t0)}}});
-    Degree0 const cos(typename Degree0::Polynomial({0}, t0),
-                      {{ω,
-                        {/*sin=*/typename Degree0::Polynomial({0}, t0),
-                         /*cos=*/typename Degree0::Polynomial({1}, t0)}}});
-    auto const sin_amplitude = dot(function, sin, weight);
-    auto const cos_amplitude = dot(function, cos, weight);
-    return sin_amplitude * sin_amplitude + cos_amplitude * cos_amplitude;
+    std::array<Degree0, 2 * dimension> const basis =
+        PoissonSeriesBasisGenerator<Degree0, dimension>::Basis(ω, t0);
+    typename Hilbert<Value>::InnerProductType result{};
+    for (int i = 0; i < basis.size(); ++i) {
+      auto const amplitude = dot(function, basis[i], weight);
+      result += amplitude * amplitude;
+    }
+    return result;
   };
 
   return GoldenSectionSearch(amplitude,
                              fft_mode.min,
                              fft_mode.max,
-                             std::greater<Square<Value>>());
+                             std::greater<>());
 }
 
 template<int degree_,

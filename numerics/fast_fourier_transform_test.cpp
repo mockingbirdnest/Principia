@@ -4,6 +4,9 @@
 #include <random>
 #include <vector>
 
+#include "geometry/complexification.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
@@ -14,6 +17,11 @@ namespace principia {
 namespace numerics {
 namespace internal_fast_fourier_transform {
 
+using geometry::Displacement;
+using geometry::Frame;
+using geometry::Handedness;
+using geometry::Inertial;
+using quantities::Cos;
 using quantities::Length;
 using quantities::Sqrt;
 using quantities::si::Metre;
@@ -25,10 +33,15 @@ using ::testing::Pair;
 
 class FastFourierTransformTest : public ::testing::Test {
  protected:
-  using Complex = std::complex<double>;
+  using World = Frame<serialization::Frame::TestTag,
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
+
+  using Complex = Complexification<double>;
 
   template<typename Scalar, std::size_t size_>
-  std::array<std::complex<double>, size_> Coefficients(
+  std::array<Complexification<double>, size_> Coefficients(
       FastFourierTransform<Scalar, size_> const& fft) {
     return fft.transform_;
   }
@@ -146,6 +159,26 @@ TEST_F(FastFourierTransformTest, Mode) {
   std::vector<Length> signal;
   for (int n = 0; n < FFT::size; ++n) {
     signal.push_back((Sin(n * ω * Δt) + noise(random)) * Metre);
+  }
+
+  // Won't fit on the stack.
+  auto transform = std::make_unique<FFT>(signal, Δt);
+
+  auto const mode = transform->Mode();
+  EXPECT_THAT(mode.midpoint(), AlmostEquals(ω, 0));
+  EXPECT_THAT(mode.measure(),
+              AlmostEquals(4 * π / FFT::size * Radian / Second, 24));
+}
+
+TEST_F(FastFourierTransformTest, Vector) {
+  using FFT = FastFourierTransform<Displacement<World>, 1 << 16>;
+  AngularFrequency const ω = 666 * π / FFT::size * Radian / Second;
+  Time const Δt = 1 * Second;
+  std::vector<Displacement<World>> signal;
+  for (int n = 0; n < FFT::size; ++n) {
+    signal.push_back(Displacement<World>({Sin(n * ω * Δt) * Metre,
+                                          Cos(n * ω * Δt) * Metre,
+                                          Sin(2 * n * ω * Δt) * Metre}));
   }
 
   // Won't fit on the stack.

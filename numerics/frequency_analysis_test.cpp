@@ -28,11 +28,12 @@ namespace principia {
 namespace numerics {
 namespace frequency_analysis {
 
+using geometry::Displacement;
+using geometry::Frame;
 using geometry::Handedness;
 using geometry::Hilbert;
 using geometry::Inertial;
 using geometry::Instant;
-using geometry::Frame;
 using geometry::Vector;
 using quantities::Abs;
 using quantities::Acceleration;
@@ -119,7 +120,7 @@ class FrequencyAnalysisTest : public ::testing::Test {
       random_polynomial4_;
 };
 
-TEST_F(FrequencyAnalysisTest, PreciseMode) {
+TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   using FFT = FastFourierTransform<Length, 1 << 16>;
   AngularFrequency const ω = 666.543 * π / FFT::size * Radian / Second;
   Time const Δt = 1 * Second;
@@ -169,6 +170,49 @@ TEST_F(FrequencyAnalysisTest, PreciseMode) {
   auto const precise_mode = PreciseMode(
       mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
   EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(6.4e-11_⑴)));
+}
+
+TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
+  using FFT = FastFourierTransform<Displacement<World>, 1 << 16>;
+  AngularFrequency const ω = 666.543 * π / FFT::size * Radian / Second;
+  Time const Δt = 1 * Second;
+
+  using Series0 = PoissonSeries<Displacement<World>, 0, HornerEvaluator>;
+  Series0::PolynomialsByAngularFrequency polynomials;
+
+  // Main harmonic.
+  polynomials.emplace(
+      ω,
+      Series0::Polynomials{
+          /*sin=*/Series0::Polynomial(
+              {Displacement<World>({1 * Metre, 2 * Metre, 3 * Metre})}, t0_),
+          /*cos=*/Series0::Polynomial(
+              {Displacement<World>({-5 * Metre, 7 * Metre, 11 * Metre})},
+              t0_)});
+  Series0 const sin(Series0::Polynomial(Displacement<World>(), t0_),
+                    polynomials);
+
+  Instant const t_min = t0_;
+  Instant const t_max = t0_ + (FFT::size - 1) * Δt;
+  std::vector<Displacement<World>> signal;
+  for (int n = 0; n < FFT::size; ++n) {
+    signal.push_back(sin(t0_ + n * Δt));
+  }
+
+  // Won't fit on the stack.
+  auto transform = std::make_unique<FFT>(signal, Δt);
+
+  // The FFT gives us an accuracy which is of the order of the number of points.
+  auto const mode = transform->Mode();
+  EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
+
+  DotImplementation dot(t_min, t_max);
+
+  // The precise analysis is only limited by our ability to pinpoint the
+  // maximum.
+  auto const precise_mode = PreciseMode(
+      mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(5.3e-10_⑴)));
 }
 
 TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {

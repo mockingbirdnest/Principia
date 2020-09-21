@@ -14,6 +14,7 @@ using base::not_constructible;
 using quantities::is_quantity;
 using quantities::is_quantity_v;
 using quantities::Product;
+using quantities::Quotient;
 using quantities::Square;
 
 // A trait that represents a Hilbert space, i.e., a space with an inner product
@@ -77,7 +78,7 @@ struct Hilbert<T, T,
   using NormType = decltype(std::declval<T>().Norm());
   static NormType Norm(T const& t);
 
-  using NormalizedType = decltype(std::declval<T>() / NormType());
+  using NormalizedType = Quotient<T, NormType>;
 };
 
 }  // namespace internal_hilbert

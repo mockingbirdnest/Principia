@@ -45,17 +45,17 @@ TEST_F(QuadratureTest, Sin) {
   EXPECT_THAT(GaussLegendre<9>(f, -2.0 * Radian, 5.0 * Radian),
               RelativeErrorFrom(ʃf, IsNear(4.8e-11_⑴)));
   EXPECT_THAT(GaussLegendre<10>(f, -2.0 * Radian, 5.0 * Radian),
-              AlmostEquals(ʃf, 2498));
+              AlmostEquals(ʃf, 2495, 2498));
   EXPECT_THAT(GaussLegendre<11>(f, -2.0 * Radian, 5.0 * Radian),
               AlmostEquals(ʃf, 20));
   EXPECT_THAT(GaussLegendre<12>(f, -2.0 * Radian, 5.0 * Radian),
-              AlmostEquals(ʃf, 6));
+              AlmostEquals(ʃf, 6, 7));
   EXPECT_THAT(GaussLegendre<13>(f, -2.0 * Radian, 5.0 * Radian),
-              AlmostEquals(ʃf, 1));
+              AlmostEquals(ʃf, 0, 1));
   EXPECT_THAT(GaussLegendre<14>(f, -2.0 * Radian, 5.0 * Radian),
-              AlmostEquals(ʃf, 1));
+              AlmostEquals(ʃf, 1, 2));
   EXPECT_THAT(GaussLegendre<15>(f, -2.0 * Radian, 5.0 * Radian),
-              AlmostEquals(ʃf, 4));
+              AlmostEquals(ʃf, 3, 4));
 }
 
 TEST_F(QuadratureTest, Sin10) {
@@ -88,11 +88,11 @@ TEST_F(QuadratureTest, Sin10) {
   EXPECT_THAT(GaussLegendre<13>(f, -2.0 * Radian, 5.0 * Radian),
               RelativeErrorFrom(ʃf, IsNear(3.7e-12_⑴)));
   EXPECT_THAT(GaussLegendre<14>(f, -2.0 * Radian, 5.0 * Radian),
-              AlmostEquals(ʃf, 422));
+              AlmostEquals(ʃf, 422, 425));
   EXPECT_THAT(GaussLegendre<15>(f, -2.0 * Radian, 5.0 * Radian),
-              AlmostEquals(ʃf, 44));
+              AlmostEquals(ʃf, 36, 50));
   EXPECT_THAT(GaussLegendre<16>(f, -2.0 * Radian, 5.0 * Radian),
-              AlmostEquals(ʃf, 152));
+              AlmostEquals(ʃf, 152, 159));
 }
 
 }  // namespace quadrature

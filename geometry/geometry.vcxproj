@@ -12,6 +12,8 @@
     <ClInclude Include="barycentre_calculator_body.hpp" />
     <ClInclude Include="cartesian_product.hpp" />
     <ClInclude Include="cartesian_product_body.hpp" />
+    <ClInclude Include="complexification.hpp" />
+    <ClInclude Include="complexification_body.hpp" />
     <ClInclude Include="frame.hpp" />
     <ClInclude Include="frame_body.hpp" />
     <ClInclude Include="hilbert.hpp" />
@@ -58,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="barycentre_calculator_test.cpp" />
+    <ClCompile Include="complexification_test.cpp" />
     <ClCompile Include="frame_test.cpp" />
     <ClCompile Include="grassmann_test.cpp" />
     <ClCompile Include="hilbert_test.cpp" />
