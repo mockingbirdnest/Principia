@@ -613,7 +613,7 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
 
   auto dot = [t_min, t_max](auto const& left,
                             auto const& right,
-                            auto const& weight) -> Square<Length> {
+                            auto const& weight) {
     return Dot(left, right, weight, t_min, t_max);
   };
 
@@ -629,28 +629,29 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
       residuals.push_back(current_residual);
       max_residual = std::max(max_residual, current_residual.Norm());
     }
-    LOG(ERROR)<<max_residual;
+    LOG(ERROR)<<"max_residual="<<max_residual;
 
     switch (step++) {
       case 0: {
         return AngularFrequency();
       }
       case 1: {
-        std::vector<Length> distances;
+        std::vector<Displacement<ICRS>> residuals;
         Time const Δt = (t_max - t_min) * 0x1p-10;
         for (int i = 0; i < 1 << 10; ++i) {
-          // TODO(phl): use Hilbert: we are squaring square roots and we should
-          // feel bad (also this would make the call sites cleaner).
-          distances.push_back(residual(t_min + i * Δt).Norm());
+          residuals.push_back(residual(t_min + i * Δt));
         }
-        auto fft = std::make_unique<FastFourierTransform<Length, 1 << 10>>(
-            distances, Δt);
+        auto fft =
+            std::make_unique<FastFourierTransform<Displacement<ICRS>, 1 << 10>>(
+                residuals, Δt);
         auto const mode = fft->Mode();
-        auto const precise_mode = PreciseMode(
-            mode,
-            [&residual](auto const& t) { return residual(t).Norm(); },
-            apodization::Hann<EstrinEvaluator>(t_min, t_max),
-            dot);
+        LOG(ERROR)<<"period="<<2 * π/mode.midpoint();
+        auto const precise_mode =
+            PreciseMode(mode,
+                        residual,
+                        apodization::Hann<EstrinEvaluator>(t_min, t_max),
+                        dot);
+        LOG(ERROR)<<"precise_period="<<2 * π/precise_mode;
         return precise_mode;
       }
       default: {
