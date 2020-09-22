@@ -54,6 +54,11 @@ TEST_F(RootFindersTest, SquareRoots) {
     } else {
       EXPECT_THAT(evaluations, AllOf(Ge(49), Le(58)));
     }
+
+    evaluations = 0;
+    EXPECT_THAT(Brent(equation, t_0, t_max) - t_0,
+                AlmostEquals(Sqrt(n / si::Unit<Acceleration>), 0, 1));
+    EXPECT_THAT(evaluations, AllOf(Ge(7), Le(15)));
   }
 }
 

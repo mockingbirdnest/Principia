@@ -17,6 +17,8 @@ namespace internal_root_finders {
 
 using geometry::Barycentre;
 using geometry::Sign;
+using quantities::Abs;
+using quantities::Difference;
 using quantities::Square;
 using quantities::Sqrt;
 
@@ -34,9 +36,9 @@ Argument Bisect(Function f,
   if (f_lower == zero) {
     return lower_bound;
   }
-  CHECK(f_lower > zero && zero > f_upper || f_lower < zero && zero < f_upper)
-      << "\nlower: " << lower_bound << " :-> " << f_lower << ", "
-      << "\nupper: " << upper_bound << " :-> " << f_upper;
+  CHECK(Sign(f_lower) != Sign(f_upper))
+      << "\nlower: " << lower_bound << u8" ↦ " << f_lower << ", "
+      << "\nupper: " << upper_bound << u8" ↦ " << f_upper;
   Argument lower = lower_bound;
   Argument upper = upper_bound;
   for (;;) {
@@ -55,6 +57,106 @@ Argument Bisect(Function f,
       lower = middle;
     }
   }
+}
+
+// The implementation is translated from the ALGOL 60 in [Bre73], chapter 4,
+// section 6, with the notation adjusted to more closely mirror the formulæ from
+// the preceding sections.
+template<typename Argument, typename Function>
+Argument Brent(Function f,
+               Argument const& lower_bound,
+               Argument const& upper_bound) {
+  using Value = decltype(f(lower_bound));
+  Value const zero{};
+
+  // We do not use std::numeric_limits<double>::epsilon, because it is 2ϵ in
+  // Brent’s notation: Brent uses ϵ = β^(1-τ) / 2 for rounded arithmetic, thus
+  // here ϵ = 2^-τ, see (2.9).
+  constexpr double ϵ = 0x1p-53;
+
+  Argument a = lower_bound;
+  Argument b = upper_bound;
+  Argument c;
+
+  Difference<Argument> d;
+  Difference<Argument> e;
+
+  Value f_a = f(a);
+  Value f_b = f(b);
+  Value f_c;
+
+  if (f_a == zero) {
+    return a;
+  }
+  if (f_b == zero) {
+    return b;
+  }
+  CHECK(Sign(f_a) != Sign(f_b))
+      << "\nlower: " << lower_bound << u8" ↦ " << f_a << ", "
+      << "\nupper: " << upper_bound << u8" ↦ " << f_b;
+
+interpolation:
+  c = a;
+  f_c = f_a;
+  d = e = b - a;
+extrapolation:
+  if (Abs(f_c) < Abs(f_b)) {
+    a = b;
+    b = c;
+    c = a;
+    f_a = f_b;
+    f_b = f_c;
+    f_c = f_a;
+  }
+  Difference<Argument> const δ = 2 * ϵ * Abs(b - Argument{});
+  Difference<Argument> const m = 0.5 * (c - b);
+  if (Abs(m) > δ && f_b != zero) {
+    // See if a bisection is forced.
+    if (Abs(e) < δ || Abs(f_a) <= Abs(f_b)) {
+      d = e = m;
+    } else {
+      double const s = f_b / f_a;
+      Difference<Argument> p;
+      double q;
+      if (a == c) {
+        // Linear interpolation.
+        p = 2 * m * s;
+        q = 1 - s;
+      } else {
+        // Inverse quadratic interpolation.
+        q = f_a / f_c;
+        double const r = f_b / f_c;
+        p = s * (2 * m * q * (q - r) - (b - a) * (r - 1));
+        q = (q - 1) * (r - 1) * (s - 1);
+      }
+      if (Sign(p).is_positive()) {
+        q = -q;
+      } else {
+        p = -p;
+      }
+      // NOTE(egg): Brent writes s := e := d, wherein s := e is dimensionally
+      // nonsense. That value of s is only used in the right-hand side of the
+      // second inequality below, by which time neither e nor d has changed, so
+      // we just use e (this inequality is the negation of |p/q| ≥ ½|e| from
+      // section 2).
+      e = d;
+      if (2 * p < 3 * m * q - Abs(δ * q) && p < Abs(0.5 * e * q)) {
+        d = p / q;
+      } else {
+        d = e = m;
+      }
+    }
+    a = b;
+    f_a = f_b;
+    b += Abs(d) > δ ? d : δ * Sign(m);
+    f_b = f(b);
+    if (Sign(f_b) == Sign(f_c)) {
+      goto interpolation;
+    } else {
+      goto extrapolation;
+    }
+  }
+  return b;
 }
 
 // See https://en.wikipedia.org/wiki/Golden-section_search for a description of
