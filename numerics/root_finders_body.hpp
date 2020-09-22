@@ -115,30 +115,26 @@ extrapolation:
     if (Abs(e) < δ || Abs(f_a) <= Abs(f_b)) {
       d = e = m;
     } else {
-      double const s = f_b / f_a;
       Difference<Argument> p;
       double q;
       if (a == c) {
         // Linear interpolation.
+        double const s = f_b / f_a;
         p = 2 * m * s;
         q = 1 - s;
       } else {
         // Inverse quadratic interpolation.
-        q = f_a / f_c;
-        double const r = f_b / f_c;
-        p = s * (2 * m * q * (q - r) - (b - a) * (r - 1));
-        q = (q - 1) * (r - 1) * (s - 1);
+        double const r₁ = f_a / f_c;
+        double const r₂ = f_b / f_c;
+        double const r₃ = f_b / f_a;
+        p = r₃ * (2 * m * r₁ * (r₁ - r₂) - (b - a) * (r₂ - 1));
+        q = (r₁ - 1) * (r₂ - 1) * (r₃ - 1);
       }
       if (Sign(p).is_positive()) {
         q = -q;
       } else {
         p = -p;
       }
-      // NOTE(egg): Brent writes s := e := d, wherein s := e is dimensionally
-      // nonsense. That value of s is only used in the right-hand side of the
-      // second inequality below, by which time neither e nor d has changed, so
-      // we just use e (this inequality is the negation of |p/q| ≥ ½|e| from
-      // section 2).
       e = d;
       if (2 * p < 3 * m * q - Abs(δ * q) && p < Abs(0.5 * e * q)) {
         d = p / q;
