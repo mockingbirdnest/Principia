@@ -180,7 +180,7 @@ PoissonSeries<Value, degree_, Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::AtOrigin(
     Instant const& origin) const {
   Time const shift = origin - origin_;
-  auto aperiodic = aperiodic_.AtOrigin(origin);
+  auto const aperiodic = aperiodic_.AtOrigin(origin);
 
   PolynomialsByAngularFrequency periodic;
   for (auto const& [ω, polynomials] : periodic_) {
@@ -192,7 +192,7 @@ PoissonSeries<Value, degree_, Evaluator>::AtOrigin(
         Polynomials{/*sin=*/sin * Cos(ω * shift) - cos * Sin(ω * shift),
                     /*cos=*/sin * Sin(ω * shift) + cos * Cos(ω * shift)});
   }
-  return {std::move(aperiodic), std::move(periodic)};
+  return {aperiodic, periodic};
 }
 
 template<typename Value, int degree_,
@@ -209,7 +209,7 @@ PoissonSeries<Value, degree_, Evaluator>::Primitive() const {
         ω,
         AngularFrequencyPrimitive<Value, degree_, Evaluator>(ω, polynomials));
   }
-  return Result{std::move(aperiodic), std::move(periodic)};
+  return Result{aperiodic, periodic};
 }
 
 template<typename Value, int degree_,
@@ -334,7 +334,7 @@ PoissonSeries<Value, rdegree_, Evaluator>
 operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PoissonSeries<Value, rdegree_, Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto aperiodic = -right.aperiodic_;
+  auto const aperiodic = -right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
     periodic.emplace_hint(
         periodic.cend(),
@@ -342,7 +342,7 @@ operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
         typename Result::Polynomials{/*sin=*/-polynomials.sin,
                                      /*cos=*/-polynomials.cos});
   }
-  return {std::move(aperiodic), std::move(periodic)};
+  return {aperiodic, periodic};
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -352,7 +352,7 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto aperiodic = left.aperiodic_ + right.aperiodic_;
+  auto const aperiodic = left.aperiodic_ + right.aperiodic_;
   auto it_left = left.periodic_.cbegin();
   auto it_right = right.periodic_.cbegin();
   while (it_left != left.periodic_.cend() ||
@@ -395,7 +395,7 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       ++it_right;
     }
   }
-  return {std::move(aperiodic), std::move(periodic)};
+  return {aperiodic, periodic};
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -405,7 +405,7 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto aperiodic = left.aperiodic_ - right.aperiodic_;
+  auto const aperiodic = left.aperiodic_ - right.aperiodic_;
   auto it_left = left.periodic_.cbegin();
   auto it_right = right.periodic_.cbegin();
   while (it_left != left.periodic_.cend() ||
@@ -448,7 +448,7 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       ++it_right;
     }
   }
-  return {std::move(aperiodic), std::move(periodic)};
+  return {aperiodic, periodic};
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -458,7 +458,7 @@ operator*(Scalar const& left,
           PoissonSeries<Value, degree_, Evaluator> const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto aperiodic = left * right.aperiodic_;
+  auto const aperiodic = left * right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
     periodic.emplace_hint(
         periodic.cend(),
@@ -466,7 +466,7 @@ operator*(Scalar const& left,
         typename Result::Polynomials{/*sin=*/left * polynomials.sin,
                                      /*cos=*/left * polynomials.cos});
   }
-  return {std::move(aperiodic), std::move(periodic)};
+  return {aperiodic, periodic};
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -476,7 +476,7 @@ operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto aperiodic = left.aperiodic_ * right;
+  auto const aperiodic = left.aperiodic_ * right;
   for (auto const& [ω, polynomials] : left.periodic_) {
     periodic.emplace_hint(
         periodic.cend(),
@@ -484,7 +484,7 @@ operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
         typename Result::Polynomials{/*sin=*/polynomials.sin * right,
                                      /*cos=*/polynomials.cos * right});
   }
-  return {std::move(aperiodic), std::move(periodic)};
+  return {aperiodic, periodic};
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -494,7 +494,7 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto aperiodic = left.aperiodic_ / right;
+  auto const aperiodic = left.aperiodic_ / right;
   for (auto const& [ω, polynomials] : left.periodic_) {
     periodic.emplace_hint(
         periodic.cend(),
@@ -502,7 +502,7 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
         typename Result::Polynomials{/*sin=*/polynomials.sin / right,
                                      /*cos=*/polynomials.cos / right});
   }
-  return {std::move(aperiodic), std::move(periodic)};
+  return {aperiodic, periodic};
 }
 
 template<typename LValue, typename RValue,
