@@ -115,9 +115,7 @@ auto Multiply(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     }
   }
 
-  return Result(typename Result::PrivateConstructor{},
-                std::move(aperiodic),
-                std::move(periodic));
+  return Result(std::move(aperiodic), periodic);
 }
 
 template<typename Value, int degree_,
@@ -249,9 +247,8 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
-    PrivateConstructor,
     Polynomial aperiodic,
-    std::vector<AngularFrequencyAndPolynomials> periodic)
+    std::vector<AngularFrequencyAndPolynomials>& periodic)
     : origin_(aperiodic.origin()),
       aperiodic_(std::move(aperiodic)) {
   // The |periodic| vector may have elements with positive or negative angular
