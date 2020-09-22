@@ -106,6 +106,14 @@ class PoissonSeries {
   PoissonSeries& operator-=(PoissonSeries<V, d, E> const& right);
 
  private:
+  using AngularFrequencyAndPolynomials =
+      std::pair<AngularFrequency, Polynomials>;
+
+  struct PrivateConstructor {};
+  PoissonSeries(PrivateConstructor,
+                Polynomial aperiodic,
+                std::vector<AngularFrequencyAndPolynomials> periodic);
+
   Instant origin_;  // Common to all polynomials.
   Polynomial aperiodic_;
   // All the keys in this map are positive.
