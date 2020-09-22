@@ -99,24 +99,18 @@ auto Multiply(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   }
   for (auto const& [ωl, polynomials_left] : left.periodic_) {
     for (auto const& [ωr, polynomials_right] : right.periodic_) {
+      auto const cos_cos = product(polynomials_left.cos, polynomials_right.cos);
+      auto const cos_sin = product(polynomials_left.cos, polynomials_right.sin);
+      auto const sin_cos = product(polynomials_left.sin, polynomials_right.cos);
+      auto const sin_sin = product(polynomials_left.sin, polynomials_right.sin);
       terms.emplace_back(
           ωl - ωr,
-          typename Result::Polynomials{
-              /*sin=*/(product(-polynomials_left.cos, polynomials_right.sin) +
-                       product(polynomials_left.sin, polynomials_right.cos)) /
-                  2,
-              /*cos=*/(product(polynomials_left.sin, polynomials_right.sin) +
-                       product(polynomials_left.cos, polynomials_right.cos)) /
-                  2});
+          typename Result::Polynomials{/*sin=*/(-cos_sin + sin_cos) / 2,
+                                       /*cos=*/(sin_sin + cos_cos) / 2});
       terms.emplace_back(
           ωl + ωr,
-          typename Result::Polynomials{
-              /*sin=*/(product(polynomials_left.cos, polynomials_right.sin) +
-                       product(polynomials_left.sin, polynomials_right.cos)) /
-                  2,
-              /*cos=*/(product(-polynomials_left.sin, polynomials_right.sin) +
-                       product(polynomials_left.cos, polynomials_right.cos)) /
-                  2});
+          typename Result::Polynomials{/*sin=*/(cos_sin + sin_cos) / 2,
+                                       /*cos=*/(-sin_sin + cos_cos) / 2});
     }
   }
 
