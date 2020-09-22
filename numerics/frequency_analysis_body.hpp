@@ -42,7 +42,7 @@ AngularFrequency PreciseMode(
       PoissonSeries<typename Hilbert<Value>::NormalizedType, 0, Evaluator>;
 
   auto amplitude = [&dot, &function, &weight](AngularFrequency const& ω) {
-    constexpr int dimension = typename Hilbert<Value>::dimension;
+    constexpr int dimension = Hilbert<Value>::dimension;
     Instant const& t0 = weight.origin();
     std::array<Degree0, 2 * dimension> const basis =
         PoissonSeriesBasisGenerator<Degree0, dimension>::Basis(ω, t0);
