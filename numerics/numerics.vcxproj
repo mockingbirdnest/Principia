@@ -60,6 +60,7 @@
     <ClInclude Include="quadrature_body.hpp" />
     <ClInclude Include="root_finders.hpp" />
     <ClInclude Include="root_finders_body.hpp" />
+    <ClInclude Include="scale_b.h" />
     <ClInclude Include="ulp_distance.hpp" />
     <ClInclude Include="ulp_distance_body.hpp" />
     <ClInclude Include="apodization.hpp" />
@@ -96,6 +97,7 @@
     <ClCompile Include="polynomial_test.cpp" />
     <ClCompile Include="quadrature_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />
+    <ClCompile Include="scale_b_test.cpp" />
     <ClCompile Include="unbounded_arrays_test.cpp" />
     <ClCompile Include="чебышёв_series_test.cpp" />
   </ItemGroup>
