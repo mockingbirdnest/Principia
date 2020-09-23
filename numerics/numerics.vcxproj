@@ -60,6 +60,7 @@
     <ClInclude Include="quadrature_body.hpp" />
     <ClInclude Include="root_finders.hpp" />
     <ClInclude Include="root_finders_body.hpp" />
+    <ClInclude Include="scale_b.h" />
     <ClInclude Include="ulp_distance.hpp" />
     <ClInclude Include="ulp_distance_body.hpp" />
     <ClInclude Include="apodization.hpp" />

@@ -5,11 +5,13 @@
 
 #include <algorithm>
 #include <vector>
+#include <limits>
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "numerics/double_precision.hpp"
+#include "numerics/scale_b.h"
 
 namespace principia {
 namespace numerics {
@@ -36,7 +38,7 @@ Argument Bisect(Function f,
   if (f_lower == zero) {
     return lower_bound;
   }
-  CHECK(Sign(f_lower) != Sign(f_upper))
+  CHECK_NE(Sign(f_lower), Sign(f_upper))
       << "\nlower: " << lower_bound << u8" ↦ " << f_lower << ", "
       << "\nupper: " << upper_bound << u8" ↦ " << f_upper;
   Argument lower = lower_bound;
@@ -69,10 +71,11 @@ Argument Brent(Function f,
   using Value = decltype(f(lower_bound));
   Value const zero{};
 
-  // We do not use std::numeric_limits<double>::epsilon, because it is 2ϵ in
-  // Brent’s notation: Brent uses ϵ = β^(1-τ) / 2 for rounded arithmetic, thus
-  // here ϵ = 2^-τ, see (2.9).
-  constexpr double ϵ = 0x1p-53;
+
+  // We do not use |std::numeric_limits<double>::epsilon()|, because it is 2ϵ in
+  // Brent’s notation: Brent uses ϵ = β^(1-τ) / 2 for rounded arithmetic, see
+  // (2.9).
+  constexpr double ϵ = ScaleB(0.5, 1 - std::numeric_limits<double>::digits);
 
   Argument a = lower_bound;
   Argument b = upper_bound;
@@ -91,7 +94,7 @@ Argument Brent(Function f,
   if (f_b == zero) {
     return b;
   }
-  CHECK(Sign(f_a) != Sign(f_b))
+  CHECK_NE(Sign(f_a), Sign(f_b))
       << "\nlower: " << lower_bound << u8" ↦ " << f_a << ", "
       << "\nupper: " << upper_bound << u8" ↦ " << f_b;
 

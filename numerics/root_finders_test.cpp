@@ -2,7 +2,9 @@
 #include "numerics/root_finders.hpp"
 
 #include <functional>
+#include <set>
 #include <vector>
+#include <limits>
 
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -65,7 +67,7 @@ TEST_F(RootFindersTest, SquareRoots) {
 
 TEST_F(RootFindersTest, WilkinsGuFunction) {
   // This test constructs a pathological function for which Brent is quadratic.
-  // The construction follows [WG12] and the notation therein.
+  // The construction follows [WG13] and the notation therein.
   // We will search for a root of the constructed function over [a, b].
   double const a = 1;
   double const b = 2;
@@ -80,7 +82,8 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
   // this is because that one is overly close to the machine precision, so that
   // attempting to perform as many interpolation steps as theoretically possible
   // before the bisection leads to early bisection in practice, because the
-  // interval shrinkage becomes too great as the convergent values get discretized.
+  // interval shrinkage becomes too great as the convergent values get
+  // discretized.
   double const δ = 0x1p-50;
   // The factor p theoretically only needs to be larger than √2, but, for
   // similar reasons, bringing it closer (e.g., 17/12) requires increasing δ,
@@ -100,12 +103,12 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
     X.push_back(a + (X.back() - a) / 2);
   }
 
-  // [WG12], equation (5).
+  // [WG13], equation (5).
   auto const s = [](double xa, double xc, double xb, double fa) {
     return fa * (xb - xc) / (xa - xc);
   };
 
-  // [WG12], equations (7) and (9).
+  // [WG13], equations (7) and (9).
   auto const q =
       [](double xa, double xd, double xc, double xb, double fa, double fb) {
         double const α = (xa - xd) * fb + (xd - xb) * fa;
@@ -135,7 +138,7 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
     if (x == b) {
       return s(a, X[1], b, f_a);
     }
-    // [WG12] define f only on X. We extend it as a step function, returning the
+    // [WG13] define f only on X. We extend it as a step function, returning the
     // value for the element of X nearest to the given x.
     int j;
     double min_Δx = std::numeric_limits<double>::infinity();
@@ -147,7 +150,7 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
       }
     }
     if (expect_brent_calls) {
-      EXPECT_THAT(x, AlmostEquals(X[j],0)) << j;
+      EXPECT_THAT(x, AlmostEquals(X[j], 0)) << j;
     }
 
     if (expected_bisections.count(j) != 0) {
