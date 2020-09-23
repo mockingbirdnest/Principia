@@ -265,6 +265,9 @@
     <ClCompile Include="quadrature_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="scale_b_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
