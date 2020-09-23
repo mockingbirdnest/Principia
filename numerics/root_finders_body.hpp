@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "root_finders.hpp"
+#include "numerics/root_finders.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -19,8 +19,8 @@ using geometry::Barycentre;
 using geometry::Sign;
 using quantities::Abs;
 using quantities::Difference;
-using quantities::Square;
 using quantities::Sqrt;
+using quantities::Square;
 
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
@@ -135,8 +135,8 @@ extrapolation:
       } else {
         p = -p;
       }
-      e = d;
       if (2 * p < 3 * m * q - Abs(δ * q) && p < Abs(0.5 * e * q)) {
+        e = d;
         d = p / q;
       } else {
         d = e = m;

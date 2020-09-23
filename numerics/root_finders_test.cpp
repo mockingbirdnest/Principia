@@ -27,6 +27,7 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::IsEmpty;
 using ::testing::Le;
@@ -60,6 +61,82 @@ TEST_F(RootFindersTest, SquareRoots) {
                 AlmostEquals(Sqrt(n / si::Unit<Acceleration>), 0, 1));
     EXPECT_THAT(evaluations, AllOf(Ge(7), Le(15)));
   }
+}
+
+TEST_F(RootFindersTest, WilkinsGuFunction) {
+  double j = 4;
+  auto const s = [](double xa, double xc, double xb, double fa) {
+    return fa * (xb - xc) / (xa - xc);
+  };
+  double const a = 1;
+  double const b = 2;
+  std::vector<double> X;
+  std::set<int> expected_bisections;
+  double const p = 1.5;
+  double const δ = 0x1p-50;
+  X.push_back(b);
+  int bisections = 0;
+  for (; a < X.back(); ++bisections) {
+    int const k = std::round(std::log2((X.back() - a) / δ));
+    for (int j = 1; j <= k; ++j) {
+      X.push_back(X.back() - std::pow(p, k - j) * δ);
+    }
+    expected_bisections.insert(X.size() - 1);
+    X.push_back(a + (X.back() - a) / 2);
+  }
+  auto const q =
+      [](double xa, double xd, double xc, double xb, double fa, double fb) {
+        double const α = (xa - xd) * fb + (xd - xb) * fa;
+        double const β = (xb - xd) * Pow<2>(fa) + (xd - xa) * Pow<2>(fb);
+        double const γ = fa * fb * (fb - fa) * (xc - xd);
+        return -2 * γ / (β + Sqrt(Pow<2>(β) - 4 * α * γ));
+      };
+  std::function<double(double, int*, bool)> f =
+      [&f, s, q, a, b, X, expected_bisections](
+          double const x,
+          int* const evaluations,
+          bool const expect_brent_calls) -> double {
+    double const f_a = -100;
+    if (evaluations != nullptr) {
+      ++*evaluations;
+    }
+    if (x == a) {
+      return f_a;
+    }
+    if (x == b) {
+      return s(a, X[1], b, f_a);
+    }
+    int j;
+    double min_Δx = std::numeric_limits<double>::infinity();
+    for (int i = 1; i < X.size() - 1; ++i) {
+      double const Δx = std::abs(x - X[i]);
+      if (Δx < min_Δx) {
+        min_Δx = Δx;
+        j = i;
+      }
+    }
+    if (expect_brent_calls) {
+      EXPECT_THAT(x, AlmostEquals(X[j],0)) << j;
+    }
+    if (expected_bisections.count(j) != 0) {
+      return 100;
+    }
+    return q(a,
+             X[j + 1],
+             X[j],
+             X[j - 1],
+             f_a,
+             f(X[j - 1], nullptr, /*expect_brent_calls=*/false));
+  };
+  int evaluations = 0;
+  EXPECT_THAT(Brent(
+                  [&f, &evaluations](double x) {
+                    return f(x, &evaluations, /*expect_brent_calls=*/true);
+                  },
+                  a,
+                  b),
+      AlmostEquals(a, 2));
+  EXPECT_THAT(evaluations, Eq(1304));
 }
 
 TEST_F(RootFindersTest, GoldenSectionSearch) {
