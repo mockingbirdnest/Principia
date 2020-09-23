@@ -171,13 +171,9 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
     }
     // Note that the recursion does not count as an evaluation, and is not
     // subject to expectations.
-    return q(
-        a,
-        X[k + 1],
-        X[k],
-        X[k - 1],
-        f_a,
-        f(X[k - 1], /*evaluations=*/nullptr, /*expect_brent_calls=*/false));
+    return q(a, X[k + 1], X[k], X[k - 1], f_a, f(X[k - 1],
+                                                 /*evaluations=*/nullptr,
+                                                 /*expect_brent_calls=*/false));
   };
 
   int evaluations = 0;

@@ -113,7 +113,7 @@ Argument Brent(Function f,
       }
       Difference<Argument> const δ = 2 * ϵ * Abs(b - Argument{});
       Difference<Argument> const m = 0.5 * (c - b);
-      if (!(Abs(m) > δ && f_b != zero)) {
+      if (Abs(m) <= δ || f_b == zero)) {
         return b;
       }
       // See if a bisection is forced.
