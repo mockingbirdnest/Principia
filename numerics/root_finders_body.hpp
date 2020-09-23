@@ -98,64 +98,61 @@ Argument Brent(Function f,
       << "\nlower: " << lower_bound << u8" ↦ " << f_a << ", "
       << "\nupper: " << upper_bound << u8" ↦ " << f_b;
 
-interpolation:
-  c = a;
-  f_c = f_a;
-  d = e = b - a;
-extrapolation:
-  if (Abs(f_c) < Abs(f_b)) {
-    a = b;
-    b = c;
+  for (;;) {
     c = a;
-    f_a = f_b;
-    f_b = f_c;
     f_c = f_a;
-  }
-  Difference<Argument> const δ = 2 * ϵ * Abs(b - Argument{});
-  Difference<Argument> const m = 0.5 * (c - b);
-  if (Abs(m) > δ && f_b != zero) {
-    // See if a bisection is forced.
-    if (Abs(e) < δ || Abs(f_a) <= Abs(f_b)) {
-      d = e = m;
-    } else {
-      Difference<Argument> p;
-      double q;
-      if (a == c) {
-        // Linear interpolation.
-        double const s = f_b / f_a;
-        p = 2 * m * s;
-        q = 1 - s;
-      } else {
-        // Inverse quadratic interpolation.
-        double const r₁ = f_a / f_c;
-        double const r₂ = f_b / f_c;
-        double const r₃ = f_b / f_a;
-        p = r₃ * (2 * m * r₁ * (r₁ - r₂) - (b - a) * (r₂ - 1));
-        q = (r₁ - 1) * (r₂ - 1) * (r₃ - 1);
+    d = e = b - a;
+    do {
+      if (Abs(f_c) < Abs(f_b)) {
+        a = b;
+        b = c;
+        c = a;
+        f_a = f_b;
+        f_b = f_c;
+        f_c = f_a;
       }
-      if (Sign(p).is_positive()) {
-        q = -q;
-      } else {
-        p = -p;
+      Difference<Argument> const δ = 2 * ϵ * Abs(b - Argument{});
+      Difference<Argument> const m = 0.5 * (c - b);
+      if (!(Abs(m) > δ && f_b != zero)) {
+        return b;
       }
-      if (2 * p < 3 * m * q - Abs(δ * q) && p < Abs(0.5 * e * q)) {
-        e = d;
-        d = p / q;
-      } else {
+      // See if a bisection is forced.
+      if (Abs(e) < δ || Abs(f_a) <= Abs(f_b)) {
         d = e = m;
+      } else {
+        Difference<Argument> p;
+        double q;
+        if (a == c) {
+          // Linear interpolation.
+          double const s = f_b / f_a;
+          p = 2 * m * s;
+          q = 1 - s;
+        } else {
+          // Inverse quadratic interpolation.
+          double const r₁ = f_a / f_c;
+          double const r₂ = f_b / f_c;
+          double const r₃ = f_b / f_a;
+          p = r₃ * (2 * m * r₁ * (r₁ - r₂) - (b - a) * (r₂ - 1));
+          q = (r₁ - 1) * (r₂ - 1) * (r₃ - 1);
+        }
+        if (Sign(p).is_positive()) {
+          q = -q;
+        } else {
+          p = -p;
+        }
+        if (2 * p < 3 * m * q - Abs(δ * q) && p < Abs(0.5 * e * q)) {
+          e = d;
+          d = p / q;
+        } else {
+          d = e = m;
+        }
       }
-    }
-    a = b;
-    f_a = f_b;
-    b += Abs(d) > δ ? d : δ * Sign(m);
-    f_b = f(b);
-    if (Sign(f_b) == Sign(f_c)) {
-      goto interpolation;
-    } else {
-      goto extrapolation;
-    }
+      a = b;
+      f_a = f_b;
+      b += Abs(d) > δ ? d : δ * Sign(m);
+      f_b = f(b);
+    } while (Sign(f_b) != Sign(f_c));
   }
-  return b;
 }
 
 // See https://en.wikipedia.org/wiki/Golden-section_search for a description of
