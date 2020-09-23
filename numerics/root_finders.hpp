@@ -35,14 +35,18 @@ Argument Brent(Function f,
 // Performs a golden-section search to find a minimum of |f| between
 // |lower_bound| and |upper_bound|.
 // TODO(phl): Use Brent's algorithm.
-template<typename Argument,
-         typename Function,
-         typename Compare = std::less<
-             decltype(std::declval<Function>()(std::declval<Argument>()))>>
+template<typename Argument, typename Function, typename Compare>
 Argument GoldenSectionSearch(Function f,
                              Argument const& lower_bound,
                              Argument const& upper_bound,
-                             Compare comp = Compare());
+                             Compare compare);
+
+// Performs Brent’s procedure |localmin| from [Bre73], chapter 5.
+template<typename Argument, typename Function, typename Compare>
+Argument Brent(Function f,
+               Argument const& lower_bound,
+               Argument const& upper_bound,
+               Compare compare);
 
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0

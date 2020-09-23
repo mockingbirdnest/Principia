@@ -161,7 +161,7 @@ template<typename Argument, typename Function, typename Compare>
 Argument GoldenSectionSearch(Function f,
                              Argument const& lower_bound,
                              Argument const& upper_bound,
-                             Compare const comp) {
+                             Compare const compare) {
   static constexpr double lower_interior_ratio = 2 - φ;
   static constexpr double upper_interior_ratio = φ - 1;
   using Value = decltype(f(lower_bound));
@@ -183,9 +183,9 @@ Argument GoldenSectionSearch(Function f,
   while (lower < lower_interior &&
          lower_interior < upper_interior &&
          upper_interior < upper) {
-    Value const f_lower_min = std::min(f_lower, f_lower_interior, comp);
-    Value const f_upper_min = std::min(f_upper_interior, f_upper, comp);
-    if (comp(f_lower_min, f_upper_min)) {
+    Value const f_lower_min = std::min(f_lower, f_lower_interior, compare);
+    Value const f_upper_min = std::min(f_upper_interior, f_upper, compare);
+    if (compare(f_lower_min, f_upper_min)) {
       upper = upper_interior;
       f_upper = f_upper_interior;
       upper_interior = lower_interior;
@@ -205,6 +205,13 @@ Argument GoldenSectionSearch(Function f,
   }
 
   return Barycentre<Argument, double>({lower, upper}, {1, 1});
+}
+
+template<typename Argument, typename Function, typename Compare>
+Argument Brent(Function f,
+               Argument const& lower_bound,
+               Argument const& upper_bound,
+               Compare compare) {
 }
 
 template<typename Argument, typename Value>
