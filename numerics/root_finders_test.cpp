@@ -64,19 +64,34 @@ TEST_F(RootFindersTest, SquareRoots) {
 }
 
 TEST_F(RootFindersTest, WilkinsGuFunction) {
-  double j = 4;
-  auto const s = [](double xa, double xc, double xb, double fa) {
-    return fa * (xb - xc) / (xa - xc);
-  };
+  // This test constructs a pathological function for which Brent is quadratic.
+  // The construction follows [WG12] and the notation therein.
+  // We will search for a root of the constructed function over [a, b].
   double const a = 1;
   double const b = 2;
+
+  // We first construct the sequence of points X at which Brent will be made to
+  // evaluate the function; see section 4.1.
   std::vector<double> X;
+  // The indices i such that Brent will perform a bisection at X[i].
   std::set<int> expected_bisections;
-  double const p = 1.5;
+
+  // This tolerance is not the same as the one in our implementation of Brent:
+  // this is because that one is overly close to the machine precision, so that
+  // attempting to perform as many interpolation steps as theoretically possible
+  // before the bisection leads to early bisection in practice, because the
+  // interval shrinkage becomes too great as the convergent values get discretized.
   double const δ = 0x1p-50;
+  // The factor p theoretically only needs to be larger than √2, but, for
+  // similar reasons, bringing it closer (e.g., 17/12) requires increasing δ,
+  // which overall reduces the number of evaluations required.
+  double const p = 1.5;
+
   X.push_back(b);
   int bisections = 0;
   for (; a < X.back(); ++bisections) {
+    // k is the number of interpolation steps on the interval [a, X.back()]
+    // before a bisection happens again.
     int const k = std::round(std::log2((X.back() - a) / δ));
     for (int j = 1; j <= k; ++j) {
       X.push_back(X.back() - std::pow(p, k - j) * δ);
@@ -84,6 +99,13 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
     expected_bisections.insert(X.size() - 1);
     X.push_back(a + (X.back() - a) / 2);
   }
+
+  // [WG12], equation (5).
+  auto const s = [](double xa, double xc, double xb, double fa) {
+    return fa * (xb - xc) / (xa - xc);
+  };
+
+  // [WG12], equations (7) and (9).
   auto const q =
       [](double xa, double xd, double xc, double xb, double fa, double fb) {
         double const α = (xa - xd) * fb + (xd - xb) * fa;
@@ -91,6 +113,13 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
         double const γ = fa * fb * (fb - fa) * (xc - xd);
         return -2 * γ / (β + Sqrt(Pow<2>(β) - 4 * α * γ));
       };
+
+  // Capture everything but the function itself by copy so we have some
+  // confidence that the function is pure.
+  // We capture f because it is defined recursively.
+  // If non-null, |*evaluations| is incremented when the function is called.
+  // If |expect_brent_calls| is true, this function checks that x is an element
+  // of the expected sequence X.
   std::function<double(double, int*, bool)> f =
       [&f, s, q, a, b, X, expected_bisections](
           double const x,
@@ -106,6 +135,8 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
     if (x == b) {
       return s(a, X[1], b, f_a);
     }
+    // [WG12] define f only on X. We extend it as a step function, returning the
+    // value for the element of X nearest to the given x.
     int j;
     double min_Δx = std::numeric_limits<double>::infinity();
     for (int i = 1; i < X.size() - 1; ++i) {
@@ -118,9 +149,12 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
     if (expect_brent_calls) {
       EXPECT_THAT(x, AlmostEquals(X[j],0)) << j;
     }
+
     if (expected_bisections.count(j) != 0) {
       return 100;
     }
+    // Note that the recursion does not count as an evaluation, and is not
+    // subject to expectations.
     return q(a,
              X[j + 1],
              X[j],
@@ -128,6 +162,7 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
              f_a,
              f(X[j - 1], nullptr, /*expect_brent_calls=*/false));
   };
+
   int evaluations = 0;
   EXPECT_THAT(Brent(
                   [&f, &evaluations](double x) {
@@ -137,6 +172,16 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
                   b),
       AlmostEquals(a, 2));
   EXPECT_THAT(evaluations, Eq(1304));
+
+  evaluations = 0;
+  EXPECT_THAT(Bisect(
+                  [&f, &evaluations](double x) {
+                    return f(x, &evaluations, /*expect_brent_calls=*/false);
+                  },
+                  a,
+                  b),
+              AlmostEquals(a, 0));
+  EXPECT_THAT(evaluations, Eq(54));
 }
 
 TEST_F(RootFindersTest, GoldenSectionSearch) {
