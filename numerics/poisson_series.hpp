@@ -5,6 +5,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "geometry/hilbert.hpp"
@@ -109,10 +110,9 @@ class PoissonSeries {
   using AngularFrequencyAndPolynomials =
       std::pair<AngularFrequency, Polynomials>;
 
-  struct PrivateConstructor {};
-  PoissonSeries(PrivateConstructor,
-                Polynomial aperiodic,
-                std::vector<AngularFrequencyAndPolynomials> periodic);
+  // The vector elements are invalid after this call.
+  PoissonSeries(Polynomial aperiodic,
+                std::vector<AngularFrequencyAndPolynomials>& periodic);
 
   Instant origin_;  // Common to all polynomials.
   Polynomial aperiodic_;
