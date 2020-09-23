@@ -25,6 +25,13 @@ Argument Bisect(Function f,
                 Argument const& lower_bound,
                 Argument const& upper_bound);
 
+// Performs Brent’s procedure |zero| from [Bre73], chapter 4, with an absolute
+// tolerance t=0.
+template<typename Argument, typename Function>
+Argument Brent(Function f,
+               Argument const& lower_bound,
+               Argument const& upper_bound);
+
 // Performs a golden-section search to find a minimum of |f| between
 // |lower_bound| and |upper_bound|.
 // TODO(phl): Use Brent's algorithm.
@@ -50,6 +57,7 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
 }  // namespace internal_root_finders
 
 using internal_root_finders::Bisect;
+using internal_root_finders::Brent;
 using internal_root_finders::GoldenSectionSearch;
 using internal_root_finders::SolveQuadraticEquation;
 
