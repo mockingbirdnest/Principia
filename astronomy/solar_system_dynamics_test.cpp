@@ -623,63 +623,59 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
   auto angular_frequency_calculator =
       [&dot, &logger, &step, t_min, t_max](
           auto const& residual) -> std::optional<AngularFrequency> {
-    switch (step++) {
-      case 0: {
-        return AngularFrequency();
+    LOG(ERROR) << "step=" << step;
+    if (step == 0) {
+      ++step;
+      return AngularFrequency();
+    } else if (step <= 10) {
+      ++step;
+      Length max_residual;
+      std::vector<Displacement<ICRS>> residuals;
+      Time const Δt = (t_max - t_min) * 0x1p-10;
+      for (int i = 0; i < 1 << 10; ++i) {
+        residuals.push_back(residual(t_min + i * Δt));
+        max_residual = std::max(max_residual, residuals.back().Norm());
       }
-      case 1:
-      case 2:
-      case 3:/*
-      case 4:
-      case 5:
-      case 6:
-      case 7:
-      case 8:
-      case 9:
-      case 10:*/ {
-        Length max_residual;
-        std::vector<Displacement<ICRS>> residuals;
-        Time const Δt = (t_max - t_min) * 0x1p-10;
-        for (int i = 0; i < 1 << 10; ++i) {
-          residuals.push_back(residual(t_min + i * Δt));
-          max_residual = std::max(max_residual, residuals.back().Norm());
-        }
-        LOG(ERROR)<<"max_residual="<<max_residual;
-        auto fft =
-            std::make_unique<FastFourierTransform<Displacement<ICRS>, 1 << 10>>(
-                residuals, Δt);
-        auto const mode = fft->Mode();
-        LOG(ERROR) << "period=" << 2 * π * Radian / mode.midpoint();
-        auto const precise_mode =
-            PreciseMode(mode,
-                        residual,
-                        apodization::Hann<EstrinEvaluator>(t_min, t_max),
-                        dot);
-        auto const precise_period = 2 * π * Radian / precise_mode;
-        LOG(ERROR) << "precise_period=" << precise_period;
-        logger.Append(
-            "precisePeriod", precise_period, mathematica::ExpressIn(Second));
-        return precise_mode;
+      LOG(ERROR) << "max_residual=" << max_residual;
+      auto fft =
+          std::make_unique<FastFourierTransform<Displacement<ICRS>, 1 << 10>>(
+              residuals, Δt);
+      auto const mode = fft->Mode();
+      LOG(ERROR) << "period=" << 2 * π * Radian / mode.midpoint();
+      auto const precise_mode =
+          PreciseMode(mode,
+                      residual,
+                      apodization::Hann<EstrinEvaluator>(t_min, t_max),
+                      dot);
+      auto const precise_period = 2 * π * Radian / precise_mode;
+      LOG(ERROR) << "precise_period=" << precise_period;
+      logger.Append(
+          "precisePeriod", precise_period, mathematica::ExpressIn(Second));
+      return precise_mode;
+    } else {
+      Length max_residual;
+      std::vector<Displacement<ICRS>> residuals;
+      Time const Δt = (t_max - t_min) * 0x1p-10;
+      for (int i = 0; i < 1 << 10; ++i) {
+        residuals.push_back(residual(t_min + i * Δt));
+        max_residual = std::max(max_residual, residuals.back().Norm());
       }
-      default: {
-        Length max_residual;
-        std::vector<Displacement<ICRS>> residuals;
-        Time const Δt = (t_max - t_min) * 0x1p-10;
-        for (int i = 0; i < 1 << 10; ++i) {
-          residuals.push_back(residual(t_min + i * Δt));
-          max_residual = std::max(max_residual, residuals.back().Norm());
-        }
-        LOG(ERROR)<<"max_residual="<<max_residual;
-        return std::nullopt;
-      }
+      LOG(ERROR) << "max_residual=" << max_residual;
+      return std::nullopt;
     }
   };
 
-  frequency_analysis::IncrementalProjection<5>(
+  auto const p1 = frequency_analysis::IncrementalProjection<5>(
       io_piecewise_poisson_series,
       angular_frequency_calculator,
       apodization::Hann<EstrinEvaluator>(t_min, t_max),
       dot);
+  //step = 0;
+  //auto const p2 = frequency_analysis::IncrementalProjection<5>(
+  //    io_piecewise_poisson_series - p1,
+  //    angular_frequency_calculator,
+  //    apodization::Hann<EstrinEvaluator>(t_min, t_max),
+  //    dot);
 }
 #endif
 
