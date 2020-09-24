@@ -41,12 +41,14 @@ Argument GoldenSectionSearch(Function f,
                              Argument const& upper_bound,
                              Compare compare);
 
-// Performs Brent’s procedure |localmin| from [Bre73], chapter 5.
+// Performs Brent’s procedure |localmin| from [Bre73], chapter 5, with an
+// absolute tolerance t=0.
 template<typename Argument, typename Function, typename Compare>
 Argument Brent(Function f,
                Argument const& lower_bound,
                Argument const& upper_bound,
-               Compare compare);
+               Compare compare,
+               double eps);
 
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0

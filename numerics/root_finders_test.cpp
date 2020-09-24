@@ -9,6 +9,9 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/combinatorics.hpp"
+#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -17,15 +20,20 @@
 namespace principia {
 
 using geometry::Instant;
+using geometry::Point;
+using quantities::Abs;
 using quantities::Acceleration;
+using quantities::Entropy;
 using quantities::Length;
 using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::si::Kelvin;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using quantities::si::Watt;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -197,6 +205,141 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
   EXPECT_THAT(evaluations, Eq(54));
 }
 
+TEST_F(RootFindersTest, SharpMinimum) {
+  int evaluations = 0;
+  constexpr Instant t0;
+  constexpr Point<Entropy> s0;
+  // Whereas root finding requires the result type to have a 0, minimization
+  // works on oriented one-dimensional affine spaces.
+  auto f = [&evaluations, t0, s0](Instant const x) -> Point<Entropy> {
+    ++evaluations;
+    return s0 + Abs(x - (t0 + 1 * Second)) * (1 * Watt / Kelvin);
+  };
+
+  evaluations = 0;
+  EXPECT_THAT(
+      GoldenSectionSearch(f, t0 - π * Second, t0 + π * Second, std::less<>()),
+      AlmostEquals(t0 + 1 * Second, 0));
+  EXPECT_THAT(evaluations, Eq(81));
+
+  evaluations = 0;
+  EXPECT_THAT(
+      Brent(f, t0 - π * Second, t0 + π * Second, std::less<>(), /*eps=*/0),
+      AlmostEquals(t0 + 1 * Second, 0));
+  EXPECT_THAT(evaluations, Eq(51));
+}
+
+TEST_F(RootFindersTest, SmoothMaximum) {
+  int evaluations;
+  // The composition of the 16th degree Taylor series for the cosine with the
+  // polynomial x ↦ 3(x-1); this function approximates cos(3(x-1)) near 1, where
+  // it has a local maximum.
+  PolynomialInMonomialBasis<double, double, 16, EstrinEvaluator> const p(
+      {-4059064033.0 / 4100096000,
+       759417921.0 / 1793792000,
+       3196519569.0 / 717516800,
+       -4649859.0 / 7321600,
+       -7526709.0 / 2252800,
+       5623263.0 / 19712000,
+       3596319.0 / 3584000,
+       -22599.0 / 358400,
+       -3183543.0 / 20070400,
+       12393.0 / 2508800,
+       9477.0 / 512000,
+       -6561.0 / 2816000,
+       -2187.0 / 15769600,
+       -19683.0 / 51251200,
+       19683.0 / 102502400,
+       -59049.0 / 1793792000,
+       59049.0 / 28700672000});
+  auto const f = [&p, &evaluations](double const x) {
+    ++evaluations;
+    return p.Evaluate(x);
+  };
+
+  evaluations = 0;
+  EXPECT_THAT(GoldenSectionSearch(f, 0.0, π / 2, std::greater<>()),
+              AlmostEquals(1, 17'642'694));
+  EXPECT_THAT(evaluations, Eq(76));
+  evaluations = 0;
+  EXPECT_THAT(GoldenSectionSearch(f, π / 7, 9 * π / 14, std::greater<>()),
+              AlmostEquals(1, 8'131'392));
+  EXPECT_THAT(evaluations, Eq(80));
+
+  constexpr double ϵ = ScaleB(0.5, 1 - std::numeric_limits<double>::digits);
+  constexpr double ϵ² = ϵ * ϵ;
+  constexpr double ϵ³ = ϵ² * ϵ;
+  constexpr double ϵ⁵ = ϵ³ * ϵ²;
+
+  // Locate a maximum of the computed function with full precision, starting
+  // from two different intervals.
+  double eps = 2 * ϵ;
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
+              AlmostEquals(1, 39'406'981));
+  EXPECT_THAT(evaluations, Eq(37));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
+              AlmostEquals(1, 2'532'035));
+  EXPECT_THAT(evaluations, Eq(25));
+
+  // 3/4 of the precision.
+  eps = Sqrt(Sqrt((ϵ³)));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
+              AlmostEquals(1, 39'407'194));
+  EXPECT_THAT(evaluations, Eq(24));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
+              AlmostEquals(1, 2'528'998));
+  EXPECT_THAT(evaluations, Eq(21));
+
+  // 2/3 of the precision.
+  eps = Cbrt(ϵ²);
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
+              AlmostEquals(1, 39'407'194));
+  EXPECT_THAT(evaluations, Eq(18));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
+              AlmostEquals(1, 2'461'373));
+  EXPECT_THAT(evaluations, Eq(15));
+
+  // 5/9 of the precision.
+  eps = Cbrt(Cbrt(ϵ⁵));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
+              AlmostEquals(1, 13'620'875));
+  EXPECT_THAT(evaluations, Eq(17));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
+              AlmostEquals(1, 18'471'305));
+  EXPECT_THAT(evaluations, Eq(11));
+
+  // 1/2 of the precision.
+  eps = Sqrt(ϵ);
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
+              AlmostEquals(1, 44'628'162));
+  EXPECT_THAT(evaluations, Eq(9));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
+              AlmostEquals(1, 44'964'716));
+  EXPECT_THAT(evaluations, Eq(9));
+
+  // 1/3 of the precision.  We start actually losing precision with respect to
+  // the maximum of the theoretical function.
+  eps = Cbrt(ϵ);
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
+              AlmostEquals(1, 8'905'048'021));
+  EXPECT_THAT(evaluations, Eq(8));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
+              AlmostEquals(1, 24'970'775));
+  EXPECT_THAT(evaluations, Eq(8));
+}
+
 TEST_F(RootFindersTest, GoldenSectionSearch) {
   Instant const t_0;
   auto sin = [t_0](Instant const& t) {
@@ -214,23 +357,22 @@ TEST_F(RootFindersTest, GoldenSectionSearch) {
       EXPECT_THAT(
           GoldenSectionSearch(sin,
                               t_0 + l * 0.1 * Second,
-                              t_0 + u * 0.1 * Second),
+                              t_0 + u * 0.1 * Second,
+                              std::less<>()),
           AlmostEquals(t_0 + 3 * π / 2 * Second, 11'863'280, 11'863'284));
     }
   }
 
   // Maximum.
   EXPECT_THAT(
-      (GoldenSectionSearch<Instant, decltype(sin), std::greater<double>>)(
+      GoldenSectionSearch(
           sin,
-          t_0 + 1.5 * Second,
-          t_0 + 1.6 * Second),
+          t_0 + 1.5 * Second, t_0 + 1.6 * Second, std::greater<>()),
       AlmostEquals(t_0 + π / 2 * Second, 47453132));
 
   // A big interval will yield a semi-random minimum.
-  EXPECT_THAT(GoldenSectionSearch(sin,
-                                  t_0 - 100 * Second,
-                                  t_0 + 666 * Second),
+  EXPECT_THAT(GoldenSectionSearch(
+                  sin, t_0 - 100 * Second, t_0 + 666 * Second, std::less<>()),
               AlmostEquals(t_0 + 119 * π / 2 * Second, 370'728));
 }
 
