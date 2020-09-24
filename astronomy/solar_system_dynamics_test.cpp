@@ -47,6 +47,7 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::Instant;
+using geometry::Interval;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Rotation;
@@ -639,10 +640,13 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
       }
       LOG(ERROR) << "max_residual=" << max_residual;
       auto fft =
-          std::make_unique<FastFourierTransform<Displacement<ICRS>, 1 << 10>>(
+          std::make_unique<FastFourierTransform<Displacement<ICRS>,
+                                                1 << log2_number_of_samples>>(
               residuals, Δt);
       auto const mode = fft->Mode();
-      LOG(ERROR) << "period=" << 2 * π * Radian / mode.midpoint();
+      Interval<Time> const period{2 * π * Radian / mode.max,
+                                  2 * π * Radian / mode.min};
+      LOG(ERROR) << "period=" << period;
       auto const precise_mode =
           PreciseMode(mode,
                       residual,

@@ -180,6 +180,8 @@ Argument GoldenSectionSearch(Function f,
       {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
   Value f_upper_interior = f(upper_interior);
 
+  int ev = 4;
+
   while (lower < lower_interior &&
          lower_interior < upper_interior &&
          upper_interior < upper) {
@@ -193,6 +195,7 @@ Argument GoldenSectionSearch(Function f,
       lower_interior = Barycentre<Argument, double>(
           {lower, upper}, {upper_interior_ratio, lower_interior_ratio});
       f_lower_interior = f(lower_interior);
+      ++ev;
     } else {
       lower = lower_interior;
       f_lower = f_lower_interior;
@@ -201,8 +204,10 @@ Argument GoldenSectionSearch(Function f,
       upper_interior = Barycentre<Argument, double>(
           {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
       f_upper_interior = f(upper_interior);
+      ++ev;
     }
   }
+  LOG(ERROR)<<ev;
 
   return Barycentre<Argument, double>({lower, upper}, {1, 1});
 }
