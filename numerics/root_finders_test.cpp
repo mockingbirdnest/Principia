@@ -211,7 +211,7 @@ TEST_F(RootFindersTest, SharpMinimum) {
   constexpr Point<Entropy> s0;
   // Whereas root finding requires the result type to have a 0, minimization
   // works on oriented one-dimensional affine spaces.
-  auto f = [&evaluations, t0, s0](Instant const x) -> Point<Entropy> {
+  auto f = [s0, t0, &evaluations](Instant const x) -> Point<Entropy> {
     ++evaluations;
     return s0 + Abs(x - (t0 + 1 * Second)) * (1 * Watt / Kelvin);
   };
@@ -252,7 +252,7 @@ TEST_F(RootFindersTest, SmoothMaximum) {
        19683.0 / 102502400,
        -59049.0 / 1793792000,
        59049.0 / 28700672000});
-  auto const f = [&p, &evaluations](double const x) {
+  auto const f = [&evaluations, &p](double const x) {
     ++evaluations;
     return p.Evaluate(x);
   };
@@ -284,7 +284,7 @@ TEST_F(RootFindersTest, SmoothMaximum) {
   EXPECT_THAT(evaluations, Eq(25));
 
   // 3/4 of the precision.
-  eps = Sqrt(Sqrt((ϵ³)));
+  eps = Sqrt(Sqrt(ϵ³));
   evaluations = 0;
   EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
               AlmostEquals(1, 39'407'194));

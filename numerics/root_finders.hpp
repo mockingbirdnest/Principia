@@ -19,7 +19,6 @@ using quantities::Derivative;
 // function agreeing with |f| on the values of |Argument|.
 // If |f(lower_bound)| and |f(upper_bound)| are both nonzero, they must be of
 // opposite signs.
-// TODO(phl): Use Brent's algorithm.
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
                 Argument const& lower_bound,
@@ -32,9 +31,12 @@ Argument Brent(Function f,
                Argument const& lower_bound,
                Argument const& upper_bound);
 
-// Performs a golden-section search to find a minimum of |f| between
+// Performs a golden-section search to find a local extremum of |f| between
 // |lower_bound| and |upper_bound|.
-// TODO(phl): Use Brent's algorithm.
+// The function searches for a minimum if compare is <, and a maximum if compare
+// is >.  Arbitrary order relations are allowed; in general, this function
+// searches for a value x such that compare(y, f(x)) is false for all y in some
+// neighbourhood of x.
 template<typename Argument, typename Function, typename Compare>
 Argument GoldenSectionSearch(Function f,
                              Argument const& lower_bound,
@@ -43,6 +45,9 @@ Argument GoldenSectionSearch(Function f,
 
 // Performs Brent’s procedure |localmin| from [Bre73], chapter 5, with an
 // absolute tolerance t=0.
+// The function searches for a minimum if compare is <, and a maximum if compare
+// is >.  No values of Compare other than std::less<> and std::greater<> are
+// allowed.
 template<typename Argument, typename Function, typename Compare>
 Argument Brent(Function f,
                Argument const& lower_bound,

@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include "numerics/root_finders.hpp"
+
 #include <algorithm>
 #include <limits>
 #include <vector>
@@ -9,7 +11,6 @@
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "numerics/double_precision.hpp"
-#include "numerics/root_finders.hpp"
 #include "numerics/scale_b.h"
 
 namespace principia {
@@ -179,7 +180,8 @@ Argument GoldenSectionSearch(Function f,
       {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
   Value f_upper_interior = f(upper_interior);
 
-  while (lower < lower_interior && lower_interior < upper_interior &&
+  while (lower < lower_interior &&
+         lower_interior < upper_interior &&
          upper_interior < upper) {
     Value const f_lower_min = std::min(f_lower, f_lower_interior, compare);
     Value const f_upper_min = std::min(f_upper_interior, f_upper, compare);
@@ -232,6 +234,9 @@ Argument Brent(Function f,
   {
     auto const& f = minimized_f;
 
+    // We do not use |std::numeric_limits<double>::epsilon()|, because it is 2ϵ
+    // in Brent’s notation: Brent uses ϵ = β^(1-τ) / 2 for rounded arithmetic,
+    // see [Bre73], chapter 4, section 2, (2.9).
     constexpr double ϵ = ScaleB(0.5, 1 - std::numeric_limits<double>::digits);
     // In order to ensure convergence, eps should be no smaller than 2ϵ, see
     // [Bre73] chapter 5, section 5.
@@ -254,7 +259,7 @@ Argument Brent(Function f,
     Difference<Argument> e{};
     f_v = f_w = f_x = f(x);
     for (;;) {
-      Argument const m = a + (b - a) / 2;
+      Argument const m = a + (b - a) * 0.5;
       Difference<Argument> const tol = eps * Abs(x - Argument{});
       Difference<Argument> const t2 = 2 * tol;
       // Check stopping criterion.
