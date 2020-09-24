@@ -96,7 +96,8 @@ PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 IncrementalProjection(Function const& function,
                       AngularFrequencyCalculator const& calculator,
                       PoissonSeries<double, wdegree_, Evaluator> const& weight,
-                      Dot const& dot) {
+                      Dot const& dot,
+                      mathematica::Logger* const logger) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
   using Norm² = typename Hilbert<Value>::InnerProductType;
@@ -134,13 +135,6 @@ IncrementalProjection(Function const& function,
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
   UnboundedVector<double> A(basis_size, uninitialized);
 
-  //logger.Append("f" + std::to_string(degree_),
-  //              function,
-  //              mathematica::ExpressIn(Metre, Radian, Second));
-  //logger.Set("basis" + std::to_string(degree_),
-  //           basis,
-  //           mathematica::ExpressIn(Metre, Radian, Second));
-
   Norm² const F₀ = dot(function, basis[0], weight);
   Norm² const Q₀₀ = dot(basis[0], basis[0], weight);
   α[0][0] = 1 / Sqrt(Q₀₀);
@@ -148,26 +142,12 @@ IncrementalProjection(Function const& function,
 
   // At the beginning of iteration m this contains fₘ₋₁.
   auto f = function - A[0] * basis[0];
-  //logger.Append("F" + std::to_string(degree_), F₀,
-  //              mathematica::ExpressIn(Metre, Radian, Second));
-  //logger.Append("Q" + std::to_string(degree_), Q₀₀,
-  //              mathematica::ExpressIn(Metre, Radian, Second));
 
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
-      //if (m == 6) {
-      //  LOG(ERROR)<<"Doing the logging "<<degree_;
-      //  do_the_logging = true;
-      //}
-
       // Contains Fₘ.
       Norm² const F = dot(f, basis[m], weight);
-      //logger.Append("f" + std::to_string(degree_), f,
-      //              mathematica::ExpressIn(Metre, Radian, Second));
-      //logger.Append("F" + std::to_string(degree_), F,
-      //              mathematica::ExpressIn(Metre, Radian, Second));
-      //do_the_logging = false;
 
       // This vector contains Qₘⱼ.
       UnboundedVector<Norm²> Q(m + 1, uninitialized);
@@ -244,16 +224,15 @@ IncrementalProjection(Function const& function,
         f -= α[m][m] * F * Σ_αₘᵢ_eᵢ;
       }
     }
-    //logger.Append("f" + std::to_string(degree_), f,
-    //              mathematica::ExpressIn(Metre, Radian, Second));
 
     PoissonSeries<Value, degree_, Evaluator> result = A[0] * basis[0];
     for (int i = 1; i < basis_size; ++i) {
       result += A[i] * basis[i];
     }
-    //logger.Append("approximation" + std::to_string(degree_),
-    //              result,
-    //              mathematica::ExpressIn(Metre, Second, Radian));
+    if (logger != nullptr) {
+      logger->Append(
+          "solutions", result, mathematica::ExpressIn(Metre, Radian, Second));
+    }
 
     ω = calculator(f);
     if (!ω.has_value()) {

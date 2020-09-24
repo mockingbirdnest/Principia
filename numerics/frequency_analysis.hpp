@@ -54,7 +54,7 @@ AngularFrequency PreciseMode(
 
 // Computes the Кудрявцев projection of |function| on a basis with angular
 // frequency ω and maximum degree |degree_|.  See [Kud07].
-// TODO(phl): We really need multiple angular frequencies.
+//TODO(phl):frequency after function.
 template<int degree_,
          typename Function,
          int wdegree_, typename Dot,
@@ -91,15 +91,14 @@ PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 IncrementalProjection(Function const& function,
                       AngularFrequencyCalculator const& calculator,
                       PoissonSeries<double, wdegree_, Evaluator> const& weight,
-                      Dot const& dot);
+                      Dot const& dot,
+                      mathematica::Logger* logger = nullptr);
 
 }  // namespace internal_frequency_analysis
 
 using internal_frequency_analysis::IncrementalProjection;
 using internal_frequency_analysis::PreciseMode;
 using internal_frequency_analysis::Projection;
-
-//mathematica::Logger logger(TEMP_DIR / "frequency_analysis.wl");
 
 }  // namespace frequency_analysis
 }  // namespace numerics

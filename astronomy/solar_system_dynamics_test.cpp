@@ -595,8 +595,8 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
   // TODO(phl): Use a switch statement with macros.
   auto const io_piecewise_poisson_series =
       io_trajectory.ToPiecewisePoissonSeries<7>(t_min, t_max);
-  //LOG(ERROR)<<io_piecewise_poisson_series.t_min()<<" "<<t_min;
-  //LOG(ERROR)<<io_piecewise_poisson_series.t_max()<<" "<<t_max;
+  logger.Set("tMin", t_min, mathematica::ExpressIn(Second));
+  logger.Set("tMax", t_max, mathematica::ExpressIn(Second));
 
   std::vector<Displacement<ICRS>> displacements;
   std::vector<std::tuple<Instant, Displacement<ICRS>>> trajectory;
@@ -608,10 +608,6 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
         io_trajectory.EvaluatePosition(t) - ICRS::origin;
     trajectory.push_back({t, current_trajectory});
   }
-  //frequency_analysis::logger.Append(
-  //    "displacements", displacements, mathematica::ExpressIn(Metre));
-  //frequency_analysis::logger.Append(
-  //    "trajectory", trajectory, mathematica::ExpressIn(Metre, Second));
 
   auto dot = [t_min, t_max](auto const& left,
                             auto const& right,
@@ -619,20 +615,25 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
     return Dot(left, right, weight, t_min, t_max);
   };
 
+  static constexpr int number_of_frequencies = 10;
+  static constexpr int log2_number_of_samples = 10;
+
   int step = 0;
   auto angular_frequency_calculator =
       [&dot, &logger, &step, t_min, t_max](
           auto const& residual) -> std::optional<AngularFrequency> {
     LOG(ERROR) << "step=" << step;
+    logger.Append(
+        "residuals", residual, mathematica::ExpressIn(Metre, Radian, Second));
     if (step == 0) {
       ++step;
       return AngularFrequency();
-    } else if (step <= 10) {
+    } else if (step <= number_of_frequencies) {
       ++step;
       Length max_residual;
       std::vector<Displacement<ICRS>> residuals;
-      Time const Δt = (t_max - t_min) * 0x1p-10;
-      for (int i = 0; i < 1 << 10; ++i) {
+      Time const Δt = (t_max - t_min) / (1 << log2_number_of_samples);
+      for (int i = 0; i < 1 << log2_number_of_samples; ++i) {
         residuals.push_back(residual(t_min + i * Δt));
         max_residual = std::max(max_residual, residuals.back().Norm());
       }
@@ -650,13 +651,13 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
       auto const precise_period = 2 * π * Radian / precise_mode;
       LOG(ERROR) << "precise_period=" << precise_period;
       logger.Append(
-          "precisePeriod", precise_period, mathematica::ExpressIn(Second));
+          "precisePeriods", precise_period, mathematica::ExpressIn(Second));
       return precise_mode;
     } else {
       Length max_residual;
       std::vector<Displacement<ICRS>> residuals;
-      Time const Δt = (t_max - t_min) * 0x1p-10;
-      for (int i = 0; i < 1 << 10; ++i) {
+      Time const Δt = (t_max - t_min) / (1 << log2_number_of_samples);
+      for (int i = 0; i < 1 << log2_number_of_samples; ++i) {
         residuals.push_back(residual(t_min + i * Δt));
         max_residual = std::max(max_residual, residuals.back().Norm());
       }
@@ -665,17 +666,12 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
     }
   };
 
-  auto const p1 = frequency_analysis::IncrementalProjection<5>(
+  auto const sol = frequency_analysis::IncrementalProjection<5>(
       io_piecewise_poisson_series,
       angular_frequency_calculator,
-      apodization::Hann<EstrinEvaluator>(t_min, t_max),
-      dot);
-  //step = 0;
-  //auto const p2 = frequency_analysis::IncrementalProjection<5>(
-  //    io_piecewise_poisson_series - p1,
-  //    angular_frequency_calculator,
-  //    apodization::Hann<EstrinEvaluator>(t_min, t_max),
-  //    dot);
+      apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
+      dot,
+      &logger);
 }
 #endif
 
