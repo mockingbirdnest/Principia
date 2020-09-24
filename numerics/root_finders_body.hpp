@@ -4,6 +4,7 @@
 #include "numerics/root_finders.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <limits>
 #include <vector>
 
