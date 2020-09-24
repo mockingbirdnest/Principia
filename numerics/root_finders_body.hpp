@@ -259,7 +259,7 @@ Argument Brent(Function f,
     Difference<Argument> e{};
     f_v = f_w = f_x = f(x);
     for (;;) {
-      Argument const m = a + (b - a) * 0.5;
+      Argument const m = Barycentre<Argument, double>({a, b}, {1, 1});
       Difference<Argument> const tol = eps * Abs(x - Argument{});
       Difference<Argument> const t2 = 2 * tol;
       // Check stopping criterion.
