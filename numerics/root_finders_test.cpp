@@ -6,6 +6,7 @@
 #include <vector>
 #include <limits>
 
+#include "absl/base/casts.h"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -341,6 +342,18 @@ TEST_F(RootFindersTest, SmoothMaximum) {
 }
 
 TEST_F(RootFindersTest, GoldenSectionSearch) {
+  // Arbitrary comparator; we use the lexicographic ordering of the binary
+  // representation, with
+  // +0 < ... < 1 < ... < +∞ < NaNs < -∞ < ... < -1 < ... < -0.
+  EXPECT_THAT(GoldenSectionSearch([](double const x) { return x - 1; },
+                                  -π,
+                                  π,
+                                  [](double const left, double const right) {
+                                    return absl::bit_cast<std::uint64_t>(left) <
+                                           absl::bit_cast<std::uint64_t>(right);
+                                  }),
+              AlmostEquals(1, 0));
+
   Instant const t_0;
   auto sin = [t_0](Instant const& t) {
     return Sin((t - t_0) * Radian / Second);
