@@ -190,6 +190,10 @@ Argument GoldenSectionSearch(Function f,
       f_upper = f_upper_interior;
       upper_interior = lower_interior;
       f_upper_interior = f_lower_interior;
+      // The new lower interior point must be not be computed using the upper
+      // point, lest the ratios diverge.  A very similar issue is discussed in
+      // [Ove65] (who does not mention the resolution).  We use the formula from
+      // the golden section step in [Bre73], chapter 5, section 8.
       lower_interior =
           upper_interior - (upper_interior - lower) * lower_interior_ratio;
       f_lower_interior = f(lower_interior);
@@ -198,6 +202,7 @@ Argument GoldenSectionSearch(Function f,
       f_lower = f_lower_interior;
       lower_interior = upper_interior;
       f_lower_interior = f_upper_interior;
+      // See the remark in the other branch.
       upper_interior =
           lower_interior + (upper - lower_interior) * lower_interior_ratio;
       f_upper_interior = f(upper_interior);

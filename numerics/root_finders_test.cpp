@@ -261,6 +261,9 @@ TEST_F(RootFindersTest, MinimumAt0) {
     return Abs(x);
   };
 
+  // This search takes a lot of steps, so that it fails if the computation of
+  // the new interior points is unstable, e.g., if they are computed as a
+  // barycentre of the lower and upper points.
   evaluations = 0;
   EXPECT_THAT(GoldenSectionSearch(abs, -1.0, 1.0, std::less<>()),
               AlmostEquals(0, 0));
