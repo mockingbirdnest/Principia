@@ -190,16 +190,16 @@ Argument GoldenSectionSearch(Function f,
       f_upper = f_upper_interior;
       upper_interior = lower_interior;
       f_upper_interior = f_lower_interior;
-      lower_interior = Barycentre<Argument, double>(
-          {lower, upper}, {upper_interior_ratio, lower_interior_ratio});
+      lower_interior =
+          upper_interior - (upper_interior - lower) * lower_interior_ratio;
       f_lower_interior = f(lower_interior);
     } else {
       lower = lower_interior;
       f_lower = f_lower_interior;
       lower_interior = upper_interior;
       f_lower_interior = f_upper_interior;
-      upper_interior = Barycentre<Argument, double>(
-          {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
+      upper_interior =
+          lower_interior + (upper - lower_interior) * lower_interior_ratio;
       f_upper_interior = f(upper_interior);
     }
   }

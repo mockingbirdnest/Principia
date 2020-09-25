@@ -206,6 +206,18 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
   EXPECT_THAT(evaluations, Eq(54));
 }
 
+TEST_F(RootFindersTest, MinimumAt0) {
+  int evaluations;
+  auto abs = [&evaluations](double const x) {
+    ++evaluations;
+    return Abs(x);
+  };
+  evaluations = 0;
+  EXPECT_THAT(GoldenSectionSearch(abs, -1.0, 1.0, std::less<>()),
+              AlmostEquals(0, 0));
+  EXPECT_THAT(evaluations, Eq(1551));
+}
+
 TEST_F(RootFindersTest, SharpMinimum) {
   int evaluations = 0;
   constexpr Instant t0;
