@@ -25,6 +25,7 @@ using quantities::Difference;
 using quantities::Product;
 using quantities::Sqrt;
 using quantities::Square;
+namespace si = quantities::si;
 
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
@@ -191,16 +192,21 @@ Argument GoldenSectionSearch(Function f,
       f_upper = f_upper_interior;
       upper_interior = lower_interior;
       f_upper_interior = f_lower_interior;
-      lower_interior = Barycentre<Argument, double>(
-          {lower, upper}, {upper_interior_ratio, lower_interior_ratio});
+      // The new lower interior point must be not be computed using the upper
+      // point, lest the ratios diverge.  A very similar issue is discussed in
+      // [Ove65] (who does not mention the resolution).  We use the formula from
+      // the golden section step in [Bre73], chapter 5, section 8.
+      lower_interior =
+          upper_interior - (upper_interior - lower) * lower_interior_ratio;
       f_lower_interior = f(lower_interior);
     } else {
       lower = lower_interior;
       f_lower = f_lower_interior;
       lower_interior = upper_interior;
       f_lower_interior = f_upper_interior;
-      upper_interior = Barycentre<Argument, double>(
-          {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
+      // See the remark in the other branch.
+      upper_interior =
+          lower_interior + (upper - lower_interior) * lower_interior_ratio;
       f_upper_interior = f(upper_interior);
     }
   }
@@ -237,11 +243,16 @@ Argument Brent(Function f,
 
     // We do not use |std::numeric_limits<double>::epsilon()|, because it is 2ϵ
     // in Brent’s notation: Brent uses ϵ = β^(1-τ) / 2 for rounded arithmetic,
-    // see [Bre73], chapter 4, section 2, (2.9).
+    // see [Bre73], chapter 4, (2.9).
     constexpr double ϵ = ScaleB(0.5, 1 - std::numeric_limits<double>::digits);
     // In order to ensure convergence, eps should be no smaller than 2ϵ, see
     // [Bre73] chapter 5, section 5.
     eps = std::max(eps, 2 * ϵ);
+    // Similarly, t needs to be greater than 0, see [Bre73] chapter 5,
+    // section 4.
+    constexpr Difference<Argument> t =
+        std::numeric_limits<double>::denorm_min() *
+        si::Unit<Difference<Argument>>;
 
     Argument a = lower_bound;
     Argument b = upper_bound;
@@ -261,7 +272,7 @@ Argument Brent(Function f,
     f_v = f_w = f_x = f(x);
     for (;;) {
       Argument const m = Barycentre<Argument, double>({a, b}, {1, 1});
-      Difference<Argument> const tol = eps * Abs(x - Argument{});
+      Difference<Argument> const tol = eps * Abs(x - Argument{}) + t;
       Difference<Argument> const t2 = 2 * tol;
       // Check stopping criterion.
       if (Abs(x - m) <= t2 - 0.5 * (b - a)) {

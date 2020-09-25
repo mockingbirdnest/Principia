@@ -6,6 +6,7 @@
 #include <vector>
 #include <limits>
 
+#include "absl/base/casts.h"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -205,6 +206,75 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
   EXPECT_THAT(evaluations, Eq(54));
 }
 
+TEST_F(RootFindersTest, RootNear0) {
+  int evaluations;
+  auto const f = [&evaluations](double const x) {
+    ++evaluations;
+    return Sin(x * Radian) - std::numeric_limits<double>::denorm_min();
+  };
+  evaluations = 0;
+  EXPECT_THAT(Bisect(f, -1.0, 2.0),
+              AlmostEquals(std::numeric_limits<double>::denorm_min(), 0));
+  EXPECT_THAT(evaluations, Eq(1078));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, -1.0, 2.0),
+              AlmostEquals(std::numeric_limits<double>::denorm_min(), 0));
+  EXPECT_THAT(evaluations, Eq(10));
+}
+
+TEST_F(RootFindersTest, RootAt0) {
+  int evaluations;
+  auto id = [&evaluations](double const x) {
+    ++evaluations;
+    return x;
+  };
+
+  evaluations = 0;
+  EXPECT_THAT(Bisect(id, -1.0, 2.0), AlmostEquals(0, 0));
+  EXPECT_THAT(evaluations, Eq(1077));
+
+  evaluations = 0;
+  EXPECT_THAT(Brent(id, -1.0, 2.0), AlmostEquals(0, 0));
+  EXPECT_THAT(evaluations, Eq(3));
+}
+
+TEST_F(RootFindersTest, MinimumNear0) {
+  int evaluations;
+  auto const f = [&evaluations](double const x) {
+    ++evaluations;
+    return Abs(x - std::numeric_limits<double>::denorm_min());
+  };
+  evaluations = 0;
+  EXPECT_THAT(GoldenSectionSearch(f, -1.0, 1.0, std::less<>()),
+              AlmostEquals(std::numeric_limits<double>::denorm_min(), 0));
+  EXPECT_THAT(evaluations, Eq(1551));
+  // This fails to terminate if t=0.
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, -1.0, 1.0, std::less<>(), /*eps=*/0),
+              AlmostEquals(std::numeric_limits<double>::denorm_min(), 0));
+  EXPECT_THAT(evaluations, Eq(1327));
+}
+
+TEST_F(RootFindersTest, MinimumAt0) {
+  int evaluations;
+  auto abs = [&evaluations](double const x) {
+    ++evaluations;
+    return Abs(x);
+  };
+
+  // This search takes a lot of steps, so that it fails if the computation of
+  // the new interior points is unstable, e.g., if they are computed as a
+  // barycentre of the lower and upper points.
+  evaluations = 0;
+  EXPECT_THAT(GoldenSectionSearch(abs, -1.0, 1.0, std::less<>()),
+              AlmostEquals(0, 0));
+  EXPECT_THAT(evaluations, Eq(1551));
+
+  evaluations = 0;
+  EXPECT_THAT(Brent(abs, -1.0, 1.0, std::less<>(), 0), AlmostEquals(0, 1));
+  EXPECT_THAT(evaluations, Eq(1327));
+}
+
 TEST_F(RootFindersTest, SharpMinimum) {
   int evaluations = 0;
   constexpr Instant t0;
@@ -220,7 +290,7 @@ TEST_F(RootFindersTest, SharpMinimum) {
   EXPECT_THAT(
       GoldenSectionSearch(f, t0 - π * Second, t0 + π * Second, std::less<>()),
       AlmostEquals(t0 + 1 * Second, 0));
-  EXPECT_THAT(evaluations, Eq(81));
+  EXPECT_THAT(evaluations, Eq(82));
 
   evaluations = 0;
   EXPECT_THAT(
@@ -259,11 +329,11 @@ TEST_F(RootFindersTest, SmoothMaximum) {
 
   evaluations = 0;
   EXPECT_THAT(GoldenSectionSearch(f, 0.0, π / 2, std::greater<>()),
-              AlmostEquals(1, 17'642'694));
-  EXPECT_THAT(evaluations, Eq(76));
+              AlmostEquals(1, 22'535'664));
+  EXPECT_THAT(evaluations, Eq(79));
   evaluations = 0;
   EXPECT_THAT(GoldenSectionSearch(f, π / 7, 9 * π / 14, std::greater<>()),
-              AlmostEquals(1, 8'131'392));
+              AlmostEquals(1, 9'447'534));
   EXPECT_THAT(evaluations, Eq(80));
 
   constexpr double ϵ = ScaleB(0.5, 1 - std::numeric_limits<double>::digits);
@@ -341,6 +411,18 @@ TEST_F(RootFindersTest, SmoothMaximum) {
 }
 
 TEST_F(RootFindersTest, GoldenSectionSearch) {
+  // Arbitrary comparator; we use the lexicographic ordering of the binary
+  // representation, with
+  // +0 < ... < 1 < ... < +∞ < NaNs < -∞ < ... < -1 < ... < -0.
+  EXPECT_THAT(GoldenSectionSearch([](double const x) { return x - 1; },
+                                  -π,
+                                  π,
+                                  [](double const left, double const right) {
+                                    return absl::bit_cast<std::uint64_t>(left) <
+                                           absl::bit_cast<std::uint64_t>(right);
+                                  }),
+              AlmostEquals(1, 0));
+
   Instant const t_0;
   auto sin = [t_0](Instant const& t) {
     return Sin((t - t_0) * Radian / Second);
@@ -368,7 +450,7 @@ TEST_F(RootFindersTest, GoldenSectionSearch) {
       GoldenSectionSearch(
           sin,
           t_0 + 1.5 * Second, t_0 + 1.6 * Second, std::greater<>()),
-      AlmostEquals(t_0 + π / 2 * Second, 47453132));
+      AlmostEquals(t_0 + π / 2 * Second, 47453133));
 
   // A big interval will yield a semi-random minimum.
   EXPECT_THAT(GoldenSectionSearch(
