@@ -685,6 +685,7 @@ PiecewisePoissonSeries<Value, rdegree_, Evaluator> operator-(
     PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PiecewisePoissonSeries<Value, rdegree_, Evaluator>;
   std::vector<typename Result::Series> series;
+  series.reserve(right.series_.size());
   for (int i = 0; i < right.series_.size(); ++i) {
     series.push_back(-right.series_[i]);
   }
@@ -699,6 +700,7 @@ PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator> operator*(
   using Result =
       PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
   std::vector<typename Result::Series> series;
+  series.reserve(right.series_.size());
   for (int i = 0; i < right.series_.size(); ++i) {
     series.push_back(left * right.series_[i]);
   }
@@ -713,6 +715,7 @@ PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator> operator*(
   using Result =
       PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator>;
   std::vector<typename Result::Series> series;
+  series.reserve(left.series_.size());
   for (int i = 0; i < left.series_.size(); ++i) {
     series.push_back(left.series_[i] * right);
   }
@@ -727,6 +730,7 @@ PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator> operator/(
   using Result =
       PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>;
   std::vector<typename Result::Series> series;
+  series.reserve(left.series_.size());
   for (int i = 0; i < left.series_.size(); ++i) {
     series.push_back(left.series_[i] / right);
   }
@@ -747,6 +751,7 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
   using Result =
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   std::vector<typename Result::Series> series;
+  series.reserve(right.series_.size());
   for (int i = 0; i < right.series_.size(); ++i) {
     Instant const origin = right.series_[i].origin();
     series.push_back(left.AtOrigin(origin) + right.series_[i]);
@@ -762,6 +767,7 @@ operator+(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
   using Result =
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   std::vector<typename Result::Series> series;
+  series.reserve(left.series_.size());
   for (int i = 0; i < left.series_.size(); ++i) {
     Instant const origin = left.series_[i].origin();
     series.push_back(left.series_[i] + right.AtOrigin(origin));
@@ -777,6 +783,7 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
   using Result =
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   std::vector<typename Result::Series> series;
+  series.reserve(right.series_.size());
   for (int i = 0; i < right.series_.size(); ++i) {
     Instant const origin = right.series_[i].origin();
     series.push_back(left.AtOrigin(origin) - right.series_[i]);
@@ -792,6 +799,7 @@ operator-(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
   using Result =
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   std::vector<typename Result::Series> series;
+  series.reserve(left.series_.size());
   for (int i = 0; i < left.series_.size(); ++i) {
     Instant const origin = left.series_[i].origin();
     series.push_back(left.series_[i] - right.AtOrigin(origin));
@@ -808,6 +816,7 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
                                         ldegree_ + rdegree_,
                                         Evaluator>;
   std::vector<typename Result::Series> series;
+  series.reserve(left.series_.size());
   for (int i = 0; i < right.series_.size(); ++i) {
     Instant const origin = right.series_[i].origin();
     series.push_back(left.AtOrigin(origin) * right.series_[i]);
@@ -824,6 +833,7 @@ operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
                                         ldegree_ + rdegree_,
                                         Evaluator>;
   std::vector<typename Result::Series> series;
+  series.reserve(left.series_.size());
   for (int i = 0; i < left.series_.size(); ++i) {
     Instant const origin = left.series_[i].origin();
     series.push_back(left.series_[i] * right.AtOrigin(origin));
