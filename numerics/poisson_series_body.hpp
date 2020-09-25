@@ -73,10 +73,14 @@ template<typename LValue, typename RValue,
 auto Multiply(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
               PoissonSeries<RValue, rdegree_, Evaluator> const& right,
               Product const& product) {
-  using Result =
-      PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
-                    ldegree_ + rdegree_,
-                    Evaluator>;
+  using Result = PoissonSeries<
+      typename std::invoke_result_t<
+          Product,
+          typename PoissonSeries<LValue, ldegree_, Evaluator>::Polynomial,
+          typename PoissonSeries<RValue, rdegree_, Evaluator>::Polynomial>::
+          Result,
+      ldegree_ + rdegree_,
+      Evaluator>;
 
   auto aperiodic = product(left.aperiodic_, right.aperiodic_);
 
@@ -851,9 +855,8 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   Result result{};
   for (int i = 0; i < right.series_.size(); ++i) {
     Instant const origin = right.series_[i].origin();
-    auto const integrand =
-        PointwiseInnerProduct(left.AtOrigin(origin), right.series_[i]) *
-        weight.AtOrigin(origin);
+    auto const integrand = PointwiseInnerProduct(
+        left.AtOrigin(origin) * weight.AtOrigin(origin), right.series_[i]);
     auto const integral =
         quadrature::GaussLegendre<ldegree_ + rdegree_ + wdegree_>(
             integrand, right.bounds_[i], right.bounds_[i + 1]);
@@ -884,58 +887,13 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result{};
-#if 0
-  if (do_the_logging) {
-      frequency_analysis::logger.Append(
-          "right",
-          right,
-          mathematica::ExpressIn(Metre, Radian, Second));
-      frequency_analysis::logger.Append(
-          "weight",
-          weight,
-          mathematica::ExpressIn(Metre, Radian, Second));
-  }
-#endif
   for (int i = 0; i < left.series_.size(); ++i) {
     Instant const origin = left.series_[i].origin();
-    auto const integrand =
-        PointwiseInnerProduct(left.series_[i], right.AtOrigin(origin)) *
-        weight.AtOrigin(origin);
+    auto const integrand = PointwiseInnerProduct(
+        left.series_[i], right.AtOrigin(origin) * weight.AtOrigin(origin));
     auto const integral =
         quadrature::GaussLegendre<ldegree_ + rdegree_ + wdegree_>(
             integrand, left.bounds_[i], left.bounds_[i + 1]);
-#if 0
-    if (do_the_logging) {
-      frequency_analysis::logger.Append(
-          "rightAtOrigin",
-          right.AtOrigin(origin),
-          mathematica::ExpressIn(Metre, Radian, Second));
-      frequency_analysis::logger.Append(
-          "weigthAtOrigin",
-          weight.AtOrigin(origin),
-          mathematica::ExpressIn(Metre, Radian, Second));
-      frequency_analysis::logger.Append(
-          "series",
-          left.series_[i],
-          mathematica::ExpressIn(Metre, Radian, Second));
-      frequency_analysis::logger.Append(
-          "integrand",
-          integrand,
-          mathematica::ExpressIn(Metre, Radian, Second));
-      frequency_analysis::logger.Append(
-          "bounds",
-          std::vector{left.bounds_[i + 1], left.bounds_[i]},
-          mathematica::ExpressIn(Metre, Radian, Second));
-      frequency_analysis::logger.Append(
-          "primitive",
-          primitive,
-          mathematica::ExpressIn(Metre, Radian, Second));
-      frequency_analysis::logger.Append(
-          "integral",
-          integral.value,
-          mathematica::ExpressIn(Metre, Radian, Second));
-    }
-#endif
     result += integral;
   }
   return result / (t_max - t_min);

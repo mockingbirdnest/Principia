@@ -92,6 +92,8 @@ template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
  public:
+  using Result = Value;
+
   // Equivalent to:
   //   std::tuple<Value,
   //              Derivative<Value, Argument>,
@@ -205,6 +207,8 @@ template<typename Value, typename Argument, int degree_,
 class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
     : public Polynomial<Value, Point<Argument>> {
  public:
+  using Result = Value;
+
   // Equivalent to:
   //   std::tuple<Value,
   //              Derivative<Value, Argument>,
