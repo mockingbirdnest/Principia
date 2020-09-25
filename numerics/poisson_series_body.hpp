@@ -171,7 +171,7 @@ PoissonSeries<Value, degree_, Evaluator>::AtOrigin(
         Polynomials{/*sin=*/sin * Cos(ω * shift) - cos * Sin(ω * shift),
                     /*cos=*/sin * Sin(ω * shift) + cos * Cos(ω * shift)});
   }
-  return {aperiodic, periodic};
+  return {PrivateConstructor{}, std::move(aperiodic), std::move(periodic)};
 }
 
 template<typename Value, int degree_,
@@ -329,7 +329,9 @@ operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
         typename Result::Polynomials{/*sin=*/-polynomials.sin,
                                      /*cos=*/-polynomials.cos});
   }
-  return {aperiodic, periodic};
+  return {typename Result::PrivateConstructor{},
+          std::move(aperiodic),
+          std::move(periodic)};
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -380,7 +382,9 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       ++it_right;
     }
   }
-  return {aperiodic, periodic};
+  return {typename Result::PrivateConstructor{},
+          std::move(aperiodic),
+          std::move(periodic)};
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -431,7 +435,9 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       ++it_right;
     }
   }
-  return {aperiodic, periodic};
+  return {typename Result::PrivateConstructor{},
+          std::move(aperiodic),
+          std::move(periodic)};
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -449,7 +455,9 @@ operator*(Scalar const& left,
         typename Result::Polynomials{/*sin=*/left * polynomials.sin,
                                      /*cos=*/left * polynomials.cos});
   }
-  return {aperiodic, periodic};
+  return {typename Result::PrivateConstructor{},
+          std::move(aperiodic),
+          std::move(periodic)};
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -467,7 +475,9 @@ operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
         typename Result::Polynomials{/*sin=*/polynomials.sin * right,
                                      /*cos=*/polynomials.cos * right});
   }
-  return {aperiodic, periodic};
+  return {typename Result::PrivateConstructor{},
+          std::move(aperiodic),
+          std::move(periodic)};
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -485,7 +495,9 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
         typename Result::Polynomials{/*sin=*/polynomials.sin / right,
                                      /*cos=*/polynomials.cos / right});
   }
-  return {aperiodic, periodic};
+  return {typename Result::PrivateConstructor{},
+          std::move(aperiodic),
+          std::move(periodic)};
 }
 
 template<typename LValue, typename RValue,
