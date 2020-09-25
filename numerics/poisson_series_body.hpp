@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "numerics/quadrature.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -26,6 +27,7 @@ using quantities::Primitive;
 using quantities::Sin;
 using quantities::Time;
 using quantities::Variation;
+using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 namespace si = quantities::si;
@@ -71,10 +73,14 @@ template<typename LValue, typename RValue,
 auto Multiply(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
               PoissonSeries<RValue, rdegree_, Evaluator> const& right,
               Product const& product) {
-  using Result =
-      PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
-                    ldegree_ + rdegree_,
-                    Evaluator>;
+  using Result = PoissonSeries<
+      typename std::invoke_result_t<
+          Product,
+          typename PoissonSeries<LValue, ldegree_, Evaluator>::Polynomial,
+          typename PoissonSeries<RValue, rdegree_, Evaluator>::Polynomial>::
+          Result,
+      ldegree_ + rdegree_,
+      Evaluator>;
 
   auto aperiodic = product(left.aperiodic_, right.aperiodic_);
 
@@ -178,7 +184,7 @@ PoissonSeries<Value, degree_, Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::AtOrigin(
     Instant const& origin) const {
   Time const shift = origin - origin_;
-  auto const aperiodic = aperiodic_.AtOrigin(origin);
+  auto aperiodic = aperiodic_.AtOrigin(origin);
 
   PolynomialsByAngularFrequency periodic;
   for (auto const& [ω, polynomials] : periodic_) {
@@ -225,7 +231,7 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
     FirstPart const first_part(
         typename FirstPart::Polynomial({}, origin_),
         {{ω,
-          {/*sin=*/typename FirstPart::Polynomial(polynomials.cos),
+          {/*sin=*/typename FirstPart::Polynomial(polynomials.cos ),
            /*cos=*/typename FirstPart::Polynomial(-polynomials.sin)}}});
     result += (first_part(t2) - first_part(t1)) / ω * Radian;
 
@@ -331,7 +337,7 @@ PoissonSeries<Value, rdegree_, Evaluator>
 operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PoissonSeries<Value, rdegree_, Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto const aperiodic = -right.aperiodic_;
+  auto aperiodic = -right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
     periodic.emplace_hint(
         periodic.cend(),
@@ -349,7 +355,7 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto const aperiodic = left.aperiodic_ + right.aperiodic_;
+  auto aperiodic = left.aperiodic_ + right.aperiodic_;
   auto it_left = left.periodic_.cbegin();
   auto it_right = right.periodic_.cbegin();
   while (it_left != left.periodic_.cend() ||
@@ -402,7 +408,7 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result = PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto const aperiodic = left.aperiodic_ - right.aperiodic_;
+  auto aperiodic = left.aperiodic_ - right.aperiodic_;
   auto it_left = left.periodic_.cbegin();
   auto it_right = right.periodic_.cbegin();
   while (it_left != left.periodic_.cend() ||
@@ -455,7 +461,7 @@ operator*(Scalar const& left,
           PoissonSeries<Value, degree_, Evaluator> const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto const aperiodic = left * right.aperiodic_;
+  auto aperiodic = left * right.aperiodic_;
   for (auto const& [ω, polynomials] : right.periodic_) {
     periodic.emplace_hint(
         periodic.cend(),
@@ -473,7 +479,7 @@ operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto const aperiodic = left.aperiodic_ * right;
+  auto aperiodic = left.aperiodic_ * right;
   for (auto const& [ω, polynomials] : left.periodic_) {
     periodic.emplace_hint(
         periodic.cend(),
@@ -491,7 +497,7 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
   typename Result::PolynomialsByAngularFrequency periodic;
-  auto const aperiodic = left.aperiodic_ / right;
+  auto aperiodic = left.aperiodic_ / right;
   for (auto const& [ω, polynomials] : left.periodic_) {
     periodic.emplace_hint(
         periodic.cend(),
@@ -846,14 +852,15 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const& t_max) {
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
-  Result result;
+  Result result{};
   for (int i = 0; i < right.series_.size(); ++i) {
     Instant const origin = right.series_[i].origin();
-    auto const integrand =
-        PointwiseInnerProduct(left.AtOrigin(origin), right.series_[i]) *
-        weight.AtOrigin(origin);
-    auto const primitive = integrand.Primitive();
-    result += primitive(right.bounds_[i + 1]) - primitive(right.bounds_[i]);
+    auto const integrand = PointwiseInnerProduct(
+        left.AtOrigin(origin) * weight.AtOrigin(origin), right.series_[i]);
+    auto const integral =
+        quadrature::GaussLegendre<ldegree_ + rdegree_ + wdegree_>(
+            integrand, right.bounds_[i], right.bounds_[i + 1]);
+    result += integral;
   }
   return result / (t_max - t_min);
 }
@@ -879,14 +886,15 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const& t_max) {
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
-  Result result;
+  Result result{};
   for (int i = 0; i < left.series_.size(); ++i) {
     Instant const origin = left.series_[i].origin();
-    auto const integrand =
-        PointwiseInnerProduct(left.series_[i], right.AtOrigin(origin)) *
-        weight.AtOrigin(origin);
-    auto const primitive = integrand.Primitive();
-    result += primitive(left.bounds_[i + 1]) - primitive(left.bounds_[i]);
+    auto const integrand = PointwiseInnerProduct(
+        left.series_[i], right.AtOrigin(origin) * weight.AtOrigin(origin));
+    auto const integral =
+        quadrature::GaussLegendre<ldegree_ + rdegree_ + wdegree_>(
+            integrand, left.bounds_[i], left.bounds_[i + 1]);
+    result += integral;
   }
   return result / (t_max - t_min);
 }
