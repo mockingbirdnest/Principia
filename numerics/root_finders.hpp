@@ -44,7 +44,8 @@ Argument GoldenSectionSearch(Function f,
                              Compare compare);
 
 // Performs Brent’s procedure |localmin| from [Bre73], chapter 5, with an
-// absolute tolerance t=0.
+// absolute tolerance t set to the (subnormal) smallest strictly positive value
+// of |Difference<Argument>|.
 // The function searches for a minimum if compare is <, and a maximum if compare
 // is >.  No values of Compare other than std::less<> and std::greater<> are
 // allowed.

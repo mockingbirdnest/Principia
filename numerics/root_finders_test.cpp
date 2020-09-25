@@ -248,10 +248,11 @@ TEST_F(RootFindersTest, MinimumNear0) {
   EXPECT_THAT(GoldenSectionSearch(f, -1.0, 1.0, std::less<>()),
               AlmostEquals(std::numeric_limits<double>::denorm_min(), 0));
   EXPECT_THAT(evaluations, Eq(1551));
+  // This fails to terminate if t=0.
   evaluations = 0;
   EXPECT_THAT(Brent(f, -1.0, 1.0, std::less<>(), /*eps=*/0),
-              AlmostEquals(0, 0));
-  EXPECT_THAT(evaluations, Eq(0));
+              AlmostEquals(std::numeric_limits<double>::denorm_min(), 0));
+  EXPECT_THAT(evaluations, Eq(1327));
 }
 
 TEST_F(RootFindersTest, MinimumAt0) {

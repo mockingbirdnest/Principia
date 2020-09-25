@@ -24,6 +24,7 @@ using quantities::Difference;
 using quantities::Product;
 using quantities::Sqrt;
 using quantities::Square;
+namespace si = quantities::si;
 
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
@@ -246,6 +247,11 @@ Argument Brent(Function f,
     // In order to ensure convergence, eps should be no smaller than 2ϵ, see
     // [Bre73] chapter 5, section 5.
     eps = std::max(eps, 2 * ϵ);
+    // Similarly, t needs to be greater than 0, see [Bre73] chapter 5,
+    // section 4.
+    constexpr Difference<Argument> t =
+        std::numeric_limits<double>::denorm_min() *
+        si::Unit<Difference<Argument>>;
 
     Argument a = lower_bound;
     Argument b = upper_bound;
@@ -265,7 +271,7 @@ Argument Brent(Function f,
     f_v = f_w = f_x = f(x);
     for (;;) {
       Argument const m = Barycentre<Argument, double>({a, b}, {1, 1});
-      Difference<Argument> const tol = eps * Abs(x - Argument{});
+      Difference<Argument> const tol = eps * Abs(x - Argument{}) + t;
       Difference<Argument> const t2 = 2 * tol;
       // Check stopping criterion.
       if (Abs(x - m) <= t2 - 0.5 * (b - a)) {
