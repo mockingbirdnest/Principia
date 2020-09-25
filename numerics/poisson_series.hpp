@@ -116,8 +116,8 @@ class PoissonSeries {
 
   Instant origin_;  // Common to all polynomials.
   Polynomial aperiodic_;
-  //TODO(phl):Comment
-  // All the keys in this map are positive.
+  // The frequencies in this vector are positive, distinct and in increasing
+  // order.
   PolynomialsByAngularFrequency periodic_;
 
   template<typename V, int r, template<typename, typename, int> class E>

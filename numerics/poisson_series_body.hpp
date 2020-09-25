@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "numerics/quadrature.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -27,9 +26,7 @@ using quantities::Primitive;
 using quantities::Sin;
 using quantities::Time;
 using quantities::Variation;
-using quantities::si::Metre;
 using quantities::si::Radian;
-using quantities::si::Second;
 namespace si = quantities::si;
 
 template<typename Value, int degree_,
