@@ -206,16 +206,69 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
   EXPECT_THAT(evaluations, Eq(54));
 }
 
+TEST_F(RootFindersTest, RootNear0) {
+  int evaluations;
+  auto const f = [&evaluations](double const x) {
+    ++evaluations;
+    return Sin(x * Radian) - std::numeric_limits<double>::denorm_min();
+  };
+  evaluations = 0;
+  EXPECT_THAT(Bisect(f, -1.0, 2.0),
+              AlmostEquals(std::numeric_limits<double>::denorm_min(), 0));
+  EXPECT_THAT(evaluations, Eq(1078));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, -1.0, 2.0),
+              AlmostEquals(std::numeric_limits<double>::denorm_min(), 0));
+  EXPECT_THAT(evaluations, Eq(10));
+}
+
+TEST_F(RootFindersTest, RootAt0) {
+  int evaluations;
+  auto id = [&evaluations](double const x) {
+    ++evaluations;
+    return x;
+  };
+
+  evaluations = 0;
+  EXPECT_THAT(Bisect(id, -1.0, 2.0), AlmostEquals(0, 0));
+  EXPECT_THAT(evaluations, Eq(1077));
+
+  evaluations = 0;
+  EXPECT_THAT(Brent(id, -1.0, 2.0), AlmostEquals(0, 0));
+  EXPECT_THAT(evaluations, Eq(3));
+}
+
+TEST_F(RootFindersTest, MinimumNear0) {
+  int evaluations;
+  auto const f = [&evaluations](double const x) {
+    ++evaluations;
+    return Abs(x - std::numeric_limits<double>::denorm_min());
+  };
+  evaluations = 0;
+  EXPECT_THAT(GoldenSectionSearch(f, -1.0, 1.0, std::less<>()),
+              AlmostEquals(std::numeric_limits<double>::denorm_min(), 0));
+  EXPECT_THAT(evaluations, Eq(1551));
+  evaluations = 0;
+  EXPECT_THAT(Brent(f, -1.0, 1.0, std::less<>(), /*eps=*/0),
+              AlmostEquals(0, 0));
+  EXPECT_THAT(evaluations, Eq(0));
+}
+
 TEST_F(RootFindersTest, MinimumAt0) {
   int evaluations;
   auto abs = [&evaluations](double const x) {
     ++evaluations;
     return Abs(x);
   };
+
   evaluations = 0;
   EXPECT_THAT(GoldenSectionSearch(abs, -1.0, 1.0, std::less<>()),
               AlmostEquals(0, 0));
   EXPECT_THAT(evaluations, Eq(1551));
+
+  evaluations = 0;
+  EXPECT_THAT(Brent(abs, -1.0, 1.0, std::less<>(), 0), AlmostEquals(0, 0));
+  EXPECT_THAT(evaluations, Eq(1330));
 }
 
 TEST_F(RootFindersTest, SharpMinimum) {
