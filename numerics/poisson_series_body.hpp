@@ -89,7 +89,7 @@ auto Multiply(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   // times.
   std::vector<typename Result::AngularFrequencyAndPolynomials> periodic;
   periodic.reserve(left.periodic_.size() + right.periodic_.size() +
-                   left.periodic_.size() * right.periodic_.size());
+                   2 * left.periodic_.size() * right.periodic_.size());
   for (auto const& [ω, polynomials] : left.periodic_) {
     periodic.emplace_back(
         ω,
