@@ -624,8 +624,6 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
       [&dot, &logger, &step, t_min, t_max](
           auto const& residual) -> std::optional<AngularFrequency> {
     LOG(ERROR) << "step=" << step;
-    logger.Append(
-        "residuals", residual, mathematica::ExpressIn(Metre, Radian, Second));
     if (step == 0) {
       ++step;
       return AngularFrequency();
