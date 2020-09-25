@@ -271,8 +271,8 @@ TEST_F(RootFindersTest, MinimumAt0) {
   EXPECT_THAT(evaluations, Eq(1551));
 
   evaluations = 0;
-  EXPECT_THAT(Brent(abs, -1.0, 1.0, std::less<>(), 0), AlmostEquals(0, 0));
-  EXPECT_THAT(evaluations, Eq(1330));
+  EXPECT_THAT(Brent(abs, -1.0, 1.0, std::less<>(), 0), AlmostEquals(0, 1));
+  EXPECT_THAT(evaluations, Eq(1327));
 }
 
 TEST_F(RootFindersTest, SharpMinimum) {
@@ -290,7 +290,7 @@ TEST_F(RootFindersTest, SharpMinimum) {
   EXPECT_THAT(
       GoldenSectionSearch(f, t0 - π * Second, t0 + π * Second, std::less<>()),
       AlmostEquals(t0 + 1 * Second, 0));
-  EXPECT_THAT(evaluations, Eq(81));
+  EXPECT_THAT(evaluations, Eq(82));
 
   evaluations = 0;
   EXPECT_THAT(
@@ -329,11 +329,11 @@ TEST_F(RootFindersTest, SmoothMaximum) {
 
   evaluations = 0;
   EXPECT_THAT(GoldenSectionSearch(f, 0.0, π / 2, std::greater<>()),
-              AlmostEquals(1, 17'642'694));
-  EXPECT_THAT(evaluations, Eq(76));
+              AlmostEquals(1, 22'535'664));
+  EXPECT_THAT(evaluations, Eq(79));
   evaluations = 0;
   EXPECT_THAT(GoldenSectionSearch(f, π / 7, 9 * π / 14, std::greater<>()),
-              AlmostEquals(1, 8'131'392));
+              AlmostEquals(1, 9'447'534));
   EXPECT_THAT(evaluations, Eq(80));
 
   constexpr double ϵ = ScaleB(0.5, 1 - std::numeric_limits<double>::digits);
@@ -450,7 +450,7 @@ TEST_F(RootFindersTest, GoldenSectionSearch) {
       GoldenSectionSearch(
           sin,
           t_0 + 1.5 * Second, t_0 + 1.6 * Second, std::greater<>()),
-      AlmostEquals(t_0 + π / 2 * Second, 47453132));
+      AlmostEquals(t_0 + π / 2 * Second, 47453133));
 
   // A big interval will yield a semi-random minimum.
   EXPECT_THAT(GoldenSectionSearch(
