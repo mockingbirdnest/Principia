@@ -859,10 +859,8 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const origin = right.series_[i].origin();
     auto const integrand = PointwiseInnerProduct(
         left.AtOrigin(origin) * weight.AtOrigin(origin), right.series_[i]);
-    auto const integral =
-        quadrature::GaussLegendre<ldegree_ + rdegree_ + wdegree_>(
-            integrand, right.bounds_[i], right.bounds_[i + 1]);
-    result += integral;
+    auto const primitive = integrand.Primitive();
+    result += primitive(right.bounds_[i + 1]) - primitive(right.bounds_[i]);
   }
   return result / (t_max - t_min);
 }
@@ -893,10 +891,8 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const origin = left.series_[i].origin();
     auto const integrand = PointwiseInnerProduct(
         left.series_[i], right.AtOrigin(origin) * weight.AtOrigin(origin));
-    auto const integral =
-        quadrature::GaussLegendre<ldegree_ + rdegree_ + wdegree_>(
-            integrand, left.bounds_[i], left.bounds_[i + 1]);
-    result += integral;
+    auto const primitive = integrand.Primitive();
+    result += primitive(left.bounds_[i + 1]) - primitive(left.bounds_[i]);
   }
   return result / (t_max - t_min);
 }
