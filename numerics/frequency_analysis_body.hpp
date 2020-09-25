@@ -54,10 +54,10 @@ AngularFrequency PreciseMode(
     return result;
   };
 
-  return GoldenSectionSearch(amplitude,
-                             fft_mode.min,
-                             fft_mode.max,
-                             std::greater<>());
+  return Brent(amplitude,
+               fft_mode.min,
+               fft_mode.max,
+               std::greater<>());
 }
 
 template<int degree_,
