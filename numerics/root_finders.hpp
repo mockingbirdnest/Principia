@@ -2,6 +2,7 @@
 #pragma once
 
 #include <functional>
+#include <limits>
 #include <vector>
 
 #include "base/array.hpp"
@@ -44,16 +45,20 @@ Argument GoldenSectionSearch(Function f,
                              Compare compare);
 
 // Performs Brent’s procedure |localmin| from [Bre73], chapter 5, with an
-// absolute tolerance t=0.
+// absolute tolerance t set to the (subnormal) smallest strictly positive value
+// of |Difference<Argument>|.
 // The function searches for a minimum if compare is <, and a maximum if compare
 // is >.  No values of Compare other than std::less<> and std::greater<> are
 // allowed.
+// The default value of |eps| is √ϵ, for ϵ as defined in [Bre73], chapter 4,
+// (2.9).
 template<typename Argument, typename Function, typename Compare>
-Argument Brent(Function f,
-               Argument const& lower_bound,
-               Argument const& upper_bound,
-               Compare compare,
-               double eps);
+Argument Brent(
+    Function f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    Compare compare,
+    double eps = Sqrt(ScaleB(0.5, 1 - std::numeric_limits<double>::digits)));
 
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
