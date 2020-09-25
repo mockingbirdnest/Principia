@@ -2,6 +2,7 @@
 #pragma once
 
 #include <functional>
+#include <limits>
 #include <vector>
 
 #include "base/array.hpp"
