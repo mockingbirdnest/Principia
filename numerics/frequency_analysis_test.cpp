@@ -131,7 +131,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   Series0::PolynomialsByAngularFrequency polynomials;
 
   // Main harmonic.
-  polynomials.emplace(
+  polynomials.emplace_back(
       ω,
       Series0::Polynomials{/*sin=*/Series0::Polynomial({1 * Metre}, t0_),
                            /*cos=*/Series0::Polynomial({0 * Metre}, t0_)});
@@ -140,10 +140,11 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   for (int i = 0; i < 10; ++i) {
     auto const sin_amplitude = amplitude_distribution(random) * Metre;
     auto const cos_amplitude = amplitude_distribution(random) * Metre;
-    polynomials.emplace(ω * frequency_distribution(random),
-                        Series0::Polynomials{
-                            /*sin=*/Series0::Polynomial({sin_amplitude}, t0_),
-                            /*cos=*/Series0::Polynomial({cos_amplitude}, t0_)});
+    polynomials.emplace_back(
+        ω * frequency_distribution(random),
+        Series0::Polynomials{
+            /*sin=*/Series0::Polynomial({sin_amplitude}, t0_),
+            /*cos=*/Series0::Polynomial({cos_amplitude}, t0_)});
   }
   Series0 const sin(
       Series0::Polynomial({amplitude_distribution(random) * Metre}, t0_),
@@ -181,7 +182,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   Series0::PolynomialsByAngularFrequency polynomials;
 
   // Main harmonic.
-  polynomials.emplace(
+  polynomials.emplace_back(
       ω,
       Series0::Polynomials{
           /*sin=*/Series0::Polynomial(
