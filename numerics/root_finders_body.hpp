@@ -242,7 +242,7 @@ Argument Brent(Function f,
 
     // We do not use |std::numeric_limits<double>::epsilon()|, because it is 2ϵ
     // in Brent’s notation: Brent uses ϵ = β^(1-τ) / 2 for rounded arithmetic,
-    // see [Bre73], chapter 4, section 2, (2.9).
+    // see [Bre73], chapter 4, (2.9).
     constexpr double ϵ = ScaleB(0.5, 1 - std::numeric_limits<double>::digits);
     // In order to ensure convergence, eps should be no smaller than 2ϵ, see
     // [Bre73] chapter 5, section 5.

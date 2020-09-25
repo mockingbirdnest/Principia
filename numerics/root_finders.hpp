@@ -49,12 +49,15 @@ Argument GoldenSectionSearch(Function f,
 // The function searches for a minimum if compare is <, and a maximum if compare
 // is >.  No values of Compare other than std::less<> and std::greater<> are
 // allowed.
+// The default value of |eps| is √ϵ, for ϵ as defined in [Bre73], chapter 4,
+// (2.9).
 template<typename Argument, typename Function, typename Compare>
-Argument Brent(Function f,
-               Argument const& lower_bound,
-               Argument const& upper_bound,
-               Compare compare,
-               double eps);
+Argument Brent(
+    Function f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    Compare compare,
+    double eps = Sqrt(ScaleB(0.5, 1 - std::numeric_limits<double>::digits)));
 
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
