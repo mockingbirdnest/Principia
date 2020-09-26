@@ -869,10 +869,11 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result{};
+  auto const left_weight = left * weight;
   for (int i = 0; i < right.series_.size(); ++i) {
     Instant const origin = right.series_[i].origin();
-    auto const integrand = PointwiseInnerProduct(
-        left.AtOrigin(origin) * weight.AtOrigin(origin), right.series_[i]);
+    auto const integrand =
+        PointwiseInnerProduct(left_weight.AtOrigin(origin), right.series_[i]);
     auto const integral =
         quadrature::GaussLegendre<(ldegree_ + rdegree_ + wdegree_) / 2>(
             integrand, right.bounds_[i], right.bounds_[i + 1]);
@@ -903,10 +904,11 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result{};
+  auto const right_weight = right * weight;
   for (int i = 0; i < left.series_.size(); ++i) {
     Instant const origin = left.series_[i].origin();
-    auto const integrand = PointwiseInnerProduct(
-        left.series_[i], right.AtOrigin(origin) * weight.AtOrigin(origin));
+    auto const integrand =
+        PointwiseInnerProduct(left.series_[i], right_weight.AtOrigin(origin));
     auto const integral =
         quadrature::GaussLegendre<(ldegree_ + rdegree_ + wdegree_) / 2>(
             integrand, left.bounds_[i], left.bounds_[i + 1]);
