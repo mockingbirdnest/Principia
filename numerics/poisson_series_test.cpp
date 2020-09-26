@@ -451,22 +451,22 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
 }
 
 TEST_F(PiecewisePoissonSeriesTest, Dot) {
-  double const d1 = Dot(
+  double const d1 = Dot<double, double, 0, 0, 0, HornerEvaluator, 8>(
       pp_, p_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  double const d2 = Dot(
+  double const d2 = Dot<double, double, 0, 0, 0, HornerEvaluator, 8>(
       p_, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 1));
-  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 1));
+  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 0));
+  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 0));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, DotMultiorigin) {
   auto const p = p_.AtOrigin(t0_ + 2 * Second);
-  double const d1 = Dot(
+  double const d1 = Dot<double, double, 0, 0, 0, HornerEvaluator, 8>(
       pp_, p, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  double const d2 = Dot(
+  double const d2 = Dot<double, double, 0, 0, 0, HornerEvaluator, 8>(
       p, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 1));
-  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 1));
+  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 0));
+  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 0));
 }
 
 }  // namespace numerics
