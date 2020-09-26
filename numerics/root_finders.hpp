@@ -6,6 +6,8 @@
 #include <vector>
 
 #include "base/array.hpp"
+#include "numerics/scale_b.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -14,6 +16,7 @@ namespace internal_root_finders {
 
 using base::BoundedArray;
 using quantities::Derivative;
+using quantities::Sqrt;
 
 // Approximates a root of |f| between |lower_bound| and |upper_bound| by
 // bisection.  The result is less than one ULP from a root of any continuous
