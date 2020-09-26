@@ -82,7 +82,8 @@ class PoissonSeries {
     Polynomial cos;
   };
 
-  using PolynomialsByAngularFrequency = std::map<AngularFrequency, Polynomials>;
+  using PolynomialsByAngularFrequency =
+      std::vector<std::pair<AngularFrequency, Polynomials>>;
 
   PoissonSeries(Polynomial const& aperiodic,
                 PolynomialsByAngularFrequency const& periodic);
@@ -107,16 +108,16 @@ class PoissonSeries {
   PoissonSeries& operator-=(PoissonSeries<V, d, E> const& right);
 
  private:
-  using AngularFrequencyAndPolynomials =
-      std::pair<AngularFrequency, Polynomials>;
+  struct PrivateConstructor {};
 
-  // The vector elements are invalid after this call.
-  PoissonSeries(Polynomial aperiodic,
-                std::vector<AngularFrequencyAndPolynomials>& periodic);
+  PoissonSeries(PrivateConstructor,
+                Polynomial aperiodic,
+                PolynomialsByAngularFrequency periodic);
 
   Instant origin_;  // Common to all polynomials.
   Polynomial aperiodic_;
-  // All the keys in this map are positive.
+  // The frequencies in this vector are positive, distinct and in increasing
+  // order.
   PolynomialsByAngularFrequency periodic_;
 
   template<typename V, int r, template<typename, typename, int> class E>
@@ -164,6 +165,9 @@ class PoissonSeries {
   friend std::string mathematica::internal_mathematica::ToMathematicaExpression(
       PoissonSeries<V, d, E> const& polynomial,
       O express_in);
+  template<typename V, int d,
+           template<typename, typename, int> class E>
+  friend class PoissonSeries;
 };
 
 // Vector space of Poisson series.
