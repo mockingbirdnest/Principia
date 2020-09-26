@@ -171,7 +171,7 @@ PoissonSeries<Value, degree_, Evaluator>::AtOrigin(
         Polynomials{/*sin=*/sin * Cos(ω * shift) - cos * Sin(ω * shift),
                     /*cos=*/sin * Sin(ω * shift) + cos * Cos(ω * shift)});
   }
-  return {PrivateConstructor{}, std::move(aperiodic), std::move(periodic)};
+  return {TrustedPrivateConstructor{}, std::move(aperiodic), std::move(periodic)};
 }
 
 template<typename Value, int degree_,
@@ -290,6 +290,16 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
+    TrustedPrivateConstructor,
+    Polynomial aperiodic,
+    PolynomialsByAngularFrequency periodic)
+    : origin_(aperiodic.origin()),
+      aperiodic_(std::move(aperiodic)),
+      periodic_(std::move(periodic)) {}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 template<typename V, int d, template<typename, typename, int> class E>
 PoissonSeries<Value, degree_, Evaluator>&
 PoissonSeries<Value, degree_, Evaluator>::operator+=(
@@ -329,7 +339,7 @@ operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
         typename Result::Polynomials{/*sin=*/-polynomials.sin,
                                      /*cos=*/-polynomials.cos});
   }
-  return {typename Result::PrivateConstructor{},
+  return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
           std::move(periodic)};
 }
@@ -382,7 +392,9 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       ++it_right;
     }
   }
-  return {typename Result::PrivateConstructor{},
+  // Because we have done a merge on the periodic vectors, we can use the
+  // trusted constructor.
+  return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
           std::move(periodic)};
 }
@@ -435,7 +447,9 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       ++it_right;
     }
   }
-  return {typename Result::PrivateConstructor{},
+  // Because we have done a merge on the periodic vectors, we can use the
+  // trusted constructor.
+  return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
           std::move(periodic)};
 }
@@ -475,7 +489,7 @@ operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
         typename Result::Polynomials{/*sin=*/polynomials.sin * right,
                                      /*cos=*/polynomials.cos * right});
   }
-  return {typename Result::PrivateConstructor{},
+  return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
           std::move(periodic)};
 }
@@ -495,7 +509,7 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
         typename Result::Polynomials{/*sin=*/polynomials.sin / right,
                                      /*cos=*/polynomials.cos / right});
   }
-  return {typename Result::PrivateConstructor{},
+  return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
           std::move(periodic)};
 }
@@ -860,7 +874,7 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     auto const integrand = PointwiseInnerProduct(
         left.AtOrigin(origin) * weight.AtOrigin(origin), right.series_[i]);
     auto const integral =
-        quadrature::GaussLegendre<ldegree_ + rdegree_ + wdegree_>(
+        quadrature::GaussLegendre<(ldegree_ + rdegree_ + wdegree_) / 2>(
             integrand, right.bounds_[i], right.bounds_[i + 1]);
     result += integral;
   }
@@ -894,7 +908,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     auto const integrand = PointwiseInnerProduct(
         left.series_[i], right.AtOrigin(origin) * weight.AtOrigin(origin));
     auto const integral =
-        quadrature::GaussLegendre<ldegree_ + rdegree_ + wdegree_>(
+        quadrature::GaussLegendre<(ldegree_ + rdegree_ + wdegree_) / 2>(
             integrand, left.bounds_[i], left.bounds_[i + 1]);
     result += integral;
   }
