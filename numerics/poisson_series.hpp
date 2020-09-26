@@ -69,7 +69,7 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 class PoissonSeries {
  public:
-  static const int degree = degree_;
+  static constexpr int degree = degree_;
   using Polynomial =
       numerics::PolynomialInMonomialBasis<Value, Instant, degree_, Evaluator>;
 
@@ -277,6 +277,7 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 class PiecewisePoissonSeries {
  public:
+  static constexpr int degree = degree_;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
   PiecewisePoissonSeries(Interval<Instant> const& interval,

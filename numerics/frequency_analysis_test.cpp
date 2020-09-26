@@ -170,7 +170,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   // maximum.
   auto const precise_mode = PreciseMode(
       mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
-  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(6.4e-11_⑴)));
+  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.7e-11_⑴)));
 }
 
 TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
@@ -213,7 +213,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   // maximum.
   auto const precise_mode = PreciseMode(
       mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
-  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(5.3e-10_⑴)));
+  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.0e-11_⑴)));
 }
 
 TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
@@ -328,7 +328,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
 }
 
 TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
-  AngularFrequency const ω = 666.543 * π * Radian / Second;
+  AngularFrequency const ω = 6.66543 * π * Radian / Second;
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> amplitude_distribution(-10.0, 10.0);
   std::uniform_real_distribution<> perturbation_distribution(-1e-6, 1e-6);
