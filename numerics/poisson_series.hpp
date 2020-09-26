@@ -351,7 +351,7 @@ class PiecewisePoissonSeries {
   friend operator*(PiecewisePoissonSeries<L, l, E> const& left,
                    PoissonSeries<R, r, E> const& right);
   template<typename L, typename R, int l, int r, int w,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> class E, int p>
   typename Hilbert<L, R>::InnerProductType
   friend Dot(PoissonSeries<L, l, E> const& left,
              PiecewisePoissonSeries<R, r, E> const& right,
@@ -359,7 +359,7 @@ class PiecewisePoissonSeries {
              Instant const& t_min,
              Instant const& t_max);
   template<typename L, typename R, int l, int r, int w,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> class E, int p>
   typename Hilbert<L, R>::InnerProductType
   friend Dot(PiecewisePoissonSeries<L, l, E> const& left,
              PoissonSeries<R, r, E> const& right,
@@ -448,9 +448,12 @@ PiecewisePoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
 operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
           PoissonSeries<RValue, rdegree_, Evaluator> const& right);
 
+// TODO(phl): Remove the parameter |points| in the templates below and the
+// exporting of Dot from the namespace once we have a smarter Gauss integrator.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -458,7 +461,8 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -468,7 +472,8 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -476,7 +481,8 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -486,6 +492,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 }  // namespace internal_poisson_series
 
+using internal_poisson_series::Dot;
 using internal_poisson_series::PiecewisePoissonSeries;
 using internal_poisson_series::PoissonSeries;
 
