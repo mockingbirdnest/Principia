@@ -80,21 +80,6 @@ constexpr double Pow(double x) {
 // turned into multiplications at compile time.
 
 template<>
-inline constexpr double Pow<-3>(double x) {
-  return 1 / (x * x * x);
-}
-
-template<>
-inline constexpr double Pow<-2>(double x) {
-  return 1 / (x * x);
-}
-
-template<>
-inline constexpr double Pow<-1>(double x) {
-  return 1 / x;
-}
-
-template<>
 inline constexpr double Pow<0>(double x) {
   return 1;
 }
