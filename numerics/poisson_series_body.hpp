@@ -871,9 +871,10 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   Result result{};
   auto const left_weight = left * weight;
   for (int i = 0; i < right.series_.size(); ++i) {
-    Instant const origin = right.series_[i].origin();
-    auto const integrand =
-        PointwiseInnerProduct(left_weight.AtOrigin(origin), right.series_[i]);
+    auto integrand = [i, &left_weight, &right](Instant const& t) {
+      return Hilbert<LValue, RValue>::InnerProduct(left_weight(t),
+                                                   right.series_[i](t));
+    };
     auto const integral =
         quadrature::GaussLegendre<(ldegree_ + rdegree_ + wdegree_) / 2>(
             integrand, right.bounds_[i], right.bounds_[i + 1]);
@@ -906,9 +907,10 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
   Result result{};
   auto const right_weight = right * weight;
   for (int i = 0; i < left.series_.size(); ++i) {
-    Instant const origin = left.series_[i].origin();
-    auto const integrand =
-        PointwiseInnerProduct(left.series_[i], right_weight.AtOrigin(origin));
+    auto integrand = [i, &right_weight, &left](Instant const& t) {
+      return Hilbert<LValue, RValue>::InnerProduct(left.series_[i](t),
+                                                   right_weight(t));
+    };
     auto const integral =
         quadrature::GaussLegendre<(ldegree_ + rdegree_ + wdegree_) / 2>(
             integrand, left.bounds_[i], left.bounds_[i + 1]);
