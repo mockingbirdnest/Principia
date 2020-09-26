@@ -29,7 +29,6 @@ using quantities::Time;
 using quantities::Variation;
 using quantities::si::Metre;
 using quantities::si::Radian;
-using quantities::si::Second;
 namespace si = quantities::si;
 
 template<typename Value, int degree_,
