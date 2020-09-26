@@ -59,26 +59,25 @@ CubeRoot<Q> Cbrt(Q const& x) {
 
 template<int exponent>
 constexpr double Pow(double x) {
-  return std::pow(x, exponent);
+  // Use the Russian peasant algorithm for small exponents.
+  if constexpr (exponent > 0 && exponent < 32) {
+    // The end of the recursion is handled by the specializations below.
+    auto const y = Pow<exponent / 2>(x);
+    auto const y² = y * y;
+    if constexpr (exponent % 2 == 1) {
+      return y² * x;
+    } else {
+      return y²;
+    }
+  } else if constexpr (exponent < 0 && exponent > -32) {
+    return 1 / Pow<-exponent>(x);
+  } else {
+    return std::pow(x, exponent);
+  }
 }
 
 // Static specializations for frequently-used exponents, so that this gets
 // turned into multiplications at compile time.
-
-template<>
-inline constexpr double Pow<-3>(double x) {
-  return 1 / (x * x * x);
-}
-
-template<>
-inline constexpr double Pow<-2>(double x) {
-  return 1 / (x * x);
-}
-
-template<>
-inline constexpr double Pow<-1>(double x) {
-  return 1 / x;
-}
 
 template<>
 inline constexpr double Pow<0>(double x) {
