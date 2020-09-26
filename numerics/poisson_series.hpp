@@ -92,7 +92,7 @@ class PoissonSeries {
 
   Instant const& origin() const;
 
-  Value operator()(Instant const& t) const;
+  virtual Value operator()(Instant const& t) const;
 
   // Returns a copy of this series adjusted to the given origin.
   PoissonSeries AtOrigin(Instant const& origin) const;
@@ -292,7 +292,7 @@ class PiecewisePoissonSeries {
   Instant t_max() const;
 
   // t must be in the interval [t_min, t_max].
-  Value operator()(Instant const& t) const;
+  virtual Value operator()(Instant const& t) const;
 
   template<typename V, int d, template<typename, typename, int> class E>
   PiecewisePoissonSeries& operator+=(PoissonSeries<V, d, E> const& right);

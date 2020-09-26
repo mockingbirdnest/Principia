@@ -45,14 +45,53 @@ AngularFrequency PreciseMode(
   using Degree0 =
       PoissonSeries<typename Hilbert<Value>::NormalizedType, 0, Evaluator>;
 
-  auto amplitude = [&dot, &function, &weight](AngularFrequency const& ω) {
+  //TODO(phl):comment
+  class CachedFunction : public Function {
+   public:
+    explicit CachedFunction(Function const& function) :
+      Function(function),
+      function_(function) {}
+
+    Value operator()(Instant const& t) const override {
+      ++call_;
+      if (iteration_ == 0) {
+        auto const value = function_(t);
+        values_[evaluation_++] = value;
+        return value;
+      } else {
+        ++hit_;
+        return values_[evaluation_++];
+      }
+    }
+
+    void FinishIteration() {
+      LOG_EVERY_N(ERROR, 1)<<hit_<<"/"<<call_;
+      ++iteration_;
+      evaluation_ = 0;
+    }
+
+
+    mutable int call_ = 0;
+    mutable int hit_ = 0;
+   private:
+    Function const& function_;
+    mutable std::array<Value, 50_000> values_;
+    mutable int evaluation_ = 0;
+    mutable int iteration_ = 0;
+  };
+
+  CachedFunction cached_function{function};
+
+  auto amplitude = [&cached_function, &dot, &function, &weight](
+                       AngularFrequency const& ω) {
     constexpr int dimension = Hilbert<Value>::dimension;
     Instant const& t0 = weight.origin();
     std::array<Degree0, 2 * dimension> const basis =
         PoissonSeriesBasisGenerator<Degree0, dimension>::Basis(ω, t0);
     typename Hilbert<Value>::InnerProductType result{};
     for (int i = 0; i < basis.size(); ++i) {
-      auto const amplitude = dot(function, basis[i], weight);
+      auto const amplitude = dot(cached_function, basis[i], weight);
+      cached_function.FinishIteration();
       result += amplitude * amplitude;
     }
     return result;

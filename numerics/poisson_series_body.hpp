@@ -913,7 +913,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
   Result result{};
   for (int i = 0; i < left.series_.size(); ++i) {
     auto integrand = [i, &left, &right, &weight](Instant const& t) {
-      return Hilbert<LValue, RValue>::InnerProduct(left.series_[i](t),
+      return Hilbert<LValue, RValue>::InnerProduct(left/*.series_[i]*/(t),
                                                    right (t) * weight(t));
     };
     auto const integral = quadrature::GaussLegendre<points>(
