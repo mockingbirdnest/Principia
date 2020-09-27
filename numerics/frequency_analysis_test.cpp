@@ -90,13 +90,13 @@ DotImplementation::operator()(LFunction const& left,
   // PiecewisePoissonSeriesProjection doesn't yield a reasonable solution.  This
   // doesn't happen with real life functions, which are much smoother than the
   // test functions.
-  return Dot<std::invoke_result_t<LFunction, Instant>,
-             std::invoke_result_t<RFunction, Instant>,
-             LFunction::degree,
-             RFunction::degree,
-             Weight::degree,
-             HornerEvaluator,
-             /*points=*/30>(left, right, weight, t_min_, t_max_);
+  return InnerProduct<std::invoke_result_t<LFunction, Instant>,
+                      std::invoke_result_t<RFunction, Instant>,
+                      LFunction::degree,
+                      RFunction::degree,
+                      Weight::degree,
+                      HornerEvaluator,
+                      /*points=*/30>(left, right, weight, t_min_, t_max_);
 }
 
 class FrequencyAnalysisTest : public ::testing::Test {

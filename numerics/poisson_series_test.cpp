@@ -240,15 +240,15 @@ TEST_F(PoissonSeriesTest, Primitive) {
                    expected_primitive(5 * Second), 1, 2));
 }
 
-TEST_F(PoissonSeriesTest, Dot) {
+TEST_F(PoissonSeriesTest, InnerProduct) {
   Instant const t_min = t0_;
   Instant const t_max = t0_ + 3 * Second;
   // Computed using Mathematica.
-  EXPECT_THAT(Dot(*pa_,
-                  *pb_,
-                  apodization::Hann<HornerEvaluator>(t_min, t_max),
-                  t_min,
-                  t_max),
+  EXPECT_THAT(InnerProduct(*pa_,
+                           *pb_,
+                           apodization::Hann<HornerEvaluator>(t_min, t_max),
+                           t_min,
+                           t_max),
               AlmostEquals(-381.25522770148542400, 71));
 }
 
@@ -450,20 +450,20 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
   }
 }
 
-TEST_F(PiecewisePoissonSeriesTest, Dot) {
-  double const d1 = Dot<double, double, 0, 0, 0, HornerEvaluator, 8>(
+TEST_F(PiecewisePoissonSeriesTest, InnerProduct) {
+  double const d1 = InnerProduct<double, double, 0, 0, 0, HornerEvaluator, 8>(
       pp_, p_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  double const d2 = Dot<double, double, 0, 0, 0, HornerEvaluator, 8>(
+  double const d2 = InnerProduct<double, double, 0, 0, 0, HornerEvaluator, 8>(
       p_, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
   EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 0));
   EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 0));
 }
 
-TEST_F(PiecewisePoissonSeriesTest, DotMultiorigin) {
+TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
   auto const p = p_.AtOrigin(t0_ + 2 * Second);
-  double const d1 = Dot<double, double, 0, 0, 0, HornerEvaluator, 8>(
+  double const d1 = InnerProduct<double, double, 0, 0, 0, HornerEvaluator, 8>(
       pp_, p, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  double const d2 = Dot<double, double, 0, 0, 0, HornerEvaluator, 8>(
+  double const d2 = InnerProduct<double, double, 0, 0, 0, HornerEvaluator, 8>(
       p, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
   EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 0));
   EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 0));

@@ -259,18 +259,15 @@ std::ostream& operator<<(
 // Technically the weight function must be nonnegative for this to be an inner
 // product.  Not sure how this works with the flat-top windows, which can be
 // negative.  Note that the result is normalized by dividing by (t_max - t_min).
-// NOTE(phl): |points| is currently unused but ensures that the template has the
-// same profile as the one for |PiecewisePoissonSeries|.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator,
-         int points = 0>
+         template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType
-Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max);
+InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight,
+             Instant const& t_min,
+             Instant const& t_max);
 
 // A function defined by Poisson series piecewise.  Each of the Poisson series
 // making up the function applies over the semi-open interval
@@ -357,19 +354,19 @@ class PiecewisePoissonSeries {
   template<typename L, typename R, int l, int r, int w,
            template<typename, typename, int> class E, int p>
   typename Hilbert<L, R>::InnerProductType
-  friend Dot(PoissonSeries<L, l, E> const& left,
-             PiecewisePoissonSeries<R, r, E> const& right,
-             PoissonSeries<double, w, E> const& weight,
-             Instant const& t_min,
-             Instant const& t_max);
+  friend InnerProduct(PoissonSeries<L, l, E> const& left,
+                      PiecewisePoissonSeries<R, r, E> const& right,
+                      PoissonSeries<double, w, E> const& weight,
+                      Instant const& t_min,
+                      Instant const& t_max);
   template<typename L, typename R, int l, int r, int w,
            template<typename, typename, int> class E, int p>
   typename Hilbert<L, R>::InnerProductType
-  friend Dot(PiecewisePoissonSeries<L, l, E> const& left,
-             PoissonSeries<R, r, E> const& right,
-             PoissonSeries<double, w, E> const& weight,
-             Instant const& t_min,
-             Instant const& t_max);
+  friend InnerProduct(PiecewisePoissonSeries<L, l, E> const& left,
+                      PoissonSeries<R, r, E> const& right,
+                      PoissonSeries<double, w, E> const& weight,
+                      Instant const& t_min,
+                      Instant const& t_max);
   template<typename V, int d,
            template<typename, typename, int> class E,
            typename O>
@@ -457,44 +454,44 @@ template<typename LValue, typename RValue,
          template<typename, typename, int> class Evaluator,
          int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
-Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight);
+InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight);
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
          int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
-Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max);
+InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight,
+             Instant const& t_min,
+             Instant const& t_max);
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
          int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
-Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight);
+InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight);
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
          int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
-Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max);
+InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight,
+             Instant const& t_min,
+             Instant const& t_max);
 
 }  // namespace internal_poisson_series
 
-using internal_poisson_series::Dot;
+using internal_poisson_series::InnerProduct;
 using internal_poisson_series::PiecewisePoissonSeries;
 using internal_poisson_series::PoissonSeries;
 
