@@ -34,23 +34,27 @@ template<typename Function,
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Degree0 =
       PoissonSeries<typename Hilbert<Value>::NormalizedType, 0, Evaluator>;
 
-  auto amplitude = [&function, &weight](AngularFrequency const& ω) {
-    constexpr int dimension = Hilbert<Value>::dimension;
-    Instant const& t0 = weight.origin();
-    std::array<Degree0, 2 * dimension> const basis =
-        PoissonSeriesBasisGenerator<Degree0, dimension>::Basis(ω, t0);
-    typename Hilbert<Value>::InnerProductType result{};
-    for (int i = 0; i < basis.size(); ++i) {
-      auto const amplitude = InnerProduct(function, basis[i], weight);
-      result += amplitude * amplitude;
-    }
-    return result;
-  };
+  auto amplitude =
+      [&function, t_min, t_max, &weight](AngularFrequency const& ω) {
+        constexpr int dimension = Hilbert<Value>::dimension;
+        Instant const& t0 = weight.origin();
+        std::array<Degree0, 2 * dimension> const basis =
+            PoissonSeriesBasisGenerator<Degree0, dimension>::Basis(ω, t0);
+        typename Hilbert<Value>::InnerProductType result{};
+        for (int i = 0; i < basis.size(); ++i) {
+          auto const amplitude =
+              InnerProduct(function, basis[i], weight, t_min, t_max);
+          result += amplitude * amplitude;
+        }
+        return result;
+      };
 
   return Brent(amplitude,
                fft_mode.min,
@@ -65,7 +69,9 @@ template<int degree_,
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 Projection(AngularFrequency const& ω,
            Function const& function,
-           PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+           PoissonSeries<double, wdegree_, Evaluator> const& weight,
+           Instant const& t_min,
+           Instant const& t_max) {
   std::optional<AngularFrequency> optional_ω = ω;
 
   // A calculator that returns optional_ω once and then stops.
@@ -77,7 +83,8 @@ Projection(AngularFrequency const& ω,
 
   return IncrementalProjection<degree_>(function,
                                         angular_frequency_calculator,
-                                        weight);
+                                        weight,
+                                        t_min, t_max);
 }
 
 template<int degree_,
@@ -87,7 +94,9 @@ template<int degree_,
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 IncrementalProjection(Function const& function,
                       AngularFrequencyCalculator const& calculator,
-                      PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+                      PoissonSeries<double, wdegree_, Evaluator> const& weight,
+                      Instant const& t_min,
+                      Instant const& t_max) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
   using Norm² = typename Hilbert<Value>::InnerProductType;
@@ -125,8 +134,8 @@ IncrementalProjection(Function const& function,
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
   UnboundedVector<double> A(basis_size, uninitialized);
 
-  Norm² const F₀ = InnerProduct(function, basis[0], weight);
-  Norm² const Q₀₀ = InnerProduct(basis[0], basis[0], weight);
+  Norm² const F₀ = InnerProduct(function, basis[0], weight, t_min, t_max);
+  Norm² const Q₀₀ = InnerProduct(basis[0], basis[0], weight, t_min, t_max);
   α[0][0] = 1 / Sqrt(Q₀₀);
   A[0] = F₀ / Q₀₀;
 
@@ -137,12 +146,12 @@ IncrementalProjection(Function const& function,
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
       // Contains Fₘ.
-      Norm² const F = InnerProduct(f, basis[m], weight);
+      Norm² const F = InnerProduct(f, basis[m], weight, t_min, t_max);
 
       // This vector contains Qₘⱼ.
       UnboundedVector<Norm²> Q(m + 1, uninitialized);
       for (int j = 0; j <= m; ++j) {
-        Q[j] = InnerProduct(basis[m], basis[j], weight);
+        Q[j] = InnerProduct(basis[m], basis[j], weight, t_min, t_max);
       }
 
       // This vector contains Bⱼ⁽ᵐ⁾.

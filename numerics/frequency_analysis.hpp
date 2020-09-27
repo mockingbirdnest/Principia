@@ -32,7 +32,9 @@ template<typename Function,
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight);
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max);
 
 // Computes the Кудрявцев projection of |function| on a basis with angular
 // frequency ω and maximum degree |degree_|.  See [Kud07].
@@ -43,7 +45,9 @@ template<int degree_,
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 Projection(AngularFrequency const& ω,
            Function const& function,
-           PoissonSeries<double, wdegree_, Evaluator> const& weight);
+           PoissonSeries<double, wdegree_, Evaluator> const& weight,
+           Instant const& t_min,
+           Instant const& t_max);
 
 // AngularFrequencyCalculator is a templated functor that implements the
 // extraction of the most relevant frequency out of a (mostly periodic)
@@ -70,7 +74,9 @@ template<int degree_,
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 IncrementalProjection(Function const& function,
                       AngularFrequencyCalculator const& calculator,
-                      PoissonSeries<double, wdegree_, Evaluator> const& weight);
+                      PoissonSeries<double, wdegree_, Evaluator> const& weight,
+                      Instant const& t_min,
+                      Instant const& t_max);
 
 }  // namespace internal_frequency_analysis
 
