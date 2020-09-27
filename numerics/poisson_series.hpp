@@ -60,6 +60,10 @@ using quantities::Product;
 using quantities::Quotient;
 using quantities::Time;
 
+// The trigonometric functions are by default assumed to look like a polynomial
+// of this degree over an interval of a piecewise series.
+constexpr int estimated_trigonometric_degree = 1;
+
 // A Poisson series is the sum of terms of the form:
 //   aₙtⁿ      aₙₖ tⁿ sin ωₖ t      aₙₖ tⁿ cos ωₖ t
 // Terms of the first kind are called aperiodic, terms of the second and third
@@ -452,7 +456,9 @@ operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
-         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
+         int points = (ldegree_ + estimated_trigonometric_degree +
+                       rdegree_ + estimated_trigonometric_degree +
+                       wdegree_ + estimated_trigonometric_degree) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
              PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -461,7 +467,9 @@ InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
-         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
+         int points = (ldegree_ + estimated_trigonometric_degree +
+                       rdegree_ + estimated_trigonometric_degree +
+                       wdegree_ + estimated_trigonometric_degree) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
              PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -472,7 +480,9 @@ InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
-         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
+         int points = (ldegree_ + estimated_trigonometric_degree +
+                       rdegree_ + estimated_trigonometric_degree +
+                       wdegree_ + estimated_trigonometric_degree) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
              PoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -481,7 +491,9 @@ InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
-         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
+         int points = (ldegree_ + estimated_trigonometric_degree +
+                       rdegree_ + estimated_trigonometric_degree +
+                       wdegree_ + estimated_trigonometric_degree) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
              PoissonSeries<RValue, rdegree_, Evaluator> const& right,

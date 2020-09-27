@@ -316,7 +316,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
 }
 
 TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
-  AngularFrequency const ω = 6.66543 * π * Radian / Second;
+  AngularFrequency const ω = 0.0566543 * π * Radian / Second;
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> amplitude_distribution(-10.0, 10.0);
   std::uniform_real_distribution<> perturbation_distribution(-1e-6, 1e-6);
@@ -332,7 +332,7 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   // Build a series that is based on |series| with different perturbations over
   // different intervals.
   PiecewiseSeries4 piecewise_series({t0_, t0_ + 1 * Second}, series);
-  for (int i = 1; i < 3; ++i) {
+  for (int i = 1; i < 10; ++i) {
     auto const perturbation_sin =
         random_polynomial4_(t0_, random, perturbation_distribution);
     auto const perturbation_cos =
@@ -347,17 +347,18 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   Instant const t_min = piecewise_series.t_min();
   Instant const t_max = piecewise_series.t_max();
 
-  // Projection on a 4th degree basis.  The errors are of the order of the
-  // perturbation.
+  // Projection on a 4th degree basis.  The approximation is only as good as the
+  // Gauss-Legendre integration.
   auto const projection4 =
       Projection<4>(ω,
                     piecewise_series,
-                    apodization::Hann<HornerEvaluator>(t_min, t_max),
+                    apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
-    EXPECT_THAT(projection4(t0_ + i * Radian / ω),
-                RelativeErrorFrom(series(t0_ + i * Radian / ω),
-                                  AllOf(Gt(6.2e-9), Lt(3.2e-4))));
+    EXPECT_THAT(
+        projection4(t_min + i * (t_max - t_min) / 100),
+        RelativeErrorFrom(series(t0_ + i * (t_max - t_min) / 100),
+                          AllOf(Gt(4.4e-8), Lt(6.5e-2))));
   }
 }
 
