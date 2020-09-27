@@ -630,20 +630,15 @@ std::ostream& operator<<(
   return out;
 }
 
-template<typename LValue,
-         typename RValue,
-         int ldegree_,
-         int rdegree_,
-         int wdegree_,
-         template<typename, typename, int>
-         class Evaluator,
-         int points>
-typename Hilbert<LValue, RValue>::InnerProductType Dot(
-    PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max) {
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator>
+typename Hilbert<LValue, RValue>::InnerProductType
+InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight,
+             Instant const& t_min,
+             Instant const& t_max) {
   auto const integrand = PointwiseInnerProduct(left, right) * weight;
   auto const primitive = integrand.Primitive();
   return (primitive(t_max) - primitive(t_min)) / (t_max - t_min);
@@ -981,11 +976,14 @@ template<typename LValue,
          template<typename, typename, int>
          class Evaluator,
          int points>
-typename Hilbert<LValue, RValue>::InnerProductType Dot(
-    PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight) {
-  return Dot<LValue, RValue, ldegree_, rdegree_, wdegree_, Evaluator, points>(
+typename Hilbert<LValue, RValue>::InnerProductType
+InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+  return InnerProduct<LValue, RValue,
+                      ldegree_, rdegree_, wdegree_,
+                      Evaluator,
+                      points>(
       left, right, weight, right.t_min(), right.t_max());
 }
 
@@ -997,12 +995,12 @@ template<typename LValue,
          template<typename, typename, int>
          class Evaluator,
          int points>
-typename Hilbert<LValue, RValue>::InnerProductType Dot(
-    PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max) {
+typename Hilbert<LValue, RValue>::InnerProductType
+InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight,
+             Instant const& t_min,
+             Instant const& t_max) {
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result{};
@@ -1026,12 +1024,15 @@ template<typename LValue,
          template<typename, typename, int>
          class Evaluator,
          int points>
-typename Hilbert<LValue, RValue>::InnerProductType Dot(
-    PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight) {
-  return Dot<LValue, RValue, ldegree_, rdegree_, wdegree_, Evaluator, points>(
-      left, right, weight, left.t_min(), left.t_max());
+typename Hilbert<LValue, RValue>::InnerProductType
+InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight) {
+  return InnerProduct<LValue, RValue,
+                      ldegree_, rdegree_, wdegree_,
+                      Evaluator,
+                      points>(
+       left, right, weight, left.t_min(), left.t_max());
 }
 
 template<typename LValue,
@@ -1042,12 +1043,12 @@ template<typename LValue,
          template<typename, typename, int>
          class Evaluator,
          int points>
-typename Hilbert<LValue, RValue>::InnerProductType Dot(
-    PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max) {
+typename Hilbert<LValue, RValue>::InnerProductType
+InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight,
+             Instant const& t_min,
+             Instant const& t_max) {
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result{};

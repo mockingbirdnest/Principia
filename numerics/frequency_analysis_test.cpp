@@ -59,46 +59,6 @@ using ::testing::Gt;
 using ::testing::Lt;
 namespace si = quantities::si;
 
-class DotImplementation {
- public:
-  DotImplementation(Instant const& t_min, Instant const& t_max);
-
-  template<typename LFunction, typename RFunction, typename Weight>
-  typename Hilbert<std::invoke_result_t<LFunction, Instant>,
-                   std::invoke_result_t<RFunction, Instant>>::InnerProductType
-  operator()(LFunction const& left,
-             RFunction const& right,
-             Weight const& weight) const;
-
- private:
-  Instant const t_min_;
-  Instant const t_max_;
-};
-
-DotImplementation::DotImplementation(Instant const& t_min,
-                                     Instant const& t_max)
-    : t_min_(t_min),
-      t_max_(t_max) {}
-
-template<typename LFunction, typename RFunction, typename Weight>
-typename Hilbert<std::invoke_result_t<LFunction, Instant>,
-                 std::invoke_result_t<RFunction, Instant>>::InnerProductType
-DotImplementation::operator()(LFunction const& left,
-                              RFunction const& right,
-                              Weight const& weight) const {
-  // We need to use a large number of points otherwise the test
-  // PiecewisePoissonSeriesProjection doesn't yield a reasonable solution.  This
-  // doesn't happen with real life functions, which are much smoother than the
-  // test functions.
-  return Dot<std::invoke_result_t<LFunction, Instant>,
-             std::invoke_result_t<RFunction, Instant>,
-             LFunction::degree,
-             RFunction::degree,
-             Weight::degree,
-             HornerEvaluator,
-             /*points=*/30>(left, right, weight, t_min_, t_max_);
-}
-
 class FrequencyAnalysisTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
@@ -174,12 +134,13 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   auto const mode = transform->Mode();
   EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
 
-  DotImplementation dot(t_min, t_max);
-
   // The precise analysis is only limited by our ability to pinpoint the
   // maximum.
-  auto const precise_mode = PreciseMode(
-      mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  auto const precise_mode =
+      PreciseMode(mode,
+                  sin,
+                  apodization::Hann<HornerEvaluator>(t_min, t_max),
+                  t_min, t_max);
   EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.7e-11_⑴)));
 }
 
@@ -217,12 +178,13 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   auto const mode = transform->Mode();
   EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
 
-  DotImplementation dot(t_min, t_max);
-
   // The precise analysis is only limited by our ability to pinpoint the
   // maximum.
-  auto const precise_mode = PreciseMode(
-      mode, sin, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  auto const precise_mode =
+      PreciseMode(mode,
+                  sin,
+                  apodization::Hann<HornerEvaluator>(t_min, t_max),
+                  t_min, t_max);
   EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.0e-11_⑴)));
 }
 
@@ -239,27 +201,35 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
 
   Instant const t_min = t0_;
   Instant const t_max = t0_ + 100 * Radian / ω;
-  DotImplementation const dot(t_min, t_max);
 
   // Projection on a 4th degree basis accurately reconstructs the function.
-  auto const projection4 = Projection<4>(
-      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  auto const projection4 =
+      Projection<4>(ω,
+                    series,
+                    apodization::Hann<HornerEvaluator>(t_min, t_max),
+                    t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection4(t0_ + i * Radian / ω),
                 AlmostEquals(series(t0_ + i * Radian / ω), 0, 2688));
   }
 
   // Projection on a 5th degree basis is also accurate.
-  auto const projection5 = Projection<5>(
-      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  auto const projection5 =
+      Projection<5>(ω,
+                    series,
+                    apodization::Hann<HornerEvaluator>(t_min, t_max),
+                    t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection5(t0_ + i * Radian / ω),
                 AlmostEquals(series(t0_ + i * Radian / ω), 0, 8000));
   }
 
   // Projection on a 3rd degree basis introduces significant errors.
-  auto const projection3 = Projection<3>(
-      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  auto const projection3 =
+      Projection<3>(ω,
+                    series,
+                    apodization::Hann<HornerEvaluator>(t_min, t_max),
+                    t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection3(t0_ + i * Radian / ω),
                 RelativeErrorFrom(series(t0_ + i * Radian / ω),
@@ -309,27 +279,35 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
 
   Instant const t_min = t0_;
   Instant const t_max = t0_ + 100 * Radian / ω;
-  DotImplementation const dot(t_min, t_max);
 
   // Projection on a 4th degree basis accurately reconstructs the function.
-  auto const projection4 = Projection<4>(
-      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  auto const projection4 =
+      Projection<4>(ω,
+                    series,
+                    apodization::Hann<HornerEvaluator>(t_min, t_max),
+                    t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection4(t0_ + i * Radian / ω),
                 AlmostEquals(series(t0_ + i * Radian / ω), 0, 4016));
   }
 
   // Projection on a 5th degree basis is also accurate.
-  auto const projection5 = Projection<5>(
-      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  auto const projection5 =
+      Projection<5>(ω,
+                    series,
+                    apodization::Hann<HornerEvaluator>(t_min, t_max),
+                    t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection5(t0_ + i * Radian / ω),
                 AlmostEquals(series(t0_ + i * Radian / ω), 0, 5376));
   }
 
   // Projection on a 3rd degree basis introduces significant errors.
-  auto const projection3 = Projection<3>(
-      ω, series, apodization::Hann<HornerEvaluator>(t_min, t_max), dot);
+  auto const projection3 =
+      Projection<3>(ω,
+                    series,
+                    apodization::Hann<HornerEvaluator>(t_min, t_max),
+                    t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection3(t0_ + i * Radian / ω),
                 RelativeErrorFrom(series(t0_ + i * Radian / ω),
@@ -338,7 +316,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
 }
 
 TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
-  AngularFrequency const ω = 6.66543 * π * Radian / Second;
+  AngularFrequency const ω = 0.0566543 * π * Radian / Second;
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> amplitude_distribution(-10.0, 10.0);
   std::uniform_real_distribution<> perturbation_distribution(-1e-6, 1e-6);
@@ -354,7 +332,7 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   // Build a series that is based on |series| with different perturbations over
   // different intervals.
   PiecewiseSeries4 piecewise_series({t0_, t0_ + 1 * Second}, series);
-  for (int i = 1; i < 3; ++i) {
+  for (int i = 1; i < 10; ++i) {
     auto const perturbation_sin =
         random_polynomial4_(t0_, random, perturbation_distribution);
     auto const perturbation_cos =
@@ -368,19 +346,19 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
 
   Instant const t_min = piecewise_series.t_min();
   Instant const t_max = piecewise_series.t_max();
-  DotImplementation const dot(t_min, t_max);
 
-  // Projection on a 4th degree basis.  The errors are of the order of the
-  // perturbation.
+  // Projection on a 4th degree basis.  The approximation is only as good as the
+  // Gauss-Legendre integration.
   auto const projection4 =
       Projection<4>(ω,
                     piecewise_series,
-                    apodization::Hann<HornerEvaluator>(t_min, t_max),
-                    dot);
+                    apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
+                    t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
-    EXPECT_THAT(projection4(t0_ + i * Radian / ω),
-                RelativeErrorFrom(series(t0_ + i * Radian / ω),
-                                  AllOf(Gt(6.2e-9), Lt(3.2e-4))));
+    EXPECT_THAT(
+        projection4(t_min + i * (t_max - t_min) / 100),
+        RelativeErrorFrom(series(t0_ + i * (t_max - t_min) / 100),
+                          AllOf(Gt(4.4e-8), Lt(6.5e-2))));
   }
 }
 
@@ -409,7 +387,6 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
   Instant const t_min = t0_;
   Instant const t_max =
       t0_ + 200 * Radian / *std::max_element(ωs.cbegin(), ωs.cend());
-  DotImplementation const dot(t_min, t_max);
 
   // A perfect calculator for the frequencies of the series.
   int ω_index = 0;
@@ -441,7 +418,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
       IncrementalProjection<4>(series.value(),
                                angular_frequency_calculator,
                                apodization::Hann<HornerEvaluator>(t_min, t_max),
-                               dot);
+                               t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
@@ -472,7 +449,6 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
   Instant const t_min = t0_;
   Instant const t_max =
       t0_ + 200 * Radian / *std::max_element(ωs.cbegin(), ωs.cend());
-  DotImplementation const dot(t_min, t_max);
 
   // A perfect calculator for the frequencies of the series.
   int ω_index = 0;
@@ -507,7 +483,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
       IncrementalProjection<4>(series,
                                angular_frequency_calculator,
                                apodization::Hann<HornerEvaluator>(t_min, t_max),
-                               dot);
+                               t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
