@@ -127,15 +127,15 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
   }
   {
     auto const sum = *pa_ + *pb_;
-    EXPECT_THAT(
-        sum(t0_ + 1 * Second),
-        AlmostEquals((*pa_)(t0_ + 1 * Second) + (*pb_)(t0_ + 1 * Second), 1));
+    EXPECT_THAT(sum(t0_ + 1 * Second),
+                AlmostEquals((*pa_)(t0_ + 1 * Second) +
+                                 (*pb_)(t0_ + 1 * Second), 1));
   }
   {
     auto const difference = *pa_ - *pb_;
-    EXPECT_THAT(
-        difference(t0_ + 1 * Second),
-        AlmostEquals((*pa_)(t0_ + 1 * Second) - (*pb_)(t0_ + 1 * Second), 0));
+    EXPECT_THAT(difference(t0_ + 1 * Second),
+                AlmostEquals((*pa_)(t0_ + 1 * Second) -
+                                 (*pb_)(t0_ + 1 * Second), 0));
   }
   {
     auto const left_product = 3 * *pa_;
@@ -156,9 +156,9 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
 
 TEST_F(PoissonSeriesTest, Algebra) {
   auto const product = *pa_ * *pb_;
-  EXPECT_THAT(
-      product(t0_ + 1 * Second),
-      AlmostEquals((*pa_)(t0_ + 1 * Second) * (*pb_)(t0_ + 1 * Second), 6, 38));
+  EXPECT_THAT(product(t0_ + 1 * Second),
+              AlmostEquals((*pa_)(t0_ + 1 * Second) *
+                               (*pb_)(t0_ + 1 * Second), 6, 38));
 }
 
 TEST_F(PoissonSeriesTest, AtOrigin) {
@@ -177,25 +177,32 @@ TEST_F(PoissonSeriesTest, AtOrigin) {
 
 TEST_F(PoissonSeriesTest, PointwiseInnerProduct) {
   using Degree2 = PoissonSeries<Displacement<World>, 2, HornerEvaluator>;
-  Degree2::Polynomial::Coefficients const coefficients_a(
-      {Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre}),
-       Velocity<World>(
-           {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second}),
-       Vector<Acceleration, World>({1 * Metre / Second / Second,
+  Degree2::Polynomial::Coefficients const coefficients_a({
+      Displacement<World>({0 * Metre,
+                            0 * Metre,
+                            1 * Metre}),
+      Velocity<World>({0 * Metre / Second,
+                        1 * Metre / Second,
+                        0 * Metre / Second}),
+      Vector<Acceleration, World>({1 * Metre / Second / Second,
                                     0 * Metre / Second / Second,
                                     0 * Metre / Second / Second})});
-  Degree2::Polynomial::Coefficients const coefficients_b(
-      {Displacement<World>({0 * Metre, 2 * Metre, 3 * Metre}),
-       Velocity<World>(
-           {-1 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second}),
-       Vector<Acceleration, World>({1 * Metre / Second / Second,
-                                    1 * Metre / Second / Second,
-                                    -2 * Metre / Second / Second})});
+  Degree2::Polynomial::Coefficients const coefficients_b({
+      Displacement<World>({0 * Metre,
+                           2 * Metre,
+                           3 * Metre}),
+      Velocity<World>({-1 * Metre / Second,
+                       1 * Metre / Second,
+                       0 * Metre / Second}),
+      Vector<Acceleration, World>({1 * Metre / Second / Second,
+                                   1 * Metre / Second / Second,
+                                   -2 * Metre / Second / Second})});
   Degree2 const pa(Degree2::Polynomial({coefficients_a}, t0_), {{}});
   Degree2 const pb(Degree2::Polynomial({coefficients_b}, t0_), {{}});
 
   auto const product = PointwiseInnerProduct(pa, pb);
-  EXPECT_THAT(product(t0_ + 1 * Second), AlmostEquals(5 * Metre * Metre, 0));
+  EXPECT_THAT(product(t0_ + 1 * Second),
+              AlmostEquals(5 * Metre * Metre, 0));
 }
 
 TEST_F(PoissonSeriesTest, Fourier) {
@@ -285,11 +292,10 @@ TEST_F(PoissonSeriesTest, Primitive) {
                 AlmostEquals(expected_primitive(i * Second), 0, 6));
   }
 
-  EXPECT_THAT(pb_->Integrate(t0_ + 5 * Second, t0_ + 13 * Second),
-              AlmostEquals(expected_primitive(13 * Second) -
-                               expected_primitive(5 * Second),
-                           1,
-                           2));
+  EXPECT_THAT(
+      pb_->Integrate(t0_ + 5 * Second, t0_ + 13 * Second),
+      AlmostEquals(expected_primitive(13 * Second) -
+                   expected_primitive(5 * Second), 1, 2));
 }
 
 TEST_F(PoissonSeriesTest, InnerProduct) {
