@@ -86,7 +86,17 @@ typename Hilbert<std::invoke_result_t<LFunction, Instant>,
 DotImplementation::operator()(LFunction const& left,
                               RFunction const& right,
                               Weight const& weight) const {
-  return Dot(left, right, weight, t_min_, t_max_);
+  // We need to use a large number of points otherwise the test
+  // PiecewisePoissonSeriesProjection doesn't yield a reasonable solution.  This
+  // doesn't happen with real life functions, which are much smoother than the
+  // test functions.
+  return Dot<std::invoke_result_t<LFunction, Instant>,
+             std::invoke_result_t<RFunction, Instant>,
+             LFunction::degree,
+             RFunction::degree,
+             Weight::degree,
+             HornerEvaluator,
+             /*points=*/30>(left, right, weight, t_min_, t_max_);
 }
 
 class FrequencyAnalysisTest : public ::testing::Test {
@@ -370,7 +380,7 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection4(t0_ + i * Radian / ω),
                 RelativeErrorFrom(series(t0_ + i * Radian / ω),
-                                  AllOf(Gt(2.1e-7), Lt(8.8e-4))));
+                                  AllOf(Gt(6.2e-9), Lt(3.2e-4))));
   }
 }
 

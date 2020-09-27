@@ -586,7 +586,8 @@ std::ostream& operator<<(
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,

@@ -259,9 +259,12 @@ std::ostream& operator<<(
 // Technically the weight function must be nonnegative for this to be an inner
 // product.  Not sure how this works with the flat-top windows, which can be
 // negative.  Note that the result is normalized by dividing by (t_max - t_min).
+// NOTE(phl): |points| is currently unused but ensures that the template has the
+// same profile as the one for |PiecewisePoissonSeries|.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points = 0>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
