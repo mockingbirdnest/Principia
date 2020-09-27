@@ -69,7 +69,7 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 class PoissonSeries {
  public:
-  static const int degree = degree_;
+  static constexpr int degree = degree_;
   using Polynomial =
       numerics::PolynomialInMonomialBasis<Value, Instant, degree_, Evaluator>;
 
@@ -85,6 +85,8 @@ class PoissonSeries {
   using PolynomialsByAngularFrequency =
       std::vector<std::pair<AngularFrequency, Polynomials>>;
 
+  // The |periodic| vector may contain frequencies that are negative or zero, as
+  // well as repeated frequencies.  It is not expected to be ordered.
   PoissonSeries(Polynomial const& aperiodic,
                 PolynomialsByAngularFrequency const& periodic);
 
@@ -108,9 +110,18 @@ class PoissonSeries {
   PoissonSeries& operator-=(PoissonSeries<V, d, E> const& right);
 
  private:
+  // Similar to the public constructor, but passing by copy allows moves, which
+  // is useful for internal algorithms.
   struct PrivateConstructor {};
-
   PoissonSeries(PrivateConstructor,
+                Polynomial aperiodic,
+                PolynomialsByAngularFrequency periodic);
+
+  // Similar to the previous constructor, except that the |periodic| vector is
+  // used verbatim, without sorting or normalization, which is useful for
+  // internal algorithms which produce positive, ordered frequencies.
+  struct TrustedPrivateConstructor {};
+  PoissonSeries(TrustedPrivateConstructor,
                 Polynomial aperiodic,
                 PolynomialsByAngularFrequency periodic);
 
@@ -248,9 +259,12 @@ std::ostream& operator<<(
 // Technically the weight function must be nonnegative for this to be an inner
 // product.  Not sure how this works with the flat-top windows, which can be
 // negative.  Note that the result is normalized by dividing by (t_max - t_min).
+// NOTE(phl): |points| is currently unused but ensures that the template has the
+// same profile as the one for |PiecewisePoissonSeries|.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points = 0>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -266,6 +280,7 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 class PiecewisePoissonSeries {
  public:
+  static constexpr int degree = degree_;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 
   PiecewisePoissonSeries(Interval<Instant> const& interval,
@@ -340,7 +355,7 @@ class PiecewisePoissonSeries {
   friend operator*(PiecewisePoissonSeries<L, l, E> const& left,
                    PoissonSeries<R, r, E> const& right);
   template<typename L, typename R, int l, int r, int w,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> class E, int p>
   typename Hilbert<L, R>::InnerProductType
   friend Dot(PoissonSeries<L, l, E> const& left,
              PiecewisePoissonSeries<R, r, E> const& right,
@@ -348,7 +363,7 @@ class PiecewisePoissonSeries {
              Instant const& t_min,
              Instant const& t_max);
   template<typename L, typename R, int l, int r, int w,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> class E, int p>
   typename Hilbert<L, R>::InnerProductType
   friend Dot(PiecewisePoissonSeries<L, l, E> const& left,
              PoissonSeries<R, r, E> const& right,
@@ -439,7 +454,8 @@ operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -447,7 +463,8 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -457,7 +474,8 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -465,7 +483,8 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points = (ldegree_ + rdegree_ + wdegree_) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -475,6 +494,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 }  // namespace internal_poisson_series
 
+using internal_poisson_series::Dot;
 using internal_poisson_series::PiecewisePoissonSeries;
 using internal_poisson_series::PoissonSeries;
 

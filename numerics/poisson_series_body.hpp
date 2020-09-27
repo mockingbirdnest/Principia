@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "numerics/quadrature.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -161,14 +162,19 @@ PoissonSeries<Value, degree_, Evaluator>::AtOrigin(
   PolynomialsByAngularFrequency periodic;
   periodic.reserve(periodic_.size());
   for (auto const& [ω, polynomials] : periodic_) {
-    Polynomial const sin = polynomials.sin.AtOrigin(origin);
-    Polynomial const cos = polynomials.cos.AtOrigin(origin);
-    periodic.emplace_back(
-        ω,
-        Polynomials{/*sin=*/sin * Cos(ω * shift) - cos * Sin(ω * shift),
-                    /*cos=*/sin * Sin(ω * shift) + cos * Cos(ω * shift)});
+    double const cos_ω_shift = Cos(ω * shift);
+    double const sin_ω_shift = Sin(ω * shift);
+    Polynomial const sin_at_origin = polynomials.sin.AtOrigin(origin);
+    Polynomial const cos_at_origin = polynomials.cos.AtOrigin(origin);
+    periodic.emplace_back(ω,
+                          Polynomials{/*sin=*/sin_at_origin * cos_ω_shift -
+                                              cos_at_origin * sin_ω_shift,
+                                      /*cos=*/sin_at_origin * sin_ω_shift +
+                                              cos_at_origin * cos_ω_shift});
   }
-  return {PrivateConstructor{}, std::move(aperiodic), std::move(periodic)};
+  return {TrustedPrivateConstructor{},
+          std::move(aperiodic),
+          std::move(periodic)};
 }
 
 template<typename Value, int degree_,
@@ -287,6 +293,16 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
+    TrustedPrivateConstructor,
+    Polynomial aperiodic,
+    PolynomialsByAngularFrequency periodic)
+    : origin_(aperiodic.origin()),
+      aperiodic_(std::move(aperiodic)),
+      periodic_(std::move(periodic)) {}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 template<typename V, int d, template<typename, typename, int> class E>
 PoissonSeries<Value, degree_, Evaluator>&
 PoissonSeries<Value, degree_, Evaluator>::operator+=(
@@ -326,7 +342,7 @@ operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
         typename Result::Polynomials{/*sin=*/-polynomials.sin,
                                      /*cos=*/-polynomials.cos});
   }
-  return {typename Result::PrivateConstructor{},
+  return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
           std::move(periodic)};
 }
@@ -379,7 +395,9 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       ++it_right;
     }
   }
-  return {typename Result::PrivateConstructor{},
+  // Because we have done a merge on the periodic vectors, we can use the
+  // trusted constructor.
+  return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
           std::move(periodic)};
 }
@@ -432,7 +450,9 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
       ++it_right;
     }
   }
-  return {typename Result::PrivateConstructor{},
+  // Because we have done a merge on the periodic vectors, we can use the
+  // trusted constructor.
+  return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
           std::move(periodic)};
 }
@@ -472,7 +492,7 @@ operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
         typename Result::Polynomials{/*sin=*/polynomials.sin * right,
                                      /*cos=*/polynomials.cos * right});
   }
-  return {typename Result::PrivateConstructor{},
+  return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
           std::move(periodic)};
 }
@@ -492,7 +512,7 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
         typename Result::Polynomials{/*sin=*/polynomials.sin / right,
                                      /*cos=*/polynomials.cos / right});
   }
-  return {typename Result::PrivateConstructor{},
+  return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
           std::move(periodic)};
 }
@@ -568,7 +588,8 @@ std::ostream& operator<<(
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -832,17 +853,20 @@ operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight) {
-  return Dot(left, right, weight, right.t_min(), right.t_max());
+  return Dot<LValue, RValue, ldegree_, rdegree_, wdegree_, Evaluator, points>(
+      left, right, weight, right.t_min(), right.t_max());
 }
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -853,28 +877,33 @@ Dot(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result{};
   for (int i = 0; i < right.series_.size(); ++i) {
-    Instant const origin = right.series_[i].origin();
-    auto const integrand = PointwiseInnerProduct(
-        left.AtOrigin(origin) * weight.AtOrigin(origin), right.series_[i]);
-    auto const primitive = integrand.Primitive();
-    result += primitive(right.bounds_[i + 1]) - primitive(right.bounds_[i]);
+    auto integrand = [i, &left, &right, &weight](Instant const& t) {
+      return Hilbert<LValue, RValue>::InnerProduct(left(t) * weight(t),
+                                                   right.series_[i](t));
+    };
+    auto const integral = quadrature::GaussLegendre<points>(
+        integrand, right.bounds_[i], right.bounds_[i + 1]);
+    result += integral;
   }
   return result / (t_max - t_min);
 }
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight) {
-  return Dot(left, right, weight, left.t_min(), left.t_max());
+  return Dot<LValue, RValue, ldegree_, rdegree_, wdegree_, Evaluator, points>(
+      left, right, weight, left.t_min(), left.t_max());
 }
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> class Evaluator,
+         int points>
 typename Hilbert<LValue, RValue>::InnerProductType
 Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
@@ -885,11 +914,13 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result{};
   for (int i = 0; i < left.series_.size(); ++i) {
-    Instant const origin = left.series_[i].origin();
-    auto const integrand = PointwiseInnerProduct(
-        left.series_[i], right.AtOrigin(origin) * weight.AtOrigin(origin));
-    auto const primitive = integrand.Primitive();
-    result += primitive(left.bounds_[i + 1]) - primitive(left.bounds_[i]);
+    auto integrand = [i, &left, &right, &weight](Instant const& t) {
+      return Hilbert<LValue, RValue>::InnerProduct(left.series_[i](t),
+                                                   right(t) * weight(t));
+    };
+    auto const integral = quadrature::GaussLegendre<points>(
+        integrand, left.bounds_[i], left.bounds_[i + 1]);
+    result += integral;
   }
   return result / (t_max - t_min);
 }
