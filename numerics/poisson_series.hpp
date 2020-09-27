@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "geometry/complexification.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
@@ -51,6 +52,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_poisson_series {
 
+using geometry::Complexification;
 using geometry::Hilbert;
 using geometry::Instant;
 using geometry::Interval;
@@ -297,6 +299,18 @@ class PiecewisePoissonSeries {
 
   // t must be in the interval [t_min, t_max].
   Value operator()(Instant const& t) const;
+
+  // Returns the Fourier transform of this Poisson series on [t_min, t_max].
+  // When evaluated at a given frequency, the Fourier transform is computed by
+  // Gauss-Legendre quadrature on each subinterval, where the number of points
+  // is chosen assuming that the periods of periodic terms are all large
+  // compared to the subintervals.
+  // If apodization is desired, the |*this| should be multiplied by an
+  // apodization function, and |FourierTransform| should be called on the
+  // product.
+  // |*this| must outlive the resulting function.
+  std::function<Complexification<Value>(AngularFrequency const&)>
+  FourierTransform() const;
 
   template<typename V, int d, template<typename, typename, int> class E>
   PiecewisePoissonSeries& operator+=(PoissonSeries<V, d, E> const& right);

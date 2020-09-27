@@ -17,7 +17,7 @@ Difference<T> Interval<T>::measure() const {
 
 template<typename T>
 T Interval<T>::midpoint() const {
-  return max >= min ? min + measure() / 2 : NaN<T>;
+  return max >= min ? min + measure() / 2 : min + NaN<Difference<T>>;
 }
 
 template<typename T>

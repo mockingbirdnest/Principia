@@ -11,10 +11,12 @@
 #include "numerics/apodization.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/quadrature.hpp"
+#include "numerics/root_finders.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -38,7 +40,9 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
+using testing_utilities::operator""_⑴;
 
 class PoissonSeriesTest : public ::testing::Test {
  protected:
@@ -47,6 +51,7 @@ class PoissonSeriesTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
+  using Degree0 = PoissonSeries<double, 0, HornerEvaluator>;
   using Degree1 = PoissonSeries<double, 1, HornerEvaluator>;
 
   PoissonSeriesTest()
@@ -101,7 +106,8 @@ TEST_F(PoissonSeriesTest, Evaluate) {
   EXPECT_THAT((*pa_)(t0_ + 1 * Second),
               AlmostEquals(3 + 11 * Sin(1 * Radian) + 15 * Cos(1 * Radian) +
                                27 * Sin(2 * Radian) + 31 * Cos(2 * Radian),
-                           0, 1));
+                           0,
+                           1));
   EXPECT_THAT((*pb_)(t0_ + 1 * Second),
               AlmostEquals(7 + 19 * Sin(1 * Radian) + 23 * Cos(1 * Radian) +
                                35 * Sin(3 * Radian) + 39 * Cos(3 * Radian),
@@ -121,15 +127,15 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
   }
   {
     auto const sum = *pa_ + *pb_;
-    EXPECT_THAT(sum(t0_ + 1 * Second),
-                AlmostEquals((*pa_)(t0_ + 1 * Second) +
-                                 (*pb_)(t0_ + 1 * Second), 1));
+    EXPECT_THAT(
+        sum(t0_ + 1 * Second),
+        AlmostEquals((*pa_)(t0_ + 1 * Second) + (*pb_)(t0_ + 1 * Second), 1));
   }
   {
     auto const difference = *pa_ - *pb_;
-    EXPECT_THAT(difference(t0_ + 1 * Second),
-                AlmostEquals((*pa_)(t0_ + 1 * Second) -
-                                 (*pb_)(t0_ + 1 * Second), 0));
+    EXPECT_THAT(
+        difference(t0_ + 1 * Second),
+        AlmostEquals((*pa_)(t0_ + 1 * Second) - (*pb_)(t0_ + 1 * Second), 0));
   }
   {
     auto const left_product = 3 * *pa_;
@@ -150,9 +156,9 @@ TEST_F(PoissonSeriesTest, VectorSpace) {
 
 TEST_F(PoissonSeriesTest, Algebra) {
   auto const product = *pa_ * *pb_;
-  EXPECT_THAT(product(t0_ + 1 * Second),
-              AlmostEquals((*pa_)(t0_ + 1 * Second) *
-                               (*pb_)(t0_ + 1 * Second), 6, 38));
+  EXPECT_THAT(
+      product(t0_ + 1 * Second),
+      AlmostEquals((*pa_)(t0_ + 1 * Second) * (*pb_)(t0_ + 1 * Second), 6, 38));
 }
 
 TEST_F(PoissonSeriesTest, AtOrigin) {
@@ -171,39 +177,84 @@ TEST_F(PoissonSeriesTest, AtOrigin) {
 
 TEST_F(PoissonSeriesTest, PointwiseInnerProduct) {
   using Degree2 = PoissonSeries<Displacement<World>, 2, HornerEvaluator>;
-  Degree2::Polynomial::Coefficients const coefficients_a({
-      Displacement<World>({0 * Metre,
-                            0 * Metre,
-                            1 * Metre}),
-      Velocity<World>({0 * Metre / Second,
-                        1 * Metre / Second,
-                        0 * Metre / Second}),
-      Vector<Acceleration, World>({1 * Metre / Second / Second,
+  Degree2::Polynomial::Coefficients const coefficients_a(
+      {Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre}),
+       Velocity<World>(
+           {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second}),
+       Vector<Acceleration, World>({1 * Metre / Second / Second,
                                     0 * Metre / Second / Second,
                                     0 * Metre / Second / Second})});
-  Degree2::Polynomial::Coefficients const coefficients_b({
-      Displacement<World>({0 * Metre,
-                           2 * Metre,
-                           3 * Metre}),
-      Velocity<World>({-1 * Metre / Second,
-                       1 * Metre / Second,
-                       0 * Metre / Second}),
-      Vector<Acceleration, World>({1 * Metre / Second / Second,
-                                   1 * Metre / Second / Second,
-                                   -2 * Metre / Second / Second})});
+  Degree2::Polynomial::Coefficients const coefficients_b(
+      {Displacement<World>({0 * Metre, 2 * Metre, 3 * Metre}),
+       Velocity<World>(
+           {-1 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second}),
+       Vector<Acceleration, World>({1 * Metre / Second / Second,
+                                    1 * Metre / Second / Second,
+                                    -2 * Metre / Second / Second})});
   Degree2 const pa(Degree2::Polynomial({coefficients_a}, t0_), {{}});
   Degree2 const pb(Degree2::Polynomial({coefficients_b}, t0_), {{}});
 
   auto const product = PointwiseInnerProduct(pa, pb);
-  EXPECT_THAT(product(t0_ + 1 * Second),
-              AlmostEquals(5 * Metre * Metre, 0));
+  EXPECT_THAT(product(t0_ + 1 * Second), AlmostEquals(5 * Metre * Metre, 0));
+}
+
+TEST_F(PoissonSeriesTest, Fourier) {
+  Degree0::Polynomial constant({1.0}, t0_);
+  AngularFrequency const ω = 4 * Radian / Second;
+  PoissonSeries<Displacement<World>, 0, HornerEvaluator> signal(
+      constant * Displacement<World>{},
+      {{ω,
+        {/*sin=*/constant *
+             Displacement<World>({2 * Metre, -3 * Metre, 5 * Metre}),
+         /*cos=*/constant *
+             Displacement<World>({-7 * Metre, 11 * Metre, -13 * Metre})}}});
+  // Slice our signal into segments short enough that one-point Gauss-Legendre
+  // (also known as midpoint) does the job.
+  constexpr int segments = 100;
+  PiecewisePoissonSeries<Displacement<World>, 0, HornerEvaluator> f(
+      {t0_, t0_ + π * Second / segments}, signal);
+  for (int k = 1; k < segments; ++k) {
+    f.Append({t0_ + k * π * Second / segments,
+              t0_ + (k + 1) * π * Second / segments},
+             signal);
+  }
+  auto const f_fourier_transform = f.FourierTransform();
+  auto const f_power_spectrum =
+      [&f_fourier_transform](AngularFrequency const& ω) {
+        return f_fourier_transform(ω).Norm²();
+      };
+  EXPECT_THAT(Brent(f_power_spectrum, 0.9 * ω, 1.1 * ω, std::greater<>{}),
+              IsNear(4.117_⑴ * Radian / Second));
+  // A peak arising from the finite interval.
+  EXPECT_THAT(Brent(f_power_spectrum,
+                    0 * Radian / Second,
+                    2 * Radian / Second,
+                    std::greater<>{}),
+              IsNear(1.209_⑴ * Radian / Second));
+
+  auto const fw = f * apodization::Hann<HornerEvaluator>(f.t_min(), f.t_max());
+
+  auto const fw_fourier_transform = fw.FourierTransform();
+  auto const fw_power_spectrum =
+      [&fw_fourier_transform](AngularFrequency const& ω) {
+        return fw_fourier_transform(ω).Norm²();
+      };
+  EXPECT_THAT(Brent(fw_power_spectrum, 0.9 * ω, 1.1 * ω, std::greater<>{}),
+              IsNear(+3.979_⑴ * Radian / Second));
+  // Hann filters out the interval; this search for a second maximum converges
+  // to its boundary.
+  EXPECT_THAT(Brent(fw_power_spectrum,
+                    0 * Radian / Second,
+                    2 * Radian / Second,
+                    std::greater<>{}),
+              IsNear(1.9999999_⑴ * Radian / Second));
 }
 
 TEST_F(PoissonSeriesTest, Primitive) {
   auto const actual_primitive = pb_->Primitive();
 
   // The primitive was computed using Mathematica.
-  auto const expected_primitive = [=](Time const& t){
+  auto const expected_primitive = [=](Time const& t) {
     auto const a0 = 3;
     auto const a1 = 4 / Second;
     auto const b0 = 9;
@@ -234,10 +285,11 @@ TEST_F(PoissonSeriesTest, Primitive) {
                 AlmostEquals(expected_primitive(i * Second), 0, 6));
   }
 
-  EXPECT_THAT(
-      pb_->Integrate(t0_ + 5 * Second, t0_ + 13 * Second),
-      AlmostEquals(expected_primitive(13 * Second) -
-                   expected_primitive(5 * Second), 1, 2));
+  EXPECT_THAT(pb_->Integrate(t0_ + 5 * Second, t0_ + 13 * Second),
+              AlmostEquals(expected_primitive(13 * Second) -
+                               expected_primitive(5 * Second),
+                           1,
+                           2));
 }
 
 TEST_F(PoissonSeriesTest, Dot) {
@@ -377,22 +429,17 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
     auto const s2 = pp_ + p_;
     EXPECT_THAT(s1(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(s1(t0_ + 1.5 * Second),
-                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s1(t0_ + 1.5 * Second), AlmostEquals((6 + Sqrt(2)) / 4, 0));
     EXPECT_THAT(s2(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(s2(t0_ + 1.5 * Second),
-                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s2(t0_ + 1.5 * Second), AlmostEquals((6 + Sqrt(2)) / 4, 0));
   }
   {
     auto const d1 = p_ - pp_;
     auto const d2 = pp_ - p_;
-    EXPECT_THAT(d1(t0_ + 0.5 * Second),
-                AlmostEquals((2 + Sqrt(2)) / 4, 1));
-    EXPECT_THAT(d1(t0_ + 1.5 * Second),
-                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(d2(t0_ + 0.5 * Second),
-                AlmostEquals((-2 - Sqrt(2)) / 4, 1));
+    EXPECT_THAT(d1(t0_ + 0.5 * Second), AlmostEquals((2 + Sqrt(2)) / 4, 1));
+    EXPECT_THAT(d1(t0_ + 1.5 * Second), AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
+    EXPECT_THAT(d2(t0_ + 0.5 * Second), AlmostEquals((-2 - Sqrt(2)) / 4, 1));
     EXPECT_THAT(d2(t0_ + 1.5 * Second),
                 AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
   }
@@ -400,11 +447,11 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
     auto const p1 = p_ * pp_;
     auto const p2 = pp_ * p_;
     EXPECT_THAT(p1(t0_ + 0.5 * Second),
-                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+                AlmostEquals((7 - 4 * Sqrt(2)) / 4, 0, 4));
     EXPECT_THAT(p1(t0_ + 1.5 * Second),
                 AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
     EXPECT_THAT(p2(t0_ + 0.5 * Second),
-                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+                AlmostEquals((7 - 4 * Sqrt(2)) / 4, 0, 4));
     EXPECT_THAT(p2(t0_ + 1.5 * Second),
                 AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
   }
@@ -417,22 +464,17 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
     auto const s2 = pp_ + p;
     EXPECT_THAT(s1(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 1));
-    EXPECT_THAT(s1(t0_ + 1.5 * Second),
-                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s1(t0_ + 1.5 * Second), AlmostEquals((6 + Sqrt(2)) / 4, 0));
     EXPECT_THAT(s2(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 1));
-    EXPECT_THAT(s2(t0_ + 1.5 * Second),
-                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s2(t0_ + 1.5 * Second), AlmostEquals((6 + Sqrt(2)) / 4, 0));
   }
   {
     auto const d1 = p - pp_;
     auto const d2 = pp_ - p;
-    EXPECT_THAT(d1(t0_ + 0.5 * Second),
-                AlmostEquals((2 + Sqrt(2)) / 4, 0, 2));
-    EXPECT_THAT(d1(t0_ + 1.5 * Second),
-                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(d2(t0_ + 0.5 * Second),
-                AlmostEquals((-2 - Sqrt(2)) / 4, 0, 2));
+    EXPECT_THAT(d1(t0_ + 0.5 * Second), AlmostEquals((2 + Sqrt(2)) / 4, 0, 2));
+    EXPECT_THAT(d1(t0_ + 1.5 * Second), AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
+    EXPECT_THAT(d2(t0_ + 0.5 * Second), AlmostEquals((-2 - Sqrt(2)) / 4, 0, 2));
     EXPECT_THAT(d2(t0_ + 1.5 * Second),
                 AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
   }
@@ -440,11 +482,11 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
     auto const p1 = p * pp_;
     auto const p2 = pp_ * p;
     EXPECT_THAT(p1(t0_ + 0.5 * Second),
-                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+                AlmostEquals((7 - 4 * Sqrt(2)) / 4, 0, 4));
     EXPECT_THAT(p1(t0_ + 1.5 * Second),
                 AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
     EXPECT_THAT(p2(t0_ + 0.5 * Second),
-                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+                AlmostEquals((7 - 4 * Sqrt(2)) / 4, 0, 4));
     EXPECT_THAT(p2(t0_ + 1.5 * Second),
                 AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
   }
