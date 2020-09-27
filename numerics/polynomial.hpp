@@ -207,6 +207,7 @@ template<typename Value, typename Argument, int degree_,
 class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
     : public Polynomial<Value, Point<Argument>> {
  public:
+  // TODO(phl): Use the |Value_| style.
   using Result = Value;
 
   // Equivalent to:

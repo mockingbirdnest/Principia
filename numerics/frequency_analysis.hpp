@@ -21,49 +21,35 @@ using quantities::Primitive;
 using quantities::Product;
 using quantities::Time;
 
-// In this file Dot is a templated functor that implements the dot product
-// between two functors and a weight.  Its declaration must look like:
-//
-// class Dot {
-//  public:
-//   ...
-//   template<typename LFunction, typename RFunction, typename Weight>
-//   Product<std::invoke_result_t<LFunction, Instant>,
-//           std::invoke_result_t<RFunction, Instant>>
-//   operator()(LFunction const& left,
-//              RFunction const& right,
-//              Weight const& weight) const;
-//   ...
-//};
-//
-// Where the implementation of Dot may assume that Weight is a Poisson series
-// returning a double.
+// In this file the |Function| must have an |InnerProduct| with |PoissonSeries|
+// or |PiecewisePoissonSeries|.
 
 // Computes the precise mode of a quasi-periodic |function|, assuming that the
 // mode is over the interval |fft_mode| (so named because it has presumably been
 // obtained using FFT).  See [Cha95].
 template<typename Function,
          int wdegree_,
-         typename Dot,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Dot const& dot);
+    Instant const& t_min,
+    Instant const& t_max);
 
 // Computes the Кудрявцев projection of |function| on a basis with angular
 // frequency ω and maximum degree |degree_|.  See [Kud07].
 //TODO(phl):frequency after function.
 template<int degree_,
          typename Function,
-         int wdegree_, typename Dot,
+         int wdegree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 Projection(AngularFrequency const& ω,
            Function const& function,
            PoissonSeries<double, wdegree_, Evaluator> const& weight,
-           Dot const& dot);
+           Instant const& t_min,
+           Instant const& t_max);
 
 // AngularFrequencyCalculator is a templated functor that implements the
 // extraction of the most relevant frequency out of a (mostly periodic)
@@ -85,13 +71,14 @@ Projection(AngularFrequency const& ω,
 // the algorithm, it does so by returning std::nullopt.
 template<int degree_,
          typename Function,
-         typename AngularFrequencyCalculator, int wdegree_, typename Dot,
+         typename AngularFrequencyCalculator, int wdegree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 IncrementalProjection(Function const& function,
                       AngularFrequencyCalculator const& calculator,
                       PoissonSeries<double, wdegree_, Evaluator> const& weight,
-                      Dot const& dot,
+                      Instant const& t_min,
+                      Instant const& t_max,
                       mathematica::Logger* logger = nullptr);
 
 }  // namespace internal_frequency_analysis

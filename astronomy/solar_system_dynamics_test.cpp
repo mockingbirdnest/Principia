@@ -611,18 +611,12 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
     trajectory.push_back({t, current_trajectory});
   }
 
-  auto dot = [t_min, t_max](auto const& left,
-                            auto const& right,
-                            auto const& weight) {
-    return Dot(left, right, weight, t_min, t_max);
-  };
-
   static constexpr int number_of_frequencies = 10;
   static constexpr int log2_number_of_samples = 10;
 
   int step = 0;
   auto angular_frequency_calculator =
-      [&dot, &logger, &step, t_min, t_max](
+      [&logger, &step, t_min, t_max](
           auto const& residual) -> std::optional<AngularFrequency> {
     LOG(ERROR) << "step=" << step;
     if (step == 0) {
@@ -651,7 +645,7 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
           PreciseMode(mode,
                       residual,
                       apodization::Hann<EstrinEvaluator>(t_min, t_max),
-                      dot);
+                      t_min, t_max);
       LOG(ERROR)<<"Gauss="<<numerics::quadrature::gauss;
       auto const precise_period = 2 * π * Radian / precise_mode;
       LOG(ERROR) << "precise_period=" << precise_period;
@@ -675,7 +669,7 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
       io_piecewise_poisson_series,
       angular_frequency_calculator,
       apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
-      dot,
+      t_min, t_max,
       &logger);
 }
 #endif

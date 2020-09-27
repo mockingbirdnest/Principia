@@ -38,6 +38,8 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
     Function const& function,
     Argument const& lower_bound,
     Argument const& upper_bound) {
+  static_assert(points < LegendreRoots.size,
+                "No table for Gauss-Legendre with the chosen number of points");
   return Gauss<points>(function,
                        lower_bound,
                        upper_bound,

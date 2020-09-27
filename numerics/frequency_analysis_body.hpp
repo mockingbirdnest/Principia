@@ -34,68 +34,31 @@ using quantities::si::Second;
 
 template<typename Function,
          int wdegree_,
-         typename Dot,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Dot const& dot) {
+    Instant const& t_min,
+    Instant const& t_max) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Degree0 =
       PoissonSeries<typename Hilbert<Value>::NormalizedType, 0, Evaluator>;
 
-  //TODO(phl):comment
-  class CachedFunction : public Function {
-   public:
-    explicit CachedFunction(Function const& function) :
-      Function(function),
-      function_(function) {}
-
-    Value operator()(Instant const& t) const override {
-      ++call_;
-      if (iteration_ == 0) {
-        auto const value = function_(t);
-        values_[evaluation_++] = value;
-        return value;
-      } else {
-        ++hit_;
-        return values_[evaluation_++];
-      }
-    }
-
-    void FinishIteration() {
-      LOG_EVERY_N(ERROR, 1)<<hit_<<"/"<<call_;
-      ++iteration_;
-      evaluation_ = 0;
-    }
-
-
-    mutable int call_ = 0;
-    mutable int hit_ = 0;
-   private:
-    Function const& function_;
-    mutable std::array<Value, 50_000> values_;
-    mutable int evaluation_ = 0;
-    mutable int iteration_ = 0;
-  };
-
-  CachedFunction cached_function{function};
-
-  auto amplitude = [&cached_function, &dot, &function, &weight](
-                       AngularFrequency const& ω) {
-    constexpr int dimension = Hilbert<Value>::dimension;
-    Instant const& t0 = weight.origin();
-    std::array<Degree0, 2 * dimension> const basis =
-        PoissonSeriesBasisGenerator<Degree0, dimension>::Basis(ω, t0);
-    typename Hilbert<Value>::InnerProductType result{};
-    for (int i = 0; i < basis.size(); ++i) {
-      auto const amplitude = dot(cached_function, basis[i], weight);
-      cached_function.FinishIteration();
-      result += amplitude * amplitude;
-    }
-    return result;
-  };
+  auto amplitude =
+      [&function, t_min, t_max, &weight](AngularFrequency const& ω) {
+        constexpr int dimension = Hilbert<Value>::dimension;
+        Instant const& t0 = weight.origin();
+        std::array<Degree0, 2 * dimension> const basis =
+            PoissonSeriesBasisGenerator<Degree0, dimension>::Basis(ω, t0);
+        typename Hilbert<Value>::InnerProductType result{};
+        for (int i = 0; i < basis.size(); ++i) {
+          auto const amplitude =
+              InnerProduct(function, basis[i], weight, t_min, t_max);
+          result += amplitude * amplitude;
+        }
+        return result;
+      };
 
   return Brent(amplitude,
                fft_mode.min,
@@ -105,13 +68,14 @@ AngularFrequency PreciseMode(
 
 template<int degree_,
          typename Function,
-         int wdegree_, typename Dot,
+         int wdegree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 Projection(AngularFrequency const& ω,
            Function const& function,
            PoissonSeries<double, wdegree_, Evaluator> const& weight,
-           Dot const& dot) {
+           Instant const& t_min,
+           Instant const& t_max) {
   std::optional<AngularFrequency> optional_ω = ω;
 
   // A calculator that returns optional_ω once and then stops.
@@ -124,18 +88,19 @@ Projection(AngularFrequency const& ω,
   return IncrementalProjection<degree_>(function,
                                         angular_frequency_calculator,
                                         weight,
-                                        dot);
+                                        t_min, t_max);
 }
 
 template<int degree_,
          typename Function,
-         typename AngularFrequencyCalculator, int wdegree_, typename Dot,
+         typename AngularFrequencyCalculator, int wdegree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
 IncrementalProjection(Function const& function,
                       AngularFrequencyCalculator const& calculator,
                       PoissonSeries<double, wdegree_, Evaluator> const& weight,
-                      Dot const& dot,
+                      Instant const& t_min,
+                      Instant const& t_max,
                       mathematica::Logger* const logger) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
@@ -174,8 +139,8 @@ IncrementalProjection(Function const& function,
   // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
   UnboundedVector<double> A(basis_size, uninitialized);
 
-  Norm² const F₀ = dot(function, basis[0], weight);
-  Norm² const Q₀₀ = dot(basis[0], basis[0], weight);
+  Norm² const F₀ = InnerProduct(function, basis[0], weight, t_min, t_max);
+  Norm² const Q₀₀ = InnerProduct(basis[0], basis[0], weight, t_min, t_max);
   α[0][0] = 1 / Sqrt(Q₀₀);
   A[0] = F₀ / Q₀₀;
 
@@ -186,12 +151,12 @@ IncrementalProjection(Function const& function,
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
       // Contains Fₘ.
-      Norm² const F = dot(f, basis[m], weight);
+      Norm² const F = InnerProduct(f, basis[m], weight, t_min, t_max);
 
       // This vector contains Qₘⱼ.
       UnboundedVector<Norm²> Q(m + 1, uninitialized);
       for (int j = 0; j <= m; ++j) {
-        Q[j] = dot(basis[m], basis[j], weight);
+        Q[j] = InnerProduct(basis[m], basis[j], weight, t_min, t_max);
       }
 
       // This vector contains Bⱼ⁽ᵐ⁾.
