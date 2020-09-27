@@ -347,7 +347,7 @@ operator PolynomialInMonomialBasis<Value, Argument, higher_degree_,
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 Value PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
-Evaluate(Argument const& argument) const {
+operator()(Argument const& argument) const {
   return Evaluator<Value, Argument, degree_>::Evaluate(coefficients_, argument);
 }
 
@@ -477,7 +477,7 @@ operator PolynomialInMonomialBasis<Value, Point<Argument>, higher_degree_,
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 Value PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
-Evaluate(Point<Argument> const& argument) const {
+operator()(Point<Argument> const& argument) const {
   return Evaluator<Value, Argument, degree_>::Evaluate(
       coefficients_, argument - origin_);
 }

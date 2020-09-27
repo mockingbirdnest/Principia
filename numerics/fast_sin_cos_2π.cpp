@@ -80,7 +80,7 @@ void FastSinCos2π(double const cycles, double& sin, double& cos) {
   // argument, i.e., y * (s₁ + s₃ * y² + s₅ * (y² * y²)), avoids having a
   // multiplication by y at the end.
   double const s = s₁ * y + (s₃ + s₅ * y²) * y³;
-  double const c = cos_polynomial.Evaluate(y²);
+  double const c = cos_polynomial(y²);
 
   switch (quadrant) {
     case 0:

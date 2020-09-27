@@ -67,7 +67,7 @@ class Polynomial {
   // making the destructor protected and nonvirtual.
   virtual ~Polynomial() = default;
 
-  virtual Value Evaluate(Argument const& argument) const = 0;
+  virtual Value operator()(Argument const& argument) const = 0;
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;
 
@@ -112,7 +112,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
       Value, Argument, higher_degree_, HigherEvaluator>() const;
 
   FORCE_INLINE(inline) Value
-  Evaluate(Argument const& argument) const override;
+  operator()(Argument const& argument) const override;
   FORCE_INLINE(inline) Derivative<Value, Argument>
   EvaluateDerivative(Argument const& argument) const override;
 
@@ -229,7 +229,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
       Value, Point<Argument>, higher_degree_, HigherEvaluator>() const;
 
   FORCE_INLINE(inline) Value
-  Evaluate(Point<Argument> const& argument) const override;
+  operator()(Point<Argument> const& argument) const override;
   FORCE_INLINE(inline) Derivative<Value, Argument>
   EvaluateDerivative(Point<Argument> const& argument) const override;
 

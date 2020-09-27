@@ -143,10 +143,10 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 Value PoissonSeries<Value, degree_, Evaluator>::operator()(
     Instant const& t) const {
-  Value result = aperiodic_.Evaluate(t);
+  Value result = aperiodic_(t);
   for (auto const& [ω, polynomials] : periodic_) {
-    result += polynomials.sin.Evaluate(t) * Sin(ω * (t - origin_)) +
-              polynomials.cos.Evaluate(t) * Cos(ω * (t - origin_));
+    result += polynomials.sin(t) * Sin(ω * (t - origin_)) +
+              polynomials.cos(t) * Cos(ω * (t - origin_));
   }
   return result;
 }
@@ -203,7 +203,7 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
   using SecondPart = PoissonSeries<Variation<Value>, degree_ - 1, Evaluator>;
   auto const aperiodic_primitive = aperiodic_.Primitive();
   quantities::Primitive<Value, Time> result =
-      aperiodic_primitive.Evaluate(t2) - aperiodic_primitive.Evaluate(t1);
+      aperiodic_primitive(t2) - aperiodic_primitive(t1);
   for (auto const& [ω, polynomials] : periodic_) {
     // Integration by parts.
     FirstPart const first_part(

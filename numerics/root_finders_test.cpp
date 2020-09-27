@@ -324,7 +324,7 @@ TEST_F(RootFindersTest, SmoothMaximum) {
        59049.0 / 28700672000});
   auto const f = [&evaluations, &p](double const x) {
     ++evaluations;
-    return p.Evaluate(x);
+    return p(x);
   };
 
   evaluations = 0;
