@@ -172,7 +172,9 @@ PoissonSeries<Value, degree_, Evaluator>::AtOrigin(
                                       /*cos=*/sin_at_origin * sin_ω_shift +
                                               cos_at_origin * cos_ω_shift});
   }
-  return {TrustedPrivateConstructor{}, std::move(aperiodic), std::move(periodic)};
+  return {TrustedPrivateConstructor{},
+          std::move(aperiodic),
+          std::move(periodic)};
 }
 
 template<typename Value, int degree_,
@@ -207,7 +209,7 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
     FirstPart const first_part(
         typename FirstPart::Polynomial({}, origin_),
         {{ω,
-          {/*sin=*/typename FirstPart::Polynomial(polynomials.cos ),
+          {/*sin=*/typename FirstPart::Polynomial(polynomials.cos),
            /*cos=*/typename FirstPart::Polynomial(-polynomials.sin)}}});
     result += (first_part(t2) - first_part(t1)) / ω * Radian;
 
@@ -914,7 +916,7 @@ Dot(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
   for (int i = 0; i < left.series_.size(); ++i) {
     auto integrand = [i, &left, &right, &weight](Instant const& t) {
       return Hilbert<LValue, RValue>::InnerProduct(left.series_[i](t),
-                                                   right (t) * weight(t));
+                                                   right(t) * weight(t));
     };
     auto const integral = quadrature::GaussLegendre<points>(
         integrand, left.bounds_[i], left.bounds_[i + 1]);
