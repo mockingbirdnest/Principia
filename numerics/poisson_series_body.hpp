@@ -685,7 +685,10 @@ template<typename V, int d, template<typename, typename, int> class E>
 PiecewisePoissonSeries<Value, degree_, Evaluator>&
 PiecewisePoissonSeries<Value, degree_, Evaluator>::operator+=(
     PoissonSeries<V, d, E> const& right) {
-  *this = *this + right;
+  for (int i = 0; i < series_.size(); ++i) {
+    auto& series = series_[i];
+    series += right.AtOrigin(series.origin());
+  }
   return *this;
 }
 
@@ -695,7 +698,10 @@ template<typename V, int d, template<typename, typename, int> class E>
 PiecewisePoissonSeries<Value, degree_, Evaluator>&
 PiecewisePoissonSeries<Value, degree_, Evaluator>::operator-=(
     PoissonSeries<V, d, E> const& right) {
-  *this = *this - right;
+  for (int i = 0; i < series_.size(); ++i) {
+    auto& series = series_[i];
+    series -= right.AtOrigin(series.origin());
+  }
   return *this;
 }
 
