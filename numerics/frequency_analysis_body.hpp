@@ -34,9 +34,7 @@ template<typename Function,
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max) {
+    PoissonSeries<double, wdegree_, Evaluator> const& weight) {
   auto const weighted_function = weight * function;
   auto const weighted_function_spectrum = weighted_function.FourierTransform();
 

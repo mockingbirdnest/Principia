@@ -129,6 +129,7 @@ class CartesianProductVectorSpace;
 template<typename Scalar, typename Tuple, std::size_t... indices>
 class CartesianProductVectorSpace<Scalar, Tuple,
                                   std::index_sequence<indices...>> {
+ public:
   template<typename L, typename R>
   using Product = quantities::Product<L, R>;
   template<typename T>
@@ -138,7 +139,6 @@ class CartesianProductVectorSpace<Scalar, Tuple,
   template<typename T>
   using Quotient = quantities::Quotient<T, Scalar>;
 
- public:
   FORCE_INLINE(static constexpr) Apply<ScalarLeftProduct, Tuple> Multiply(
       Scalar const& left,
       Tuple const& right);
@@ -235,6 +235,7 @@ template<typename LTuple, typename RTuple,
          int lsize_ = std::tuple_size_v<LTuple>,
          int rsize_ = std::tuple_size_v<RTuple>>
 class PolynomialRing {
+ public:
   // Right is split into head (index 0) and tail (the rest).  The tail is a
   // polynomial with valuation 1.
   using RHead = std::tuple_element_t<0, RTuple>;
@@ -266,7 +267,6 @@ class PolynomialRing {
                    Add(std::declval<LTupleRHeadProduct>(),
                        std::declval<ZeroLTupleRTailProduct>()));
 
- public:
   FORCE_INLINE(static constexpr)
   Result Multiply(LTuple const& left, RTuple const& right);
 };
@@ -351,6 +351,7 @@ class CartesianProductPointwiseMultiplicativeSpace;
 template<typename Scalar, typename Tuple, std::size_t... indices>
 class CartesianProductPointwiseMultiplicativeSpace<
     Scalar, Tuple, std::index_sequence<indices...>> {
+ public:
   template<typename L, typename R>
   using Product = typename Hilbert<L, R>::InnerProductType;
   template<typename T>
@@ -358,7 +359,6 @@ class CartesianProductPointwiseMultiplicativeSpace<
   template<typename T>
   using ScalarRightProduct = Product<T, Scalar>;
 
- public:
   FORCE_INLINE(static constexpr) Apply<ScalarLeftProduct, Tuple> Multiply(
       Scalar const& left,
       Tuple const& right);
