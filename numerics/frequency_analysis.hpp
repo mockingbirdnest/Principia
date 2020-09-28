@@ -21,21 +21,20 @@ using quantities::Primitive;
 using quantities::Product;
 using quantities::Time;
 
-// In this file the |Function| must have an |InnerProduct| with |PoissonSeries|
-// or |PiecewisePoissonSeries|.
-
 // Computes the precise mode of a quasi-periodic |function|, assuming that the
 // mode is over the interval |fft_mode| (so named because it has presumably been
-// obtained using FFT).  See [Cha95].
+// obtained using FFT).  The |Function| must have a member |FourierTransform|
+// that returns its spectrum.  See [Cha95].
 template<typename Function,
          int wdegree_,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max);
+    PoissonSeries<double, wdegree_, Evaluator> const& weight);
+
+// In the projection functions the |Function| must have an |InnerProduct| with
+// |PoissonSeries| or |PiecewisePoissonSeries|.
 
 // Computes the Кудрявцев projection of |function| on a basis with angular
 // frequency ω and maximum degree |degree_|.  See [Kud07].
