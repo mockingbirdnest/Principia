@@ -106,8 +106,7 @@ TEST_F(PoissonSeriesTest, Evaluate) {
   EXPECT_THAT((*pa_)(t0_ + 1 * Second),
               AlmostEquals(3 + 11 * Sin(1 * Radian) + 15 * Cos(1 * Radian) +
                                27 * Sin(2 * Radian) + 31 * Cos(2 * Radian),
-                           0,
-                           1));
+                           0, 1));
   EXPECT_THAT((*pb_)(t0_ + 1 * Second),
               AlmostEquals(7 + 19 * Sin(1 * Radian) + 23 * Cos(1 * Radian) +
                                35 * Sin(3 * Radian) + 39 * Cos(3 * Radian),
