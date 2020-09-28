@@ -59,6 +59,21 @@ using ::testing::Gt;
 using ::testing::Lt;
 namespace si = quantities::si;
 
+// Constructs a piecewise Poisson series that has the given number of pieces
+// covering [t_min, t_max] and that matches |series| over that interval.
+template<typename Piecewise>
+Piecewise Slice(typename Piecewise::Series const& series,
+                int const pieces,
+                Instant const& t_min,
+                Instant const& t_max) {
+  Time const Δt = (t_max - t_min) / pieces;
+  Piecewise piecewise({t_min, t_min + Δt}, series);
+  for (int i = 1; i < pieces; ++i) {
+    piecewise.Append({t_min + i * Δt, t_min + (i + 1) * Δt}, series);
+  }
+  return piecewise;
+}
+
 class FrequencyAnalysisTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
@@ -98,6 +113,8 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   std::uniform_real_distribution<> amplitude_distribution(-0.1, 0.1);
   std::uniform_real_distribution<> frequency_distribution(-100.0, 100.0);
 
+  using PiecewiseSeries0 = PiecewisePoissonSeries<Length, 0, HornerEvaluator>;
+  using Series0 = PiecewiseSeries0::Series;
   Series0::PolynomialsByAngularFrequency polynomials;
 
   // Main harmonic.
@@ -122,9 +139,12 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
 
   Instant const t_min = t0_;
   Instant const t_max = t0_ + (FFT::size - 1) * Δt;
+  PiecewiseSeries0 const piecewise_sin =
+      Slice<PiecewiseSeries0>(sin, /*pieces=*/1000, t_min, t_max);
+
   std::vector<Length> signal;
   for (int n = 0; n < FFT::size; ++n) {
-    signal.push_back(sin(t0_ + n * Δt));
+    signal.push_back(piecewise_sin(t0_ + n * Δt));
   }
 
   // Won't fit on the stack.
@@ -138,10 +158,9 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   // maximum.
   auto const precise_mode =
       PreciseMode(mode,
-                  sin,
-                  apodization::Hann<HornerEvaluator>(t_min, t_max),
-                  t_min, t_max);
-  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.7e-11_⑴)));
+                  piecewise_sin,
+                  apodization::Hann<HornerEvaluator>(t_min, t_max));
+  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(2.6e-8_⑴)));
 }
 
 TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
@@ -149,7 +168,9 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   AngularFrequency const ω = 666.543 * π / FFT::size * Radian / Second;
   Time const Δt = 1 * Second;
 
-  using Series0 = PoissonSeries<Displacement<World>, 0, HornerEvaluator>;
+  using PiecewiseSeries0 =
+      PiecewisePoissonSeries<Displacement<World>, 0, HornerEvaluator>;
+  using Series0 = PiecewiseSeries0::Series;
   Series0::PolynomialsByAngularFrequency polynomials;
 
   // Main harmonic.
@@ -166,9 +187,12 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
 
   Instant const t_min = t0_;
   Instant const t_max = t0_ + (FFT::size - 1) * Δt;
+  PiecewiseSeries0 const piecewise_sin =
+      Slice<PiecewiseSeries0>(sin, /*pieces=*/1000, t_min, t_max);
+
   std::vector<Displacement<World>> signal;
   for (int n = 0; n < FFT::size; ++n) {
-    signal.push_back(sin(t0_ + n * Δt));
+    signal.push_back(piecewise_sin(t0_ + n * Δt));
   }
 
   // Won't fit on the stack.
@@ -182,10 +206,9 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   // maximum.
   auto const precise_mode =
       PreciseMode(mode,
-                  sin,
-                  apodization::Hann<HornerEvaluator>(t_min, t_max),
-                  t_min, t_max);
-  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.0e-11_⑴)));
+                  piecewise_sin,
+                  apodization::Hann<HornerEvaluator>(t_min, t_max));
+  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.2e-11_⑴)));
 }
 
 TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
