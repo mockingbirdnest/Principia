@@ -1,3 +1,8 @@
+# Define AGENT_OS if not present.
+if [ -z "${AGENT_OS+1}" ]; then
+  AGENT_OS=$(uname -s)
+fi
+
 # It seems that protoc really wants its dependencies to be in /usr/local/lib.
 # In some setups, e.g., Azure pipelines, this does not work, so we need to help
 # it find its dynamic libraries.
