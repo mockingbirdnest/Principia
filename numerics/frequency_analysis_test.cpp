@@ -59,7 +59,7 @@ using ::testing::Gt;
 using ::testing::Lt;
 namespace si = quantities::si;
 
-// Construct a piecewise Poisson series that has the given number of pieces
+// Constructs a piecewise Poisson series that has the given number of pieces
 // covering [t_min, t_max] and that matches |series| over that interval.
 template<typename Piecewise>
 Piecewise Slice(typename Piecewise::Series const& series,
