@@ -644,8 +644,7 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
       auto const precise_mode =
           PreciseMode(mode,
                       residual,
-                      apodization::Hann<EstrinEvaluator>(t_min, t_max),
-                      t_min, t_max);
+                      apodization::Hann<EstrinEvaluator>(t_min, t_max));
       LOG(ERROR)<<"Gauss="<<numerics::quadrature::gauss;
       auto const precise_period = 2 * π * Radian / precise_mode;
       LOG(ERROR) << "precise_period=" << precise_period;
