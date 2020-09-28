@@ -286,6 +286,8 @@ class PiecewisePoissonSeries {
  public:
   static constexpr int degree = degree_;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
+  using Spectrum = std::function<Complexification<Primitive<Value, Time>>(
+      AngularFrequency const&)>;
 
   PiecewisePoissonSeries(Interval<Instant> const& interval,
                          Series const& series);
@@ -302,7 +304,11 @@ class PiecewisePoissonSeries {
   // t must be in the interval [t_min, t_max].
   Value operator()(Instant const& t) const;
 
-  // Returns the Fourier transform of this Poisson series on [t_min, t_max].
+  // Returns the Fourier transform of this piecewise Poisson series.
+  // The function is taken to be 0 outside [t_min, t_max].
+  // The convention used is ∫ f(t) exp(-iωt) dt, corresponding to Mathematica’s
+  // FourierParameters -> {1, -1} for FourierTransform (the “pure mathematics;
+  // systems engineering”).
   // When evaluated at a given frequency, the Fourier transform is computed by
   // Gauss-Legendre quadrature on each subinterval, where the number of points
   // is chosen assuming that the periods of periodic terms are all large
@@ -310,8 +316,7 @@ class PiecewisePoissonSeries {
   // If apodization is desired, |*this| should be multiplied by an apodization
   // function, and |FourierTransform| should be called on the product.
   // |*this| must outlive the resulting function.
-  std::function<Complexification<Value>(AngularFrequency const&)>
-  FourierTransform() const;
+  Spectrum FourierTransform() const;
 
   template<typename V, int d, template<typename, typename, int> class E>
   PiecewisePoissonSeries& operator+=(PoissonSeries<V, d, E> const& right);

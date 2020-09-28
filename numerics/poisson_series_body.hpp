@@ -656,8 +656,8 @@ Value PiecewisePoissonSeries<Value, degree_, Evaluator>::operator()(
 template<typename Value,
          int degree_,
          template<typename, typename, int> class Evaluator>
-std::function<Complexification<Value>(AngularFrequency const&)>
-PiecewisePoissonSeries<Value, degree_, Evaluator>::FourierTransform() const {
+auto PiecewisePoissonSeries<Value, degree_, Evaluator>::FourierTransform() const
+    -> Spectrum {
   // TODO(egg): consider pre-evaluating |*this| at all points used by the
   // Gaussian quadratures, removing the lifetime requirement on |*this| and
   // potentially speeding up repeated evaluations of the Fourier transform.
@@ -670,12 +670,12 @@ PiecewisePoissonSeries<Value, degree_, Evaluator>::FourierTransform() const {
           [&f = series_[k], t0, ω](
               Instant const& t) -> Complexification<Value> {
             return f(t) * Complexification<double>{Cos(ω * (t - t0)),
-                                                   Sin(ω * (t - t0))};
+                                                   -Sin(ω * (t - t0))};
           },
           bounds_[k],
           bounds_[k + 1]);
     }
-    return integral / time_domain.measure();
+    return integral;
   };
 }
 
