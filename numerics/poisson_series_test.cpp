@@ -1,6 +1,7 @@
 ﻿
 #include "numerics/poisson_series.hpp"
 
+#include <functional>
 #include <limits>
 #include <memory>
 
