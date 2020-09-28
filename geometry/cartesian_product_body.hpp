@@ -129,10 +129,12 @@ class CartesianProductVectorSpace;
 template<typename Scalar, typename Tuple, std::size_t... indices>
 class CartesianProductVectorSpace<Scalar, Tuple,
                                   std::index_sequence<indices...>> {
+  template<typename L, typename R>
+  using Product = quantities::Product<L, R>;
   template<typename T>
-  using ScalarLeftProduct = quantities::Product<Scalar, T>;
+  using ScalarLeftProduct = Product<Scalar, T>;
   template<typename T>
-  using ScalarRightProduct = quantities::Product<T, Scalar>;
+  using ScalarRightProduct = Product<T, Scalar>;
   template<typename T>
   using Quotient = quantities::Quotient<T, Scalar>;
 
@@ -242,7 +244,8 @@ class PolynomialRing {
   // insert a zero for the lowest degree (because of the valuation 1).  This is
   // the type of that zero.
   using LHead = std::tuple_element_t<0, LTuple>;
-  using Zero = typename Hilbert<LHead, RHead>::InnerProductType;
+  using Zero = typename CartesianProductMultiplicativeSpace<LHead, RTuple>::
+      template Product<LHead, RHead>;
 
   // The hard part: generating the type of the result.
   using LTupleRHeadProduct =
@@ -348,10 +351,12 @@ class CartesianProductPointwiseMultiplicativeSpace;
 template<typename Scalar, typename Tuple, std::size_t... indices>
 class CartesianProductPointwiseMultiplicativeSpace<
     Scalar, Tuple, std::index_sequence<indices...>> {
+  template<typename L, typename R>
+  using Product = typename Hilbert<L, R>::InnerProductType;
   template<typename T>
-  using ScalarLeftProduct = typename Hilbert<Scalar, T>::InnerProductType;
+  using ScalarLeftProduct = Product<Scalar, T>;
   template<typename T>
-  using ScalarRightProduct = typename Hilbert<T, Scalar>::InnerProductType;
+  using ScalarRightProduct = Product<T, Scalar>;
 
  public:
   FORCE_INLINE(static constexpr) Apply<ScalarLeftProduct, Tuple> Multiply(

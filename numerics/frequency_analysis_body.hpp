@@ -37,26 +37,15 @@ AngularFrequency PreciseMode(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) {
-  using Value = std::invoke_result_t<Function, Instant>;
-  using Degree0 =
-      PoissonSeries<typename Hilbert<Value>::NormalizedType, 0, Evaluator>;
+  auto const weighted_function = weight * function;
+  auto const weighted_function_spectrum = weighted_function.FourierTransform();
 
-  auto amplitude =
-      [&function, t_min, t_max, &weight](AngularFrequency const& ω) {
-        constexpr int dimension = Hilbert<Value>::dimension;
-        Instant const& t0 = weight.origin();
-        std::array<Degree0, 2 * dimension> const basis =
-            PoissonSeriesBasisGenerator<Degree0, dimension>::Basis(ω, t0);
-        typename Hilbert<Value>::InnerProductType result{};
-        for (int i = 0; i < basis.size(); ++i) {
-          auto const amplitude =
-              InnerProduct(function, basis[i], weight, t_min, t_max);
-          result += amplitude * amplitude;
-        }
-        return result;
+  auto power =
+      [&weighted_function_spectrum](AngularFrequency const& ω) {
+        return weighted_function_spectrum(ω).Norm²();
       };
 
-  return Brent(amplitude,
+  return Brent(power,
                fft_mode.min,
                fft_mode.max,
                std::greater<>());
