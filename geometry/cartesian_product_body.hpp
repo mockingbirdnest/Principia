@@ -144,7 +144,9 @@ class CartesianProductVectorSpace<Scalar, Tuple,
       Tuple const& left,
       Scalar const& right);
 
-  FORCE_INLINE(static constexpr) Apply<Quotient, Tuple> Divide(
+  // SFINAEd out unless the division is defined.
+  template<typename TupleQuotient = Apply<Quotient, Tuple>>
+  FORCE_INLINE(static constexpr) TupleQuotient Divide(
       Tuple const& left,
       Scalar const& right);
 };
@@ -168,11 +170,10 @@ constexpr auto CartesianProductVectorSpace<
 }
 
 template<typename Scalar, typename Tuple, std::size_t... indices>
-constexpr auto CartesianProductVectorSpace<
-    Scalar, Tuple,
-    std::index_sequence<indices...>>::Divide(Tuple const& left,
-                                             Scalar const& right)
-    -> Apply<Quotient, Tuple> {
+template<typename TupleQuotient>
+constexpr TupleQuotient
+CartesianProductVectorSpace<Scalar, Tuple, std::index_sequence<indices...>>::
+    Divide(Tuple const& left, Scalar const& right) {
   return {std::get<indices>(left) / right...};
 }
 

@@ -1,6 +1,7 @@
 ﻿
 #include "numerics/poisson_series.hpp"
 
+#include <functional>
 #include <limits>
 #include <memory>
 
@@ -11,10 +12,13 @@
 #include "numerics/apodization.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/quadrature.hpp"
+#include "numerics/root_finders.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -38,7 +42,10 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
+using testing_utilities::RelativeErrorFrom;
+using testing_utilities::operator""_⑴;
 
 class PoissonSeriesTest : public ::testing::Test {
  protected:
@@ -47,6 +54,7 @@ class PoissonSeriesTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
+  using Degree0 = PoissonSeries<double, 0, HornerEvaluator>;
   using Degree1 = PoissonSeries<double, 1, HornerEvaluator>;
 
   PoissonSeriesTest()
@@ -199,11 +207,63 @@ TEST_F(PoissonSeriesTest, PointwiseInnerProduct) {
               AlmostEquals(5 * Metre * Metre, 0));
 }
 
+TEST_F(PoissonSeriesTest, Fourier) {
+  Degree0::Polynomial constant({1.0}, t0_);
+  AngularFrequency const ω = 4 * Radian / Second;
+  PoissonSeries<Displacement<World>, 0, HornerEvaluator> signal(
+      constant * Displacement<World>{},
+      {{ω,
+        {/*sin=*/constant *
+             Displacement<World>({2 * Metre, -3 * Metre, 5 * Metre}),
+         /*cos=*/constant *
+             Displacement<World>({-7 * Metre, 11 * Metre, -13 * Metre})}}});
+  // Slice our signal into segments short enough that one-point Gauss-Legendre
+  // (also known as midpoint) does the job.
+  constexpr int segments = 100;
+  PiecewisePoissonSeries<Displacement<World>, 0, HornerEvaluator> f(
+      {t0_, t0_ + π * Second / segments}, signal);
+  for (int k = 1; k < segments; ++k) {
+    f.Append({t0_ + k * π * Second / segments,
+              t0_ + (k + 1) * π * Second / segments},
+             signal);
+  }
+  auto const f_fourier_transform = f.FourierTransform();
+  auto const f_power_spectrum =
+      [&f_fourier_transform](AngularFrequency const& ω) {
+        return f_fourier_transform(ω).Norm²();
+      };
+  EXPECT_THAT(Brent(f_power_spectrum, 0.9 * ω, 1.1 * ω, std::greater<>{}),
+              RelativeErrorFrom(ω, IsNear(0.03_⑴)));
+  // A peak arising from the finite interval.
+  EXPECT_THAT(Brent(f_power_spectrum,
+                    0 * Radian / Second,
+                    2 * Radian / Second,
+                    std::greater<>{}),
+              IsNear(1.209_⑴ * Radian / Second));
+
+  auto const fw = f * apodization::Hann<HornerEvaluator>(f.t_min(), f.t_max());
+
+  auto const fw_fourier_transform = fw.FourierTransform();
+  auto const fw_power_spectrum =
+      [&fw_fourier_transform](AngularFrequency const& ω) {
+        return fw_fourier_transform(ω).Norm²();
+      };
+  EXPECT_THAT(Brent(fw_power_spectrum, 0.9 * ω, 1.1 * ω, std::greater<>{}),
+              RelativeErrorFrom(ω, IsNear(0.005_⑴)));
+  // Hann filters out the interval; this search for a second maximum converges
+  // to its boundary.
+  EXPECT_THAT(Brent(fw_power_spectrum,
+                    0 * Radian / Second,
+                    2 * Radian / Second,
+                    std::greater<>{}),
+              IsNear(1.9999999_⑴ * Radian / Second));
+}
+
 TEST_F(PoissonSeriesTest, Primitive) {
   auto const actual_primitive = pb_->Primitive();
 
   // The primitive was computed using Mathematica.
-  auto const expected_primitive = [=](Time const& t){
+  auto const expected_primitive = [=](Time const& t) {
     auto const a0 = 3;
     auto const a1 = 4 / Second;
     auto const b0 = 9;
@@ -400,11 +460,11 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
     auto const p1 = p_ * pp_;
     auto const p2 = pp_ * p_;
     EXPECT_THAT(p1(t0_ + 0.5 * Second),
-                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+                AlmostEquals((7 - 4 * Sqrt(2)) / 4, 0, 4));
     EXPECT_THAT(p1(t0_ + 1.5 * Second),
                 AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
     EXPECT_THAT(p2(t0_ + 0.5 * Second),
-                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+                AlmostEquals((7 - 4 * Sqrt(2)) / 4, 0, 4));
     EXPECT_THAT(p2(t0_ + 1.5 * Second),
                 AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
   }
@@ -440,11 +500,11 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
     auto const p1 = p * pp_;
     auto const p2 = pp_ * p;
     EXPECT_THAT(p1(t0_ + 0.5 * Second),
-                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+                AlmostEquals((7 - 4 * Sqrt(2)) / 4, 0, 4));
     EXPECT_THAT(p1(t0_ + 1.5 * Second),
                 AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
     EXPECT_THAT(p2(t0_ + 0.5 * Second),
-                AlmostEquals((7 - 4* Sqrt(2))/4, 0, 4));
+                AlmostEquals((7 - 4 * Sqrt(2)) / 4, 0, 4));
     EXPECT_THAT(p2(t0_ + 1.5 * Second),
                 AlmostEquals((-3 - 3 * Sqrt(2)) / 4, 1));
   }
