@@ -2,6 +2,7 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
 #include <map>
 #include <optional>
 #include <string>
@@ -306,9 +307,8 @@ class PiecewisePoissonSeries {
   // Gauss-Legendre quadrature on each subinterval, where the number of points
   // is chosen assuming that the periods of periodic terms are all large
   // compared to the subintervals.
-  // If apodization is desired, the |*this| should be multiplied by an
-  // apodization function, and |FourierTransform| should be called on the
-  // product.
+  // If apodization is desired, |*this| should be multiplied by an apodization
+  // function, and |FourierTransform| should be called on the product.
   // |*this| must outlive the resulting function.
   std::function<Complexification<Value>(AngularFrequency const&)>
   FourierTransform() const;

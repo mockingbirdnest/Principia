@@ -18,6 +18,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -43,6 +44,7 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
+using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_⑴;
 
 class PoissonSeriesTest : public ::testing::Test {
@@ -231,7 +233,7 @@ TEST_F(PoissonSeriesTest, Fourier) {
         return f_fourier_transform(ω).Norm²();
       };
   EXPECT_THAT(Brent(f_power_spectrum, 0.9 * ω, 1.1 * ω, std::greater<>{}),
-              IsNear(4.117_⑴ * Radian / Second));
+              RelativeErrorFrom(ω, IsNear(0.03_⑴)));
   // A peak arising from the finite interval.
   EXPECT_THAT(Brent(f_power_spectrum,
                     0 * Radian / Second,
@@ -247,7 +249,7 @@ TEST_F(PoissonSeriesTest, Fourier) {
         return fw_fourier_transform(ω).Norm²();
       };
   EXPECT_THAT(Brent(fw_power_spectrum, 0.9 * ω, 1.1 * ω, std::greater<>{}),
-              IsNear(+3.979_⑴ * Radian / Second));
+              RelativeErrorFrom(ω, IsNear(0.005_⑴)));
   // Hann filters out the interval; this search for a second maximum converges
   // to its boundary.
   EXPECT_THAT(Brent(fw_power_spectrum,
@@ -435,17 +437,22 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
     auto const s2 = pp_ + p_;
     EXPECT_THAT(s1(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(s1(t0_ + 1.5 * Second), AlmostEquals((6 + Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s1(t0_ + 1.5 * Second),
+                AlmostEquals((6 + Sqrt(2)) / 4, 0));
     EXPECT_THAT(s2(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(s2(t0_ + 1.5 * Second), AlmostEquals((6 + Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s2(t0_ + 1.5 * Second),
+                AlmostEquals((6 + Sqrt(2)) / 4, 0));
   }
   {
     auto const d1 = p_ - pp_;
     auto const d2 = pp_ - p_;
-    EXPECT_THAT(d1(t0_ + 0.5 * Second), AlmostEquals((2 + Sqrt(2)) / 4, 1));
-    EXPECT_THAT(d1(t0_ + 1.5 * Second), AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(d2(t0_ + 0.5 * Second), AlmostEquals((-2 - Sqrt(2)) / 4, 1));
+    EXPECT_THAT(d1(t0_ + 0.5 * Second),
+                AlmostEquals((2 + Sqrt(2)) / 4, 1));
+    EXPECT_THAT(d1(t0_ + 1.5 * Second),
+                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
+    EXPECT_THAT(d2(t0_ + 0.5 * Second),
+                AlmostEquals((-2 - Sqrt(2)) / 4, 1));
     EXPECT_THAT(d2(t0_ + 1.5 * Second),
                 AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
   }
@@ -470,17 +477,22 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
     auto const s2 = pp_ + p;
     EXPECT_THAT(s1(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 1));
-    EXPECT_THAT(s1(t0_ + 1.5 * Second), AlmostEquals((6 + Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s1(t0_ + 1.5 * Second),
+                AlmostEquals((6 + Sqrt(2)) / 4, 0));
     EXPECT_THAT(s2(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 1));
-    EXPECT_THAT(s2(t0_ + 1.5 * Second), AlmostEquals((6 + Sqrt(2)) / 4, 0));
+    EXPECT_THAT(s2(t0_ + 1.5 * Second),
+                AlmostEquals((6 + Sqrt(2)) / 4, 0));
   }
   {
     auto const d1 = p - pp_;
     auto const d2 = pp_ - p;
-    EXPECT_THAT(d1(t0_ + 0.5 * Second), AlmostEquals((2 + Sqrt(2)) / 4, 0, 2));
-    EXPECT_THAT(d1(t0_ + 1.5 * Second), AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
-    EXPECT_THAT(d2(t0_ + 0.5 * Second), AlmostEquals((-2 - Sqrt(2)) / 4, 0, 2));
+    EXPECT_THAT(d1(t0_ + 0.5 * Second),
+                AlmostEquals((2 + Sqrt(2)) / 4, 0, 2));
+    EXPECT_THAT(d1(t0_ + 1.5 * Second),
+                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
+    EXPECT_THAT(d2(t0_ + 0.5 * Second),
+                AlmostEquals((-2 - Sqrt(2)) / 4, 0, 2));
     EXPECT_THAT(d2(t0_ + 1.5 * Second),
                 AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
   }

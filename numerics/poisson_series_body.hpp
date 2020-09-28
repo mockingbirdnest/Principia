@@ -655,9 +655,8 @@ Value PiecewisePoissonSeries<Value, degree_, Evaluator>::operator()(
 
 template<typename Value,
          int degree_,
-         template<typename, typename, int>
-         class Evaluator>
-inline std::function<Complexification<Value>(AngularFrequency const&)>
+         template<typename, typename, int> class Evaluator>
+std::function<Complexification<Value>(AngularFrequency const&)>
 PiecewisePoissonSeries<Value, degree_, Evaluator>::FourierTransform() const {
   // TODO(egg): consider pre-evaluating |*this| at all points used by the
   // Gaussian quadratures, removing the lifetime requirement on |*this| and
@@ -669,7 +668,7 @@ PiecewisePoissonSeries<Value, degree_, Evaluator>::FourierTransform() const {
     for (int k = 0; k < series_.size(); ++k) {
       integral += quadrature::GaussLegendre<std::max(1, (degree_ + 1) / 2)>(
           [&f = series_[k], t0, ω](
-              Instant const t) -> Complexification<Value> {
+              Instant const& t) -> Complexification<Value> {
             return f(t) * Complexification<double>{Cos(ω * (t - t0)),
                                                    Sin(ω * (t - t0))};
           },
