@@ -20,7 +20,6 @@
 #include "numerics/frequency_analysis.hpp"
 #include "numerics/poisson_series.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "numerics/quadrature.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -640,12 +639,10 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
       Interval<Time> const period{2 * π * Radian / mode.max,
                                   2 * π * Radian / mode.min};
       LOG(ERROR) << "period=" << period;
-      numerics::quadrature::gauss = 0;
       auto const precise_mode =
           PreciseMode(mode,
                       residual,
                       apodization::Hann<EstrinEvaluator>(t_min, t_max));
-      LOG(ERROR)<<"Gauss="<<numerics::quadrature::gauss;
       auto const precise_period = 2 * π * Radian / precise_mode;
       LOG(ERROR) << "precise_period=" << precise_period;
       logger.Append(
@@ -668,8 +665,7 @@ TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
       io_piecewise_poisson_series,
       angular_frequency_calculator,
       apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
-      t_min, t_max,
-      &logger);
+      t_min, t_max);
 }
 #endif
 

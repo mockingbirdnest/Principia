@@ -5,7 +5,6 @@
 
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
-#include "mathematica/mathematica.hpp"
 #include "numerics/poisson_series.hpp"
 #include "quantities/named_quantities.hpp"
 
