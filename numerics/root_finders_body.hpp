@@ -182,8 +182,6 @@ Argument GoldenSectionSearch(Function f,
       {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
   Value f_upper_interior = f(upper_interior);
 
-  int ev = 4;
-
   while (lower < lower_interior &&
          lower_interior < upper_interior &&
          upper_interior < upper) {
@@ -201,7 +199,6 @@ Argument GoldenSectionSearch(Function f,
       lower_interior =
           upper_interior - (upper_interior - lower) * lower_interior_ratio;
       f_lower_interior = f(lower_interior);
-      ++ev;
     } else {
       lower = lower_interior;
       f_lower = f_lower_interior;
@@ -211,11 +208,8 @@ Argument GoldenSectionSearch(Function f,
       upper_interior =
           lower_interior + (upper - lower_interior) * lower_interior_ratio;
       f_upper_interior = f(upper_interior);
-      ++ev;
     }
   }
-  LOG(ERROR)<<ev;
-
   return Barycentre<Argument, double>({lower, upper}, {1, 1});
 }
 
@@ -276,14 +270,12 @@ Argument Brent(Function f,
     v = w = x = a + c * (b - a);
     Difference<Argument> e{};
     f_v = f_w = f_x = f(x);
-    int ev = 1;
     for (;;) {
       Argument const m = Barycentre<Argument, double>({a, b}, {1, 1});
       Difference<Argument> const tol = eps * Abs(x - Argument{}) + t;
       Difference<Argument> const t2 = 2 * tol;
       // Check stopping criterion.
       if (Abs(x - m) <= t2 - 0.5 * (b - a)) {
-        LOG(ERROR)<<ev;
         return x;
       }
       // p = q = r = 0;
@@ -320,7 +312,6 @@ Argument Brent(Function f,
       // f must not be evaluated too close to x.
       u = x + (Abs(d) > tol ? d : tol * Sign(d));
       f_u = f(u);
-      ++ev;
       // Update a, b, v, w, and x.
       if (f_u <= f_x) {
         if (u < x) {

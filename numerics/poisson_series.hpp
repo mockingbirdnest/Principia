@@ -99,7 +99,7 @@ class PoissonSeries {
 
   Instant const& origin() const;
 
-  virtual Value operator()(Instant const& t) const;
+  Value operator()(Instant const& t) const;
 
   // Returns a copy of this series adjusted to the given origin.
   PoissonSeries AtOrigin(Instant const& origin) const;
@@ -302,7 +302,7 @@ class PiecewisePoissonSeries {
   Instant t_max() const;
 
   // t must be in the interval [t_min, t_max].
-  virtual Value operator()(Instant const& t) const;
+  Value operator()(Instant const& t) const;
 
   // Returns the Fourier transform of this piecewise Poisson series.
   // The function is taken to be 0 outside [t_min, t_max].
@@ -472,8 +472,6 @@ PiecewisePoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
 operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
           PoissonSeries<RValue, rdegree_, Evaluator> const& right);
 
-// TODO(phl): Remove the parameter |points| in the templates below and the
-// exporting of Dot from the namespace once we have a smarter Gauss integrator.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,

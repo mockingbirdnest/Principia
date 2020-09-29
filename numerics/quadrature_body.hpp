@@ -8,9 +8,6 @@
 namespace principia {
 namespace numerics {
 namespace quadrature {
-
-static int gauss = 0;
-
 namespace internal_quadrature {
 
 using quantities::Difference;
@@ -29,7 +26,6 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> Gauss(
     // TODO(phl): Consider compensated summation.
     result += weights[i] * function(scaled_node);
   }
-  ++gauss;
   return result * half_width;
 }
 

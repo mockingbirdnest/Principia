@@ -14,7 +14,6 @@
 #include "numerics/root_finders.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -28,9 +27,6 @@ using quantities::Inverse;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 
 template<typename Function,
          int wdegree_,
@@ -87,8 +83,7 @@ IncrementalProjection(Function const& function,
                       AngularFrequencyCalculator const& calculator,
                       PoissonSeries<double, wdegree_, Evaluator> const& weight,
                       Instant const& t_min,
-                      Instant const& t_max,
-                      mathematica::Logger* const logger) {
+                      Instant const& t_max) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
   using Norm² = typename Hilbert<Value>::InnerProductType;
@@ -219,10 +214,6 @@ IncrementalProjection(Function const& function,
     PoissonSeries<Value, degree_, Evaluator> result = A[0] * basis[0];
     for (int i = 1; i < basis_size; ++i) {
       result += A[i] * basis[i];
-    }
-    if (logger != nullptr) {
-      logger->Append(
-          "solutions", result, mathematica::ExpressIn(Metre, Radian, Second));
     }
 
     ω = calculator(f);
