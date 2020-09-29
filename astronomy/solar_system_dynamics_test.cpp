@@ -15,11 +15,6 @@
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/mathematica.hpp"
-#include "numerics/apodization.hpp"
-#include "numerics/fast_fourier_transform.hpp"
-#include "numerics/frequency_analysis.hpp"
-#include "numerics/poisson_series.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -38,7 +33,6 @@ namespace principia {
 using base::dynamic_cast_not_null;
 using geometry::AngleBetween;
 using geometry::AngularVelocity;
-using geometry::Barycentre;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::Commutator;
@@ -47,7 +41,6 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::Instant;
-using geometry::Interval;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Rotation;
@@ -63,9 +56,6 @@ using integrators::methods::QuinlanTremaine1990Order12;
 using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
-using numerics::EstrinEvaluator;
-using numerics::FastFourierTransform;
-using numerics::frequency_analysis::PreciseMode;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -76,11 +66,9 @@ using physics::RigidMotion;
 using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::Angle;
-using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::GravitationalParameter;
 using quantities::Length;
-using quantities::Square;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::ArcSecond;
@@ -101,8 +89,6 @@ using testing_utilities::operator""_⑴;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
-namespace apodization = numerics::apodization;
-namespace frequency_analysis = numerics::frequency_analysis;
 
 namespace astronomy {
 
@@ -276,7 +262,6 @@ class SolarSystemDynamicsTest : public ::testing::Test {
 };
 
 #if !_DEBUG
-#if !defined(_MSVC_LANG) || _MSVC_LANG > 201703L
 TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
   SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -563,111 +548,6 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
     }
   }
 }
-
-#else
-
-TEST_F(SolarSystemDynamicsTest, FrequencyAnalysis) {
-  mathematica::Logger logger(TEMP_DIR / "frequency_analysis.wl",
-                             /*make_unique=*/false);
-  SolarSystem<ICRS> solar_system_at_j2000(
-      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
-      SOLUTION_DIR / "astronomy" /
-          "sol_initial_state_jd_2451545_000000000.proto.txt");
-
-  // NOTE(phl): Keep these parameters aligned with
-  // sol_numerics_blueprint.proto.txt.
-  auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
-      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
-                               /*geopotential_tolerance=*/0x1p-24},
-      Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<ICRS>>(),
-          /*step=*/10 * Minute));
-  ephemeris->Prolong(solar_system_at_j2000.epoch() + 0.25 * JulianYear);
-
-  auto const& io_trajectory =
-      solar_system_at_j2000.trajectory(*ephemeris, "Io");
-  Instant const t_min = io_trajectory.t_min();
-  Instant const t_max = io_trajectory.t_max();
-  int const io_piecewise_poisson_series_degree =
-      io_trajectory.PiecewisePoissonSeriesDegree(t_min, t_max);
-  LOG(ERROR)<<io_piecewise_poisson_series_degree;
-
-  // TODO(phl): Use a switch statement with macros.
-  auto const io_piecewise_poisson_series =
-      io_trajectory.ToPiecewisePoissonSeries<7>(t_min, t_max);
-  logger.Set("tMin", t_min, mathematica::ExpressIn(Second));
-  logger.Set("tMax", t_max, mathematica::ExpressIn(Second));
-
-  std::vector<Displacement<ICRS>> displacements;
-  std::vector<std::tuple<Instant, Displacement<ICRS>>> trajectory;
-  for (int i = 0; i <= 1000; ++i) {
-    auto const t = t_min + i * (t_max - t_min) / 1000;
-    auto const current_displacements = io_piecewise_poisson_series(t);
-    displacements.push_back(current_displacements);
-    auto const current_trajectory =
-        io_trajectory.EvaluatePosition(t) - ICRS::origin;
-    trajectory.push_back({t, current_trajectory});
-  }
-
-  static constexpr int number_of_frequencies = 10;
-  static constexpr int log2_number_of_samples = 10;
-
-  int step = 0;
-  auto angular_frequency_calculator =
-      [&logger, &step, t_min, t_max](
-          auto const& residual) -> std::optional<AngularFrequency> {
-    LOG(ERROR) << "step=" << step;
-    if (step == 0) {
-      ++step;
-      return AngularFrequency();
-    } else if (step <= number_of_frequencies) {
-      ++step;
-      Length max_residual;
-      std::vector<Displacement<ICRS>> residuals;
-      Time const Δt = (t_max - t_min) / (1 << log2_number_of_samples);
-      for (int i = 0; i < 1 << log2_number_of_samples; ++i) {
-        residuals.push_back(residual(t_min + i * Δt));
-        max_residual = std::max(max_residual, residuals.back().Norm());
-      }
-      LOG(ERROR) << "max_residual=" << max_residual;
-      auto fft =
-          std::make_unique<FastFourierTransform<Displacement<ICRS>,
-                                                1 << log2_number_of_samples>>(
-              residuals, Δt);
-      auto const mode = fft->Mode();
-      Interval<Time> const period{2 * π * Radian / mode.max,
-                                  2 * π * Radian / mode.min};
-      LOG(ERROR) << "period=" << period;
-      auto const precise_mode =
-          PreciseMode(mode,
-                      residual,
-                      apodization::Hann<EstrinEvaluator>(t_min, t_max));
-      auto const precise_period = 2 * π * Radian / precise_mode;
-      LOG(ERROR) << "precise_period=" << precise_period;
-      logger.Append(
-          "precisePeriods", precise_period, mathematica::ExpressIn(Second));
-      return precise_mode;
-    } else {
-      Length max_residual;
-      std::vector<Displacement<ICRS>> residuals;
-      Time const Δt = (t_max - t_min) / (1 << log2_number_of_samples);
-      for (int i = 0; i < 1 << log2_number_of_samples; ++i) {
-        residuals.push_back(residual(t_min + i * Δt));
-        max_residual = std::max(max_residual, residuals.back().Norm());
-      }
-      LOG(ERROR) << "max_residual=" << max_residual;
-      return std::nullopt;
-    }
-  };
-
-  auto const sol = frequency_analysis::IncrementalProjection<5>(
-      io_piecewise_poisson_series,
-      angular_frequency_calculator,
-      apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
-      t_min, t_max);
-}
-#endif
 
 // This test produces the file phobos.generated.wl which is consumed by the
 // notebook phobos.nb.
