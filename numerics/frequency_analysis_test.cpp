@@ -227,8 +227,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
 
   // Projection on a 4th degree basis accurately reconstructs the function.
   auto const projection4 =
-      Projection<4>(ω,
-                    series,
+      Projection<4>(series,
+                    ω,
                     apodization::Hann<HornerEvaluator>(t_min, t_max),
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
@@ -238,8 +238,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
 
   // Projection on a 5th degree basis is also accurate.
   auto const projection5 =
-      Projection<5>(ω,
-                    series,
+      Projection<5>(series,
+                    ω,
                     apodization::Hann<HornerEvaluator>(t_min, t_max),
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
@@ -249,8 +249,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
 
   // Projection on a 3rd degree basis introduces significant errors.
   auto const projection3 =
-      Projection<3>(ω,
-                    series,
+      Projection<3>(series,
+                    ω,
                     apodization::Hann<HornerEvaluator>(t_min, t_max),
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
@@ -305,8 +305,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
 
   // Projection on a 4th degree basis accurately reconstructs the function.
   auto const projection4 =
-      Projection<4>(ω,
-                    series,
+      Projection<4>(series,
+                    ω,
                     apodization::Hann<HornerEvaluator>(t_min, t_max),
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
@@ -316,8 +316,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
 
   // Projection on a 5th degree basis is also accurate.
   auto const projection5 =
-      Projection<5>(ω,
-                    series,
+      Projection<5>(series,
+                    ω,
                     apodization::Hann<HornerEvaluator>(t_min, t_max),
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
@@ -327,8 +327,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
 
   // Projection on a 3rd degree basis introduces significant errors.
   auto const projection3 =
-      Projection<3>(ω,
-                    series,
+      Projection<3>(series,
+                    ω,
                     apodization::Hann<HornerEvaluator>(t_min, t_max),
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
@@ -373,8 +373,8 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   // Projection on a 4th degree basis.  The approximation is only as good as the
   // Gauss-Legendre integration.
   auto const projection4 =
-      Projection<4>(ω,
-                    piecewise_series,
+      Projection<4>(piecewise_series,
+                    ω,
                     apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {

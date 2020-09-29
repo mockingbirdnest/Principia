@@ -27,7 +27,6 @@ using quantities::Primitive;
 using quantities::Sin;
 using quantities::Time;
 using quantities::Variation;
-using quantities::si::Metre;
 using quantities::si::Radian;
 namespace si = quantities::si;
 
@@ -210,7 +209,7 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
     FirstPart const first_part(
         typename FirstPart::Polynomial({}, origin_),
         {{ω,
-          {/*sin=*/typename FirstPart::Polynomial(polynomials.cos ),
+          {/*sin=*/typename FirstPart::Polynomial(polynomials.cos),
            /*cos=*/typename FirstPart::Polynomial(-polynomials.sin)}}});
     result += (first_part(t2) - first_part(t1)) / ω * Radian;
 

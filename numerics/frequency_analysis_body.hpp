@@ -54,8 +54,8 @@ template<int degree_,
          int wdegree_,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
-Projection(AngularFrequency const& ω,
-           Function const& function,
+Projection(Function const& function,
+           AngularFrequency const& ω,
            PoissonSeries<double, wdegree_, Evaluator> const& weight,
            Instant const& t_min,
            Instant const& t_max) {
