@@ -11,6 +11,7 @@
 #include "numerics/apodization.hpp"
 #include "numerics/fast_fourier_transform.hpp"
 #include "numerics/frequency_analysis.hpp"
+#include "numerics/poisson_series.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
@@ -31,6 +32,7 @@ using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
 using numerics::EstrinEvaluator;
 using numerics::FastFourierTransform;
+using numerics::PoissonSeries;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Length;
@@ -45,16 +47,93 @@ using quantities::si::Second;
 namespace apodization = numerics::apodization;
 namespace frequency_analysis = numerics::frequency_analysis;
 
+static constexpr int approximation_degree = 5;
+static constexpr int log2_number_of_samples = 10;
+static constexpr int number_of_frequencies = 10;
+
 class AnalyticalSeriesTest : public ::testing::Test {
  protected:
-  AnalyticalSeriesTest() {
+  AnalyticalSeriesTest()
+      : logger_(TEMP_DIR / "analytical_series.wl",
+               /*make_unique=*/false) {
     google::LogToStderr();
   }
+
+  template<int degree>
+  PoissonSeries<Displacement<ICRS>, approximation_degree, EstrinEvaluator>
+  ComputeCompactRepresentation(ContinuousTrajectory<ICRS> const& trajectory) {
+    Instant const t_min = trajectory.t_min();
+    Instant const t_max = trajectory.t_max();
+    auto const piecewise_poisson_series =
+        trajectory.ToPiecewisePoissonSeries<degree>(t_min, t_max);
+
+    int step = 0;
+
+    auto angular_frequency_calculator =
+        [this, &step, t_min, t_max](
+            auto const& residual) -> std::optional<AngularFrequency> {
+      Time const Δt = (t_max - t_min) / (1 << log2_number_of_samples);
+      LOG(INFO) << "step=" << step;
+      if (step == 0) {
+        ++step;
+        return AngularFrequency();
+      } else if (step <= number_of_frequencies) {
+        ++step;
+        Length max_residual;
+        std::vector<Displacement<ICRS>> residuals;
+        for (int i = 0; i < 1 << log2_number_of_samples; ++i) {
+          residuals.push_back(residual(t_min + i * Δt));
+          max_residual = std::max(max_residual, residuals.back().Norm());
+        }
+        LOG(INFO) << "max_residual=" << max_residual;
+        auto fft =
+            std::make_unique<FastFourierTransform<Displacement<ICRS>,
+                                                  1 << log2_number_of_samples>>(
+                residuals, Δt);
+        auto const mode = fft->Mode();
+        Interval<Time> const period{2 * π * Radian / mode.max,
+                                    2 * π * Radian / mode.min};
+        LOG(INFO) << "period=" << period;
+        auto const precise_mode = frequency_analysis::PreciseMode(
+            mode, residual, apodization::Hann<EstrinEvaluator>(t_min, t_max));
+        auto const precise_period = 2 * π * Radian / precise_mode;
+        LOG(INFO) << "precise_period=" << precise_period;
+        logger_.Append(
+            "precisePeriods", precise_period, mathematica::ExpressIn(Second));
+        return precise_mode;
+      } else {
+        Length max_residual;
+        for (int i = 0; i < 1 << log2_number_of_samples; ++i) {
+          max_residual =
+              std::max(max_residual, residual(t_min + i * Δt).Norm());
+        }
+        LOG(INFO) << "max_residual=" << max_residual;
+        return std::nullopt;
+      }
+    };
+
+    return frequency_analysis::IncrementalProjection<approximation_degree>(
+        piecewise_poisson_series,
+        angular_frequency_calculator,
+        apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
+        t_min,
+        t_max);
+  }
+
+  mathematica::Logger logger_;
 };
 
-TEST_F(AnalyticalSeriesTest, SolarSystemSeries) {
-  mathematica::Logger logger(TEMP_DIR / "analytical_series.wl",
-                             /*make_unique=*/false);
+#define PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(                   \
+    degree, approximation, trajectory)                                   \
+  case degree: {                                                         \
+    approximation = std::make_unique<PoissonSeries<Displacement<ICRS>,   \
+                                                   approximation_degree, \
+                                                   EstrinEvaluator>>(    \
+        ComputeCompactRepresentation<(degree)>(trajectory));             \
+    break;                                                               \
+  }
+
+TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
   SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
@@ -73,87 +152,54 @@ TEST_F(AnalyticalSeriesTest, SolarSystemSeries) {
 
   auto const& io_trajectory =
       solar_system_at_j2000.trajectory(*ephemeris, "Io");
-  Instant const t_min = io_trajectory.t_min();
-  Instant const t_max = io_trajectory.t_max();
   int const io_piecewise_poisson_series_degree =
-      io_trajectory.PiecewisePoissonSeriesDegree(t_min, t_max);
-  LOG(ERROR)<<io_piecewise_poisson_series_degree;
+      io_trajectory.PiecewisePoissonSeriesDegree(io_trajectory.t_min(),
+                                                 io_trajectory.t_max());
+  std::unique_ptr<
+      PoissonSeries<Displacement<ICRS>, approximation_degree, EstrinEvaluator>>
+      io_approximation;
 
-  // TODO(phl): Use a switch statement with macros.
-  auto const io_piecewise_poisson_series =
-      io_trajectory.ToPiecewisePoissonSeries<7>(t_min, t_max);
-  logger.Set("tMin", t_min, mathematica::ExpressIn(Second));
-  logger.Set("tMax", t_max, mathematica::ExpressIn(Second));
-
-  std::vector<Displacement<ICRS>> displacements;
-  std::vector<std::tuple<Instant, Displacement<ICRS>>> trajectory;
-  for (int i = 0; i <= 1000; ++i) {
-    auto const t = t_min + i * (t_max - t_min) / 1000;
-    auto const current_displacements = io_piecewise_poisson_series(t);
-    displacements.push_back(current_displacements);
-    auto const current_trajectory =
-        io_trajectory.EvaluatePosition(t) - ICRS::origin;
-    trajectory.push_back({t, current_trajectory});
-  }
-
-  static constexpr int number_of_frequencies = 10;
-  static constexpr int log2_number_of_samples = 10;
-
-  int step = 0;
-  auto angular_frequency_calculator =
-      [&logger, &step, t_min, t_max](
-          auto const& residual) -> std::optional<AngularFrequency> {
-    LOG(ERROR) << "step=" << step;
-    if (step == 0) {
-      ++step;
-      return AngularFrequency();
-    } else if (step <= number_of_frequencies) {
-      ++step;
-      Length max_residual;
-      std::vector<Displacement<ICRS>> residuals;
-      Time const Δt = (t_max - t_min) / (1 << log2_number_of_samples);
-      for (int i = 0; i < 1 << log2_number_of_samples; ++i) {
-        residuals.push_back(residual(t_min + i * Δt));
-        max_residual = std::max(max_residual, residuals.back().Norm());
-      }
-      LOG(ERROR) << "max_residual=" << max_residual;
-      auto fft =
-          std::make_unique<FastFourierTransform<Displacement<ICRS>,
-                                                1 << log2_number_of_samples>>(
-              residuals, Δt);
-      auto const mode = fft->Mode();
-      Interval<Time> const period{2 * π * Radian / mode.max,
-                                  2 * π * Radian / mode.min};
-      LOG(ERROR) << "period=" << period;
-      auto const precise_mode =
-          frequency_analysis::PreciseMode(
-              mode,
-              residual,
-              apodization::Hann<EstrinEvaluator>(t_min, t_max));
-      auto const precise_period = 2 * π * Radian / precise_mode;
-      LOG(ERROR) << "precise_period=" << precise_period;
-      logger.Append(
-          "precisePeriods", precise_period, mathematica::ExpressIn(Second));
-      return precise_mode;
-    } else {
-      Length max_residual;
-      std::vector<Displacement<ICRS>> residuals;
-      Time const Δt = (t_max - t_min) / (1 << log2_number_of_samples);
-      for (int i = 0; i < 1 << log2_number_of_samples; ++i) {
-        residuals.push_back(residual(t_min + i * Δt));
-        max_residual = std::max(max_residual, residuals.back().Norm());
-      }
-      LOG(ERROR) << "max_residual=" << max_residual;
-      return std::nullopt;
-    }
+  switch (io_piecewise_poisson_series_degree) {
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        3, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        4, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        5, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        6, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        7, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        8, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        9, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        10, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        11, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        12, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        13, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        14, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        15, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        16, io_approximation, io_trajectory);
+    PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+        17, io_approximation, io_trajectory);
+    default:
+      LOG(FATAL) << "Unexpected degree " << io_piecewise_poisson_series_degree;
   };
 
-  auto const solution = frequency_analysis::IncrementalProjection<5>(
-      io_piecewise_poisson_series,
-      angular_frequency_calculator,
-      apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
-      t_min, t_max);
+  logger_.Set("approximation",
+              *io_approximation,
+              mathematica::ExpressIn(Metre, Second, Radian));
 }
+
+#undef PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE
 
 }  // namespace physics
 }  // namespace principia
