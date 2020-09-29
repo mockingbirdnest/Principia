@@ -126,9 +126,10 @@ TEST_F(AnalyticalSeriesTest, SolarSystemSeries) {
                                   2 * π * Radian / mode.min};
       LOG(ERROR) << "period=" << period;
       auto const precise_mode =
-          PreciseMode(mode,
-                      residual,
-                      apodization::Hann<EstrinEvaluator>(t_min, t_max));
+          frequency_analysis::PreciseMode(
+              mode,
+              residual,
+              apodization::Hann<EstrinEvaluator>(t_min, t_max));
       auto const precise_period = 2 * π * Radian / precise_mode;
       LOG(ERROR) << "precise_period=" << precise_period;
       logger.Append(
