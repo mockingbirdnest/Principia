@@ -1,4 +1,7 @@
 ﻿
+#include <algorithm>
+#include <vector>
+
 #include "astronomy/frames.hpp"
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
@@ -133,6 +136,7 @@ class AnalyticalSeriesTest : public ::testing::Test {
     break;                                                               \
   }
 
+#if !_DEBUG
 TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
   SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -198,6 +202,7 @@ TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
               *io_approximation,
               mathematica::ExpressIn(Metre, Second, Radian));
 }
+#endif
 
 #undef PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE
 
