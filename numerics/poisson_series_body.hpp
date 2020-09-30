@@ -653,13 +653,42 @@ Value PiecewisePoissonSeries<Value, degree_, Evaluator>::operator()(
   return series_[it - bounds_.cbegin() - 1](t);
 }
 
+template<typename Value,
+         int degree_,
+         template<typename, typename, int> class Evaluator>
+auto PiecewisePoissonSeries<Value, degree_, Evaluator>::FourierTransform() const
+    -> Spectrum {
+  // TODO(egg): consider pre-evaluating |*this| at all points used by the
+  // Gaussian quadratures, removing the lifetime requirement on |*this| and
+  // potentially speeding up repeated evaluations of the Fourier transform.
+  return [this](AngularFrequency const& ω) {
+    Interval<Instant> const time_domain{t_min(), t_max()};
+    Instant const t0 = time_domain.midpoint();
+    Primitive<Complexification<Value>, Instant> integral;
+    for (int k = 0; k < series_.size(); ++k) {
+      integral += quadrature::GaussLegendre<std::max(1, (degree_ + 1) / 2)>(
+          [&f = series_[k], t0, ω](
+              Instant const& t) -> Complexification<Value> {
+            return f(t) * Complexification<double>{Cos(ω * (t - t0)),
+                                                   -Sin(ω * (t - t0))};
+          },
+          bounds_[k],
+          bounds_[k + 1]);
+    }
+    return integral;
+  };
+}
+
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 template<typename V, int d, template<typename, typename, int> class E>
 PiecewisePoissonSeries<Value, degree_, Evaluator>&
 PiecewisePoissonSeries<Value, degree_, Evaluator>::operator+=(
     PoissonSeries<V, d, E> const& right) {
-  *this = *this + right;
+  for (int i = 0; i < series_.size(); ++i) {
+    auto& series = series_[i];
+    series += right.AtOrigin(series.origin());
+  }
   return *this;
 }
 
@@ -669,7 +698,10 @@ template<typename V, int d, template<typename, typename, int> class E>
 PiecewisePoissonSeries<Value, degree_, Evaluator>&
 PiecewisePoissonSeries<Value, degree_, Evaluator>::operator-=(
     PoissonSeries<V, d, E> const& right) {
-  *this = *this - right;
+  for (int i = 0; i < series_.size(); ++i) {
+    auto& series = series_[i];
+    series -= right.AtOrigin(series.origin());
+  }
   return *this;
 }
 
