@@ -76,7 +76,7 @@ auto Multiply(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
           Product,
           typename PoissonSeries<LValue, ldegree_, Evaluator>::Polynomial,
           typename PoissonSeries<RValue, rdegree_, Evaluator>::Polynomial>::
-          Result,
+          Value,
       ldegree_ + rdegree_,
       Evaluator>;
 
