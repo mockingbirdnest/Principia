@@ -93,7 +93,7 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
 
   while (state.KeepRunning()) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
-      result += p.Evaluate(argument);
+      result += p(argument);
       argument += Δargument;
     }
   }

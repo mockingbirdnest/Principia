@@ -18,18 +18,18 @@
 
 namespace principia {
 namespace numerics {
-FORWARD_DECLARE_FROM(polynomial,
-                     TEMPLATE(typename Value, typename Argument, int degree_,
-                              template<typename, typename, int> class Evaluator)
-                              class,
-                     PolynomialInMonomialBasis);
+FORWARD_DECLARE_FROM(
+    polynomial,
+    TEMPLATE(typename Value, typename Argument, int degree_,
+            template<typename, typename, int> typename Evaluator) class,
+    PolynomialInMonomialBasis);
 }  // namespace numerics
 
 namespace mathematica {
 FORWARD_DECLARE_FUNCTION_FROM(
     mathematica,
     TEMPLATE(typename Value, typename Argument, int degree_,
-             template<typename, typename, int> class Evaluator,
+             template<typename, typename, int> typename Evaluator,
              typename OptionalExpressIn = std::nullopt_t) std::string,
     ToMathematicaExpression,
     (numerics::
@@ -52,22 +52,25 @@ using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
 
-// |Value| must belong to an affine space.  |Argument| must belong to a ring or
-// to Point based on a ring.
+// |Value_| must belong to an affine space.  |Argument_| must belong to a ring
+// or to Point based on a ring.
 // TODO(phl): We would like the base case to be the affine case (not limited to
 // Point) and the specialized case to check for the existence of Sum and Product
-// for Argument, and that works with Clang but not with VS2015.  Revisit once
+// for Argument_, and that works with Clang but not with VS2015.  Revisit once
 // MSFT has fixed their bugs.
-template<typename Value, typename Argument>
+template<typename Value_, typename Argument_>
 class Polynomial {
  public:
+  using Argument = Argument_;
+  using Value = Value_;
+
   // This virtual destructor makes this class and its subclasses non-literal, so
   // constexpr-ness is a bit of a lie for polynomials.
   // TODO(phl): Consider providing an explicit deleter function that would allow
   // making the destructor protected and nonvirtual.
   virtual ~Polynomial() = default;
 
-  virtual Value Evaluate(Argument const& argument) const = 0;
+  virtual Value operator()(Argument const& argument) const = 0;
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;
 
@@ -83,16 +86,17 @@ class Polynomial {
 
   // The evaluator is not part of the serialization because it's fine to read
   // with a different evaluator than the one the polynomial was written with.
-  template<template<typename, typename, int> class Evaluator>
+  template<template<typename, typename, int> typename Evaluator>
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);
 };
 
-template<typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
-class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator>
+class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
  public:
-  using Result = Value;
+  using Argument = Argument_;
+  using Value = Value;
 
   // Equivalent to:
   //   std::tuple<Value,
@@ -112,7 +116,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
       Value, Argument, higher_degree_, HigherEvaluator>() const;
 
   FORCE_INLINE(inline) Value
-  Evaluate(Argument const& argument) const override;
+  operator()(Argument const& argument) const override;
   FORCE_INLINE(inline) Derivative<Value, Argument>
   EvaluateDerivative(Argument const& argument) const override;
 
@@ -143,54 +147,54 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   Coefficients coefficients_;
 
   template<typename V, typename A, int r,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<V, A, r, E>
   friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
   friend operator+(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
   friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename S,
            typename V, typename A, int d,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<Product<S, V>, A, d, E>
   friend operator*(S const& left,
                    PolynomialInMonomialBasis<V, A, d, E> const& right);
   template<typename S,
            typename V, typename A, int d,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<Product<V, S>, A, d, E>
   friend operator*(PolynomialInMonomialBasis<V, A, d, E> const& left,
                    S const& right);
   template<typename S,
            typename V, typename A, int d,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<Quotient<V, S>, A, d, E>
   friend operator/(PolynomialInMonomialBasis<V, A, d, E> const& left,
                    S const& right);
   template<typename L, typename R, typename A,
            int l, int r,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<Product<L, R>, A, l + r, E>
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename L, typename R, typename A,
            int l, int r,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<
       typename Hilbert<L, R>::InnerProductType, A, l + r, E>
   friend PointwiseInnerProduct(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename V, typename A, int d,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   friend std::ostream& operator<<(
       std::ostream& out,
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial);
@@ -202,13 +206,13 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
       O express_in);
 };
 
-template<typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
-class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
-    : public Polynomial<Value, Point<Argument>> {
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator>
+class PolynomialInMonomialBasis<Value_, Point<Argument_>, degree_, Evaluator>
+    : public Polynomial<Value_, Point<Argument_>> {
  public:
-  // TODO(phl): Use the |Value_| style.
-  using Result = Value;
+  using Argument = Argument_;
+  using Value = Value_;
 
   // Equivalent to:
   //   std::tuple<Value,
@@ -229,7 +233,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
       Value, Point<Argument>, higher_degree_, HigherEvaluator>() const;
 
   FORCE_INLINE(inline) Value
-  Evaluate(Point<Argument> const& argument) const override;
+  operator()(Point<Argument> const& argument) const override;
   FORCE_INLINE(inline) Derivative<Value, Argument>
   EvaluateDerivative(Point<Argument> const& argument) const override;
 
@@ -267,54 +271,54 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   Point<Argument> origin_;
 
   template<typename V, typename A, int r,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<V, A, r, E>
   friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
   friend operator+(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
   friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename S,
            typename V, typename A, int d,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<Product<S, V>, A, d, E>
   friend operator*(S const& left,
                    PolynomialInMonomialBasis<V, A, d, E> const& right);
   template<typename S,
            typename V, typename A, int d,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<Product<V, S>, A, d, E>
   friend operator*(PolynomialInMonomialBasis<V, A, d, E> const& left,
                    S const& right);
   template<typename S,
            typename V, typename A, int d,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<Quotient<V, S>, A, d, E>
   friend operator/(PolynomialInMonomialBasis<V, A, d, E> const& left,
                    S const& right);
   template<typename L, typename R, typename A,
            int l, int r,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<Product<L, R>, A, l + r, E>
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename L, typename R, typename A,
            int l, int r,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<
       typename Hilbert<L, R>::InnerProductType, A, l + r, E>
   friend PointwiseInnerProduct(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename V, typename A, int d,
-           template<typename, typename, int> class E>
+           template<typename, typename, int> typename E>
   friend std::ostream& operator<<(
       std::ostream& out,
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial);
@@ -329,19 +333,19 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 // Vector space of polynomials.
 
 template<typename Value, typename Argument, int rdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
 operator+(PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
               right);
 
 template<typename Value, typename Argument, int rdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
 operator-(PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
               right);
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument,
                                     std::max(ldegree_, rdegree_), Evaluator>
 operator+(
@@ -350,7 +354,7 @@ operator+(
         right);
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument,
                                     std::max(ldegree_, rdegree_), Evaluator>
 operator-(
@@ -360,7 +364,7 @@ operator-(
 
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Product<Scalar, Value>, Argument,
                                     degree_, Evaluator>
 operator*(Scalar const& left,
@@ -369,7 +373,7 @@ operator*(Scalar const& left,
 
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Product<Value, Scalar>, Argument,
                                     degree_, Evaluator>
 operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
@@ -378,7 +382,7 @@ operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
 
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument,
                                     degree_, Evaluator>
 operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
@@ -389,7 +393,7 @@ operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
 
 template<typename LValue, typename RValue,
          typename Argument, int ldegree_, int rdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                     ldegree_ + rdegree_, Evaluator>
 operator*(
@@ -402,7 +406,7 @@ operator*(
 // vector-valued polynomials.
 template<typename LValue, typename RValue,
          typename Argument, int ldegree_, int rdegree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<
     typename Hilbert<LValue, RValue>::InnerProductType, Argument,
     ldegree_ + rdegree_, Evaluator>
@@ -415,7 +419,7 @@ PointwiseInnerProduct(
 // Output.
 
 template<typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 std::ostream& operator<<(
     std::ostream& out,
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
