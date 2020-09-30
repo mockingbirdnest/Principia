@@ -187,8 +187,8 @@ Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
   CHECK_GE(t_max_locked(), time);
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
-  auto const& polynomial = it->polynomial;
-  return polynomial->Evaluate(time) + Frame::origin;
+  auto const& polynomial = *it->polynomial;
+  return polynomial(time) + Frame::origin;
 }
 
 template<typename Frame>
@@ -199,8 +199,8 @@ Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
   CHECK_GE(t_max_locked(), time);
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
-  auto const& polynomial = it->polynomial;
-  return polynomial->EvaluateDerivative(time);
+  auto const& polynomial = *it->polynomial;
+  return polynomial.EvaluateDerivative(time);
 }
 
 template<typename Frame>
@@ -211,9 +211,9 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
   CHECK_GE(t_max_locked(), time);
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
-  auto const& polynomial = it->polynomial;
-  return DegreesOfFreedom<Frame>(polynomial->Evaluate(time) + Frame::origin,
-                                 polynomial->EvaluateDerivative(time));
+  auto const& polynomial = *it->polynomial;
+  return DegreesOfFreedom<Frame>(polynomial(time) + Frame::origin,
+                                 polynomial.EvaluateDerivative(time));
 }
 
 template<typename Frame>
