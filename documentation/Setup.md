@@ -118,6 +118,7 @@ A shell script is provided that will do this automatically on macOS:
 
 In `<root>/Principia`, run the following command:
 ```bash
-./principia_make.sh
+make
 ```
+See the Makefile for more options.
 If some of the unit tests fail, you may or may not be able to run the resulting version of Principia.
