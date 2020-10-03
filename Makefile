@@ -6,6 +6,7 @@ UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
 
 CXX := clang++
+MSBUILD := msbuild
 
 VERSION_TRANSLATION_UNIT := base/version.generated.cc
 
@@ -100,7 +101,6 @@ ifeq ($(UNAME_S),Linux)
     else
         SHARED_ARGS += -m32
     endif
-    MDTOOL := mdtool
     LIBS += -lsupc++ -lc++fs
     TEST_LIBS += -lsupc++
     SHAREDFLAG := -shared
@@ -108,7 +108,6 @@ endif
 ifeq ($(UNAME_S),Darwin)
     INCLUDES += -I$(DEP_DIR)compatibility/filesystem -I$(DEP_DIR)compatibility/optional -I$(DEP_DIR)Optional
     SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64 -D_LIBCPP_STD_VER=16
-    MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
     SHAREDFLAG := -dynamiclib
 endif
 
@@ -289,7 +288,7 @@ benchmark: $(PRINCIPIA_BENCHMARK_BIN)
 ########## Adapter
 
 $(ADAPTER): $(GENERATED_PROFILES)
-	$(MDTOOL) build -c:$(ADAPTER_CONFIGURATION) ksp_plugin_adapter/ksp_plugin_adapter.csproj
+	$(MSBUILD) -p:Configuration=$(ADAPTER_CONFIGURATION) ksp_plugin_adapter/ksp_plugin_adapter.csproj
 
 ######### Distribution
 
