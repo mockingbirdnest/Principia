@@ -25,6 +25,7 @@ using quantities::Cos;
 using quantities::Infinity;
 using quantities::Primitive;
 using quantities::Sin;
+using quantities::Sqrt;
 using quantities::Time;
 using quantities::Variation;
 using quantities::si::Radian;
@@ -300,6 +301,19 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
     : origin_(aperiodic.origin()),
       aperiodic_(std::move(aperiodic)),
       periodic_(std::move(periodic)) {}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+template<int wdegree_>
+typename Hilbert<Value>::NormType
+PoissonSeries<Value, degree_, Evaluator>::Norm(
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) const {
+  auto const integrand = PointwiseInnerProduct(*this, *this) * weight;
+  auto const primitive = integrand.Primitive();
+  return Sqrt((primitive(t_max) - primitive(t_min)) / (t_max - t_min));
+}
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>

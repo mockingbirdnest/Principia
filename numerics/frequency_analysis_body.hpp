@@ -120,8 +120,7 @@ IncrementalProjection(Function const& function,
   std::vector<PoissonSeries<Normalized, degree_, Evaluator>> q;
 
   auto const a₀ = basis[0];
-  //TODO(phl): Add a Norm member to PoissonSeries.
-  r[0][0] = Sqrt(InnerProduct(a₀, a₀, weight, t_min, t_max));
+  r[0][0] = a₀.Norm(weight, t_min, t_max);
   q.push_back(a₀ / r[0][0]);
 
   auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
@@ -139,8 +138,7 @@ IncrementalProjection(Function const& function,
         aₘ⁽ᵏ⁾ -= r[k][m] * q[k];
       }
 
-      //TODO(phl): Add a Norm member to PoissonSeries.
-      r[m][m] = Sqrt(InnerProduct(aₘ⁽ᵏ⁾, aₘ⁽ᵏ⁾, weight, t_min, t_max));
+      r[m][m] = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
       q.push_back(aₘ⁽ᵏ⁾ / r[m][m]);
       DCHECK_EQ(m + 1, q.size());
 
