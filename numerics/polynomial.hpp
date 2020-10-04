@@ -96,7 +96,7 @@ template<typename Value_, typename Argument_, int degree_,
 class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
  public:
   using Argument = Argument_;
-  using Value = Value;
+  using Value = Value_;
 
   // Equivalent to:
   //   std::tuple<Value,
