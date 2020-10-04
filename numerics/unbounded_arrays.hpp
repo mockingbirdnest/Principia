@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include <initializer_list>
@@ -74,7 +74,7 @@ class UnboundedLowerTriangularMatrix final {
 
   bool operator==(UnboundedLowerTriangularMatrix const& right) const;
 
-  // For  0 < j <= i < rows, the entry a_ij is accessed as |a[i][j]|.
+  // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a[i][j]|.
   // if i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
   Scalar* operator[](int index);
@@ -91,6 +91,73 @@ class UnboundedLowerTriangularMatrix final {
 };
 
 template<typename Scalar>
+class UnboundedUpperTriangularMatrix final {
+ public:
+  explicit UnboundedUpperTriangularMatrix(int columns);
+  UnboundedUpperTriangularMatrix(int columns, uninitialized_t);
+
+  // The |data| must be in row-major format.
+  UnboundedUpperTriangularMatrix(std::initializer_list<Scalar> const& data);
+
+  void Extend(int extra_columns);
+  void Extend(int extra_columns, uninitialized_t);
+
+  // The |data| must be in row-major format.
+  void Extend(std::initializer_list<Scalar> const& data);
+
+  void EraseToEnd(int begin_column_index);
+
+  int columns() const;
+  int dimension() const;
+
+  bool operator==(UnboundedUpperTriangularMatrix const& right) const;
+
+  // A helper class for indexing column-major data in a human-friendly manner.
+  template<typename Matrix>
+  class Row {
+   public:
+    Scalar& operator[](int column);
+    Scalar const& operator[](int column) const;
+
+   private:
+    explicit Row(Matrix& matrix, int row);
+
+    Matrix& matrix_;
+    int row_;
+
+    template<typename S>
+    friend class UnboundedUpperTriangularMatrix;
+  };
+
+  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a[i][j]|.
+  // if i and j do not satisfy these conditions, the expression |a[i][j]| is
+  // erroneous.
+  Row<UnboundedUpperTriangularMatrix> operator[](int row);
+  Row<UnboundedUpperTriangularMatrix const> operator[](int row) const;
+
+ private:
+  // For ease of writing matrices in tests, the input data is received in row-
+  // major format.  This translates a trapezoidal slice to make it column-major.
+  static std::vector<Scalar, uninitialized_allocator<Scalar>> Transpose(
+      std::initializer_list<Scalar> const& data,
+      int current_columns,
+      int extra_columns);
+
+  int columns_;
+  // Stored in column-major format, so the data passed the public API must be
+  // transposed.
+  std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
+
+  template<typename S>
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      UnboundedUpperTriangularMatrix<S> const& matrix);
+
+  template<typename R>
+  friend class Row;
+};
+
+template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedVector<Scalar> const& vector);
 
@@ -98,9 +165,14 @@ template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedLowerTriangularMatrix<Scalar> const& matrix);
 
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         UnboundedUpperTriangularMatrix<Scalar> const& matrix);
+
 }  // namespace internal_unbounded_arrays
 
 using internal_unbounded_arrays::UnboundedLowerTriangularMatrix;
+using internal_unbounded_arrays::UnboundedUpperTriangularMatrix;
 using internal_unbounded_arrays::UnboundedVector;
 
 }  // namespace numerics
