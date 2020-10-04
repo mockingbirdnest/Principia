@@ -279,7 +279,7 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
   // |data| is a trapezoidal slice at the end of the matrix.  This is
   // inconvenient to index, so we start by constructing a rectangular array with
   // |extra_columns| columns and |current_columns + extra_columns| rows padded
-  // with zeros.
+  // with junk.
   std::vector<Scalar, uninitialized_allocator<Scalar>> padded;
   {
     padded.reserve(2 * data.size());  // An overestimate.
