@@ -119,29 +119,29 @@ IncrementalProjection(Function const& function,
 
   std::vector<PoissonSeries<Normalized, degree_, Evaluator>> q;
 
-  auto const a0 = basis[0];
+  auto const a₀ = basis[0];
   //TODO(phl): Add a Norm member to PoissonSeries.
-  r[0][0] = Sqrt(InnerProduct(a0, a0, weight, t_min, t_max));
-  q.push_back(a0 / r[0][0]);
+  r[0][0] = Sqrt(InnerProduct(a₀, a₀, weight, t_min, t_max));
+  q.push_back(a₀ / r[0][0]);
 
-  auto const A0 = InnerProduct(function, q[0], weight, t_min, t_max);
+  auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
 
-  PoissonSeries<Value, degree_, Evaluator> F = A0 * q[0];
+  PoissonSeries<Value, degree_, Evaluator> F = A₀ * q[0];
   auto f = function - F;
 
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
       //a^(k)_n+1
-      auto a = basis[m];
+      auto aₘ⁽ᵏ⁾ = basis[m];
       for (int k = 0; k < m; ++k) {
-        r[k][m] = InnerProduct(q[k], a, weight, t_min, t_max);
-        a -= r[k][m] * q[k];
+        r[k][m] = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
+        aₘ⁽ᵏ⁾ -= r[k][m] * q[k];
       }
 
       //TODO(phl): Add a Norm member to PoissonSeries.
-      r[m][m] = Sqrt(InnerProduct(a, a, weight, t_min, t_max));
-      q.push_back(a / r[m][m]);
+      r[m][m] = Sqrt(InnerProduct(aₘ⁽ᵏ⁾, aₘ⁽ᵏ⁾, weight, t_min, t_max));
+      q.push_back(aₘ⁽ᵏ⁾ / r[m][m]);
       DCHECK_EQ(m + 1, q.size());
 
       auto A = InnerProduct(f, q[m], weight, t_min, t_max);
