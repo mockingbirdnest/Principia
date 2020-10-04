@@ -4,6 +4,7 @@
 #include "numerics/unbounded_arrays.hpp"
 
 #include <cmath>
+#include <vector>
 
 #include "base/macros.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -234,27 +235,27 @@ bool UnboundedUpperTriangularMatrix<Scalar>::operator==(
 }
 
 template<typename Scalar>
-template<typename Reference>
-Scalar& UnboundedUpperTriangularMatrix<Scalar>::Row<Reference>::operator[](
+template<typename Matrix>
+Scalar& UnboundedUpperTriangularMatrix<Scalar>::Row<Matrix>::operator[](
     int const column) {
-  DCHECK_LT(column, reference_.columns_);
-  return reference_.data_[column * (column + 1) / 2 + row_];
+  DCHECK_LT(column, matrix_.columns_);
+  return matrix_.data_[column * (column + 1) / 2 + row_];
 }
 
 template<typename Scalar>
-template<typename Reference>
+template<typename Matrix>
 Scalar const&
-UnboundedUpperTriangularMatrix<Scalar>::Row<Reference>::operator[](
+UnboundedUpperTriangularMatrix<Scalar>::Row<Matrix>::operator[](
     int const column) const {
-  DCHECK_LT(column, reference_.columns_);
-  return reference_.data_[column * (column + 1) / 2 + row_];
+  DCHECK_LT(column, matrix_.columns_);
+  return matrix_.data_[column * (column + 1) / 2 + row_];
 }
 
 template<typename Scalar>
-template<typename Reference>
-UnboundedUpperTriangularMatrix<Scalar>::Row<Reference>::Row(Reference reference,
-                                                            int const row)
-    : reference_(reference),
+template<typename Matrix>
+UnboundedUpperTriangularMatrix<Scalar>::Row<Matrix>::Row(Matrix& matrix,
+                                                         int const row)
+    : matrix_(matrix),
       row_(row) {}
 
 template<typename Scalar>

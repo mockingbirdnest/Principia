@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include <initializer_list>
@@ -74,7 +74,7 @@ class UnboundedLowerTriangularMatrix final {
 
   bool operator==(UnboundedLowerTriangularMatrix const& right) const;
 
-  // For  0 < j <= i < rows, the entry a_ij is accessed as |a[i][j]|.
+  // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a[i][j]|.
   // if i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
   Scalar* operator[](int index);
@@ -113,23 +113,23 @@ class UnboundedUpperTriangularMatrix final {
   bool operator==(UnboundedUpperTriangularMatrix const& right) const;
 
   // A helper class for indexing column-major data in a human-friendly manner.
-  template<typename Reference>
+  template<typename Matrix>
   class Row {
    public:
     Scalar& operator[](int column);
     Scalar const& operator[](int column) const;
 
    private:
-    explicit Row(Reference reference, int row);
+    explicit Row(Matrix& matrix, int row);
 
-    Reference reference_;
+    Matrix& matrix_;
     int row_;
 
     template<typename S>
     friend class UnboundedUpperTriangularMatrix;
   };
 
-  // For  0 < i <= j < columns, the entry a_ij is accessed as |a[i][j]|.
+  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a[i][j]|.
   // if i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
   Row<UnboundedUpperTriangularMatrix&> operator[](int row);
