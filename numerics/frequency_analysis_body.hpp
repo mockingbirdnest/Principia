@@ -115,8 +115,8 @@ IncrementalProjection(Function const& function,
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
   }
 
+  // These are logically the Q and R in the QR decomposition of basis.
   UnboundedUpperTriangularMatrix<Norm> r(basis_size, uninitialized);
-
   std::vector<PoissonSeries<Normalized, degree_, Evaluator>> q;
 
   auto const a₀ = basis[0];
@@ -142,7 +142,7 @@ IncrementalProjection(Function const& function,
       q.push_back(aₘ⁽ᵏ⁾ / r[m][m]);
       DCHECK_EQ(m + 1, q.size());
 
-      auto A = InnerProduct(f, q[m], weight, t_min, t_max);
+      Norm const A = InnerProduct(f, q[m], weight, t_min, t_max);
 
       f -= A * q[m];
       F += A * q[m];
