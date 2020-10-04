@@ -482,7 +482,7 @@ template<typename Scalar, typename Value, int degree_,
 PoissonSeries<Product<Value, Scalar>, degree_, Evaluator>
 operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right) {
-  using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
+  using Result = PoissonSeries<Product<Value, Scalar>, degree_, Evaluator>;
   auto aperiodic = left.aperiodic_ * right;
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(left.periodic_.size());
@@ -502,7 +502,7 @@ template<typename Scalar, typename Value, int degree_,
 PoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>
 operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right) {
-  using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
+  using Result = PoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>;
   auto aperiodic = left.aperiodic_ / right;
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(left.periodic_.size());
