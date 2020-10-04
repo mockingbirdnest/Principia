@@ -131,7 +131,6 @@ IncrementalProjection(Function const& function,
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
-      //a^(k)_n+1
       auto aₘ⁽ᵏ⁾ = basis[m];
       for (int k = 0; k < m; ++k) {
         r[k][m] = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
