@@ -132,8 +132,8 @@ class UnboundedUpperTriangularMatrix final {
   // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a[i][j]|.
   // if i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
-  Row<UnboundedUpperTriangularMatrix&> operator[](int row);
-  Row<UnboundedUpperTriangularMatrix const&> operator[](int row) const;
+  Row<UnboundedUpperTriangularMatrix> operator[](int row);
+  Row<UnboundedUpperTriangularMatrix const> operator[](int row) const;
 
  private:
   // For ease of writing matrices in tests, the input data is received in row-

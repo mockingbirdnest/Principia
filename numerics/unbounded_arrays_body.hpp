@@ -260,14 +260,14 @@ UnboundedUpperTriangularMatrix<Scalar>::Row<Matrix>::Row(Matrix& matrix,
 
 template<typename Scalar>
 auto UnboundedUpperTriangularMatrix<Scalar>::operator[](int const row)
-    -> Row<UnboundedUpperTriangularMatrix&> {
-  return Row<UnboundedUpperTriangularMatrix&>{*this, row};
+    -> Row<UnboundedUpperTriangularMatrix> {
+  return Row<UnboundedUpperTriangularMatrix>{*this, row};
 }
 
 template<typename Scalar>
 auto UnboundedUpperTriangularMatrix<Scalar>::operator[](int const row) const
-    -> Row<UnboundedUpperTriangularMatrix const&> {
-  return Row<UnboundedUpperTriangularMatrix const&>{*this, row};
+    -> Row<UnboundedUpperTriangularMatrix const> {
+  return Row<UnboundedUpperTriangularMatrix const>{*this, row};
 }
 
 template<typename Scalar>
