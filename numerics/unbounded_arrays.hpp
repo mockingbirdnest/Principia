@@ -112,11 +112,28 @@ class UnboundedUpperTriangularMatrix final {
 
   bool operator==(UnboundedUpperTriangularMatrix const& right) const;
 
+  // A helper class for indexing column-major data in a human-friendly manner.
+  template<typename Reference>
+  class Row {
+   public:
+    Scalar& operator[](int column);
+    Scalar const& operator[](int column) const;
+
+   private:
+    explicit Row(Reference reference, int row);
+
+    Reference reference_;
+    int row_;
+
+    template<typename S>
+    friend class UnboundedUpperTriangularMatrix;
+  };
+
   // For  0 < i <= j < columns, the entry a_ij is accessed as |a[i][j]|.
   // if i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
-  Scalar* operator[](int index);
-  Scalar const* operator[](int index) const;
+  Row<UnboundedUpperTriangularMatrix&> operator[](int row);
+  Row<UnboundedUpperTriangularMatrix const&> operator[](int row) const;
 
  private:
   // For ease of writing matrices in tests, the input data is received in row-
@@ -135,6 +152,9 @@ class UnboundedUpperTriangularMatrix final {
   friend std::ostream& operator<<(
       std::ostream& out,
       UnboundedUpperTriangularMatrix<S> const& matrix);
+
+  template<typename R>
+  friend class Row;
 };
 
 template<typename Scalar>

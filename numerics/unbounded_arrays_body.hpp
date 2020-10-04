@@ -197,20 +197,23 @@ void UnboundedUpperTriangularMatrix<Scalar>::Extend(int const extra_columns,
 template<typename Scalar>
 void UnboundedUpperTriangularMatrix<Scalar>::Extend(
     std::initializer_list<Scalar> const& data) {
-  int const new_columns =
-      static_cast<int>(std::lround((-1 + Sqrt(8 * data.size())) * 0.5));
-  data_ = Transpose(data,
-                    /*current_columns=*/columns_,
-                    /*extra_columns=*/new_columns - columns_);
+  int const new_columns = static_cast<int>(
+      std::lround((-1 + Sqrt(8 * (data_.size() + data.size()))) * 0.5));
+  auto transposed_data = Transpose(data,
+                                   /*current_columns=*/columns_,
+                                   /*extra_columns=*/new_columns - columns_);
   columns_ = new_columns;
+  std::move(transposed_data.begin(),
+            transposed_data.end(),
+            std::back_inserter(data_));
   DCHECK_EQ(data_.size(), columns_ * (columns_ + 1) / 2);
 }
 
 template<typename Scalar>
 void UnboundedUpperTriangularMatrix<Scalar>::EraseToEnd(
     int const begin_column_index) {
-  columns_ = begin_row_index;
-  data_.erase(data_.begin() + begin_row_index * (begin_row_index + 1) / 2,
+  columns_ = begin_column_index;
+  data_.erase(data_.begin() + begin_column_index * (begin_column_index + 1) / 2,
               data_.end());
 }
 
@@ -231,16 +234,39 @@ bool UnboundedUpperTriangularMatrix<Scalar>::operator==(
 }
 
 template<typename Scalar>
-Scalar* UnboundedUpperTriangularMatrix<Scalar>::operator[](int const index) {
-  DCHECK_LT(index, columns_);
-  return &data_[index * (index + 1) / 2];
+template<typename Reference>
+Scalar& UnboundedUpperTriangularMatrix<Scalar>::Row<Reference>::operator[](
+    int const column) {
+  DCHECK_LT(column, reference_.columns_);
+  return reference_.data_[column * (column + 1) / 2 + row_];
 }
 
 template<typename Scalar>
-Scalar const* UnboundedUpperTriangularMatrix<Scalar>::operator[](
-    int const index) const {
-  DCHECK_LT(index, columns_);
-  return &data_[index * (index + 1) / 2];
+template<typename Reference>
+Scalar const&
+UnboundedUpperTriangularMatrix<Scalar>::Row<Reference>::operator[](
+    int const column) const {
+  DCHECK_LT(column, reference_.columns_);
+  return reference_.data_[column * (column + 1) / 2 + row_];
+}
+
+template<typename Scalar>
+template<typename Reference>
+UnboundedUpperTriangularMatrix<Scalar>::Row<Reference>::Row(Reference reference,
+                                                            int const row)
+    : reference_(reference),
+      row_(row) {}
+
+template<typename Scalar>
+auto UnboundedUpperTriangularMatrix<Scalar>::operator[](int const row)
+    -> Row<UnboundedUpperTriangularMatrix&> {
+  return Row<UnboundedUpperTriangularMatrix&>{*this, row};
+}
+
+template<typename Scalar>
+auto UnboundedUpperTriangularMatrix<Scalar>::operator[](int const row) const
+    -> Row<UnboundedUpperTriangularMatrix const&> {
+  return Row<UnboundedUpperTriangularMatrix const&>{*this, row};
 }
 
 template<typename Scalar>
@@ -259,9 +285,10 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
     padded.reserve(2 * data.size());  // An overestimate.
     int row = 0;
     int column = 0;
-    for (int i = 0; i < data.size(); ++i) {
+    for (auto it = data.begin(); it != data.end();) {
       if (row <= current_columns + column) {
-        padded.push_back(data[i]);
+        padded.push_back(*it);
+        ++it;
       } else {
         padded.emplace_back();
       }
