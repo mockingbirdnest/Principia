@@ -311,8 +311,7 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
     Instant const& t_min,
     Instant const& t_max) const {
   auto const integrand = PointwiseInnerProduct(*this, *this) * weight;
-  auto const primitive = integrand.Primitive();
-  return Sqrt((primitive(t_max) - primitive(t_min)) / (t_max - t_min));
+  return Sqrt(integrand.Integrate(t_min, t_max) / (t_max - t_min));
 }
 
 template<typename Value, int degree_,

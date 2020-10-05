@@ -381,7 +381,7 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series(t0_ + i * (t_max - t_min) / 100),
-                          AllOf(Gt(4.4e-8), Lt(6.5e-2))));
+                          AllOf(Gt(2.1e-10), Lt(9.0e-4))));
   }
 }
 
@@ -425,7 +425,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
                     ? AllOf(Gt(6.7e-2 * Metre), Lt(7.9 * Metre))
                     : ω_index == 2
                           ? AllOf(Gt(1.1e-4 * Metre), Lt(9.7e-1 * Metre))
-                          : AllOf(Gt(4.2e-10 * Metre), Lt(1.7e-5 * Metre)))
+                          : AllOf(Gt(2.8e-11 * Metre), Lt(1.2e-6 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -446,7 +446,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series.value()(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Gt(1.3e-10), Lt(5.4e-4))));
+                          AllOf(Gt(5.9e-12), Lt(1.9e-6))));
   }
 }
 
@@ -489,8 +489,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
                           ? AllOf(Gt(3.3e-2 * Metre), Lt(3.6 * Metre))
                           : ω_index == 3
                                 ? AllOf(Gt(7.5e-3 * Metre), Lt(5.4 * Metre))
-                                : AllOf(Gt(2.9e-14 * Metre),
-                                        Lt(1.2e-9 * Metre)))
+                                : AllOf(Gt(3.7e-15 * Metre),
+                                        Lt(2.1e-11 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -511,7 +511,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Gt(1.6e-15), Lt(6.6e-11))));
+                          AllOf(Gt(1.9e-16), Lt(1.3e-12))));
   }
 }
 
