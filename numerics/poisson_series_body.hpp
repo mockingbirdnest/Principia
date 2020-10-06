@@ -311,7 +311,7 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
     Instant const& t_min,
     Instant const& t_max) const {
   auto integrand = [this, &weight](Instant const& t) {
-    return Hilbert<Value>::InnerProduct((*this)(t)*weight(t), (*this)(t));
+    return Hilbert<Value>::InnerProduct((*this)(t), (*this)(t)) * weight(t);
   };
   return Sqrt(quadrature::AutomaticClenshawCurtis(integrand, t_min, t_max) /
               (t_max - t_min));
