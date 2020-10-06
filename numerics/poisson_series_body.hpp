@@ -614,7 +614,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     typename Hilbert<LValue, RValue>::InnerProductType const
         absolute_tolerance) {
   auto integrand = [&left, &right, &weight](Instant const& t) {
-    return Hilbert<LValue, RValue>::InnerProduct(left(t) * weight(t), right(t));
+    return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
   };
   return quadrature::AutomaticClenshawCurtis(
              integrand, t_min, t_max, absolute_tolerance * (t_max - t_min)) /
