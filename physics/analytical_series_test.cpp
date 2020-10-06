@@ -155,7 +155,7 @@ TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
   ephemeris->Prolong(solar_system_at_j2000.epoch() + 0.25 * JulianYear);
 
   auto const& io_trajectory =
-      solar_system_at_j2000.trajectory(*ephemeris, "Io");
+      solar_system_at_j2000.trajectory(*ephemeris, "Moon");
   int const io_piecewise_poisson_series_degree =
       io_trajectory.PiecewisePoissonSeriesDegree(io_trajectory.t_min(),
                                                  io_trajectory.t_max());
