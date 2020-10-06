@@ -61,16 +61,10 @@ class FastFourierTransform {
 
  private:
   Time const Δt_;
-  AngularFrequency const ω_;
+  AngularFrequency const Δω_;
 
-  // A type obtained by complexifying the signal or frequency space, and
-  // discarding the units.  The Fourier transform is computed in place, so that
-  // the same member successively holds the signal and frequency.
-  using Complex = Complexification<typename Hilbert<Value>::NormalizedType>;
-
-  // The elements of transform_ are in SI units of Value.  They are spaced in
-  // frequency by ω_.
-  std::array<Complex, size> transform_;
+  // The elements of transform_ are spaced in frequency by ω_.
+  std::array<Complexification<Value>, size> transform_;
 
   friend class FastFourierTransformTest;
 };

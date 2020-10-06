@@ -19,8 +19,6 @@ using base::BitReversedIncrement;
 using quantities::Angle;
 using quantities::Sin;
 using quantities::si::Radian;
-using quantities::si::Unit;
-namespace si = quantities::si;
 
 // Implementation of the Danielson-Lánczos algorithm using templates for
 // recursion and template specializations for short FFTs [DL42, Myr07].
@@ -128,21 +126,21 @@ FastFourierTransform<Value, size_>::FastFourierTransform(
     Iterator const end,
     Time const& Δt)
     : Δt_(Δt),
-      ω_(2 * π * Radian / (size * Δt_)) {
+      Δω_(2 * π * Radian / (size * Δt_)) {
   DCHECK_EQ(size, std::distance(begin, end));
 
-  // Type decay, reindexing, and promotion to complex.
+  // Reindexing and promotion to complex.
   int bit_reversed_index = 0;
   for (auto it = begin;
        it != end;
        ++it,
        bit_reversed_index = BitReversedIncrement(bit_reversed_index,
                                                  log2_size)) {
-    transform_[bit_reversed_index] =
-        *it / si::Unit<typename Hilbert<Value>::NormType>;
+    transform_[bit_reversed_index] = *it;
   }
 
-  DanielsonLánczos<Complex, size>::Transform(transform_.begin());
+  DanielsonLánczos<Complexification<Value>, size>::Transform(
+      transform_.begin());
 }
 
 template<typename Value, std::size_t size_>
@@ -158,11 +156,7 @@ FastFourierTransform<Value, size_>::PowerSpectrum() const {
       spectrum;
   int k = 0;
   for (auto const& coefficient : transform_) {
-    spectrum.emplace_hint(
-        spectrum.end(),
-        k * ω_,
-        coefficient.Norm²() *
-            si::Unit<typename Hilbert<Value>::InnerProductType>);
+    spectrum.emplace_hint(spectrum.end(), k * Δω_, coefficient.Norm²());
     ++k;
   }
   return spectrum;
