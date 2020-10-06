@@ -16,6 +16,7 @@ namespace internal_quadrature {
 
 using base::FloorLog2;
 using quantities::Abs;
+using quantities::Angle;
 using quantities::Cos;
 using quantities::Difference;
 using quantities::Pow;
@@ -98,23 +99,27 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
 
   Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
 
+  constexpr Angle N⁻¹π = π * Radian / N;
   // This array contains the nodes, which are the extrema of the Чебышёв
   // polynomial Tn, together with ±1: cos_N⁻¹π[s] = cos sπ/N.
   // TODO(egg): Consider precomputing this globally, we use it in the FFT as
   // well.
-  std::array<double, N + 1> cos_N⁻¹π;
+  static const std::array<double, N + 1> cos_N⁻¹π = [N⁻¹π] {
+    std::array<double, N + 1> cos_N⁻¹π;
+    for (int s = 0; s <= N; ++s) {
+      cos_N⁻¹π[s] = Cos(N⁻¹π * s);
+    }
+    return cos_N⁻¹π;
+  }();
   std::array<Value, 2 * N> f_cos_N⁻¹π;
   for (int s = 0; s <= N; ++s) {
-    cos_N⁻¹π[s] = Cos(π * Radian * s / N);
-  }
-  for (int s = 0; s <= N; ++s) {
-    f_cos_N⁻¹π[s] = f(lower_bound + half_width * (1 + cos_N⁻¹π[k]));
+    f_cos_N⁻¹π[s] = f(lower_bound + half_width * (1 + cos_N⁻¹π[s]));
   }
   for (int s = 1; s < N; ++s) {
     f_cos_N⁻¹π[2 * N - s] = f_cos_N⁻¹π[s];  // (5).
   }
 
-  FastFourierTransform(f_cos_N⁻¹π, 1 * quantities::si::Second);
+  FastFourierTransform<Value, Angle, 2 * N> a(f_cos_N⁻¹π, N⁻¹π);
 
   for (std::int64_t k = 0; k <= n / 2 - 1; ++k) {
     Argument const xₖ = lower_bound + half_width * (1 + cos_n⁻¹π[k]);
