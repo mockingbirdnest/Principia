@@ -106,7 +106,7 @@ class FrequencyAnalysisTest : public ::testing::Test {
 };
 
 TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
-  using FFT = FastFourierTransform<Length, 1 << 16>;
+  using FFT = FastFourierTransform<Length, Instant, 1 << 16>;
   AngularFrequency const ω = 666.543 * π / FFT::size * Radian / Second;
   Time const Δt = 1 * Second;
   std::mt19937_64 random(42);
@@ -164,7 +164,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
 }
 
 TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
-  using FFT = FastFourierTransform<Displacement<World>, 1 << 16>;
+  using FFT = FastFourierTransform<Displacement<World>, Instant, 1 << 16>;
   AngularFrequency const ω = 666.543 * π / FFT::size * Radian / Second;
   Time const Δt = 1 * Second;
 
