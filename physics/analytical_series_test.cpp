@@ -91,6 +91,7 @@ class AnalyticalSeriesTest : public ::testing::Test {
         LOG(INFO) << "max_residual=" << max_residual;
         auto fft =
             std::make_unique<FastFourierTransform<Displacement<ICRS>,
+                                                  Instant,
                                                   1 << log2_number_of_samples>>(
                 residuals, Δt);
         auto const mode = fft->Mode();
