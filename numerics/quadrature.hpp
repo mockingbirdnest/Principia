@@ -30,12 +30,11 @@ AutomaticClenshawCurtis(
                                Argument>>::NormType absolute_tolerance = {},
     double relative_tolerance = 0x1p-20);
 
-template<typename Argument, typename Function>
+template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
     Function const& f,
     Argument const& lower_bound,
-    Argument const& upper_bound,
-    std::int64_t points);
+    Argument const& upper_bound);
 
 template<typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(
