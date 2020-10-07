@@ -5,7 +5,6 @@
 
 #include <memory>
 
-#include "numerics/double_precision.hpp"
 #include "numerics/fast_fourier_transform.hpp"
 #include "numerics/gauss_legendre_weights.mathematica.h"
 #include "numerics/legendre_roots.mathematica.h"
@@ -139,13 +138,15 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
       f_cos_N⁻¹π, N⁻¹π);
   auto const& a = *fft;
 
-  DoublePrecision<Value> Σʺ{};
+  Value Σʺ{};
   for (std::int64_t n = 0; n <= N; n += 2) {
     // The notation g is from [OLBC10], 3.5.17.
     int gₙ = n == 0 || n == N ? 1 : 2;
     Σʺ += a[n].real_part() * gₙ / (1 - n * n);
   }
-  return Σʺ.value / N * half_width;
+  Σʺ /= N;
+
+  return Σʺ * half_width;
 }
 
 template<typename Argument, typename Function>
