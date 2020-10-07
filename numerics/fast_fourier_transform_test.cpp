@@ -34,7 +34,6 @@ using quantities::si::Volt;
 using testing_utilities::AlmostEquals;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
-using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Pair;
 
@@ -201,18 +200,18 @@ TEST_F(FastFourierTransformTest, Vector) {
 TEST_F(FastFourierTransformTest, Inverse) {
   constexpr int n = 4;
   constexpr Time Δt = 1 * Second;
-  std::array<Voltage, n> u{{1 * Volt, 0 * Volt, 1 * Volt, 0 * Volt}};
-  FastFourierTransform<Voltage, Instant, n> const U(u, Δt);
+  std::array<Voltage, n> v{{1 * Volt, 0 * Volt, 1 * Volt, 0 * Volt}};
+  FastFourierTransform<Voltage, Instant, n> const V(v, Δt);
 
-  FastFourierTransform<Voltage, AngularFrequency, n> const nu(
-      {U[0].real_part(), U[1].real_part(), U[2].real_part(), U[3].real_part()},
-      U.frequency(1) - U.frequency(0));
-  EXPECT_THAT((std::array{nu[0].real_part() / n,
-                          nu[1].real_part() / n,
-                          nu[2].real_part() / n,
-                          nu[3].real_part() / n}),
-              ElementsAreArray(u));
-  EXPECT_THAT(nu.frequency(1) - nu.frequency(0), Eq(Δt));
+  FastFourierTransform<Voltage, AngularFrequency, n> const nv(
+      {V[0].real_part(), V[1].real_part(), V[2].real_part(), V[3].real_part()},
+      V.frequency(1) - V.frequency(0));
+  EXPECT_THAT((std::array{nv[0].real_part() / n,
+                          nv[1].real_part() / n,
+                          nv[2].real_part() / n,
+                          nv[3].real_part() / n}),
+              ElementsAreArray(v));
+  EXPECT_THAT(nv.frequency(1) - nv.frequency(0), AlmostEquals(Δt, 0));
 }
 
 }  // namespace internal_fast_fourier_transform
