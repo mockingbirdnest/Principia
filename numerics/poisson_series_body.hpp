@@ -25,6 +25,7 @@ using quantities::Cos;
 using quantities::Infinity;
 using quantities::Primitive;
 using quantities::Sin;
+using quantities::Sqrt;
 using quantities::Time;
 using quantities::Variation;
 using quantities::si::Radian;
@@ -303,6 +304,18 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+template<int wdegree_>
+typename Hilbert<Value>::NormType
+PoissonSeries<Value, degree_, Evaluator>::Norm(
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) const {
+  auto const integrand = PointwiseInnerProduct(*this, *this) * weight;
+  return Sqrt(integrand.Integrate(t_min, t_max) / (t_max - t_min));
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 template<typename V, int d, template<typename, typename, int> class E>
 PoissonSeries<Value, degree_, Evaluator>&
 PoissonSeries<Value, degree_, Evaluator>::operator+=(
@@ -482,7 +495,7 @@ template<typename Scalar, typename Value, int degree_,
 PoissonSeries<Product<Value, Scalar>, degree_, Evaluator>
 operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right) {
-  using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
+  using Result = PoissonSeries<Product<Value, Scalar>, degree_, Evaluator>;
   auto aperiodic = left.aperiodic_ * right;
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(left.periodic_.size());
@@ -502,7 +515,7 @@ template<typename Scalar, typename Value, int degree_,
 PoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>
 operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
           Scalar const& right) {
-  using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
+  using Result = PoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>;
   auto aperiodic = left.aperiodic_ / right;
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(left.periodic_.size());

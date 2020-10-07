@@ -70,6 +70,9 @@ class AnalyticalSeriesTest : public ::testing::Test {
     auto const piecewise_poisson_series =
         trajectory.ToPiecewisePoissonSeries<degree>(t_min, t_max);
 
+    logger_.Set("tMin", t_min, mathematica::ExpressIn(Second));
+    logger_.Set("tMax", t_max, mathematica::ExpressIn(Second));
+
     int step = 0;
 
     auto angular_frequency_calculator =
@@ -155,7 +158,7 @@ TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
   ephemeris->Prolong(solar_system_at_j2000.epoch() + 0.25 * JulianYear);
 
   auto const& io_trajectory =
-      solar_system_at_j2000.trajectory(*ephemeris, "Io");
+      solar_system_at_j2000.trajectory(*ephemeris, "Moon");
   int const io_piecewise_poisson_series_degree =
       io_trajectory.PiecewisePoissonSeriesDegree(io_trajectory.t_min(),
                                                  io_trajectory.t_max());

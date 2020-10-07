@@ -115,110 +115,40 @@ IncrementalProjection(Function const& function,
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
   }
 
-  UnboundedLowerTriangularMatrix<Inverse<Norm>> α(basis_size, uninitialized);
+  // This is logically Q in the QR decomposition of basis.
+  std::vector<PoissonSeries<Normalized, degree_, Evaluator>> q;
 
-  // Only indices 0 to m - 1 are used in this array.  At the beginning of
-  // iteration m it contains Aⱼ⁽ᵐ⁻¹⁾.
-  UnboundedVector<double> A(basis_size, uninitialized);
+  auto const a₀ = basis[0];
+  auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
+  q.push_back(a₀ / r₀₀);
 
-  Norm² const F₀ = InnerProduct(function, basis[0], weight, t_min, t_max);
-  Norm² const Q₀₀ = InnerProduct(basis[0], basis[0], weight, t_min, t_max);
-  α[0][0] = 1 / Sqrt(Q₀₀);
-  A[0] = F₀ / Q₀₀;
+  auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
 
-  // At the beginning of iteration m this contains fₘ₋₁.
-  auto f = function - A[0] * basis[0];
+  PoissonSeries<Value, degree_, Evaluator> F = A₀ * q[0];
+  auto f = function - F;
 
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
-      // Contains Fₘ.
-      Norm² const F = InnerProduct(f, basis[m], weight, t_min, t_max);
-
-      // This vector contains Qₘⱼ.
-      UnboundedVector<Norm²> Q(m + 1, uninitialized);
-      for (int j = 0; j <= m; ++j) {
-        Q[j] = InnerProduct(basis[m], basis[j], weight, t_min, t_max);
+      auto aₘ⁽ᵏ⁾ = basis[m];
+      for (int k = 0; k < m; ++k) {
+        auto const rₖₘ = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
+        aₘ⁽ᵏ⁾ -= rₖₘ * q[k];
       }
 
-      // This vector contains Bⱼ⁽ᵐ⁾.
-      UnboundedVector<Norm> B(m, uninitialized);
-      for (int j = 0; j < m; ++j) {
-        Norm Σ_αⱼₛ_Qₘₛ{};
-        for (int s = 0; s <= j; ++s) {
-          Σ_αⱼₛ_Qₘₛ += α[j][s] * Q[s];
-        }
-        B[j] = -Σ_αⱼₛ_Qₘₛ;
-      }
+      auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
+      q.push_back(aₘ⁽ᵏ⁾ / rₘₘ);
+      DCHECK_EQ(m + 1, q.size());
 
-      {
-        Norm² Σ_Bₛ⁽ᵐ⁾²{};
-        for (int s = 0; s < m; ++s) {
-          Σ_Bₛ⁽ᵐ⁾² += B[s] * B[s];
-        }
-        if (Q[m] <= Σ_Bₛ⁽ᵐ⁾² ||
-            (Q[m] - Σ_Bₛ⁽ᵐ⁾²) / std::max(Q[m], Σ_Bₛ⁽ᵐ⁾²) < 0x1.0p-24) {
-          // We arrive here when the norm of Σₛ Bₛ⁽ᵐ⁾bₛ + eₘ is small (see
-          // [SN97] for the notation) and, due to rounding errors, the computed
-          // value of the square of that norm ends up negative, zero, or very
-          // small.  It makes no sense to have complex numbers (or infinities)
-          // here because our function is real and bounded.  But even if the
-          // norm could be computed but was very small, we would end up with an
-          // ill-conditioned solution.  Geometrically, we are in a situation
-          // where eₘ is very close to the space spanned by the (bₛ), that is,
-          // by the (eₛ) for i < m.  The fact that the basis elements and no
-          // longer independent when the degree increases is duely noted by
-          // [CV84].  Given that eₘ effectively doesn't have benefit for the
-          // projection, we just drop it and continue with the algorithm.
-          LOG(ERROR) << "Q[m]: " << Q[m] << " Σ_Bₛ⁽ᵐ⁾² " << Σ_Bₛ⁽ᵐ⁾²
-                     << " difference: " << Q[m] - Σ_Bₛ⁽ᵐ⁾²;
-          LOG(ERROR) << "Dropping " << basis[m];
-          int const basis_remaining = basis_size - m - 1;
-          basis.erase(basis.begin() + m);
-          α.EraseToEnd(m);
-          α.Extend(basis_remaining, uninitialized);
-          A.EraseToEnd(m);
-          A.Extend(basis_remaining, uninitialized);
-          --basis_size;
-          --m;
-          continue;
-        } else {
-          α[m][m] = 1 / Sqrt(Q[m] - Σ_Bₛ⁽ᵐ⁾²);
-        }
-      }
+      Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
 
-      for (int j = 0; j < m; ++j) {
-        double Σ_Bₛ⁽ᵐ⁾_αₛⱼ = 0;
-        for (int s = j; s < m; ++s) {
-          Σ_Bₛ⁽ᵐ⁾_αₛⱼ += B[s] * α[s][j];
-        }
-        α[m][j] = α[m][m] * Σ_Bₛ⁽ᵐ⁾_αₛⱼ;
-      }
-
-      A[m] = α[m][m] * α[m][m] * F;
-
-      for (int j = 0; j < m; ++j) {
-        A[j] += α[m][m] * α[m][j] * F;
-      }
-
-      {
-        PoissonSeries<Normalized, degree_, Evaluator> Σ_αₘᵢ_eᵢ =
-            α[m][0] * basis[0];
-        for (int i = 1; i <= m; ++i) {
-          Σ_αₘᵢ_eᵢ += α[m][i] * basis[i];
-        }
-        f -= α[m][m] * F * Σ_αₘᵢ_eᵢ;
-      }
-    }
-
-    PoissonSeries<Value, degree_, Evaluator> result = A[0] * basis[0];
-    for (int i = 1; i < basis_size; ++i) {
-      result += A[i] * basis[i];
+      f -= Aₘ * q[m];
+      F += Aₘ * q[m];
     }
 
     ω = calculator(f);
     if (!ω.has_value()) {
-      return result;
+      return F;
     }
 
     int ω_basis_size;
@@ -235,8 +165,6 @@ IncrementalProjection(Function const& function,
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
     }
-    α.Extend(ω_basis_size, uninitialized);
-    A.Extend(ω_basis_size, uninitialized);
     m_begin = basis_size;
     basis_size += ω_basis_size;
   }

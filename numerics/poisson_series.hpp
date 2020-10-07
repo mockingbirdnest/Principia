@@ -111,6 +111,12 @@ class PoissonSeries {
   quantities::Primitive<Value, Time> Integrate(Instant const& t1,
                                                Instant const& t2) const;
 
+  template<int wdegree_>
+  typename Hilbert<Value>::NormType Norm(
+      PoissonSeries<double, wdegree_, Evaluator> const& weight,
+      Instant const& t_min,
+      Instant const& t_max) const;
+
   template<typename V, int d, template<typename, typename, int> class E>
   PoissonSeries& operator+=(PoissonSeries<V, d, E> const& right);
   template<typename V, int d, template<typename, typename, int> class E>
