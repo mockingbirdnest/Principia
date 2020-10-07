@@ -473,28 +473,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     }
   }
 
-  if (reference_part == nullptr) {
-    LOG(ERROR)<<apparent_part_rigid_motion_.size();
-    LOG(ERROR)<<apparent_angular_momentum;
-    LOG(ERROR)<<apparent_attitude;
-    LOG(ERROR)<<apparent_inertia_eigensystem.form;
-    LOG(ERROR)<<apparent_inertia_tensor;
-    for (auto const& [part, apparent_part_motion] : apparent_part_rigid_motion_) {
-      LOG(ERROR)<<apparent_part_motion;
-      LOG(ERROR)<<apparent_pile_up_motion;
-      LOG(ERROR)<<apparent_system.LinearMotion();
-      RigidMotion<RigidPart, PileUpPrincipalAxes> const
-          part_motion_in_principal_axes =
-              apparent_pile_up_motion.Inverse() *
-              apparent_system.LinearMotion().Inverse() * apparent_part_motion;
-      LOG(ERROR)<<part_motion_in_principal_axes;
-      auto const part_proper_ω =
-          part_motion_in_principal_axes.angular_velocity_of<PileUpPrincipalAxes>()
-              .Norm();
-      LOG(ERROR)<<part_proper_ω;
-    }
-  }
-
   OrthogonalMap<RigidPart, NonRotatingPileUp> const
       reference_part_initial_attitude =
           actual_part_rigid_motion_.at(reference_part).orthogonal_map();
