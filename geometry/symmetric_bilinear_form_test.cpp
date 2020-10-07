@@ -533,7 +533,6 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     Vector<double, Eigenworld> const e₁({0, 1, 0});
     Vector<double, Eigenworld> const e₂({0, 0, 1});
 
-    // Same comment as above regarding the last two eigenvectors.
     EXPECT_THAT(f_eigensystem.rotation(e₀), Componentwise(1, 0, 0));
     EXPECT_THAT(f_eigensystem.rotation(e₁), Componentwise(0, 1, 0));
     EXPECT_THAT(f_eigensystem.rotation(e₂), Componentwise(0, 0, 1));
