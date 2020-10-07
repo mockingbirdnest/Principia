@@ -150,10 +150,8 @@ FastFourierTransform<Value, Argument, size_>::FastFourierTransform(
     : FastFourierTransform(container.cbegin(), container.cend(), Δt) {}
 
 template<typename Value, typename Argument, std::size_t size_>
-std::map<
-    typename FastFourierTransform<Value, Argument, size_>::AngularFrequency,
-    typename Hilbert<Value>::InnerProductType>
-FastFourierTransform<Value, Argument, size_>::PowerSpectrum() const {
+auto FastFourierTransform<Value, Argument, size_>::PowerSpectrum() const
+    -> std::map<AngularFrequency, typename Hilbert<Value>::InnerProductType> {
   std::map<AngularFrequency, typename Hilbert<Value>::InnerProductType>
       spectrum;
   int k = 0;
@@ -165,9 +163,8 @@ FastFourierTransform<Value, Argument, size_>::PowerSpectrum() const {
 }
 
 template<typename Value, typename Argument, std::size_t size_>
-Interval<
-    typename FastFourierTransform<Value, Argument, size_>::AngularFrequency>
-FastFourierTransform<Value, Argument, size_>::Mode() const {
+auto FastFourierTransform<Value, Argument, size_>::Mode() const
+    -> Interval<AngularFrequency> {
   auto const spectrum = PowerSpectrum();
   typename std::map<AngularFrequency,
                     typename Hilbert<Value>::InnerProductType>::const_iterator
@@ -201,6 +198,8 @@ Complexification<Value> const&
 template<typename Value, typename Argument, std::size_t size_>
 typename FastFourierTransform<Value, Argument, size_>::AngularFrequency
 FastFourierTransform<Value, Argument, size_>::frequency(int const s) const {
+  DCHECK_GE(s, 0);
+  DCHECK_LT(s, size);
   return s * Δω_;
 }
 

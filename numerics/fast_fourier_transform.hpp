@@ -25,7 +25,7 @@ using quantities::Angle;
 using quantities::Derivative;
 using quantities::Difference;
 
-// Given (u₀, ..., uₙ), this class computes the discrete Fourier transform
+// Given (u₀, ..., uₙ₋₁), this class computes the discrete Fourier transform
 //   Uₛ = ∑ᵣ uᵣ exp(-2πirs/n),
 // corresponding to
 //   Fourier[{...}, FourierParameters -> {1, -1}]
@@ -33,6 +33,8 @@ using quantities::Difference;
 template<typename Value, typename Argument, std::size_t size_>
 class FastFourierTransform {
  public:
+  // This is only an actual angular frequency if |Argument| is time-like.
+  // If |Argument| is an angular frequency, this is a time.
   using AngularFrequency = Derivative<Angle, Argument>;
 
   // The size must be a power of 2.
@@ -66,10 +68,10 @@ class FastFourierTransform {
   // Returns the interval that contains the largest peak of power.
   Interval<AngularFrequency> Mode() const;
 
-  // Returns the coefficient Uₛ.
+  // Given s ∈ [0, size - 1] ∩ ℕ, returns the coefficient Uₛ.
   Complexification<Value> const& operator[](int s) const;
 
-  // Returns the frequency corresponding to Uₛ.
+  // Given s ∈ [0, size - 1] ∩ ℕ, returns the frequency corresponding to Uₛ.
   AngularFrequency frequency(int s) const;
 
  private:
