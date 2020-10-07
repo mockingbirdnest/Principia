@@ -335,6 +335,11 @@ class PiecewisePoissonSeries {
   template<typename V, int d, template<typename, typename, int> class E>
   PiecewisePoissonSeries& operator-=(PoissonSeries<V, d, E> const& right);
 
+  void WriteToMessage(
+      not_null<serialization::PiecewisePoissonSeries*> message) const;
+  static PiecewisePoissonSeries ReadFromMessage(
+      serialization::PiecewisePoissonSeries const& message);
+
  private:
   PiecewisePoissonSeries(std::vector<Instant> const& bounds,
                          std::vector<Series> const& series);

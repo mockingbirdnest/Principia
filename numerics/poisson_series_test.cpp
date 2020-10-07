@@ -508,5 +508,27 @@ TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
   EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 0));
 }
 
+TEST_F(PiecewisePoissonSeriesTest, Serialization) {
+  serialization::PiecewisePoissonSeries message;
+  pp_.WriteToMessage(&message);
+  EXPECT_EQ(3, message.bounds_size());
+  EXPECT_EQ(2, message.series_size());
+
+  auto const piecewise_poisson_series_read = Degree0::ReadFromMessage(message);
+  EXPECT_THAT(
+      pp_(t0_ + 0.5 * Second),
+      AlmostEquals(piecewise_poisson_series_read(t0_ + 0.5 * Second), 0));
+  EXPECT_THAT(
+      pp_(t0_ + 1 * Second),
+      AlmostEquals(piecewise_poisson_series_read(t0_ + 1 * Second), 0));
+  EXPECT_THAT(
+      pp_(t0_ + 1.5 * Second),
+      AlmostEquals(piecewise_poisson_series_read(t0_ + 1.5 * Second), 0));
+
+  serialization::PiecewisePoissonSeries message2;
+  piecewise_poisson_series_read.WriteToMessage(&message2);
+  EXPECT_THAT(message2, EqualsProto(message));
+}
+
 }  // namespace numerics
 }  // namespace principia
