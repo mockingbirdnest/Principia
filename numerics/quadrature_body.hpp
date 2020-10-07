@@ -66,8 +66,8 @@ AutomaticClenshawCurtis(Function const& f,
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
   Result const estimate = ClenshawCurtis<points>(f, lower_bound, upper_bound);
   double const relative_error_estimate =
-      Abs(1 - Hilbert<Result>::Norm(previous_estimate) /
-                  Hilbert<Result>::Norm(estimate));
+      Hilbert<Result>::Norm(previous_estimate - estimate) /
+      Hilbert<Result>::Norm(estimate);
   // We look for an estimated relative error smaller than
   // |relative_tolerance * points|: since the integral is computed from |points|
   // evaluations of |f|, it will necessarily carry a relative error proportional
