@@ -17,11 +17,9 @@ namespace quadrature {
 namespace internal_quadrature {
 
 using base::FloorLog2;
-using quantities::Abs;
 using quantities::Angle;
 using quantities::Cos;
 using quantities::Difference;
-using quantities::Pow;
 using quantities::si::Radian;
 
 template<int points, typename Argument, typename Function>

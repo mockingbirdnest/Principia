@@ -275,12 +275,12 @@ std::ostream& operator<<(
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
-    PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max);
+typename Hilbert<LValue, RValue>::InnerProductType
+InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+             PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, Evaluator> const& weight,
+             Instant const& t_min,
+             Instant const& t_max);
 
 // A function defined by Poisson series piecewise.  Each of the Poisson series
 // making up the function applies over the semi-open interval
