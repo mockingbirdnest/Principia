@@ -26,8 +26,6 @@ AutomaticClenshawCurtis(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    typename Hilbert<Primitive<std::invoke_result_t<Function, Argument>,
-                               Argument>>::NormType absolute_tolerance = {},
     double relative_tolerance = 0x1p-16);
 
 template<int points, typename Argument, typename Function>

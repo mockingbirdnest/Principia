@@ -134,13 +134,7 @@ IncrementalProjection(Function const& function,
       auto aₘ⁽ᵏ⁾ = basis[m];
       for (int k = 0; k < m; ++k) {
         //LOG(ERROR) << "m=" << m << ", k=" << k;
-        r[k][m] = InnerProduct(
-            q[k],
-            aₘ⁽ᵏ⁾,
-            weight,
-            t_min,
-            t_max,
-            /*absolute_tolerance=*/0x1p-16 * quantities::si::Unit<Norm>);
+        r[k][m] = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
         aₘ⁽ᵏ⁾ -= r[k][m] * q[k];
       }
 

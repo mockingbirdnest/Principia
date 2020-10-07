@@ -57,34 +57,34 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
 
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
-AutomaticClenshawCurtis(
-    Function const& f,
-    Argument const& lower_bound,
-    Argument const& upper_bound,
-    typename Hilbert<Primitive<std::invoke_result_t<Function, Argument>,
-                               Argument>>::NormType const absolute_tolerance,
-    double const relative_tolerance,
-    Primitive<std::invoke_result_t<Function, Argument>, Argument> const
-        previous_estimate) {
+AutomaticClenshawCurtis(Function const& f,
+                        Argument const& lower_bound,
+                        Argument const& upper_bound,
+                        double const relative_tolerance,
+                        Primitive<std::invoke_result_t<Function, Argument>,
+                                  Argument> const previous_estimate) {
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
   Result const estimate = ClenshawCurtis<points>(f, lower_bound, upper_bound);
-  /*LOG(ERROR) << "Relative: " << Abs(previous_estimate / estimate - 1)
-             << "; Absolute: "
-             << Hilbert<Result>::Norm(previous_estimate - estimate);*/
-  if (Abs(previous_estimate / estimate - 1) > relative_tolerance * points &&
-      Hilbert<Result>::Norm(previous_estimate - estimate) >
-          absolute_tolerance) {
+  double const relative_error_estimate =
+      Abs(1 - Hilbert<Result>::Norm(previous_estimate) /
+                  Hilbert<Result>::Norm(estimate));
+  // We look for an estimated relative error smaller than
+  // |relative_tolerance * points|: since the integral is computed from |points|
+  // evaluations of |f|, it will necessarily carry a relative error proportional
+  // to |points|, so it makes no sense to look for convergence beyond that.
+  if (relative_error_estimate > relative_tolerance * points) {
     if constexpr (points > 1 << 24) {
       LOG(FATAL) << "Too many refinements while integrating from "
                  << lower_bound << " to " << upper_bound;
     } else {
-      return AutomaticClenshawCurtis<points + points - 1>(f,
-                                                          lower_bound,
-                                                          upper_bound,
-                                                          absolute_tolerance,
-                                                          relative_tolerance,
-                                                          estimate);
+      return AutomaticClenshawCurtis<points + points - 1>(
+          f, lower_bound, upper_bound, relative_tolerance, estimate);
     }
+  }
+  if (false&&points > 1000) {
+    LOG(ERROR) << "Automatic Clenshaw-Curtis took " << points
+               << " points; relative error "
+               << relative_error_estimate << ".";
   }
   return estimate;
 }
@@ -95,17 +95,15 @@ AutomaticClenshawCurtis(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    typename Hilbert<Primitive<std::invoke_result_t<Function, Argument>,
-                               Argument>>::NormType const absolute_tolerance,
     double const relative_tolerance) {
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
   // TODO(egg): factor the evaluations of f (and of cos).
-  Result estimate = ClenshawCurtis<initial_points>(f, lower_bound, upper_bound);
+  Result const estimate =
+      ClenshawCurtis<initial_points>(f, lower_bound, upper_bound);
   return AutomaticClenshawCurtis<initial_points + initial_points - 1>(
       f,
       lower_bound,
       upper_bound,
-      absolute_tolerance,
       relative_tolerance,
       estimate);
 }
@@ -116,7 +114,6 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
     Argument const& lower_bound,
     Argument const& upper_bound) {
   using Value = std::invoke_result_t<Function, Argument>;
-  //LOG(ERROR)<<points<<"-point Clenshaw-Curtis...";
 
   constexpr int N = points - 1;
   constexpr int log2_N = FloorLog2(N);

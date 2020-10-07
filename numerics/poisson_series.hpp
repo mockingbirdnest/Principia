@@ -280,8 +280,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
-    Instant const& t_max,
-    typename Hilbert<LValue, RValue>::InnerProductType const absolute_tolerance);
+    Instant const& t_max);
 
 // A function defined by Poisson series piecewise.  Each of the Poisson series
 // making up the function applies over the semi-open interval

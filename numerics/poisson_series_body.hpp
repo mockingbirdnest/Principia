@@ -610,14 +610,11 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PoissonSeries<RValue, rdegree_, Evaluator> const& right,
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
-    Instant const& t_max,
-    typename Hilbert<LValue, RValue>::InnerProductType const
-        absolute_tolerance) {
+    Instant const& t_max) {
   auto integrand = [&left, &right, &weight](Instant const& t) {
     return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
   };
-  return quadrature::AutomaticClenshawCurtis(
-             integrand, t_min, t_max, absolute_tolerance * (t_max - t_min)) /
+  return quadrature::AutomaticClenshawCurtis(integrand, t_min, t_max) /
          (t_max - t_min);
 }
 
