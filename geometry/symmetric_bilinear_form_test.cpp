@@ -511,6 +511,32 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                     AbsoluteErrorFrom(+0.92732994849715299942, IsNear(1.6_⑴)),
                     AbsoluteErrorFrom(-0.30863053191969508327, IsNear(0.3_⑴))));
   }
+
+  // A matrix whose eigenvalues are computed to be identical, even though p is
+  // not zero (#2716).
+  {
+    auto const f = MakeSymmetricBilinearForm<World>(
+        R3x3Matrix<double>({{+8.37592291645705700e-01,
+                             -2.08166817117216851e-17,
+                             +1.38777878078144568e-17},
+                            {-2.08166817117216851e-17,
+                             +8.37592291645705700e-01,
+                             +0.00000000000000000e+00},
+                            {+1.38777878078144568e-17,
+                             +0.00000000000000000e+00,
+                             +8.37592291645705700e-01}}));
+    auto const f_eigensystem = f.Diagonalize<Eigenworld>();
+
+    EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
+                AlmostEquals(1.0, 0)) << f;
+    Vector<double, Eigenworld> const e₀({1, 0, 0});
+    Vector<double, Eigenworld> const e₁({0, 1, 0});
+    Vector<double, Eigenworld> const e₂({0, 0, 1});
+
+    EXPECT_THAT(f_eigensystem.rotation(e₀), Componentwise(1, 0, 0));
+    EXPECT_THAT(f_eigensystem.rotation(e₁), Componentwise(0, 1, 0));
+    EXPECT_THAT(f_eigensystem.rotation(e₂), Componentwise(0, 0, 1));
+  }
 }
 
 }  // namespace internal_symmetric_bilinear_form

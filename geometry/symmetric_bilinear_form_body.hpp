@@ -185,7 +185,15 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
   // the singularity.
   auto const m₁ = A_minus_α₂I * A_minus_α₀I;
   std::unique_ptr<Rotation<Eigenframe, Frame> const> rotation;
-  if (α₁ - α₀ < α₂ - α₁) {
+  if (α₀ == α₂) {
+    // This can happen even if p != zero because of errors in the computation of
+    // the αs.
+    SymmetricBilinearForm<Scalar, Eigenframe, Multivector> form(
+        R3x3Matrix<Scalar>({q, zero, zero},
+                           {zero, q, zero},
+                           {zero, zero, q}));
+    return {form, Rotation<Eigenframe, Frame>::Identity()};
+  } else if (α₁ - α₀ < α₂ - α₁) {
     auto const m₂ = A_minus_α₀I * A_minus_α₁I;
     auto const v₂ =
         Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₂)));
@@ -193,7 +201,7 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
                                   .OrthogonalizationAgainst(v₂));
     rotation =
         std::make_unique<Rotation<Eigenframe, Frame>>(Wedge(v₁, v₂), v₁, v₂);
-  } else {
+  } else {  // α₁ - α₀ >= α₂ - α₁
     auto const m₀ = A_minus_α₁I * A_minus_α₂I;
     auto const v₀ =
         Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₀)));
