@@ -79,11 +79,6 @@ AutomaticClenshawCurtis(Function const& f,
           f, lower_bound, upper_bound, relative_tolerance, estimate);
     }
   }
-  if (false&&points > 1000) {
-    LOG(ERROR) << "Automatic Clenshaw-Curtis took " << points
-               << " points; relative error "
-               << relative_error_estimate << ".";
-  }
   return estimate;
 }
 
