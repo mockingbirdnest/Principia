@@ -115,13 +115,12 @@ IncrementalProjection(Function const& function,
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
   }
 
-  // These are logically the Q and R in the QR decomposition of basis.
-  UnboundedUpperTriangularMatrix<Norm> r(basis_size, uninitialized);
+  // This is logically Q in the QR decomposition of basis.
   std::vector<PoissonSeries<Normalized, degree_, Evaluator>> q;
 
   auto const a₀ = basis[0];
-  r[0][0] = a₀.Norm(weight, t_min, t_max);
-  q.push_back(a₀ / r[0][0]);
+  auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
+  q.push_back(a₀ / r₀₀);
 
   auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
 
@@ -133,19 +132,18 @@ IncrementalProjection(Function const& function,
     for (int m = m_begin; m < basis_size; ++m) {
       auto aₘ⁽ᵏ⁾ = basis[m];
       for (int k = 0; k < m; ++k) {
-        //LOG(ERROR) << "m=" << m << ", k=" << k;
-        r[k][m] = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
-        aₘ⁽ᵏ⁾ -= r[k][m] * q[k];
+        auto const rₖₘ = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
+        aₘ⁽ᵏ⁾ -= rₖₘ * q[k];
       }
 
-      r[m][m] = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
-      q.push_back(aₘ⁽ᵏ⁾ / r[m][m]);
+      auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
+      q.push_back(aₘ⁽ᵏ⁾ / rₘₘ);
       DCHECK_EQ(m + 1, q.size());
 
-      Norm const A = InnerProduct(f, q[m], weight, t_min, t_max);
+      Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
 
-      f -= A * q[m];
-      F += A * q[m];
+      f -= Aₘ * q[m];
+      F += Aₘ * q[m];
     }
 
     ω = calculator(f);
@@ -167,7 +165,6 @@ IncrementalProjection(Function const& function,
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
     }
-    r.Extend(ω_basis_size, uninitialized);
     m_begin = basis_size;
     basis_size += ω_basis_size;
   }
