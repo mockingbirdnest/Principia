@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/complexification.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/interval.hpp"
@@ -53,6 +54,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_poisson_series {
 
+using base::not_null;
 using geometry::Complexification;
 using geometry::Hilbert;
 using geometry::Instant;
@@ -121,6 +123,10 @@ class PoissonSeries {
   PoissonSeries& operator+=(PoissonSeries<V, d, E> const& right);
   template<typename V, int d, template<typename, typename, int> class E>
   PoissonSeries& operator-=(PoissonSeries<V, d, E> const& right);
+
+  void WriteToMessage(not_null<serialization::PoissonSeries*> message) const;
+  static PoissonSeries ReadFromMessage(
+      serialization::PoissonSeries const& message);
 
  private:
   // Similar to the public constructor, but passing by copy allows moves, which

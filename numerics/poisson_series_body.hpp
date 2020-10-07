@@ -231,6 +231,41 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+void PoissonSeries<Value, degree_, Evaluator>::WriteToMessage(
+    not_null<serialization::PoissonSeries*> const message) const {
+  aperiodic_.WriteToMessage(message->mutable_aperiodic());
+  for (auto const& [ω, polynomials] : periodic_) {
+    auto* const polynomials_and_angular_frequency = message->add_periodic();
+    ω.WriteToMessage(
+        polynomials_and_angular_frequency->mutable_angular_frequency());
+    polynomials.sin.WriteToMessage(
+        polynomials_and_angular_frequency->mutable_sin());
+    polynomials.cos.WriteToMessage(
+        polynomials_and_angular_frequency->mutable_cos());
+  }
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PoissonSeries<Value, degree_, Evaluator>
+PoissonSeries<Value, degree_, Evaluator>::ReadFromMessage(
+    serialization::PoissonSeries const& message) {
+  auto const aperiodic = Polynomial::ReadFromMessage(message.aperiodic());
+  PolynomialsByAngularFrequency periodic;
+  for (auto const& polynomial_and_angular_frequency : message.periodic()) {
+    auto const ω = AngularFrequency::ReadFromMessage(
+        polynomial_and_angular_frequency.angular_frequency());
+    auto const sin =
+        Polynomial::ReadFromMessage(polynomial_and_angular_frequency.sin());
+    auto const cos =
+        Polynomial::ReadFromMessage(polynomial_and_angular_frequency.cos());
+    periodic.emplace_back(ω, Polynomials{/*sin=*/sin, /*cos=*/cos});
+  }
+  return PoissonSeries(aperiodic, periodic);
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
     PrivateConstructor,
     Polynomial aperiodic,
