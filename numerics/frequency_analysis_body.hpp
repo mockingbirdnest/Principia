@@ -140,7 +140,7 @@ IncrementalProjection(Function const& function,
             weight,
             t_min,
             t_max,
-            /*absolute_tolerance=*/0x1p-20 * quantities::si::Unit<Norm>);
+            /*absolute_tolerance=*/0x1p-16 * quantities::si::Unit<Norm>);
         aₘ⁽ᵏ⁾ -= r[k][m] * q[k];
       }
 

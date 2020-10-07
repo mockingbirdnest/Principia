@@ -20,7 +20,7 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
     Argument const& lower_bound,
     Argument const& upper_bound);
 
-template<typename Argument, typename Function>
+template<int initial_points = 3, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
 AutomaticClenshawCurtis(
     Function const& f,
@@ -28,7 +28,7 @@ AutomaticClenshawCurtis(
     Argument const& upper_bound,
     typename Hilbert<Primitive<std::invoke_result_t<Function, Argument>,
                                Argument>>::NormType absolute_tolerance = {},
-    double relative_tolerance = 0x1p-20);
+    double relative_tolerance = 0x1p-16);
 
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(

@@ -3,6 +3,8 @@
 
 #include "numerics/quadrature.hpp"
 
+#include <memory>
+
 #include "numerics/fast_fourier_transform.hpp"
 #include "numerics/gauss_legendre_weights.mathematica.h"
 #include "numerics/legendre_roots.mathematica.h"
@@ -53,7 +55,41 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
                        GaussLegendreWeights[points]);
 }
 
-template<typename Argument, typename Function>
+template<int points, typename Argument, typename Function>
+Primitive<std::invoke_result_t<Function, Argument>, Argument>
+AutomaticClenshawCurtis(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    typename Hilbert<Primitive<std::invoke_result_t<Function, Argument>,
+                               Argument>>::NormType const absolute_tolerance,
+    double const relative_tolerance,
+    Primitive<std::invoke_result_t<Function, Argument>, Argument> const
+        previous_estimate) {
+  using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
+  Result const estimate = ClenshawCurtis<points>(f, lower_bound, upper_bound);
+  /*LOG(ERROR) << "Relative: " << Abs(previous_estimate / estimate - 1)
+             << "; Absolute: "
+             << Hilbert<Result>::Norm(previous_estimate - estimate);*/
+  if (Abs(previous_estimate / estimate - 1) > relative_tolerance * points &&
+      Hilbert<Result>::Norm(previous_estimate - estimate) >
+          absolute_tolerance) {
+    if constexpr (points > 1 << 24) {
+      LOG(FATAL) << "Too many refinements while integrating from "
+                 << lower_bound << " to " << upper_bound;
+    } else {
+      return AutomaticClenshawCurtis<points + points - 1>(f,
+                                                          lower_bound,
+                                                          upper_bound,
+                                                          absolute_tolerance,
+                                                          relative_tolerance,
+                                                          estimate);
+    }
+  }
+  return estimate;
+}
+
+template<int initial_points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
 AutomaticClenshawCurtis(
     Function const& f,
@@ -64,26 +100,14 @@ AutomaticClenshawCurtis(
     double const relative_tolerance) {
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
   // TODO(egg): factor the evaluations of f (and of cos).
-  Result previous_estimate = ClenshawCurtis(f, lower_bound, upper_bound, 3);
-  Result estimate = ClenshawCurtis(f, lower_bound, upper_bound, 5);
-  std::int64_t last_points = 5;
-  for (std::int64_t points = 9;
-       Abs(previous_estimate / estimate - 1) > relative_tolerance &&
-       Hilbert<Result>::Norm(previous_estimate - estimate) > absolute_tolerance;
-       points += points - 1) {
-    LOG(ERROR) << "..." << Abs(previous_estimate / estimate - 1) << ", "
-               << previous_estimate - estimate
-               << ". Clenshaw-Curtis with " << points << "...";
-    previous_estimate = estimate;
-    estimate = ClenshawCurtis(f, lower_bound, upper_bound, points);
-    last_points = points;
-  }
-  LOG(ERROR) << "Clenshaw-Curtis used " << last_points
-             << " points for a relative error of "
-             << Abs(previous_estimate / estimate - 1) << ", absolute error of "
-             << previous_estimate - estimate;
-  CHECK_EQ(estimate, estimate);
-  return estimate;
+  Result estimate = ClenshawCurtis<initial_points>(f, lower_bound, upper_bound);
+  return AutomaticClenshawCurtis<initial_points + initial_points - 1>(
+      f,
+      lower_bound,
+      upper_bound,
+      absolute_tolerance,
+      relative_tolerance,
+      estimate);
 }
 
 template<int points, typename Argument, typename Function>
@@ -92,6 +116,7 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
     Argument const& lower_bound,
     Argument const& upper_bound) {
   using Value = std::invoke_result_t<Function, Argument>;
+  //LOG(ERROR)<<points<<"-point Clenshaw-Curtis...";
 
   constexpr int N = points - 1;
   constexpr int log2_N = FloorLog2(N);
@@ -100,48 +125,31 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
   Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
 
   constexpr Angle N⁻¹π = π * Radian / N;
-  // This array contains the nodes, which are the extrema of the Чебышёв
-  // polynomial Tn, together with ±1: cos_N⁻¹π[s] = cos sπ/N.
-  // TODO(egg): Consider precomputing this globally, we use it in the FFT as
-  // well.
-  static const std::array<double, N + 1> cos_N⁻¹π = [N⁻¹π] {
-    std::array<double, N + 1> cos_N⁻¹π;
-    for (int s = 0; s <= N; ++s) {
-      cos_N⁻¹π[s] = Cos(N⁻¹π * s);
-    }
-    return cos_N⁻¹π;
-  }();
-  std::array<Value, 2 * N> f_cos_N⁻¹π;
+  // If we identify [lower_bound, upper_bound] with [-1, 1],
+  // f_cos_N⁻¹π[s] is f(cos πs/N).
+  std::vector<Value> f_cos_N⁻¹π;
+  f_cos_N⁻¹π.resize(2 * N);
   for (int s = 0; s <= N; ++s) {
-    f_cos_N⁻¹π[s] = f(lower_bound + half_width * (1 + cos_N⁻¹π[s]));
+    // The N + 1 evaluations.
+    f_cos_N⁻¹π[s] = f(lower_bound + half_width * (1 + Cos(N⁻¹π * s)));
   }
-  for (int s = 1; s < N; ++s) {
-    f_cos_N⁻¹π[2 * N - s] = f_cos_N⁻¹π[s];  // (5).
-  }
-
-  FastFourierTransform<Value, Angle, 2 * N> a(f_cos_N⁻¹π, N⁻¹π);
-
-  for (std::int64_t k = 0; k <= n / 2 - 1; ++k) {
-    Argument const xₖ = lower_bound + half_width * (1 + cos_n⁻¹π[k]);
-    Argument const xₖ = lower_bound + half_width * (1 - cos_n⁻¹π[k]);
-
-
-    double const gₖ = k == 0 || k == n ? 1 : 2;
-    DoublePrecision<double> Σⱼ;
-    for (std::int64_t j = 1; j <= n / 2; ++j) {
-      double const bⱼ = 2 * j == n ? 1 : 2;
-      std::int64_t const jk_mod_n = (j * k) % n;
-      double const cos_2jkπn⁻¹ = 2 * jk_mod_n <= n
-                                     ? cos_n⁻¹π[2 * jk_mod_n]
-                                     : cos_n⁻¹π[2 * (n - jk_mod_n)];
-      Σⱼ += DoublePrecision<double>((bⱼ / (4 * (j * j) - 1) * cos_2jkπn⁻¹));
-    }
-    double const wₖ = gₖ / n * (1 - Σⱼ.value);
-
-    Σₖ_wₖ_f_xₖ += DoublePrecision(wₖ * f(xₖ));
+  for (int s = N + 1; s <= 2 * N - 1; ++s) {
+    f_cos_N⁻¹π[s] = f_cos_N⁻¹π[2 * N - s];  // (5).
   }
 
-  return Σₖ_wₖ_f_xₖ.value * half_width;
+  auto const fft = std::make_unique<FastFourierTransform<Value, Angle, 2 * N>>(
+      f_cos_N⁻¹π, N⁻¹π);
+  auto const& a = *fft;
+
+  Value Σʺ{};
+  for (std::int64_t n = 0; n <= N; n += 2) {
+    // The notation g is from [OLBC10], 3.5.17.
+    int gₙ = n == 0 || n == N ? 1 : 2;
+    Σʺ += a[n].real_part() * gₙ / (1 - n * n);
+  }
+  Σʺ /= N;
+
+  return Σʺ * half_width;
 }
 
 template<typename Argument, typename Function>
