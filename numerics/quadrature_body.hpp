@@ -9,7 +9,6 @@
 #include "numerics/gauss_legendre_weights.mathematica.h"
 #include "numerics/legendre_roots.mathematica.h"
 #include "quantities/elementary_functions.hpp"
-#include "numerics/double_precision.hpp"
 
 namespace principia {
 namespace numerics {
@@ -63,6 +62,7 @@ AutomaticClenshawCurtis(Function const& f,
                                   Argument> const previous_estimate) {
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
   Result const estimate = ClenshawCurtis<points>(f, lower_bound, upper_bound);
+  // This is the naïve estimate mentioned in [Gen72b], p. 339.
   double const relative_error_estimate =
       Hilbert<Result>::Norm(previous_estimate - estimate) /
       Hilbert<Result>::Norm(estimate);
@@ -90,7 +90,7 @@ AutomaticClenshawCurtis(
     Argument const& upper_bound,
     double const relative_tolerance) {
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
-  // TODO(egg): factor the evaluations of f (and of cos).
+  // TODO(egg): factor the evaluations of f.
   Result const estimate =
       ClenshawCurtis<initial_points>(f, lower_bound, upper_bound);
   return AutomaticClenshawCurtis<initial_points + initial_points - 1>(
@@ -106,6 +106,7 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound) {
+  // We follow the notation from [Gen72b] and [Gen72c].
   using Value = std::invoke_result_t<Function, Argument>;
 
   constexpr int N = points - 1;
@@ -115,6 +116,12 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
   Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
 
   constexpr Angle N⁻¹π = π * Radian / N;
+
+  // We use a discrete Fourier transform rather than a cosine transform, see
+  // [Gen72c], (3).
+  // TODO(egg): Consider a discrete cosine transform, ideally incrementally
+  // computed to improve the performance of the automatic quadrature.
+
   // If we identify [lower_bound, upper_bound] with [-1, 1],
   // f_cos_N⁻¹π[s] is f(cos πs/N).
   std::vector<Value> f_cos_N⁻¹π;
@@ -124,13 +131,14 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
     f_cos_N⁻¹π[s] = f(lower_bound + half_width * (1 + Cos(N⁻¹π * s)));
   }
   for (int s = N + 1; s <= 2 * N - 1; ++s) {
-    f_cos_N⁻¹π[s] = f_cos_N⁻¹π[2 * N - s];  // (5).
+    f_cos_N⁻¹π[s] = f_cos_N⁻¹π[2 * N - s];  // [Gen72c] (5).
   }
 
   auto const fft = std::make_unique<FastFourierTransform<Value, Angle, 2 * N>>(
       f_cos_N⁻¹π, N⁻¹π);
   auto const& a = *fft;
 
+  // [Gen72b] (7), factoring out the division by N.
   Value Σʺ{};
   for (std::int64_t n = 0; n <= N; n += 2) {
     // The notation g is from [OLBC10], 3.5.17.

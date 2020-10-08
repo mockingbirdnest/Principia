@@ -70,7 +70,7 @@ TEST_F(QuadratureTest, Sin) {
                                       5.0 * Radian,
                                       std::numeric_limits<double>::epsilon()),
               AlmostEquals(ʃf, 4));
-  EXPECT_THAT(evaluations, Eq(132));
+  EXPECT_THAT(evaluations, Eq(134));
 }
 
 TEST_F(QuadratureTest, Sin2) {
@@ -122,7 +122,7 @@ TEST_F(QuadratureTest, Sin10) {
                                       5.0 * Radian,
                                       std::numeric_limits<double>::epsilon()),
               AlmostEquals(ʃf, 196));
-  EXPECT_THAT(evaluations, Eq(261));
+  EXPECT_THAT(evaluations, Eq(263));
 }
 
 }  // namespace quadrature
