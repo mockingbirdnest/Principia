@@ -4,6 +4,7 @@
 #include "numerics/quadrature.hpp"
 
 #include <memory>
+#include <vector>
 
 #include "numerics/fast_fourier_transform.hpp"
 #include "numerics/gauss_legendre_weights.mathematica.h"
