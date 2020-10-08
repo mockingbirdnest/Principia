@@ -756,7 +756,7 @@ PiecewisePoissonSeries<Value, degree_, Evaluator>::operator-=(
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 void PiecewisePoissonSeries<Value, degree_, Evaluator>::WriteToMessage(
-   not_null<serialization::PiecewisePoissonSeries*> message) const {
+    not_null<serialization::PiecewisePoissonSeries*> message) const {
   for (Instant const& bound : bounds_) {
     bound.WriteToMessage(message->add_bounds());
   }
