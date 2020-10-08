@@ -21,13 +21,19 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
+using geometry::Instant;
+using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Length;
 using quantities::Sqrt;
+using quantities::Time;
+using quantities::Voltage;
 using quantities::si::Metre;
 using quantities::si::Second;
+using quantities::si::Volt;
 using testing_utilities::AlmostEquals;
 using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Pair;
 
@@ -42,14 +48,14 @@ class FastFourierTransformTest : public ::testing::Test {
 
   template<typename Scalar, std::size_t size_>
   std::array<Complexification<double>, size_> Coefficients(
-      FastFourierTransform<Scalar, size_> const& fft) {
+      FastFourierTransform<Scalar, Instant, size_> const& fft) {
     return fft.transform_;
   }
 };
 
 TEST_F(FastFourierTransformTest, Square) {
-  FastFourierTransform<double, 8> const transform({1, 1, 1, 1, 0, 0, 0, 0},
-                                                  1 * Second);
+  FastFourierTransform<double, Instant, 8> const transform(
+      {1, 1, 1, 1, 0, 0, 0, 0}, 1 * Second);
   EXPECT_THAT(Coefficients(transform),
               ElementsAre(AlmostEquals(Complex{4}, 0),
                           AlmostEquals(Complex{1, -1 - Sqrt(2)}, 0, 1),
@@ -63,23 +69,24 @@ TEST_F(FastFourierTransformTest, Square) {
 
 TEST_F(FastFourierTransformTest, Sin) {
   // Sin(x) on [0, 7].
-  FastFourierTransform<double, 16> const transform({+0,
-                                                    +0.44991188055599964373,
-                                                    +0.80360826369441117592,
-                                                    +0.98544972998846018066,
-                                                    +0.95654873748436662401,
-                                                    +0.72308588173832461680,
-                                                    +0.33498815015590491954,
-                                                    -0.12474816864589884767,
-                                                    -0.55780658091328209620,
-                                                    -0.87157577241358806002,
-                                                    -0.99895491709792831520,
-                                                    -0.91270346343588987220,
-                                                    -0.63126663787232131146,
-                                                    -0.21483085764466499644,
-                                                    +0.24754738092257664739,
-                                                    +0.65698659871878909040},
-                                                   1 * Second);
+  FastFourierTransform<double, Instant, 16> const transform(
+      {+0,
+       +0.44991188055599964373,
+       +0.80360826369441117592,
+       +0.98544972998846018066,
+       +0.95654873748436662401,
+       +0.72308588173832461680,
+       +0.33498815015590491954,
+       -0.12474816864589884767,
+       -0.55780658091328209620,
+       -0.87157577241358806002,
+       -0.99895491709792831520,
+       -0.91270346343588987220,
+       -0.63126663787232131146,
+       -0.21483085764466499644,
+       +0.24754738092257664739,
+       +0.65698659871878909040},
+      1 * Second);
   EXPECT_THAT(
       Coefficients(transform),
       ElementsAre(
@@ -151,7 +158,7 @@ TEST_F(FastFourierTransformTest, Sin) {
 }
 
 TEST_F(FastFourierTransformTest, Mode) {
-  using FFT = FastFourierTransform<Length, 1 << 16>;
+  using FFT = FastFourierTransform<Length, Instant, 1 << 16>;
   AngularFrequency const ω = 666 * π / FFT::size * Radian / Second;
   Time const Δt = 1 * Second;
   std::mt19937_64 random(42);
@@ -171,7 +178,7 @@ TEST_F(FastFourierTransformTest, Mode) {
 }
 
 TEST_F(FastFourierTransformTest, Vector) {
-  using FFT = FastFourierTransform<Displacement<World>, 1 << 16>;
+  using FFT = FastFourierTransform<Displacement<World>, Instant, 1 << 16>;
   AngularFrequency const ω = 666 * π / FFT::size * Radian / Second;
   Time const Δt = 1 * Second;
   std::vector<Displacement<World>> signal;
@@ -188,6 +195,23 @@ TEST_F(FastFourierTransformTest, Vector) {
   EXPECT_THAT(mode.midpoint(), AlmostEquals(ω, 0));
   EXPECT_THAT(mode.measure(),
               AlmostEquals(4 * π / FFT::size * Radian / Second, 24));
+}
+
+TEST_F(FastFourierTransformTest, Inverse) {
+  constexpr int n = 4;
+  constexpr Time Δt = 1 * Second;
+  std::array<Voltage, n> v{{1 * Volt, 0 * Volt, 1 * Volt, 0 * Volt}};
+  FastFourierTransform<Voltage, Instant, n> const V(v, Δt);
+
+  FastFourierTransform<Voltage, AngularFrequency, n> const nv(
+      {V[0].real_part(), V[1].real_part(), V[2].real_part(), V[3].real_part()},
+      V.frequency(1) - V.frequency(0));
+  EXPECT_THAT((std::array{nv[0].real_part() / n,
+                          nv[1].real_part() / n,
+                          nv[2].real_part() / n,
+                          nv[3].real_part() / n}),
+              ElementsAreArray(v));
+  EXPECT_THAT(nv.frequency(1) - nv.frequency(0), AlmostEquals(Δt, 0));
 }
 
 }  // namespace internal_fast_fourier_transform

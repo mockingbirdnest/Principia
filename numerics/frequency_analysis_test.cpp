@@ -106,7 +106,7 @@ class FrequencyAnalysisTest : public ::testing::Test {
 };
 
 TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
-  using FFT = FastFourierTransform<Length, 1 << 16>;
+  using FFT = FastFourierTransform<Length, Instant, 1 << 16>;
   AngularFrequency const ω = 666.543 * π / FFT::size * Radian / Second;
   Time const Δt = 1 * Second;
   std::mt19937_64 random(42);
@@ -164,7 +164,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
 }
 
 TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
-  using FFT = FastFourierTransform<Displacement<World>, 1 << 16>;
+  using FFT = FastFourierTransform<Displacement<World>, Instant, 1 << 16>;
   AngularFrequency const ω = 666.543 * π / FFT::size * Radian / Second;
   Time const Δt = 1 * Second;
 
@@ -311,7 +311,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection4(t0_ + i * Radian / ω),
-                AlmostEquals(series(t0_ + i * Radian / ω), 0, 128));
+                AlmostEquals(series(t0_ + i * Radian / ω), 0, 384));
   }
 
   // Projection on a 5th degree basis is also accurate.
@@ -322,7 +322,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection5(t0_ + i * Radian / ω),
-                AlmostEquals(series(t0_ + i * Radian / ω), 0, 128));
+                AlmostEquals(series(t0_ + i * Radian / ω), 0, 384));
   }
 
   // Projection on a 3rd degree basis introduces significant errors.
@@ -494,7 +494,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
                           : ω_index == 3
                                 ? AllOf(Gt(7.5e-3 * Metre), Lt(5.4 * Metre))
                                 : AllOf(Gt(3.7e-15 * Metre),
-                                        Lt(2.1e-11 * Metre)))
+                                        Lt(4.4e-11 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -515,7 +515,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Gt(1.9e-16), Lt(1.3e-12))));
+                          AllOf(Gt(1.9e-16), Lt(3.5e-12))));
   }
 }
 
