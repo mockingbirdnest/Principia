@@ -55,12 +55,13 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
 
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
-AutomaticClenshawCurtis(Function const& f,
-                        Argument const& lower_bound,
-                        Argument const& upper_bound,
-                        double const relative_tolerance,
-                        Primitive<std::invoke_result_t<Function, Argument>,
-                                  Argument> const previous_estimate) {
+AutomaticClenshawCurtisImplementation(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    double const relative_tolerance,
+    Primitive<std::invoke_result_t<Function, Argument>, Argument> const
+        previous_estimate) {
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
   Result const estimate = ClenshawCurtis<points>(f, lower_bound, upper_bound);
   // This is the naïve estimate mentioned in [Gen72b], p. 339.
@@ -76,7 +77,7 @@ AutomaticClenshawCurtis(Function const& f,
       LOG(FATAL) << "Too many refinements while integrating from "
                  << lower_bound << " to " << upper_bound;
     } else {
-      return AutomaticClenshawCurtis<points + points - 1>(
+      return AutomaticClenshawCurtisImplementation<points + points - 1>(
           f, lower_bound, upper_bound, relative_tolerance, estimate);
     }
   }
@@ -94,12 +95,9 @@ AutomaticClenshawCurtis(
   // TODO(egg): factor the evaluations of f.
   Result const estimate =
       ClenshawCurtis<initial_points>(f, lower_bound, upper_bound);
-  return AutomaticClenshawCurtis<initial_points + initial_points - 1>(
-      f,
-      lower_bound,
-      upper_bound,
-      relative_tolerance,
-      estimate);
+  return AutomaticClenshawCurtisImplementation<
+      initial_points + initial_points - 1>(
+      f, lower_bound, upper_bound, relative_tolerance, estimate);
 }
 
 template<int points, typename Argument, typename Function>
@@ -119,7 +117,7 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
   constexpr Angle N⁻¹π = π * Radian / N;
 
   // We use a discrete Fourier transform rather than a cosine transform, see
-  // [Gen72c], (3).
+  // [Gen72c], equation (3).
   // TODO(egg): Consider a discrete cosine transform, ideally incrementally
   // computed to improve the performance of the automatic quadrature.
 
@@ -139,11 +137,11 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
       f_cos_N⁻¹π, N⁻¹π);
   auto const& a = *fft;
 
-  // [Gen72b] (7), factoring out the division by N.
+  // [Gen72b] equation (7), factoring out the division by N.
   Value Σʺ{};
   for (std::int64_t n = 0; n <= N; n += 2) {
     // The notation g is from [OLBC10], 3.5.17.
-    int gₙ = n == 0 || n == N ? 1 : 2;
+    int const gₙ = n == 0 || n == N ? 1 : 2;
     Σʺ += a[n].real_part() * gₙ / (1 - n * n);
   }
   Σʺ /= N;

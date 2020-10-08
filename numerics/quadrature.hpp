@@ -31,7 +31,8 @@ AutomaticClenshawCurtis(
     Argument const& upper_bound,
     double relative_tolerance = 0x1p-16);
 
-// |points| must be of the form 2ᵖ + 1 for some p ∈ ℕ.
+// |points| must be of the form 2ᵖ + 1 for some p ∈ ℕ.  Returns the
+// Clenshaw-Curtis quadrature of f with the given number of points.
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
     Function const& f,
