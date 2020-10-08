@@ -211,6 +211,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.2e-11_⑴)));
 }
 
+#if 0
 TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
   AngularFrequency const ω = 666.543 * π * Radian / Second;
   std::mt19937_64 random(42);
@@ -387,7 +388,6 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
 
 // TODO(phl): This test produces NaNs on casanova.  Revisit once we have better
 // integration.
-#if 0
 TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> frequency_distribution(2000.0, 3000.0);
@@ -452,7 +452,6 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
                           AllOf(Gt(5.9e-12), Lt(1.9e-6))));
   }
 }
-#endif
 
 TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
   std::mt19937_64 random(42);
@@ -518,6 +517,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
                           AllOf(Gt(1.9e-16), Lt(3.5e-12))));
   }
 }
+#endif
 
 }  // namespace frequency_analysis
 }  // namespace numerics
