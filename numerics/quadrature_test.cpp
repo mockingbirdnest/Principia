@@ -69,7 +69,7 @@ TEST_F(QuadratureTest, Sin) {
                                       -2.0 * Radian,
                                       5.0 * Radian,
                                       std::numeric_limits<double>::epsilon()),
-              AlmostEquals(ʃf, 4));
+              AlmostEquals(ʃf, 3, 4));
   EXPECT_THAT(evaluations, Eq(134));
 }
 
@@ -121,7 +121,7 @@ TEST_F(QuadratureTest, Sin10) {
                                       -2.0 * Radian,
                                       5.0 * Radian,
                                       std::numeric_limits<double>::epsilon()),
-              AlmostEquals(ʃf, 196));
+              AlmostEquals(ʃf, 144, 277));
   EXPECT_THAT(evaluations, Eq(263));
 }
 
