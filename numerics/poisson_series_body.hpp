@@ -755,6 +755,39 @@ PiecewisePoissonSeries<Value, degree_, Evaluator>::operator-=(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+void PiecewisePoissonSeries<Value, degree_, Evaluator>::WriteToMessage(
+    not_null<serialization::PiecewisePoissonSeries*> message) const {
+  for (Instant const& bound : bounds_) {
+    bound.WriteToMessage(message->add_bounds());
+  }
+  for (Series const& series : series_) {
+    series.WriteToMessage(message->add_series());
+  }
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+PiecewisePoissonSeries<Value, degree_, Evaluator>
+PiecewisePoissonSeries<Value, degree_, Evaluator>::ReadFromMessage(
+    serialization::PiecewisePoissonSeries const& message) {
+  CHECK_NE(0, message.series_size());
+  CHECK_EQ(message.bounds_size(), message.series_size() + 1);
+  Interval<Instant> const first_interval{
+      Instant::ReadFromMessage(message.bounds(0)),
+      Instant::ReadFromMessage(message.bounds(1))};
+  PiecewisePoissonSeries series(first_interval,
+                                Series::ReadFromMessage(message.series(0)));
+  for (int i = 1; i < message.series_size(); ++i) {
+    Interval<Instant> const interval{
+        Instant::ReadFromMessage(message.bounds(i)),
+        Instant::ReadFromMessage(message.bounds(i + 1))};
+    series.Append(interval, Series::ReadFromMessage(message.series(i)));
+  }
+  return series;
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries(
     std::vector<Instant> const& bounds,
     std::vector<PoissonSeries<Value, degree_, Evaluator>> const& series)
