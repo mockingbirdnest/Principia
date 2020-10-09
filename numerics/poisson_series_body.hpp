@@ -345,8 +345,11 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) const {
-  auto const integrand = PointwiseInnerProduct(*this, *this) * weight;
-  return Sqrt(integrand.Integrate(t_min, t_max) / (t_max - t_min));
+  auto integrand = [this, &weight](Instant const& t) {
+    return Hilbert<Value>::InnerProduct((*this)(t), (*this)(t)) * weight(t);
+  };
+  return Sqrt(quadrature::AutomaticClenshawCurtis(integrand, t_min, t_max) /
+              (t_max - t_min));
 }
 
 template<typename Value, int degree_,
@@ -637,15 +640,17 @@ std::ostream& operator<<(
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator>
-typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-             PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-             PoissonSeries<double, wdegree_, Evaluator> const& weight,
-             Instant const& t_min,
-             Instant const& t_max) {
-  auto const integrand = PointwiseInnerProduct(left, right) * weight;
-  auto const primitive = integrand.Primitive();
-  return (primitive(t_max) - primitive(t_min)) / (t_max - t_min);
+typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
+    PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) {
+  auto integrand = [&left, &right, &weight](Instant const& t) {
+    return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
+  };
+  return quadrature::AutomaticClenshawCurtis(integrand, t_min, t_max) /
+         (t_max - t_min);
 }
 
 template<typename Value, int degree_,

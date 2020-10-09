@@ -312,7 +312,7 @@ TEST_F(PoissonSeriesTest, InnerProduct) {
                            apodization::Hann<HornerEvaluator>(t_min, t_max),
                            t_min,
                            t_max),
-              AlmostEquals(-381.25522770148542400, 71));
+              AlmostEquals(-381.25522770148542400, 7));
 }
 
 TEST_F(PoissonSeriesTest, Output) {

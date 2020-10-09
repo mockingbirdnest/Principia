@@ -1,6 +1,8 @@
 ﻿
 #include "numerics/quadrature.hpp"
 
+#include <limits>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
@@ -20,11 +22,16 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_⑴;
+using ::testing::Eq;
 
 class QuadratureTest : public ::testing::Test {};
 
 TEST_F(QuadratureTest, Sin) {
-  auto const f = [](Angle const x) { return Sin(x); };
+  int evaluations = 0;
+  auto const f = [&evaluations](Angle const x) {
+    ++evaluations;
+    return Sin(x);
+  };
   auto const ʃf = (Cos(2.0 * Radian) - Cos(5.0 * Radian)) * Radian;
   EXPECT_THAT(GaussLegendre<1>(f, -2.0 * Radian, 5.0 * Radian),
               RelativeErrorFrom(ʃf, IsNear(10_⑴)));
@@ -56,9 +63,17 @@ TEST_F(QuadratureTest, Sin) {
               AlmostEquals(ʃf, 1, 2));
   EXPECT_THAT(GaussLegendre<15>(f, -2.0 * Radian, 5.0 * Radian),
               AlmostEquals(ʃf, 3, 4));
+
+  evaluations = 0;
+  EXPECT_THAT(AutomaticClenshawCurtis(f,
+                                      -2.0 * Radian,
+                                      5.0 * Radian,
+                                      std::numeric_limits<double>::epsilon()),
+              AlmostEquals(ʃf, 4));
+  EXPECT_THAT(evaluations, Eq(134));
 }
 
-TEST_F(QuadratureTest, Sin10) {
+TEST_F(QuadratureTest, Sin2) {
   auto const f = [](Angle const x) { return Sin(2 * x); };
   auto const ʃf = (Cos(4 * Radian) - Cos(10 * Radian)) / 2 * Radian;
   EXPECT_THAT(GaussLegendre<1>(f, -2.0 * Radian, 5.0 * Radian),
@@ -93,6 +108,21 @@ TEST_F(QuadratureTest, Sin10) {
               AlmostEquals(ʃf, 36, 50));
   EXPECT_THAT(GaussLegendre<16>(f, -2.0 * Radian, 5.0 * Radian),
               AlmostEquals(ʃf, 152, 159));
+}
+
+TEST_F(QuadratureTest, Sin10) {
+  int evaluations = 0;
+  auto const f = [&evaluations](Angle const x) {
+    ++evaluations;
+    return Sin(10 * x);
+  };
+  auto const ʃf = (Cos(20 * Radian) - Cos(50 * Radian)) / 10 * Radian;
+  EXPECT_THAT(AutomaticClenshawCurtis(f,
+                                      -2.0 * Radian,
+                                      5.0 * Radian,
+                                      std::numeric_limits<double>::epsilon()),
+              AlmostEquals(ʃf, 196));
+  EXPECT_THAT(evaluations, Eq(263));
 }
 
 }  // namespace quadrature
