@@ -66,12 +66,7 @@ AutomaticClenshawCurtisImplementation(
     Primitive<std::invoke_result_t<Function, Argument>, Argument> const
         previous_estimate) {
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
-  Result estimate;
-  typename Hilbert<std::invoke_result_t<Function, Argument>>::NormType max;
-  ClenshawCurtisImplementation<points>(f,
-                                       lower_bound, upper_bound,
-                                       estimate,
-                                       max);
+  Result const estimate = ClenshawCurtis<points>(f, lower_bound, upper_bound);
 
   // This is the naïve estimate mentioned in [Gen72b], p. 339.
   auto const absolute_error_estimate =
@@ -94,8 +89,7 @@ AutomaticClenshawCurtisImplementation(
   return estimate;
 }
 
-template<int initial_points,
-         typename Argument, typename Function>
+template<int initial_points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
 AutomaticClenshawCurtis(
     Function const& f,

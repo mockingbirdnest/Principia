@@ -9,7 +9,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
-#include "mathematica/mathematica.hpp"
 #include "numerics/apodization.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/quadrature.hpp"
