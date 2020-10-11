@@ -348,10 +348,7 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
   auto integrand = [this, &weight](Instant const& t) {
     return Hilbert<Value>::InnerProduct((*this)(t), (*this)(t)) * weight(t);
   };
-  return Sqrt(quadrature::AutomaticClenshawCurtis(
-                  PointwiseInnerProduct(*this, *this) * weight,
-                  integrand,
-                  t_min, t_max) /
+  return Sqrt(quadrature::AutomaticClenshawCurtis(integrand, t_min, t_max) /
               (t_max - t_min));
 }
 
@@ -652,10 +649,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   auto integrand = [&left, &right, &weight](Instant const& t) {
     return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
   };
-  return quadrature::AutomaticClenshawCurtis(
-             PointwiseInnerProduct(left, right) * weight,
-             integrand,
-             t_min, t_max) /
+  return quadrature::AutomaticClenshawCurtis(integrand, t_min, t_max) /
          (t_max - t_min);
 }
 
