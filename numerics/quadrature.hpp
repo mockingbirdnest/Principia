@@ -20,8 +20,10 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
     Argument const& upper_bound);
 
 // Computes a Clenshaw-Curtis quadrature on 2ᵖ + 1 points for successive p until
-// the tolerance is satisfied.
-//TODO(phl): Comment.
+// the tolerance is satisfied.  The client controls the accuracy of the result
+// using |max_relative_error| (returns when the relative error on the result is
+// estimated to be less that the specified value) and |max_points| (returns when
+// the number of points would exceed the specified value).
 template<int initial_points = 2, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
 AutomaticClenshawCurtis(

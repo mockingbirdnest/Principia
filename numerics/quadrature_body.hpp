@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "geometry/hilbert.hpp"
-#include "mathematica/mathematica.hpp"
 #include "numerics/fast_fourier_transform.hpp"
 #include "numerics/gauss_legendre_weights.mathematica.h"
 #include "numerics/legendre_roots.mathematica.h"
@@ -18,9 +17,6 @@ namespace principia {
 namespace numerics {
 namespace quadrature {
 namespace internal_quadrature {
-
-//inline mathematica::Logger logger(TEMP_DIR / "quadrature.wl",
-//                                  /*make_unique=*/false);
 
 using base::FloorLog2;
 using geometry::Hilbert;
@@ -85,11 +81,6 @@ AutomaticClenshawCurtisImplementation(
   auto const absolute_error_estimate =
       Hilbert<Result>::Norm(previous_estimate - estimate);
 
-  //TODO(phl):Comment
-  // We look for an estimated relative error smaller than
-  // |relative_tolerance * points|: since the integral is computed from |points|
-  // evaluations of |f|, it will necessarily carry a relative error proportional
-  // to |points|, so it makes no sense to look for convergence beyond that.
   if ((!max_relative_error.has_value() ||
        absolute_error_estimate > max_relative_error.value() * estimate) &&
       (!max_points.has_value() || points <= max_points.value())) {
@@ -143,9 +134,6 @@ void ClenshawCurtisImplementation(
   for (int s = N + 1; s <= 2 * N - 1; ++s) {
     f_cos_N⁻¹π[s] = f_cos_N⁻¹π[2 * N - s];  // [Gen72c] (5).
   }
-
-  //logger.Append("evaluations", std::tuple(points, f_cos_N⁻¹π),
-  //              mathematica::ExpressIn(Metre, Second, Radian));
 
   auto const fft = std::make_unique<FastFourierTransform<Value, Angle, 2 * N>>(
       f_cos_N⁻¹π, N⁻¹π);

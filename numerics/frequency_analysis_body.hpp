@@ -14,7 +14,6 @@
 #include "numerics/root_finders.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -28,9 +27,6 @@ using quantities::Inverse;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 
 template<typename Function,
          int wdegree_,
