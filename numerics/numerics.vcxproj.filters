@@ -178,7 +178,22 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="чебышёв_series_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fixed_arrays_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
     <ClCompile Include="root_finders_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hermite3_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="double_precision_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fit_hermite_spline_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="polynomial_test.cpp">
@@ -187,11 +202,32 @@
     <ClCompile Include="polynomial_evaluators_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="newhall_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
     <ClCompile Include="cbrt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cbrt_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
     <ClCompile Include="fast_sin_cos_2π.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fast_sin_cos_2π_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="legendre_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="combinatorics_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="finite_difference_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="elliptic_integrals.cpp">
       <Filter>Source Files</Filter>
@@ -199,7 +235,19 @@
     <ClCompile Include="elliptic_functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="elliptic_functions_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="elliptic_integrals_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pid_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
     <ClCompile Include="poisson_series_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="apodization_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="fast_fourier_transform_test.cpp">
@@ -208,10 +256,16 @@
     <ClCompile Include="frequency_analysis_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="unbounded_arrays_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
     <ClCompile Include="poisson_series_basis_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="quadrature_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scale_b_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -70,18 +70,36 @@
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="apodization_test.cpp" />
     <ClCompile Include="cbrt.cpp" />
+    <ClCompile Include="cbrt_test.cpp" />
+    <ClCompile Include="combinatorics_test.cpp" />
+    <ClCompile Include="double_precision_test.cpp" />
     <ClCompile Include="elliptic_integrals.cpp" />
+    <ClCompile Include="elliptic_integrals_test.cpp" />
     <ClCompile Include="elliptic_functions.cpp" />
+    <ClCompile Include="elliptic_functions_test.cpp" />
     <ClCompile Include="fast_fourier_transform_test.cpp" />
     <ClCompile Include="fast_sin_cos_2π.cpp" />
+    <ClCompile Include="fast_sin_cos_2π_test.cpp" />
+    <ClCompile Include="finite_difference_test.cpp" />
+    <ClCompile Include="fit_hermite_spline_test.cpp" />
+    <ClCompile Include="fixed_arrays_test.cpp" />
     <ClCompile Include="frequency_analysis_test.cpp" />
+    <ClCompile Include="hermite3_test.cpp" />
+    <ClCompile Include="legendre_test.cpp" />
+    <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc" />
+    <ClCompile Include="newhall_test.cpp" />
+    <ClCompile Include="pid_test.cpp" />
     <ClCompile Include="poisson_series_basis_test.cpp" />
     <ClCompile Include="poisson_series_test.cpp" />
     <ClCompile Include="polynomial_evaluators_test.cpp" />
     <ClCompile Include="polynomial_test.cpp" />
     <ClCompile Include="quadrature_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />
+    <ClCompile Include="scale_b_test.cpp" />
+    <ClCompile Include="unbounded_arrays_test.cpp" />
+    <ClCompile Include="чебышёв_series_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="bivariate_elliptic_integrals.proto.txt" />
