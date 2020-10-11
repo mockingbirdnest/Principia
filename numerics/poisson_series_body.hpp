@@ -31,6 +31,9 @@ using quantities::Variation;
 using quantities::si::Radian;
 namespace si = quantities::si;
 
+constexpr int clenshaw_curtis_point_per_period = 16;
+constexpr double clenshaw_curtis_relative_error = 0x1p-32;
+
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 typename PoissonSeries<Primitive<Value, Time>, degree_ + 1, Evaluator>::
@@ -345,10 +348,25 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) const {
+  AngularFrequency const max_ω =
+      (periodic_.empty() ? AngularFrequency{}
+                         : 2 * periodic_.back().first) +
+      (weight.periodic_.empty() ? AngularFrequency{}
+                                : weight.periodic_.back().first);
+  std::optional<int> max_points =
+      max_ω == AngularFrequency{}
+          ? std::optional<int>{}
+          : static_cast<int>(clenshaw_curtis_point_per_period *
+                             (t_max - t_min) * max_ω / (2 * π * Radian));
+
   auto integrand = [this, &weight](Instant const& t) {
     return Hilbert<Value>::InnerProduct((*this)(t), (*this)(t)) * weight(t);
   };
-  return Sqrt(quadrature::AutomaticClenshawCurtis(integrand, t_min, t_max) /
+  return Sqrt(quadrature::AutomaticClenshawCurtis(
+                  integrand,
+                  t_min, t_max,
+                  /*max_relative_error=*/clenshaw_curtis_relative_error,
+                  /*max_points=*/max_points) /
               (t_max - t_min));
 }
 
@@ -646,10 +664,27 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) {
+  AngularFrequency const max_ω =
+      (left.periodic_.empty() ? AngularFrequency{}
+                              : left.periodic_.back().first) +
+      (right.periodic_.empty() ? AngularFrequency{}
+                               : right.periodic_.back().first) +
+      (weight.periodic_.empty() ? AngularFrequency{}
+                                : weight.periodic_.back().first);
+  std::optional<int> max_points =
+      max_ω == AngularFrequency{}
+          ? std::optional<int>{}
+          : static_cast<int>(clenshaw_curtis_point_per_period *
+                             (t_max - t_min) * max_ω / (2 * π * Radian));
+
   auto integrand = [&left, &right, &weight](Instant const& t) {
     return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
   };
-  return quadrature::AutomaticClenshawCurtis(integrand, t_min, t_max) /
+  return quadrature::AutomaticClenshawCurtis(
+             integrand,
+             t_min, t_max,
+             /*max_relative_error=*/clenshaw_curtis_relative_error,
+             /*max_points=*/max_points) /
          (t_max - t_min);
 }
 

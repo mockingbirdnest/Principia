@@ -69,7 +69,8 @@ AutomaticClenshawCurtisImplementation(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    double const relative_tolerance,
+    std::optional<double> const max_relative_error,
+    std::optional<int> const max_points,
     Primitive<std::invoke_result_t<Function, Argument>, Argument> const
         previous_estimate) {
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
@@ -84,26 +85,23 @@ AutomaticClenshawCurtisImplementation(
   auto const absolute_error_estimate =
       Hilbert<Result>::Norm(previous_estimate - estimate);
 
-  //logger.Append("estimates",
-  //              std::tuple(points, previous_estimate, estimate),
-  //              mathematica::ExpressIn(Metre, Second, Radian));
-  LOG_IF(ERROR,points>10000)<<points<<" "<<estimate<<" "<<previous_estimate<<" "
-    <<absolute_error_estimate<<" "<<max<<" "<<
-    relative_tolerance * max * (upper_bound - lower_bound);
-
   //TODO(phl):Comment
   // We look for an estimated relative error smaller than
   // |relative_tolerance * points|: since the integral is computed from |points|
   // evaluations of |f|, it will necessarily carry a relative error proportional
   // to |points|, so it makes no sense to look for convergence beyond that.
-  if (absolute_error_estimate >
-      relative_tolerance * points * max * (upper_bound - lower_bound)) {
+  if ((!max_relative_error.has_value() ||
+       absolute_error_estimate > max_relative_error.value() * estimate) &&
+      (!max_points.has_value() || points <= max_points.value())) {
     if constexpr (points > 1 << 24) {
       LOG(FATAL) << "Too many refinements while integrating from "
                  << lower_bound << " to " << upper_bound;
     } else {
       return AutomaticClenshawCurtisImplementation<points + points - 1>(
-          f, lower_bound, upper_bound, relative_tolerance, estimate);
+          f,
+          lower_bound, upper_bound,
+          max_relative_error, max_points,
+          estimate);
     }
   }
   return estimate;
@@ -172,14 +170,15 @@ AutomaticClenshawCurtis(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    double const relative_tolerance) {
+    std::optional<double> const max_relative_error,
+    std::optional<int> const max_points) {
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
   // TODO(egg): factor the evaluations of f.
   Result const estimate =
       ClenshawCurtis<initial_points>(f, lower_bound, upper_bound);
   return AutomaticClenshawCurtisImplementation<
       initial_points + initial_points - 1>(
-      f, lower_bound, upper_bound, relative_tolerance, estimate);
+      f, lower_bound, upper_bound, max_relative_error, max_points, estimate);
 }
 
 template<int points, typename Argument, typename Function>

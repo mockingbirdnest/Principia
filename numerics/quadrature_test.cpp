@@ -65,10 +65,12 @@ TEST_F(QuadratureTest, Sin) {
               AlmostEquals(ʃf, 3, 4));
 
   evaluations = 0;
-  EXPECT_THAT(AutomaticClenshawCurtis(f,
-                                      -2.0 * Radian,
-                                      5.0 * Radian,
-                                      std::numeric_limits<double>::epsilon()),
+  EXPECT_THAT(AutomaticClenshawCurtis(
+                  f,
+                  -2.0 * Radian,
+                  5.0 * Radian,
+                  /*max_relative_error=*/std::numeric_limits<double>::epsilon(),
+                  /*max_points=*/std::nullopt),
               AlmostEquals(ʃf, 3, 4));
   EXPECT_THAT(evaluations, Eq(134));
 }
@@ -117,10 +119,12 @@ TEST_F(QuadratureTest, Sin10) {
     return Sin(10 * x);
   };
   auto const ʃf = (Cos(20 * Radian) - Cos(50 * Radian)) / 10 * Radian;
-  EXPECT_THAT(AutomaticClenshawCurtis(f,
-                                      -2.0 * Radian,
-                                      5.0 * Radian,
-                                      std::numeric_limits<double>::epsilon()),
+  EXPECT_THAT(AutomaticClenshawCurtis(
+                  f,
+                  -2.0 * Radian,
+                  5.0 * Radian,
+                  /*max_relative_error=*/std::numeric_limits<double>::epsilon(),
+                  /*max_points=*/std::nullopt),
               AlmostEquals(ʃf, 144, 277));
   EXPECT_THAT(evaluations, Eq(263));
 }

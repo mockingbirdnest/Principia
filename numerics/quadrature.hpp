@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <optional>
 #include <type_traits>
 
 #include "quantities/named_quantities.hpp"
@@ -20,14 +21,15 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
 
 // Computes a Clenshaw-Curtis quadrature on 2ᵖ + 1 points for successive p until
 // the tolerance is satisfied.
-// TODO(egg): The semantics of the |relative_tolerance| are unclear.
+//TODO(phl): Comment.
 template<int initial_points = 2, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
 AutomaticClenshawCurtis(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    double relative_tolerance = 0x1p-64);
+    std::optional<double> max_relative_error,
+    std::optional<int> max_points);
 
 // |points| must be of the form 2ᵖ + 1 for some p ∈ ℕ.  Returns the
 // Clenshaw-Curtis quadrature of f with the given number of points.
