@@ -6,7 +6,6 @@
 #include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "mathematica/mathematica.hpp"
 #include "numerics/cbrt.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
