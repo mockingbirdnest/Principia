@@ -9,6 +9,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
+#include "mathematica/mathematica.hpp"
 #include "numerics/apodization.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/quadrature.hpp"
@@ -317,6 +318,8 @@ TEST_F(PoissonSeriesTest, InnerProduct) {
 }
 
 TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
+  mathematica::Logger logger(TEMP_DIR / "poisson_series.wl",
+                             /*make_unique=*/false);
   using Degree4 = PoissonSeries<Length, 4, HornerEvaluator>;
   using Degree5 = PoissonSeries<Length, 5, HornerEvaluator>;
   Instant const t_min = t0_;
@@ -356,6 +359,10 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
                           -5.18229522289936838e+05 * Metre / Pow<4>(Second),
                           0 * Metre / Pow<5>(Second)},
                          t0_)}}});
+  logger.Set("f", f, mathematica::ExpressIn(Metre, Second, Radian));
+  logger.Set("q", q, mathematica::ExpressIn(Metre, Second, Radian));
+  logger.Set("tMin", t_min, mathematica::ExpressIn(Metre, Second, Radian));
+  logger.Set("tMax", t_max, mathematica::ExpressIn(Metre, Second, Radian));
   auto const product = InnerProduct(
       f, q, apodization::Hann<HornerEvaluator>(t_min, t_max), t_min, t_max);
   LOG(ERROR) << product;
