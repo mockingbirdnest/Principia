@@ -31,7 +31,9 @@ using quantities::Variation;
 using quantities::si::Radian;
 namespace si = quantities::si;
 
-constexpr int clenshaw_curtis_point_per_period = 16;
+// These parameters have been tuned for approximation of the Moon over 3 months
+// with 10 periods.
+constexpr int clenshaw_curtis_point_per_period = 4;
 constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 
 template<typename Value, int degree_,
