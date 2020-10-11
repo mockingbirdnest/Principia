@@ -316,7 +316,7 @@ TEST_F(PoissonSeriesTest, InnerProduct) {
               AlmostEquals(-381.25522770148542400, 4, 7));
 }
 
-TEST_F(PoissonSeriesTest, BadInnerProduct) {
+TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
   using Degree4 = PoissonSeries<Length, 4, HornerEvaluator>;
   using Degree5 = PoissonSeries<Length, 5, HornerEvaluator>;
   Instant const t_min = t0_;
