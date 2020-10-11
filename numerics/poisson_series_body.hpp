@@ -33,6 +33,7 @@ namespace si = quantities::si;
 
 // These parameters have been tuned for approximation of the Moon over 3 months
 // with 10 periods.
+constexpr int clenshaw_curtis_min_points_overall = 33;
 constexpr int clenshaw_curtis_point_per_period = 4;
 constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 
@@ -358,8 +359,10 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
   std::optional<int> max_points =
       max_ω == AngularFrequency{}
           ? std::optional<int>{}
-          : static_cast<int>(clenshaw_curtis_point_per_period *
-                             (t_max - t_min) * max_ω / (2 * π * Radian));
+          : std::max(
+                clenshaw_curtis_min_points_overall,
+                static_cast<int>(clenshaw_curtis_point_per_period *
+                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
 
   auto integrand = [this, &weight](Instant const& t) {
     return Hilbert<Value>::InnerProduct((*this)(t), (*this)(t)) * weight(t);
@@ -676,8 +679,10 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   std::optional<int> max_points =
       max_ω == AngularFrequency{}
           ? std::optional<int>{}
-          : static_cast<int>(clenshaw_curtis_point_per_period *
-                             (t_max - t_min) * max_ω / (2 * π * Radian));
+          : std::max(
+                clenshaw_curtis_min_points_overall,
+                static_cast<int>(clenshaw_curtis_point_per_period *
+                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
 
   auto integrand = [&left, &right, &weight](Instant const& t) {
     return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);

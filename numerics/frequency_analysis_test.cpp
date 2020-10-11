@@ -55,6 +55,7 @@ using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_⑴;
 using ::testing::AllOf;
+using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::Lt;
 namespace si = quantities::si;
@@ -370,8 +371,8 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   Instant const t_min = piecewise_series.t_min();
   Instant const t_max = piecewise_series.t_max();
 
-  // Projection on a 4th degree basis.  The approximation is only as good as the
-  // Gauss-Legendre integration.
+  // Projection on a 4th degree basis.  The approximation is reasonably
+  // accurate.
   auto const projection4 =
       Projection<4>(piecewise_series,
                     ω,
@@ -381,12 +382,10 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series(t0_ + i * (t_max - t_min) / 100),
-                          AllOf(Gt(2.1e-10), Lt(9.0e-4))));
+                          AllOf(Gt(1.4e-9), Lt(9.9e-5))));
   }
 }
 
-// TODO(phl): This test produces NaNs on casanova.  Revisit once we have better
-// integration.
 TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> frequency_distribution(2000.0, 3000.0);
@@ -491,8 +490,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
                           ? AllOf(Gt(3.3e-2 * Metre), Lt(3.6 * Metre))
                           : ω_index == 3
                                 ? AllOf(Gt(7.5e-3 * Metre), Lt(5.4 * Metre))
-                                : AllOf(Gt(3.7e-15 * Metre),
-                                        Lt(4.4e-11 * Metre)))
+                                : AllOf(Gt(1.0e-16 * Metre),
+                                        Lt(3.0e-14 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -513,7 +512,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Gt(1.9e-16), Lt(3.5e-12))));
+                          AllOf(Ge(0), Lt(5.9e-15))));
   }
 }
 
