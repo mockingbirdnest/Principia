@@ -19,8 +19,8 @@ namespace numerics {
 namespace quadrature {
 namespace internal_quadrature {
 
-inline mathematica::Logger logger(TEMP_DIR / "quadrature.wl",
-                                  /*make_unique=*/false);
+//inline mathematica::Logger logger(TEMP_DIR / "quadrature.wl",
+//                                  /*make_unique=*/false);
 
 using base::FloorLog2;
 using geometry::Hilbert;
@@ -84,10 +84,10 @@ AutomaticClenshawCurtisImplementation(
   auto const absolute_error_estimate =
       Hilbert<Result>::Norm(previous_estimate - estimate);
 
-  logger.Append("estimates",
-                std::tuple(points, previous_estimate, estimate),
-                mathematica::ExpressIn(Metre, Second, Radian));
-  LOG(ERROR)<<points<<" "<<estimate<<" "<<previous_estimate<<" "
+  //logger.Append("estimates",
+  //              std::tuple(points, previous_estimate, estimate),
+  //              mathematica::ExpressIn(Metre, Second, Radian));
+  LOG_IF(ERROR,points>10000)<<points<<" "<<estimate<<" "<<previous_estimate<<" "
     <<absolute_error_estimate<<" "<<max<<" "<<
     relative_tolerance * max * (upper_bound - lower_bound);
 
@@ -97,7 +97,7 @@ AutomaticClenshawCurtisImplementation(
   // evaluations of |f|, it will necessarily carry a relative error proportional
   // to |points|, so it makes no sense to look for convergence beyond that.
   if (absolute_error_estimate >
-      relative_tolerance * max * (upper_bound - lower_bound)) {
+      relative_tolerance * points * max * (upper_bound - lower_bound)) {
     if constexpr (points > 1 << 24) {
       LOG(FATAL) << "Too many refinements while integrating from "
                  << lower_bound << " to " << upper_bound;
@@ -146,8 +146,8 @@ void ClenshawCurtisImplementation(
     f_cos_N⁻¹π[s] = f_cos_N⁻¹π[2 * N - s];  // [Gen72c] (5).
   }
 
-  logger.Append("evaluations", std::tuple(points, f_cos_N⁻¹π),
-                mathematica::ExpressIn(Metre, Second, Radian));
+  //logger.Append("evaluations", std::tuple(points, f_cos_N⁻¹π),
+  //              mathematica::ExpressIn(Metre, Second, Radian));
 
   auto const fft = std::make_unique<FastFourierTransform<Value, Angle, 2 * N>>(
       f_cos_N⁻¹π, N⁻¹π);

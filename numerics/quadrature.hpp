@@ -27,7 +27,7 @@ AutomaticClenshawCurtis(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    double relative_tolerance = 0x1p-53);
+    double relative_tolerance = 0x1p-64);
 
 // |points| must be of the form 2ᵖ + 1 for some p ∈ ℕ.  Returns the
 // Clenshaw-Curtis quadrature of f with the given number of points.
