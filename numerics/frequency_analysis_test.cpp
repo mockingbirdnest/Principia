@@ -234,7 +234,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection4(t0_ + i * Radian / ω),
-                AlmostEquals(series(t0_ + i * Radian / ω), 0, 512));
+                AlmostEquals(series(t0_ + i * Radian / ω), 0, 768));
   }
 
   // Projection on a 5th degree basis is also accurate.
@@ -245,7 +245,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
                     t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection5(t0_ + i * Radian / ω),
-                AlmostEquals(series(t0_ + i * Radian / ω), 0, 512));
+                AlmostEquals(series(t0_ + i * Radian / ω), 0, 768));
   }
 
   // Projection on a 3rd degree basis introduces significant errors.

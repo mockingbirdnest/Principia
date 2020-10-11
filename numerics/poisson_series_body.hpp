@@ -357,7 +357,7 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
       (weight.periodic_.empty() ? AngularFrequency{}
                                 : weight.periodic_.back().first);
   std::optional<int> max_points =
-      max_ω == AngularFrequency{}
+      max_ω == AngularFrequency()
           ? std::optional<int>{}
           : std::max(
                 clenshaw_curtis_min_points_overall,
@@ -677,7 +677,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
       (weight.periodic_.empty() ? AngularFrequency{}
                                 : weight.periodic_.back().first);
   std::optional<int> max_points =
-      max_ω == AngularFrequency{}
+      max_ω == AngularFrequency()
           ? std::optional<int>{}
           : std::max(
                 clenshaw_curtis_min_points_overall,
