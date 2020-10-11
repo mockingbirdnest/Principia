@@ -318,8 +318,6 @@ TEST_F(PoissonSeriesTest, InnerProduct) {
 }
 
 TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
-  mathematica::Logger logger(TEMP_DIR / "poisson_series.wl",
-                             /*make_unique=*/false);
   using Degree4 = PoissonSeries<Length, 4, HornerEvaluator>;
   using Degree5 = PoissonSeries<Length, 5, HornerEvaluator>;
   Instant const t_min = t0_;
@@ -359,16 +357,15 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
                           -5.18229522289936838e+05 * Metre / Pow<4>(Second),
                           0 * Metre / Pow<5>(Second)},
                          t0_)}}});
-  logger.Set("f", f, mathematica::ExpressIn(Metre, Second, Radian));
-  logger.Set("q", q, mathematica::ExpressIn(Metre, Second, Radian));
-  logger.Set("tMin", t_min, mathematica::ExpressIn(Metre, Second, Radian));
-  logger.Set("tMax", t_max, mathematica::ExpressIn(Metre, Second, Radian));
+
+  // The integral is very small compared to the functions, so we end up in the
+  // numerical noise, and adding more points would not help much.
   auto const product = InnerProduct(
       f, q, apodization::Hann<HornerEvaluator>(t_min, t_max), t_min, t_max);
-  EXPECT_THAT(
-      product,
-      AlmostEquals(-4.848079980325297e-13 * Metre * Metre, 0));
-  LOG(ERROR) << product;
+  // Exact result obtained using Mathematica.
+  EXPECT_THAT(product,
+              RelativeErrorFrom(-4.848079980325297e-13 * Metre * Metre,
+                                IsNear(0.05_⑴)));
 }
 
 TEST_F(PoissonSeriesTest, Output) {
