@@ -11,7 +11,6 @@
 #include "numerics/gauss_legendre_weights.mathematica.h"
 #include "numerics/legendre_roots.mathematica.h"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -23,10 +22,7 @@ using geometry::Hilbert;
 using quantities::Angle;
 using quantities::Cos;
 using quantities::Difference;
-using quantities::Infinity;
-using quantities::si::Metre;
 using quantities::si::Radian;
-using quantities::si::Second;
 
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> Gauss(
@@ -98,59 +94,6 @@ AutomaticClenshawCurtisImplementation(
   return estimate;
 }
 
-template<int points, typename Argument, typename Function>
-void ClenshawCurtisImplementation(
-    Function const& f,
-    Argument const& lower_bound,
-    Argument const& upper_bound,
-    Primitive<std::invoke_result_t<Function, Argument>, Argument>& integral,
-    typename Hilbert<std::invoke_result_t<Function, Argument>>::NormType& max) {
-  // We follow the notation from [Gen72b] and [Gen72c].
-  using Value = std::invoke_result_t<Function, Argument>;
-
-  constexpr int N = points - 1;
-  constexpr int log2_N = FloorLog2(N);
-  static_assert(N == 1 << log2_N);
-
-  max = -Infinity<typename Hilbert<Value>::NormType>;
-  Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
-
-  constexpr Angle N⁻¹π = π * Radian / N;
-
-  // We use a discrete Fourier transform rather than a cosine transform, see
-  // [Gen72c], equation (3).
-  // TODO(egg): Consider a discrete cosine transform, ideally incrementally
-  // computed to improve the performance of the automatic quadrature.
-
-  // If we identify [lower_bound, upper_bound] with [-1, 1],
-  // f_cos_N⁻¹π[s] is f(cos πs/N).
-  std::vector<Value> f_cos_N⁻¹π;
-  f_cos_N⁻¹π.resize(2 * N);
-  for (int s = 0; s <= N; ++s) {
-    // The N + 1 evaluations.
-    f_cos_N⁻¹π[s] = f(lower_bound + half_width * (1 + Cos(N⁻¹π * s)));
-    max = std::max(max, Hilbert<Value>::Norm(f_cos_N⁻¹π[s]));
-  }
-  for (int s = N + 1; s <= 2 * N - 1; ++s) {
-    f_cos_N⁻¹π[s] = f_cos_N⁻¹π[2 * N - s];  // [Gen72c] (5).
-  }
-
-  auto const fft = std::make_unique<FastFourierTransform<Value, Angle, 2 * N>>(
-      f_cos_N⁻¹π, N⁻¹π);
-  auto const& a = *fft;
-
-  // [Gen72b] equation (7), factoring out the division by N.
-  Value Σʺ{};
-  for (std::int64_t n = 0; n <= N; n += 2) {
-    // The notation g is from [OLBC10], 3.5.17.
-    int const gₙ = n == 0 || n == N ? 1 : 2;
-    Σʺ += a[n].real_part() * gₙ / (1 - n * n);
-  }
-  Σʺ /= N;
-
-  integral = Σʺ * half_width;
-}
-
 template<int initial_points,
          typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
@@ -174,13 +117,48 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound) {
-  Primitive<std::invoke_result_t<Function, Argument>, Argument> integral;
-  typename Hilbert<std::invoke_result_t<Function, Argument>>::NormType max;
-  ClenshawCurtisImplementation<points>(f,
-                                       lower_bound, upper_bound,
-                                       integral,
-                                       max);
-  return integral;
+  // We follow the notation from [Gen72b] and [Gen72c].
+  using Value = std::invoke_result_t<Function, Argument>;
+
+  constexpr int N = points - 1;
+  constexpr int log2_N = FloorLog2(N);
+  static_assert(N == 1 << log2_N);
+
+  Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
+
+  constexpr Angle N⁻¹π = π * Radian / N;
+
+  // We use a discrete Fourier transform rather than a cosine transform, see
+  // [Gen72c], equation (3).
+  // TODO(egg): Consider a discrete cosine transform, ideally incrementally
+  // computed to improve the performance of the automatic quadrature.
+
+  // If we identify [lower_bound, upper_bound] with [-1, 1],
+  // f_cos_N⁻¹π[s] is f(cos πs/N).
+  std::vector<Value> f_cos_N⁻¹π;
+  f_cos_N⁻¹π.resize(2 * N);
+  for (int s = 0; s <= N; ++s) {
+    // The N + 1 evaluations.
+    f_cos_N⁻¹π[s] = f(lower_bound + half_width * (1 + Cos(N⁻¹π * s)));
+  }
+  for (int s = N + 1; s <= 2 * N - 1; ++s) {
+    f_cos_N⁻¹π[s] = f_cos_N⁻¹π[2 * N - s];  // [Gen72c] (5).
+  }
+
+  auto const fft = std::make_unique<FastFourierTransform<Value, Angle, 2 * N>>(
+      f_cos_N⁻¹π, N⁻¹π);
+  auto const& a = *fft;
+
+  // [Gen72b] equation (7), factoring out the division by N.
+  Value Σʺ{};
+  for (std::int64_t n = 0; n <= N; n += 2) {
+    // The notation g is from [OLBC10], 3.5.17.
+    int const gₙ = n == 0 || n == N ? 1 : 2;
+    Σʺ += a[n].real_part() * gₙ / (1 - n * n);
+  }
+  Σʺ /= N;
+
+  return Σʺ * half_width;
 }
 
 template<typename Argument, typename Function>
