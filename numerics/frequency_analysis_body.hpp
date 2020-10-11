@@ -21,9 +21,6 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
-inline mathematica::Logger logger(TEMP_DIR / "frequency_analysis.wl",
-                                  /*make_unique=*/false);
-
 using base::uninitialized;
 using geometry::Hilbert;
 using geometry::Vector;
@@ -128,9 +125,6 @@ IncrementalProjection(Function const& function,
   auto const a₀ = basis[0];
   auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
   q.push_back(a₀ / r₀₀);
-  logger.Append("q", q.back(), mathematica::ExpressIn(Metre, Second, Radian));
-  logger.Append(
-      "basis", basis[0], mathematica::ExpressIn(Metre, Second, Radian));
 
   auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
 
@@ -149,13 +143,7 @@ IncrementalProjection(Function const& function,
       auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
       q.push_back(aₘ⁽ᵏ⁾ / rₘₘ);
       DCHECK_EQ(m + 1, q.size());
-      logger.Append(
-          "q", q[m], mathematica::ExpressIn(Metre, Second, Radian));
-      logger.Append(
-          "basis", basis[m], mathematica::ExpressIn(Metre, Second, Radian));
 
-      LOG(ERROR)<<q[m];
-      LOG(ERROR)<<t_min<<" "<<t_max;
       Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
 
       f -= Aₘ * q[m];
