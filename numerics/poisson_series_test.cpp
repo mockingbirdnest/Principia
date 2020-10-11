@@ -365,6 +365,9 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
   logger.Set("tMax", t_max, mathematica::ExpressIn(Metre, Second, Radian));
   auto const product = InnerProduct(
       f, q, apodization::Hann<HornerEvaluator>(t_min, t_max), t_min, t_max);
+  EXPECT_THAT(
+      product,
+      AlmostEquals(-4.848079980325297e-13 * Metre * Metre, 0));
   LOG(ERROR) << product;
 }
 
