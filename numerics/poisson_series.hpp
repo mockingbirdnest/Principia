@@ -189,6 +189,15 @@ class PoissonSeries {
   template<typename V, int d, template<typename, typename, int> class E>
   friend std::ostream& operator<<(std::ostream& out,
                                   PoissonSeries<V, d, E> const& series);
+  template<typename L, typename R,
+         int l, int r, int w,
+         template<typename, typename, int> class E>
+  friend typename Hilbert<L, R>::InnerProductType InnerProduct(
+      PoissonSeries<L, l, E> const& left,
+      PoissonSeries<R, r, E> const& right,
+      PoissonSeries<double, w, E> const& weight,
+      Instant const& t_min,
+      Instant const& t_max);
   template<typename V, int d,
            template<typename, typename, int> class E,
            typename O>

@@ -36,6 +36,7 @@ using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
+using quantities::Length;
 using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
@@ -312,7 +313,58 @@ TEST_F(PoissonSeriesTest, InnerProduct) {
                            apodization::Hann<HornerEvaluator>(t_min, t_max),
                            t_min,
                            t_max),
-              AlmostEquals(-381.25522770148542400, 7));
+              AlmostEquals(-381.25522770148542400, 4, 7));
+}
+
+TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
+  using Degree4 = PoissonSeries<Length, 4, HornerEvaluator>;
+  using Degree5 = PoissonSeries<Length, 5, HornerEvaluator>;
+  Instant const t_min = t0_;
+  Instant const t_max = t0_ + 4.77553415434249021e-02 * Second;
+  AngularFrequency const ω = 2.09400659210170170e+03 * Radian / Second;
+  Degree4 const f(Degree4::Polynomial({}, t0_),
+                  {{ω,
+                    {/*sin=*/Degree4::Polynomial(
+                         {+5.10311065909077932e+00 * Metre,
+                          +2.78062787709394854e+00 * Metre / Second,
+                          +5.04290401496053242e+00 * Metre / Pow<2>(Second),
+                          -7.27454632735125806e+00 * Metre / Pow<3>(Second),
+                          +8.06537932856756612e+00 * Metre / Pow<4>(Second)},
+                         t0_),
+                     /*cos=*/Degree4::Polynomial(
+                         {-8.11863376474325804e+00 * Metre,
+                          +1.49140608216528037e+00 * Metre / Second,
+                          -2.54224601087630298e+00 * Metre / Pow<2>(Second),
+                          -4.52251796525658367e+00 * Metre / Pow<3>(Second),
+                          -2.19458237171412751e+00 * Metre / Pow<4>(Second)},
+                         t0_)}}});
+  Degree5 const q(Degree5::Polynomial({}, t0_),
+                  {{ω,
+                    {/*sin=*/Degree5::Polynomial(
+                         {-4.41249783881549433e+01 * Metre,
+                          +1.50208859053174347e+04 * Metre / Second,
+                          -1.70674564621978020e+06 * Metre / Pow<2>(Second),
+                          +8.52015772027946562e+07 * Metre / Pow<3>(Second),
+                          -1.92799129073151779e+09 * Metre / Pow<4>(Second),
+                          +1.61514557548221931e+10 * Metre / Pow<5>(Second)},
+                         t0_),
+                     /*cos=*/Degree5::Polynomial(
+                         {-1.00752842659088765e-01 * Metre,
+                          +2.25402995957193006e+01 * Metre / Second,
+                          -1.66819064858902379e+03 * Metre / Pow<2>(Second),
+                          +4.98682536071893774e+04 * Metre / Pow<3>(Second),
+                          -5.18229522289936838e+05 * Metre / Pow<4>(Second),
+                          0 * Metre / Pow<5>(Second)},
+                         t0_)}}});
+
+  // The integral is very small compared to the functions, so we end up in the
+  // numerical noise, and adding more points would not help much.
+  auto const product = InnerProduct(
+      f, q, apodization::Hann<HornerEvaluator>(t_min, t_max), t_min, t_max);
+  // Exact result obtained using Mathematica.
+  EXPECT_THAT(product,
+              RelativeErrorFrom(-4.848079980325297e-13 * Metre * Metre,
+                                IsNear(0.05_⑴)));
 }
 
 TEST_F(PoissonSeriesTest, Output) {

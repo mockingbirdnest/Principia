@@ -1,9 +1,9 @@
 ﻿
 #pragma once
 
+#include <optional>
 #include <type_traits>
 
-#include "geometry/hilbert.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -11,7 +11,6 @@ namespace numerics {
 namespace quadrature {
 namespace internal_quadrature {
 
-using geometry::Hilbert;
 using quantities::Primitive;
 
 template<int points, typename Argument, typename Function>
@@ -21,15 +20,18 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
     Argument const& upper_bound);
 
 // Computes a Clenshaw-Curtis quadrature on 2ᵖ + 1 points for successive p until
-// the tolerance is satisfied.
-// TODO(egg): The semantics of the |relative_tolerance| are unclear.
+// the tolerance is satisfied.  The client controls the accuracy of the result
+// using |max_relative_error| (returns when the relative error on the result is
+// estimated to be less that the specified value) and |max_points| (returns when
+// the number of points would exceed the specified value).
 template<int initial_points = 2, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
 AutomaticClenshawCurtis(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    double relative_tolerance = 0x1p-16);
+    std::optional<double> max_relative_error,
+    std::optional<int> max_points);
 
 // |points| must be of the form 2ᵖ + 1 for some p ∈ ℕ.  Returns the
 // Clenshaw-Curtis quadrature of f with the given number of points.
