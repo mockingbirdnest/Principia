@@ -22,6 +22,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_⑴;
+using ::testing::AnyOf;
 using ::testing::Eq;
 
 class QuadratureTest : public ::testing::Test {};
@@ -125,8 +126,8 @@ TEST_F(QuadratureTest, Sin10) {
                   5.0 * Radian,
                   /*max_relative_error=*/std::numeric_limits<double>::epsilon(),
                   /*max_points=*/std::nullopt),
-              AlmostEquals(ʃf, 20, 277));
-  EXPECT_THAT(evaluations, Eq(131088));
+              AlmostEquals(ʃf, 9, 277));
+  EXPECT_THAT(evaluations, AnyOf(Eq(131088), Eq(524306)));
 }
 
 }  // namespace quadrature
