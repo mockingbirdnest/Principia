@@ -129,8 +129,9 @@ ClenshawCurtisImplementation(
   // value corresponding to s = N.
   for (int direct = 1; direct <= N; ++direct) {
     f_cos_N⁻¹π[reverse] = cached_f_cos_N⁻¹π[direct];
-    f_cos_N⁻¹π[2 * N - reverse] = cached_f_cos_N⁻¹π[direct];  // [Gen72c] (5).
-    ++direct;
+    if (reverse > 0) {
+      f_cos_N⁻¹π[2 * N - reverse] = cached_f_cos_N⁻¹π[direct];  // [Gen72c] (5).
+    }
     reverse = BitReversedIncrement(reverse, log2_N);
   }
   f_cos_N⁻¹π[N] = cached_f_cos_N⁻¹π[0];
