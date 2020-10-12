@@ -8,7 +8,6 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/hilbert.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -31,7 +30,6 @@ namespace frequency_analysis {
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
-using geometry::Hilbert;
 using geometry::Inertial;
 using geometry::Instant;
 using geometry::Vector;
