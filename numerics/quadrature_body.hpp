@@ -57,6 +57,79 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
                        GaussLegendreWeights[points]);
 }
 
+// Our automatic Cleshaw-Curtis implementation doubles the number of points
+// repeatedly until it reaches a suitable exit criterion.  Naïvely evaluating
+// the function N times for each iteration would be wasteful.  Assume that we
+// have already evaluated the function at 0/2 and 1/2 (that is, s = 0 and 1 for
+// N = 2), we would evaluate it again at 0/4 and 2/4 for N = 4, and then proceed
+// with evaluations at 1/4 and 3/4.  Overall, we would do roughly twice the
+// work.
+// Therefore, we cache the past evaluations.  However, we do not want to use a
+// map and we do not want to do insertion in a vector, say, to squeeze 1/4
+// between 0/2 and 1/2.  So we append the result of evaluations to the cache
+// vector as we perform them.  To fill the cache for N points, we recursively
+// fill it for N/2 points (which yields all the values at s/N for s even) and
+// then we append the values at s/N for s odd.  The order of the second part
+// matters.  It is done by taking the indices of the first part (covering
+// [0/N, (N/2-1)/N[) in bit-reversed order and for each index s appending the
+// value at (2 s + 1)/N.  This ensures that the entire array follows
+// bit-reversed ordering.
+// There is an extra wart: we need the value at N/N, but it does not fit nicely
+// in the bit-reversed ordering.  So we store it at position 0 in the cache, and
+// the regular cache starts at index 1.
+// Clients are expected to reserve (at least) points + 1 entries in the cache
+// vector for efficient heap allocation.
+template<int points, typename Argument, typename Function>
+void FillClenshawCurtisCache(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    std::vector<std::invoke_result_t<Function, Argument>>& cached_f_cos_N⁻¹π) {
+  // If we identify [lower_bound, upper_bound] with [-1, 1],
+  // cached_f_cos_N⁻¹π contains f(cos πs/N) in bit-reversed order of s.
+  // We use a discrete Fourier transform rather than a cosine transform, see
+  // [Gen72c], equation (3).
+
+  //TODO(phl): points is a power of 2.
+  constexpr int N = points;
+  static_assert(N >= 1);
+  constexpr int log2_N = FloorLog2(N);
+  static_assert(N == 1 << log2_N);
+
+  // The cache already has all the data we need.
+  if (cached_f_cos_N⁻¹π.size() > N) {
+    return;
+  }
+
+  Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
+  constexpr Angle N⁻¹π = π * Radian / N;
+
+  if constexpr (N == 1) {
+    DCHECK(cached_f_cos_N⁻¹π.empty());
+    // See above for the magic entry at index 0.  The entry at index 1 is a bona
+    // fide entry which will be used by the recursive calls.
+    cached_f_cos_N⁻¹π.push_back(f(lower_bound));  // s = N.
+    cached_f_cos_N⁻¹π.push_back(f(upper_bound));  // s = 0.
+  } else {
+    // Fill the first half of the cache, corresponding to s even for this value
+    // of N.
+    FillClenshawCurtisCache<N / 2>(f,
+                                   lower_bound, upper_bound,
+                                   cached_f_cos_N⁻¹π);
+    // N/2 evaluations for f(cos πs/N) with s odd.  Note the need to preserve
+    // bit-reversed ordering.
+    int reverse = 0;
+    for (int evaluations = 0; evaluations < N / 2; ++evaluations) {
+      int const s = 2 * reverse + 1;
+      cached_f_cos_N⁻¹π.push_back(
+          f(lower_bound + half_width * (1 + Cos(N⁻¹π * s))));
+      if constexpr (log2_N > 1) {
+        reverse = BitReversedIncrement(reverse, log2_N - 1);
+      }
+    }
+  }
+}
+
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
 AutomaticClenshawCurtisImplementation(
@@ -150,57 +223,6 @@ ClenshawCurtisImplementation(
   Σʺ /= N;
 
   return Σʺ * half_width;
-}
-
-template<int points, typename Argument, typename Function>
-void FillClenshawCurtisCache(
-    Function const& f,
-    Argument const& lower_bound,
-    Argument const& upper_bound,
-    std::vector<std::invoke_result_t<Function, Argument>>& cached_f_cos_N⁻¹π) {
-  //TODO(phl):Order
-  // If we identify [lower_bound, upper_bound] with [-1, 1],
-  // cached_f_cos_N⁻¹π contains f(cos πs/N).
-  // We use a discrete Fourier transform rather than a cosine transform, see
-  // [Gen72c], equation (3).
-
-  //TODO(phl): points is a power of 2.
-  constexpr int N = points;
-  static_assert(N >= 1);
-  constexpr int log2_N = FloorLog2(N);
-  static_assert(N == 1 << log2_N);
-
-  // The cache already has all the data we need.
-  if (cached_f_cos_N⁻¹π.size() > N) {
-    return;
-  }
-
-  Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
-  constexpr Angle N⁻¹π = π * Radian / N;
-
-  if constexpr (N == 1) {
-    DCHECK(cached_f_cos_N⁻¹π.empty());
-    //TODO(phl):comment this hack
-    cached_f_cos_N⁻¹π.push_back(
-        f(lower_bound + half_width * (1 + Cos(N⁻¹π * /*s=*/N))));
-    cached_f_cos_N⁻¹π.push_back(
-        f(lower_bound + half_width * (1 + Cos(N⁻¹π * /*s=*/0))));
-  } else {
-    FillClenshawCurtisCache<N / 2>(
-        f, lower_bound, upper_bound, cached_f_cos_N⁻¹π);
-    // N/2 evaluations for f(cos πs/N) with s odd: the values for s even have
-    // already been computed by the previous recursive call.
-    //TODO(phl):comment order.
-    int reverse = 0;
-    for (int evaluations = 0; evaluations < N / 2; ++evaluations) {
-      int const s = 2 * reverse + 1;
-      cached_f_cos_N⁻¹π.push_back(
-          f(lower_bound + half_width * (1 + Cos(N⁻¹π * s))));
-      if constexpr (N > 2) {
-        reverse = BitReversedIncrement(reverse, log2_N - 1);
-      }
-    }
-  }
 }
 
 template<int initial_points, typename Argument, typename Function>
