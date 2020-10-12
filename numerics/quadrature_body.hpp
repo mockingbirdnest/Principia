@@ -190,9 +190,15 @@ void FillClenshawCurtisCache(
         f, lower_bound, upper_bound, cached_f_cos_N⁻¹π);
     // N/2 evaluations for f(cos πs/N) with s odd: the values for s even have
     // already been computed by the previous recursive call.
-    for (int s = 1; s < N; s += 2) {
+    //TODO(phl):comment order.
+    int reverse = 0;
+    for (int evaluations = 0; evaluations < N / 2; ++evaluations) {
+      int const s = 2 * reverse + 1;
       cached_f_cos_N⁻¹π.push_back(
           f(lower_bound + half_width * (1 + Cos(N⁻¹π * s))));
+      if constexpr (N > 2) {
+        reverse = BitReversedIncrement(reverse, log2_N - 1);
+      }
     }
   }
 }
