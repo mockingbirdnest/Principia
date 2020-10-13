@@ -206,8 +206,7 @@ ClenshawCurtisImplementation(
        ++bit_reversed_s, s = BitReversedIncrement(s, log2_N)) {
     f_cos_N⁻¹π[s] = f_cos_N⁻¹π_bit_reversed[bit_reversed_s];
     if (s > 0) {
-      // [Gen72c] (5).
-      f_cos_N⁻¹π[2 * N - s] = f_cos_N⁻¹π_bit_reversed[bit_reversed_s];
+      f_cos_N⁻¹π[2 * N - s] = f_cos_N⁻¹π[s];  // [Gen72c] (5).
     }
   }
   f_cos_N⁻¹π[N] = f_cos_N⁻¹π_bit_reversed[0];
