@@ -77,8 +77,8 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
 // There is an extra wart: we need the value at N/N, but it does not fit nicely
 // in the bit-reversed ordering.  So we store it at position 0 in the cache, and
 // the regular cache starts at index 1.
-// Clients are expected to reserve (at least) points + 1 entries in the cache
-// vector for efficient heap allocation.
+// Clients are expected to reserve (at least) points entries in the cache vector
+// for efficient heap allocation.
 template<int points, typename Argument, typename Function>
 void FillClenshawCurtisCache(
     Function const& f,
@@ -90,16 +90,15 @@ void FillClenshawCurtisCache(
   // We use a discrete Fourier transform rather than a cosine transform, see
   // [Gen72c], equation (3).
 
-  //TODO(phl): points is a power of 2.
-  constexpr int N = points;
+  // The cache already has all the data we need.
+  if (cached_f_cos_N⁻¹π.size() >= points) {
+    return;
+  }
+
+  constexpr int N = points - 1;
   static_assert(N >= 1);
   constexpr int log2_N = FloorLog2(N);
   static_assert(N == 1 << log2_N);
-
-  // The cache already has all the data we need.
-  if (cached_f_cos_N⁻¹π.size() > N) {
-    return;
-  }
 
   Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
   constexpr Angle N⁻¹π = π * Radian / N;
@@ -113,9 +112,9 @@ void FillClenshawCurtisCache(
   } else {
     // Fill the first half of the cache, corresponding to s even for this value
     // of N.
-    FillClenshawCurtisCache<N / 2>(f,
-                                   lower_bound, upper_bound,
-                                   cached_f_cos_N⁻¹π);
+    FillClenshawCurtisCache<N / 2 + 1>(f,
+                                       lower_bound, upper_bound,
+                                       cached_f_cos_N⁻¹π);
     // N/2 evaluations for f(cos πs/N) with s odd.  Note the need to preserve
     // bit-reversed ordering.
     int reverse = 0;
@@ -159,8 +158,8 @@ AutomaticClenshawCurtisImplementation(
       LOG(FATAL) << "Too many refinements while integrating from "
                  << lower_bound << " to " << upper_bound;
     } else {
-      cached_f_cos_N⁻¹π.reserve(2 * points + 1);
-      return AutomaticClenshawCurtisImplementation<2 * points>(
+      cached_f_cos_N⁻¹π.reserve(2 * points - 1);
+      return AutomaticClenshawCurtisImplementation<2 * points - 1>(
           f,
           lower_bound, upper_bound,
           max_relative_error, max_points,
@@ -171,7 +170,6 @@ AutomaticClenshawCurtisImplementation(
   return estimate;
 }
 
-//TODO(phl):comment
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
 ClenshawCurtisImplementation(
@@ -182,7 +180,7 @@ ClenshawCurtisImplementation(
   // We follow the notation from [Gen72b] and [Gen72c].
   using Value = std::invoke_result_t<Function, Argument>;
 
-  constexpr int N = points;
+  constexpr int N = points - 1;
   constexpr int log2_N = FloorLog2(N);
 
   Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
@@ -191,7 +189,8 @@ ClenshawCurtisImplementation(
   FillClenshawCurtisCache<points>(
       f, lower_bound, upper_bound, cached_f_cos_N⁻¹π);
 
-  //TODO(phl): See if the copy can be avoided.
+  // TODO(phl): If might be possible to avoid copies since cached_f_cos_N⁻¹π is
+  // tantalizing close to the order needed for the FFT.
   std::vector<Value> f_cos_N⁻¹π;
   f_cos_N⁻¹π.resize(2 * N);
   // An index in f_cos_N⁻¹π, corresponding to the increasing order of s for this
@@ -205,7 +204,9 @@ ClenshawCurtisImplementation(
     if (reverse > 0) {
       f_cos_N⁻¹π[2 * N - reverse] = cached_f_cos_N⁻¹π[direct];  // [Gen72c] (5).
     }
-    reverse = BitReversedIncrement(reverse, log2_N);
+    if constexpr (log2_N > 0) {
+      reverse = BitReversedIncrement(reverse, log2_N);
+    }
   }
   f_cos_N⁻¹π[N] = cached_f_cos_N⁻¹π[0];
 
@@ -235,13 +236,11 @@ AutomaticClenshawCurtis(
     std::optional<int> const max_points) {
   using Result = Primitive<std::invoke_result_t<Function, Argument>, Argument>;
   using Value = std::invoke_result_t<Function, Argument>;
-  constexpr int N = initial_points;
-
   std::vector<Value> cached_f_cos_N⁻¹π;
-  cached_f_cos_N⁻¹π.reserve(2 * N + 1);
-  Result const estimate = ClenshawCurtisImplementation<N>(
+  cached_f_cos_N⁻¹π.reserve(2 * initial_points - 1);
+  Result const estimate = ClenshawCurtisImplementation<initial_points>(
       f, lower_bound, upper_bound, cached_f_cos_N⁻¹π);
-  return AutomaticClenshawCurtisImplementation<2 * N>(
+  return AutomaticClenshawCurtisImplementation<2 * initial_points - 1>(
       f,
       lower_bound, upper_bound,
       max_relative_error, max_points,
@@ -255,11 +254,9 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
     Argument const& lower_bound,
     Argument const& upper_bound) {
   using Value = std::invoke_result_t<Function, Argument>;
-  constexpr int N = points;
-
   std::vector<Value> cached_f_cos_N⁻¹π;
-  cached_f_cos_N⁻¹π.reserve(N + 1);
-  return ClenshawCurtisImplementation<N>(
+  cached_f_cos_N⁻¹π.reserve(points);
+  return ClenshawCurtisImplementation<points>(
       f, lower_bound, upper_bound, cached_f_cos_N⁻¹π);
 }
 
