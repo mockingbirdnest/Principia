@@ -1,4 +1,4 @@
-
+ï»¿
 #pragma once
 
 #include "geometry/hilbert.hpp"
@@ -29,8 +29,8 @@ auto Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>::
 }
 
 template<typename T>
-auto Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>::Norm²(T const& t)
-    -> Norm²Type {
+auto Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>::NormÂ²(T const& t)
+    -> NormÂ²Type {
   return t * t;
 }
 
@@ -64,8 +64,8 @@ template<typename T>
 auto Hilbert<T, T,
              std::void_t<decltype(InnerProduct(std::declval<T>(),
                                                std::declval<T>()))>>::
-Norm²(T const& t) -> Norm²Type {
-  return t.Norm²();
+NormÂ²(T const& t) -> NormÂ²Type {
+  return t.NormÂ²();
 }
 
 template<typename T>

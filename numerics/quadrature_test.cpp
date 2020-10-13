@@ -127,7 +127,7 @@ TEST_F(QuadratureTest, Sin10) {
                   /*max_relative_error=*/std::numeric_limits<double>::epsilon(),
                   /*max_points=*/std::nullopt),
               AlmostEquals(ʃf, 2, 20));
-  EXPECT_THAT(evaluations, Eq(65537));
+  EXPECT_THAT(evaluations, AnyOf(Eq(65537), Eq(262145)));
 }
 
 }  // namespace quadrature

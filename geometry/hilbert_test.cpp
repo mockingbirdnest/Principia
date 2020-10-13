@@ -1,4 +1,4 @@
-#include "geometry/hilbert.hpp"
+ï»¿#include "geometry/hilbert.hpp"
 
 #include <type_traits>
 
@@ -38,7 +38,7 @@ TEST(HilbertTest, ScalarTypes) {
   static_assert(std::is_same_v<Length, H2::InnerProductType>);
 #if 0
   H2::NormType h2a;
-  H2::Norm²Type h2b;
+  H2::NormÂ²Type h2b;
 #endif
 
   using H3 = Hilbert<Length, Length>;
@@ -58,7 +58,7 @@ TEST(HilbertTest, VectorTypes) {
   static_assert(std::is_same_v<Length, H2::InnerProductType>);
 #if 0
   H2::NormType h2a;
-  H2::Norm²Type h2b;
+  H2::NormÂ²Type h2b;
 #endif
 
   using H3 = Hilbert<Trivector<Length, World>, Trivector<Length, World>>;
@@ -76,7 +76,7 @@ TEST(HilbertTest, ScalarValues) {
   EXPECT_EQ(6 * Metre, H2::InnerProduct(3, 2 * Metre));
 #if 0
   auto h2a = H2::Norm(6 * Metre);
-  auto h2b = H2::Norm²(6 * Metre);
+  auto h2b = H2::NormÂ²(6 * Metre);
 #endif
 
   using H3 = Hilbert<Length, Length>;
@@ -96,7 +96,7 @@ TEST(HilbertTest, VectorValues) {
   EXPECT_EQ(-32 * Metre, H2::InnerProduct(v1, v2));
 #if 0
   auto h2a = H2::Norm(v2);
-  auto h2b = H2::Norm²(v2);
+  auto h2b = H2::NormÂ²(v2);
 #endif
 
   using H3 = Hilbert<Vector<Length, World>, Vector<Length, World>>;
@@ -109,11 +109,11 @@ TEST(HilbertTest, OneParameter) {
 
   using H1 = Hilbert<double>;
   EXPECT_EQ(2, H1::Norm(2));
-  EXPECT_EQ(4, H1::Norm²(2));
+  EXPECT_EQ(4, H1::NormÂ²(2));
 
   using H3 = Hilbert<Vector<Length, World>>;
   EXPECT_EQ(Sqrt(77) * Metre, H3::Norm(v2));
-  EXPECT_EQ(77 * Metre * Metre, H3::Norm²(v2));
+  EXPECT_EQ(77 * Metre * Metre, H3::NormÂ²(v2));
 }
 
 TEST(HilbertTest, BadParameters) {
