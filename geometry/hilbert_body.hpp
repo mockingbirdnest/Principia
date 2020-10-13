@@ -1,10 +1,11 @@
-
+﻿
 #pragma once
 
 #include "geometry/hilbert.hpp"
 
 #include "geometry/grassmann.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "hilbert.hpp"
 
 namespace principia {
 namespace geometry {
@@ -25,6 +26,12 @@ template<typename T>
 auto Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>::
     InnerProduct(T const& t1, T const& t2) -> InnerProductType {
   return t1 * t2;
+}
+
+template<typename T>
+auto Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>::Norm²(T const& t)
+    -> Norm²Type {
+  return t * t;
 }
 
 template<typename T>
@@ -51,6 +58,14 @@ auto Hilbert<T, T,
   // Is there a better way to avoid recursion than to put our fingers inside
   // grassmann?
   return internal_grassmann::InnerProduct(t1, t2);
+}
+
+template<typename T>
+auto Hilbert<T, T,
+             std::void_t<decltype(InnerProduct(std::declval<T>(),
+                                               std::declval<T>()))>>::
+Norm²(T const& t) -> Norm²Type {
+  return t.Norm²();
 }
 
 template<typename T>

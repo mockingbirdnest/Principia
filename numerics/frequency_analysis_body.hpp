@@ -86,7 +86,6 @@ IncrementalProjection(Function const& function,
                       Instant const& t_max) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
-  using Norm² = typename Hilbert<Value>::InnerProductType;
   using Normalized = typename Hilbert<Value>::NormalizedType;
   using Series = PoissonSeries<Value, degree_, Evaluator>;
 

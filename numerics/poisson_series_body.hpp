@@ -365,7 +365,7 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
                                  (t_max - t_min) * max_ω / (2 * π * Radian)));
 
   auto integrand = [this, &weight](Instant const& t) {
-    return Hilbert<Value>::InnerProduct((*this)(t), (*this)(t)) * weight(t);
+    return Hilbert<Value>::Norm²((*this)(t)) * weight(t);
   };
   return Sqrt(quadrature::AutomaticClenshawCurtis(
                   integrand,

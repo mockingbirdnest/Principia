@@ -45,10 +45,11 @@ struct Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>
   using InnerProductType = Square<T>;
   static InnerProductType InnerProduct(T const& t1, T const& t2);
 
+  using Norm²Type = InnerProductType;
+  static Norm²Type Norm²(T const& t);
+
   using NormType = T;
   static NormType Norm(T const& t);
-
-  // TODO(egg): Hilbert::Norm².
 
   using NormalizedType = double;
 };
@@ -77,10 +78,11 @@ struct Hilbert<T, T,
       decltype(InnerProduct(std::declval<T>(), std::declval<T>()));
   static InnerProductType InnerProduct(T const& t1, T const& t2);
 
+  using Norm²Type = InnerProductType;
+  static Norm²Type Norm²(T const& t);
+
   using NormType = decltype(std::declval<T>().Norm());
   static NormType Norm(T const& t);
-
-  // TODO(egg): Hilbert::Norm².
 
   using NormalizedType = Quotient<T, NormType>;
 };
