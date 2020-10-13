@@ -35,9 +35,8 @@ Complexification<Vector> Complexification<Vector>::Conjugate() const {
 template<typename Vector>
 typename Hilbert<Vector>::InnerProductType Complexification<Vector>::Norm²()
     const {
-  // TODO(egg): Hilbert::Norm².
-  return Hilbert<Vector>::InnerProduct(real_part_, real_part_) +
-         Hilbert<Vector>::InnerProduct(imaginary_part_, imaginary_part_);
+  return Hilbert<Vector>::Norm²(real_part_) +
+         Hilbert<Vector>::Norm²(imaginary_part_);
 }
 
 template<typename Vector>
