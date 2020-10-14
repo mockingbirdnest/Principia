@@ -44,18 +44,34 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> Gauss(
 }
 
 template<int points, typename Argument, typename Function>
-Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
+void FillClenshawCurtisCache(
     Function const& f,
     Argument const& lower_bound,
-    Argument const& upper_bound) {
-  static_assert(points < LegendreRoots.size,
-                "No table for Gauss-Legendre with the chosen number of points");
-  return Gauss<points>(f,
-                       lower_bound,
-                       upper_bound,
-                       LegendreRoots[points],
-                       GaussLegendreWeights[points]);
-}
+    Argument const& upper_bound,
+    std::vector<std::invoke_result_t<Function, Argument>>&
+        f_cos_N⁻¹π_bit_reversed);
+
+template<int points, typename Argument, typename Function>
+Primitive<std::invoke_result_t<Function, Argument>, Argument>
+AutomaticClenshawCurtisImplementation(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    std::optional<double> const max_relative_error,
+    std::optional<int> const max_points,
+    Primitive<std::invoke_result_t<Function, Argument>, Argument> const
+        previous_estimate,
+    std::vector<std::invoke_result_t<Function, Argument>>&
+        f_cos_N⁻¹π_bit_reversed);
+
+template<int points, typename Argument, typename Function>
+Primitive<std::invoke_result_t<Function, Argument>, Argument>
+ClenshawCurtisImplementation(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    std::vector<std::invoke_result_t<Function, Argument>>&
+        f_cos_N⁻¹π_bit_reversed);
 
 // Our automatic Cleshaw-Curtis implementation doubles the number of points
 // repeatedly until it reaches a suitable exit criterion.  Naïvely evaluating
@@ -225,6 +241,20 @@ ClenshawCurtisImplementation(
   Σʺ /= N;
 
   return Σʺ * half_width;
+}
+
+template<int points, typename Argument, typename Function>
+Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound) {
+  static_assert(points < LegendreRoots.size,
+                "No table for Gauss-Legendre with the chosen number of points");
+  return Gauss<points>(f,
+                       lower_bound,
+                       upper_bound,
+                       LegendreRoots[points],
+                       GaussLegendreWeights[points]);
 }
 
 template<int initial_points, typename Argument, typename Function>
