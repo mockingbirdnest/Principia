@@ -351,10 +351,12 @@ class PiecewisePoissonSeries {
 
  private:
   PiecewisePoissonSeries(std::vector<Instant> const& bounds,
-                         std::vector<Series> const& series);
+                         std::vector<Series> const& series,
+                         std::optional<Series> const& addend);
 
   std::vector<Instant> bounds_;
   std::vector<Series> series_;
+  std::optional<Series> addend_;
 
   template<typename V, int r, template<typename, typename, int> class E>
   PiecewisePoissonSeries<V, r, E>

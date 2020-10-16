@@ -732,8 +732,9 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 Value PiecewisePoissonSeries<Value, degree_, Evaluator>::operator()(
     Instant const& t) const {
+  Value const addend = addend_.has_value() ? addend_.value()(t) : Value{};
   if (t == bounds_.back()) {
-    return series_.back()(t);
+    return series_.back()(t) + addend;
   }
 
   // If t is an element of bounds_, the returned iterator points to the next
@@ -745,7 +746,7 @@ Value PiecewisePoissonSeries<Value, degree_, Evaluator>::operator()(
       << bounds_.front() << " .. " << bounds_.back();
   CHECK(it != bounds_.cend())
       << t << " is outside of " << bounds_.front() << " .. " << bounds_.back();
-  return series_[it - bounds_.cbegin() - 1](t);
+  return series_[it - bounds_.cbegin() - 1](t) + addend;
 }
 
 template<typename Value,
@@ -771,6 +772,7 @@ auto PiecewisePoissonSeries<Value, degree_, Evaluator>::FourierTransform() const
           bounds_[k + 1]);
     }
     return integral;
+    //Addend
   };
 }
 
@@ -780,9 +782,10 @@ template<typename V, int d, template<typename, typename, int> class E>
 PiecewisePoissonSeries<Value, degree_, Evaluator>&
 PiecewisePoissonSeries<Value, degree_, Evaluator>::operator+=(
     PoissonSeries<V, d, E> const& right) {
-  for (int i = 0; i < series_.size(); ++i) {
-    auto& series = series_[i];
-    series += right.AtOrigin(series.origin());
+  if (addend_.has_value()) {
+    addend_.value() += right;
+  } else {
+    addend_ = right;
   }
   return *this;
 }
@@ -793,9 +796,10 @@ template<typename V, int d, template<typename, typename, int> class E>
 PiecewisePoissonSeries<Value, degree_, Evaluator>&
 PiecewisePoissonSeries<Value, degree_, Evaluator>::operator-=(
     PoissonSeries<V, d, E> const& right) {
-  for (int i = 0; i < series_.size(); ++i) {
-    auto& series = series_[i];
-    series -= right.AtOrigin(series.origin());
+  if (addend_.has_value()) {
+    addend_.value() -= right;
+  } else {
+    addend_ = -right;
   }
   return *this;
 }
@@ -810,6 +814,7 @@ void PiecewisePoissonSeries<Value, degree_, Evaluator>::WriteToMessage(
   for (Series const& series : series_) {
     series.WriteToMessage(message->add_series());
   }
+  //Addend
 }
 
 template<typename Value, int degree_,
@@ -830,6 +835,7 @@ PiecewisePoissonSeries<Value, degree_, Evaluator>::ReadFromMessage(
         Instant::ReadFromMessage(message.bounds(i + 1))};
     series.Append(interval, Series::ReadFromMessage(message.series(i)));
   }
+  //Addend
   return series;
 }
 
@@ -837,9 +843,11 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries(
     std::vector<Instant> const& bounds,
-    std::vector<PoissonSeries<Value, degree_, Evaluator>> const& series)
+    std::vector<PoissonSeries<Value, degree_, Evaluator>> const& series,
+    std::optional<Series> const& addend)
     : bounds_(bounds),
-      series_(series) {}
+      series_(series),
+      addend_(addend) {}
 
 template<typename Value, int rdegree_,
          template<typename, typename, int> class Evaluator>
@@ -858,7 +866,11 @@ PiecewisePoissonSeries<Value, rdegree_, Evaluator> operator-(
   for (int i = 0; i < right.series_.size(); ++i) {
     series.push_back(-right.series_[i]);
   }
-  return Result(right.bounds_, series);
+  std::optional<typename Result::Series> addend;
+  if (right.addend_.has_value()) {
+    addend = -right.addend_.value();
+  }
+  return Result(right.bounds_, series, addend);
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -873,7 +885,11 @@ PiecewisePoissonSeries<Product<Scalar, Value>, degree_, Evaluator> operator*(
   for (int i = 0; i < right.series_.size(); ++i) {
     series.push_back(left * right.series_[i]);
   }
-  return Result(right.bounds_, series);
+  std::optional<typename Result::Series> addend;
+  if (right.addend_.has_value()) {
+    addend = left * right.addend_.value();
+  }
+  return Result(right.bounds_, series, addend);
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -888,7 +904,11 @@ PiecewisePoissonSeries<Product<Value, Scalar>, degree_, Evaluator> operator*(
   for (int i = 0; i < left.series_.size(); ++i) {
     series.push_back(left.series_[i] * right);
   }
-  return Result(left.bounds_, series);
+  std::optional<typename Result::Series> addend;
+  if (left.addend_.has_value()) {
+    addend = left.addend_.value() * right;
+  }
+  return Result(left.bounds_, series, addend);
 }
 
 template<typename Scalar, typename Value, int degree_,
@@ -903,14 +923,12 @@ PiecewisePoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator> operator/(
   for (int i = 0; i < left.series_.size(); ++i) {
     series.push_back(left.series_[i] / right);
   }
-  return Result(left.bounds_, series);
+  std::optional<typename Result::Series> addend;
+  if (left.addend_.has_value()) {
+    addend = left.addend_.value() / right;
+  }
+  return Result(left.bounds_, series, addend);
 }
-
-// In practice changing the origin of the piecewise series chunks is horribly
-// ill-conditioned, so the code below changes the origin of the (single) Poisson
-// series.
-// TODO(phl): All these origin changes might be expensive, see if we can factor
-// them.
 
 template<typename Value, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
@@ -919,13 +937,13 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result =
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
-  std::vector<typename Result::Series> series;
-  series.reserve(right.series_.size());
-  for (int i = 0; i < right.series_.size(); ++i) {
-    Instant const origin = right.series_[i].origin();
-    series.push_back(left.AtOrigin(origin) + right.series_[i]);
+  std::optional<typename Result::Series> addend;
+  if (right.addend_.has_value()) {
+    addend = left + right.addend_.value();
+  } else {
+    addend = left;
   }
-  return Result(right.bounds_, series);
+  return Result(right.bounds_, right.series_, addend);
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -935,13 +953,13 @@ operator+(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result =
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
-  std::vector<typename Result::Series> series;
-  series.reserve(left.series_.size());
-  for (int i = 0; i < left.series_.size(); ++i) {
-    Instant const origin = left.series_[i].origin();
-    series.push_back(left.series_[i] + right.AtOrigin(origin));
+  std::optional<typename Result::Series> addend;
+  if (left.addend_.has_value()) {
+    addend = left.addend_.value() + right;
+  } else {
+    addend = right;
   }
-  return Result(left.bounds_, series);
+  return Result(left.bounds_, left.series_, addend);
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -951,13 +969,13 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result =
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
-  std::vector<typename Result::Series> series;
-  series.reserve(right.series_.size());
-  for (int i = 0; i < right.series_.size(); ++i) {
-    Instant const origin = right.series_[i].origin();
-    series.push_back(left.AtOrigin(origin) - right.series_[i]);
+  std::optional<typename Result::Series> addend;
+  if (right.addend_.has_value()) {
+    addend = left - right.addend_.value();
+  } else {
+    addend = left;
   }
-  return Result(right.bounds_, series);
+  return Result(right.bounds_, right.series_, addend);
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -967,13 +985,13 @@ operator-(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result =
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
-  std::vector<typename Result::Series> series;
-  series.reserve(left.series_.size());
-  for (int i = 0; i < left.series_.size(); ++i) {
-    Instant const origin = left.series_[i].origin();
-    series.push_back(left.series_[i] - right.AtOrigin(origin));
+  std::optional<typename Result::Series> addend;
+  if (left.addend_.has_value()) {
+    addend = left.addend_.value() - right;
+  } else {
+    addend = -right;
   }
-  return Result(left.bounds_, series);
+  return Result(left.bounds_, left.series_, addend);
 }
 
 template<typename LValue, typename RValue, int ldegree_, int rdegree_,
@@ -990,7 +1008,11 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const origin = right.series_[i].origin();
     series.push_back(left.AtOrigin(origin) * right.series_[i]);
   }
-  return Result(right.bounds_, series);
+  std::optional<typename Result::Series> addend;
+  if (right.addend_.has_value()) {
+    addend = left * right.addend_.value();
+  }
+  return Result(right.bounds_, series, addend);
 }
 
 template<typename LValue, typename RValue, int ldegree_, int rdegree_,
@@ -1007,9 +1029,14 @@ operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
     Instant const origin = left.series_[i].origin();
     series.push_back(left.series_[i] * right.AtOrigin(origin));
   }
-  return Result(left.bounds_, series);
+  std::optional<typename Result::Series> addend;
+  if (left.addend_.has_value()) {
+    addend = left.addend_.value() * right;
+  }
+  return Result(left.bounds_, series, addend);
 }
 
+//Addend below this line.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
