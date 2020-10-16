@@ -763,16 +763,16 @@ auto PiecewisePoissonSeries<Value, degree_, Evaluator>::FourierTransform() const
     Primitive<Complexification<Value>, Instant> integral;
     for (int k = 0; k < series_.size(); ++k) {
       integral += quadrature::GaussLegendre<std::max(1, (degree_ + 1) / 2)>(
-          [&f = series_[k], t0, ω](
+          [&a = addend_, &f = series_[k], t0, ω](
               Instant const& t) -> Complexification<Value> {
-            return f(t) * Complexification<double>{Cos(ω * (t - t0)),
-                                                   -Sin(ω * (t - t0))};
+            return (f(t) + (a.has_value() ? a.value()(t) : Value{})) *
+                   Complexification<double>{Cos(ω * (t - t0)),
+                                            -Sin(ω * (t - t0))};
           },
           bounds_[k],
           bounds_[k + 1]);
     }
     return integral;
-    //Addend
   };
 }
 
@@ -969,13 +969,18 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result =
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
+  std::vector<typename Result::Series> series;
+  series.reserve(right.series_.size());
+  for (int i = 0; i < right.series_.size(); ++i) {
+    series.push_back(-right.series_[i]);
+  }
   std::optional<typename Result::Series> addend;
   if (right.addend_.has_value()) {
     addend = left - right.addend_.value();
   } else {
     addend = left;
   }
-  return Result(right.bounds_, right.series_, addend);
+  return Result(right.bounds_, series, addend);
 }
 
 template<typename Value, int ldegree_, int rdegree_,
@@ -1036,7 +1041,6 @@ operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
   return Result(left.bounds_, series, addend);
 }
 
-//Addend below this line.
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
@@ -1067,8 +1071,11 @@ InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
   Result result{};
   for (int i = 0; i < right.series_.size(); ++i) {
     auto integrand = [i, &left, &right, &weight](Instant const& t) {
-      return Hilbert<LValue, RValue>::InnerProduct(left(t) * weight(t),
-                                                   right.series_[i](t));
+      return Hilbert<LValue, RValue>::InnerProduct(
+          left(t) * weight(t),
+          right.series_[i](t) + (right.addend_.has_value()
+                                     ? right.addend_.value()(t)
+                                     : RValue{}));
     };
     auto const integral = quadrature::GaussLegendre<points>(
         integrand, right.bounds_[i], right.bounds_[i + 1]);
@@ -1107,8 +1114,11 @@ InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
   Result result{};
   for (int i = 0; i < left.series_.size(); ++i) {
     auto integrand = [i, &left, &right, &weight](Instant const& t) {
-      return Hilbert<LValue, RValue>::InnerProduct(left.series_[i](t),
-                                                   right(t) * weight(t));
+      return Hilbert<LValue, RValue>::InnerProduct(
+          left.series_[i](t) + (left.addend_.has_value()
+                                    ? left.addend_.value()(t)
+                                    : LValue{}),
+          right(t) * weight(t));
     };
     auto const integral = quadrature::GaussLegendre<points>(
         integrand, left.bounds_[i], left.bounds_[i + 1]);
