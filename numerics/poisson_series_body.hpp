@@ -345,6 +345,30 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+template<int higher_degree_,
+         template<typename, typename, int> class HigherEvaluator>
+PoissonSeries<Value, degree_, Evaluator>::
+operator PoissonSeries<Value, higher_degree_, HigherEvaluator>() const {
+  //TODO(phl):Test
+  static_assert(degree_ <= higher_degree_);
+  using Result = PoissonSeries<Value, higher_degree_, HigherEvaluator>;
+  auto aperiodic = typename Result::Polynomial(aperiodic_);
+  typename Result::PolynomialsByAngularFrequency periodic;
+  periodic.reserve(periodic_.size());
+  for (auto const& [ω, polynomials] : periodic_) {
+    periodic.emplace_back(
+        ω,
+        typename Result::Polynomials{
+            /*sin=*/typename Result::Polynomial(polynomials.sin),
+            /*cos=*/typename Result::Polynomial(polynomials.cos)});
+  }
+  return Result(typename Result::TrustedPrivateConstructor{},
+                std::move(aperiodic),
+                std::move(periodic));
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 template<int wdegree_>
 typename Hilbert<Value>::NormType
 PoissonSeries<Value, degree_, Evaluator>::Norm(
@@ -377,20 +401,22 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-template<typename V, int d, template<typename, typename, int> class E>
+template<int d>
 PoissonSeries<Value, degree_, Evaluator>&
 PoissonSeries<Value, degree_, Evaluator>::operator+=(
-    PoissonSeries<V, d, E> const& right) {
+    PoissonSeries<Value, d, Evaluator> const& right) {
+  static_assert(d <= degree);
   *this = *this + right;
   return *this;
 }
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-template<typename V, int d, template<typename, typename, int> class E>
+template<int d>
 PoissonSeries<Value, degree_, Evaluator>&
 PoissonSeries<Value, degree_, Evaluator>::operator-=(
-    PoissonSeries<V, d, E> const& right) {
+    PoissonSeries<Value, d, Evaluator> const& right) {
+  static_assert(d <= degree);
   *this = *this - right;
   return *this;
 }
@@ -778,10 +804,11 @@ auto PiecewisePoissonSeries<Value, degree_, Evaluator>::FourierTransform() const
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-template<typename V, int d, template<typename, typename, int> class E>
+template<int d>
 PiecewisePoissonSeries<Value, degree_, Evaluator>&
 PiecewisePoissonSeries<Value, degree_, Evaluator>::operator+=(
-    PoissonSeries<V, d, E> const& right) {
+    PoissonSeries<Value, d, Evaluator> const& right) {
+  static_assert(d <= degree);
   if (addend_.has_value()) {
     addend_.value() += right;
   } else {
@@ -792,14 +819,15 @@ PiecewisePoissonSeries<Value, degree_, Evaluator>::operator+=(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
-template<typename V, int d, template<typename, typename, int> class E>
+template<int d>
 PiecewisePoissonSeries<Value, degree_, Evaluator>&
 PiecewisePoissonSeries<Value, degree_, Evaluator>::operator-=(
-    PoissonSeries<V, d, E> const& right) {
+    PoissonSeries<Value, d, Evaluator> const& right) {
+  static_assert(d <= degree);
   if (addend_.has_value()) {
     addend_.value() -= right;
   } else {
-    addend_ = -right;
+    addend_.emplace(-right);
   }
   return *this;
 }
@@ -990,13 +1018,18 @@ operator-(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
           PoissonSeries<Value, rdegree_, Evaluator> const& right) {
   using Result =
       PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
+  std::vector<typename Result::Series> series;
+  series.reserve(left.series_.size());
+  for (int i = 0; i < left.series_.size(); ++i) {
+    series.push_back(typename Result::Series(left.series_[i]));
+  }
   std::optional<typename Result::Series> addend;
   if (left.addend_.has_value()) {
     addend = left.addend_.value() - right;
   } else {
-    addend = -right;
+    addend.emplace(-right);
   }
-  return Result(left.bounds_, left.series_, addend);
+  return Result(left.bounds_, series, addend);
 }
 
 template<typename LValue, typename RValue, int ldegree_, int rdegree_,
