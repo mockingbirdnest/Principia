@@ -349,7 +349,6 @@ template<int higher_degree_,
          template<typename, typename, int> class HigherEvaluator>
 PoissonSeries<Value, degree_, Evaluator>::
 operator PoissonSeries<Value, higher_degree_, HigherEvaluator>() const {
-  //TODO(phl):Test
   static_assert(degree_ <= higher_degree_);
   using Result = PoissonSeries<Value, higher_degree_, HigherEvaluator>;
   auto aperiodic = typename Result::Polynomial(aperiodic_);
@@ -758,7 +757,7 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 Value PiecewisePoissonSeries<Value, degree_, Evaluator>::operator()(
     Instant const& t) const {
-  Value const addend = addend_.has_value() ? addend_.value()(t) : Value{};
+  Value const addend = EvaluateAddend(t);
   if (t == bounds_.back()) {
     return series_.back()(t) + addend;
   }
@@ -789,9 +788,9 @@ auto PiecewisePoissonSeries<Value, degree_, Evaluator>::FourierTransform() const
     Primitive<Complexification<Value>, Instant> integral;
     for (int k = 0; k < series_.size(); ++k) {
       integral += quadrature::GaussLegendre<std::max(1, (degree_ + 1) / 2)>(
-          [&a = addend_, &f = series_[k], t0, ω](
+          [this, &f = series_[k], t0, ω](
               Instant const& t) -> Complexification<Value> {
-            return (f(t) + (a.has_value() ? a.value()(t) : Value{})) *
+            return (f(t) + EvaluateAddend(t)) *
                    Complexification<double>{Cos(ω * (t - t0)),
                                             -Sin(ω * (t - t0))};
           },
@@ -812,7 +811,7 @@ PiecewisePoissonSeries<Value, degree_, Evaluator>::operator+=(
   if (addend_.has_value()) {
     addend_.value() += right;
   } else {
-    addend_ = right;
+    addend_ = Series(right);
   }
   return *this;
 }
@@ -827,7 +826,7 @@ PiecewisePoissonSeries<Value, degree_, Evaluator>::operator-=(
   if (addend_.has_value()) {
     addend_.value() -= right;
   } else {
-    addend_.emplace(-right);
+    addend_ = Series(-right);
   }
   return *this;
 }
@@ -842,7 +841,9 @@ void PiecewisePoissonSeries<Value, degree_, Evaluator>::WriteToMessage(
   for (Series const& series : series_) {
     series.WriteToMessage(message->add_series());
   }
-  //Addend
+  if (addend_.has_value()) {
+    addend_->WriteToMessage(message->mutable_addend());
+  }
 }
 
 template<typename Value, int degree_,
@@ -863,7 +864,9 @@ PiecewisePoissonSeries<Value, degree_, Evaluator>::ReadFromMessage(
         Instant::ReadFromMessage(message.bounds(i + 1))};
     series.Append(interval, Series::ReadFromMessage(message.series(i)));
   }
-  //Addend
+  if (message.has_addend()) {
+    series.addend_ = Series::ReadFromMessage(message.addend());
+  }
   return series;
 }
 
@@ -876,6 +879,13 @@ PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries(
     : bounds_(bounds),
       series_(series),
       addend_(addend) {}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+Value PiecewisePoissonSeries<Value, degree_, Evaluator>::EvaluateAddend(
+    Instant const& t) const {
+  return addend_.has_value() ? addend_.value()(t) : Value{};
+}
 
 template<typename Value, int rdegree_,
          template<typename, typename, int> class Evaluator>
@@ -969,7 +979,7 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
   if (right.addend_.has_value()) {
     addend = left + right.addend_.value();
   } else {
-    addend = left;
+    addend = typename Result::Series(left);
   }
   return Result(right.bounds_, right.series_, addend);
 }
@@ -985,7 +995,7 @@ operator+(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
   if (left.addend_.has_value()) {
     addend = left.addend_.value() + right;
   } else {
-    addend = right;
+    addend = typename Result::Series(right);
   }
   return Result(left.bounds_, left.series_, addend);
 }
@@ -1006,7 +1016,7 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
   if (right.addend_.has_value()) {
     addend = left - right.addend_.value();
   } else {
-    addend = left;
+    addend = typename Result::Series(left);
   }
   return Result(right.bounds_, series, addend);
 }
@@ -1027,7 +1037,7 @@ operator-(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
   if (left.addend_.has_value()) {
     addend = left.addend_.value() - right;
   } else {
-    addend.emplace(-right);
+    addend = typename Result::Series(-right);
   }
   return Result(left.bounds_, series, addend);
 }
@@ -1106,9 +1116,7 @@ InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
     auto integrand = [i, &left, &right, &weight](Instant const& t) {
       return Hilbert<LValue, RValue>::InnerProduct(
           left(t) * weight(t),
-          right.series_[i](t) + (right.addend_.has_value()
-                                     ? right.addend_.value()(t)
-                                     : RValue{}));
+          right.series_[i](t) + right.EvaluateAddend(t));
     };
     auto const integral = quadrature::GaussLegendre<points>(
         integrand, right.bounds_[i], right.bounds_[i + 1]);
@@ -1148,9 +1156,7 @@ InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
   for (int i = 0; i < left.series_.size(); ++i) {
     auto integrand = [i, &left, &right, &weight](Instant const& t) {
       return Hilbert<LValue, RValue>::InnerProduct(
-          left.series_[i](t) + (left.addend_.has_value()
-                                    ? left.addend_.value()(t)
-                                    : LValue{}),
+          left.series_[i](t) + left.EvaluateAddend(t),
           right(t) * weight(t));
     };
     auto const integral = quadrature::GaussLegendre<points>(

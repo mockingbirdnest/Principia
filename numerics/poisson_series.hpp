@@ -363,6 +363,8 @@ class PiecewisePoissonSeries {
                          std::vector<Series> const& series,
                          std::optional<Series> const& addend);
 
+  Value EvaluateAddend(Instant const& t) const;
+
   std::vector<Instant> bounds_;
   std::vector<Series> series_;
   std::optional<Series> addend_;

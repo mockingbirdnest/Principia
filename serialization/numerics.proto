@@ -45,6 +45,7 @@ message DoublePrecision {
 message PiecewisePoissonSeries {
   repeated Point bounds = 1;
   repeated PoissonSeries series = 2;
+  optional PoissonSeries addend = 3;
 }
 
 message PoissonSeries {

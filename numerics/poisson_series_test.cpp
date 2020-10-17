@@ -120,6 +120,15 @@ TEST_F(PoissonSeriesTest, Evaluate) {
                            32));
 }
 
+TEST_F(PoissonSeriesTest, Conversion) {
+  using Degree3 = PoissonSeries<double, 3, HornerEvaluator>;
+  Degree3 const pa3 = Degree3(*pa_);
+  EXPECT_THAT(pa3(t0_ + 1 * Second),
+              AlmostEquals(3 + 11 * Sin(1 * Radian) + 15 * Cos(1 * Radian) +
+                               27 * Sin(2 * Radian) + 31 * Cos(2 * Radian),
+                           0, 1));
+}
+
 TEST_F(PoissonSeriesTest, VectorSpace) {
   {
     auto const identity = +*pa_;
@@ -562,9 +571,11 @@ TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
 
 TEST_F(PiecewisePoissonSeriesTest, Serialization) {
   serialization::PiecewisePoissonSeries message;
+  pp_ += p_;
   pp_.WriteToMessage(&message);
   EXPECT_EQ(3, message.bounds_size());
   EXPECT_EQ(2, message.series_size());
+  EXPECT_TRUE(message.has_addend());
 
   auto const piecewise_poisson_series_read = Degree0::ReadFromMessage(message);
   EXPECT_THAT(
