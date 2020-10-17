@@ -488,11 +488,11 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
     auto const d1 = p_ - pp_;
     auto const d2 = pp_ - p_;
     EXPECT_THAT(d1(t0_ + 0.5 * Second),
-                AlmostEquals((2 + Sqrt(2)) / 4, 1));
+                AlmostEquals((2 + Sqrt(2)) / 4, 1, 2));
     EXPECT_THAT(d1(t0_ + 1.5 * Second),
                 AlmostEquals((6 + 5 * Sqrt(2)) / 4, 1));
     EXPECT_THAT(d2(t0_ + 0.5 * Second),
-                AlmostEquals((-2 - Sqrt(2)) / 4, 1));
+                AlmostEquals((-2 - Sqrt(2)) / 4, 1, 2));
     EXPECT_THAT(d2(t0_ + 1.5 * Second),
                 AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 1));
   }
@@ -516,11 +516,11 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
     auto const s1 = p + pp_;
     auto const s2 = pp_ + p;
     EXPECT_THAT(s1(t0_ + 0.5 * Second),
-                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
+                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0, 1));
     EXPECT_THAT(s1(t0_ + 1.5 * Second),
                 AlmostEquals((6 + Sqrt(2)) / 4, 1));
     EXPECT_THAT(s2(t0_ + 0.5 * Second),
-                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
+                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0, 1));
     EXPECT_THAT(s2(t0_ + 1.5 * Second),
                 AlmostEquals((6 + Sqrt(2)) / 4, 1));
   }
@@ -530,11 +530,11 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
     EXPECT_THAT(d1(t0_ + 0.5 * Second),
                 AlmostEquals((2 + Sqrt(2)) / 4, 0, 2));
     EXPECT_THAT(d1(t0_ + 1.5 * Second),
-                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
+                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0, 1));
     EXPECT_THAT(d2(t0_ + 0.5 * Second),
                 AlmostEquals((-2 - Sqrt(2)) / 4, 0, 2));
     EXPECT_THAT(d2(t0_ + 1.5 * Second),
-                AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
+                AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0, 1));
   }
   {
     auto const p1 = p * pp_;
