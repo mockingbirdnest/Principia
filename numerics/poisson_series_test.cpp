@@ -120,6 +120,15 @@ TEST_F(PoissonSeriesTest, Evaluate) {
                            32));
 }
 
+TEST_F(PoissonSeriesTest, Conversion) {
+  using Degree3 = PoissonSeries<double, 3, HornerEvaluator>;
+  Degree3 const pa3 = Degree3(*pa_);
+  EXPECT_THAT(pa3(t0_ + 1 * Second),
+              AlmostEquals(3 + 11 * Sin(1 * Radian) + 15 * Cos(1 * Radian) +
+                               27 * Sin(2 * Radian) + 31 * Cos(2 * Radian),
+                           0, 1));
+}
+
 TEST_F(PoissonSeriesTest, VectorSpace) {
   {
     auto const identity = +*pa_;
@@ -469,11 +478,11 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
     EXPECT_THAT(s1(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
     EXPECT_THAT(s1(t0_ + 1.5 * Second),
-                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+                AlmostEquals((6 + Sqrt(2)) / 4, 1));
     EXPECT_THAT(s2(t0_ + 0.5 * Second),
                 AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
     EXPECT_THAT(s2(t0_ + 1.5 * Second),
-                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+                AlmostEquals((6 + Sqrt(2)) / 4, 1));
   }
   {
     auto const d1 = p_ - pp_;
@@ -481,11 +490,11 @@ TEST_F(PiecewisePoissonSeriesTest, Action) {
     EXPECT_THAT(d1(t0_ + 0.5 * Second),
                 AlmostEquals((2 + Sqrt(2)) / 4, 1));
     EXPECT_THAT(d1(t0_ + 1.5 * Second),
-                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 0));
+                AlmostEquals((6 + 5 * Sqrt(2)) / 4, 1));
     EXPECT_THAT(d2(t0_ + 0.5 * Second),
                 AlmostEquals((-2 - Sqrt(2)) / 4, 1));
     EXPECT_THAT(d2(t0_ + 1.5 * Second),
-                AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 0));
+                AlmostEquals((-6 - 5 * Sqrt(2)) / 4, 1));
   }
   {
     auto const p1 = p_ * pp_;
@@ -507,13 +516,13 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
     auto const s1 = p + pp_;
     auto const s2 = pp_ + p;
     EXPECT_THAT(s1(t0_ + 0.5 * Second),
-                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 1));
+                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
     EXPECT_THAT(s1(t0_ + 1.5 * Second),
-                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+                AlmostEquals((6 + Sqrt(2)) / 4, 1));
     EXPECT_THAT(s2(t0_ + 0.5 * Second),
-                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 1));
+                AlmostEquals((10 - 3 * Sqrt(2)) / 4, 0));
     EXPECT_THAT(s2(t0_ + 1.5 * Second),
-                AlmostEquals((6 + Sqrt(2)) / 4, 0));
+                AlmostEquals((6 + Sqrt(2)) / 4, 1));
   }
   {
     auto const d1 = p - pp_;
@@ -562,9 +571,11 @@ TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
 
 TEST_F(PiecewisePoissonSeriesTest, Serialization) {
   serialization::PiecewisePoissonSeries message;
+  pp_ += p_;
   pp_.WriteToMessage(&message);
   EXPECT_EQ(3, message.bounds_size());
   EXPECT_EQ(2, message.series_size());
+  EXPECT_TRUE(message.has_addend());
 
   auto const piecewise_poisson_series_read = Degree0::ReadFromMessage(message);
   EXPECT_THAT(

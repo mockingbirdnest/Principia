@@ -99,6 +99,13 @@ class PoissonSeries {
   PoissonSeries(Polynomial const& aperiodic,
                 PolynomialsByAngularFrequency const& periodic);
 
+  // A Poisson series may be explicitly converted to a higher degree (possibly
+  // with a different evaluator).
+  template<int higher_degree_,
+           template<typename, typename, int> class HigherEvaluator>
+  explicit operator
+      PoissonSeries<Value, higher_degree_, HigherEvaluator>() const;
+
   Instant const& origin() const;
 
   Value operator()(Instant const& t) const;
@@ -119,10 +126,10 @@ class PoissonSeries {
       Instant const& t_min,
       Instant const& t_max) const;
 
-  template<typename V, int d, template<typename, typename, int> class E>
-  PoissonSeries& operator+=(PoissonSeries<V, d, E> const& right);
-  template<typename V, int d, template<typename, typename, int> class E>
-  PoissonSeries& operator-=(PoissonSeries<V, d, E> const& right);
+  template<int d>
+  PoissonSeries& operator+=(PoissonSeries<Value, d, Evaluator> const& right);
+  template<int d>
+  PoissonSeries& operator-=(PoissonSeries<Value, d, Evaluator> const& right);
 
   void WriteToMessage(not_null<serialization::PoissonSeries*> message) const;
   static PoissonSeries ReadFromMessage(
@@ -339,10 +346,12 @@ class PiecewisePoissonSeries {
   // |*this| must outlive the resulting function.
   Spectrum FourierTransform() const;
 
-  template<typename V, int d, template<typename, typename, int> class E>
-  PiecewisePoissonSeries& operator+=(PoissonSeries<V, d, E> const& right);
-  template<typename V, int d, template<typename, typename, int> class E>
-  PiecewisePoissonSeries& operator-=(PoissonSeries<V, d, E> const& right);
+  template<int d>
+  PiecewisePoissonSeries& operator+=(
+      PoissonSeries<Value, d, Evaluator> const& right);
+  template<int d>
+  PiecewisePoissonSeries& operator-=(
+      PoissonSeries<Value, d, Evaluator> const& right);
 
   void WriteToMessage(
       not_null<serialization::PiecewisePoissonSeries*> message) const;
@@ -351,10 +360,14 @@ class PiecewisePoissonSeries {
 
  private:
   PiecewisePoissonSeries(std::vector<Instant> const& bounds,
-                         std::vector<Series> const& series);
+                         std::vector<Series> const& series,
+                         std::optional<Series> const& addend);
+
+  Value EvaluateAddend(Instant const& t) const;
 
   std::vector<Instant> bounds_;
   std::vector<Series> series_;
+  std::optional<Series> addend_;
 
   template<typename V, int r, template<typename, typename, int> class E>
   PiecewisePoissonSeries<V, r, E>
