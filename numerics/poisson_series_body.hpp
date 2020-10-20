@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "numerics/double_precision.hpp"
 #include "numerics/quadrature.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -218,7 +219,9 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
         {{ω,
           {/*sin=*/typename FirstPart::Polynomial(polynomials.cos),
            /*cos=*/typename FirstPart::Polynomial(-polynomials.sin)}}});
-    result += (first_part(t2) - first_part(t1)) / ω * Radian;
+    DoublePrecision<Value> sum;
+    sum += first_part(t2);
+    sum -= first_part(t1);
 
     if constexpr (degree_ != 0) {
       auto const sin_polynomial =
@@ -229,8 +232,9 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
                                    {{ω,
                                      {/*sin=*/sin_polynomial,
                                       /*cos=*/cos_polynomial}}});
-      result += second_part.Integrate(t1, t2) / ω * Radian;
+      sum += second_part.Integrate(t1, t2);
     }
+    result += (sum.value + sum.error) / ω * Radian;
   }
   return result;
 }
