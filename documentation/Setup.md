@@ -36,7 +36,7 @@ This project depends upon:
   benchmark library;
 - our [fork](https://github.com/mockingbirdnest/gipfeli) of the Google gipfeli library;
 - our [fork](https://github.com/mockingbirdnest/abseil-cpp) of the Google Abseil C++ library;
-- our [fork]() of the LLNL zfp library;
+- our [fork](https://github.com/mockingbirdnest/zfp) of the LLNL zfp library;
 - parts of the Chromium codebase (for stack tracing support in glog on Windows),
   *modified according to the instructions below*.
 
