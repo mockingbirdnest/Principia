@@ -151,6 +151,13 @@ class PoissonSeries {
                 Polynomial aperiodic,
                 PolynomialsByAngularFrequency periodic);
 
+  //TODO(phl): Comment.
+  struct SplitPoissonSeries {
+    PoissonSeries slow;
+    PoissonSeries fast;
+  };
+  SplitPoissonSeries Split(AngularFrequency const& ω_cutoff) const;
+
   Instant origin_;  // Common to all polynomials.
   Polynomial aperiodic_;
   // The frequencies in this vector are positive, distinct and in increasing

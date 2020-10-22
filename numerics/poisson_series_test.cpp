@@ -310,7 +310,7 @@ TEST_F(PoissonSeriesTest, Primitive) {
   EXPECT_THAT(
       pb_->Integrate(t0_ + 5 * Second, t0_ + 13 * Second),
       AlmostEquals(expected_primitive(13 * Second) -
-                   expected_primitive(5 * Second), 1, 2));
+                   expected_primitive(5 * Second), 0));
 }
 
 TEST_F(PoissonSeriesTest, InnerProduct) {

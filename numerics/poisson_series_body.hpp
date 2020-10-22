@@ -350,6 +350,34 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+typename PoissonSeries<Value, degree_, Evaluator>::SplitPoissonSeries
+PoissonSeries<Value, degree_, Evaluator>::Split(
+    AngularFrequency const& ω_cutoff) const {
+  // TODO(phl): Should we try to avoid a linear search and copies?
+  typename PoissonSeries::PolynomialsByAngularFrequency slow_periodic;
+  typename PoissonSeries::PolynomialsByAngularFrequency fast_periodic;
+  for (auto const& [ω, polynomials] : periodic_) {
+    if (ω <= ω_cutoff) {
+      slow_periodic.emplace_back(ω, polynomials);
+    } else {
+      fast_periodic.emplace_back(ω, polynomials);
+    }
+  }
+  PoissonSeries slow_series(TrustedPrivateConstructor{},
+                            aperiodic_,
+                            std::move(slow_periodic));
+  PoissonSeries fast_series(
+      TrustedPrivateConstructor{},
+      typename PoissonSeries::Polynomial(
+          typename PoissonSeries::Polynomial::Coefficients{},
+          aperiodic_.origin()),
+      std::move(fast_periodic));
+  return {/*slow=*/std::move(slow_series),
+          /*fast=*/std::move(fast_series)};
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 template<int higher_degree_,
          template<typename, typename, int> class HigherEvaluator>
 PoissonSeries<Value, degree_, Evaluator>::
@@ -380,26 +408,11 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
     Instant const& t_min,
     Instant const& t_max) const {
 #if 1
-  // TODO(phl): Should we try to avoid a linear search?
-  typename PoissonSeries::PolynomialsByAngularFrequency slow_periodic;
-  typename PoissonSeries::PolynomialsByAngularFrequency fast_periodic;
-  for (auto const& [ω, polynomials] : periodic_) {
-    if (ω <= 2 * π * Radian * clenshaw_curtis_max_periods_overall /
-                 (t_max - t_min)) {
-      slow_periodic.emplace_back(ω, polynomials);
-    } else {
-      fast_periodic.emplace_back(ω, polynomials);
-    }
-  }
-  PoissonSeries const slow_series(TrustedPrivateConstructor{},
-                                  aperiodic_,
-                                  std::move(slow_periodic));
-  PoissonSeries const fast_series(
-      TrustedPrivateConstructor{},
-      typename PoissonSeries::Polynomial(
-          typename PoissonSeries::Polynomial::Coefficients{},
-          aperiodic_.origin()),
-      std::move(fast_periodic));
+  auto const split_poisson_series = Split(
+      2 * π * Radian * clenshaw_curtis_max_periods_overall /
+                 (t_max - t_min));
+  auto const& slow_series = split_poisson_series.slow;
+  auto const& fast_series = split_poisson_series.fast;
 
   AngularFrequency const max_ω =
       (slow_series.periodic_.empty() ? AngularFrequency{}
