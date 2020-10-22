@@ -363,15 +363,30 @@ PoissonSeries<Value, degree_, Evaluator>::Split(
       fast_periodic.emplace_back(ω, polynomials);
     }
   }
-  PoissonSeries slow(TrustedPrivateConstructor{},
-                     aperiodic_,
-                     std::move(slow_periodic));
-  PoissonSeries fast(TrustedPrivateConstructor{},
-                     typename PoissonSeries::Polynomial(
-                         typename PoissonSeries::Polynomial::Coefficients{},
-                         aperiodic_.origin()),
-                     std::move(fast_periodic));
-  return {/*slow=*/std::move(slow), /*fast=*/std::move(fast)};
+
+  //TODO(phl):Comment
+  if (slow_periodic.empty()) {
+    //TODO(phl):Zero
+    PoissonSeries slow(TrustedPrivateConstructor{},
+                       typename PoissonSeries::Polynomial(
+                           typename PoissonSeries::Polynomial::Coefficients{},
+                           aperiodic_.origin()),
+                       std::move(slow_periodic));
+    PoissonSeries fast(TrustedPrivateConstructor{},
+                       aperiodic_,
+                       std::move(fast_periodic));
+    return {/*slow=*/std::move(slow), /*fast=*/std::move(fast)};
+  } else {
+    PoissonSeries slow(TrustedPrivateConstructor{},
+                       aperiodic_,
+                       std::move(slow_periodic));
+    PoissonSeries fast(TrustedPrivateConstructor{},
+                       typename PoissonSeries::Polynomial(
+                           typename PoissonSeries::Polynomial::Coefficients{},
+                           aperiodic_.origin()),
+                       std::move(fast_periodic));
+    return {/*slow=*/std::move(slow), /*fast=*/std::move(fast)};
+  }
 }
 
 template<typename Value, int degree_,
