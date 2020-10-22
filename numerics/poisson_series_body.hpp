@@ -34,6 +34,7 @@ namespace si = quantities::si;
 
 // These parameters have been tuned for approximation of the Moon over 3 months
 // with 10 periods.
+constexpr int clenshaw_curtis_max_periods_overall = 40;
 constexpr int clenshaw_curtis_min_points_overall = 33;
 constexpr int clenshaw_curtis_point_per_period = 4;
 constexpr double clenshaw_curtis_relative_error = 0x1p-32;
@@ -378,6 +379,57 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) const {
+#if 1
+  // TODO(phl): Should we try to avoid a linear search?
+  typename PoissonSeries::PolynomialsByAngularFrequency slow_periodic;
+  typename PoissonSeries::PolynomialsByAngularFrequency fast_periodic;
+  for (auto const& [ω, polynomials] : periodic_) {
+    if (ω <= 2 * π * Radian * clenshaw_curtis_max_periods_overall /
+                 (t_max - t_min)) {
+      slow_periodic.emplace_back(ω, polynomials);
+    } else {
+      fast_periodic.emplace_back(ω, polynomials);
+    }
+  }
+  PoissonSeries const slow_series(TrustedPrivateConstructor{},
+                                  aperiodic_,
+                                  std::move(slow_periodic));
+  PoissonSeries const fast_series(
+      TrustedPrivateConstructor{},
+      typename PoissonSeries::Polynomial(
+          typename PoissonSeries::Polynomial::Coefficients{},
+          aperiodic_.origin()),
+      std::move(fast_periodic));
+
+  AngularFrequency const max_ω =
+      (slow_series.periodic_.empty() ? AngularFrequency{}
+                                     : 2 * slow_series.periodic_.back().first) +
+      (weight.periodic_.empty() ? AngularFrequency{}
+                                : weight.periodic_.back().first);
+  std::optional<int> max_points =
+      max_ω == AngularFrequency()
+          ? std::optional<int>{}
+          : std::max(
+                clenshaw_curtis_min_points_overall,
+                static_cast<int>(clenshaw_curtis_point_per_period *
+                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
+
+  auto slow_integrand = [&slow_series, &weight](Instant const& t) {
+    return Hilbert<Value>::Norm²(slow_series(t)) * weight(t);
+  };
+  auto const slow_quadrature = quadrature::AutomaticClenshawCurtis(
+      slow_integrand,
+      t_min, t_max,
+      /*max_relative_error=*/clenshaw_curtis_relative_error,
+      /*max_points=*/max_points);
+
+  auto const fast_integrand =
+      PointwiseInnerProduct(fast_series, fast_series + 2 * slow_series) *
+      weight;
+  auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
+
+  return Sqrt((slow_quadrature + fast_quadrature) / (t_max - t_min));
+#else
   AngularFrequency const max_ω =
       (periodic_.empty() ? AngularFrequency{}
                          : 2 * periodic_.back().first) +
@@ -400,6 +452,7 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
                   /*max_relative_error=*/clenshaw_curtis_relative_error,
                   /*max_points=*/max_points) /
               (t_max - t_min));
+#endif
 }
 
 template<typename Value, int degree_,
