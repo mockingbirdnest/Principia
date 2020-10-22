@@ -363,17 +363,15 @@ PoissonSeries<Value, degree_, Evaluator>::Split(
       fast_periodic.emplace_back(ω, polynomials);
     }
   }
-  PoissonSeries slow_series(TrustedPrivateConstructor{},
-                            aperiodic_,
-                            std::move(slow_periodic));
-  PoissonSeries fast_series(
-      TrustedPrivateConstructor{},
-      typename PoissonSeries::Polynomial(
-          typename PoissonSeries::Polynomial::Coefficients{},
-          aperiodic_.origin()),
-      std::move(fast_periodic));
-  return {/*slow=*/std::move(slow_series),
-          /*fast=*/std::move(fast_series)};
+  PoissonSeries slow(TrustedPrivateConstructor{},
+                     aperiodic_,
+                     std::move(slow_periodic));
+  PoissonSeries fast(TrustedPrivateConstructor{},
+                     typename PoissonSeries::Polynomial(
+                         typename PoissonSeries::Polynomial::Coefficients{},
+                         aperiodic_.origin()),
+                     std::move(fast_periodic));
+  return {/*slow=*/std::move(slow), /*fast=*/std::move(fast)};
 }
 
 template<typename Value, int degree_,
@@ -408,15 +406,13 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
     Instant const& t_min,
     Instant const& t_max) const {
 #if 1
-  auto const split_poisson_series = Split(
+  auto const split = Split(
       2 * π * Radian * clenshaw_curtis_max_periods_overall /
                  (t_max - t_min));
-  auto const& slow_series = split_poisson_series.slow;
-  auto const& fast_series = split_poisson_series.fast;
 
   AngularFrequency const max_ω =
-      (slow_series.periodic_.empty() ? AngularFrequency{}
-                                     : 2 * slow_series.periodic_.back().first) +
+      (split.slow.periodic_.empty() ? AngularFrequency{}
+                                     : 2 * split.slow.periodic_.back().first) +
       (weight.periodic_.empty() ? AngularFrequency{}
                                 : weight.periodic_.back().first);
   std::optional<int> max_points =
@@ -427,8 +423,8 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
                 static_cast<int>(clenshaw_curtis_point_per_period *
                                  (t_max - t_min) * max_ω / (2 * π * Radian)));
 
-  auto slow_integrand = [&slow_series, &weight](Instant const& t) {
-    return Hilbert<Value>::Norm²(slow_series(t)) * weight(t);
+  auto slow_integrand = [&split, &weight](Instant const& t) {
+    return Hilbert<Value>::Norm²(split.slow(t)) * weight(t);
   };
   auto const slow_quadrature = quadrature::AutomaticClenshawCurtis(
       slow_integrand,
@@ -437,7 +433,7 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
       /*max_points=*/max_points);
 
   auto const fast_integrand =
-      PointwiseInnerProduct(fast_series, fast_series + 2 * slow_series) *
+      PointwiseInnerProduct(split.fast, split.fast + 2 * split.slow) *
       weight;
   auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
 
@@ -764,11 +760,18 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) {
+  AngularFrequency const ω_cutoff =
+      2 * π * Radian * clenshaw_curtis_max_periods_overall / (t_max - t_min);
+  auto const left_split = left.Split(ω_cutoff);
+  auto const right_split = right.Split(ω_cutoff);
+
   AngularFrequency const max_ω =
-      (left.periodic_.empty() ? AngularFrequency{}
-                              : left.periodic_.back().first) +
-      (right.periodic_.empty() ? AngularFrequency{}
-                               : right.periodic_.back().first) +
+      (left_split.slow.periodic_.empty()
+           ? AngularFrequency{}
+           : left_split.slow.periodic_.back().first) +
+      (right_split.slow.periodic_.empty()
+           ? AngularFrequency{}
+           : right_split.slow.periodic_.back().first) +
       (weight.periodic_.empty() ? AngularFrequency{}
                                 : weight.periodic_.back().first);
   std::optional<int> max_points =
@@ -779,15 +782,25 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
                 static_cast<int>(clenshaw_curtis_point_per_period *
                                  (t_max - t_min) * max_ω / (2 * π * Radian)));
 
-  auto integrand = [&left, &right, &weight](Instant const& t) {
-    return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
+  auto slow_integrand = [&left_split, &right_split, &weight](Instant const& t) {
+    return Hilbert<LValue, RValue>::InnerProduct(left_split.slow(t),
+                                                 right_split.slow(t)) *
+           weight(t);
   };
-  return quadrature::AutomaticClenshawCurtis(
-             integrand,
-             t_min, t_max,
-             /*max_relative_error=*/clenshaw_curtis_relative_error,
-             /*max_points=*/max_points) /
-         (t_max - t_min);
+  auto const slow_quadrature = quadrature::AutomaticClenshawCurtis(
+      slow_integrand,
+      t_min, t_max,
+      /*max_relative_error=*/clenshaw_curtis_relative_error,
+      /*max_points=*/max_points);
+
+  auto const fast_integrand =
+      (PointwiseInnerProduct(left_split.fast, right_split.slow) +
+       PointwiseInnerProduct(left_split.slow, right_split.fast) +
+       PointwiseInnerProduct(left_split.fast, right_split.fast)) *
+      weight;
+  auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
+
+  return (slow_quadrature + fast_quadrature) / (t_max - t_min);
 }
 
 template<typename Value, int degree_,
