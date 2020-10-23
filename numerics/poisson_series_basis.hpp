@@ -19,7 +19,7 @@ using quantities::AngularFrequency;
 // of multivector dimensions to produce.  |degree| is the maximum degree of tⁿ.
 template<typename Series,
          int dimension,
-         int degree = Series::degree,
+         int degree,
          typename = std::make_index_sequence<dimension * (degree + 1)>>
 struct PoissonSeriesBasisGenerator;
 

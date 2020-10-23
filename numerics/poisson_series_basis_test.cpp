@@ -46,7 +46,8 @@ class PoissonSeriesBasisTest : public ::testing::Test {
 TEST_F(PoissonSeriesBasisTest, Aperiodic) {
   auto const aperiodic = PoissonSeriesBasisGenerator<
       Series3,
-      Hilbert<Displacement<World>>::dimension>::Basis(t0_);
+      Hilbert<Displacement<World>>::dimension,
+      /*degree=*/3>::Basis(t0_);
   EXPECT_EQ(12, aperiodic.size());
 
   Instant const t1 = t0_ + 2 * Second;
@@ -84,7 +85,8 @@ TEST_F(PoissonSeriesBasisTest, Periodic) {
   AngularFrequency const ω = π / 6 * Radian / Second;
   auto const periodic = PoissonSeriesBasisGenerator<
       Series3,
-      Hilbert<Displacement<World>>::dimension>::Basis(ω, t0_);
+      Hilbert<Displacement<World>>::dimension,
+      /*degree=*/3>::Basis(ω, t0_);
   EXPECT_EQ(24, periodic.size());
 
   Instant const t1 = t0_ + 2 * Second;
