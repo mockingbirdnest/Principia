@@ -46,7 +46,8 @@ class PoissonSeriesBasisTest : public ::testing::Test {
 TEST_F(PoissonSeriesBasisTest, Aperiodic) {
   auto const aperiodic = PoissonSeriesBasisGenerator<
       Series3,
-      Hilbert<Displacement<World>>::dimension>::Basis(t0_);
+      Hilbert<Displacement<World>>::dimension,
+      /*degree=*/3>::Basis(t0_);
   EXPECT_EQ(12, aperiodic.size());
 
   Instant const t1 = t0_ + 2 * Second;
@@ -84,7 +85,8 @@ TEST_F(PoissonSeriesBasisTest, Periodic) {
   AngularFrequency const ω = π / 6 * Radian / Second;
   auto const periodic = PoissonSeriesBasisGenerator<
       Series3,
-      Hilbert<Displacement<World>>::dimension>::Basis(ω, t0_);
+      Hilbert<Displacement<World>>::dimension,
+      /*degree=*/3>::Basis(ω, t0_);
   EXPECT_EQ(24, periodic.size());
 
   Instant const t1 = t0_ + 2 * Second;
@@ -189,6 +191,118 @@ TEST_F(PoissonSeriesBasisTest, Periodic) {
       AlmostEquals(
           Displacement<World>({0 * Metre, 0 * Metre, 4 * Metre}), 1));
 }
+
+TEST_F(PoissonSeriesBasisTest, ReducedDegree) {
+  auto const aperiodic = PoissonSeriesBasisGenerator<
+      Series3,
+      Hilbert<Displacement<World>>::dimension,
+      /*degree=*/2>::Basis(t0_);
+  EXPECT_EQ(9, aperiodic.size());
+
+  AngularFrequency const ω = π / 6 * Radian / Second;
+  auto const periodic = PoissonSeriesBasisGenerator<
+      Series3,
+      Hilbert<Displacement<World>>::dimension,
+      /*degree=*/2>::Basis(ω, t0_);
+  EXPECT_EQ(18, periodic.size());
+
+  Instant const t1 = t0_ + 2 * Second;
+
+  EXPECT_EQ(Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
+            aperiodic[0](t1));
+  EXPECT_EQ(Displacement<World>({0 * Metre, 1 * Metre, 0 * Metre}),
+            aperiodic[1](t1));
+  EXPECT_EQ(Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre}),
+            aperiodic[2](t1));
+
+  EXPECT_EQ(Displacement<World>({2 * Metre, 0 * Metre, 0 * Metre}),
+            aperiodic[3](t1));
+  EXPECT_EQ(Displacement<World>({0 * Metre, 2 * Metre, 0 * Metre}),
+            aperiodic[4](t1));
+  EXPECT_EQ(Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre}),
+            aperiodic[5](t1));
+
+  EXPECT_EQ(Displacement<World>({4 * Metre, 0 * Metre, 0 * Metre}),
+            aperiodic[6](t1));
+  EXPECT_EQ(Displacement<World>({0 * Metre, 4 * Metre, 0 * Metre}),
+            aperiodic[7](t1));
+  EXPECT_EQ(Displacement<World>({0 * Metre, 0 * Metre, 4 * Metre}),
+            aperiodic[8](t1));
+
+  EXPECT_THAT(
+      periodic[0](t1),
+      AlmostEquals(
+          Displacement<World>({Sqrt(3) / 2 * Metre, 0 * Metre, 0 * Metre}), 0));
+  EXPECT_THAT(
+      periodic[1](t1),
+      AlmostEquals(
+          Displacement<World>({0.5 * Metre, 0 * Metre, 0 * Metre}), 1));
+  EXPECT_THAT(
+      periodic[2](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, Sqrt(3) / 2 * Metre, 0 * Metre}), 0));
+  EXPECT_THAT(
+      periodic[3](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, 0.5 * Metre, 0 * Metre}), 1));
+  EXPECT_THAT(
+      periodic[4](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, 0 * Metre, Sqrt(3) / 2 * Metre}), 0));
+  EXPECT_THAT(
+      periodic[5](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, 0 * Metre, 0.5 * Metre}), 1));
+
+  EXPECT_THAT(
+      periodic[6](t1),
+      AlmostEquals(
+          Displacement<World>({Sqrt(3) * Metre, 0 * Metre, 0 * Metre}), 0));
+  EXPECT_THAT(
+      periodic[7](t1),
+      AlmostEquals(
+          Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}), 1));
+  EXPECT_THAT(
+      periodic[8](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, Sqrt(3) * Metre, 0 * Metre}), 0));
+  EXPECT_THAT(
+      periodic[9](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, 1 * Metre, 0 * Metre}), 1));
+  EXPECT_THAT(
+      periodic[10](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, 0 * Metre, Sqrt(3) * Metre}), 0));
+  EXPECT_THAT(
+      periodic[11](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre}), 1));
+
+  EXPECT_THAT(
+      periodic[12](t1),
+      AlmostEquals(
+          Displacement<World>({2 * Sqrt(3) * Metre, 0 * Metre, 0 * Metre}), 0));
+  EXPECT_THAT(
+      periodic[13](t1),
+      AlmostEquals(
+          Displacement<World>({2 * Metre, 0 * Metre, 0 * Metre}), 1));
+  EXPECT_THAT(
+      periodic[14](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, 2 * Sqrt(3) * Metre, 0 * Metre}), 0));
+  EXPECT_THAT(
+      periodic[15](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, 2 * Metre, 0 * Metre}), 1));
+  EXPECT_THAT(
+      periodic[16](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, 0 * Metre, 2 * Sqrt(3) * Metre}), 0));
+  EXPECT_THAT(
+      periodic[17](t1),
+      AlmostEquals(
+          Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre}), 1));}
 
 }  // namespace numerics
 }  // namespace principia

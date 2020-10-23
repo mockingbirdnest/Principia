@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <algorithm>
 #include <type_traits>
 
 #include "geometry/interval.hpp"
@@ -25,26 +26,26 @@ using quantities::Time;
 // obtained using FFT).  The |Function| must have a member |FourierTransform|
 // that returns its spectrum.  See [Cha95].
 template<typename Function,
-         int wdegree_,
+         int wdegree,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight);
+    PoissonSeries<double, wdegree, Evaluator> const& weight);
 
 // In the projection functions the |Function| must have an |InnerProduct| with
 // |PoissonSeries| or |PiecewisePoissonSeries|.
 
 // Computes the Кудрявцев projection of |function| on a basis with angular
 // frequency ω and maximum degree |degree_|.  See [Kud07].
-template<int degree_,
+template<int degree,
          typename Function,
-         int wdegree_,
+         int wdegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>, degree, Evaluator>
 Projection(Function const& function,
            AngularFrequency const& ω,
-           PoissonSeries<double, wdegree_, Evaluator> const& weight,
+           PoissonSeries<double, wdegree, Evaluator> const& weight,
            Instant const& t_min,
            Instant const& t_max);
 
@@ -66,14 +67,16 @@ Projection(Function const& function,
 // to |IncrementalProjection|.
 // If the calculator cannot find a suitable frequency, or if it wants to stop
 // the algorithm, it does so by returning std::nullopt.
-template<int degree_,
+template<int aperiodic_degree, int periodic_degree = aperiodic_degree,
          typename Function,
-         typename AngularFrequencyCalculator, int wdegree_,
+         typename AngularFrequencyCalculator, int wdegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<std::invoke_result_t<Function, Instant>, degree_, Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>,
+              std::max(aperiodic_degree, periodic_degree),
+              Evaluator>
 IncrementalProjection(Function const& function,
                       AngularFrequencyCalculator const& calculator,
-                      PoissonSeries<double, wdegree_, Evaluator> const& weight,
+                      PoissonSeries<double, wdegree, Evaluator> const& weight,
                       Instant const& t_min,
                       Instant const& t_max);
 

@@ -82,25 +82,25 @@ typename Series::Polynomial SeriesGenerator<Series, n, d>::Unit(
   return typename Series::Polynomial(coefficients, origin);
 }
 
-template<typename Series, int dimension, std::size_t... indices>
-std::array<Series, dimension*(Series::degree + 1)> PoissonSeriesBasisGenerator<
-    Series, dimension,
+template<typename Series, int dimension, int degree, std::size_t... indices>
+std::array<Series, dimension * (degree + 1)> PoissonSeriesBasisGenerator<
+    Series, dimension, degree,
     std::index_sequence<indices...>>::Basis(Instant const& origin) {
   return {SeriesGenerator<Series, indices / dimension, indices % dimension>::
               Aperiodic(origin)...};
 }
 
-template<typename Series, int dimension, std::size_t... indices>
-std::array<Series, 2 * dimension*(Series::degree + 1)>
+template<typename Series, int dimension, int degree, std::size_t... indices>
+std::array<Series, 2 * dimension * (degree + 1)>
 PoissonSeriesBasisGenerator<
-    Series, dimension,
+    Series, dimension, degree,
     std::index_sequence<indices...>>::Basis(AngularFrequency const& ω,
                                             Instant const& origin) {
   // This has the elements {Sin(ωt), t Sin(ωt), t² Sin(ωt), ..., Cos(ωt), ...}
   // in the scalar case and {x Sin(ωt), y Sin(ωt), z Sin(ωt), x t Sin(ωt), ...}
   // in the vector case.  This is not the order we want (we want lower-degree
   // polynomials first) so we'll need to reorder the terms.
-  std::array<Series, 2 * dimension * (Series::degree + 1)> all_series = {
+  std::array<Series, 2 * dimension * (degree + 1)> all_series = {
       SeriesGenerator<Series, indices / dimension, indices % dimension>::Sin(
           ω, origin)...,
       SeriesGenerator<Series, indices / dimension, indices % dimension>::Cos(
@@ -114,9 +114,9 @@ PoissonSeriesBasisGenerator<
     // 2 * dimension * (Series::degree + 1) are unused.
     std::array<int, all_series.size()> permutation;
     for (int i = 1; i < all_series.size() - 1; ++i) {
-      permutation[i] = i < dimension * (Series::degree + 1)
+      permutation[i] = i < dimension * (degree + 1)
                            ? 2 * i
-                           : 2 * (i - dimension * (Series::degree + 1)) + 1;
+                           : 2 * (i - dimension * (degree + 1)) + 1;
     }
     for (int i = 1; i < all_series.size() - 1;) {
       // Swap the series currently at index i to its final resting place.
