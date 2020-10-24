@@ -34,9 +34,21 @@ namespace si = quantities::si;
 
 // These parameters have been tuned for approximation of the Moon over 3 months
 // with 10 periods.
+
+// In the fast/slow algorithms, specifies the maximum number of periods over the
+// time interval below which we use Clenshaw-Curtis integration.
 constexpr int clenshaw_curtis_max_periods_overall = 40;
+
+// The minimum value of the max_point parameter passed to Clenshaw-Curtis
+// integration, irrespective of the frequencies of the argument function.
 constexpr int clenshaw_curtis_min_points_overall = 33;
+
+// The maximum number of points use in Clenshaw-Curtis integration for each
+// period of the highest frequency of the argument function.
 constexpr int clenshaw_curtis_point_per_period = 4;
+
+// The desired relative error on Clenshaw-Curtis integration, as determined by
+// two successive computations with increasing number of points.
 constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 
 template<typename Value, int degree_,
@@ -364,9 +376,11 @@ PoissonSeries<Value, degree_, Evaluator>::Split(
     }
   }
 
-  //TODO(phl):Comment
+  // The reason for having the slow/fast split is to handle cancellations that
+  // occurs between the aperiodic component and the components with low
+  // frequencies.  If there are no low frequencies, we might as well put the
+  // aperiodic component in the high-frequencies half.
   if (slow_periodic.empty()) {
-    //TODO(phl):Zero
     PoissonSeries slow(TrustedPrivateConstructor{},
                        typename PoissonSeries::Polynomial(
                            typename PoissonSeries::Polynomial::Coefficients{},
@@ -420,10 +434,9 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) const {
-#if 1
-  auto const split = Split(
-      2 * π * Radian * clenshaw_curtis_max_periods_overall /
-                 (t_max - t_min));
+  AngularFrequency const ω_cutoff =
+      2 * π * Radian * clenshaw_curtis_max_periods_overall / (t_max - t_min);
+  auto const split = Split(ω_cutoff);
 
   AngularFrequency const max_ω =
       (split.slow.periodic_.empty() ? AngularFrequency{}
@@ -453,30 +466,6 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
   auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
 
   return Sqrt((slow_quadrature + fast_quadrature) / (t_max - t_min));
-#else
-  AngularFrequency const max_ω =
-      (periodic_.empty() ? AngularFrequency{}
-                         : 2 * periodic_.back().first) +
-      (weight.periodic_.empty() ? AngularFrequency{}
-                                : weight.periodic_.back().first);
-  std::optional<int> max_points =
-      max_ω == AngularFrequency()
-          ? std::optional<int>{}
-          : std::max(
-                clenshaw_curtis_min_points_overall,
-                static_cast<int>(clenshaw_curtis_point_per_period *
-                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
-
-  auto integrand = [this, &weight](Instant const& t) {
-    return Hilbert<Value>::Norm²((*this)(t)) * weight(t);
-  };
-  return Sqrt(quadrature::AutomaticClenshawCurtis(
-                  integrand,
-                  t_min, t_max,
-                  /*max_relative_error=*/clenshaw_curtis_relative_error,
-                  /*max_points=*/max_points) /
-              (t_max - t_min));
-#endif
 }
 
 template<typename Value, int degree_,

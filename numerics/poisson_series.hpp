@@ -151,7 +151,8 @@ class PoissonSeries {
                 Polynomial aperiodic,
                 PolynomialsByAngularFrequency periodic);
 
-  //TODO(phl): Comment.
+  // Splits this series into two copies, with frequencies lower and higher than
+  // ω_cutoff, respectively.
   struct SplitPoissonSeries {
     PoissonSeries slow;
     PoissonSeries fast;
