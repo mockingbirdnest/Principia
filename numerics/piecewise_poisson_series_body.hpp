@@ -169,7 +169,8 @@ template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Value, degree_, Evaluator>::PiecewisePoissonSeries(
     std::vector<Instant> const& bounds,
-    std::vector<PoissonSeries<Value, degree_, degree_, Evaluator>> const& series,
+    std::vector<PoissonSeries<Value, degree_, degree_, Evaluator>> const&
+        series,
     std::optional<Series> const& addend)
     : bounds_(bounds),
       series_(series),
@@ -383,10 +384,10 @@ template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
          int points>
-typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PoissonSeries<LValue, ldegree_, ldegree_, Evaluator> const& left,
-             PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
-             PoissonSeries<double, wdegree_, wdegree_, Evaluator> const& weight) {
+typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
+    PoissonSeries<LValue, ldegree_, ldegree_, Evaluator> const& left,
+    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, wdegree_, Evaluator> const& weight) {
   return InnerProduct<LValue, RValue,
                       ldegree_, rdegree_, wdegree_,
                       Evaluator,
@@ -424,10 +425,10 @@ template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
          template<typename, typename, int> class Evaluator,
          int points>
-typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
-             PoissonSeries<RValue, rdegree_, rdegree_, Evaluator> const& right,
-             PoissonSeries<double, wdegree_, wdegree_,Evaluator> const& weight) {
+typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
+    PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, wdegree_, Evaluator> const& weight) {
   return InnerProduct<LValue, RValue,
                       ldegree_, rdegree_, wdegree_,
                       Evaluator,
@@ -442,7 +443,7 @@ template<typename LValue, typename RValue,
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
              PoissonSeries<RValue, rdegree_, rdegree_, Evaluator> const& right,
-             PoissonSeries<double, wdegree_, wdegree_,Evaluator> const& weight,
+             PoissonSeries<double, wdegree_, wdegree_, Evaluator> const& weight,
              Instant const& t_min,
              Instant const& t_max) {
   using Result =
