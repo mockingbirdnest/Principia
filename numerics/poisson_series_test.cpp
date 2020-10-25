@@ -58,8 +58,8 @@ class PoissonSeriesTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using Degree0 = PoissonSeries<double, 0, HornerEvaluator>;
-  using Degree1 = PoissonSeries<double, 1, HornerEvaluator>;
+  using Degree0 = PoissonSeries<double, 0, 0, HornerEvaluator>;
+  using Degree1 = PoissonSeries<double, 1, 1, HornerEvaluator>;
 
   PoissonSeriesTest()
       : ω0_(0 * Radian / Second),

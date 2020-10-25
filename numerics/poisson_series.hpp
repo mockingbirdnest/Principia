@@ -166,61 +166,61 @@ class PoissonSeries {
   // order.
   PolynomialsByAngularFrequency periodic_;
 
-  template<typename V, int r, template<typename, typename, int> class E>
-  PoissonSeries<V, r, E>
-  friend operator-(PoissonSeries<V, r, E> const& right);
-  template<typename V, int l, int r, template<typename, typename, int> class E>
-  PoissonSeries<V, std::max(l, r), E>
-  friend operator+(PoissonSeries<V, l, E> const& left,
-                   PoissonSeries<V, r, E> const& right);
-  template<typename V, int l, int r, template<typename, typename, int> class E>
-  PoissonSeries<V, std::max(l, r), E>
-  friend operator-(PoissonSeries<V, l, E> const& left,
-                   PoissonSeries<V, r, E> const& right);
-  template<typename Scalar,
-           typename V, int d,
+  template<typename V, int ar, int pr,
            template<typename, typename, int> class E>
-  PoissonSeries<Product<Scalar, V>, d, E>
-  friend operator*(Scalar const& left,
-                   PoissonSeries<V, d, E> const& right);
-  template<typename Scalar,
-           typename V, int d,
+  PoissonSeries<V, ar, pr, E>
+  friend operator-(PoissonSeries<V, ar, pr, E> const& right);
+  template<typename V, int al, int pl, int ar, int pr,
            template<typename, typename, int> class E>
-  PoissonSeries<Product<V, Scalar>, d, E>
-  friend operator*(PoissonSeries<V, d, E> const& left,
-                   Scalar const& right);
-  template<typename Scalar,
-           typename V, int d,
+  PoissonSeries<V, std::max(al, ar), std::max(pl, pr), E>
+  friend operator+(PoissonSeries<V, al, pl, E> const& left,
+                   PoissonSeries<V, ar, pr, E> const& right);
+  template<typename V, int al, int pl, int ar, int pr,
            template<typename, typename, int> class E>
-  PoissonSeries<Quotient<V, Scalar>, d, E>
-  friend operator/(PoissonSeries<V, d, E> const& left,
-                   Scalar const& right);
-  template<typename L, typename R,
-           int l, int r,
+  PoissonSeries<V, std::max(al, ar), std::max(pl, pr), E>
+  friend operator-(PoissonSeries<V, al, pl, E> const& left,
+                   PoissonSeries<V, ar, pr, E> const& right);
+  template<typename S, typename V, int ar, int pr,
+           template<typename, typename, int> class E>
+  PoissonSeries<Product<S, V>, ar, pr, E>
+  friend operator*(S const& left,
+                   PoissonSeries<V, ar, pr, E> const& right);
+  template<typename S, typename V, int al, int pl,
+           template<typename, typename, int> class E>
+  PoissonSeries<Product<V, S>, al, pl, E>
+  friend operator*(PoissonSeries<V, al, pl, E> const& left,
+                   S const& right);
+  template<typename S, typename V, int al, int pl,
+           template<typename, typename, int> class E>
+  PoissonSeries<Quotient<V, S>, al, pl, E>
+  friend operator/(PoissonSeries<V, al, pl, E> const& left,
+                   S const& right);
+  template<typename L, typename R, int al, int pl, int ar, int pr,
            template<typename, typename, int> class E,
            typename P>
-  auto friend Multiply(PoissonSeries<L, l, E> const& left,
-                       PoissonSeries<R, r, E> const& right,
+  auto friend Multiply(PoissonSeries<L, al, pl, E> const& left,
+                       PoissonSeries<R, ar, pr, E> const& right,
                        P const& product);
-  template<typename V, int d, template<typename, typename, int> class E>
+  template<typename V, int ad, int pd,
+           template<typename, typename, int> class E>
   friend std::ostream& operator<<(std::ostream& out,
-                                  PoissonSeries<V, d, E> const& series);
+                                  PoissonSeries<V, ad, pd, E> const& series);
   template<typename L, typename R,
-         int l, int r, int w,
+         int al, int pl, int ar, int pr, int aw, int pw,
          template<typename, typename, int> class E>
   friend typename Hilbert<L, R>::InnerProductType InnerProduct(
-      PoissonSeries<L, l, E> const& left,
-      PoissonSeries<R, r, E> const& right,
-      PoissonSeries<double, w, E> const& weight,
+      PoissonSeries<L, al, pl, E> const& left,
+      PoissonSeries<R, ar, pr, E> const& right,
+      PoissonSeries<double, aw, pw, E> const& weight,
       Instant const& t_min,
       Instant const& t_max);
-  template<typename V, int d,
+  template<typename V, int ad, int pd,
            template<typename, typename, int> class E,
            typename O>
   friend std::string mathematica::internal_mathematica::ToMathematicaExpression(
-      PoissonSeries<V, d, E> const& polynomial,
+      PoissonSeries<V, ad, pd, E> const& polynomial,
       O express_in);
-  template<typename V, int d,
+  template<typename V, int ad, int pd,
            template<typename, typename, int> class E>
   friend class PoissonSeries;
 };
