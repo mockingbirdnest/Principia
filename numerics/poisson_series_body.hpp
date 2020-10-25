@@ -128,18 +128,18 @@ auto Multiply(PoissonSeries<LValue,
                    2 * left.periodic_.size() * right.periodic_.size());
   for (auto const& [ω, polynomials] : left.periodic_) {
     auto const cos_polynomial = typename Result::PeriodicPolynomial(
-        product(polynomials.sin, right.aperiodic_));
-    auto const sin_polynomial = typename Result::PeriodicPolynomial(
         product(polynomials.cos, right.aperiodic_));
+    auto const sin_polynomial = typename Result::PeriodicPolynomial(
+        product(polynomials.sin, right.aperiodic_));
     periodic.emplace_back(ω,
                           typename Result::Polynomials{/*sin=*/sin_polynomial,
                                                        /*cos=*/cos_polynomial});
   }
   for (auto const& [ω, polynomials] : right.periodic_) {
     auto const cos_polynomial = typename Result::PeriodicPolynomial(
-        product(left.aperiodic_, polynomials.sin));
-    auto const sin_polynomial = typename Result::PeriodicPolynomial(
         product(left.aperiodic_, polynomials.cos));
+    auto const sin_polynomial = typename Result::PeriodicPolynomial(
+        product(left.aperiodic_, polynomials.sin));
     periodic.emplace_back(ω,
                           typename Result::Polynomials{/*sin=*/sin_polynomial,
                                                        /*cos=*/cos_polynomial});
@@ -493,10 +493,11 @@ PoissonSeries(PrivateConstructor,
       } else {
         ++it;
       }
-    } else {
-      LOG(FATAL)<<"nonpasnous";
-      //aperiodic_ += AperiodicPolynomial(polynomials.cos);
+    } else if constexpr (aperiodic_degree_ >= periodic_degree_) {
+      aperiodic_ += AperiodicPolynomial(polynomials.cos);
       it = periodic_.erase(it);
+    } else {
+      LOG(FATAL) << "Degrees mismatch for zero frequency";
     }
     previous_abs_ω = abs_ω;
   }
@@ -816,7 +817,9 @@ template<typename LValue, typename RValue,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Product<LValue, RValue>,
               aperiodic_ldegree + aperiodic_rdegree,
-              periodic_ldegree + periodic_rdegree,
+              std::max({periodic_ldegree + periodic_rdegree,
+                        aperiodic_ldegree + periodic_rdegree,
+                        periodic_ldegree + aperiodic_rdegree}),
               Evaluator>
 operator*(PoissonSeries<LValue,
                         aperiodic_ldegree, periodic_ldegree,
