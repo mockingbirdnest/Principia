@@ -154,6 +154,29 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+template<int higher_degree_,
+         template<typename, typename, int> class HigherEvaluator>
+PoissonSeries<Value, degree_, Evaluator>::
+operator PoissonSeries<Value, higher_degree_, HigherEvaluator>() const {
+  static_assert(degree_ <= higher_degree_);
+  using Result = PoissonSeries<Value, higher_degree_, HigherEvaluator>;
+  auto aperiodic = typename Result::Polynomial(aperiodic_);
+  typename Result::PolynomialsByAngularFrequency periodic;
+  periodic.reserve(periodic_.size());
+  for (auto const& [ω, polynomials] : periodic_) {
+    periodic.emplace_back(
+        ω,
+        typename Result::Polynomials{
+            /*sin=*/typename Result::Polynomial(polynomials.sin),
+            /*cos=*/typename Result::Polynomial(polynomials.cos)});
+  }
+  return Result(typename Result::TrustedPrivateConstructor{},
+                std::move(aperiodic),
+                std::move(periodic));
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 Instant const& PoissonSeries<Value, degree_, Evaluator>::origin() const {
   return origin_;
 }
@@ -248,6 +271,70 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
     result += (sum.value + sum.error) / ω * Radian;
   }
   return result;
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+template<int wdegree_>
+typename Hilbert<Value>::NormType
+PoissonSeries<Value, degree_, Evaluator>::Norm(
+    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) const {
+  AngularFrequency const ω_cutoff =
+      2 * π * Radian * clenshaw_curtis_max_periods_overall / (t_max - t_min);
+  auto const split = Split(ω_cutoff);
+
+  AngularFrequency const max_ω =
+      (split.slow.periodic_.empty() ? AngularFrequency{}
+                                     : 2 * split.slow.periodic_.back().first) +
+      (weight.periodic_.empty() ? AngularFrequency{}
+                                : weight.periodic_.back().first);
+  std::optional<int> max_points =
+      max_ω == AngularFrequency()
+          ? std::optional<int>{}
+          : std::max(
+                clenshaw_curtis_min_points_overall,
+                static_cast<int>(clenshaw_curtis_point_per_period *
+                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
+
+  auto slow_integrand = [&split, &weight](Instant const& t) {
+    return Hilbert<Value>::Norm²(split.slow(t)) * weight(t);
+  };
+  auto const slow_quadrature = quadrature::AutomaticClenshawCurtis(
+      slow_integrand,
+      t_min, t_max,
+      /*max_relative_error=*/clenshaw_curtis_relative_error,
+      /*max_points=*/max_points);
+
+  auto const fast_integrand =
+      PointwiseInnerProduct(split.fast, split.fast + 2 * split.slow) *
+      weight;
+  auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
+
+  return Sqrt((slow_quadrature + fast_quadrature) / (t_max - t_min));
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+template<int d>
+PoissonSeries<Value, degree_, Evaluator>&
+PoissonSeries<Value, degree_, Evaluator>::operator+=(
+    PoissonSeries<Value, d, Evaluator> const& right) {
+  static_assert(d <= degree);
+  *this = *this + right;
+  return *this;
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
+template<int d>
+PoissonSeries<Value, degree_, Evaluator>&
+PoissonSeries<Value, degree_, Evaluator>::operator-=(
+    PoissonSeries<Value, d, Evaluator> const& right) {
+  static_assert(d <= degree);
+  *this = *this - right;
+  return *this;
 }
 
 template<typename Value, int degree_,
@@ -399,93 +486,6 @@ PoissonSeries<Value, degree_, Evaluator>::Split(
                        std::move(fast_periodic));
     return {/*slow=*/std::move(slow), /*fast=*/std::move(fast)};
   }
-}
-
-template<typename Value, int degree_,
-         template<typename, typename, int> class Evaluator>
-template<int higher_degree_,
-         template<typename, typename, int> class HigherEvaluator>
-PoissonSeries<Value, degree_, Evaluator>::
-operator PoissonSeries<Value, higher_degree_, HigherEvaluator>() const {
-  static_assert(degree_ <= higher_degree_);
-  using Result = PoissonSeries<Value, higher_degree_, HigherEvaluator>;
-  auto aperiodic = typename Result::Polynomial(aperiodic_);
-  typename Result::PolynomialsByAngularFrequency periodic;
-  periodic.reserve(periodic_.size());
-  for (auto const& [ω, polynomials] : periodic_) {
-    periodic.emplace_back(
-        ω,
-        typename Result::Polynomials{
-            /*sin=*/typename Result::Polynomial(polynomials.sin),
-            /*cos=*/typename Result::Polynomial(polynomials.cos)});
-  }
-  return Result(typename Result::TrustedPrivateConstructor{},
-                std::move(aperiodic),
-                std::move(periodic));
-}
-
-template<typename Value, int degree_,
-         template<typename, typename, int> class Evaluator>
-template<int wdegree_>
-typename Hilbert<Value>::NormType
-PoissonSeries<Value, degree_, Evaluator>::Norm(
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
-    Instant const& t_min,
-    Instant const& t_max) const {
-  AngularFrequency const ω_cutoff =
-      2 * π * Radian * clenshaw_curtis_max_periods_overall / (t_max - t_min);
-  auto const split = Split(ω_cutoff);
-
-  AngularFrequency const max_ω =
-      (split.slow.periodic_.empty() ? AngularFrequency{}
-                                     : 2 * split.slow.periodic_.back().first) +
-      (weight.periodic_.empty() ? AngularFrequency{}
-                                : weight.periodic_.back().first);
-  std::optional<int> max_points =
-      max_ω == AngularFrequency()
-          ? std::optional<int>{}
-          : std::max(
-                clenshaw_curtis_min_points_overall,
-                static_cast<int>(clenshaw_curtis_point_per_period *
-                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
-
-  auto slow_integrand = [&split, &weight](Instant const& t) {
-    return Hilbert<Value>::Norm²(split.slow(t)) * weight(t);
-  };
-  auto const slow_quadrature = quadrature::AutomaticClenshawCurtis(
-      slow_integrand,
-      t_min, t_max,
-      /*max_relative_error=*/clenshaw_curtis_relative_error,
-      /*max_points=*/max_points);
-
-  auto const fast_integrand =
-      PointwiseInnerProduct(split.fast, split.fast + 2 * split.slow) *
-      weight;
-  auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
-
-  return Sqrt((slow_quadrature + fast_quadrature) / (t_max - t_min));
-}
-
-template<typename Value, int degree_,
-         template<typename, typename, int> class Evaluator>
-template<int d>
-PoissonSeries<Value, degree_, Evaluator>&
-PoissonSeries<Value, degree_, Evaluator>::operator+=(
-    PoissonSeries<Value, d, Evaluator> const& right) {
-  static_assert(d <= degree);
-  *this = *this + right;
-  return *this;
-}
-
-template<typename Value, int degree_,
-         template<typename, typename, int> class Evaluator>
-template<int d>
-PoissonSeries<Value, degree_, Evaluator>&
-PoissonSeries<Value, degree_, Evaluator>::operator-=(
-    PoissonSeries<Value, d, Evaluator> const& right) {
-  static_assert(d <= degree);
-  *this = *this - right;
-  return *this;
 }
 
 template<typename Value, int rdegree_,
