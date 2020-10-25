@@ -112,13 +112,17 @@ auto Multiply(PoissonSeries<LValue,
                                   aperiodic_rdegree, periodic_rdegree,
                                   Evaluator>::AperiodicPolynomial>::
           Value,
-      aperiodic_ldegree + aperiodic_rdegree,
-      std::max({periodic_ldegree + periodic_rdegree,
+      std::max({aperiodic_ldegree + aperiodic_rdegree,
                 aperiodic_ldegree + periodic_rdegree,
-                periodic_ldegree + aperiodic_rdegree}),
+                periodic_ldegree + aperiodic_rdegree,
+                periodic_ldegree + periodic_rdegree}),
+      std::max({aperiodic_ldegree + periodic_rdegree,
+                periodic_ldegree + aperiodic_rdegree,
+                periodic_ldegree + periodic_rdegree}),
       Evaluator>;
 
-  auto aperiodic = product(left.aperiodic_, right.aperiodic_);
+  auto aperiodic = typename Result::AperiodicPolynomial(
+      product(left.aperiodic_, right.aperiodic_));
 
   // Compute all the individual terms using elementary trigonometric identities
   // and put them in a vector, because the same frequency may appear multiple
@@ -497,7 +501,7 @@ PoissonSeries(PrivateConstructor,
       aperiodic_ += AperiodicPolynomial(polynomials.cos);
       it = periodic_.erase(it);
     } else {
-      LOG(FATAL) << "Degrees mismatch for zero frequency";
+      LOG(FATAL) << "Degrees mismatch for zero frequency: " << polynomials.cos;
     }
     previous_abs_ω = abs_ω;
   }
@@ -816,10 +820,13 @@ template<typename LValue, typename RValue,
          int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Product<LValue, RValue>,
-              aperiodic_ldegree + aperiodic_rdegree,
-              std::max({periodic_ldegree + periodic_rdegree,
+              std::max({aperiodic_ldegree + aperiodic_rdegree,
                         aperiodic_ldegree + periodic_rdegree,
-                        periodic_ldegree + aperiodic_rdegree}),
+                        periodic_ldegree + aperiodic_rdegree,
+                        periodic_ldegree + periodic_rdegree}),
+              std::max({aperiodic_ldegree + periodic_rdegree,
+                        periodic_ldegree + aperiodic_rdegree,
+                        periodic_ldegree + periodic_rdegree}),
               Evaluator>
 operator*(PoissonSeries<LValue,
                         aperiodic_ldegree, periodic_ldegree,
@@ -842,10 +849,13 @@ template<typename LValue, typename RValue,
          int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
-              aperiodic_ldegree + aperiodic_rdegree,
-              std::max({periodic_ldegree + periodic_rdegree,
+              std::max({aperiodic_ldegree + aperiodic_rdegree,
                         aperiodic_ldegree + periodic_rdegree,
-                        periodic_ldegree + aperiodic_rdegree}),
+                        periodic_ldegree + aperiodic_rdegree,
+                        periodic_ldegree + periodic_rdegree}),
+              std::max({aperiodic_ldegree + periodic_rdegree,
+                        periodic_ldegree + aperiodic_rdegree,
+                        periodic_ldegree + periodic_rdegree}),
               Evaluator>
 PointwiseInnerProduct(PoissonSeries<LValue,
                                     aperiodic_ldegree, periodic_ldegree,
