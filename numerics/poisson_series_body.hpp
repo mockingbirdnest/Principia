@@ -542,17 +542,23 @@ Split(AngularFrequency const& ω_cutoff) const {
   }
 }
 
-template<typename Value, int rdegree_,
+template<typename Value,
+         int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<Value, rdegree_, Evaluator> operator+(
-    PoissonSeries<Value, rdegree_, Evaluator> const& right) {
+PoissonSeries<Value, aperiodic_rdegree, periodic_rdegree, Evaluator>
+operator+(PoissonSeries<Value,
+                        aperiodic_rdegree, periodic_rdegree,
+                        Evaluator> const& right) {
   return right;
 }
 
-template<typename Value, int rdegree_,
+template<typename Value,
+         int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<Value, rdegree_, Evaluator>
-operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
+PoissonSeries<Value, aperiodic_rdegree, periodic_rdegree, Evaluator>
+operator-(PoissonSeries<Value,
+                        aperiodic_rdegree, periodic_rdegree,
+                        Evaluator> const& right) {
   using Result = PoissonSeries<Value, rdegree_, Evaluator>;
   auto aperiodic = -right.aperiodic_;
   typename Result::PolynomialsByAngularFrequency periodic;
@@ -568,11 +574,20 @@ operator-(PoissonSeries<Value, rdegree_, Evaluator> const& right) {
           std::move(periodic)};
 }
 
-template<typename Value, int ldegree_, int rdegree_,
+template<typename Value,
+         int aperiodic_ldegree, int periodic_ldegree,
+         int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
-operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
-          PoissonSeries<Value, rdegree_, Evaluator> const& right) {
+PoissonSeries<Value,
+              std::max(aperiodic_ldegree, aperiodic_rdegree),
+              std::max(periodic_ldegree, periodic_rdegree),
+              Evaluator>
+operator+(PoissonSeries<Value,
+                        aperiodic_ldegree, periodic_ldegree,
+                        Evaluator> const& left,
+          PoissonSeries<Value,
+                        aperiodic_rdegree, periodic_rdegree,
+                        Evaluator> const& right) {
   using Result = PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   auto aperiodic = left.aperiodic_ + right.aperiodic_;
   typename Result::PolynomialsByAngularFrequency periodic;
@@ -623,11 +638,20 @@ operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           std::move(periodic)};
 }
 
-template<typename Value, int ldegree_, int rdegree_,
+template<typename Value,
+         int aperiodic_ldegree, int periodic_ldegree,
+         int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
-operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
-          PoissonSeries<Value, rdegree_, Evaluator> const& right) {
+PoissonSeries<Value,
+              std::max(aperiodic_ldegree, aperiodic_rdegree),
+              std::max(periodic_ldegree, periodic_rdegree),
+              Evaluator>
+operator-(PoissonSeries<Value,
+                        aperiodic_ldegree, periodic_ldegree,
+                        Evaluator> const& left,
+          PoissonSeries<Value,
+                        aperiodic_rdegree, periodic_rdegree,
+                        Evaluator> const& right) {
   using Result = PoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>;
   auto aperiodic = left.aperiodic_ - right.aperiodic_;
   typename Result::PolynomialsByAngularFrequency periodic;
@@ -678,11 +702,16 @@ operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
           std::move(periodic)};
 }
 
-template<typename Scalar, typename Value, int degree_,
+template<typename Scalar, typename Value,
+         int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>
+PoissonSeries<Product<Scalar, Value>,
+              aperiodic_rdegree, periodic_rdegree,
+              Evaluator>
 operator*(Scalar const& left,
-          PoissonSeries<Value, degree_, Evaluator> const& right) {
+          PoissonSeries<Value,
+                        aperiodic_rdegree, periodic_rdegree,
+                        Evaluator> const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>, degree_, Evaluator>;
   auto aperiodic = left * right.aperiodic_;
   typename Result::PolynomialsByAngularFrequency periodic;
@@ -698,10 +727,15 @@ operator*(Scalar const& left,
           std::move(periodic)};
 }
 
-template<typename Scalar, typename Value, int degree_,
+template<typename Scalar, typename Value,
+         int aperiodic_ldegree, int periodic_ldegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<Product<Value, Scalar>, degree_, Evaluator>
-operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
+PoissonSeries<Product<Value, Scalar>,
+              aperiodic_ldegree, periodic_ldegree,
+              Evaluator>
+operator*(PoissonSeries<Value,
+                        aperiodic_ldegree, periodic_ldegree,
+                        Evaluator> const& left,
           Scalar const& right) {
   using Result = PoissonSeries<Product<Value, Scalar>, degree_, Evaluator>;
   auto aperiodic = left.aperiodic_ * right;
@@ -718,10 +752,15 @@ operator*(PoissonSeries<Value, degree_, Evaluator> const& left,
           std::move(periodic)};
 }
 
-template<typename Scalar, typename Value, int degree_,
+template<typename Scalar, typename Value,
+         int aperiodic_ldegree, int periodic_ldegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>
-operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
+PoissonSeries<Quotient<Value, Scalar>,
+              aperiodic_ldegree, periodic_ldegree,
+              Evaluator>
+operator/(PoissonSeries<Value,
+                        aperiodic_ldegree, periodic_ldegree,
+                        Evaluator> const& left,
           Scalar const& right) {
   using Result = PoissonSeries<Quotient<Value, Scalar>, degree_, Evaluator>;
   auto aperiodic = left.aperiodic_ / right;
@@ -739,15 +778,23 @@ operator/(PoissonSeries<Value, degree_, Evaluator> const& left,
 }
 
 template<typename LValue, typename RValue,
-         int ldegree_, int rdegree_,
+         int aperiodic_ldegree, int periodic_ldegree,
+         int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
-operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-          PoissonSeries<RValue, rdegree_, Evaluator> const& right) {
+PoissonSeries<Product<LValue, RValue>,
+              aperiodic_ldegree + aperiodic_rdegree,
+              periodic_ldegree + periodic_rdegree,
+              Evaluator>
+operator*(PoissonSeries<LValue,
+                        aperiodic_ldegree, periodic_ldegree,
+                        Evaluator> const& left,
+          PoissonSeries<RValue,
+                        aperiodic_rdegree, periodic_rdegree,
+                        Evaluator> const& right) {
   auto product =
-      [](typename PoissonSeries<LValue, ldegree_, Evaluator>::Polynomial const&
+      [](PolynomialInMonomialBasis<LValue, Instant, ldegree, Evaluator> const&
              left,
-         typename PoissonSeries<RValue, rdegree_, Evaluator>::Polynomial const&
+         PolynomialInMonomialBasis<RValue, Instant, rdegree, Evaluator> const&
              right) {
     return left * right;
   };
@@ -757,17 +804,23 @@ operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
 }
 
 template<typename LValue, typename RValue,
-         int ldegree_, int rdegree_,
+         int aperiodic_ldegree, int periodic_ldegree,
+         int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
-              ldegree_ + rdegree_,
+              aperiodic_ldegree + aperiodic_rdegree,
+              periodic_ldegree + periodic_rdegree,
               Evaluator>
-PointwiseInnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-                      PoissonSeries<RValue, rdegree_, Evaluator> const& right) {
+PointwiseInnerProduct(PoissonSeries<LValue,
+                                    aperiodic_ldegree, periodic_ldegree,
+                                    Evaluator> const& left,
+                      PoissonSeries<RValue,
+                                    aperiodic_rdegree, periodic_rdegree,
+                                    Evaluator> const& right) {
   auto product =
-      [](typename PoissonSeries<LValue, ldegree_, Evaluator>::Polynomial const&
+      [](PolynomialInMonomialBasis<LValue, Instant, ldegree, Evaluator> const&
              left,
-         typename PoissonSeries<RValue, rdegree_, Evaluator>::Polynomial const&
+         PolynomialInMonomialBasis<RValue, Instant, rdegree, Evaluator> const&
              right) {
     return PointwiseInnerProduct(left, right);
   };
@@ -776,11 +829,14 @@ PointwiseInnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
       left, right, product);
 }
 
-template<typename Value, int degree_,
+template<typename Value,
+         int aperiodic_degree, int periodic_degree,
          template<typename, typename, int> class Evaluator>
 std::ostream& operator<<(
     std::ostream& out,
-    PoissonSeries<Value, degree_, Evaluator> const& series) {
+    PoissonSeries<Value,
+                  aperiodic_degree, periodic_degree,
+                  Evaluator> const& series) {
   bool is_start_of_output = true;
   if (!series.aperiodic_.is_zero()) {
     out << series.aperiodic_;
@@ -808,12 +864,20 @@ std::ostream& operator<<(
 }
 
 template<typename LValue, typename RValue,
-         int ldegree_, int rdegree_, int wdegree_,
+         int aperiodic_ldegree, int periodic_ldegree,
+         int aperiodic_rdegree, int periodic_rdegree,
+         int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
-    PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-    PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-    PoissonSeries<double, wdegree_, Evaluator> const& weight,
+    PoissonSeries<LValue,
+                  aperiodic_ldegree, periodic_ldegree,
+                  Evaluator> const& left,
+    PoissonSeries<RValue,
+                  aperiodic_rdegree, periodic_rdegree,
+                  Evaluator> const& right,
+    PoissonSeries<double,
+                  aperiodic_wdegree, periodic_wdegree,
+                  Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) {
   AngularFrequency const ω_cutoff =

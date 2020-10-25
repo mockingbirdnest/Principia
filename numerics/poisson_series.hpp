@@ -235,8 +235,8 @@ operator+(PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree,
                         Evaluator> const& right);
 
-template<typename Value, int
-         aperiodic_rdegree, int periodic_rdegree,
+template<typename Value,
+         int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value, aperiodic_rdegree, periodic_rdegree, Evaluator>
 operator-(PoissonSeries<Value,
