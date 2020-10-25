@@ -52,7 +52,7 @@ namespace apodization = numerics::apodization;
 namespace frequency_analysis = numerics::frequency_analysis;
 
 static constexpr int aperiodic_approximation_degree = 5;
-static constexpr int periodic_approximation_degree = 5;
+static constexpr int periodic_approximation_degree = 3;
 static constexpr int log2_number_of_samples = 14;
 static constexpr int number_of_frequencies = 10;
 static constexpr Length acceptable_residual = 1 * Metre;

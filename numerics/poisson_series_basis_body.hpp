@@ -42,23 +42,23 @@ Series SeriesGenerator<Series, n, d>::Aperiodic(Instant const& origin) {
 template<typename Series, int n, int d>
 Series SeriesGenerator<Series, n, d>::Sin(AngularFrequency const& ω,
                                           Instant const& origin) {
-  typename Series::PeriodicPolynomial::Coefficients const zeros;
-  typename Series::PeriodicPolynomial const zero{zeros, origin};
-  return Series(zero,
+  typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
+  typename Series::PeriodicPolynomial const periodic_zero{{}, origin};
+  return Series(aperiodic_zero,
                 {{ω,
                   {/*sin=*/Unit<typename Series::PeriodicPolynomial>(origin),
-                   /*cos=*/zero}}});
+                   /*cos=*/periodic_zero}}});
 }
 
 template<typename Series, int n, int d>
 Series SeriesGenerator<Series, n, d>::Cos(AngularFrequency const& ω,
                                           Instant const& origin) {
-  typename Series::PeriodicPolynomial::Coefficients const zeros;
-  typename Series::PeriodicPolynomial const zero{zeros, origin};
+  typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
+  typename Series::PeriodicPolynomial const periodic_zero{{}, origin};
   return Series(
-      zero,
+      aperiodic_zero,
       {{ω,
-        {/*sin=*/zero,
+        {/*sin=*/periodic_zero,
          /*cos=*/Unit<typename Series::PeriodicPolynomial>(origin)}}});
 }
 
