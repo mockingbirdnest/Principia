@@ -274,6 +274,9 @@
     <ClCompile Include="scale_b_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="piecewise_poisson_series_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
