@@ -1,6 +1,9 @@
 ﻿
 #pragma once
 
+#include <optional>
+#include <vector>
+
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/complexification.hpp"

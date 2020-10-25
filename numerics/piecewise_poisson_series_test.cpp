@@ -204,6 +204,58 @@ TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
   EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 0));
 }
 
+TEST_F(PiecewisePoissonSeriesTest, Fourier) {
+  Degree0::Polynomial constant({1.0}, t0_);
+  AngularFrequency const ω = 4 * Radian / Second;
+  PoissonSeries<Displacement<World>, 0, HornerEvaluator> signal(
+      constant * Displacement<World>{},
+      {{ω,
+        {/*sin=*/constant *
+             Displacement<World>({2 * Metre, -3 * Metre, 5 * Metre}),
+         /*cos=*/constant *
+             Displacement<World>({-7 * Metre, 11 * Metre, -13 * Metre})}}});
+  // Slice our signal into segments short enough that one-point Gauss-Legendre
+  // (also known as midpoint) does the job.
+  constexpr int segments = 100;
+  PiecewisePoissonSeries<Displacement<World>, 0, HornerEvaluator> f(
+      {t0_, t0_ + π * Second / segments}, signal);
+  for (int k = 1; k < segments; ++k) {
+    f.Append({t0_ + k * π * Second / segments,
+              t0_ + (k + 1) * π * Second / segments},
+             signal);
+  }
+  auto const f_fourier_transform = f.FourierTransform();
+  auto const f_power_spectrum =
+      [&f_fourier_transform](AngularFrequency const& ω) {
+        return f_fourier_transform(ω).Norm²();
+      };
+  EXPECT_THAT(Brent(f_power_spectrum, 0.9 * ω, 1.1 * ω, std::greater<>{}),
+              RelativeErrorFrom(ω, IsNear(0.03_⑴)));
+  // A peak arising from the finite interval.
+  EXPECT_THAT(Brent(f_power_spectrum,
+                    0 * Radian / Second,
+                    2 * Radian / Second,
+                    std::greater<>{}),
+              IsNear(1.209_⑴ * Radian / Second));
+
+  auto const fw = f * apodization::Hann<HornerEvaluator>(f.t_min(), f.t_max());
+
+  auto const fw_fourier_transform = fw.FourierTransform();
+  auto const fw_power_spectrum =
+      [&fw_fourier_transform](AngularFrequency const& ω) {
+        return fw_fourier_transform(ω).Norm²();
+      };
+  EXPECT_THAT(Brent(fw_power_spectrum, 0.9 * ω, 1.1 * ω, std::greater<>{}),
+              RelativeErrorFrom(ω, IsNear(0.005_⑴)));
+  // Hann filters out the interval; this search for a second maximum converges
+  // to its boundary.
+  EXPECT_THAT(Brent(fw_power_spectrum,
+                    0 * Radian / Second,
+                    2 * Radian / Second,
+                    std::greater<>{}),
+              IsNear(1.9999999_⑴ * Radian / Second));
+}
+
 TEST_F(PiecewisePoissonSeriesTest, Serialization) {
   serialization::PiecewisePoissonSeries message;
   pp_ += p_;
