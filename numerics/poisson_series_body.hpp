@@ -395,7 +395,6 @@ operator-=(PoissonSeries<Value,
                          Evaluator> const& right) {
   static_assert(aperiodic_rdegree <= aperiodic_degree_);
   static_assert(periodic_rdegree <= periodic_degree_);
-  static_assert(d <= degree);
   *this = *this - right;
   return *this;
 }

@@ -74,10 +74,11 @@ Projection(Function const& function,
     return result;
   };
 
-  return IncrementalProjection<degree>(function,
-                                        angular_frequency_calculator,
-                                        weight,
-                                        t_min, t_max);
+  return IncrementalProjection<aperiodic_degree, periodic_degree>(
+      function,
+      angular_frequency_calculator,
+      weight,
+      t_min, t_max);
 }
 
 template<int aperiodic_degree, int periodic_degree,
@@ -98,7 +99,9 @@ IncrementalProjection(Function const& function,
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
   using Normalized = typename Hilbert<Value>::NormalizedType;
-  using Series = PoissonSeries<Value, degree, Evaluator>;
+  using Series = PoissonSeries<Value,
+                               aperiodic_degree, periodic_degree,
+                               Evaluator>;
 
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
   // of Кудрявцев which start at 1.
@@ -128,7 +131,9 @@ IncrementalProjection(Function const& function,
   }
 
   // This is logically Q in the QR decomposition of basis.
-  std::vector<PoissonSeries<Normalized, degree, Evaluator>> q;
+  std::vector<PoissonSeries<Normalized,
+                            aperiodic_degree, periodic_degree,
+                            Evaluator>> q;
 
   auto const a₀ = basis[0];
   auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
@@ -136,7 +141,7 @@ IncrementalProjection(Function const& function,
 
   auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
 
-  PoissonSeries<Value, degree, Evaluator> F = A₀ * q[0];
+  Series F = A₀ * q[0];
   auto f = function - F;
 
   int m_begin = 1;
