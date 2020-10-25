@@ -206,10 +206,10 @@ std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in = std::nullopt);
 
-template<typename V, int d,
+template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
          typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(PoissonSeries<V, d, E> const& series,
+std::string ToMathematica(PoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, int d,

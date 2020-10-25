@@ -120,10 +120,10 @@ std::string ToMathematicaExpression(
   return Apply("Plus", monomials);
 }
 
-template<typename V, int d,
+template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematicaExpression(PoissonSeries<V, d, E> const& series,
+std::string ToMathematicaExpression(PoissonSeries<V, ad, pd, E> const& series,
                                     OptionalExpressIn express_in) {
   std::vector<std::string> components = {
       ToMathematicaExpression(series.aperiodic_, express_in)};
@@ -386,10 +386,10 @@ std::string ToMathematica(
   return Apply("Function", {ToMathematicaExpression(polynomial, express_in)});
 }
 
-template<typename V, int d,
+template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematica(PoissonSeries<V, d, E> const& series,
+std::string ToMathematica(PoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in) {
   return Apply("Function", {ToMathematicaExpression(series, express_in)});
 }
