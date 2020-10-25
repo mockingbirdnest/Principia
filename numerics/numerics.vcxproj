@@ -49,6 +49,7 @@
     <ClInclude Include="pid.hpp" />
     <ClInclude Include="pid_body.hpp" />
     <ClInclude Include="piecewise_poisson_series.hpp" />
+    <ClInclude Include="piecewise_poisson_series_body.hpp" />
     <ClInclude Include="poisson_series.hpp" />
     <ClInclude Include="poisson_series_basis.hpp" />
     <ClInclude Include="poisson_series_basis_body.hpp" />

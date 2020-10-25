@@ -24,10 +24,8 @@ namespace internal_poisson_series {
 using quantities::Abs;
 using quantities::Cos;
 using quantities::Infinity;
-using quantities::Primitive;
 using quantities::Sin;
 using quantities::Sqrt;
-using quantities::Time;
 using quantities::Variation;
 using quantities::si::Radian;
 namespace si = quantities::si;

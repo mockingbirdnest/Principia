@@ -179,6 +179,9 @@
     <ClInclude Include="piecewise_poisson_series.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="piecewise_poisson_series_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">

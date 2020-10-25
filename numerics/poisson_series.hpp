@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/complexification.hpp"
 #include "geometry/hilbert.hpp"
@@ -17,6 +18,7 @@
 #include "numerics/polynomial.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/numerics.pb.h"
 
 namespace principia {
 namespace numerics {
