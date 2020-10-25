@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "numerics/double_precision.hpp"
 #include "numerics/quadrature.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -33,8 +34,21 @@ namespace si = quantities::si;
 
 // These parameters have been tuned for approximation of the Moon over 3 months
 // with 10 periods.
+
+// In the fast/slow algorithms, specifies the maximum number of periods over the
+// time interval below which we use Clenshaw-Curtis integration.
+constexpr int clenshaw_curtis_max_periods_overall = 40;
+
+// The minimum value of the max_point parameter passed to Clenshaw-Curtis
+// integration, irrespective of the frequencies of the argument function.
 constexpr int clenshaw_curtis_min_points_overall = 33;
+
+// The maximum number of points use in Clenshaw-Curtis integration for each
+// period of the highest frequency of the argument function.
 constexpr int clenshaw_curtis_point_per_period = 4;
+
+// The desired relative error on Clenshaw-Curtis integration, as determined by
+// two successive computations with increasing number of points.
 constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 
 template<typename Value, int degree_,
@@ -218,7 +232,9 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
         {{ω,
           {/*sin=*/typename FirstPart::Polynomial(polynomials.cos),
            /*cos=*/typename FirstPart::Polynomial(-polynomials.sin)}}});
-    result += (first_part(t2) - first_part(t1)) / ω * Radian;
+    DoublePrecision<Value> sum;
+    sum += first_part(t2);
+    sum -= first_part(t1);
 
     if constexpr (degree_ != 0) {
       auto const sin_polynomial =
@@ -229,8 +245,9 @@ PoissonSeries<Value, degree_, Evaluator>::Integrate(Instant const& t1,
                                    {{ω,
                                      {/*sin=*/sin_polynomial,
                                       /*cos=*/cos_polynomial}}});
-      result += second_part.Integrate(t1, t2) / ω * Radian;
+      sum += second_part.Integrate(t1, t2);
     }
+    result += (sum.value + sum.error) / ω * Radian;
   }
   return result;
 }
@@ -345,6 +362,49 @@ PoissonSeries<Value, degree_, Evaluator>::PoissonSeries(
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
+typename PoissonSeries<Value, degree_, Evaluator>::SplitPoissonSeries
+PoissonSeries<Value, degree_, Evaluator>::Split(
+    AngularFrequency const& ω_cutoff) const {
+  // TODO(phl): Should we try to avoid a linear search and copies?
+  typename PoissonSeries::PolynomialsByAngularFrequency slow_periodic;
+  typename PoissonSeries::PolynomialsByAngularFrequency fast_periodic;
+  for (auto const& [ω, polynomials] : periodic_) {
+    if (ω <= ω_cutoff) {
+      slow_periodic.emplace_back(ω, polynomials);
+    } else {
+      fast_periodic.emplace_back(ω, polynomials);
+    }
+  }
+
+  // The reason for having the slow/fast split is to handle cancellations that
+  // occurs between the aperiodic component and the components with low
+  // frequencies.  If there are no low frequencies, we might as well put the
+  // aperiodic component in the high-frequencies half.
+  if (slow_periodic.empty()) {
+    PoissonSeries slow(TrustedPrivateConstructor{},
+                       typename PoissonSeries::Polynomial(
+                           typename PoissonSeries::Polynomial::Coefficients{},
+                           aperiodic_.origin()),
+                       std::move(slow_periodic));
+    PoissonSeries fast(TrustedPrivateConstructor{},
+                       aperiodic_,
+                       std::move(fast_periodic));
+    return {/*slow=*/std::move(slow), /*fast=*/std::move(fast)};
+  } else {
+    PoissonSeries slow(TrustedPrivateConstructor{},
+                       aperiodic_,
+                       std::move(slow_periodic));
+    PoissonSeries fast(TrustedPrivateConstructor{},
+                       typename PoissonSeries::Polynomial(
+                           typename PoissonSeries::Polynomial::Coefficients{},
+                           aperiodic_.origin()),
+                       std::move(fast_periodic));
+    return {/*slow=*/std::move(slow), /*fast=*/std::move(fast)};
+  }
+}
+
+template<typename Value, int degree_,
+         template<typename, typename, int> class Evaluator>
 template<int higher_degree_,
          template<typename, typename, int> class HigherEvaluator>
 PoissonSeries<Value, degree_, Evaluator>::
@@ -374,9 +434,13 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) const {
+  AngularFrequency const ω_cutoff =
+      2 * π * Radian * clenshaw_curtis_max_periods_overall / (t_max - t_min);
+  auto const split = Split(ω_cutoff);
+
   AngularFrequency const max_ω =
-      (periodic_.empty() ? AngularFrequency{}
-                         : 2 * periodic_.back().first) +
+      (split.slow.periodic_.empty() ? AngularFrequency{}
+                                     : 2 * split.slow.periodic_.back().first) +
       (weight.periodic_.empty() ? AngularFrequency{}
                                 : weight.periodic_.back().first);
   std::optional<int> max_points =
@@ -387,15 +451,21 @@ PoissonSeries<Value, degree_, Evaluator>::Norm(
                 static_cast<int>(clenshaw_curtis_point_per_period *
                                  (t_max - t_min) * max_ω / (2 * π * Radian)));
 
-  auto integrand = [this, &weight](Instant const& t) {
-    return Hilbert<Value>::Norm²((*this)(t)) * weight(t);
+  auto slow_integrand = [&split, &weight](Instant const& t) {
+    return Hilbert<Value>::Norm²(split.slow(t)) * weight(t);
   };
-  return Sqrt(quadrature::AutomaticClenshawCurtis(
-                  integrand,
-                  t_min, t_max,
-                  /*max_relative_error=*/clenshaw_curtis_relative_error,
-                  /*max_points=*/max_points) /
-              (t_max - t_min));
+  auto const slow_quadrature = quadrature::AutomaticClenshawCurtis(
+      slow_integrand,
+      t_min, t_max,
+      /*max_relative_error=*/clenshaw_curtis_relative_error,
+      /*max_points=*/max_points);
+
+  auto const fast_integrand =
+      PointwiseInnerProduct(split.fast, split.fast + 2 * split.slow) *
+      weight;
+  auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
+
+  return Sqrt((slow_quadrature + fast_quadrature) / (t_max - t_min));
 }
 
 template<typename Value, int degree_,
@@ -694,11 +764,18 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PoissonSeries<double, wdegree_, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max) {
+  AngularFrequency const ω_cutoff =
+      2 * π * Radian * clenshaw_curtis_max_periods_overall / (t_max - t_min);
+  auto const left_split = left.Split(ω_cutoff);
+  auto const right_split = right.Split(ω_cutoff);
+
   AngularFrequency const max_ω =
-      (left.periodic_.empty() ? AngularFrequency{}
-                              : left.periodic_.back().first) +
-      (right.periodic_.empty() ? AngularFrequency{}
-                               : right.periodic_.back().first) +
+      (left_split.slow.periodic_.empty()
+           ? AngularFrequency{}
+           : left_split.slow.periodic_.back().first) +
+      (right_split.slow.periodic_.empty()
+           ? AngularFrequency{}
+           : right_split.slow.periodic_.back().first) +
       (weight.periodic_.empty() ? AngularFrequency{}
                                 : weight.periodic_.back().first);
   std::optional<int> max_points =
@@ -709,15 +786,25 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
                 static_cast<int>(clenshaw_curtis_point_per_period *
                                  (t_max - t_min) * max_ω / (2 * π * Radian)));
 
-  auto integrand = [&left, &right, &weight](Instant const& t) {
-    return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
+  auto slow_integrand = [&left_split, &right_split, &weight](Instant const& t) {
+    return Hilbert<LValue, RValue>::InnerProduct(left_split.slow(t),
+                                                 right_split.slow(t)) *
+           weight(t);
   };
-  return quadrature::AutomaticClenshawCurtis(
-             integrand,
-             t_min, t_max,
-             /*max_relative_error=*/clenshaw_curtis_relative_error,
-             /*max_points=*/max_points) /
-         (t_max - t_min);
+  auto const slow_quadrature = quadrature::AutomaticClenshawCurtis(
+      slow_integrand,
+      t_min, t_max,
+      /*max_relative_error=*/clenshaw_curtis_relative_error,
+      /*max_points=*/max_points);
+
+  auto const fast_integrand =
+      (PointwiseInnerProduct(left_split.fast, right_split.slow) +
+       PointwiseInnerProduct(left_split.slow, right_split.fast) +
+       PointwiseInnerProduct(left_split.fast, right_split.fast)) *
+      weight;
+  auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
+
+  return (slow_quadrature + fast_quadrature) / (t_max - t_min);
 }
 
 template<typename Value, int degree_,
