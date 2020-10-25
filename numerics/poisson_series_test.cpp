@@ -66,21 +66,21 @@ class PoissonSeriesTest : public ::testing::Test {
         ω1_(1 * Radian / Second),
         ω2_(2 * Radian / Second),
         ω3_(-3 * Radian / Second) {
-    Degree1::Polynomial pa0({0, 0 / Second}, t0_);
-    Degree1::Polynomial psa0({100, 200 / Second}, t0_);
-    Degree1::Polynomial pca0({1, 2 / Second}, t0_);
-    Degree1::Polynomial pb0({3, 4 / Second}, t0_);
+    Degree1::AperiodicPolynomial pa0({0, 0 / Second}, t0_);
+    Degree1::PeriodicPolynomial psa0({100, 200 / Second}, t0_);
+    Degree1::PeriodicPolynomial pca0({1, 2 / Second}, t0_);
+    Degree1::AperiodicPolynomial pb0({3, 4 / Second}, t0_);
 
-    Degree1::Polynomial psa1({5, 6 / Second}, t0_);
-    Degree1::Polynomial pca1({7, 8 / Second}, t0_);
-    Degree1::Polynomial psb1({9, 10 / Second}, t0_);
-    Degree1::Polynomial pcb1({11, 12 / Second}, t0_);
+    Degree1::PeriodicPolynomial psa1({5, 6 / Second}, t0_);
+    Degree1::PeriodicPolynomial pca1({7, 8 / Second}, t0_);
+    Degree1::PeriodicPolynomial psb1({9, 10 / Second}, t0_);
+    Degree1::PeriodicPolynomial pcb1({11, 12 / Second}, t0_);
 
-    Degree1::Polynomial psa2({13, 14 / Second}, t0_);
-    Degree1::Polynomial pca2({15, 16 / Second}, t0_);
+    Degree1::PeriodicPolynomial psa2({13, 14 / Second}, t0_);
+    Degree1::PeriodicPolynomial pca2({15, 16 / Second}, t0_);
 
-    Degree1::Polynomial psb3({-17, -18 / Second}, t0_);
-    Degree1::Polynomial pcb3({19, 20 / Second}, t0_);
+    Degree1::PeriodicPolynomial psb3({-17, -18 / Second}, t0_);
+    Degree1::PeriodicPolynomial pcb3({19, 20 / Second}, t0_);
 
     Degree1::Polynomials psca0{/*sin=*/psa0, /*cos=*/pca0};
 
@@ -121,7 +121,7 @@ TEST_F(PoissonSeriesTest, Evaluate) {
 }
 
 TEST_F(PoissonSeriesTest, Conversion) {
-  using Degree3 = PoissonSeries<double, 3, HornerEvaluator>;
+  using Degree3 = PoissonSeries<double, 3, 3, HornerEvaluator>;
   Degree3 const pa3 = Degree3(*pa_);
   EXPECT_THAT(pa3(t0_ + 1 * Second),
               AlmostEquals(3 + 11 * Sin(1 * Radian) + 15 * Cos(1 * Radian) +
@@ -191,8 +191,8 @@ TEST_F(PoissonSeriesTest, AtOrigin) {
 }
 
 TEST_F(PoissonSeriesTest, PointwiseInnerProduct) {
-  using Degree2 = PoissonSeries<Displacement<World>, 2, HornerEvaluator>;
-  Degree2::Polynomial::Coefficients const coefficients_a({
+  using Degree2 = PoissonSeries<Displacement<World>, 2, 0, HornerEvaluator>;
+  Degree2::AperiodicPolynomial::Coefficients const coefficients_a({
       Displacement<World>({0 * Metre,
                             0 * Metre,
                             1 * Metre}),
@@ -202,7 +202,7 @@ TEST_F(PoissonSeriesTest, PointwiseInnerProduct) {
       Vector<Acceleration, World>({1 * Metre / Second / Second,
                                     0 * Metre / Second / Second,
                                     0 * Metre / Second / Second})});
-  Degree2::Polynomial::Coefficients const coefficients_b({
+  Degree2::AperiodicPolynomial::Coefficients const coefficients_b({
       Displacement<World>({0 * Metre,
                            2 * Metre,
                            3 * Metre}),
@@ -212,8 +212,8 @@ TEST_F(PoissonSeriesTest, PointwiseInnerProduct) {
       Vector<Acceleration, World>({1 * Metre / Second / Second,
                                    1 * Metre / Second / Second,
                                    -2 * Metre / Second / Second})});
-  Degree2 const pa(Degree2::Polynomial({coefficients_a}, t0_), {{}});
-  Degree2 const pb(Degree2::Polynomial({coefficients_b}, t0_), {{}});
+  Degree2 const pa(Degree2::AperiodicPolynomial({coefficients_a}, t0_), {{}});
+  Degree2 const pb(Degree2::AperiodicPolynomial({coefficients_b}, t0_), {{}});
 
   auto const product = PointwiseInnerProduct(pa, pb);
   EXPECT_THAT(product(t0_ + 1 * Second),
@@ -274,30 +274,30 @@ TEST_F(PoissonSeriesTest, InnerProduct) {
 }
 
 TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
-  using Degree4 = PoissonSeries<Length, 4, HornerEvaluator>;
-  using Degree5 = PoissonSeries<Length, 5, HornerEvaluator>;
+  using Degree4 = PoissonSeries<Length, 0, 4, HornerEvaluator>;
+  using Degree5 = PoissonSeries<Length, 0, 5, HornerEvaluator>;
   Instant const t_min = t0_;
   Instant const t_max = t0_ + 4.77553415434249021e-02 * Second;
   AngularFrequency const ω = 2.09400659210170170e+03 * Radian / Second;
-  Degree4 const f(Degree4::Polynomial({}, t0_),
+  Degree4 const f(Degree4::AperiodicPolynomial({}, t0_),
                   {{ω,
-                    {/*sin=*/Degree4::Polynomial(
+                    {/*sin=*/Degree4::PeriodicPolynomial(
                          {+5.10311065909077932e+00 * Metre,
                           +2.78062787709394854e+00 * Metre / Second,
                           +5.04290401496053242e+00 * Metre / Pow<2>(Second),
                           -7.27454632735125806e+00 * Metre / Pow<3>(Second),
                           +8.06537932856756612e+00 * Metre / Pow<4>(Second)},
                          t0_),
-                     /*cos=*/Degree4::Polynomial(
+                     /*cos=*/Degree4::PeriodicPolynomial(
                          {-8.11863376474325804e+00 * Metre,
                           +1.49140608216528037e+00 * Metre / Second,
                           -2.54224601087630298e+00 * Metre / Pow<2>(Second),
                           -4.52251796525658367e+00 * Metre / Pow<3>(Second),
                           -2.19458237171412751e+00 * Metre / Pow<4>(Second)},
                          t0_)}}});
-  Degree5 const q(Degree5::Polynomial({}, t0_),
+  Degree5 const q(Degree5::AperiodicPolynomial({}, t0_),
                   {{ω,
-                    {/*sin=*/Degree5::Polynomial(
+                    {/*sin=*/Degree5::PeriodicPolynomial(
                          {-4.41249783881549433e+01 * Metre,
                           +1.50208859053174347e+04 * Metre / Second,
                           -1.70674564621978020e+06 * Metre / Pow<2>(Second),
@@ -305,7 +305,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
                           -1.92799129073151779e+09 * Metre / Pow<4>(Second),
                           +1.61514557548221931e+10 * Metre / Pow<5>(Second)},
                          t0_),
-                     /*cos=*/Degree5::Polynomial(
+                     /*cos=*/Degree5::PeriodicPolynomial(
                          {-1.00752842659088765e-01 * Metre,
                           +2.25402995957193006e+01 * Metre / Second,
                           -1.66819064858902379e+03 * Metre / Pow<2>(Second),

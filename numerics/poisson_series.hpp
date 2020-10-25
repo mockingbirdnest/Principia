@@ -334,7 +334,9 @@ template<typename LValue, typename RValue,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
               aperiodic_ldegree + aperiodic_rdegree,
-              periodic_ldegree + periodic_rdegree,
+              std::max({periodic_ldegree + periodic_rdegree,
+                        aperiodic_ldegree + periodic_rdegree,
+                        periodic_ldegree + aperiodic_rdegree}),
               Evaluator>
 PointwiseInnerProduct(PoissonSeries<LValue,
                                     aperiodic_ldegree, periodic_ldegree,
