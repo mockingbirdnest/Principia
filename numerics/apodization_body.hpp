@@ -18,15 +18,15 @@ using quantities::AngularFrequency;
 using quantities::si::Radian;
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> Dirichlet(Instant const& t_min,
-                                              Instant const& t_max) {
+PoissonSeries<double, 0, 0, Evaluator> Dirichlet(Instant const& t_min,
+                                                 Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   return Result(typename Result::Polynomial({1}, t_min), {});
 }
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> Sine(Instant const& t_min,
-                                         Instant const& t_max) {
+PoissonSeries<double, 0, 0, Evaluator> Sine(Instant const& t_min,
+                                            Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = π * Radian / (t_max - t_min);
   return Result(typename Result::Polynomial({0}, t_min),
@@ -36,8 +36,8 @@ PoissonSeries<double, 0, Evaluator> Sine(Instant const& t_min,
 }
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> Hann(Instant const& t_min,
-                                         Instant const& t_max) {
+PoissonSeries<double, 0, 0, Evaluator> Hann(Instant const& t_min,
+                                            Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
   return Result(typename Result::Polynomial({0.5}, t_min),
@@ -47,8 +47,8 @@ PoissonSeries<double, 0, Evaluator> Hann(Instant const& t_min,
 }
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> Hamming(Instant const& t_min,
-                                            Instant const& t_max) {
+PoissonSeries<double, 0, 0, Evaluator> Hamming(Instant const& t_min,
+                                               Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
   return Result(
@@ -59,8 +59,8 @@ PoissonSeries<double, 0, Evaluator> Hamming(Instant const& t_min,
 }
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> Blackman(Instant const& t_min,
-                                             Instant const& t_max) {
+PoissonSeries<double, 0, 0, Evaluator> Blackman(Instant const& t_min,
+                                                Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
   return Result(typename Result::Polynomial({0.42}, t_min),
@@ -73,8 +73,8 @@ PoissonSeries<double, 0, Evaluator> Blackman(Instant const& t_min,
 }
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> ExactBlackman(Instant const& t_min,
-                                                  Instant const& t_max) {
+PoissonSeries<double, 0, 0, Evaluator> ExactBlackman(Instant const& t_min,
+                                                     Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
   return Result(
@@ -88,8 +88,8 @@ PoissonSeries<double, 0, Evaluator> ExactBlackman(Instant const& t_min,
 }
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> Nuttall(Instant const& t_min,
-                                            Instant const& t_max) {
+PoissonSeries<double, 0, 0, Evaluator> Nuttall(Instant const& t_min,
+                                               Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
   return Result(typename Result::Polynomial({0.355768}, t_min),
@@ -105,8 +105,8 @@ PoissonSeries<double, 0, Evaluator> Nuttall(Instant const& t_min,
 }
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> BlackmanNuttall(Instant const& t_min,
-                                                    Instant const& t_max) {
+PoissonSeries<double, 0, 0, Evaluator> BlackmanNuttall(Instant const& t_min,
+                                                       Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
   return Result(typename Result::Polynomial({0.3635819}, t_min),
@@ -122,8 +122,8 @@ PoissonSeries<double, 0, Evaluator> BlackmanNuttall(Instant const& t_min,
 }
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> BlackmanHarris(Instant const& t_min,
-                                                   Instant const& t_max) {
+PoissonSeries<double, 0, 0, Evaluator> BlackmanHarris(Instant const& t_min,
+                                                      Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
   return Result(typename Result::Polynomial({0.35875}, t_min),
@@ -139,8 +139,8 @@ PoissonSeries<double, 0, Evaluator> BlackmanHarris(Instant const& t_min,
 }
 
 template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, Evaluator> ISO18431_2(Instant const& t_min,
-                                               Instant const& t_max) {
+PoissonSeries<double, 0, 0, Evaluator> ISO18431_2(Instant const& t_min,
+                                                  Instant const& t_max) {
   using Result = PoissonSeries<double, 0, Evaluator>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
   return Result(typename Result::Polynomial({1.0 / 4.63867187}, t_min),
