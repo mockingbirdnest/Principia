@@ -108,7 +108,7 @@ class PoissonSeries {
 
   // The constant term of the result is zero.
   PoissonSeries<quantities::Primitive<Value, Time>,
-                aperiodic_degree_ + 1, aperiodic_degree_ + 1,
+                aperiodic_degree_ + 1, periodic_degree_ + 1,
                 Evaluator>
   Primitive() const;
 
@@ -120,14 +120,17 @@ class PoissonSeries {
       PoissonSeries<double,
                     aperiodic_wdegree, periodic_wdegree,
                     Evaluator> const& weight,
-                    Instant const& t_min, Instant const& t_max) const;
+                    Instant const& t_min,
+                    Instant const& t_max) const;
 
-  template<int ad, int pd>
-  PoissonSeries& operator+=(
-      PoissonSeries<Value, ad, pd, Evaluator> const& right);
-  template<int ad, int pd>
-  PoissonSeries& operator-=(
-      PoissonSeries<Value, ad, pd, Evaluator> const& right);
+  template<int aperiodic_rdegree, int periodic_rdegree>
+  PoissonSeries& operator+=(PoissonSeries<Value,
+                                          aperiodic_rdegree, periodic_rdegree,
+                                          Evaluator> const& right);
+  template<int aperiodic_rdegree, int periodic_rdegree>
+  PoissonSeries& operator-=(PoissonSeries<Value,
+                                          aperiodic_rdegree, periodic_rdegree,
+                                          Evaluator> const& right);
 
   void WriteToMessage(not_null<serialization::PoissonSeries*> message) const;
   static PoissonSeries ReadFromMessage(
@@ -371,7 +374,8 @@ InnerProduct(PoissonSeries<LValue,
              PoissonSeries<double,
                            aperiodic_wdegree, periodic_wdegree,
                            Evaluator> const& weight,
-             Instant const& t_min, Instant const& t_max);
+             Instant const& t_min,
+             Instant const& t_max);
 
 }  // namespace internal_poisson_series
 
