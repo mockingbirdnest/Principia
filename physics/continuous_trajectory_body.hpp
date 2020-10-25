@@ -262,7 +262,8 @@ ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
   CHECK(!polynomials_.empty());
   using PiecewisePoisson =
       PiecewisePoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>;
-  using Poisson = PoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>;
+  using Poisson =
+      PoissonSeries<Displacement<Frame>, degree, 0, EstrinEvaluator>;
 
   auto cast_to_degree =
       [](not_null<Polynomial<Displacement<Frame>, Instant> const*> const
