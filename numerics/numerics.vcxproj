@@ -48,6 +48,8 @@
     <ClInclude Include="newhall_body.hpp" />
     <ClInclude Include="pid.hpp" />
     <ClInclude Include="pid_body.hpp" />
+    <ClInclude Include="piecewise_poisson_series.hpp" />
+    <ClInclude Include="piecewise_poisson_series_body.hpp" />
     <ClInclude Include="poisson_series.hpp" />
     <ClInclude Include="poisson_series_basis.hpp" />
     <ClInclude Include="poisson_series_basis_body.hpp" />
@@ -91,6 +93,7 @@
     <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc" />
     <ClCompile Include="newhall_test.cpp" />
     <ClCompile Include="pid_test.cpp" />
+    <ClCompile Include="piecewise_poisson_series_test.cpp" />
     <ClCompile Include="poisson_series_basis_test.cpp" />
     <ClCompile Include="poisson_series_test.cpp" />
     <ClCompile Include="polynomial_evaluators_test.cpp" />

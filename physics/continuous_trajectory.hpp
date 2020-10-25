@@ -10,7 +10,7 @@
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
-#include "numerics/poisson_series.hpp"
+#include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "physics/checkpointer.hpp"

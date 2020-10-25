@@ -176,6 +176,12 @@
     <ClInclude Include="scale_b.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="piecewise_poisson_series.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="piecewise_poisson_series_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -266,6 +272,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="scale_b_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="piecewise_poisson_series_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

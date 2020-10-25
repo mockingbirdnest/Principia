@@ -18,6 +18,7 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/poisson_series.hpp"
 #include "numerics/polynomial.hpp"
 #include "physics/degrees_of_freedom.hpp"
